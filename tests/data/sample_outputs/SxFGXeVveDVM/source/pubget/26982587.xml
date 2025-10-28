@@ -1,0 +1,1679 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" article-type="research-article">
+  <?properties open_access?>
+  <front>
+    <journal-meta>
+      <journal-id journal-id-type="nlm-ta">PLoS One</journal-id>
+      <journal-id journal-id-type="iso-abbrev">PLoS ONE</journal-id>
+      <journal-id journal-id-type="publisher-id">plos</journal-id>
+      <journal-id journal-id-type="pmc">plosone</journal-id>
+      <journal-title-group>
+        <journal-title>PLoS ONE</journal-title>
+      </journal-title-group>
+      <issn pub-type="epub">1932-6203</issn>
+      <publisher>
+        <publisher-name>Public Library of Science</publisher-name>
+        <publisher-loc>San Francisco, CA USA</publisher-loc>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="pmid">26982587</article-id>
+      <article-id pub-id-type="pmc">4794204</article-id>
+      <article-id pub-id-type="doi">10.1371/journal.pone.0150345</article-id>
+      <article-id pub-id-type="publisher-id">PONE-D-15-22224</article-id>
+      <article-categories>
+        <subj-group subj-group-type="heading">
+          <subject>Research Article</subject>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Biology and Life Sciences</subject>
+          <subj-group>
+            <subject>Agriculture</subject>
+            <subj-group>
+              <subject>Crop Science</subject>
+              <subj-group>
+                <subject>Crops</subject>
+                <subj-group>
+                  <subject>Cereal Crops</subject>
+                  <subj-group>
+                    <subject>Rice</subject>
+                  </subj-group>
+                </subj-group>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Biology and Life Sciences</subject>
+          <subj-group>
+            <subject>Organisms</subject>
+            <subj-group>
+              <subject>Plants</subject>
+              <subj-group>
+                <subject>Grasses</subject>
+                <subj-group>
+                  <subject>Rice</subject>
+                </subj-group>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Research and Analysis Methods</subject>
+          <subj-group>
+            <subject>Model Organisms</subject>
+            <subj-group>
+              <subject>Plant and Algal Models</subject>
+              <subj-group>
+                <subject>Rice</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Biology and Life Sciences</subject>
+          <subj-group>
+            <subject>Physiology</subject>
+            <subj-group>
+              <subject>Physiological Processes</subject>
+              <subj-group>
+                <subject>Eating</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Medicine and Health Sciences</subject>
+          <subj-group>
+            <subject>Physiology</subject>
+            <subj-group>
+              <subject>Physiological Processes</subject>
+              <subj-group>
+                <subject>Eating</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Materials Science</subject>
+            <subj-group>
+              <subject>Material Properties</subject>
+              <subj-group>
+                <subject>Texture</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Chemistry</subject>
+            <subj-group>
+              <subject>Chemical Properties</subject>
+              <subj-group>
+                <subject>Viscosity</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Chemistry</subject>
+            <subj-group>
+              <subject>Physical Chemistry</subject>
+              <subj-group>
+                <subject>Chemical Properties</subject>
+                <subj-group>
+                  <subject>Viscosity</subject>
+                </subj-group>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Materials Science</subject>
+            <subj-group>
+              <subject>Materials Physics</subject>
+              <subj-group>
+                <subject>Viscosity</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Physics</subject>
+            <subj-group>
+              <subject>Materials Physics</subject>
+              <subj-group>
+                <subject>Viscosity</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Engineering and Technology</subject>
+          <subj-group>
+            <subject>Navigation</subject>
+            <subj-group>
+              <subject>Global Positioning System</subject>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Biology and Life Sciences</subject>
+          <subj-group>
+            <subject>Physiology</subject>
+            <subj-group>
+              <subject>Physiological Processes</subject>
+              <subj-group>
+                <subject>Food Consumption</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Medicine and Health Sciences</subject>
+          <subj-group>
+            <subject>Physiology</subject>
+            <subj-group>
+              <subject>Physiological Processes</subject>
+              <subj-group>
+                <subject>Food Consumption</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Chemistry</subject>
+            <subj-group>
+              <subject>Chemical Compounds</subject>
+              <subj-group>
+                <subject>Organic Compounds</subject>
+                <subj-group>
+                  <subject>Carbohydrates</subject>
+                  <subj-group>
+                    <subject>Starches</subject>
+                  </subj-group>
+                </subj-group>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>Physical Sciences</subject>
+          <subj-group>
+            <subject>Chemistry</subject>
+            <subj-group>
+              <subject>Organic Chemistry</subject>
+              <subj-group>
+                <subject>Organic Compounds</subject>
+                <subj-group>
+                  <subject>Carbohydrates</subject>
+                  <subj-group>
+                    <subject>Starches</subject>
+                  </subj-group>
+                </subj-group>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+        <subj-group subj-group-type="Discipline-v3">
+          <subject>People and Places</subject>
+          <subj-group>
+            <subject>Geographical Locations</subject>
+            <subj-group>
+              <subject>Asia</subject>
+              <subj-group>
+                <subject>Philippines</subject>
+              </subj-group>
+            </subj-group>
+          </subj-group>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Rice Grain Quality and Consumer Preferences: A Case Study of Two Rural Towns in the Philippines</article-title>
+        <alt-title alt-title-type="running-head">Rice Grain Quality and Consumer Preferences in the Philippines</alt-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author" equal-contrib="yes">
+          <name>
+            <surname>Cuevas</surname>
+            <given-names>Rosa Paula</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff001">
+            <sup>1</sup>
+          </xref>
+        </contrib>
+        <contrib contrib-type="author" equal-contrib="yes">
+          <name>
+            <surname>Pede</surname>
+            <given-names>Valerien O.</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff002">
+            <sup>2</sup>
+          </xref>
+        </contrib>
+        <contrib contrib-type="author" equal-contrib="yes">
+          <name>
+            <surname>McKinley</surname>
+            <given-names>Justin</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff002">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="corresp" rid="cor001">*</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Velarde</surname>
+            <given-names>Orlee</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff002">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff003">
+            <sup>3</sup>
+          </xref>
+          <xref ref-type="author-notes" rid="econtrib001">
+            <sup>‡</sup>
+          </xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Demont</surname>
+            <given-names>Matty</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff002">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="author-notes" rid="econtrib001">
+            <sup>‡</sup>
+          </xref>
+        </contrib>
+      </contrib-group>
+      <aff id="aff001"><label>1</label>
+<addr-line>Grain Quality and Nutrition Center, International Rice Research Institute, DAPO 7777 Metro Manila, Philippines</addr-line></aff>
+      <aff id="aff002"><label>2</label>
+<addr-line>Social Sciences Division, International Rice Research Institute, DAPO 7777 Metro Manila, Philippines</addr-line></aff>
+      <aff id="aff003"><label>3</label>
+<addr-line>Asian Development Bank, 6 ADB Avenue, Mandaluyong City 1550, Metro Manila, Philippines</addr-line></aff>
+      <contrib-group>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Yang</surname>
+            <given-names>Daichang</given-names>
+          </name>
+          <role>Editor</role>
+          <xref ref-type="aff" rid="edit1"/>
+        </contrib>
+      </contrib-group>
+      <aff id="edit1">
+        <addr-line>Wuhan University, CHINA</addr-line>
+      </aff>
+      <author-notes>
+        <fn fn-type="COI-statement" id="coi001">
+          <p><bold>Competing Interests: </bold>Although one author [OV] is currently affiliated with a multilateral development finance institution, his contributions to this study were carried out while employed by the International Rice Research Institute and his current affiliation with the Asian Development Bank is in no way a competing interest for the study. This does not alter the authors' adherence to PLOS ONE policies on sharing data and materials.</p>
+        </fn>
+        <fn fn-type="con" id="contrib001">
+          <p>Conceived and designed the experiments: VOP OV. Performed the experiments: RPC OV. Analyzed the data: RPC VOP JM MD. Contributed reagents/materials/analysis tools: RPC VOP JM OV MD. Wrote the paper: RPC VOP JM OV MD.</p>
+        </fn>
+        <fn fn-type="other" id="econtrib001">
+          <p>‡These authors also contributed equally to this work.</p>
+        </fn>
+        <corresp id="cor001">* E-mail: <email>j.mckinley@irri.org</email></corresp>
+      </author-notes>
+      <pub-date pub-type="epub">
+        <day>16</day>
+        <month>3</month>
+        <year>2016</year>
+      </pub-date>
+      <pub-date pub-type="collection">
+        <year>2016</year>
+      </pub-date>
+      <volume>11</volume>
+      <issue>3</issue>
+      <elocation-id>e0150345</elocation-id>
+      <history>
+        <date date-type="received">
+          <day>28</day>
+          <month>5</month>
+          <year>2015</year>
+        </date>
+        <date date-type="accepted">
+          <day>14</day>
+          <month>2</month>
+          <year>2016</year>
+        </date>
+      </history>
+      <permissions>
+        <copyright-statement>© 2016 Cuevas et al</copyright-statement>
+        <copyright-year>2016</copyright-year>
+        <copyright-holder>Cuevas et al</copyright-holder>
+        <license xlink:href="http://creativecommons.org/licenses/by/4.0/">
+          <license-p>This is an open access article distributed under the terms of the <ext-link ext-link-type="uri" xlink:href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution License</ext-link>, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.</license-p>
+        </license>
+      </permissions>
+      <self-uri content-type="pdf" xlink:type="simple" xlink:href="pone.0150345.pdf"/>
+      <abstract>
+        <p>Hedonic pricing analysis is conducted to determine the implicit values of various attributes in the market value of a good. In this study, hedonic pricing analysis was applied to measure the contribution of grain quality search and experience attributes to the price of rice in two rural towns in the Philippines. Rice samples from respondents underwent quantitative routine assessments of grain quality. In particular, gelatinization temperature and chalkiness, two parameters that are normally assessed through visual scores, were evaluated by purely quantitative means (differential scanning calorimetry and by digital image analysis). Results indicate that rice consumed by respondents had mainly similar physical and chemical grain quality attributes. The respondents’ revealed preferences were typical of what has been previously reported for Filipino rice consumers. Hedonic regression analyses showed that grain quality characteristics that affected price varied by income class. Some of the traits or socioeconomic factors that affected price were percent broken grains, gel consistency, and household per capita rice consumption. There is an income effect on rice price and the characteristics that affect price vary between income classes.</p>
+      </abstract>
+      <funding-group>
+        <funding-statement>The cost of data collection and grain quality analysis were covered through funds available from the Global Rice Science Partnership (GRiSP). More information about GRiSP is available at: <ext-link ext-link-type="uri" xlink:href="http://www.grisp.net/main/summary">http://www.grisp.net/main/summary</ext-link>. The funder provided support in the form of salaries for authors [VP, OV, RC] as well as the costs of grain quality tests, but did not have any additional role in the study design, data collection and analysis, decision to publish, or preparation of the manuscript. The specific roles of these authors are articulated in the ‘author contributions’ section. Although one author [OV] is currently affiliated with a multilateral development finance institution, his contributions to this study were carried out while employed by the International Rice Research Institute and his current affiliation with the Asian Development Bank in no way influences the study.</funding-statement>
+      </funding-group>
+      <counts>
+        <fig-count count="1"/>
+        <table-count count="6"/>
+        <page-count count="17"/>
+      </counts>
+      <custom-meta-group>
+        <custom-meta id="data-availability">
+          <meta-name>Data Availability</meta-name>
+          <meta-value>All data are hosted by the Harvard Dataverse (<ext-link ext-link-type="uri" xlink:href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HZDQ70">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HZDQ70</ext-link>). Data are also hosted at IRRI (<ext-link ext-link-type="uri" xlink:href="http://ricestat.irri.org/fhsd/php/survey.php">http://ricestat.irri.org/fhsd/php/survey.php</ext-link>) under Project ID: 98.</meta-value>
+        </custom-meta>
+      </custom-meta-group>
+    </article-meta>
+    <notes>
+      <title>Data Availability</title>
+      <p>All data are hosted by the Harvard Dataverse (<ext-link ext-link-type="uri" xlink:href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HZDQ70">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HZDQ70</ext-link>). Data are also hosted at IRRI (<ext-link ext-link-type="uri" xlink:href="http://ricestat.irri.org/fhsd/php/survey.php">http://ricestat.irri.org/fhsd/php/survey.php</ext-link>) under Project ID: 98.</p>
+    </notes>
+  </front>
+  <body>
+    <sec sec-type="intro" id="sec001">
+      <title>Introduction</title>
+      <p>Rice <italic>(Oryza sativa</italic> L.<italic>)</italic> is one of the most important food crops as it is consumed by more than half of the world’s population [<xref rid="pone.0150345.ref001" ref-type="bibr">1</xref>]. Despite its importance, the international rice market is considered a “thin” market; it is highly segmented because rice consumers have very specific preferences [<xref rid="pone.0150345.ref002" ref-type="bibr">2</xref>]. The definition of “premium-quality” rice is largely dependent on the socioeconomic context of consumers, with data suggesting that even lower income classes are increasingly conscious of food quality [<xref rid="pone.0150345.ref003" ref-type="bibr">3</xref>–<xref rid="pone.0150345.ref006" ref-type="bibr">6</xref>].</p>
+      <p>Rice quality is judged based on attributes, which could be classified several ways. Product characteristics could either be <italic>intrinsic</italic>, such as taste, texture, or color; or <italic>extrinsic</italic> to the product, such as packaging, brand, or label. Another attribute classification distinguishes between <italic>search</italic>, <italic>experience</italic>, and <italic>credence</italic> attributes. Search attributes are available for product evaluation before purchase, such as price, appearance, brand, and packaging. Experience attributes can be evaluated only upon product experience, thus after purchase or product use—examples are taste, texture, ease of cooking, and swelling capacity. Credence attributes are attributes that consumers cannot evaluate or verify themselves. Instead, they rely on people or institutions, such as government controls or industry claims. Attributes relating to production, processing, and product contents are typical examples of the credence-type attributes [<xref rid="pone.0150345.ref007" ref-type="bibr">7</xref>]. In this paper, we will focus on <italic>intrinsic search</italic> and <italic>experience</italic> attributes, such as visual and physicochemical grain properties. It is argued that measuring such properties objectively is difficult [<xref rid="pone.0150345.ref008" ref-type="bibr">8</xref>] but relatively high-throughput routine methods have been developed to conduct measurements of a number of rice quality parameters.</p>
+      <p>Visual characteristics of rice grains are important <italic>search</italic> attributes that affect consumers’ purchasing decisions and hence are used as some of the first selection criteria in varietal improvement programs [<xref rid="pone.0150345.ref009" ref-type="bibr">9</xref>–<xref rid="pone.0150345.ref011" ref-type="bibr">11</xref>]. Grain size is mainly based on the length. On the other hand, grain shape is based on length-to-width ratio [<xref rid="pone.0150345.ref010" ref-type="bibr">10</xref>]. The classification of rice samples based on size and shape is not standardized across different countries and different markets [<xref rid="pone.0150345.ref012" ref-type="bibr">12</xref>–<xref rid="pone.0150345.ref014" ref-type="bibr">14</xref>]. The routine classification system used by the International Rice Research Institute (IRRI) breeding programs is as follows: short (≤ 5.50 mm), medium/intermediate (5.51–6.60 mm), long (6.61–7.50 mm), and very long (&gt; 7.50 mm). The grain shapes of rice, likewise, can be described based on the routine value ranges used in IRRI: bold (≤ 2.0), medium (2.1–3.0), and slender (&gt; 3.0) [<xref rid="pone.0150345.ref014" ref-type="bibr">14</xref>]. Chalky areas in rice grains—those opaque white parts of the grain—are deemed, generally, to represent poor quality in many rice market segments and thus these grains fetch lower market prices [<xref rid="pone.0150345.ref015" ref-type="bibr">15</xref>]. Grains are classified based on the proportion of the grain that is chalky: none (0%), small (&lt; 10%), medium (10–20%), and large (&gt; 20%) [<xref rid="pone.0150345.ref014" ref-type="bibr">14</xref>,<xref rid="pone.0150345.ref016" ref-type="bibr">16</xref>]. Traditionally, rice grain dimensions were measured using photographic enlargers and transparent rulers [<xref rid="pone.0150345.ref009" ref-type="bibr">9</xref>] while visual scoring by an experienced technician was conducted to determine chalkiness in rice grains [<xref rid="pone.0150345.ref010" ref-type="bibr">10</xref>]. Using manual ways of measuring grain dimensions is laborious and time-consuming while visual assessment of chalk has some degree of subjectivity and does not indicate where the chalky portion is in the grain [<xref rid="pone.0150345.ref017" ref-type="bibr">17</xref>].</p>
+      <p><italic>Experience</italic> attributes, such as cooking and organoleptic properties of rice, affect a consumer’s repeat purchasing behavior. Three parameters deemed most important in gauging the cooking and eating quality of a rice variety are: apparent amylose content (AAC), gel consistency (GC), and gelatinization temperature (GT). As AAC increases, cooked rice grains tend to be increasingly harder [<xref rid="pone.0150345.ref018" ref-type="bibr">18</xref>]. Colorimetry with iodine [<xref rid="pone.0150345.ref019" ref-type="bibr">19</xref>–<xref rid="pone.0150345.ref021" ref-type="bibr">21</xref>] remains the method of choice for measuring AAC despite its limitations [<xref rid="pone.0150345.ref018" ref-type="bibr">18</xref>,<xref rid="pone.0150345.ref022" ref-type="bibr">22</xref>–<xref rid="pone.0150345.ref024" ref-type="bibr">24</xref>] and the development of new methodologies summarized by [<xref rid="pone.0150345.ref025" ref-type="bibr">25</xref>]. Based on AAC, rice can be grouped into five arbitrarily set classes: waxy (0–2%), very low (3–9%), low (10–19%), intermediate (20–25%), and high (&gt; 25%) [<xref rid="pone.0150345.ref026" ref-type="bibr">26</xref>] although a more recent study suggests that these AAC classes can further be subdivided [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>]. There are cases in which rice materials of the same AAC class are very distinct in hardness. In these cases, GC is used as a complementary test for degree of hardness upon retrogradation. The methods for measuring GC, or the hardness of rice upon cooling after being cooked, are still in routine use today mainly for rice breeding programs focused on intermediate- and high-AAC materials [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>,<xref rid="pone.0150345.ref028" ref-type="bibr">28</xref>] while a method has been developed for glutinous rice [<xref rid="pone.0150345.ref029" ref-type="bibr">29</xref>]. Rice can be classified into three groups based on GC: hard and very flaky (≤ 40 mm), medium and flaky (41–60 mm), and soft (&gt; 61 mm) [<xref rid="pone.0150345.ref010" ref-type="bibr">10</xref>]. On the other hand, GT is associated with the cooking time of rice [<xref rid="pone.0150345.ref030" ref-type="bibr">30</xref>,<xref rid="pone.0150345.ref031" ref-type="bibr">31</xref>]. Rice can be classified based on GT: low (&lt; 70°C), intermediate (70–74°C), and high (&gt; 74°C) [<xref rid="pone.0150345.ref032" ref-type="bibr">32</xref>]. The alkali spreading test [<xref rid="pone.0150345.ref033" ref-type="bibr">33</xref>] is a high-throughput assay for GT but this entails some subjectivity since the scores are based on perceptions of the analyst. Scores indicate GT classes, not direct information regarding the GT of the rice sample.</p>
+      <p>Throughout the world, consumer preferences are far from homogeneous. Various market segments can be distinguished between continents, regions, countries, and even between socio-economic groups [<xref rid="pone.0150345.ref007" ref-type="bibr">7</xref>,<xref rid="pone.0150345.ref034" ref-type="bibr">34</xref>,<xref rid="pone.0150345.ref035" ref-type="bibr">35</xref>]. Grain quality experts in 23 countries have identified the top three popular rice varieties in their countries and, for some countries, at various sub-country levels; the most commonly assessed cooking and eating properties of these varieties have been reported [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>]. Consumers may not be able to articulate the reasons behind their preferences or describe what they like or dislike in food items but they show appreciation or the value they attach to food in other ways [<xref rid="pone.0150345.ref036" ref-type="bibr">36</xref>] such as a willingness to pay higher prices for rice with certain quality attributes. Price differences between rice samples of different quality classes indicate that grain quality attributes must be contributing to the price of rice.</p>
+      <p>Determining the implicit contribution of the various grain quality attributes to the market price of rice varieties can be done through hedonic pricing analysis [<xref rid="pone.0150345.ref037" ref-type="bibr">37</xref>]. Hedonic pricing regressions have been quite popular in the economics literature, being applied to various food commodities such as wine [<xref rid="pone.0150345.ref038" ref-type="bibr">38</xref>,<xref rid="pone.0150345.ref039" ref-type="bibr">39</xref>], tea [<xref rid="pone.0150345.ref040" ref-type="bibr">40</xref>], apples [<xref rid="pone.0150345.ref041" ref-type="bibr">41</xref>], and breakfast cereals [<xref rid="pone.0150345.ref042" ref-type="bibr">42</xref>]. In all these commodities, the products could be grouped into quality classes or varieties [<xref rid="pone.0150345.ref043" ref-type="bibr">43</xref>]. The hedonic pricing model has also been applied to study the effects of extrinsic and intrinsic quality attributes of rice to market prices [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>–<xref rid="pone.0150345.ref047" ref-type="bibr">47</xref>]; with the results suggesting that varietal improvement programs should not be limited only to yield-enhancing traits. Furthermore, dissemination and adoption of new varieties need to be supported. A recent study in Central Luzon found that out of the 200 modern rice varieties released, fewer than 10 varieties are being used by farmers in the Central Luzon area [<xref rid="pone.0150345.ref048" ref-type="bibr">48</xref>].</p>
+      <p>Previous hedonic studies involving intrinsic rice quality parameters [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>,<xref rid="pone.0150345.ref046" ref-type="bibr">46</xref>,<xref rid="pone.0150345.ref047" ref-type="bibr">47</xref>] have two main limitations. First, they did not investigate how homogeneity in some physical characteristics influences rice prices. Homogeneity in physical characteristics—such as length and width—of the rice sample being purchased may play a major role in consumers’ willingness-to-pay for rice. Rice varieties are often mixed at various stages of harvest and post-harvest activities (i.e. harvesting, threshing, drying, and milling), which results in heterogeneous grain quality. Second, rice quality data obtained in these studies, specifically degree of chalkiness and GT, were measured through semi-quantitative means: scores were provided based on experienced technicians’ evaluations. Techniques that provide quantitative data now exist and can potentially improve hedonic pricing models. Machine vision technology, such as digital imaging systems, is available for monitoring quantifiable attributes of post-harvest quality of plant and animal products such as size, shape, and degree of chalkiness, as in the case of rice [<xref rid="pone.0150345.ref017" ref-type="bibr">17</xref>,<xref rid="pone.0150345.ref049" ref-type="bibr">49</xref>–<xref rid="pone.0150345.ref051" ref-type="bibr">51</xref>]. Differential scanning calorimetry (DSC) is an alternative method (to the alkali spreading test) for characterizing GT; it monitors thermal transitions and provides the temperature range at which the crystalline starch structures irreversibly melt in the presence of plasticizing water [<xref rid="pone.0150345.ref052" ref-type="bibr">52</xref>,<xref rid="pone.0150345.ref053" ref-type="bibr">53</xref>]. Paste viscosity, measured using a Rapid Visco-Analyzer (RVA), is another indicator of cooking and eating quality in rice [<xref rid="pone.0150345.ref054" ref-type="bibr">54</xref>,<xref rid="pone.0150345.ref055" ref-type="bibr">55</xref>]. Different parts of the viscosity curve have been associated with GT, with AAC, and with texture [<xref rid="pone.0150345.ref055" ref-type="bibr">55</xref>–<xref rid="pone.0150345.ref057" ref-type="bibr">57</xref>].</p>
+      <p>Previous literature on consumer preferences in the Philippines has mainly focused on big urban consumption zones [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>,<xref rid="pone.0150345.ref047" ref-type="bibr">47</xref>,<xref rid="pone.0150345.ref058" ref-type="bibr">58</xref>]. Since the Philippines is a net importer, consumer preferences in urban areas close to the port tend to be dominated by imported rice characteristics, which are not necessarily satisfied by domestic supply. In order to focus on consumer preferences for the characteristics of rice varieties which are currently produced domestically, we need to move away from these highly urbanized zones. Since we are also not interested in preferences of consumers who are producers themselves, we need to look for concentrated consumption zones close to production zones, i.e. rural towns. Therefore, in this study, we determine how the implicit market value of intrinsic search and experience quality attributes of rice contribute to the total market price of rice in two rural towns in the Philippines: Famy (14.4333°N, 121.4500°E) and Sta Maria (14.4700°N, 121.4261°E). In doing so, the contributions of this study are: (1) to determine consumer preferences in rural areas, which have largely been de-prioritized in consumer preference studies; (2) to apply quantitative methodologies in measuring GT and chalkiness; and (3) to identify the household willingness-to-pay for various characteristics of rice by income groups.</p>
+    </sec>
+    <sec sec-type="materials|methods" id="sec002">
+      <title>Materials and Methods</title>
+      <sec id="sec003">
+        <title>Ethics statement</title>
+        <p>There is no Institutional Review Board at IRRI at this time. However, this work has been reviewed and approved by the division head of the Social Sciences Division through an internal review process. All participants in this study gave informed oral consent prior to the survey interview and had the option to terminate the interview at any point. No minors were directly interviewed during this study. All datasets collected by the Social Sciences Division of IRRI are ultimately uploaded and made available for public use. However, it is our policy to first make datasets anonymous prior to uploading. This is done by removing all identifying information within the dataset, including: name, email, telephone number, street address, and gps coordinates. These measures are done with the approval of the Chief Information Officer of the International Rice Research Institute.</p>
+      </sec>
+      <sec id="sec004">
+        <title>Survey and sample collection</title>
+        <p>Rice consumer respondents (n = 128) were selected in the adjacent towns of Famy and Sta Maria, two northernmost towns in Laguna province in the Philippines, situated at 93 and 86 km from the capital city, Manila, respectively. These towns are both rural areas. To select the respondents, high-resolution imagery from Google Earth and a global positioning system (GPS) were used. The target population was delimited in the town proper because houses are more closely situated there. Households 20 meters apart were marked based on GPS coordinates. Then, 100 GPS coordinates were randomly selected. In cases when the GPS coordinates pointed to vacant lots or roads, respondents were obtained from the house nearest the GPS point. All respondents gave oral informed consent to be surveyed.</p>
+        <p>Respondents were interviewed to determine their socioeconomic profiles (<xref rid="pone.0150345.t001" ref-type="table">Table 1</xref>). A sample of uncooked milled rice (300 g) consumed by these respondents was then collected in exchange for 1 kg of premium milled rice. At the time of collection, respondents also reported the price paid per kilogram of rice. The milled rice samples from the respondents were sent to the Grain Quality and Nutrition Center of the IRRI for physicochemical analyses. For the statistical analysis presented in this paper, households were classified based on Philippine National Statistics Office (NSO) income classes [<xref rid="pone.0150345.ref059" ref-type="bibr">59</xref>] but with a slight modification by merging the three lowest NSO-reported income classes into a single category as the low household income class used for this study. For the final analysis, only three income classes remain: low household income (&lt; 2,431.91 USD per annum), medium household income (between 2,431.91 and 6,079.77 USD per annum), and high household income (&gt;6,079.77 USD per annum). The exchange rate at the time of the study was 1 USD = 41.12 PHP</p>
+        <table-wrap id="pone.0150345.t001" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t001</object-id>
+          <label>Table 1</label>
+          <caption>
+            <title>Characteristics of respondents by income group and by location (Famy and Sta Maria, Laguna, Philippines).</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t001g" xlink:href="pone.0150345.t001"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" colspan="3" rowspan="1">Income Group</th>
+                  <th align="center" colspan="2" rowspan="1">Location</th>
+                  <th align="left" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">Low</th>
+                  <th align="center" rowspan="1" colspan="1">Middle</th>
+                  <th align="center" rowspan="1" colspan="1">High</th>
+                  <th align="center" rowspan="1" colspan="1">Famy</th>
+                  <th align="center" rowspan="1" colspan="1">Sta Maria</th>
+                  <th align="left" rowspan="1" colspan="1">Combined</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Household size</td>
+                  <td align="center" rowspan="1" colspan="1">4 (1)</td>
+                  <td align="center" rowspan="1" colspan="1">5 (2)</td>
+                  <td align="center" rowspan="1" colspan="1">5 (2)</td>
+                  <td align="center" rowspan="1" colspan="1">5 (2)</td>
+                  <td align="center" rowspan="1" colspan="1">5 (2)</td>
+                  <td align="center" rowspan="1" colspan="1">5 (2)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Annual household income (USD)</td>
+                  <td align="center" rowspan="1" colspan="1">1,512.79 (657.56)</td>
+                  <td align="center" rowspan="1" colspan="1">3,923.47 (991.44)</td>
+                  <td align="center" rowspan="1" colspan="1">10,305.86 (4,836.09)</td>
+                  <td align="center" rowspan="1" colspan="1">5,366.85 (4,335.58)</td>
+                  <td align="center" rowspan="1" colspan="1">4,910.46 (4,829.18)</td>
+                  <td align="center" rowspan="1" colspan="1">5,145.79 (4,568.85)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Age of rice purchaser (yrs)</td>
+                  <td align="center" rowspan="1" colspan="1">43 (15)</td>
+                  <td align="center" rowspan="1" colspan="1">46 (15)</td>
+                  <td align="center" rowspan="1" colspan="1">43 (13)</td>
+                  <td align="center" rowspan="1" colspan="1">43 (15)</td>
+                  <td align="center" rowspan="1" colspan="1">45 (14)</td>
+                  <td align="center" rowspan="1" colspan="1">44 (15)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Educ. of rice purchaser (yrs)</td>
+                  <td align="center" rowspan="1" colspan="1">9 (3)</td>
+                  <td align="center" rowspan="1" colspan="1">10 (3)</td>
+                  <td align="center" rowspan="1" colspan="1">11 (3)</td>
+                  <td align="center" rowspan="1" colspan="1">10 (3)</td>
+                  <td align="center" rowspan="1" colspan="1">10 (3)</td>
+                  <td align="center" rowspan="1" colspan="1">10 (3)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Rice consumption per capita (kg)</td>
+                  <td align="center" rowspan="1" colspan="1">211 (91)</td>
+                  <td align="center" rowspan="1" colspan="1">214 (107)</td>
+                  <td align="center" rowspan="1" colspan="1">200 (86)</td>
+                  <td align="center" rowspan="1" colspan="1">230 (102)</td>
+                  <td align="center" rowspan="1" colspan="1">186 (83)</td>
+                  <td align="center" rowspan="1" colspan="1">209 (95)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Rice price (USD/kg)</td>
+                  <td align="center" rowspan="1" colspan="1">0.78 (0.05)</td>
+                  <td align="center" rowspan="1" colspan="1">0.80 (0.05)</td>
+                  <td align="center" rowspan="1" colspan="1">0.83 (0.07)</td>
+                  <td align="center" rowspan="1" colspan="1">0.80 (0.05)</td>
+                  <td align="center" rowspan="1" colspan="1">0.80 (0.07)</td>
+                  <td align="center" rowspan="1" colspan="1">0.80 (0.05)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Sample Size</td>
+                  <td align="center" rowspan="1" colspan="1">41</td>
+                  <td align="center" rowspan="1" colspan="1">47</td>
+                  <td align="center" rowspan="1" colspan="1">40</td>
+                  <td align="center" rowspan="1" colspan="1">66</td>
+                  <td align="center" rowspan="1" colspan="1">62</td>
+                  <td align="center" rowspan="1" colspan="1">128</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t001fn001">
+              <p>Note: Figures presented here are means and standard deviations (in parentheses). The conversion rate at the time of the study (September to December 2012) was 1 USD = 41.12 PHP.</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+      </sec>
+      <sec id="sec005">
+        <title>Grain quality analyses</title>
+        <p>Milled grains underwent assessment of physical traits (grain dimensions, proportion of head rice in milled rice, and chalkiness) and then an test portion of each sample was ground into fine flour (100-mesh) using a Udy Cyclone Sample Mill (model 3010–30, Fort Collins, CO). Reverse osmosis (RO) water and reagent-grade chemicals were used for the chemical analyses.</p>
+        <p>Physical traits (length, width, and degree of chalkiness) of the milled rice grains were determined using the Cervitec<sup>™</sup> 1625 Grain Inspector (FOSS, Denmark). Grain shape was calculated based on the length-to-width ratio of the grains. The proportion of head rice (%) in the milled rice was determined by measuring the amount of grains that are 75% intact after a test portion (100 g) of milled rice was sorted using a shaking sieve; the rest are broken grains (%). The measurement of AAC was conducted following the Routine Method of ISO 6647 [<xref rid="pone.0150345.ref060" ref-type="bibr">60</xref>], and calculated based on a standard curve generated using the iodine-binding capacities of a set of standard rice varieties. The AACs of these standards were determined as described in the Reference Method of ISO 6647 [<xref rid="pone.0150345.ref061" ref-type="bibr">61</xref>]. Absorbance was measured at 620 nm using a San<sup>++</sup> Automated Wet Chemistry Analyzer (Skalar Analytical B.V., Breda, The Netherlands) equipped with an SA1100 sampler. Data were collected and analyzed using the Skalar FlowAccess<sup>™</sup> V3 software. Gel consistency was determined according to a previously published protocol [<xref rid="pone.0150345.ref028" ref-type="bibr">28</xref>]. Gelatinization temperature was measured by DSC (Q100, TA Instruments, New Castle, DE, USA). Flour (4 mg) and RO water (8 μL) were placed in an aluminum pan, which was then sealed hermetically. An empty hermetically sealed pan served as the reference. The temperature was raised from 35°C to 120°C at 10°C min<sup>-1</sup>. Thermal transitions were recorded and analyzed using the TA Universal Analysis 2000 software. The peak of each resulting endotherm was reported as the GT. Viscosity curves for the rice samples were generated using the RVA following the profile detailed in the AACC Method 61–02 [<xref rid="pone.0150345.ref062" ref-type="bibr">62</xref>]. Several points in the viscosity curves were recorded: peak (PV), trough (TV), and final (FV) viscosities; derived values from these points were calculated: breakdown (BD, the difference between PV and TV), lift-off (LO, the difference between FV and TV), and setback (SB, the difference between FV and PV) [<xref rid="pone.0150345.ref063" ref-type="bibr">63</xref>]. The time of PV (peak time) and pasting temperature were also obtained.</p>
+      </sec>
+      <sec id="sec006">
+        <title>Statistical analysis</title>
+        <sec id="sec007">
+          <title>Across income groups</title>
+          <p>One-way analysis of variance (ANOVA) was conducted for hypothesis testing for grain quality parameters that passed the assumptions of ANOVA (average length, variability in length, PV, TV, FV, and LO). For the other parameters, hypotheses were tested using Kruskal-Wallis rank sum test and means were compared using the Mann-Whitney-U post-hoc test with Bonferroni correction.</p>
+        </sec>
+        <sec id="sec008">
+          <title>Between towns</title>
+          <p>The Z-test was used to compare samples from the two towns in the quality parameters whose data were normally distributed. For parameters whose data were not normally distributed, the Mann-Whitney (Wilcoxon rank sum) test was used.</p>
+          <p>These analyses were conducted using R (version 3.2.0, released 2015).</p>
+        </sec>
+      </sec>
+      <sec id="sec009">
+        <title>Establishing the hedonic price model</title>
+        <p>Hedonic pricing regressions are based on Lancaster’s “characteristics theory of value,” which states that any good can be described in terms of its attributes or characteristics [<xref rid="pone.0150345.ref064" ref-type="bibr">64</xref>]. The price consumers are willing to pay for a good at a given time is therefore assumed to depend on the attributes of the good or commodity.</p>
+        <p>When buying rice, consumers face a choice of several search attributes, some are visible and others are not, but those attributes are embedded in the product. Each of these attributes contributes to the final price paid on the market. The socioeconomic status of consumers and their preferences will determine which products they will buy among a given set of quality-differentiated rice types available in the market and hence which prices they are willing to pay for those products. The rice types purchased and prices paid by consumers can be interpreted as their revealed preferences and willingness-to-pay (WTP) [<xref rid="pone.0150345.ref065" ref-type="bibr">65</xref>]. Thus, besides the physical and chemical characteristics of rice, we consider that consumers’ socioeconomic status also determines the type of rice they choose in the market and the price they are willing to pay. We therefore specify our hedonic pricing model as follows:
+<disp-formula id="pone.0150345.e001"><alternatives><graphic xlink:href="pone.0150345.e001.jpg" id="pone.0150345.e001g" mimetype="image" position="anchor" orientation="portrait"/><mml:math id="M1"><mml:mrow><mml:msub><mml:mi>P</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:mi>β</mml:mi><mml:msub><mml:mi mathvariant="bold-italic">x</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>ρ</mml:mi><mml:msub><mml:mi mathvariant="bold-italic">z</mml:mi><mml:mi>i</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>ρ</mml:mi><mml:msub><mml:mi mathvariant="bold-italic">k</mml:mi><mml:mi mathvariant="bold-italic">i</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>η</mml:mi><mml:mi>D</mml:mi><mml:mo>+</mml:mo><mml:msub><mml:mi>ε</mml:mi><mml:mi>i</mml:mi></mml:msub></mml:mrow></mml:math></alternatives><label>(1)</label></disp-formula>
+where, <italic>P</italic> represents the price paid for rice by consumer <italic>i</italic>, <bold>x</bold> is a vector of physical attributes characterizing rice purchased by consumer <italic>i</italic>, <bold>z</bold> is a vector of chemical characteristics embedded in rice purchased by consumer <italic>i</italic>, <bold>k</bold> is a vector of socioeconomic characteristics describing consumer <italic>i</italic>, <italic>D</italic> is a location dummy assumed to capture region-specific factors, and ε is the error term of the model.</p>
+        <p>The hedonic model expressed in <xref ref-type="disp-formula" rid="pone.0150345.e001">Eq 1</xref> is estimated in log-log functional form using Ordinary Least Squares (OLS). The model was first estimated as a pooled sample, then per income group, and with income interaction terms on physical and chemical rice characteristics and one socio-economic factor (per capita rice consumption). The physical characteristics considered in the model are: the proportion of broken rice in the sample and chalkiness. The chemical characteristics are: GC, AAC, and GT. The consumer characteristics are: rice consumption per capita, age, gender, and education of the rice purchaser.</p>
+        <p>Traditionally, the estimated coefficients from the hedonic regression are interpreted as consumers’ WTP for a given attribute of the good or commodity. A positive sign indicates that consumers are willing to pay a price premium for the attribute, while a negative sign reveals that consumers discount the attribute.</p>
+        <p>Studies on consumer preferences typically use consumer and expert surveys or interviews [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>,<xref rid="pone.0150345.ref066" ref-type="bibr">66</xref>], quality evaluations of samples coming from national programs [<xref rid="pone.0150345.ref058" ref-type="bibr">58</xref>,<xref rid="pone.0150345.ref067" ref-type="bibr">67</xref>], or consumer product preference and acceptability tests using specific sets of rice samples [<xref rid="pone.0150345.ref068" ref-type="bibr">68</xref>]. Such approaches, although effective in determining stated consumer preferences and the characteristics of those rice varieties, do not indicate buyers’ WTP based on quality attributes. To reveal realistic contributions of grain quality to market prices in rice that people actually buy, it is best to base hedonic regression models on information about samples obtained from consumers.</p>
+        <p>This method of obtaining sample from surveyed households was previously employed by Abansi et al. [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>]. In that study, rice samples obtained from surveyed households were analyzed for physicochemical characteristics to compare consumer preferences between urban and rural consumers [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>]. Additionally, consumer preferences were investigated across different income strata.</p>
+      </sec>
+    </sec>
+    <sec id="sec010">
+      <title>Results and Discussion</title>
+      <sec id="sec011">
+        <title>Socioeconomic characteristics of the respondents</title>
+        <p>Among the 128 respondents surveyed (<xref rid="pone.0150345.t001" ref-type="table">Table 1</xref>) 66 came from Famy and 62 from Sta Maria. The 128 respondents were also grouped by income classes: 41 were classified as low-income, 47 as middle-income, and 40 as high-income.</p>
+        <p>The respondents in Famy and in Sta Maria had similar socioeconomic characteristics and, on average, bought rice with the same price (0.80 USD/kg, <xref rid="pone.0150345.t001" ref-type="table">Table 1</xref>). The majority (80%) of the rice purchasers who participated in the survey have studied for 8–12 years, with age averaging in the 40s across the three income classes (<xref rid="pone.0150345.t001" ref-type="table">Table 1</xref>). Household sizes of respondents, on average, were four household members for the low-income class and five members in both middle- and high-income classes, and in both towns. The annual rice consumption of the respondents in these households was mainly 100–250 kg per capita. The averages of per capita consumption of rice by location and by income class (<xref rid="pone.0150345.t001" ref-type="table">Table 1</xref>) were higher than the per capita consumption determined in the 1990s for rural consumer groups [<xref rid="pone.0150345.ref069" ref-type="bibr">69</xref>] and the national average in 2008–2009 [<xref rid="pone.0150345.ref070" ref-type="bibr">70</xref>]. Most of the respondents earned less than 4,863.81 USD annually, with the number of respondents decreasing with an increase in income.</p>
+      </sec>
+      <sec id="sec012">
+        <title>Physical characteristics of raw grains of the rice samples</title>
+        <p>Based on the IRRI classification system for grain size and shape [<xref rid="pone.0150345.ref014" ref-type="bibr">14</xref>], the respondents across the different income groups in the towns had a revealed preference for rice with long and slender grain shape (Tables <xref rid="pone.0150345.t002" ref-type="table">2</xref> and <xref rid="pone.0150345.t003" ref-type="table">3</xref>).</p>
+        <table-wrap id="pone.0150345.t002" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t002</object-id>
+          <label>Table 2</label>
+          <caption>
+            <title>Physical, cooking, and eating quality indicators of rice samples obtained from respondents by income class.</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t002g" xlink:href="pone.0150345.t002"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" colspan="4" rowspan="1">Income Class</th>
+                  <th align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">Low</th>
+                  <th align="center" rowspan="1" colspan="1">Middle</th>
+                  <th align="center" rowspan="1" colspan="1">High</th>
+                  <th align="center" rowspan="1" colspan="1">p-value<xref ref-type="table-fn" rid="t002fn003"><sup>c</sup></xref></th>
+                  <th align="center" rowspan="1" colspan="1">Combined</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Grain length (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">6.67 (0.08)</td>
+                  <td align="center" rowspan="1" colspan="1">6.67 (0.09)</td>
+                  <td align="center" rowspan="1" colspan="1">6.69 (0.08)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.35<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">6.68 (0.08)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">CV in length (%)</td>
+                  <td align="center" rowspan="1" colspan="1">4.76 (0.47)</td>
+                  <td align="center" rowspan="1" colspan="1">4.66 (0.36)</td>
+                  <td align="center" rowspan="1" colspan="1">4.86 (0.41)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.09<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">4.76 (0.41)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Width (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">2.08 (0.06)</td>
+                  <td align="center" rowspan="1" colspan="1">2.10 (0.06)</td>
+                  <td align="center" rowspan="1" colspan="1">2.10 (0.05)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.30<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">2.09 (0.06)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">CV in width (%)</td>
+                  <td align="center" rowspan="1" colspan="1">7.94 (0.82)</td>
+                  <td align="center" rowspan="1" colspan="1">7.77 (0.02)</td>
+                  <td align="center" rowspan="1" colspan="1">7.87 (0.78)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.52<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">7.85 (0.75)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Ratio of length/width</td>
+                  <td align="center" rowspan="1" colspan="1">3.20 (0.11)</td>
+                  <td align="center" rowspan="1" colspan="1">3.18 (0.11)</td>
+                  <td align="center" rowspan="1" colspan="1">3.19 (0.08)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.43<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">3.19 (0.10)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Chalkiness (%)</td>
+                  <td align="center" rowspan="1" colspan="1">17.00 (8.00)</td>
+                  <td align="center" rowspan="1" colspan="1">19.00 (8.00)</td>
+                  <td align="center" rowspan="1" colspan="1">17.00 (7.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.13<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">18.00 (7.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Head rice (%)</td>
+                  <td align="center" rowspan="1" colspan="1">56.75 (8.85)</td>
+                  <td align="center" rowspan="1" colspan="1">55.56 (11.13)</td>
+                  <td align="center" rowspan="1" colspan="1">58.49 (14.41)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.70<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">56.86 (11.61)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">AAC (%)</td>
+                  <td align="center" rowspan="1" colspan="1">24.01 (1.98)</td>
+                  <td align="center" rowspan="1" colspan="1">23.54 (2.32)</td>
+                  <td align="center" rowspan="1" colspan="1">24.12 (1.46)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.78<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">23.87 (1.98)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GT (°C)</td>
+                  <td align="center" rowspan="1" colspan="1">77.37 (1.07)</td>
+                  <td align="center" rowspan="1" colspan="1">77.04 (1.70)</td>
+                  <td align="center" rowspan="1" colspan="1">76.76 (2.41)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.32<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">77.06 (1.80)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GC (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">50.90 (12.10)</td>
+                  <td align="center" rowspan="1" colspan="1">54.20 (13.50)</td>
+                  <td align="center" rowspan="1" colspan="1">51.60 (14.80)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.49<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">52.30 (13.50)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">PV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">2924.00 (317.00)</td>
+                  <td align="center" rowspan="1" colspan="1">2922.00 (290.00)</td>
+                  <td align="center" rowspan="1" colspan="1">2809.00 (325.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.16<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">2887.00 (312.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">TV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">1638.00 (256.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1637.00 (229.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1617.00 (287.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.92<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">1631.00 (255.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">BD (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">1287.00 (228.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1285.00 (335.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1192.00 (222.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.10<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">1257.00 (272.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">FV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">3900.00 (517.00)</td>
+                  <td align="center" rowspan="1" colspan="1">3850.00 (480.00)</td>
+                  <td align="center" rowspan="1" colspan="1">3908.00 (613.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.86<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">3884.00 (533.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">SB (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">975.00 (422.00)</td>
+                  <td align="center" rowspan="1" colspan="1">928.00 (578.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1099.00 (497.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.49<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">997.00 (508.00)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Peak time (min)</td>
+                  <td align="center" rowspan="1" colspan="1">5.56<xref ref-type="table-fn" rid="t002fn001"><sup>a</sup></xref> (0.09)</td>
+                  <td align="center" rowspan="1" colspan="1">5.5<xref ref-type="table-fn" rid="t002fn001"><sup>a</sup></xref><xref ref-type="table-fn" rid="t002fn002"><sup>b</sup></xref> (0.09)</td>
+                  <td align="center" rowspan="1" colspan="1">5.52<xref ref-type="table-fn" rid="t002fn002"><sup>b</sup></xref> (0.09)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.03<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">5.54 (0.09)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Pasting temperature (°C)</td>
+                  <td align="center" rowspan="1" colspan="1">75.46 (0.96)</td>
+                  <td align="center" rowspan="1" colspan="1">75.10 (1.64)</td>
+                  <td align="center" rowspan="1" colspan="1">75.38 (1.31)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.58<sup>B</sup></td>
+                  <td align="center" rowspan="1" colspan="1">75.30 (1.35)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">LO (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">2262.00 (298.00)</td>
+                  <td align="center" rowspan="1" colspan="1">2213.00 (303.00)</td>
+                  <td align="center" rowspan="1" colspan="1">2291.00 (364.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">0.52<sup>A</sup></td>
+                  <td align="center" rowspan="1" colspan="1">2253.00 (321.00)</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t002fn001">
+              <p><sup>a</sup> Figures presented here are means and standard deviations (in parentheses). For peak time, a different lowercase letter beside each mean indicates that the means are significantly different (α = 0.05).</p>
+            </fn>
+            <fn id="t002fn002">
+              <p><sup>b</sup> The conversion rate at the time of the study (November 2012) was 1 USD = 41.12 PHP.</p>
+            </fn>
+            <fn id="t002fn003">
+              <p><sup>c</sup> The letter beside the p-value indicates the test statistic used: (A) ANOVA (F-statistic), (B) Kruskal-Wallis rank sum test (χ<sup>2</sup>).</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+        <table-wrap id="pone.0150345.t003" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t003</object-id>
+          <label>Table 3</label>
+          <caption>
+            <title>Comparison of physical, cooking, and eating quality indicators of rice samples obtained from respondents by location (Famy and Sta Maria, Laguna, Philippines) using the Z-test.</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t003g" xlink:href="pone.0150345.t003"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="2" colspan="1"/>
+                  <th align="center" colspan="3" rowspan="1">Location</th>
+                </tr>
+                <tr>
+                  <th align="center" rowspan="1" colspan="1">Famy</th>
+                  <th align="center" rowspan="1" colspan="1">Sta Maria</th>
+                  <th align="center" rowspan="1" colspan="1">Z-value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Grain length (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">6.66 (0.08)</td>
+                  <td align="center" rowspan="1" colspan="1">6.70 (0.08)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">-2.55</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">CV in length (%)</td>
+                  <td align="center" rowspan="1" colspan="1">4.72 (0.43)</td>
+                  <td align="center" rowspan="1" colspan="1">4.80 (0.41)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">-1.05</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">PV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">2,839.00 (307.00)</td>
+                  <td align="center" rowspan="1" colspan="1">2,939.00 (311.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">-1.82</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">TV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">1,613.00 (248.00)</td>
+                  <td align="center" rowspan="1" colspan="1">1,649.00 (263.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">-0.79</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">FV (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">3,872.00 (530.00)</td>
+                  <td align="center" rowspan="1" colspan="1">3,897.00 (540.00)</td>
+                  <td align="char" char="." rowspan="1" colspan="1">-0.26</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t003fn001">
+              <p>Note: Values presented are means and standard deviations (in parentheses).</p>
+            </fn>
+            <fn id="t003fn002">
+              <p>At p &lt; 0.05, attributes with Z &lt; -1.96 or Z &gt; 1.96 are significantly different between the locations.</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+        <p>Results indicated that the widths and the shapes of rice samples obtained from respondents in Famy and in Sta Maria were not significantly different across income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between towns (<xref rid="pone.0150345.t004" ref-type="table">Table 4</xref>). The lengths of the rice grains were not significantly different across income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) but there was a small but significant difference in the length between the grains consumed in the two towns: Famy respondents purchased, on average, slightly shorter grains than Sta Maria respondents (<xref rid="pone.0150345.t003" ref-type="table">Table 3</xref>), but the difference was not large enough to put the grains into different quality classes. The variability in length and in width of rice grains across the different income classes and between towns were not significantly different as well (Tables <xref rid="pone.0150345.t002" ref-type="table">2</xref>–<xref rid="pone.0150345.t004" ref-type="table">4</xref>). The data indicated a preference for long and slender grains. This similarity may be associated with the proximity of the two towns. It is possible that the markets in these towns have the same set of rice suppliers, hence leading to the same grains being sold. It is also possible that this preference for long and slender grain is stable due to similarities to grain dimensions of IR64 in the late 1980s [<xref rid="pone.0150345.ref071" ref-type="bibr">71</xref>], a benchmark of rice grain quality in the Philippines for millers, traders, and consumers [<xref rid="pone.0150345.ref072" ref-type="bibr">72</xref>]; and to recently reported expert opinions on grain dimensions of highly preferred Filipino rice varieties [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>].</p>
+        <table-wrap id="pone.0150345.t004" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t004</object-id>
+          <label>Table 4</label>
+          <caption>
+            <title>Comparison of physical, cooking, and eating quality indicators of rice samples obtained from respondents by location (Famy and Sta Maria, Laguna, Philippines) using the Mann-Whitney (Wilcoxon rank sum) test.</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t004g" xlink:href="pone.0150345.t004"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" colspan="3" rowspan="1">Location</th>
+                </tr>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">Famy</th>
+                  <th align="center" rowspan="1" colspan="1">Sta Maria</th>
+                  <th align="center" rowspan="1" colspan="1">p-value<xref ref-type="table-fn" rid="t004fn002"><sup>a</sup></xref></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Width (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">2.09</td>
+                  <td align="center" rowspan="1" colspan="1">2.09</td>
+                  <td align="center" rowspan="1" colspan="1">0.98</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">CV in width (%)</td>
+                  <td align="center" rowspan="1" colspan="1">7.79</td>
+                  <td align="center" rowspan="1" colspan="1">7.92</td>
+                  <td align="center" rowspan="1" colspan="1">0.26</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Ratio of length/width</td>
+                  <td align="center" rowspan="1" colspan="1">3.19</td>
+                  <td align="center" rowspan="1" colspan="1">3.2</td>
+                  <td align="center" rowspan="1" colspan="1">0.35</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Chalkiness (%)</td>
+                  <td align="center" rowspan="1" colspan="1">18</td>
+                  <td align="center" rowspan="1" colspan="1">18</td>
+                  <td align="center" rowspan="1" colspan="1">0.75</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Head rice (%)</td>
+                  <td align="center" rowspan="1" colspan="1">56.71</td>
+                  <td align="center" rowspan="1" colspan="1">57.01</td>
+                  <td align="center" rowspan="1" colspan="1">0.99</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">AAC (%)</td>
+                  <td align="center" rowspan="1" colspan="1">23.66</td>
+                  <td align="center" rowspan="1" colspan="1">24.1</td>
+                  <td align="center" rowspan="1" colspan="1">0.06</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GT (°C)</td>
+                  <td align="center" rowspan="1" colspan="1">77.09</td>
+                  <td align="center" rowspan="1" colspan="1">77.04</td>
+                  <td align="center" rowspan="1" colspan="1">0.39</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GC (mm)</td>
+                  <td align="center" rowspan="1" colspan="1">53.65</td>
+                  <td align="center" rowspan="1" colspan="1">51.06</td>
+                  <td align="center" rowspan="1" colspan="1">0.21</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">BD (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">1226</td>
+                  <td align="center" rowspan="1" colspan="1">1290</td>
+                  <td align="center" rowspan="1" colspan="1">0.24</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">SB (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">1033</td>
+                  <td align="center" rowspan="1" colspan="1">958</td>
+                  <td align="center" rowspan="1" colspan="1">0.9</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">LO (cP)</td>
+                  <td align="center" rowspan="1" colspan="1">2,259</td>
+                  <td align="center" rowspan="1" colspan="1">2,248</td>
+                  <td align="center" rowspan="1" colspan="1">0.55</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Peak time (min)</td>
+                  <td align="center" rowspan="1" colspan="1">5.52</td>
+                  <td align="center" rowspan="1" colspan="1">5.56</td>
+                  <td align="center" rowspan="1" colspan="1">0</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Pasting temp (°C)</td>
+                  <td align="center" rowspan="1" colspan="1">75.27</td>
+                  <td align="center" rowspan="1" colspan="1">75.38</td>
+                  <td align="center" rowspan="1" colspan="1">0.31</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t004fn001">
+              <p>Note: Values presented are means.</p>
+            </fn>
+            <fn id="t004fn002">
+              <p><sup>a</sup> For comparison between locations, attributes with p &lt; 0.05 are significantly different.</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+        <p>Chalky areas in rice grains are caused by loose packing or incomplete filling of starch granules [<xref rid="pone.0150345.ref015" ref-type="bibr">15</xref>,<xref rid="pone.0150345.ref031" ref-type="bibr">31</xref>,<xref rid="pone.0150345.ref073" ref-type="bibr">73</xref>]. It effectively weakens the grain [<xref rid="pone.0150345.ref031" ref-type="bibr">31</xref>,<xref rid="pone.0150345.ref074" ref-type="bibr">74</xref>], leading to elevated incidence of breakage during the milling process and to reduced head rice yield [<xref rid="pone.0150345.ref075" ref-type="bibr">75</xref>]. Across the income classes and between towns, the degree of chalkiness was not significantly different, with the grains having medium chalkiness, on average (Tables <xref rid="pone.0150345.t002" ref-type="table">2</xref> and <xref rid="pone.0150345.t004" ref-type="table">4</xref>). These findings indicate that the respondents in this study have similar preferences in terms of chalkiness in grains. Perhaps, the respondents did not mind having opaque spots on the raw rice grains as long as grains are not broken. After all, chalkiness does not directly affect the cooking and eating experience of rice [<xref rid="pone.0150345.ref016" ref-type="bibr">16</xref>].</p>
+        <p>There were non-significant differences in the proportions of head rice across the different income groups (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between the two towns (<xref rid="pone.0150345.t004" ref-type="table">Table 4</xref>), with respondents having submitted samples with 57% head rice, on average. Based on the proportion of head rice in the respondents’ samples, it appears that the respondents were willing to pay for milled rice that fell below premium standards set by the Philippines’ National Food Authority (NFA) [<xref rid="pone.0150345.ref076" ref-type="bibr">76</xref>]; perhaps, premium grade milled rice was not available in the markets surveyed in this study. However, the data reported here (Tables <xref rid="pone.0150345.t002" ref-type="table">2</xref> and <xref rid="pone.0150345.t004" ref-type="table">4</xref>) indicate improvement from previously reported rice mill yields in the Philippines [<xref rid="pone.0150345.ref077" ref-type="bibr">77</xref>], suggesting that post-harvest processing conditions and processing facilities have improved. The motivation of breeders and post-harvest practitioners to improve head rice recovery could stem from consumers’ possible association between good taste and the wholeness of the rice grain. It is possible that the respondents’ choices of rice were constrained by their purchasing power as head rice has been reported to be correlated with market rice prices [<xref rid="pone.0150345.ref078" ref-type="bibr">78</xref>].</p>
+      </sec>
+      <sec id="sec013">
+        <title>Cooking and eating properties of the rice samples</title>
+        <p>Amylose is one of two starch polymers in rice. Amylose content is believed to be one of the best single indicators of the texture, particularly of the hardness, of rice samples [<xref rid="pone.0150345.ref024" ref-type="bibr">24</xref>]; hence, it plays a critical role in selection decisions in rice breeding programs [<xref rid="pone.0150345.ref023" ref-type="bibr">23</xref>]. In this study, there were no significant differences in AACs in rice consumed across the different income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between towns (<xref rid="pone.0150345.t004" ref-type="table">Table 4</xref>), with the respondents consuming rice with intermediate AAC, on average. These findings agree with previously reported Filipino consumer preferences [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>,<xref rid="pone.0150345.ref034" ref-type="bibr">34</xref>].</p>
+        <p>On the other hand, the rice samples from the respondents were, on average, of the medium GC class, in agreement with characteristics of popular Philippine rice varieties reported by Calingacion et al. [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>]. The respondents’ textural preferences, according to GC values, were similar across income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between towns (<xref rid="pone.0150345.t004" ref-type="table">Table 4</xref>). Amylose has been implicated in affecting GC [<xref rid="pone.0150345.ref053" ref-type="bibr">53</xref>], which predicts texture of cooked rice; however, rice texture is also reportedly influenced by proteins and lipids [<xref rid="pone.0150345.ref063" ref-type="bibr">63</xref>,<xref rid="pone.0150345.ref079" ref-type="bibr">79</xref>–<xref rid="pone.0150345.ref082" ref-type="bibr">82</xref>].</p>
+        <p>Amylopectin is the other polymer of starch in rice grains. During gelatinization, the crystalline lamellae of amylopectin melt; the temperature range at which this happens—referred to as GT—depends on the distributions of chain-lengths within the amylopectin semi-crystalline cluster [<xref rid="pone.0150345.ref030" ref-type="bibr">30</xref>,<xref rid="pone.0150345.ref083" ref-type="bibr">83</xref>–<xref rid="pone.0150345.ref084" ref-type="bibr">84</xref>]. Respondents across income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between towns (<xref rid="pone.0150345.t004" ref-type="table">Table 4</xref>) similarly preferred rice with high GT. This result contrasts reports that indicated that the preferred GT class in the Philippines is low to intermediate [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>,<xref rid="pone.0150345.ref085" ref-type="bibr">85</xref>]. However, DSC could give a different value from what is obtained from alkali-based methods [<xref rid="pone.0150345.ref030" ref-type="bibr">30</xref>], which have been used for GT characterization in the contrasting studies. Juliano et al. had used the alkali turbidimetric assay [<xref rid="pone.0150345.ref085" ref-type="bibr">85</xref>] while Calingacion et al. obtained ASV values from the experts who participated in the survey, only conducting DSC for samples of unknown GT (the authors did not specify which samples were subjected to DSC or had reported ASV data) [<xref rid="pone.0150345.ref027" ref-type="bibr">27</xref>].</p>
+        <p>The rice submitted by the respondents had statistically similar viscosity values across income groups (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>) and between towns (Tables <xref rid="pone.0150345.t003" ref-type="table">3</xref> and <xref rid="pone.0150345.t004" ref-type="table">4</xref>). However, there was a small but significant difference in the amount of time the rice samples needed to reach PV among the different income groups. The low-income group had rice samples with slightly longer peak times than samples obtained from the high-income group (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>). The difference in peak times indicates slightly different swelling behaviors between the rice from the low-income group and the high-income group; its impact during cooking, however, might be too small to be distinguished as GT is similar across income classes (<xref rid="pone.0150345.t002" ref-type="table">Table 2</xref>).</p>
+      </sec>
+      <sec id="sec014">
+        <title>The hedonic price model</title>
+        <p>This study uses a log-log functional form in all preliminary models (<xref rid="pone.0150345.t005" ref-type="table">Table 5</xref>) as well as the final model (<xref rid="pone.0150345.t006" ref-type="table">Table 6</xref>). One advantage of this functional form is that estimated coefficients can be interpreted as elasticities. The original hedonic model that was investigated can be found in column (1) of <xref rid="pone.0150345.t005" ref-type="table">Table 5</xref>. In this model, per capita income was found to be significant; different income levels are likely to have different hedonic price models. Therefore, we split the same regression in three income classes (columns (2) to (4)) and observe that slopes of explanatory variables such as percent broken and GC indeed differ across income strata (<xref ref-type="fig" rid="pone.0150345.g001">Fig 1</xref>). Unfortunately, this method also has the disadvantage that sample sizes for income groups are smaller and degrees of freedom become limiting due to the inclusion of several explanatory variables on rice grain quality as well as socio-economic factors. Because of this limitation, income classes are interacted with grain quality characteristics and one socio-economic factor in <xref rid="pone.0150345.t006" ref-type="table">Table 6</xref>. Other socio-economic factors were found to have similar effects among income classes. Hence, we were able to exploit the full, pooled sample and significantly increase the explanatory power of the original model (column (1) in <xref rid="pone.0150345.t005" ref-type="table">Table 5</xref>) from R-squared = 39% to 50% (<xref rid="pone.0150345.t006" ref-type="table">Table 6</xref>).</p>
+        <table-wrap id="pone.0150345.t005" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t005</object-id>
+          <label>Table 5</label>
+          <caption>
+            <title>Preliminary regression results for hedonic price models for rice.</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t005g" xlink:href="pone.0150345.t005"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">(1)</th>
+                  <th align="center" rowspan="1" colspan="1">(2)</th>
+                  <th align="center" rowspan="1" colspan="1">(3)</th>
+                  <th align="center" rowspan="1" colspan="1">(4)</th>
+                </tr>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">All Income</th>
+                  <th align="center" rowspan="1" colspan="1">High Income</th>
+                  <th align="center" rowspan="1" colspan="1">Middle Income</th>
+                  <th align="center" rowspan="1" colspan="1">Low Income</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Percent broken</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0695***(0.0140)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0450**(0.0208)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0582*(0.0331)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0031(0.0419)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GC</td>
+                  <td align="center" rowspan="1" colspan="1">0.0394*(0.0223)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0595(0.0452)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0238(0.0348)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0033(0.0430)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">AAC</td>
+                  <td align="center" rowspan="1" colspan="1">0.0954(0.0656)</td>
+                  <td align="center" rowspan="1" colspan="1">0.2875(0.1944)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0569(0.1037)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0431(0.0932)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GT</td>
+                  <td align="center" rowspan="1" colspan="1">0.2191(0.2245)</td>
+                  <td align="center" rowspan="1" colspan="1">0.1964(0.3593)</td>
+                  <td align="center" rowspan="1" colspan="1">0.9785*(0.5190)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.5421(0.5689)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Small Chalkiness</td>
+                  <td align="center" rowspan="1" colspan="1">0.0121(0.0178)</td>
+                  <td align="center" rowspan="1" colspan="1">0.1419**(0.0515)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0291(0.0360)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0061(0.0208)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Per capita income</td>
+                  <td align="center" rowspan="1" colspan="1">0.0159**(0.0063)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0458(0.0308)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0058(0.0365)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0118(0.0132)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Per capita rice consumption</td>
+                  <td align="center" rowspan="1" colspan="1">0.0275**(0.0116)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0507**(0.0234)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0083(0.0187)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0518**(0.0205)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Household size</td>
+                  <td align="center" rowspan="1" colspan="1">0.0202(0.0130)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0163(0.0340)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0045(0.0416)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0425*(0.0237)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Age of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">0.0338**(0.0151)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0475(0.0416)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0405*(0.0238)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0066(0.0210)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Educ. of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">0.0098(0.0137)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0892*(0.0482)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0446**(0.0204)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0095(0.0152)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Gender of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0015(0.0124)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0132(0.0265)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0114(0.0174)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0189(0.0207)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Location</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0216**(0.0109)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0319(0.0238)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0256(0.0177)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0497***(0.0173)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Intercept</td>
+                  <td align="center" rowspan="1" colspan="1">1.9591**(0.9331)</td>
+                  <td align="center" rowspan="1" colspan="1">1.5375(1.7302)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.7861(1.9570)</td>
+                  <td align="center" rowspan="1" colspan="1">5.3386**(2.5060)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Observations</td>
+                  <td align="center" rowspan="1" colspan="1">127</td>
+                  <td align="center" rowspan="1" colspan="1">40</td>
+                  <td align="center" rowspan="1" colspan="1">46</td>
+                  <td align="center" rowspan="1" colspan="1">41</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">R-squared</td>
+                  <td align="center" rowspan="1" colspan="1">0.39</td>
+                  <td align="center" rowspan="1" colspan="1">0.70</td>
+                  <td align="center" rowspan="1" colspan="1">0.47</td>
+                  <td align="center" rowspan="1" colspan="1">0.42</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t005fn001">
+              <p>Note: Standard errors in parentheses '***', '**', '*' significant at 1, 5, and 10%.</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+        <table-wrap id="pone.0150345.t006" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.t006</object-id>
+          <label>Table 6</label>
+          <caption>
+            <title>Hedonic price function interacting income classes.</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone.0150345.t006g" xlink:href="pone.0150345.t006"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+                <col align="left" valign="middle" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1"/>
+                  <th align="center" colspan="2" rowspan="1">Interaction with</th>
+                </tr>
+                <tr>
+                  <th align="left" rowspan="1" colspan="1"/>
+                  <th align="center" rowspan="1" colspan="1">Coefficients</th>
+                  <th align="center" rowspan="1" colspan="1">Middle Income</th>
+                  <th align="center" rowspan="1" colspan="1">Low Income</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Percent broken</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0560***(0.0185)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0078 (0.0398)</td>
+                  <td align="center" rowspan="1" colspan="1">0.0395 (0.0538)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GC</td>
+                  <td align="center" rowspan="1" colspan="1">0.0776**(0.0354)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.1055** (0.0508)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0760 (0.0601)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">AAC</td>
+                  <td align="center" rowspan="1" colspan="1">0.1585(0.1583)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.1315 (0.1917)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.1447 (0.1925)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">GT</td>
+                  <td align="center" rowspan="1" colspan="1">–0.1008(0.3051)</td>
+                  <td align="center" rowspan="1" colspan="1">1.0539* (0.5894)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.6394 (0.7458)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Small Chalkiness</td>
+                  <td align="center" rowspan="1" colspan="1">0.0631(0.0392)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0858 (0.0541)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0637 (0.0456)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Per capita rice consumption</td>
+                  <td align="center" rowspan="1" colspan="1">0.0592***(0.0191)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0664** (0.0259)</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0449 (0.0290)</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Middle income dummy</td>
+                  <td align="center" rowspan="1" colspan="1">–3.3724(2.4746)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Low income dummy</td>
+                  <td align="center" rowspan="1" colspan="1">3.5979(3.2838)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Household size</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0035(0.0132)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Age of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">0.0230(0.0160)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Education of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">0.0084(0.0132)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Gender of rice purchaser</td>
+                  <td align="center" rowspan="1" colspan="1">0.0029(0.0127)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Location</td>
+                  <td align="center" rowspan="1" colspan="1">–0.0225*(0.0114)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Intercept</td>
+                  <td align="center" rowspan="1" colspan="1">2.9427**(1.4672)</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">Observations</td>
+                  <td align="center" rowspan="1" colspan="1">127</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">R-squared</td>
+                  <td align="center" rowspan="1" colspan="1">0.50</td>
+                  <td align="center" rowspan="1" colspan="1"/>
+                  <td align="center" rowspan="1" colspan="1"/>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+          <table-wrap-foot>
+            <fn id="t006fn001">
+              <p>Note: Standard errors in parentheses '***', '**', '*' significant at 1, 5, and 10%.</p>
+            </fn>
+          </table-wrap-foot>
+        </table-wrap>
+        <fig id="pone.0150345.g001" orientation="portrait" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0150345.g001</object-id>
+          <label>Fig 1</label>
+          <caption>
+            <title>Results of correlation of price with percent broken and gel consistency by income class.</title>
+          </caption>
+          <graphic xlink:href="pone.0150345.g001"/>
+        </fig>
+        <p>The main advantages of the model presented in <xref rid="pone.0150345.t006" ref-type="table">Table 6</xref> are that this model maintains the original sample size and still shows the income effect on the revealed preferences of consumers. Results of this model suggest that only the high-income class significantly discounts broken grains. However, this is likely the result of high-income consumers purchasing rice from a wider range of quality classes, which is confirmed by the higher variability in the amount of percent broken in the rice samples obtained from this income class (<xref ref-type="fig" rid="pone.0150345.g001">Fig 1</xref>). Middle- and low-income consumers in this study did not purchase premium rice with low amounts of percent broken. Results also indicate that soft rice is preferred by high-income consumers with GC significant at five percent. Conversely, middle-income consumers discount rice with higher GC. This study also revealed that per capita rice consumption significantly affected WTP. However, the sign changes between high- and middle-income classes which indicate that high-income consumers spend more per kg of rice as their consumption increases and middle-income consumers spend less per kg of rice as their consumption increases. The results of high-income consumers’ preference for soft rice, as measured by GC values, is in agreement with previous studies [<xref rid="pone.0150345.ref086" ref-type="bibr">86</xref>].</p>
+      </sec>
+      <sec id="sec015">
+        <title>Implicit price</title>
+        <p>Marginal implicit prices are calculated as the product of the mean rice price from the collected samples and the mean beta coefficients of the physical and chemical characteristics divided by the mean of the explanatory variables of the collected rice samples. These implicit prices were estimated based on <xref rid="pone.0150345.t005" ref-type="table">Table 5</xref> for the whole sample as well as by income classes.</p>
+        <p>The data show that amount of percent broken grains was significant in almost all income classes. Although the magnitude of the implicit price is rather small for percent broken, it is important to note that there is a large range in percent broken values. Samples in this study ranged from 2.4% broken to 66.4% broken; the level of percent broken can change the price of rice by more than 0.08 USD (9.7%) throughout the total range. Gel consistency was found to be significant at the 10% level for the non-interacted variable with an implicit price of approximately 0.08 USD/kg for every 10% change and a total range of 550%. Also significant at the 10% level was GT for middle-income consumers. The implicit price for these consumers was 0.01 USD/kg but the range of values for GT in the middle-income was only 7.43°C. As such, GT could affect the price of rice by as much as 0.08 USD/kg (9.4%).</p>
+      </sec>
+    </sec>
+    <sec sec-type="conclusions" id="sec016">
+      <title>Conclusion</title>
+      <p>This study was conducted to measure the contribution of grain quality attributes to the market value of rice in two rural towns in the Philippines. Unlike previous hedonic studies which considered semi-quantitative scores for measuring of GT and chalkiness, this study included measurement of GT based on thermal transitions in DSC and of chalkiness based on computerized image analyses. These techniques are more accurate and reliable than routinely used assays (alkali spreading test for GT and visual scores for chalkiness). Moreover, in addition to commonly used physicochemical data, this study also employed an interaction term for income classes to reveal income effects in these factors on rice price.</p>
+      <p>The results of this study indicate that consumers’ response to grain quality characteristics changes over income classes. Generally speaking, low-income consumers appear to have less pronounced preferences for rice based on physical and chemical characteristics. Or more likely, these consumers do not have the economic power to express their preferences. Additionally, the absence of preference may result from homogeneity in the rice consumed by this income class. High-income consumers have the largest variability in rice grain quality attributes and concurrently appear to have the most pronounced preferences among consumers. High-income consumers also spend more money per kg as their consumption increases, while the opposite has been observed for the middle-income class.</p>
+      <p>These results provide important insights into value chain upgrading as the Philippines is currently struggling to reduce imports, increase rice self-sufficiency and raise income of poor farmers. Greater head rice recovery, for example, is consistently emphasized as a priority trait by consumers in the Philippines since the 1980s [<xref rid="pone.0150345.ref044" ref-type="bibr">44</xref>,<xref rid="pone.0150345.ref047" ref-type="bibr">47</xref>,<xref rid="pone.0150345.ref058" ref-type="bibr">58</xref>]. Our hedonic analysis revealed that greater percentage of broken rice grains (i.e. lower head rice recovery rate) is still discounted by consumers in medium and high income classes today. Therefore, in order to enable Filipino farmers to access those market segments with local rice, more investment will be needed in upgrading of pre- and post-milling operations (separation of varieties, sorting, and grading) as well as through rice breeding [<xref rid="pone.0150345.ref087" ref-type="bibr">87</xref>]. More generally, our findings can be used by rice breeders for setting priorities and incorporating grain quality improvements in varietal development, along with agronomic and stress-tolerance traits. Issues of grain quality and postharvest losses are likely to become more pronounced in the future as heat stress can reduce milled rice yields by as much as 13.8% for every 1°C increase in the average growing season temperature [<xref rid="pone.0150345.ref088" ref-type="bibr">88</xref>] and annual mean temperatures in all areas of the Philippines are expected to increase by as much as 1.1°C by 2020 and 2.2°C by 2050 compared to baseline temperatures from 1971–2000 [<xref rid="pone.0150345.ref089" ref-type="bibr">89</xref>].</p>
+    </sec>
+    <sec sec-type="supplementary-material" id="sec017">
+      <title>Supporting Information</title>
+      <supplementary-material content-type="local-data" id="pone.0150345.s001">
+        <label>S1 Fig</label>
+        <caption>
+          <title>Distribution of chalkiness, grain length, grain width, percentage of head rice from the milled grain, and length-width ratio of the grain length of raw milled rice grains submitted by respondents from Famy and Sta Maria.</title>
+          <p>(TIFF)</p>
+        </caption>
+        <media xlink:href="pone.0150345.s001.tiff">
+          <caption>
+            <p>Click here for additional data file.</p>
+          </caption>
+        </media>
+      </supplementary-material>
+      <supplementary-material content-type="local-data" id="pone.0150345.s002">
+        <label>S2 Fig</label>
+        <caption>
+          <title>Distribution of AAC, GT, and GC of the rice samples obtained from the respondents in Famy and Sta Maria.</title>
+          <p>(TIFF)</p>
+        </caption>
+        <media xlink:href="pone.0150345.s002.tiff">
+          <caption>
+            <p>Click here for additional data file.</p>
+          </caption>
+        </media>
+      </supplementary-material>
+    </sec>
+  </body>
+  <back>
+    <ref-list>
+      <title>References</title>
+      <ref id="pone.0150345.ref001">
+        <label>1</label>
+        <mixed-citation publication-type="journal"><name><surname>Khush</surname><given-names>GS</given-names></name>. <article-title>What it will take to feed 5.0 billion rice consumers in 2030</article-title>. <source>Plant molecular biology</source>. <year>2005</year>;<volume>59</volume>: <fpage>1</fpage>–<lpage>6</lpage>. <pub-id pub-id-type="doi">10.1007/s11103-005-2159-5</pub-id>
+<pub-id pub-id-type="pmid">16217597</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref002">
+        <label>2</label>
+        <mixed-citation publication-type="book"><name><surname>Calpe</surname><given-names>C</given-names></name>. <chapter-title>Status of the world rice market in 2002</chapter-title>
+<source>20th Session of the International Rice Commission</source>. <publisher-loc>Bangkok, Thailand</publisher-loc>: <publisher-name>Food and Agriculture Organization of the United Nations</publisher-name>; <year>2003</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref003">
+        <label>3</label>
+        <mixed-citation publication-type="journal"><name><surname>Deaton</surname><given-names>AS</given-names></name>, <name><surname>Dreze</surname><given-names>J</given-names></name>. <article-title>Nutrition in India: Facts and Interpretations</article-title>. <source>SSRN Electronic Journal</source>. <year>2008</year>; <fpage>42</fpage>–<lpage>65</lpage>. <pub-id pub-id-type="doi">10.2139/ssrn.1135253</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref004">
+        <label>4</label>
+        <mixed-citation publication-type="journal"><name><surname>Demont</surname><given-names>M</given-names></name>, <name><surname>Zossou</surname><given-names>E</given-names></name>, <name><surname>Rutsaert</surname><given-names>P</given-names></name>, <name><surname>Ndour</surname><given-names>M</given-names></name>, <name><surname>Van Mele</surname><given-names>P</given-names></name>, <name><surname>Verbeke</surname><given-names>W</given-names></name>. <article-title>Consumer valuation of improved rice parboiling technologies in Benin</article-title>. <source>Food Quality and Preference. Elsevier Ltd</source>; <year>2012</year>;<volume>23</volume>: <fpage>63</fpage>–<lpage>70</lpage>. <pub-id pub-id-type="doi">10.1016/j.foodqual.2011.07.005</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref005">
+        <label>5</label>
+        <mixed-citation publication-type="journal"><name><surname>Jensen</surname><given-names>RT</given-names></name>, <name><surname>Miller</surname><given-names>NH</given-names></name>. <article-title>Giffen Behavior and Subsistence Consumption</article-title>. <source>The American economic review</source>. <year>2008</year>;<volume>98</volume>: <fpage>1553</fpage>–<lpage>1577</lpage>. <pub-id pub-id-type="doi">10.1257/aer.98.4.1553</pub-id>
+<pub-id pub-id-type="pmid">21031158</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref006">
+        <label>6</label>
+        <mixed-citation publication-type="journal"><name><surname>Shah</surname><given-names>CH</given-names></name>. <article-title>Food Preference, Poverty, and the Nutrition Gap</article-title>. <source>Economic Development and Cultural Change</source>. <year>1983</year>;<volume>32</volume>: <fpage>121</fpage>
+<pub-id pub-id-type="doi">10.1086/451374</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref007">
+        <label>7</label>
+        <mixed-citation publication-type="book"><name><surname>Rutsaert</surname><given-names>P</given-names></name>, <name><surname>Demont</surname><given-names>M</given-names></name>, <name><surname>Verbeke</surname><given-names>W</given-names></name>. <chapter-title>Consumer Preferences for Rice in Africa</chapter-title> In: <name><surname>Wopereis</surname><given-names>MCS</given-names></name>, <name><surname>Johnson</surname><given-names>D</given-names></name>, <name><surname>Ahmad</surname><given-names>N</given-names></name>, <name><surname>Tollens</surname><given-names>E</given-names></name>, <name><surname>Jalloh</surname><given-names>A</given-names></name>, editors. <source>Realizing Africa’s Rice Promise</source>. <publisher-loc>Boston</publisher-loc>: <publisher-name>CABI Publishing</publisher-name>; <year>2013</year> pp. <fpage>293</fpage>–<lpage>301</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref008">
+        <label>8</label>
+        <mixed-citation publication-type="journal"><name><surname>Minten</surname><given-names>B</given-names></name>, <name><surname>Murshid</surname><given-names>KAS</given-names></name>, <name><surname>Reardon</surname><given-names>T</given-names></name>. <article-title>Food Quality Changes and Implications: Evidence from the Rice Value Chain of Bangladesh</article-title>. <source>World Development</source>. <year>2013</year>;<volume>42</volume>: <fpage>100</fpage>–<lpage>113</lpage>. <pub-id pub-id-type="doi">10.1016/j.worlddev.2012.06.015</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref009">
+        <label>9</label>
+        <mixed-citation publication-type="book"><name><surname>Adair</surname><given-names>CR</given-names></name>, <name><surname>Beachell</surname><given-names>HM</given-names></name>, <name><surname>Jodon</surname><given-names>NE</given-names></name>, <name><surname>Johnston</surname><given-names>TH</given-names></name>, <name><surname>Thysell</surname><given-names>JR</given-names></name>, <name><surname>Green</surname><given-names>VE</given-names><suffix>Jr</suffix></name>, <etal>et al</etal>
+<chapter-title>Rice Breeding and Testing Methods in the United States</chapter-title>
+<source>Rice in the United States: Varieties and Production</source>. <publisher-loc>Washington DC</publisher-loc>: <publisher-name>United States Department of Agriculture</publisher-name>; <year>1966</year> pp. <fpage>19</fpage>–<lpage>64</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref010">
+        <label>10</label>
+        <mixed-citation publication-type="book"><name><surname>Graham</surname><given-names>R</given-names></name>. <source>A Proposal for IRRI to Establish a Grain Quality and Nutrition Research Center</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>; <year>2002</year>. Report No.: 44.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref011">
+        <label>11</label>
+        <mixed-citation publication-type="journal"><name><surname>Tomlins</surname><given-names>K</given-names></name>, <name><surname>Manful</surname><given-names>J</given-names></name>, <name><surname>Gayin</surname><given-names>J</given-names></name>, <name><surname>Kudjawu</surname><given-names>B</given-names></name>, <name><surname>Tamakloe</surname><given-names>I</given-names></name>. <article-title>Study of sensory evaluation, consumer acceptability, affordability and market price of rice</article-title>. <source>Journal of the Science of Food and Agriculture</source>. <year>2007</year>;<volume>87</volume>: <fpage>1564</fpage>–<lpage>1575</lpage>. <pub-id pub-id-type="doi">10.1002/jsfa.2889</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref012">
+        <label>12</label>
+        <mixed-citation publication-type="other">Codex Alimentarius Commission. Codex Standard for Rice. 1995.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref013">
+        <label>13</label>
+        <mixed-citation publication-type="journal"><collab>Council of the European Eunion</collab>. <article-title>Council Regulation (EC) 1785/2003 on the common organisation of the market in rice</article-title>. <source>Official Journal of the European Union</source>. <year>2003</year>;<volume>270</volume>: <fpage>96</fpage>–<lpage>113</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref014">
+        <label>14</label>
+        <mixed-citation publication-type="book"><name><surname>Dela Cruz</surname><given-names>NM</given-names></name>, <name><surname>Khush</surname><given-names>GS</given-names></name>. <chapter-title>Rice Grain Quality Evaluation Procedures</chapter-title> In: <name><surname>Singh</surname><given-names>RK</given-names></name>, <name><surname>Singh</surname><given-names>US</given-names></name>, <name><surname>Khush</surname><given-names>GS</given-names></name>, editors. <source>Aromatic Rices</source>. <publisher-loc>New Delhi, India</publisher-loc>: <publisher-name>Mohan Primlani</publisher-name>; <year>2000</year> pp. <fpage>15</fpage>–<lpage>28</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref015">
+        <label>15</label>
+        <mixed-citation publication-type="journal"><name><surname>Fitzgerald</surname><given-names>MA</given-names></name>, <name><surname>Resurreccion</surname><given-names>AP</given-names></name>. <article-title>Maintaining the yield of edible rice in a warming world</article-title>. <source>Functional Plant Biology</source>. <year>2009</year>;<volume>36</volume>: <fpage>1037</fpage>
+<pub-id pub-id-type="doi">10.1071/FP09055</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref016">
+        <label>16</label>
+        <mixed-citation publication-type="book"><name><surname>Ikehashi</surname><given-names>H</given-names></name>, <name><surname>Khush</surname><given-names>GS</given-names></name>. <chapter-title>Methodology of assessing appearance of the rice grain, including chalkiness and whiteness</chapter-title>
+<source>Workshop on Chemical Aspects of Rice Grain Quality</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>: <publisher-name>International Rice Research Institute</publisher-name>; <year>1979</year> pp. <fpage>223</fpage>–<lpage>230</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref017">
+        <label>17</label>
+        <mixed-citation publication-type="journal"><name><surname>Yoshioka</surname><given-names>Y</given-names></name>, <name><surname>Iwata</surname><given-names>H</given-names></name>, <name><surname>Tabata</surname><given-names>M</given-names></name>, <name><surname>Ninomiya</surname><given-names>S</given-names></name>, <name><surname>Ohsawa</surname><given-names>R</given-names></name>. <article-title>Chalkiness in Rice: Potential for Evaluation with Image Analysis</article-title>. <source>Crop Science</source>. <year>2007</year>;<volume>47</volume>: <fpage>2113</fpage>
+<pub-id pub-id-type="doi">10.2135/cropsci2006.10.0631sc</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref018">
+        <label>18</label>
+        <mixed-citation publication-type="journal"><name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Perez</surname><given-names>CM</given-names></name>, <name><surname>Barber</surname><given-names>S</given-names></name>, <name><surname>Blakeney</surname><given-names>AB</given-names></name>, <name><surname>Iwasaki</surname><given-names>TA</given-names></name>, <name><surname>Shibuya</surname><given-names>N</given-names></name>, <etal>et al</etal>
+<article-title>International Cooperative Comparison of instrument methods for cooked rice texture</article-title>. <source>Journal of Texture Studies</source>. <year>1981</year>;<volume>12</volume>: <fpage>17</fpage>–<lpage>38</lpage>. <pub-id pub-id-type="doi">10.1111/j.1745-4603.1981.tb00533.x</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref019">
+        <label>19</label>
+        <mixed-citation publication-type="journal"><name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>A Simplified Assay for Milled-Rice Amylose</article-title>. <source>Cereal Science Today</source>. <year>1971</year>;<volume>16</volume>: <fpage>334</fpage>–<lpage>340</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref020">
+        <label>20</label>
+        <mixed-citation publication-type="journal"><name><surname>Mcgrance</surname><given-names>SJ</given-names></name>, <name><surname>Cornell</surname><given-names>HJ</given-names></name>, <name><surname>Rix</surname><given-names>CJ</given-names></name>. <article-title>A Simple and Rapid Colorimetric Method for the Determination of Amylose in Starch Products</article-title>. <source>Starch—Stärke</source>. <year>1998</year>;<volume>50</volume>: <fpage>158</fpage>–<lpage>163</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref021">
+        <label>21</label>
+        <mixed-citation publication-type="journal"><name><surname>Perez</surname><given-names>CM</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Modification of the Simplified Amylose Test for Milled Rice</article-title>. <source>Starch—Stärke</source>. <year>1978</year>;<volume>30</volume>: <fpage>424</fpage>–<lpage>426</lpage>. <pub-id pub-id-type="doi">10.1002/star.19780301206</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref022">
+        <label>22</label>
+        <mixed-citation publication-type="journal"><name><surname>Delwiche</surname><given-names>SR</given-names></name>, <name><surname>Mckenzie</surname><given-names>KS</given-names></name>, <name><surname>Webb</surname><given-names>BD</given-names></name>. <article-title>Quality Characteristics in Rice by Near-Infrared Reflectance Analysis of Whole-Grain Milled Samples</article-title>. <source>Cereal Chemistry</source>. <year>1996</year>;<volume>73</volume>: <fpage>257</fpage>–<lpage>263</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref023">
+        <label>23</label>
+        <mixed-citation publication-type="journal"><name><surname>Fitzgerald</surname><given-names>MA</given-names></name>, <name><surname>Bergman</surname><given-names>CJ</given-names></name>, <name><surname>Resurreccion</surname><given-names>AP</given-names></name>, <name><surname>Möller</surname><given-names>J</given-names></name>, <name><surname>Jimenez</surname><given-names>R</given-names></name>, <name><surname>Reinke</surname><given-names>RF</given-names></name>, <etal>et al</etal>
+<article-title>Addressing the Dilemmas of Measuring Amylose in Rice</article-title>. <source>Cereal Chemistry</source>. <year>2009</year>;<volume>86</volume>: <fpage>492</fpage>–<lpage>498</lpage>. <pub-id pub-id-type="doi">10.1094/CCHEM-86-5-0492</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref024">
+        <label>24</label>
+        <mixed-citation publication-type="journal"><name><surname>Morrison</surname><given-names>WR</given-names></name>, <name><surname>Azudin</surname><given-names>MN</given-names></name>. <article-title>Variation in the amylose and lipid contents and some physical properties of rice starches</article-title>. <source>Journal of Cereal Science</source>. <year>1987</year>;<volume>5</volume>: <fpage>35</fpage>–<lpage>44</lpage>. <pub-id pub-id-type="doi">10.1016/S0733-5210(87)80007-3</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref025">
+        <label>25</label>
+        <mixed-citation publication-type="journal"><name><surname>Vilaplana</surname><given-names>F</given-names></name>, <name><surname>Hasjim</surname><given-names>J</given-names></name>, <name><surname>Gilbert</surname><given-names>RG</given-names></name>. <article-title>Amylose content in starches: Toward optimal definition and validating experimental methods</article-title>. <source>Carbohydrate Polymers</source>. <year>2012</year>;<volume>88</volume>: <fpage>103</fpage>–<lpage>111</lpage>. <pub-id pub-id-type="doi">10.1016/j.carbpol.2011.11.072</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref026">
+        <label>26</label>
+        <mixed-citation publication-type="journal"><name><surname>Kumar</surname><given-names>I</given-names></name>, <name><surname>Khush</surname><given-names>GS</given-names></name>. <article-title>Genetic Analysis of Different Amylose Levels in Rice</article-title>. <source>Crop Science</source>. <year>1987</year>;<volume>27</volume>: <fpage>1167</fpage>
+<pub-id pub-id-type="doi">10.2135/cropsci1987.0011183X002700060016x</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref027">
+        <label>27</label>
+        <mixed-citation publication-type="journal"><name><surname>Calingacion</surname><given-names>M</given-names></name>, <name><surname>Laborte</surname><given-names>A</given-names></name>, <name><surname>Nelson</surname><given-names>A</given-names></name>, <name><surname>Resurreccion</surname><given-names>A</given-names></name>, <name><surname>Concepcion</surname><given-names>JC</given-names></name>, <name><surname>Daygon</surname><given-names>VD</given-names></name>, <etal>et al</etal>
+<article-title>Diversity of global rice markets and the science required for consumer-targeted rice breeding</article-title>. <source>PloS one</source>. <year>2014</year>;<volume>9</volume>: <fpage>e85106</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0085106</pub-id>
+<pub-id pub-id-type="pmid">24454799</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref028">
+        <label>28</label>
+        <mixed-citation publication-type="journal"><name><surname>Cagampang</surname><given-names>GB</given-names></name>, <name><surname>Perez</surname><given-names>CM</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>A gel consistency test for eating quality of rice</article-title>. <source>Journal of the Science of Food and Agriculture</source>. <year>1973</year>;<volume>24</volume>: <fpage>1589</fpage>–<lpage>1594</lpage>. <pub-id pub-id-type="doi">10.1002/jsfa.2740241214</pub-id>
+<pub-id pub-id-type="pmid">4771843</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref029">
+        <label>29</label>
+        <mixed-citation publication-type="journal"><name><surname>Antonio</surname><given-names>AA</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Physiochemical properties of glutinous rices in relation to pinipig</article-title>. <source>Philippine Agricultural Scientist</source>. <year>1974</year>;<volume>58</volume>: <fpage>17</fpage>–<lpage>23</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref030">
+        <label>30</label>
+        <mixed-citation publication-type="journal"><name><surname>Cuevas</surname><given-names>RP</given-names></name>, <name><surname>Daygon</surname><given-names>VD</given-names></name>, <name><surname>Corpuz</surname><given-names>HM</given-names></name>, <name><surname>Nora</surname><given-names>L</given-names></name>, <name><surname>Reinke</surname><given-names>RF</given-names></name>, <name><surname>Waters</surname><given-names>DLE</given-names></name>, <etal>et al</etal>
+<article-title>Melting the secrets of gelatinisation temperature in rice</article-title>. <source>Functional Plant Biology</source>. <year>2010</year>;<volume>37</volume>: <fpage>439</fpage>
+<pub-id pub-id-type="doi">10.1071/FP09258</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref031">
+        <label>31</label>
+        <mixed-citation publication-type="journal"><name><surname>Singh</surname><given-names>N</given-names></name>, <name><surname>Sodhi</surname><given-names>NS</given-names></name>, <name><surname>Kaur</surname><given-names>M</given-names></name>, <name><surname>Saxena</surname><given-names>SK</given-names></name>. <article-title>Physico-chemical, morphological, thermal, cooking and textural properties of chalky and translucent rice kernels</article-title>. <source>Food Chemistry</source>. <year>2003</year>;<volume>82</volume>: <fpage>433</fpage>–<lpage>439</lpage>. <pub-id pub-id-type="doi">10.1016/S0308-8146(03)00007-4</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref032">
+        <label>32</label>
+        <mixed-citation publication-type="book"><name><surname>Cuevas</surname><given-names>RP</given-names></name>, <name><surname>Fitzgerald</surname><given-names>MA</given-names></name>. <chapter-title>Genetic Diversity of Rice Grain Quality</chapter-title> In: <name><surname>Caliskan</surname><given-names>M</given-names></name>, editor. <source>Genetic Diversity in Plants</source>. <publisher-name>InTech</publisher-name>; <year>2012</year> pp. <fpage>285</fpage>–<lpage>310</lpage>. Available: <ext-link ext-link-type="uri" xlink:href="http://www.intechopen.com/books/genetic-diversity-in-plants">http://www.intechopen.com/books/genetic-diversity-in-plants</ext-link></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref033">
+        <label>33</label>
+        <mixed-citation publication-type="journal"><name><surname>Little</surname><given-names>RR</given-names></name>, <name><surname>Hilder</surname><given-names>GB</given-names></name>, <name><surname>Dawson</surname><given-names>EH</given-names></name>. <article-title>Differential effect of dilute alkali on 25 varieties of milled white rice</article-title>. <source>Cereal Chemistry</source>. <year>1958</year>;<volume>35</volume>: <fpage>111</fpage>–<lpage>126</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref034">
+        <label>34</label>
+        <mixed-citation publication-type="journal"><name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Asian perspective on rice sensory quality</article-title>. <source>Cereal Foods World</source>. <year>2001</year>;<volume>46</volume>: <fpage>531</fpage>–<lpage>535</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref035">
+        <label>35</label>
+        <mixed-citation publication-type="book"><name><surname>Kaosa-ard</surname><given-names>M</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <chapter-title>Assessing rice quality characteristics and prices in selected international markets</chapter-title> In: <name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Pollard</surname><given-names>LR</given-names></name>, <name><surname>Argosino</surname><given-names>G</given-names></name>, editors. <source>Rice Grain Marketing and Quality Issues</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>: <publisher-name>International Rice Research Institute</publisher-name>; <year>1991</year> pp. <fpage>23</fpage>–<lpage>36</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref036">
+        <label>36</label>
+        <mixed-citation publication-type="journal"><name><surname>Spiller</surname><given-names>K</given-names></name>. <article-title>It tastes better because … consumer understandings of UK farmers’ market food</article-title>. <source>Appetite</source>. <year>2012</year>;<volume>59</volume>: <fpage>100</fpage>–<lpage>7</lpage>. <pub-id pub-id-type="doi">10.1016/j.appet.2012.04.007</pub-id>
+<pub-id pub-id-type="pmid">22521516</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref037">
+        <label>37</label>
+        <mixed-citation publication-type="journal"><name><surname>Brorsen</surname><given-names>BW</given-names></name>, <name><surname>Grant</surname><given-names>WR</given-names></name>, <name><surname>Rister</surname><given-names>ME</given-names></name>. <article-title>A Hedonic Price Model for Rough Rice Bid/Acceptance Markets</article-title>. <source>American Journal of Agricultural Economics</source>. <year>1984</year>;<volume>66</volume>: <fpage>156</fpage>
+<pub-id pub-id-type="doi">10.2307/1241032</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref038">
+        <label>38</label>
+        <mixed-citation publication-type="journal"><name><surname>Combris</surname><given-names>P</given-names></name>, <name><surname>Lecocq</surname><given-names>S</given-names></name>, <name><surname>Visser</surname><given-names>M</given-names></name>. <article-title>Estimation of a Hedonic Price Equation for Bordeaux Wine: Does Quality Matter?</article-title>
+<source>The Economic Journal</source>. <year>1997</year>;<volume>107</volume>: <fpage>390</fpage>–<lpage>402</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref039">
+        <label>39</label>
+        <mixed-citation publication-type="journal"><name><surname>Nerlove</surname><given-names>M</given-names></name>. <article-title>Hedonic price functions and the measurement of preferences: The case of Swedish wine consumers</article-title>. <source>European Economic Review</source>. <year>1995</year>;<volume>39</volume>: <fpage>1697</fpage>–<lpage>1716</lpage>. <pub-id pub-id-type="doi">10.1016/0014-2921(95)00013-5</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref040">
+        <label>40</label>
+        <mixed-citation publication-type="journal"><name><surname>Deodhar</surname><given-names>SY</given-names></name>, <name><surname>Intodia</surname><given-names>V</given-names></name>. <article-title>What’s in a Drink You Call a Chai? Quality Attributes and Hedonic Price Analysis of Tea</article-title>. <source>Journal of International Food and Agribusiness Marketing</source>. <year>2004</year>;<volume>16</volume>: <fpage>43</fpage>–<lpage>57</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref041">
+        <label>41</label>
+        <mixed-citation publication-type="journal"><name><surname>Carew</surname><given-names>R</given-names></name>, <name><surname>Smith</surname><given-names>EG</given-names></name>. <article-title>The value of apple characteristics to wholesalers in western Canada : A hedonic approach</article-title>. <source>Canadian Journal of Plant Science</source>. <year>2004</year>;<volume>84</volume>: <fpage>764</fpage>–<lpage>771</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref042">
+        <label>42</label>
+        <mixed-citation publication-type="journal"><name><surname>Stanley</surname><given-names>LR</given-names></name>, <name><surname>Tschirhart</surname><given-names>J</given-names></name>. <article-title>Hedonic Prices for a Nondurable Good: The Case of Breakfast Cereals</article-title>. <source>The Review of Economics and Statistics</source>. <year>1991</year>;<volume>73</volume>: <fpage>537</fpage>
+<pub-id pub-id-type="doi">10.2307/2109582</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref043">
+        <label>43</label>
+        <mixed-citation publication-type="journal"><name><surname>Hulten</surname><given-names>CR</given-names></name>. <article-title>Price Hedonics: A Critical Review</article-title>. <source>FBNY Economic Policy Review</source>. <year>2003</year>;<volume>9</volume>: <fpage>5</fpage>–<lpage>15</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref044">
+        <label>44</label>
+        <mixed-citation publication-type="book"><name><surname>Abansi</surname><given-names>CL</given-names></name>, <name><surname>Duff</surname><given-names>B</given-names></name>, <name><surname>Lantican</surname><given-names>FA</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <chapter-title>Consumer demand for rice grain quality in selected rural and urban markets in the Philippines</chapter-title> In: <name><surname>Unnevehr</surname><given-names>L</given-names></name>, <name><surname>Duff</surname><given-names>B</given-names></name>, <name><surname>Juliano</surname><given-names>B</given-names></name>, editors. <source>Consumer Demand for Rice Grain Quality</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>: <publisher-name>International Rice Research Institute</publisher-name>; <year>1992</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref045">
+        <label>45</label>
+        <mixed-citation publication-type="journal"><name><surname>Wang</surname><given-names>Z</given-names></name>, <name><surname>Zheng</surname><given-names>S</given-names></name>, <name><surname>Lambert</surname><given-names>DM</given-names></name>, <name><surname>Fukuda</surname><given-names>S</given-names></name>. <article-title>A hedonic price model for rice market in China</article-title>. <source>Journal of the Faculty of Agriculture Kyushu University</source>. <year>2009</year>;<volume>54</volume>: <fpage>541</fpage>–<lpage>548</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref046">
+        <label>46</label>
+        <mixed-citation publication-type="journal"><name><surname>Dalton</surname><given-names>T</given-names></name>. <article-title>A household hedonic model of rice traits: economic values from farmers in West Africa</article-title>. <source>Agricultural Economics</source>. <year>2004</year>;<volume>31</volume>: <fpage>149</fpage>–<lpage>159</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref047">
+        <label>47</label>
+        <mixed-citation publication-type="journal"><name><surname>Unnevehr</surname><given-names>LJ</given-names></name>. <article-title>Consumer Demand for Rice Grain Quality and Returns to Research for Quality Improvement in Southeast Asia</article-title>. <source>American Journal of Agricultural Economics</source>. <year>1986</year>;<volume>68</volume>: <fpage>634</fpage>–<lpage>641</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref048">
+        <label>48</label>
+        <mixed-citation publication-type="journal"><name><surname>Laborte</surname><given-names>AG</given-names></name>, <name><surname>Paguirigan</surname><given-names>NC</given-names></name>, <name><surname>Moya</surname><given-names>PF</given-names></name>, <name><surname>Nelson</surname><given-names>A</given-names></name>, <name><surname>Sparks</surname><given-names>AH</given-names></name>, <name><surname>Gregorio</surname><given-names>GB</given-names></name>. <article-title>Farmers’ Preference for Rice Traits: Insights from Farm Surveys in Central Luzon, Philippines, 1966–2012</article-title>. <source>Plos One</source>. <year>2015</year>;<volume>10</volume>: <fpage>e0136562</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0136562</pub-id>
+<pub-id pub-id-type="pmid">26317505</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref049">
+        <label>49</label>
+        <mixed-citation publication-type="book"><name><surname>Bautista</surname><given-names>RC</given-names></name>, <name><surname>Siebenmorgen</surname><given-names>TJ</given-names></name>, <name><surname>Counce</surname><given-names>PA</given-names></name>. <chapter-title>Rice Kernel Chalkiness and Milling Quality Relationship of Selected Cultivars</chapter-title> In: <name><surname>Norman</surname><given-names>RJ</given-names></name>, <name><surname>Moldenhauer</surname><given-names>KA</given-names></name>, editors. <source>BR Wells Rice Research Studies 2009</source>. <publisher-loc>Fayetteville, Arkansas</publisher-loc>: <publisher-name>University of Arkansas Division of Agriculture</publisher-name>; <year>2010</year> pp. <fpage>220</fpage>–<lpage>229</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref050">
+        <label>50</label>
+        <mixed-citation publication-type="journal"><name><surname>Chen</surname><given-names>Y-R</given-names></name>, <name><surname>Chao</surname><given-names>K</given-names></name>, <name><surname>Kim</surname><given-names>MS</given-names></name>. <article-title>Machine vision technology for agricultural applications</article-title>. <source>Computers and Electronics in Agriculture</source>. <year>2002</year>;<volume>36</volume>: <fpage>173</fpage>–<lpage>191</lpage>. <pub-id pub-id-type="doi">10.1016/S0168-1699(02)00100-X</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref051">
+        <label>51</label>
+        <mixed-citation publication-type="book"><name><surname>Reuss</surname><given-names>R</given-names></name>. <chapter-title>Using real-time quality measurement to maintain and increase value across the grain supply chain</chapter-title> In: <name><surname>Wright</surname><given-names>EJ</given-names></name>, <name><surname>Webb</surname><given-names>MC</given-names></name>, <name><surname>Highley</surname><given-names>E</given-names></name>, editors. <source>Stored Grains in Australia</source>. <publisher-loc>Canberra, Australia</publisher-loc>: <publisher-name>CSIRO Stored Grain Research Laboratory</publisher-name>; <year>2003</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref052">
+        <label>52</label>
+        <mixed-citation publication-type="journal"><name><surname>Normand</surname><given-names>FL</given-names></name>, <name><surname>Marshall</surname><given-names>WE</given-names></name>. <article-title>Differential Scanning Calorimetry of Whole Grain Milled Rice and Milled Rice Flour</article-title>. <source>Cereal Chemistry</source>. <year>1989</year>;<volume>66</volume>: <fpage>317</fpage>–<lpage>320</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref053">
+        <label>53</label>
+        <mixed-citation publication-type="journal"><name><surname>Slade</surname><given-names>L</given-names></name>, <name><surname>Levine</surname><given-names>H</given-names></name>. <article-title>Non-equilibrium melting of native granular starch: Part I. Temperature location of the glass transition associated with gelatinization of A-type cereal starches</article-title>. <source>Carbohydrate Polymers</source>. <year>1988</year>;<volume>8</volume>: <fpage>183</fpage>–<lpage>208</lpage>. <pub-id pub-id-type="doi">10.1016/0144-8617(88)90002-1</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref054">
+        <label>54</label>
+        <mixed-citation publication-type="journal"><name><surname>Bason</surname><given-names>ML</given-names></name>, <name><surname>Ronalds</surname><given-names>JA</given-names></name>, <name><surname>Wrigley</surname><given-names>CW</given-names></name>, <name><surname>Hubbard</surname><given-names>LJ</given-names></name>. <article-title>Testing for sprout damage in malting barley using the Rapid Visco-Analyzer</article-title>. <source>Cereal Chemistry</source>. <year>1993</year>;<volume>70</volume>: <fpage>269</fpage>–<lpage>272</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref055">
+        <label>55</label>
+        <mixed-citation publication-type="journal"><name><surname>Champagne</surname><given-names>ET</given-names></name>, <name><surname>Bett</surname><given-names>KL</given-names></name>, <name><surname>Vinyard</surname><given-names>BT</given-names></name>, <name><surname>McClung</surname><given-names>AM</given-names></name>, <name><surname>Barton</surname><given-names>FE</given-names></name>, <name><surname>Moldenhauer</surname><given-names>K</given-names></name>, <etal>et al</etal>
+<article-title>Correlation Between Cooked Rice Texture and Rapid Visco Analyser Measurements</article-title>. <source>Cereal Chemistry</source>. <year>1999</year>;<volume>76</volume>: <fpage>764</fpage>–<lpage>771</lpage>. <pub-id pub-id-type="doi">10.1094/CCHEM.1999.76.5.764</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref056">
+        <label>56</label>
+        <mixed-citation publication-type="journal"><name><surname>Chen</surname><given-names>M-H</given-names></name>, <name><surname>Bergman</surname><given-names>C</given-names></name>, <name><surname>Pinson</surname><given-names>S</given-names></name>, <name><surname>Fjellstrom</surname><given-names>R</given-names></name>. <article-title>Waxy gene haplotypes: Associations with apparent amylose content and the effect by the environment in an international rice germplasm collection</article-title>. <source>Journal of Cereal Science</source>. <year>2008</year>;<volume>47</volume>: <fpage>536</fpage>–<lpage>545</lpage>. <pub-id pub-id-type="doi">10.1016/j.jcs.2007.06.013</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref057">
+        <label>57</label>
+        <mixed-citation publication-type="journal"><name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Onate</surname><given-names>LU</given-names></name>, <name><surname>del Mundo</surname><given-names>AM</given-names></name>. <article-title>Relation of starch composition, protein content, and gelatinization temperature to cooking and eating qualities of milled rice</article-title>. <source>Food Technology</source>. <year>1965</year>;<volume>19</volume>: <fpage>116</fpage>–<lpage>121</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref058">
+        <label>58</label>
+        <mixed-citation publication-type="book"><name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Villareal</surname><given-names>CP</given-names></name>. <source>Grain Quality Evaluation of World Rices</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>: <publisher-name>International Rice Research Institute</publisher-name>; <year>1993</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref059">
+        <label>59</label>
+        <mixed-citation publication-type="other">NSO. 2012 FAMILY INCOME AND EXPENDITURE SURVEY Final Results: National Capital Region. 2014.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref060">
+        <label>60</label>
+        <mixed-citation publication-type="other">International Organization for Standardization. ISO 6647–2: 2007–Rice—Determination of amylose content—Part 2: Routine methods. 10. 2007.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref061">
+        <label>61</label>
+        <mixed-citation publication-type="other">International Organization for Standardization. ISO 6647–1: 2007–Rice—Determination of amylose content—Part 1: Reference method. 11. 2007.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref062">
+        <label>62</label>
+        <mixed-citation publication-type="book"><collab>American Association of Ceral Chemists</collab>. <source>Approved methods of the American Association of Cereal Chemists</source> (<edition>10th ed.</edition>). <publisher-loc>St. Paul, Minnesota</publisher-loc>; <year>2000</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref063">
+        <label>63</label>
+        <mixed-citation publication-type="journal"><name><surname>Fitzgerald</surname><given-names>MA</given-names></name>, <name><surname>Martin</surname><given-names>M</given-names></name>, <name><surname>Ward</surname><given-names>RM</given-names></name>, <name><surname>Park</surname><given-names>WD</given-names></name>, <name><surname>Shead</surname><given-names>HJ</given-names></name>. <article-title>Viscosity of rice flour: a rheological and biological study</article-title>. <source>Journal of agricultural and food chemistry</source>. <year>2003</year>;<volume>51</volume>: <fpage>2295</fpage>–<lpage>9</lpage>. <pub-id pub-id-type="doi">10.1021/jf020574i</pub-id>
+<pub-id pub-id-type="pmid">12670173</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref064">
+        <label>64</label>
+        <mixed-citation publication-type="journal"><name><surname>Lancaster</surname><given-names>KJ</given-names></name>. <article-title>A New Approach to Consumer Theory</article-title>. <source>Journal of Political Economy</source>. <year>1966</year>;<volume>74</volume>: <fpage>132</fpage>–<lpage>157</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref065">
+        <label>65</label>
+        <mixed-citation publication-type="book"><name><surname>Lusk</surname><given-names>JL</given-names></name>, <name><surname>Shogren</surname><given-names>JF</given-names></name>. <source>Experimental Auctions</source>. <publisher-loc>Cambridge, MA</publisher-loc>: <publisher-name>Cambridge University Press</publisher-name>; <year>2008</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref066">
+        <label>66</label>
+        <mixed-citation publication-type="journal"><name><surname>Suwannaporn</surname><given-names>P</given-names></name>, <name><surname>Linnemann</surname><given-names>A</given-names></name>. <article-title>Consumer Preferences and Buying Criteria in Rice: A Study to Identify Market Strategy for Thailand Jasmine Rice Export</article-title>. <source>Journal of Food Products Marketing</source>. <year>2008</year>;<volume>14</volume>: <fpage>33</fpage>–<lpage>53</lpage>. <pub-id pub-id-type="doi">10.1080/10454440801986348</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref067">
+        <label>67</label>
+        <mixed-citation publication-type="journal"><name><surname>Champagne</surname><given-names>ET</given-names></name>, <name><surname>Bett-Garber</surname><given-names>KL</given-names></name>, <name><surname>Fitzgerald</surname><given-names>MA</given-names></name>, <name><surname>Grimm</surname><given-names>CC</given-names></name>, <name><surname>Lea</surname><given-names>J</given-names></name>, <name><surname>Ohtsubo</surname><given-names>K</given-names></name>, <etal>et al</etal>
+<article-title>Important Sensory Properties Differentiating Premium Rice Varieties</article-title>. <source>Rice</source>. <year>2010</year>;<volume>3</volume>: <fpage>270</fpage>–<lpage>281</lpage>. <pub-id pub-id-type="doi">10.1007/s12284-010-9057-4</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref068">
+        <label>68</label>
+        <mixed-citation publication-type="journal"><name><surname>Del Mundo</surname><given-names>AM</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Consumer Preference and Properties of Raw and Cooked Milled Rice</article-title>. <source>Journal of Texture Studies</source>. <year>1981</year>;<volume>12</volume>: <fpage>107</fpage>–<lpage>120</lpage>. <pub-id pub-id-type="doi">10.1111/j.1745-4603.1981.tb01225.x</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref069">
+        <label>69</label>
+        <mixed-citation publication-type="journal"><name><surname>Abansi</surname><given-names>CL</given-names></name>, <name><surname>Lantican</surname><given-names>FA</given-names></name>, <name><surname>Duff</surname><given-names>B</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Hedonic Model Estimation: Application to Consumer Demand for Rice Grain Quality</article-title>. <source>Transactions of the National Academy of Science and Technology</source>. <year>1990</year>;<volume>12</volume>: <fpage>235</fpage>–<lpage>256</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref070">
+        <label>70</label>
+        <mixed-citation publication-type="book"><name><surname>Lantican</surname><given-names>FA</given-names></name>, <name><surname>Quilloy</surname><given-names>KP</given-names></name>, <name><surname>Sombilla</surname><given-names>MA</given-names></name>. <source>Estimating the Demand Elasticities of Rice in the Philippines</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>; <year>2011</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref071">
+        <label>71</label>
+        <mixed-citation publication-type="book"><name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Perez</surname><given-names>CM</given-names></name>, <name><surname>Maranan</surname><given-names>CL</given-names></name>, <name><surname>Abansi</surname><given-names>CL</given-names></name>, <name><surname>Duff</surname><given-names>B</given-names></name>. <chapter-title>Grain quality characteristics of rice in Philippine retail markets</chapter-title> In: <name><surname>Unnevehr</surname><given-names>LJ</given-names></name>, <name><surname>Duff</surname><given-names>B</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>, editors. <source>Consumer Demand for Rice Grain Quality</source>. <publisher-loc>Los Baños, Philippines</publisher-loc>: <publisher-name>International Rice Research Institute</publisher-name>; <year>1992</year> pp. <fpage>77</fpage>–<lpage>86</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref072">
+        <label>72</label>
+        <mixed-citation publication-type="journal"><name><surname>Roferos</surname><given-names>LT</given-names></name>, <name><surname>Felix</surname><given-names>A dR</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>The Search for the Grain Quality of Raw and Cooked IR64 Milled Rice Among Philippine Seed Board Rice Varieties</article-title>. <source>The Philippine Agricultural Scientist</source>. <year>2006</year>;<volume>89</volume>: <fpage>58</fpage>–<lpage>70</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref073">
+        <label>73</label>
+        <mixed-citation publication-type="journal"><name><surname>Tashiro</surname><given-names>T</given-names></name>, <name><surname>Wardlaw</surname><given-names>I</given-names></name>. <article-title>The effect of high temperature on kernel dimensions and the type and occurrence of kernel damage in rice</article-title>. <source>Australian Journal of Agricultural Research</source>. <year>1991</year>;<volume>42</volume>: <fpage>485</fpage>–<lpage>496</lpage>. <pub-id pub-id-type="doi">10.1071/AR9910485</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref074">
+        <label>74</label>
+        <mixed-citation publication-type="journal"><name><surname>Ashida</surname><given-names>K</given-names></name>, <name><surname>Iida</surname><given-names>S</given-names></name>, <name><surname>Yasui</surname><given-names>T</given-names></name>. <article-title>Morphological, Physical, and Chemical Properties of Grain and Flour from Chalky Rice Mutants</article-title>. <source>Cereal Chemistry</source>. <year>2009</year>;<volume>86</volume>: <fpage>225</fpage>–<lpage>231</lpage>. <pub-id pub-id-type="doi">10.1094/CCHEM-86-2-0225</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref075">
+        <label>75</label>
+        <mixed-citation publication-type="journal"><name><surname>Zhao</surname><given-names>X</given-names></name>, <name><surname>Fitzgerald</surname><given-names>MA</given-names></name>. <article-title>Climate change: implications for the yield of edible rice</article-title>. <source>PloS one</source>. <year>2013</year>;<volume>8</volume>: <fpage>e66218</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0066218</pub-id>
+<pub-id pub-id-type="pmid">23776635</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref076">
+        <label>76</label>
+        <mixed-citation publication-type="book"><name><surname>Semple</surname><given-names>RL</given-names></name>, <name><surname>Hicks</surname><given-names>PA</given-names></name>, <name><surname>Lozare</surname><given-names>JV</given-names></name>, <name><surname>Castermans</surname><given-names>A</given-names></name>. <chapter-title>Towards integrated commodity and pest management in grain storage</chapter-title>
+<source>Regional Training Course on Integrated Pest Management Strategies in Grain Storage Systems</source>. <publisher-loc>Rome, Italy</publisher-loc>: <publisher-name>Food and Agriculture Organization of the United Nations</publisher-name>; <year>1992</year> p. <fpage>526</fpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref077">
+        <label>77</label>
+        <mixed-citation publication-type="book"><name><surname>Rickman</surname><given-names>JF</given-names></name>. <chapter-title>Grain quality from harvest to market</chapter-title>
+<source>9th JIRCAS International Symposium–“Value-Addition to Agricultural Products”</source>. <publisher-loc>Tsukuba, Japan</publisher-loc>: <publisher-name>Japan International Research Center for Agricultural Sciences</publisher-name>; <year>2002</year> pp. <fpage>94</fpage>–<lpage>98</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref078">
+        <label>78</label>
+        <mixed-citation publication-type="journal"><name><surname>Rachmat</surname><given-names>R</given-names></name>, <name><surname>Thahir</surname><given-names>R</given-names></name>, <name><surname>Gummert</surname><given-names>M</given-names></name>. <article-title>The Emperical Relationship Between Price and Quality of Rice at Market Level in West Java</article-title>. <source>Indonesian Journal of Agricultural Science</source>. <year>2006</year>;<volume>7</volume>: <fpage>27</fpage>–<lpage>33</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref079">
+        <label>79</label>
+        <mixed-citation publication-type="journal"><name><surname>Hamaker</surname><given-names>BR</given-names></name>, <name><surname>Griffin</surname><given-names>VK</given-names></name>. <article-title>Effect of disulfide bond-containing protein on rice starch gelatinization and pasting</article-title>. <source>Cereal Chemistry</source>. <year>1993</year>;<volume>70</volume>: <fpage>377</fpage>–<lpage>380</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref080">
+        <label>80</label>
+        <mixed-citation publication-type="journal"><name><surname>Liang</surname><given-names>X</given-names></name>, <name><surname>King</surname><given-names>JM</given-names></name>, <name><surname>Shih</surname><given-names>FF</given-names></name>. <article-title>Pasting Property Differences of Commercial and Isolated Rice Starch with Added Lipids and β-Cyclodextrin</article-title>. <source>Cereal Chemistry</source>. <year>2002</year>;<volume>79</volume>: <fpage>812</fpage>–<lpage>818</lpage>. <pub-id pub-id-type="doi">10.1094/CCHEM.2002.79.6.812</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref081">
+        <label>81</label>
+        <mixed-citation publication-type="journal"><name><surname>Maniñgat</surname><given-names>CC</given-names></name>, <name><surname>Juliano</surname><given-names>BO</given-names></name>. <article-title>Starch Lipids and Their Effect on Rice Starch Properties</article-title>. <source>Starch—Stärke</source>. <year>1980</year>;<volume>32</volume>: <fpage>76</fpage>–<lpage>82</lpage>. <pub-id pub-id-type="doi">10.1002/star.19800320303</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref082">
+        <label>82</label>
+        <mixed-citation publication-type="journal"><name><surname>Martin</surname><given-names>M</given-names></name>, <name><surname>Fitzgerald</surname><given-names>MA</given-names></name>. <article-title>Proteins in Rice Grains Influence Cooking Properties!</article-title>
+<source>Journal of Cereal Science</source>. <year>2002</year>;<volume>36</volume>: <fpage>285</fpage>–<lpage>294</lpage>. <pub-id pub-id-type="doi">10.1006/jcrs.2001.0465</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref083">
+        <label>83</label>
+        <mixed-citation publication-type="journal"><name><surname>Jane</surname><given-names>J</given-names></name>, <name><surname>Chen</surname><given-names>YY</given-names></name>, <name><surname>Lee</surname><given-names>LF</given-names></name>, <name><surname>McPherson</surname><given-names>AE</given-names></name>, <name><surname>Wong</surname><given-names>KS</given-names></name>, <name><surname>Radosavljevic</surname><given-names>M</given-names></name>, <etal>et al</etal>
+<article-title>Effects of Amylopectin Branch Chain Length and Amylose Content on the Gelatinization and Pasting Properties of Starch 1</article-title>. <source>Cereal Chemistry</source>. <year>1999</year>;<volume>76</volume>: <fpage>629</fpage>–<lpage>637</lpage>. <pub-id pub-id-type="doi">10.1094/CCHEM.1999.76.5.629</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref084">
+        <label>84</label>
+        <mixed-citation publication-type="journal"><name><surname>Nakamura</surname><given-names>Y</given-names></name>, <name><surname>Sakurai</surname><given-names>A</given-names></name>, <name><surname>Inaba</surname><given-names>Y</given-names></name>, <name><surname>Kimura</surname><given-names>K</given-names></name>, <name><surname>Iwasawa</surname><given-names>N</given-names></name>, <name><surname>Nagamine</surname><given-names>T</given-names></name>. <article-title>The fine Structure of Amylopectin in Endosperm from Asian Cultivated Rice can be largely Classified into two Classes</article-title>. <source>Starch—Stärke</source>. <year>2002</year>;<volume>54</volume>: <fpage>117</fpage>–<lpage>131</lpage>. <pub-id pub-id-type="doi">10.1002/1521-379X(200204)54:3/4&lt;117::AID-STAR117&gt;3.0.CO;2-2</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref085">
+        <label>85</label>
+        <mixed-citation publication-type="journal"><name><surname>Juliano</surname><given-names>BO</given-names></name>, <name><surname>Perez</surname><given-names>CM</given-names></name>, <name><surname>Resurreccion</surname><given-names>AP</given-names></name>. <article-title>Apparent Amylose Content and Gelatinization Temperature Types of Philippine Rice Accessions in the IRRI Gene Bank</article-title>. <source>Philippine Agricultural Scientist</source>. <year>2009</year>;<volume>92</volume>: <fpage>106</fpage>–<lpage>109</lpage>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref086">
+        <label>86</label>
+        <mixed-citation publication-type="book"><name><surname>Bartell</surname><given-names>KH</given-names></name>. <source>Fine Filipino Food All Editions of Fine Filipino Food</source>. <publisher-loc>New York</publisher-loc>: <publisher-name>Hippocrene Books</publisher-name>; <year>2003</year>.</mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref087">
+        <label>87</label>
+        <mixed-citation publication-type="other">IRRI. Rice Knowledge Bank. In: Breeding for grain quality [Internet]. 2006 Accessed: 12 October 2015. Available: <ext-link ext-link-type="uri" xlink:href="http://www.knowledgebank.irri.org/ricebreedingcourse/Grain_quality.htm">http://www.knowledgebank.irri.org/ricebreedingcourse/Grain_quality.htm</ext-link></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref088">
+        <label>88</label>
+        <mixed-citation publication-type="journal"><name><surname>Lyman</surname><given-names>NB</given-names></name>, <name><surname>Jagadish</surname><given-names>KS V</given-names></name>, <name><surname>Nalley</surname><given-names>LL</given-names></name>, <name><surname>Dixon</surname><given-names>BL</given-names></name>, <name><surname>Siebenmorgen</surname><given-names>T</given-names></name>. <article-title>Neglecting rice milling yield and quality underestimates economic losses from high-temperature stress</article-title>. <source>PloS one</source>. <year>2013</year>;<volume>8</volume>: <fpage>e72157</fpage>
+<pub-id pub-id-type="doi">10.1371/journal.pone.0072157</pub-id>
+<pub-id pub-id-type="pmid">23991056</pub-id></mixed-citation>
+      </ref>
+      <ref id="pone.0150345.ref089">
+        <label>89</label>
+        <mixed-citation publication-type="book"><collab>PAGASA</collab>. <source>Climate change scenarios in the Philippines</source>. <publisher-loc>Quezon City</publisher-loc>; <year>2011</year>.</mixed-citation>
+      </ref>
+    </ref-list>
+  </back>
+</article>

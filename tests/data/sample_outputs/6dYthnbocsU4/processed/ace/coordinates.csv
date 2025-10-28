@@ -1,0 +1,34 @@
+table_id,table_label,table_caption,table_number,x,y,z,p_value,region,size,statistic,groups
+19532,Table 1,. Brain regions activated in the decision phase.,1,-28.0,42.0,30.0,,Middle frontal gyrus,6162,5.780,
+19532,Table 1,. Brain regions activated in the decision phase.,1,2.0,42.0,8.0,,Medial prefrontal cortex,,4.080,
+19532,Table 1,. Brain regions activated in the decision phase.,1,32.0,46.0,14.0,,Middle frontal gyrus,,3.750,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-8.0,44.0,-2.0,,Medial prefrontal cortex,,3.470,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-20.0,-64.0,64.0,,Superior parietal lobule,2709,4.790,
+19532,Table 1,. Brain regions activated in the decision phase.,1,30.0,-56.0,64.0,,Superior parietal lobule,,4.010,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-8.0,-52.0,62.0,,Precuneus,,3.720,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-62.0,10.0,8.0,,Inferior frontal gyrus,2048,4.380,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-62.0,-22.0,0.0,,Superior temporal gyrus,,4.270,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-24.0,-12.0,56.0,,Precentral gyrus,1279,4.210,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-22.0,6.0,48.0,,Superior frontal gyrus,,3.790,
+19532,Table 1,. Brain regions activated in the decision phase.,1,14.0,8.0,-2.0,,Ventral striatuma,88,3.540,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-12.0,32.0,38.0,,Dorsomedial prefrontal cortexa,39,3.100,
+19532,Table 1,. Brain regions activated in the decision phase.,1,58.0,-26.0,12.0,,Temporo-parietal junctiona,30,3.470,
+19532,Table 1,. Brain regions activated in the decision phase.,1,-12.0,4.0,-10.0,,Ventral striatuma,74,3.610,Matching condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,60.0,-28.0,48.0,,Supramarginal gyrus,1701,4.590,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,48.0,-32.0,6.0,,Temporo-parietal junctiona,59,3.480,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,-50.0,-26.0,4.0,,Temporo-parietal junctiona,4,3.000,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,8.0,50.0,-4.0,,Medial prefrontal cortexa,3,2.970,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,-10.0,50.0,-4.0,,Medial prefrontal cortexa,4,3.120,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,16.0,10.0,-2.0,,Ventral striatuma,25,3.350,Empty Cell
+19532,Table 1,. Brain regions activated in the decision phase.,1,-16.0,14.0,-8.0,,Ventral striatuma,9,3.270,Signaling condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,4.0,54.0,-10.0,,Ventromedial prefrontal cortex,1727,4.010,Matching condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,0.0,52.0,8.0,,Medial prefrontal cortex,,3.800,Matching condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,-10.0,30.0,48.0,,Dorsomedial prefrontal cortexa,24,3.320,Matching condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,10.0,36.0,44.0,,Dorsomedial prefrontal cortexa,2,2.970,Matching condition
+19532,Table 1,. Brain regions activated in the decision phase.,1,-8.0,28.0,40.0,,Dorsomedial prefrontal cortexa,113,3.200,Solo condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,-12.0,-46.0,-60.0,,Cerebellum,4963,6.030,Signaling condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,-6.0,-58.0,62.0,,Precuneus,3868,5.060,Signaling condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,4.0,-68.0,58.0,,Precuneus,,4.610,Signaling condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,4.0,6.0,-4.0,,Ventral striatuma,108,4.860,Signaling condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,-6.0,12.0,-10.0,,Ventral striatuma,58,4.130,Signaling condition
+19533,Table 2,. Functional connectivity in the contrast of choosing Word LFHB versus choosing Word HFLB as a function of the difference between the proportion of choosing Word LFHB and Word HFLB.,2,12.0,8.0,-12.0,,Ventral striatuma,17,3.420,Empty Cell

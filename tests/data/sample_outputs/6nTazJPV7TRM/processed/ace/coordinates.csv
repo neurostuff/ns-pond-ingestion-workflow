@@ -1,0 +1,11 @@
+table_id,table_label,table_caption,table_number,x,y,z,p_value,region,size,statistic,groups
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,-24.0,-96.0,10.0,,L. Middle Occipital Gyrus,24640,5.37,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,14.0,-92.0,2.0,,R. Middle Occipital Gyrus/Calcarine,-,4.77,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,-34.0,-8.0,55.0,,L. Frontal Eye Field,5824,5.34,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,54.0,-52.0,13.0,,R. Middle Temporal Gyrus,9534,4.68,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,28.0,-4.0,48.0,,R. Frontal Eye Field,5166,4.65,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,18.0,-66.0,66.0,,R. Posterior Superior Parietal Lobule,5250,4.61,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,-22.0,-64.0,66.0,,L. Posterior Superior Parietal Lobule,3178,4.58,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,56.0,10.0,20.0,,L. dorsal Inferior Frontal Gyrus,1316,4.52,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,-50.0,-54.0,13.0,,L. Middle Temporal Gyrus,3626,4.33,
+9081,Table 1,Brain regions that were activated during the spatial attention localizer task. Each of these regions constituted an ROI.,1,24.0,-16.0,-18.0,,R. Hippocampus,630,3.48,

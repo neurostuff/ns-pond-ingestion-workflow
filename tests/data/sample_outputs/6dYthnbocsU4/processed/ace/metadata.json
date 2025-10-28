@@ -1,0 +1,11 @@
+{
+    "title": "The neural underpinnings of allocentric thinking in a novel signaling task.",
+    "authors": "Zhen, Shanshan;Chowdhury, Avijit;Yu, Rongjun",
+    "journal": "NeuroImage",
+    "keywords": null,
+    "abstract": "The ability to adopt the perspectives of others is fundamental to effective communication in social interactions. However, the neural correlates of allocentric thinking in communicative signaling remain unclear. We adapted a novel signaling task in which the signaler was given the target word and must choose a one-word signal to help the receiver guess the target. Behavioral results suggest that speakers can use allocentric thinking to choose signals that are salient from the perspective of the receiver rather than their own point of view. At the neural level, functional magnetic resonance imaging (fMRI) data reveal that the medial prefrontal cortex (mPFC), ventral striatum, and temporal-parietal junction are more activated when signalers engage in allocentric than egocentric thinking. Moreover, functional connectivity between the mPFC and ventral striatum predicted individuals' perspective-taking ability during successful communication. These findings reveal that neural representations in the mPFC-striatum network support perspective-taking in complex social decision making, providing a new perspective on how the brain arbitrates between allocentric thinking and egocentric thinking in communication and social coordination.",
+    "publication_year": 2021,
+    "coordinate_space": "MNI",
+    "license": null,
+    "text": true
+}

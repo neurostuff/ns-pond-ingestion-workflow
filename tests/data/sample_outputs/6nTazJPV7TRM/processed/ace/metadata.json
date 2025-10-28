@@ -1,0 +1,11 @@
+{
+    "title": "Hippocampal spatial mechanisms relate to the development of arithmetic symbol processing in children.",
+    "authors": "Mathieu, Romain;Epinat-Duclos, Justine;L\u00e9one, Jessica;Fayol, Michel;Thevenot, Catherine;Prado, J\u00e9r\u00f4me",
+    "journal": "Developmental cognitive neuroscience",
+    "keywords": null,
+    "abstract": "Understanding the meaning of abstract mathematical symbols is a cornerstone of arithmetic learning in children. Studies have long focused on the role of spatial intuitions in the processing of numerals. However, it has been argued that such intuitions may also underlie symbols that convey fundamental arithmetic concepts, such as arithmetic operators. In the present cross-sectional study, we used fMRI to investigate how and when associations between arithmetic operators and brain regions processing spatial information emerge in children from 3 to 10 grade. We found that the mere perception of a '+' sign elicited grade-related increases of spatial activity in the right hippocampus. That is, merely perceiving '+' signs - without any operands - elicited enhanced hippocampal activity after around 7 grade (12-13 years old). In these children, hippocampal activity in response to a '+' sign was further correlated with the degree to which calculation performance was facilitated by the preview of that sign before an addition problem, an effect termed operator-priming. Grade-related increases of hippocampal spatial activity were operation-specific because they were not observed with '\u00d7' signs, which might evoke rote retrieval rather than numerical manipulation. Our study raises the possibility that hippocampal spatial mechanisms help build associations between some arithmetic operators and space throughout age and/or education.",
+    "publication_year": 2017,
+    "coordinate_space": "MNI",
+    "license": null,
+    "text": true
+}

@@ -1,0 +1,32 @@
+Anatomical region,Putative BA,Side,x,y,z,Voxels (n),p value,t value
+Whole-brain effects,,,,,,,,
+Congruency effect over groups,,,,,,,,
+Cuneus,18,R/L,−16,−96,24,634.0,<0.001,4.85
+SPL/Superior occipital gyrus,7/19,L,−30,−76,34,254.0,0.004,4.37
+IFG,45/47,L,−52,22,−10,223.0,0.007,4.37
+Cuneus,18,R,18,−98,16,190.0,0.016,4.52
+Congruency effect for psychopathy group,,,,,,,,
+SPL/superior occipital gyrus,7/19,R/L,8,−82,38,925.0,<0.001,4.98
+Angular gyrus,39/19,L,−30,−72,34,337.0,0.001,4.35
+Superior temporal gyrus,42,L,−32,−32,6,214.0,0.009,4.51
+SPL,7,R,28,−74,46,158.0,0.034,4.58
+Cerebellum,,L,−24,−66,−38,146.0,0.046,4.63
+Negative testosterone modulation of group (psychopathic offenders > healthy control subjects) × congruency interaction,,,,,,,,
+aPFC,10,R,30,58,12,391.0,<0.001,5.1
+Supramarginal gyrus,40,R,54,−42,54,325.0,0.001,4.66
+Caudate nucleus,,R,10,10,2,273.0,0.002,4.69
+Putamen/Insula,,L,−34,6,−10,176.0,0.022,5.22
+Cerebellum,,R,18,−76,−38,188.0,0.016,5.09
+Negative testosterone modulation of Congruency effect in psychopathy,,,,,,,,
+Supramarginal gyrus,40,R,52,−40,54,657.0,<0.001,5.32
+Precentral/superior frontal gyrus,6,R/L,6,22,66,471.0,<0.001,5.65
+Caudate nucleus,,R,6,6,4,228.0,0.006,4.28
+VOI on bilateral aPFC,,,,,,,,
+Congruency effect over groups,10,R,30,58,14,31.0,0.001,4.46
+,10,L,−30,58,10,5.0,0.036,3.43
+Congruency effect in healthy control subjects,10,R,32,58,14,12.0,0.001,4.58
+,10,L,−34,52,4,2.0,0.040,3.4
+Negative testosterone modulation of group (psychopathic offenders > healthy control subjects) × congruency interaction,10,R,30,58,12,145.0,<0.001,5.1
+Negative testosterone modulation of group (psychopathic offenders > healthy control subjects) × congruency interaction,10,L,−24,56,6,15.0,0.010,3.87
+Negative testosterone modulation of congruency effect in psychopathy,10,R,32,56,10,77.0,0.002,4.34
+Negative testosterone modulation of congruency effect in psychopathy,10,L,−30,58,8,17.0,0.015,3.74

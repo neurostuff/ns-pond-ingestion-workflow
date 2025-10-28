@@ -1,0 +1,123 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - www.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json&ids=10.1093%2Fcercor%2Fbht135
+  response:
+    body:
+      string: '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+        <html><head>
+
+        <title>301 Moved Permanently</title>
+
+        </head><body>
+
+        <h1>Moved Permanently</h1>
+
+        <p>The document has moved <a href="https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?format=json&amp;ids=10.1093%2Fcercor%2Fbht135">here</a>.</p>
+
+        </body></html>
+
+        '
+    headers:
+      Connection:
+      - Keep-Alive
+      Content-Length:
+      - '312'
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/html; charset=iso-8859-1
+      Date:
+      - Tue, 28 Oct 2025 17:17:31 GMT
+      Keep-Alive:
+      - timeout=1, max=10
+      Location:
+      - https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?format=json&ids=10.1093%2Fcercor%2Fbht135
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Apache
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+    status:
+      code: 301
+      message: Moved Permanently
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?format=json&ids=10.1093%2Fcercor%2Fbht135
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA3WQUUvDMBDHv0o50Kd2S9LOroU9Cb4JvstgsYk2ans1lzlG6Xf3mk1BcW+5P7/f
+        n7uMQEGHPUEN+AYpeEsD9mQzo4PlUAm1yqTI1DqReS3LOpeR+thbClCPcNC+d/0LFzwCh/6YDNrr
+        LtnZTrv3XeIo6RwRIwsWfxEB8Q+wTeEZfae5GV4JezacidVSLKSo8mVjfYN++dQGma9m3jYtMn3S
+        NrN0zcrmzF+pu5PBj7OTwqf15PhI1nrkmVo8aOfM9+xMOA7z8QYdTPO1XBDXGGNUX9gmhaFrYs3D
+        /W2hRLkuqxjOmcpLUd0Uxc/nWZNF9v+uaTt9AShzpMWbAQAA
+    headers:
+      Alt-Svc:
+      - clear
+      Content-Encoding:
+      - gzip
+      Date:
+      - Tue, 28 Oct 2025 17:17:31 GMT
+      Server:
+      - istio-envoy
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 1.1 google
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      allow:
+      - GET, HEAD, OPTIONS
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      referrer-policy:
+      - same-origin
+      set-cookie:
+      - ncbi_sid=D6CC151B900F3E03_3246SID; Domain=.nih.gov; expires=Wed, 28 Oct 2026
+        17:17:31 GMT; Max-Age=31536000; Path=/
+      vary:
+      - Accept,Accept-Encoding
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '7'
+      x-frame-options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+version: 1

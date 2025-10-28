@@ -1,0 +1,6 @@
+Measure,"Label@Max, Extended coverage",Side,Max-log(p),VtxMax,Size (mm2),x,y,z,Correlate,P (corr),F-value,Effect Size???
+Thickness,Lingual,R,−2.488,"127,927",1110,19,−69,−7,MJ Years,0.016,10.07,0.063
+GWR,"Rostral middle frontal,",L,−2.668,"42,505",1730,−23,53,10,MJ Grams,0.001,11.09,1.969
+,Rostral middle frontal,R,−3.565,"94,896",2661,39,30,18,MJ Years,0.0002,16.6,0.744
+,Medial orbitofrontal,R,−3.304,"84,773",1368,6,47,−20,MJ Years,0.013,14.92,0.796
+LGI,Inferior parietal,L,3.456,"122,169",2565,−44,−62,44,MJ Grams,0.015,15.89,0.131

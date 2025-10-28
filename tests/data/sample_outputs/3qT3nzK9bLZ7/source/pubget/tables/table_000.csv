@@ -1,0 +1,21 @@
+Measure,Early onset (n = 20),Early onset (n = 20),Early onset (n = 20),Late onset (n = 22),Late onset (n = 22),Late onset (n = 22),p-Value,Effect size???,Statistic
+Unnamed: 0_level_1,Mean,(SD),Min–Max,Mean,(SD),Min–Max,Unnamed: 7_level_1,Unnamed: 8_level_1,|t/U
+Age,32.50,(8.01),21–50,30.25,(7.19),21–47,0.316,0.302,t = 1.01
+Education (years),12.91,(2.54),8–18,13.26,(2.40),10–19,0.651,0.144,t = 0.456
+Gender (male),55%,,,73%,,,0.241,0.034,χ2 = 1.41
+Ethnicity (% Caucasian),50%,,,50%,,,0.566,0.008,χ2 = 0.336
+IQ???,108,(9.99),88–124,105,(13.54),83–129,0.351,0.298,t = 0.94
+Age of first MJ use???,13.18,(1.89),9–15,16.90,(1.48),16–21,<0.001,0.866,U = 0
+Age of regular MJ use???,16.50,(3.57),9–25,19.00,(4.29),16–36,0.004,0.439,U = 108
+Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days,Substance use in the last 60 days
+MJ grams (daily),2.14,(1.79),0.50–7.50,1.65,(1.21),0.46–4.23,0.338,0.083,U = 182
+# EtOH drinks,44.09,(76.30),0–310,38.85,(58.61),0–183,0.588,0.039,U = 198.05
+Max # EtOH drinks,6.62,(7.21),0–31,6.25,(5.80),0–21,0.8,0.095,U = 210
+# EtOH drinking days,11.09,(16.69),0–59,9.84,(13.51),0–60,0.537,0.006,U = 185.5
+# Binge EtOH drinking days,4.36,(12.50),0–59,2.90,(5.53),0–19,0.968,0.035,U = 218.5
+# EtOH drinks per day,2.99,(2.27),0–7.40,3.56,(3.29),0–14.00,0.82,0.289,U = 211
+# Cigarette days,1.18,(3.72),0–17,2.95,(1.17),0–21,0.06,0.294,U = 159
+# Cigarettes per day,0.22,(0.55),0–2.00,0.78,(1.23),0–4.50,0.057,0.296,U = 158
+Max # cigarettes,0.25,(0.61),0–2,0.96,(1.60),0–6,0.054,0.290,U = 157.5
+Illicit drug use/past 90 days,14%,,,5%,,,,,
+Lifetime illicit drug use,73%,,,75%,,,,,

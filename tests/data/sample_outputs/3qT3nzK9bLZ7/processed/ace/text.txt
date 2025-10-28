@@ -1,0 +1,724 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Preliminary findings demonstrating latent effects of early adolescent marijuana use onset on cortical architecture - PMC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Back to Top
+        
+Skip to main content
+
+
+
+
+
+
+An official website of the United States government
+
+Here's how you know
+
+
+
+
+
+
+
+
+The .gov means it’s official.
+
+            Federal government websites often end in .gov or .mil. Before
+            sharing sensitive information, make sure you’re on a federal
+            government site.
+          
+
+
+
+
+
+
+The site is secure.
+
+            The https:// ensures that you are connecting to the
+            official website and that any information you provide is encrypted
+            and transmitted securely.
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Log in
+
+
+
+Show account info
+
+
+
+
+
+Close
+Account
+
+
+						Logged in as:
+username
+
+
+
+Dashboard
+Publications
+Account settings
+Log out
+
+
+
+
+
+
+
+
+Access keys
+NCBI Homepage
+MyNCBI Homepage
+Main Content
+Main Navigation
+
+
+
+
+
+
+
+
+
+
+
+                        Preview improvements coming to the PMC website in October 2024.
+                        Learn More or
+                        Try it out now.
+                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Search PMC Full-Text Archive
+
+
+
+
+
+Search in PMC
+
+
+
+
+
+
+
+                            Advanced Search
+                        
+
+
+
+                            User Guide
+                        
+
+
+
+
+
+
+
+
+
+
+
+Journal List
+
+
+Dev Cogn Neurosci
+
+
+v.16; 2015 Dec
+
+
+                    PMC4691364
+                
+
+
+
+
+
+Other Formats
+
+PDF (753K)
+
+
+
+Actions
+
+
+
+Cite
+
+
+
+
+
+
+Collections
+
+
+
+Add to Collections
+
+
+
+
+
+
+
+Create a new collection
+
+
+
+Add to an existing collection
+
+
+
+
+
+
+        Name your collection:
+      
+
+
+        Name must be less than  characters
+      
+
+
+
+        Choose a collection:
+      
+
+
+
+        Unable to load your collection due to an error
+Please try again
+
+
+
+
+
+      Add
+    
+
+      Cancel
+    
+
+
+
+
+
+
+
+
+
+
+Share
+
+ 
+ 
+
+
+
+
+ 
+
+
+
+
+                                Permalink
+                              
+
+
+Copy
+
+
+
+
+
+
+
+
+RESOURCES
+
+
+
+
+                        Similar articles
+                    
+
+
+
+
+
+
+
+                        Cited by other articles
+                    
+
+
+
+
+
+
+
+                        Links to NCBI Databases
+                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Journal List
+
+
+Dev Cogn Neurosci
+
+
+v.16; 2015 Dec
+
+
+                    PMC4691364
+                
+
+
+
+    As a library, NLM provides access to scientific literature. Inclusion in an NLM database does not imply endorsement of, or agreement with,
+    the contents by NLM or the National Institutes of Health.
+    Learn more:
+    PMC Disclaimer
+    |
+    
+        PMC Copyright Notice
+    
+
+
+
+
+
+Dev Cogn Neurosci. 2015 Dec; 16: 16-22. Published online 2015 Oct 9.  doi: 10.1016/j.dcn.2015.10.001PMCID: PMC4691364NIHMSID: NIHMS733302PMID: 26507433Preliminary findings demonstrating latent effects of early adolescent marijuana use onset on cortical architectureFrancesca M. Filbey,a,⁎ Tim McQueeny,a Samuel J. DeWitt,a and  Virendra MishrabFrancesca M. FilbeyaCenter for BrainHealth, School of Behavioral and Brain Sciences, The University of Texas at Dallas, United StatesFind articles by Francesca M. FilbeyTim McQueenyaCenter for BrainHealth, School of Behavioral and Brain Sciences, The University of Texas at Dallas, United StatesFind articles by Tim McQueenySamuel J. DeWittaCenter for BrainHealth, School of Behavioral and Brain Sciences, The University of Texas at Dallas, United StatesFind articles by Samuel J. DeWittVirendra MishrabAdvance MRI, LLC, Frisco, TX, United StatesFind articles by Virendra MishraAuthor information Article notes Copyright and License information PMC DisclaimeraCenter for BrainHealth, School of Behavioral and Brain Sciences, The University of Texas at Dallas, United StatesbAdvance MRI, LLC, Frisco, TX, United StatesFrancesca M. Filbey: ude.salladtu@yebliF.acsecnarF ⁎Corresponding author at: Center for BrainHealth, School of Behavioral and Brain Sciences, University of Texas at Dallas, 2200 West Mockingbird, Dallas, TX 75235, United States. ude.salladtu@yebliF.acsecnarFReceived 2014 Dec 12; Revised 2015 Sep 9; Accepted 2015 Oct 2.Copyright © 2015 The AuthorsThis is an open access article under the CC BY-NC-ND license (http://creativecommons.org/licenses/by-nc-nd/4.0/).Associated DataSupplementary Materialsmmc1.pptx (2.1M)GUID: E6C77A81-D133-4EBD-83BB-A2005D84A0C0Highlights•Early onset MJ use was associated with different patterns of cortical architecture.•Early vs. late onset divergence was in brain regions underlying higher-order cognition.•Findings were above and beyond effects of alcohol and current age.Keywords: Adolescence, Marijuana, Cortical thickness, Gyrification, Morphology, FreeSurferAbstractBackgroundAs the most commonly used illicit substance during early adolescence, long-term or latent effects of early adolescent marijuana use across adolescent developmental processes remain to be determined.MethodsWe examined cortical thickness, gray/white matter border contrast (GWR) and local gyrification index (LGI) in 42 marijuana (MJ) users. Voxelwise regressions assessed early-onset (age <16) vs. late-onset (≥16 years-old) differences and relationships to continued use while controlling for current age and alcohol use.ResultsAlthough groups did not differ by onset status, groups diverged in their correlations between cannabis use and cortical architecture. Among early-onset users, continued years of MJ use and current MJ consumption were associated with thicker cortex, increased GWR and decreased LGI. Late-onset users exhibited the opposite pattern. This divergence was observed in all three morphological measures in the anterior dorsolateral frontal cortex (p < .05, FWE-corrected).ConclusionsDivergent patterns between current MJ use and elements of cortical architecture were associated with early MJ use onset. Considering brain development in early adolescence, findings are consistent with disruptions in pruning. However, divergence with continued use for many years thereafter suggests altered trajectories of brain maturation during late adolescence and beyond.Keywords: Adolescence, Marijuana, Cortical thickness, Gyrification, Morphology, FreeSurfer1. IntroductionWith more than 25% of high school seniors reporting recent use and 6.5% of 12th graders being daily users (Johnston et al., 2014), marijuana (MJ) is the most frequently used illicit substance among adolescents. Across all age groups over 70% of new drug initiates start with using MJ at an average age of 18 years (SAMHSA, 2014). Indeed, the scope of MJ use prevalence is of great public interest, as MJ use in early adolescence is associated with increased risk of greater substance use, legal problems, disrupting education, injuries/medical problems, developing psychopathology, cognitive changes and chronic psychosocial struggles (CASA, 2011, Fergusson and Horwood, 1997, Fergusson et al., 1996, Patton et al., 2002). Taken together, rates of MJ use are suggestive of an epidemic based in adolescence, which is concerning not just due to societal cost, but also due to the potential to offset sensitive brain development during this period.Despite its prevalence, the impact of MJ use on adolescent brain development is not fully known. Important neuromaturational processes during adolescence through young adulthood are believed to bring about improved higher-order cognition by refining neural systems locally and globally through white and gray matter development (Casey et al., 2005, Giedd, 2008, Paus, 2005). In general, gray matter reductions and cortical thinning coincide with increased white matter volume and organization through adolescence and young adulthood, suggestive of synaptic pruning and axonal myelination (Giorgio et al., 2010, Gogtay et al., 2004, Hasan et al., 2007, Lebel et al., 2010, Shaw et al., 2008). The endogenous cannabinoid (CB) system is also immature during adolescence (Anavi-Goffer and Mulder, 2009, Verdurand et al., 2011). In an animal model (Verdurand et al., 2011) imaged CB1 receptor binding using PET and found relatively lower activation of CB1 receptors in adolescent rats compared to adult rats in brain areas including those in the frontal cortex, temporal lobe (hippocampus and amygdala) and sub-cortical regions including striatal regions, thalamus, hypothalamus, superior colliculus. Thus, adolescence represents a developmental period with vulnerability to structural and functional changes due to exogenous MJ exposure.Adolescent MJ use has the potential to cause structural and functional changes in the brain by altering cannabinoid signaling. One possible mechanism would be blunt neurotoxic influence. For example, delta9-tetrahydrocannabinol (THC), the primary psychoactive component in MJ that binds CB1 receptors, is reported to cause cell shrinkage and damage DNA strands in THC-treated neuron cultures (Chan et al., 1998). This may be the mechanism by which smaller volumes have been observed in individuals exposed to cannabis during adolescence (Battistella et al., 2014). However, it is more likely that MJ exerts its influence on brain development indirectly. The cannabinoid system plays a role in modulating other neurotransmitters, including gamma-aminobutyric acid (GABA), glutamate and monoamines (Lopez-Moreno et al., 2008). Specifically, activation of CB1 receptors is associated with down-regulating inhibitory GABAergic transmission in cortical interneurons during adolescence (Caballero and Tseng, 2012, Cass et al., 2014). In addition, CB signaling inhibits microglia function (Walter et al., 2003). These two points are important because cortical pruning processes involve glial-mediated synaptic elimination and altering the excitatory/inhibitory balance is liable to disrupt the selective tagging and preserving synapses (Selemon, 2013). The impact of this indirect influence on the developing brain may be in the observations of abnormal connectivity in those who began MJ use in adolescence (Jacobus et al., 2009). Evidence from human neuroimaging studies lends greater support to MJ-related disruptions to brain development.Structural neuroimaging studies have indicated that volumes of several brain areas are smaller in heavy adult MJ users especially in areas enriched with cannabinoid 1 (CB1) receptors, such as medial temporal lobe, and prefrontal cortex (Lorenzetti et al., 2010). Studies of adult chronic MJ users note brain volume reductions in temporal lobe, insula, and prefrontal cortex, amygdala and hippocampus (Battistella et al., 2014, Cousijn et al., 2012, Filbey et al., 2014, Matochik et al., 2005, Yucel et al., 2008). Among different characteristics of MJ involvement (e.g., dependence symptoms, use frequency, consumption), the age of initial MJ use is a robust factor that has been associated with smaller brain volumes in users. For example, Battistella et al. (2014) observed left parahippocampal gyrus and right temporal pole structural differences in 25 regular MJ users compared to 22 occasional users, however, even the occasional users who began smoking MJ during adolescence (before age 18) demonstrated similar brain changes as the regular users. Our group has also found links with early MJ use onset (Bava et al., 2009) and structural connectivity with orbitofrontal cortex in a cohort of daily MJ users, suggesting complex neuroadaptive processes related to MJ use in the context of adolescent brain development (Filbey et al., 2014). These findings underscore the potential for significant heterogeneity in brain changes among adult MJ users, especially those who began using MJ during neurodevelopment.Studies comparing early adolescent MJ use to users initiating MJ use in later adolescence provide further evidence for the potential of MJ to cause enduring change. The few studies that have directly investigated the timing of the effects of MJ during adolescence have noted divergent neurodevelopment effects. For example, in an fMRI study by Gruber and colleagues, functional and behavioral differences during an interference task were reported between early (before age 16) and late (after age 16) MJ users (Gruber et al., 2012) (Sagar et al., 2015). The same group also reported decreased white matter integrity in early onset vs. late onset MJ users (mean age 14.46 vs. 17.93) (Gruber et al., 2014). Similar differential effects have also been noted in parietal lobe activation between early and late adolescent binge drinkers during a spatial working memory task (Tapert et al., 2004). These studies highlight the importance of clarifying the differential neural effects of early- and late-adolescent onset use.To that end, in the current study, we compared daily MJ users who were early onset users (<16 years old) versus late onset users (≥16 years old) on measures of cortical morphology that are sensitive to developmental changes. We aimed to characterize both the effect of early onset status on cortical morphology as well as assess for morphological patterns linked to the continued use of MJ after early and late adolescent MJ initiation. We expected early onset users to show a morphological pattern consistent with disruption of early adolescent brain development (e.g., increased cortical thickness, greater gray/white definition of the cortical ribbon via disruptions to adolescent pruning processes) that may be more consistent with indirect impact of MJ of brain development. While gray matter decline has been shown to be associated with marijuana use, particularly in areas rich in CB1 receptors, increased cortical thickness and greater gray/white definition in the cortical ribbon point to potential disruption in neurodevelopment (i.e. synaptic pruning) that may result from MJ use at key developmental stages (i.e. earlier as opposed to later in adolescent neuronal development). Such disruptions may extend to gyrification as well. While this process begins in utero, there is evidence that gyrification is ongoing into adolescence (Armstrong et al., 1995, Alemán-Gómez et al., 2013, Klein et al., 2014) and may also display aberrant developmental patterns in the presence of MJ use.2. MethodsThis study was approved by the University of Texas at Dallas (UTD) and University of Texas Southwestern Medical Center (UTSW) Institutional Review Boards. All participants were recruited from the Dallas-Ft.Worth metro area via flyers and advertisements. Following informed consent, MJ users completed two sessions – a baseline appointment for collecting demographic, psychosocial and behavioral measures and a thorough substance use history. Three days later the participants returned for a neuroimaging appointment. Prior to their scanning session, participants were asked to be abstinent from MJ use for 72 h, from alcohol for 24 h, and from caffeine and cigarettes for the preceding 2 h. These were confirmed by self-report (MJ, alcohol, caffeine and cigarettes), quantitative THC urinalysis (MJ), and by breath alcohol level of .000 (alcohol) at the start of their session.2.1. ParticipantsWe scanned 45 regular heavy MJ users as part of the parent project. Inclusion criteria were: right-handedness, English as the primary language and no histories of psychosis, traumatic brain injury, and MRI contraindications (e.g., pregnancy, non-removal metallic implants, claustrophobia). One subject reported a history of anxiety and depression and one other reported a history of ADHD as a child. Additional exclusions for the current study included: Axis I diagnosis (via SCID) other than cannabis use disorder, unusable sMRI due to motion artifact or poor signal-to-noise ratio that precluded accurate tissue segmentation (n = 1) and incomplete drug use histories (n = 2). Of the 42 remaining cases, 22 were early onset users (onset of first use before age 16). Group categorization using onset of regular use as opposed to onset of first use maintained the same grouping (mean early onset of regular use = 16.5, mean late onset of regular use = 19.0). Regular use was defined as at least one time per week. To determine how age of onset of regular MJ use influenced our reported effects, we performed these analyses while covarying for age of onset of regular use (see Supplement). Table 1 summarizes demographic and substance use information according to onset status. Table 2 summarizes the correlation between age and identified marijuana use variables. Only MJ years of use and current age showed a statistically significant correlation. Participants were recruited based on self-reported daily MJ use and a positive urinalysis for THC metabolites at their baseline visit. All of the participants were screened via urinalysis for other drugs of abuse and were excluded if drugs (other than MJ) were detected. Participants were required to have used MJ for a minimum of 5000 lifetime occasions and self-report daily use (without >24 h abstinence) for the last 60 days.Table 1Sample characteristics. MJ, marijuana.MeasureEarly onset (n = 20)Late onset (n = 22)p-ValueEffect size***StatisticMean(SD)Min–MaxMean(SD)Min–Max|t/UAge32.50(8.01)21–5030.25(7.19)21–470.3160.302t = 1.01Education (years)12.91(2.54)8–1813.26(2.40)10–190.6510.144t = 0.456Gender (male)55%73%0.2410.034χ2 = 1.41Ethnicity (% Caucasian)50%50%0.5660.008χ2 = 0.336IQ*108(9.99)88–124105(13.54)83–1290.3510.298t = 0.94Age of first MJ use**13.18(1.89)9–1516.90(1.48)16–21<0.0010.866U = 0Age of regular MJ use**16.50(3.57)9–2519.00(4.29)16–360.0040.439U = 108Substance use in the last 60 days MJ grams (daily)2.14(1.79)0.50–7.501.65(1.21)0.46–4.230.3380.083U = 182 # EtOH drinks44.09(76.30)0–31038.85(58.61)0–1830.5880.039U = 198.05 Max # EtOH drinks6.62(7.21)0–316.25(5.80)0–210.80.095U = 210 # EtOH drinking days11.09(16.69)0–599.84(13.51)0–600.5370.006U = 185.5 # Binge EtOH drinking days4.36(12.50)0–592.90(5.53)0–190.9680.035U = 218.5 # EtOH drinks per day2.99(2.27)0–7.403.56(3.29)0–14.000.820.289U = 211 # Cigarette days1.18(3.72)0–172.95(1.17)0–210.060.294U = 159 # Cigarettes per day0.22(0.55)0–2.000.78(1.23)0–4.500.0570.296U = 158 Max # cigarettes0.25(0.61)0–20.96(1.60)0–60.0540.290U = 157.5Illicit drug use/past 90 days14%5%Lifetime illicit drug use73%75%Open in a separate window*IQ scores derived from Wechsler Abbreviated Scale of Intelligence Vocabulary and Matrix Reasoning subtests.**p < .05; SS, standard score; |t|, absolute value of student's t, U is the Mann–Whitney U's score.***The effect sizes of the above table were calculated either based on mean differences if normally distributed, correlation coefficient or F-value score using the default Cohen's effect size formula for respective metrics.Table 2The correlations between current age and all MJ use variables.MeasureEarly onsetLate onsetFirst MJ user = 0.038r = 0.189Regular MJ user = 0.289r = 0.203MJ years of user = 0.898*r = 0.623**MJ gramsr = 0.123r = 0.206Open in a separate window*p < 0.001.**p < 0.005.2.2. MRI acquisition and analysis2.2.1.  Image acquisition Scanning sessions took place at the Advanced Imaging Research Center at the University of Texas, Southwestern Medical Center three days following their initial visit. Another verification of THC metabolites via urinalysis was also performed before the scan. MRI images were collected using a 3T Philips whole-body scanner equipped with Quasar gradient subsystem (40 mT/m amplitude, a slew rate of 220 mT/m/ms). High-resolution T1-weighted anatomical scans were collected using a MPRAGE sequence: TR/TE/TI = 2100/3.70/1100 ms; flip angle = 12°; field of view = 256 mm × 256 mm; slab thickness = 160 mm (along left-right direction); voxel size = 1 mm × 1 mm × 1 mm, Total scan time = 3 m 57 s.2.2.2.  Image processing MPRAGE anatomical scans were pre-processed for surface-based analyses using FreeSurfer v5.3 semi-automated pipeline (http://surfer.nmr.mgh.harvard.edu). This semi-automated pipeline included spatial (Talairach) and signal intensity normalization of images, volumetric segmentation and subcortical labeling (Dale et al., 1999, Fischl et al., 2002). Outer gray matter and white matter boundaries were then identified and reconstructed into a mesh of over 150,000 tessellated vertices to allow point-to-point surface measures (Fischl et al., 1999). Next, gyral anatomy is aligned to a standard spherical template using surface convexity and curvature measures. Resulting surfaces were inspected, blind to MJ onset status, to identify and correct any errors made during cortical reconstruction. Modifications to the volumes were made as necessary to correct for tissue misclassifications according to FreeSurfer's wiki manual (Schmansky et al., 2010). In preparation for analysis, each morphological measure for each case was co-registered to a standard template (fsaverage). Anatomical labels in FreeSurfer (Desikan et al., 2006) were used for interpretation of results.2.3. Morphological measures2.3.1.  Cortical thickness The width of the cortical ribbon was measured as the distance between corresponding vertices of the white matter and gray matter surfaces at each vertex in the cortical mantel (Fischl and Dale, 2000).2.3.2.  Gray–white matter ratio (GWR) To assess the quality of cortical ribbon definition, a tissue contrast between gray and white matter signal intensities was computed as a percent ratio (W − G)/(.5*(W + G)) (from pctsurfcon v1.11.2.1, inbuilt component of FreeSurfer pipeline v5.3, 2011). White matter signal intensities were measured at an absolute length of 1 mm below the gray–white border surface and gray matter signal was measured 30% into the cortical ribbon (Salat et al., 2009).2.3.3.  Local gyrification index The cortical surface from FreeSurfer's main pipeline is further processed to create an outer surface that encapsulates the gyral and sulcal curvature for each hemisphere, which serves as a basis for calculating a local gyrification index (Schaer et al., 2012). LGI is measured as the amount of cortex within the sulcal folds beneath the outer surface compared to the amount of visible cortex that touches the outer surface. Cortical maps are generated from repeated iterations of delineating a 25 mm radius sphere on the outer surface and its corresponding point on the cortical surface using a matching algorithm.2.4. Background and premorbid characteristics2.4.1.  Sample characteristics Age, gender, education level, ethnicity, along with other background information, was obtained using a standard demographics questionnaire. The two-subtest administration of the Wechsler Abbreviated Scale of Intelligence (Vocabulary and Matrix Reasoning) provided estimates of intellect (Wechsler, 1999).2.4.2.  Substance use The Substance Use Disorder modules of the Structured Clinical Interview for DSM-IV (SCID) (First et al., 2002) were administered by a trained research assistant to assess for lifetime and current symptoms of abuse and dependence for alcohol, nicotine, MJ and other substances. The SCID interview also provided the onset of use information. A Time Line Follow-Back (TLFB) approach was used to quantify alcohol, nicotine, and MJ use patterns for 90 days prior to study participation (Sobell and Sobell, 1992). Marijuana use in grams was obtained via self-report in response to probes aimed at quantifying their regular use.2.5. Statistical analysesStatistical analyses were conducted in SPSS 18.0 for behavioral and psychosocial measures whereas general linear model group comparisons on surfaced-based morphology measures were carried out FreeSurfer's built-in application QDEC (v1.5). Independent samples t-tests, Mann–Whitney U-tests or chi-square tests, compared groups on background and demographic variables (see Table 1). Before statistical analysis was conducted, the dependent measures of cortical thickness, GWR and LGI were smoothed using a FWHM Gaussian filter with a width of either 10 or 15 mm. Separate univariate general linear model (GLM) was then used to model cortical thickness, GWR and LGI with onset status of MJ use as a between groups factor. The dependent variables were thickness, gray–white ratio or local gyrification index and the independent variables were either recent monthly MJ use in grams (MJ grams) or duration of MJ use (MJ years). Age and total drinks in the past 2 months were treated as nuisance covariates in the model. Using MJ years of use and MJ grams as independent predictors of interest allowed us to characterize and differentiate the latent developmental effects from cumulative and current effects of MJ use. The variable “marijuana years of use” was based on the participants’ response to the question “For how many years have you been using marijuana regularly?” Of note, an outlier in the early onset group was removed before the statistical comparisons were performed.3. Results3.1. Cortical thicknessThere were no regions of group differences in cortical thickness by early onset status alone, controlled for age and alcohol use. However, MJ use characteristics were correlated with anterior dorsolateral prefrontal cortex thickness based on onset status. Early onset users showed increased thickness with increased MJ grams while late onset users showed thinner cortex with increased MJ grams (p < 0.05 uncorrected) (Table 3). The same pattern emerged with more years of MJ use being associated with thicker region of the right medial temporal lobe in the early onset users and the reverse for the late onset users (p < 0.05 uncorrected) (Fig. 1).Table 3Clusters of significant age of onset × marijuana use interactions. GWR, gray/white matter border ratio; LGI, local gyrification index.MeasureLabel@Max, Extended coverageSideMax-log(p)VtxMaxSize (mm2)xyzCorrelateP (corr)F-valueEffect Size**ThicknessLingualR−2.488127,927111019−69−7MJ Years0.01610.070.063GWRRostral middle frontal,L−2.66842,5051730−235310MJ Grams0.00111.091.969Rostral middle frontalR−3.56594,8962661393018MJ Years0.000216.60.744Medial orbitofrontalR−3.30484,7731368647−20MJ Years0.01314.920.796LGIInferior parietalL3.456122,1692565−44−6244MJ Grams0.01515.890.131Open in a separate windowp(corr), family-wise error fully corrected.**The effect sizes were derived from Freesurfer's tool in the significant region of interest using mri_segstats. This was also confirmed manually by using the F-value reported by Freesurfer.Open in a separate windowFig. 1Early vs. late onset marijuana users show divergent morphological patterns based on current marijuana use (measured in grams; MJ grams) in overlapping areas of anterior prefrontal cortex. GWR, gray/white matter border ratio; LGI, local gyrification index.3.2. Gray–white matter contrastThere were no regions of group differences in gray–white matter contrast by early onset status alone, controlled for age and alcohol use. However, current MJ consumption (grams) and onset status were differentially correlated with gray–white matter contrast in a left anterior dorsal frontal region (p < 0.05, FWE corrected). Increased gray–white contrast with heavier MJ use was seen in the early onset users and the opposite was seen in later onset users (heavier current use linked to decreasing GWR). The same pattern was seen between duration of MJ use in two prefrontal cortex clusters of the right dorsal frontal and medial orbitofrontal area p < 0.05, FWE corrected – more years of MJ use were linked to greater GWR among early users (Fig. 1).3.3. GyrificationMJ use onset status alone showed no significant main effects above age and alcohol covariates. However, onset status was correlated with divergent patterns between local gyrification and MJ use, whereby early onset users showed decreasing LGI with increasing MJ consumption and longer duration of use in prefrontal cortex regions p < 0.05, FWE corrected. The left hemisphere clusters encompassed the majority of the length of the middle lateral surface of the left cortex, including motor cortices, parietal lobe and multimodal integration areas (Fig. 1).4. DiscussionThe present study was designed to characterize the cortical architecture in adolescent onset MJ users by comparing early adolescent onset users to late adolescent onset in MJ use on measures of cortical thickness, gray/white matter contrast and gyrification. The primary finding was that early versus late onset MJ users showed a divergent pattern in cortical thickness, definition of the cortical ribbon and local gyrification with continued use through and beyond adolescent years. Specifically, early onset users showed cortical thickening, enhanced gray/white matter contrast, and decreased gyrification in association with more years of MJ use and current consumption of MJ in grams in frontal and temporal regions – areas that underlie higher order cognition including executive functioning, learning and memory. Findings were above and beyond effects of alcohol and current age, therefore, results are less likely to reflect morphological trends due to aging.Our findings did not find the expected age of onset differences previously reported in marijuana users (Gruber et al., 2012, Gruber et al., 2014). This inconsistency suggests that the age of onset effects may be more robust in brain white matter connectivity (Gruber et al., 2014) and function (Gruber et al., 2012) than brain surface morphometry. To date, the few studies that have described altered cortical morphology in MJ users have led to mixed findings. Mata et al. (2010) identified brain regions with decreased sulcal depth suggestive of lower gyrification in a study of adult MJ users. Jacobus and Tapert (2014) recently reported increased cortical thickness in the entorhinal cortex among 24 adolescent MJ users (mean age = 17.7, mean MJ onset age = 15.4) relative to peer controls. However, the authors also reported a negative relationship between cortical thickness and total MJ use in the right paracentral gyrus, and they observed consistent positive relationships in various brain regions between age of MJ onset and thickness. In the only other known adolescent study of cortical thickness and MJ, Lopez-Larson and colleagues studied 18 adolescent heavy MJ users (similar in age and MJ onset as Jacobus and Tapert, 2014) and reported mixed findings of increased thickness in prefrontal/insula regions and decreased thickness in posterior/temporal lobe areas in the MJ users compared to controls. In contrast to Jacobus and Tapert, 2014, Lopez-Larson et al., 2011 found areas of the frontal lobe and insula that were thinner with increased urine THC metabolites and thicker with earlier age of onset. Select findings from the current study align with aspects of both of these studies, with a consensus supporting findings of a negative dose-dependent relationship between MJ use and cortical thickness. Given the low availability of studies to compare, this consensus is very limited. Although Jacobus et al. and Lopez-Larson et al. found the opposite effect of age of onset on thickness, the pattern of divergence among early vs. late onset users in the current study is more consistent with the latter study, whereby we saw early onset users exhibit thicker cortex with continued MJ use. Taken together, findings of increased thickness related to early MJ onset accompanied by negative dose-dependent relationships with MJ exposure may reflect two distinct processes. One process may be specific to the interactions with cortical development during early adolescence, likely leading to a disruption in pruning, and, the other, specific to the pharmacological effect with heavy chronic MJ use.In the only known study to examine the curvature-morphology of the cortex in adult MJ users, Mata et al. (2010) identified decreased sulcal concavity and thinner sulci in 23 MJ users compared to controls (n = 44), also in prefrontal areas. However, they did not observe significant relationships with age, MJ onset age, or cumulative MJ use. It is interesting that the authors detected group level differences (MJ vs. controls) but no correlations with MJ use characteristics such as dose or age of onset, whereas our primary findings are the consistent effects of continued MJ use differing after early or late adolescent onset. There are substantial methodological explanations for this disparity. For example, the current study did not compare morphology in MJ users to a normative control sample, therefore, it is feasible that group-level differences may emerge with such a comparison. Likewise, we deliberately covaried for current age in order to control for brain changes with aging and thus optimize our interrogation of developmental effects of early onset age and of aspects of continued use.The heterogeneity of MJ effects clearly suggests a multifactorial system of neurobiological processes involved. The primary results uphold that age of onset is a robust variable that differentiates heavy MJ users based on early versus late MJ onset. However, this group distinction relied on current use characteristics. Therefore, in the absence of group-level differences, the interactions between onset age and current use indicates that continued cannabis exposure and early adolescent developmental factors both contribute to a dynamic and sustained departure from what is expected based on developmental studies.Typical synaptic refinement processes during early adolescence are in the context of long-term depression and potentiation of cortical neurons in order to facilitate neuronal remodeling. Thus, the normal course of early adolescent development is uniquely vulnerable to disruption by MJ due to the electrochemical conditions and maturity of brain processes that would not present together again. Cass and colleagues tested the sensitivity of early adolescence cannabinoid exposure in an animal model (Cass et al., 2014). They found that acute administration of cannabinoid agonists in early, middle and late adolescent rats led to a state of frequency-dependent disinhibition of neurons in the frontal cortex in the early-to-middle adolescent rats, but not in the late adolescent rats. Moreover, the authors also noted that adult rats previously exposed to cannabinoid agonists in adolescence displayed comparable neuronal disinhibition. Thus, by changing the inhibitory/excitatory landscape during adolescence, MJ can influence lasting changes to typical cortical remodeling during sensitive early adolescent years.The sequence of pruning and myelination likely plays a formative role in lasting changes from early adolescent onset MJ use. With decreased synaptic elimination, our findings of greater GW border contrast may reflect greater proliferation of myelin at the boundary of the cortical ribbon where non-pruned synapses remained with linked axons. Findings of altered white matter tissue qualities are mixed in adolescent and adult MJ user samples. Some report both increases and decreases in fractional anisotropy (FA) and average water diffusion (Bava et al., 2009) whereas others report consistent decreases in FA among adolescent MJ users (Ashtari et al., 2009, Jacobus et al., 2009) or null findings (Delisi et al., 2006). Two studies of diffusion tensor imaging in adult MJ users reported reduced FA in users compared to controls (Gruber et al., 2011, Gruber et al., 2014). In addition to equivocal findings, research is needed to address the microstructural changes that could result in altered definition of the cortical ribbon. For example, rather than whole brain techniques that assess diffusion measures along major white matter tracts, indices assessing axonal organization along radial and interneuron association fibers along the cortical ribbon are needed. This scenario played out could result in increased gray matter (thicker cortex from disrupted pruning) and the myelination of connections to these spared terminals would result in increased density of white matter at the cortical boundary. Without any known studies of adolescent development of the gray/white tissue contrast at the cortical border to serve as a point of comparison, we speculate that early adolescent disruption of pruning and subsequent myelination of connections at the cortical boundary would be reflected by increased GWR as we saw in the current study.5. Limitations and conclusionsThe cross-sectional nature of this study limits causal attributions in terms of what we can infer to be directly related to the effects of MJ. Although a longitudinal design is optimal for addressing brain changes directly due to MJ, cross-sectional studies facilitate data-driven hypotheses that can be assessed directly in prospective studies.It is important to keep in mind that the participants were not explicitly asked for possible years of abstinence during their period of regular use, which may have created possible inflation in reported duration of regular use. However, because the participants provided number of years of “regular” marijuana use, this inherently suggests continued, uninterrupted years of use. Concurrent nicotine use could have also influenced our reported results. But in the absence of a larger sample size and the presence of huge variance in nicotine use in the current sample, we were unable to verify the effect of nicotine use in the reported results.Interpretation of these findings is also limited by the lack of behavioral anchors for the observed morphological effects and lack of information on other aspects of developmental history that could further characterize the effects of marijuana during neurodevelopment. This is further limited by the absence of “expected” patterns based on normative data. Given the varied directions of effects and the small sample size, these findings should be replicated and be viewed as preliminary.To conclude, early MJ use was linked to altered neurodevelopmental patterns in brain regions sub-serving higher-order cognitive process. Clinical implications include need for early, targeted intervention. Given that the most robust results were related to interactions between onset age and continued use through emerging adulthood, harm reduction approaches may be effective in moderating adolescent MJ use to levels that are less likely to cause long-term developmental changes.Conflict of interestThe authors report no conflicts of interest.AcknowledgementsThis research was funded by the National Institute on Drug Abuse (R01 DA030344, Filbey). We would like to thank all the participants who volunteered for this study. We are also very grateful to Talha Alvi, Sina Aslan, Jessica Baine, Collette Bice, Vicki Germer, Ariel Ketcherside, Alison King, Brittany Kuhn, Tyler Rhinehardt, Wing Ting To and the team of lab interns for their assistance with recruitment, running participants and data management.FootnotesAppendix ASupplementary material related to this article can be found, in the online version, at http://dx.doi.org/10.1016/j.dcn.2015.10.001.Appendix A. Supplementary dataThe following are Supplementary data to this article:Click here to view.(2.1M, pptx)ReferencesAlemán-Gómez Y. The human cerebral cortex flattens during adolescence. J. Neurosci. 2013;33(38):15004-15010. [PMC free article] [PubMed] [Google Scholar]Anavi-Goffer S., Mulder J. The polarised life of the endocannabinoid system in CNS development. Chembiochem. 2009;10(10):1591-1598. [PubMed] [Google Scholar]Armstrong E. The ontogeny of human gyrification. Cereb. Cortex. 1995;5(1):56-63. [PubMed] [Google Scholar]Ashtari M., Cervellione K., Cottone J., Ardekani B.A., Sevy S., Kumra S. Diffusion abnormalities in adolescents and young adults with a history of heavy cannabis use. J. Psychiatr. Res. 2009;43(3):189-204. [PMC free article] [PubMed] [Google Scholar]Battistella G., Fornari E., Annoni J.M., Chtioui H., Dao K., Fabritius M.…Giroud C. Long-term effects of cannabis on brain structure. Neuropsychopharmacology. 2014;39(9):2041-2048. [PMC free article] [PubMed] [Google Scholar]Bava S., Frank L.R., McQueeny T., Schweinsburg B.C., Schweinsburg A.D., Tapert S.F. Altered white matter microstructure in adolescent substance users. Psychiatry Res. 2009;173(3):228-237. pii:S0925-4927(09)00089-4. [PMC free article] [PubMed] [Google Scholar]Caballero A., Tseng K.Y. Association of cannabis use during adolescence, prefrontal cb1 receptor signaling, and schizophrenia. Front Pharmacol. 2012;3:101. [PMC free article] [PubMed] [Google Scholar]CASA . The National Center on Addiction and Substance Abuse (CASA) at Columbia University; New York: 2011. Adolescent Substance Use: America's #1 Public Health Problem. [Google Scholar]Casey B.J., Tottenham N., Liston C., Durston S. Imaging the developing brain: what have we learned about cognitive development? Trends Cogn. Sci. 2005;9(3):104-110. pii:S1364-6613(05)00030-6. [PubMed] [Google Scholar]Cass D.K., Flores-Barrera E., Thomases D.R., Vital W.F., Caballero A., Tseng K.Y. CB1 cannabinoid receptor stimulation during adolescence impairs the maturation of GABA function in the adult rat prefrontal cortex. Mol. Psychiatry. 2014;19(5):536-543. [PMC free article] [PubMed] [Google Scholar]Chan G.C., Hinds T.R., Impey S., Storm D.R. Hippocampal neurotoxicity of Delta9-tetrahydrocannabinol. J. Neurosci. 1998;18(14):5322-5332. Retrieved from  http://www.ncbi.nlm.nih.gov/pubmed/9651215,  http://www.jneurosci.org/content/18/14/5322.full.pdf. [PMC free article] [PubMed] [Google Scholar]Cousijn J., Wiers R.W., Ridderinkhof K.R., van den Brink W., Veltman D.J., Goudriaan A.E. Grey matter alterations associated with cannabis use: results of a VBM study in heavy cannabis users and healthy controls. Neuroimage. 2012;59(4):3845-3851. [PubMed] [Google Scholar]Dale A.M., Fischl B., Sereno M.I. Cortical surface-based analysis I. Segmentation and surface reconstruction. Neuroimage. 1999;9(2):179-194. [PubMed] [Google Scholar]Delisi L.E., Bertisch H.C., Szulc K.U., Majcher M., Brown K., Bappal A., Ardekani B.A. A preliminary DTI study showing no brain structural change associated with adolescent cannabis use. Harm Reduct. J. 2006;3:17. [PMC free article] [PubMed] [Google Scholar]Desikan R.S., Segonne F., Fischl B., Quinn B.T., Dickerson B.C., Blacker D.…Killiany R.J. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage. 2006;31(3):968-980. [PubMed] [Google Scholar]Fergusson D.M., Horwood L.J. Early onset cannabis use and psychosocial adjustment in young adults. Addiction. 1997;92(3):279-296. Retrieved from  http://www.ncbi.nlm.nih.gov/pubmed/9219390. [PubMed] [Google Scholar]Fergusson D.M., Lynskey M.T., Horwood L.J. The short-term consequences of early onset cannabis use. J. Abnorm. Child Psychol. 1996;24(4):499-512. Retrieved from  http://www.ncbi.nlm.nih.gov/pubmed/8886945. [PubMed] [Google Scholar]Filbey F.M., Aslan S., Calhoun V.D., Spence J.S., Damaraju E., Caprihan A., Segall J. Long-term effects of marijuana use on the brain. Proc. Natl. Acad. Sci. U.S.A. 2014 [PMC free article] [PubMed] [Google Scholar]First M.B., Spitzer R.L., Miriam G., Williams J.B.W.  Biometrics Research, New York State Psychiatric Institute; New York: 2002. Structured Clinical Interview for DSM-IV-TR Axis I Disorders, Research Version, Non-patient Edition (SCID-I/NP) [Google Scholar]Fischl B., Dale A.M. Measuring the thickness of the human cerebral cortex from magnetic resonance images. Proc. Natl. Acad. Sci. U.S.A. 2000;97(20):11050-11055. [PMC free article] [PubMed] [Google Scholar]Fischl B., Salat D.H., Busa E., Albert M., Dieterich M., Haselgrove C.…Dale A.M. Whole brain segmentation: automated labeling of neuroanatomical structures in the human brain. Neuron. 2002;33(3):341-355. Retrieved from  http://www.ncbi.nlm.nih.gov/pubmed/11832223. [PubMed] [Google Scholar]Fischl B., Sereno M.I., Dale A.M. Cortical surface-based analysis II: Inflation, flattening, and a surface-based coordinate system. Neuroimage. 1999;9(2):195-207. [PubMed] [Google Scholar]Giedd J.N. The teen brain: insights from neuroimaging. J. Adolesc. Health. 2008;42(4):335-343. [PubMed] [Google Scholar]Giorgio A., Watkins K.E., Chadwick M., James S., Winmill L., Douaud G.…James A.C. Longitudinal changes in grey and white matter during adolescence. Neuroimage. 2010;49(1):94-103. pii:S1053-8119(09)00864-7. [PubMed] [Google Scholar]Gogtay N., Giedd J.N., Lusk L., Hayashi K.M., Greenstein D.…Thompson P.M. Dynamic mapping of human cortical development during childhood through early adulthood. Proc. Natl. Acad. Sci. U.S.A. 2004;101(21):8174-8179. [PMC free article] [PubMed] [Google Scholar]Gruber S.A., Dahlgren M.K., Sagar K.A., Gonenc A., Killgore W.D. Age of onset of marijuana use impacts inhibitory processing. Neurosci. Lett. 2012;511(2):89-94. [PMC free article] [PubMed] [Google Scholar]Gruber S.A., Dahlgren M.K., Sagar K.A., Gonenc A., Lukas S.E. Worth the wait: effects of age of onset of marijuana use on white matter and impulsivity. Psychopharmacology (Berlin) 2014;231(8):1455-1465. [PMC free article] [PubMed] [Google Scholar]Gruber S.A., Silveri M.M., Dahlgren M.K., Yurgelun-Todd D. Why so impulsive? White matter alterations are associated with impulsivity in chronic marijuana smokers. Exp. Clin. Psychopharmacol. 2011;19(3):231-242. [PMC free article] [PubMed] [Google Scholar]Hasan K.M., Sankar A., Halphen C., Kramer L.A., Brandt M.E., Juranek J.…Ewing-Cobbs L. Development and organization of the human brain tissue compartments across the lifespan using diffusion tensor imaging. Neuroreport. 2007;18(16):1735-1739. [PubMed] [Google Scholar]Jacobus J., McQueeny T., Bava S., Schweinsburg B.C., Frank L.R., Yang T.T., Tapert S.F. White matter integrity in adolescents with histories of marijuana use and binge drinking. Neurotoxicol. Teratol. 2009;31(6):349-355. pii:S0892-0362(09)00145-7. [PMC free article] [PubMed] [Google Scholar]Jacobus J., Tapert S.F. Effects of cannabis on the adolescent brain. Curr. Pharm. Des. 2014;20(13):2186-2193. [PMC free article] [PubMed] [Google Scholar]Johnston L.D., O’Malley P.M., Miech R.A., Bachman J.G., Schulenberg J.E.  Institute for Social Research, The University of Michigan; Ann Arbor, MI: 2014. Monitoring the Future National Survey Results on Drug Use, 1975–2013. [Google Scholar]Klein D. Adolescent brain maturation and cortical folding: evidence for reductions in gyrification. PLoS One. 2014;9(1):e84914. [PMC free article] [PubMed] [Google Scholar]Lebel C., Caverhill-Godkewitsch S., Beaulieu C. Age-related variations of white matter tracts. Neuroimage. 2010;52(1):20-31. pii:S1053-8119(10)00359-9. [PubMed] [Google Scholar]Lopez-Larson M.P. Altered prefrontal and insular cortical thickness in adolescent marijuana users. Behav. Brain Res. 2011;220(1):164-172. [PMC free article] [PubMed] [Google Scholar]Lopez-Moreno J.A., Gonzalez-Cuevas G., Moreno G., Navarro M. The pharmacology of the endocannabinoid system: functional and structural interactions with other neurotransmitter systems and their repercussions in behavioral addiction. Addict. Biol. 2008;13(2):160-187. [PubMed] [Google Scholar]Lorenzetti V., Lubman D.I., Whittle S., Solowij N., Yucel M. Structural MRI findings in long-term cannabis users: what do we know? Subst. Use Misuse. 2010;45(11):1787-1808. [PubMed] [Google Scholar]Mata I. Gyrification brain abnormalities associated with adolescence and early-adulthood cannabis use. Brain Res. 2010;1317:297-304. [PubMed] [Google Scholar]Matochik J.A., Eldreth D.A., Cadet J.L., Bolla K.I. Altered brain tissue composition in heavy marijuana users. Drug Alcohol Depend. 2005;77(1):23-30. Retrieved from  http://www.sciencedirect.com/science?_ob=MImg&_imagekey=B6T63-4DCN07C-1-1&_cdi=5019&_user=2629161&_pii=S0376871604002066&_orig=search&_coverDate=01%2F07%2F2005&_sk=999229998&view=c&wchp=dGLbVzb-zSkWA&md5=f38ff3ce0e5bc6e93f01659d96437f10&ie=/sdarticle.pdf. [PubMed] [Google Scholar]Patton G.C., Coffey C., Carlin J.B., Degenhardt L., Lynskey M., Hall W. Cannabis use and mental health in young people: cohort study. BMJ. 2002;325(7374):1195-1198. [PMC free article] [PubMed] [Google Scholar]Paus T.Å. Mapping brain maturation and cognitive development during adolescence. Trends Cogn. Sci. 2005;9(2):60-68. [PubMed] [Google Scholar]Sagar K.A., Dahlgren M.K., Gonenc A., Racine M.T., Dreman M.W., Gruber S.A. The impact of initiation: early onset marijuana smokers demonstrate altered Stroop performance and brain activation. Dev. Cogn. Neurosci. 2015 [PMC free article] [PubMed] [Google Scholar]Salat D.H., Lee S.Y., van der Kouwe A.J., Greve D.N., Fischl B., Rosas H.D. Age-associated alterations in cortical gray and white matter signal intensity and gray to white matter contrast. Neuroimage. 2009;48(1):21-28. [PMC free article] [PubMed] [Google Scholar]SAMHSA . Substance Abuse and Mental Health Services Administration; Rockville, MD: 2014. Results from the 2013 National Survey on Drug Use and Health: Summary of National Findings NSDUH Series H-48, HHS Publication No. (SMA) 14-4863. [Google Scholar]Schaer M., Cuadra M.B., Schmansky N., Fischl B., Thiran J.P., Eliez S. How to measure cortical folding from MR images: a step-by-step tutorial to compute local gyrification index. J. Vis. Exp. 2012;(59):e3417. [PMC free article] [PubMed] [Google Scholar]Schmansky N., Stevens A., Subramaniam K., Greve D.N., Kakunoori S., Pacheco J.  FsTutorial; 2010. Troubleshooting Your Output. Retrieved from  http://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/TroubleshootingData. [Google Scholar]Selemon L.D. A role for synaptic plasticity in the adolescent development of executive function. Transl. Psychiatry. 2013;3:e238. [PMC free article] [PubMed] [Google Scholar]Shaw P., Kabani N.J., Lerch J.P., Eckstrand K., Lenroot R., Gogtay N.…Wise S.P. Neurodevelopmental trajectories of the human cerebral cortex. J. Neurosci. 2008;28(14):3586-3594. pii:28/14/3586. [PMC free article] [PubMed] [Google Scholar]Sobell L.C., Sobell M.B.  Timeline follow-back: a technique for assessing self-reported alcohol consumption. In: Litten R.Z., Allen J.P., editors. Measuring Alcohol Consumption: Psychosocial and Biochemical Methods. Humana Press; Totowa, NJ, USA: 1992. pp. 41-72. [Google Scholar]Tapert S.F., Schweinsburg A.D., Barlett V.C., Brown S.A., Frank L.R., Brown G.G., Meloy M.J. Blood oxygen level dependent response and spatial working memory in adolescents with alcohol use disorders. Alcohol Clin. Exp. Res. 2004;28(10):1577-1586. Retrieved from  http://www.ncbi.nlm.nih.gov/pubmed/15597092. [PubMed] [Google Scholar]Verdurand M., Nguyen V., Stark D., Zahra D., Gregoire M.C., Greguric I., Zavitsanou K. Comparison of cannabinoid CB(1) receptor binding in adolescent and adult rats: a positron emission tomography study using [F]MK-9470. Int. J. Mol. Imaging. 2011;2011:548123. [PMC free article] [PubMed] [Google Scholar]Walter L., Franklin A., Witting A., Wade C., Xie Y., Kunos G.…Stella N. Nonpsychotropic cannabinoid receptors regulate microglial cell migration. J. Neurosci. 2003;23(4):1398-1405. pii:23/4/1398. [PMC free article] [PubMed] [Google Scholar]Wechsler D.  The Psychological Corporation; San Antonio, TX: 1999. Manual for the Wechsler Abbreviated Scale of Intelligence. [Google Scholar]Yucel M., Solowij N., Respondek C., Whittle S., Fornito A., Pantelis C., Lubman D.I. Regional brain abnormalities associated with long-term heavy cannabis use. Arch. Gen. Psychiatry. 2008;65(6):694-701. [PubMed] [Google Scholar]Articles from Developmental Cognitive Neuroscience are provided here courtesy of Elsevier
+
+
+
+
+
+Other Formats
+
+PDF (753K)
+
+
+
+Actions
+
+
+
+Cite
+
+
+
+
+
+
+Collections
+
+
+
+Add to Collections
+
+
+
+
+
+
+
+Create a new collection
+
+
+
+Add to an existing collection
+
+
+
+
+
+
+        Name your collection:
+      
+
+
+        Name must be less than  characters
+      
+
+
+
+        Choose a collection:
+      
+
+
+
+        Unable to load your collection due to an error
+Please try again
+
+
+
+
+
+      Add
+    
+
+      Cancel
+    
+
+
+
+
+
+
+
+
+
+
+Share
+
+ 
+ 
+
+
+
+
+ 
+
+
+
+
+                                Permalink
+                              
+
+
+Copy
+
+
+
+
+
+
+
+
+RESOURCES
+
+
+
+
+                        Similar articles
+                    
+
+
+
+
+
+
+
+                        Cited by other articles
+                    
+
+
+
+
+
+
+
+                        Links to NCBI Databases
+                    
+
+
+
+
+
+
+
+
+
+
+[x]
+Cite
+
+
+
+
+      Copy
+    
+
+Download .nbib
+.nbib
+
+
+Format:
+
+
+        AMA
+      
+
+        APA
+      
+
+        MLA
+      
+
+        NLM
+      
+
+
+
+
+
+
+
+
+
+Follow NCBI
+
+
+
+
+
+
+Twitter
+
+
+
+
+Facebook
+
+
+
+
+LinkedIn
+
+
+
+
+
+
+
+GitHub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Connect with NLM
+
+
+
+SM-Twitter
+
+
+
+
+
+
+
+
+
+
+
+
+SM-Facebook
+
+
+
+
+
+
+
+
+
+SM-Youtube
+
+
+
+
+
+
+
+
+
+National Library of Medicine
+8600 Rockville Pike
+                  Bethesda, MD 20894
+
+
+Web Policies
+FOIA
+HHS Vulnerability Disclosure
+
+
+Help
+Accessibility
+Careers
+
+
+
+
+
+
+
+NLM
+
+
+NIH
+
+
+HHS
+
+
+USA.gov
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

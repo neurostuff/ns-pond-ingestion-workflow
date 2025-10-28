@@ -1,0 +1,1951 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" article-type="research-article">
+  <?properties open_access?>
+  <front>
+    <journal-meta>
+      <journal-id journal-id-type="nlm-ta">Dev Cogn Neurosci</journal-id>
+      <journal-id journal-id-type="iso-abbrev">Dev Cogn Neurosci</journal-id>
+      <journal-title-group>
+        <journal-title>Developmental Cognitive Neuroscience</journal-title>
+      </journal-title-group>
+      <issn pub-type="ppub">1878-9293</issn>
+      <issn pub-type="epub">1878-9307</issn>
+      <publisher>
+        <publisher-name>Elsevier</publisher-name>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="pmid">26507433</article-id>
+      <article-id pub-id-type="pmc">4691364</article-id>
+      <article-id pub-id-type="publisher-id">S1878-9293(15)00091-2</article-id>
+      <article-id pub-id-type="doi">10.1016/j.dcn.2015.10.001</article-id>
+      <article-categories>
+        <subj-group subj-group-type="heading">
+          <subject>Original Research</subject>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Preliminary findings demonstrating latent effects of early adolescent marijuana use onset on cortical architecture</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author" id="aut0005">
+          <name>
+            <surname>Filbey</surname>
+            <given-names>Francesca M.</given-names>
+          </name>
+          <email>Francesca.Filbey@utdallas.edu</email>
+          <xref rid="aff0005" ref-type="aff">a</xref>
+          <xref rid="cor0005" ref-type="corresp">⁎</xref>
+        </contrib>
+        <contrib contrib-type="author" id="aut0010">
+          <name>
+            <surname>McQueeny</surname>
+            <given-names>Tim</given-names>
+          </name>
+          <xref rid="aff0005" ref-type="aff">a</xref>
+        </contrib>
+        <contrib contrib-type="author" id="aut0015">
+          <name>
+            <surname>DeWitt</surname>
+            <given-names>Samuel J.</given-names>
+          </name>
+          <xref rid="aff0005" ref-type="aff">a</xref>
+        </contrib>
+        <contrib contrib-type="author" id="aut0020">
+          <name>
+            <surname>Mishra</surname>
+            <given-names>Virendra</given-names>
+          </name>
+          <xref rid="aff0010" ref-type="aff">b</xref>
+        </contrib>
+      </contrib-group>
+      <aff id="aff0005"><label>a</label>Center for BrainHealth, School of Behavioral and Brain Sciences, The University of Texas at Dallas, United States</aff>
+      <aff id="aff0010"><label>b</label>Advance MRI, LLC, Frisco, TX, United States</aff>
+      <author-notes>
+        <corresp id="cor0005"><label>⁎</label>Corresponding author at: Center for BrainHealth, School of Behavioral and Brain Sciences, University of Texas at Dallas, 2200 West Mockingbird, Dallas, TX 75235, United States. <email>Francesca.Filbey@utdallas.edu</email></corresp>
+      </author-notes>
+      <pub-date pub-type="pmc-release">
+        <day>09</day>
+        <month>10</month>
+        <year>2015</year>
+      </pub-date>
+      <!-- PMC Release delay is 0 months and 0 days and was based on <pub-date
+						pub-type="epub">.-->
+      <pub-date pub-type="collection">
+        <month>12</month>
+        <year>2015</year>
+      </pub-date>
+      <pub-date pub-type="epub">
+        <day>09</day>
+        <month>10</month>
+        <year>2015</year>
+      </pub-date>
+      <volume>16</volume>
+      <fpage>16</fpage>
+      <lpage>22</lpage>
+      <history>
+        <date date-type="received">
+          <day>12</day>
+          <month>12</month>
+          <year>2014</year>
+        </date>
+        <date date-type="rev-recd">
+          <day>9</day>
+          <month>9</month>
+          <year>2015</year>
+        </date>
+        <date date-type="accepted">
+          <day>2</day>
+          <month>10</month>
+          <year>2015</year>
+        </date>
+      </history>
+      <permissions>
+        <copyright-statement>© 2015 The Authors</copyright-statement>
+        <copyright-year>2015</copyright-year>
+        <license license-type="CC BY-NC-ND" xlink:href="http://creativecommons.org/licenses/by-nc-nd/4.0/">
+          <license-p>This is an open access article under the CC BY-NC-ND license (http://creativecommons.org/licenses/by-nc-nd/4.0/).</license-p>
+        </license>
+      </permissions>
+      <abstract abstract-type="author-highlights" id="abs0005">
+        <title>Highlights</title>
+        <p>
+          <list list-type="simple" id="lis0005">
+            <list-item id="lsti0005">
+              <label>•</label>
+              <p id="par0005">Early onset MJ use was associated with different patterns of cortical architecture.</p>
+            </list-item>
+            <list-item id="lsti0010">
+              <label>•</label>
+              <p id="par0010">Early vs. late onset divergence was in brain regions underlying higher-order cognition.</p>
+            </list-item>
+            <list-item id="lsti0015">
+              <label>•</label>
+              <p id="par0015">Findings were above and beyond effects of alcohol and current age.</p>
+            </list-item>
+          </list>
+        </p>
+      </abstract>
+      <abstract id="abs0010">
+        <sec>
+          <title>Background</title>
+          <p>As the most commonly used illicit substance during early adolescence, long-term or latent effects of early adolescent marijuana use across adolescent developmental processes remain to be determined.</p>
+        </sec>
+        <sec>
+          <title>Methods</title>
+          <p>We examined cortical thickness, gray/white matter border contrast (GWR) and local gyrification index (LGI) in 42 marijuana (MJ) users. Voxelwise regressions assessed early-onset (age &lt;16) vs. late-onset (≥16 years-old) differences and relationships to continued use while controlling for current age and alcohol use.</p>
+        </sec>
+        <sec>
+          <title>Results</title>
+          <p>Although groups did not differ by onset status, groups diverged in their correlations between cannabis use and cortical architecture. Among early-onset users, continued years of MJ use and current MJ consumption were associated with thicker cortex, increased GWR and decreased LGI. Late-onset users exhibited the opposite pattern. This divergence was observed in all three morphological measures in the anterior dorsolateral frontal cortex (<italic>p</italic> &lt; .05, FWE-corrected).</p>
+        </sec>
+        <sec>
+          <title>Conclusions</title>
+          <p>Divergent patterns between current MJ use and elements of cortical architecture were associated with early MJ use onset. Considering brain development in early adolescence, findings are consistent with disruptions in pruning. However, divergence with continued use for many years thereafter suggests altered trajectories of brain maturation during late adolescence and beyond.</p>
+        </sec>
+      </abstract>
+      <kwd-group id="kwd0005">
+        <title>Keywords</title>
+        <kwd>Adolescence</kwd>
+        <kwd>Marijuana</kwd>
+        <kwd>Cortical thickness</kwd>
+        <kwd>Gyrification</kwd>
+        <kwd>Morphology</kwd>
+        <kwd>FreeSurfer</kwd>
+      </kwd-group>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="sec0005">
+      <label>1</label>
+      <title>Introduction</title>
+      <p id="par0020">With more than 25% of high school seniors reporting recent use and 6.5% of 12th graders being daily users (<xref rid="bib0145" ref-type="bibr">Johnston et al., 2014</xref>), marijuana (MJ) is the most frequently used illicit substance among adolescents. Across all age groups over 70% of new drug initiates start with using MJ at an average age of 18 years (<xref rid="bib0190" ref-type="bibr">SAMHSA, 2014</xref>). Indeed, the scope of MJ use prevalence is of great public interest, as MJ use in early adolescence is associated with increased risk of greater substance use, legal problems, disrupting education, injuries/medical problems, developing psychopathology, cognitive changes and chronic psychosocial struggles (<xref rid="bib0030" ref-type="bibr">CASA, 2011</xref>, <xref rid="bib0070" ref-type="bibr">Fergusson and Horwood, 1997</xref>, <xref rid="bib0075" ref-type="bibr">Fergusson et al., 1996</xref>, <xref rid="bib0170" ref-type="bibr">Patton et al., 2002</xref>). Taken together, rates of MJ use are suggestive of an epidemic based in adolescence, which is concerning not just due to societal cost, but also due to the potential to offset sensitive brain development during this period.</p>
+      <p id="par0025">Despite its prevalence, the impact of MJ use on adolescent brain development is not fully known. Important neuromaturational processes during adolescence through young adulthood are believed to bring about improved higher-order cognition by refining neural systems locally and globally through white and gray matter development (<xref rid="bib0035" ref-type="bibr">Casey et al., 2005</xref>, <xref rid="bib0105" ref-type="bibr">Giedd, 2008</xref>, <xref rid="bib0175" ref-type="bibr">Paus, 2005</xref>). In general, gray matter reductions and cortical thinning coincide with increased white matter volume and organization through adolescence and young adulthood, suggestive of synaptic pruning and axonal myelination (<xref rid="bib0110" ref-type="bibr">Giorgio et al., 2010</xref>, <xref rid="bib0115" ref-type="bibr">Gogtay et al., 2004</xref>, <xref rid="bib0135" ref-type="bibr">Hasan et al., 2007</xref>, <xref rid="bib0150" ref-type="bibr">Lebel et al., 2010</xref>, <xref rid="bib0210" ref-type="bibr">Shaw et al., 2008</xref>). The endogenous cannabinoid (CB) system is also immature during adolescence (<xref rid="bib0005" ref-type="bibr">Anavi-Goffer and Mulder, 2009</xref>, <xref rid="bib0225" ref-type="bibr">Verdurand et al., 2011</xref>). In an animal model (<xref rid="bib0225" ref-type="bibr">Verdurand et al., 2011</xref>) imaged CB1 receptor binding using PET and found relatively lower activation of CB1 receptors in adolescent rats compared to adult rats in brain areas including those in the frontal cortex, temporal lobe (hippocampus and amygdala) and sub-cortical regions including striatal regions, thalamus, hypothalamus, superior colliculus. Thus, adolescence represents a developmental period with vulnerability to structural and functional changes due to exogenous MJ exposure.</p>
+      <p id="par0030">Adolescent MJ use has the potential to cause structural and functional changes in the brain by altering cannabinoid signaling. One possible mechanism would be blunt neurotoxic influence. For example, delta9-tetrahydrocannabinol (THC), the primary psychoactive component in MJ that binds CB1 receptors, is reported to cause cell shrinkage and damage DNA strands in THC-treated neuron cultures (<xref rid="bib0045" ref-type="bibr">Chan et al., 1998</xref>). This may be the mechanism by which smaller volumes have been observed in individuals exposed to cannabis during adolescence (<xref rid="bib0015" ref-type="bibr">Battistella et al., 2014</xref>). However, it is more likely that MJ exerts its influence on brain development indirectly. The cannabinoid system plays a role in modulating other neurotransmitters, including gamma-aminobutyric acid (GABA), glutamate and monoamines (<xref rid="bib0155" ref-type="bibr">Lopez-Moreno et al., 2008</xref>). Specifically, activation of CB1 receptors is associated with down-regulating inhibitory GABAergic transmission in cortical interneurons during adolescence (<xref rid="bib0025" ref-type="bibr">Caballero and Tseng, 2012</xref>, <xref rid="bib0040" ref-type="bibr">Cass et al., 2014</xref>). In addition, CB signaling inhibits microglia function (<xref rid="bib0230" ref-type="bibr">Walter et al., 2003</xref>). These two points are important because cortical pruning processes involve glial-mediated synaptic elimination and altering the excitatory/inhibitory balance is liable to disrupt the selective tagging and preserving synapses (<xref rid="bib0205" ref-type="bibr">Selemon, 2013</xref>). The impact of this indirect influence on the developing brain may be in the observations of abnormal connectivity in those who began MJ use in adolescence (<xref rid="bib0140" ref-type="bibr">Jacobus et al., 2009</xref>). Evidence from human neuroimaging studies lends greater support to MJ-related disruptions to brain development.</p>
+      <p id="par0035">Structural neuroimaging studies have indicated that volumes of several brain areas are smaller in heavy adult MJ users especially in areas enriched with cannabinoid 1 (CB1) receptors, such as medial temporal lobe, and prefrontal cortex (<xref rid="bib0160" ref-type="bibr">Lorenzetti et al., 2010</xref>). Studies of adult chronic MJ users note brain volume reductions in temporal lobe, insula, and prefrontal cortex, amygdala and hippocampus (<xref rid="bib0015" ref-type="bibr">Battistella et al., 2014</xref>, <xref rid="bib0050" ref-type="bibr">Cousijn et al., 2012</xref>, <xref rid="bib0080" ref-type="bibr">Filbey et al., 2014</xref>, <xref rid="bib0165" ref-type="bibr">Matochik et al., 2005</xref>, <xref rid="bib0240" ref-type="bibr">Yucel et al., 2008</xref>). Among different characteristics of MJ involvement (e.g., dependence symptoms, use frequency, consumption), the age of initial MJ use is a robust factor that has been associated with smaller brain volumes in users. For example, <xref rid="bib0015" ref-type="bibr">Battistella et al. (2014)</xref> observed left parahippocampal gyrus and right temporal pole structural differences in 25 regular MJ users compared to 22 occasional users, however, even the occasional users who began smoking MJ during adolescence (before age 18) demonstrated similar brain changes as the regular users. Our group has also found links with early MJ use onset (<xref rid="bib0020" ref-type="bibr">Bava et al., 2009</xref>) and structural connectivity with orbitofrontal cortex in a cohort of daily MJ users, suggesting complex neuroadaptive processes related to MJ use in the context of adolescent brain development (<xref rid="bib0080" ref-type="bibr">Filbey et al., 2014</xref>). These findings underscore the potential for significant heterogeneity in brain changes among adult MJ users, especially those who began using MJ during neurodevelopment.</p>
+      <p id="par0040">Studies comparing early adolescent MJ use to users initiating MJ use in later adolescence provide further evidence for the potential of MJ to cause enduring change. The few studies that have directly investigated the timing of the effects of MJ during adolescence have noted divergent neurodevelopment effects. For example, in an fMRI study by Gruber and colleagues, functional and behavioral differences during an interference task were reported between early (before age 16) and late (after age 16) MJ users (<xref rid="bib0120" ref-type="bibr">Gruber et al., 2012</xref>) (<xref rid="bib0180" ref-type="bibr">Sagar et al., 2015</xref>). The same group also reported decreased white matter integrity in early onset vs. late onset MJ users (mean age 14.46 vs. 17.93) (<xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>). Similar differential effects have also been noted in parietal lobe activation between early and late adolescent binge drinkers during a spatial working memory task (<xref rid="bib0220" ref-type="bibr">Tapert et al., 2004</xref>). These studies highlight the importance of clarifying the differential neural effects of early- and late-adolescent onset use.</p>
+      <p id="par0045">To that end, in the current study, we compared daily MJ users who were early onset users (&lt;16 years old) versus late onset users (≥16 years old) on measures of cortical morphology that are sensitive to developmental changes. We aimed to characterize both the effect of early onset status on cortical morphology as well as assess for morphological patterns linked to the continued use of MJ after early and late adolescent MJ initiation. We expected early onset users to show a morphological pattern consistent with disruption of early adolescent brain development (e.g., increased cortical thickness, greater gray/white definition of the cortical ribbon via disruptions to adolescent pruning processes) that may be more consistent with indirect impact of MJ of brain development. While gray matter decline has been shown to be associated with marijuana use, particularly in areas rich in CB1 receptors, increased cortical thickness and greater gray/white definition in the cortical ribbon point to potential disruption in neurodevelopment (i.e. synaptic pruning) that may result from MJ use at key developmental stages (i.e. earlier as opposed to later in adolescent neuronal development). Such disruptions may extend to gyrification as well. While this process begins in utero, there is evidence that gyrification is ongoing into adolescence (<xref rid="bib0006" ref-type="bibr">Armstrong et al., 1995</xref>, <xref rid="bib0001" ref-type="bibr">Alemán-Gómez et al., 2013</xref>, <xref rid="bib0146" ref-type="bibr">Klein et al., 2014</xref>) and may also display aberrant developmental patterns in the presence of MJ use.</p>
+    </sec>
+    <sec id="sec0010">
+      <label>2</label>
+      <title>Methods</title>
+      <p id="par0050">This study was approved by the University of Texas at Dallas (UTD) and University of Texas Southwestern Medical Center (UTSW) Institutional Review Boards. All participants were recruited from the Dallas-Ft.Worth metro area via flyers and advertisements. Following informed consent, MJ users completed two sessions – a baseline appointment for collecting demographic, psychosocial and behavioral measures and a thorough substance use history. Three days later the participants returned for a neuroimaging appointment. Prior to their scanning session, participants were asked to be abstinent from MJ use for 72 h, from alcohol for 24 h, and from caffeine and cigarettes for the preceding 2 h. These were confirmed by self-report (MJ, alcohol, caffeine and cigarettes), quantitative THC urinalysis (MJ), and by breath alcohol level of .000 (alcohol) at the start of their session.</p>
+      <sec id="sec0015">
+        <label>2.1</label>
+        <title>Participants</title>
+        <p id="par0195">We scanned 45 regular heavy MJ users as part of the parent project. Inclusion criteria were: right-handedness, English as the primary language and no histories of psychosis, traumatic brain injury, and MRI contraindications (e.g., pregnancy, non-removal metallic implants, claustrophobia). One subject reported a history of anxiety and depression and one other reported a history of ADHD as a child. Additional exclusions for the current study included: Axis I diagnosis (via SCID) other than cannabis use disorder, unusable sMRI due to motion artifact or poor signal-to-noise ratio that precluded accurate tissue segmentation (<italic>n</italic> = 1) and incomplete drug use histories (<italic>n</italic> = 2). Of the 42 remaining cases, 22 were early onset users (onset of first use before age 16). Group categorization using onset of regular use as opposed to onset of first use maintained the same grouping (mean early onset of regular use = 16.5, mean late onset of regular use = 19.0). Regular use was defined as at least one time per week. To determine how age of onset of regular MJ use influenced our reported effects, we performed these analyses while covarying for age of onset of regular use (see <xref rid="sec0115" ref-type="sec">Supplement</xref>). <xref rid="tbl0005" ref-type="table">Table 1</xref> summarizes demographic and substance use information according to onset status. <xref rid="tbl0010" ref-type="table">Table 2</xref> summarizes the correlation between age and identified marijuana use variables. Only MJ years of use and current age showed a statistically significant correlation. Participants were recruited based on self-reported daily MJ use and a positive urinalysis for THC metabolites at their baseline visit. All of the participants were screened via urinalysis for other drugs of abuse and were excluded if drugs (other than MJ) were detected. Participants were required to have used MJ for a minimum of 5000 lifetime occasions and self-report daily use (without &gt;24 h abstinence) for the last 60 days.<table-wrap position="float" id="tbl0005"><label>Table 1</label><caption><p>Sample characteristics. MJ, marijuana.</p></caption><table frame="hsides" rules="groups"><thead><tr><th align="left">Measure</th><th colspan="3" align="left">Early onset (<italic>n</italic> = 20)<hr/></th><th colspan="3" align="left">Late onset (<italic>n</italic> = 22)<hr/></th><th align="left"><italic>p</italic>-Value</th><th align="left">Effect size<xref rid="tblfn0015" ref-type="table-fn">***</xref></th><th align="left">Statistic</th></tr><tr><th/><th align="left">Mean</th><th align="left">(SD)</th><th align="left">Min–Max</th><th align="left">Mean</th><th align="left">(SD)</th><th align="left">Min–Max</th><th/><th/><th align="left"><italic>|t/U</italic></th></tr></thead><tbody><tr><td align="left">Age</td><td align="char">32.50</td><td align="left">(8.01)</td><td align="char">21–50</td><td align="char">30.25</td><td align="left">(7.19)</td><td align="char">21–47</td><td align="char">0.316</td><td align="char">0.302</td><td align="left"><italic>t</italic> = 1.01</td></tr><tr><td align="left">Education (years)</td><td align="char">12.91</td><td align="left">(2.54)</td><td align="char">8–18</td><td align="char">13.26</td><td align="left">(2.40)</td><td align="char">10–19</td><td align="char">0.651</td><td align="char">0.144</td><td align="left"><italic>t</italic> = 0.456</td></tr><tr><td align="left">Gender (male)</td><td align="char">55%</td><td/><td/><td align="char">73%</td><td/><td/><td align="char">0.241</td><td align="char">0.034</td><td align="left"><italic>χ</italic><sup>2</sup> = 1.41</td></tr><tr><td align="left">Ethnicity (% Caucasian)</td><td align="char">50%</td><td/><td/><td align="char">50%</td><td/><td/><td align="char">0.566</td><td align="char">0.008</td><td align="left"><italic>χ</italic><sup>2</sup> = 0.336</td></tr><tr><td align="left">IQ<xref rid="tblfn0005" ref-type="table-fn">*</xref></td><td align="char">108</td><td align="left">(9.99)</td><td align="char">88–124</td><td align="char">105</td><td align="left">(13.54)</td><td align="char">83–129</td><td align="char">0.351</td><td align="char">0.298</td><td align="left"><italic>t</italic> = 0.94</td></tr><tr><td align="left">Age of first MJ use<xref rid="tblfn0010" ref-type="table-fn">**</xref></td><td align="char">13.18</td><td align="left">(1.89)</td><td align="char">9–15</td><td align="char">16.90</td><td align="left">(1.48)</td><td align="char">16–21</td><td align="char">&lt;0.001</td><td align="char">0.866</td><td align="left"><italic>U</italic> = 0</td></tr><tr><td align="left">Age of regular MJ use<xref rid="tblfn0010" ref-type="table-fn">**</xref></td><td align="char">16.50</td><td align="left">(3.57)</td><td align="char">9–25</td><td align="char">19.00</td><td align="left">(4.29)</td><td align="char">16–36</td><td align="char">0.004</td><td align="char">0.439</td><td align="left"><italic>U</italic> = 108</td></tr><tr><td colspan="10" align="left">Substance use in the last 60 days</td></tr><tr><td align="left"> MJ grams (daily)</td><td align="char">2.14</td><td align="left">(1.79)</td><td align="char">0.50–7.50</td><td align="char">1.65</td><td align="left">(1.21)</td><td align="char">0.46–4.23</td><td align="char">0.338</td><td align="char">0.083</td><td align="left"><italic>U</italic> = 182</td></tr><tr><td align="left"> # EtOH drinks</td><td align="char">44.09</td><td align="left">(76.30)</td><td align="char">0–310</td><td align="char">38.85</td><td align="left">(58.61)</td><td align="char">0–183</td><td align="char">0.588</td><td align="char">0.039</td><td align="left"><italic>U</italic> = 198.05</td></tr><tr><td align="left"> Max # EtOH drinks</td><td align="char">6.62</td><td align="left">(7.21)</td><td align="char">0–31</td><td align="char">6.25</td><td align="left">(5.80)</td><td align="char">0–21</td><td align="char">0.8</td><td align="char">0.095</td><td align="left"><italic>U</italic> = 210</td></tr><tr><td align="left"> # EtOH drinking days</td><td align="char">11.09</td><td align="left">(16.69)</td><td align="char">0–59</td><td align="char">9.84</td><td align="left">(13.51)</td><td align="char">0–60</td><td align="char">0.537</td><td align="char">0.006</td><td align="left"><italic>U</italic> = 185.5</td></tr><tr><td align="left"> # Binge EtOH drinking days</td><td align="char">4.36</td><td align="left">(12.50)</td><td align="char">0–59</td><td align="char">2.90</td><td align="left">(5.53)</td><td align="char">0–19</td><td align="char">0.968</td><td align="char">0.035</td><td align="left"><italic>U</italic> = 218.5</td></tr><tr><td align="left"> # EtOH drinks per day</td><td align="char">2.99</td><td align="left">(2.27)</td><td align="char">0–7.40</td><td align="char">3.56</td><td align="left">(3.29)</td><td align="char">0–14.00</td><td align="char">0.82</td><td align="char">0.289</td><td align="left"><italic>U</italic> = 211</td></tr><tr><td align="left"> # Cigarette days</td><td align="char">1.18</td><td align="left">(3.72)</td><td align="char">0–17</td><td align="char">2.95</td><td align="left">(1.17)</td><td align="char">0–21</td><td align="char">0.06</td><td align="char">0.294</td><td align="left"><italic>U</italic> = 159</td></tr><tr><td align="left"> # Cigarettes per day</td><td align="char">0.22</td><td align="left">(0.55)</td><td align="char">0–2.00</td><td align="char">0.78</td><td align="left">(1.23)</td><td align="char">0–4.50</td><td align="char">0.057</td><td align="char">0.296</td><td align="left"><italic>U</italic> = 158</td></tr><tr><td align="left"> Max # cigarettes</td><td align="char">0.25</td><td align="left">(0.61)</td><td align="char">0–2</td><td align="char">0.96</td><td align="left">(1.60)</td><td align="char">0–6</td><td align="char">0.054</td><td align="char">0.290</td><td align="left"><italic>U</italic> = 157.5</td></tr><tr><td align="left">Illicit drug use/past 90 days</td><td align="char">14%</td><td/><td/><td align="char">5%</td><td/><td/><td/><td/><td/></tr><tr><td align="left">Lifetime illicit drug use</td><td align="char">73%</td><td/><td/><td align="char">75%</td><td/><td/><td/><td/><td/></tr></tbody></table><table-wrap-foot><fn id="tblfn0005"><label>*</label><p id="npar0005">IQ scores derived from Wechsler Abbreviated Scale of Intelligence Vocabulary and Matrix Reasoning subtests.</p></fn></table-wrap-foot><table-wrap-foot><fn id="tblfn0010"><label>**</label><p id="npar0010"><italic>p</italic> &lt; .05; SS, standard score; |<italic>t</italic>|, absolute value of student's <italic>t, U</italic> is the Mann–Whitney <italic>U</italic>'s score.</p></fn></table-wrap-foot><table-wrap-foot><fn id="tblfn0015"><label>***</label><p id="npar0015">The effect sizes of the above table were calculated either based on mean differences if normally distributed, correlation coefficient or <italic>F</italic>-value score using the default Cohen's effect size formula for respective metrics.</p></fn></table-wrap-foot></table-wrap><table-wrap position="float" id="tbl0010"><label>Table 2</label><caption><p>The correlations between current age and all MJ use variables.</p></caption><table frame="hsides" rules="groups"><thead><tr><th align="left">Measure</th><th align="left">Early onset</th><th align="left">Late onset</th></tr></thead><tbody><tr><td align="left">First MJ use</td><td align="left"><italic>r</italic> = 0.038</td><td align="left"><italic>r</italic> = 0.189</td></tr><tr><td align="left">Regular MJ use</td><td align="left"><italic>r</italic> = 0.289</td><td align="left"><italic>r</italic> = 0.203</td></tr><tr><td align="left">MJ years of use</td><td align="left"><italic>r</italic> = 0.898<xref rid="tblfn0020" ref-type="table-fn">*</xref></td><td align="left"><italic>r</italic> = 0.623<xref rid="tblfn0025" ref-type="table-fn">**</xref></td></tr><tr><td align="left">MJ grams</td><td align="left"><italic>r</italic> = 0.123</td><td align="left"><italic>r</italic> = 0.206</td></tr></tbody></table><table-wrap-foot><fn id="tblfn0020"><label>*</label><p id="npar0020"><italic>p</italic> &lt; 0.001.</p></fn></table-wrap-foot><table-wrap-foot><fn id="tblfn0025"><label>**</label><p id="npar0025"><italic>p</italic> &lt; 0.005.</p></fn></table-wrap-foot></table-wrap></p>
+      </sec>
+      <sec id="sec0020">
+        <label>2.2</label>
+        <title>MRI acquisition and analysis</title>
+        <sec id="sec0025">
+          <label>2.2.1</label>
+          <title>Image acquisition</title>
+          <p id="par0060">Scanning sessions took place at the Advanced Imaging Research Center at the University of Texas, Southwestern Medical Center three days following their initial visit. Another verification of THC metabolites via urinalysis was also performed before the scan. MRI images were collected using a 3T Philips whole-body scanner equipped with Quasar gradient subsystem (40 mT/m amplitude, a slew rate of 220 mT/m/ms). High-resolution T1-weighted anatomical scans were collected using a MPRAGE sequence: TR/TE/TI = 2100/3.70/1100 ms; flip angle = 12°; field of view = 256 mm × 256 mm; slab thickness = 160 mm (along left-right direction); voxel size = 1 mm × 1 mm × 1 mm, Total scan time = 3 m 57 s.</p>
+        </sec>
+        <sec id="sec0030">
+          <label>2.2.2</label>
+          <title>Image processing</title>
+          <p id="par0065">MPRAGE anatomical scans were pre-processed for surface-based analyses using FreeSurfer v5.3 semi-automated pipeline (<ext-link ext-link-type="uri" xlink:href="http://surfer.nmr.mgh.harvard.edu/" id="intr0005">http://surfer.nmr.mgh.harvard.edu</ext-link>). This semi-automated pipeline included spatial (Talairach) and signal intensity normalization of images, volumetric segmentation and subcortical labeling (<xref rid="bib0055" ref-type="bibr">Dale et al., 1999</xref>, <xref rid="bib0095" ref-type="bibr">Fischl et al., 2002</xref>). Outer gray matter and white matter boundaries were then identified and reconstructed into a mesh of over 150,000 tessellated vertices to allow point-to-point surface measures (<xref rid="bib0100" ref-type="bibr">Fischl et al., 1999</xref>). Next, gyral anatomy is aligned to a standard spherical template using surface convexity and curvature measures. Resulting surfaces were inspected, blind to MJ onset status, to identify and correct any errors made during cortical reconstruction. Modifications to the volumes were made as necessary to correct for tissue misclassifications according to FreeSurfer's wiki manual (<xref rid="bib0200" ref-type="bibr">Schmansky et al., 2010</xref>). In preparation for analysis, each morphological measure for each case was co-registered to a standard template (fsaverage). Anatomical labels in FreeSurfer (<xref rid="bib0065" ref-type="bibr">Desikan et al., 2006</xref>) were used for interpretation of results.</p>
+        </sec>
+      </sec>
+      <sec id="sec0035">
+        <label>2.3</label>
+        <title>Morphological measures</title>
+        <sec id="sec0040">
+          <label>2.3.1</label>
+          <title>Cortical thickness</title>
+          <p id="par0070">The width of the cortical ribbon was measured as the distance between corresponding vertices of the white matter and gray matter surfaces at each vertex in the cortical mantel (<xref rid="bib0090" ref-type="bibr">Fischl and Dale, 2000</xref>).</p>
+        </sec>
+        <sec id="sec0045">
+          <label>2.3.2</label>
+          <title>Gray–white matter ratio (GWR)</title>
+          <p id="par0075">To assess the quality of cortical ribbon definition, a tissue contrast between gray and white matter signal intensities was computed as a percent ratio (W − G)/(.5*(W + G)) (from pctsurfcon v1.11.2.1, inbuilt component of FreeSurfer pipeline v5.3, 2011). White matter signal intensities were measured at an absolute length of 1 mm below the gray–white border surface and gray matter signal was measured 30% into the cortical ribbon (<xref rid="bib0185" ref-type="bibr">Salat et al., 2009</xref>).</p>
+        </sec>
+        <sec id="sec0050">
+          <label>2.3.3</label>
+          <title>Local gyrification index</title>
+          <p id="par0080">The cortical surface from FreeSurfer's main pipeline is further processed to create an outer surface that encapsulates the gyral and sulcal curvature for each hemisphere, which serves as a basis for calculating a local gyrification index (<xref rid="bib0195" ref-type="bibr">Schaer et al., 2012</xref>). LGI is measured as the amount of cortex within the sulcal folds beneath the outer surface compared to the amount of visible cortex that touches the outer surface. Cortical maps are generated from repeated iterations of delineating a 25 mm radius sphere on the outer surface and its corresponding point on the cortical surface using a matching algorithm.</p>
+        </sec>
+      </sec>
+      <sec id="sec0055">
+        <label>2.4</label>
+        <title>Background and premorbid characteristics</title>
+        <sec id="sec0060">
+          <label>2.4.1</label>
+          <title>Sample characteristics</title>
+          <p id="par0085">Age, gender, education level, ethnicity, along with other background information, was obtained using a standard demographics questionnaire. The two-subtest administration of the Wechsler Abbreviated Scale of Intelligence (Vocabulary and Matrix Reasoning) provided estimates of intellect (<xref rid="bib0235" ref-type="bibr">Wechsler, 1999</xref>).</p>
+        </sec>
+        <sec id="sec0065">
+          <label>2.4.2</label>
+          <title>Substance use</title>
+          <p id="par0090">The Substance Use Disorder modules of the Structured Clinical Interview for DSM-IV (SCID) (<xref rid="bib0085" ref-type="bibr">First et al., 2002</xref>) were administered by a trained research assistant to assess for lifetime and current symptoms of abuse and dependence for alcohol, nicotine, MJ and other substances. The SCID interview also provided the onset of use information. A Time Line Follow-Back (TLFB) approach was used to quantify alcohol, nicotine, and MJ use patterns for 90 days prior to study participation (<xref rid="bib0215" ref-type="bibr">Sobell and Sobell, 1992</xref>). Marijuana use in grams was obtained via self-report in response to probes aimed at quantifying their regular use.</p>
+        </sec>
+      </sec>
+      <sec id="sec0070">
+        <label>2.5</label>
+        <title>Statistical analyses</title>
+        <p id="par0095">Statistical analyses were conducted in SPSS 18.0 for behavioral and psychosocial measures whereas general linear model group comparisons on surfaced-based morphology measures were carried out FreeSurfer's built-in application QDEC (v1.5). Independent samples <italic>t</italic>-tests, Mann–Whitney <italic>U</italic>-tests or chi-square tests, compared groups on background and demographic variables (see <xref rid="tbl0005" ref-type="table">Table 1</xref>). Before statistical analysis was conducted, the dependent measures of cortical thickness, GWR and LGI were smoothed using a FWHM Gaussian filter with a width of either 10 or 15 mm. Separate univariate general linear model (GLM) was then used to model cortical thickness, GWR and LGI with onset status of MJ use as a between groups factor. The dependent variables were thickness, gray–white ratio or local gyrification index and the independent variables were either recent monthly MJ use in grams (MJ grams) or duration of MJ use (MJ years). Age and total drinks in the past 2 months were treated as nuisance covariates in the model. Using MJ years of use and MJ grams as independent predictors of interest allowed us to characterize and differentiate the latent developmental effects from cumulative and current effects of MJ use. The variable “marijuana years of use” was based on the participants’ response to the question “For how many years have you been using marijuana regularly?” Of note, an outlier in the early onset group was removed before the statistical comparisons were performed.</p>
+      </sec>
+    </sec>
+    <sec id="sec0075">
+      <label>3</label>
+      <title>Results</title>
+      <sec id="sec0080">
+        <label>3.1</label>
+        <title>Cortical thickness</title>
+        <p id="par0105">There were no regions of group differences in cortical thickness by early onset status alone, controlled for age and alcohol use. However, MJ use characteristics were correlated with anterior dorsolateral prefrontal cortex thickness based on onset status. Early onset users showed increased thickness with increased MJ grams while late onset users showed thinner cortex with increased MJ grams (<italic>p</italic> &lt; 0.05 uncorrected) (<xref rid="tbl0015" ref-type="table">Table 3</xref>). The same pattern emerged with more years of MJ use being associated with thicker region of the right medial temporal lobe in the early onset users and the reverse for the late onset users (<italic>p</italic> &lt; 0.05 uncorrected) (<xref rid="fig0005" ref-type="fig">Fig. 1</xref>).<table-wrap position="float" id="tbl0015"><label>Table 3</label><caption><p>Clusters of significant age of onset × marijuana use interactions. GWR, gray/white matter border ratio; LGI, local gyrification index.</p></caption><table frame="hsides" rules="groups"><thead><tr><th align="left">Measure</th><th align="left">Label@Max, <italic>Extended coverage</italic></th><th align="left">Side</th><th align="left">Max-log(<italic>p</italic>)</th><th align="left">VtxMax</th><th align="left">Size (mm<sup>2</sup>)</th><th align="left"><italic>x</italic></th><th align="left"><italic>y</italic></th><th align="left"><italic>z</italic></th><th align="left">Correlate</th><th align="left"><italic>P</italic> (corr)</th><th align="left"><italic>F</italic>-value</th><th align="left">Effect Size<xref rid="tblfn0030" ref-type="table-fn">**</xref></th></tr></thead><tbody><tr><td align="left">Thickness</td><td align="left">Lingual</td><td align="left">R</td><td align="char">−2.488</td><td align="char">127,927</td><td align="char">1110</td><td align="char">19</td><td align="char">−69</td><td align="char">−7</td><td align="left">MJ Years</td><td align="char">0.016</td><td align="char">10.07</td><td align="char">0.063</td></tr><tr><td align="left">GWR</td><td align="left">Rostral middle frontal,</td><td align="left">L</td><td align="char">−2.668</td><td align="char">42,505</td><td align="char">1730</td><td align="char">−23</td><td align="char">53</td><td align="char">10</td><td align="left">MJ Grams</td><td align="char">0.001</td><td align="char">11.09</td><td align="char">1.969</td></tr><tr><td/><td align="left">Rostral middle frontal</td><td align="left">R</td><td align="char">−3.565</td><td align="char">94,896</td><td align="char">2661</td><td align="char">39</td><td align="char">30</td><td align="char">18</td><td align="left">MJ Years</td><td align="char">0.0002</td><td align="char">16.6</td><td align="char">0.744</td></tr><tr><td/><td align="left">Medial orbitofrontal</td><td align="left">R</td><td align="char">−3.304</td><td align="char">84,773</td><td align="char">1368</td><td align="char">6</td><td align="char">47</td><td align="char">−20</td><td align="left">MJ Years</td><td align="char">0.013</td><td align="char">14.92</td><td align="char">0.796</td></tr><tr><td align="left">LGI</td><td align="left">Inferior parietal</td><td align="left">L</td><td align="char">3.456</td><td align="char">122,169</td><td align="char">2565</td><td align="char">−44</td><td align="char">−62</td><td align="char">44</td><td align="left">MJ Grams</td><td align="char">0.015</td><td align="char">15.89</td><td align="char">0.131</td></tr></tbody></table><table-wrap-foot><fn><p><italic>p</italic>(corr), family-wise error fully corrected.</p></fn></table-wrap-foot><table-wrap-foot><fn id="tblfn0030"><label>**</label><p id="npar0030">The effect sizes were derived from Freesurfer's tool in the significant region of interest using <italic>mri_segstats</italic>. This was also confirmed manually by using the <italic>F</italic>-value reported by Freesurfer.</p></fn></table-wrap-foot></table-wrap><fig id="fig0005"><label>Fig. 1</label><caption><p>Early vs. late onset marijuana users show divergent morphological patterns based on current marijuana use (measured in grams; MJ grams) in overlapping areas of anterior prefrontal cortex. GWR, gray/white matter border ratio; LGI, local gyrification index.</p></caption><graphic xlink:href="gr1"/></fig></p>
+      </sec>
+      <sec id="sec0085">
+        <label>3.2</label>
+        <title>Gray–white matter contrast</title>
+        <p id="par0110">There were no regions of group differences in gray–white matter contrast by early onset status alone, controlled for age and alcohol use. However, current MJ consumption (grams) and onset status were differentially correlated with gray–white matter contrast in a left anterior dorsal frontal region (<italic>p</italic> &lt; 0.05, FWE corrected). Increased gray–white contrast with heavier MJ use was seen in the early onset users and the opposite was seen in later onset users (heavier current use linked to decreasing GWR). The same pattern was seen between duration of MJ use in two prefrontal cortex clusters of the right dorsal frontal and medial orbitofrontal area <italic>p</italic> &lt; 0.05, FWE corrected – more years of MJ use were linked to greater GWR among early users (<xref rid="fig0005" ref-type="fig">Fig. 1</xref>).</p>
+      </sec>
+      <sec id="sec0090">
+        <label>3.3</label>
+        <title>Gyrification</title>
+        <p id="par0115">MJ use onset status alone showed no significant main effects above age and alcohol covariates. However, onset status was correlated with divergent patterns between local gyrification and MJ use, whereby early onset users showed decreasing LGI with increasing MJ consumption and longer duration of use in prefrontal cortex regions <italic>p</italic> &lt; 0.05, FWE corrected. The left hemisphere clusters encompassed the majority of the length of the middle lateral surface of the left cortex, including motor cortices, parietal lobe and multimodal integration areas (<xref rid="fig0005" ref-type="fig">Fig. 1</xref>).</p>
+      </sec>
+    </sec>
+    <sec id="sec0095">
+      <label>4</label>
+      <title>Discussion</title>
+      <p id="par0120">The present study was designed to characterize the cortical architecture in adolescent onset MJ users by comparing early adolescent onset users to late adolescent onset in MJ use on measures of cortical thickness, gray/white matter contrast and gyrification. The primary finding was that early versus late onset MJ users showed a divergent pattern in cortical thickness, definition of the cortical ribbon and local gyrification with continued use through and beyond adolescent years. Specifically, early onset users showed cortical thickening, enhanced gray/white matter contrast, and decreased gyrification in association with more years of MJ use and current consumption of MJ in grams in frontal and temporal regions – areas that underlie higher order cognition including executive functioning, learning and memory. Findings were above and beyond effects of alcohol and current age, therefore, results are less likely to reflect morphological trends due to aging.</p>
+      <p id="par0125">Our findings did not find the expected age of onset differences previously reported in marijuana users (<xref rid="bib0120" ref-type="bibr">Gruber et al., 2012</xref>, <xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>). This inconsistency suggests that the age of onset effects may be more robust in brain white matter connectivity (<xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>) and function (<xref rid="bib0120" ref-type="bibr">Gruber et al., 2012</xref>) than brain surface morphometry. To date, the few studies that have described altered cortical morphology in MJ users have led to mixed findings. <xref rid="bib0161" ref-type="bibr">Mata et al. (2010)</xref> identified brain regions with decreased sulcal depth suggestive of lower gyrification in a study of adult MJ users. <xref rid="bib0141" ref-type="bibr">Jacobus and Tapert (2014)</xref> recently reported increased cortical thickness in the entorhinal cortex among 24 adolescent MJ users (mean age = 17.7, mean MJ onset age = 15.4) relative to peer controls. However, the authors also reported a negative relationship between cortical thickness and total MJ use in the right paracentral gyrus, and they observed consistent positive relationships in various brain regions between age of MJ onset and thickness. In the only other known adolescent study of cortical thickness and MJ, Lopez-Larson and colleagues studied 18 adolescent heavy MJ users (similar in age and MJ onset as <xref rid="bib0141" ref-type="bibr">Jacobus and Tapert, 2014</xref>) and reported mixed findings of increased thickness in prefrontal/insula regions and decreased thickness in posterior/temporal lobe areas in the MJ users compared to controls. In contrast to <xref rid="bib0141" ref-type="bibr">Jacobus and Tapert, 2014</xref>, <xref rid="bib0151" ref-type="bibr">Lopez-Larson et al., 2011</xref> found areas of the frontal lobe and insula that were thinner with increased urine THC metabolites and thicker with earlier age of onset. Select findings from the current study align with aspects of both of these studies, with a consensus supporting findings of a negative dose-dependent relationship between MJ use and cortical thickness. Given the low availability of studies to compare, this consensus is very limited. Although Jacobus et al. and Lopez-Larson et al. found the opposite effect of age of onset on thickness, the pattern of divergence among early vs. late onset users in the current study is more consistent with the latter study, whereby we saw early onset users exhibit thicker cortex with continued MJ use. Taken together, findings of increased thickness related to early MJ onset accompanied by negative dose-dependent relationships with MJ exposure may reflect two distinct processes. One process may be specific to the interactions with cortical development during early adolescence, likely leading to a disruption in pruning, and, the other, specific to the pharmacological effect with heavy chronic MJ use.</p>
+      <p id="par0130">In the only known study to examine the curvature-morphology of the cortex in adult MJ users, <xref rid="bib0161" ref-type="bibr">Mata et al. (2010)</xref> identified decreased sulcal concavity and thinner sulci in 23 MJ users compared to controls (<italic>n</italic> = 44), also in prefrontal areas. However, they did not observe significant relationships with age, MJ onset age, or cumulative MJ use. It is interesting that the authors detected group level differences (MJ vs. controls) but no correlations with MJ use characteristics such as dose or age of onset, whereas our primary findings are the consistent effects of continued MJ use differing after early or late adolescent onset. There are substantial methodological explanations for this disparity. For example, the current study did not compare morphology in MJ users to a normative control sample, therefore, it is feasible that group-level differences may emerge with such a comparison. Likewise, we deliberately covaried for current age in order to control for brain changes with aging and thus optimize our interrogation of developmental effects of early onset age and of aspects of continued use.</p>
+      <p id="par0135">The heterogeneity of MJ effects clearly suggests a multifactorial system of neurobiological processes involved. The primary results uphold that age of onset is a robust variable that differentiates heavy MJ users based on early versus late MJ onset. However, this group distinction relied on current use characteristics. Therefore, in the absence of group-level differences, the interactions between onset age and current use indicates that continued cannabis exposure and early adolescent developmental factors both contribute to a dynamic and sustained departure from what is expected based on developmental studies.</p>
+      <p id="par0140">Typical synaptic refinement processes during early adolescence are in the context of long-term depression and potentiation of cortical neurons in order to facilitate neuronal remodeling. Thus, the normal course of early adolescent development is uniquely vulnerable to disruption by MJ due to the electrochemical conditions and maturity of brain processes that would not present together again. Cass and colleagues tested the sensitivity of early adolescence cannabinoid exposure in an animal model (<xref rid="bib0040" ref-type="bibr">Cass et al., 2014</xref>). They found that acute administration of cannabinoid agonists in early, middle and late adolescent rats led to a state of frequency-dependent disinhibition of neurons in the frontal cortex in the early-to-middle adolescent rats, but not in the late adolescent rats. Moreover, the authors also noted that adult rats previously exposed to cannabinoid agonists in adolescence displayed comparable neuronal disinhibition. Thus, by changing the inhibitory/excitatory landscape during adolescence, MJ can influence lasting changes to typical cortical remodeling during sensitive early adolescent years.</p>
+      <p id="par0145">The sequence of pruning and myelination likely plays a formative role in lasting changes from early adolescent onset MJ use. With decreased synaptic elimination, our findings of greater GW border contrast may reflect greater proliferation of myelin at the boundary of the cortical ribbon where non-pruned synapses remained with linked axons. Findings of altered white matter tissue qualities are mixed in adolescent and adult MJ user samples. Some report both increases and decreases in fractional anisotropy (FA) and average water diffusion (<xref rid="bib0020" ref-type="bibr">Bava et al., 2009</xref>) whereas others report consistent decreases in FA among adolescent MJ users (<xref rid="bib0010" ref-type="bibr">Ashtari et al., 2009</xref>, <xref rid="bib0140" ref-type="bibr">Jacobus et al., 2009</xref>) or null findings (<xref rid="bib0060" ref-type="bibr">Delisi et al., 2006</xref>). Two studies of diffusion tensor imaging in adult MJ users reported reduced FA in users compared to controls (<xref rid="bib0130" ref-type="bibr">Gruber et al., 2011</xref>, <xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>). In addition to equivocal findings, research is needed to address the microstructural changes that could result in altered definition of the cortical ribbon. For example, rather than whole brain techniques that assess diffusion measures along major white matter tracts, indices assessing axonal organization along radial and interneuron association fibers along the cortical ribbon are needed. This scenario played out could result in increased gray matter (thicker cortex from disrupted pruning) and the myelination of connections to these spared terminals would result in increased density of white matter at the cortical boundary. Without any known studies of adolescent development of the gray/white tissue contrast at the cortical border to serve as a point of comparison, we speculate that early adolescent disruption of pruning and subsequent myelination of connections at the cortical boundary would be reflected by increased GWR as we saw in the current study.</p>
+    </sec>
+    <sec id="sec0100">
+      <label>5</label>
+      <title>Limitations and conclusions</title>
+      <p id="par0150">The cross-sectional nature of this study limits causal attributions in terms of what we can infer to be directly related to the effects of MJ. Although a longitudinal design is optimal for addressing brain changes directly due to MJ, cross-sectional studies facilitate data-driven hypotheses that can be assessed directly in prospective studies.</p>
+      <p id="par0155">It is important to keep in mind that the participants were not explicitly asked for possible years of abstinence during their period of regular use, which may have created possible inflation in reported duration of regular use. However, because the participants provided number of years of “regular” marijuana use, this inherently suggests continued, uninterrupted years of use. Concurrent nicotine use could have also influenced our reported results. But in the absence of a larger sample size and the presence of huge variance in nicotine use in the current sample, we were unable to verify the effect of nicotine use in the reported results.</p>
+      <p id="par0160">Interpretation of these findings is also limited by the lack of behavioral anchors for the observed morphological effects and lack of information on other aspects of developmental history that could further characterize the effects of marijuana during neurodevelopment. This is further limited by the absence of “expected” patterns based on normative data. Given the varied directions of effects and the small sample size, these findings should be replicated and be viewed as preliminary.</p>
+      <p id="par0165">To conclude, early MJ use was linked to altered neurodevelopmental patterns in brain regions sub-serving higher-order cognitive process. Clinical implications include need for early, targeted intervention. Given that the most robust results were related to interactions between onset age and continued use through emerging adulthood, harm reduction approaches may be effective in moderating adolescent MJ use to levels that are less likely to cause long-term developmental changes.</p>
+    </sec>
+    <sec id="sec0105">
+      <title>Conflict of interest</title>
+      <p id="par0170">The authors report no conflicts of interest.</p>
+    </sec>
+  </body>
+  <back>
+    <ref-list id="bibl0005">
+      <title>References</title>
+      <ref id="bib0001">
+        <element-citation publication-type="journal" id="sbref0001">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Alemán-Gómez</surname>
+              <given-names>Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>The human cerebral cortex flattens during adolescence</article-title>
+          <source>J. Neurosci.</source>
+          <volume>33</volume>
+          <issue>38</issue>
+          <year>2013</year>
+          <fpage>15004</fpage>
+          <lpage>15010</lpage>
+          <pub-id pub-id-type="pmid">24048830</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0005">
+        <element-citation publication-type="journal" id="sbref0005">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Anavi-Goffer</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Mulder</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>The polarised life of the endocannabinoid system in CNS development</article-title>
+          <source>Chembiochem</source>
+          <volume>10</volume>
+          <issue>10</issue>
+          <year>2009</year>
+          <fpage>1591</fpage>
+          <lpage>1598</lpage>
+          <pub-id pub-id-type="pmid">19533710</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0006">
+        <element-citation publication-type="journal" id="sbref0006">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Armstrong</surname>
+              <given-names>E.</given-names>
+            </name>
+          </person-group>
+          <article-title>The ontogeny of human gyrification</article-title>
+          <source>Cereb. Cortex</source>
+          <volume>5</volume>
+          <issue>1</issue>
+          <year>1995</year>
+          <fpage>56</fpage>
+          <lpage>63</lpage>
+          <pub-id pub-id-type="pmid">7719130</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0010">
+        <element-citation publication-type="journal" id="sbref0010">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Ashtari</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Cervellione</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Cottone</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Ardekani</surname>
+              <given-names>B.A.</given-names>
+            </name>
+            <name>
+              <surname>Sevy</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Kumra</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Diffusion abnormalities in adolescents and young adults with a history of heavy cannabis use</article-title>
+          <source>J. Psychiatr. Res.</source>
+          <volume>43</volume>
+          <issue>3</issue>
+          <year>2009</year>
+          <fpage>189</fpage>
+          <lpage>204</lpage>
+          <pub-id pub-id-type="pmid">19111160</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0015">
+        <element-citation publication-type="journal" id="sbref0015">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Battistella</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Fornari</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Annoni</surname>
+              <given-names>J.M.</given-names>
+            </name>
+            <name>
+              <surname>Chtioui</surname>
+              <given-names>H.</given-names>
+            </name>
+            <name>
+              <surname>Dao</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Fabritius</surname>
+              <given-names>M.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Giroud</surname>
+              <given-names>C.</given-names>
+            </name>
+          </person-group>
+          <article-title>Long-term effects of cannabis on brain structure</article-title>
+          <source>Neuropsychopharmacology</source>
+          <volume>39</volume>
+          <issue>9</issue>
+          <year>2014</year>
+          <fpage>2041</fpage>
+          <lpage>2048</lpage>
+          <pub-id pub-id-type="pmid">24633558</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0020">
+        <element-citation publication-type="journal" id="sbref0020">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Bava</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Frank</surname>
+              <given-names>L.R.</given-names>
+            </name>
+            <name>
+              <surname>McQueeny</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Schweinsburg</surname>
+              <given-names>B.C.</given-names>
+            </name>
+            <name>
+              <surname>Schweinsburg</surname>
+              <given-names>A.D.</given-names>
+            </name>
+            <name>
+              <surname>Tapert</surname>
+              <given-names>S.F.</given-names>
+            </name>
+          </person-group>
+          <article-title>Altered white matter microstructure in adolescent substance users</article-title>
+          <source>Psychiatry Res.</source>
+          <volume>173</volume>
+          <issue>3</issue>
+          <year>2009</year>
+          <fpage>228</fpage>
+          <lpage>237</lpage>
+          <comment>pii:S0925-4927(09)00089-4</comment>
+          <pub-id pub-id-type="pmid">19699064</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0025">
+        <element-citation publication-type="journal" id="sbref0025">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Caballero</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Tseng</surname>
+              <given-names>K.Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>Association of cannabis use during adolescence, prefrontal cb1 receptor signaling, and schizophrenia</article-title>
+          <source>Front Pharmacol.</source>
+          <volume>3</volume>
+          <year>2012</year>
+          <fpage>101</fpage>
+          <pub-id pub-id-type="pmid">22654759</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0030">
+        <element-citation publication-type="book" id="sbref0030">
+          <person-group person-group-type="author">
+            <name>
+              <surname>CASA</surname>
+            </name>
+          </person-group>
+          <chapter-title>Adolescent Substance Use: America's #1 Public Health Problem</chapter-title>
+          <year>2011</year>
+          <publisher-name>The National Center on Addiction and Substance Abuse (CASA) at Columbia University</publisher-name>
+          <publisher-loc>New York</publisher-loc>
+        </element-citation>
+      </ref>
+      <ref id="bib0035">
+        <element-citation publication-type="journal" id="sbref0035">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Casey</surname>
+              <given-names>B.J.</given-names>
+            </name>
+            <name>
+              <surname>Tottenham</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Liston</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Durston</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>Imaging the developing brain: what have we learned about cognitive development?</article-title>
+          <source>Trends Cogn. Sci.</source>
+          <volume>9</volume>
+          <issue>3</issue>
+          <year>2005</year>
+          <fpage>104</fpage>
+          <lpage>110</lpage>
+          <comment>pii:S1364-6613(05)00030-6</comment>
+          <pub-id pub-id-type="pmid">15737818</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0040">
+        <element-citation publication-type="journal" id="sbref0040">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Cass</surname>
+              <given-names>D.K.</given-names>
+            </name>
+            <name>
+              <surname>Flores-Barrera</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Thomases</surname>
+              <given-names>D.R.</given-names>
+            </name>
+            <name>
+              <surname>Vital</surname>
+              <given-names>W.F.</given-names>
+            </name>
+            <name>
+              <surname>Caballero</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Tseng</surname>
+              <given-names>K.Y.</given-names>
+            </name>
+          </person-group>
+          <article-title>CB1 cannabinoid receptor stimulation during adolescence impairs the maturation of GABA function in the adult rat prefrontal cortex</article-title>
+          <source>Mol. Psychiatry</source>
+          <volume>19</volume>
+          <issue>5</issue>
+          <year>2014</year>
+          <fpage>536</fpage>
+          <lpage>543</lpage>
+          <pub-id pub-id-type="pmid">24589887</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0045">
+        <element-citation publication-type="journal" id="sbref0045">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Chan</surname>
+              <given-names>G.C.</given-names>
+            </name>
+            <name>
+              <surname>Hinds</surname>
+              <given-names>T.R.</given-names>
+            </name>
+            <name>
+              <surname>Impey</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Storm</surname>
+              <given-names>D.R.</given-names>
+            </name>
+          </person-group>
+          <article-title>Hippocampal neurotoxicity of Delta9-tetrahydrocannabinol</article-title>
+          <source>J. Neurosci.</source>
+          <volume>18</volume>
+          <issue>14</issue>
+          <year>1998</year>
+          <fpage>5322</fpage>
+          <lpage>5332</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/9651215" id="intr0015">http://www.ncbi.nlm.nih.gov/pubmed/9651215</ext-link>, <ext-link ext-link-type="uri" xlink:href="http://www.jneurosci.org/content/18/14/5322.full.pdf" id="intr0020">http://www.jneurosci.org/content/18/14/5322.full.pdf</ext-link></comment>
+          <pub-id pub-id-type="pmid">9651215</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0050">
+        <element-citation publication-type="journal" id="sbref0050">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Cousijn</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Wiers</surname>
+              <given-names>R.W.</given-names>
+            </name>
+            <name>
+              <surname>Ridderinkhof</surname>
+              <given-names>K.R.</given-names>
+            </name>
+            <name>
+              <surname>van den Brink</surname>
+              <given-names>W.</given-names>
+            </name>
+            <name>
+              <surname>Veltman</surname>
+              <given-names>D.J.</given-names>
+            </name>
+            <name>
+              <surname>Goudriaan</surname>
+              <given-names>A.E.</given-names>
+            </name>
+          </person-group>
+          <article-title>Grey matter alterations associated with cannabis use: results of a VBM study in heavy cannabis users and healthy controls</article-title>
+          <source>Neuroimage</source>
+          <volume>59</volume>
+          <issue>4</issue>
+          <year>2012</year>
+          <fpage>3845</fpage>
+          <lpage>3851</lpage>
+          <pub-id pub-id-type="pmid">21982932</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0055">
+        <element-citation publication-type="journal" id="sbref0055">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Dale</surname>
+              <given-names>A.M.</given-names>
+            </name>
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Sereno</surname>
+              <given-names>M.I.</given-names>
+            </name>
+          </person-group>
+          <article-title>Cortical surface-based analysis I. Segmentation and surface reconstruction</article-title>
+          <source>Neuroimage</source>
+          <volume>9</volume>
+          <issue>2</issue>
+          <year>1999</year>
+          <fpage>179</fpage>
+          <lpage>194</lpage>
+          <pub-id pub-id-type="pmid">9931268</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0060">
+        <element-citation publication-type="journal" id="sbref0060">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Delisi</surname>
+              <given-names>L.E.</given-names>
+            </name>
+            <name>
+              <surname>Bertisch</surname>
+              <given-names>H.C.</given-names>
+            </name>
+            <name>
+              <surname>Szulc</surname>
+              <given-names>K.U.</given-names>
+            </name>
+            <name>
+              <surname>Majcher</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Brown</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Bappal</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Ardekani</surname>
+              <given-names>B.A.</given-names>
+            </name>
+          </person-group>
+          <article-title>A preliminary DTI study showing no brain structural change associated with adolescent cannabis use</article-title>
+          <source>Harm Reduct. J.</source>
+          <volume>3</volume>
+          <year>2006</year>
+          <fpage>17</fpage>
+          <pub-id pub-id-type="pmid">16684342</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0065">
+        <element-citation publication-type="journal" id="sbref0065">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Desikan</surname>
+              <given-names>R.S.</given-names>
+            </name>
+            <name>
+              <surname>Segonne</surname>
+              <given-names>F.</given-names>
+            </name>
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Quinn</surname>
+              <given-names>B.T.</given-names>
+            </name>
+            <name>
+              <surname>Dickerson</surname>
+              <given-names>B.C.</given-names>
+            </name>
+            <name>
+              <surname>Blacker</surname>
+              <given-names>D.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Killiany</surname>
+              <given-names>R.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest</article-title>
+          <source>Neuroimage</source>
+          <volume>31</volume>
+          <issue>3</issue>
+          <year>2006</year>
+          <fpage>968</fpage>
+          <lpage>980</lpage>
+          <pub-id pub-id-type="pmid">16530430</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0070">
+        <element-citation publication-type="journal" id="sbref0070">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fergusson</surname>
+              <given-names>D.M.</given-names>
+            </name>
+            <name>
+              <surname>Horwood</surname>
+              <given-names>L.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Early onset cannabis use and psychosocial adjustment in young adults</article-title>
+          <source>Addiction</source>
+          <volume>92</volume>
+          <issue>3</issue>
+          <year>1997</year>
+          <fpage>279</fpage>
+          <lpage>296</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/9219390" id="intr0025">http://www.ncbi.nlm.nih.gov/pubmed/9219390</ext-link></comment>
+          <pub-id pub-id-type="pmid">9219390</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0075">
+        <element-citation publication-type="journal" id="sbref0075">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fergusson</surname>
+              <given-names>D.M.</given-names>
+            </name>
+            <name>
+              <surname>Lynskey</surname>
+              <given-names>M.T.</given-names>
+            </name>
+            <name>
+              <surname>Horwood</surname>
+              <given-names>L.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>The short-term consequences of early onset cannabis use</article-title>
+          <source>J. Abnorm. Child Psychol.</source>
+          <volume>24</volume>
+          <issue>4</issue>
+          <year>1996</year>
+          <fpage>499</fpage>
+          <lpage>512</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/8886945" id="intr0030">http://www.ncbi.nlm.nih.gov/pubmed/8886945</ext-link></comment>
+          <pub-id pub-id-type="pmid">8886945</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0080">
+        <element-citation publication-type="journal" id="sbref0080">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Filbey</surname>
+              <given-names>F.M.</given-names>
+            </name>
+            <name>
+              <surname>Aslan</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Calhoun</surname>
+              <given-names>V.D.</given-names>
+            </name>
+            <name>
+              <surname>Spence</surname>
+              <given-names>J.S.</given-names>
+            </name>
+            <name>
+              <surname>Damaraju</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Caprihan</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Segall</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Long-term effects of marijuana use on the brain</article-title>
+          <source>Proc. Natl. Acad. Sci. U.S.A.</source>
+          <year>2014</year>
+        </element-citation>
+      </ref>
+      <ref id="bib0085">
+        <element-citation publication-type="book" id="sbref0085">
+          <person-group person-group-type="author">
+            <name>
+              <surname>First</surname>
+              <given-names>M.B.</given-names>
+            </name>
+            <name>
+              <surname>Spitzer</surname>
+              <given-names>R.L.</given-names>
+            </name>
+            <name>
+              <surname>Miriam</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Williams</surname>
+              <given-names>J.B.W.</given-names>
+            </name>
+          </person-group>
+          <chapter-title>Structured Clinical Interview for DSM-IV-TR Axis I Disorders, Research Version, Non-patient Edition (SCID-I/NP)</chapter-title>
+          <year>2002</year>
+          <publisher-name>Biometrics Research, New York State Psychiatric Institute</publisher-name>
+          <publisher-loc>New York</publisher-loc>
+        </element-citation>
+      </ref>
+      <ref id="bib0090">
+        <element-citation publication-type="journal" id="sbref0090">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Dale</surname>
+              <given-names>A.M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Measuring the thickness of the human cerebral cortex from magnetic resonance images</article-title>
+          <source>Proc. Natl. Acad. Sci. U.S.A.</source>
+          <volume>97</volume>
+          <issue>20</issue>
+          <year>2000</year>
+          <fpage>11050</fpage>
+          <lpage>11055</lpage>
+          <pub-id pub-id-type="pmid">10984517</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0095">
+        <element-citation publication-type="journal" id="sbref0095">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Salat</surname>
+              <given-names>D.H.</given-names>
+            </name>
+            <name>
+              <surname>Busa</surname>
+              <given-names>E.</given-names>
+            </name>
+            <name>
+              <surname>Albert</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Dieterich</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Haselgrove</surname>
+              <given-names>C.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Dale</surname>
+              <given-names>A.M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Whole brain segmentation: automated labeling of neuroanatomical structures in the human brain</article-title>
+          <source>Neuron</source>
+          <volume>33</volume>
+          <issue>3</issue>
+          <year>2002</year>
+          <fpage>341</fpage>
+          <lpage>355</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/11832223" id="intr0035">http://www.ncbi.nlm.nih.gov/pubmed/11832223</ext-link></comment>
+          <pub-id pub-id-type="pmid">11832223</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0100">
+        <element-citation publication-type="journal" id="sbref0100">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Sereno</surname>
+              <given-names>M.I.</given-names>
+            </name>
+            <name>
+              <surname>Dale</surname>
+              <given-names>A.M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Cortical surface-based analysis II: Inflation, flattening, and a surface-based coordinate system</article-title>
+          <source>Neuroimage</source>
+          <volume>9</volume>
+          <issue>2</issue>
+          <year>1999</year>
+          <fpage>195</fpage>
+          <lpage>207</lpage>
+          <pub-id pub-id-type="pmid">9931269</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0105">
+        <element-citation publication-type="journal" id="sbref0105">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Giedd</surname>
+              <given-names>J.N.</given-names>
+            </name>
+          </person-group>
+          <article-title>The teen brain: insights from neuroimaging</article-title>
+          <source>J. Adolesc. Health</source>
+          <volume>42</volume>
+          <issue>4</issue>
+          <year>2008</year>
+          <fpage>335</fpage>
+          <lpage>343</lpage>
+          <pub-id pub-id-type="pmid">18346658</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0110">
+        <element-citation publication-type="journal" id="sbref0110">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Giorgio</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Watkins</surname>
+              <given-names>K.E.</given-names>
+            </name>
+            <name>
+              <surname>Chadwick</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>James</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Winmill</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Douaud</surname>
+              <given-names>G.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>James</surname>
+              <given-names>A.C.</given-names>
+            </name>
+          </person-group>
+          <article-title>Longitudinal changes in grey and white matter during adolescence</article-title>
+          <source>Neuroimage</source>
+          <volume>49</volume>
+          <issue>1</issue>
+          <year>2010</year>
+          <fpage>94</fpage>
+          <lpage>103</lpage>
+          <comment>pii:S1053-8119(09)00864-7</comment>
+          <pub-id pub-id-type="pmid">19679191</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0115">
+        <element-citation publication-type="journal" id="sbref0115">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gogtay</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Giedd</surname>
+              <given-names>J.N.</given-names>
+            </name>
+            <name>
+              <surname>Lusk</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Hayashi</surname>
+              <given-names>K.M.</given-names>
+            </name>
+            <name>
+              <surname>Greenstein</surname>
+              <given-names>D.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Thompson</surname>
+              <given-names>P.M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Dynamic mapping of human cortical development during childhood through early adulthood</article-title>
+          <source>Proc. Natl. Acad. Sci. U.S.A.</source>
+          <volume>101</volume>
+          <issue>21</issue>
+          <year>2004</year>
+          <fpage>8174</fpage>
+          <lpage>8179</lpage>
+          <pub-id pub-id-type="pmid">15148381</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0120">
+        <element-citation publication-type="journal" id="sbref0120">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gruber</surname>
+              <given-names>S.A.</given-names>
+            </name>
+            <name>
+              <surname>Dahlgren</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Sagar</surname>
+              <given-names>K.A.</given-names>
+            </name>
+            <name>
+              <surname>Gonenc</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Killgore</surname>
+              <given-names>W.D.</given-names>
+            </name>
+          </person-group>
+          <article-title>Age of onset of marijuana use impacts inhibitory processing</article-title>
+          <source>Neurosci. Lett.</source>
+          <volume>511</volume>
+          <issue>2</issue>
+          <year>2012</year>
+          <fpage>89</fpage>
+          <lpage>94</lpage>
+          <pub-id pub-id-type="pmid">22306089</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0125">
+        <element-citation publication-type="journal" id="sbref0125">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gruber</surname>
+              <given-names>S.A.</given-names>
+            </name>
+            <name>
+              <surname>Dahlgren</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Sagar</surname>
+              <given-names>K.A.</given-names>
+            </name>
+            <name>
+              <surname>Gonenc</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Lukas</surname>
+              <given-names>S.E.</given-names>
+            </name>
+          </person-group>
+          <article-title>Worth the wait: effects of age of onset of marijuana use on white matter and impulsivity</article-title>
+          <source>Psychopharmacology (Berlin)</source>
+          <volume>231</volume>
+          <issue>8</issue>
+          <year>2014</year>
+          <fpage>1455</fpage>
+          <lpage>1465</lpage>
+          <pub-id pub-id-type="pmid">24190588</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0130">
+        <element-citation publication-type="journal" id="sbref0130">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Gruber</surname>
+              <given-names>S.A.</given-names>
+            </name>
+            <name>
+              <surname>Silveri</surname>
+              <given-names>M.M.</given-names>
+            </name>
+            <name>
+              <surname>Dahlgren</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Yurgelun-Todd</surname>
+              <given-names>D.</given-names>
+            </name>
+          </person-group>
+          <article-title>Why so impulsive? White matter alterations are associated with impulsivity in chronic marijuana smokers</article-title>
+          <source>Exp. Clin. Psychopharmacol.</source>
+          <volume>19</volume>
+          <issue>3</issue>
+          <year>2011</year>
+          <fpage>231</fpage>
+          <lpage>242</lpage>
+          <pub-id pub-id-type="pmid">21480730</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0135">
+        <element-citation publication-type="journal" id="sbref0135">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Hasan</surname>
+              <given-names>K.M.</given-names>
+            </name>
+            <name>
+              <surname>Sankar</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Halphen</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Kramer</surname>
+              <given-names>L.A.</given-names>
+            </name>
+            <name>
+              <surname>Brandt</surname>
+              <given-names>M.E.</given-names>
+            </name>
+            <name>
+              <surname>Juranek</surname>
+              <given-names>J.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Ewing-Cobbs</surname>
+              <given-names>L.</given-names>
+            </name>
+          </person-group>
+          <article-title>Development and organization of the human brain tissue compartments across the lifespan using diffusion tensor imaging</article-title>
+          <source>Neuroreport</source>
+          <volume>18</volume>
+          <issue>16</issue>
+          <year>2007</year>
+          <fpage>1735</fpage>
+          <lpage>1739</lpage>
+          <pub-id pub-id-type="pmid">17921878</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0140">
+        <element-citation publication-type="journal" id="sbref0140">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Jacobus</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>McQueeny</surname>
+              <given-names>T.</given-names>
+            </name>
+            <name>
+              <surname>Bava</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Schweinsburg</surname>
+              <given-names>B.C.</given-names>
+            </name>
+            <name>
+              <surname>Frank</surname>
+              <given-names>L.R.</given-names>
+            </name>
+            <name>
+              <surname>Yang</surname>
+              <given-names>T.T.</given-names>
+            </name>
+            <name>
+              <surname>Tapert</surname>
+              <given-names>S.F.</given-names>
+            </name>
+          </person-group>
+          <article-title>White matter integrity in adolescents with histories of marijuana use and binge drinking</article-title>
+          <source>Neurotoxicol. Teratol.</source>
+          <volume>31</volume>
+          <issue>6</issue>
+          <year>2009</year>
+          <fpage>349</fpage>
+          <lpage>355</lpage>
+          <comment>pii:S0892-0362(09)00145-7</comment>
+          <pub-id pub-id-type="pmid">19631736</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0141">
+        <element-citation publication-type="journal" id="sbref0141">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Jacobus</surname>
+              <given-names>J.</given-names>
+            </name>
+            <name>
+              <surname>Tapert</surname>
+              <given-names>S.F.</given-names>
+            </name>
+          </person-group>
+          <article-title>Effects of cannabis on the adolescent brain</article-title>
+          <source>Curr. Pharm. Des.</source>
+          <volume>20</volume>
+          <issue>13</issue>
+          <year>2014</year>
+          <fpage>2186</fpage>
+          <lpage>2193</lpage>
+          <pub-id pub-id-type="pmid">23829363</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0145">
+        <element-citation publication-type="book" id="sbref0145">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Johnston</surname>
+              <given-names>L.D.</given-names>
+            </name>
+            <name>
+              <surname>O’Malley</surname>
+              <given-names>P.M.</given-names>
+            </name>
+            <name>
+              <surname>Miech</surname>
+              <given-names>R.A.</given-names>
+            </name>
+            <name>
+              <surname>Bachman</surname>
+              <given-names>J.G.</given-names>
+            </name>
+            <name>
+              <surname>Schulenberg</surname>
+              <given-names>J.E.</given-names>
+            </name>
+          </person-group>
+          <chapter-title>Monitoring the Future National Survey Results on Drug Use, 1975–2013</chapter-title>
+          <year>2014</year>
+          <publisher-name>Institute for Social Research, The University of Michigan</publisher-name>
+          <publisher-loc>Ann Arbor, MI</publisher-loc>
+        </element-citation>
+      </ref>
+      <ref id="bib0146">
+        <element-citation publication-type="journal" id="sbref0146">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Klein</surname>
+              <given-names>D.</given-names>
+            </name>
+          </person-group>
+          <article-title>Adolescent brain maturation and cortical folding: evidence for reductions in gyrification</article-title>
+          <source>PLoS One</source>
+          <volume>9</volume>
+          <issue>1</issue>
+          <year>2014</year>
+          <fpage>e84914</fpage>
+          <pub-id pub-id-type="pmid">24454765</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0150">
+        <element-citation publication-type="journal" id="sbref0150">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lebel</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Caverhill-Godkewitsch</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Beaulieu</surname>
+              <given-names>C.</given-names>
+            </name>
+          </person-group>
+          <article-title>Age-related variations of white matter tracts</article-title>
+          <source>Neuroimage</source>
+          <volume>52</volume>
+          <issue>1</issue>
+          <year>2010</year>
+          <fpage>20</fpage>
+          <lpage>31</lpage>
+          <comment>pii:S1053-8119(10)00359-9</comment>
+          <pub-id pub-id-type="pmid">20362683</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0151">
+        <element-citation publication-type="journal" id="sbref0151">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lopez-Larson</surname>
+              <given-names>M.P.</given-names>
+            </name>
+          </person-group>
+          <article-title>Altered prefrontal and insular cortical thickness in adolescent marijuana users</article-title>
+          <source>Behav. Brain Res.</source>
+          <volume>220</volume>
+          <issue>1</issue>
+          <year>2011</year>
+          <fpage>164</fpage>
+          <lpage>172</lpage>
+          <pub-id pub-id-type="pmid">21310189</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0155">
+        <element-citation publication-type="journal" id="sbref0155">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lopez-Moreno</surname>
+              <given-names>J.A.</given-names>
+            </name>
+            <name>
+              <surname>Gonzalez-Cuevas</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Moreno</surname>
+              <given-names>G.</given-names>
+            </name>
+            <name>
+              <surname>Navarro</surname>
+              <given-names>M.</given-names>
+            </name>
+          </person-group>
+          <article-title>The pharmacology of the endocannabinoid system: functional and structural interactions with other neurotransmitter systems and their repercussions in behavioral addiction</article-title>
+          <source>Addict. Biol.</source>
+          <volume>13</volume>
+          <issue>2</issue>
+          <year>2008</year>
+          <fpage>160</fpage>
+          <lpage>187</lpage>
+          <pub-id pub-id-type="pmid">18422831</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0160">
+        <element-citation publication-type="journal" id="sbref0160">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Lorenzetti</surname>
+              <given-names>V.</given-names>
+            </name>
+            <name>
+              <surname>Lubman</surname>
+              <given-names>D.I.</given-names>
+            </name>
+            <name>
+              <surname>Whittle</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Solowij</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Yucel</surname>
+              <given-names>M.</given-names>
+            </name>
+          </person-group>
+          <article-title>Structural MRI findings in long-term cannabis users: what do we know?</article-title>
+          <source>Subst. Use Misuse</source>
+          <volume>45</volume>
+          <issue>11</issue>
+          <year>2010</year>
+          <fpage>1787</fpage>
+          <lpage>1808</lpage>
+          <pub-id pub-id-type="pmid">20590400</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0161">
+        <element-citation publication-type="journal" id="sbref0161">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Mata</surname>
+              <given-names>I.</given-names>
+            </name>
+          </person-group>
+          <article-title>Gyrification brain abnormalities associated with adolescence and early-adulthood cannabis use</article-title>
+          <source>Brain Res.</source>
+          <volume>1317</volume>
+          <year>2010</year>
+          <fpage>297</fpage>
+          <lpage>304</lpage>
+          <pub-id pub-id-type="pmid">20045399</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0165">
+        <element-citation publication-type="journal" id="sbref0165">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Matochik</surname>
+              <given-names>J.A.</given-names>
+            </name>
+            <name>
+              <surname>Eldreth</surname>
+              <given-names>D.A.</given-names>
+            </name>
+            <name>
+              <surname>Cadet</surname>
+              <given-names>J.L.</given-names>
+            </name>
+            <name>
+              <surname>Bolla</surname>
+              <given-names>K.I.</given-names>
+            </name>
+          </person-group>
+          <article-title>Altered brain tissue composition in heavy marijuana users</article-title>
+          <source>Drug Alcohol Depend.</source>
+          <volume>77</volume>
+          <issue>1</issue>
+          <year>2005</year>
+          <fpage>23</fpage>
+          <lpage>30</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.sciencedirect.com/science?_ob=MImg%26_imagekey=B6T63-4DCN07C-1-1%26_cdi=5019%26_user=2629161%26_pii=S0376871604002066%26_orig=search%26_coverDate=01%2F07%2F2005%26_sk=999229998%26view=c%26wchp=dGLbVzb-zSkWA%26md5=f38ff3ce0e5bc6e93f01659d96437f10%26ie=/sdarticle.pdf" id="intr0040">http://www.sciencedirect.com/science?_ob=MImg&amp;_imagekey=B6T63-4DCN07C-1-1&amp;_cdi=5019&amp;_user=2629161&amp;_pii=S0376871604002066&amp;_orig=search&amp;_coverDate=01%2F07%2F2005&amp;_sk=999229998&amp;view=c&amp;wchp=dGLbVzb-zSkWA&amp;md5=f38ff3ce0e5bc6e93f01659d96437f10&amp;ie=/sdarticle.pdf</ext-link></comment>
+          <pub-id pub-id-type="pmid">15607838</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0170">
+        <element-citation publication-type="journal" id="sbref0170">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Patton</surname>
+              <given-names>G.C.</given-names>
+            </name>
+            <name>
+              <surname>Coffey</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Carlin</surname>
+              <given-names>J.B.</given-names>
+            </name>
+            <name>
+              <surname>Degenhardt</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Lynskey</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Hall</surname>
+              <given-names>W.</given-names>
+            </name>
+          </person-group>
+          <article-title>Cannabis use and mental health in young people: cohort study</article-title>
+          <source>BMJ</source>
+          <volume>325</volume>
+          <issue>7374</issue>
+          <year>2002</year>
+          <fpage>1195</fpage>
+          <lpage>1198</lpage>
+          <pub-id pub-id-type="pmid">12446533</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0175">
+        <element-citation publication-type="journal" id="sbref0175">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Paus</surname>
+              <given-names>T.Å.</given-names>
+            </name>
+          </person-group>
+          <article-title>Mapping brain maturation and cognitive development during adolescence</article-title>
+          <source>Trends Cogn. Sci.</source>
+          <volume>9</volume>
+          <issue>2</issue>
+          <year>2005</year>
+          <fpage>60</fpage>
+          <lpage>68</lpage>
+          <pub-id pub-id-type="pmid">15668098</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0180">
+        <element-citation publication-type="journal" id="sbref0180">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Sagar</surname>
+              <given-names>K.A.</given-names>
+            </name>
+            <name>
+              <surname>Dahlgren</surname>
+              <given-names>M.K.</given-names>
+            </name>
+            <name>
+              <surname>Gonenc</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Racine</surname>
+              <given-names>M.T.</given-names>
+            </name>
+            <name>
+              <surname>Dreman</surname>
+              <given-names>M.W.</given-names>
+            </name>
+            <name>
+              <surname>Gruber</surname>
+              <given-names>S.A.</given-names>
+            </name>
+          </person-group>
+          <article-title>The impact of initiation: early onset marijuana smokers demonstrate altered Stroop performance and brain activation</article-title>
+          <source>Dev. Cogn. Neurosci.</source>
+          <year>2015</year>
+        </element-citation>
+      </ref>
+      <ref id="bib0185">
+        <element-citation publication-type="journal" id="sbref0185">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Salat</surname>
+              <given-names>D.H.</given-names>
+            </name>
+            <name>
+              <surname>Lee</surname>
+              <given-names>S.Y.</given-names>
+            </name>
+            <name>
+              <surname>van der Kouwe</surname>
+              <given-names>A.J.</given-names>
+            </name>
+            <name>
+              <surname>Greve</surname>
+              <given-names>D.N.</given-names>
+            </name>
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Rosas</surname>
+              <given-names>H.D.</given-names>
+            </name>
+          </person-group>
+          <article-title>Age-associated alterations in cortical gray and white matter signal intensity and gray to white matter contrast</article-title>
+          <source>Neuroimage</source>
+          <volume>48</volume>
+          <issue>1</issue>
+          <year>2009</year>
+          <fpage>21</fpage>
+          <lpage>28</lpage>
+          <pub-id pub-id-type="pmid">19580876</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0190">
+        <element-citation publication-type="book" id="sbref0190">
+          <person-group person-group-type="author">
+            <name>
+              <surname>SAMHSA</surname>
+            </name>
+          </person-group>
+          <chapter-title>Results from the 2013 National Survey on Drug Use and Health: Summary of National Findings NSDUH Series H-48, HHS Publication No. (SMA) 14-4863</chapter-title>
+          <year>2014</year>
+          <publisher-name>Substance Abuse and Mental Health Services Administration</publisher-name>
+          <publisher-loc>Rockville, MD</publisher-loc>
+        </element-citation>
+      </ref>
+      <ref id="bib0195">
+        <element-citation publication-type="journal" id="sbref0195">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Schaer</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Cuadra</surname>
+              <given-names>M.B.</given-names>
+            </name>
+            <name>
+              <surname>Schmansky</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Fischl</surname>
+              <given-names>B.</given-names>
+            </name>
+            <name>
+              <surname>Thiran</surname>
+              <given-names>J.P.</given-names>
+            </name>
+            <name>
+              <surname>Eliez</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>How to measure cortical folding from MR images: a step-by-step tutorial to compute local gyrification index</article-title>
+          <source>J. Vis. Exp.</source>
+          <issue>59</issue>
+          <year>2012</year>
+          <fpage>e3417</fpage>
+          <pub-id pub-id-type="pmid">22230945</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0200">
+        <element-citation publication-type="book" id="sbref0200">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Schmansky</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Stevens</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Subramaniam</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Greve</surname>
+              <given-names>D.N.</given-names>
+            </name>
+            <name>
+              <surname>Kakunoori</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Pacheco</surname>
+              <given-names>J.</given-names>
+            </name>
+          </person-group>
+          <chapter-title>Troubleshooting Your Output</chapter-title>
+          <year>2010</year>
+          <publisher-name>FsTutorial</publisher-name>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/TroubleshootingData" id="intr0045">http://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/TroubleshootingData</ext-link></comment>
+        </element-citation>
+      </ref>
+      <ref id="bib0205">
+        <element-citation publication-type="journal" id="sbref0205">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Selemon</surname>
+              <given-names>L.D.</given-names>
+            </name>
+          </person-group>
+          <article-title>A role for synaptic plasticity in the adolescent development of executive function</article-title>
+          <source>Transl. Psychiatry</source>
+          <volume>3</volume>
+          <year>2013</year>
+          <fpage>e238</fpage>
+          <pub-id pub-id-type="pmid">23462989</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0210">
+        <element-citation publication-type="journal" id="sbref0210">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Shaw</surname>
+              <given-names>P.</given-names>
+            </name>
+            <name>
+              <surname>Kabani</surname>
+              <given-names>N.J.</given-names>
+            </name>
+            <name>
+              <surname>Lerch</surname>
+              <given-names>J.P.</given-names>
+            </name>
+            <name>
+              <surname>Eckstrand</surname>
+              <given-names>K.</given-names>
+            </name>
+            <name>
+              <surname>Lenroot</surname>
+              <given-names>R.</given-names>
+            </name>
+            <name>
+              <surname>Gogtay</surname>
+              <given-names>N.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Wise</surname>
+              <given-names>S.P.</given-names>
+            </name>
+          </person-group>
+          <article-title>Neurodevelopmental trajectories of the human cerebral cortex</article-title>
+          <source>J. Neurosci.</source>
+          <volume>28</volume>
+          <issue>14</issue>
+          <year>2008</year>
+          <fpage>3586</fpage>
+          <lpage>3594</lpage>
+          <comment>pii:28/14/3586</comment>
+          <pub-id pub-id-type="pmid">18385317</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0215">
+        <element-citation publication-type="book" id="sbref0215">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Sobell</surname>
+              <given-names>L.C.</given-names>
+            </name>
+            <name>
+              <surname>Sobell</surname>
+              <given-names>M.B.</given-names>
+            </name>
+          </person-group>
+          <chapter-title>Timeline follow-back: a technique for assessing self-reported alcohol consumption</chapter-title>
+          <person-group person-group-type="editor">
+            <name>
+              <surname>Litten</surname>
+              <given-names>R.Z.</given-names>
+            </name>
+            <name>
+              <surname>Allen</surname>
+              <given-names>J.P.</given-names>
+            </name>
+          </person-group>
+          <source>Measuring Alcohol Consumption: Psychosocial and Biochemical Methods</source>
+          <year>1992</year>
+          <publisher-name>Humana Press</publisher-name>
+          <publisher-loc>Totowa, NJ, USA</publisher-loc>
+          <fpage>41</fpage>
+          <lpage>72</lpage>
+        </element-citation>
+      </ref>
+      <ref id="bib0220">
+        <element-citation publication-type="journal" id="sbref0220">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Tapert</surname>
+              <given-names>S.F.</given-names>
+            </name>
+            <name>
+              <surname>Schweinsburg</surname>
+              <given-names>A.D.</given-names>
+            </name>
+            <name>
+              <surname>Barlett</surname>
+              <given-names>V.C.</given-names>
+            </name>
+            <name>
+              <surname>Brown</surname>
+              <given-names>S.A.</given-names>
+            </name>
+            <name>
+              <surname>Frank</surname>
+              <given-names>L.R.</given-names>
+            </name>
+            <name>
+              <surname>Brown</surname>
+              <given-names>G.G.</given-names>
+            </name>
+            <name>
+              <surname>Meloy</surname>
+              <given-names>M.J.</given-names>
+            </name>
+          </person-group>
+          <article-title>Blood oxygen level dependent response and spatial working memory in adolescents with alcohol use disorders</article-title>
+          <source>Alcohol Clin. Exp. Res.</source>
+          <volume>28</volume>
+          <issue>10</issue>
+          <year>2004</year>
+          <fpage>1577</fpage>
+          <lpage>1586</lpage>
+          <comment>Retrieved from <ext-link ext-link-type="uri" xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/15597092" id="intr0050">http://www.ncbi.nlm.nih.gov/pubmed/15597092</ext-link></comment>
+          <pub-id pub-id-type="pmid">15597092</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0225">
+        <element-citation publication-type="journal" id="sbref0225">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Verdurand</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Nguyen</surname>
+              <given-names>V.</given-names>
+            </name>
+            <name>
+              <surname>Stark</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Zahra</surname>
+              <given-names>D.</given-names>
+            </name>
+            <name>
+              <surname>Gregoire</surname>
+              <given-names>M.C.</given-names>
+            </name>
+            <name>
+              <surname>Greguric</surname>
+              <given-names>I.</given-names>
+            </name>
+            <name>
+              <surname>Zavitsanou</surname>
+              <given-names>K.</given-names>
+            </name>
+          </person-group>
+          <article-title>Comparison of cannabinoid CB(1) receptor binding in adolescent and adult rats: a positron emission tomography study using [F]MK-9470</article-title>
+          <source>Int. J. Mol. Imaging</source>
+          <volume>2011</volume>
+          <year>2011</year>
+          <fpage>548123</fpage>
+          <pub-id pub-id-type="pmid">22187642</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0230">
+        <element-citation publication-type="journal" id="sbref0230">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Walter</surname>
+              <given-names>L.</given-names>
+            </name>
+            <name>
+              <surname>Franklin</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Witting</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Wade</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Xie</surname>
+              <given-names>Y.</given-names>
+            </name>
+            <name>
+              <surname>Kunos</surname>
+              <given-names>G.</given-names>
+            </name>
+            <x>…</x>
+            <name>
+              <surname>Stella</surname>
+              <given-names>N.</given-names>
+            </name>
+          </person-group>
+          <article-title>Nonpsychotropic cannabinoid receptors regulate microglial cell migration</article-title>
+          <source>J. Neurosci.</source>
+          <volume>23</volume>
+          <issue>4</issue>
+          <year>2003</year>
+          <fpage>1398</fpage>
+          <lpage>1405</lpage>
+          <comment>pii:23/4/1398</comment>
+          <pub-id pub-id-type="pmid">12598628</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="bib0235">
+        <element-citation publication-type="book" id="sbref0235">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Wechsler</surname>
+              <given-names>D.</given-names>
+            </name>
+          </person-group>
+          <chapter-title>Manual for the Wechsler Abbreviated Scale of Intelligence</chapter-title>
+          <year>1999</year>
+          <publisher-name>The Psychological Corporation</publisher-name>
+          <publisher-loc>San Antonio, TX</publisher-loc>
+        </element-citation>
+      </ref>
+      <ref id="bib0240">
+        <element-citation publication-type="journal" id="sbref0240">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Yucel</surname>
+              <given-names>M.</given-names>
+            </name>
+            <name>
+              <surname>Solowij</surname>
+              <given-names>N.</given-names>
+            </name>
+            <name>
+              <surname>Respondek</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Whittle</surname>
+              <given-names>S.</given-names>
+            </name>
+            <name>
+              <surname>Fornito</surname>
+              <given-names>A.</given-names>
+            </name>
+            <name>
+              <surname>Pantelis</surname>
+              <given-names>C.</given-names>
+            </name>
+            <name>
+              <surname>Lubman</surname>
+              <given-names>D.I.</given-names>
+            </name>
+          </person-group>
+          <article-title>Regional brain abnormalities associated with long-term heavy cannabis use</article-title>
+          <source>Arch. Gen. Psychiatry</source>
+          <volume>65</volume>
+          <issue>6</issue>
+          <year>2008</year>
+          <fpage>694</fpage>
+          <lpage>701</lpage>
+          <pub-id pub-id-type="pmid">18519827</pub-id>
+        </element-citation>
+      </ref>
+    </ref-list>
+    <sec id="sec0115" sec-type="supplementary-material">
+      <label>Appendix A</label>
+      <title>Supplementary data</title>
+      <p id="par0185">The following are Supplementary data to this article:<supplementary-material content-type="local-data" id="upi0005"><media xlink:href="mmc1.pptx"/></supplementary-material></p>
+    </sec>
+    <ack id="ack0005">
+      <title>Acknowledgements</title>
+      <p>This research was funded by the <funding-source id="gs1">National Institute on Drug Abuse</funding-source> (R01 DA030344, Filbey). We would like to thank all the participants who volunteered for this study. We are also very grateful to Talha Alvi, Sina Aslan, Jessica Baine, Collette Bice, Vicki Germer, Ariel Ketcherside, Alison King, Brittany Kuhn, Tyler Rhinehardt, Wing Ting To and the team of lab interns for their assistance with recruitment, running participants and data management.</p>
+    </ack>
+    <fn-group>
+      <fn id="sec0110" fn-type="supplementary-material">
+        <label>Appendix A</label>
+        <p id="par0180">Supplementary material related to this article can be found, in the online version, at <ext-link ext-link-type="doi" xlink:href="10.1016/j.dcn.2015.10.001" id="intr0010">http://dx.doi.org/10.1016/j.dcn.2015.10.001</ext-link>.</p>
+      </fn>
+    </fn-group>
+  </back>
+</article>

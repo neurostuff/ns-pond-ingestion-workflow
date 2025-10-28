@@ -1,0 +1,18 @@
+Unnamed: 0_level_0,Unnamed: 1_level_0,Interaction with,Interaction with
+Unnamed: 0_level_1,Coefficients,Middle Income,Low Income
+Percent broken,–0.0560***(0.0185),–0.0078 (0.0398),0.0395 (0.0538)
+GC,0.0776**(0.0354),–0.1055** (0.0508),–0.0760 (0.0601)
+AAC,0.1585(0.1583),–0.1315 (0.1917),–0.1447 (0.1925)
+GT,–0.1008(0.3051),1.0539* (0.5894),–0.6394 (0.7458)
+Small Chalkiness,0.0631(0.0392),–0.0858 (0.0541),–0.0637 (0.0456)
+Per capita rice consumption,0.0592***(0.0191),–0.0664** (0.0259),–0.0449 (0.0290)
+Middle income dummy,–3.3724(2.4746),,
+Low income dummy,3.5979(3.2838),,
+Household size,–0.0035(0.0132),,
+Age of rice purchaser,0.0230(0.0160),,
+Education of rice purchaser,0.0084(0.0132),,
+Gender of rice purchaser,0.0029(0.0127),,
+Location,–0.0225*(0.0114),,
+Intercept,2.9427**(1.4672),,
+Observations,127,,
+R-squared,0.50,,
