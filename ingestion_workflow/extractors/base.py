@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Type
+from typing import Dict, Iterable, List, Optional, Sequence, Type
 
 from ingestion_workflow.models import DownloadResult, Identifier
 
@@ -37,8 +37,8 @@ class Extractor(ABC):
         """Return True if the extractor can attempt this identifier."""
 
     @abstractmethod
-    def download(self, identifier: Identifier) -> DownloadResult:
-        """Execute download logic and return the resulting artifacts."""
+    def download(self, identifiers: Sequence[Identifier]) -> List[DownloadResult]:
+        """Execute download logic for provided identifiers."""
 
 
 class ExtractorRegistry:

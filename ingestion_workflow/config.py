@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -44,7 +44,6 @@ class Settings(BaseSettings):
     extractor_order: List[str] = Field(
         default_factory=lambda: [
             "pubget",
-            "semantic_scholar",
             "elsevier",
             "ace",
         ],
@@ -68,14 +67,69 @@ class Settings(BaseSettings):
         default=500,
         description="Number of records to request per PubMed page.",
     )
-    pubmed_max_results: int = Field(
-        default=5000,
+    pubmed_max_results: Optional[int] = Field(
+        default=None,
         description="Upper bound on total PubMed results to retrieve per query.",
     )
 
-    @field_validator("data_root", "cache_root", "ns_pond_root", mode="before")
+    ace_html_root: Path = Field(
+        default=Path("./tests/data/test_html"),
+        description="Root directory containing HTML files for ACE ingestion.",
+    )
+    ace_metadata_root: Optional[Path] = Field(
+        default=None,
+        description="Optional directory for cached PubMed metadata used by ACE.",
+    )
+    ace_use_readability: bool = Field(
+        default=False,
+        description="Whether ACE should attempt to use readability-based HTML cleaning.",
+    )
+    ace_save_table_html: bool = Field(
+        default=True,
+        description="When True, ACE stores raw table HTML in source/ace/tables.",
+    )
+    ace_download_mode: str = Field(
+        default="browser",
+        description="Retrieval mode used by ACE scraper ('browser' or 'requests').",
+    )
+    ace_prefer_pmc_source: Union[str, bool] = Field(
+        default=False,
+        description="Hints to ACE scraper for preferring PubMed Central sources ('only' or bool).",
+    )
+    pubget_cache_root: Optional[Path] = Field(
+        default=None,
+        description="Optional directory containing cached Pubget outputs to reuse before downloading.",
+    )
+    semantic_scholar_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for the Semantic Scholar Graph API.",
+    )
+    openalex_email: str = Field(
+        default="jamesdkent21@gmail.com",
+        description="Contact email supplied to OpenAlex API requests.",
+    )
+    metadata_provider_order: List[str] = Field(
+        default_factory=lambda: ["semantic_scholar", "pubmed", "openalex"],
+        description="Ordered list of metadata enrichment providers.",
+    )
+    retry_on_missing_coordinates: bool = Field(
+        default=False,
+        description=(
+            "When True, identifiers with downloaded articles but no coordinate tables "
+            "are passed to the next extractor."
+        ),
+    )
+
+    @field_validator("data_root", "cache_root", "ns_pond_root", "ace_html_root", mode="before")
     @classmethod
     def _expand_path(cls, value: str | Path) -> Path:
+        return Path(value).expanduser().resolve()
+
+    @field_validator("ace_metadata_root", "pubget_cache_root", mode="before")
+    @classmethod
+    def _expand_optional_path(cls, value: str | Path | None) -> Path | None:
+        if value is None:
+            return None
         return Path(value).expanduser().resolve()
 
 

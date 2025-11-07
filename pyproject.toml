@@ -17,7 +17,17 @@ dependencies = [
   "tenacity>=8.2",
   "pandas>=2.2",
   "lxml>=4.9",
+  "beautifulsoup4>=4.12",
+  "readabilipy~=0.3.0",
+  "regex>=2024.5.15",
+  "SQLAlchemy<2.0",
+  "simplejson>=3.19",
+  "xmltodict>=0.13",
+  "seleniumbase>=4.34",
+  "tqdm>=4.66",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
+  "ACE @ git+https://github.com/neurosynth/ACE.git@master",
+  "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",
   "pydantic-settings>=2.5",
 ]
 

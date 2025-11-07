@@ -1,0 +1,76 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.semanticscholar.org
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/DOI:10.1016/j.dcn.2015.10.001?fields=title%2Cabstract%2Cvenue%2Cyear%2Cauthors%2CexternalIds%2CpublicationVenue%2Ctldr
+  response:
+    body:
+      string: '{"paperId": "463d3028779eb83bf43a59e6bc383b3a4ce472d9", "externalIds":
+        {"PubMedCentral": "4691364", "MAG": "2187858528", "DOI": "10.1016/j.dcn.2015.10.001",
+        "CorpusId": 14501334, "PubMed": "26507433"}, "publicationVenue": {"id": "89489694-27f4-47d8-b7da-38d0780b7357",
+        "name": "Developmental Cognitive Neuroscience", "type": "journal", "alternate_names":
+        ["Dev Cogn Neurosci"], "issn": "1878-9293", "url": "http://www.elsevier.com/wps/find/journaldescription.cws_home/722734/description#description",
+        "alternate_urls": ["http://www.sciencedirect.com/science/journal/18789293",
+        "https://www.journals.elsevier.com/developmental-cognitive-neuroscience/"]},
+        "title": "Preliminary findings demonstrating latent effects of early adolescent
+        marijuana use onset on cortical architecture", "venue": "Developmental Cognitive
+        Neuroscience", "year": 2015, "openAccessPdf": {"url": "https://doi.org/10.1016/j.dcn.2015.10.001",
+        "status": "GOLD", "license": "CCBYNCND", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC4691364, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "tldr": {"model": "tldr@v2.0.0", "text": "Early onset MJ use
+        was associated with different patterns of cortical architecture in brain regions
+        underlying higher-order cognition and was above and beyond effects of alcohol
+        and current age."}, "authors": [{"authorId": "145669822", "name": "F. Filbey"},
+        {"authorId": "5786351", "name": "Tim M. McQueeny"}, {"authorId": "50493617",
+        "name": "Samuel DeWitt"}, {"authorId": "2781305", "name": "V. Mishra"}], "abstract":
+        null}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1709'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 07 Nov 2025 03:11:43 GMT
+      Via:
+      - 1.1 cbe94ab27088fc4bb73abf8e3179b3d2.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - J7SP0LivVF5h_2opQKs_WFELKSkuKX5uZyAc6PS7jnoQZnBFIttrPg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - Tpx5hHe4PHcEt7Q=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1709'
+      x-amzn-Remapped-Date:
+      - Fri, 07 Nov 2025 03:11:43 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - bf9a6d4d-b35b-411f-a566-d572216bca3d
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -17,5 +17,9 @@ def vcr_cassette_dir() -> str:
 @pytest.fixture(scope="session")
 def vcr_config():
     return {
-        "filter_headers": ["authorization", "x-api-key"],
+        "filter_headers": ["authorization", "x-api-key", "x-els-apikey", "x-els-insttoken"],
+        "filter_query_parameters": [
+            ("api_key", "DUMMY"),
+        ],
+        "record_mode": "once",
     }

@@ -96,7 +96,7 @@ class DownloadResult:
     source: str
     artifacts: List[DownloadArtifact]
     open_access: bool = False
-    extra_metadata: Dict[str, str] = field(default_factory=dict)
+    extra_metadata: Dict[str, object] = field(default_factory=dict)
 
     def to_manifest_entry(self) -> Dict[str, object]:
         """Serialize to manifest-friendly dictionary."""
@@ -197,6 +197,11 @@ class RunManifest:
         }
         self.items.setdefault(identifier.hash_id, {})
         self.items[identifier.hash_id]["identifier"] = payload
+
+    def register_processing(self, identifier: Identifier, payload: Dict[str, object]) -> None:
+        """Record processing summary for the identifier."""
+        self.items.setdefault(identifier.hash_id, {})
+        self.items[identifier.hash_id]["process"] = payload
 
     def register_download(self, result: DownloadResult) -> None:
         self.items.setdefault(result.identifier.hash_id, {})

@@ -13,17 +13,13 @@ interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.5
     method: POST
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/epost.fcgi
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAALKxr8jNUShLLSrOzM+zVTLUM1BSSM1Lzk/JzEu3VQoNcdO1UFKwt+MCAAAA//9U
-        jcEKgkAQhs/5FJv3dlbNJWPxkHqQ1CyM6BRrLinYKrkKvn0SEnWb+f5/vmFL/+Bl1zRAIm06dRJd
-        XyuUnndR6CF9BZBEMYCf+Ui0U45MQhximxQgSHSkl0q13RZA9KqqOyzveYVl/cSyKvGjGWYOhSrg
-        e/kR4QnpLvt56moLduzFa9yL0TUYfOeJX0QeyMGNvdC/UYcYZE0cbvHc5pxa027ndMNgbmkM/rRv
-        AAAA//8DAHlZMQQLAQAA
+      string: "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<!DOCTYPE ePostResult
+        PUBLIC \"-//NLM//DTD epost 20090526//EN\" \"https://eutils.ncbi.nlm.nih.gov/eutils/dtd/20090526/epost.dtd\"><ePostResult>\n\t<QueryKey>1</QueryKey>\n\t<WebEnv>MCID_690d471d15b72f1c5800e586</WebEnv>\n</ePostResult>\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -38,20 +34,20 @@ interactions:
       Content-Type:
       - text/xml; charset=UTF-8
       Date:
-      - Tue, 28 Oct 2025 17:57:29 GMT
+      - Fri, 07 Nov 2025 01:10:52 GMT
       Keep-Alive:
       - timeout=4, max=40
       NCBI-PHID:
-      - 1D32DE4381700FB50000161725ED77A0.1.1.m_1
+      - 1D3427FF506230E500003B78343C685B.1.1.m_1
       NCBI-SID:
-      - 9CB2753907DB56AF_BD2FSID
+      - 58EA336F8408247B_1B12SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=9CB2753907DB56AF_BD2FSID; domain=.nih.gov; path=/; expires=Wed, 28
-        Oct 2026 17:57:29 GMT
+      - ncbi_sid=58EA336F8408247B_1B12SID; domain=.nih.gov; path=/; expires=Sat, 07
+        Nov 2026 01:10:53 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -70,7 +66,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: db=pmc&term=open%2Baccess%5Bfilter%5D&usehistory=y&retmode=json&retmax=5&WebEnv=MCID_69010409a3ab5aa639015b68&query_key=1
+    body: db=pmc&term=open%2Baccess%5Bfilter%5D&usehistory=y&retmode=json&retmax=5&WebEnv=MCID_690d471d15b72f1c5800e586&query_key=1
     headers:
       Accept:
       - '*/*'
@@ -83,19 +79,17 @@ interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       Cookie:
-      - ncbi_sid=9CB2753907DB56AF_BD2FSID
+      - ncbi_sid=58EA336F8408247B_1B12SID
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.5
     method: POST
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAAGxQwUoDMRC9+xVlvCgukm22sdubWBAPVhE8lSKz2SkNTbNrkq1dyv67E6Uo4i3v
-        vZm89+YIG8KaPMyOEPuWYAYUCL3eQAZ78sE0jjlxLWHITpKn0NmYVnTTOX5AztOe4g4PPyBE9EkT
-        DN878v2WeoZjhh9UkdszeLx7mL+pUuSiECVKrCaISjKeVGrKg6a2JvAnSyhUmUtVwCqD6NEFi5Gj
-        BUriHy6i3qaV+5en12fIuBj5HZs1Lbkr1JpCWK6NZXbFFmtDtmb1m2Hi1OlGCjkdp7h0aG1Tp9ss
-        0hVuF/MU46vTL1+WL87zyxHLo/+shuHsEwAA//8DACMou6VuAQAA
+      string: '{"header":{"type":"esearch","version":"0.3"},"esearchresult":{"count":"1","retmax":"1","retstart":"0","querykey":"2","webenv":"MCID_690d471d15b72f1c5800e586","idlist":["4691364"],"translationset":[],"translationstack":["GROUP",{"term":"open+access[filter]","field":"filter","count":"7331377","explode":"N"},"AND"],"querytranslation":"(#1)
+        AND open+access[filter]"}}
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -110,20 +104,20 @@ interactions:
       Content-Type:
       - application/json; charset=UTF-8
       Date:
-      - Tue, 28 Oct 2025 17:57:30 GMT
+      - Fri, 07 Nov 2025 01:10:53 GMT
       Keep-Alive:
-      - timeout=4, max=39
+      - timeout=4, max=40
       NCBI-PHID:
-      - 1D32DE4381700FB5000042172759A019.1.1.m_1
+      - 1D32D641C3ECA1A50000266A7A238CA9.1.1.m_1
       NCBI-SID:
-      - 9CB2753907DB56AF_BD2FSID
+      - 58EA336F8408247B_1B12SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=9CB2753907DB56AF_BD2FSID; domain=.nih.gov; path=/; expires=Wed, 28
-        Oct 2026 17:57:30 GMT
+      - ncbi_sid=58EA336F8408247B_1B12SID; domain=.nih.gov; path=/; expires=Sat, 07
+        Nov 2026 01:10:54 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:
@@ -142,7 +136,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: WebEnv=MCID_69010409a3ab5aa639015b68&query_key=2&retmax=500&retstart=0&db=pmc
+    body: WebEnv=MCID_690d471d15b72f1c5800e586&query_key=2&retmax=500&retstart=0&db=pmc
     headers:
       Accept:
       - '*/*'
@@ -155,510 +149,1265 @@ interactions:
       Content-Type:
       - application/x-www-form-urlencoded
       Cookie:
-      - ncbi_sid=9CB2753907DB56AF_BD2FSID
+      - ncbi_sid=58EA336F8408247B_1B12SID
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.5
     method: POST
     uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi
   response:
     body:
-      string: !!binary |
-        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
+      string: '<?xml version="1.0"  ?><!DOCTYPE pmc-articleset PUBLIC "-//NLM//DTD
+        ARTICLE SET 2.0//EN" "https://dtd.nlm.nih.gov/ncbi/pmc/articleset/nlm-articleset-2.0.dtd"><pmc-articleset><article
+        xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:ali="http://www.niso.org/schemas/ali/1.0/"
+        article-type="research-article" xml:lang="en" dtd-version="1.4"><front><journal-meta><journal-id
+        journal-id-type="nlm-ta">Dev Cogn Neurosci</journal-id><journal-id journal-id-type="iso-abbrev">Dev
+        Cogn Neurosci</journal-id><journal-id journal-id-type="pmc-domain-id">3767</journal-id><journal-id
+        journal-id-type="pmc-domain">dcn</journal-id><journal-title-group><journal-title>Developmental
+        Cognitive Neuroscience</journal-title></journal-title-group><issn pub-type="ppub">1878-9293</issn><issn
+        pub-type="epub">1878-9307</issn><publisher><publisher-name>Elsevier</publisher-name></publisher></journal-meta><article-meta><article-id
+        pub-id-type="pmcid">PMC4691364</article-id><article-id pub-id-type="pmcid-ver">PMC4691364.2</article-id><article-id
+        pub-id-type="pmcaid">4691364</article-id><article-id pub-id-type="pmcaiid">7099883</article-id><article-id
+        pub-id-type="pmid">26507433</article-id><article-id pub-id-type="doi">10.1016/j.dcn.2015.10.001</article-id><article-id
+        pub-id-type="publisher-id">S1878-9293(15)00091-2</article-id><article-version
+        article-version-type="pmc-version">2</article-version><article-categories><subj-group
+        subj-group-type="heading"><subject>Original Research</subject></subj-group></article-categories><title-group><article-title>Preliminary
+        findings demonstrating latent effects of early adolescent marijuana use onset
+        on cortical architecture</article-title></title-group><contrib-group><contrib
+        contrib-type="author" id="aut0005"><name name-style="western"><surname>Filbey</surname><given-names
+        initials="FM">Francesca M.</given-names></name><email>Francesca.Filbey@utdallas.edu</email><xref
+        rid="aff0005" ref-type="aff">a</xref><xref rid="cor0005" ref-type="corresp">&#8270;</xref></contrib><contrib
+        contrib-type="author" id="aut0010"><name name-style="western"><surname>McQueeny</surname><given-names
+        initials="T">Tim</given-names></name><xref rid="aff0005" ref-type="aff">a</xref></contrib><contrib
+        contrib-type="author" id="aut0015"><name name-style="western"><surname>DeWitt</surname><given-names
+        initials="SJ">Samuel J.</given-names></name><xref rid="aff0005" ref-type="aff">a</xref></contrib><contrib
+        contrib-type="author" id="aut0020"><name name-style="western"><surname>Mishra</surname><given-names
+        initials="V">Virendra</given-names></name><xref rid="aff0010" ref-type="aff">b</xref></contrib></contrib-group><aff
+        id="aff0005"><label>a</label>Center for BrainHealth, School of Behavioral
+        and Brain Sciences, The University of Texas at Dallas, United States</aff><aff
+        id="aff0010"><label>b</label>Advance MRI, LLC, Frisco, TX, United States</aff><author-notes><corresp
+        id="cor0005"><label>&#8270;</label>Corresponding author at: Center for BrainHealth,
+        School of Behavioral and Brain Sciences, University of Texas at Dallas, 2200
+        West Mockingbird, Dallas, TX 75235, United States. <email>Francesca.Filbey@utdallas.edu</email></corresp></author-notes><pub-date
+        pub-type="collection"><month>12</month><year>2015</year></pub-date><pub-date
+        pub-type="epub"><day>09</day><month>10</month><year>2015</year></pub-date><volume>16</volume><issue-id
+        pub-id-type="pmc-issue-id">351150</issue-id><fpage>16</fpage><lpage>22</lpage><history><date
+        date-type="received"><day>12</day><month>12</month><year>2014</year></date><date
+        date-type="rev-recd"><day>9</day><month>9</month><year>2015</year></date><date
+        date-type="accepted"><day>2</day><month>10</month><year>2015</year></date></history><pub-history><event
+        event-type="pmc-release"><date><day>09</day><month>10</month><year>2015</year></date></event><event
+        event-type="pmc-live"><date><day>01</day><month>12</month><year>2016</year></date></event><event
+        event-type="pmc-last-change"><date iso-8601-date="2024-02-08 18:25:11.160"><day>08</day><month>02</month><year>2024</year></date></event><event
+        event-type="pmc-version" specific-use="live"><article-id pub-id-type="pmcaiid">4691364</article-id><article-id
+        pub-id-type="doi">10.1016/j.dcn.2015.10.001</article-id><article-id pub-id-type="manuscript-id">NIHMS733302</article-id><article-version>1</article-version><pub-date><day>09</day><month>10</month><year>2015</year></pub-date></event><event
+        event-type="pmc-version" specific-use="live"><article-id pub-id-type="pmcaiid">7099883</article-id><article-id
+        pub-id-type="doi">10.1016/j.dcn.2015.10.001</article-id><article-version>2</article-version><pub-date><day>09</day><month>10</month><year>2015</year></pub-date></event></pub-history><permissions><copyright-statement>&#169;
+        2015 The Authors</copyright-statement><copyright-year>2015</copyright-year><license
+        xmlns:xlink="http://www.w3.org/1999/xlink" license-type="CC BY-NC-ND" xlink:href="http://creativecommons.org/licenses/by-nc-nd/4.0/"><ali:license_ref
+        specific-use="textmining" content-type="ccbyncndlicense">https://creativecommons.org/licenses/by-nc-nd/4.0/</ali:license_ref><license-p>This
+        is an open access article under the CC BY-NC-ND license (http://creativecommons.org/licenses/by-nc-nd/4.0/).</license-p></license></permissions><self-uri
+        xmlns:xlink="http://www.w3.org/1999/xlink" content-type="pmc-pdf" xlink:href="main.pdf"/><abstract
+        abstract-type="author-highlights" id="abs0005"><title>Highlights</title><p><list
+        list-type="simple" id="lis0005"><list-item id="lsti0005"><label>&#8226;</label><p
+        id="par0005">Early onset MJ use was associated with different patterns of
+        cortical architecture.</p></list-item><list-item id="lsti0010"><label>&#8226;</label><p
+        id="par0010">Early vs. late onset divergence was in brain regions underlying
+        higher-order cognition.</p></list-item><list-item id="lsti0015"><label>&#8226;</label><p
+        id="par0015">Findings were above and beyond effects of alcohol and current
+        age.</p></list-item></list></p></abstract><abstract id="abs0010"><sec><title>Background</title><p>As
+        the most commonly used illicit substance during early adolescence, long-term
+        or latent effects of early adolescent marijuana use across adolescent developmental
+        processes remain to be determined.</p></sec><sec><title>Methods</title><p>We
+        examined cortical thickness, gray/white matter border contrast (GWR) and local
+        gyrification index (LGI) in 42 marijuana (MJ) users. Voxelwise regressions
+        assessed early-onset (age &lt;16) vs. late-onset (&#8805;16 years-old) differences
+        and relationships to continued use while controlling for current age and alcohol
+        use.</p></sec><sec><title>Results</title><p>Although groups did not differ
+        by onset status, groups diverged in their correlations between cannabis use
+        and cortical architecture. Among early-onset users, continued years of MJ
+        use and current MJ consumption were associated with thicker cortex, increased
+        GWR and decreased LGI. Late-onset users exhibited the opposite pattern. This
+        divergence was observed in all three morphological measures in the anterior
+        dorsolateral frontal cortex (<italic toggle="yes">p</italic>&#160;&lt;&#160;.05,
+        FWE-corrected).</p></sec><sec><title>Conclusions</title><p>Divergent patterns
+        between current MJ use and elements of cortical architecture were associated
+        with early MJ use onset. Considering brain development in early adolescence,
+        findings are consistent with disruptions in pruning. However, divergence with
+        continued use for many years thereafter suggests altered trajectories of brain
+        maturation during late adolescence and beyond.</p></sec></abstract><kwd-group
+        id="kwd0005"><title>Keywords</title><kwd>Adolescence</kwd><kwd>Marijuana</kwd><kwd>Cortical
+        thickness</kwd><kwd>Gyrification</kwd><kwd>Morphology</kwd><kwd>FreeSurfer</kwd></kwd-group><custom-meta-group><custom-meta><meta-name>pmc-status-qastatus</meta-name><meta-value>0</meta-value></custom-meta><custom-meta><meta-name>pmc-status-live</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-status-embargo</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-status-released</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-open-access</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-olf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-manuscript</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-legally-suppressed</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-pdf</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-supplement</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-pdf-only</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-suppress-copyright</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-real-version</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-scanned-article</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-preprint</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-in-epmc</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-license-ref</meta-name><meta-value>CC
+        BY-NC-ND</meta-value></custom-meta></custom-meta-group></article-meta></front><body><sec
+        id="sec0005"><label>1</label><title>Introduction</title><p id="par0020">With
+        more than 25% of high school seniors reporting recent use and 6.5% of 12th
+        graders being daily users (<xref rid="bib0145" ref-type="bibr">Johnston et
+        al., 2014</xref>), marijuana (MJ) is the most frequently used illicit substance
+        among adolescents. Across all age groups over 70% of new drug initiates start
+        with using MJ at an average age of 18 years (<xref rid="bib0190" ref-type="bibr">SAMHSA,
+        2014</xref>). Indeed, the scope of MJ use prevalence is of great public interest,
+        as MJ use in early adolescence is associated with increased risk of greater
+        substance use, legal problems, disrupting education, injuries/medical problems,
+        developing psychopathology, cognitive changes and chronic psychosocial struggles
+        (<xref rid="bib0030" ref-type="bibr">CASA, 2011</xref>, <xref rid="bib0070"
+        ref-type="bibr">Fergusson and Horwood, 1997</xref>, <xref rid="bib0075" ref-type="bibr">Fergusson
+        et al., 1996</xref>, <xref rid="bib0170" ref-type="bibr">Patton et al., 2002</xref>).
+        Taken together, rates of MJ use are suggestive of an epidemic based in adolescence,
+        which is concerning not just due to societal cost, but also due to the potential
+        to offset sensitive brain development during this period.</p><p id="par0025">Despite
+        its prevalence, the impact of MJ use on adolescent brain development is not
+        fully known. Important neuromaturational processes during adolescence through
+        young adulthood are believed to bring about improved higher-order cognition
+        by refining neural systems locally and globally through white and gray matter
+        development (<xref rid="bib0035" ref-type="bibr">Casey et al., 2005</xref>,
+        <xref rid="bib0105" ref-type="bibr">Giedd, 2008</xref>, <xref rid="bib0175"
+        ref-type="bibr">Paus, 2005</xref>). In general, gray matter reductions and
+        cortical thinning coincide with increased white matter volume and organization
+        through adolescence and young adulthood, suggestive of synaptic pruning and
+        axonal myelination (<xref rid="bib0110" ref-type="bibr">Giorgio et al., 2010</xref>,
+        <xref rid="bib0115" ref-type="bibr">Gogtay et al., 2004</xref>, <xref rid="bib0135"
+        ref-type="bibr">Hasan et al., 2007</xref>, <xref rid="bib0150" ref-type="bibr">Lebel
+        et al., 2010</xref>, <xref rid="bib0210" ref-type="bibr">Shaw et al., 2008</xref>).
+        The endogenous cannabinoid (CB) system is also immature during adolescence
+        (<xref rid="bib0005" ref-type="bibr">Anavi-Goffer and Mulder, 2009</xref>,
+        <xref rid="bib0225" ref-type="bibr">Verdurand et al., 2011</xref>). In an
+        animal model (<xref rid="bib0225" ref-type="bibr">Verdurand et al., 2011</xref>)
+        imaged CB1 receptor binding using PET and found relatively lower activation
+        of CB1 receptors in adolescent rats compared to adult rats in brain areas
+        including those in the frontal cortex, temporal lobe (hippocampus and amygdala)
+        and sub-cortical regions including striatal regions, thalamus, hypothalamus,
+        superior colliculus. Thus, adolescence represents a developmental period with
+        vulnerability to structural and functional changes due to exogenous MJ exposure.</p><p
+        id="par0030">Adolescent MJ use has the potential to cause structural and functional
+        changes in the brain by altering cannabinoid signaling. One possible mechanism
+        would be blunt neurotoxic influence. For example, delta9-tetrahydrocannabinol
+        (THC), the primary psychoactive component in MJ that binds CB1 receptors,
+        is reported to cause cell shrinkage and damage DNA strands in THC-treated
+        neuron cultures (<xref rid="bib0045" ref-type="bibr">Chan et al., 1998</xref>).
+        This may be the mechanism by which smaller volumes have been observed in individuals
+        exposed to cannabis during adolescence (<xref rid="bib0015" ref-type="bibr">Battistella
+        et al., 2014</xref>). However, it is more likely that MJ exerts its influence
+        on brain development indirectly. The cannabinoid system plays a role in modulating
+        other neurotransmitters, including gamma-aminobutyric acid (GABA), glutamate
+        and monoamines (<xref rid="bib0155" ref-type="bibr">Lopez-Moreno et al., 2008</xref>).
+        Specifically, activation of CB1 receptors is associated with down-regulating
+        inhibitory GABAergic transmission in cortical interneurons during adolescence
+        (<xref rid="bib0025" ref-type="bibr">Caballero and Tseng, 2012</xref>, <xref
+        rid="bib0040" ref-type="bibr">Cass et al., 2014</xref>). In addition, CB signaling
+        inhibits microglia function (<xref rid="bib0230" ref-type="bibr">Walter et
+        al., 2003</xref>). These two points are important because cortical pruning
+        processes involve glial-mediated synaptic elimination and altering the excitatory/inhibitory
+        balance is liable to disrupt the selective tagging and preserving synapses
+        (<xref rid="bib0205" ref-type="bibr">Selemon, 2013</xref>). The impact of
+        this indirect influence on the developing brain may be in the observations
+        of abnormal connectivity in those who began MJ use in adolescence (<xref rid="bib0140"
+        ref-type="bibr">Jacobus et al., 2009</xref>). Evidence from human neuroimaging
+        studies lends greater support to MJ-related disruptions to brain development.</p><p
+        id="par0035">Structural neuroimaging studies have indicated that volumes of
+        several brain areas are smaller in heavy adult MJ users especially in areas
+        enriched with cannabinoid 1 (CB1) receptors, such as medial temporal lobe,
+        and prefrontal cortex (<xref rid="bib0160" ref-type="bibr">Lorenzetti et al.,
+        2010</xref>). Studies of adult chronic MJ users note brain volume reductions
+        in temporal lobe, insula, and prefrontal cortex, amygdala and hippocampus
+        (<xref rid="bib0015" ref-type="bibr">Battistella et al., 2014</xref>, <xref
+        rid="bib0050" ref-type="bibr">Cousijn et al., 2012</xref>, <xref rid="bib0080"
+        ref-type="bibr">Filbey et al., 2014</xref>, <xref rid="bib0165" ref-type="bibr">Matochik
+        et al., 2005</xref>, <xref rid="bib0240" ref-type="bibr">Yucel et al., 2008</xref>).
+        Among different characteristics of MJ involvement (e.g., dependence symptoms,
+        use frequency, consumption), the age of initial MJ use is a robust factor
+        that has been associated with smaller brain volumes in users. For example,
+        <xref rid="bib0015" ref-type="bibr">Battistella et al. (2014)</xref> observed
+        left parahippocampal gyrus and right temporal pole structural differences
+        in 25 regular MJ users compared to 22 occasional users, however, even the
+        occasional users who began smoking MJ during adolescence (before age 18) demonstrated
+        similar brain changes as the regular users. Our group has also found links
+        with early MJ use onset (<xref rid="bib0020" ref-type="bibr">Bava et al.,
+        2009</xref>) and structural connectivity with orbitofrontal cortex in a cohort
+        of daily MJ users, suggesting complex neuroadaptive processes related to MJ
+        use in the context of adolescent brain development (<xref rid="bib0080" ref-type="bibr">Filbey
+        et al., 2014</xref>). These findings underscore the potential for significant
+        heterogeneity in brain changes among adult MJ users, especially those who
+        began using MJ during neurodevelopment.</p><p id="par0040">Studies comparing
+        early adolescent MJ use to users initiating MJ use in later adolescence provide
+        further evidence for the potential of MJ to cause enduring change. The few
+        studies that have directly investigated the timing of the effects of MJ during
+        adolescence have noted divergent neurodevelopment effects. For example, in
+        an fMRI study by Gruber and colleagues, functional and behavioral differences
+        during an interference task were reported between early (before age 16) and
+        late (after age 16) MJ users (<xref rid="bib0120" ref-type="bibr">Gruber et
+        al., 2012</xref>) (<xref rid="bib0180" ref-type="bibr">Sagar et al., 2015</xref>).
+        The same group also reported decreased white matter integrity in early onset
+        vs. late onset MJ users (mean age 14.46 vs. 17.93) (<xref rid="bib0125" ref-type="bibr">Gruber
+        et al., 2014</xref>). Similar differential effects have also been noted in
+        parietal lobe activation between early and late adolescent binge drinkers
+        during a spatial working memory task (<xref rid="bib0220" ref-type="bibr">Tapert
+        et al., 2004</xref>). These studies highlight the importance of clarifying
+        the differential neural effects of early- and late-adolescent onset use.</p><p
+        id="par0045">To that end, in the current study, we compared daily MJ users
+        who were early onset users (&lt;16 years old) versus late onset users (&#8805;16
+        years old) on measures of cortical morphology that are sensitive to developmental
+        changes. We aimed to characterize both the effect of early onset status on
+        cortical morphology as well as assess for morphological patterns linked to
+        the continued use of MJ after early and late adolescent MJ initiation. We
+        expected early onset users to show a morphological pattern consistent with
+        disruption of early adolescent brain development (e.g., increased cortical
+        thickness, greater gray/white definition of the cortical ribbon via disruptions
+        to adolescent pruning processes) that may be more consistent with indirect
+        impact of MJ of brain development. While gray matter decline has been shown
+        to be associated with marijuana use, particularly in areas rich in CB1 receptors,
+        increased cortical thickness and greater gray/white definition in the cortical
+        ribbon point to potential disruption in neurodevelopment (i.e. synaptic pruning)
+        that may result from MJ use at key developmental stages (i.e. earlier as opposed
+        to later in adolescent neuronal development). Such disruptions may extend
+        to gyrification as well. While this process begins in utero, there is evidence
+        that gyrification is ongoing into adolescence (<xref rid="bib0006" ref-type="bibr">Armstrong
+        et al., 1995</xref>, <xref rid="bib0001" ref-type="bibr">Alem&#225;n-G&#243;mez
+        et al., 2013</xref>, <xref rid="bib0146" ref-type="bibr">Klein et al., 2014</xref>)
+        and may also display aberrant developmental patterns in the presence of MJ
+        use.</p></sec><sec id="sec0010"><label>2</label><title>Methods</title><p id="par0050">This
+        study was approved by the University of Texas at Dallas (UTD) and University
+        of Texas Southwestern Medical Center (UTSW) Institutional Review Boards. All
+        participants were recruited from the Dallas-Ft.Worth metro area via flyers
+        and advertisements. Following informed consent, MJ users completed two sessions
+        &#8211; a baseline appointment for collecting demographic, psychosocial and
+        behavioral measures and a thorough substance use history. Three days later
+        the participants returned for a neuroimaging appointment. Prior to their scanning
+        session, participants were asked to be abstinent from MJ use for 72&#160;h,
+        from alcohol for 24&#160;h, and from caffeine and cigarettes for the preceding
+        2&#160;h. These were confirmed by self-report (MJ, alcohol, caffeine and cigarettes),
+        quantitative THC urinalysis (MJ), and by breath alcohol level of .000 (alcohol)
+        at the start of their session.</p><sec id="sec0015"><label>2.1</label><title>Participants</title><p
+        id="par0195">We scanned 45 regular heavy MJ users as part of the parent project.
+        Inclusion criteria were: right-handedness, English as the primary language
+        and no histories of psychosis, traumatic brain injury, and MRI contraindications
+        (e.g., pregnancy, non-removal metallic implants, claustrophobia). One subject
+        reported a history of anxiety and depression and one other reported a history
+        of ADHD as a child. Additional exclusions for the current study included:
+        Axis I diagnosis (via SCID) other than cannabis use disorder, unusable sMRI
+        due to motion artifact or poor signal-to-noise ratio that precluded accurate
+        tissue segmentation (<italic toggle="yes">n</italic>&#160;=&#160;1) and incomplete
+        drug use histories (<italic toggle="yes">n</italic>&#160;=&#160;2). Of the
+        42 remaining cases, 22 were early onset users (onset of first use before age
+        16). Group categorization using onset of regular use as opposed to onset of
+        first use maintained the same grouping (mean early onset of regular use&#160;=&#160;16.5,
+        mean late onset of regular use&#160;=&#160;19.0). Regular use was defined
+        as at least one time per week. To determine how age of onset of regular MJ
+        use influenced our reported effects, we performed these analyses while covarying
+        for age of onset of regular use (see <xref rid="sec0115" ref-type="sec">Supplement</xref>).
+        <xref rid="tbl0005" ref-type="table">Table 1</xref> summarizes demographic
+        and substance use information according to onset status. <xref rid="tbl0010"
+        ref-type="table">Table 2</xref> summarizes the correlation between age and
+        identified marijuana use variables. Only MJ years of use and current age showed
+        a statistically significant correlation. Participants were recruited based
+        on self-reported daily MJ use and a positive urinalysis for THC metabolites
+        at their baseline visit. All of the participants were screened via urinalysis
+        for other drugs of abuse and were excluded if drugs (other than MJ) were detected.
+        Participants were required to have used MJ for a minimum of 5000 lifetime
+        occasions and self-report daily use (without &gt;24&#160;h abstinence) for
+        the last 60 days.<table-wrap position="float" id="tbl0005" orientation="portrait"><label>Table
+        1</label><caption><p>Sample characteristics. MJ, marijuana.</p></caption><table
+        frame="hsides" rules="groups"><thead><tr><th align="left" colspan="1" rowspan="1">Measure</th><th
+        colspan="3" align="left" rowspan="1">Early onset (<italic toggle="yes">n</italic>&#160;=&#160;20)<hr/></th><th
+        colspan="3" align="left" rowspan="1">Late onset (<italic toggle="yes">n</italic>&#160;=&#160;22)<hr/></th><th
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">p</italic>-Value</th><th
+        align="left" colspan="1" rowspan="1">Effect size<xref rid="tblfn0015" ref-type="table-fn">***</xref></th><th
+        align="left" colspan="1" rowspan="1">Statistic</th></tr><tr><th colspan="1"
+        rowspan="1"/><th align="left" colspan="1" rowspan="1">Mean</th><th align="left"
+        colspan="1" rowspan="1">(SD)</th><th align="left" colspan="1" rowspan="1">Min&#8211;Max</th><th
+        align="left" colspan="1" rowspan="1">Mean</th><th align="left" colspan="1"
+        rowspan="1">(SD)</th><th align="left" colspan="1" rowspan="1">Min&#8211;Max</th><th
+        colspan="1" rowspan="1"/><th colspan="1" rowspan="1"/><th align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">|t/U</italic></th></tr></thead><tbody><tr><td
+        align="left" colspan="1" rowspan="1">Age</td><td align="char" colspan="1"
+        rowspan="1">32.50</td><td align="left" colspan="1" rowspan="1">(8.01)</td><td
+        align="char" colspan="1" rowspan="1">21&#8211;50</td><td align="char" colspan="1"
+        rowspan="1">30.25</td><td align="left" colspan="1" rowspan="1">(7.19)</td><td
+        align="char" colspan="1" rowspan="1">21&#8211;47</td><td align="char" colspan="1"
+        rowspan="1">0.316</td><td align="char" colspan="1" rowspan="1">0.302</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">t</italic>&#160;=&#160;1.01</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Education (years)</td><td align="char"
+        colspan="1" rowspan="1">12.91</td><td align="left" colspan="1" rowspan="1">(2.54)</td><td
+        align="char" colspan="1" rowspan="1">8&#8211;18</td><td align="char" colspan="1"
+        rowspan="1">13.26</td><td align="left" colspan="1" rowspan="1">(2.40)</td><td
+        align="char" colspan="1" rowspan="1">10&#8211;19</td><td align="char" colspan="1"
+        rowspan="1">0.651</td><td align="char" colspan="1" rowspan="1">0.144</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">t</italic>&#160;=&#160;0.456</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Gender (male)</td><td align="char" colspan="1"
+        rowspan="1">55%</td><td colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td
+        align="char" colspan="1" rowspan="1">73%</td><td colspan="1" rowspan="1"/><td
+        colspan="1" rowspan="1"/><td align="char" colspan="1" rowspan="1">0.241</td><td
+        align="char" colspan="1" rowspan="1">0.034</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">&#967;</italic><sup>2</sup>&#160;=&#160;1.41</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Ethnicity (% Caucasian)</td><td align="char"
+        colspan="1" rowspan="1">50%</td><td colspan="1" rowspan="1"/><td colspan="1"
+        rowspan="1"/><td align="char" colspan="1" rowspan="1">50%</td><td colspan="1"
+        rowspan="1"/><td colspan="1" rowspan="1"/><td align="char" colspan="1" rowspan="1">0.566</td><td
+        align="char" colspan="1" rowspan="1">0.008</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">&#967;</italic><sup>2</sup>&#160;=&#160;0.336</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">IQ<xref rid="tblfn0005" ref-type="table-fn">*</xref></td><td
+        align="char" colspan="1" rowspan="1">108</td><td align="left" colspan="1"
+        rowspan="1">(9.99)</td><td align="char" colspan="1" rowspan="1">88&#8211;124</td><td
+        align="char" colspan="1" rowspan="1">105</td><td align="left" colspan="1"
+        rowspan="1">(13.54)</td><td align="char" colspan="1" rowspan="1">83&#8211;129</td><td
+        align="char" colspan="1" rowspan="1">0.351</td><td align="char" colspan="1"
+        rowspan="1">0.298</td><td align="left" colspan="1" rowspan="1"><italic toggle="yes">t</italic>&#160;=&#160;0.94</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Age of first MJ use<xref rid="tblfn0010"
+        ref-type="table-fn">**</xref></td><td align="char" colspan="1" rowspan="1">13.18</td><td
+        align="left" colspan="1" rowspan="1">(1.89)</td><td align="char" colspan="1"
+        rowspan="1">9&#8211;15</td><td align="char" colspan="1" rowspan="1">16.90</td><td
+        align="left" colspan="1" rowspan="1">(1.48)</td><td align="char" colspan="1"
+        rowspan="1">16&#8211;21</td><td align="char" colspan="1" rowspan="1">&lt;0.001</td><td
+        align="char" colspan="1" rowspan="1">0.866</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;0</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Age of regular MJ use<xref rid="tblfn0010"
+        ref-type="table-fn">**</xref></td><td align="char" colspan="1" rowspan="1">16.50</td><td
+        align="left" colspan="1" rowspan="1">(3.57)</td><td align="char" colspan="1"
+        rowspan="1">9&#8211;25</td><td align="char" colspan="1" rowspan="1">19.00</td><td
+        align="left" colspan="1" rowspan="1">(4.29)</td><td align="char" colspan="1"
+        rowspan="1">16&#8211;36</td><td align="char" colspan="1" rowspan="1">0.004</td><td
+        align="char" colspan="1" rowspan="1">0.439</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;108</td></tr><tr><td
+        colspan="10" align="left" rowspan="1">Substance use in the last 60 days</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;MJ grams (daily)</td><td align="char"
+        colspan="1" rowspan="1">2.14</td><td align="left" colspan="1" rowspan="1">(1.79)</td><td
+        align="char" colspan="1" rowspan="1">0.50&#8211;7.50</td><td align="char"
+        colspan="1" rowspan="1">1.65</td><td align="left" colspan="1" rowspan="1">(1.21)</td><td
+        align="char" colspan="1" rowspan="1">0.46&#8211;4.23</td><td align="char"
+        colspan="1" rowspan="1">0.338</td><td align="char" colspan="1" rowspan="1">0.083</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;182</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# EtOH drinks</td><td align="char"
+        colspan="1" rowspan="1">44.09</td><td align="left" colspan="1" rowspan="1">(76.30)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;310</td><td align="char" colspan="1"
+        rowspan="1">38.85</td><td align="left" colspan="1" rowspan="1">(58.61)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;183</td><td align="char" colspan="1"
+        rowspan="1">0.588</td><td align="char" colspan="1" rowspan="1">0.039</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;198.05</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;Max # EtOH drinks</td><td align="char"
+        colspan="1" rowspan="1">6.62</td><td align="left" colspan="1" rowspan="1">(7.21)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;31</td><td align="char" colspan="1"
+        rowspan="1">6.25</td><td align="left" colspan="1" rowspan="1">(5.80)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;21</td><td align="char" colspan="1"
+        rowspan="1">0.8</td><td align="char" colspan="1" rowspan="1">0.095</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;210</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# EtOH drinking days</td><td align="char"
+        colspan="1" rowspan="1">11.09</td><td align="left" colspan="1" rowspan="1">(16.69)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;59</td><td align="char" colspan="1"
+        rowspan="1">9.84</td><td align="left" colspan="1" rowspan="1">(13.51)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;60</td><td align="char" colspan="1"
+        rowspan="1">0.537</td><td align="char" colspan="1" rowspan="1">0.006</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;185.5</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# Binge EtOH drinking days</td><td
+        align="char" colspan="1" rowspan="1">4.36</td><td align="left" colspan="1"
+        rowspan="1">(12.50)</td><td align="char" colspan="1" rowspan="1">0&#8211;59</td><td
+        align="char" colspan="1" rowspan="1">2.90</td><td align="left" colspan="1"
+        rowspan="1">(5.53)</td><td align="char" colspan="1" rowspan="1">0&#8211;19</td><td
+        align="char" colspan="1" rowspan="1">0.968</td><td align="char" colspan="1"
+        rowspan="1">0.035</td><td align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;218.5</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# EtOH drinks per day</td><td align="char"
+        colspan="1" rowspan="1">2.99</td><td align="left" colspan="1" rowspan="1">(2.27)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;7.40</td><td align="char" colspan="1"
+        rowspan="1">3.56</td><td align="left" colspan="1" rowspan="1">(3.29)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;14.00</td><td align="char" colspan="1"
+        rowspan="1">0.82</td><td align="char" colspan="1" rowspan="1">0.289</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;211</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# Cigarette days</td><td align="char"
+        colspan="1" rowspan="1">1.18</td><td align="left" colspan="1" rowspan="1">(3.72)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;17</td><td align="char" colspan="1"
+        rowspan="1">2.95</td><td align="left" colspan="1" rowspan="1">(1.17)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;21</td><td align="char" colspan="1"
+        rowspan="1">0.06</td><td align="char" colspan="1" rowspan="1">0.294</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;159</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;# Cigarettes per day</td><td align="char"
+        colspan="1" rowspan="1">0.22</td><td align="left" colspan="1" rowspan="1">(0.55)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;2.00</td><td align="char" colspan="1"
+        rowspan="1">0.78</td><td align="left" colspan="1" rowspan="1">(1.23)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;4.50</td><td align="char" colspan="1"
+        rowspan="1">0.057</td><td align="char" colspan="1" rowspan="1">0.296</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;158</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">&#160;Max # cigarettes</td><td align="char"
+        colspan="1" rowspan="1">0.25</td><td align="left" colspan="1" rowspan="1">(0.61)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;2</td><td align="char" colspan="1"
+        rowspan="1">0.96</td><td align="left" colspan="1" rowspan="1">(1.60)</td><td
+        align="char" colspan="1" rowspan="1">0&#8211;6</td><td align="char" colspan="1"
+        rowspan="1">0.054</td><td align="char" colspan="1" rowspan="1">0.290</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">U</italic>&#160;=&#160;157.5</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Illicit drug use/past 90 days</td><td
+        align="char" colspan="1" rowspan="1">14%</td><td colspan="1" rowspan="1"/><td
+        colspan="1" rowspan="1"/><td align="char" colspan="1" rowspan="1">5%</td><td
+        colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td
+        colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/></tr><tr><td align="left"
+        colspan="1" rowspan="1">Lifetime illicit drug use</td><td align="char" colspan="1"
+        rowspan="1">73%</td><td colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td
+        align="char" colspan="1" rowspan="1">75%</td><td colspan="1" rowspan="1"/><td
+        colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td colspan="1" rowspan="1"/><td
+        colspan="1" rowspan="1"/></tr></tbody></table><table-wrap-foot><fn id="tblfn0005"><label>*</label><p
+        id="npar0005">IQ scores derived from Wechsler Abbreviated Scale of Intelligence
+        Vocabulary and Matrix Reasoning subtests.</p></fn></table-wrap-foot><table-wrap-foot><fn
+        id="tblfn0010"><label>**</label><p id="npar0010"><italic toggle="yes">p</italic>&#160;&lt;&#160;.05;
+        SS, standard score; |<italic toggle="yes">t</italic>|, absolute value of student''s
+        <italic toggle="yes">t, U</italic> is the Mann&#8211;Whitney <italic toggle="yes">U</italic>''s
+        score.</p></fn></table-wrap-foot><table-wrap-foot><fn id="tblfn0015"><label>***</label><p
+        id="npar0015">The effect sizes of the above table were calculated either based
+        on mean differences if normally distributed, correlation coefficient or <italic
+        toggle="yes">F</italic>-value score using the default Cohen''s effect size
+        formula for respective metrics.</p></fn></table-wrap-foot></table-wrap><table-wrap
+        position="float" id="tbl0010" orientation="portrait"><label>Table 2</label><caption><p>The
+        correlations between current age and all MJ use variables.</p></caption><table
+        frame="hsides" rules="groups"><thead><tr><th align="left" colspan="1" rowspan="1">Measure</th><th
+        align="left" colspan="1" rowspan="1">Early onset</th><th align="left" colspan="1"
+        rowspan="1">Late onset</th></tr></thead><tbody><tr><td align="left" colspan="1"
+        rowspan="1">First MJ use</td><td align="left" colspan="1" rowspan="1"><italic
+        toggle="yes">r</italic>&#160;=&#160;0.038</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.189</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">Regular MJ use</td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.289</td><td align="left"
+        colspan="1" rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.203</td></tr><tr><td
+        align="left" colspan="1" rowspan="1">MJ years of use</td><td align="left"
+        colspan="1" rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.898<xref
+        rid="tblfn0020" ref-type="table-fn">*</xref></td><td align="left" colspan="1"
+        rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.623<xref rid="tblfn0025"
+        ref-type="table-fn">**</xref></td></tr><tr><td align="left" colspan="1" rowspan="1">MJ
+        grams</td><td align="left" colspan="1" rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.123</td><td
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">r</italic>&#160;=&#160;0.206</td></tr></tbody></table><table-wrap-foot><fn
+        id="tblfn0020"><label>*</label><p id="npar0020"><italic toggle="yes">p</italic>&#160;&lt;&#160;0.001.</p></fn></table-wrap-foot><table-wrap-foot><fn
+        id="tblfn0025"><label>**</label><p id="npar0025"><italic toggle="yes">p</italic>&#160;&lt;&#160;0.005.</p></fn></table-wrap-foot></table-wrap></p></sec><sec
+        id="sec0020"><label>2.2</label><title>MRI acquisition and analysis</title><sec
+        id="sec0025"><label>2.2.1</label><title>Image acquisition</title><p id="par0060">Scanning
+        sessions took place at the Advanced Imaging Research Center at the University
+        of Texas, Southwestern Medical Center three days following their initial visit.
+        Another verification of THC metabolites via urinalysis was also performed
+        before the scan. MRI images were collected using a 3T Philips whole-body scanner
+        equipped with Quasar gradient subsystem (40&#160;mT/m amplitude, a slew rate
+        of 220&#160;mT/m/ms). High-resolution T1-weighted anatomical scans were collected
+        using a MPRAGE sequence: TR/TE/TI&#160;=&#160;2100/3.70/1100&#160;ms; flip
+        angle&#160;=&#160;12&#176;; field of view&#160;=&#160;256&#160;mm&#160;&#215;&#160;256&#160;mm;
+        slab thickness&#160;=&#160;160&#160;mm (along left-right direction); voxel
+        size&#160;=&#160;1&#160;mm&#160;&#215;&#160;1&#160;mm&#160;&#215;&#160;1&#160;mm,
+        Total scan time&#160;=&#160;3&#160;m 57&#160;s.</p></sec><sec id="sec0030"><label>2.2.2</label><title>Image
+        processing</title><p id="par0065">MPRAGE anatomical scans were pre-processed
+        for surface-based analyses using FreeSurfer v5.3 semi-automated pipeline (<ext-link
+        xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri" xlink:href="http://surfer.nmr.mgh.harvard.edu/"
+        id="intr0005">http://surfer.nmr.mgh.harvard.edu</ext-link>). This semi-automated
+        pipeline included spatial (Talairach) and signal intensity normalization of
+        images, volumetric segmentation and subcortical labeling (<xref rid="bib0055"
+        ref-type="bibr">Dale et al., 1999</xref>, <xref rid="bib0095" ref-type="bibr">Fischl
+        et al., 2002</xref>). Outer gray matter and white matter boundaries were then
+        identified and reconstructed into a mesh of over 150,000 tessellated vertices
+        to allow point-to-point surface measures (<xref rid="bib0100" ref-type="bibr">Fischl
+        et al., 1999</xref>). Next, gyral anatomy is aligned to a standard spherical
+        template using surface convexity and curvature measures. Resulting surfaces
+        were inspected, blind to MJ onset status, to identify and correct any errors
+        made during cortical reconstruction. Modifications to the volumes were made
+        as necessary to correct for tissue misclassifications according to FreeSurfer''s
+        wiki manual (<xref rid="bib0200" ref-type="bibr">Schmansky et al., 2010</xref>).
+        In preparation for analysis, each morphological measure for each case was
+        co-registered to a standard template (fsaverage). Anatomical labels in FreeSurfer
+        (<xref rid="bib0065" ref-type="bibr">Desikan et al., 2006</xref>) were used
+        for interpretation of results.</p></sec></sec><sec id="sec0035"><label>2.3</label><title>Morphological
+        measures</title><sec id="sec0040"><label>2.3.1</label><title>Cortical thickness</title><p
+        id="par0070">The width of the cortical ribbon was measured as the distance
+        between corresponding vertices of the white matter and gray matter surfaces
+        at each vertex in the cortical mantel (<xref rid="bib0090" ref-type="bibr">Fischl
+        and Dale, 2000</xref>).</p></sec><sec id="sec0045"><label>2.3.2</label><title>Gray&#8211;white
+        matter ratio (GWR)</title><p id="par0075">To assess the quality of cortical
+        ribbon definition, a tissue contrast between gray and white matter signal
+        intensities was computed as a percent ratio (W&#160;&#8722;&#160;G)/(.5*(W&#160;+&#160;G))
+        (from pctsurfcon v1.11.2.1, inbuilt component of FreeSurfer pipeline v5.3,
+        2011). White matter signal intensities were measured at an absolute length
+        of 1&#160;mm below the gray&#8211;white border surface and gray matter signal
+        was measured 30% into the cortical ribbon (<xref rid="bib0185" ref-type="bibr">Salat
+        et al., 2009</xref>).</p></sec><sec id="sec0050"><label>2.3.3</label><title>Local
+        gyrification index</title><p id="par0080">The cortical surface from FreeSurfer''s
+        main pipeline is further processed to create an outer surface that encapsulates
+        the gyral and sulcal curvature for each hemisphere, which serves as a basis
+        for calculating a local gyrification index (<xref rid="bib0195" ref-type="bibr">Schaer
+        et al., 2012</xref>). LGI is measured as the amount of cortex within the sulcal
+        folds beneath the outer surface compared to the amount of visible cortex that
+        touches the outer surface. Cortical maps are generated from repeated iterations
+        of delineating a 25&#160;mm radius sphere on the outer surface and its corresponding
+        point on the cortical surface using a matching algorithm.</p></sec></sec><sec
+        id="sec0055"><label>2.4</label><title>Background and premorbid characteristics</title><sec
+        id="sec0060"><label>2.4.1</label><title>Sample characteristics</title><p id="par0085">Age,
+        gender, education level, ethnicity, along with other background information,
+        was obtained using a standard demographics questionnaire. The two-subtest
+        administration of the Wechsler Abbreviated Scale of Intelligence (Vocabulary
+        and Matrix Reasoning) provided estimates of intellect (<xref rid="bib0235"
+        ref-type="bibr">Wechsler, 1999</xref>).</p></sec><sec id="sec0065"><label>2.4.2</label><title>Substance
+        use</title><p id="par0090">The Substance Use Disorder modules of the Structured
+        Clinical Interview for DSM-IV (SCID) (<xref rid="bib0085" ref-type="bibr">First
+        et al., 2002</xref>) were administered by a trained research assistant to
+        assess for lifetime and current symptoms of abuse and dependence for alcohol,
+        nicotine, MJ and other substances. The SCID interview also provided the onset
+        of use information. A Time Line Follow-Back (TLFB) approach was used to quantify
+        alcohol, nicotine, and MJ use patterns for 90 days prior to study participation
+        (<xref rid="bib0215" ref-type="bibr">Sobell and Sobell, 1992</xref>). Marijuana
+        use in grams was obtained via self-report in response to probes aimed at quantifying
+        their regular use.</p></sec></sec><sec id="sec0070"><label>2.5</label><title>Statistical
+        analyses</title><p id="par0095">Statistical analyses were conducted in SPSS
+        18.0 for behavioral and psychosocial measures whereas general linear model
+        group comparisons on surfaced-based morphology measures were carried out FreeSurfer''s
+        built-in application QDEC (v1.5). Independent samples <italic toggle="yes">t</italic>-tests,
+        Mann&#8211;Whitney <italic toggle="yes">U</italic>-tests or chi-square tests,
+        compared groups on background and demographic variables (see <xref rid="tbl0005"
+        ref-type="table">Table 1</xref>). Before statistical analysis was conducted,
+        the dependent measures of cortical thickness, GWR and LGI were smoothed using
+        a FWHM Gaussian filter with a width of either 10 or 15&#160;mm. Separate univariate
+        general linear model (GLM) was then used to model cortical thickness, GWR
+        and LGI with onset status of MJ use as a between groups factor. The dependent
+        variables were thickness, gray&#8211;white ratio or local gyrification index
+        and the independent variables were either recent monthly MJ use in grams (MJ
+        grams) or duration of MJ use (MJ years). Age and total drinks in the past
+        2 months were treated as nuisance covariates in the model. Using MJ years
+        of use and MJ grams as independent predictors of interest allowed us to characterize
+        and differentiate the latent developmental effects from cumulative and current
+        effects of MJ use. The variable &#8220;marijuana years of use&#8221; was based
+        on the participants&#8217; response to the question &#8220;For how many years
+        have you been using marijuana regularly?&#8221; Of note, an outlier in the
+        early onset group was removed before the statistical comparisons were performed.</p></sec></sec><sec
+        id="sec0075"><label>3</label><title>Results</title><sec id="sec0080"><label>3.1</label><title>Cortical
+        thickness</title><p id="par0105">There were no regions of group differences
+        in cortical thickness by early onset status alone, controlled for age and
+        alcohol use. However, MJ use characteristics were correlated with anterior
+        dorsolateral prefrontal cortex thickness based on onset status. Early onset
+        users showed increased thickness with increased MJ grams while late onset
+        users showed thinner cortex with increased MJ grams (<italic toggle="yes">p</italic>&#160;&lt;&#160;0.05
+        uncorrected) (<xref rid="tbl0015" ref-type="table">Table 3</xref>). The same
+        pattern emerged with more years of MJ use being associated with thicker region
+        of the right medial temporal lobe in the early onset users and the reverse
+        for the late onset users (<italic toggle="yes">p</italic>&#160;&lt;&#160;0.05
+        uncorrected) (<xref rid="fig0005" ref-type="fig">Fig. 1</xref>).<table-wrap
+        position="float" id="tbl0015" orientation="portrait"><label>Table 3</label><caption><p>Clusters
+        of significant age of onset&#160;&#215;&#160;marijuana use interactions. GWR,
+        gray/white matter border ratio; LGI, local gyrification index.</p></caption><table
+        frame="hsides" rules="groups"><thead><tr><th align="left" colspan="1" rowspan="1">Measure</th><th
+        align="left" colspan="1" rowspan="1">Label@Max, <italic toggle="yes">Extended
+        coverage</italic></th><th align="left" colspan="1" rowspan="1">Side</th><th
+        align="left" colspan="1" rowspan="1">Max-log(<italic toggle="yes">p</italic>)</th><th
+        align="left" colspan="1" rowspan="1">VtxMax</th><th align="left" colspan="1"
+        rowspan="1">Size (mm<sup>2</sup>)</th><th align="left" colspan="1" rowspan="1"><italic
+        toggle="yes">x</italic></th><th align="left" colspan="1" rowspan="1"><italic
+        toggle="yes">y</italic></th><th align="left" colspan="1" rowspan="1"><italic
+        toggle="yes">z</italic></th><th align="left" colspan="1" rowspan="1">Correlate</th><th
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">P</italic> (corr)</th><th
+        align="left" colspan="1" rowspan="1"><italic toggle="yes">F</italic>-value</th><th
+        align="left" colspan="1" rowspan="1">Effect Size<xref rid="tblfn0030" ref-type="table-fn">**</xref></th></tr></thead><tbody><tr><td
+        align="left" colspan="1" rowspan="1">Thickness</td><td align="left" colspan="1"
+        rowspan="1">Lingual</td><td align="left" colspan="1" rowspan="1">R</td><td
+        align="char" colspan="1" rowspan="1">&#8722;2.488</td><td align="char" colspan="1"
+        rowspan="1">127,927</td><td align="char" colspan="1" rowspan="1">1110</td><td
+        align="char" colspan="1" rowspan="1">19</td><td align="char" colspan="1" rowspan="1">&#8722;69</td><td
+        align="char" colspan="1" rowspan="1">&#8722;7</td><td align="left" colspan="1"
+        rowspan="1">MJ Years</td><td align="char" colspan="1" rowspan="1">0.016</td><td
+        align="char" colspan="1" rowspan="1">10.07</td><td align="char" colspan="1"
+        rowspan="1">0.063</td></tr><tr><td align="left" colspan="1" rowspan="1">GWR</td><td
+        align="left" colspan="1" rowspan="1">Rostral middle frontal,</td><td align="left"
+        colspan="1" rowspan="1">L</td><td align="char" colspan="1" rowspan="1">&#8722;2.668</td><td
+        align="char" colspan="1" rowspan="1">42,505</td><td align="char" colspan="1"
+        rowspan="1">1730</td><td align="char" colspan="1" rowspan="1">&#8722;23</td><td
+        align="char" colspan="1" rowspan="1">53</td><td align="char" colspan="1" rowspan="1">10</td><td
+        align="left" colspan="1" rowspan="1">MJ Grams</td><td align="char" colspan="1"
+        rowspan="1">0.001</td><td align="char" colspan="1" rowspan="1">11.09</td><td
+        align="char" colspan="1" rowspan="1">1.969</td></tr><tr><td colspan="1" rowspan="1"/><td
+        align="left" colspan="1" rowspan="1">Rostral middle frontal</td><td align="left"
+        colspan="1" rowspan="1">R</td><td align="char" colspan="1" rowspan="1">&#8722;3.565</td><td
+        align="char" colspan="1" rowspan="1">94,896</td><td align="char" colspan="1"
+        rowspan="1">2661</td><td align="char" colspan="1" rowspan="1">39</td><td align="char"
+        colspan="1" rowspan="1">30</td><td align="char" colspan="1" rowspan="1">18</td><td
+        align="left" colspan="1" rowspan="1">MJ Years</td><td align="char" colspan="1"
+        rowspan="1">0.0002</td><td align="char" colspan="1" rowspan="1">16.6</td><td
+        align="char" colspan="1" rowspan="1">0.744</td></tr><tr><td colspan="1" rowspan="1"/><td
+        align="left" colspan="1" rowspan="1">Medial orbitofrontal</td><td align="left"
+        colspan="1" rowspan="1">R</td><td align="char" colspan="1" rowspan="1">&#8722;3.304</td><td
+        align="char" colspan="1" rowspan="1">84,773</td><td align="char" colspan="1"
+        rowspan="1">1368</td><td align="char" colspan="1" rowspan="1">6</td><td align="char"
+        colspan="1" rowspan="1">47</td><td align="char" colspan="1" rowspan="1">&#8722;20</td><td
+        align="left" colspan="1" rowspan="1">MJ Years</td><td align="char" colspan="1"
+        rowspan="1">0.013</td><td align="char" colspan="1" rowspan="1">14.92</td><td
+        align="char" colspan="1" rowspan="1">0.796</td></tr><tr><td align="left" colspan="1"
+        rowspan="1">LGI</td><td align="left" colspan="1" rowspan="1">Inferior parietal</td><td
+        align="left" colspan="1" rowspan="1">L</td><td align="char" colspan="1" rowspan="1">3.456</td><td
+        align="char" colspan="1" rowspan="1">122,169</td><td align="char" colspan="1"
+        rowspan="1">2565</td><td align="char" colspan="1" rowspan="1">&#8722;44</td><td
+        align="char" colspan="1" rowspan="1">&#8722;62</td><td align="char" colspan="1"
+        rowspan="1">44</td><td align="left" colspan="1" rowspan="1">MJ Grams</td><td
+        align="char" colspan="1" rowspan="1">0.015</td><td align="char" colspan="1"
+        rowspan="1">15.89</td><td align="char" colspan="1" rowspan="1">0.131</td></tr></tbody></table><table-wrap-foot><fn><p><italic
+        toggle="yes">p</italic>(corr), family-wise error fully corrected.</p></fn></table-wrap-foot><table-wrap-foot><fn
+        id="tblfn0030"><label>**</label><p id="npar0030">The effect sizes were derived
+        from Freesurfer''s tool in the significant region of interest using <italic
+        toggle="yes">mri_segstats</italic>. This was also confirmed manually by using
+        the <italic toggle="yes">F</italic>-value reported by Freesurfer.</p></fn></table-wrap-foot></table-wrap><fig
+        id="fig0005" position="float" orientation="portrait"><label>Fig. 1</label><caption><p>Early
+        vs. late onset marijuana users show divergent morphological patterns based
+        on current marijuana use (measured in grams; MJ grams) in overlapping areas
+        of anterior prefrontal cortex. GWR, gray/white matter border ratio; LGI, local
+        gyrification index.</p></caption><graphic xmlns:xlink="http://www.w3.org/1999/xlink"
+        position="float" orientation="portrait" xlink:href="gr1.jpg"/></fig></p></sec><sec
+        id="sec0085"><label>3.2</label><title>Gray&#8211;white matter contrast</title><p
+        id="par0110">There were no regions of group differences in gray&#8211;white
+        matter contrast by early onset status alone, controlled for age and alcohol
+        use. However, current MJ consumption (grams) and onset status were differentially
+        correlated with gray&#8211;white matter contrast in a left anterior dorsal
+        frontal region (<italic toggle="yes">p</italic>&#160;&lt;&#160;0.05, FWE corrected).
+        Increased gray&#8211;white contrast with heavier MJ use was seen in the early
+        onset users and the opposite was seen in later onset users (heavier current
+        use linked to decreasing GWR). The same pattern was seen between duration
+        of MJ use in two prefrontal cortex clusters of the right dorsal frontal and
+        medial orbitofrontal area <italic toggle="yes">p</italic>&#160;&lt;&#160;0.05,
+        FWE corrected &#8211; more years of MJ use were linked to greater GWR among
+        early users (<xref rid="fig0005" ref-type="fig">Fig. 1</xref>).</p></sec><sec
+        id="sec0090"><label>3.3</label><title>Gyrification</title><p id="par0115">MJ
+        use onset status alone showed no significant main effects above age and alcohol
+        covariates. However, onset status was correlated with divergent patterns between
+        local gyrification and MJ use, whereby early onset users showed decreasing
+        LGI with increasing MJ consumption and longer duration of use in prefrontal
+        cortex regions <italic toggle="yes">p</italic>&#160;&lt;&#160;0.05, FWE corrected.
+        The left hemisphere clusters encompassed the majority of the length of the
+        middle lateral surface of the left cortex, including motor cortices, parietal
+        lobe and multimodal integration areas (<xref rid="fig0005" ref-type="fig">Fig.
+        1</xref>).</p></sec></sec><sec id="sec0095"><label>4</label><title>Discussion</title><p
+        id="par0120">The present study was designed to characterize the cortical architecture
+        in adolescent onset MJ users by comparing early adolescent onset users to
+        late adolescent onset in MJ use on measures of cortical thickness, gray/white
+        matter contrast and gyrification. The primary finding was that early versus
+        late onset MJ users showed a divergent pattern in cortical thickness, definition
+        of the cortical ribbon and local gyrification with continued use through and
+        beyond adolescent years. Specifically, early onset users showed cortical thickening,
+        enhanced gray/white matter contrast, and decreased gyrification in association
+        with more years of MJ use and current consumption of MJ in grams in frontal
+        and temporal regions &#8211; areas that underlie higher order cognition including
+        executive functioning, learning and memory. Findings were above and beyond
+        effects of alcohol and current age, therefore, results are less likely to
+        reflect morphological trends due to aging.</p><p id="par0125">Our findings
+        did not find the expected age of onset differences previously reported in
+        marijuana users (<xref rid="bib0120" ref-type="bibr">Gruber et al., 2012</xref>,
+        <xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>). This inconsistency
+        suggests that the age of onset effects may be more robust in brain white matter
+        connectivity (<xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>)
+        and function (<xref rid="bib0120" ref-type="bibr">Gruber et al., 2012</xref>)
+        than brain surface morphometry. To date, the few studies that have described
+        altered cortical morphology in MJ users have led to mixed findings. <xref
+        rid="bib0161" ref-type="bibr">Mata et al. (2010)</xref> identified brain regions
+        with decreased sulcal depth suggestive of lower gyrification in a study of
+        adult MJ users. <xref rid="bib0141" ref-type="bibr">Jacobus and Tapert (2014)</xref>
+        recently reported increased cortical thickness in the entorhinal cortex among
+        24 adolescent MJ users (mean age&#160;=&#160;17.7, mean MJ onset age&#160;=&#160;15.4)
+        relative to peer controls. However, the authors also reported a negative relationship
+        between cortical thickness and total MJ use in the right paracentral gyrus,
+        and they observed consistent positive relationships in various brain regions
+        between age of MJ onset and thickness. In the only other known adolescent
+        study of cortical thickness and MJ, Lopez-Larson and colleagues studied 18
+        adolescent heavy MJ users (similar in age and MJ onset as <xref rid="bib0141"
+        ref-type="bibr">Jacobus and Tapert, 2014</xref>) and reported mixed findings
+        of increased thickness in prefrontal/insula regions and decreased thickness
+        in posterior/temporal lobe areas in the MJ users compared to controls. In
+        contrast to <xref rid="bib0141" ref-type="bibr">Jacobus and Tapert, 2014</xref>,
+        <xref rid="bib0151" ref-type="bibr">Lopez-Larson et al., 2011</xref> found
+        areas of the frontal lobe and insula that were thinner with increased urine
+        THC metabolites and thicker with earlier age of onset. Select findings from
+        the current study align with aspects of both of these studies, with a consensus
+        supporting findings of a negative dose-dependent relationship between MJ use
+        and cortical thickness. Given the low availability of studies to compare,
+        this consensus is very limited. Although Jacobus et al. and Lopez-Larson et
+        al. found the opposite effect of age of onset on thickness, the pattern of
+        divergence among early vs. late onset users in the current study is more consistent
+        with the latter study, whereby we saw early onset users exhibit thicker cortex
+        with continued MJ use. Taken together, findings of increased thickness related
+        to early MJ onset accompanied by negative dose-dependent relationships with
+        MJ exposure may reflect two distinct processes. One process may be specific
+        to the interactions with cortical development during early adolescence, likely
+        leading to a disruption in pruning, and, the other, specific to the pharmacological
+        effect with heavy chronic MJ use.</p><p id="par0130">In the only known study
+        to examine the curvature-morphology of the cortex in adult MJ users, <xref
+        rid="bib0161" ref-type="bibr">Mata et al. (2010)</xref> identified decreased
+        sulcal concavity and thinner sulci in 23&#160;MJ users compared to controls
+        (<italic toggle="yes">n</italic>&#160;=&#160;44), also in prefrontal areas.
+        However, they did not observe significant relationships with age, MJ onset
+        age, or cumulative MJ use. It is interesting that the authors detected group
+        level differences (MJ vs. controls) but no correlations with MJ use characteristics
+        such as dose or age of onset, whereas our primary findings are the consistent
+        effects of continued MJ use differing after early or late adolescent onset.
+        There are substantial methodological explanations for this disparity. For
+        example, the current study did not compare morphology in MJ users to a normative
+        control sample, therefore, it is feasible that group-level differences may
+        emerge with such a comparison. Likewise, we deliberately covaried for current
+        age in order to control for brain changes with aging and thus optimize our
+        interrogation of developmental effects of early onset age and of aspects of
+        continued use.</p><p id="par0135">The heterogeneity of MJ effects clearly
+        suggests a multifactorial system of neurobiological processes involved. The
+        primary results uphold that age of onset is a robust variable that differentiates
+        heavy MJ users based on early versus late MJ onset. However, this group distinction
+        relied on current use characteristics. Therefore, in the absence of group-level
+        differences, the interactions between onset age and current use indicates
+        that continued cannabis exposure and early adolescent developmental factors
+        both contribute to a dynamic and sustained departure from what is expected
+        based on developmental studies.</p><p id="par0140">Typical synaptic refinement
+        processes during early adolescence are in the context of long-term depression
+        and potentiation of cortical neurons in order to facilitate neuronal remodeling.
+        Thus, the normal course of early adolescent development is uniquely vulnerable
+        to disruption by MJ due to the electrochemical conditions and maturity of
+        brain processes that would not present together again. Cass and colleagues
+        tested the sensitivity of early adolescence cannabinoid exposure in an animal
+        model (<xref rid="bib0040" ref-type="bibr">Cass et al., 2014</xref>). They
+        found that acute administration of cannabinoid agonists in early, middle and
+        late adolescent rats led to a state of frequency-dependent disinhibition of
+        neurons in the frontal cortex in the early-to-middle adolescent rats, but
+        not in the late adolescent rats. Moreover, the authors also noted that adult
+        rats previously exposed to cannabinoid agonists in adolescence displayed comparable
+        neuronal disinhibition. Thus, by changing the inhibitory/excitatory landscape
+        during adolescence, MJ can influence lasting changes to typical cortical remodeling
+        during sensitive early adolescent years.</p><p id="par0145">The sequence of
+        pruning and myelination likely plays a formative role in lasting changes from
+        early adolescent onset MJ use. With decreased synaptic elimination, our findings
+        of greater GW border contrast may reflect greater proliferation of myelin
+        at the boundary of the cortical ribbon where non-pruned synapses remained
+        with linked axons. Findings of altered white matter tissue qualities are mixed
+        in adolescent and adult MJ user samples. Some report both increases and decreases
+        in fractional anisotropy (FA) and average water diffusion (<xref rid="bib0020"
+        ref-type="bibr">Bava et al., 2009</xref>) whereas others report consistent
+        decreases in FA among adolescent MJ users (<xref rid="bib0010" ref-type="bibr">Ashtari
+        et al., 2009</xref>, <xref rid="bib0140" ref-type="bibr">Jacobus et al., 2009</xref>)
+        or null findings (<xref rid="bib0060" ref-type="bibr">Delisi et al., 2006</xref>).
+        Two studies of diffusion tensor imaging in adult MJ users reported reduced
+        FA in users compared to controls (<xref rid="bib0130" ref-type="bibr">Gruber
+        et al., 2011</xref>, <xref rid="bib0125" ref-type="bibr">Gruber et al., 2014</xref>).
+        In addition to equivocal findings, research is needed to address the microstructural
+        changes that could result in altered definition of the cortical ribbon. For
+        example, rather than whole brain techniques that assess diffusion measures
+        along major white matter tracts, indices assessing axonal organization along
+        radial and interneuron association fibers along the cortical ribbon are needed.
+        This scenario played out could result in increased gray matter (thicker cortex
+        from disrupted pruning) and the myelination of connections to these spared
+        terminals would result in increased density of white matter at the cortical
+        boundary. Without any known studies of adolescent development of the gray/white
+        tissue contrast at the cortical border to serve as a point of comparison,
+        we speculate that early adolescent disruption of pruning and subsequent myelination
+        of connections at the cortical boundary would be reflected by increased GWR
+        as we saw in the current study.</p></sec><sec id="sec0100"><label>5</label><title>Limitations
+        and conclusions</title><p id="par0150">The cross-sectional nature of this
+        study limits causal attributions in terms of what we can infer to be directly
+        related to the effects of MJ. Although a longitudinal design is optimal for
+        addressing brain changes directly due to MJ, cross-sectional studies facilitate
+        data-driven hypotheses that can be assessed directly in prospective studies.</p><p
+        id="par0155">It is important to keep in mind that the participants were not
+        explicitly asked for possible years of abstinence during their period of regular
+        use, which may have created possible inflation in reported duration of regular
+        use. However, because the participants provided number of years of &#8220;regular&#8221;
+        marijuana use, this inherently suggests continued, uninterrupted years of
+        use. Concurrent nicotine use could have also influenced our reported results.
+        But in the absence of a larger sample size and the presence of huge variance
+        in nicotine use in the current sample, we were unable to verify the effect
+        of nicotine use in the reported results.</p><p id="par0160">Interpretation
+        of these findings is also limited by the lack of behavioral anchors for the
+        observed morphological effects and lack of information on other aspects of
+        developmental history that could further characterize the effects of marijuana
+        during neurodevelopment. This is further limited by the absence of &#8220;expected&#8221;
+        patterns based on normative data. Given the varied directions of effects and
+        the small sample size, these findings should be replicated and be viewed as
+        preliminary.</p><p id="par0165">To conclude, early MJ use was linked to altered
+        neurodevelopmental patterns in brain regions sub-serving higher-order cognitive
+        process. Clinical implications include need for early, targeted intervention.
+        Given that the most robust results were related to interactions between onset
+        age and continued use through emerging adulthood, harm reduction approaches
+        may be effective in moderating adolescent MJ use to levels that are less likely
+        to cause long-term developmental changes.</p></sec><sec id="sec0105"><title>Conflict
+        of interest</title><p id="par0170">The authors report no conflicts of interest.</p></sec></body><back><ref-list
+        id="bibl0005"><title>References</title><ref id="bib0001"><element-citation
+        publication-type="journal" id="sbref0001"><person-group person-group-type="author"><name
+        name-style="western"><surname>Alem&#225;n-G&#243;mez</surname><given-names>Y.</given-names></name></person-group><article-title>The
+        human cerebral cortex flattens during adolescence</article-title><source>J.
+        Neurosci.</source><volume>33</volume><issue>38</issue><year>2013</year><fpage>15004</fpage><lpage>15010</lpage><pub-id
+        pub-id-type="pmid">24048830</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1523/JNEUROSCI.1459-13.2013</pub-id><pub-id
+        pub-id-type="pmcid">PMC6618418</pub-id></element-citation></ref><ref id="bib0005"><element-citation
+        publication-type="journal" id="sbref0005"><person-group person-group-type="author"><name
+        name-style="western"><surname>Anavi-Goffer</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Mulder</surname><given-names>J.</given-names></name></person-group><article-title>The
+        polarised life of the endocannabinoid system in CNS development</article-title><source>Chembiochem</source><volume>10</volume><issue>10</issue><year>2009</year><fpage>1591</fpage><lpage>1598</lpage><pub-id
+        pub-id-type="pmid">19533710</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1002/cbic.200800827</pub-id></element-citation></ref><ref
+        id="bib0006"><element-citation publication-type="journal" id="sbref0006"><person-group
+        person-group-type="author"><name name-style="western"><surname>Armstrong</surname><given-names>E.</given-names></name></person-group><article-title>The
+        ontogeny of human gyrification</article-title><source>Cereb. Cortex</source><volume>5</volume><issue>1</issue><year>1995</year><fpage>56</fpage><lpage>63</lpage><pub-id
+        pub-id-type="pmid">7719130</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1093/cercor/5.1.56</pub-id></element-citation></ref><ref
+        id="bib0010"><element-citation publication-type="journal" id="sbref0010"><person-group
+        person-group-type="author"><name name-style="western"><surname>Ashtari</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Cervellione</surname><given-names>K.</given-names></name><name
+        name-style="western"><surname>Cottone</surname><given-names>J.</given-names></name><name
+        name-style="western"><surname>Ardekani</surname><given-names>B.A.</given-names></name><name
+        name-style="western"><surname>Sevy</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Kumra</surname><given-names>S.</given-names></name></person-group><article-title>Diffusion
+        abnormalities in adolescents and young adults with a history of heavy cannabis
+        use</article-title><source>J. Psychiatr. Res.</source><volume>43</volume><issue>3</issue><year>2009</year><fpage>189</fpage><lpage>204</lpage><pub-id
+        pub-id-type="pmid">19111160</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.jpsychires.2008.12.002</pub-id><pub-id
+        pub-id-type="pmcid">PMC3314332</pub-id></element-citation></ref><ref id="bib0015"><element-citation
+        publication-type="journal" id="sbref0015"><person-group person-group-type="author"><name
+        name-style="western"><surname>Battistella</surname><given-names>G.</given-names></name><name
+        name-style="western"><surname>Fornari</surname><given-names>E.</given-names></name><name
+        name-style="western"><surname>Annoni</surname><given-names>J.M.</given-names></name><name
+        name-style="western"><surname>Chtioui</surname><given-names>H.</given-names></name><name
+        name-style="western"><surname>Dao</surname><given-names>K.</given-names></name><name
+        name-style="western"><surname>Fabritius</surname><given-names>M.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Giroud</surname><given-names>C.</given-names></name></person-group><article-title>Long-term
+        effects of cannabis on brain structure</article-title><source>Neuropsychopharmacology</source><volume>39</volume><issue>9</issue><year>2014</year><fpage>2041</fpage><lpage>2048</lpage><pub-id
+        pub-id-type="pmid">24633558</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1038/npp.2014.67</pub-id><pub-id
+        pub-id-type="pmcid">PMC4104335</pub-id></element-citation></ref><ref id="bib0020"><element-citation
+        publication-type="journal" id="sbref0020"><person-group person-group-type="author"><name
+        name-style="western"><surname>Bava</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Frank</surname><given-names>L.R.</given-names></name><name
+        name-style="western"><surname>McQueeny</surname><given-names>T.</given-names></name><name
+        name-style="western"><surname>Schweinsburg</surname><given-names>B.C.</given-names></name><name
+        name-style="western"><surname>Schweinsburg</surname><given-names>A.D.</given-names></name><name
+        name-style="western"><surname>Tapert</surname><given-names>S.F.</given-names></name></person-group><article-title>Altered
+        white matter microstructure in adolescent substance users</article-title><source>Psychiatry
+        Res.</source><volume>173</volume><issue>3</issue><year>2009</year><fpage>228</fpage><lpage>237</lpage><comment>pii:S0925-4927(09)00089-4</comment><pub-id
+        pub-id-type="pmid">19699064</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.pscychresns.2009.04.005</pub-id><pub-id
+        pub-id-type="pmcid">PMC2734872</pub-id></element-citation></ref><ref id="bib0025"><element-citation
+        publication-type="journal" id="sbref0025"><person-group person-group-type="author"><name
+        name-style="western"><surname>Caballero</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Tseng</surname><given-names>K.Y.</given-names></name></person-group><article-title>Association
+        of cannabis use during adolescence, prefrontal cb1 receptor signaling, and
+        schizophrenia</article-title><source>Front Pharmacol.</source><volume>3</volume><year>2012</year><fpage>101</fpage><pub-id
+        pub-id-type="pmid">22654759</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.3389/fphar.2012.00101</pub-id><pub-id
+        pub-id-type="pmcid">PMC3361072</pub-id></element-citation></ref><ref id="bib0030"><element-citation
+        publication-type="book" id="sbref0030"><person-group person-group-type="author"><name
+        name-style="western"><surname>CASA</surname></name></person-group><chapter-title>Adolescent
+        Substance Use: America''s #1 Public Health Problem</chapter-title><year>2011</year><publisher-name>The
+        National Center on Addiction and Substance Abuse (CASA) at Columbia University</publisher-name><publisher-loc>New
+        York</publisher-loc></element-citation></ref><ref id="bib0035"><element-citation
+        publication-type="journal" id="sbref0035"><person-group person-group-type="author"><name
+        name-style="western"><surname>Casey</surname><given-names>B.J.</given-names></name><name
+        name-style="western"><surname>Tottenham</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Liston</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Durston</surname><given-names>S.</given-names></name></person-group><article-title>Imaging
+        the developing brain: what have we learned about cognitive development?</article-title><source>Trends
+        Cogn. Sci.</source><volume>9</volume><issue>3</issue><year>2005</year><fpage>104</fpage><lpage>110</lpage><comment>pii:S1364-6613(05)00030-6</comment><pub-id
+        pub-id-type="pmid">15737818</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.tics.2005.01.011</pub-id></element-citation></ref><ref
+        id="bib0040"><element-citation publication-type="journal" id="sbref0040"><person-group
+        person-group-type="author"><name name-style="western"><surname>Cass</surname><given-names>D.K.</given-names></name><name
+        name-style="western"><surname>Flores-Barrera</surname><given-names>E.</given-names></name><name
+        name-style="western"><surname>Thomases</surname><given-names>D.R.</given-names></name><name
+        name-style="western"><surname>Vital</surname><given-names>W.F.</given-names></name><name
+        name-style="western"><surname>Caballero</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Tseng</surname><given-names>K.Y.</given-names></name></person-group><article-title>CB1
+        cannabinoid receptor stimulation during adolescence impairs the maturation
+        of GABA function in the adult rat prefrontal cortex</article-title><source>Mol.
+        Psychiatry</source><volume>19</volume><issue>5</issue><year>2014</year><fpage>536</fpage><lpage>543</lpage><pub-id
+        pub-id-type="pmid">24589887</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1038/mp.2014.14</pub-id><pub-id
+        pub-id-type="pmcid">PMC3999247</pub-id></element-citation></ref><ref id="bib0045"><element-citation
+        publication-type="journal" id="sbref0045"><person-group person-group-type="author"><name
+        name-style="western"><surname>Chan</surname><given-names>G.C.</given-names></name><name
+        name-style="western"><surname>Hinds</surname><given-names>T.R.</given-names></name><name
+        name-style="western"><surname>Impey</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Storm</surname><given-names>D.R.</given-names></name></person-group><article-title>Hippocampal
+        neurotoxicity of Delta9-tetrahydrocannabinol</article-title><source>J. Neurosci.</source><volume>18</volume><issue>14</issue><year>1998</year><fpage>5322</fpage><lpage>5332</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/9651215" id="intr0015">http://www.ncbi.nlm.nih.gov/pubmed/9651215</ext-link>,
+        <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri" xlink:href="http://www.jneurosci.org/content/18/14/5322.full.pdf"
+        id="intr0020">http://www.jneurosci.org/content/18/14/5322.full.pdf</ext-link></comment><pub-id
+        pub-id-type="pmid">9651215</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1523/JNEUROSCI.18-14-05322.1998</pub-id><pub-id
+        pub-id-type="pmcid">PMC6793471</pub-id></element-citation></ref><ref id="bib0050"><element-citation
+        publication-type="journal" id="sbref0050"><person-group person-group-type="author"><name
+        name-style="western"><surname>Cousijn</surname><given-names>J.</given-names></name><name
+        name-style="western"><surname>Wiers</surname><given-names>R.W.</given-names></name><name
+        name-style="western"><surname>Ridderinkhof</surname><given-names>K.R.</given-names></name><name
+        name-style="western"><surname>van den Brink</surname><given-names>W.</given-names></name><name
+        name-style="western"><surname>Veltman</surname><given-names>D.J.</given-names></name><name
+        name-style="western"><surname>Goudriaan</surname><given-names>A.E.</given-names></name></person-group><article-title>Grey
+        matter alterations associated with cannabis use: results of a VBM study in
+        heavy cannabis users and healthy controls</article-title><source>Neuroimage</source><volume>59</volume><issue>4</issue><year>2012</year><fpage>3845</fpage><lpage>3851</lpage><pub-id
+        pub-id-type="pmid">21982932</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neuroimage.2011.09.046</pub-id></element-citation></ref><ref
+        id="bib0055"><element-citation publication-type="journal" id="sbref0055"><person-group
+        person-group-type="author"><name name-style="western"><surname>Dale</surname><given-names>A.M.</given-names></name><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Sereno</surname><given-names>M.I.</given-names></name></person-group><article-title>Cortical
+        surface-based analysis I. Segmentation and surface reconstruction</article-title><source>Neuroimage</source><volume>9</volume><issue>2</issue><year>1999</year><fpage>179</fpage><lpage>194</lpage><pub-id
+        pub-id-type="pmid">9931268</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1006/nimg.1998.0395</pub-id></element-citation></ref><ref
+        id="bib0060"><element-citation publication-type="journal" id="sbref0060"><person-group
+        person-group-type="author"><name name-style="western"><surname>Delisi</surname><given-names>L.E.</given-names></name><name
+        name-style="western"><surname>Bertisch</surname><given-names>H.C.</given-names></name><name
+        name-style="western"><surname>Szulc</surname><given-names>K.U.</given-names></name><name
+        name-style="western"><surname>Majcher</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Brown</surname><given-names>K.</given-names></name><name
+        name-style="western"><surname>Bappal</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Ardekani</surname><given-names>B.A.</given-names></name></person-group><article-title>A
+        preliminary DTI study showing no brain structural change associated with adolescent
+        cannabis use</article-title><source>Harm Reduct. J.</source><volume>3</volume><year>2006</year><fpage>17</fpage><pub-id
+        pub-id-type="pmid">16684342</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1186/1477-7517-3-17</pub-id><pub-id
+        pub-id-type="pmcid">PMC1524733</pub-id></element-citation></ref><ref id="bib0065"><element-citation
+        publication-type="journal" id="sbref0065"><person-group person-group-type="author"><name
+        name-style="western"><surname>Desikan</surname><given-names>R.S.</given-names></name><name
+        name-style="western"><surname>Segonne</surname><given-names>F.</given-names></name><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Quinn</surname><given-names>B.T.</given-names></name><name
+        name-style="western"><surname>Dickerson</surname><given-names>B.C.</given-names></name><name
+        name-style="western"><surname>Blacker</surname><given-names>D.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Killiany</surname><given-names>R.J.</given-names></name></person-group><article-title>An
+        automated labeling system for subdividing the human cerebral cortex on MRI
+        scans into gyral based regions of interest</article-title><source>Neuroimage</source><volume>31</volume><issue>3</issue><year>2006</year><fpage>968</fpage><lpage>980</lpage><pub-id
+        pub-id-type="pmid">16530430</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neuroimage.2006.01.021</pub-id></element-citation></ref><ref
+        id="bib0070"><element-citation publication-type="journal" id="sbref0070"><person-group
+        person-group-type="author"><name name-style="western"><surname>Fergusson</surname><given-names>D.M.</given-names></name><name
+        name-style="western"><surname>Horwood</surname><given-names>L.J.</given-names></name></person-group><article-title>Early
+        onset cannabis use and psychosocial adjustment in young adults</article-title><source>Addiction</source><volume>92</volume><issue>3</issue><year>1997</year><fpage>279</fpage><lpage>296</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/9219390" id="intr0025">http://www.ncbi.nlm.nih.gov/pubmed/9219390</ext-link></comment><pub-id
+        pub-id-type="pmid">9219390</pub-id></element-citation></ref><ref id="bib0075"><element-citation
+        publication-type="journal" id="sbref0075"><person-group person-group-type="author"><name
+        name-style="western"><surname>Fergusson</surname><given-names>D.M.</given-names></name><name
+        name-style="western"><surname>Lynskey</surname><given-names>M.T.</given-names></name><name
+        name-style="western"><surname>Horwood</surname><given-names>L.J.</given-names></name></person-group><article-title>The
+        short-term consequences of early onset cannabis use</article-title><source>J.
+        Abnorm. Child Psychol.</source><volume>24</volume><issue>4</issue><year>1996</year><fpage>499</fpage><lpage>512</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/8886945" id="intr0030">http://www.ncbi.nlm.nih.gov/pubmed/8886945</ext-link></comment><pub-id
+        pub-id-type="pmid">8886945</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1007/BF01441571</pub-id></element-citation></ref><ref
+        id="bib0080"><element-citation publication-type="journal" id="sbref0080"><person-group
+        person-group-type="author"><name name-style="western"><surname>Filbey</surname><given-names>F.M.</given-names></name><name
+        name-style="western"><surname>Aslan</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Calhoun</surname><given-names>V.D.</given-names></name><name
+        name-style="western"><surname>Spence</surname><given-names>J.S.</given-names></name><name
+        name-style="western"><surname>Damaraju</surname><given-names>E.</given-names></name><name
+        name-style="western"><surname>Caprihan</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Segall</surname><given-names>J.</given-names></name></person-group><article-title>Long-term
+        effects of marijuana use on the brain</article-title><source>Proc. Natl. Acad.
+        Sci. U.S.A.</source><year>2014</year><pub-id pub-id-type="doi" assigning-authority="pmc">10.1073/pnas.1415297111</pub-id><pub-id
+        pub-id-type="pmcid">PMC4250161</pub-id><pub-id pub-id-type="pmid">25385625</pub-id></element-citation></ref><ref
+        id="bib0085"><element-citation publication-type="book" id="sbref0085"><person-group
+        person-group-type="author"><name name-style="western"><surname>First</surname><given-names>M.B.</given-names></name><name
+        name-style="western"><surname>Spitzer</surname><given-names>R.L.</given-names></name><name
+        name-style="western"><surname>Miriam</surname><given-names>G.</given-names></name><name
+        name-style="western"><surname>Williams</surname><given-names>J.B.W.</given-names></name></person-group><chapter-title>Structured
+        Clinical Interview for DSM-IV-TR Axis I Disorders, Research Version, Non-patient
+        Edition (SCID-I/NP)</chapter-title><year>2002</year><publisher-name>Biometrics
+        Research, New York State Psychiatric Institute</publisher-name><publisher-loc>New
+        York</publisher-loc></element-citation></ref><ref id="bib0090"><element-citation
+        publication-type="journal" id="sbref0090"><person-group person-group-type="author"><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Dale</surname><given-names>A.M.</given-names></name></person-group><article-title>Measuring
+        the thickness of the human cerebral cortex from magnetic resonance images</article-title><source>Proc.
+        Natl. Acad. Sci. U.S.A.</source><volume>97</volume><issue>20</issue><year>2000</year><fpage>11050</fpage><lpage>11055</lpage><pub-id
+        pub-id-type="pmid">10984517</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1073/pnas.200033797</pub-id><pub-id
+        pub-id-type="pmcid">PMC27146</pub-id></element-citation></ref><ref id="bib0095"><element-citation
+        publication-type="journal" id="sbref0095"><person-group person-group-type="author"><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Salat</surname><given-names>D.H.</given-names></name><name
+        name-style="western"><surname>Busa</surname><given-names>E.</given-names></name><name
+        name-style="western"><surname>Albert</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Dieterich</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Haselgrove</surname><given-names>C.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Dale</surname><given-names>A.M.</given-names></name></person-group><article-title>Whole
+        brain segmentation: automated labeling of neuroanatomical structures in the
+        human brain</article-title><source>Neuron</source><volume>33</volume><issue>3</issue><year>2002</year><fpage>341</fpage><lpage>355</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/11832223" id="intr0035">http://www.ncbi.nlm.nih.gov/pubmed/11832223</ext-link></comment><pub-id
+        pub-id-type="pmid">11832223</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/s0896-6273(02)00569-x</pub-id></element-citation></ref><ref
+        id="bib0100"><element-citation publication-type="journal" id="sbref0100"><person-group
+        person-group-type="author"><name name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Sereno</surname><given-names>M.I.</given-names></name><name
+        name-style="western"><surname>Dale</surname><given-names>A.M.</given-names></name></person-group><article-title>Cortical
+        surface-based analysis II: Inflation, flattening, and a surface-based coordinate
+        system</article-title><source>Neuroimage</source><volume>9</volume><issue>2</issue><year>1999</year><fpage>195</fpage><lpage>207</lpage><pub-id
+        pub-id-type="pmid">9931269</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1006/nimg.1998.0396</pub-id></element-citation></ref><ref
+        id="bib0105"><element-citation publication-type="journal" id="sbref0105"><person-group
+        person-group-type="author"><name name-style="western"><surname>Giedd</surname><given-names>J.N.</given-names></name></person-group><article-title>The
+        teen brain: insights from neuroimaging</article-title><source>J. Adolesc.
+        Health</source><volume>42</volume><issue>4</issue><year>2008</year><fpage>335</fpage><lpage>343</lpage><pub-id
+        pub-id-type="pmid">18346658</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.jadohealth.2008.01.007</pub-id></element-citation></ref><ref
+        id="bib0110"><element-citation publication-type="journal" id="sbref0110"><person-group
+        person-group-type="author"><name name-style="western"><surname>Giorgio</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Watkins</surname><given-names>K.E.</given-names></name><name
+        name-style="western"><surname>Chadwick</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>James</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Winmill</surname><given-names>L.</given-names></name><name
+        name-style="western"><surname>Douaud</surname><given-names>G.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>James</surname><given-names>A.C.</given-names></name></person-group><article-title>Longitudinal
+        changes in grey and white matter during adolescence</article-title><source>Neuroimage</source><volume>49</volume><issue>1</issue><year>2010</year><fpage>94</fpage><lpage>103</lpage><comment>pii:S1053-8119(09)00864-7</comment><pub-id
+        pub-id-type="pmid">19679191</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neuroimage.2009.08.003</pub-id></element-citation></ref><ref
+        id="bib0115"><element-citation publication-type="journal" id="sbref0115"><person-group
+        person-group-type="author"><name name-style="western"><surname>Gogtay</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Giedd</surname><given-names>J.N.</given-names></name><name
+        name-style="western"><surname>Lusk</surname><given-names>L.</given-names></name><name
+        name-style="western"><surname>Hayashi</surname><given-names>K.M.</given-names></name><name
+        name-style="western"><surname>Greenstein</surname><given-names>D.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Thompson</surname><given-names>P.M.</given-names></name></person-group><article-title>Dynamic
+        mapping of human cortical development during childhood through early adulthood</article-title><source>Proc.
+        Natl. Acad. Sci. U.S.A.</source><volume>101</volume><issue>21</issue><year>2004</year><fpage>8174</fpage><lpage>8179</lpage><pub-id
+        pub-id-type="pmid">15148381</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1073/pnas.0402680101</pub-id><pub-id
+        pub-id-type="pmcid">PMC419576</pub-id></element-citation></ref><ref id="bib0120"><element-citation
+        publication-type="journal" id="sbref0120"><person-group person-group-type="author"><name
+        name-style="western"><surname>Gruber</surname><given-names>S.A.</given-names></name><name
+        name-style="western"><surname>Dahlgren</surname><given-names>M.K.</given-names></name><name
+        name-style="western"><surname>Sagar</surname><given-names>K.A.</given-names></name><name
+        name-style="western"><surname>Gonenc</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Killgore</surname><given-names>W.D.</given-names></name></person-group><article-title>Age
+        of onset of marijuana use impacts inhibitory processing</article-title><source>Neurosci.
+        Lett.</source><volume>511</volume><issue>2</issue><year>2012</year><fpage>89</fpage><lpage>94</lpage><pub-id
+        pub-id-type="pmid">22306089</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neulet.2012.01.039</pub-id><pub-id
+        pub-id-type="pmcid">PMC3659423</pub-id></element-citation></ref><ref id="bib0125"><element-citation
+        publication-type="journal" id="sbref0125"><person-group person-group-type="author"><name
+        name-style="western"><surname>Gruber</surname><given-names>S.A.</given-names></name><name
+        name-style="western"><surname>Dahlgren</surname><given-names>M.K.</given-names></name><name
+        name-style="western"><surname>Sagar</surname><given-names>K.A.</given-names></name><name
+        name-style="western"><surname>Gonenc</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Lukas</surname><given-names>S.E.</given-names></name></person-group><article-title>Worth
+        the wait: effects of age of onset of marijuana use on white matter and impulsivity</article-title><source>Psychopharmacology
+        (Berlin)</source><volume>231</volume><issue>8</issue><year>2014</year><fpage>1455</fpage><lpage>1465</lpage><pub-id
+        pub-id-type="pmid">24190588</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1007/s00213-013-3326-z</pub-id><pub-id
+        pub-id-type="pmcid">PMC3967072</pub-id></element-citation></ref><ref id="bib0130"><element-citation
+        publication-type="journal" id="sbref0130"><person-group person-group-type="author"><name
+        name-style="western"><surname>Gruber</surname><given-names>S.A.</given-names></name><name
+        name-style="western"><surname>Silveri</surname><given-names>M.M.</given-names></name><name
+        name-style="western"><surname>Dahlgren</surname><given-names>M.K.</given-names></name><name
+        name-style="western"><surname>Yurgelun-Todd</surname><given-names>D.</given-names></name></person-group><article-title>Why
+        so impulsive? White matter alterations are associated with impulsivity in
+        chronic marijuana smokers</article-title><source>Exp. Clin. Psychopharmacol.</source><volume>19</volume><issue>3</issue><year>2011</year><fpage>231</fpage><lpage>242</lpage><pub-id
+        pub-id-type="pmid">21480730</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1037/a0023034</pub-id><pub-id
+        pub-id-type="pmcid">PMC3659424</pub-id></element-citation></ref><ref id="bib0135"><element-citation
+        publication-type="journal" id="sbref0135"><person-group person-group-type="author"><name
+        name-style="western"><surname>Hasan</surname><given-names>K.M.</given-names></name><name
+        name-style="western"><surname>Sankar</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Halphen</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Kramer</surname><given-names>L.A.</given-names></name><name
+        name-style="western"><surname>Brandt</surname><given-names>M.E.</given-names></name><name
+        name-style="western"><surname>Juranek</surname><given-names>J.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Ewing-Cobbs</surname><given-names>L.</given-names></name></person-group><article-title>Development
+        and organization of the human brain tissue compartments across the lifespan
+        using diffusion tensor imaging</article-title><source>Neuroreport</source><volume>18</volume><issue>16</issue><year>2007</year><fpage>1735</fpage><lpage>1739</lpage><pub-id
+        pub-id-type="pmid">17921878</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1097/WNR.0b013e3282f0d40c</pub-id></element-citation></ref><ref
+        id="bib0140"><element-citation publication-type="journal" id="sbref0140"><person-group
+        person-group-type="author"><name name-style="western"><surname>Jacobus</surname><given-names>J.</given-names></name><name
+        name-style="western"><surname>McQueeny</surname><given-names>T.</given-names></name><name
+        name-style="western"><surname>Bava</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Schweinsburg</surname><given-names>B.C.</given-names></name><name
+        name-style="western"><surname>Frank</surname><given-names>L.R.</given-names></name><name
+        name-style="western"><surname>Yang</surname><given-names>T.T.</given-names></name><name
+        name-style="western"><surname>Tapert</surname><given-names>S.F.</given-names></name></person-group><article-title>White
+        matter integrity in adolescents with histories of marijuana use and binge
+        drinking</article-title><source>Neurotoxicol. Teratol.</source><volume>31</volume><issue>6</issue><year>2009</year><fpage>349</fpage><lpage>355</lpage><comment>pii:S0892-0362(09)00145-7</comment><pub-id
+        pub-id-type="pmid">19631736</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.ntt.2009.07.006</pub-id><pub-id
+        pub-id-type="pmcid">PMC2762024</pub-id></element-citation></ref><ref id="bib0141"><element-citation
+        publication-type="journal" id="sbref0141"><person-group person-group-type="author"><name
+        name-style="western"><surname>Jacobus</surname><given-names>J.</given-names></name><name
+        name-style="western"><surname>Tapert</surname><given-names>S.F.</given-names></name></person-group><article-title>Effects
+        of cannabis on the adolescent brain</article-title><source>Curr. Pharm. Des.</source><volume>20</volume><issue>13</issue><year>2014</year><fpage>2186</fpage><lpage>2193</lpage><pub-id
+        pub-id-type="pmid">23829363</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.2174/13816128113199990426</pub-id><pub-id
+        pub-id-type="pmcid">PMC3930618</pub-id></element-citation></ref><ref id="bib0145"><element-citation
+        publication-type="book" id="sbref0145"><person-group person-group-type="author"><name
+        name-style="western"><surname>Johnston</surname><given-names>L.D.</given-names></name><name
+        name-style="western"><surname>O&#8217;Malley</surname><given-names>P.M.</given-names></name><name
+        name-style="western"><surname>Miech</surname><given-names>R.A.</given-names></name><name
+        name-style="western"><surname>Bachman</surname><given-names>J.G.</given-names></name><name
+        name-style="western"><surname>Schulenberg</surname><given-names>J.E.</given-names></name></person-group><chapter-title>Monitoring
+        the Future National Survey Results on Drug Use, 1975&#8211;2013</chapter-title><year>2014</year><publisher-name>Institute
+        for Social Research, The University of Michigan</publisher-name><publisher-loc>Ann
+        Arbor, MI</publisher-loc></element-citation></ref><ref id="bib0146"><element-citation
+        publication-type="journal" id="sbref0146"><person-group person-group-type="author"><name
+        name-style="western"><surname>Klein</surname><given-names>D.</given-names></name></person-group><article-title>Adolescent
+        brain maturation and cortical folding: evidence for reductions in gyrification</article-title><source>PLoS
+        One</source><volume>9</volume><issue>1</issue><year>2014</year><fpage>e84914</fpage><pub-id
+        pub-id-type="pmid">24454765</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1371/journal.pone.0084914</pub-id><pub-id
+        pub-id-type="pmcid">PMC3893168</pub-id></element-citation></ref><ref id="bib0150"><element-citation
+        publication-type="journal" id="sbref0150"><person-group person-group-type="author"><name
+        name-style="western"><surname>Lebel</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Caverhill-Godkewitsch</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Beaulieu</surname><given-names>C.</given-names></name></person-group><article-title>Age-related
+        variations of white matter tracts</article-title><source>Neuroimage</source><volume>52</volume><issue>1</issue><year>2010</year><fpage>20</fpage><lpage>31</lpage><comment>pii:S1053-8119(10)00359-9</comment><pub-id
+        pub-id-type="pmid">20362683</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neuroimage.2010.03.072</pub-id></element-citation></ref><ref
+        id="bib0151"><element-citation publication-type="journal" id="sbref0151"><person-group
+        person-group-type="author"><name name-style="western"><surname>Lopez-Larson</surname><given-names>M.P.</given-names></name></person-group><article-title>Altered
+        prefrontal and insular cortical thickness in adolescent marijuana users</article-title><source>Behav.
+        Brain Res.</source><volume>220</volume><issue>1</issue><year>2011</year><fpage>164</fpage><lpage>172</lpage><pub-id
+        pub-id-type="pmid">21310189</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.bbr.2011.02.001</pub-id><pub-id
+        pub-id-type="pmcid">PMC3073407</pub-id></element-citation></ref><ref id="bib0155"><element-citation
+        publication-type="journal" id="sbref0155"><person-group person-group-type="author"><name
+        name-style="western"><surname>Lopez-Moreno</surname><given-names>J.A.</given-names></name><name
+        name-style="western"><surname>Gonzalez-Cuevas</surname><given-names>G.</given-names></name><name
+        name-style="western"><surname>Moreno</surname><given-names>G.</given-names></name><name
+        name-style="western"><surname>Navarro</surname><given-names>M.</given-names></name></person-group><article-title>The
+        pharmacology of the endocannabinoid system: functional and structural interactions
+        with other neurotransmitter systems and their repercussions in behavioral
+        addiction</article-title><source>Addict. Biol.</source><volume>13</volume><issue>2</issue><year>2008</year><fpage>160</fpage><lpage>187</lpage><pub-id
+        pub-id-type="pmid">18422831</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1111/j.1369-1600.2008.00105.x</pub-id></element-citation></ref><ref
+        id="bib0160"><element-citation publication-type="journal" id="sbref0160"><person-group
+        person-group-type="author"><name name-style="western"><surname>Lorenzetti</surname><given-names>V.</given-names></name><name
+        name-style="western"><surname>Lubman</surname><given-names>D.I.</given-names></name><name
+        name-style="western"><surname>Whittle</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Solowij</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Yucel</surname><given-names>M.</given-names></name></person-group><article-title>Structural
+        MRI findings in long-term cannabis users: what do we know?</article-title><source>Subst.
+        Use Misuse</source><volume>45</volume><issue>11</issue><year>2010</year><fpage>1787</fpage><lpage>1808</lpage><pub-id
+        pub-id-type="pmid">20590400</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.3109/10826084.2010.482443</pub-id></element-citation></ref><ref
+        id="bib0161"><element-citation publication-type="journal" id="sbref0161"><person-group
+        person-group-type="author"><name name-style="western"><surname>Mata</surname><given-names>I.</given-names></name></person-group><article-title>Gyrification
+        brain abnormalities associated with adolescence and early-adulthood cannabis
+        use</article-title><source>Brain Res.</source><volume>1317</volume><year>2010</year><fpage>297</fpage><lpage>304</lpage><pub-id
+        pub-id-type="pmid">20045399</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.brainres.2009.12.069</pub-id></element-citation></ref><ref
+        id="bib0165"><element-citation publication-type="journal" id="sbref0165"><person-group
+        person-group-type="author"><name name-style="western"><surname>Matochik</surname><given-names>J.A.</given-names></name><name
+        name-style="western"><surname>Eldreth</surname><given-names>D.A.</given-names></name><name
+        name-style="western"><surname>Cadet</surname><given-names>J.L.</given-names></name><name
+        name-style="western"><surname>Bolla</surname><given-names>K.I.</given-names></name></person-group><article-title>Altered
+        brain tissue composition in heavy marijuana users</article-title><source>Drug
+        Alcohol Depend.</source><volume>77</volume><issue>1</issue><year>2005</year><fpage>23</fpage><lpage>30</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.sciencedirect.com/science?_ob=MImg%26_imagekey=B6T63-4DCN07C-1-1%26_cdi=5019%26_user=2629161%26_pii=S0376871604002066%26_orig=search%26_coverDate=01%2F07%2F2005%26_sk=999229998%26view=c%26wchp=dGLbVzb-zSkWA%26md5=f38ff3ce0e5bc6e93f01659d96437f10%26ie=/sdarticle.pdf"
+        id="intr0040">http://www.sciencedirect.com/science?_ob=MImg&amp;_imagekey=B6T63-4DCN07C-1-1&amp;_cdi=5019&amp;_user=2629161&amp;_pii=S0376871604002066&amp;_orig=search&amp;_coverDate=01%2F07%2F2005&amp;_sk=999229998&amp;view=c&amp;wchp=dGLbVzb-zSkWA&amp;md5=f38ff3ce0e5bc6e93f01659d96437f10&amp;ie=/sdarticle.pdf</ext-link></comment><pub-id
+        pub-id-type="pmid">15607838</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.drugalcdep.2004.06.011</pub-id></element-citation></ref><ref
+        id="bib0170"><element-citation publication-type="journal" id="sbref0170"><person-group
+        person-group-type="author"><name name-style="western"><surname>Patton</surname><given-names>G.C.</given-names></name><name
+        name-style="western"><surname>Coffey</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Carlin</surname><given-names>J.B.</given-names></name><name
+        name-style="western"><surname>Degenhardt</surname><given-names>L.</given-names></name><name
+        name-style="western"><surname>Lynskey</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Hall</surname><given-names>W.</given-names></name></person-group><article-title>Cannabis
+        use and mental health in young people: cohort study</article-title><source>BMJ</source><volume>325</volume><issue>7374</issue><year>2002</year><fpage>1195</fpage><lpage>1198</lpage><pub-id
+        pub-id-type="pmid">12446533</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1136/bmj.325.7374.1195</pub-id><pub-id
+        pub-id-type="pmcid">PMC135489</pub-id></element-citation></ref><ref id="bib0175"><element-citation
+        publication-type="journal" id="sbref0175"><person-group person-group-type="author"><name
+        name-style="western"><surname>Paus</surname><given-names>T.&#197;.</given-names></name></person-group><article-title>Mapping
+        brain maturation and cognitive development during adolescence</article-title><source>Trends
+        Cogn. Sci.</source><volume>9</volume><issue>2</issue><year>2005</year><fpage>60</fpage><lpage>68</lpage><pub-id
+        pub-id-type="pmid">15668098</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.tics.2004.12.008</pub-id></element-citation></ref><ref
+        id="bib0180"><element-citation publication-type="journal" id="sbref0180"><person-group
+        person-group-type="author"><name name-style="western"><surname>Sagar</surname><given-names>K.A.</given-names></name><name
+        name-style="western"><surname>Dahlgren</surname><given-names>M.K.</given-names></name><name
+        name-style="western"><surname>Gonenc</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Racine</surname><given-names>M.T.</given-names></name><name
+        name-style="western"><surname>Dreman</surname><given-names>M.W.</given-names></name><name
+        name-style="western"><surname>Gruber</surname><given-names>S.A.</given-names></name></person-group><article-title>The
+        impact of initiation: early onset marijuana smokers demonstrate altered Stroop
+        performance and brain activation</article-title><source>Dev. Cogn. Neurosci.</source><year>2015</year><pub-id
+        pub-id-type="doi" assigning-authority="pmc">10.1016/j.dcn.2015.03.003</pub-id><pub-id
+        pub-id-type="pmcid">PMC4596753</pub-id><pub-id pub-id-type="pmid">25936584</pub-id></element-citation></ref><ref
+        id="bib0185"><element-citation publication-type="journal" id="sbref0185"><person-group
+        person-group-type="author"><name name-style="western"><surname>Salat</surname><given-names>D.H.</given-names></name><name
+        name-style="western"><surname>Lee</surname><given-names>S.Y.</given-names></name><name
+        name-style="western"><surname>van der Kouwe</surname><given-names>A.J.</given-names></name><name
+        name-style="western"><surname>Greve</surname><given-names>D.N.</given-names></name><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Rosas</surname><given-names>H.D.</given-names></name></person-group><article-title>Age-associated
+        alterations in cortical gray and white matter signal intensity and gray to
+        white matter contrast</article-title><source>Neuroimage</source><volume>48</volume><issue>1</issue><year>2009</year><fpage>21</fpage><lpage>28</lpage><pub-id
+        pub-id-type="pmid">19580876</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1016/j.neuroimage.2009.06.074</pub-id><pub-id
+        pub-id-type="pmcid">PMC2750073</pub-id></element-citation></ref><ref id="bib0190"><element-citation
+        publication-type="book" id="sbref0190"><person-group person-group-type="author"><name
+        name-style="western"><surname>SAMHSA</surname></name></person-group><chapter-title>Results
+        from the 2013 National Survey on Drug Use and Health: Summary of National
+        Findings NSDUH Series H-48, HHS Publication No. (SMA) 14-4863</chapter-title><year>2014</year><publisher-name>Substance
+        Abuse and Mental Health Services Administration</publisher-name><publisher-loc>Rockville,
+        MD</publisher-loc></element-citation></ref><ref id="bib0195"><element-citation
+        publication-type="journal" id="sbref0195"><person-group person-group-type="author"><name
+        name-style="western"><surname>Schaer</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Cuadra</surname><given-names>M.B.</given-names></name><name
+        name-style="western"><surname>Schmansky</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Fischl</surname><given-names>B.</given-names></name><name
+        name-style="western"><surname>Thiran</surname><given-names>J.P.</given-names></name><name
+        name-style="western"><surname>Eliez</surname><given-names>S.</given-names></name></person-group><article-title>How
+        to measure cortical folding from MR images: a step-by-step tutorial to compute
+        local gyrification index</article-title><source>J. Vis. Exp.</source><issue>59</issue><year>2012</year><fpage>e3417</fpage><pub-id
+        pub-id-type="pmid">22230945</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.3791/3417</pub-id><pub-id
+        pub-id-type="pmcid">PMC3369773</pub-id></element-citation></ref><ref id="bib0200"><element-citation
+        publication-type="book" id="sbref0200"><person-group person-group-type="author"><name
+        name-style="western"><surname>Schmansky</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Stevens</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Subramaniam</surname><given-names>K.</given-names></name><name
+        name-style="western"><surname>Greve</surname><given-names>D.N.</given-names></name><name
+        name-style="western"><surname>Kakunoori</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Pacheco</surname><given-names>J.</given-names></name></person-group><chapter-title>Troubleshooting
+        Your Output</chapter-title><year>2010</year><publisher-name>FsTutorial</publisher-name><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/TroubleshootingData"
+        id="intr0045">http://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/TroubleshootingData</ext-link></comment></element-citation></ref><ref
+        id="bib0205"><element-citation publication-type="journal" id="sbref0205"><person-group
+        person-group-type="author"><name name-style="western"><surname>Selemon</surname><given-names>L.D.</given-names></name></person-group><article-title>A
+        role for synaptic plasticity in the adolescent development of executive function</article-title><source>Transl.
+        Psychiatry</source><volume>3</volume><year>2013</year><fpage>e238</fpage><pub-id
+        pub-id-type="pmid">23462989</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1038/tp.2013.7</pub-id><pub-id
+        pub-id-type="pmcid">PMC3625918</pub-id></element-citation></ref><ref id="bib0210"><element-citation
+        publication-type="journal" id="sbref0210"><person-group person-group-type="author"><name
+        name-style="western"><surname>Shaw</surname><given-names>P.</given-names></name><name
+        name-style="western"><surname>Kabani</surname><given-names>N.J.</given-names></name><name
+        name-style="western"><surname>Lerch</surname><given-names>J.P.</given-names></name><name
+        name-style="western"><surname>Eckstrand</surname><given-names>K.</given-names></name><name
+        name-style="western"><surname>Lenroot</surname><given-names>R.</given-names></name><name
+        name-style="western"><surname>Gogtay</surname><given-names>N.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Wise</surname><given-names>S.P.</given-names></name></person-group><article-title>Neurodevelopmental
+        trajectories of the human cerebral cortex</article-title><source>J. Neurosci.</source><volume>28</volume><issue>14</issue><year>2008</year><fpage>3586</fpage><lpage>3594</lpage><comment>pii:28/14/3586</comment><pub-id
+        pub-id-type="pmid">18385317</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1523/JNEUROSCI.5309-07.2008</pub-id><pub-id
+        pub-id-type="pmcid">PMC6671079</pub-id></element-citation></ref><ref id="bib0215"><element-citation
+        publication-type="book" id="sbref0215"><person-group person-group-type="author"><name
+        name-style="western"><surname>Sobell</surname><given-names>L.C.</given-names></name><name
+        name-style="western"><surname>Sobell</surname><given-names>M.B.</given-names></name></person-group><chapter-title>Timeline
+        follow-back: a technique for assessing self-reported alcohol consumption</chapter-title><person-group
+        person-group-type="editor"><name name-style="western"><surname>Litten</surname><given-names>R.Z.</given-names></name><name
+        name-style="western"><surname>Allen</surname><given-names>J.P.</given-names></name></person-group><source>Measuring
+        Alcohol Consumption: Psychosocial and Biochemical Methods</source><year>1992</year><publisher-name>Humana
+        Press</publisher-name><publisher-loc>Totowa, NJ, USA</publisher-loc><fpage>41</fpage><lpage>72</lpage></element-citation></ref><ref
+        id="bib0220"><element-citation publication-type="journal" id="sbref0220"><person-group
+        person-group-type="author"><name name-style="western"><surname>Tapert</surname><given-names>S.F.</given-names></name><name
+        name-style="western"><surname>Schweinsburg</surname><given-names>A.D.</given-names></name><name
+        name-style="western"><surname>Barlett</surname><given-names>V.C.</given-names></name><name
+        name-style="western"><surname>Brown</surname><given-names>S.A.</given-names></name><name
+        name-style="western"><surname>Frank</surname><given-names>L.R.</given-names></name><name
+        name-style="western"><surname>Brown</surname><given-names>G.G.</given-names></name><name
+        name-style="western"><surname>Meloy</surname><given-names>M.J.</given-names></name></person-group><article-title>Blood
+        oxygen level dependent response and spatial working memory in adolescents
+        with alcohol use disorders</article-title><source>Alcohol Clin. Exp. Res.</source><volume>28</volume><issue>10</issue><year>2004</year><fpage>1577</fpage><lpage>1586</lpage><comment>Retrieved
+        from <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri"
+        xlink:href="http://www.ncbi.nlm.nih.gov/pubmed/15597092" id="intr0050">http://www.ncbi.nlm.nih.gov/pubmed/15597092</ext-link></comment><pub-id
+        pub-id-type="pmid">15597092</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1097/01.alc.0000141812.81234.a6</pub-id></element-citation></ref><ref
+        id="bib0225"><element-citation publication-type="journal" id="sbref0225"><person-group
+        person-group-type="author"><name name-style="western"><surname>Verdurand</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Nguyen</surname><given-names>V.</given-names></name><name
+        name-style="western"><surname>Stark</surname><given-names>D.</given-names></name><name
+        name-style="western"><surname>Zahra</surname><given-names>D.</given-names></name><name
+        name-style="western"><surname>Gregoire</surname><given-names>M.C.</given-names></name><name
+        name-style="western"><surname>Greguric</surname><given-names>I.</given-names></name><name
+        name-style="western"><surname>Zavitsanou</surname><given-names>K.</given-names></name></person-group><article-title>Comparison
+        of cannabinoid CB(1) receptor binding in adolescent and adult rats: a positron
+        emission tomography study using [F]MK-9470</article-title><source>Int. J.
+        Mol. Imaging</source><volume>2011</volume><year>2011</year><fpage>548123</fpage><pub-id
+        pub-id-type="pmid">22187642</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1155/2011/548123</pub-id><pub-id
+        pub-id-type="pmcid">PMC3236487</pub-id></element-citation></ref><ref id="bib0230"><element-citation
+        publication-type="journal" id="sbref0230"><person-group person-group-type="author"><name
+        name-style="western"><surname>Walter</surname><given-names>L.</given-names></name><name
+        name-style="western"><surname>Franklin</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Witting</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Wade</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Xie</surname><given-names>Y.</given-names></name><name
+        name-style="western"><surname>Kunos</surname><given-names>G.</given-names></name><x
+        xml:space="preserve">&#8230;</x><name name-style="western"><surname>Stella</surname><given-names>N.</given-names></name></person-group><article-title>Nonpsychotropic
+        cannabinoid receptors regulate microglial cell migration</article-title><source>J.
+        Neurosci.</source><volume>23</volume><issue>4</issue><year>2003</year><fpage>1398</fpage><lpage>1405</lpage><comment>pii:23/4/1398</comment><pub-id
+        pub-id-type="pmid">12598628</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1523/JNEUROSCI.23-04-01398.2003</pub-id><pub-id
+        pub-id-type="pmcid">PMC6742252</pub-id></element-citation></ref><ref id="bib0235"><element-citation
+        publication-type="book" id="sbref0235"><person-group person-group-type="author"><name
+        name-style="western"><surname>Wechsler</surname><given-names>D.</given-names></name></person-group><chapter-title>Manual
+        for the Wechsler Abbreviated Scale of Intelligence</chapter-title><year>1999</year><publisher-name>The
+        Psychological Corporation</publisher-name><publisher-loc>San Antonio, TX</publisher-loc></element-citation></ref><ref
+        id="bib0240"><element-citation publication-type="journal" id="sbref0240"><person-group
+        person-group-type="author"><name name-style="western"><surname>Yucel</surname><given-names>M.</given-names></name><name
+        name-style="western"><surname>Solowij</surname><given-names>N.</given-names></name><name
+        name-style="western"><surname>Respondek</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Whittle</surname><given-names>S.</given-names></name><name
+        name-style="western"><surname>Fornito</surname><given-names>A.</given-names></name><name
+        name-style="western"><surname>Pantelis</surname><given-names>C.</given-names></name><name
+        name-style="western"><surname>Lubman</surname><given-names>D.I.</given-names></name></person-group><article-title>Regional
+        brain abnormalities associated with long-term heavy cannabis use</article-title><source>Arch.
+        Gen. Psychiatry</source><volume>65</volume><issue>6</issue><year>2008</year><fpage>694</fpage><lpage>701</lpage><pub-id
+        pub-id-type="pmid">18519827</pub-id><pub-id pub-id-type="doi" assigning-authority="pmc">10.1001/archpsyc.65.6.694</pub-id></element-citation></ref></ref-list><sec
+        id="sec0115" sec-type="supplementary-material"><label>Appendix A</label><title>Supplementary
+        data</title><p id="par0185">The following are Supplementary data to this article:<supplementary-material
+        content-type="local-data" id="upi0005" position="float" orientation="portrait"><media
+        xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="mmc1.pptx" position="float"
+        orientation="portrait"/></supplementary-material></p></sec><ack id="ack0005"><title>Acknowledgements</title><p>This
+        research was funded by the <funding-source id="gs1">National Institute on
+        Drug Abuse</funding-source> (R01 DA030344, Filbey). We would like to thank
+        all the participants who volunteered for this study. We are also very grateful
+        to Talha Alvi, Sina Aslan, Jessica Baine, Collette Bice, Vicki Germer, Ariel
+        Ketcherside, Alison King, Brittany Kuhn, Tyler Rhinehardt, Wing Ting To and
+        the team of lab interns for their assistance with recruitment, running participants
+        and data management.</p></ack><fn-group><fn id="sec0110" fn-type="supplementary-material"><label>Appendix
+        A</label><p id="par0180">Supplementary material related to this article can
+        be found, in the online version, at <ext-link xmlns:xlink="http://www.w3.org/1999/xlink"
+        ext-link-type="doi" xlink:href="10.1016/j.dcn.2015.10.001" id="intr0010">http://dx.doi.org/10.1016/j.dcn.2015.10.001</ext-link>.</p></fn></fn-group></back></article></pmc-articleset>'
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -673,20 +1422,20 @@ interactions:
       Content-Type:
       - text/xml; charset=UTF-8
       Date:
-      - Tue, 28 Oct 2025 17:57:31 GMT
+      - Fri, 07 Nov 2025 01:10:54 GMT
       Keep-Alive:
-      - timeout=4, max=38
+      - timeout=4, max=40
       NCBI-PHID:
-      - 1D347464432F8F350000562CEC5469A8.1.1.m_4
+      - 1D32D641C3ECA1A50000436A7AEBE788.1.1.m_4
       NCBI-SID:
-      - 9CB2753907DB56AF_BD2FSID
+      - 58EA336F8408247B_1B12SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:
       - Finatra
       Set-Cookie:
-      - ncbi_sid=9CB2753907DB56AF_BD2FSID; domain=.nih.gov; path=/; expires=Wed, 28
-        Oct 2026 17:57:31 GMT
+      - ncbi_sid=58EA336F8408247B_1B12SID; domain=.nih.gov; path=/; expires=Sat, 07
+        Nov 2026 01:10:55 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Transfer-Encoding:

@@ -24,9 +24,8 @@ outputs a list of identifiers (pmids, dois, pmcids) for each paper.
 ## Download
 Use a hiearchy of approaches to get the papers
 1. Pubmed Central (PMC) Open Access Subset (https://github.com/neuroquery/pubget)
-2. Semantic Scholar (https://www.semanticscholar.org/)
-4. Elsevier
-5. ACE (https://github.com/neurosynth/ACE)
+2. Elsevier
+3. ACE (https://github.com/neurosynth/ACE)
 
 We should have an option to select which sources to use, and the order to try them in,
 but the default should be the above order. Identify whether the paper is openaccess or not.
@@ -38,7 +37,7 @@ There is also an opportunity for the ACE extractor to cache its results to avoid
 3. If found, extract the table and standardize the format
 4. Also extract raw form of the table, one file per table.
 5. Extract metadata (title, authors, journal, year, abstract, etc.)
-  a. Use semantic scholar/pubmed to get metadata if possible
+  a. Use semantic scholar/pubmed/openalex to get metadata if possible
   b. fall back to parsing the paper if needed
   c. cache the metadata lookup to avoid re-querying for the same paper multiple times,
      this will be independent of the download caching and independent of the source used to
@@ -74,8 +73,6 @@ This process needs to be able to run incrementally, and allow for everwriting ex
 The Download and Process stages will run for each extractor sequentially, removing the papers that were downloaded by a previous extractor.
 Once a source is successful, we move on to processing that paper, and do not try to download from the remaining sources:
 - pubmed central
-- europe pmc
-- semantic scholar
 - elsevier
 - ace
 
@@ -91,19 +88,11 @@ The eventual final storage format will look like this:
             coordinates.csv
             text.txt
             metadata.json
-        europe_pmc/
-            coordinates.csv
-            text.txt
-            metadata.json
         ace/
             coordinates.csv
             text.txt
             metadata.json
         elsevier/
-            coordinates.csv
-            text.txt
-            metadata.json
-        semantic_scholar/
             coordinates.csv
             text.txt
             metadata.json
@@ -114,11 +103,10 @@ The eventual final storage format will look like this:
                 table_000.csv
                 table_000_info.json
                 tables.xml
-        europe_pmc/
         ace/
             <pmid>.html
         elsevier/
             <doi>.xml
-        semantic_scholar/
-            <paper_id>.xml
     identifiers.json
+
+Although, each hash directory will likely only have one source that was run, as once a source is successful, we do not try to download from the remaining sources, so the other source folders will likely not exist.
