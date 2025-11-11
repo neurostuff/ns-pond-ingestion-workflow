@@ -1,0 +1,78 @@
+# Python build / packaging artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+.wheels/
+*.manifest
+*.spec
+
+# Virtual environments
+.env/
+.venv/
+venv/
+ENV/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+
+# Editor / IDE metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs & reports
+*.log
+coverage.xml
+pytest.xml
+.htmlcov/
+.coverage*
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Type checker / linter caches
+.dmypy.json
+
+# Local data & caches
+cache/
+.cache/
+**/.cache/
+/data/
+/ns-pond/
+/tmp/
+**/staging/
+
+# Generated manifests & reports
+manifest*.jsonl
+*analyses.json
+*metadata.json
+pipeline_report*.json
+
+# Environment / secrets
+.env
+*.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node / frontend (if added later)
+node_modules/
+
+# Security: avoid committing large downloads
+**/downloads/
+**/extractions/
+
+# Ignore compiled notebooks (if any export step added)
+*.nbconvert.ipynb
+
+## Custom
+.tmp_repos
+.tmp
