@@ -3,6 +3,7 @@ This module will search for articles
 based on a given query/set of parameters.
 """
 
+
 class ArticleSearchService:
     def __init__(self, query: str):
         self.query = query

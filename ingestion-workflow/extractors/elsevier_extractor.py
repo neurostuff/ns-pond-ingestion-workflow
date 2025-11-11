@@ -1,9 +1,8 @@
 """Download and Extract tables from articles using Elsevier."""
+
 from ingestion_workflow.extractors.base import BaseExtractor
 
-from ingestion_workflow.models import (
-    Identifiers, DownloadResult, ExtractionResult
-)
+from ingestion_workflow.models import Identifiers, DownloadResult, ExtractionResult
 
 
 class ElsevierExtractor(BaseExtractor):

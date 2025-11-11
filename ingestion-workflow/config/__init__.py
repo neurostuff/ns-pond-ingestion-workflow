@@ -5,6 +5,7 @@ There are three levels of configuration in order of priority
 2. yaml config file
 3. environment variables
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,6 +18,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ingestion_workflow.models import (
     DownloadSource,
 )
+
+
 class Settings(BaseSettings):
     """
     Application configuration with support for:
@@ -37,10 +40,7 @@ class Settings(BaseSettings):
     # ===== Core directories =====
     data_root: Path = Field(
         default=Path("./data"),
-        description=(
-            "Root directory for workflow data "
-            "(manifests, staging, etc.)"
-        ),
+        description=("Root directory for workflow data " "(manifests, staging, etc.)"),
     )
     cache_root: Path = Field(
         default=Path("./.cache"),
@@ -49,17 +49,13 @@ class Settings(BaseSettings):
 
     ns_pond_root: Path = Field(
         default=Path("./ns-pond"),
-        description=(
-            "Local mirror of Neurostore content organized by base study ID"
-        ),
+        description=("Local mirror of Neurostore content organized by base study ID"),
     )
 
     # ===== PubMed configuration =====
     pubmed_email: Optional[str] = Field(
         default=None,
-        description=(
-            "Contact email for PubMed API (required by NCBI guidelines)"
-        ),
+        description=("Contact email for PubMed API (required by NCBI guidelines)"),
         # Accept PUBMED_EMAIL specifically, or fall back to generic EMAIL
         validation_alias=AliasChoices("PUBMED_EMAIL", "EMAIL"),
     )
@@ -78,8 +74,7 @@ class Settings(BaseSettings):
     semantic_scholar_api_key: Optional[str] = Field(
         default=None,
         description=(
-            "Optional API key for Semantic Scholar "
-            "(increases rate limits)"
+            "Optional API key for Semantic Scholar " "(increases rate limits)"
         ),
     )
 
@@ -99,9 +94,7 @@ class Settings(BaseSettings):
 
     cache_only_mode: bool = Field(
         default=False,
-        description=(
-            "If True, only use cached downloads and never fetch new content"
-        ),
+        description=("If True, only use cached downloads and never fetch new content"),
     )
 
     elsevier_api_key: Optional[str] = Field(
@@ -126,9 +119,7 @@ class Settings(BaseSettings):
     )
     elsevier_use_proxy: bool = Field(
         default=False,
-        description=(
-            "Whether to route Elsevier requests through configured proxy"
-        ),
+        description=("Whether to route Elsevier requests through configured proxy"),
     )
 
     llm_api_key: Optional[str] = Field(
@@ -175,9 +166,7 @@ class Settings(BaseSettings):
     # ===== Parallelism configuration =====
     max_workers: int = Field(
         default=4,
-        description=(
-            "Maximum number of parallel workers for concurrent operations"
-        ),
+        description=("Maximum number of parallel workers for concurrent operations"),
     )
 
     # ===== Behavior flags =====
@@ -228,9 +217,7 @@ class Settings(BaseSettings):
             data = yaml.safe_load(fh) or {}
 
         if not isinstance(data, dict):
-            raise ValueError(
-                "Settings YAML must contain a mapping at the root"
-            )
+            raise ValueError("Settings YAML must contain a mapping at the root")
 
         return cls(**data)
 
@@ -284,9 +271,9 @@ class Settings(BaseSettings):
         for directory in (self.data_root, self.cache_root, self.ns_pond_root):
             directory.mkdir(parents=True, exist_ok=True)
 
-    # Optionally ensure per-source cache roots exist if configured
-    # These are separate from the unified cache_root and are used by
-    # specific providers
+        # Optionally ensure per-source cache roots exist if configured
+        # These are separate from the unified cache_root and are used by
+        # specific providers
         for optional_dir in (
             getattr(self, "pubget_cache_root", None),
             getattr(self, "ace_cache_root", None),

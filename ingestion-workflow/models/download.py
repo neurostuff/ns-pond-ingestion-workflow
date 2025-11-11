@@ -126,6 +126,7 @@ class DownloadIndex:
 
         # Convert dataclass to dict, excluding index_path
         from dataclasses import asdict
+
         payload = asdict(self)
         del payload["index_path"]
 
@@ -166,7 +167,7 @@ class DownloadIndex:
                     content_type=f["content_type"],
                     source=DownloadSource(f["source"]),
                     downloaded_at=datetime.fromisoformat(f["downloaded_at"]),
-                    md5_hash=f.get("md5_hash")
+                    md5_hash=f.get("md5_hash"),
                 )
                 for f in result_data.get("files", [])
             ]
@@ -175,7 +176,7 @@ class DownloadIndex:
                 source=DownloadSource(result_data["source"]),
                 success=result_data["success"],
                 files=files,
-                error_message=result_data.get("error_message")
+                error_message=result_data.get("error_message"),
             )
-        
+
         return cls(downloads=downloads, index_path=index_path)

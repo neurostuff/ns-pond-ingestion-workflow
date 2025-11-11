@@ -12,6 +12,7 @@ import json
 from .download import DownloadSource
 from .metadata import ArticleMetadata
 
+
 @dataclass
 class ExtractedTable:
     """
@@ -124,9 +125,10 @@ class ExtractionIndex:
 
         # Convert dataclass to dict, excluding index_path
         from dataclasses import asdict
+
         payload = asdict(self)
         del payload["index_path"]
-        
+
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         self.index_path.write_text(
             json.dumps(payload, indent=2, default=str),
@@ -153,7 +155,7 @@ class ExtractionIndex:
 
         raw = index_path.read_text(encoding="utf-8")
         data = json.loads(raw)
-        
+
         # Convert nested dicts back to dataclasses
         extractions = {}
         for hash_id, content_data in data.get("extractions", {}).items():
@@ -164,7 +166,7 @@ class ExtractionIndex:
                     table_number=t.get("table_number"),
                     caption=t.get("caption", ""),
                     footer=t.get("footer", ""),
-                    contains_coordinates=t.get("contains_coordinates", False)
+                    contains_coordinates=t.get("contains_coordinates", False),
                 )
                 for t in content_data.get("tables", [])
             ]
@@ -178,10 +180,8 @@ class ExtractionIndex:
                 ),
                 tables=tables,
                 has_coordinates=content_data.get("has_coordinates", False),
-                extracted_at=datetime.fromisoformat(
-                    content_data["extracted_at"]
-                ),
-                error_message=content_data.get("error_message")
+                extracted_at=datetime.fromisoformat(content_data["extracted_at"]),
+                error_message=content_data.get("error_message"),
             )
-        
+
         return cls(extractions=extractions, index_path=index_path)

@@ -1,9 +1,9 @@
 """Download and Extract tables from articles using ACE."""
+
 from ingestion_workflow.extractors.base import BaseExtractor
 
-from ingestion_workflow.models import (
-    Identifiers, DownloadResult, ExtractionResult
-) 
+from ingestion_workflow.models import Identifiers, DownloadResult, ExtractionResult
+
 
 class ACEExtractor(BaseExtractor):
     """Extractor that uses ACE to download and extract tables from articles."""

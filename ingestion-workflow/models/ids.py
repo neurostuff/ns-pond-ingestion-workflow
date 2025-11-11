@@ -4,6 +4,7 @@ from typing import Optional, Iterator
 
 import json
 
+
 @dataclass
 class Identifier:
     pmid: str
@@ -48,13 +49,13 @@ class Identifiers:
         file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with file_path.open('w', encoding='utf-8') as f:
+        with file_path.open("w", encoding="utf-8") as f:
             for identifier in self.identifiers:
                 json.dump(asdict(identifier), f)
-                f.write('\n')
+                f.write("\n")
 
     @classmethod
-    def load(cls, file_path: Path | str) -> 'Identifiers':
+    def load(cls, file_path: Path | str) -> "Identifiers":
         """
         Load identifiers from a JSONL file.
 
@@ -74,7 +75,7 @@ class Identifiers:
             return cls()
 
         identifiers = []
-        with file_path.open('r', encoding='utf-8') as f:
+        with file_path.open("r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:  # Skip empty lines
@@ -149,5 +150,3 @@ class Identifiers:
     def sort(self, key=None, reverse: bool = False) -> None:
         """Sort the list in place."""
         self.identifiers.sort(key=key, reverse=reverse)
-
-   
