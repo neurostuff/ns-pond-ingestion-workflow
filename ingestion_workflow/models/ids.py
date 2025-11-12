@@ -1,7 +1,7 @@
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 import json
 import re
@@ -274,6 +274,7 @@ class Identifiers:
         self.identifiers = unique_identifiers
         self._rebuild_indices()
 
+
     def save(self, file_path: Path | str) -> None:
         """
         Save identifiers to a JSONL file.
@@ -425,3 +426,40 @@ class Identifiers:
     def sort(self, key=None, reverse: bool = False) -> None:
         """Sort the list in place."""
         self.identifiers.sort(key=key, reverse=reverse)
+
+
+@dataclass
+class IdentifierExpansion:
+    """Pipeline payload describing identifier lookup results."""
+
+    seed_identifier: Identifier
+    identifiers: Identifiers = field(default_factory=Identifiers)
+    sources: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "seed_identifier": self.seed_identifier.__dict__.copy(),
+            "identifiers": [
+                identifier.__dict__.copy()
+                for identifier in self.identifiers.identifiers
+            ],
+            "sources": list(self.sources),
+        }
+
+    @classmethod
+    def from_dict(
+        cls, payload: Mapping[str, Any]
+    ) -> "IdentifierExpansion":
+        seed_payload = payload.get("seed_identifier", {})
+        seed_identifier = Identifier(
+            **seed_payload
+        )  # type: ignore[arg-type]
+        identifiers_payload = payload.get("identifiers", [])
+        identifier_list = [
+            Identifier(**item) for item in identifiers_payload
+        ]
+        return cls(
+            seed_identifier=seed_identifier,
+            identifiers=Identifiers(identifier_list),
+            sources=[str(source) for source in payload.get("sources", [])],
+        )

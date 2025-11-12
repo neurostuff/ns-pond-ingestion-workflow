@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
@@ -87,28 +86,6 @@ class ArticleMetadata:
             Metadata formatted for Neurostore upload
         """
         raise NotImplementedError()
-
-
-@dataclass
-class MetadataCache:
-    """
-    Cache entry for article metadata.
-
-    Used to avoid re-querying external APIs for articles we've
-    already looked up.
-    """
-
-    # Hash ID of the article
-    hash_id: str
-
-    # Cached metadata
-    metadata: ArticleMetadata
-
-    # Timestamp when metadata was cached
-    cached_at: datetime = field(default_factory=datetime.now)
-
-    # Which metadata sources were queried
-    sources_queried: List[str] = field(default_factory=list)
 
 
 def merge_metadata_from_sources(

@@ -1,4 +1,4 @@
-"""Data models for downloaded and extracted content."""
+"""Download pipeline data models."""
 
 from __future__ import annotations
 
@@ -6,9 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
-
-import json
+from typing import Dict, List, Mapping, Optional
 
 from .ids import Identifier
 
@@ -35,29 +33,42 @@ class DownloadSource(str, Enum):
 
 @dataclass
 class DownloadedFile:
-    """
-    Metadata about a downloaded file.
-
-    Tracks where the file came from, what it contains, and where
-    it's stored in the cache.
-    """
+    """Metadata about an individual downloaded file."""
 
     file_path: Path
     file_type: FileType
     content_type: str
     source: DownloadSource
-    downloaded_at: datetime = field(default_factory=datetime.now)
+    downloaded_at: datetime = field(default_factory=datetime.utcnow)
     md5_hash: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "file_path": str(self.file_path),
+            "file_type": self.file_type.value,
+            "content_type": self.content_type,
+            "source": self.source.value,
+            "downloaded_at": self.downloaded_at.isoformat(),
+            "md5_hash": self.md5_hash,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> "DownloadedFile":
+        return cls(
+            file_path=Path(str(payload["file_path"])),
+            file_type=FileType(str(payload["file_type"])),
+            content_type=str(payload["content_type"]),
+            source=DownloadSource(str(payload["source"])),
+            downloaded_at=datetime.fromisoformat(
+                str(payload["downloaded_at"])
+            ),
+            md5_hash=payload.get("md5_hash") or None,
+        )
 
 
 @dataclass
 class DownloadResult:
-    """
-    Result of attempting to download a article.
-
-    Contains all successfully downloaded files plus metadata about
-    the download attempt.
-    """
+    """Result of attempting to download an article."""
 
     identifier: Identifier
     source: DownloadSource
@@ -65,119 +76,35 @@ class DownloadResult:
     files: List[DownloadedFile] = field(default_factory=list)
     error_message: Optional[str] = None
 
-@dataclass
-class DownloadIndex:
-    """
-    Index of all downloads in the cache.
-
-    Maintains a mapping of hash_id -> download results to enable
-    cache-only mode and avoid redundant downloads.
-    """
-
-    downloads: Dict[str, DownloadResult] = field(default_factory=dict)
-    index_path: Optional[Path] = None
-
-    def add_download(self, result: DownloadResult) -> None:
-        """
-        Add a download result to the index.
-
-        Parameters
-        ----------
-        result : DownloadResult
-            Download result to add
-        """
-        self.downloads[result.identifier.hash_id] = result
-
-    def get_download(self, hash_id: str) -> Optional[DownloadResult]:
-        """
-        Get download result for a article.
-
-        Parameters
-        ----------
-        hash_id : str
-            Hash ID of the article
-
-        Returns
-        -------
-        DownloadResult or None
-            Download result if found, None otherwise
-        """
-        return self.downloads.get(hash_id)
-
-    def has_download(self, hash_id: str) -> bool:
-        """
-        Check if a article has been downloaded.
-
-        Parameters
-        ----------
-        hash_id : str
-            Hash ID of the article
-
-        Returns
-        -------
-        bool
-            True if article has been downloaded
-        """
-        return hash_id in self.downloads
-
-    def save(self) -> None:
-        """Save the index to disk."""
-        if self.index_path is None:
-            raise ValueError("index_path must be set before saving")
-
-        # Convert dataclass to dict, excluding index_path
-        from dataclasses import asdict
-
-        payload = asdict(self)
-        del payload["index_path"]
-
-        self.index_path.parent.mkdir(parents=True, exist_ok=True)
-        self.index_path.write_text(
-            json.dumps(payload, indent=2, default=str),
-            encoding="utf-8",
-        )
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "identifier": self.identifier.__dict__.copy(),
+            "source": self.source.value,
+            "success": self.success,
+            "files": [file.to_dict() for file in self.files],
+            "error_message": self.error_message,
+        }
 
     @classmethod
-    def load(cls, index_path: Path) -> DownloadIndex:
-        """
-        Load download index from disk.
+    def from_dict(cls, payload: Mapping[str, object]) -> "DownloadResult":
+        identifier_data = payload.get("identifier", {})
+        identifier = Identifier(**identifier_data)  # type: ignore[arg-type]
+        files_payload = payload.get("files", [])
+        files = [
+            DownloadedFile.from_dict(item) for item in files_payload
+        ]  # type: ignore[arg-type]
+        return cls(
+            identifier=identifier,
+            source=DownloadSource(str(payload["source"])),
+            success=bool(payload["success"]),
+            files=files,
+            error_message=payload.get("error_message") or None,
+        )
 
-        Parameters
-        ----------
-        index_path : Path
-            Path to index file
 
-        Returns
-        -------
-        DownloadIndex
-            Loaded index
-        """
-        if not index_path.exists():
-            return cls(downloads={}, index_path=index_path)
-
-        raw = index_path.read_text(encoding="utf-8")
-        data = json.loads(raw)
-
-        # Convert nested dicts back to dataclasses
-        downloads = {}
-        for hash_id, result_data in data.get("downloads", {}).items():
-            files = [
-                DownloadedFile(
-                    file_path=Path(f["file_path"]),
-                    file_type=FileType(f["file_type"]),
-                    content_type=f["content_type"],
-                    source=DownloadSource(f["source"]),
-                    downloaded_at=datetime.fromisoformat(f["downloaded_at"]),
-                    md5_hash=f.get("md5_hash"),
-                )
-                for f in result_data.get("files", [])
-            ]
-            downloads[hash_id] = DownloadResult(
-                hash_id=result_data["hash_id"],
-                source=DownloadSource(result_data["source"]),
-                success=result_data["success"],
-                files=files,
-                error_message=result_data.get("error_message"),
-            )
-
-        return cls(downloads=downloads, index_path=index_path)
+__all__ = [
+    "DownloadResult",
+    "DownloadSource",
+    "DownloadedFile",
+    "FileType",
+]

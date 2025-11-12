@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional
 
 
 class CoordinateSpace(str, Enum):
@@ -187,6 +188,39 @@ class AnalysisCollection:
             Analysis to add
         """
         raise NotImplementedError()
+
+
+@dataclass
+class CreateAnalysesResult:
+    """Pipeline payload for the create-analyses workflow."""
+
+    hash_id: str
+    analysis_paths: List[Path] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_message: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "hash_id": self.hash_id,
+            "analysis_paths": [str(path) for path in self.analysis_paths],
+            "metadata": dict(self.metadata),
+            "error_message": self.error_message,
+        }
+
+    @classmethod
+    def from_dict(
+        cls,
+        payload: Mapping[str, Any],
+    ) -> "CreateAnalysesResult":
+        return cls(
+            hash_id=str(payload["hash_id"]),
+            analysis_paths=[
+                Path(str(path))
+                for path in payload.get("analysis_paths", [])
+            ],
+            metadata=dict(payload.get("metadata", {})),
+            error_message=payload.get("error_message") or None,
+        )
 
     def to_neurostore_format(self) -> Dict[str, Any]:
         """

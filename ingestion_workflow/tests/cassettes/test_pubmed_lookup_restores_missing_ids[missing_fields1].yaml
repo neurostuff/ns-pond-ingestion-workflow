@@ -1,0 +1,180 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=31268615&idtype=pmid&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: '{"status":"ok","response-date":"2025-11-12 00:24:21","request":{"warnings":[],"format":"json","idtype":"pmid","ids":["31268615"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"ids=31268615&format=json&email=tests%40example.com&tool=ingestion-workflow-tests&idtype=pmid","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"31268615"}]}'
+    headers:
+      Alt-Svc:
+      - clear
+      Content-Encoding:
+      - gzip
+      Date:
+      - Wed, 12 Nov 2025 05:24:21 GMT
+      Server:
+      - istio-envoy
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 1.1 google
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      allow:
+      - GET, HEAD, OPTIONS
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      referrer-policy:
+      - same-origin
+      set-cookie:
+      - ncbi_sid=D6CC045C91413963_8580SID; Domain=.nih.gov; expires=Thu, 12 Nov 2026
+        05:24:21 GMT; Max-Age=31536000; Path=/
+      vary:
+      - Accept,Accept-Encoding
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '7'
+      x-frame-options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Cookie:
+      - ncbi_sid=D6CC045C91413963_8580SID
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: '{"status":"ok","response-date":"2025-11-12 00:24:22","request":{"warnings":[],"format":"json","idtype":"doi","ids":["10.1002/hbm.24703"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"ids=10.1002%2Fhbm.24703&format=json&email=tests%40example.com&tool=ingestion-workflow-tests&idtype=doi","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"10.1002/hbm.24703"}]}'
+    headers:
+      Alt-Svc:
+      - clear
+      Content-Encoding:
+      - gzip
+      Date:
+      - Wed, 12 Nov 2025 05:24:22 GMT
+      Server:
+      - istio-envoy
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 1.1 google
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      allow:
+      - GET, HEAD, OPTIONS
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      referrer-policy:
+      - same-origin
+      set-cookie:
+      - ncbi_sid=D6CC045C91413963_8580SID; Domain=.nih.gov; expires=Thu, 12 Nov 2026
+        05:24:22 GMT; Max-Age=31536000; Path=/
+      vary:
+      - Accept,Accept-Encoding
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Cookie:
+      - ncbi_sid=D6CC045C91413963_8580SID
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: '{"status":"ok","response-date":"2025-11-12 00:24:22","request":{"warnings":[],"format":"json","idtype":"pmcid","ids":["PMC6865431"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"ids=PMC6865431&format=json&email=tests%40example.com&tool=ingestion-workflow-tests&idtype=pmcid","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"PMC6865431"}]}'
+    headers:
+      Alt-Svc:
+      - clear
+      Content-Encoding:
+      - gzip
+      Date:
+      - Wed, 12 Nov 2025 05:24:22 GMT
+      Server:
+      - istio-envoy
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 1.1 google
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      allow:
+      - GET, HEAD, OPTIONS
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      referrer-policy:
+      - same-origin
+      set-cookie:
+      - ncbi_sid=D6CC045C91413963_8580SID; Domain=.nih.gov; expires=Thu, 12 Nov 2026
+        05:24:22 GMT; Max-Age=31536000; Path=/
+      vary:
+      - Accept,Accept-Encoding
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+version: 1
