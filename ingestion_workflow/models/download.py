@@ -10,6 +10,8 @@ from typing import Dict, List, Optional
 
 import json
 
+from .ids import Identifier
+
 
 class FileType(str, Enum):
     """Enumeration of file types encountered during download/extraction."""
@@ -57,12 +59,11 @@ class DownloadResult:
     the download attempt.
     """
 
-    hash_id: str
+    identifier: Identifier
     source: DownloadSource
     success: bool
     files: List[DownloadedFile] = field(default_factory=list)
     error_message: Optional[str] = None
-
 
 @dataclass
 class DownloadIndex:
@@ -85,7 +86,7 @@ class DownloadIndex:
         result : DownloadResult
             Download result to add
         """
-        self.downloads[result.hash_id] = result
+        self.downloads[result.identifier.hash_id] = result
 
     def get_download(self, hash_id: str) -> Optional[DownloadResult]:
         """

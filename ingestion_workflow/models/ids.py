@@ -1,6 +1,7 @@
+from collections.abc import MutableMapping
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Optional, Iterator
+from typing import Iterator, Optional
 
 import json
 import re
@@ -40,7 +41,7 @@ def _normalize_doi(value: Optional[str]) -> Optional[str]:
 
 
 @dataclass
-class Identifier:
+class Identifier(MutableMapping[str, Optional[str]]):
     neurostore: Optional[str] = None
     pmid: Optional[str] = None
     doi: Optional[str] = None
@@ -60,6 +61,11 @@ class Identifier:
         ]
         return "|".join(id_parts)
 
+    @property
+    def hash_id(self) -> str:
+        """Return the current hash of primary identifiers."""
+        return self.hash_identifiers()
+
     def normalize(self) -> None:
         """Normalize identifier fields."""
         self.pmid = _normalize_pmid(self.pmid) if self.pmid else None
@@ -70,10 +76,80 @@ class Identifier:
                 k: _normalize_identifier(v) for k, v in self.other_ids.items()
             }
             self.other_ids = {
-                key: value for key, value in normalized.items() if value is not None
+                key: value
+                for key, value in normalized.items()
+                if value is not None
             }
             if not self.other_ids:
                 self.other_ids = None
+
+    # -- MutableMapping protocol ----------------------------------------------
+
+    _PRIMARY_KEYS = {"neurostore", "pmid", "doi", "pmcid"}
+
+    def __getitem__(self, key: str) -> Optional[str]:
+        normalized_key = self._normalize_mapping_key(key)
+        if normalized_key in self._PRIMARY_KEYS:
+            return getattr(self, normalized_key)
+        if self.other_ids and normalized_key in self.other_ids:
+            return self.other_ids[normalized_key]
+        raise KeyError(key)
+
+    def __setitem__(self, key: str, value: Optional[str]) -> None:
+        normalized_key = self._normalize_mapping_key(key)
+        if normalized_key in self._PRIMARY_KEYS:
+            setattr(self, normalized_key, value)
+            self.normalize()
+            return
+
+        if value is None:
+            if self.other_ids is not None:
+                self.other_ids.pop(normalized_key, None)
+                if not self.other_ids:
+                    self.other_ids = None
+            return
+
+        if self.other_ids is None:
+            self.other_ids = {}
+        self.other_ids[normalized_key] = str(value)
+        self.normalize()
+
+    def __delitem__(self, key: str) -> None:
+        normalized_key = self._normalize_mapping_key(key)
+        if normalized_key in self._PRIMARY_KEYS:
+            setattr(self, normalized_key, None)
+            return
+        if self.other_ids and normalized_key in self.other_ids:
+            self.other_ids.pop(normalized_key, None)
+            if not self.other_ids:
+                self.other_ids = None
+            return
+        raise KeyError(key)
+
+    def __iter__(self) -> Iterator[str]:
+        for primary in self._PRIMARY_KEYS:
+            value = getattr(self, primary)
+            if value is not None:
+                yield primary
+        if self.other_ids:
+            for key in self.other_ids:
+                yield key
+
+    def __len__(self) -> int:
+        count = sum(
+            1 for key in self._PRIMARY_KEYS if getattr(self, key) is not None
+        )
+        if self.other_ids:
+            count += len(self.other_ids)
+        return count
+
+    def _normalize_mapping_key(self, key: str) -> str:
+        if key is None:
+            raise KeyError(key)
+        key_str = str(key).strip()
+        if not key_str:
+            raise KeyError(key)
+        return key_str.lower()
 
 
 @dataclass
@@ -99,7 +175,8 @@ class Identifiers:
         for key in keys:
             if key not in valid_keys:
                 raise ValueError(
-                    "Index keys must be drawn from 'pmid', 'pmcid', 'doi', or 'neurostore'."
+                    "Index keys must be drawn from 'pmid', 'pmcid', 'doi', "
+                    "or 'neurostore'."
                 )
             normalized_keys.add(key)
 
@@ -108,11 +185,19 @@ class Identifiers:
         for identifier in self.identifiers:
             self._add_to_indices(identifier)
 
-    def lookup(self, value: str, key: Optional[str] = None) -> Optional[Identifier]:
+    def lookup(
+        self, value: str, key: Optional[str] = None
+    ) -> Optional[Identifier]:
         """Return a matching identifier in constant time."""
-        if key is not None and key not in {"pmid", "pmcid", "doi", "neurostore"}:
+        if key is not None and key not in {
+            "pmid",
+            "pmcid",
+            "doi",
+            "neurostore",
+        }:
             raise ValueError(
-                "Lookup key must be one of 'pmid', 'pmcid', 'doi', or 'neurostore'."
+                "Lookup key must be one of 'pmid', 'pmcid', 'doi', or "
+                "'neurostore'."
             )
 
         target_key = key
@@ -120,7 +205,9 @@ class Identifiers:
             target_key = next(iter(self._index_keys))
 
         if target_key is None:
-            raise ValueError("No index configured. Set indices first or provide key.")
+            raise ValueError(
+                "No index configured. Set indices first or provide key."
+            )
 
         if target_key not in self._index_keys:
             new_keys = set(self._index_keys)
@@ -132,7 +219,9 @@ class Identifiers:
             return None
         return self._indices[target_key].get(normalized)
 
-    def _normalize_for_key(self, key: str, value: Optional[str]) -> Optional[str]:
+    def _normalize_for_key(
+        self, key: str, value: Optional[str]
+    ) -> Optional[str]:
         if value is None:
             return None
         value_str = str(value)
@@ -237,7 +326,9 @@ class Identifiers:
         """Return the number of identifiers."""
         return len(self.identifiers)
 
-    def __getitem__(self, index: int | slice | str) -> Identifier | list[Identifier]:
+    def __getitem__(
+        self, index: int | slice | str
+    ) -> Identifier | list[Identifier]:
         """Get identifier(s) by index, slice, or indexed id."""
         if isinstance(index, str):
             result = self.lookup(index)

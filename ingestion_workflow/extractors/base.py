@@ -1,3 +1,4 @@
+from typing import List
 from ingestion_workflow.models import (
     DownloadResult,
     ExtractionResult,
@@ -8,8 +9,8 @@ from ingestion_workflow.models import (
 class BaseExtractor:
     """Shared interface for extractor implementations."""
 
-    def download(self, identifiers: Identifiers) -> DownloadResult:
+    def download(self, identifiers: Identifiers) -> List[DownloadResult]:
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def extract(self, download_result: DownloadResult) -> ExtractionResult:
+    def extract(self, download_result: List[DownloadResult]) -> List[ExtractionResult]:
         raise NotImplementedError("Subclasses must implement this method.")
