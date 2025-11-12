@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 from .download import DownloadSource
+from .analysis import Coordinate, CoordinateSpace
 
 
 @dataclass
@@ -20,6 +21,14 @@ class ExtractedTable:
     caption: str = ""
     footer: str = ""
     contains_coordinates: bool = False
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    coordinates: List[Coordinate] = field(default_factory=list)
+    space: Optional[CoordinateSpace] = None
+
+    def __post_init__(self) -> None:
+        self.contains_coordinates = bool(self.coordinates)
+        if not isinstance(self.metadata, dict):
+            self.metadata = dict(self.metadata or {})
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -29,10 +38,47 @@ class ExtractedTable:
             "caption": self.caption,
             "footer": self.footer,
             "contains_coordinates": self.contains_coordinates,
+            "metadata": self.metadata,
+            "coordinates": [
+                {
+                    **{
+                        key: value
+                        for key, value in asdict(coord).items()
+                        if key != "space"
+                    },
+                    "space": (
+                        coord.space.value
+                        if coord.space
+                        else (
+                            self.space.value if self.space else None
+                        )
+                    ),
+                }
+                for coord in self.coordinates
+            ],
+            "space": self.space.value if self.space else None,
         }
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> "ExtractedTable":
+        metadata = payload.get("metadata") or {}
+        space_value = payload.get("space")
+        table_space = (
+            CoordinateSpace(str(space_value)) if space_value else None
+        )
+        coordinates_payload = payload.get("coordinates", [])
+        resolved_coordinates: List[Coordinate] = []
+        for item in coordinates_payload:
+            coord_data = dict(item)
+            space = coord_data.pop("space", None)
+            coord_space: Optional[CoordinateSpace] = None
+            if space:
+                coord_space = CoordinateSpace(str(space))
+            elif table_space is not None:
+                coord_space = table_space
+            if coord_space is not None:
+                coord_data["space"] = coord_space
+            resolved_coordinates.append(Coordinate(**coord_data))
         return cls(
             table_id=str(payload["table_id"]),
             raw_content_path=Path(str(payload["raw_content_path"])),
@@ -42,6 +88,9 @@ class ExtractedTable:
             contains_coordinates=bool(
                 payload.get("contains_coordinates", False)
             ),
+            metadata=dict(metadata),
+            coordinates=resolved_coordinates,
+            space=table_space,
         )
 
 

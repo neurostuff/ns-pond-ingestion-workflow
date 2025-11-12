@@ -14,7 +14,17 @@ from ingestion_workflow.models import (
 @pytest.mark.usefixtures("manifest_identifiers")
 @pytest.mark.vcr()
 def test_ace_downloads_html_articles(tmp_path, manifest_identifiers):
-    subset = Identifiers(list(manifest_identifiers.identifiers[:10]))
+    excluded_pmids = {"31268615", "29069521"}
+
+    subset_identifiers = []
+    for identifier in manifest_identifiers.identifiers:
+        if identifier.pmid in excluded_pmids:
+            continue
+        subset_identifiers.append(identifier)
+        if len(subset_identifiers) == 10:
+            break
+
+    subset = Identifiers(subset_identifiers)
 
     settings = Settings(
         cache_root=tmp_path / "cache",

@@ -5,12 +5,19 @@ from __future__ import annotations
 import hashlib
 import logging
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import re
+from concurrent.futures import (
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    as_completed,
+)
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from ace.config import update_config
 from ace.scrape import Scraper
+from ace.sources import SourceManager
+from ace import extract as ace_extract
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
@@ -22,9 +29,248 @@ from ingestion_workflow.models import (
     DownloadedFile,
     ExtractionResult,
     FileType,
+    ExtractedContent,
+    ExtractedTable,
+    Coordinate,
+    CoordinateSpace,
 )
 
+
 logger = logging.getLogger(__name__)
+
+
+def _safe_hash_stem(hash_id: str | None) -> str:
+    """Sanitize the hash stem used for ACE extraction directories."""
+    candidate = hash_id or ""
+    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
+    if sanitized:
+        return sanitized.lower()
+    digest = hashlib.sha256(candidate.encode("utf-8"))
+    return digest.hexdigest()[:16]
+
+
+def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
+    fallback = f"table-{index}"
+    if not candidate:
+        return fallback
+    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
+    return sanitized.lower() or fallback
+
+
+def _coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
+    if not guess:
+        return CoordinateSpace.OTHER
+    normalized = str(guess).strip().upper()
+    if normalized == "MNI":
+        return CoordinateSpace.MNI
+    if normalized in {"TAL", "TALAIRACH"}:
+        return CoordinateSpace.TALAIRACH
+    if normalized == "UNKNOWN":
+        return CoordinateSpace.OTHER
+    return CoordinateSpace.OTHER
+
+
+def _resolve_table_space(table: Any, article: Any) -> CoordinateSpace:
+    parts = [
+        getattr(table, "caption", None),
+        getattr(table, "label", None),
+        getattr(table, "notes", None),
+    ]
+    metadata_text = " ".join(part for part in parts if part)
+    guess = ace_extract.guess_space(metadata_text)
+    if guess == "UNKNOWN":
+        guess = getattr(article, "space", None)
+    return _coordinate_space_from_guess(guess)
+
+
+def _coordinate_from_activation(
+    activation: Any, space: CoordinateSpace
+) -> Optional[Coordinate]:
+    if activation is None:
+        return None
+    coords = (
+        getattr(activation, "x", None),
+        getattr(activation, "y", None),
+        getattr(activation, "z", None),
+    )
+    if any(value is None for value in coords):
+        return None
+    try:
+        x_val = float(activation.x)
+        y_val = float(activation.y)
+        z_val = float(activation.z)
+    except (TypeError, ValueError):
+        return None
+
+    statistic_value = None
+    raw_stat = getattr(activation, "statistic", None)
+    if raw_stat not in (None, ""):
+        try:
+            statistic_value = float(raw_stat)
+        except (TypeError, ValueError):
+            statistic_value = None
+
+    cluster_size = None
+    raw_size = getattr(activation, "size", None)
+    if raw_size not in (None, ""):
+        try:
+            cluster_size = int(float(str(raw_size)))
+        except (TypeError, ValueError):
+            cluster_size = None
+
+    return Coordinate(
+        x=x_val,
+        y=y_val,
+        z=z_val,
+        space=space,
+        statistic_value=statistic_value,
+        cluster_size=cluster_size,
+    )
+
+
+def _select_html_file(
+    download_result: DownloadResult,
+) -> Optional[DownloadedFile]:
+    for downloaded in download_result.files:
+        if downloaded.file_type is FileType.HTML:
+            return downloaded
+    return None
+
+
+def _build_failure_extraction(
+    download_result: DownloadResult, message: str
+) -> ExtractedContent:
+    return ExtractedContent(
+        hash_id=download_result.identifier.hash_id,
+        source=DownloadSource.ACE,
+        full_text_path=None,
+        tables=[],
+        has_coordinates=False,
+        error_message=message,
+    )
+
+
+def _translate_ace_table(
+    table: Any,
+    article: Any,
+    tables_dir: Path,
+    table_index: int,
+) -> ExtractedTable:
+    table_id = _sanitize_table_id(
+        getattr(table, "number", None),
+        table_index + 1,
+    )
+    raw_filename = tables_dir / f"{table_id}.html"
+    raw_html = getattr(table, "input_html", None) or ""
+    raw_filename.parent.mkdir(parents=True, exist_ok=True)
+    if raw_html:
+        raw_filename.write_text(raw_html, encoding="utf-8")
+    else:
+        raw_filename.write_text(
+            "<!-- ACE did not retain raw table HTML -->",
+            encoding="utf-8",
+        )
+
+    space = _resolve_table_space(table, article)
+    coordinates = [
+        coord
+        for coord in (
+            _coordinate_from_activation(activation, space)
+            for activation in getattr(table, "activations", [])
+        )
+        if coord is not None
+    ]
+
+    metadata = {
+        "label": getattr(table, "label", None),
+        "notes": getattr(table, "notes", None),
+        "position": getattr(table, "position", None),
+        "n_activations": getattr(table, "n_activations", None),
+        "n_columns": getattr(table, "n_columns", None),
+    }
+
+    table_number = None
+    raw_number = getattr(table, "number", None)
+    if raw_number is not None:
+        try:
+            table_number = int(str(raw_number))
+        except ValueError:
+            table_number = None
+
+    return ExtractedTable(
+        table_id=table_id,
+        raw_content_path=raw_filename,
+        table_number=table_number,
+        caption=getattr(table, "caption", "") or "",
+        footer=getattr(table, "notes", "") or "",
+        metadata={k: v for k, v in metadata.items() if v is not None},
+        coordinates=coordinates,
+        space=space,
+    )
+
+
+def _extract_ace_article(
+    download_result: DownloadResult,
+    extraction_root: Path,
+) -> ExtractedContent:
+    update_config(SAVE_ORIGINAL_HTML=True)
+    html_file = _select_html_file(download_result)
+    if html_file is None:
+        raise ValueError("ACE extraction requires an HTML payload.")
+
+    hash_id = download_result.identifier.hash_id
+    article_dir = extraction_root / _safe_hash_stem(hash_id)
+    tables_dir = article_dir / "tables"
+    source_tables_dir = article_dir / "downloaded_tables"
+    tables_dir.mkdir(parents=True, exist_ok=True)
+    source_tables_dir.mkdir(parents=True, exist_ok=True)
+
+    html_text = html_file.file_path.read_text(encoding="utf-8")
+    manager = SourceManager(table_dir=str(source_tables_dir))
+    source = manager.identify_source(html_text)
+    if source is None:
+        raise ValueError("ACE could not identify an article source.")
+
+    article = source.parse_article(
+        html_text,
+        pmid=download_result.identifier.pmid,
+        metadata_dir=None,
+    )
+    if not article:
+        raise ValueError("ACE failed to parse the article content.")
+
+    article_text = getattr(article, "text", "") or ""
+    full_text_path = article_dir / "article.txt"
+    full_text_path.write_text(article_text, encoding="utf-8")
+
+    extracted_tables = [
+        _translate_ace_table(table, article, tables_dir, index)
+        for index, table in enumerate(getattr(article, "tables", []))
+    ]
+
+    has_coordinates = any(table.coordinates for table in extracted_tables)
+
+    return ExtractedContent(
+        hash_id=hash_id,
+        source=DownloadSource.ACE,
+        full_text_path=full_text_path,
+        tables=extracted_tables,
+        has_coordinates=has_coordinates,
+        error_message=None,
+    )
+
+
+def _run_ace_extraction_task(
+    download_result: DownloadResult, extraction_root: Path | str
+) -> ExtractedContent:
+    root_path = Path(extraction_root)
+    try:
+        return _extract_ace_article(download_result, root_path)
+    except Exception as exc:  # pragma: no cover - worker failure logging
+        logger.exception(
+            "ACE extraction failed for %s", download_result.identifier.hash_id
+        )
+        return _build_failure_extraction(download_result, str(exc))
 
 
 class ACEExtractor(BaseExtractor):
@@ -43,6 +289,7 @@ class ACEExtractor(BaseExtractor):
         self.settings.ensure_directories()
 
         self._cache_root = self._resolve_cache_root()
+        self._extraction_root = self._resolve_extraction_root()
 
         update_config(SAVE_ORIGINAL_HTML=True)
         self._download_mode = download_mode
@@ -65,9 +312,9 @@ class ACEExtractor(BaseExtractor):
                 for identifier in identifiers_list
             ]
 
-        ordered_results: list[Optional[DownloadResult]] = [None] * len(
-            identifiers_list
-        )
+        ordered_results: list[Optional[DownloadResult]] = [
+            None
+        ] * len(identifiers_list)
 
         thread_local = threading.local()
 
@@ -115,9 +362,69 @@ class ACEExtractor(BaseExtractor):
         self, download_results: list[DownloadResult]
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using ACE."""
-        raise NotImplementedError(
-            "ACEExtractor extract method not implemented."
-        )
+        if not download_results:
+            return []
+
+        extraction_root = self._extraction_root
+        extraction_root.mkdir(parents=True, exist_ok=True)
+
+        for download_result in download_results:
+            if not download_result.success:
+                raise ValueError(
+                    "ACEExtractor.extract received an unsuccessful download "
+                    "result; download validation should occur before "
+                    "extraction."
+                )
+
+        ordered_results: list[Optional[ExtractionResult]] = [
+            None
+        ] * len(download_results)
+
+        worker_count = max(1, self.settings.max_workers)
+
+        if worker_count == 1 or len(download_results) == 1:
+            for index, download_result in enumerate(download_results):
+                ordered_results[index] = _run_ace_extraction_task(
+                    download_result,
+                    extraction_root,
+                )
+        else:
+            root_str = str(extraction_root)
+            with ProcessPoolExecutor(max_workers=worker_count) as executor:
+                future_map = {
+                    executor.submit(
+                        _run_ace_extraction_task,
+                        download_result,
+                        root_str,
+                    ): index
+                    for index, download_result in enumerate(download_results)
+                }
+                for future in as_completed(future_map):
+                    index = future_map[future]
+                    download_result = download_results[index]
+                    try:
+                        ordered_results[index] = future.result()
+                    except Exception as exc:  # pragma: no cover - defensive
+                        logger.exception(
+                            "ACE extraction raised exception for %s",
+                            download_result.identifier.hash_id,
+                        )
+                        ordered_results[index] = _build_failure_extraction(
+                            download_result,
+                            f"ACE extraction raised an exception: {exc}",
+                        )
+
+        final_results: list[ExtractionResult] = []
+        for index, download_result in enumerate(download_results):
+            result = ordered_results[index]
+            if result is None:
+                result = _build_failure_extraction(
+                    download_result,
+                    "ACE extraction did not produce a result.",
+                )
+            final_results.append(result)
+
+        return final_results
 
     def _download_single(
         self,
@@ -222,4 +529,9 @@ class ACEExtractor(BaseExtractor):
         )
         base.mkdir(parents=True, exist_ok=True)
         (base / "html").mkdir(parents=True, exist_ok=True)
+        return base
+
+    def _resolve_extraction_root(self) -> Path:
+        base = self._cache_root / "extracted"
+        base.mkdir(parents=True, exist_ok=True)
         return base

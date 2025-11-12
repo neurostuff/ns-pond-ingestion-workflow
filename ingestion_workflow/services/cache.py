@@ -37,12 +37,17 @@ from ingestion_workflow.models import (
     CreateAnalysesResultIndex,
     DownloadIndex,
     DownloadResult,
+    ExtractionResult,
     Identifier,
     IdentifierCacheEntry,
     IdentifierCacheIndex,
     Identifiers,
 )
-from ingestion_workflow.models.cache import CacheIndex, ExtractionResultIndex
+from ingestion_workflow.models.cache import (
+    CacheIndex,
+    ExtractionResultEntry,
+    ExtractionResultIndex,
+)
 
 
 DOWNLOAD_CACHE_NAMESPACE = "download"
@@ -322,3 +327,48 @@ def index_legacy_downloads(
     """
 
     raise NotImplementedError("Legacy download indexing not yet implemented.")
+
+
+def partition_cached_extractions(
+    settings: Settings,
+    extractor_name: str,
+    download_results: Sequence[DownloadResult],
+    *,
+    namespace: str = EXTRACT_CACHE_NAMESPACE,
+) -> Tuple[List[ExtractionResult | None], List[DownloadResult]]:
+    """Split download results into cached extractions and missing work."""
+
+    index = load_extractor_index(settings, extractor_name, namespace=namespace)
+    cached_results: List[ExtractionResult | None] = []
+    missing: List[DownloadResult] = []
+
+    for download_result in download_results:
+        entry = index.get_extraction(download_result.identifier.hash_id)
+        if entry is None:
+            cached_results.append(None)
+            missing.append(download_result)
+            continue
+        cached_results.append(entry.clone_payload())
+
+    return cached_results, missing
+
+
+def cache_extraction_results(
+    settings: Settings,
+    extractor_name: str,
+    results: Sequence[ExtractionResult],
+    *,
+    namespace: str = EXTRACT_CACHE_NAMESPACE,
+) -> None:
+    """Persist extraction outputs to the cache index."""
+
+    if not results:
+        return
+
+    with _acquire_lock(settings, namespace, extractor_name):
+        index_path = _index_path(settings, namespace, extractor_name)
+        index = ExtractionResultIndex.load(index_path)
+        for result in results:
+            index.add_extraction(ExtractionResultEntry.from_content(result))
+        index.index_path = index_path
+        index.save()

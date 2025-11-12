@@ -55,6 +55,9 @@ class ArticleMetadata:
     # Primary source of metadata (pubmed, semantic_scholar, etc.)
     source: Optional[str] = None
 
+    # Whether the article is open access
+    open_access: Optional[bool] = None
+
     # Raw metadata from external sources for reference
     raw_metadata: Dict[str, Any] = field(default_factory=dict)
 
