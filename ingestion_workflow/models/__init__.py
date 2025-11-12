@@ -11,7 +11,7 @@ from .analysis import (
     Image,
 )
 from .download import DownloadResult, DownloadSource, DownloadedFile, FileType
-from .extract import ExtractedContent, ExtractedTable
+from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
 from .ids import Identifier, IdentifierExpansion, Identifiers
 from .metadata import (
     ArticleMetadata,
@@ -41,6 +41,7 @@ ExtractionIndex = ExtractionResultIndex
 __all__ = [
     "Analysis",
     "AnalysisCollection",
+    "ArticleExtractionBundle",
     "ArticleMetadata",
     "Author",
     "CACHE_SCHEMA_VERSION",

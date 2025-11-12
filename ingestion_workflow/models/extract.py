@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from .download import DownloadSource
 from .analysis import Coordinate, CoordinateSpace
+from .ids import Identifier
+from .metadata import ArticleMetadata
 
 
 @dataclass
@@ -100,6 +102,7 @@ class ExtractedContent:
 
     hash_id: str
     source: DownloadSource
+    identifier: Optional[Identifier] = None
     full_text_path: Optional[Path] = None
     tables: List[ExtractedTable] = field(default_factory=list)
     has_coordinates: bool = False
@@ -110,6 +113,9 @@ class ExtractedContent:
         return {
             "hash_id": self.hash_id,
             "source": self.source.value,
+            "identifier": (
+                self.identifier.to_dict() if self.identifier else None
+            ),
             "full_text_path": (
                 str(self.full_text_path) if self.full_text_path else None
             ),
@@ -123,9 +129,16 @@ class ExtractedContent:
     def from_dict(cls, payload: Mapping[str, object]) -> "ExtractedContent":
         tables_payload = payload.get("tables", [])
         tables = [ExtractedTable.from_dict(item) for item in tables_payload]
+        identifier_data = payload.get("identifier")
+        identifier = (
+            Identifier.from_dict(identifier_data)
+            if identifier_data
+            else None
+        )
         return cls(
             hash_id=str(payload["hash_id"]),
             source=DownloadSource(str(payload["source"])),
+            identifier=identifier,
             full_text_path=(
                 Path(str(payload["full_text_path"]))
                 if payload.get("full_text_path")
@@ -141,4 +154,30 @@ class ExtractedContent:
 __all__ = [
     "ExtractedContent",
     "ExtractedTable",
+    "ArticleExtractionBundle",
 ]
+
+
+@dataclass
+class ArticleExtractionBundle:
+    """Combined extraction output and associated metadata for an article."""
+
+    article_data: ExtractedContent
+    article_metadata: ArticleMetadata
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "article_data": self.article_data.to_dict(),
+            "article_metadata": self.article_metadata.to_dict(),
+        }
+
+    @classmethod
+    def from_dict(
+        cls, payload: Mapping[str, object]
+    ) -> "ArticleExtractionBundle":
+        data_payload = payload.get("article_data") or {}
+        metadata_payload = payload.get("article_metadata") or {}
+        return cls(
+            article_data=ExtractedContent.from_dict(data_payload),
+            article_metadata=ArticleMetadata.from_dict(metadata_payload),
+        )

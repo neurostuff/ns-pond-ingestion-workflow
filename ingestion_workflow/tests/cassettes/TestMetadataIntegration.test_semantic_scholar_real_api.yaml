@@ -1,0 +1,94 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.24703"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.5
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess
+  response:
+    body:
+      string: '[{"paperId": "185cdce001c430556cfc3721f86a91849d20856d", "title": "Modulating
+        functional connectivity between medial frontopolar cortex and amygdala by
+        inhibitory and excitatory transcranial magnetic stimulation", "venue": "Human
+        Brain Mapping", "year": 2019, "isOpenAccess": true, "openAccessPdf": {"url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703", "status":
+        "BRONZE", "license": null, "disclaimer": "Notice: Paper or abstract available
+        at https://api.unpaywall.org/v2/10.1002/hbm.24703?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1002/hbm.24703, which is subject to the license by the
+        author or copyright owner provided with this content. Please go to the source
+        to verify the license and copyright information for your use."}, "publicationDate":
+        "2019-10-15", "authors": [{"authorId": "144167506", "name": "P. Riedel"},
+        {"authorId": "14872187", "name": "Matthias Heil"}, {"authorId": "1762318",
+        "name": "S. Bender"}, {"authorId": "3123685", "name": "Gabriel Dippel"}, {"authorId":
+        "3336825", "name": "Franziska M. Korb"}, {"authorId": "2272108", "name": "M.
+        Smolka"}, {"authorId": "8426521", "name": "M. Marxen"}], "abstract": "The
+        prefrontal\u2010limbic network in the human brain plays a major role in social
+        cognition, especially cognitive control of emotion. The medial frontopolar
+        cortex (mFP; Brodmann Area 10) and the amygdala are part of this network and
+        display correlated neuronal activity in time, as measured by functional magnetic
+        resonance imaging (fMRI). This functional connectivity is dynamic, sensitive
+        to training, and affected in mental disorders. However, the effects of neurostimulation
+        on functional connectivity within this network have not yet been systematically
+        investigated. Here, we investigate the effects of both low\u2010 and high\u2010frequency
+        repetitive transcranial magnetic stimulation (rTMS) to the right mFP on functional
+        connectivity between mFP and amygdala, as measured with resting state fMRI
+        (rsfMRI). Three groups of healthy participants received either low\u2010frequency
+        rTMS (1 Hz; N = 18), sham TMS (1 Hz, subthreshold; N = 18) or high\u2010frequency
+        rTMS (20\u2009Hz; N = 19). rsfMRI was acquired before and after (separate
+        days). We hypothesized a modulation of functional connectivity in opposite
+        directions compared to sham TMS through adjustment of the stimulation frequency.
+        Groups differed in functional connectivity between mFP and amygdala after
+        stimulation compared to before stimulation (low\u2010frequency: decrease,
+        high\u2010frequency: increase). Motion or induced changes in neuronal activity
+        were excluded as confounders. Results show that rTMS is effective for increasing
+        and decreasing functional coherence between prefrontal and limbic regions.
+        This finding is relevant for social and affective neuroscience as well as
+        novel treatment approaches in psychiatry."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2863'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 12 Nov 2025 20:56:51 GMT
+      Via:
+      - 1.1 8139bc666c011a53bdc5037ba6d5931e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - GzeIeYP3be1kiWvP6nAZfnBYPXAC7QmAtzjjOYLUDEiWdCKDrBiAmA==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - T8snEG_lvHcERsQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2863'
+      x-amzn-Remapped-Date:
+      - Wed, 12 Nov 2025 20:56:51 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - eb806215-329b-4af5-8338-3fbb6421fa0f
+    status:
+      code: 200
+      message: OK
+version: 1

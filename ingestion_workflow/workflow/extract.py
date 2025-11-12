@@ -9,18 +9,25 @@ subsequent iterations.
 
 from __future__ import annotations
 
+import logging
 from typing import Dict, List, Sequence, Tuple
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import (
+    ArticleExtractionBundle,
     DownloadResult,
     DownloadSource,
     ExtractionResult,
     FileType,
 )
+from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import cache
+from ingestion_workflow.services.metadata import MetadataService
 from ingestion_workflow.workflow.download import _resolve_extractor
+
+
+logger = logging.getLogger(__name__)
 
 
 def _ensure_successful_download(download_result: DownloadResult) -> None:
@@ -145,8 +152,16 @@ def run_extraction(
     download_results: Sequence[DownloadResult],
     *,
     settings: Settings | None = None,
-) -> List[ExtractionResult]:
-    """Execute extraction for previously downloaded articles."""
+) -> List[ArticleExtractionBundle]:
+    """
+    Execute extraction for previously downloaded articles.
+    
+    Returns
+    -------
+    list
+        Ordered list of ArticleExtractionBundle instances pairing each
+        extraction result with its metadata.
+    """
 
     if not download_results:
         return []
@@ -228,7 +243,63 @@ def run_extraction(
             )
         final_results.append(candidate)
 
-    return final_results
+    # Enrich metadata for articles with coordinates
+    metadata_dict: Dict[str, ArticleMetadata] = {}
+    eligible_for_metadata = [
+        result for result in final_results if result.identifier
+    ]
+
+    if eligible_for_metadata:
+        logger.info(
+            "Enriching metadata for %d articles",
+            len(eligible_for_metadata),
+        )
+        try:
+            metadata_service = MetadataService(resolved_settings)
+            metadata_dict = metadata_service.enrich_metadata(
+                eligible_for_metadata
+            )
+            logger.info(
+                "Successfully enriched metadata for %d articles",
+                len(metadata_dict),
+            )
+        except Exception as exc:
+            logger.error(
+                "Metadata enrichment failed: %s. Continuing without metadata.",
+                exc,
+            )
+
+    bundles: List[ArticleExtractionBundle] = []
+    for result in final_results:
+        metadata = metadata_dict.get(result.hash_id)
+        if metadata is None:
+            metadata = _build_placeholder_metadata(result)
+        bundles.append(
+            ArticleExtractionBundle(
+                article_data=result,
+                article_metadata=metadata,
+            )
+        )
+
+    return bundles
+
+
+def _build_placeholder_metadata(result: ExtractionResult) -> ArticleMetadata:
+    identifier = result.identifier
+    if identifier:
+        for candidate in (
+            identifier.doi,
+            identifier.pmid,
+            identifier.pmcid,
+        ):
+            if candidate:
+                return ArticleMetadata(title=str(candidate))
+        identifier_label = " / ".join(
+            part for part in identifier.hash_id.split("|") if part
+        )
+        if identifier_label:
+            return ArticleMetadata(title=identifier_label)
+    return ArticleMetadata(title=result.hash_id)
 
 
 __all__ = [

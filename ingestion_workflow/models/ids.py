@@ -59,7 +59,8 @@ class Identifier(MutableMapping[str, Optional[str]]):
             self.doi or "",
             self.pmcid or "",
         ]
-        return "|".join(id_parts)
+        # replace slashes to avoid path issues
+        return "|".join(id_parts).replace("/", "_")
 
     @property
     def hash_id(self) -> str:

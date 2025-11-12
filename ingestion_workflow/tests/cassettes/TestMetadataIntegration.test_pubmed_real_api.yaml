@@ -1,0 +1,82 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?api_key=DUMMY&db=pubmed&email=jamesdkent21%40gmail.com&id=31268615&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: '{"header":{"type":"esummary","version":"0.3"},"result":{"uids":["31268615"],"31268615":{"uid":"31268615","pubdate":"2019
+        Oct 15","epubdate":"2019 Jul 3","source":"Hum Brain Mapp","authors":[{"name":"Riedel
+        P","authtype":"Author","clusterid":""},{"name":"Heil M","authtype":"Author","clusterid":""},{"name":"Bender
+        S","authtype":"Author","clusterid":""},{"name":"Dippel G","authtype":"Author","clusterid":""},{"name":"Korb
+        FM","authtype":"Author","clusterid":""},{"name":"Smolka MN","authtype":"Author","clusterid":""},{"name":"Marxen
+        M","authtype":"Author","clusterid":""}],"lastauthor":"Marxen M","title":"Modulating
+        functional connectivity between medial frontopolar cortex and amygdala by
+        inhibitory and excitatory transcranial magnetic stimulation.","sorttitle":"modulating
+        functional connectivity between medial frontopolar cortex and amygdala by
+        inhibitory and excitatory transcranial magnetic stimulation","volume":"40","issue":"15","pages":"4301-4315","lang":["eng"],"nlmuniqueid":"9419065","issn":"1065-9471","essn":"1097-0193","pubtype":["Journal
+        Article"],"recordstatus":"PubMed - indexed for MEDLINE","pubstatus":"256","articleids":[{"idtype":"pubmed","idtypen":1,"value":"31268615"},{"idtype":"pmc","idtypen":8,"value":"PMC6865431"},{"idtype":"pmcid","idtypen":5,"value":"pmc-id:
+        PMC6865431;"},{"idtype":"doi","idtypen":3,"value":"10.1002/hbm.24703"}],"history":[{"pubstatus":"received","date":"2018/11/30
+        00:00"},{"pubstatus":"revised","date":"2019/06/20 00:00"},{"pubstatus":"accepted","date":"2019/06/21
+        00:00"},{"pubstatus":"pubmed","date":"2019/07/04 06:00"},{"pubstatus":"medline","date":"2020/04/21
+        06:00"},{"pubstatus":"entrez","date":"2019/07/04 06:00"},{"pubstatus":"pmc-release","date":"2019/07/03
+        00:00"}],"references":[],"attributes":["Has Abstract"],"pmcrefcount":112,"fulljournalname":"Human
+        brain mapping","elocationid":"doi: 10.1002/hbm.24703","doctype":"citation","srccontriblist":[],"booktitle":"","medium":"","edition":"","publisherlocation":"","publishername":"","srcdate":"","reportnumber":"","availablefromurl":"","locationlabel":"","doccontriblist":[],"docdate":"","bookname":"","chapter":"","sortpubdate":"2019/10/15
+        00:00","sortfirstauthor":"Riedel P","vernaculartitle":""}}}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Cache-Control:
+      - private
+      Connection:
+      - Keep-Alive
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 12 Nov 2025 21:03:57 GMT
+      Keep-Alive:
+      - timeout=4, max=40
+      NCBI-PHID:
+      - 1D324FA150E172850000453D23213ED0.1.1.m_1
+      NCBI-SID:
+      - 755253B95DC14BD6_4786SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Set-Cookie:
+      - ncbi_sid=755253B95DC14BD6_4786SID; domain=.nih.gov; path=/; expires=Thu, 12
+        Nov 2026 21:03:58 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-RateLimit-Limit:
+      - '10'
+      X-RateLimit-Remaining:
+      - '9'
+      X-UA-Compatible:
+      - IE=Edge
+      X-XSS-Protection:
+      - 1; mode=block
+      content-encoding:
+      - gzip
+    status:
+      code: 200
+      message: OK
+version: 1

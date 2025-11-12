@@ -10,6 +10,7 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
+from ingestion_workflow.models.metadata import ArticleMetadata, Author
 
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
@@ -289,3 +290,119 @@ class PubMedClient:
         response = self._session.get(url, params=params, timeout=30)
         response.raise_for_status()
         return response.json()
+
+    def get_metadata(
+        self, identifiers: List[Identifier]
+    ) -> Dict[str, ArticleMetadata]:
+        """
+        Fetch article metadata for batch of identifiers using esummary.
+
+        Parameters
+        ----------
+        identifiers : list of Identifier
+            Identifiers with PMIDs to fetch metadata for
+
+        Returns
+        -------
+        dict
+            Mapping from hash_id to ArticleMetadata
+        """
+        if not identifiers:
+            return {}
+
+        # Filter identifiers with PMIDs
+        pmid_map: Dict[str, Identifier] = {}
+        for identifier in identifiers:
+            if identifier.pmid:
+                pmid_map[identifier.pmid] = identifier
+
+        if not pmid_map:
+            return {}
+
+        # Batch requests
+        results: Dict[str, ArticleMetadata] = {}
+        pmids = list(pmid_map.keys())
+        batch_size = IDCONV_BATCH_SIZE
+
+        for i in range(0, len(pmids), batch_size):
+            batch = pmids[i:i + batch_size]
+            try:
+                response_data = self._request_esummary(batch)
+                self._process_esummary_response(
+                    batch, response_data, pmid_map, results
+                )
+            except Exception:
+                # Continue with other batches on failure
+                continue
+
+        return results
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=8),
+    )
+    def _request_esummary(self, pmids: List[str]) -> Dict[str, object]:
+        """Request article metadata from PubMed esummary endpoint."""
+        esummary_url = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+        )
+        params: List[Tuple[str, str]] = [
+            ("db", "pubmed"),
+            ("id", ",".join(pmids)),
+            ("retmode", "json"),
+            ("email", self.email),
+            ("tool", self.tool),
+        ]
+        if self.api_key:
+            params.append(("api_key", self.api_key))
+
+        return self._request_json(esummary_url, params)
+
+    def _process_esummary_response(
+        self,
+        batch: List[str],
+        response_data: Dict[str, object],
+        pmid_map: Dict[str, Identifier],
+        results: Dict[str, ArticleMetadata],
+    ) -> None:
+        """Process esummary response and build ArticleMetadata objects."""
+        result_data = response_data.get("result", {})
+
+        for pmid in batch:
+            record = result_data.get(pmid)
+            if not record or not isinstance(record, dict):
+                continue
+
+            identifier = pmid_map.get(pmid)
+            if not identifier:
+                continue
+
+            # Parse authors
+            authors_data = record.get("authors", [])
+            authors = [
+                Author(name=str(author.get("name", "")))
+                for author in authors_data
+                if isinstance(author, dict) and author.get("name")
+            ]
+
+            # Extract year from publication date
+            pubdate = record.get("pubdate", "")
+            year = None
+            if pubdate:
+                try:
+                    year = int(str(pubdate).split()[0])
+                except (ValueError, IndexError):
+                    pass
+
+            # Build metadata
+            metadata = ArticleMetadata(
+                title=str(record.get("title", "")),
+                authors=authors,
+                abstract=None,  # esummary doesn't include abstracts
+                journal=record.get("fulljournalname"),
+                publication_year=year,
+                source="pubmed",
+                raw_metadata={"pubmed": record},
+            )
+
+            results[identifier.hash_id] = metadata

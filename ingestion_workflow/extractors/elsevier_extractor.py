@@ -672,6 +672,7 @@ def _build_failure_extraction(
     return ExtractedContent(
         hash_id=download_result.identifier.hash_id,
         source=DownloadSource.ELSEVIER,
+        identifier=download_result.identifier,
         full_text_path=full_text_path,
         tables=[],
         has_coordinates=False,
@@ -896,6 +897,7 @@ def _extract_elsevier_article(
     return ExtractedContent(
         hash_id=hash_id,
         source=DownloadSource.ELSEVIER,
+        identifier=download_result.identifier,
         full_text_path=full_text_path,
         tables=extracted_tables,
         has_coordinates=has_coordinates,
