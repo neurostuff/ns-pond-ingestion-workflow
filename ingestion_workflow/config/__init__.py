@@ -137,6 +137,21 @@ class Settings(BaseSettings):
         description="Specific model to use for coordinate extraction",
     )
 
+    export: bool = Field(
+        default=False,
+        description="Enable exporting extraction outputs to disk mirrors",
+    )
+
+    export_overwrite: bool = Field(
+        default=False,
+        description="Overwrite previously exported files if they exist",
+    )
+
+    n_llm_workers: int = Field(
+        default=2,
+        description="Maximum number of concurrent LLM workers",
+    )
+
     # ===== Neurostore configuration =====
     neurostore_base_url: str = Field(
         default="https://neurostore.org/api",

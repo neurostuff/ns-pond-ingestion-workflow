@@ -67,10 +67,34 @@ def create_analyses(
         "-e",
         help="Extractor namespace to use for cache lookups.",
     ),
+    export: Optional[bool] = typer.Option(
+        None,
+        "--export/--no-export",
+        help="Enable exporting bundle artifacts to the data-root export folder.",
+    ),
+    export_overwrite: Optional[bool] = typer.Option(
+        None,
+        "--export-overwrite/--no-export-overwrite",
+        help="Overwrite exported files when they already exist.",
+    ),
+    n_llm_workers: Optional[int] = typer.Option(
+        None,
+        "--n-llm-workers",
+        help="Number of parallel workers for LLM analysis creation.",
+    ),
 ) -> None:
     """Execute the create-analyses workflow step for serialized bundles."""
 
     settings = load_settings(config_path)
+    overrides: dict[str, object] = {}
+    if export is not None:
+        overrides["export"] = export
+    if export_overwrite is not None:
+        overrides["export_overwrite"] = export_overwrite
+    if n_llm_workers is not None:
+        overrides["n_llm_workers"] = max(1, n_llm_workers)
+    if overrides:
+        settings = settings.merge_overrides(overrides)
     payload = json.loads(bundles_path.read_text(encoding="utf-8"))
     bundles = _load_bundles(payload)
     results = create_analyses_workflow.run_create_analyses(

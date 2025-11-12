@@ -1,5 +1,6 @@
 """Service layer abstractions for the ingestion workflow."""
 
+from .export import ExportService
 from .id_lookup import (
     IDLookupService,
     OpenAlexIDLookupService,
@@ -10,6 +11,7 @@ from .search import ArticleSearchService, PubMedSearchService
 
 __all__ = [
     "ArticleSearchService",
+    "ExportService",
     "IDLookupService",
     "OpenAlexIDLookupService",
     "PubMedIDLookupService",

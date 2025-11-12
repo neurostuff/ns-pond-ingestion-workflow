@@ -23,6 +23,7 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import cache
+from ingestion_workflow.services.export import ExportService
 from ingestion_workflow.services.metadata import MetadataService
 from ingestion_workflow.workflow.download import _resolve_extractor
 
@@ -280,6 +281,14 @@ def run_extraction(
                 article_metadata=metadata,
             )
         )
+
+    if resolved_settings.export:
+        exporter = ExportService(
+            resolved_settings,
+            overwrite=resolved_settings.export_overwrite,
+        )
+        for bundle in bundles:
+            exporter.export(bundle)
 
     return bundles
 
