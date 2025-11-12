@@ -151,13 +151,6 @@ class ExtractedContent:
         )
 
 
-__all__ = [
-    "ExtractedContent",
-    "ExtractedTable",
-    "ArticleExtractionBundle",
-]
-
-
 @dataclass
 class ArticleExtractionBundle:
     """Combined extraction output and associated metadata for an article."""
@@ -181,3 +174,10 @@ class ArticleExtractionBundle:
             article_data=ExtractedContent.from_dict(data_payload),
             article_metadata=ArticleMetadata.from_dict(metadata_payload),
         )
+
+
+__all__ = [
+    "ExtractedContent",
+    "ExtractedTable",
+    "ArticleExtractionBundle",
+]
