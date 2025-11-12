@@ -26,6 +26,7 @@ def vcr_config():
             ("api_key", "DUMMY"),
         ],
         "record_mode": "once",
+        "ignore_hosts": ["localhost"],
     }
 
 

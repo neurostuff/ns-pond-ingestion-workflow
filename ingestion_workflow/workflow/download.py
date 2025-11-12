@@ -31,8 +31,8 @@ def _pubget_factory(settings: Settings) -> BaseExtractor:
     return PubgetExtractor(settings=settings)
 
 
-def _ace_factory(_settings: Settings) -> BaseExtractor:
-    return ACEExtractor()
+def _ace_factory(settings: Settings) -> BaseExtractor:
+    return ACEExtractor(settings=settings)
 
 
 EXTRACTOR_FACTORIES: Dict[DownloadSource, ExtractorFactory] = {

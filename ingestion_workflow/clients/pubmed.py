@@ -18,9 +18,8 @@ ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
 
 
-
 class PubMedClient:
-    """Client for the PMC ID Converter API."""
+    """Client for the PubMed/PMC API."""
 
     ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     BASE_URL = "https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/"
