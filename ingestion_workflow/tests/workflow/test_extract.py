@@ -60,13 +60,13 @@ def download_result():
 
 def test_run_extraction_returns_bundles(monkeypatch, download_result):
     extraction = ExtractedContent(
-        hash_id="hash-1",
+        slug="hash-1",
         source=DownloadSource.ELSEVIER,
         identifier=download_result.identifier,
         has_coordinates=True,
     )
     fake_extractor = _FakeExtractor([extraction])
-    metadata_response = {extraction.hash_id: ArticleMetadata(title="Test")}
+    metadata_response = {extraction.slug: ArticleMetadata(title="Test")}
     recorder = _MetadataRecorder(metadata_response)
 
     monkeypatch.setattr(
@@ -92,13 +92,13 @@ def test_run_extraction_returns_bundles(monkeypatch, download_result):
     bundle = bundles[0]
     assert isinstance(bundle, ArticleExtractionBundle)
     assert bundle.article_data is extraction
-    assert bundle.article_metadata is metadata_response[extraction.hash_id]
+    assert bundle.article_metadata is metadata_response[extraction.slug]
     assert recorder.seen == [extraction]
 
 
 def test_run_extraction_placeholder_metadata(monkeypatch, download_result):
     extraction = ExtractedContent(
-        hash_id="hash-2",
+        slug="hash-2",
         source=DownloadSource.ELSEVIER,
         identifier=download_result.identifier,
         has_coordinates=False,

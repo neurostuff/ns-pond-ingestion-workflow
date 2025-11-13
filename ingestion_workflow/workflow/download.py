@@ -5,9 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Callable, Dict, Iterable, List, Sequence
 
-from tqdm.auto import tqdm
-
-from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import (
     ACEExtractor,
     ElsevierExtractor,
@@ -22,8 +20,13 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.services import cache
 from ingestion_workflow.services.logging import console_kwargs
-from ingestion_workflow.workflow.stats import StageMetrics
 from ingestion_workflow.utils.progress import progress_callback
+from ingestion_workflow.workflow.common import (
+    create_progress_bar,
+    log_success,
+    resolve_settings,
+)
+from ingestion_workflow.workflow.stats import StageMetrics
 
 
 ExtractorFactory = Callable[[Settings], BaseExtractor]
@@ -62,17 +65,17 @@ def _resolve_extractor(source: DownloadSource, settings: Settings) -> BaseExtrac
     return factory(settings)
 
 
-def _successful_hashes(results: Sequence[DownloadResult]) -> set[str]:
-    """Return the hash IDs for successful download results."""
-    return {result.identifier.hash_id for result in results if result.success}
+def _successful_slugs(results: Sequence[DownloadResult]) -> set[str]:
+    """Return the slugs for successful download results."""
+    return {result.identifier.slug for result in results if result.success}
 
 
-def _identifiers_from_hashes(
+def _identifiers_from_slugs(
     pending: Iterable[Identifier],
-    success_hashes: set[str],
+    success_slugs: set[str],
 ) -> List[Identifier]:
-    """Filter pending identifiers to those whose hash IDs are not in the successes set."""
-    return [identifier for identifier in pending if identifier.hash_id not in success_hashes]
+    """Filter pending identifiers to those whose slugs are not in the successes set."""
+    return [identifier for identifier in pending if identifier.slug not in success_slugs]
 
 
 def _partition_supported_identifiers(
@@ -110,18 +113,18 @@ def run_downloads(
     and persist successful payloads.
     """
 
-    settings = settings or load_settings()
+    resolved_settings = resolve_settings(settings)
     remaining: List[Identifier] = list(identifiers.identifiers)
     collected_results: List[DownloadResult] = []
     total_requested = len(remaining)
-    successful_hashes: set[str] = set()
+    successful_slugs: set[str] = set()
 
-    for source_name in settings.download_sources:
+    for source_name in resolved_settings.download_sources:
         if not remaining:
             break
 
         source = DownloadSource(source_name)
-        extractor = _resolve_extractor(source, settings)
+        extractor = _resolve_extractor(source, resolved_settings)
 
         supported, unsupported = _partition_supported_identifiers(extractor, remaining)
         if not supported:
@@ -130,13 +133,13 @@ def run_downloads(
 
         extractor_identifiers = Identifiers(list(supported))
         cached_results, missing = cache.partition_cached_downloads(
-            settings,
+            resolved_settings,
             extractor_name=source.value,
             identifiers=extractor_identifiers,
         )
         collected_results.extend(cached_results)
-        successful_hashes.update(
-            result.identifier.hash_id
+        successful_slugs.update(
+            result.identifier.slug
             for result in cached_results
             if result.success and result.identifier
         )
@@ -167,7 +170,7 @@ def run_downloads(
             remaining = next_remaining
             continue
 
-        if settings.cache_only_mode:
+        if resolved_settings.cache_only_mode:
             if pending_count:
                 logger.info(
                     "Download[%s] skipping %d identifiers (cache-only mode)",
@@ -186,10 +189,11 @@ def run_downloads(
             extra=console_kwargs(),
         )
 
-        progress = _create_progress_bar(
-            settings,
+        progress = create_progress_bar(
+            resolved_settings,
             pending_count,
             f"Download[{source.value}]",
+            unit="article",
         )
 
         progress_hook = progress_callback(progress)
@@ -208,17 +212,17 @@ def run_downloads(
         successes = [result for result in download_results if result.success]
         if successes:
             cache.cache_download_results(
-                settings,
+                resolved_settings,
                 extractor_name=source.value,
                 results=successes,
             )
 
-        successful_hashes.update(
-            result.identifier.hash_id for result in successes if result.identifier
+        successful_slugs.update(
+            result.identifier.slug for result in successes if result.identifier
         )
 
-        success_hashes = _successful_hashes(successes)
-        failures = _identifiers_from_hashes(missing, success_hashes)
+        success_slugs = _successful_slugs(successes)
+        failures = _identifiers_from_slugs(missing, success_slugs)
         next_remaining.extend(failures)
         remaining = next_remaining
 
@@ -231,35 +235,11 @@ def run_downloads(
         )
 
     if total_requested:
-        logger.info(
-            "[download] successes: %d/%d",
-            len(successful_hashes),
-            total_requested,
-            extra=console_kwargs(),
-        )
+        log_success("download", len(successful_slugs), total_requested)
     if metrics is not None:
         metrics.record_produced(len(collected_results))
 
     return collected_results
-
-
-def _create_progress_bar(
-    settings: Settings,
-    total: int,
-    desc: str,
-) -> tqdm | None:
-    """
-    Create a tqdm progress bar for download
-    processing when progress display is enabled.
-    """
-    if not settings.show_progress or total <= 0:
-        return None
-    return tqdm(
-        total=total,
-        desc=desc,
-        leave=False,
-        unit="article",
-    )
 
 
 __all__ = ["run_downloads"]

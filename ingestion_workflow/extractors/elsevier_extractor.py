@@ -10,7 +10,6 @@ import logging
 import math
 import os
 import re
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from collections import deque
 from typing import Any, Callable, Deque, Dict, Iterable, List, Mapping, Optional, Tuple
@@ -33,6 +32,15 @@ from elsevier_coordinate_extraction.types import ArticleContent
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.utils import (
+    build_downloaded_file,
+    build_failure_extraction,
+    coordinate_from_row,
+    coordinate_space_from_guess,
+    parse_table_number,
+    safe_hash_stem,
+    sanitize_table_id,
+)
 from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
@@ -116,9 +124,14 @@ class ElsevierExtractor(BaseExtractor):
                 )
 
         if not prepared:
+            default_builder = lambda identifier: self._build_failure_result(  # noqa: E731
+                identifier=identifier,
+                error_message="Elsevier download did not produce a result.",
+            )
             return self._ordered_results(
                 identifiers,
                 results_by_index,
+                default_builder,
                 progress_hook=progress_hook,
             )
 
@@ -131,9 +144,14 @@ class ElsevierExtractor(BaseExtractor):
                     identifier=identifier,
                     error_message=failure_reason,
                 )
+            default_builder = lambda identifier: self._build_failure_result(  # noqa: E731
+                identifier=identifier,
+                error_message="Elsevier download did not produce a result.",
+            )
             return self._ordered_results(
                 identifiers,
                 results_by_index,
+                default_builder,
                 progress_hook=progress_hook,
             )
 
@@ -195,7 +213,15 @@ class ElsevierExtractor(BaseExtractor):
             )
             emit_progress(progress_hook)
 
-        return self._ordered_results(identifiers, results_by_index)
+        default_builder = lambda identifier: self._build_failure_result(  # noqa: E731
+            identifier=identifier,
+            error_message="Elsevier download did not produce a result.",
+        )
+        return self._ordered_results(
+            identifiers,
+            results_by_index,
+            default_builder,
+        )
 
     def extract(
         self,
@@ -203,70 +229,20 @@ class ElsevierExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> List[ExtractionResult]:
         """Extract tables from downloaded articles using Elsevier."""
-        if not download_results:
-            return []
-
-        for download_result in download_results:
-            if not download_result.success:
-                raise ValueError(
-                    "ElsevierExtractor.extract received an unsuccessful "
-                    "download result; validate downloads before "
-                    "invoking extraction."
-                )
-
-        extraction_root = self._resolve_extraction_root()
-        extraction_root.mkdir(parents=True, exist_ok=True)
-
-        ordered_results: List[Optional[ExtractedContent]] = [None] * len(download_results)
-
-        worker_count = max(1, self.settings.max_workers)
-
-        if worker_count == 1 or len(download_results) == 1:
-            for index, download_result in enumerate(download_results):
-                ordered_results[index] = _run_elsevier_extraction_task(
-                    download_result,
-                    extraction_root,
-                )
-                emit_progress(progress_hook)
-        else:
-            root_str = str(extraction_root)
-            with ProcessPoolExecutor(max_workers=worker_count) as executor:
-                future_map = {
-                    executor.submit(
-                        _run_elsevier_extraction_task,
-                        download_result,
-                        root_str,
-                    ): index
-                    for index, download_result in enumerate(download_results)
-                }
-                for future in as_completed(future_map):
-                    index = future_map[future]
-                    download_result = download_results[index]
-                    try:
-                        ordered_results[index] = future.result()
-                    except Exception as exc:  # pragma: no cover
-                        logger.exception(
-                            "Elsevier extraction raised exception for %s",
-                            download_result.identifier.hash_id,
-                        )
-                        ordered_results[index] = _build_failure_extraction(
-                            download_result,
-                            f"Elsevier extraction raised an exception: {exc}",
-                        )
-                    finally:
-                        emit_progress(progress_hook)
-
-        final_results: List[ExtractedContent] = []
-        for index, download_result in enumerate(download_results):
-            result = ordered_results[index]
-            if result is None:
-                result = _build_failure_extraction(
-                    download_result,
-                    "Elsevier extraction did not produce a result.",
-                )
-            final_results.append(result)
-
-        return final_results
+        return self._run_extraction_pipeline(
+            download_results,
+            extraction_root=self._resolve_extraction_root(),
+            worker=_run_elsevier_extraction_task,
+            worker_count=self.settings.max_workers,
+            source_name="Elsevier",
+            failure_message="Elsevier extraction did not produce a result.",
+            failure_builder=lambda download_result, message: build_failure_extraction(
+                download_result,
+                DownloadSource.ELSEVIER,
+                message,
+            ),
+            progress_hook=progress_hook,
+        )
 
     def _resolve_extraction_root(self) -> Path:
         base = self.settings.get_cache_dir("extract")
@@ -443,14 +419,12 @@ class ElsevierExtractor(BaseExtractor):
         if has_payload:
             payload_path = article_dir / f"content.{extension}"
             payload_path.write_bytes(payload)
-            md5_hash = hashlib.md5(payload).hexdigest()
             files.append(
-                DownloadedFile(
-                    file_path=payload_path,
-                    file_type=file_type,
-                    content_type=content_type,
+                build_downloaded_file(
+                    payload_path,
+                    file_type,
                     source=DownloadSource.ELSEVIER,
-                    md5_hash=md5_hash,
+                    content_type=content_type,
                 )
             )
 
@@ -459,7 +433,7 @@ class ElsevierExtractor(BaseExtractor):
         metadata.setdefault("slug", slug)
         metadata.setdefault("lookup_type", lookup_type)
         metadata.setdefault("lookup_value", lookup_value)
-        metadata.setdefault("identifier_hash", identifier.hash_id)
+        metadata.setdefault("identifier_slug", identifier.slug)
         if "doi" not in metadata:
             metadata["doi"] = self._extract_doi(article)
 
@@ -469,11 +443,11 @@ class ElsevierExtractor(BaseExtractor):
             encoding="utf-8",
         )
         files.append(
-            DownloadedFile(
-                file_path=metadata_path,
-                file_type=FileType.JSON,
-                content_type="application/json",
+            build_downloaded_file(
+                metadata_path,
+                FileType.JSON,
                 source=DownloadSource.ELSEVIER,
+                content_type="application/json",
             )
         )
 
@@ -547,29 +521,8 @@ class ElsevierExtractor(BaseExtractor):
             error_message=error_message,
         )
 
-    def _ordered_results(
-        self,
-        identifiers: Identifiers,
-        results_by_index: Dict[int, DownloadResult],
-        *,
-        progress_hook: Callable[[int], None] | None = None,
-    ) -> List[DownloadResult]:
-        ordered_results: List[DownloadResult] = []
-        total = len(identifiers)
-        for index in range(total):
-            identifier = identifiers[index]
-            result = results_by_index.get(index)
-            if result is None:
-                result = self._build_failure_result(
-                    identifier=identifier,
-                    error_message=("Elsevier download did not produce a result."),
-                )
-            ordered_results.append(result)
-            emit_progress(progress_hook)
-        return ordered_results
-
     def _identifier_cache_key(self, identifier: Identifier, index: int) -> str:
-        seed = identifier.hash_id.strip()
+        seed = identifier.slug.strip()
         if not seed:
             seed = f"identifier-{index}"
         digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
@@ -649,26 +602,9 @@ def _run_elsevier_extraction_task(
     except Exception as exc:  # pragma: no cover - worker safeguard
         logger.exception(
             "Elsevier extraction failed for %s",
-            download_result.identifier.hash_id,
+            download_result.identifier.slug,
         )
-        return _build_failure_extraction(download_result, str(exc))
-
-
-def _build_failure_extraction(
-    download_result: DownloadResult,
-    message: str,
-    full_text_path: Path | None = None,
-) -> ExtractedContent:
-    """Build a failed extraction result."""
-    return ExtractedContent(
-        hash_id=download_result.identifier.hash_id,
-        source=DownloadSource.ELSEVIER,
-        identifier=download_result.identifier,
-        full_text_path=full_text_path,
-        tables=[],
-        has_coordinates=False,
-        error_message=message,
-    )
+        return build_failure_extraction(download_result, DownloadSource.ELSEVIER, str(exc))
 
 
 def _extract_elsevier_article(
@@ -694,8 +630,8 @@ def _extract_elsevier_article(
         raise ValueError(f"Failed to load Elsevier metadata: {exc}") from exc
 
     # Setup output directory
-    hash_id = download_result.identifier.hash_id
-    output_dir = extraction_root / _safe_hash_stem(hash_id)
+    slug = download_result.identifier.slug
+    output_dir = extraction_root / safe_hash_stem(slug)
     tables_output_dir = output_dir / "tables"
     tables_output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -723,7 +659,7 @@ def _extract_elsevier_article(
     except Exception as exc:
         logger.warning(
             "Failed to extract text for %s: %s",
-            hash_id,
+            slug,
             exc,
         )
         # Create a fallback text file
@@ -743,31 +679,33 @@ def _extract_elsevier_article(
     except Exception as exc:
         logger.warning(
             "Failed to parse article XML for %s: %s",
-            hash_id,
+            slug,
             exc,
         )
         article_text = ""
 
     # Detect coordinate space from article text
-    article_space = _coordinate_space_from_guess(_neurosynth_guess_space(article_text))
+    article_space = coordinate_space_from_guess(_neurosynth_guess_space(article_text))
 
     # Extract tables
     try:
         tables = extract_tables_from_article(payload)
     except Exception as exc:
         message = f"Elsevier table extraction failed: {exc}"
-        logger.error("%s: %s", hash_id, message)
-        return _build_failure_extraction(
+        logger.error("%s: %s", slug, message)
+        return build_failure_extraction(
             download_result,
+            DownloadSource.ELSEVIER,
             message,
             full_text_path,
         )
 
     if not tables:
         message = "Elsevier found no tables in the article."
-        logger.warning("%s: %s", hash_id, message)
-        return _build_failure_extraction(
+        logger.warning("%s: %s", slug, message)
+        return build_failure_extraction(
             download_result,
+            DownloadSource.ELSEVIER,
             message,
             full_text_path,
         )
@@ -779,7 +717,7 @@ def _extract_elsevier_article(
 
     for index, (table_metadata, table_frame) in enumerate(tables):
         # Generate table ID
-        sanitized_id = _sanitize_table_id(
+        sanitized_id = sanitize_table_id(
             table_metadata.identifier,
             table_metadata.label,
             index,
@@ -801,7 +739,7 @@ def _extract_elsevier_article(
         except Exception as exc:
             reason = f"Coordinate parsing failed for {sanitized_id}: {exc}"
             failure_reasons.append(reason)
-            logger.warning("%s: %s", hash_id, reason)
+            logger.warning("%s: %s", slug, reason)
             coordinates_frame = None
 
         # Save coordinates CSV
@@ -811,7 +749,7 @@ def _extract_elsevier_article(
             coordinates_frame.to_csv(coordinate_csv_path, index=False)
             if not coordinates_frame.empty:
                 for _, row in coordinates_frame.iterrows():
-                    coord = _coordinate_from_row(row, article_space)
+                    coord = coordinate_from_row(row, article_space)
                     if coord is not None:
                         coordinates.append(coord)
         else:
@@ -827,7 +765,7 @@ def _extract_elsevier_article(
         }
 
         # Parse table number
-        table_number = _parse_table_number(table_metadata.label)
+        table_number = parse_table_number(table_metadata.label)
 
         # Build metadata dict
         extraction_metadata = {
@@ -855,9 +793,10 @@ def _extract_elsevier_article(
         message = "Elsevier failed to extract any tables."
         if failure_reasons:
             message = f"{message} Reasons: {' | '.join(failure_reasons)}"
-        logger.error("%s: %s", hash_id, message)
-        return _build_failure_extraction(
+        logger.error("%s: %s", slug, message)
+        return build_failure_extraction(
             download_result,
+            DownloadSource.ELSEVIER,
             message,
             full_text_path,
         )
@@ -877,7 +816,7 @@ def _extract_elsevier_article(
     has_coordinates = any(table.coordinates for table in extracted_tables)
 
     return ExtractedContent(
-        hash_id=hash_id,
+        slug=slug,
         source=DownloadSource.ELSEVIER,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
@@ -909,40 +848,6 @@ def _select_metadata_file(
     return None
 
 
-def _safe_hash_stem(hash_id: str | None) -> str:
-    """Create a safe directory name from a hash ID."""
-    candidate = hash_id or ""
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-_")
-    if sanitized:
-        return sanitized.lower()
-    digest = hashlib.sha256(candidate.encode("utf-8")).hexdigest()
-    return digest[:16]
-
-
-def _sanitize_table_id(
-    table_id: Optional[str],
-    table_label: Optional[str],
-    index: int,
-) -> str:
-    """Create a sanitized table ID from metadata."""
-    fallback = f"table-{index + 1:03d}"
-    candidate = table_id or table_label or fallback
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
-    return sanitized.lower() or fallback
-
-
-def _coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
-    """Convert Pubget space guess to CoordinateSpace enum."""
-    if not guess:
-        return CoordinateSpace.OTHER
-    normalized = guess.strip().upper()
-    if normalized == "MNI":
-        return CoordinateSpace.MNI
-    if normalized in {"TAL", "TALAIRACH"}:
-        return CoordinateSpace.TALAIRACH
-    return CoordinateSpace.OTHER
-
-
 def _build_progress_callback(
     progress_hook: Callable[[int], None] | None,
 ) -> Callable[[Mapping[str, str], Any | None, BaseException | None], None] | None:
@@ -953,39 +858,3 @@ def _build_progress_callback(
         emit_progress(progress_hook)
 
     return _callback
-
-
-def _coordinate_from_row(
-    row: Any,
-    space: CoordinateSpace,
-) -> Optional[Coordinate]:
-    """Convert a DataFrame row to a Coordinate object."""
-    try:
-        x_val = float(row["x"])
-        y_val = float(row["y"])
-        z_val = float(row["z"])
-    except (KeyError, TypeError, ValueError):
-        return None
-
-    if any(math.isnan(value) for value in (x_val, y_val, z_val)):
-        return None
-
-    return Coordinate(
-        x=x_val,
-        y=y_val,
-        z=z_val,
-        space=space,
-    )
-
-
-def _parse_table_number(label: Optional[str]) -> Optional[int]:
-    """Extract table number from label string."""
-    if not label:
-        return None
-    match = re.search(r"(\d+)", label)
-    if not match:
-        return None
-    try:
-        return int(match.group(1))
-    except ValueError:
-        return None

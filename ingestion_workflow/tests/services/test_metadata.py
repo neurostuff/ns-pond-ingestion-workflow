@@ -71,7 +71,7 @@ class TestMetadataService:
         """Test metadata enrichment with mocked Semantic Scholar."""
         identifier = Identifier(doi="10.1234/test")
         extracted = ExtractedContent(
-            hash_id=identifier.hash_id,
+            slug=identifier.slug,
             source=DownloadSource.PUBGET,
             identifier=identifier,
             has_coordinates=True,
@@ -86,18 +86,18 @@ class TestMetadataService:
         with patch.object(
             metadata_service._s2_client,
             "get_metadata",
-            return_value={identifier.hash_id: mock_metadata},
+            return_value={identifier.slug: mock_metadata},
         ):
             result = metadata_service.enrich_metadata([extracted])
 
-        assert extracted.hash_id in result
-        assert result[extracted.hash_id].title == "Test Article"
+        assert extracted.slug in result
+        assert result[extracted.slug].title == "Test Article"
 
     def test_enrich_metadata_fallback_to_pubmed(self, metadata_service):
         """Test fallback to PubMed when S2 fails."""
         identifier = Identifier(pmid="12345678")
         extracted = ExtractedContent(
-            hash_id=identifier.hash_id,
+            slug=identifier.slug,
             source=DownloadSource.PUBGET,
             identifier=identifier,
             has_coordinates=True,
@@ -117,19 +117,19 @@ class TestMetadataService:
             patch.object(
                 metadata_service,
                 "_get_pubmed_metadata_cached",
-                return_value={identifier.hash_id: mock_metadata},
+                return_value={identifier.slug: mock_metadata},
             ),
         ):
             result = metadata_service.enrich_metadata([extracted])
 
-        assert extracted.hash_id in result
-        assert result[extracted.hash_id].title == "PubMed Article"
+        assert extracted.slug in result
+        assert result[extracted.slug].title == "PubMed Article"
 
     def test_get_elsevier_fallback(self, metadata_service):
         """Test fallback metadata extraction from Elsevier files."""
         # Create mock metadata.json in the expected location
         identifier = Identifier(doi="10.1000/test")
-        digest = hashlib.sha256(identifier.hash_id.encode("utf-8")).hexdigest()[:32]
+        digest = hashlib.sha256(identifier.slug.encode("utf-8")).hexdigest()[:32]
         cache_dir = metadata_service.settings.cache_root / "elsevier" / digest
         cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -147,7 +147,7 @@ class TestMetadataService:
             json.dump(metadata_data, f)
 
         extracted = ExtractedContent(
-            hash_id="test_elsevier",
+            slug="test_elsevier",
             source=DownloadSource.ELSEVIER,
             identifier=identifier,
             has_coordinates=False,
@@ -205,7 +205,7 @@ class TestMetadataService:
             f.write(xml_content)
 
         extracted = ExtractedContent(
-            hash_id="test_pubget",
+            slug="test_pubget",
             source=DownloadSource.PUBGET,
             identifier=identifier,
             has_coordinates=False,
@@ -250,7 +250,7 @@ class TestMetadataIntegration:
         service = MetadataService(settings)
 
         extracted = ExtractedContent(
-            hash_id=identifier.hash_id,
+            slug=identifier.slug,
             source=DownloadSource.PUBGET,
             identifier=identifier,
             has_coordinates=True,
@@ -258,8 +258,8 @@ class TestMetadataIntegration:
 
         result = service.enrich_metadata([extracted])
 
-        assert extracted.hash_id in result
-        assert result[extracted.hash_id].title is not None
+        assert extracted.slug in result
+        assert result[extracted.slug].title is not None
 
     @pytest.mark.vcr()
     def test_pubmed_real_api(
@@ -290,7 +290,7 @@ class TestMetadataIntegration:
         service = MetadataService(settings)
 
         extracted = ExtractedContent(
-            hash_id=identifier.hash_id,
+            slug=identifier.slug,
             source=DownloadSource.PUBGET,
             identifier=identifier,
             has_coordinates=True,
@@ -304,5 +304,5 @@ class TestMetadataIntegration:
         ):
             result = service.enrich_metadata([extracted])
 
-        assert extracted.hash_id in result
-        assert result[extracted.hash_id].title is not None
+        assert extracted.slug in result
+        assert result[extracted.slug].title is not None

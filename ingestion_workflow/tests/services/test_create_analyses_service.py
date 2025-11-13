@@ -45,7 +45,7 @@ def _make_bundle(table_path: Path) -> ArticleExtractionBundle:
         coordinates=[Coordinate(x=0.0, y=0.0, z=0.0, space=CoordinateSpace.MNI)],
     )
     content = ExtractedContent(
-        hash_id="article-1",
+        slug="article-1",
         source=DownloadSource.ELSEVIER,
         identifier=Identifier(pmid="12345"),
         tables=[table],

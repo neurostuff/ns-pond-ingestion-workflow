@@ -30,7 +30,7 @@ def _bundle_payload(tmp_path: Path) -> list[dict]:
         raw_content_path=table_path,
     )
     content = ExtractedContent(
-        hash_id="article-1",
+        slug="article-1",
         source=DownloadSource.ELSEVIER,
         identifier=Identifier(pmid="12345"),
         tables=[table],
@@ -49,7 +49,7 @@ def test_cli_create_analyses_writes_output(monkeypatch, tmp_path):
     output_path = tmp_path / "analyses.json"
 
     collection = AnalysisCollection(
-        hash_id="article-1::table-1",
+        slug="article-1::table-1",
         analyses=[Analysis(name="Example")],
     )
     expected_serialized = {"article-1": {"Table 1": collection.to_dict()}}

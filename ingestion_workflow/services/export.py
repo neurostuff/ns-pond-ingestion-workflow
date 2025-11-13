@@ -35,12 +35,12 @@ class ExportService:
         if identifier is None:
             logger.debug(
                 "Skipping export for bundle %s because identifier is missing",
-                bundle.article_data.hash_id,
+                bundle.article_data.slug,
             )
             return
 
-        hash_id = identifier.hash_id
-        root = self.settings.data_root / "export" / hash_id
+        slug = identifier.slug
+        root = self.settings.data_root / "export" / slug
         root.mkdir(parents=True, exist_ok=True)
 
         self._write_identifiers(root, identifier.to_dict())
@@ -94,7 +94,7 @@ class ExportService:
         analyses: Sequence[CreateAnalysesResult],
     ) -> None:
         filtered = [
-            result for result in analyses if result.article_hash == bundle.article_data.hash_id
+            result for result in analyses if result.article_slug == bundle.article_data.slug
         ]
         if not filtered:
             return

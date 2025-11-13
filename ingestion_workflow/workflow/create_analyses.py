@@ -12,9 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from typing import Callable, Dict, List, Sequence, Tuple
 
-from tqdm.auto import tqdm
-
-from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
@@ -28,8 +26,14 @@ from ingestion_workflow.services.create_analyses import (
 )
 from ingestion_workflow.services.export import ExportService
 from ingestion_workflow.services.logging import console_kwargs
-from ingestion_workflow.workflow.stats import StageMetrics
 from ingestion_workflow.utils.progress import progress_callback
+from ingestion_workflow.workflow.common import (
+    create_progress_bar,
+    log_success,
+    maybe_export,
+    resolve_settings,
+)
+from ingestion_workflow.workflow.stats import StageMetrics
 
 
 logger = logging.getLogger(__name__)
@@ -48,13 +52,13 @@ def run_create_analyses(
     Returns
     -------
     dict
-        Mapping of article hash IDs to table-id-indexed AnalysisCollections.
+        Mapping of article slugs to table-id-indexed AnalysisCollections.
     """
 
     if not bundles:
         return {}
 
-    resolved_settings = settings or load_settings()
+    resolved_settings = resolve_settings(settings)
 
     results: Dict[str, Dict[str, AnalysisCollection]] = {}
     cache_candidates: List[CreateAnalysesResult] = []
@@ -63,11 +67,11 @@ def run_create_analyses(
     cached_tables = 0
     pending_tables = 0
     skipped_tables = 0
-    hash_to_bundle = {bundle.article_data.hash_id: bundle for bundle in bundles}
+    slug_to_bundle = {bundle.article_data.slug: bundle for bundle in bundles}
 
     for bundle in bundles:
-        article_hash = bundle.article_data.hash_id
-        logger.info("Creating analyses for article %s", article_hash)
+        article_slug = bundle.article_data.slug
+        logger.info("Creating analyses for article %s", article_slug)
         (
             per_table,
             per_bundle_results,
@@ -75,12 +79,12 @@ def run_create_analyses(
             stats,
         ) = _run_bundle_with_cache(
             bundle,
-            article_hash,
+            article_slug,
             resolved_settings,
             extractor_name,
         )
-        results[article_hash] = per_table
-        bundle_results[article_hash] = per_bundle_results
+        results[article_slug] = per_table
+        bundle_results[article_slug] = per_bundle_results
         cached_tables += stats.cached
         pending_tables += stats.pending
         skipped_tables += stats.skipped
@@ -114,10 +118,11 @@ def run_create_analyses(
             pending_tables,
             extra=console_kwargs(),
         )
-        progress = _create_progress_bar(
+        progress = create_progress_bar(
             resolved_settings,
             pending_tables,
             "CreateAnalyses",
+            unit="table",
         )
         progress_hook = progress_callback(progress)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -145,26 +150,27 @@ def run_create_analyses(
             cache_candidates,
         )
 
-    if resolved_settings.export:
-        exporter = ExportService(
+    def _export_payload(exporter: ExportService, item: Tuple[str, List[CreateAnalysesResult]]) -> None:
+        article_slug, per_bundle = item
+        bundle = slug_to_bundle.get(article_slug)
+        if bundle is None:
+            return
+        exporter.export(bundle, per_bundle)
+
+    maybe_export(
+        resolved_settings.export,
+        lambda: ExportService(
             resolved_settings,
             overwrite=resolved_settings.export_overwrite,
-        )
-        for article_hash, per_bundle in bundle_results.items():
-            bundle = hash_to_bundle.get(article_hash)
-            if bundle is None:
-                continue
-            exporter.export(bundle, per_bundle)
+        ),
+        bundle_results.items(),
+        export_fn=_export_payload,
+    )
 
     total_success_tables = sum(len(entries) for entries in bundle_results.values())
     total_target_tables = cached_tables + pending_tables
     if total_target_tables:
-        logger.info(
-            "[create_analyses] successes: %d/%d",
-            total_success_tables,
-            total_target_tables,
-            extra=console_kwargs(),
-        )
+        log_success("create_analyses", total_success_tables, total_target_tables)
     if metrics is not None:
         metrics.record_produced(total_success_tables)
         if skipped_tables:
@@ -175,7 +181,7 @@ def run_create_analyses(
 
 def _run_bundle_with_cache(
     bundle: ArticleExtractionBundle,
-    article_hash: str,
+    article_slug: str,
     settings: Settings,
     extractor_name: str | None,
 ) -> Tuple[
@@ -197,7 +203,7 @@ def _run_bundle_with_cache(
 
         sanitized_table_id = sanitize_table_id(table.table_id, index)
         table_key = table.table_id or sanitized_table_id
-        cache_key = _compose_cache_key(article_hash, sanitized_table_id)
+        cache_key = _compose_cache_key(article_slug, sanitized_table_id)
         cached = cache.get_cached_create_analyses_result(
             settings,
             cache_key,
@@ -227,7 +233,7 @@ def _run_bundle_with_cache(
     )
 
     pending_job = PendingJob(
-        article_hash=article_hash,
+        article_slug=article_slug,
         bundle=pruned_bundle,
         pending_info=pending_info,
         table_results=table_results,
@@ -236,13 +242,13 @@ def _run_bundle_with_cache(
     return table_results, bundle_results, pending_job, stats
 
 
-def _compose_cache_key(article_hash: str, sanitized_table_id: str) -> str:
-    return f"{article_hash}::{sanitized_table_id}"
+def _compose_cache_key(article_slug: str, sanitized_table_id: str) -> str:
+    return f"{article_slug}::{sanitized_table_id}"
 
 
 @dataclass
 class PendingJob:
-    article_hash: str
+    article_slug: str
     bundle: ArticleExtractionBundle
     pending_info: Dict[str, Dict[str, object]]
     table_results: Dict[str, AnalysisCollection]
@@ -274,8 +280,8 @@ def _process_pending_job(
             continue
         job.table_results[table_key] = collection
         result_obj = CreateAnalysesResult(
-            hash_id=info["cache_key"],
-            article_hash=job.article_hash,
+            slug=info["cache_key"],
+            article_slug=job.article_slug,
             table_id=table_key,
             sanitized_table_id=info["sanitized"],
             analysis_collection=collection,
@@ -292,18 +298,3 @@ def _process_pending_job(
 __all__ = [
     "run_create_analyses",
 ]
-
-
-def _create_progress_bar(
-    settings: Settings,
-    total: int,
-    desc: str,
-) -> tqdm | None:
-    if not settings.show_progress or total <= 0:
-        return None
-    return tqdm(
-        total=total,
-        desc=desc,
-        leave=False,
-        unit="table",
-    )

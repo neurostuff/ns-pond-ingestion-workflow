@@ -29,7 +29,7 @@ def _bundle(identifier: Identifier) -> ArticleExtractionBundle:
         raw_content_path=Path(__file__),
     )
     content = ExtractedContent(
-        hash_id="hash-1",
+        slug="hash-1",
         source=DownloadSource.ELSEVIER,
         identifier=identifier,
         tables=[table],
@@ -67,9 +67,9 @@ def test_run_pipeline_full_sequence(monkeypatch, tmp_path):
     ]
     bundles = [_bundle(identifier)]
     analyses = {
-        bundles[0].article_data.hash_id: {
+        bundles[0].article_data.slug: {
             "Table 1": AnalysisCollection(
-                hash_id="hash-1::table-1",
+                slug="hash-1::table-1",
                 coordinate_space=CoordinateSpace.MNI,
                 identifier=identifier,
             )
@@ -158,9 +158,9 @@ def test_pipeline_hydrates_from_cache_when_only_create(monkeypatch, tmp_path):
     ]
     bundles = [_bundle(identifier)]
     analyses = {
-        bundles[0].article_data.hash_id: {
+        bundles[0].article_data.slug: {
             "Table 1": AnalysisCollection(
-                hash_id="hash-1::table-1",
+                slug="hash-1::table-1",
                 coordinate_space=CoordinateSpace.MNI,
                 identifier=identifier,
             )

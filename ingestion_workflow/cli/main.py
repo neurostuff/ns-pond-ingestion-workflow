@@ -140,10 +140,10 @@ def create_analyses(
         extractor_name=extractor_name,
     )
     serializable = {
-        article_hash: {
+        article_slug: {
             table_id: collection.to_dict() for table_id, collection in table_map.items()
         }
-        for article_hash, table_map in results.items()
+        for article_slug, table_map in results.items()
     }
     output = json.dumps(serializable, indent=2, sort_keys=True)
     if output_path is None:

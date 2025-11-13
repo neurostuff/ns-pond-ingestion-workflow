@@ -59,7 +59,7 @@ class CreateAnalysesService:
             return {}
 
         results: Dict[str, AnalysisCollection] = {}
-        article_hash = bundle.article_data.hash_id
+        article_slug = bundle.article_data.slug
         identifier = bundle.article_data.identifier
 
         for index, table in enumerate(bundle.article_data.tables):
@@ -67,7 +67,7 @@ class CreateAnalysesService:
                 logger.debug(
                     "Skipping table %s for article %s (no coordinates detected).",
                     table.table_id,
-                    bundle.article_data.hash_id,
+                    bundle.article_data.slug,
                 )
                 continue
             sanitized_table_id = sanitize_table_id(table.table_id, index)
@@ -79,7 +79,7 @@ class CreateAnalysesService:
                 logger.warning(
                     "Skipping table %s for article %s: %s",
                     table_key,
-                    article_hash,
+                    article_slug,
                     exc,
                 )
                 continue
@@ -88,7 +88,7 @@ class CreateAnalysesService:
             if not parsed_output.analyses:
                 logger.warning(
                     "LLM returned no analyses for article %s table %s",
-                    article_hash,
+                    article_slug,
                     table_key,
                 )
 
@@ -98,7 +98,7 @@ class CreateAnalysesService:
                 identifier,
                 sanitized_table_id,
                 table_key,
-                article_hash,
+                article_slug,
             )
             results[table_key] = collection
             emit_progress(progress_hook)
@@ -112,11 +112,11 @@ class CreateAnalysesService:
         identifier,
         sanitized_table_id: str,
         table_key: str,
-        article_hash: str,
+        article_slug: str,
     ) -> AnalysisCollection:
         table_space = table.space or CoordinateSpace.OTHER
         collection = AnalysisCollection(
-            hash_id=f"{article_hash}::{sanitized_table_id}",
+            slug=f"{article_slug}::{sanitized_table_id}",
             coordinate_space=table_space,
             identifier=identifier,
         )

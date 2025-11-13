@@ -79,8 +79,8 @@ def load_manifest(path: Path) -> List[Dict[str, str]]:
 
 
 def slugify_identifier(record: Dict[str, str], metadata: Dict[str, object]) -> str:
-    if "identifier_hash" in metadata:
-        return str(metadata["identifier_hash"]).replace("/", "_")
+    if "identifier_slug" in metadata:
+        return str(metadata["identifier_slug"]).replace("/", "_")
     for key in ("pmcid", "pmid", "doi"):
         value = metadata.get(key) or record.get(key)
         if value:

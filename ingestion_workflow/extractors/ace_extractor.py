@@ -2,15 +2,10 @@
 
 from __future__ import annotations
 
-import hashlib
 import logging
 import threading
 import re
-from concurrent.futures import (
-    ProcessPoolExecutor,
-    ThreadPoolExecutor,
-    as_completed,
-)
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -21,6 +16,10 @@ from ace import extract as ace_extract
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.utils import (
+    build_downloaded_file,
+    build_failure_extraction,
+)
 from ingestion_workflow.models import (
     Identifier,
     Identifiers,
@@ -34,6 +33,8 @@ from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
 )
+
+from ingestion_workflow.utils import slugify
 from ingestion_workflow.patches import apply_ace_patch
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -52,21 +53,12 @@ _HTML_INVALID_MARKERS: list[tuple[str, str]] = [
 _MIN_HTML_LENGTH = 500
 
 
-def _safe_hash_stem(hash_id: str | None) -> str:
-    """Sanitize the hash stem used for ACE extraction directories."""
-    candidate = hash_id or ""
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
-    if sanitized:
-        return sanitized.lower()
-    digest = hashlib.sha256(candidate.encode("utf-8"))
-    return digest.hexdigest()[:16]
-
 
 def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
     fallback = f"table-{index}"
     if not candidate:
         return fallback
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
+    sanitized = slugify(candidate).strip("-")
     return sanitized.lower() or fallback
 
 
@@ -172,19 +164,6 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
 
     return True, None
 
-
-def _build_failure_extraction(download_result: DownloadResult, message: str) -> ExtractedContent:
-    return ExtractedContent(
-        hash_id=download_result.identifier.hash_id,
-        source=DownloadSource.ACE,
-        identifier=download_result.identifier,
-        full_text_path=None,
-        tables=[],
-        has_coordinates=False,
-        error_message=message,
-    )
-
-
 def _translate_ace_table(
     table: Any,
     article: Any,
@@ -253,8 +232,8 @@ def _extract_ace_article(
     if html_file is None:
         raise ValueError("ACE extraction requires an HTML payload.")
 
-    hash_id = download_result.identifier.hash_id
-    article_dir = extraction_root / _safe_hash_stem(hash_id)
+    slug = download_result.identifier.slug
+    article_dir = extraction_root / slug
     tables_dir = article_dir / "tables"
     source_tables_dir = article_dir / "downloaded_tables"
     tables_dir.mkdir(parents=True, exist_ok=True)
@@ -286,7 +265,7 @@ def _extract_ace_article(
     has_coordinates = any(table.coordinates for table in extracted_tables)
 
     return ExtractedContent(
-        hash_id=hash_id,
+        slug=slug,
         source=DownloadSource.ACE,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
@@ -303,8 +282,8 @@ def _run_ace_extraction_task(
     try:
         return _extract_ace_article(download_result, root_path)
     except Exception as exc:  # pragma: no cover - worker failure logging
-        logger.exception("ACE extraction failed for %s", download_result.identifier.hash_id)
-        return _build_failure_extraction(download_result, str(exc))
+        logger.exception("ACE extraction failed for %s", download_result.identifier.slug)
+        return build_failure_extraction(download_result, DownloadSource.ACE, str(exc))
 
 
 class ACEExtractor(BaseExtractor):
@@ -403,70 +382,20 @@ class ACEExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using ACE."""
-        if not download_results:
-            return []
-
-        extraction_root = self._extraction_root
-        extraction_root.mkdir(parents=True, exist_ok=True)
-
-        for download_result in download_results:
-            if not download_result.success:
-                raise ValueError(
-                    "ACEExtractor.extract received an unsuccessful download "
-                    "result; download validation should occur before "
-                    "extraction."
-                )
-
-        ordered_results: list[Optional[ExtractionResult]] = [None] * len(download_results)
-
-        worker_count = max(1, self.settings.max_workers)
-
-        if worker_count == 1 or len(download_results) == 1:
-            for index, download_result in enumerate(download_results):
-                ordered_results[index] = _run_ace_extraction_task(
-                    download_result,
-                    extraction_root,
-                )
-                emit_progress(progress_hook)
-        else:
-            root_str = str(extraction_root)
-            with ProcessPoolExecutor(max_workers=worker_count) as executor:
-                future_map = {
-                    executor.submit(
-                        _run_ace_extraction_task,
-                        download_result,
-                        root_str,
-                    ): index
-                    for index, download_result in enumerate(download_results)
-                }
-                for future in as_completed(future_map):
-                    index = future_map[future]
-                    download_result = download_results[index]
-                    try:
-                        ordered_results[index] = future.result()
-                    except Exception as exc:  # pragma: no cover - defensive
-                        logger.exception(
-                            "ACE extraction raised exception for %s",
-                            download_result.identifier.hash_id,
-                        )
-                        ordered_results[index] = _build_failure_extraction(
-                            download_result,
-                            f"ACE extraction raised an exception: {exc}",
-                        )
-                    finally:
-                        emit_progress(progress_hook)
-
-        final_results: list[ExtractionResult] = []
-        for index, download_result in enumerate(download_results):
-            result = ordered_results[index]
-            if result is None:
-                result = _build_failure_extraction(
-                    download_result,
-                    "ACE extraction did not produce a result.",
-                )
-            final_results.append(result)
-
-        return final_results
+        return self._run_extraction_pipeline(
+            download_results,
+            extraction_root=self._extraction_root,
+            worker=_run_ace_extraction_task,
+            worker_count=self.settings.max_workers,
+            source_name="ACE",
+            failure_message="ACE extraction did not produce a result.",
+            failure_builder=lambda download_result, message: build_failure_extraction(
+                download_result,
+                DownloadSource.ACE,
+                message,
+            ),
+            progress_hook=progress_hook,
+        )
 
     def _download_single(
         self,
@@ -560,14 +489,11 @@ class ACEExtractor(BaseExtractor):
         return matches[0] if matches else None
 
     def _build_downloaded_file(self, file_path: Path) -> DownloadedFile:
-        payload = file_path.read_bytes()
-        md5_hash = hashlib.md5(payload).hexdigest()
-        return DownloadedFile(
-            file_path=file_path,
-            file_type=FileType.HTML,
-            content_type=self._HTML_CONTENT_TYPE,
+        return build_downloaded_file(
+            file_path,
+            FileType.HTML,
             source=DownloadSource.ACE,
-            md5_hash=md5_hash,
+            content_type=self._HTML_CONTENT_TYPE,
         )
 
     def _failure(self, identifier: Identifier, message: str) -> DownloadResult:

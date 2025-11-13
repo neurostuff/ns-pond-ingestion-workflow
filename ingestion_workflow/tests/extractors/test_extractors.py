@@ -57,7 +57,7 @@ def test_elsevier_download_records_articles(tmp_path, manifest_identifiers):
 
             assert metadata["lookup_type"] == expected_lookup_type
             assert metadata["lookup_value"] == expected_lookup_value
-            assert metadata["identifier_hash"] == identifier.hash_id
+            assert metadata["identifier_slug"] == identifier.slug
         else:
             assert not result.files
 

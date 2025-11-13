@@ -43,7 +43,7 @@ def _decode_datetime(value: str) -> datetime:
 class CacheEnvelope(Generic[PayloadT]):
     """Generic wrapper that pairs a payload with cache metadata."""
 
-    hash_id: str
+    slug: str
     payload: PayloadT
     cached_at: datetime = field(default_factory=datetime.utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -51,11 +51,11 @@ class CacheEnvelope(Generic[PayloadT]):
     payload_cls: ClassVar[Type[PayloadT]]
 
     def cache_key(self) -> str:
-        return self.hash_id
+        return self.slug
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "hash_id": self.hash_id,
+            "slug": self.slug,
             "cached_at": _encode_datetime(self.cached_at),
             "metadata": dict(self.metadata),
             "payload": self._encode_payload(),
@@ -79,12 +79,12 @@ class CacheEnvelope(Generic[PayloadT]):
         cached_raw = payload.get("cached_at")
         cached_at = _decode_datetime(str(cached_raw)) if cached_raw else datetime.utcnow()
         metadata = dict(payload.get("metadata", {}))
-        raw_hash_id = payload.get("hash_id")
-        hash_id = (
-            str(raw_hash_id) if raw_hash_id is not None else cls._derive_hash_id(decoded_payload)
+        raw_slug = payload.get("slug")
+        slug = (
+            str(raw_slug) if raw_slug is not None else cls._derive_slug(decoded_payload)
         )
         return cls(
-            hash_id=hash_id,
+            slug=slug,
             payload=decoded_payload,
             cached_at=cached_at,
             metadata=metadata,
@@ -103,8 +103,8 @@ class CacheEnvelope(Generic[PayloadT]):
         return type(self)._decode_payload(self._encode_payload())
 
     @classmethod
-    def _derive_hash_id(cls, payload: PayloadT) -> str:
-        candidate = getattr(payload, "hash_id", None)
+    def _derive_slug(cls, payload: PayloadT) -> str:
+        candidate = getattr(payload, "slug", None)
         if candidate is None:
             return ""
         return str(candidate)
@@ -125,14 +125,14 @@ class CacheIndex(Generic[EnvelopeT]):
     def add(self, entry: EnvelopeT) -> None:
         self.entries[entry.cache_key()] = entry
 
-    def get(self, hash_id: str) -> Optional[EnvelopeT]:
-        return self.entries.get(hash_id)
+    def get(self, slug: str) -> Optional[EnvelopeT]:
+        return self.entries.get(slug)
 
-    def has(self, hash_id: str) -> bool:
-        return hash_id in self.entries
+    def has(self, slug: str) -> bool:
+        return slug in self.entries
 
-    def remove(self, hash_id: str) -> bool:
-        return self.entries.pop(hash_id, None) is not None
+    def remove(self, slug: str) -> bool:
+        return self.entries.pop(slug, None) is not None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -192,8 +192,8 @@ class DownloadCacheEntry(CacheEnvelope[DownloadResult]):
     @classmethod
     def from_result(cls, result: DownloadResult) -> "DownloadCacheEntry":
         clone = DownloadResult.from_dict(result.to_dict())
-        hash_id = clone.identifier.hash_id
-        return cls(hash_id=hash_id, payload=clone)
+        slug = clone.identifier.slug
+        return cls(slug=slug, payload=clone)
 
     @property
     def result(self) -> DownloadResult:
@@ -210,11 +210,11 @@ class DownloadIndex(CacheIndex[DownloadCacheEntry]):
     def add_download(self, result: DownloadResult) -> None:
         self.add(DownloadCacheEntry.from_result(result))
 
-    def get_download(self, hash_id: str) -> Optional[DownloadCacheEntry]:
-        return self.get(hash_id)
+    def get_download(self, slug: str) -> Optional[DownloadCacheEntry]:
+        return self.get(slug)
 
-    def remove_download(self, hash_id: str) -> bool:
-        return self.remove(hash_id)
+    def remove_download(self, slug: str) -> bool:
+        return self.remove(slug)
 
 
 @dataclass
@@ -226,8 +226,8 @@ class IdentifierCacheEntry(CacheEnvelope[IdentifierExpansion]):
     @classmethod
     def from_expansion(cls, expansion: IdentifierExpansion) -> "IdentifierCacheEntry":
         clone = IdentifierExpansion.from_dict(expansion.to_dict())
-        hash_id = clone.seed_identifier.hash_id
-        return cls(hash_id=hash_id, payload=clone)
+        slug = clone.seed_identifier.slug
+        return cls(slug=slug, payload=clone)
 
     @property
     def seed_identifier(self) -> Identifier:
@@ -262,7 +262,7 @@ class ExtractionResultEntry(CacheEnvelope[ExtractedContent]):
     @classmethod
     def from_content(cls, content: ExtractedContent) -> "ExtractionResultEntry":
         clone = ExtractedContent.from_dict(content.to_dict())
-        return cls(hash_id=clone.hash_id, payload=clone)
+        return cls(slug=clone.slug, payload=clone)
 
     @property
     def content(self) -> ExtractedContent:
@@ -283,11 +283,11 @@ class ExtractionResultIndex(CacheIndex[ExtractionResultEntry]):
     def add_extraction(self, entry: ExtractionResultEntry) -> None:
         self.add(entry)
 
-    def get_extraction(self, hash_id: str) -> Optional[ExtractionResultEntry]:
-        return self.get(hash_id)
+    def get_extraction(self, slug: str) -> Optional[ExtractionResultEntry]:
+        return self.get(slug)
 
-    def has_extraction(self, hash_id: str) -> bool:
-        return self.has(hash_id)
+    def has_extraction(self, slug: str) -> bool:
+        return self.has(slug)
 
 
 @dataclass
@@ -299,7 +299,7 @@ class CreateAnalysesResultEntry(CacheEnvelope[CreateAnalysesResult]):
     @classmethod
     def from_result(cls, result: CreateAnalysesResult) -> "CreateAnalysesResultEntry":
         clone = CreateAnalysesResult.from_dict(result.to_dict())
-        return cls(hash_id=clone.hash_id, payload=clone)
+        return cls(slug=clone.slug, payload=clone)
 
     @property
     def analysis_paths(self) -> list[Path]:
@@ -334,14 +334,14 @@ class MetadataCache(CacheEnvelope[ArticleMetadata]):
     @classmethod
     def from_metadata(
         cls,
-        hash_id: str,
+        slug: str,
         metadata: ArticleMetadata,
         sources_queried: Optional[list[str]] = None,
     ) -> "MetadataCache":
         payload_dict = cls._article_to_dict(metadata)
         clone = cls._decode_payload(payload_dict)
         envelope = cls(
-            hash_id=hash_id,
+            slug=slug,
             payload=clone,
             metadata={
                 "sources_queried": list(sources_queried or []),

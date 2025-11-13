@@ -183,7 +183,7 @@ class Analysis:
 class AnalysisCollection:
     """Collection of analyses for a single table or article."""
 
-    hash_id: str
+    slug: str
     analyses: List[Analysis] = field(default_factory=list)
     coordinate_space: CoordinateSpace = CoordinateSpace.MNI
     identifier: Optional[Identifier] = None
@@ -193,7 +193,7 @@ class AnalysisCollection:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "hash_id": self.hash_id,
+            "slug": self.slug,
             "coordinate_space": self.coordinate_space.value,
             "analyses": [analysis.to_dict() for analysis in self.analyses],
             "identifier": (self.identifier.__dict__.copy() if self.identifier else None),
@@ -203,8 +203,9 @@ class AnalysisCollection:
     def from_dict(cls, payload: Mapping[str, Any]) -> "AnalysisCollection":
         identifier_payload = payload.get("identifier")
         identifier = Identifier(**identifier_payload) if identifier_payload is not None else None
+        slug = payload.get("slug") or ""
         return cls(
-            hash_id=str(payload["hash_id"]),
+            slug=str(slug),
             analyses=[Analysis.from_dict(item) for item in payload.get("analyses", [])],
             coordinate_space=CoordinateSpace(
                 payload.get("coordinate_space", CoordinateSpace.MNI.value)
@@ -217,8 +218,8 @@ class AnalysisCollection:
 class CreateAnalysesResult:
     """Cache payload for a parsed table's analyses."""
 
-    hash_id: str
-    article_hash: str
+    slug: str
+    article_slug: str
     table_id: str
     sanitized_table_id: str
     analysis_collection: AnalysisCollection
@@ -228,8 +229,8 @@ class CreateAnalysesResult:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "hash_id": self.hash_id,
-            "article_hash": self.article_hash,
+            "slug": self.slug,
+            "article_slug": self.article_slug,
             "table_id": self.table_id,
             "sanitized_table_id": self.sanitized_table_id,
             "analysis_collection": self.analysis_collection.to_dict(),
@@ -241,9 +242,11 @@ class CreateAnalysesResult:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "CreateAnalysesResult":
         paths = [Path(str(item)) for item in payload.get("analysis_paths", [])]
+        slug = payload.get("slug") or ""
+        article_slug = payload.get("article_slug") or ""
         return cls(
-            hash_id=str(payload["hash_id"]),
-            article_hash=str(payload.get("article_hash", "")),
+            slug=str(slug),
+            article_slug=str(article_slug),
             table_id=str(payload.get("table_id", "")),
             sanitized_table_id=str(payload.get("sanitized_table_id", "")),
             analysis_collection=AnalysisCollection.from_dict(payload["analysis_collection"]),

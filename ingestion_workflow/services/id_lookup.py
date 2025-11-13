@@ -188,7 +188,7 @@ class IDLookupService:
         self.logger.warning(
             "Failed %s lookup for %s (provider=%s): %s",
             id_type,
-            values or [identifier.hash_id for identifier in identifiers],
+            values or [identifier.slug for identifier in identifiers],
             self.extractor_name,
             error,
         )

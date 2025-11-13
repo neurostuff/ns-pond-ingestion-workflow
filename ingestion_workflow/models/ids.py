@@ -8,6 +8,8 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 import json
 import re
 
+from ingestion_workflow.utils import slugify
+
 DOI_URL = re.compile(r'(?i)https?://[^/\s]+/(10\.\d{4,9}/[^\s"\'<>()]+)')
 
 
@@ -54,20 +56,20 @@ class Identifier(MutableMapping[str, Optional[str]]):
         """Ensure identifiers are normalized immediately after creation."""
         self.normalize()
 
-    def hash_identifiers(self) -> str:
-        """Create a hashable representation of the identifiers."""
+    def make_slug(self) -> str:
+        """Create a slugable representation of the identifiers."""
         id_parts = [
             self.pmid or "",
             self.doi or "",
             self.pmcid or "",
         ]
         # replace slashes to avoid path issues
-        return "|".join(id_parts).replace("/", "_")
+        return slugify("-".join(id_parts))
 
     @property
-    def hash_id(self) -> str:
-        """Return the current hash of primary identifiers."""
-        return self.hash_identifiers()
+    def slug(self) -> str:
+        """Return the current slug of primary identifiers."""
+        return self.make_slug()
 
     def normalize(self) -> None:
         """Normalize identifier fields."""
@@ -268,13 +270,13 @@ class Identifiers:
             self._add_to_indices(identifier)
 
     def deduplicate(self) -> None:
-        """Remove duplicate identifiers based on their hash."""
-        unique_hashes = set()
+        """Remove duplicate identifiers based on their slug."""
+        unique_slugs = set()
         unique_identifiers = []
         for identifier in self.identifiers:
-            hash_value = identifier.hash_identifiers()
-            if hash_value not in unique_hashes:
-                unique_hashes.add(hash_value)
+            slug_value = identifier.slug
+            if slug_value not in unique_slugs:
+                unique_slugs.add(slug_value)
                 unique_identifiers.append(identifier)
         self.identifiers = unique_identifiers
         self._rebuild_indices()

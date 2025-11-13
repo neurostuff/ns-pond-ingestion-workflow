@@ -12,9 +12,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Sequence, Tuple
 
-from tqdm.auto import tqdm
-
-from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import (
     ArticleExtractionBundle,
@@ -28,8 +26,16 @@ from ingestion_workflow.services import cache
 from ingestion_workflow.services.export import ExportService
 from ingestion_workflow.services.metadata import MetadataService
 from ingestion_workflow.services.logging import console_kwargs
-from ingestion_workflow.workflow.download import _resolve_extractor
 from ingestion_workflow.utils.progress import progress_callback
+from ingestion_workflow.workflow.common import (
+    create_progress_bar,
+    ensure_successful_download as ensure_base_download,
+    log_cache_hits,
+    log_success,
+    maybe_export,
+    resolve_settings,
+)
+from ingestion_workflow.workflow.download import _resolve_extractor
 from ingestion_workflow.workflow.stats import StageMetrics
 
 
@@ -39,25 +45,7 @@ logger = logging.getLogger(__name__)
 def _ensure_successful_download(download_result: DownloadResult) -> None:
     """Validate that a download result is suitable for extraction."""
 
-    if not download_result.success:
-        raise ValueError(
-            "Extraction workflow received an unsuccessful download result; "
-            "ensure downloads are filtered before extraction."
-        )
-
-    if not download_result.files:
-        raise ValueError("Successful downloads must include persisted files for extraction.")
-
-    missing_paths = [
-        downloaded.file_path
-        for downloaded in download_result.files
-        if not downloaded.file_path.exists()
-    ]
-    if missing_paths:
-        missing_str = ", ".join(str(path) for path in missing_paths)
-        raise ValueError(
-            f"Extraction workflow found download payloads missing on disk: {missing_str}"
-        )
+    ensure_base_download(download_result)
 
     if download_result.source is DownloadSource.ACE:
         html_file = next(
@@ -162,7 +150,7 @@ def run_extraction(
     if not download_results:
         return []
 
-    resolved_settings = settings or load_settings()
+    resolved_settings = resolve_settings(settings)
 
     grouped = _group_by_source(download_results)
     ordered_results: List[ExtractionResult | None] = [None] * len(download_results)
@@ -186,12 +174,7 @@ def run_extraction(
         missing_total = len(missing_results)
         processed_count += cached_count
         if cached_count:
-            logger.info(
-                "Extract[%s] loaded %d bundles from cache",
-                source.value,
-                cached_count,
-                extra=console_kwargs(),
-            )
+            log_cache_hits(f"Extract[{source.value}]", cached_count)
             if metrics is not None:
                 metrics.record_cache_hits(cached_count)
         pending_entries: List[Tuple[int, DownloadResult]] = []
@@ -227,10 +210,11 @@ def run_extraction(
 
         pending_subset = [download_result for _, download_result in pending_entries]
 
-        progress = _create_progress_bar(
+        progress = create_progress_bar(
             resolved_settings,
             len(pending_subset),
             f"Extract[{source.value}]",
+            unit="article",
         )
         progress_hook = progress_callback(progress)
 
@@ -298,7 +282,7 @@ def run_extraction(
 
     bundles: List[ArticleExtractionBundle] = []
     for result in final_results:
-        metadata = metadata_dict.get(result.hash_id)
+        metadata = metadata_dict.get(result.slug)
         if metadata is None:
             metadata = _build_placeholder_metadata(result)
         bundles.append(
@@ -308,21 +292,18 @@ def run_extraction(
             )
         )
 
-    if resolved_settings.export:
-        exporter = ExportService(
+    maybe_export(
+        resolved_settings.export,
+        lambda: ExportService(
             resolved_settings,
             overwrite=resolved_settings.export_overwrite,
-        )
-        for bundle in bundles:
-            exporter.export(bundle)
+        ),
+        bundles,
+        export_fn=lambda exporter, bundle: exporter.export(bundle),
+    )
 
     if download_results:
-        logger.info(
-            "[extract] successes: %d/%d",
-            processed_count,
-            len(download_results),
-            extra=console_kwargs(),
-        )
+        log_success("extract", processed_count, len(download_results))
     if metrics is not None:
         metrics.record_produced(len(bundles))
 
@@ -339,27 +320,12 @@ def _build_placeholder_metadata(result: ExtractionResult) -> ArticleMetadata:
         ):
             if candidate:
                 return ArticleMetadata(title=str(candidate))
-        identifier_label = " / ".join(part for part in identifier.hash_id.split("|") if part)
+        identifier_label = " / ".join(part for part in identifier.slug.split("|") if part)
         if identifier_label:
             return ArticleMetadata(title=identifier_label)
-    return ArticleMetadata(title=result.hash_id)
+    return ArticleMetadata(title=result.slug)
 
 
 __all__ = [
     "run_extraction",
 ]
-
-
-def _create_progress_bar(
-    settings: Settings,
-    total: int,
-    desc: str,
-) -> tqdm | None:
-    if not settings.show_progress or total <= 0:
-        return None
-    return tqdm(
-        total=total,
-        desc=desc,
-        leave=False,
-        unit="article",
-    )

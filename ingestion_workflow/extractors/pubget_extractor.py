@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
-import hashlib
-import math
 import json
 import logging
-import re
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -27,6 +23,15 @@ from pubget._utils import (
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.utils import (
+    build_downloaded_file,
+    build_failure_extraction,
+    coordinate_from_row,
+    coordinate_space_from_guess,
+    parse_table_number,
+    safe_hash_stem,
+    sanitize_table_id,
+)
 from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
@@ -40,21 +45,9 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
-from ingestion_workflow.utils.progress import emit_progress
 
 
 logger = logging.getLogger(__name__)
-
-
-_CONTENT_TYPE_MAP: Dict[FileType, str] = {
-    FileType.XML: "application/xml",
-    FileType.CSV: "text/csv",
-    FileType.JSON: "application/json",
-    FileType.HTML: "text/html",
-    FileType.TEXT: "text/plain",
-    FileType.PDF: "application/pdf",
-    FileType.BINARY: "application/octet-stream",
-}
 
 
 class PubgetExtractor(BaseExtractor):
@@ -85,10 +78,11 @@ class PubgetExtractor(BaseExtractor):
             pmcid_map.setdefault(normalized, []).append(index)
 
         if not pmcid_map:
+            failure_message = "No valid PMCIDs were provided for Pubget download."
             return self._ordered_results(
                 identifiers,
                 results_by_index,
-                "No valid PMCIDs were provided for Pubget download.",
+                lambda identifier, msg=failure_message: self._build_failure(identifier, msg),
             )
 
         data_dir = self._resolve_data_dir()
@@ -113,7 +107,7 @@ class PubgetExtractor(BaseExtractor):
             return self._ordered_results(
                 identifiers,
                 results_by_index,
-                failure_message,
+                lambda identifier, msg=failure_message: self._build_failure(identifier, msg),
                 progress_hook=progress_hook,
             )
 
@@ -129,7 +123,7 @@ class PubgetExtractor(BaseExtractor):
             return self._ordered_results(
                 identifiers,
                 results_by_index,
-                failure_message,
+                lambda identifier, msg=failure_message: self._build_failure(identifier, msg),
                 progress_hook=progress_hook,
             )
 
@@ -151,7 +145,7 @@ class PubgetExtractor(BaseExtractor):
             return self._ordered_results(
                 identifiers,
                 results_by_index,
-                failure_message,
+                lambda identifier, msg=failure_message: self._build_failure(identifier, msg),
                 progress_hook=progress_hook,
             )
 
@@ -167,7 +161,7 @@ class PubgetExtractor(BaseExtractor):
             return self._ordered_results(
                 identifiers,
                 results_by_index,
-                failure_message,
+                lambda identifier, msg=failure_message: self._build_failure(identifier, msg),
                 progress_hook=progress_hook,
             )
 
@@ -202,10 +196,11 @@ class PubgetExtractor(BaseExtractor):
                     combined_warning,
                 )
 
+        default_message = "Pubget did not return content for this identifier."
         return self._ordered_results(
             identifiers,
             results_by_index,
-            "Pubget did not return content for this identifier.",
+            lambda identifier, msg=default_message: self._build_failure(identifier, msg),
             progress_hook=progress_hook,
         )
 
@@ -215,70 +210,20 @@ class PubgetExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using Pubget."""
-        if not download_results:
-            return []
-
-        for download_result in download_results:
-            if not download_result.success:
-                raise ValueError(
-                    "PubgetExtractor.extract received an unsuccessful "
-                    "download result; validate downloads before "
-                    "invoking extraction."
-                )
-
-        extraction_root = self._extraction_root
-        extraction_root.mkdir(parents=True, exist_ok=True)
-
-        ordered_results: list[Optional[ExtractionResult]] = [None] * len(download_results)
-
-        worker_count = max(1, self.settings.max_workers)
-
-        if worker_count == 1 or len(download_results) == 1:
-            for index, download_result in enumerate(download_results):
-                ordered_results[index] = _run_pubget_extraction_task(
-                    download_result,
-                    extraction_root,
-                )
-                emit_progress(progress_hook)
-        else:
-            root_str = str(extraction_root)
-            with ProcessPoolExecutor(max_workers=worker_count) as executor:
-                future_map = {
-                    executor.submit(
-                        _run_pubget_extraction_task,
-                        download_result,
-                        root_str,
-                    ): index
-                    for index, download_result in enumerate(download_results)
-                }
-                for future in as_completed(future_map):
-                    index = future_map[future]
-                    download_result = download_results[index]
-                    try:
-                        ordered_results[index] = future.result()
-                    except Exception as exc:  # pragma: no cover
-                        logger.exception(
-                            "Pubget extraction raised exception for %s",
-                            download_result.identifier.hash_id,
-                        )
-                        ordered_results[index] = _build_failure_extraction(
-                            download_result,
-                            f"Pubget extraction raised an exception: {exc}",
-                        )
-                    finally:
-                        emit_progress(progress_hook)
-
-        final_results: list[ExtractionResult] = []
-        for index, download_result in enumerate(download_results):
-            result = ordered_results[index]
-            if result is None:
-                result = _build_failure_extraction(
-                    download_result,
-                    "Pubget extraction did not produce a result.",
-                )
-            final_results.append(result)
-
-        return final_results
+        return self._run_extraction_pipeline(
+            download_results,
+            extraction_root=self._extraction_root,
+            worker=_run_pubget_extraction_task,
+            worker_count=self.settings.max_workers,
+            source_name="Pubget",
+            failure_message="Pubget extraction did not produce a result.",
+            failure_builder=lambda download_result, message: build_failure_extraction(
+                download_result,
+                DownloadSource.PUBGET,
+                message,
+            ),
+            progress_hook=progress_hook,
+        )
 
     def _resolve_extraction_root(self) -> Path:
         base = self.settings.get_cache_dir("extract")
@@ -331,14 +276,26 @@ class PubgetExtractor(BaseExtractor):
 
         article_xml = article_dir.joinpath("article.xml")
         if article_xml.is_file():
-            files.append(self._downloaded_file(article_xml, FileType.XML))
+            files.append(
+                build_downloaded_file(
+                    article_xml,
+                    FileType.XML,
+                    source=DownloadSource.PUBGET,
+                )
+            )
             seen_paths.add(article_xml)
         else:
             missing.append("article.xml")
 
         tables_xml = article_dir.joinpath("tables", "tables.xml")
         if tables_xml.is_file():
-            files.append(self._downloaded_file(tables_xml, FileType.XML))
+            files.append(
+                build_downloaded_file(
+                    tables_xml,
+                    FileType.XML,
+                    source=DownloadSource.PUBGET,
+                )
+            )
             seen_paths.add(tables_xml)
         else:
             missing.append("tables/tables.xml")
@@ -353,10 +310,10 @@ class PubgetExtractor(BaseExtractor):
                     missing.append(str(info_path.relative_to(article_dir)))
                     continue
                 files.append(
-                    self._downloaded_file(
+                    build_downloaded_file(
                         info_path,
                         FileType.JSON,
-                        content_type=_CONTENT_TYPE_MAP[FileType.JSON],
+                        source=DownloadSource.PUBGET,
                     )
                 )
                 seen_paths.add(info_path)
@@ -376,10 +333,10 @@ class PubgetExtractor(BaseExtractor):
                 if data_path in seen_paths:
                     continue
                 files.append(
-                    self._downloaded_file(
+                    build_downloaded_file(
                         data_path,
                         FileType.CSV,
-                        content_type=_CONTENT_TYPE_MAP[FileType.CSV],
+                        source=DownloadSource.PUBGET,
                     )
                 )
                 seen_paths.add(data_path)
@@ -405,27 +362,6 @@ class PubgetExtractor(BaseExtractor):
             error_message=error_message,
         )
 
-    def _downloaded_file(
-        self,
-        path: Path,
-        file_type: FileType,
-        *,
-        content_type: str | None = None,
-    ) -> DownloadedFile:
-        payload = path.read_bytes()
-        md5_hash = hashlib.md5(payload).hexdigest()
-        resolved_type = content_type or _CONTENT_TYPE_MAP.get(
-            file_type,
-            _CONTENT_TYPE_MAP[FileType.BINARY],
-        )
-        return DownloadedFile(
-            file_path=path,
-            file_type=file_type,
-            content_type=resolved_type,
-            source=DownloadSource.PUBGET,
-            md5_hash=md5_hash,
-        )
-
     def _build_failure(self, identifier: Identifier, message: str) -> DownloadResult:
         return DownloadResult(
             identifier=identifier,
@@ -434,23 +370,6 @@ class PubgetExtractor(BaseExtractor):
             files=[],
             error_message=message,
         )
-
-    def _ordered_results(
-        self,
-        identifiers: Identifiers,
-        results_by_index: Dict[int, DownloadResult],
-        default_message: str,
-        *,
-        progress_hook: Callable[[int], None] | None = None,
-    ) -> List[DownloadResult]:
-        ordered: List[DownloadResult] = []
-        for index, identifier in enumerate(identifiers.identifiers):
-            result = results_by_index.get(index)
-            if result is None:
-                result = self._build_failure(identifier, default_message)
-            ordered.append(result)
-            emit_progress(progress_hook)
-        return ordered
 
 
 def _run_pubget_extraction_task(
@@ -463,25 +382,9 @@ def _run_pubget_extraction_task(
     except Exception as exc:  # pragma: no cover - worker safeguard
         logger.exception(
             "Pubget extraction failed for %s",
-            download_result.identifier.hash_id,
+            download_result.identifier.slug,
         )
-        return _build_failure_extraction(download_result, str(exc))
-
-
-def _build_failure_extraction(
-    download_result: DownloadResult,
-    message: str,
-    full_text_path: Path | None = None,
-) -> ExtractedContent:
-    return ExtractedContent(
-        hash_id=download_result.identifier.hash_id,
-        source=DownloadSource.PUBGET,
-        identifier=download_result.identifier,
-        full_text_path=full_text_path,
-        tables=[],
-        has_coordinates=False,
-        error_message=message,
-    )
+        return build_failure_extraction(download_result, DownloadSource.PUBGET, str(exc))
 
 
 def _extract_pubget_article(
@@ -497,8 +400,8 @@ def _extract_pubget_article(
         raise ValueError("Pubget extraction requires tables.xml content.")
 
     article_input_dir = article_file.file_path.parent
-    hash_id = download_result.identifier.hash_id
-    output_dir = extraction_root / _safe_hash_stem(hash_id)
+    slug = download_result.identifier.slug
+    output_dir = extraction_root / safe_hash_stem(slug)
     tables_output_dir = output_dir / "tables"
     tables_output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -518,7 +421,7 @@ def _extract_pubget_article(
     except Exception as exc:
         logger.warning(
             "Failed to transform article text for %s: %s",
-            hash_id,
+            slug,
             exc,
         )
         full_text = " ".join(article_tree.xpath(".//text()"))
@@ -528,7 +431,7 @@ def _extract_pubget_article(
     full_text_path.write_text(full_text, encoding="utf-8")
 
     article_text = " ".join(article_tree.xpath(".//text()"))
-    article_space = _coordinate_space_from_guess(_neurosynth_guess_space(article_text))
+    article_space = coordinate_space_from_guess(_neurosynth_guess_space(article_text))
 
     tables_tree = etree.parse(str(tables_file.file_path))
     element_by_id, element_by_label = _build_table_lookup(tables_tree)
@@ -536,9 +439,9 @@ def _extract_pubget_article(
     info_files = get_table_info_files_from_article_dir(article_input_dir)
     if not info_files:
         message = "Pubget tables metadata not found; returning empty extraction."
-        logger.info("%s: %s", hash_id, message)
+        logger.info("%s: %s", slug, message)
         return ExtractedContent(
-            hash_id=hash_id,
+            slug=slug,
             source=DownloadSource.PUBGET,
             identifier=download_result.identifier,
             full_text_path=full_text_path,
@@ -559,7 +462,7 @@ def _extract_pubget_article(
             failure_reasons.append(reason)
             logger.warning(
                 "Failed to load table metadata for %s: %s",
-                hash_id,
+                slug,
                 reason,
             )
             continue
@@ -572,7 +475,7 @@ def _extract_pubget_article(
         if element is None:
             reason = f"Missing table XML for {table_info.get('table_id') or info_path.name}"
             failure_reasons.append(reason)
-            logger.warning("%s: %s", hash_id, reason)
+            logger.warning("%s: %s", slug, reason)
             continue
 
         original_wrapper = element.find("original-table")
@@ -581,18 +484,18 @@ def _extract_pubget_article(
                 f"original-table node not found for {table_info.get('table_id') or info_path.name}"
             )
             failure_reasons.append(reason)
-            logger.warning("%s: %s", hash_id, reason)
+            logger.warning("%s: %s", slug, reason)
             continue
 
         data_name = table_info.get("table_data_file")
         if not data_name:
             reason = f"table_data_file missing for {info_path.name}"
             failure_reasons.append(reason)
-            logger.warning("%s: %s", hash_id, reason)
+            logger.warning("%s: %s", slug, reason)
             continue
         data_path = info_path.with_name(str(data_name))
 
-        sanitized_id = _sanitize_table_id(
+        sanitized_id = sanitize_table_id(
             table_info.get("table_id"),
             table_info.get("table_label"),
             index,
@@ -611,7 +514,7 @@ def _extract_pubget_article(
         except Exception as exc:
             reason = f"Coordinate parsing failed for {sanitized_id}: {exc}"
             failure_reasons.append(reason)
-            logger.warning("%s: %s", hash_id, reason)
+            logger.warning("%s: %s", slug, reason)
             coordinates_frame = None
 
         coordinates: List[Coordinate] = []
@@ -620,7 +523,7 @@ def _extract_pubget_article(
             coordinates_frame.to_csv(coordinate_csv_path, index=False)
             if not coordinates_frame.empty:
                 for _, row in coordinates_frame.iterrows():
-                    coord = _coordinate_from_row(row, article_space)
+                    coord = coordinate_from_row(row, article_space)
                     if coord is not None:
                         coordinates.append(coord)
         else:
@@ -632,7 +535,7 @@ def _extract_pubget_article(
             "coordinates_path": str(coordinate_csv_path),
         }
 
-        table_number = _parse_table_number(table_info.get("table_label"))
+        table_number = parse_table_number(table_info.get("table_label"))
         caption = table_info.get("table_caption") or ""
         footer = table_info.get("table_foot") or ""
         metadata = {
@@ -660,9 +563,10 @@ def _extract_pubget_article(
         message = "Pubget failed to extract any tables."
         if failure_reasons:
             message = f"{message} Reasons: {' | '.join(failure_reasons)}"
-        logger.error("%s: %s", hash_id, message)
-        return _build_failure_extraction(
+        logger.error("%s: %s", slug, message)
+        return build_failure_extraction(
             download_result,
+            DownloadSource.PUBGET,
             message,
             full_text_path,
         )
@@ -680,7 +584,7 @@ def _extract_pubget_article(
     has_coordinates = any(table.coordinates for table in extracted_tables)
 
     return ExtractedContent(
-        hash_id=hash_id,
+        slug=slug,
         source=DownloadSource.PUBGET,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
@@ -735,68 +639,3 @@ def _select_tables_file(
         if downloaded.file_type is FileType.XML and downloaded.file_path.name == "tables.xml":
             return downloaded
     return None
-
-
-def _safe_hash_stem(hash_id: str | None) -> str:
-    candidate = hash_id or ""
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-_")
-    if sanitized:
-        return sanitized.lower()
-    digest = hashlib.sha256(candidate.encode("utf-8")).hexdigest()
-    return digest[:16]
-
-
-def _sanitize_table_id(
-    table_id: Optional[str],
-    table_label: Optional[str],
-    index: int,
-) -> str:
-    fallback = f"table-{index + 1:03d}"
-    candidate = table_id or table_label or fallback
-    sanitized = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate).strip("-")
-    return sanitized.lower() or fallback
-
-
-def _coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
-    if not guess:
-        return CoordinateSpace.OTHER
-    normalized = guess.strip().upper()
-    if normalized == "MNI":
-        return CoordinateSpace.MNI
-    if normalized in {"TAL", "TALAIRACH"}:
-        return CoordinateSpace.TALAIRACH
-    return CoordinateSpace.OTHER
-
-
-def _coordinate_from_row(
-    row: Any,
-    space: CoordinateSpace,
-) -> Optional[Coordinate]:
-    try:
-        x_val = float(row["x"])
-        y_val = float(row["y"])
-        z_val = float(row["z"])
-    except (KeyError, TypeError, ValueError):
-        return None
-
-    if any(math.isnan(value) for value in (x_val, y_val, z_val)):
-        return None
-
-    return Coordinate(
-        x=x_val,
-        y=y_val,
-        z=z_val,
-        space=space,
-    )
-
-
-def _parse_table_number(label: Optional[str]) -> Optional[int]:
-    if not label:
-        return None
-    match = re.search(r"(\d+)", label)
-    if not match:
-        return None
-    try:
-        return int(match.group(1))
-    except ValueError:
-        return None

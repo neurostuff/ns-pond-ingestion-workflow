@@ -29,8 +29,8 @@ class _FakeElsevierExtractor(BaseExtractor):
     ) -> list[DownloadResult]:
         results: list[DownloadResult] = []
         for identifier in identifiers.identifiers:
-            if identifier.hash_id in self._success_targets:
-                payload_path = self._success_dir / f"{identifier.hash_id}_content.txt"
+            if identifier.slug in self._success_targets:
+                payload_path = self._success_dir / f"{identifier.slug}_content.txt"
                 payload_path.parent.mkdir(parents=True, exist_ok=True)
                 payload_path.write_text("payload", encoding="utf-8")
                 results.append(
@@ -103,7 +103,7 @@ def test_run_downloads_mixes_cached_and_new(monkeypatch, tmp_path):
         results=[cached_result],
     )
 
-    success_target = identifiers.identifiers[1].hash_id
+    success_target = identifiers.identifiers[1].slug
 
     def fake_factory(_settings: Settings) -> BaseExtractor:
         return _FakeElsevierExtractor(

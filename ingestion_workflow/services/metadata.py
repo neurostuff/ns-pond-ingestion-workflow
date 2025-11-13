@@ -70,14 +70,14 @@ class MetadataService:
         Returns
         -------
         dict
-            Mapping from hash_id to ArticleMetadata
+            Mapping from slug to ArticleMetadata
         """
         if not extracted_contents:
             return {}
 
         identified_items = [item for item in extracted_contents if item.identifier]
 
-        id_to_content = {item.identifier.hash_id: item for item in identified_items}
+        id_to_content = {item.identifier.slug: item for item in identified_items}
 
         results: Dict[str, ArticleMetadata] = {}
 
@@ -90,11 +90,11 @@ class MetadataService:
             s2_results = self._get_semantic_scholar_metadata_cached(
                 [item.identifier for item in identified_items]
             )
-            for identifier_hash, metadata in s2_results.items():
-                content = id_to_content.get(identifier_hash)
+            for identifier_slug, metadata in s2_results.items():
+                content = id_to_content.get(identifier_slug)
                 if content is None:
                     continue
-                results[content.hash_id] = metadata
+                results[content.slug] = metadata
             logger.info(
                 "Semantic Scholar returned metadata for %d articles",
                 len(s2_results),
@@ -102,7 +102,7 @@ class MetadataService:
 
         # Try PubMed for remaining items
         if self._pubmed_client and identified_items:
-            missing = [item.identifier for item in identified_items if item.hash_id not in results]
+            missing = [item.identifier for item in identified_items if item.slug not in results]
             if missing:
                 logger.info(
                     "Fetching metadata from PubMed for %d articles",
@@ -110,22 +110,22 @@ class MetadataService:
                 )
                 pubmed_results = self._get_pubmed_metadata_cached(missing)
                 # Merge with existing results
-                for identifier_hash, pubmed_meta in pubmed_results.items():
-                    content = id_to_content.get(identifier_hash)
+                for identifier_slug, pubmed_meta in pubmed_results.items():
+                    content = id_to_content.get(identifier_slug)
                     if content is None:
                         continue
-                    article_hash = content.hash_id
-                    if article_hash in results:
-                        results[article_hash] = results[article_hash].merge_from(pubmed_meta)
+                    article_slug = content.slug
+                    if article_slug in results:
+                        results[article_slug] = results[article_slug].merge_from(pubmed_meta)
                     else:
-                        results[article_hash] = pubmed_meta
+                        results[article_slug] = pubmed_meta
                 logger.info(
                     "PubMed returned metadata for %d articles",
                     len(pubmed_results),
                 )
 
         # Fallback to extractor metadata for remaining items
-        still_missing = [item for item in extracted_contents if item.hash_id not in results]
+        still_missing = [item for item in extracted_contents if item.slug not in results]
         if still_missing:
             logger.info(
                 "Falling back to extractor metadata for %d articles",
@@ -135,14 +135,14 @@ class MetadataService:
                 try:
                     fallback_meta = self._get_fallback_metadata(item)
                     if fallback_meta:
-                        if item.hash_id in results:
-                            results[item.hash_id] = results[item.hash_id].merge_from(fallback_meta)
+                        if item.slug in results:
+                            results[item.slug] = results[item.slug].merge_from(fallback_meta)
                         else:
-                            results[item.hash_id] = fallback_meta
+                            results[item.slug] = fallback_meta
                 except Exception as exc:
                     logger.warning(
                         "Failed to extract fallback metadata for %s: %s",
-                        item.hash_id,
+                        item.slug,
                         exc,
                     )
 
@@ -161,15 +161,15 @@ class MetadataService:
 
         # Check cache first
         for identifier in identifiers:
-            cache_file = cache_dir / f"{identifier.hash_id}.json"
+            cache_file = cache_dir / f"{identifier.slug}.json"
             if cache_file.exists():
                 try:
                     data = json.loads(cache_file.read_text(encoding="utf-8"))
-                    results[identifier.hash_id] = ArticleMetadata.from_dict(data)
+                    results[identifier.slug] = ArticleMetadata.from_dict(data)
                 except Exception as exc:
                     logger.warning(
                         "Failed to load cached S2 metadata for %s: %s",
-                        identifier.hash_id,
+                        identifier.slug,
                         exc,
                     )
                     uncached.append(identifier)
@@ -181,8 +181,8 @@ class MetadataService:
             try:
                 fresh_results = self._s2_client.get_metadata(uncached)
                 # Cache and add to results
-                for hash_id, metadata in fresh_results.items():
-                    cache_file = cache_dir / f"{hash_id}.json"
+                for slug, metadata in fresh_results.items():
+                    cache_file = cache_dir / f"{slug}.json"
                     try:
                         cache_file.write_text(
                             json.dumps(metadata.to_dict(), indent=2),
@@ -191,10 +191,10 @@ class MetadataService:
                     except Exception as exc:
                         logger.warning(
                             "Failed to cache S2 metadata for %s: %s",
-                            hash_id,
+                            slug,
                             exc,
                         )
-                    results[hash_id] = metadata
+                    results[slug] = metadata
             except Exception as exc:
                 logger.error("Semantic Scholar metadata request failed: %s", exc)
 
@@ -212,15 +212,15 @@ class MetadataService:
 
         # Check cache first
         for identifier in identifiers:
-            cache_file = cache_dir / f"{identifier.hash_id}.json"
+            cache_file = cache_dir / f"{identifier.slug}.json"
             if cache_file.exists():
                 try:
                     data = json.loads(cache_file.read_text(encoding="utf-8"))
-                    results[identifier.hash_id] = ArticleMetadata.from_dict(data)
+                    results[identifier.slug] = ArticleMetadata.from_dict(data)
                 except Exception as exc:
                     logger.warning(
                         "Failed to load cached PubMed metadata for %s: %s",
-                        identifier.hash_id,
+                        identifier.slug,
                         exc,
                     )
                     uncached.append(identifier)
@@ -232,8 +232,8 @@ class MetadataService:
             try:
                 fresh_results = self._pubmed_client.get_metadata(uncached)
                 # Cache and add to results
-                for hash_id, metadata in fresh_results.items():
-                    cache_file = cache_dir / f"{hash_id}.json"
+                for slug, metadata in fresh_results.items():
+                    cache_file = cache_dir / f"{slug}.json"
                     try:
                         cache_file.write_text(
                             json.dumps(metadata.to_dict(), indent=2),
@@ -242,10 +242,10 @@ class MetadataService:
                     except Exception as exc:
                         logger.warning(
                             "Failed to cache PubMed metadata for %s: %s",
-                            hash_id,
+                            slug,
                             exc,
                         )
-                    results[hash_id] = metadata
+                    results[slug] = metadata
             except Exception as exc:
                 logger.error("PubMed metadata request failed: %s", exc)
 
@@ -277,9 +277,9 @@ class MetadataService:
             candidate_files.append(article_dir.parent / "metadata.json")
 
         if extracted_content.identifier:
-            identifier_hash = extracted_content.identifier.hash_id.strip()
-            if identifier_hash:
-                digest = hashlib.sha256(identifier_hash.encode("utf-8")).hexdigest()[:32]
+            identifier_slug = extracted_content.identifier.slug.strip()
+            if identifier_slug:
+                digest = hashlib.sha256(identifier_slug.encode("utf-8")).hexdigest()[:32]
                 base_dir = (
                     self.settings.elsevier_cache_root
                     if self.settings.elsevier_cache_root is not None
@@ -354,7 +354,7 @@ class MetadataService:
         except Exception as exc:
             logger.warning(
                 "Failed to parse Elsevier metadata for %s: %s",
-                extracted_content.hash_id,
+                extracted_content.slug,
                 exc,
             )
             return None
@@ -455,7 +455,7 @@ class MetadataService:
         except Exception as exc:
             logger.warning(
                 "Failed to parse Pubget article XML for %s: %s",
-                extracted_content.hash_id,
+                extracted_content.slug,
                 exc,
             )
             return None

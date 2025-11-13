@@ -75,7 +75,7 @@ def test_elsevier_download_mixed_success(monkeypatch, tmp_path):
     metadata = json.loads(metadata_file.file_path.read_text(encoding="utf-8"))
     assert metadata["lookup_type"] == "pmid"
     assert metadata["lookup_value"] == "123456"
-    assert metadata["identifier_hash"] == second.identifier.hash_id
+    assert metadata["identifier_slug"] == second.identifier.slug
 
     assert third.identifier is identifiers.identifiers[2]
     assert third.success
@@ -83,4 +83,4 @@ def test_elsevier_download_mixed_success(monkeypatch, tmp_path):
     metadata = json.loads(metadata_file.file_path.read_text(encoding="utf-8"))
     assert metadata["lookup_type"] == "doi"
     assert metadata["lookup_value"] == "10.1234/success"
-    assert metadata["identifier_hash"] == third.identifier.hash_id
+    assert metadata["identifier_slug"] == third.identifier.slug

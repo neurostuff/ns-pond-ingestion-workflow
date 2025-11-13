@@ -321,10 +321,10 @@ def _hydrate_downloads_from_cache(
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
-            entry = index.get_download(identifier.hash_id)
+            entry = index.get_download(identifier.slug)
             if entry is None:
                 continue
-            hydrated[identifier.hash_id] = entry.result
+            hydrated[identifier.slug] = entry.result
     return list(hydrated.values())
 
 
@@ -343,12 +343,12 @@ def _hydrate_bundles_from_cache(
     for source_name, download_list in downloads_by_source.items():
         index = cache.load_extractor_index(settings, source_name)
         for download in download_list:
-            entry = index.get_extraction(download.identifier.hash_id)
+            entry = index.get_extraction(download.identifier.slug)
             if entry is None:
                 continue
             content = entry.content
             metadata = _build_placeholder_metadata(download.identifier)
-            bundles[download.identifier.hash_id] = ArticleExtractionBundle(
+            bundles[download.identifier.slug] = ArticleExtractionBundle(
                 article_data=content,
                 article_metadata=metadata,
             )
@@ -360,10 +360,10 @@ def _build_placeholder_metadata(identifier: Identifier) -> ArticleMetadata:
     for candidate in (identifier.doi, identifier.pmid, identifier.pmcid):
         if candidate:
             return ArticleMetadata(title=str(candidate))
-    label = " / ".join(part for part in identifier.hash_id.split("|") if part)
+    label = " / ".join(part for part in identifier.slug.split("|") if part)
     if label:
         return ArticleMetadata(title=label)
-    return ArticleMetadata(title=identifier.hash_id or "Unknown Identifier")
+    return ArticleMetadata(title=identifier.slug or "Unknown Identifier")
 
 
 def _configure_logging_for_run(settings: Settings) -> None:

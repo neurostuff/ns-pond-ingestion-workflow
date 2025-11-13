@@ -49,7 +49,7 @@ def _bundle(tmp_path: Path, *, has_coordinates: bool = True) -> ArticleExtractio
         coordinates=coordinates,
     )
     content = ExtractedContent(
-        hash_id="article-1",
+        slug="article-1",
         source=DownloadSource.ELSEVIER,
         identifier=Identifier(pmid="12345"),
         tables=[table],
@@ -114,12 +114,12 @@ def test_run_create_analyses_uses_cached_entries(monkeypatch, tmp_path):
     bundle = _bundle(tmp_path)
 
     cached_collection = AnalysisCollection(
-        hash_id="article-1::table-1",
+        slug="article-1::table-1",
         analyses=[Analysis(name="cached")],
     )
     cached_entry = CreateAnalysesResult(
-        hash_id="article-1::table-1",
-        article_hash="article-1",
+        slug="article-1::table-1",
+        article_slug="article-1",
         table_id="Table 1",
         sanitized_table_id="table-1",
         analysis_collection=cached_collection,

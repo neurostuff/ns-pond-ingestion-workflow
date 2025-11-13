@@ -31,7 +31,7 @@ def _bundle(tmp_path: Path, with_identifier: bool = True) -> ArticleExtractionBu
     )
     identifier = Identifier(pmid="12345") if with_identifier else None
     content = ExtractedContent(
-        hash_id="hash-1",
+        slug="hash-1",
         source=DownloadSource.ELSEVIER,
         identifier=identifier,
         tables=[table],
@@ -59,7 +59,7 @@ def test_export_writes_structure(tmp_path):
     exporter = ExportService(settings)
     exporter.export(bundle)
 
-    root = tmp_path / "export" / bundle.article_data.identifier.hash_id
+    root = tmp_path / "export" / bundle.article_data.identifier.slug
     assert (root / "identifiers.json").exists()
 
     source_dir = root / "source" / bundle.article_data.source.value
@@ -78,7 +78,7 @@ def test_export_writes_analyses_jsonl(tmp_path):
     exporter = ExportService(settings, overwrite=True)
 
     collection = AnalysisCollection(
-        hash_id="hash-1::table-a",
+        slug="hash-1::table-a",
         analyses=[
             Analysis(
                 name="analysis",
@@ -96,8 +96,8 @@ def test_export_writes_analyses_jsonl(tmp_path):
         identifier=bundle.article_data.identifier,
     )
     result = CreateAnalysesResult(
-        hash_id="hash-1::table-a",
-        article_hash=bundle.article_data.hash_id,
+        slug="hash-1::table-a",
+        article_slug=bundle.article_data.slug,
         table_id="Table A",
         sanitized_table_id="table-a",
         analysis_collection=collection,
@@ -107,7 +107,7 @@ def test_export_writes_analyses_jsonl(tmp_path):
     analyses_dir = (
         settings.data_root
         / "export"
-        / bundle.article_data.identifier.hash_id
+        / bundle.article_data.identifier.slug
         / "processed"
         / bundle.article_data.source.value
         / "analyses"

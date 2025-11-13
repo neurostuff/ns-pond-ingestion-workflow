@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Sequence
 
-from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models import Identifiers
 from ingestion_workflow.services import logging
 from ingestion_workflow.services.id_lookup import (
@@ -17,7 +16,8 @@ from ingestion_workflow.services.id_lookup import (
     SemanticScholarIDLookupService,
 )
 from ingestion_workflow.services.search import PubMedSearchService
-
+from ingestion_workflow.utils import slugify
+from ingestion_workflow.workflow.common import resolve_settings
 
 DEFAULT_SEARCH_START_YEAR = 1990
 OUTPUT_SUBDIR = "manifests"
@@ -54,7 +54,7 @@ def gather_identifiers(
     and persist the combined manifest for downstream workflow stages.
     """
 
-    resolved_settings = _resolve_settings(settings)
+    resolved_settings = resolve_settings(settings)
     combined = Identifiers()
     combined.set_index("pmid", "doi", "pmcid")
 
@@ -117,17 +117,6 @@ def gather_identifiers(
     )
 
     return combined
-
-
-def _resolve_settings(settings: Settings | None) -> Settings:
-    """
-    Load default settings if necessary and ensure required
-    directories exist before gathering identifiers.
-    """
-    if settings is None:
-        settings = load_settings()
-    settings.ensure_directories()
-    return settings
 
 
 def _load_manifest(
@@ -194,23 +183,13 @@ def _output_path(settings: Settings, label: str | None) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if label:
-        slug = _slugify(label)
+        slug = slugify(label) or "manifest"
         filename = f"{slug}.jsonl"
     else:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         filename = f"{timestamp}.jsonl"
 
     return output_dir / filename
-
-
-def _slugify(value: str) -> str:
-    """
-    Create a filesystem-safe slug from user-provided
-    labels when naming manifest files.
-    """
-    mapped = re.sub(r"[^a-z0-9]+", "-", value.lower())
-    slug = mapped.strip("-")
-    return slug or "manifest"
 
 
 __all__ = ["SearchQuery", "gather_identifiers"]

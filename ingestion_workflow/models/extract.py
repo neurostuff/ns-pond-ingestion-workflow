@@ -90,7 +90,7 @@ class ExtractedTable:
 class ExtractedContent:
     """All content extracted from a downloaded article."""
 
-    hash_id: str
+    slug: str
     source: DownloadSource
     identifier: Optional[Identifier] = None
     full_text_path: Optional[Path] = None
@@ -101,7 +101,7 @@ class ExtractedContent:
 
     def to_dict(self) -> Dict[str, object]:
         return {
-            "hash_id": self.hash_id,
+            "slug": self.slug,
             "source": self.source.value,
             "identifier": (self.identifier.to_dict() if self.identifier else None),
             "full_text_path": (str(self.full_text_path) if self.full_text_path else None),
@@ -118,7 +118,7 @@ class ExtractedContent:
         identifier_data = payload.get("identifier")
         identifier = Identifier.from_dict(identifier_data) if identifier_data else None
         return cls(
-            hash_id=str(payload["hash_id"]),
+            slug=str(payload["slug"]),
             source=DownloadSource(str(payload["source"])),
             identifier=identifier,
             full_text_path=(

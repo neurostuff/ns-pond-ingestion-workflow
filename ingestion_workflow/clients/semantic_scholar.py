@@ -174,7 +174,7 @@ class SemanticScholarClient:
         Returns
         -------
         dict
-            Mapping from hash_id to ArticleMetadata
+            Mapping from slug to ArticleMetadata
         """
         if not identifiers:
             return {}
@@ -274,4 +274,4 @@ class SemanticScholarClient:
                 raw_metadata={"semantic_scholar": record},
             )
 
-            results[identifier.hash_id] = metadata
+            results[identifier.slug] = metadata

@@ -247,7 +247,7 @@ def get_identifier_cache_entry(
         extractor_name,
         namespace=namespace,
     )
-    return index.get(identifier.hash_id)
+    return index.get(identifier.slug)
 
 
 def cache_identifier_entries(
@@ -293,7 +293,7 @@ def partition_cached_downloads(
     missing: List[Identifier] = []
 
     for identifier in identifiers.identifiers:
-        entry = index.get_download(identifier.hash_id)
+        entry = index.get_download(identifier.slug)
         if entry is None:
             missing.append(identifier)
             continue
@@ -328,22 +328,22 @@ def cache_download_results(
 def invalidate_download_cache(
     settings: Settings,
     extractor_name: str,
-    hash_ids: Iterable[str],
+    slugs: Iterable[str],
     *,
     namespace: str = DOWNLOAD_CACHE_NAMESPACE,
 ) -> None:
     """Remove specific identifiers from the download cache index."""
 
-    hash_ids = list(hash_ids)
-    if not hash_ids:
+    slugs = list(slugs)
+    if not slugs:
         return
 
     with _acquire_lock(settings, namespace, extractor_name):
         index_path = _index_path(settings, namespace, extractor_name)
         index = DownloadIndex.load(index_path)
         removed = False
-        for hash_id in hash_ids:
-            removed |= index.remove_download(hash_id)
+        for slug in slugs:
+            removed |= index.remove_download(slug)
         if removed:
             index.index_path = index_path
             index.save()
@@ -383,7 +383,7 @@ def partition_cached_extractions(
     missing: List[DownloadResult] = []
 
     for download_result in download_results:
-        entry = index.get_extraction(download_result.identifier.hash_id)
+        entry = index.get_extraction(download_result.identifier.slug)
         if entry is None:
             cached_results.append(None)
             missing.append(download_result)

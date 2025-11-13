@@ -295,7 +295,7 @@ class PubMedClient:
         Returns
         -------
         dict
-            Mapping from hash_id to ArticleMetadata
+            Mapping from slug to ArticleMetadata
         """
         if not identifiers:
             return {}
@@ -391,4 +391,4 @@ class PubMedClient:
                 raw_metadata={"pubmed": record},
             )
 
-            results[identifier.hash_id] = metadata
+            results[identifier.slug] = metadata
