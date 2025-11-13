@@ -130,9 +130,7 @@ def test_run_downloads_mixes_cached_and_new(monkeypatch, tmp_path):
     cached_after, missing_after = cache.partition_cached_downloads(
         settings,
         extractor_name=DownloadSource.ELSEVIER.value,
-        identifiers=Identifiers(
-            [identifiers.identifiers[1], identifiers.identifiers[2]]
-        ),
+        identifiers=Identifiers([identifiers.identifiers[1], identifiers.identifiers[2]]),
     )
 
     assert len(cached_after) == 1

@@ -67,9 +67,7 @@ class CacheEnvelope(Generic[PayloadT]):
             return encoder()
         if hasattr(self.payload, "__dict__"):
             return dict(self.payload.__dict__)
-        raise TypeError(
-            "Cache payload" f" {type(self.payload)!r}" " does not support serialization"
-        )
+        raise TypeError(f"Cache payload {type(self.payload)!r} does not support serialization")
 
     @classmethod
     def from_dict(
@@ -79,15 +77,11 @@ class CacheEnvelope(Generic[PayloadT]):
         payload_blob = payload.get("payload", {})
         decoded_payload = cls._decode_payload(payload_blob)
         cached_raw = payload.get("cached_at")
-        cached_at = (
-            _decode_datetime(str(cached_raw)) if cached_raw else datetime.utcnow()
-        )
+        cached_at = _decode_datetime(str(cached_raw)) if cached_raw else datetime.utcnow()
         metadata = dict(payload.get("metadata", {}))
         raw_hash_id = payload.get("hash_id")
         hash_id = (
-            str(raw_hash_id)
-            if raw_hash_id is not None
-            else cls._derive_hash_id(decoded_payload)
+            str(raw_hash_id) if raw_hash_id is not None else cls._derive_hash_id(decoded_payload)
         )
         return cls(
             hash_id=hash_id,
@@ -143,9 +137,7 @@ class CacheIndex(Generic[EnvelopeT]):
     def to_dict(self) -> Dict[str, Any]:
         return {
             "version": self.version,
-            self.entries_key: {
-                key: entry.to_dict() for key, entry in self.entries.items()
-            },
+            self.entries_key: {key: entry.to_dict() for key, entry in self.entries.items()},
         }
 
     def save(self) -> None:

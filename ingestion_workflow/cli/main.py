@@ -181,9 +181,7 @@ def _load_bundles(payload: Any) -> Iterable[ArticleExtractionBundle]:
         elif all(isinstance(value, dict) for value in payload.values()):
             payload = payload.values()
     if not isinstance(payload, (list, tuple)):
-        raise typer.BadParameter(
-            "Expected a list or mapping of ArticleExtractionBundle payloads."
-        )
+        raise typer.BadParameter("Expected a list or mapping of ArticleExtractionBundle payloads.")
     return [
         ArticleExtractionBundle.from_dict(item)  # type: ignore[arg-type]
         for item in payload

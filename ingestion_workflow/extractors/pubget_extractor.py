@@ -174,12 +174,11 @@ class PubgetExtractor(BaseExtractor):
         warning_messages: List[str] = []
         if download_code == ExitCode.INCOMPLETE:
             warning_messages.append(
-                "Pubget reported an incomplete download; some PMCIDs may " "be missing."
+                "Pubget reported an incomplete download; some PMCIDs may be missing."
             )
         if extract_code == ExitCode.INCOMPLETE:
             warning_messages.append(
-                "Pubget reported incomplete article extraction; outputs may "
-                "be partial."
+                "Pubget reported incomplete article extraction; outputs may be partial."
             )
         combined_warning = " ".join(warning_messages) if warning_messages else None
 
@@ -190,7 +189,7 @@ class PubgetExtractor(BaseExtractor):
                 identifier = identifiers.identifiers[idx]
                 if article_dir is None:
                     message = combined_warning or (
-                        "Pubget did not produce output for the requested " "PMCID."
+                        "Pubget did not produce output for the requested PMCID."
                     )
                     results_by_index[idx] = self._build_failure(
                         identifier,
@@ -230,9 +229,7 @@ class PubgetExtractor(BaseExtractor):
         extraction_root = self._extraction_root
         extraction_root.mkdir(parents=True, exist_ok=True)
 
-        ordered_results: list[Optional[ExtractionResult]] = [None] * len(
-            download_results
-        )
+        ordered_results: list[Optional[ExtractionResult]] = [None] * len(download_results)
 
         worker_count = max(1, self.settings.max_workers)
 
@@ -392,9 +389,7 @@ class PubgetExtractor(BaseExtractor):
         success = not missing
         error_message = None
         if missing:
-            error_message = (
-                f"Pubget output missing expected files: {', '.join(missing)}."
-            )
+            error_message = f"Pubget output missing expected files: {', '.join(missing)}."
         if combined_warning:
             error_message = (
                 f"{combined_warning} {error_message}".strip()
@@ -575,10 +570,7 @@ def _extract_pubget_article(
             element_by_label,
         )
         if element is None:
-            reason = (
-                f"Missing table XML for "
-                f"{table_info.get('table_id') or info_path.name}"
-            )
+            reason = f"Missing table XML for {table_info.get('table_id') or info_path.name}"
             failure_reasons.append(reason)
             logger.warning("%s: %s", hash_id, reason)
             continue
@@ -586,8 +578,7 @@ def _extract_pubget_article(
         original_wrapper = element.find("original-table")
         if original_wrapper is None:
             reason = (
-                f"original-table node not found for "
-                f"{table_info.get('table_id') or info_path.name}"
+                f"original-table node not found for {table_info.get('table_id') or info_path.name}"
             )
             failure_reasons.append(reason)
             logger.warning("%s: %s", hash_id, reason)
@@ -624,9 +615,7 @@ def _extract_pubget_article(
             coordinates_frame = None
 
         coordinates: List[Coordinate] = []
-        coordinate_csv_path = tables_output_dir.joinpath(
-            f"{sanitized_id}_coordinates.csv"
-        )
+        coordinate_csv_path = tables_output_dir.joinpath(f"{sanitized_id}_coordinates.csv")
         if coordinates_frame is not None:
             coordinates_frame.to_csv(coordinate_csv_path, index=False)
             if not coordinates_frame.empty:
@@ -734,10 +723,7 @@ def _select_article_file(
     download_result: DownloadResult,
 ) -> Optional[DownloadedFile]:
     for downloaded in download_result.files:
-        if (
-            downloaded.file_type is FileType.XML
-            and downloaded.file_path.name == "article.xml"
-        ):
+        if downloaded.file_type is FileType.XML and downloaded.file_path.name == "article.xml":
             return downloaded
     return None
 
@@ -746,10 +732,7 @@ def _select_tables_file(
     download_result: DownloadResult,
 ) -> Optional[DownloadedFile]:
     for downloaded in download_result.files:
-        if (
-            downloaded.file_type is FileType.XML
-            and downloaded.file_path.name == "tables.xml"
-        ):
+        if downloaded.file_type is FileType.XML and downloaded.file_path.name == "tables.xml":
             return downloaded
     return None
 

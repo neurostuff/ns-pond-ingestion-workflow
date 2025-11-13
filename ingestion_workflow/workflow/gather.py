@@ -107,7 +107,8 @@ def gather_identifiers(
     output_path = _output_path(resolved_settings, label)
     combined.save(output_path)
     logger.info(
-        "Gather summary: %d total identifiers (manifest=%d, search=%d, expansions=%s) -> saved to %s",
+        "Gather summary: %d total identifiers "
+        "(manifest=%d, search=%d, expansions=%s) -> saved to %s",
         len(combined.identifiers),
         initial_manifest_count,
         len(combined.identifiers) - initial_manifest_count,

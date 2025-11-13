@@ -54,9 +54,7 @@ def apply_patch() -> None:
 
     original = getattr(ace_sources.Source, "_download_table", None)
     if original is None:  # pragma: no cover - defensive guard
-        logger.warning(
-            "ACE Source._download_table is missing; skipping download patch."
-        )
+        logger.warning("ACE Source._download_table is missing; skipping download patch.")
         return
 
     ace_sources.Source._download_table = _patched_download_table

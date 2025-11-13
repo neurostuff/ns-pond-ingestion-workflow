@@ -168,10 +168,7 @@ class TestMetadataService:
         identifier = Identifier(pmcid="PMC1234567")
         pmcid_suffix = "1234567"
         cache_dir = (
-            metadata_service.settings.cache_root
-            / "pubget"
-            / "records"
-            / f"pmcid_{pmcid_suffix}"
+            metadata_service.settings.cache_root / "pubget" / "records" / f"pmcid_{pmcid_suffix}"
         )
         cache_dir.mkdir(parents=True, exist_ok=True)
 

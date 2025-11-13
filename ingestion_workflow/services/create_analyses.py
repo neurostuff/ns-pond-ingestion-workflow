@@ -157,9 +157,7 @@ class CreateAnalysesService:
                 statistic_type = primary_value.kind
                 try:
                     statistic_value = (
-                        float(primary_value.value)
-                        if primary_value.value is not None
-                        else None
+                        float(primary_value.value) if primary_value.value is not None else None
                     )
                 except (TypeError, ValueError):
                     statistic_value = None

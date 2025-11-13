@@ -49,9 +49,7 @@ def test_elsevier_download_records_articles(tmp_path, manifest_identifiers):
         if result.success:
             assert result.files, "Successful downloads should persist files"
 
-            metadata_file = next(
-                file for file in result.files if file.file_type is FileType.JSON
-            )
+            metadata_file = next(file for file in result.files if file.file_type is FileType.JSON)
             metadata = json.loads(metadata_file.file_path.read_text(encoding="utf-8"))
 
             expected_lookup_type = "doi" if identifier.doi else "pmid"

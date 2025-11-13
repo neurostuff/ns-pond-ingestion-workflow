@@ -42,9 +42,7 @@ def test_hydrate_skips_complete_identifier(monkeypatch, tmp_path):
         fake_get_identifier_cache_entry,
     )
 
-    identifiers = Identifiers(
-        [Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456")]
-    )
+    identifiers = Identifiers([Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456")])
 
     pending = service._hydrate_from_cache(identifiers)
 

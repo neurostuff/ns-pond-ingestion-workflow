@@ -55,9 +55,7 @@ class IDLookupService:
 
         any_success = False
         for id_type in self.lookup_order:
-            subset = [
-                identifier for identifier in pending if getattr(identifier, id_type)
-            ]
+            subset = [identifier for identifier in pending if getattr(identifier, id_type)]
             if not subset:
                 continue
 
@@ -111,9 +109,7 @@ class IDLookupService:
     def _is_complete(self, identifier: Identifier) -> bool:
         return bool(identifier.pmid and identifier.doi and identifier.pmcid)
 
-    def _merge_cached_entry(
-        self, identifier: Identifier, entry: IdentifierCacheEntry
-    ) -> None:
+    def _merge_cached_entry(self, identifier: Identifier, entry: IdentifierCacheEntry) -> None:
         for cached_identifier in entry.identifiers.identifiers:
             self._merge_identifier(identifier, cached_identifier)
 

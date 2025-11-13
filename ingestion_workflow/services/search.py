@@ -40,9 +40,7 @@ class PubMedSearchService(ArticleSearchService):
 
     def _create_client(self) -> PubMedClient:
         if not self.settings.pubmed_email:
-            raise ValueError(
-                "pubmed_email must be configured to perform PubMed searches"
-            )
+            raise ValueError("pubmed_email must be configured to perform PubMed searches")
 
         return PubMedClient(
             email=self.settings.pubmed_email,

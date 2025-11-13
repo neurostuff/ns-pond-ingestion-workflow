@@ -133,9 +133,7 @@ def test_run_create_analyses_uses_cached_entries(monkeypatch, tmp_path):
     monkeypatch.setattr(
         workflow_module.cache,
         "cache_create_analyses_results",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            AssertionError("Should not write cache")
-        ),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("Should not write cache")),
     )
 
     class _ServiceStub:

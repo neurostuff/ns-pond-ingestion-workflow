@@ -75,12 +75,8 @@ class Identifier(MutableMapping[str, Optional[str]]):
         self.doi = _normalize_doi(self.doi) if self.doi else None
         self.pmcid = _normalize_pmcid(self.pmcid) if self.pmcid else None
         if self.other_ids is not None:
-            normalized = {
-                k: _normalize_identifier(v) for k, v in self.other_ids.items()
-            }
-            self.other_ids = {
-                key: value for key, value in normalized.items() if value is not None
-            }
+            normalized = {k: _normalize_identifier(v) for k, v in self.other_ids.items()}
+            self.other_ids = {key: value for key, value in normalized.items() if value is not None}
             if not self.other_ids:
                 self.other_ids = None
 
@@ -194,8 +190,7 @@ class Identifiers:
         for key in keys:
             if key not in valid_keys:
                 raise ValueError(
-                    "Index keys must be drawn from 'pmid', 'pmcid', 'doi', "
-                    "or 'neurostore'."
+                    "Index keys must be drawn from 'pmid', 'pmcid', 'doi', or 'neurostore'."
                 )
             normalized_keys.add(key)
 
@@ -212,9 +207,7 @@ class Identifiers:
             "doi",
             "neurostore",
         }:
-            raise ValueError(
-                "Lookup key must be one of 'pmid', 'pmcid', 'doi', or " "'neurostore'."
-            )
+            raise ValueError("Lookup key must be one of 'pmid', 'pmcid', 'doi', or 'neurostore'.")
 
         target_key = key
         if target_key is None and len(self._index_keys) == 1:
@@ -347,9 +340,7 @@ class Identifiers:
             return result
         return self.identifiers[index]
 
-    def __setitem__(
-        self, index: int | slice, value: Identifier | list[Identifier]
-    ) -> None:
+    def __setitem__(self, index: int | slice, value: Identifier | list[Identifier]) -> None:
         """Set identifier(s) at index, keeping the index in sync."""
         replaced = self.identifiers[index]
 
@@ -449,8 +440,7 @@ class IdentifierExpansion:
         return {
             "seed_identifier": self.seed_identifier.__dict__.copy(),
             "identifiers": [
-                identifier.__dict__.copy()
-                for identifier in self.identifiers.identifiers
+                identifier.__dict__.copy() for identifier in self.identifiers.identifiers
             ],
             "sources": list(self.sources),
         }

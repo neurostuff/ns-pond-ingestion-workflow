@@ -111,8 +111,7 @@ class ElsevierExtractor(BaseExtractor):
                 results_by_index[index] = self._build_failure_result(
                     identifier=identifier,
                     error_message=(
-                        "Identifier is missing a DOI or PMID required for "
-                        "Elsevier download."
+                        "Identifier is missing a DOI or PMID required for Elsevier download."
                     ),
                 )
 
@@ -155,9 +154,7 @@ class ElsevierExtractor(BaseExtractor):
                 identifier_type = metadata.get("identifier_type")
                 identifier_value = metadata.get("identifier")
                 if identifier_type and identifier_value:
-                    lookup_key = self._lookup_key(
-                        {str(identifier_type): str(identifier_value)}
-                    )
+                    lookup_key = self._lookup_key({str(identifier_type): str(identifier_value)})
             articles_by_lookup.setdefault(lookup_key, deque()).append(article)
 
         for prepared_index, (
@@ -220,9 +217,7 @@ class ElsevierExtractor(BaseExtractor):
         extraction_root = self._resolve_extraction_root()
         extraction_root.mkdir(parents=True, exist_ok=True)
 
-        ordered_results: List[Optional[ExtractedContent]] = [None] * len(
-            download_results
-        )
+        ordered_results: List[Optional[ExtractedContent]] = [None] * len(download_results)
 
         worker_count = max(1, self.settings.max_workers)
 
@@ -285,9 +280,7 @@ class ElsevierExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> List[Any]:
         elsevier_settings = self._build_elsevier_settings()
-        progress_proxy = (
-            _build_progress_callback(progress_hook) if progress_hook else None
-        )
+        progress_proxy = _build_progress_callback(progress_hook) if progress_hook else None
 
         async def _runner() -> List[Any]:
             if self._client is None:
@@ -313,7 +306,7 @@ class ElsevierExtractor(BaseExtractor):
             return asyncio.run(_runner())
         if loop.is_running():  # pragma: no cover - defensive
             raise RuntimeError(
-                "ElsevierExtractor.download cannot run inside an active event " "loop."
+                "ElsevierExtractor.download cannot run inside an active event loop."
             )
         return loop.run_until_complete(_runner())
 
@@ -322,18 +315,14 @@ class ElsevierExtractor(BaseExtractor):
         if self.settings.elsevier_api_key:
             overrides["ELSEVIER_API_KEY"] = self.settings.elsevier_api_key
 
-        cache_root = self.settings.elsevier_cache_root or self.settings.get_cache_dir(
-            "elsevier"
-        )
+        cache_root = self.settings.elsevier_cache_root or self.settings.get_cache_dir("elsevier")
         overrides["ELSEVIER_CACHE_DIR"] = str(cache_root)
 
         if self.settings.elsevier_http_proxy:
             overrides["ELSEVIER_HTTP_PROXY"] = self.settings.elsevier_http_proxy
         if self.settings.elsevier_https_proxy:
             overrides["ELSEVIER_HTTPS_PROXY"] = self.settings.elsevier_https_proxy
-        overrides["ELSEVIER_USE_PROXY"] = (
-            "true" if self.settings.elsevier_use_proxy else "false"
-        )
+        overrides["ELSEVIER_USE_PROXY"] = "true" if self.settings.elsevier_use_proxy else "false"
         overrides["ELSEVIER_CONCURRENCY"] = str(max(1, self.settings.max_workers))
 
         with _temporary_env(overrides):
@@ -413,9 +402,7 @@ class ElsevierExtractor(BaseExtractor):
                 ),
             )
 
-        success = has_payload and any(
-            file.file_type is not FileType.JSON for file in files
-        )
+        success = has_payload and any(file.file_type is not FileType.JSON for file in files)
         error_message = None
         if not success:
             error_message = "Elsevier returned metadata without content payload."
@@ -693,8 +680,7 @@ def _extract_elsevier_article(
     content_file = _select_content_file(download_result)
     if content_file is None:
         raise ValueError(
-            "Elsevier extraction requires XML content; PDF-only articles "
-            "are not supported."
+            "Elsevier extraction requires XML content; PDF-only articles are not supported."
         )
 
     # Load metadata
@@ -820,9 +806,7 @@ def _extract_elsevier_article(
 
         # Save coordinates CSV
         coordinates: List[Coordinate] = []
-        coordinate_csv_path = tables_output_dir.joinpath(
-            f"{sanitized_id}_coordinates.csv"
-        )
+        coordinate_csv_path = tables_output_dir.joinpath(f"{sanitized_id}_coordinates.csv")
         if coordinates_frame is not None:
             coordinates_frame.to_csv(coordinate_csv_path, index=False)
             if not coordinates_frame.empty:
@@ -908,9 +892,8 @@ def _select_content_file(
 ) -> Optional[DownloadedFile]:
     """Find the XML content file from download results."""
     for downloaded in download_result.files:
-        if (
-            downloaded.file_type is FileType.XML
-            and downloaded.file_path.name.startswith("content.")
+        if downloaded.file_type is FileType.XML and downloaded.file_path.name.startswith(
+            "content."
         ):
             return downloaded
     return None
@@ -921,10 +904,7 @@ def _select_metadata_file(
 ) -> Optional[DownloadedFile]:
     """Find the metadata JSON file from download results."""
     for downloaded in download_result.files:
-        if (
-            downloaded.file_type is FileType.JSON
-            and downloaded.file_path.name == "metadata.json"
-        ):
+        if downloaded.file_type is FileType.JSON and downloaded.file_path.name == "metadata.json":
             return downloaded
     return None
 

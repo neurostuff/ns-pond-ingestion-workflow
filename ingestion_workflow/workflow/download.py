@@ -72,9 +72,7 @@ def _identifiers_from_hashes(
     success_hashes: set[str],
 ) -> List[Identifier]:
     """Filter pending identifiers to those whose hash IDs are not in the successes set."""
-    return [
-        identifier for identifier in pending if identifier.hash_id not in success_hashes
-    ]
+    return [identifier for identifier in pending if identifier.hash_id not in success_hashes]
 
 
 def _partition_supported_identifiers(

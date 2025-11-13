@@ -5,9 +5,7 @@ from ingestion_workflow.models.ids import Identifier, Identifiers
 
 
 @pytest.mark.vcr()
-def test_semantic_scholar_client_enriches_from_doi(
-    manifest_identifiers, semantic_scholar_api_key
-):
+def test_semantic_scholar_client_enriches_from_doi(manifest_identifiers, semantic_scholar_api_key):
     original = manifest_identifiers.identifiers[0]
     identifiers = Identifiers(
         [

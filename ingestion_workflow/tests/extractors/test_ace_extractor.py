@@ -53,10 +53,7 @@ def test_ace_downloads_html_articles(tmp_path, manifest_identifiers):
     successes = [result for result in results if result.success]
     if not successes:
         failure_messages = [result.error_message or "" for result in results]
-        pytest.fail(
-            "No ACE downloads succeeded; failure details: "
-            + " | ".join(failure_messages)
-        )
+        pytest.fail("No ACE downloads succeeded; failure details: " + " | ".join(failure_messages))
 
     ace_root = settings.ace_cache_root
 

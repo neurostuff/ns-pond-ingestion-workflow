@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # ===== Core directories =====
     data_root: Path = Field(
         default=Path("./data"),
-        description=("Root directory for workflow data " "(manifests, staging, etc.)"),
+        description=("Root directory for workflow data (manifests, staging, etc.)"),
     )
     cache_root: Path = Field(
         default=Path("./.cache"),
@@ -73,9 +73,7 @@ class Settings(BaseSettings):
     # ===== External API configuration =====
     semantic_scholar_api_key: Optional[str] = Field(
         default=None,
-        description=(
-            "Optional API key for Semantic Scholar " "(increases rate limits)"
-        ),
+        description=("Optional API key for Semantic Scholar (increases rate limits)"),
     )
 
     openalex_email: Optional[str] = Field(
@@ -106,15 +104,13 @@ class Settings(BaseSettings):
     elsevier_http_proxy: Optional[str] = Field(
         default=None,
         description=(
-            "HTTP proxy URL to use for Elsevier requests "
-            "(e.g., socks5://127.0.0.1:1080)"
+            "HTTP proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)"
         ),
     )
     elsevier_https_proxy: Optional[str] = Field(
         default=None,
         description=(
-            "HTTPS proxy URL to use for Elsevier requests "
-            "(e.g., socks5://127.0.0.1:1080)"
+            "HTTPS proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)"
         ),
     )
     elsevier_use_proxy: bool = Field(
@@ -212,9 +208,7 @@ class Settings(BaseSettings):
 
     dry_run: bool = Field(
         default=False,
-        description=(
-            "Perform dry run without making external API calls or file changes"
-        ),
+        description=("Perform dry run without making external API calls or file changes"),
     )
 
     stages: List[str] = Field(

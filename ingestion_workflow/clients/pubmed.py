@@ -26,9 +26,7 @@ class PubMedClient:
     BASE_URL = "https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/"
     _SUPPORTED_ID_TYPES = {"pmid", "pmcid", "doi"}
 
-    def __init__(
-        self, email: str, api_key: str = None, tool: str = "ingestion-workflow"
-    ) -> None:
+    def __init__(self, email: str, api_key: str = None, tool: str = "ingestion-workflow") -> None:
         self.email = email
         self.api_key = api_key
         self.tool = tool
@@ -73,14 +71,10 @@ class PubMedClient:
     def validate_ids(self, id_type: str, identifiers: Identifiers) -> None:
         """Ensure the identifiers support the requested lookup type."""
         if id_type not in self._SUPPORTED_ID_TYPES:
-            raise ValueError(
-                "PubMed ID lookups support only 'pmid', 'pmcid', or 'doi'."
-            )
+            raise ValueError("PubMed ID lookups support only 'pmid', 'pmcid', or 'doi'.")
 
         if any(getattr(identifier, id_type) is None for identifier in identifiers):
-            raise ValueError(
-                f"All identifiers must provide a {id_type.upper()} for lookup."
-            )
+            raise ValueError(f"All identifiers must provide a {id_type.upper()} for lookup.")
 
     def get_ids_by_type(
         self,

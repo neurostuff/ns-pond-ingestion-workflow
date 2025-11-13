@@ -101,9 +101,7 @@ class ArticleMetadata:
 
         # Merge abstract: prefer the longer one
         merged_abstract = self.abstract
-        if not merged_abstract or (
-            other.abstract and len(other.abstract) > len(merged_abstract)
-        ):
+        if not merged_abstract or (other.abstract and len(other.abstract) > len(merged_abstract)):
             merged_abstract = other.abstract
 
         # Merge keywords: combine unique keywords

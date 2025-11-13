@@ -67,28 +67,21 @@ class ExportService:
             destination = source_dir / full_text_path.name
             self._copy_file(full_text_path, destination)
 
-    def _write_metadata(
-        self, bundle: ArticleExtractionBundle, processed_dir: Path
-    ) -> None:
+    def _write_metadata(self, bundle: ArticleExtractionBundle, processed_dir: Path) -> None:
         metadata_path = processed_dir / "article_metadata.json"
         self._write_json(metadata_path, bundle.article_metadata.to_dict())
 
         content_path = processed_dir / "article_data.json"
         self._write_json(content_path, bundle.article_data.to_dict())
 
-    def _write_tables(
-        self, bundle: ArticleExtractionBundle, processed_dir: Path
-    ) -> None:
+    def _write_tables(self, bundle: ArticleExtractionBundle, processed_dir: Path) -> None:
         tables_dir = processed_dir / "tables"
         tables_dir.mkdir(parents=True, exist_ok=True)
         tables_payload = []
         for index, table in enumerate(bundle.article_data.tables):
             sanitized = sanitize_table_id(table.table_id, index)
             tables_payload.append(table.to_dict())
-            dest_file = (
-                tables_dir
-                / f"{sanitized}{Path(table.raw_content_path).suffix or '.html'}"
-            )
+            dest_file = tables_dir / f"{sanitized}{Path(table.raw_content_path).suffix or '.html'}"
             if table.raw_content_path.exists():
                 self._copy_file(table.raw_content_path, dest_file)
         tables_path = processed_dir / "tables.json"
@@ -101,9 +94,7 @@ class ExportService:
         analyses: Sequence[CreateAnalysesResult],
     ) -> None:
         filtered = [
-            result
-            for result in analyses
-            if result.article_hash == bundle.article_data.hash_id
+            result for result in analyses if result.article_hash == bundle.article_data.hash_id
         ]
         if not filtered:
             return
@@ -113,9 +104,7 @@ class ExportService:
         used_names: set[str] = set()
 
         for index, result in enumerate(filtered):
-            base_name = (
-                result.table_id or result.sanitized_table_id or f"table_{index:02d}"
-            )
+            base_name = result.table_id or result.sanitized_table_id or f"table_{index:02d}"
             file_stem = sanitize_table_id(base_name, index)
             if file_stem in used_names:
                 file_stem = f"{file_stem}_{index}"

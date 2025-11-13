@@ -43,11 +43,7 @@ class ExtractedTable:
             "metadata": self.metadata,
             "coordinates": [
                 {
-                    **{
-                        key: value
-                        for key, value in asdict(coord).items()
-                        if key != "space"
-                    },
+                    **{key: value for key, value in asdict(coord).items() if key != "space"},
                     "space": (
                         coord.space.value
                         if coord.space
@@ -108,9 +104,7 @@ class ExtractedContent:
             "hash_id": self.hash_id,
             "source": self.source.value,
             "identifier": (self.identifier.to_dict() if self.identifier else None),
-            "full_text_path": (
-                str(self.full_text_path) if self.full_text_path else None
-            ),
+            "full_text_path": (str(self.full_text_path) if self.full_text_path else None),
             "tables": [table.to_dict() for table in self.tables],
             "has_coordinates": self.has_coordinates,
             "extracted_at": self.extracted_at.isoformat(),
@@ -128,9 +122,7 @@ class ExtractedContent:
             source=DownloadSource(str(payload["source"])),
             identifier=identifier,
             full_text_path=(
-                Path(str(payload["full_text_path"]))
-                if payload.get("full_text_path")
-                else None
+                Path(str(payload["full_text_path"])) if payload.get("full_text_path") else None
             ),
             tables=tables,
             has_coordinates=bool(payload.get("has_coordinates", False)),

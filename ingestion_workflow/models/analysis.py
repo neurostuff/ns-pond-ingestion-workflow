@@ -168,12 +168,8 @@ class Analysis:
         return cls(
             name=str(payload["name"]),
             description=payload.get("description"),
-            coordinates=[
-                Coordinate.from_dict(item) for item in payload.get("coordinates", [])
-            ],
-            contrasts=[
-                Contrast.from_dict(item) for item in payload.get("contrasts", [])
-            ],
+            coordinates=[Coordinate.from_dict(item) for item in payload.get("coordinates", [])],
+            contrasts=[Contrast.from_dict(item) for item in payload.get("contrasts", [])],
             images=[Image.from_dict(item) for item in payload.get("images", [])],
             table_id=payload.get("table_id"),
             table_number=payload.get("table_number"),
@@ -200,17 +196,13 @@ class AnalysisCollection:
             "hash_id": self.hash_id,
             "coordinate_space": self.coordinate_space.value,
             "analyses": [analysis.to_dict() for analysis in self.analyses],
-            "identifier": (
-                self.identifier.__dict__.copy() if self.identifier else None
-            ),
+            "identifier": (self.identifier.__dict__.copy() if self.identifier else None),
         }
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "AnalysisCollection":
         identifier_payload = payload.get("identifier")
-        identifier = (
-            Identifier(**identifier_payload) if identifier_payload is not None else None
-        )
+        identifier = Identifier(**identifier_payload) if identifier_payload is not None else None
         return cls(
             hash_id=str(payload["hash_id"]),
             analyses=[Analysis.from_dict(item) for item in payload.get("analyses", [])],
@@ -254,9 +246,7 @@ class CreateAnalysesResult:
             article_hash=str(payload.get("article_hash", "")),
             table_id=str(payload.get("table_id", "")),
             sanitized_table_id=str(payload.get("sanitized_table_id", "")),
-            analysis_collection=AnalysisCollection.from_dict(
-                payload["analysis_collection"]
-            ),
+            analysis_collection=AnalysisCollection.from_dict(payload["analysis_collection"]),
             analysis_paths=paths,
             metadata=dict(payload.get("metadata", {})),
             error_message=payload.get("error_message"),

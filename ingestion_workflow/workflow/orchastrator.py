@@ -115,9 +115,7 @@ def _run_extract_stage(settings: Settings, state: PipelineState) -> None:
     _ensure_downloads(settings, state)
     from ingestion_workflow.workflow.extract import run_extraction
 
-    successful_downloads = [
-        download for download in state.downloads or [] if download.success
-    ]
+    successful_downloads = [download for download in state.downloads or [] if download.success]
 
     if not successful_downloads:
         logger.info("No successful downloads available for extraction.")
@@ -162,11 +160,7 @@ def _run_sync_stage(settings: Settings, state: PipelineState) -> None:
 
 
 def _normalize_stages(stages: Sequence[str] | None) -> List[str]:
-    requested = (
-        [stage.lower() for stage in stages if stage]
-        if stages
-        else list(CANONICAL_STAGES)
-    )
+    requested = [stage.lower() for stage in stages if stage] if stages else list(CANONICAL_STAGES)
     invalid = [stage for stage in requested if stage not in CANONICAL_STAGES]
     if invalid:
         raise ValueError(f"Unknown stages requested: {', '.join(sorted(set(invalid)))}")
@@ -196,8 +190,7 @@ def _ensure_identifiers(settings: Settings, state: PipelineState) -> None:
         state.identifiers = _load_identifiers_from_manifest(settings)
         return
     raise ValueError(
-        "Identifiers are required for this stage. Run the gather stage or "
-        "provide a manifest."
+        "Identifiers are required for this stage. Run the gather stage or provide a manifest."
     )
 
 
@@ -233,9 +226,7 @@ def _ensure_bundles(settings: Settings, state: PipelineState) -> None:
         state.downloads or [],
     )
     if not hydrated:
-        raise ValueError(
-            "No cached extraction bundles were found. " "Re-run the extract stage."
-        )
+        raise ValueError("No cached extraction bundles were found. Re-run the extract stage.")
     state.bundles = hydrated
 
 
@@ -250,9 +241,7 @@ def _log_stage_summary(stage: str, state: PipelineState) -> None:
     elif stage == "download":
         metrics = state.stage_metrics.get("download")
         produced = (
-            metrics.produced
-            if metrics
-            else (len(state.downloads) if state.downloads else 0)
+            metrics.produced if metrics else (len(state.downloads) if state.downloads else 0)
         )
         cache_hits = metrics.cache_hits if metrics else 0
         logger.info(
@@ -268,11 +257,7 @@ def _log_stage_summary(stage: str, state: PipelineState) -> None:
             )
     elif stage == "extract":
         metrics = state.stage_metrics.get("extract")
-        produced = (
-            metrics.produced
-            if metrics
-            else (len(state.bundles) if state.bundles else 0)
-        )
+        produced = metrics.produced if metrics else (len(state.bundles) if state.bundles else 0)
         cache_hits = metrics.cache_hits if metrics else 0
         logger.info(
             "Extract stage bundles: %d (cache hits: %d)",

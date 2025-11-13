@@ -14,9 +14,7 @@ _CONSOLE_FILTER_FLAG = "to_console"
 class _ConsoleFilter(logging.Filter):
     """Allow only records flagged for console emission."""
 
-    def filter(
-        self, record: logging.LogRecord
-    ) -> bool:  # pragma: no cover - simple predicate
+    def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - simple predicate
         return bool(getattr(record, _CONSOLE_FILTER_FLAG, False))
 
 

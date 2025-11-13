@@ -40,9 +40,7 @@ class SemanticScholarClient:
             raise ValueError("Semantic Scholar lookups support 'doi' or 'pmid'.")
 
         if any(getattr(identifier, id_type) is None for identifier in identifiers):
-            raise ValueError(
-                f"All identifiers must provide a {id_type.upper()} for lookup."
-            )
+            raise ValueError(f"All identifiers must provide a {id_type.upper()} for lookup.")
 
     def get_ids_by_type(self, id_type: str, identifiers: Identifiers) -> Identifiers:
         """Query Semantic Scholar for the chosen identifier type."""
@@ -153,9 +151,7 @@ class SemanticScholarClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
     )
-    def _request_semantic_scholar(
-        self, request_ids: Iterable[str]
-    ) -> Iterable[Dict[str, object]]:
+    def _request_semantic_scholar(self, request_ids: Iterable[str]) -> Iterable[Dict[str, object]]:
         self._rate_limit_sleep()
         response = self._session.post(
             self.BASE_URL,
@@ -210,9 +206,7 @@ class SemanticScholarClient:
         for batch in batches:
             try:
                 response_data = self._request_metadata_batch(batch)
-                self._process_metadata_response(
-                    batch, response_data, request_map, results
-                )
+                self._process_metadata_response(batch, response_data, request_map, results)
             except Exception:
                 # Continue with other batches on failure
                 continue
@@ -223,9 +217,7 @@ class SemanticScholarClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
     )
-    def _request_metadata_batch(
-        self, request_ids: List[str]
-    ) -> List[Dict[str, object]]:
+    def _request_metadata_batch(self, request_ids: List[str]) -> List[Dict[str, object]]:
         """Request metadata batch from Semantic Scholar API."""
         self._rate_limit_sleep()
         fields = [

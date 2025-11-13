@@ -17,7 +17,6 @@ _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
 
 
 class OpenAlexClient:
-
     BASE_URL = "https://api.openalex.org"
     LOOKUP_ENDPOINT = "/works"
     ID_QUERY_ARGS = "select=ids,doi"

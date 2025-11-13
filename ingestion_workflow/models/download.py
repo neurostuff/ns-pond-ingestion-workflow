@@ -88,9 +88,7 @@ class DownloadResult:
         identifier_data = payload.get("identifier", {})
         identifier = Identifier(**identifier_data)  # type: ignore[arg-type]
         files_payload = payload.get("files", [])
-        files = [
-            DownloadedFile.from_dict(item) for item in files_payload
-        ]  # type: ignore[arg-type]
+        files = [DownloadedFile.from_dict(item) for item in files_payload]  # type: ignore[arg-type]
         return cls(
             identifier=identifier,
             source=DownloadSource(str(payload["source"])),

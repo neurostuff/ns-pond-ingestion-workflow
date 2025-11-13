@@ -14,8 +14,7 @@ class PointsValue(BaseModel):
     value: Optional[Union[float, str]] = Field(
         None,
         description=(
-            "Optional statistical value associated with the point "
-            "(e.g., t-value, z-value)"
+            "Optional statistical value associated with the point (e.g., t-value, z-value)"
         ),
     )
     kind: Optional[

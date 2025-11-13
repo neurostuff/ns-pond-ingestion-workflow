@@ -96,9 +96,7 @@ def _resolve_table_space(table: Any, article: Any) -> CoordinateSpace:
     return _coordinate_space_from_guess(guess)
 
 
-def _coordinate_from_activation(
-    activation: Any, space: CoordinateSpace
-) -> Optional[Coordinate]:
+def _coordinate_from_activation(activation: Any, space: CoordinateSpace) -> Optional[Coordinate]:
     if activation is None:
         return None
     coords = (
@@ -170,16 +168,12 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
             return False, reason
 
     if len(normalized) < _MIN_HTML_LENGTH:
-        return False, (
-            f"HTML payload is unexpectedly small ({len(normalized)} characters)."
-        )
+        return False, (f"HTML payload is unexpectedly small ({len(normalized)} characters).")
 
     return True, None
 
 
-def _build_failure_extraction(
-    download_result: DownloadResult, message: str
-) -> ExtractedContent:
+def _build_failure_extraction(download_result: DownloadResult, message: str) -> ExtractedContent:
     return ExtractedContent(
         hash_id=download_result.identifier.hash_id,
         source=DownloadSource.ACE,
@@ -309,9 +303,7 @@ def _run_ace_extraction_task(
     try:
         return _extract_ace_article(download_result, root_path)
     except Exception as exc:  # pragma: no cover - worker failure logging
-        logger.exception(
-            "ACE extraction failed for %s", download_result.identifier.hash_id
-        )
+        logger.exception("ACE extraction failed for %s", download_result.identifier.hash_id)
         return _build_failure_extraction(download_result, str(exc))
 
 
@@ -425,9 +417,7 @@ class ACEExtractor(BaseExtractor):
                     "extraction."
                 )
 
-        ordered_results: list[Optional[ExtractionResult]] = [None] * len(
-            download_results
-        )
+        ordered_results: list[Optional[ExtractionResult]] = [None] * len(download_results)
 
         worker_count = max(1, self.settings.max_workers)
 

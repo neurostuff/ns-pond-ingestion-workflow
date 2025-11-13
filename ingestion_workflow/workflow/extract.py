@@ -46,9 +46,7 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
         )
 
     if not download_result.files:
-        raise ValueError(
-            "Successful downloads must include persisted files for " "extraction."
-        )
+        raise ValueError("Successful downloads must include persisted files for extraction.")
 
     missing_paths = [
         downloaded.file_path
@@ -58,8 +56,7 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
     if missing_paths:
         missing_str = ", ".join(str(path) for path in missing_paths)
         raise ValueError(
-            "Extraction workflow found download payloads missing on disk: "
-            f"{missing_str}"
+            f"Extraction workflow found download payloads missing on disk: {missing_str}"
         )
 
     if download_result.source is DownloadSource.ACE:
@@ -95,8 +92,7 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
         )
         if article_xml is None or tables_xml is None:
             raise ValueError(
-                "Pubget downloads must include article.xml and "
-                "tables/tables.xml for extraction."
+                "Pubget downloads must include article.xml and tables/tables.xml for extraction."
             )
 
     if download_result.source is DownloadSource.ELSEVIER:
@@ -124,9 +120,7 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
                 "PDF-only articles are not supported."
             )
         if metadata_file is None:
-            raise ValueError(
-                "Elsevier downloads must include metadata.json for extraction."
-            )
+            raise ValueError("Elsevier downloads must include metadata.json for extraction.")
 
 
 def _group_by_source(
@@ -247,8 +241,7 @@ def run_extraction(
             )
         except NotImplementedError as exc:  # pragma: no cover - dev feedback
             raise NotImplementedError(
-                f"Extractor for source {source.value} does not yet implement "
-                "extraction."
+                f"Extractor for source {source.value} does not yet implement extraction."
             ) from exc
         finally:
             if progress is not None:
@@ -346,9 +339,7 @@ def _build_placeholder_metadata(result: ExtractionResult) -> ArticleMetadata:
         ):
             if candidate:
                 return ArticleMetadata(title=str(candidate))
-        identifier_label = " / ".join(
-            part for part in identifier.hash_id.split("|") if part
-        )
+        identifier_label = " / ".join(part for part in identifier.hash_id.split("|") if part)
         if identifier_label:
             return ArticleMetadata(title=identifier_label)
     return ArticleMetadata(title=result.hash_id)

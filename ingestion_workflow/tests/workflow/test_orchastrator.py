@@ -79,8 +79,7 @@ def test_run_pipeline_full_sequence(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.gather",
-        gather_identifiers=lambda settings, manifest=None: calls.append("gather")
-        or identifiers,
+        gather_identifiers=lambda settings, manifest=None: calls.append("gather") or identifiers,
     )
     _install_stub_module(
         monkeypatch,
@@ -91,18 +90,18 @@ def test_run_pipeline_full_sequence(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.extract",
-        run_extraction=lambda results, settings=None, metrics=None, progress_hook=None: calls.append(
-            "extract"
-        )
-        or bundles,
+        run_extraction=lambda results,
+        settings=None,
+        metrics=None,
+        progress_hook=None: calls.append("extract") or bundles,
     )
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.create_analyses",
-        run_create_analyses=lambda bundle_seq, settings=None, extractor_name=None, metrics=None: calls.append(
-            "create_analyses"
-        )
-        or analyses,
+        run_create_analyses=lambda bundle_seq,
+        settings=None,
+        extractor_name=None,
+        metrics=None: calls.append("create_analyses") or analyses,
     )
 
     settings = Settings(
@@ -181,7 +180,10 @@ def test_pipeline_hydrates_from_cache_when_only_create(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.create_analyses",
-        run_create_analyses=lambda bundle_seq, settings=None, extractor_name=None, metrics=None: analyses,
+        run_create_analyses=lambda bundle_seq,
+        settings=None,
+        extractor_name=None,
+        metrics=None: analyses,
     )
 
     settings = Settings(

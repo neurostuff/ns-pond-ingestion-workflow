@@ -102,11 +102,7 @@ class MetadataService:
 
         # Try PubMed for remaining items
         if self._pubmed_client and identified_items:
-            missing = [
-                item.identifier
-                for item in identified_items
-                if item.hash_id not in results
-            ]
+            missing = [item.identifier for item in identified_items if item.hash_id not in results]
             if missing:
                 logger.info(
                     "Fetching metadata from PubMed for %d articles",
@@ -120,9 +116,7 @@ class MetadataService:
                         continue
                     article_hash = content.hash_id
                     if article_hash in results:
-                        results[article_hash] = results[article_hash].merge_from(
-                            pubmed_meta
-                        )
+                        results[article_hash] = results[article_hash].merge_from(pubmed_meta)
                     else:
                         results[article_hash] = pubmed_meta
                 logger.info(
@@ -131,9 +125,7 @@ class MetadataService:
                 )
 
         # Fallback to extractor metadata for remaining items
-        still_missing = [
-            item for item in extracted_contents if item.hash_id not in results
-        ]
+        still_missing = [item for item in extracted_contents if item.hash_id not in results]
         if still_missing:
             logger.info(
                 "Falling back to extractor metadata for %d articles",
@@ -144,9 +136,7 @@ class MetadataService:
                     fallback_meta = self._get_fallback_metadata(item)
                     if fallback_meta:
                         if item.hash_id in results:
-                            results[item.hash_id] = results[item.hash_id].merge_from(
-                                fallback_meta
-                            )
+                            results[item.hash_id] = results[item.hash_id].merge_from(fallback_meta)
                         else:
                             results[item.hash_id] = fallback_meta
                 except Exception as exc:
@@ -289,9 +279,7 @@ class MetadataService:
         if extracted_content.identifier:
             identifier_hash = extracted_content.identifier.hash_id.strip()
             if identifier_hash:
-                digest = hashlib.sha256(identifier_hash.encode("utf-8")).hexdigest()[
-                    :32
-                ]
+                digest = hashlib.sha256(identifier_hash.encode("utf-8")).hexdigest()[:32]
                 base_dir = (
                     self.settings.elsevier_cache_root
                     if self.settings.elsevier_cache_root is not None
@@ -407,11 +395,7 @@ class MetadataService:
 
             # Extract title
             title_elem = root.find(".//article-title")
-            title = (
-                " ".join(title_elem.itertext()).strip()
-                if title_elem is not None
-                else None
-            )
+            title = " ".join(title_elem.itertext()).strip() if title_elem is not None else None
 
             # Extract authors
             authors: List[Author] = []
@@ -434,17 +418,13 @@ class MetadataService:
             # Extract abstract
             abstract_elem = root.find(".//abstract")
             abstract = (
-                " ".join(abstract_elem.itertext()).strip()
-                if abstract_elem is not None
-                else None
+                " ".join(abstract_elem.itertext()).strip() if abstract_elem is not None else None
             )
 
             # Extract journal
             journal_elem = root.find(".//journal-title")
             journal = (
-                " ".join(journal_elem.itertext()).strip()
-                if journal_elem is not None
-                else None
+                " ".join(journal_elem.itertext()).strip() if journal_elem is not None else None
             )
 
             # Extract year
