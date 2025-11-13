@@ -231,6 +231,23 @@ class Settings(BaseSettings):
         description="Ordered pipeline stages to execute",
     )
 
+    log_to_file: bool = Field(
+        default=True,
+        description="Persist logs to a file (defaults to <data_root>/logs/pipeline.log)",
+    )
+    log_to_console: bool = Field(
+        default=True,
+        description="Emit selected logs to the console in addition to the log file",
+    )
+    log_file: Optional[Path] = Field(
+        default=None,
+        description="Optional override for log file path",
+    )
+    show_progress: bool = Field(
+        default=True,
+        description="Show tqdm progress bars on the console",
+    )
+
     manifest_path: Optional[Path] = Field(
         default=None,
         description=(

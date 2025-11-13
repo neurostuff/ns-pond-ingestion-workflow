@@ -12,6 +12,7 @@ from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
     ArticleMetadata,
+    Coordinate,
     CreateAnalysesResult,
     ExtractedContent,
     ExtractedTable,
@@ -36,14 +37,18 @@ def stub_llm_init(monkeypatch):
     )
 
 
-def _bundle(tmp_path: Path) -> ArticleExtractionBundle:
+def _bundle(tmp_path: Path, *, has_coordinates: bool = True) -> ArticleExtractionBundle:
     table_path = tmp_path / "table.html"
     table_path.write_text("<table><tr><td>1</td></tr></table>", encoding="utf-8")
+    coordinates = (
+        [Coordinate(x=0.0, y=0.0, z=0.0)] if has_coordinates else []
+    )
     table = ExtractedTable(
         table_id="Table 1",
         raw_content_path=table_path,
         caption="Cap",
         footer="Foot",
+        coordinates=coordinates,
     )
     content = ExtractedContent(
         hash_id="article-1",
@@ -139,7 +144,7 @@ def test_run_create_analyses_uses_cached_entries(monkeypatch, tmp_path):
         def __init__(self, *args, **kwargs):
             self.run_called = False
 
-        def run(self, bundle):
+        def run(self, bundle, progress_hook=None):
             raise AssertionError("Service should not be invoked for cached tables")
 
     monkeypatch.setattr(
@@ -154,3 +159,31 @@ def test_run_create_analyses_uses_cached_entries(monkeypatch, tmp_path):
     )
 
     assert results["article-1"]["Table 1"] is cached_collection
+
+
+def test_run_create_analyses_skips_tables_without_coordinates(monkeypatch, tmp_path):
+    bundle = _bundle(tmp_path, has_coordinates=False)
+
+    run_calls: list[ArticleExtractionBundle] = []
+
+    class _ServiceStub:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def run(self, bundle, progress_hook=None):
+            run_calls.append(bundle)
+            return {}
+
+    monkeypatch.setattr(
+        workflow_module,
+        "CreateAnalysesService",
+        lambda *args, **kwargs: _ServiceStub(),
+    )
+
+    results = workflow_module.run_create_analyses(
+        [bundle],
+        settings=Settings(llm_api_key="test"),
+    )
+
+    assert results["article-1"] == {}
+    assert not run_calls

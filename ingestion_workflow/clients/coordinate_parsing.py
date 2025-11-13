@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
@@ -66,7 +66,7 @@ class CoordinateParsingClient(GenericLLMClient):
 
         result_dict = json.loads(function_call.arguments)
         for analysis in result_dict.get("analyses", []):
-            valid_points = []
+            valid_points: List[Dict[str, Any]] = []
             for point in analysis.get("points", []):
                 coordinates = point.get("coordinates")
                 if (
@@ -76,12 +76,93 @@ class CoordinateParsingClient(GenericLLMClient):
                 ):
                     valid_points.append(point)
             analysis["points"] = valid_points
+        _coerce_point_values_schema(result_dict)
         try:
             return ParseAnalysesOutput(**result_dict)
         except Exception as exc:  # noqa: BLE001
-            logger.error("Validation error parsing analyses: %s", exc)
-            logger.error("Result payload: %s", result_dict)
-            raise
+            logger.warning(
+                "LLM output validation failed; skipping table: %s", exc
+            )
+            logger.debug("Result payload: %s", result_dict)
+            return ParseAnalysesOutput(analyses=[])
+
+
+def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
+    analyses = payload.get("analyses")
+    if not isinstance(analyses, list):
+        return
+    for analysis in analyses:
+        points = analysis.get("points")
+        if not isinstance(points, list):
+            continue
+        for point in points:
+            values = point.get("values")
+            if not isinstance(values, list):
+                continue
+            coerced: List[Dict[str, Any]] = []
+            for value in values:
+                if isinstance(value, dict):
+                    normalized = _normalize_value_dict(value)
+                    if normalized:
+                        coerced.append(normalized)
+                    continue
+                if isinstance(value, (int, float)):
+                    kind = "t-statistic" if isinstance(value, float) else "other"
+                    coerced.append({"value": value, "kind": kind})
+                    continue
+                # attempt to parse numeric strings
+                if isinstance(value, str):
+                    try:
+                        num = float(value)
+                    except ValueError:
+                        continue
+                    kind = "t-statistic"
+                    if num.is_integer():
+                        kind = "other"
+                        num = int(num)
+                    coerced.append({"value": num, "kind": kind})
+                    continue
+            if coerced:
+                point["values"] = coerced
+
+
+def _normalize_value_dict(value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    normalized_kind = _map_kind(value.get("kind"))
+    if normalized_kind is None:
+        return None
+    result = dict(value)
+    result["kind"] = normalized_kind
+    return result
+
+
+def _map_kind(kind: Any) -> Optional[str]:
+    if kind is None:
+        return None
+    if isinstance(kind, str):
+        normalized = kind.strip().lower()
+        allowed = {
+            "z-statistic",
+            "t-statistic",
+            "f-statistic",
+            "correlation",
+            "p-value",
+            "beta",
+            "other",
+        }
+        if normalized in allowed:
+            return normalized
+        if "z" in normalized:
+            return "z-statistic"
+        if "t" in normalized or "stat" in normalized:
+            return "t-statistic"
+        if "f" in normalized:
+            return "f-statistic"
+        if normalized.startswith("p"):
+            return "p-value"
+        if "beta" in normalized:
+            return "beta"
+        return "other"
+    return None
 
 
 __all__ = ["CoordinateParsingClient"]

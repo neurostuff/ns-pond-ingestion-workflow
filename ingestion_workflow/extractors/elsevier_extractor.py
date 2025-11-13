@@ -13,7 +13,7 @@ import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from collections import deque
-from typing import Any, Deque, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Callable, Deque, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from lxml import etree
 from pubget._coordinate_space import _neurosynth_guess_space
@@ -46,6 +46,7 @@ from ingestion_workflow.models import (
     ExtractionResult,
     FileType,
 )
+from ingestion_workflow.utils.progress import emit_progress
 
 
 logger = logging.getLogger(__name__)
@@ -87,7 +88,11 @@ class ElsevierExtractor(BaseExtractor):
         self._client = client
         self._cache = cache
 
-    def download(self, identifiers: Identifiers) -> List[DownloadResult]:
+    def download(
+        self,
+        identifiers: Identifiers,
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> List[DownloadResult]:
         """Download articles for each identifier using Elsevier services."""
 
         if not identifiers:
@@ -112,10 +117,14 @@ class ElsevierExtractor(BaseExtractor):
                 )
 
         if not prepared:
-            return self._ordered_results(identifiers, results_by_index)
+            return self._ordered_results(
+                identifiers,
+                results_by_index,
+                progress_hook=progress_hook,
+            )
 
         try:
-            articles = list(self._run_download(records))
+            articles = list(self._run_download(records, progress_hook))
         except Exception as exc:  # pragma: no cover - surfaced to caller
             failure_reason = str(exc) or "Unknown Elsevier download failure."
             for original_index, identifier, _ in prepared:
@@ -123,7 +132,11 @@ class ElsevierExtractor(BaseExtractor):
                     identifier=identifier,
                     error_message=failure_reason,
                 )
-            return self._ordered_results(identifiers, results_by_index)
+            return self._ordered_results(
+                identifiers,
+                results_by_index,
+                progress_hook=progress_hook,
+            )
 
         base_dir = Path(
             self.settings.elsevier_cache_root
@@ -184,11 +197,14 @@ class ElsevierExtractor(BaseExtractor):
                 lookup_type=actual_lookup_type,
                 lookup_value=actual_lookup_value,
             )
+            emit_progress(progress_hook)
 
         return self._ordered_results(identifiers, results_by_index)
 
     def extract(
-        self, download_results: List[DownloadResult]
+        self,
+        download_results: List[DownloadResult],
+        progress_hook: Callable[[int], None] | None = None,
     ) -> List[ExtractionResult]:
         """Extract tables from downloaded articles using Elsevier."""
         if not download_results:
@@ -217,6 +233,7 @@ class ElsevierExtractor(BaseExtractor):
                     download_result,
                     extraction_root,
                 )
+                emit_progress(progress_hook)
         else:
             root_str = str(extraction_root)
             with ProcessPoolExecutor(max_workers=worker_count) as executor:
@@ -242,6 +259,8 @@ class ElsevierExtractor(BaseExtractor):
                             download_result,
                             f"Elsevier extraction raised an exception: {exc}",
                         )
+                    finally:
+                        emit_progress(progress_hook)
 
         final_results: List[ExtractedContent] = []
         for index, download_result in enumerate(download_results):
@@ -261,8 +280,15 @@ class ElsevierExtractor(BaseExtractor):
         root.mkdir(parents=True, exist_ok=True)
         return root
 
-    def _run_download(self, records: List[Dict[str, str]]) -> List[Any]:
+    def _run_download(
+        self,
+        records: List[Dict[str, str]],
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> List[Any]:
         elsevier_settings = self._build_elsevier_settings()
+        progress_proxy = (
+            _build_progress_callback(progress_hook) if progress_hook else None
+        )
 
         async def _runner() -> List[Any]:
             if self._client is None:
@@ -272,12 +298,14 @@ class ElsevierExtractor(BaseExtractor):
                         client=client,
                         cache=self._cache,
                         settings=elsevier_settings,
+                        progress_callback=progress_proxy,
                     )
             return await download_articles(
                 records,
                 client=self._client,
                 cache=self._cache,
                 settings=elsevier_settings,
+                progress_callback=progress_proxy,
             )
 
         try:
@@ -529,6 +557,19 @@ class ElsevierExtractor(BaseExtractor):
         pmid = str(record.get("pmid") or "").strip()
         return (doi or None, pmid or None)
 
+    @staticmethod
+    def _record_from_identifier(identifier: Identifier) -> Dict[str, str]:
+        record: Dict[str, str] = {}
+        if identifier.doi:
+            record["doi"] = identifier.doi
+        if identifier.pmid:
+            record["pmid"] = identifier.pmid
+        if identifier.pmcid:
+            record["pmcid"] = identifier.pmcid
+        if "doi" not in record and "pmid" not in record:
+            return {}
+        return record
+
     def _build_failure_result(
         self,
         *,
@@ -546,6 +587,8 @@ class ElsevierExtractor(BaseExtractor):
         self,
         identifiers: Identifiers,
         results_by_index: Dict[int, DownloadResult],
+        *,
+        progress_hook: Callable[[int], None] | None = None,
     ) -> List[DownloadResult]:
         ordered_results: List[DownloadResult] = []
         total = len(identifiers)
@@ -560,20 +603,9 @@ class ElsevierExtractor(BaseExtractor):
                     ),
                 )
             ordered_results.append(result)
+            emit_progress(progress_hook)
         return ordered_results
 
-    @staticmethod
-    def _record_from_identifier(identifier: Identifier) -> Dict[str, str]:
-        record: Dict[str, str] = {}
-        if identifier.doi:
-            record["doi"] = identifier.doi
-        if identifier.pmid:
-            record["pmid"] = identifier.pmid
-        if identifier.pmcid:
-            record["pmcid"] = identifier.pmcid
-        if "doi" not in record and "pmid" not in record:
-            return {}
-        return record
 
     def _identifier_cache_key(
         self, identifier: Identifier, index: int
@@ -963,6 +995,18 @@ def _coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
     if normalized in {"TAL", "TALAIRACH"}:
         return CoordinateSpace.TALAIRACH
     return CoordinateSpace.OTHER
+
+
+def _build_progress_callback(
+    progress_hook: Callable[[int], None] | None,
+) -> Callable[[Mapping[str, str], Any | None, BaseException | None], None] | None:
+    if progress_hook is None:
+        return None
+
+    def _callback(record, article, error):
+        emit_progress(progress_hook)
+
+    return _callback
 
 
 def _coordinate_from_row(

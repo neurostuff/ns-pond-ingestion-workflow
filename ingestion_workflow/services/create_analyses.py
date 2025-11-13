@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
@@ -22,6 +22,7 @@ from ingestion_workflow.models.coordinate_parsing import (
     CoordinatePoint,
     ParseAnalysesOutput,
 )
+from ingestion_workflow.utils.progress import emit_progress
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +49,9 @@ class CreateAnalysesService:
         self.client = CoordinateParsingClient(settings)
 
     def run(
-        self, bundle: ArticleExtractionBundle
+        self,
+        bundle: ArticleExtractionBundle,
+        progress_hook: Callable[[int], None] | None = None,
     ) -> Dict[str, AnalysisCollection]:
         """Create analyses for every table in the bundle."""
         if not bundle.article_data.tables:
@@ -59,10 +62,26 @@ class CreateAnalysesService:
         identifier = bundle.article_data.identifier
 
         for index, table in enumerate(bundle.article_data.tables):
+            if not table.contains_coordinates and not table.coordinates:
+                logger.debug(
+                    "Skipping table %s for article %s (no coordinates detected).",
+                    table.table_id,
+                    bundle.article_data.hash_id,
+                )
+                continue
             sanitized_table_id = sanitize_table_id(table.table_id, index)
             table_key = table.table_id or sanitized_table_id
 
-            table_text = self._read_table_content(table)
+            try:
+                table_text = self._read_table_content(table)
+            except FileNotFoundError as exc:
+                logger.warning(
+                    "Skipping table %s for article %s: %s",
+                    table_key,
+                    article_hash,
+                    exc,
+                )
+                continue
             prompt = self._build_prompt(bundle, table, table_text, table_key)
             parsed_output = self.client.parse_analyses(prompt)
             if not parsed_output.analyses:
@@ -81,6 +100,7 @@ class CreateAnalysesService:
                 article_hash,
             )
             results[table_key] = collection
+            emit_progress(progress_hook)
 
         return results
 

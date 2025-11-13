@@ -12,7 +12,7 @@ from concurrent.futures import (
     as_completed,
 )
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from ace.config import update_config
 from ace.scrape import Scraper
@@ -34,9 +34,22 @@ from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
 )
+from ingestion_workflow.patches import apply_ace_patch
+from ingestion_workflow.utils.progress import emit_progress
+
+
+apply_ace_patch()
 
 
 logger = logging.getLogger(__name__)
+
+_HTML_INVALID_MARKERS: list[tuple[str, str]] = [
+    ("<title>new tab</title>", "HTML payload captured a browser new-tab page."),
+    ("api rate limit exceeded", "HTML payload contains an API rate limit error."),
+    ("captcha", "HTML payload appears to be a CAPTCHA challenge."),
+    ("access to this page has been denied", "HTML payload was an access-denied page."),
+]
+_MIN_HTML_LENGTH = 500
 
 
 def _safe_hash_stem(hash_id: str | None) -> str:
@@ -137,6 +150,33 @@ def _select_html_file(
     return None
 
 
+def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
+    """Validate downloaded HTML content to catch placeholders or errors."""
+    try:
+        html_text = file_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        html_text = file_path.read_text(errors="ignore")
+
+    normalized = html_text.strip()
+    if not normalized:
+        return False, "HTML payload was empty."
+
+    lowered = normalized.lower()
+    if "<html" not in lowered:
+        return False, "HTML payload is missing an <html> tag."
+
+    for marker, reason in _HTML_INVALID_MARKERS:
+        if marker in lowered:
+            return False, reason
+
+    if len(normalized) < _MIN_HTML_LENGTH:
+        return False, (
+            f"HTML payload is unexpectedly small ({len(normalized)} characters)."
+        )
+
+    return True, None
+
+
 def _build_failure_extraction(
     download_result: DownloadResult, message: str
 ) -> ExtractedContent:
@@ -149,6 +189,8 @@ def _build_failure_extraction(
         has_coordinates=False,
         error_message=message,
     )
+
+
 
 
 def _translate_ace_table(
@@ -296,7 +338,11 @@ class ACEExtractor(BaseExtractor):
         update_config(SAVE_ORIGINAL_HTML=True)
         self._download_mode = download_mode
 
-    def download(self, identifiers: Identifiers) -> list[DownloadResult]:
+    def download(
+        self,
+        identifiers: Identifiers,
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> list[DownloadResult]:
         if not identifiers:
             return []
 
@@ -309,10 +355,12 @@ class ACEExtractor(BaseExtractor):
 
         if worker_count == 1 or len(identifiers_list) <= 1:
             scraper = self._build_scraper()
-            return [
-                self._download_single(identifier, scraper=scraper)
-                for identifier in identifiers_list
-            ]
+            results = []
+            for identifier in identifiers_list:
+                result = self._download_single(identifier, scraper=scraper)
+                results.append(result)
+                emit_progress(progress_hook)
+            return results
 
         ordered_results: list[Optional[DownloadResult]] = [
             None
@@ -347,6 +395,7 @@ class ACEExtractor(BaseExtractor):
                         f"ACE download raised an exception: {exc}",
                     )
                 ordered_results[index] = result
+                emit_progress(progress_hook)
 
         results: list[DownloadResult] = []
         for index, identifier in enumerate(identifiers_list):
@@ -361,7 +410,9 @@ class ACEExtractor(BaseExtractor):
         return results
 
     def extract(
-        self, download_results: list[DownloadResult]
+        self,
+        download_results: list[DownloadResult],
+        progress_hook: Callable[[int], None] | None = None,
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using ACE."""
         if not download_results:
@@ -390,6 +441,7 @@ class ACEExtractor(BaseExtractor):
                     download_result,
                     extraction_root,
                 )
+                emit_progress(progress_hook)
         else:
             root_str = str(extraction_root)
             with ProcessPoolExecutor(max_workers=worker_count) as executor:
@@ -415,6 +467,8 @@ class ACEExtractor(BaseExtractor):
                             download_result,
                             f"ACE extraction raised an exception: {exc}",
                         )
+                    finally:
+                        emit_progress(progress_hook)
 
         final_results: list[ExtractionResult] = []
         for index, download_result in enumerate(download_results):
@@ -468,6 +522,21 @@ class ACEExtractor(BaseExtractor):
 
         if resolved_path is None:
             message = "ACE scrape did not produce HTML content."
+            logger.warning("%s PMID=%s", message, pmid)
+            return self._failure(identifier, message)
+
+        html_valid, invalid_reason = _validate_downloaded_html(resolved_path)
+        if not html_valid:
+            try:
+                resolved_path.unlink()
+            except OSError as exc:  # pragma: no cover - best-effort cleanup
+                logger.debug(
+                    "Failed to delete invalid ACE HTML payload %s: %s",
+                    resolved_path,
+                    exc,
+                )
+            reason = invalid_reason or "HTML payload failed validation."
+            message = f"ACE scrape produced invalid HTML: {reason}"
             logger.warning("%s PMID=%s", message, pmid)
             return self._failure(identifier, message)
 

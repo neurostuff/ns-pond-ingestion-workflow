@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import types
 from pathlib import Path
+from typing import Dict
 
 import pytest
 
@@ -78,24 +79,28 @@ def test_run_pipeline_full_sequence(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.gather",
-        gather_identifiers=lambda settings: calls.append("gather") or identifiers,
+        gather_identifiers=lambda settings, manifest=None: calls.append("gather") or identifiers,
     )
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.download",
-        run_downloads=lambda ids, settings=None: calls.append("download")
+        run_downloads=lambda ids, settings=None, metrics=None: calls.append(
+            "download"
+        )
         or download_results,
     )
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.extract",
-        run_extraction=lambda results, settings=None: calls.append("extract")
+        run_extraction=lambda results, settings=None, metrics=None, progress_hook=None: calls.append(
+            "extract"
+        )
         or bundles,
     )
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.create_analyses",
-        run_create_analyses=lambda bundle_seq, settings=None: calls.append(
+        run_create_analyses=lambda bundle_seq, settings=None, extractor_name=None, metrics=None: calls.append(
             "create_analyses"
         )
         or analyses,
@@ -125,7 +130,7 @@ def test_pipeline_uses_manifest_when_gather_skipped(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.download",
-        run_downloads=lambda ids, settings=None: seen.setdefault(
+        run_downloads=lambda ids, settings=None, metrics=None: seen.setdefault(
             "count", len(ids.identifiers)
         )
         or [],
@@ -177,7 +182,7 @@ def test_pipeline_hydrates_from_cache_when_only_create(monkeypatch, tmp_path):
     _install_stub_module(
         monkeypatch,
         "ingestion_workflow.workflow.create_analyses",
-        run_create_analyses=lambda bundle_seq, settings=None: analyses,
+        run_create_analyses=lambda bundle_seq, settings=None, extractor_name=None, metrics=None: analyses,
     )
 
     settings = Settings(
@@ -216,3 +221,35 @@ def test_pipeline_requires_manifest_when_gather_missing(tmp_path):
     )
     with pytest.raises(ValueError):
         orchastrator.run_pipeline(settings=settings)
+
+
+def test_gather_stage_combines_manifest(monkeypatch, tmp_path):
+    manifest_identifier = Identifier(pmid="321")
+    manifest = tmp_path / "manifest.jsonl"
+    Identifiers([manifest_identifier]).save(manifest)
+
+    returned_identifiers = Identifiers(
+        [Identifier(pmid="654"), manifest_identifier]
+    )
+    seen: Dict[str, object] = {}
+
+    def _fake_gather_identifiers(*, settings=None, manifest=None, **_kwargs):
+        seen["manifest"] = manifest
+        return returned_identifiers
+
+    _install_stub_module(
+        monkeypatch,
+        "ingestion_workflow.workflow.gather",
+        gather_identifiers=_fake_gather_identifiers,
+    )
+
+    settings = Settings(
+        data_root=tmp_path,
+        stages=["gather"],
+        manifest_path=manifest,
+    )
+
+    state = orchastrator.run_pipeline(settings=settings)
+
+    assert seen["manifest"] == manifest
+    assert state.identifiers is returned_identifiers

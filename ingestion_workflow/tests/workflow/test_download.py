@@ -22,7 +22,11 @@ class _FakeElsevierExtractor(BaseExtractor):
         self._success_dir = success_dir
         self._success_targets = success_targets
 
-    def download(self, identifiers: Identifiers) -> list[DownloadResult]:
+    def download(
+        self,
+        identifiers: Identifiers,
+        progress_hook=None,
+    ) -> list[DownloadResult]:
         results: list[DownloadResult] = []
         for identifier in identifiers.identifiers:
             if identifier.hash_id in self._success_targets:
@@ -56,6 +60,8 @@ class _FakeElsevierExtractor(BaseExtractor):
                         error_message="simulated failure",
                     )
                 )
+            if progress_hook:
+                progress_hook(1)
         return results
 
 

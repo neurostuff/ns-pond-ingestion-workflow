@@ -54,9 +54,14 @@ def gather_identifiers(
     combined = Identifiers()
     combined.set_index("pmid", "doi", "pmcid")
 
+    initial_manifest_count = 0
+    cache_hits = 0
+
     if manifest is not None:
         manifest_identifiers = _load_manifest(manifest, resolved_settings)
+        initial_manifest_count = len(manifest_identifiers.identifiers)
         _extend_identifiers(combined, manifest_identifiers)
+        cache_hits += initial_manifest_count
 
     for search_query in _normalize_queries(queries):
         search_service = PubMedSearchService(
@@ -71,10 +76,13 @@ def gather_identifiers(
                 search_query.query,
                 len(search_results.identifiers),
             )
+        before_extend = len(combined.identifiers)
         _extend_identifiers(combined, search_results)
+        cache_hits += before_extend
 
     combined.deduplicate()
 
+    expansion_stats: dict[str, int] = {}
     for provider in resolved_settings.metadata_providers:
         service_class = ID_LOOKUP_SERVICE_FACTORIES.get(provider)
         if service_class is None:
@@ -84,7 +92,10 @@ def gather_identifiers(
             )
             continue
         service = service_class(resolved_settings)
+        before_expand = len(combined.identifiers)
         service.find_identifiers(combined)
+        after_expand = len(combined.identifiers)
+        expansion_stats[provider] = after_expand - before_expand
 
     combined.deduplicate()
     combined.set_index("pmid", "doi", "pmcid")
@@ -92,8 +103,11 @@ def gather_identifiers(
     output_path = _output_path(resolved_settings, label)
     combined.save(output_path)
     logger.info(
-        "Persisted %d identifiers to %s",
+        "Gather summary: %d total identifiers (manifest=%d, search=%d, expansions=%s) -> saved to %s",
         len(combined.identifiers),
+        initial_manifest_count,
+        len(combined.identifiers) - initial_manifest_count,
+        ", ".join(f"{provider}:{delta}" for provider, delta in expansion_stats.items()),
         output_path,
     )
 

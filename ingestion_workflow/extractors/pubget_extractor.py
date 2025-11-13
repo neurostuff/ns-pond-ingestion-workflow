@@ -9,7 +9,7 @@ import logging
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from lxml import etree
 
@@ -40,6 +40,7 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.utils.progress import emit_progress
 
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,11 @@ class PubgetExtractor(BaseExtractor):
         self.settings.ensure_directories()
         self._extraction_root = self._resolve_extraction_root()
 
-    def download(self, identifiers: Identifiers) -> list[DownloadResult]:
+    def download(
+        self,
+        identifiers: Identifiers,
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> list[DownloadResult]:
         """Download articles using Pubget."""
         if not identifiers:
             return []
@@ -109,6 +114,7 @@ class PubgetExtractor(BaseExtractor):
                 identifiers,
                 results_by_index,
                 failure_message,
+                progress_hook=progress_hook,
             )
 
         if download_code == ExitCode.ERROR:
@@ -126,6 +132,7 @@ class PubgetExtractor(BaseExtractor):
                 identifiers,
                 results_by_index,
                 failure_message,
+                progress_hook=progress_hook,
             )
 
         n_jobs = max(1, self.settings.max_workers)
@@ -147,6 +154,7 @@ class PubgetExtractor(BaseExtractor):
                 identifiers,
                 results_by_index,
                 failure_message,
+                progress_hook=progress_hook,
             )
 
         if extract_code == ExitCode.ERROR:
@@ -162,6 +170,7 @@ class PubgetExtractor(BaseExtractor):
                 identifiers,
                 results_by_index,
                 failure_message,
+                progress_hook=progress_hook,
             )
 
         warning_messages: List[str] = []
@@ -204,10 +213,13 @@ class PubgetExtractor(BaseExtractor):
             identifiers,
             results_by_index,
             "Pubget did not return content for this identifier.",
+            progress_hook=progress_hook,
         )
 
     def extract(
-        self, download_results: list[DownloadResult]
+        self,
+        download_results: list[DownloadResult],
+        progress_hook: Callable[[int], None] | None = None,
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using Pubget."""
         if not download_results:
@@ -236,6 +248,7 @@ class PubgetExtractor(BaseExtractor):
                     download_result,
                     extraction_root,
                 )
+                emit_progress(progress_hook)
         else:
             root_str = str(extraction_root)
             with ProcessPoolExecutor(max_workers=worker_count) as executor:
@@ -261,6 +274,8 @@ class PubgetExtractor(BaseExtractor):
                             download_result,
                             f"Pubget extraction raised an exception: {exc}",
                         )
+                    finally:
+                        emit_progress(progress_hook)
 
         final_results: list[ExtractionResult] = []
         for index, download_result in enumerate(download_results):
@@ -442,6 +457,8 @@ class PubgetExtractor(BaseExtractor):
         identifiers: Identifiers,
         results_by_index: Dict[int, DownloadResult],
         default_message: str,
+        *,
+        progress_hook: Callable[[int], None] | None = None,
     ) -> List[DownloadResult]:
         ordered: List[DownloadResult] = []
         for index, identifier in enumerate(identifiers.identifiers):
@@ -449,6 +466,7 @@ class PubgetExtractor(BaseExtractor):
             if result is None:
                 result = self._build_failure(identifier, default_message)
             ordered.append(result)
+            emit_progress(progress_hook)
         return ordered
 
 
@@ -536,12 +554,18 @@ def _extract_pubget_article(
 
     info_files = get_table_info_files_from_article_dir(article_input_dir)
     if not info_files:
-        message = "Pubget tables metadata not found."
-        logger.error("%s: %s", hash_id, message)
-        return _build_failure_extraction(
-            download_result,
-            message,
-            full_text_path,
+        message = (
+            "Pubget tables metadata not found; returning empty extraction."
+        )
+        logger.info("%s: %s", hash_id, message)
+        return ExtractedContent(
+            hash_id=hash_id,
+            source=DownloadSource.PUBGET,
+            identifier=download_result.identifier,
+            full_text_path=full_text_path,
+            tables=[],
+            has_coordinates=False,
+            error_message=message,
         )
 
     extracted_tables: List[ExtractedTable] = []

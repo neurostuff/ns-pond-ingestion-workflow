@@ -12,6 +12,8 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Sequence, Tuple
 
+from tqdm.auto import tqdm
+
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import (
@@ -25,7 +27,10 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import cache
 from ingestion_workflow.services.export import ExportService
 from ingestion_workflow.services.metadata import MetadataService
+from ingestion_workflow.services.logging import console_kwargs
 from ingestion_workflow.workflow.download import _resolve_extractor
+from ingestion_workflow.utils.progress import progress_callback
+from ingestion_workflow.workflow.stats import StageMetrics
 
 
 logger = logging.getLogger(__name__)
@@ -153,6 +158,7 @@ def run_extraction(
     download_results: Sequence[DownloadResult],
     *,
     settings: Settings | None = None,
+    metrics: StageMetrics | None = None,
 ) -> List[ArticleExtractionBundle]:
     """
     Execute extraction for previously downloaded articles.
@@ -174,6 +180,7 @@ def run_extraction(
         None
     ] * len(download_results)
 
+    processed_count = 0
     for source, entries in grouped.items():
         extractor = _resolve_extractor_for_source(source, resolved_settings)
         subset = [download_result for _, download_result in entries]
@@ -188,12 +195,22 @@ def run_extraction(
                 subset,
             )
 
+        cached_count = sum(1 for item in cached_slots if item is not None)
+        missing_total = len(missing_results)
+        processed_count += cached_count
+        if cached_count:
+            logger.info(
+                "Extract[%s] loaded %d bundles from cache",
+                source.value,
+                cached_count,
+                extra=console_kwargs(),
+            )
+            if metrics is not None:
+                metrics.record_cache_hits(cached_count)
         pending_entries: List[Tuple[int, DownloadResult]] = []
         missing_index = 0
 
-        for (index, _), cached_result in zip(
-            entries, cached_slots
-        ):
+        for (index, _), cached_result in zip(entries, cached_slots):
             if cached_result is not None:
                 ordered_results[index] = cached_result
                 continue
@@ -207,20 +224,47 @@ def run_extraction(
             )
 
         if not pending_entries:
+            logger.info(
+                "Extract[%s] successes: %d/%d (cache)",
+                source.value,
+                cached_count,
+                len(subset),
+                extra=console_kwargs(),
+            )
             continue
+
+        logger.info(
+            "Extract[%s] processing %d downloads",
+            source.value,
+            missing_total,
+            extra=console_kwargs(),
+        )
 
         pending_subset = [
             download_result
             for _, download_result in pending_entries
         ]
 
+        progress = _create_progress_bar(
+            resolved_settings,
+            len(pending_subset),
+            f"Extract[{source.value}]",
+        )
+        progress_hook = progress_callback(progress)
+
         try:
-            extracted = extractor.extract(pending_subset)
+            extracted = extractor.extract(
+                pending_subset,
+                progress_hook=progress_hook,
+            )
         except NotImplementedError as exc:  # pragma: no cover - dev feedback
             raise NotImplementedError(
                 f"Extractor for source {source.value} does not yet implement "
                 "extraction."
             ) from exc
+        finally:
+            if progress is not None:
+                progress.close()
 
         if len(extracted) != len(pending_subset):
             raise ValueError(
@@ -229,11 +273,20 @@ def run_extraction(
 
         for (index, _), extraction_result in zip(pending_entries, extracted):
             ordered_results[index] = extraction_result
+            processed_count += 1
 
         cache.cache_extraction_results(
             resolved_settings,
             source.value,
             extracted,
+        )
+
+        logger.info(
+            "Extract[%s] successes: %d/%d",
+            source.value,
+            len(extracted),
+            missing_total,
+            extra=console_kwargs(),
         )
 
     final_results: List[ExtractionResult] = []
@@ -290,6 +343,16 @@ def run_extraction(
         for bundle in bundles:
             exporter.export(bundle)
 
+    if download_results:
+        logger.info(
+            "[extract] successes: %d/%d",
+            processed_count,
+            len(download_results),
+            extra=console_kwargs(),
+        )
+    if metrics is not None:
+        metrics.record_produced(len(bundles))
+
     return bundles
 
 
@@ -314,3 +377,18 @@ def _build_placeholder_metadata(result: ExtractionResult) -> ArticleMetadata:
 __all__ = [
     "run_extraction",
 ]
+
+
+def _create_progress_bar(
+    settings: Settings,
+    total: int,
+    desc: str,
+) -> tqdm | None:
+    if not settings.show_progress or total <= 0:
+        return None
+    return tqdm(
+        total=total,
+        desc=desc,
+        leave=False,
+        unit="article",
+    )

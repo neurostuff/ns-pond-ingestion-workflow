@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Sequence
 
@@ -17,6 +17,11 @@ from ingestion_workflow.models import (
     Identifiers,
 )
 from ingestion_workflow.services import cache
+from ingestion_workflow.services.logging import (
+    configure_logging,
+    console_kwargs,
+)
+from ingestion_workflow.workflow.stats import StageMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +41,7 @@ class PipelineState:
     downloads: List[DownloadResult] | None = None
     bundles: List[ArticleExtractionBundle] | None = None
     analyses: Dict[str, Dict[str, AnalysisCollection]] | None = None
+    stage_metrics: Dict[str, StageMetrics] = field(default_factory=dict)
 
 
 def run_pipeline(
@@ -46,6 +52,7 @@ def run_pipeline(
 
     resolved_settings = settings or load_settings()
     resolved_settings.ensure_directories()
+    _configure_logging_for_run(resolved_settings)
     selected_stages = _normalize_stages(resolved_settings.stages)
     state = PipelineState()
     _seed_identifiers_from_manifest(
@@ -65,9 +72,10 @@ def run_pipeline(
 
     for stage in selected_stages:
         handler = stage_handlers[stage]
-        logger.info("Starting stage: %s", stage)
+        logger.info("Starting stage: %s", stage, extra=console_kwargs())
         handler(resolved_settings, state)
-        logger.info("Completed stage: %s", stage)
+        _log_stage_summary(stage, state)
+        logger.info("Completed stage: %s", stage, extra=console_kwargs())
 
     return state
 
@@ -78,7 +86,8 @@ def _run_gather_stage(settings: Settings, state: PipelineState) -> None:
         return
     from ingestion_workflow.workflow.gather import gather_identifiers
 
-    identifiers = gather_identifiers(settings=settings)
+    manifest = settings.manifest_path
+    identifiers = gather_identifiers(settings=settings, manifest=manifest)
     state.identifiers = identifiers
 
 
@@ -89,8 +98,14 @@ def _run_download_stage(settings: Settings, state: PipelineState) -> None:
     _ensure_identifiers(settings, state)
     from ingestion_workflow.workflow.download import run_downloads
 
-    downloads = run_downloads(state.identifiers, settings=settings)
+    download_metrics = StageMetrics()
+    downloads = run_downloads(
+        state.identifiers,
+        settings=settings,
+        metrics=download_metrics,
+    )
     state.downloads = downloads
+    state.stage_metrics["download"] = download_metrics
 
 
 def _run_extract_stage(settings: Settings, state: PipelineState) -> None:
@@ -100,8 +115,24 @@ def _run_extract_stage(settings: Settings, state: PipelineState) -> None:
     _ensure_downloads(settings, state)
     from ingestion_workflow.workflow.extract import run_extraction
 
-    bundles = run_extraction(state.downloads, settings=settings)
+    successful_downloads = [
+        download for download in state.downloads or [] if download.success
+    ]
+
+    if not successful_downloads:
+        logger.info("No successful downloads available for extraction.")
+        state.bundles = []
+        state.stage_metrics["extract"] = StageMetrics()
+        return
+
+    extract_metrics = StageMetrics()
+    bundles = run_extraction(
+        successful_downloads,
+        settings=settings,
+        metrics=extract_metrics,
+    )
     state.bundles = bundles
+    state.stage_metrics["extract"] = extract_metrics
 
 
 def _run_create_analyses_stage(
@@ -113,8 +144,15 @@ def _run_create_analyses_stage(
     _ensure_bundles(settings, state)
     from ingestion_workflow.workflow.create_analyses import run_create_analyses
 
-    analyses = run_create_analyses(state.bundles, settings=settings)
+    analyses_metrics = StageMetrics()
+    analyses = run_create_analyses(
+        state.bundles,
+        settings=settings,
+        extractor_name=None,
+        metrics=analyses_metrics,
+    )
     state.analyses = analyses
+    state.stage_metrics["create_analyses"] = analyses_metrics
 
 
 def _run_upload_stage(settings: Settings, state: PipelineState) -> None:
@@ -168,7 +206,7 @@ def _ensure_identifiers(settings: Settings, state: PipelineState) -> None:
 
 
 def _ensure_downloads(settings: Settings, state: PipelineState) -> None:
-    if state.downloads:
+    if state.downloads is not None:
         return
     if not settings.use_cached_inputs:
         raise ValueError(
@@ -186,7 +224,7 @@ def _ensure_downloads(settings: Settings, state: PipelineState) -> None:
 
 
 def _ensure_bundles(settings: Settings, state: PipelineState) -> None:
-    if state.bundles:
+    if state.bundles is not None:
         return
     if not settings.use_cached_inputs:
         raise ValueError(
@@ -204,6 +242,75 @@ def _ensure_bundles(settings: Settings, state: PipelineState) -> None:
             "Re-run the extract stage."
         )
     state.bundles = hydrated
+
+
+def _log_stage_summary(stage: str, state: PipelineState) -> None:
+    if stage == "gather":
+        count = len(state.identifiers.identifiers) if state.identifiers else 0
+        logger.info(
+            "Gather stage identifiers: %d",
+            count,
+            extra=console_kwargs(),
+        )
+    elif stage == "download":
+        metrics = state.stage_metrics.get("download")
+        produced = (
+            metrics.produced
+            if metrics
+            else (len(state.downloads) if state.downloads else 0)
+        )
+        cache_hits = metrics.cache_hits if metrics else 0
+        logger.info(
+            "Download stage results: %d (cache hits: %d)",
+            produced,
+            cache_hits,
+            extra=console_kwargs(),
+        )
+        if metrics and metrics.cache_hits == 0:
+            logger.warning(
+                "Download stage loaded zero items from cache.",
+                extra=console_kwargs(),
+            )
+    elif stage == "extract":
+        metrics = state.stage_metrics.get("extract")
+        produced = (
+            metrics.produced
+            if metrics
+            else (len(state.bundles) if state.bundles else 0)
+        )
+        cache_hits = metrics.cache_hits if metrics else 0
+        logger.info(
+            "Extract stage bundles: %d (cache hits: %d)",
+            produced,
+            cache_hits,
+            extra=console_kwargs(),
+        )
+        if metrics and metrics.cache_hits == 0:
+            logger.warning(
+                "Extract stage loaded zero bundles from cache.",
+                extra=console_kwargs(),
+            )
+    elif stage == "create_analyses":
+        metrics = state.stage_metrics.get("create_analyses")
+        articles = len(state.analyses) if state.analyses else 0
+        collections = (
+            sum(len(collections) for collections in state.analyses.values())
+            if state.analyses
+            else 0
+        )
+        cache_hits = metrics.cache_hits if metrics else 0
+        logger.info(
+            "Create analyses stage: %d articles, %d collections (cache hits: %d)",
+            articles,
+            collections,
+            cache_hits,
+            extra=console_kwargs(),
+        )
+        if metrics and metrics.cache_hits == 0:
+            logger.warning(
+                "Create analyses stage loaded zero tables from cache.",
+                extra=console_kwargs(),
+            )
 
 
 def _load_identifiers_from_manifest(settings: Settings) -> Identifiers:
@@ -283,6 +390,20 @@ def _build_placeholder_metadata(identifier: Identifier) -> ArticleMetadata:
     if label:
         return ArticleMetadata(title=label)
     return ArticleMetadata(title=identifier.hash_id or "Unknown Identifier")
+
+
+def _configure_logging_for_run(settings: Settings) -> None:
+    log_path: Path | None = settings.log_file
+    if log_path is None:
+        log_path = settings.data_root / "logs" / "pipeline.log"
+    elif not log_path.is_absolute():
+        log_path = settings.data_root / log_path
+
+    configure_logging(
+        log_to_file=settings.log_to_file,
+        log_file=log_path if settings.log_to_file else None,
+        log_to_console=settings.log_to_console,
+    )
 
 
 __all__ = ["PipelineState", "run_pipeline"]

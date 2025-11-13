@@ -42,14 +42,18 @@ def test_elsevier_download_mixed_success(monkeypatch, tmp_path):
 
     extractor = ElsevierExtractor(settings=settings)
 
-    def fake_run_download(self, records):
+    def fake_run_download(self, records, progress_hook=None):
         assert len(records) == 3
-        return [
+        articles = [
             _make_fake_article(pmid="123456", identifier_type="pmid"),
             _make_fake_article(
                 doi="10.1234/success", identifier_type="doi"
             ),
         ]
+        if progress_hook:
+            for _ in articles:
+                progress_hook(1)
+        return articles
 
     monkeypatch.setattr(ElsevierExtractor, "_run_download", fake_run_download)
 

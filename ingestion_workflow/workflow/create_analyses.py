@@ -10,7 +10,9 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
-from typing import Dict, List, Sequence, Tuple
+from typing import Callable, Dict, List, Sequence, Tuple
+
+from tqdm.auto import tqdm
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models import (
@@ -25,6 +27,9 @@ from ingestion_workflow.services.create_analyses import (
     sanitize_table_id,
 )
 from ingestion_workflow.services.export import ExportService
+from ingestion_workflow.services.logging import console_kwargs
+from ingestion_workflow.workflow.stats import StageMetrics
+from ingestion_workflow.utils.progress import progress_callback
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +40,7 @@ def run_create_analyses(
     *,
     settings: Settings | None = None,
     extractor_name: str | None = None,
+    metrics: StageMetrics | None = None,
 ) -> Dict[str, Dict[str, AnalysisCollection]]:
     """
     Run the create-analyses step for a sequence of bundles.
@@ -54,12 +60,20 @@ def run_create_analyses(
     cache_candidates: List[CreateAnalysesResult] = []
     bundle_results: Dict[str, List[CreateAnalysesResult]] = {}
     pending_jobs: List["PendingJob"] = []
+    cached_tables = 0
+    pending_tables = 0
+    skipped_tables = 0
     hash_to_bundle = {bundle.article_data.hash_id: bundle for bundle in bundles}
 
     for bundle in bundles:
         article_hash = bundle.article_data.hash_id
         logger.info("Creating analyses for article %s", article_hash)
-        per_table, per_bundle_results, pending_job = _run_bundle_with_cache(
+        (
+            per_table,
+            per_bundle_results,
+            pending_job,
+            stats,
+        ) = _run_bundle_with_cache(
             bundle,
             article_hash,
             resolved_settings,
@@ -67,8 +81,26 @@ def run_create_analyses(
         )
         results[article_hash] = per_table
         bundle_results[article_hash] = per_bundle_results
+        cached_tables += stats.cached
+        pending_tables += stats.pending
+        skipped_tables += stats.skipped
         if pending_job is not None:
             pending_jobs.append(pending_job)
+
+    if cached_tables:
+        logger.info(
+            "create_analyses loaded %d tables from cache",
+            cached_tables,
+            extra=console_kwargs(),
+        )
+        if metrics is not None:
+            metrics.record_cache_hits(cached_tables)
+    if skipped_tables:
+        logger.info(
+            "create_analyses skipped %d tables without coordinates",
+            skipped_tables,
+            extra=console_kwargs(),
+        )
 
     if pending_jobs:
         max_workers = max(1, resolved_settings.n_llm_workers)
@@ -77,6 +109,17 @@ def run_create_analyses(
             len(pending_jobs),
             max_workers,
         )
+        logger.info(
+            "Processing %d tables via LLM",
+            pending_tables,
+            extra=console_kwargs(),
+        )
+        progress = _create_progress_bar(
+            resolved_settings,
+            pending_tables,
+            "CreateAnalyses",
+        )
+        progress_hook = progress_callback(progress)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_job = {
                 executor.submit(
@@ -84,12 +127,16 @@ def run_create_analyses(
                     job,
                     resolved_settings,
                     extractor_name,
+                    progress_hook,
                 ): job
                 for job in pending_jobs
             }
             for future in as_completed(future_to_job):
+                job = future_to_job[future]
                 produced = future.result()
                 cache_candidates.extend(produced)
+        if progress is not None:
+            progress.close()
 
     if cache_candidates:
         cache.cache_create_analyses_results(
@@ -109,6 +156,22 @@ def run_create_analyses(
                 continue
             exporter.export(bundle, per_bundle)
 
+    total_success_tables = sum(
+        len(entries) for entries in bundle_results.values()
+    )
+    total_target_tables = cached_tables + pending_tables
+    if total_target_tables:
+        logger.info(
+            "[create_analyses] successes: %d/%d",
+            total_success_tables,
+            total_target_tables,
+            extra=console_kwargs(),
+        )
+    if metrics is not None:
+        metrics.record_produced(total_success_tables)
+        if skipped_tables:
+            metrics.record_skipped(skipped_tables)
+
     return results
 
 
@@ -121,13 +184,19 @@ def _run_bundle_with_cache(
     Dict[str, AnalysisCollection],
     List[CreateAnalysesResult],
     "PendingJob | None",
+    "BundleCacheStats",
 ]:
     table_results: Dict[str, AnalysisCollection] = {}
     pending_tables: List[ExtractedTable] = []
     pending_info: Dict[str, Dict[str, object]] = {}
     bundle_results: List[CreateAnalysesResult] = []
+    stats = BundleCacheStats()
 
     for index, table in enumerate(bundle.article_data.tables):
+        if not table.contains_coordinates and not table.coordinates:
+            stats.skipped += 1
+            continue
+
         sanitized_table_id = sanitize_table_id(table.table_id, index)
         table_key = table.table_id or sanitized_table_id
         cache_key = _compose_cache_key(article_hash, sanitized_table_id)
@@ -139,8 +208,10 @@ def _run_bundle_with_cache(
         if cached:
             table_results[table_key] = cached.analysis_collection
             bundle_results.append(cached)
+            stats.cached += 1
             continue
         pending_tables.append(table)
+        stats.pending += 1
         pending_info[table_key] = {
             "sanitized": sanitized_table_id,
             "cache_key": cache_key,
@@ -149,7 +220,7 @@ def _run_bundle_with_cache(
         }
 
     if not pending_tables:
-        return table_results, bundle_results, None
+        return table_results, bundle_results, None, stats
 
     pruned_content = replace(bundle.article_data, tables=list(pending_tables))
     pruned_bundle = ArticleExtractionBundle(
@@ -164,7 +235,7 @@ def _run_bundle_with_cache(
         table_results=table_results,
         bundle_records=bundle_results,
     )
-    return table_results, bundle_results, pending_job
+    return table_results, bundle_results, pending_job, stats
 
 
 def _compose_cache_key(article_hash: str, sanitized_table_id: str) -> str:
@@ -180,16 +251,24 @@ class PendingJob:
     bundle_records: List[CreateAnalysesResult]
 
 
+@dataclass
+class BundleCacheStats:
+    cached: int = 0
+    pending: int = 0
+    skipped: int = 0
+
+
 def _process_pending_job(
     job: PendingJob,
     settings: Settings,
     extractor_name: str | None,
+    progress_hook: Callable[[int], None] | None,
 ) -> List[CreateAnalysesResult]:
     service = CreateAnalysesService(
         settings,
         extractor_name=extractor_name,
     )
-    new_results = service.run(job.bundle)
+    new_results = service.run(job.bundle, progress_hook=progress_hook)
     produced: List[CreateAnalysesResult] = []
     for table_key, collection in new_results.items():
         info = job.pending_info.get(table_key)
@@ -215,3 +294,18 @@ def _process_pending_job(
 __all__ = [
     "run_create_analyses",
 ]
+
+
+def _create_progress_bar(
+    settings: Settings,
+    total: int,
+    desc: str,
+) -> tqdm | None:
+    if not settings.show_progress or total <= 0:
+        return None
+    return tqdm(
+        total=total,
+        desc=desc,
+        leave=False,
+        unit="table",
+    )

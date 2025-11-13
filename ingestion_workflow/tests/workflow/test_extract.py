@@ -19,7 +19,7 @@ from ingestion_workflow.workflow import extract as extract_module
 class _FakeExtractor:
     payload: list[ExtractedContent]
 
-    def extract(self, download_results):  # pragma: no cover
+    def extract(self, download_results, progress_hook=None):  # pragma: no cover
         assert len(download_results) == len(self.payload)
         return list(self.payload)
 
