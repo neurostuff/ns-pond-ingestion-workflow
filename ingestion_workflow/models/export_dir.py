@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
+
+from pyarty import Dir, File, bundle, twig
 
 from .analysis import AnalysisCollection, CreateAnalysesResult
 from .download import DownloadSource
@@ -236,6 +239,10 @@ class ProcessedExtractorTree:
         source_name = self.source.value if isinstance(self.source, DownloadSource) else self.source
         return Path("processed") / source_name
 
+    @property
+    def source_name(self) -> str:
+        return self.source.value if isinstance(self.source, DownloadSource) else self.source
+
     @classmethod
     def load(cls, root: Path, source_name: str) -> "ProcessedExtractorTree":
         base_dir = Path("processed") / source_name
@@ -358,6 +365,37 @@ class ProcessedExtractorTree:
                 file.rel_path = rel_path
                 file.save(root, overwrite=overwrite)
 
+    def to_pyarty_bundle(self) -> "_ProcessedSourceBundle":
+        tables_manifest = self.tables_index or list(self.bundle.article_data.tables)
+        tables_payload: list[dict[str, Any]] | None = None
+        if tables_manifest:
+            tables_payload = [table.to_dict() for table in tables_manifest]
+
+        table_files = [
+            _TableFileBundle(
+                filename=Path(text_file.rel_path).name,
+                payload=text_file.content.encode("utf-8"),
+            )
+            for _, text_file in sorted(self.table_files.items())
+        ]
+
+        analysis_files = [
+            _AnalysisFileBundle(
+                filename=Path(analysis.rel_path).name,
+                collection=json.dumps(analysis.collection.to_dict(), indent=2).encode("utf-8"),
+            )
+            for _, analysis in sorted(self.analyses.items())
+        ]
+
+        return _ProcessedSourceBundle(
+            source_name=self.source_name,
+            article_data=self.bundle.article_data.to_dict(),
+            article_metadata=self.bundle.article_metadata.to_dict(),
+            tables_index=tables_payload,
+            tables=table_files,
+            analyses=analysis_files,
+        )
+
 
 @dataclass
 class ExtractorSourceTree:
@@ -370,6 +408,10 @@ class ExtractorSourceTree:
     def base_dir(self) -> Path:
         source_name = self.source.value if isinstance(self.source, DownloadSource) else self.source
         return Path("source") / source_name
+
+    @property
+    def source_name(self) -> str:
+        return self.source.value if isinstance(self.source, DownloadSource) else self.source
 
     @classmethod
     def load(cls, root: Path, source_name: str) -> "ExtractorSourceTree":
@@ -407,6 +449,16 @@ class ExtractorSourceTree:
             rel_path = _relative_under(base_dir, file.rel_path, name)
             file.rel_path = rel_path
             file.save(root, overwrite=overwrite)
+
+    def to_pyarty_bundle(self) -> "_SourceBundle":
+        entries = [
+            _BinaryFileBundle(
+                filename=Path(file.rel_path).name,
+                payload=file.data,
+            )
+            for _, file in sorted(self.files.items())
+        ]
+        return _SourceBundle(source_name=self.source_name, files=entries)
 
 
 # --------------------------------------------------------------------------- #
@@ -471,19 +523,98 @@ class ArticleDirectory:
             sources=sources,
         )
 
-    def save(self, base_root: Path, *, overwrite: bool = True) -> None:
-        root = base_root / self.root_name
-        root.mkdir(parents=True, exist_ok=True)
-
-        IdentifierFile(rel_path=Path("identifiers.json"), identifier=self.identifier).save(
-            root, overwrite=overwrite
+    def _to_pyarty_bundle(self) -> "_ArticleExportBundle":
+        processed_entries = [
+            tree.to_pyarty_bundle()
+            for _, tree in sorted(self.processed.items(), key=lambda item: item[0])
+        ]
+        source_entries = [
+            tree.to_pyarty_bundle()
+            for _, tree in sorted(self.sources.items(), key=lambda item: item[0])
+        ]
+        identifier_payload = self.identifier.to_dict()
+        return _ArticleExportBundle(
+            identifier=identifier_payload,
+            processed_sources=processed_entries,
+            sources=source_entries,
         )
 
-        for processed_tree in self.processed.values():
-            processed_tree.save(root, overwrite=overwrite)
+    def save(self, base_root: Path, *, overwrite: bool = True) -> None:
+        root = base_root / self.root_name
+        if root.exists():
+            if not overwrite:
+                return
+            shutil.rmtree(root)
 
-        for source_tree in self.sources.values():
-            source_tree.save(root, overwrite=overwrite)
+        bundle = self._to_pyarty_bundle()
+        bundle.write(root, overwrite=True)
+
+
+def _constant_name(value: str) -> Callable[[str, Any, Any, int | None], str]:
+    def _name(field_name: str, child: Any, owner: Any, index: int | None = None) -> str:
+        return value
+
+    return _name
+
+
+@bundle
+class _TableFileBundle:
+    filename: str
+    payload: File[bytes] = twig(name="{filename}")
+
+
+@bundle
+class _AnalysisFileBundle:
+    filename: str
+    collection: File[bytes] = twig(name="{filename}")
+
+
+@bundle
+class _ProcessedSourceBundle:
+    source_name: str
+    article_data: File[dict[str, Any]] = twig(name=_constant_name("article_data"))
+    article_metadata: File[dict[str, Any]] = twig(name=_constant_name("article_metadata"))
+    tables_index: File[list[dict[str, Any]]] = twig(
+        name=_constant_name("tables"),
+        extension="json",
+        default=None,
+    )
+    tables: Dir[list[_TableFileBundle]] = twig(
+        name=_constant_name("tables"),
+        default_factory=list,
+    )
+    analyses: Dir[list[_AnalysisFileBundle]] = twig(
+        name=_constant_name("analyses"),
+        default_factory=list,
+    )
+
+
+@bundle
+class _BinaryFileBundle:
+    filename: str
+    payload: File[bytes] = twig(name="{filename}")
+
+
+@bundle
+class _SourceBundle:
+    source_name: str
+    files: Dir[list[_BinaryFileBundle]] = twig(
+        name=_constant_name(""),
+        default_factory=list,
+    )
+
+
+@bundle
+class _ArticleExportBundle:
+    identifier: File[dict[str, Any]] = twig(name=_constant_name("identifiers"))
+    processed_sources: Dir[list[_ProcessedSourceBundle]] = twig(
+        prefix="processed",
+        name=("{source_name}", "field"),
+    )
+    sources: Dir[list[_SourceBundle]] = twig(
+        prefix="source",
+        name=("{source_name}", "field"),
+    )
 
 
 __all__ = [

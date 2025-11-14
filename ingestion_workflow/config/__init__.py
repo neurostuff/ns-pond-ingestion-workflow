@@ -139,7 +139,7 @@ class Settings(BaseSettings):
     )
 
     export_overwrite: bool = Field(
-        default=False,
+        default=True,
         description="Overwrite previously exported files if they exist",
     )
 

@@ -7,7 +7,6 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
-    ArticleDirectory,
     ArticleExtractionBundle,
     ArticleMetadata,
     Coordinate,
@@ -72,9 +71,8 @@ def test_export_writes_structure(tmp_path):
     copied_table = processed_dir / "tables" / "table-a.html"
     assert copied_table.exists()
 
-    directory = ArticleDirectory.load(settings.data_root / "export", bundle.article_data.identifier.slug)
-    processed = directory.processed[bundle.article_data.source.value]
-    assert processed.tables_index[0].table_id == "Table A"
+    manifest = json.loads((processed_dir / "tables.json").read_text())
+    assert manifest[0]["table_id"] == "Table A"
 
 
 def test_export_writes_analyses_jsonl(tmp_path):
@@ -122,8 +120,22 @@ def test_export_writes_analyses_jsonl(tmp_path):
     payload = json.loads(files[0].read_text())
     assert payload["analyses"][0]["name"] == "analysis"
 
-    directory = ArticleDirectory.load(
-        settings.data_root / "export", bundle.article_data.identifier.slug
-    )
-    processed = directory.processed[bundle.article_data.source.value]
-    assert processed.analyses
+    assert payload["analyses"]
+
+
+def test_export_overwrites_existing_tree(tmp_path):
+    bundle = _bundle(tmp_path)
+    bundle.article_data.full_text_path = tmp_path / "fulltext.txt"
+    bundle.article_data.full_text_path.write_text("full text", encoding="utf-8")
+    settings = Settings(data_root=tmp_path)
+    exporter = ExportService(settings, overwrite=True)
+
+    exporter.export(bundle)
+    export_root = settings.data_root / "export" / bundle.article_data.identifier.slug
+    stale = export_root / "processed" / bundle.article_data.source.value / "stale.txt"
+    stale.parent.mkdir(parents=True, exist_ok=True)
+    stale.write_text("old", encoding="utf-8")
+
+    exporter.export(bundle)
+    assert not stale.exists()
+    assert (export_root / "identifiers.json").exists()

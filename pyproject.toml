@@ -30,6 +30,7 @@ dependencies = [
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@58ae05ba68fa458ed5669a6a33508d9ad3a0e8c9",
   "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",
+  "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   "pydantic-settings>=2.5",
 ]
 
