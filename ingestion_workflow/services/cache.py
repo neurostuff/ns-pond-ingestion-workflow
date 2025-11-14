@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import re
+import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Iterator, List, Sequence, Tuple, Type, TypeVar
@@ -486,13 +487,11 @@ def _collect_ace_legacy_results(root: Path) -> Iterator[DownloadResult]:
 
 
 def _collect_pubget_legacy_results(root: Path) -> Iterator[DownloadResult]:
-    for article_dir in (path for path in root.rglob("pmcid_*") if path.is_dir()):
-        pmcid_suffix = article_dir.name.split("_", 1)[-1].strip()
-        if not pmcid_suffix:
+    for article_xml in _pubget_article_files(root):
+        article_dir = article_xml.parent
+        pmcid = _derive_pmcid_from_path(article_dir) or _extract_pmcid_from_xml(article_xml)
+        if not pmcid:
             continue
-        pmcid = pmcid_suffix.upper()
-        if not pmcid.startswith("PMC"):
-            pmcid = f"PMC{pmcid}"
         identifier = Identifier(pmcid=pmcid)
         files: List[DownloadedFile] = []
         for file_path in article_dir.rglob("*"):
@@ -515,6 +514,61 @@ def _collect_pubget_legacy_results(root: Path) -> Iterator[DownloadResult]:
             success=True,
             files=files,
         )
+
+
+def _pubget_article_files(root: Path) -> Iterator[Path]:
+    for path in root.rglob("*"):
+        if path.is_file() and path.name.lower() == "article.xml":
+            yield path
+
+
+def _derive_pmcid_from_path(article_dir: Path) -> Optional[str]:
+    for part in reversed(article_dir.parts):
+        candidate = _normalize_pmcid_token(part)
+        if candidate:
+            return candidate
+    return None
+
+
+def _normalize_pmcid_token(value: str) -> Optional[str]:
+    token = value.strip()
+    if not token:
+        return None
+    lowered = token.lower()
+    if lowered.startswith("pmcid"):
+        suffix = token[5:]
+        suffix = suffix.lstrip("_- ")
+    elif lowered.startswith("pmc"):
+        suffix = token[3:]
+        suffix = suffix.lstrip("_- ")
+        if not suffix:
+            suffix = token[3:]
+    else:
+        return None
+    cleaned = suffix.strip().upper()
+    if not cleaned:
+        return None
+    if not cleaned.startswith("PMC"):
+        cleaned = f"PMC{cleaned}"
+    return cleaned
+
+
+def _extract_pmcid_from_xml(article_xml: Path) -> Optional[str]:
+    try:
+        for _event, elem in ET.iterparse(article_xml, events=("end",)):
+            if elem.tag.lower().endswith("article-id") and elem.attrib.get("pub-id-type") == "pmcid":
+                text = (elem.text or "").strip()
+                elem.clear()
+                if not text:
+                    continue
+                normalized = text.upper()
+                if not normalized.startswith("PMC"):
+                    normalized = f"PMC{normalized}"
+                return normalized
+            elem.clear()
+    except ET.ParseError:
+        return None
+    return None
 
 
 def _guess_file_type(suffix: str) -> Tuple[FileType, str]:

@@ -55,3 +55,39 @@ def test_index_legacy_downloads_pubget(tmp_path: Path) -> None:
     names = {file.file_path.name for file in result.files}
     assert "article.xml" in names
     assert "table_000.csv" in names
+
+
+def test_index_legacy_downloads_pubget_nested_structure(tmp_path: Path) -> None:
+    settings = _make_settings(tmp_path)
+    source = tmp_path / "pubget_nested"
+    article_dir = (
+        source
+        / "original"
+        / "fmri_journal"
+        / "query_abc123"
+        / "articles"
+        / "bucket_a"
+        / "nested_dir"
+    )
+    article_dir.mkdir(parents=True)
+    article_xml = article_dir / "article.xml"
+    article_xml.write_text(
+        """
+        <article>
+          <front>
+            <article-meta>
+              <article-id pub-id-type=\"pmcid\">9056519</article-id>
+            </article-meta>
+          </front>
+        </article>
+        """.strip()
+    )
+    (article_dir / "fulltext.pdf").write_bytes(b"pdf")
+
+    index = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    assert index.count() == 1
+    entry = next(index.iter_entries())
+    assert entry.result.identifier.pmcid == "PMC9056519"
+    names = {file.file_path.name for file in entry.result.files}
+    assert "article.xml" in names
+    assert "fulltext.pdf" in names
