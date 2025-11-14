@@ -161,12 +161,13 @@ def ensure_successful_download(download_result: DownloadResult) -> None:
     if not download_result.files:
         raise ValueError("Successful downloads must include persisted files for processing.")
     missing = [
-        downloaded.file_path for downloaded in download_result.files if not downloaded.file_path.exists()
+        downloaded.file_path
+        for downloaded in download_result.files
+        if not downloaded.file_path.exists()
     ]
     if missing:
         raise ValueError(
-            "Download payloads missing on disk: "
-            + ", ".join(str(path) for path in missing)
+            "Download payloads missing on disk: " + ", ".join(str(path) for path in missing)
         )
 
 

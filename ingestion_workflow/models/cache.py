@@ -80,9 +80,7 @@ class CacheEnvelope(Generic[PayloadT]):
         cached_at = _decode_datetime(str(cached_raw)) if cached_raw else datetime.utcnow()
         metadata = dict(payload.get("metadata", {}))
         raw_slug = payload.get("slug")
-        slug = (
-            str(raw_slug) if raw_slug is not None else cls._derive_slug(decoded_payload)
-        )
+        slug = str(raw_slug) if raw_slug is not None else cls._derive_slug(decoded_payload)
         return cls(
             slug=slug,
             payload=decoded_payload,

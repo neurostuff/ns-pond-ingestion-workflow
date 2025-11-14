@@ -150,7 +150,9 @@ def run_create_analyses(
             cache_candidates,
         )
 
-    def _export_payload(exporter: ExportService, item: Tuple[str, List[CreateAnalysesResult]]) -> None:
+    def _export_payload(
+        exporter: ExportService, item: Tuple[str, List[CreateAnalysesResult]]
+    ) -> None:
         article_slug, per_bundle = item
         bundle = slug_to_bundle.get(article_slug)
         if bundle is None:

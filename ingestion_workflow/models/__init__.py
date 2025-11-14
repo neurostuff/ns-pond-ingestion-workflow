@@ -12,6 +12,20 @@ from .analysis import (
 )
 from .download import DownloadResult, DownloadSource, DownloadedFile, FileType
 from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
+from .export_dir import (
+    AnalysisFile,
+    ArticleDataFile,
+    ArticleDirectory,
+    ArticleMetadataFile,
+    BinaryFile,
+    ExtractorSourceTree,
+    IdentifierFile,
+    JsonFile,
+    JsonLinesFile,
+    ProcessedExtractorTree,
+    TablesIndexFile,
+    TextFile,
+)
 from .ids import Identifier, IdentifierExpansion, Identifiers
 from .metadata import (
     ArticleMetadata,
@@ -40,10 +54,14 @@ ExtractionIndex = ExtractionResultIndex
 
 __all__ = [
     "Analysis",
+    "AnalysisFile",
+    "ArticleDataFile",
+    "ArticleDirectory",
     "AnalysisCollection",
     "ArticleExtractionBundle",
     "ArticleMetadata",
     "Author",
+    "ArticleMetadataFile",
     "CACHE_SCHEMA_VERSION",
     "CacheEnvelope",
     "CacheIndex",
@@ -65,6 +83,7 @@ __all__ = [
     "ExtractedTable",
     "ExtractionResultEntry",
     "ExtractionResultIndex",
+    "BinaryFile",
     "FileType",
     "Identifier",
     "IdentifierExpansion",
@@ -72,7 +91,14 @@ __all__ = [
     "IdentifierCacheEntry",
     "IdentifierCacheIndex",
     "Image",
+    "ExtractorSourceTree",
+    "IdentifierFile",
+    "JsonFile",
+    "JsonLinesFile",
     "MetadataCache",
     "MetadataCacheIndex",
+    "ProcessedExtractorTree",
+    "TablesIndexFile",
+    "TextFile",
     "merge_metadata_from_sources",
 ]

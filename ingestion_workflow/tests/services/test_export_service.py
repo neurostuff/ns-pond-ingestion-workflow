@@ -7,6 +7,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
+    ArticleDirectory,
     ArticleExtractionBundle,
     ArticleMetadata,
     Coordinate,
@@ -71,6 +72,10 @@ def test_export_writes_structure(tmp_path):
     copied_table = processed_dir / "tables" / "table-a.html"
     assert copied_table.exists()
 
+    directory = ArticleDirectory.load(settings.data_root / "export", bundle.article_data.identifier.slug)
+    processed = directory.processed[bundle.article_data.source.value]
+    assert processed.tables_index[0].table_id == "Table A"
+
 
 def test_export_writes_analyses_jsonl(tmp_path):
     bundle = _bundle(tmp_path)
@@ -116,3 +121,9 @@ def test_export_writes_analyses_jsonl(tmp_path):
     assert len(files) == 1
     payload = json.loads(files[0].read_text())
     assert payload["analyses"][0]["name"] == "analysis"
+
+    directory = ArticleDirectory.load(
+        settings.data_root / "export", bundle.article_data.identifier.slug
+    )
+    processed = directory.processed[bundle.article_data.source.value]
+    assert processed.analyses

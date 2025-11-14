@@ -53,7 +53,6 @@ _HTML_INVALID_MARKERS: list[tuple[str, str]] = [
 _MIN_HTML_LENGTH = 500
 
 
-
 def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
     fallback = f"table-{index}"
     if not candidate:
@@ -163,6 +162,7 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
         return False, (f"HTML payload is unexpectedly small ({len(normalized)} characters).")
 
     return True, None
+
 
 def _translate_ace_table(
     table: Any,
