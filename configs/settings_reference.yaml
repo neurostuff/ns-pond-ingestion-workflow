@@ -1,0 +1,72 @@
+# Ingestion Workflow configuration reference.
+# Each option mirrors a field in ingestion_workflow.config.Settings along with its default.
+
+data_root: "./data"  # Root directory for workflow data (manifests, staging, etc.).
+cache_root: "./.cache"  # Base directory for cached indices by stage or provider.
+ns_pond_root: "./ns-pond"  # Local mirror of Neurostore content organized by base study ID.
+
+pubmed_email: null  # Contact email for PubMed API (required by NCBI guidelines).
+pubmed_api_key: null  # Optional PubMed API key for higher rate limits.
+pubmed_batch_size: 500  # Number of records requested per PubMed API call.
+
+semantic_scholar_api_key: null  # Optional Semantic Scholar API key to raise rate limits.
+openalex_email: null  # Contact email for OpenAlex API (enables polite pool access).
+
+download_sources:  # Ordered download providers to attempt per identifier.
+  - pubget
+  - elsevier
+  - ace
+cache_only_mode: false  # If true, only use cached downloads and never fetch new content.
+
+elsevier_api_key: null  # API key for Elsevier full-text access.
+elsevier_http_proxy: null  # HTTP proxy URL for Elsevier requests (e.g., socks5://127.0.0.1:1080).
+elsevier_https_proxy: null  # HTTPS proxy URL for Elsevier requests.
+elsevier_use_proxy: false  # Toggle routing Elsevier traffic through the configured proxy.
+
+llm_api_key: null  # API key for the configured LLM provider used during extraction.
+llm_api_base: null  # Optional base URL for the configured LLM service.
+llm_model: "gpt-5-mini"  # Default LLM model name for coordinate extraction.
+
+export: false  # Enable exporting extraction outputs to disk mirrors under data_root.
+export_overwrite: true  # Overwrite exported files if they already exist.
+n_llm_workers: 2  # Maximum number of concurrent LLM workers during analysis creation.
+
+neurostore_base_url: "https://neurostore.org/api"  # Base URL for Neurostore REST API.
+neurostore_token: null  # Authentication token for Neurostore uploads.
+neurostore_batch_size: 50  # Number of studies uploaded in a single batch.
+
+pubmed_tool: null  # Optional tool name reported to NCBI for PubMed requests.
+
+metadata_providers:  # Ordered list of metadata providers queried during enrichment.
+  - semantic_scholar
+  - pubmed
+  - openalex
+
+max_workers: 4  # Maximum number of parallel workers for concurrent operations.
+ace_max_workers: 4  # Max workers dedicated specifically to ACE downloads.
+
+force_redownload: false  # Force new downloads even when cached files exist.
+force_reextract: false  # Force re-running extraction even if cached bundles exist.
+
+verbose: false  # Increase logging verbosity on the console.
+dry_run: false  # When true, skip external calls and file writes (planning mode).
+
+stages:  # Canonical order of pipeline stages to execute.
+  - gather
+  - download
+  - extract
+  - create_analyses
+  - upload
+  - sync
+
+log_to_file: true  # Persist logs to a file (defaults to <data_root>/logs/pipeline.log).
+log_to_console: true  # Mirror selected log output to the console.
+log_file: null  # Optional explicit log file path override.
+show_progress: true  # Show tqdm progress bars on the console.
+
+manifest_path: null  # Path to identifiers manifest when skipping the gather stage.
+use_cached_inputs: true  # Hydrate skipped stages from cached outputs when available.
+
+pubget_cache_root: null  # Optional override for the Pubget cache directory.
+ace_cache_root: null  # Optional override for the ACE cache directory.
+elsevier_cache_root: null  # Optional override for the Elsevier cache directory.
