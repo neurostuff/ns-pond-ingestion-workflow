@@ -26,11 +26,14 @@ available.
 
 from __future__ import annotations
 
+import json
+import re
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Iterator, List, Sequence, Tuple, Type, TypeVar
 
 from filelock import FileLock
+from tqdm.auto import tqdm
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
@@ -38,7 +41,10 @@ from ingestion_workflow.models import (
     CreateAnalysesResultEntry,
     CreateAnalysesResultIndex,
     DownloadIndex,
+    DownloadedFile,
     DownloadResult,
+    DownloadSource,
+    FileType,
     ExtractionResult,
     Identifier,
     IdentifierCacheEntry,
@@ -58,6 +64,7 @@ GATHER_CACHE_NAMESPACE = "gather"
 CREATE_ANALYSES_CACHE_NAMESPACE = "create_analyses"
 INDEX_FILENAME = "index.json"
 LOCK_FILENAME = "index.lock"
+LEGACY_INDEX_BATCH_SIZE = 1000
 
 
 TIndex = TypeVar("TIndex", bound=CacheIndex)
@@ -89,6 +96,32 @@ def _index_path(
 ) -> Path:
     extractor_root = _extractor_root(settings, namespace, extractor_name)
     return extractor_root / INDEX_FILENAME
+
+
+def _analysis_artifacts_dir(
+    settings: Settings,
+    extractor_name: str | None,
+) -> Path:
+    root = _extractor_root(settings, CREATE_ANALYSES_CACHE_NAMESPACE, extractor_name)
+    artifacts = root / "artifacts"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    return artifacts
+
+
+def _sanitize_manifest_filename(value: str) -> str:
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "-", value)
+    sanitized = sanitized.strip("-")
+    return sanitized or "analysis"
+
+
+def _analysis_manifest_path(
+    settings: Settings,
+    extractor_name: str | None,
+    slug: str,
+) -> Path:
+    base = _analysis_artifacts_dir(settings, extractor_name)
+    filename = f"{_sanitize_manifest_filename(slug)}.jsonl"
+    return base / filename
 
 
 def _lock_path(
@@ -227,6 +260,12 @@ def cache_create_analyses_results(
         index_path = _index_path(settings, namespace, extractor_name)
         index = CreateAnalysesResultIndex.load(index_path)
         for result in results:
+            manifest_path = _analysis_manifest_path(settings, extractor_name, result.slug)
+            manifest_path.write_text(
+                json.dumps(result.analysis_collection.to_dict(), indent=2),
+                encoding="utf-8",
+            )
+            result.analysis_paths = [manifest_path]
             entry = CreateAnalysesResultEntry.from_result(result)
             index.add_result(entry)
         index.index_path = index_path
@@ -356,17 +395,265 @@ def index_legacy_downloads(
     *,
     namespace: str = DOWNLOAD_CACHE_NAMESPACE,
 ) -> DownloadIndex:
-    """Stub for indexing legacy downloads resident outside the workflow.
+    """Index historical downloads for ACE/Pubget into the cache."""
 
-    The implementation will:
-    1. walk ``source_directory`` and detect candidate payloads
-    2. use the identifier lookup service to enrich partial identifiers
-    3. persist synthetic ``DownloadResult`` entries into the cache index
+    extractor = DownloadSource(extractor_name)
+    source_directory = Path(source_directory)
+    if not source_directory.exists():
+        raise FileNotFoundError(f"Legacy source directory not found: {source_directory}")
+    if not source_directory.is_dir():
+        raise NotADirectoryError(f"Legacy source path must be a directory: {source_directory}")
 
-    Returns the updated index once implemented.
-    """
+    if extractor is DownloadSource.ACE:
+        results_iter = _collect_ace_legacy_results(source_directory)
+    elif extractor is DownloadSource.PUBGET:
+        results_iter = _collect_pubget_legacy_results(source_directory)
+    else:  # pragma: no cover - unsupported legacy extractor
+        raise ValueError(f"Legacy indexing not supported for extractor '{extractor_name}'.")
 
-    raise NotImplementedError("Legacy download indexing not yet implemented.")
+    index = load_download_index(settings, extractor_name, namespace=namespace)
+    slug_set, pmid_set, pmcid_set, doi_set = _build_identifier_filters(index)
+
+    progress = tqdm(
+        desc=f"Index[{extractor.value}] legacy",
+        unit="file",
+        leave=False,
+        dynamic_ncols=True,
+    )
+    batch: List[DownloadResult] = []
+
+    try:
+        for result in results_iter:
+            progress.update(1)
+            if _is_duplicate_identifier(result.identifier, slug_set, pmid_set, pmcid_set, doi_set):
+                continue
+            batch.append(result)
+            if len(batch) >= LEGACY_INDEX_BATCH_SIZE:
+                _persist_legacy_batch(
+                    settings,
+                    extractor_name,
+                    batch,
+                    slug_set,
+                    pmid_set,
+                    pmcid_set,
+                    doi_set,
+                    namespace,
+                )
+                batch.clear()
+
+        if batch:
+            _persist_legacy_batch(
+                settings,
+                extractor_name,
+                batch,
+                slug_set,
+                pmid_set,
+                pmcid_set,
+                doi_set,
+                namespace,
+            )
+    finally:
+        progress.close()
+
+    return load_download_index(settings, extractor_name, namespace=namespace)
+
+
+_CONTENT_TYPE_MAP = {
+    "html": (FileType.HTML, "text/html"),
+    "htm": (FileType.HTML, "text/html"),
+    "xml": (FileType.XML, "text/xml"),
+    "json": (FileType.JSON, "application/json"),
+    "csv": (FileType.CSV, "text/csv"),
+    "txt": (FileType.TEXT, "text/plain"),
+    "text": (FileType.TEXT, "text/plain"),
+    "pdf": (FileType.PDF, "application/pdf"),
+}
+
+
+def _collect_ace_legacy_results(root: Path) -> Iterator[DownloadResult]:
+    for html_file in root.rglob("*.html"):
+        if not html_file.is_file():
+            continue
+        pmid = html_file.stem.strip()
+        if not pmid:
+            continue
+        identifier = Identifier(pmid=pmid)
+        downloaded_file = DownloadedFile(
+            file_path=html_file,
+            file_type=FileType.HTML,
+            content_type="text/html",
+            source=DownloadSource.ACE,
+        )
+        yield DownloadResult(
+            identifier=identifier,
+            source=DownloadSource.ACE,
+            success=True,
+            files=[downloaded_file],
+        )
+
+
+def _collect_pubget_legacy_results(root: Path) -> Iterator[DownloadResult]:
+    for article_dir in (path for path in root.rglob("pmcid_*") if path.is_dir()):
+        pmcid_suffix = article_dir.name.split("_", 1)[-1].strip()
+        if not pmcid_suffix:
+            continue
+        pmcid = pmcid_suffix.upper()
+        if not pmcid.startswith("PMC"):
+            pmcid = f"PMC{pmcid}"
+        identifier = Identifier(pmcid=pmcid)
+        files: List[DownloadedFile] = []
+        for file_path in article_dir.rglob("*"):
+            if not file_path.is_file():
+                continue
+            file_type, content_type = _guess_file_type(file_path.suffix)
+            files.append(
+                DownloadedFile(
+                    file_path=file_path,
+                    file_type=file_type,
+                    content_type=content_type,
+                    source=DownloadSource.PUBGET,
+                )
+            )
+        if not files:
+            continue
+        yield DownloadResult(
+            identifier=identifier,
+            source=DownloadSource.PUBGET,
+            success=True,
+            files=files,
+        )
+
+
+def _guess_file_type(suffix: str) -> Tuple[FileType, str]:
+    normalized = suffix.lower().lstrip(".")
+    if normalized in _CONTENT_TYPE_MAP:
+        return _CONTENT_TYPE_MAP[normalized]
+    return FileType.BINARY, "application/octet-stream"
+
+
+def _enrich_identifiers_with_lookups(
+    settings: Settings, results: Sequence[DownloadResult]
+) -> None:
+    if not results:
+        return
+    services = _build_lookup_services(settings)
+    if not services:
+        return
+    identifiers = Identifiers([result.identifier for result in results])
+    for service in services:
+        service.find_identifiers(identifiers)
+
+
+def _build_lookup_services(settings: Settings):
+    from ingestion_workflow.services.id_lookup import (
+        IDLookupService,
+        OpenAlexIDLookupService,
+        PubMedIDLookupService,
+        SemanticScholarIDLookupService,
+    )
+
+    candidates: List[IDLookupService] = []
+    for cls in (
+        SemanticScholarIDLookupService,
+        PubMedIDLookupService,
+        OpenAlexIDLookupService,
+    ):
+        service = cls(settings)
+        if service.can_run():
+            candidates.append(service)
+    return candidates
+
+
+def _build_identifier_filters(
+    index: DownloadIndex,
+) -> Tuple[set[str], set[str], set[str], set[str]]:
+    slug_set: set[str] = set()
+    pmid_set: set[str] = set()
+    pmcid_set: set[str] = set()
+    doi_set: set[str] = set()
+    for entry in index.entries.values():
+        _add_identifier_keys(entry.result.identifier, slug_set, pmid_set, pmcid_set, doi_set)
+    return slug_set, pmid_set, pmcid_set, doi_set
+
+
+def _persist_legacy_batch(
+    settings: Settings,
+    extractor_name: str,
+    batch: List[DownloadResult],
+    slug_set: set[str],
+    pmid_set: set[str],
+    pmcid_set: set[str],
+    doi_set: set[str],
+    namespace: str,
+) -> None:
+    if not batch:
+        return
+
+    _enrich_identifiers_with_lookups(settings, batch)
+
+    new_results: List[DownloadResult] = []
+    for result in batch:
+        identifier = result.identifier
+        if not identifier.slug:
+            continue
+        if _is_duplicate_identifier(identifier, slug_set, pmid_set, pmcid_set, doi_set):
+            continue
+        new_results.append(result)
+        _add_identifier_keys(identifier, slug_set, pmid_set, pmcid_set, doi_set)
+
+    if not new_results:
+        return
+
+    with _acquire_lock(settings, namespace, extractor_name):
+        index_path = _index_path(settings, namespace, extractor_name)
+        index = DownloadIndex.load(index_path)
+        added = 0
+        for result in new_results:
+            slug = result.identifier.slug
+            if not slug or index.has(slug):
+                continue
+            index.add_download(result)
+            added += 1
+        if added:
+            index.index_path = index_path
+            index.save()
+
+
+def _is_duplicate_identifier(
+    identifier: Identifier,
+    slug_set: set[str],
+    pmid_set: set[str],
+    pmcid_set: set[str],
+    doi_set: set[str],
+) -> bool:
+    slug = identifier.slug
+    if slug and slug in slug_set:
+        return True
+    if identifier.pmid and identifier.pmid in pmid_set:
+        return True
+    if identifier.pmcid and identifier.pmcid in pmcid_set:
+        return True
+    if identifier.doi and identifier.doi in doi_set:
+        return True
+    return False
+
+
+def _add_identifier_keys(
+    identifier: Identifier,
+    slug_set: set[str],
+    pmid_set: set[str],
+    pmcid_set: set[str],
+    doi_set: set[str],
+) -> None:
+    slug = identifier.slug
+    if slug:
+        slug_set.add(slug)
+    if identifier.pmid:
+        pmid_set.add(identifier.pmid)
+    if identifier.pmcid:
+        pmcid_set.add(identifier.pmcid)
+    if identifier.doi:
+        doi_set.add(identifier.doi)
 
 
 def partition_cached_extractions(

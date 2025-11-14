@@ -17,6 +17,7 @@ from ingestion_workflow.models import (
     Identifier,
 )
 from ingestion_workflow.models.download import DownloadSource
+from ingestion_workflow.services import cache as cache_service
 from ingestion_workflow.services.export import ExportService
 
 
@@ -55,29 +56,38 @@ def test_export_writes_structure(tmp_path):
     bundle = _bundle(tmp_path)
     bundle.article_data.full_text_path = tmp_path / "fulltext.txt"
     bundle.article_data.full_text_path.write_text("full text", encoding="utf-8")
-    settings = Settings(data_root=tmp_path)
+    settings = Settings(
+        data_root=tmp_path,
+        cache_root=tmp_path / ".cache",
+        ns_pond_root=tmp_path / "ns",
+    )
+    settings.ensure_directories()
     exporter = ExportService(settings)
     exporter.export(bundle)
 
     root = tmp_path / "export" / bundle.article_data.identifier.slug
     assert (root / "identifiers.json").exists()
 
-    source_dir = root / "source" / bundle.article_data.source.value
-    assert any(source_dir.iterdir())
+    processed_manifest = root / "processed" / bundle.article_data.source.value / "processed.json"
+    assert processed_manifest.exists()
+    processed_content = json.loads(processed_manifest.read_text(encoding="utf-8"))
+    assert processed_content["article_data"]["tables"][0]["table_id"] == "Table A"
 
-    processed_dir = root / "processed" / bundle.article_data.source.value
-    tables_json = json.loads((processed_dir / "tables.json").read_text())
-    assert len(tables_json) == 1
-    copied_table = processed_dir / "tables" / "table-a.html"
-    assert copied_table.exists()
-
-    manifest = json.loads((processed_dir / "tables.json").read_text())
-    assert manifest[0]["table_id"] == "Table A"
+    source_manifest = root / "source" / bundle.article_data.source.value / "source.json"
+    assert source_manifest.exists()
+    source_content = json.loads(source_manifest.read_text(encoding="utf-8"))
+    assert source_content["tables"][0]["table_id"] == "Table A"
+    assert source_content["raw_downloads"] == []
 
 
 def test_export_writes_analyses_jsonl(tmp_path):
     bundle = _bundle(tmp_path)
-    settings = Settings(data_root=tmp_path)
+    settings = Settings(
+        data_root=tmp_path,
+        cache_root=tmp_path / ".cache",
+        ns_pond_root=tmp_path / "ns",
+    )
+    settings.ensure_directories()
     exporter = ExportService(settings, overwrite=True)
 
     collection = AnalysisCollection(
@@ -105,29 +115,40 @@ def test_export_writes_analyses_jsonl(tmp_path):
         sanitized_table_id="table-a",
         analysis_collection=collection,
     )
+    cache_service.cache_create_analyses_results(
+        settings,
+        bundle.article_data.source.value,
+        [result],
+    )
 
     exporter.export(bundle, [result])
-    analyses_dir = (
+    processed_manifest = (
         settings.data_root
         / "export"
         / bundle.article_data.identifier.slug
         / "processed"
         / bundle.article_data.source.value
-        / "analyses"
+        / "processed.json"
     )
-    files = list(analyses_dir.glob("*.jsonl"))
-    assert len(files) == 1
-    payload = json.loads(files[0].read_text())
+    manifest_payload = json.loads(processed_manifest.read_text(encoding="utf-8"))
+    analysis_entry = manifest_payload["article_data"]["analyses"][0]
+    assert analysis_entry["jsonl_path"] is not None
+    analysis_path = Path(analysis_entry["jsonl_path"])
+    assert analysis_path.exists()
+    payload = json.loads(analysis_path.read_text(encoding="utf-8"))
     assert payload["analyses"][0]["name"] == "analysis"
-
-    assert payload["analyses"]
 
 
 def test_export_overwrites_existing_tree(tmp_path):
     bundle = _bundle(tmp_path)
     bundle.article_data.full_text_path = tmp_path / "fulltext.txt"
     bundle.article_data.full_text_path.write_text("full text", encoding="utf-8")
-    settings = Settings(data_root=tmp_path)
+    settings = Settings(
+        data_root=tmp_path,
+        cache_root=tmp_path / ".cache",
+        ns_pond_root=tmp_path / "ns",
+    )
+    settings.ensure_directories()
     exporter = ExportService(settings, overwrite=True)
 
     exporter.export(bundle)

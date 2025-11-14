@@ -10,10 +10,23 @@ from typing import Any, Iterable, List, Optional
 
 import typer
 
-from ingestion_workflow.config import load_settings
-from ingestion_workflow.models import ArticleExtractionBundle
+from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.models import (
+    ArticleExtractionBundle,
+    DownloadResult,
+    DownloadSource,
+    Identifiers,
+)
+from ingestion_workflow.services import cache
+from ingestion_workflow.workflow import (
+    SearchQuery,
+    gather_identifiers,
+)
 from ingestion_workflow.workflow import create_analyses as create_analyses_workflow
+from ingestion_workflow.workflow.download import run_downloads
+from ingestion_workflow.workflow.extract import run_extraction
 from ingestion_workflow.workflow.orchastrator import run_pipeline
+from ingestion_workflow.workflow.stats import StageMetrics
 
 app = typer.Typer(
     name="Article Ingestion Workflow",
@@ -63,18 +76,200 @@ def run(
 
 
 @app.command()
-def search():
-    pass
+def search(
+    config_path: Optional[Path] = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=False,
+        help="Optional YAML settings override.",
+    ),
+    queries: Optional[List[str]] = typer.Option(
+        None,
+        "--query",
+        "-q",
+        help="PubMed query to run (repeatable).",
+    ),
+    start_year: Optional[int] = typer.Option(
+        None,
+        "--start-year",
+        help="Earliest publication year for all queries.",
+    ),
+    manifest_path: Optional[Path] = typer.Option(
+        None,
+        "--manifest",
+        "-m",
+        exists=False,
+        help="Optional identifiers manifest to seed the search.",
+    ),
+    label: Optional[str] = typer.Option(
+        None,
+        "--label",
+        "-l",
+        help="Label to use when saving the manifest.",
+    ),
+) -> None:
+    """Gather identifiers via PubMed queries and persist a manifest."""
+
+    settings = load_settings(config_path)
+    manifest_seed = manifest_path or settings.manifest_path
+    if not queries and manifest_seed is None:
+        raise typer.BadParameter("Provide at least one --query or --manifest to search.")
+
+    search_queries = (
+        [SearchQuery(query=query, start_year=start_year) for query in queries]
+        if queries
+        else None
+    )
+    result = gather_identifiers(
+        settings=settings,
+        manifest=manifest_seed,
+        queries=search_queries,
+        label=label,
+    )
+    typer.echo(
+        "Gather stage produced "
+        f"{len(result.identifiers)} identifiers; manifest saved to "
+        f"{settings.data_root / 'manifests'} (check logs for exact filename)."
+    )
 
 
 @app.command()
-def download():
-    pass
+def download(
+    manifest_path: Optional[Path] = typer.Option(
+        None,
+        "--manifest",
+        "-m",
+        exists=False,
+        help="Identifiers manifest to download content for.",
+    ),
+    config_path: Optional[Path] = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=False,
+        help="Optional YAML settings override.",
+    ),
+) -> None:
+    """Run the download stage for a manifest."""
+
+    settings = load_settings(config_path)
+    identifiers = _load_identifiers_from_manifest(settings, manifest_path)
+    if not identifiers.identifiers:
+        typer.echo("Manifest contains no identifiers; nothing to download.")
+        return
+
+    metrics = StageMetrics()
+    results = run_downloads(identifiers, settings=settings, metrics=metrics)
+    success_slugs = {
+        result.identifier.slug
+        for result in results
+        if result.success and result.identifier
+    }
+    total = len(identifiers.identifiers)
+    typer.echo(
+        "Download stage complete: "
+        f"{len(success_slugs)}/{total} identifiers succeeded (cache hits: {metrics.cache_hits})."
+    )
 
 
 @app.command()
-def extract():
-    pass
+def extract(
+    manifest_path: Optional[Path] = typer.Option(
+        None,
+        "--manifest",
+        "-m",
+        exists=False,
+        help="Identifiers manifest to operate on.",
+    ),
+    config_path: Optional[Path] = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=False,
+        help="Optional YAML settings override.",
+    ),
+) -> None:
+    """Run the extract stage using cached downloads."""
+
+    settings = load_settings(config_path)
+    identifiers = _load_identifiers_from_manifest(settings, manifest_path)
+    if not identifiers.identifiers:
+        typer.echo("Manifest contains no identifiers; nothing to extract.")
+        return
+
+    downloads = _hydrate_downloads_from_cache(settings, identifiers)
+    if not downloads:
+        typer.echo("No cached downloads found for the provided manifest.")
+        raise typer.Exit(code=1)
+
+    metrics = StageMetrics()
+    bundles = run_extraction(downloads, settings=settings, metrics=metrics)
+    typer.echo(
+        "Extract stage complete: "
+        f"{len(bundles)} bundles from {len(downloads)} downloads (cache hits: {metrics.cache_hits})."
+    )
+
+
+@app.command("index-legacy-downloads")
+def index_legacy_downloads_cli(
+    extractor_name: DownloadSource = typer.Argument(
+        ...,
+        case_sensitive=False,
+        help="Download source name whose legacy files should be indexed (ace|pubget).",
+    ),
+    legacy_directory: Path = typer.Argument(
+        ...,
+        exists=False,
+        file_okay=False,
+        dir_okay=True,
+        help="Path to the legacy download directory to index.",
+    ),
+    config_path: Optional[Path] = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=False,
+        help="Optional YAML settings override.",
+    ),
+    namespace: Optional[str] = typer.Option(
+        None,
+        "--namespace",
+        "-n",
+        help="Cache namespace override (defaults to downloads namespace).",
+    ),
+) -> None:
+    """Index legacy download payloads for a given extractor into the cache."""
+
+    settings = load_settings(config_path)
+    resolved_dir = _resolve_working_path(settings, legacy_directory)
+
+    if not resolved_dir.exists():
+        raise typer.BadParameter(f"Legacy directory not found: {resolved_dir}")
+    if not resolved_dir.is_dir():
+        raise typer.BadParameter(f"Legacy path must be a directory: {resolved_dir}")
+
+    cache_namespace = namespace or cache.DOWNLOAD_CACHE_NAMESPACE
+    before_index = cache.load_download_index(
+        settings,
+        extractor_name.value,
+        namespace=cache_namespace,
+    )
+    before = len(before_index.entries)
+
+    index = cache.index_legacy_downloads(
+        settings,
+        extractor_name.value,
+        resolved_dir,
+        namespace=cache_namespace,
+    )
+    after = len(index.entries)
+    added = max(0, after - before)
+
+    typer.echo(
+        "Legacy indexing complete: "
+        f"{added} new entries added (total {after} cached for {extractor_name.value})."
+    )
 
 
 @app.command()
@@ -186,3 +381,57 @@ def _load_bundles(payload: Any) -> Iterable[ArticleExtractionBundle]:
         ArticleExtractionBundle.from_dict(item)  # type: ignore[arg-type]
         for item in payload
     ]
+
+
+def _resolve_manifest_path(
+    settings: Settings,
+    manifest_path: Optional[Path],
+) -> Path:
+    candidate = manifest_path or settings.manifest_path
+    if candidate is None:
+        raise typer.BadParameter("Manifest path must be provided via --manifest or configuration.")
+
+    resolved = Path(candidate)
+    if not resolved.is_absolute():
+        resolved = settings.data_root / resolved
+
+    if not resolved.exists():
+        raise FileNotFoundError(f"Manifest file not found: {resolved}")
+
+    return resolved
+
+
+def _load_identifiers_from_manifest(
+    settings: Settings,
+    manifest_path: Optional[Path],
+) -> Identifiers:
+    path = _resolve_manifest_path(settings, manifest_path)
+    return Identifiers.load(path)
+
+
+def _hydrate_downloads_from_cache(
+    settings: Settings,
+    identifiers: Identifiers,
+) -> List[DownloadResult]:
+    if not identifiers.identifiers:
+        return []
+
+    hydrated: dict[str, DownloadResult] = {}
+    for source_name in settings.download_sources:
+        index = cache.load_download_index(settings, source_name)
+        for identifier in identifiers.identifiers:
+            slug = identifier.slug
+            if slug in hydrated:
+                continue
+            entry = index.get_download(slug)
+            if entry is None:
+                continue
+            hydrated[slug] = entry.result
+
+    return list(hydrated.values())
+
+
+def _resolve_working_path(settings: Settings, path: Path) -> Path:
+    """Resolve user-provided directories relative to data_root when applicable."""
+    resolved = path if path.is_absolute() else settings.data_root / path
+    return resolved

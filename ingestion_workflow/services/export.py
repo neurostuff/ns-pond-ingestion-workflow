@@ -37,7 +37,11 @@ class ExportService:
         export_root = self.settings.data_root / "export"
         export_root.mkdir(parents=True, exist_ok=True)
 
-        slug, export_bundle = build_article_export(bundle, analyses or ())
+        slug, export_bundle = build_article_export(
+            bundle,
+            analyses or (),
+            settings=self.settings,
+        )
         article_path = export_root / slug
         if article_path.exists():
             if not self.overwrite:

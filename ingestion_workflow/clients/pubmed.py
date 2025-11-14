@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import time
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from datetime import datetime
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import requests
+import xmltodict
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
@@ -23,6 +24,7 @@ class PubMedClient:
     """Client for the PubMed/PMC API."""
 
     ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+    EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
     BASE_URL = "https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/"
     _SUPPORTED_ID_TYPES = {"pmid", "pmcid", "doi"}
 
@@ -283,9 +285,19 @@ class PubMedClient:
         response.raise_for_status()
         return response.json()
 
+    def _request_xml(
+        self,
+        url: str,
+        params: Mapping[str, str] | Sequence[Tuple[str, str]],
+    ) -> Dict[str, Any]:
+        self._rate_limit_sleep()
+        response = self._session.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return xmltodict.parse(response.text)
+
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """
-        Fetch article metadata for batch of identifiers using esummary.
+        Fetch article metadata for batch of identifiers using efetch.
 
         Parameters
         ----------
@@ -317,8 +329,8 @@ class PubMedClient:
         for i in range(0, len(pmids), batch_size):
             batch = pmids[i : i + batch_size]
             try:
-                response_data = self._request_esummary(batch)
-                self._process_esummary_response(batch, response_data, pmid_map, results)
+                response_data = self._request_efetch(batch)
+                self._process_efetch_response(response_data, pmid_map, results)
             except Exception:
                 # Continue with other batches on failure
                 continue
@@ -329,66 +341,223 @@ class PubMedClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
     )
-    def _request_esummary(self, pmids: List[str]) -> Dict[str, object]:
-        """Request article metadata from PubMed esummary endpoint."""
-        esummary_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+    def _request_efetch(self, pmids: List[str]) -> Dict[str, Any]:
+        """Request article metadata from PubMed efetch endpoint."""
         params: List[Tuple[str, str]] = [
             ("db", "pubmed"),
             ("id", ",".join(pmids)),
-            ("retmode", "json"),
+            ("retmode", "xml"),
             ("email", self.email),
             ("tool", self.tool),
         ]
         if self.api_key:
             params.append(("api_key", self.api_key))
 
-        return self._request_json(esummary_url, params)
+        return self._request_xml(self.EFETCH_URL, params)
 
-    def _process_esummary_response(
+    def _process_efetch_response(
         self,
-        batch: List[str],
-        response_data: Dict[str, object],
+        response_data: Dict[str, Any],
         pmid_map: Dict[str, Identifier],
         results: Dict[str, ArticleMetadata],
     ) -> None:
-        """Process esummary response and build ArticleMetadata objects."""
-        result_data = response_data.get("result", {})
+        article_set = response_data.get("PubmedArticleSet", {})
+        articles = article_set.get("PubmedArticle")
+        if not articles:
+            return
+        if not isinstance(articles, list):
+            articles = [articles]
 
-        for pmid in batch:
-            record = result_data.get(pmid)
-            if not record or not isinstance(record, dict):
+        for article in articles:
+            if not isinstance(article, dict):
                 continue
-
+            pmid = self._extract_pmid(article)
+            if not pmid:
+                continue
             identifier = pmid_map.get(pmid)
             if not identifier:
                 continue
+            metadata = self._build_article_metadata(article)
+            if metadata:
+                results[identifier.slug] = metadata
 
-            # Parse authors
-            authors_data = record.get("authors", [])
-            authors = [
-                Author(name=str(author.get("name", "")))
-                for author in authors_data
-                if isinstance(author, dict) and author.get("name")
-            ]
+    @staticmethod
+    def _extract_pmid(article: Mapping[str, Any]) -> Optional[str]:
+        citation = article.get("MedlineCitation")
+        if isinstance(citation, dict):
+            pmid = citation.get("PMID")
+            if isinstance(pmid, dict):
+                pmid = pmid.get("#text")
+            if pmid:
+                return str(pmid)
+        return None
 
-            # Extract year from publication date
-            pubdate = record.get("pubdate", "")
-            year = None
-            if pubdate:
-                try:
-                    year = int(str(pubdate).split()[0])
-                except (ValueError, IndexError):
-                    pass
+    def _build_article_metadata(self, article: Mapping[str, Any]) -> Optional[ArticleMetadata]:
+        citation = article.get("MedlineCitation")
+        if not isinstance(citation, dict):
+            return None
+        article_data = citation.get("Article")
+        if not isinstance(article_data, dict):
+            return None
 
-            # Build metadata
-            metadata = ArticleMetadata(
-                title=str(record.get("title", "")),
-                authors=authors,
-                abstract=None,  # esummary doesn't include abstracts
-                journal=record.get("fulljournalname"),
-                publication_year=year,
-                source="pubmed",
-                raw_metadata={"pubmed": record},
+        title = self._text_from(article_data.get("ArticleTitle")) or ""
+        abstract = self._parse_abstract(article_data.get("Abstract"))
+        authors = self._parse_authors(article_data.get("AuthorList"))
+        journal = self._text_from(
+            article_data.get("Journal", {}).get("Title") if isinstance(article_data.get("Journal"), dict) else None
+        )
+        publication_year = self._extract_publication_year(article_data, citation)
+        keywords = self._parse_keywords(citation)
+
+        return ArticleMetadata(
+            title=title,
+            authors=authors,
+            abstract=abstract,
+            journal=journal,
+            publication_year=publication_year,
+            keywords=keywords,
+            source="pubmed",
+            raw_metadata={"pubmed": article},
+        )
+
+    def _parse_authors(self, author_list: Any) -> List[Author]:
+        if not author_list:
+            return []
+        if isinstance(author_list, dict):
+            entries = author_list.get("Author", author_list)
+        else:
+            entries = author_list
+        authors: List[Author] = []
+        for entry in self._ensure_list(entries):
+            if not isinstance(entry, Mapping):
+                continue
+            if entry.get("CollectiveName"):
+                name = self._text_from(entry.get("CollectiveName"))
+            else:
+                fore = entry.get("ForeName") or entry.get("Initials")
+                last = entry.get("LastName")
+                name = " ".join(part for part in [fore, last] if part)
+            if not name:
+                continue
+
+            affiliation = None
+            affiliation_info = entry.get("AffiliationInfo")
+            if affiliation_info:
+                info_entry = self._ensure_list(affiliation_info)[0]
+                if isinstance(info_entry, Mapping):
+                    affiliation = info_entry.get("Affiliation")
+                elif isinstance(info_entry, str):
+                    affiliation = info_entry
+
+            authors.append(Author(name=name, affiliation=affiliation))
+        return authors
+
+    def _parse_abstract(self, abstract_section: Any) -> Optional[str]:
+        if not abstract_section or not isinstance(abstract_section, Mapping):
+            return None
+        texts = abstract_section.get("AbstractText")
+        parts: List[str] = []
+        for item in self._ensure_list(texts):
+            label = None
+            text_value = ""
+            if isinstance(item, Mapping):
+                label = item.get("@Label")
+                text_value = self._text_from(item.get("#text") or item)
+            else:
+                text_value = self._text_from(item)
+            if text_value:
+                if label:
+                    parts.append(f"{label}: {text_value}")
+                else:
+                    parts.append(text_value)
+        joined = "\n\n".join(part.strip() for part in parts if part.strip())
+        return joined or None
+
+    def _parse_keywords(self, citation: Mapping[str, Any]) -> List[str]:
+        keyword_section = citation.get("KeywordList")
+        if not keyword_section:
+            return []
+        keywords: List[str] = []
+        for entry in self._ensure_list(keyword_section):
+            if isinstance(entry, Mapping):
+                keyword_values = entry.get("Keyword", entry)
+            else:
+                keyword_values = entry
+            for keyword in self._ensure_list(keyword_values):
+                text = self._text_from(keyword)
+                if text and text not in keywords:
+                    keywords.append(text)
+        return keywords
+
+    def _extract_publication_year(
+        self,
+        article_data: Mapping[str, Any],
+        citation: Mapping[str, Any],
+    ) -> Optional[int]:
+        journal = article_data.get("Journal")
+        if isinstance(journal, dict):
+            issue = journal.get("JournalIssue")
+            if isinstance(issue, dict):
+                candidate = self._year_from_pubdate(issue.get("PubDate"))
+                if candidate:
+                    return candidate
+        candidate = self._year_from_pubdate(article_data.get("ArticleDate"))
+        if candidate:
+            return candidate
+        candidate = self._year_from_pubdate(citation.get("DateCompleted"))
+        return candidate
+
+    def _year_from_pubdate(self, data: Any) -> Optional[int]:
+        if not data:
+            return None
+        for entry in self._ensure_list(data):
+            if isinstance(entry, Mapping):
+                year = entry.get("Year") or entry.get("#text")
+                if year:
+                    try:
+                        return int(str(year)[:4])
+                    except (TypeError, ValueError):
+                        pass
+                medline_date = entry.get("MedlineDate")
+                if medline_date:
+                    year_match = self._extract_year_from_string(medline_date)
+                    if year_match:
+                        return year_match
+            elif isinstance(entry, str):
+                year_match = self._extract_year_from_string(entry)
+                if year_match:
+                    return year_match
+        return None
+
+    @staticmethod
+    def _extract_year_from_string(value: str) -> Optional[int]:
+        import re
+
+        match = re.search(r"(19|20)\d{2}", value or "")
+        if match:
+            return int(match.group(0))
+        return None
+
+    @staticmethod
+    def _ensure_list(value: Any) -> List[Any]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        return [value]
+
+    @staticmethod
+    def _text_from(value: Any) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value
+        if isinstance(value, Mapping):
+            if "#text" in value:
+                return str(value["#text"])
+            return " ".join(
+                part
+                for key, part in value.items()
+                if not key.startswith("@") and isinstance(part, str)
             )
-
-            results[identifier.slug] = metadata
+        return str(value)

@@ -94,7 +94,8 @@ class MetadataService:
                 content = id_to_content.get(identifier_slug)
                 if content is None:
                     continue
-                results[content.slug] = metadata
+                if self._has_useful_metadata(metadata):
+                    results[content.slug] = metadata
             logger.info(
                 "Semantic Scholar returned metadata for %d articles",
                 len(s2_results),
@@ -102,7 +103,11 @@ class MetadataService:
 
         # Try PubMed for remaining items
         if self._pubmed_client and identified_items:
-            missing = [item.identifier for item in identified_items if item.slug not in results]
+            missing = [
+                item.identifier
+                for item in identified_items
+                if self._needs_more_metadata(results.get(item.slug))
+            ]
             if missing:
                 logger.info(
                     "Fetching metadata from PubMed for %d articles",
@@ -113,6 +118,8 @@ class MetadataService:
                 for identifier_slug, pubmed_meta in pubmed_results.items():
                     content = id_to_content.get(identifier_slug)
                     if content is None:
+                        continue
+                    if not self._has_useful_metadata(pubmed_meta):
                         continue
                     article_slug = content.slug
                     if article_slug in results:
@@ -125,7 +132,9 @@ class MetadataService:
                 )
 
         # Fallback to extractor metadata for remaining items
-        still_missing = [item for item in extracted_contents if item.slug not in results]
+        still_missing = [
+            item for item in extracted_contents if self._needs_more_metadata(results.get(item.slug))
+        ]
         if still_missing:
             logger.info(
                 "Falling back to extractor metadata for %d articles",
@@ -134,7 +143,7 @@ class MetadataService:
             for item in still_missing:
                 try:
                     fallback_meta = self._get_fallback_metadata(item)
-                    if fallback_meta:
+                    if fallback_meta and self._has_useful_metadata(fallback_meta):
                         if item.slug in results:
                             results[item.slug] = results[item.slug].merge_from(fallback_meta)
                         else:
@@ -263,6 +272,47 @@ class MetadataService:
             # ACE doesn't provide reliable metadata
             return None
         return None
+
+    @staticmethod
+    def _has_useful_metadata(metadata: ArticleMetadata) -> bool:
+        """Return True when metadata contains at least one meaningful field."""
+        title_present = bool(metadata.title and metadata.title.strip())
+        return any(
+            [
+                title_present,
+                bool(metadata.authors),
+                bool(metadata.abstract),
+                bool(metadata.journal),
+                metadata.publication_year is not None,
+                bool(metadata.keywords),
+                bool(metadata.license),
+                metadata.source is not None,
+                metadata.open_access is not None,
+            ]
+        )
+
+    @classmethod
+    def _is_complete(cls, metadata: ArticleMetadata) -> bool:
+        """Return True when all primary metadata attributes are populated."""
+        return all(
+            [
+                bool(metadata.title and metadata.title.strip()),
+                bool(metadata.authors),
+                bool(metadata.abstract and metadata.abstract.strip()),
+                bool(metadata.journal and metadata.journal.strip()),
+                metadata.publication_year is not None,
+                bool(metadata.keywords),
+                bool(metadata.license and metadata.license.strip()),
+                bool(metadata.source and metadata.source.strip()),
+                metadata.open_access is not None,
+            ]
+        )
+
+    @classmethod
+    def _needs_more_metadata(cls, metadata: Optional[ArticleMetadata]) -> bool:
+        if metadata is None:
+            return True
+        return not cls._is_complete(metadata)
 
     def _get_elsevier_fallback(
         self, extracted_content: ExtractedContent

@@ -6,6 +6,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+from dotenv import load_dotenv
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.download import DownloadSource
@@ -268,6 +269,7 @@ class TestMetadataIntegration:
         manifest_identifiers,
     ):
         """Test with real PubMed API (VCR cassette)."""
+        load_dotenv()
         pubmed_email = os.getenv("PUBMED_EMAIL") or os.getenv("EMAIL")
         if not pubmed_email:
             pytest.skip("PUBMED_EMAIL/EMAIL environment variable not set")

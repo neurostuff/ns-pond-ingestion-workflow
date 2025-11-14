@@ -7,7 +7,7 @@ import re
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any, Sequence
 
 from pyarty import Dir, File, bundle, twig
 
@@ -550,13 +550,6 @@ class ArticleDirectory:
         bundle.write(root, overwrite=True)
 
 
-def _constant_name(value: str) -> Callable[[str, Any, Any, int | None], str]:
-    def _name(field_name: str, child: Any, owner: Any, index: int | None = None) -> str:
-        return value
-
-    return _name
-
-
 @bundle
 class _TableFileBundle:
     filename: str
@@ -572,19 +565,19 @@ class _AnalysisFileBundle:
 @bundle
 class _ProcessedSourceBundle:
     source_name: str
-    article_data: File[dict[str, Any]] = twig(name=_constant_name("article_data"))
-    article_metadata: File[dict[str, Any]] = twig(name=_constant_name("article_metadata"))
+    article_data: File[dict[str, Any]] = twig(name="article_data")
+    article_metadata: File[dict[str, Any]] = twig(name="article_metadata")
     tables_index: File[list[dict[str, Any]]] = twig(
-        name=_constant_name("tables"),
+        name="tables",
         extension="json",
         default=None,
     )
     tables: Dir[list[_TableFileBundle]] = twig(
-        name=_constant_name("tables"),
+        name="tables",
         default_factory=list,
     )
     analyses: Dir[list[_AnalysisFileBundle]] = twig(
-        name=_constant_name("analyses"),
+        name="analyses",
         default_factory=list,
     )
 
@@ -599,14 +592,14 @@ class _BinaryFileBundle:
 class _SourceBundle:
     source_name: str
     files: Dir[list[_BinaryFileBundle]] = twig(
-        name=_constant_name(""),
+        name=".",
         default_factory=list,
     )
 
 
 @bundle
 class _ArticleExportBundle:
-    identifier: File[dict[str, Any]] = twig(name=_constant_name("identifiers"))
+    identifier: File[dict[str, Any]] = twig(name="identifiers")
     processed_sources: Dir[list[_ProcessedSourceBundle]] = twig(
         prefix="processed",
         name=("{source_name}", "field"),

@@ -2,177 +2,166 @@
 
 from __future__ import annotations
 
-import json
-import re
-from pathlib import Path
 from typing import Any, Sequence
 
 from pyarty import Dir, File, bundle, twig
 
+from ingestion_workflow.config import Settings
+from ingestion_workflow.services.cache import load_download_index
+
 from .analysis import CreateAnalysesResult
-from .extract import ArticleExtractionBundle, ExtractedTable
-
-
-# --------------------------------------------------------------------------- #
-# Bundle definitions
-# --------------------------------------------------------------------------- #
-@bundle
-class TableAsset:
-    stem: str
-    content: File[Path] = twig(name="{stem}", copyfile=True)
+from .extract import ArticleExtractionBundle
 
 
 @bundle
-class AnalysisAsset:
-    filename: str
-    payload: File[bytes] = twig(name="{filename}")
-
-
-@bundle
-class SourceFile:
-    stem: str
-    payload: File[Path] = twig(name="{stem}", copyfile=True)
-
-
-@bundle
-class ProcessedSource:
+class ProcessedManifest:
     source: str
-    article_data: File[dict[str, Any]]
-    article_metadata: File[dict[str, Any]]
-    tables_manifest: File[list[dict[str, Any]]] = twig(name="tables", extension="json")
-    tables: Dir[list[TableAsset]]
-    analyses: Dir[list[AnalysisAsset]]
+    manifest: File[dict[str, Any]] = twig(name="processed", extension="json")
 
 
 @bundle
-class SourceDump:
+class SourceManifest:
     source: str
-    files: Dir[list[SourceFile]] = twig(name=".")
+    manifest: File[dict[str, Any]] = twig(name="source", extension="json")
 
 
 @bundle
 class ArticleExport:
     identifiers: File[dict[str, Any]]
-    processed: Dir[list[ProcessedSource]] = twig(prefix="processed", name=("{source}", "field"))
-    source: Dir[list[SourceDump]] = twig(prefix="source", name=("{source}", "field"))
+    processed: Dir[list[ProcessedManifest]] = twig(
+        prefix="processed",
+        name=("{source}", "field"),
+    )
+    source: Dir[list[SourceManifest]] = twig(
+        prefix="source",
+        name=("{source}", "field"),
+    )
 
 
-# --------------------------------------------------------------------------- #
-# Conversion helpers
-# --------------------------------------------------------------------------- #
 def build_article_export(
     bundle: ArticleExtractionBundle,
     analyses: Sequence[CreateAnalysesResult] | None = None,
+    *,
+    settings: Settings | None = None,
 ) -> tuple[str, ArticleExport]:
+    """
+    Build the export bundle for a single article.
+
+    Parameters
+    ----------
+    bundle :
+        Extraction bundle containing article data and metadata.
+    analyses :
+        Optional cached or produced analyses results for the bundle.
+    settings :
+        Optional workflow settings used to resolve cache locations.
+    """
     identifier = bundle.article_data.identifier
     if identifier is None:
         raise ValueError("Cannot build export without an identifier.")
 
-    processed_sources = [_build_processed_source(bundle, analyses or ())]
-    source_dumps = _build_source_dumps(bundle)
+    processed_manifest = _build_processed_manifest(bundle, analyses or ())
+    source_manifest = _build_source_manifest(bundle, settings)
 
     export_bundle = ArticleExport(
         identifiers=identifier.to_dict(),
-        processed=processed_sources,
-        source=source_dumps,
+        processed=[processed_manifest],
+        source=[source_manifest],
     )
     return identifier.slug, export_bundle
 
 
-def _build_processed_source(
+def _build_processed_manifest(
     bundle: ArticleExtractionBundle,
     analyses: Sequence[CreateAnalysesResult],
-) -> ProcessedSource:
+) -> ProcessedManifest:
     source_name = bundle.article_data.source.value
-    tables_manifest = [_table_manifest_entry(table) for table in bundle.article_data.tables]
-    tables = [_table_asset_for(table, idx) for idx, table in enumerate(bundle.article_data.tables)]
-    tables = [asset for asset in tables if asset is not None]
-    analysis_assets = _analysis_assets(bundle, analyses)
+    article_data = bundle.article_data.to_dict()
+    relevant = [result for result in analyses if result.article_slug == bundle.article_data.slug]
+    article_data["analyses"] = [_analysis_entry(result) for result in relevant]
 
-    return ProcessedSource(
-        source=source_name,
-        article_data=bundle.article_data.to_dict(),
-        article_metadata=bundle.article_metadata.to_dict(),
-        tables_manifest=tables_manifest,
-        tables=tables,
-        analyses=analysis_assets,
-    )
+    manifest_payload = {
+        "article_data": article_data,
+        "article_metadata": bundle.article_metadata.to_dict(),
+    }
+    return ProcessedManifest(source=source_name, manifest=manifest_payload)
 
 
-def _table_manifest_entry(table: ExtractedTable) -> dict[str, Any]:
-    payload = table.to_dict()
-    payload["raw_content_path"] = str(table.raw_content_path)
-    return payload
+def _analysis_entry(result: CreateAnalysesResult) -> dict[str, Any]:
+    entry: dict[str, Any] = {
+        "table_id": result.table_id,
+        "sanitized_table_id": result.sanitized_table_id,
+        "slug": result.slug,
+        "metadata": dict(result.metadata),
+        "error_message": result.error_message,
+    }
+    if result.analysis_paths:
+        entry["jsonl_path"] = str(result.analysis_paths[0])
+    else:
+        entry["analysis_collection"] = result.analysis_collection.to_dict()
+        entry["jsonl_path"] = None
+    return entry
 
 
-def _table_asset_for(table: ExtractedTable, index: int) -> TableAsset | None:
-    raw_path = table.raw_content_path
-    if not raw_path or not Path(raw_path).exists():
-        return None
-    sanitized = _sanitize_table_id(table.table_id, index)
-    return TableAsset(stem=sanitized, content=Path(raw_path))
-
-
-def _analysis_assets(
+def _build_source_manifest(
     bundle: ArticleExtractionBundle,
-    analyses: Sequence[CreateAnalysesResult],
-) -> list[AnalysisAsset]:
-    results = [
-        result for result in analyses if result.article_slug == bundle.article_data.slug
-    ]
-    used_names: set[str] = set()
-    assets: list[AnalysisAsset] = []
-    for index, result in enumerate(results):
-        base = result.sanitized_table_id or result.table_id
-        sanitized = _sanitize_table_id(base, index)
-        stem = _unique_stem(sanitized, used_names, index)
-        filename = f"{stem}.jsonl"
-        payload = json.dumps(result.analysis_collection.to_dict(), indent=2).encode("utf-8")
-        assets.append(AnalysisAsset(filename=filename, payload=payload))
-    return assets
+    settings: Settings | None,
+) -> SourceManifest:
+    source_name = bundle.article_data.source.value
+    manifest_payload = {
+        "source": source_name,
+        "raw_downloads": _download_entries(bundle, settings),
+        "tables": _table_entries(bundle),
+    }
+    return SourceManifest(source=source_name, manifest=manifest_payload)
 
 
-def _build_source_dumps(bundle: ArticleExtractionBundle) -> list[SourceDump]:
-    files: list[SourceFile] = []
-    full_text_path = bundle.article_data.full_text_path
-    if full_text_path and full_text_path.exists():
-        files.append(
-            SourceFile(
-                stem=_stem_for(full_text_path),
-                payload=full_text_path,
-            )
-        )
-    if not files:
+def _download_entries(
+    bundle: ArticleExtractionBundle,
+    settings: Settings | None,
+) -> list[dict[str, Any]]:
+    if settings is None:
         return []
-    return [SourceDump(source=bundle.article_data.source.value, files=files)]
+    identifier = bundle.article_data.identifier
+    if identifier is None:
+        return []
+
+    source_name = bundle.article_data.source.value
+    index = load_download_index(settings, source_name)
+    entry = index.get(identifier.slug)
+    if entry is None:
+        return []
+
+    downloads = [
+        {
+            "filename": file.file_path.name,
+            "path": str(file.file_path),
+            "file_type": file.file_type.value,
+            "content_type": file.content_type,
+            "downloaded_at": file.downloaded_at.isoformat(),
+            "md5_hash": file.md5_hash,
+        }
+        for file in entry.result.files
+    ]
+    return downloads
 
 
-# --------------------------------------------------------------------------- #
-# Naming helpers
-# --------------------------------------------------------------------------- #
-def _sanitize_table_id(table_id: str | None, index: int) -> str:
-    if table_id:
-        normalized = re.sub(r"[^A-Za-z0-9_-]+", "-", table_id).strip("-")
-        if normalized:
-            return normalized.lower()
-    return f"table-{index + 1}"
-
-
-def _unique_stem(base: str, used: set[str], index: int) -> str:
-    stem = base
-    if stem in used:
-        stem = f"{stem}-{index}"
-    while stem in used:
-        stem = f"{stem}-{index + 1}"
-    used.add(stem)
-    return stem
-
-
-def _stem_for(path: Path) -> str:
-    suffix = path.suffix
-    if suffix:
-        return path.name[: -len(suffix)]
-    return path.name
+def _table_entries(bundle: ArticleExtractionBundle) -> list[dict[str, Any]]:
+    tables: list[dict[str, Any]] = []
+    for table in bundle.article_data.tables:
+        tables.append(
+            {
+                "table_id": table.table_id,
+                "table_number": table.table_number,
+                "caption": table.caption,
+                "footer": table.footer,
+                "contains_coordinates": table.contains_coordinates,
+                "raw_content_path": str(table.raw_content_path),
+                "coordinates_path": table.metadata.get("coordinates_path"),
+                "metadata": dict(table.metadata),
+            }
+        )
+    return tables
 
 
 __all__ = [
