@@ -19,16 +19,12 @@ interactions:
     uri: https://postman-echo.com/post
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA8yQQU7DMBBFr1L9ZeU0tNCNdywrtVwAdTHY08Qo8Rh7CpQod0dJASFOwO7rj/T0
-        5g+g3BTYYTTwpAQ7IFEu7KdEkbpL4QL7OCBSz7DYReUmkwaJi/v5HgoMPBeXQ5pqWOz3h8pzDq/s
-        YZAkRL1CnEj2IZLO0K1Z35j19mhQErmJfnjYYTyOx3E0OIWOv9ROkvtrapk856lGK0VhkaRoT7Fi
-        18rKSQ8DJ1E5aqWXNEEppS64Wbl+LhJhQM5x0oqjEx9iA4vmIySzeMowOBfOFTUcZ/xFW4lV5pcz
-        Fy31ZnW7WW1h8F6dJL9R9uyrlEUFFq1qKj94WCzr5S+fjmOjLSzW2zuMBrPMP1r8nLvvJ2xd/x12
-        LjB+AgAA//8DAKlbnDQzAgAA
+      string: '{"args":{},"data":{"parsed":{"analyses":[{"name":"Integration Analysis","description":"LLM-derived","points":[{"coordinates":[5,10,15],"space":"MNI"}]}]}},"files":{},"form":{},"headers":{"host":"postman-echo.com","content-type":"application/json","accept-encoding":"gzip,
+        br","user-agent":"python-requests/2.32.5","x-forwarded-proto":"https","accept":"*/*","content-length":"154"},"json":{"parsed":{"analyses":[{"name":"Integration
+        Analysis","description":"LLM-derived","points":[{"coordinates":[5,10,15],"space":"MNI"}]}]}},"url":"https://postman-echo.com/post"}'
     headers:
       CF-RAY:
-      - 99d957e04bfd6e72-DFW
+      - 9a02a3547c581448-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -36,16 +32,16 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Wed, 12 Nov 2025 22:07:37 GMT
+      - Mon, 17 Nov 2025 22:24:23 GMT
       Server:
       - cloudflare
       Set-Cookie:
-      - sails.sid=s%3AYf6JqeA7OEat7xdpwlYRj9WERx8PTRi7.QS8c6taEZPITpQfJCqsk6GMxa3l8HpG4iMGNOf4s6IQ;
+      - sails.sid=s%3AWjeNW23cCKksbBVzMZKaApFQOxqEyfyt.cI5LVUHummcMeIPQRRTDtOg%2FQV9R%2F%2FiJTNxqyzYFMro;
         Path=/; HttpOnly
-      - __cf_bm=XJ5QTKAmKZlVQGNVlMJqtv2tLYlmnrY9o.IB7N0oxqc-1762985257-1.0.1.1-pDvIzJhbO8jo8J8Ajtq1hqbbuVekUNGxZIiusILii.JgwjWfeUgmHHbE7hbdyfamv1ESWZrK75t9Wi9VPMYP2VWEwnE_VIv9NMu04EA9P1o;
-        path=/; expires=Wed, 12-Nov-25 22:37:37 GMT; domain=.postman-echo.com; HttpOnly;
+      - __cf_bm=Yvn2YDz8wKWacWE5p7AUhHdMIb3xaNpowxX0IsnQ8Xw-1763418263-1.0.1.1-H.Oi80ITN7wqi6HBbuFRuX8nzLwjJnWmoM2PIl8DT4VnpWCTDXY74LxyEbiH1X0wt.8v4flkjWDJDZSAWGxk0q7Ck3nlZgoNKInEfv5IIpg;
+        path=/; expires=Mon, 17-Nov-25 22:54:23 GMT; domain=.postman-echo.com; HttpOnly;
         Secure; SameSite=None
-      - _cfuvid=tRxwqMAq8Kde9Zth8WJGdMiewUxMTwFg16IBsQcFC1E-1762985257095-0.0.1.1-604800000;
+      - _cfuvid=sx1G1lCpWsbDZCo9FByBueQb6tfO0nfKDrjfObCf5TM-1763418263878-0.0.1.1-604800000;
         path=/; domain=.postman-echo.com; HttpOnly; Secure; SameSite=None
       Transfer-Encoding:
       - chunked
@@ -56,7 +52,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-envoy-upstream-service-time:
-      - '4'
+      - '51'
     status:
       code: 200
       message: OK
