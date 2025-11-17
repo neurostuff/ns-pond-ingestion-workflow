@@ -112,7 +112,11 @@ def _run_extract_stage(settings: Settings, state: PipelineState) -> None:
     if settings.dry_run:
         logger.info("Dry-run enabled: extract stage skipped.")
         return
-    _ensure_downloads(settings, state)
+    if not _ensure_downloads(settings, state):
+        logger.error("Extraction skipped: downloads unavailable.")
+        state.bundles = []
+        state.stage_metrics["extract"] = StageMetrics()
+        return
     from ingestion_workflow.workflow.extract import run_extraction
 
     successful_downloads = [download for download in state.downloads or [] if download.success]
@@ -137,7 +141,11 @@ def _run_create_analyses_stage(settings: Settings, state: PipelineState) -> None
     if settings.dry_run:
         logger.info("Dry-run enabled: create_analyses stage skipped.")
         return
-    _ensure_bundles(settings, state)
+    if not _ensure_bundles(settings, state):
+        logger.error("Create_analyses skipped: extraction bundles unavailable.")
+        state.analyses = {}
+        state.stage_metrics["create_analyses"] = StageMetrics()
+        return
     from ingestion_workflow.workflow.create_analyses import run_create_analyses
 
     analyses_metrics = StageMetrics()
@@ -194,40 +202,51 @@ def _ensure_identifiers(settings: Settings, state: PipelineState) -> None:
     )
 
 
-def _ensure_downloads(settings: Settings, state: PipelineState) -> None:
+def _ensure_downloads(settings: Settings, state: PipelineState) -> bool:
     if state.downloads is not None:
-        return
+        return True
     if not settings.use_cached_inputs:
-        raise ValueError(
+        logger.error(
             "Download results are required but missing. "
             "Re-run the download stage or enable cached inputs."
         )
-    _ensure_identifiers(settings, state)
+        return False
+    try:
+        _ensure_identifiers(settings, state)
+    except ValueError as exc:
+        logger.error("Unable to hydrate downloads from cache: %s", exc)
+        return False
     hydrated = _hydrate_downloads_from_cache(settings, state.identifiers)
     if not hydrated:
-        raise ValueError(
+        logger.error(
             "No cached download results were found for the provided "
             "identifiers. Re-run the download stage."
         )
+        return False
     state.downloads = hydrated
+    return True
 
 
-def _ensure_bundles(settings: Settings, state: PipelineState) -> None:
+def _ensure_bundles(settings: Settings, state: PipelineState) -> bool:
     if state.bundles is not None:
-        return
+        return True
     if not settings.use_cached_inputs:
-        raise ValueError(
+        logger.error(
             "Extraction bundles are required but missing. "
             "Re-run the extract stage or enable cached inputs."
         )
-    _ensure_downloads(settings, state)
+        return False
+    if not _ensure_downloads(settings, state):
+        return False
     hydrated = _hydrate_bundles_from_cache(
         settings,
         state.downloads or [],
     )
     if not hydrated:
-        raise ValueError("No cached extraction bundles were found. Re-run the extract stage.")
+        logger.error("No cached extraction bundles were found. Re-run the extract stage.")
+        return False
     state.bundles = hydrated
+    return True
 
 
 def _log_stage_summary(stage: str, state: PipelineState) -> None:

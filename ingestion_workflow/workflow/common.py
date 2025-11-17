@@ -154,21 +154,47 @@ def reorder_results(
     return [result for result in ordered if result is not None]
 
 
-def ensure_successful_download(download_result: DownloadResult) -> None:
-    """Shared validation for download results before extraction."""
+def ensure_successful_download(download_result: DownloadResult) -> bool:
+    """Shared validation for download results before extraction.
+
+    Returns
+    -------
+    bool
+        True when the download is usable; False when missing/invalid with an error logged.
+    """
+    ident = getattr(download_result.identifier, "slug", None) or "unknown"
+    source = getattr(download_result, "source", None)
+    source_label = source.value if hasattr(source, "value") else str(source)
+    context = f"[download:{source_label} id={ident}]"
+
     if not download_result.success:
-        raise ValueError("Download result must succeed before downstream processing.")
+        logger.error("%s marked unsuccessful%s", context, _format_error_suffix(download_result))
+        return False
+
     if not download_result.files:
-        raise ValueError("Successful downloads must include persisted files for processing.")
+        logger.error("%s missing persisted files for processing", context)
+        return False
+
     missing = [
         downloaded.file_path
         for downloaded in download_result.files
         if not downloaded.file_path.exists()
     ]
     if missing:
-        raise ValueError(
-            "Download payloads missing on disk: " + ", ".join(str(path) for path in missing)
+        logger.error(
+            "%s payloads missing on disk: %s",
+            context,
+            ", ".join(str(path) for path in missing),
         )
+        return False
+
+    return True
+
+
+def _format_error_suffix(download_result: DownloadResult) -> str:
+    if download_result.error_message:
+        return f" ({download_result.error_message})"
+    return ""
 
 
 def log_cache_hits(stage: str, count: int) -> None:

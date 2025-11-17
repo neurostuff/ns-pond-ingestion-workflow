@@ -42,10 +42,15 @@ from ingestion_workflow.workflow.stats import StageMetrics
 logger = logging.getLogger(__name__)
 
 
-def _ensure_successful_download(download_result: DownloadResult) -> None:
+def _ensure_successful_download(download_result: DownloadResult) -> bool:
     """Validate that a download result is suitable for extraction."""
 
-    ensure_base_download(download_result)
+    if not ensure_base_download(download_result):
+        return False
+
+    ident = download_result.identifier.slug
+    source_label = download_result.source.value
+    context = f"[extract:{source_label} id={ident}]"
 
     if download_result.source is DownloadSource.ACE:
         html_file = next(
@@ -57,7 +62,10 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
             None,
         )
         if html_file is None:
-            raise ValueError("ACE downloads must include an HTML file for extraction.")
+            logger.error(
+                "%s missing HTML content for extraction", context
+            )
+            return False
 
     if download_result.source is DownloadSource.PUBGET:
         article_xml = next(
@@ -79,9 +87,13 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
             None,
         )
         if article_xml is None or tables_xml is None:
-            raise ValueError(
-                "Pubget downloads must include article.xml and tables/tables.xml for extraction."
+            logger.error(
+                "%s requires article.xml and tables.xml for extraction (found: %s%s)",
+                context,
+                "article.xml" if article_xml else "missing article.xml",
+                "; tables.xml" if tables_xml else "; missing tables.xml",
             )
+            return False
 
     if download_result.source is DownloadSource.ELSEVIER:
         xml_file = next(
@@ -103,12 +115,15 @@ def _ensure_successful_download(download_result: DownloadResult) -> None:
             None,
         )
         if xml_file is None:
-            raise ValueError(
-                "Elsevier downloads must include XML content for extraction; "
-                "PDF-only articles are not supported."
+            logger.error(
+                "%s missing content XML for extraction", context
             )
+            return False
         if metadata_file is None:
-            raise ValueError("Elsevier downloads must include metadata.json for extraction.")
+            logger.error("%s missing metadata.json for extraction", context)
+            return False
+
+    return True
 
 
 def _group_by_source(
@@ -116,7 +131,14 @@ def _group_by_source(
 ) -> Dict[DownloadSource, List[Tuple[int, DownloadResult]]]:
     grouped: Dict[DownloadSource, List[Tuple[int, DownloadResult]]] = {}
     for index, download_result in enumerate(download_results):
-        _ensure_successful_download(download_result)
+        if not _ensure_successful_download(download_result):
+            logger.error(
+                "[extract:%s id=%s] skipping invalid download at index %d",
+                download_result.source.value,
+                download_result.identifier.slug,
+                index,
+            )
+            continue
         grouped.setdefault(download_result.source, []).append((index, download_result))
     return grouped
 
@@ -153,7 +175,7 @@ def run_extraction(
     resolved_settings = resolve_settings(settings)
 
     grouped = _group_by_source(download_results)
-    ordered_results: List[ExtractionResult | None] = [None] * len(download_results)
+    ordered_results: List[Tuple[int, ExtractionResult]] = []
 
     processed_count = 0
     for source, entries in grouped.items():
@@ -172,7 +194,6 @@ def run_extraction(
 
         cached_count = sum(1 for item in cached_slots if item is not None)
         missing_total = len(missing_results)
-        processed_count += cached_count
         if cached_count:
             log_cache_hits(f"Extract[{source.value}]", cached_count)
             if metrics is not None:
@@ -182,7 +203,8 @@ def run_extraction(
 
         for (index, _), cached_result in zip(entries, cached_slots):
             if cached_result is not None:
-                ordered_results[index] = cached_result
+                ordered_results.append((index, cached_result))
+                processed_count += 1
                 continue
             pending_result = missing_results[missing_index]
             pending_entries.append((index, pending_result))
@@ -235,7 +257,7 @@ def run_extraction(
             raise ValueError("Extractor returned a result set with mismatched length.")
 
         for (index, _), extraction_result in zip(pending_entries, extracted):
-            ordered_results[index] = extraction_result
+            ordered_results.append((index, extraction_result))
             processed_count += 1
 
         cache.cache_extraction_results(
@@ -252,11 +274,8 @@ def run_extraction(
             extra=console_kwargs(),
         )
 
-    final_results: List[ExtractionResult] = []
-    for index, candidate in enumerate(ordered_results):
-        if candidate is None:
-            raise ValueError(f"Extraction result missing for download index {index}.")
-        final_results.append(candidate)
+    ordered_results.sort(key=lambda pair: pair[0])
+    final_results: List[ExtractionResult] = [result for _, result in ordered_results]
 
     # Enrich metadata for articles with coordinates
     metadata_dict: Dict[str, ArticleMetadata] = {}

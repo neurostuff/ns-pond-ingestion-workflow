@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 from ingestion_workflow.config import Settings
@@ -21,7 +22,8 @@ def _make_settings(tmp_path: Path) -> Settings:
 def test_index_legacy_downloads_ace(tmp_path: Path) -> None:
     settings = _make_settings(tmp_path)
     source = DATA_DIR / "test_html"
-    index = index_legacy_downloads(settings, DownloadSource.ACE.value, source)
+    result = index_legacy_downloads(settings, DownloadSource.ACE.value, source)
+    index = result.index
 
     html_files = sorted(source.rglob("*.html"))
     assert index.count() == len(html_files)
@@ -41,7 +43,8 @@ def test_index_legacy_downloads_ace(tmp_path: Path) -> None:
 def test_index_legacy_downloads_pubget(tmp_path: Path) -> None:
     settings = _make_settings(tmp_path)
     source = DATA_DIR / "test_pubget"
-    index = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    result = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    index = result.index
 
     article_dirs = [path for path in source.rglob("pmcid_*") if path.is_dir()]
     assert index.count() == len(article_dirs)
@@ -84,10 +87,38 @@ def test_index_legacy_downloads_pubget_nested_structure(tmp_path: Path) -> None:
     )
     (article_dir / "fulltext.pdf").write_bytes(b"pdf")
 
-    index = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    result = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    index = result.index
     assert index.count() == 1
     entry = next(index.iter_entries())
     assert entry.result.identifier.pmcid == "PMC9056519"
     names = {file.file_path.name for file in entry.result.files}
     assert "article.xml" in names
     assert "fulltext.pdf" in names
+
+
+def test_index_legacy_downloads_update_existing(tmp_path: Path) -> None:
+    settings = _make_settings(tmp_path)
+    source = tmp_path / "pubget_source"
+    shutil.copytree(DATA_DIR / "test_pubget", source)
+
+    initial = index_legacy_downloads(settings, DownloadSource.PUBGET.value, source)
+    index = initial.index
+    assert index.count() > 0
+    entry = next(index.iter_entries())
+    target_dir = entry.result.files[0].file_path.parent
+    new_file = target_dir / "new_payload.bin"
+    new_file.write_bytes(b"new payload")
+
+    updated = index_legacy_downloads(
+        settings,
+        DownloadSource.PUBGET.value,
+        source,
+        update_existing=True,
+    )
+    updated_entry = next(updated.index.iter_entries())
+    names = {file.file_path.name for file in updated_entry.result.files}
+
+    assert updated.added == 0
+    assert updated.updated >= 1
+    assert "new_payload.bin" in names

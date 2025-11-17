@@ -30,6 +30,7 @@ import json
 import re
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator, List, Sequence, Tuple, Type, TypeVar
 
@@ -41,6 +42,7 @@ from ingestion_workflow.models import (
     CreateAnalysesResult,
     CreateAnalysesResultEntry,
     CreateAnalysesResultIndex,
+    DownloadCacheEntry,
     DownloadIndex,
     DownloadedFile,
     DownloadResult,
@@ -69,6 +71,19 @@ LEGACY_INDEX_BATCH_SIZE = 10000
 
 
 TIndex = TypeVar("TIndex", bound=CacheIndex)
+
+
+@dataclass
+class LegacyBatchResult:
+    added: int = 0
+    updated: int = 0
+
+
+@dataclass
+class LegacyIndexingResult:
+    index: DownloadIndex
+    added: int = 0
+    updated: int = 0
 
 
 def _namespace_root(settings: Settings, namespace: str) -> Path:
@@ -387,9 +402,15 @@ def index_legacy_downloads(
     extractor_name: str,
     source_directory: Path,
     *,
+    update_existing: bool = False,
     namespace: str = DOWNLOAD_CACHE_NAMESPACE,
-) -> DownloadIndex:
-    """Index historical downloads for ACE/Pubget into the cache."""
+) -> LegacyIndexingResult:
+    """Index historical downloads for ACE/Pubget into the cache.
+
+    When ``update_existing`` is True, entries are refreshed instead of inserted.
+    Existing cache entries are inspected for missing files and updated in place
+    when new files are detected.
+    """
 
     extractor = DownloadSource(extractor_name)
     source_directory = Path(source_directory)
@@ -406,6 +427,8 @@ def index_legacy_downloads(
         raise ValueError(f"Legacy indexing not supported for extractor '{extractor_name}'.")
 
     index = load_download_index(settings, extractor_name, namespace=namespace)
+    before_count = index.count()
+    updated_total = 0
     slug_set, pmid_set, pmcid_set, doi_set = _build_identifier_filters(index)
 
     progress = tqdm(
@@ -419,11 +442,21 @@ def index_legacy_downloads(
     try:
         for result in results_iter:
             progress.update(1)
-            if _is_duplicate_identifier(result.identifier, slug_set, pmid_set, pmcid_set, doi_set):
+            is_duplicate = _is_duplicate_identifier(
+                result.identifier,
+                slug_set,
+                pmid_set,
+                pmcid_set,
+                doi_set,
+            )
+            if update_existing:
+                if not is_duplicate:
+                    continue
+            elif is_duplicate:
                 continue
             batch.append(result)
             if len(batch) >= LEGACY_INDEX_BATCH_SIZE:
-                _persist_legacy_batch(
+                batch_result = _persist_legacy_batch(
                     settings,
                     extractor_name,
                     batch,
@@ -432,11 +465,13 @@ def index_legacy_downloads(
                     pmcid_set,
                     doi_set,
                     namespace,
+                    update_existing=update_existing,
                 )
+                updated_total += batch_result.updated
                 batch.clear()
 
         if batch:
-            _persist_legacy_batch(
+            batch_result = _persist_legacy_batch(
                 settings,
                 extractor_name,
                 batch,
@@ -445,11 +480,19 @@ def index_legacy_downloads(
                 pmcid_set,
                 doi_set,
                 namespace,
+                update_existing=update_existing,
             )
+            updated_total += batch_result.updated
     finally:
         progress.close()
 
-    return load_download_index(settings, extractor_name, namespace=namespace)
+    final_index = load_download_index(settings, extractor_name, namespace=namespace)
+    added_count = max(0, final_index.count() - before_count)
+    return LegacyIndexingResult(
+        index=final_index,
+        added=added_count,
+        updated=updated_total,
+    )
 
 
 _CONTENT_TYPE_MAP = {
@@ -626,9 +669,14 @@ def _persist_legacy_batch(
     pmcid_set: set[str],
     doi_set: set[str],
     namespace: str,
-) -> None:
+    *,
+    update_existing: bool = False,
+) -> LegacyBatchResult:
     if not batch:
-        return
+        return LegacyBatchResult()
+
+    if update_existing:
+        return _update_existing_legacy_batch(settings, extractor_name, batch, namespace)
 
     _enrich_identifiers_with_lookups(settings, batch)
 
@@ -643,7 +691,7 @@ def _persist_legacy_batch(
         _add_identifier_keys(identifier, slug_set, pmid_set, pmcid_set, doi_set)
 
     if not new_results:
-        return
+        return LegacyBatchResult()
 
     with _acquire_lock(settings, namespace, extractor_name):
         index_path = _index_path(settings, namespace, extractor_name)
@@ -656,6 +704,117 @@ def _persist_legacy_batch(
             pending.append(result)
         if pending:
             index.add_downloads(pending)
+        return LegacyBatchResult(added=len(pending))
+
+
+def _update_existing_legacy_batch(
+    settings: Settings,
+    extractor_name: str,
+    batch: List[DownloadResult],
+    namespace: str,
+) -> LegacyBatchResult:
+    with _acquire_lock(settings, namespace, extractor_name):
+        index_path = _index_path(settings, namespace, extractor_name)
+        index = DownloadIndex.load(index_path)
+        slug_lookup, pmid_lookup, pmcid_lookup, doi_lookup = _build_download_entry_lookup(index)
+        updated_entries = 0
+
+        for result in batch:
+            existing_entry = _find_existing_entry(
+                result.identifier,
+                slug_lookup,
+                pmid_lookup,
+                pmcid_lookup,
+                doi_lookup,
+            )
+            if existing_entry is None:
+                continue
+
+            merged_files, added_files = _merge_download_files(
+                existing_entry.result.files, result.files
+            )
+            if not added_files:
+                continue
+
+            merged_result = existing_entry.clone_payload()
+            merged_result.files = merged_files
+            updated_entry = DownloadCacheEntry(
+                slug=existing_entry.slug,
+                payload=merged_result,
+                cached_at=existing_entry.cached_at,
+                metadata=dict(existing_entry.metadata),
+            )
+            index.add_entries([updated_entry])
+            slug_lookup[existing_entry.slug] = updated_entry
+            identifier = merged_result.identifier
+            if identifier.pmid:
+                pmid_lookup[identifier.pmid] = updated_entry
+            if identifier.pmcid:
+                pmcid_lookup[identifier.pmcid] = updated_entry
+            if identifier.doi:
+                doi_lookup[identifier.doi] = updated_entry
+            updated_entries += 1
+
+        return LegacyBatchResult(updated=updated_entries)
+
+
+def _build_download_entry_lookup(
+    index: DownloadIndex,
+) -> Tuple[
+    dict[str, DownloadCacheEntry],
+    dict[str, DownloadCacheEntry],
+    dict[str, DownloadCacheEntry],
+    dict[str, DownloadCacheEntry],
+]:
+    slug_lookup: dict[str, DownloadCacheEntry] = {}
+    pmid_lookup: dict[str, DownloadCacheEntry] = {}
+    pmcid_lookup: dict[str, DownloadCacheEntry] = {}
+    doi_lookup: dict[str, DownloadCacheEntry] = {}
+    for entry in index.iter_entries():
+        slug_lookup[entry.slug] = entry
+        identifier = entry.result.identifier
+        if identifier.pmid:
+            pmid_lookup[identifier.pmid] = entry
+        if identifier.pmcid:
+            pmcid_lookup[identifier.pmcid] = entry
+        if identifier.doi:
+            doi_lookup[identifier.doi] = entry
+    return slug_lookup, pmid_lookup, pmcid_lookup, doi_lookup
+
+
+def _find_existing_entry(
+    identifier: Identifier,
+    slug_lookup: dict[str, DownloadCacheEntry],
+    pmid_lookup: dict[str, DownloadCacheEntry],
+    pmcid_lookup: dict[str, DownloadCacheEntry],
+    doi_lookup: dict[str, DownloadCacheEntry],
+) -> DownloadCacheEntry | None:
+    slug = identifier.slug
+    if slug and slug in slug_lookup:
+        return slug_lookup[slug]
+    if identifier.pmid and identifier.pmid in pmid_lookup:
+        return pmid_lookup[identifier.pmid]
+    if identifier.pmcid and identifier.pmcid in pmcid_lookup:
+        return pmcid_lookup[identifier.pmcid]
+    if identifier.doi and identifier.doi in doi_lookup:
+        return doi_lookup[identifier.doi]
+    return None
+
+
+def _merge_download_files(
+    existing_files: Sequence[DownloadedFile],
+    new_files: Sequence[DownloadedFile],
+) -> Tuple[List[DownloadedFile], List[DownloadedFile]]:
+    merged = list(existing_files)
+    added: List[DownloadedFile] = []
+    existing_paths = {file.file_path for file in existing_files}
+    for file in new_files:
+        if file.file_path in existing_paths:
+            continue
+        merged.append(file)
+        added.append(file)
+        existing_paths.add(file.file_path)
+    return merged, added
 
 
 def _is_duplicate_identifier(

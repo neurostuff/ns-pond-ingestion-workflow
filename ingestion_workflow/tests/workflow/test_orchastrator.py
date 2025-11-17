@@ -210,8 +210,9 @@ def test_pipeline_errors_without_cached_inputs(tmp_path):
         manifest_path=manifest,
         use_cached_inputs=False,
     )
-    with pytest.raises(ValueError):
-        orchastrator.run_pipeline(settings=settings)
+    state = orchastrator.run_pipeline(settings=settings)
+    assert state.bundles == []
+    assert state.stage_metrics.get("extract") is not None
 
 
 def test_pipeline_requires_manifest_when_gather_missing(tmp_path):

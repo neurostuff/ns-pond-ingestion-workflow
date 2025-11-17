@@ -225,6 +225,11 @@ def index_legacy_downloads_cli(
         dir_okay=True,
         help="Path to the legacy download directory to index.",
     ),
+    update: bool = typer.Option(
+        False,
+        "--update/--no-update",
+        help="Refresh existing cache entries with newly detected files instead of adding new entries.",
+    ),
     config_path: Optional[Path] = typer.Option(
         None,
         "--config",
@@ -257,19 +262,29 @@ def index_legacy_downloads_cli(
     )
     before = before_index.count()
 
-    index = cache.index_legacy_downloads(
+    result = cache.index_legacy_downloads(
         settings,
         extractor_name.value,
         resolved_dir,
+        update_existing=update,
         namespace=cache_namespace,
     )
-    after = index.count()
-    added = max(0, after - before)
+    after = result.index.count()
+    added = result.added if not update else 0
+    updated = result.updated
 
-    typer.echo(
-        "Legacy indexing complete: "
-        f"{added} new entries added (total {after} cached for {extractor_name.value})."
-    )
+    if update:
+        typer.echo(
+            "Legacy indexing update complete: "
+            f"{updated} entries refreshed (total {after} cached for {extractor_name.value})."
+        )
+    else:
+        # fallback to before/after diff when add tracking was bypassed (e.g. no batches)
+        added = added or max(0, after - before)
+        typer.echo(
+            "Legacy indexing complete: "
+            f"{added} new entries added (total {after} cached for {extractor_name.value})."
+        )
 
 
 @app.command()

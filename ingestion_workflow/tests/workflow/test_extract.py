@@ -39,7 +39,7 @@ def stub_validation(monkeypatch):
     monkeypatch.setattr(
         extract_module,
         "_ensure_successful_download",
-        lambda *_args, **_kwargs: None,
+        lambda *_args, **_kwargs: True,
     )
     monkeypatch.setattr(
         extract_module.cache,
