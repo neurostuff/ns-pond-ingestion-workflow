@@ -249,6 +249,7 @@ def _extract_ace_article(
         html_text,
         pmid=download_result.identifier.pmid,
         metadata_dir=None,
+        skip_metadata=True,
     )
     if not article:
         raise ValueError("ACE failed to parse the article content.")
