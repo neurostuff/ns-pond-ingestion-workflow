@@ -26,14 +26,14 @@ def configure_logging(
 ) -> None:
     """Configure logging sinks for this run."""
 
-    root_logger = logging.getLogger(_ROOT_LOGGER_NAME)
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+
+    root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     root_logger.propagate = False
 
     for handler in list(root_logger.handlers):
         root_logger.removeHandler(handler)
-
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     if log_to_file and log_file is not None:
         log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -41,16 +41,24 @@ def configure_logging(
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
 
+    ingestion_logger = logging.getLogger(_ROOT_LOGGER_NAME)
+    ingestion_logger.setLevel(logging.INFO)
+    ingestion_logger.propagate = True
+
+    for handler in list(ingestion_logger.handlers):
+        ingestion_logger.removeHandler(handler)
+
     if log_to_console:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
         console_handler.addFilter(_ConsoleFilter())
-        root_logger.addHandler(console_handler)
+        ingestion_logger.addHandler(console_handler)
 
-    if not root_logger.handlers:  # pragma: no cover - fallback
+    if not ingestion_logger.handlers and not (log_to_file and log_file):
+        # Fallback to console output when no other handlers exist.
         fallback_handler = logging.StreamHandler()
         fallback_handler.setFormatter(formatter)
-        root_logger.addHandler(fallback_handler)
+        ingestion_logger.addHandler(fallback_handler)
 
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:
