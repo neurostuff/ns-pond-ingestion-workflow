@@ -226,8 +226,12 @@ class PubgetExtractor(BaseExtractor):
         )
 
     def _resolve_extraction_root(self) -> Path:
-        base = self.settings.get_cache_dir("extract")
-        root = base / "pubget"
+        if self.settings.pubget_cache_root is not None:
+            base = self.settings.pubget_cache_root
+            root = base / "extracted"
+        else:
+            base = self.settings.get_cache_dir("extract")
+            root = base / "pubget"
         root.mkdir(parents=True, exist_ok=True)
         return root
 

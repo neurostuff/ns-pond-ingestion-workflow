@@ -26,6 +26,7 @@ from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from pubget._utils import article_bucket_from_pmcid
 
 
 logger = logging.getLogger(__name__)
@@ -421,15 +422,46 @@ class MetadataService:
             candidate_files.append(article_dir / "article.xml")
 
         if extracted_content.identifier and extracted_content.identifier.pmcid:
-            pmcid = extracted_content.identifier.pmcid.strip().upper()
-            if pmcid.startswith("PMC"):
-                pmcid = pmcid[3:]
+            pmcid_value = extracted_content.identifier.pmcid.strip().upper()
+            if pmcid_value.startswith("PMC"):
+                pmcid_value = pmcid_value[3:]
+
+            # Normalize to the canonical integer format used on disk (removes leading zeros).
+            if pmcid_value.isdigit():
+                pmcid_value = str(int(pmcid_value))
+
             base_dir = (
                 self.settings.pubget_cache_root
                 if self.settings.pubget_cache_root is not None
                 else self.settings.cache_root / "pubget"
             )
-            candidate_files.extend(base_dir.glob(f"**/pmcid_{pmcid}/article.xml"))
+
+            bucket = article_bucket_from_pmcid(int(pmcid_value))
+            pmcid_dir = f"pmcid_{pmcid_value}"
+
+            # Check the common layouts without a recursive glob to avoid walking the entire tree.
+            candidate_paths: list[Path] = [
+                base_dir / "articles" / bucket / pmcid_dir / "article.xml",
+                base_dir / bucket / pmcid_dir / "article.xml",
+            ]
+
+            if base_dir.exists():
+                for subdir in base_dir.iterdir():
+                    if not subdir.is_dir():
+                        continue
+                    if not subdir.name.startswith(("pmcidList_", "query_")):
+                        continue
+                    candidate_paths.append(
+                        subdir / "articles" / bucket / pmcid_dir / "article.xml"
+                    )
+
+            # Preserve earlier ordering while avoiding duplicates.
+            seen: set[Path] = set()
+            for path in candidate_paths:
+                if path in seen:
+                    continue
+                seen.add(path)
+                candidate_files.append(path)
 
         article_xml = next(
             (path for path in candidate_files if path.exists()),

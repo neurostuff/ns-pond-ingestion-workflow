@@ -245,8 +245,12 @@ class ElsevierExtractor(BaseExtractor):
         )
 
     def _resolve_extraction_root(self) -> Path:
-        base = self.settings.get_cache_dir("extract")
-        root = base / "elsevier"
+        if self.settings.elsevier_cache_root is not None:
+            base = self.settings.elsevier_cache_root
+            root = base / "extracted"
+        else:
+            base = self.settings.get_cache_dir("extract")
+            root = base / "elsevier"
         root.mkdir(parents=True, exist_ok=True)
         return root
 
