@@ -49,6 +49,7 @@ from ingestion_workflow.models import (
     DownloadSource,
     FileType,
     ExtractionResult,
+    ExtractedContent,
     Identifier,
     IdentifierCacheEntry,
     IdentifierCacheIndex,
@@ -854,6 +855,18 @@ def _add_identifier_keys(
         doi_set.add(identifier.doi)
 
 
+def _cached_extraction_files_exist(content: ExtractedContent) -> bool:
+    """Return False if cached paths have been removed since they were indexed."""
+
+    if content.full_text_path:
+        if not Path(content.full_text_path).exists():
+            return False
+    for table in content.tables:
+        if table.raw_content_path and not Path(table.raw_content_path).exists():
+            return False
+    return True
+
+
 def partition_cached_extractions(
     settings: Settings,
     extractor_name: str,
@@ -870,6 +883,10 @@ def partition_cached_extractions(
     for download_result in download_results:
         entry = index.get_extraction(download_result.identifier.slug)
         if entry is None:
+            cached_results.append(None)
+            missing.append(download_result)
+            continue
+        if not _cached_extraction_files_exist(entry.content):
             cached_results.append(None)
             missing.append(download_result)
             continue
