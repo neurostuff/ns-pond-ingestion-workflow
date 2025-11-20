@@ -21,7 +21,7 @@ dependencies = [
   "beautifulsoup4>=4.12",
   "readabilipy~=0.3.0",
   "regex>=2024.5.15",
-  "SQLAlchemy<2.0",
+  "SQLAlchemy>=2.0",
   "simplejson>=3.19",
   "xmltodict>=0.13",
   "seleniumbase>=4.34",
@@ -32,6 +32,9 @@ dependencies = [
   "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   "pydantic-settings>=2.5",
+  "sshtunnel>=0.4",
+  "psycopg[binary]>=3.1",
+  "shortuuid>=1.0",
 ]
 
 [project.optional-dependencies]

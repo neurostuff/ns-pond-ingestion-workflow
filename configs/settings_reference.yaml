@@ -70,3 +70,20 @@ use_cached_inputs: true  # Hydrate skipped stages from cached outputs when avail
 pubget_cache_root: null  # Optional override for the Pubget cache directory.
 ace_cache_root: null  # Optional override for the ACE cache directory.
 elsevier_cache_root: null  # Optional override for the Elsevier cache directory.
+
+# Upload configuration
+upload_use_ssh: true  # Enable SSH tunneling for upload database connections.
+upload_ssh_host: "neurostore.xyz"  # SSH host for tunneling to the remote database.
+upload_ssh_user: "jdkent"  # SSH user for tunneling to the remote database.
+upload_ssh_key: "~/.ssh/id_ed25519"  # Path to SSH private key for tunneling.
+upload_remote_bind_host: "store-store-pgsql17-1"  # Remote bind host inside the tunnel (container hostname).
+upload_remote_bind_port: 5432  # Remote bind port for the Postgres service.
+upload_local_forward_port: 6543  # Local port forwarded to the remote database via SSH.
+upload_db_host: "localhost"  # Database host used by SQLAlchemy (often localhost when tunneling).
+upload_db_name: "neurostore"  # Database name for uploads.
+upload_db_user: "postgres"  # Database user for uploads.
+upload_db_password: "example"  # Database password for uploads.
+upload_connect_timeout: 10  # Connection timeout (seconds) for upload database sessions.
+upload_behavior: "update"  # Behavior for existing studies with source 'llm': update in place or insert_new.
+upload_metadata_only: false  # When true, only update metadata fields without touching coordinates.
+upload_metadata_mode: "fill"  # Metadata strategy: fill empty fields or overwrite existing values.

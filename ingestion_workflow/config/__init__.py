@@ -8,6 +8,7 @@ There are three levels of configuration in order of priority
 
 from __future__ import annotations
 
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -18,6 +19,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ingestion_workflow.models import (
     DownloadSource,
 )
+
+
+class UploadBehavior(str, Enum):
+    UPDATE = "update"
+    INSERT_NEW = "insert_new"
+
+
+class UploadMetadataMode(str, Enum):
+    FILL = "fill"
+    OVERWRITE = "overwrite"
 
 
 class Settings(BaseSettings):
@@ -372,6 +383,71 @@ class Settings(BaseSettings):
     elsevier_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for Elsevier cache root directory",
+    )
+
+    # ===== Upload configuration =====
+    upload_use_ssh: bool = Field(
+        default=True,
+        description="Enable SSH tunneling for upload database connections",
+    )
+    upload_ssh_host: str = Field(
+        default="neurostore.xyz",
+        description="SSH host for tunneling to the remote database",
+    )
+    upload_ssh_user: str = Field(
+        default="jdkent",
+        description="SSH user for tunneling to the remote database",
+    )
+    upload_ssh_key: Path = Field(
+        default=Path("~/.ssh/id_ed25519"),
+        description="Path to SSH private key for tunneling",
+    )
+    upload_remote_bind_host: str = Field(
+        default="store-store-pgsql17-1",
+        description="Remote bind host inside SSH tunnel (container hostname)",
+    )
+    upload_remote_bind_port: int = Field(
+        default=5432,
+        description="Remote bind port for the Postgres service",
+    )
+    upload_local_forward_port: int = Field(
+        default=6543,
+        description="Local port to forward to the remote database via SSH",
+    )
+    upload_db_host: str = Field(
+        default="localhost",
+        description="Database host used by SQLAlchemy (often localhost when tunneling)",
+    )
+    upload_db_name: str = Field(
+        default="neurostore",
+        description="Database name for uploads",
+    )
+    upload_db_user: str = Field(
+        default="postgres",
+        description="Database user for uploads",
+    )
+    upload_db_password: str = Field(
+        default="example",
+        description="Database password for uploads",
+    )
+    upload_connect_timeout: int = Field(
+        default=30,
+        description="Connection timeout (seconds) for upload database sessions",
+    )
+    upload_behavior: UploadBehavior = Field(
+        default=UploadBehavior.UPDATE,
+        description=(
+            "Behavior for existing studies with source 'llm': "
+            "'update' to modify in place, 'insert_new' to create a new study"
+        ),
+    )
+    upload_metadata_only: bool = Field(
+        default=False,
+        description="When true, only update metadata fields without touching coordinates",
+    )
+    upload_metadata_mode: UploadMetadataMode = Field(
+        default=UploadMetadataMode.FILL,
+        description="Metadata update strategy: 'fill' (only empty fields) or 'overwrite'",
     )
 
 

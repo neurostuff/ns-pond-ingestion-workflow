@@ -54,18 +54,17 @@ from ingestion_workflow.models import (
     IdentifierCacheEntry,
     IdentifierCacheIndex,
     Identifiers,
+    UploadCacheEntry,
+    UploadCacheIndex,
 )
-from ingestion_workflow.models.cache import (
-    CacheIndex,
-    ExtractionResultEntry,
-    ExtractionResultIndex,
-)
+from ingestion_workflow.models.cache import CacheIndex, ExtractionResultEntry, ExtractionResultIndex
 
 
 DOWNLOAD_CACHE_NAMESPACE = "download"
 EXTRACT_CACHE_NAMESPACE = "extract"
 GATHER_CACHE_NAMESPACE = "gather"
 CREATE_ANALYSES_CACHE_NAMESPACE = "create_analyses"
+UPLOAD_CACHE_NAMESPACE = "upload"
 INDEX_FILENAME = "index.sqlite"
 LOCK_FILENAME = "index.lock"
 LEGACY_INDEX_BATCH_SIZE = 10000
@@ -287,6 +286,38 @@ def cache_create_analyses_results(
             entry = CreateAnalysesResultEntry.from_result(result)
             entries_to_add.append(entry)
         index.add_entries(entries_to_add)
+
+
+def load_upload_index(
+    settings: Settings,
+    *,
+    namespace: str = UPLOAD_CACHE_NAMESPACE,
+) -> UploadCacheIndex:
+    """Load the upload cache index."""
+
+    return load_index(
+        settings,
+        namespace,
+        extractor_name=None,
+        index_cls=UploadCacheIndex,
+    )
+
+
+def cache_upload_results(
+    settings: Settings,
+    outcomes: Sequence[UploadCacheEntry],
+    *,
+    namespace: str = UPLOAD_CACHE_NAMESPACE,
+) -> None:
+    """Persist upload outcomes for future reuse."""
+
+    if not outcomes:
+        return
+
+    with _acquire_lock(settings, namespace, extractor_name=None):
+        index_path = _index_path(settings, namespace, extractor_name=None)
+        index = UploadCacheIndex.load(index_path)
+        index.add_entries(list(outcomes))
 
 
 def get_identifier_cache_entry(

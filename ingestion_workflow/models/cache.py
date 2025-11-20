@@ -27,6 +27,7 @@ from .download import DownloadResult
 from .extract import ExtractedContent, ExtractedTable
 from .ids import Identifier, IdentifierExpansion, Identifiers
 from .metadata import ArticleMetadata, Author
+from .upload import UploadOutcome
 
 
 CACHE_SCHEMA_VERSION = 1
@@ -574,6 +575,53 @@ class MetadataCacheIndex(CacheIndex[MetadataCache]):
         return None
 
 
+@dataclass
+class UploadCacheEntry(CacheEnvelope[UploadOutcome]):
+    """Envelope for cached upload outcomes."""
+
+    payload_cls: ClassVar[Type[UploadOutcome]] = UploadOutcome
+
+    @classmethod
+    def from_outcome(cls, outcome: UploadOutcome) -> "UploadCacheEntry":
+        clone = UploadOutcome(
+            slug=outcome.slug,
+            base_study_id=outcome.base_study_id,
+            study_id=outcome.study_id,
+            analysis_ids=list(outcome.analysis_ids),
+            success=outcome.success,
+            error=outcome.error,
+        )
+        return cls(slug=clone.slug, payload=clone)
+
+    @property
+    def base_study_id(self) -> Optional[str]:
+        return self.payload.base_study_id
+
+    @property
+    def study_id(self) -> Optional[str]:
+        return self.payload.study_id
+
+
+class UploadCacheIndex(CacheIndex[UploadCacheEntry]):
+    """Index for upload outcomes."""
+
+    table_name: ClassVar[str] = "upload_entries"
+    envelope_type: ClassVar[Type[UploadCacheEntry]] = UploadCacheEntry
+    extra_columns: ClassVar[Mapping[str, str]] = {
+        "base_study_id": "TEXT",
+        "study_id": "TEXT",
+    }
+
+    def _extra_values(self, entry: UploadCacheEntry) -> Dict[str, Any]:
+        return {
+            "base_study_id": entry.base_study_id,
+            "study_id": entry.study_id,
+        }
+
+    def _identifier_from_entry(self, entry: UploadCacheEntry) -> Optional[Identifier]:
+        return None
+
+
 __all__ = [
     "CACHE_SCHEMA_VERSION",
     "CacheEnvelope",
@@ -588,4 +636,6 @@ __all__ = [
     "IdentifierCacheIndex",
     "MetadataCache",
     "MetadataCacheIndex",
+    "UploadCacheEntry",
+    "UploadCacheIndex",
 ]

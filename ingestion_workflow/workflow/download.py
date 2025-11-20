@@ -205,7 +205,20 @@ def run_downloads(
         finally:
             if progress is not None:
                 progress.close()
-
+ 
+        # Transient debug: log summary of download_results returned by the extractor
+        try:
+            success_count = sum(1 for r in download_results if r.success)
+            total_count = len(download_results)
+            logger.debug(
+                "Extractor.download returned %d results (%d successes) for %d pending identifiers",
+                total_count,
+                success_count,
+                pending_count,
+            )
+        except Exception:
+            logger.exception("Failed to summarize download_results for debug")
+ 
         for result in download_results:
             collected_results.append(result)
 

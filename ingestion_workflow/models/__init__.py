@@ -46,6 +46,16 @@ from .cache import (
     IdentifierCacheIndex,
     MetadataCache,
     MetadataCacheIndex,
+    UploadCacheEntry,
+    UploadCacheIndex,
+)
+from .upload import (
+    BaseStudyPayload,
+    StudyPayload,
+    TablePayload,
+    UploadOutcome,
+    UploadWorkItem,
+    PreparedAnalysis,
 )
 
 # Align with earlier interface expectations.
@@ -101,4 +111,12 @@ __all__ = [
     "TablesIndexFile",
     "TextFile",
     "merge_metadata_from_sources",
+    "BaseStudyPayload",
+    "StudyPayload",
+    "TablePayload",
+    "UploadOutcome",
+    "UploadWorkItem",
+    "PreparedAnalysis",
+    "UploadCacheEntry",
+    "UploadCacheIndex",
 ]

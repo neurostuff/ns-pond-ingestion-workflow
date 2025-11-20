@@ -160,7 +160,23 @@ def _run_create_analyses_stage(settings: Settings, state: PipelineState) -> None
 
 
 def _run_upload_stage(settings: Settings, state: PipelineState) -> None:
-    logger.info("Upload stage not yet implemented; skipping.")
+    if settings.dry_run:
+        logger.info("Dry-run enabled: upload stage skipped.")
+        return
+    if state.analyses is None:
+        logger.info("No analyses available for upload; skipping.")
+        return
+    from ingestion_workflow.workflow.upload import run_upload
+
+    outcomes = run_upload(state, settings=settings)
+    success = sum(1 for outcome in outcomes if outcome.success)
+    failed = len(outcomes) - success
+    logger.info(
+        "Upload completed: %d successes, %d failures",
+        success,
+        failed,
+        extra=console_kwargs(),
+    )
 
 
 def _run_sync_stage(settings: Settings, state: PipelineState) -> None:

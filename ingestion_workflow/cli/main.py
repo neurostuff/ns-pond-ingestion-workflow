@@ -6,12 +6,18 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import typer
 
-from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.config import (
+    Settings,
+    UploadBehavior,
+    UploadMetadataMode,
+    load_settings,
+)
 from ingestion_workflow.models import (
+    AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
     DownloadSource,
@@ -25,8 +31,9 @@ from ingestion_workflow.workflow import (
 from ingestion_workflow.workflow import create_analyses as create_analyses_workflow
 from ingestion_workflow.workflow.download import run_downloads
 from ingestion_workflow.workflow.extract import run_extraction
-from ingestion_workflow.workflow.orchastrator import run_pipeline
+from ingestion_workflow.workflow.orchastrator import PipelineState, run_pipeline
 from ingestion_workflow.workflow.stats import StageMetrics
+from ingestion_workflow.workflow.upload import run_upload
 
 app = typer.Typer(
     name="Article Ingestion Workflow",
@@ -364,9 +371,87 @@ def create_analyses(
         typer.echo(f"Wrote analyses to {output_path}")
 
 
-@app.command()
-def upload():
-    pass
+@app.command(name="upload-analyses")
+def upload_analyses(
+    analyses_path: Path = typer.Argument(
+        ...,
+        exists=True,
+        readable=True,
+        help="Path to JSON mapping slug -> table_id -> AnalysisCollection (from create_analyses).",
+    ),
+    bundles_path: Optional[Path] = typer.Option(
+        None,
+        "--bundles",
+        "-b",
+        exists=True,
+        readable=True,
+        help="Optional JSON of ArticleExtractionBundle payloads to supply metadata.",
+    ),
+    config_path: Optional[Path] = typer.Option(
+        None,
+        "--config",
+        "-c",
+        exists=False,
+        help="Optional YAML settings override.",
+    ),
+    behavior: Optional[UploadBehavior] = typer.Option(
+        None,
+        "--behavior",
+        help="Conflict behavior for existing llm studies (update or insert_new).",
+    ),
+    metadata_only: Optional[bool] = typer.Option(
+        None,
+        "--metadata-only/--with-coordinates",
+        help="When set, only metadata is updated and coordinates are untouched.",
+    ),
+    metadata_mode: Optional[UploadMetadataMode] = typer.Option(
+        None,
+        "--metadata-mode",
+        help="Metadata update strategy: fill or overwrite.",
+    ),
+    output_path: Optional[Path] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Optional path to write upload outcomes JSON.",
+    ),
+) -> None:
+    """Execute the upload stage from serialized analyses output."""
+
+    settings = load_settings(config_path)
+    analyses = _load_analyses_collections(analyses_path)
+    bundles: List[ArticleExtractionBundle] = []
+    metadata_by_slug: Dict[str, Any] = {}
+    if bundles_path is not None:
+        payload = json.loads(bundles_path.read_text(encoding="utf-8"))
+        bundles = list(_load_bundles(payload))
+        metadata_by_slug = {bundle.article_data.slug: bundle.article_metadata for bundle in bundles}
+
+    state = PipelineState(analyses=analyses, bundles=bundles)
+    outcomes = run_upload(
+        state,
+        settings=settings,
+        behavior=behavior,
+        metadata_only=metadata_only,
+        metadata_mode=metadata_mode,
+    )
+
+    summary = {
+        "success": sum(1 for outcome in outcomes if outcome.success),
+        "failed": sum(1 for outcome in outcomes if not outcome.success),
+    }
+    if output_path is None:
+        typer.echo(json.dumps({"summary": summary, "outcomes": [outcome.__dict__ for outcome in outcomes]}, indent=2))
+    else:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(
+                {"summary": summary, "outcomes": [outcome.__dict__ for outcome in outcomes]},
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        typer.echo(f"Wrote upload outcomes to {output_path}")
 
 
 @app.command()
@@ -396,6 +481,18 @@ def _load_bundles(payload: Any) -> Iterable[ArticleExtractionBundle]:
         ArticleExtractionBundle.from_dict(item)  # type: ignore[arg-type]
         for item in payload
     ]
+
+
+def _load_analyses_collections(analyses_path: Path) -> Dict[str, Dict[str, AnalysisCollection]]:
+    """Load serialized analysis collections from JSON file."""
+    data = json.loads(analyses_path.read_text(encoding="utf-8"))
+    analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
+    for slug, table_map in data.items():
+        per_table: Dict[str, AnalysisCollection] = {}
+        for table_id, payload in table_map.items():
+            per_table[table_id] = AnalysisCollection.from_dict(payload)
+        analyses[str(slug)] = per_table
+    return analyses
 
 
 def _resolve_manifest_path(

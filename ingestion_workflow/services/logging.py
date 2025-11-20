@@ -29,7 +29,7 @@ def configure_logging(
     formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
+    root_logger.setLevel(logging.DEBUG)
     root_logger.propagate = False
 
     for handler in list(root_logger.handlers):
@@ -42,7 +42,7 @@ def configure_logging(
         root_logger.addHandler(file_handler)
 
     ingestion_logger = logging.getLogger(_ROOT_LOGGER_NAME)
-    ingestion_logger.setLevel(logging.INFO)
+    ingestion_logger.setLevel(logging.DEBUG)
     ingestion_logger.propagate = True
 
     for handler in list(ingestion_logger.handlers):
