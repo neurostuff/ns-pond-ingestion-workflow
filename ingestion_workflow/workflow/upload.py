@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Dict, List
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import ArticleMetadata, UploadOutcome
 from ingestion_workflow.models.cache import UploadCacheEntry
-from ingestion_workflow.services.cache import cache_upload_results
+from ingestion_workflow.services.cache import cache_upload_results, load_cached_analysis_collections
 from ingestion_workflow.services.db import SSHTunnel, SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.upload import UploadService
@@ -34,8 +34,15 @@ def run_upload(
 ) -> List[UploadOutcome]:
     """Run the upload stage using cached analyses and metadata."""
     resolved_settings = resolve_settings(settings)
-    if state.analyses is None or state.analyses == {}:
-        logger.info("No analyses available; skipping upload.", extra=console_kwargs())
+    analyses = state.analyses or {}
+    if not analyses:
+        logger.info(
+            "No analyses found in state; attempting to hydrate from cache.",
+            extra=console_kwargs(),
+        )
+        analyses = load_cached_analysis_collections(resolved_settings)
+    if not analyses:
+        logger.info("No analyses available after hydration; skipping upload.", extra=console_kwargs())
         return []
 
     behavior = behavior or resolved_settings.upload_behavior
@@ -49,7 +56,7 @@ def run_upload(
         session_factory = SessionFactory(resolved_settings, tunnel=tunnel)
         service = UploadService(resolved_settings, session_factory)
         work_items = service.prepare_work_items(
-            state.analyses,
+            analyses,
             metadata_by_slug,
             metadata_mode=metadata_mode,
         )

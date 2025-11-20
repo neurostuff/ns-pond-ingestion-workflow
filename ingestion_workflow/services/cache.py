@@ -39,6 +39,7 @@ from tqdm.auto import tqdm
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
+    AnalysisCollection,
     CreateAnalysesResult,
     CreateAnalysesResultEntry,
     CreateAnalysesResultIndex,
@@ -238,6 +239,29 @@ def load_create_analyses_index(
         extractor_name,
         index_cls=CreateAnalysesResultIndex,
     )
+
+
+def load_cached_analysis_collections(
+    settings: Settings,
+    extractor_name: str | None = None,
+    *,
+    namespace: str = CREATE_ANALYSES_CACHE_NAMESPACE,
+) -> Dict[str, Dict[str, "AnalysisCollection"]]:
+    """
+    Hydrate AnalysisCollection mapping from the create_analyses cache index.
+
+    Returns
+    -------
+    dict
+        Mapping of article_slug -> table_id -> AnalysisCollection.
+    """
+    index = load_create_analyses_index(settings, extractor_name, namespace=namespace)
+    collections: Dict[str, Dict[str, "AnalysisCollection"]] = {}
+    for entry in index.iter_entries():
+        result = entry.clone_payload()
+        per_table = collections.setdefault(result.article_slug, {})
+        per_table[result.table_id] = result.analysis_collection
+    return collections
 
 
 def get_cached_create_analyses_result(

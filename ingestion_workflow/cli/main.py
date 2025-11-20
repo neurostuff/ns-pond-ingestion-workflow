@@ -373,11 +373,11 @@ def create_analyses(
 
 @app.command(name="upload-analyses")
 def upload_analyses(
-    analyses_path: Path = typer.Argument(
-        ...,
+    analyses_path: Optional[Path] = typer.Argument(
+        None,
         exists=True,
         readable=True,
-        help="Path to JSON mapping slug -> table_id -> AnalysisCollection (from create_analyses).",
+        help="Optional path to JSON mapping slug -> table_id -> AnalysisCollection. If omitted, hydrate from cache.",
     ),
     bundles_path: Optional[Path] = typer.Option(
         None,
@@ -419,7 +419,15 @@ def upload_analyses(
     """Execute the upload stage from serialized analyses output."""
 
     settings = load_settings(config_path)
-    analyses = _load_analyses_collections(analyses_path)
+    analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
+    if analyses_path is not None:
+        analyses = _load_analyses_collections(analyses_path)
+    else:
+        analyses = cache.load_cached_analysis_collections(settings)
+        if not analyses:
+            raise typer.BadParameter(
+                "No analyses found in cache; provide analyses_path or run create_analyses first."
+            )
     bundles: List[ArticleExtractionBundle] = []
     metadata_by_slug: Dict[str, Any] = {}
     if bundles_path is not None:
