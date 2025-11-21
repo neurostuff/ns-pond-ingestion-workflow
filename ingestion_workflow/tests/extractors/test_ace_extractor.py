@@ -125,6 +125,7 @@ def test_ace_extract_translates_tables(tmp_path, monkeypatch):
             html_text: str,
             pmid: str | None,
             metadata_dir,
+            skip_metadata: bool = False,
         ):
             table = SimpleNamespace(
                 number="1",

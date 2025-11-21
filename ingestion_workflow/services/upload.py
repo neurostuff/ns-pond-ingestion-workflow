@@ -358,8 +358,10 @@ class UploadService:
         for prepared in item.analyses:
             table_ref = table_map.get(prepared.table.table_id)
             base_name = prepared.table.label or prepared.table.table_id or prepared.table.title
-            count = name_counters.get(prepared.table.table_id, 0) + 1
-            name_counters[prepared.table.table_id] = count
+            table_key = prepared.table.label or prepared.table.table_id
+            counter_key = table_key or prepared.table.table_id
+            count = name_counters.get(counter_key, 0) + 1
+            name_counters[counter_key] = count
             analysis_name = base_name if count == 1 else f"{base_name}-{count}"
             analysis_row = DbAnalysis(
                 study_id=study.id,

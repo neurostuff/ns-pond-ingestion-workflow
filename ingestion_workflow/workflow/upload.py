@@ -9,10 +9,11 @@ be created only if results have changed."""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Mapping
+from typing import TYPE_CHECKING, Dict, List, Mapping, Optional, Set
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import (
+    AnalysisCollection,
     ArticleExtractionBundle,
     ArticleMetadata,
     DownloadResult,
@@ -43,10 +44,19 @@ def run_upload(
 ) -> List[UploadOutcome]:
     """Run the upload stage using cached analyses and metadata."""
     resolved_settings = resolve_settings(settings)
-    analyses = dict(state.analyses or {})
+    manifest_identifiers = _resolve_manifest_identifiers(state, resolved_settings)
+    manifest_slugs: Optional[Set[str]] = (
+        {identifier.slug for identifier in manifest_identifiers.identifiers}
+        if manifest_identifiers and manifest_identifiers.identifiers
+        else None
+    )
+
+    analyses = _filter_to_manifest(dict(state.analyses or {}), manifest_slugs)
     cached_analyses = load_cached_analysis_collections(resolved_settings)
     # Merge cached analyses for slugs not already present in state
     for slug, per_table in cached_analyses.items():
+        if manifest_slugs is not None and slug not in manifest_slugs:
+            continue
         if slug not in analyses:
             analyses[slug] = per_table
     if not analyses:
@@ -55,8 +65,10 @@ def run_upload(
 
     # Best effort: hydrate bundles from cache so we have metadata when running upload alone.
     existing_bundles = {b.article_data.slug: b for b in getattr(state, "bundles", []) or []}
-    hydrated_bundles = _hydrate_bundles_for_upload(resolved_settings)
+    hydrated_bundles = _hydrate_bundles_for_upload(resolved_settings, manifest_identifiers)
     for bundle in hydrated_bundles:
+        if manifest_slugs is not None and bundle.article_data.slug not in manifest_slugs:
+            continue
         if bundle.article_data.slug not in existing_bundles:
             existing_bundles[bundle.article_data.slug] = bundle
     state.bundles = list(existing_bundles.values())
@@ -66,6 +78,8 @@ def run_upload(
     metadata_mode = metadata_mode or resolved_settings.upload_metadata_mode
 
     metadata_by_slug: Dict[str, ArticleMetadata] = state_to_metadata(state)
+    if manifest_slugs is not None:
+        metadata_by_slug = {slug: meta for slug, meta in metadata_by_slug.items() if slug in manifest_slugs}
     metadata_by_slug = _hydrate_metadata_from_cache(
         resolved_settings,
         analyses,
@@ -106,8 +120,11 @@ def state_to_metadata(state: PipelineState) -> Dict[str, ArticleMetadata]:
 # ------- cache hydration helpers for upload-only runs ---------------------
 
 
-def _hydrate_bundles_for_upload(settings: Settings) -> List[ArticleExtractionBundle]:
-    identifiers = _load_identifiers_from_manifest(settings)
+def _hydrate_bundles_for_upload(
+    settings: Settings,
+    identifiers: Optional[Identifiers],
+) -> List[ArticleExtractionBundle]:
+    identifiers = identifiers or _load_identifiers_from_manifest(settings)
     if identifiers is None or not identifiers.identifiers:
         return []
     downloads = _hydrate_downloads_from_cache(settings, identifiers)
@@ -241,3 +258,21 @@ def _resolve_identifier_for_slug(
         if collection.identifier is not None:
             return collection.identifier
     return None
+
+
+def _resolve_manifest_identifiers(
+    state: "PipelineState",
+    settings: Settings,
+) -> Optional[Identifiers]:
+    if state.identifiers is not None:
+        return state.identifiers
+    return _load_identifiers_from_manifest(settings)
+
+
+def _filter_to_manifest(
+    analyses: Mapping[str, Mapping[str, AnalysisCollection]],
+    manifest_slugs: Optional[Set[str]],
+) -> Dict[str, Mapping[str, AnalysisCollection]]:
+    if manifest_slugs is None:
+        return dict(analyses)
+    return {slug: per_table for slug, per_table in analyses.items() if slug in manifest_slugs}
