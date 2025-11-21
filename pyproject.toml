@@ -27,6 +27,7 @@ dependencies = [
   "seleniumbase>=4.34",
   "tqdm>=4.66",
   "filelock>=3.15",
+  "paramiko>=3,<4",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
   "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",

@@ -163,7 +163,7 @@ def _run_upload_stage(settings: Settings, state: PipelineState) -> None:
     if settings.dry_run:
         logger.info("Dry-run enabled: upload stage skipped.")
         return
-    if state.analyses is None:
+    if state.analyses is None and not settings.use_cached_inputs:
         logger.info("No analyses available for upload; skipping.")
         return
     from ingestion_workflow.workflow.upload import run_upload
@@ -356,10 +356,12 @@ def _hydrate_downloads_from_cache(
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
-            entry = index.get_download(identifier.slug)
+            entry = index.get_download_by_identifier(identifier)
             if entry is None:
                 continue
-            hydrated[identifier.slug] = entry.result
+            payload = entry.clone_payload()
+            payload.identifier = identifier
+            hydrated[identifier.slug] = payload
     return list(hydrated.values())
 
 
@@ -375,18 +377,41 @@ def _hydrate_bundles_from_cache(
     for download in downloads:
         downloads_by_source.setdefault(download.source.value, []).append(download)
 
-    for source_name, download_list in downloads_by_source.items():
+    def _has_coords(content: ArticleExtractionBundle) -> bool:
+        tables = getattr(content, "tables", []) or []
+        if any(len(getattr(t, "coordinates", []) or []) > 0 for t in tables):
+            return True
+        return bool(getattr(content, "has_coordinates", False))
+
+    for source_name in settings.download_sources:
+        download_list = downloads_by_source.get(source_name)
+        if not download_list:
+            continue
         index = cache.load_extractor_index(settings, source_name)
         for download in download_list:
-            entry = index.get_extraction(download.identifier.slug)
+            entry = index.get_extraction_by_identifier(download.identifier)
             if entry is None:
                 continue
-            content = entry.content
+            content = entry.clone_payload()
+            content.identifier = download.identifier
+            content.slug = download.identifier.slug
             metadata = _build_placeholder_metadata(download.identifier)
-            bundles[download.identifier.slug] = ArticleExtractionBundle(
+            slug = download.identifier.slug
+            existing = bundles.get(slug)
+            candidate_bundle = ArticleExtractionBundle(
                 article_data=content,
                 article_metadata=metadata,
             )
+            if existing is None:
+                bundles[slug] = candidate_bundle
+                continue
+            existing_has = _has_coords(existing.article_data)
+            if existing_has:
+                continue  # keep the first bundle that has coordinates
+            candidate_has = _has_coords(candidate_bundle.article_data)
+            
+            if candidate_has:
+                bundles[slug] = candidate_bundle
 
     return list(bundles.values())
 

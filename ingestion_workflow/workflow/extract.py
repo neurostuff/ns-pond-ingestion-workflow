@@ -128,8 +128,18 @@ def _ensure_successful_download(download_result: DownloadResult) -> bool:
 
 def _group_by_source(
     download_results: Sequence[DownloadResult],
+    source_order: Sequence[str] | None = None,
 ) -> Dict[DownloadSource, List[Tuple[int, DownloadResult]]]:
     grouped: Dict[DownloadSource, List[Tuple[int, DownloadResult]]] = {}
+
+    # Pre-seed groups to preserve configured source ordering when iterating.
+    if source_order:
+        for source_name in source_order:
+            try:
+                grouped[DownloadSource(source_name)] = []
+            except ValueError:
+                continue
+
     for index, download_result in enumerate(download_results):
         if not _ensure_successful_download(download_result):
             logger.error(
@@ -174,11 +184,16 @@ def run_extraction(
 
     resolved_settings = resolve_settings(settings)
 
-    grouped = _group_by_source(download_results)
+    grouped = _group_by_source(
+        download_results,
+        source_order=resolved_settings.download_sources,
+    )
     ordered_results: List[Tuple[int, ExtractionResult]] = []
 
     processed_count = 0
     for source, entries in grouped.items():
+        if not entries:
+            continue
         extractor = _resolve_extractor_for_source(source, resolved_settings)
         subset = [download_result for _, download_result in entries]
 

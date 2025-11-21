@@ -8,11 +8,20 @@ be created only if results have changed."""
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
-from ingestion_workflow.models import ArticleMetadata, UploadOutcome
+from ingestion_workflow.models import (
+    ArticleExtractionBundle,
+    ArticleMetadata,
+    DownloadResult,
+    Identifier,
+    Identifiers,
+    UploadOutcome,
+)
 from ingestion_workflow.models.cache import UploadCacheEntry
+from ingestion_workflow.services import cache
 from ingestion_workflow.services.cache import cache_upload_results, load_cached_analysis_collections
 from ingestion_workflow.services.db import SSHTunnel, SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
@@ -34,16 +43,23 @@ def run_upload(
 ) -> List[UploadOutcome]:
     """Run the upload stage using cached analyses and metadata."""
     resolved_settings = resolve_settings(settings)
-    analyses = state.analyses or {}
-    if not analyses:
-        logger.info(
-            "No analyses found in state; attempting to hydrate from cache.",
-            extra=console_kwargs(),
-        )
-        analyses = load_cached_analysis_collections(resolved_settings)
+    analyses = dict(state.analyses or {})
+    cached_analyses = load_cached_analysis_collections(resolved_settings)
+    # Merge cached analyses for slugs not already present in state
+    for slug, per_table in cached_analyses.items():
+        if slug not in analyses:
+            analyses[slug] = per_table
     if not analyses:
         logger.info("No analyses available after hydration; skipping upload.", extra=console_kwargs())
         return []
+
+    # Best effort: hydrate bundles from cache so we have metadata when running upload alone.
+    existing_bundles = {b.article_data.slug: b for b in getattr(state, "bundles", []) or []}
+    hydrated_bundles = _hydrate_bundles_for_upload(resolved_settings)
+    for bundle in hydrated_bundles:
+        if bundle.article_data.slug not in existing_bundles:
+            existing_bundles[bundle.article_data.slug] = bundle
+    state.bundles = list(existing_bundles.values())
 
     behavior = behavior or resolved_settings.upload_behavior
     metadata_only = metadata_only if metadata_only is not None else resolved_settings.upload_metadata_only
@@ -80,3 +96,109 @@ def state_to_metadata(state: PipelineState) -> Dict[str, ArticleMetadata]:
     for bundle in bundles:
         mapping[bundle.article_data.slug] = bundle.article_metadata
     return mapping
+
+
+# ------- cache hydration helpers for upload-only runs ---------------------
+
+
+def _hydrate_bundles_for_upload(settings: Settings) -> List[ArticleExtractionBundle]:
+    identifiers = _load_identifiers_from_manifest(settings)
+    if identifiers is None or not identifiers.identifiers:
+        return []
+    downloads = _hydrate_downloads_from_cache(settings, identifiers)
+    if not downloads:
+        return []
+    return _hydrate_bundles_from_cache(settings, downloads)
+
+
+def _load_identifiers_from_manifest(settings: Settings) -> Identifiers | None:
+    manifest = settings.manifest_path
+    if manifest is None:
+        return None
+    manifest_path = Path(manifest)
+    if not manifest_path.is_absolute():
+        manifest_path = settings.data_root / manifest_path
+    try:
+        return Identifiers.load(manifest_path)
+    except Exception as exc:  # pragma: no cover - defensive for upload-only
+        logger.warning("Failed to load manifest for upload hydration: %s", exc, extra=console_kwargs())
+        return None
+
+
+def _hydrate_downloads_from_cache(
+    settings: Settings,
+    identifiers: Identifiers,
+) -> List[DownloadResult]:
+    if identifiers is None or not identifiers.identifiers:
+        return []
+    hydrated: Dict[str, DownloadResult] = {}
+    for source_name in settings.download_sources:
+        index = cache.load_download_index(settings, source_name)
+        for identifier in identifiers.identifiers:
+            entry = index.get_download_by_identifier(identifier)
+            if entry is None:
+                continue
+            payload = entry.clone_payload()
+            payload.identifier = identifier
+            hydrated[identifier.slug] = payload
+    return list(hydrated.values())
+
+
+def _hydrate_bundles_from_cache(
+    settings: Settings,
+    downloads: List[DownloadResult],
+) -> List[ArticleExtractionBundle]:
+    if not downloads:
+        return []
+
+    bundles: Dict[str, ArticleExtractionBundle] = {}
+    downloads_by_source: Dict[str, List[DownloadResult]] = {}
+    for download in downloads:
+        downloads_by_source.setdefault(download.source.value, []).append(download)
+
+    def _has_coords(content: ArticleExtractionBundle) -> bool:
+        tables = getattr(content, "tables", []) or []
+        if any(len(getattr(t, "coordinates", []) or []) > 0 for t in tables):
+            return True
+        return bool(getattr(content, "has_coordinates", False))
+
+    for source_name in settings.download_sources:
+        download_list = downloads_by_source.get(source_name)
+        if not download_list:
+            continue
+        index = cache.load_extractor_index(settings, source_name)
+        for download in download_list:
+            entry = index.get_extraction_by_identifier(download.identifier)
+            if entry is None:
+                continue
+            content = entry.clone_payload()
+            content.identifier = download.identifier
+            content.slug = download.identifier.slug
+            metadata = _build_placeholder_metadata(download.identifier)
+            slug = download.identifier.slug
+            existing = bundles.get(slug)
+            candidate_bundle = ArticleExtractionBundle(
+                article_data=content,
+                article_metadata=metadata,
+            )
+            if existing is None:
+                bundles[slug] = candidate_bundle
+                continue
+            existing_has = _has_coords(existing.article_data)
+            candidate_has = _has_coords(candidate_bundle.article_data)
+            if existing_has:
+                continue  # keep first bundle that has coordinates
+            if candidate_has:
+                bundles[slug] = candidate_bundle
+
+    return list(bundles.values())
+
+
+def _build_placeholder_metadata(identifier: Identifier) -> ArticleMetadata:
+    for candidate in (identifier.doi, identifier.pmid, identifier.pmcid):
+        if candidate:
+            return ArticleMetadata(title=str(candidate))
+    label = " / ".join(part for part in identifier.slug.split("|") if part)
+    if label:
+        return ArticleMetadata(title=label)
+    return ArticleMetadata(title=identifier.slug or "Unknown Identifier")

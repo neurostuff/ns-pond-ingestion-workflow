@@ -210,6 +210,8 @@ def _run_bundle_with_cache(
             settings,
             cache_key,
             extractor_name,
+            identifier=bundle.article_data.identifier,
+            sanitized_table_id=sanitized_table_id,
         )
         if cached:
             table_results[table_key] = cached.analysis_collection

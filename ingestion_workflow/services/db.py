@@ -5,6 +5,8 @@ from __future__ import annotations
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
 from typing import Callable, Iterator, Optional
+import socket
+import subprocess
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
@@ -47,14 +49,12 @@ class SSHTunnel(AbstractContextManager):
             self.settings.upload_remote_bind_host,
             self.settings.upload_remote_bind_port,
         )
+        remote_target = _resolve_remote_bind_host(self.settings)
         self.forwarder = SSHTunnelForwarder(
             (self.settings.upload_ssh_host, 22),
             ssh_username=self.settings.upload_ssh_user,
             ssh_private_key=str(self.settings.upload_ssh_key.expanduser()),
-            remote_bind_address=(
-                self.settings.upload_remote_bind_host,
-                self.settings.upload_remote_bind_port,
-            ),
+            remote_bind_address=(remote_target, self.settings.upload_remote_bind_port),
             local_bind_address=("localhost", self.settings.upload_local_forward_port),
         )
         self.forwarder.start()
@@ -154,3 +154,53 @@ class SessionFactory:
 
 
 __all__ = ["SSHTunnel", "SessionFactory"]
+
+
+def _resolve_remote_bind_host(settings: Settings) -> str:
+    """
+    Resolve the remote bind host for the SSH tunnel.
+
+    If the configured host does not resolve locally (common when the target is a
+    container name only resolvable inside the remote Docker network), attempt to
+    look up the container's IP via SSH + `docker inspect` on the remote host.
+    """
+    host = settings.upload_remote_bind_host
+    if not host:
+        return host
+
+    try:
+        socket.getaddrinfo(host, settings.upload_remote_bind_port)
+        return host  # resolvable locally, no action needed
+    except Exception:
+        logger.debug("Local DNS lookup failed for %s; attempting remote docker inspect.", host)
+
+    network_name = getattr(settings, "upload_remote_container_network", "nginx-proxy")
+    inspect_cmd = (
+        f"docker inspect -f '{{{{ (index .NetworkSettings.Networks \"{network_name}\").IPAddress }}}}' "
+        f"{host}"
+    )
+    try:
+        result = subprocess.check_output(
+            [
+                "ssh",
+                f"{settings.upload_ssh_user}@{settings.upload_ssh_host}",
+                inspect_cmd,
+            ],
+            text=True,
+            timeout=10,
+        ).strip()
+        if result:
+            logger.info(
+                "Resolved remote container %s on network %s to %s",
+                host,
+                network_name,
+                result,
+            )
+            return result
+    except Exception as exc:  # pragma: no cover - best-effort resolution
+        logger.warning(
+            "Failed to resolve remote bind host %s via docker inspect: %s",
+            host,
+            exc,
+        )
+    return host

@@ -2,7 +2,17 @@
 
 from __future__ import annotations
 
-from sqlalchemy import JSON, Boolean, CheckConstraint, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 import shortuuid
@@ -67,7 +77,7 @@ class Study(Base):
     metadata_: Mapped[dict | None] = mapped_column("metadata_", JSON, nullable=True)
     source: Mapped[str | None] = mapped_column(String, nullable=True)
     source_id: Mapped[str | None] = mapped_column(String, nullable=True)
-    source_updated_at = mapped_column(String, nullable=True)
+    source_updated_at = mapped_column(DateTime(timezone=True), nullable=True)
     base_study_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("base_studies.id", ondelete="CASCADE"), index=True
     )

@@ -269,6 +269,8 @@ def get_cached_create_analyses_result(
     cache_key: str,
     extractor_name: str | None = None,
     *,
+    identifier: Identifier | None = None,
+    sanitized_table_id: str | None = None,
     namespace: str = CREATE_ANALYSES_CACHE_NAMESPACE,
 ) -> CreateAnalysesResult | None:
     """Retrieve a cached create-analyses entry if present."""
@@ -279,9 +281,17 @@ def get_cached_create_analyses_result(
         namespace=namespace,
     )
     entry = index.get(cache_key)
+    if entry is None and identifier is not None:
+        entry = index.find_by_identifier(identifier, sanitized_table_id=sanitized_table_id)
     if entry is None:
         return None
-    return entry.clone_payload()
+
+    cloned = entry.clone_payload()
+    if cache_key:
+        cloned.slug = cache_key
+    if identifier is not None and cloned.analysis_collection:
+        cloned.analysis_collection.identifier = identifier
+    return cloned
 
 
 def cache_create_analyses_results(
@@ -358,7 +368,7 @@ def get_identifier_cache_entry(
         extractor_name,
         namespace=namespace,
     )
-    return index.get(identifier.slug)
+    return index.get_by_identifier(identifier)
 
 
 def cache_identifier_entries(
@@ -404,7 +414,7 @@ def partition_cached_downloads(
     missing: List[Identifier] = []
 
     for identifier in identifiers.identifiers:
-        entry = index.get_download(identifier.slug)
+        entry = index.get_download_by_identifier(identifier)
         if entry is None:
             missing.append(identifier)
             continue
@@ -936,7 +946,7 @@ def partition_cached_extractions(
     missing: List[DownloadResult] = []
 
     for download_result in download_results:
-        entry = index.get_extraction(download_result.identifier.slug)
+        entry = index.get_extraction_by_identifier(download_result.identifier)
         if entry is None:
             cached_results.append(None)
             missing.append(download_result)
@@ -945,7 +955,10 @@ def partition_cached_extractions(
             cached_results.append(None)
             missing.append(download_result)
             continue
-        cached_results.append(entry.clone_payload())
+        cached_payload = entry.clone_payload()
+        cached_payload.identifier = download_result.identifier
+        cached_payload.slug = download_result.identifier.slug
+        cached_results.append(cached_payload)
 
     return cached_results, missing
 

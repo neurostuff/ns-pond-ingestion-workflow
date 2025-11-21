@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Dict, Iterable, List, Mapping, Optional
 from datetime import datetime, timezone
 
@@ -30,6 +31,28 @@ from ingestion_workflow.services.upload_models import Study as DbStudy
 from ingestion_workflow.services.upload_models import Table as DbTable
 
 logger = get_logger(__name__)
+
+
+def _sanitize_text(value: str | None) -> str | None:
+    """Strip NULL bytes from text fields to keep Postgres happy."""
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return value  # type: ignore[return-value]
+    if "\x00" in value:
+        return value.replace("\x00", "")
+    return value
+
+
+def _sanitize_mapping(obj):
+    """Recursively strip NULL bytes from all string values in mappings/lists."""
+    if isinstance(obj, dict):
+        return {k: _sanitize_mapping(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_mapping(v) for v in obj]
+    if isinstance(obj, str):
+        return _sanitize_text(obj)
+    return obj
 
 
 class UploadService:
@@ -230,33 +253,50 @@ class UploadService:
 
         prepared_analyses: List[PreparedAnalysis] = []
         for collection in per_table.values():
+            if not collection.analyses:
+                logger.warning(
+                    "No analyses found in collection for %s; skipping collection.",
+                    slug,
+                    extra=console_kwargs(),
+                )
+                continue
             for a_index, analysis in enumerate(collection.analyses, start=1):
                 table_meta = analysis.metadata.get("table_metadata", {}) if analysis.metadata else {}
                 sanitized_id = None
                 if analysis.metadata:
                     sanitized_id = analysis.metadata.get("sanitized_table_id")
                 table_id = analysis.table_id or sanitized_id or f"table-{a_index}"
-            table_payload = TablePayload(
-                table_id=table_id,
-                caption=analysis.table_caption or "",
-                footer=analysis.table_footer or "",
-                title=analysis.table_caption or table_id or "",
-                    label=sanitized_id or analysis.table_id,
-                    metadata={
-                        "table_metadata": table_meta,
-                        "table_number": analysis.table_number,
-                        "original_table_id": analysis.table_id,
-                    },
+                analysis_name = _sanitize_text(analysis.name)
+                analysis_description = _sanitize_text(analysis.description)
+                table_payload = TablePayload(
+                    table_id=_sanitize_text(table_id) or f"table-{a_index}",
+                    caption=_sanitize_text(analysis.table_caption) or "",
+                    footer=_sanitize_text(analysis.table_footer) or "",
+                    title=_sanitize_text(analysis.table_caption) or table_id or "",
+                    label=_sanitize_text(sanitized_id or analysis.table_id),
+                    metadata=_sanitize_mapping(
+                        {
+                            "table_metadata": table_meta,
+                            "table_number": analysis.table_number,
+                            "original_table_id": analysis.table_id,
+                        }
+                    ),
                 )
-            prepared_analyses.append(
-                PreparedAnalysis(
-                    table=table_payload,
-                    analysis=analysis,
-                    coordinate_space=collection.coordinate_space.value
-                    if collection.coordinate_space
-                    else None,
+                cleaned_analysis = replace(
+                    analysis,
+                    name=analysis_name,
+                    description=analysis_description,
+                    metadata=_sanitize_mapping(analysis.metadata or {}),
                 )
-            )
+                prepared_analyses.append(
+                    PreparedAnalysis(
+                        table=table_payload,
+                        analysis=cleaned_analysis,
+                        coordinate_space=collection.coordinate_space.value
+                        if collection.coordinate_space
+                        else None,
+                    )
+                )
 
         return UploadWorkItem(
             slug=slug,
@@ -302,6 +342,8 @@ class UploadService:
             if t_id not in table_map:
                 table_map[t_id] = self._upsert_table(session, study.id, prepared.table, metadata_mode)
 
+        # Build deterministic analysis names per table (table label with numeric suffix if needed)
+        name_counters: Dict[str, int] = {}
         if metadata_only:
             session.flush()
             return UploadOutcome(
@@ -315,10 +357,14 @@ class UploadService:
         order_counter = 1
         for prepared in item.analyses:
             table_ref = table_map.get(prepared.table.table_id)
+            base_name = prepared.table.label or prepared.table.table_id or prepared.table.title
+            count = name_counters.get(prepared.table.table_id, 0) + 1
+            name_counters[prepared.table.table_id] = count
+            analysis_name = base_name if count == 1 else f"{base_name}-{count}"
             analysis_row = DbAnalysis(
                 study_id=study.id,
                 table_id=table_ref.id if table_ref else None,
-                name=prepared.analysis.name,
+                name=analysis_name,
                 description=prepared.analysis.description or prepared.table.caption or "",
                 metadata_={
                     **(prepared.analysis.metadata or {}),
@@ -417,7 +463,7 @@ class UploadService:
         self._apply_payload_fields(study, payload, metadata_mode)
         study.level = "group"
         study.source = payload.source
-        study.source_updated_at = datetime.now(timezone.utc).isoformat()
+        study.source_updated_at = datetime.now(timezone.utc)
         session.flush()
         return study
 
@@ -432,12 +478,12 @@ class UploadService:
             "authors": payload.authors,
             "year": payload.year,
         }
-        self._set_fields(target, scalars, mode)
+        self._set_fields(target, {k: _sanitize_text(v) for k, v in scalars.items()}, mode)
 
         if getattr(payload, "metadata", None) is not None:
             target.metadata_ = self._merge_metadata_blob(
                 getattr(target, "metadata_", {}) or {},
-                payload.metadata or {},
+                _sanitize_mapping(payload.metadata or {}),
                 mode,
             )
 

@@ -231,6 +231,36 @@ class CacheIndex(Generic[EnvelopeT]):
             return None
         return self._entry_from_row(row)
 
+    def get_by_identifier(self, identifier: Identifier) -> Optional[EnvelopeT]:
+        """
+        Attempt to resolve an entry by slug first, then by individual identifiers.
+
+        This allows callers to hydrate cached entries even when the composed slug
+        differs (e.g., legacy cache keyed by PMID only).
+        """
+        if identifier is None:
+            return None
+
+        slug = getattr(identifier, "slug", None)
+        if slug:
+            entry = self.get(slug)
+            if entry is not None:
+                return entry
+
+        for column in ("pmid", "doi", "pmcid"):
+            value = getattr(identifier, column, None)
+            if not value:
+                continue
+            cursor = self._conn.execute(
+                f"SELECT * FROM {self.table_name} WHERE {column} = ? LIMIT 1",
+                (value,),
+            )
+            row = cursor.fetchone()
+            if row is not None:
+                return self._entry_from_row(row)
+
+        return None
+
     def has(self, slug: str) -> bool:
         cursor = self._conn.execute(
             f"SELECT 1 FROM {self.table_name} WHERE slug = ? LIMIT 1",
@@ -351,6 +381,9 @@ class DownloadIndex(CacheIndex[DownloadCacheEntry]):
     def get_download(self, slug: str) -> Optional[DownloadCacheEntry]:
         return self.get(slug)
 
+    def get_download_by_identifier(self, identifier: Identifier) -> Optional[DownloadCacheEntry]:
+        return self.get_by_identifier(identifier)
+
     def remove_download(self, slug: str) -> bool:
         return self.remove(slug)
 
@@ -448,6 +481,11 @@ class ExtractionResultIndex(CacheIndex[ExtractionResultEntry]):
     def get_extraction(self, slug: str) -> Optional[ExtractionResultEntry]:
         return self.get(slug)
 
+    def get_extraction_by_identifier(
+        self, identifier: Identifier
+    ) -> Optional[ExtractionResultEntry]:
+        return self.get_by_identifier(identifier)
+
     def has_extraction(self, slug: str) -> bool:
         return self.has(slug)
 
@@ -487,6 +525,52 @@ class CreateAnalysesResultIndex(CacheIndex[CreateAnalysesResultEntry]):
 
     def add_result(self, entry: CreateAnalysesResultEntry) -> None:
         self.add(entry)
+
+    def find_by_identifier(
+        self, identifier: Identifier, *, sanitized_table_id: str | None = None
+    ) -> Optional[CreateAnalysesResultEntry]:
+        """
+        Resolve an entry by identifier columns with optional table filter.
+
+        Slug match is attempted first; if it fails, the lookup falls back to
+        pmid/doi/pmcid columns and filters by sanitized_table_id when provided.
+        """
+        if identifier is None:
+            return None
+
+        slug = getattr(identifier, "slug", None)
+        if slug:
+            entry = self.get(slug)
+            if entry and (
+                sanitized_table_id is None
+                or entry.payload.sanitized_table_id == sanitized_table_id
+            ):
+                return entry
+
+        seen: set[str] = set()
+        if slug:
+            seen.add(slug)
+
+        for column in ("pmid", "doi", "pmcid"):
+            value = getattr(identifier, column, None)
+            if not value:
+                continue
+            cursor = self._conn.execute(
+                f"SELECT * FROM {self.table_name} WHERE {column} = ?",
+                (value,),
+            )
+            for row in cursor:
+                row_slug = row["slug"]
+                if row_slug in seen:
+                    continue
+                seen.add(row_slug)
+                entry = self._entry_from_row(row)
+                if sanitized_table_id is None:
+                    return entry
+                if entry.payload.sanitized_table_id == sanitized_table_id:
+                    return entry
+
+        return None
 
     def _identifier_from_entry(self, entry: CreateAnalysesResultEntry) -> Optional[Identifier]:
         return entry.payload.analysis_collection.identifier
