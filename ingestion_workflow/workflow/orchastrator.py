@@ -11,7 +11,6 @@ from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
-    ArticleMetadata,
     DownloadResult,
     Identifier,
     Identifiers,
@@ -356,6 +355,8 @@ def _hydrate_downloads_from_cache(
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
+            if identifier.slug in hydrated:
+                continue  # keep first hit in configured source order
             entry = index.get_download_by_identifier(identifier)
             if entry is None:
                 continue
@@ -395,7 +396,13 @@ def _hydrate_bundles_from_cache(
             content = entry.clone_payload()
             content.identifier = download.identifier
             content.slug = download.identifier.slug
-            metadata = _build_placeholder_metadata(download.identifier)
+            metadata = cache.get_cached_article_metadata(
+                settings,
+                slug=content.slug,
+                identifier=download.identifier,
+            )
+            if metadata is None:
+                continue
             slug = download.identifier.slug
             existing = bundles.get(slug)
             candidate_bundle = ArticleExtractionBundle(
@@ -414,16 +421,6 @@ def _hydrate_bundles_from_cache(
                 bundles[slug] = candidate_bundle
 
     return list(bundles.values())
-
-
-def _build_placeholder_metadata(identifier: Identifier) -> ArticleMetadata:
-    for candidate in (identifier.doi, identifier.pmid, identifier.pmcid):
-        if candidate:
-            return ArticleMetadata(title=str(candidate))
-    label = " / ".join(part for part in identifier.slug.split("|") if part)
-    if label:
-        return ArticleMetadata(title=label)
-    return ArticleMetadata(title=identifier.slug or "Unknown Identifier")
 
 
 def _configure_logging_for_run(settings: Settings) -> None:

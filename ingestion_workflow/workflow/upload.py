@@ -9,7 +9,7 @@ be created only if results have changed."""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Mapping
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import (
@@ -66,6 +66,11 @@ def run_upload(
     metadata_mode = metadata_mode or resolved_settings.upload_metadata_mode
 
     metadata_by_slug: Dict[str, ArticleMetadata] = state_to_metadata(state)
+    metadata_by_slug = _hydrate_metadata_from_cache(
+        resolved_settings,
+        analyses,
+        metadata_by_slug,
+    )
     outcomes: List[UploadOutcome] = []
 
     with SSHTunnel(resolved_settings) as tunnel:
@@ -135,6 +140,8 @@ def _hydrate_downloads_from_cache(
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
+            if identifier.slug in hydrated:
+                continue  # preserve first cached hit by configured source order
             entry = index.get_download_by_identifier(identifier)
             if entry is None:
                 continue
@@ -174,7 +181,13 @@ def _hydrate_bundles_from_cache(
             content = entry.clone_payload()
             content.identifier = download.identifier
             content.slug = download.identifier.slug
-            metadata = _build_placeholder_metadata(download.identifier)
+            metadata = cache.get_cached_article_metadata(
+                settings,
+                slug=content.slug,
+                identifier=download.identifier,
+            )
+            if metadata is None:
+                continue
             slug = download.identifier.slug
             existing = bundles.get(slug)
             candidate_bundle = ArticleExtractionBundle(
@@ -194,11 +207,37 @@ def _hydrate_bundles_from_cache(
     return list(bundles.values())
 
 
-def _build_placeholder_metadata(identifier: Identifier) -> ArticleMetadata:
-    for candidate in (identifier.doi, identifier.pmid, identifier.pmcid):
-        if candidate:
-            return ArticleMetadata(title=str(candidate))
-    label = " / ".join(part for part in identifier.slug.split("|") if part)
-    if label:
-        return ArticleMetadata(title=label)
-    return ArticleMetadata(title=identifier.slug or "Unknown Identifier")
+def _hydrate_metadata_from_cache(
+    settings: Settings,
+    analyses: Mapping[str, Mapping[str, AnalysisCollection]],
+    metadata_by_slug: Dict[str, ArticleMetadata],
+) -> Dict[str, ArticleMetadata]:
+    if not analyses:
+        return metadata_by_slug
+
+    for slug in analyses.keys():
+        cached = cache.get_cached_article_metadata(
+            settings,
+            slug=slug,
+            identifier=_resolve_identifier_for_slug(analyses, slug),
+        )
+        if cached is None:
+            continue
+        existing = metadata_by_slug.get(slug)
+        if existing is None or not cache.has_substantive_metadata(existing):
+            metadata_by_slug[slug] = cached
+        else:
+            metadata_by_slug[slug] = existing.merge_from(cached)
+
+    return metadata_by_slug
+
+
+def _resolve_identifier_for_slug(
+    analyses: Mapping[str, Mapping[str, AnalysisCollection]],
+    slug: str,
+) -> Identifier | None:
+    per_table = analyses.get(slug) or {}
+    for collection in per_table.values():
+        if collection.identifier is not None:
+            return collection.identifier
+    return None

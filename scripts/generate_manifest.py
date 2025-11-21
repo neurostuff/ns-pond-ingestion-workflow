@@ -22,7 +22,7 @@ if sys.version_info < (3, 9):
 from ingestion_workflow.models.ids import Identifier
 
 
-DEFAULT_INDEX_PATH = Path("ingestion_workflow/tests/data/manifests/index.json")
+DEFAULT_INDEX_PATH = Path("ingestion_workflow/tests/data/manifests/index_with_coordinates.json")
 
 
 def parse_args() -> argparse.Namespace:

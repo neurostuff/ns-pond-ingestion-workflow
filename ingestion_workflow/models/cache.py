@@ -588,14 +588,20 @@ class MetadataCache(CacheEnvelope[ArticleMetadata]):
         slug: str,
         metadata: ArticleMetadata,
         sources_queried: Optional[list[str]] = None,
+        *,
+        identifier: Optional[Identifier] = None,
+        metadata_path: Optional[Path] = None,
     ) -> "MetadataCache":
         payload_dict = cls._article_to_dict(metadata)
         clone = cls._decode_payload(payload_dict)
+        ident_blob = identifier.to_dict() if identifier is not None else None
         envelope = cls(
             slug=slug,
             payload=clone,
             metadata={
                 "sources_queried": list(sources_queried or []),
+                "identifier": ident_blob,
+                "metadata_path": str(metadata_path) if metadata_path else None,
             },
         )
         return envelope
@@ -656,6 +662,12 @@ class MetadataCacheIndex(CacheIndex[MetadataCache]):
         self.add(entry)
 
     def _identifier_from_entry(self, entry: MetadataCache) -> Optional[Identifier]:  # pragma: no cover - metadata may not include identifiers
+        ident_dict = entry.metadata.get("identifier")
+        if isinstance(ident_dict, dict):
+            try:
+                return Identifier.from_dict(ident_dict)
+            except Exception:
+                return None
         return None
 
 

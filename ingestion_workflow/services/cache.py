@@ -32,7 +32,7 @@ import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Iterator, List, Sequence, Tuple, Type, TypeVar
+from typing import Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Type, TypeVar
 
 from filelock import FileLock
 from tqdm.auto import tqdm
@@ -40,6 +40,7 @@ from tqdm.auto import tqdm
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     AnalysisCollection,
+    ArticleMetadata,
     CreateAnalysesResult,
     CreateAnalysesResultEntry,
     CreateAnalysesResultIndex,
@@ -55,6 +56,8 @@ from ingestion_workflow.models import (
     IdentifierCacheEntry,
     IdentifierCacheIndex,
     Identifiers,
+    MetadataCache,
+    MetadataCacheIndex,
     UploadCacheEntry,
     UploadCacheIndex,
 )
@@ -66,6 +69,7 @@ EXTRACT_CACHE_NAMESPACE = "extract"
 GATHER_CACHE_NAMESPACE = "gather"
 CREATE_ANALYSES_CACHE_NAMESPACE = "create_analyses"
 UPLOAD_CACHE_NAMESPACE = "upload"
+METADATA_CACHE_NAMESPACE = "metadata"
 INDEX_FILENAME = "index.sqlite"
 LOCK_FILENAME = "index.lock"
 LEGACY_INDEX_BATCH_SIZE = 10000
@@ -141,6 +145,26 @@ def _analysis_manifest_path(
     return base / filename
 
 
+def _metadata_artifacts_dir(
+    settings: Settings,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> Path:
+    root = _namespace_root(settings, namespace)
+    target = root / "articles"
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
+def _metadata_manifest_path(
+    settings: Settings,
+    slug: str,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> Path:
+    base = _metadata_artifacts_dir(settings, namespace)
+    filename = f"{_sanitize_manifest_filename(slug)}.json"
+    return base / filename
+
+
 def _lock_path(
     settings: Settings,
     namespace: str,
@@ -162,6 +186,25 @@ def _acquire_lock(
         yield
     finally:
         lock.release()
+
+
+def has_substantive_metadata(metadata: ArticleMetadata | None) -> bool:
+    """Return True when metadata contains more than a placeholder title."""
+    if metadata is None:
+        return False
+    return any(
+        [
+            bool(metadata.authors),
+            bool(metadata.abstract and metadata.abstract.strip()),
+            bool(metadata.journal and metadata.journal.strip()),
+            metadata.publication_year is not None,
+            bool(metadata.keywords),
+            bool(metadata.license and metadata.license.strip()),
+            bool(metadata.source and metadata.source.strip()),
+            metadata.open_access is not None,
+            bool(metadata.raw_metadata),
+        ]
+    )
 
 
 def load_download_index(
@@ -191,6 +234,94 @@ def load_index(
 
     index_path = _index_path(settings, namespace, extractor_name)
     return index_cls.load(index_path)
+
+
+def load_metadata_index(
+    settings: Settings,
+    *,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> MetadataCacheIndex:
+    """Load the metadata cache index."""
+
+    return load_index(
+        settings,
+        namespace,
+        extractor_name=None,
+        index_cls=MetadataCacheIndex,
+    )
+
+
+def cache_metadata_entries(
+    settings: Settings,
+    entries: Sequence[MetadataCache],
+    *,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> None:
+    """Persist metadata cache envelopes."""
+
+    if not entries:
+        return
+
+    with _acquire_lock(settings, namespace, extractor_name=None):
+        index_path = _index_path(settings, namespace, extractor_name=None)
+        index = MetadataCacheIndex.load(index_path)
+        index.add_entries(list(entries))
+
+
+def cache_article_metadata(
+    settings: Settings,
+    metadata_by_slug: Mapping[str, ArticleMetadata],
+    *,
+    identifiers: Mapping[str, Identifier | None] | None = None,
+    sources_queried: Sequence[str] | None = None,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> None:
+    """Write article metadata payloads to disk and persist to the metadata cache."""
+
+    if not metadata_by_slug:
+        return
+
+    entries: List[MetadataCache] = []
+    for slug, metadata in metadata_by_slug.items():
+        if not has_substantive_metadata(metadata):
+            continue
+        metadata_path = None
+        try:
+            metadata_path = _metadata_manifest_path(settings, slug, namespace)
+            metadata_path.write_text(
+                json.dumps(metadata.to_dict(), indent=2),
+                encoding="utf-8",
+            )
+        except Exception:
+            metadata_path = None
+        identifier = identifiers.get(slug) if identifiers else None
+        entries.append(
+            MetadataCache.from_metadata(
+                slug,
+                metadata,
+                sources_queried=list(sources_queried or []),
+                identifier=identifier,
+                metadata_path=metadata_path,
+            )
+        )
+
+    cache_metadata_entries(settings, entries, namespace=namespace)
+
+
+def get_cached_article_metadata(
+    settings: Settings,
+    *,
+    slug: str | None = None,
+    identifier: Identifier | None = None,
+    namespace: str = METADATA_CACHE_NAMESPACE,
+) -> Optional[ArticleMetadata]:
+    """Lookup cached metadata by slug, then identifier fields."""
+
+    index = load_metadata_index(settings, namespace=namespace)
+    entry = index.get(slug) if slug else None
+    if entry is None and identifier is not None:
+        entry = index.get_by_identifier(identifier)
+    return entry.article_metadata if entry is not None else None
 
 
 def load_extractor_index(

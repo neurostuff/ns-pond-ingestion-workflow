@@ -26,6 +26,7 @@ from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.services import cache
 from pubget._utils import article_bucket_from_pmcid
 
 
@@ -81,6 +82,7 @@ class MetadataService:
         id_to_content = {item.identifier.slug: item for item in identified_items}
 
         results: Dict[str, ArticleMetadata] = {}
+        sources_checked: List[str] = []
 
         # Try Semantic Scholar first
         if self._s2_client and identified_items:
@@ -88,6 +90,7 @@ class MetadataService:
                 "Fetching metadata from Semantic Scholar for %d articles",
                 len(identified_items),
             )
+            sources_checked.append("semantic_scholar")
             s2_results = self._get_semantic_scholar_metadata_cached(
                 [item.identifier for item in identified_items]
             )
@@ -114,6 +117,7 @@ class MetadataService:
                     "Fetching metadata from PubMed for %d articles",
                     len(missing),
                 )
+                sources_checked.append("pubmed")
                 pubmed_results = self._get_pubmed_metadata_cached(missing)
                 # Merge with existing results
                 for identifier_slug, pubmed_meta in pubmed_results.items():
@@ -141,6 +145,7 @@ class MetadataService:
                 "Falling back to extractor metadata for %d articles",
                 len(still_missing),
             )
+            sources_checked.append("fallback")
             for item in still_missing:
                 try:
                     fallback_meta = self._get_fallback_metadata(item)
@@ -155,6 +160,17 @@ class MetadataService:
                         item.slug,
                         exc,
                     )
+
+        identifiers_for_results: Dict[str, Optional[Identifier]] = {}
+        for slug, metadata in results.items():
+            content = id_to_content.get(slug)
+            identifiers_for_results[slug] = content.identifier if content else None
+        cache.cache_article_metadata(
+            self.settings,
+            results,
+            identifiers=identifiers_for_results,
+            sources_queried=sources_checked,
+        )
 
         return results
 

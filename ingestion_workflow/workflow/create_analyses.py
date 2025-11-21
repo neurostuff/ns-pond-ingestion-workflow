@@ -60,6 +60,16 @@ def run_create_analyses(
 
     resolved_settings = resolve_settings(settings)
 
+    bundle_metadata: Dict[str, ArticleExtractionBundle] = {
+        bundle.article_data.slug: bundle for bundle in bundles
+    }
+    cache.cache_article_metadata(
+        resolved_settings,
+        {slug: bundle.article_metadata for slug, bundle in bundle_metadata.items()},
+        identifiers={slug: bundle.article_data.identifier for slug, bundle in bundle_metadata.items()},
+        sources_queried=["create_analyses"],
+    )
+
     results: Dict[str, Dict[str, AnalysisCollection]] = {}
     cache_candidates: List[CreateAnalysesResult] = []
     bundle_results: Dict[str, List[CreateAnalysesResult]] = {}
