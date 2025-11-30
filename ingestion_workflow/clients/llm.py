@@ -6,7 +6,7 @@ import os
 from typing import Any, Dict, Optional, Type
 
 from openai import OpenAI
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 from ingestion_workflow.config import Settings
 
@@ -53,10 +53,10 @@ class GenericLLMClient:
 
     def _generate_function_schema(
         self,
-        model_class: Type[BaseModel],
+        model_class: Type[Any],
         function_name: str,
     ) -> Dict[str, Any]:
-        """Generate an OpenAI function-call schema from a Pydantic model."""
+        """Generate an OpenAI function-call schema from a Pydantic model or dataclass."""
 
         def convert_field(field_info: Dict[str, Any]) -> Dict[str, Any]:
             result: Dict[str, Any] = {}
@@ -89,9 +89,12 @@ class GenericLLMClient:
                 result["$ref"] = field_info["$ref"]
             return result
 
-        full_schema = model_class.model_json_schema(
-            ref_template="#/$defs/{model}",
-        )
+        if isinstance(model_class, type) and issubclass(model_class, BaseModel):
+            full_schema = model_class.model_json_schema(
+                ref_template="#/$defs/{model}",
+            )
+        else:
+            full_schema = TypeAdapter(model_class).json_schema(ref_template="#/$defs/{model}")
         properties = {
             field_name: convert_field(field_info)
             for field_name, field_info in full_schema.get("properties", {}).items()

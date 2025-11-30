@@ -17,8 +17,6 @@ from ingestion_workflow.models import (
     ExtractedContent,
     ExtractedTable,
     Identifier,
-)
-from ingestion_workflow.models.coordinate_parsing import (
     ParseAnalysesOutput,
     ParsedAnalysis,
     CoordinatePoint,

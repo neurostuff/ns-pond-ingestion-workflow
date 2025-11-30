@@ -18,6 +18,119 @@ class CoordinateSpace(str, Enum):
     OTHER = "OTHER"
 
 
+_ALLOWED_VALUE_KINDS = {
+    "z-statistic",
+    "t-statistic",
+    "f-statistic",
+    "correlation",
+    "p-value",
+    "beta",
+    "other",
+}
+
+
+@dataclass
+class PointsValue:
+    """Represents a value associated with a coordinate point."""
+
+    value: Optional[float | str] = None
+    kind: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if self.kind is None:
+            return
+        normalized = str(self.kind).strip().lower()
+        if normalized not in _ALLOWED_VALUE_KINDS:
+            raise ValueError(f"Invalid value kind: {self.kind}")
+        self.kind = normalized
+
+
+@dataclass
+class CoordinatePoint:
+    """Represents a single coordinate point with its space information."""
+
+    coordinates: List[float]
+    space: Optional[str] = None
+    values: Optional[List[PointsValue]] = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.coordinates, list):
+            raise ValueError("coordinates must be provided as a list")
+        if len(self.coordinates) != 3:
+            raise ValueError("coordinates must contain exactly 3 values [x, y, z]")
+        coerced: List[float] = []
+        for index, coord in enumerate(self.coordinates):
+            try:
+                coerced.append(float(coord))
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Coordinate at index {index} must be numeric") from exc
+        self.coordinates = coerced
+
+        if self.values is None:
+            return
+        if not isinstance(self.values, list):
+            raise ValueError("values must be a list when provided")
+        parsed_values: List[PointsValue] = []
+        for value in self.values:
+            if isinstance(value, PointsValue):
+                parsed_values.append(value)
+                continue
+            if isinstance(value, Mapping):
+                parsed_values.append(PointsValue(**value))
+                continue
+            if isinstance(value, (int, float, str)):
+                parsed_values.append(PointsValue(value=value, kind=None))
+                continue
+            raise ValueError("values entries must be PointsValue, mapping, number, or string")
+        self.values = parsed_values
+
+
+@dataclass
+class ParsedAnalysis:
+    """Represents a single analysis with its metadata and points."""
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    points: List[CoordinatePoint] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.points is None:
+            self.points = []
+        if not isinstance(self.points, list):
+            raise ValueError("points must be a list")
+        coerced: List[CoordinatePoint] = []
+        for point in self.points:
+            if isinstance(point, CoordinatePoint):
+                coerced.append(point)
+            elif isinstance(point, Mapping):
+                coerced.append(CoordinatePoint(**point))
+            else:
+                raise ValueError("points entries must be CoordinatePoint instances or mappings")
+        self.points = coerced
+
+
+@dataclass
+class ParseAnalysesOutput:
+    """Output schema for the parse_analyses function."""
+
+    analyses: List[ParsedAnalysis] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.analyses is None:
+            self.analyses = []
+        if not isinstance(self.analyses, list):
+            raise ValueError("analyses must be a list")
+        parsed: List[ParsedAnalysis] = []
+        for analysis in self.analyses:
+            if isinstance(analysis, ParsedAnalysis):
+                parsed.append(analysis)
+            elif isinstance(analysis, Mapping):
+                parsed.append(ParsedAnalysis(**analysis))
+            else:
+                raise ValueError("analyses entries must be ParsedAnalysis instances or mappings")
+        self.analyses = parsed
+
+
 @dataclass
 class Coordinate:
     """Single stereotactic coordinate point."""
@@ -265,4 +378,8 @@ __all__ = [
     "CoordinateSpace",
     "CreateAnalysesResult",
     "Image",
+    "CoordinatePoint",
+    "ParseAnalysesOutput",
+    "ParsedAnalysis",
+    "PointsValue",
 ]
