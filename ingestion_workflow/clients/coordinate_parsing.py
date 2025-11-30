@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models.coordinate_parsing import ParseAnalysesOutput
+from ingestion_workflow.models import ParseAnalysesOutput
 
 
 logger = logging.getLogger(__name__)

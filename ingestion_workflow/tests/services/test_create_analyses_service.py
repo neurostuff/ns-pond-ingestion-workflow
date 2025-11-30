@@ -12,12 +12,10 @@ from ingestion_workflow.models import (
     ArticleMetadata,
     Coordinate,
     CoordinateSpace,
+    CoordinatePoint,
     ExtractedContent,
     ExtractedTable,
     Identifier,
-)
-from ingestion_workflow.models.coordinate_parsing import (
-    CoordinatePoint,
     ParseAnalysesOutput,
     ParsedAnalysis,
     PointsValue,

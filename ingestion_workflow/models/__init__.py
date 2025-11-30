@@ -9,6 +9,10 @@ from .analysis import (
     CoordinateSpace,
     CreateAnalysesResult,
     Image,
+    CoordinatePoint,
+    ParseAnalysesOutput,
+    ParsedAnalysis,
+    PointsValue,
 )
 from .download import DownloadResult, DownloadSource, DownloadedFile, FileType
 from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
@@ -78,10 +82,14 @@ __all__ = [
     "Condition",
     "Contrast",
     "Coordinate",
+    "CoordinatePoint",
     "CoordinateSpace",
     "CreateAnalysesResult",
+    "ParseAnalysesOutput",
+    "ParsedAnalysis",
     "CreateAnalysesResultEntry",
     "CreateAnalysesResultIndex",
+    "PointsValue",
     "DownloadCacheEntry",
     "DownloadIndex",
     "DownloadResult",
