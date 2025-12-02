@@ -56,6 +56,12 @@ def run(
         "-s",
         help="Subset of pipeline stages to execute in canonical order.",
     ),
+    ignore_cache: Optional[List[str]] = typer.Option(
+        None,
+        "--ignore-cache",
+        "-i",
+        help="Stage names whose caches should be ignored (repeatable).",
+    ),
     manifest_path: Optional[Path] = typer.Option(
         None,
         "--manifest",
@@ -74,6 +80,8 @@ def run(
     overrides: dict[str, object] = {}
     if stages:
         overrides["stages"] = [stage.lower() for stage in stages]
+    if ignore_cache:
+        overrides["ignore_cache_stages"] = [stage.lower() for stage in ignore_cache]
     if manifest_path is not None:
         overrides["manifest_path"] = manifest_path
     if use_cached_inputs is not None:

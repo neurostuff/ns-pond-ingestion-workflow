@@ -155,6 +155,57 @@ def test_run_create_analyses_uses_cached_entries(monkeypatch, tmp_path):
     assert results["article-1"]["Table 1"] is cached_collection
 
 
+def test_run_create_analyses_ignores_cache_when_configured(monkeypatch, tmp_path):
+    bundle = _bundle(tmp_path)
+
+    def _fail_cache(*_args, **_kwargs):
+        raise AssertionError("Cache should be ignored when configured")
+
+    monkeypatch.setattr(
+        workflow_module.cache,
+        "get_cached_create_analyses_result",
+        _fail_cache,
+    )
+
+    class _ServiceStub:
+        def __init__(self, *args, **kwargs):
+            self.called = False
+
+        def run(self, bundle, progress_hook=None):
+            self.called = True
+            analysis = Analysis(name="fresh")
+            collection = AnalysisCollection(
+                slug="article-1::table-1",
+                analyses=[analysis],
+            )
+            return {bundle.article_data.tables[0].table_id: collection}
+
+    service_stub = _ServiceStub()
+    monkeypatch.setattr(
+        workflow_module,
+        "CreateAnalysesService",
+        lambda *args, **kwargs: service_stub,
+    )
+    monkeypatch.setattr(
+        workflow_module.cache,
+        "cache_create_analyses_results",
+        lambda *_args, **_kwargs: None,
+    )
+
+    results = workflow_module.run_create_analyses(
+        [bundle],
+        settings=Settings(
+            llm_api_key="test",
+            data_root=tmp_path,
+            cache_root=tmp_path / "cache",
+            ignore_cache_stages=["create_analyses"],
+        ),
+    )
+
+    assert service_stub.called
+    assert results["article-1"]["Table 1"].analyses[0].name == "fresh"
+
+
 def test_run_create_analyses_skips_tables_without_coordinates(monkeypatch, tmp_path):
     bundle = _bundle(tmp_path, has_coordinates=False)
 

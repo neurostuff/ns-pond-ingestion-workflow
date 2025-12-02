@@ -212,6 +212,11 @@ class Settings(BaseSettings):
         description="Force re-extraction even if results exist in cache",
     )
 
+    ignore_cache_stages: List[str] = Field(
+        default_factory=list,
+        description="Pipeline stages whose caches should be ignored and regenerated",
+    )
+
     verbose: bool = Field(
         default=False,
         description="Enable verbose logging output",

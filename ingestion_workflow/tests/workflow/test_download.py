@@ -136,3 +136,41 @@ def test_run_downloads_mixes_cached_and_new(monkeypatch, tmp_path):
     assert len(cached_after) == 1
     assert cached_after[0].identifier is identifiers.identifiers[1]
     assert missing_after == [identifiers.identifiers[2]]
+
+
+def test_run_downloads_ignores_cache_when_requested(monkeypatch, tmp_path):
+    settings = Settings(
+        cache_root=tmp_path / "cache",
+        data_root=tmp_path / "data",
+        download_sources=[DownloadSource.ELSEVIER.value],
+        ignore_cache_stages=["download"],
+    )
+
+    identifiers = Identifiers([Identifier(pmid="400")])
+
+    def _fail_partition(*_args, **_kwargs):
+        raise AssertionError("Cache partition should not be called when ignoring cache")
+
+    monkeypatch.setattr(
+        cache,
+        "partition_cached_downloads",
+        _fail_partition,
+    )
+
+    def fake_factory(_settings: Settings) -> BaseExtractor:
+        return _FakeElsevierExtractor(
+            success_dir=tmp_path / "success",
+            success_targets={identifiers.identifiers[0].slug},
+        )
+
+    monkeypatch.setitem(
+        EXTRACTOR_FACTORIES,
+        DownloadSource.ELSEVIER,
+        fake_factory,
+    )
+
+    results = run_downloads(identifiers, settings=settings)
+
+    assert len(results) == 1
+    assert results[0].success is True
+    assert results[0].identifier == identifiers.identifiers[0]

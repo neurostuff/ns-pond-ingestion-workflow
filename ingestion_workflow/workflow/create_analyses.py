@@ -216,18 +216,21 @@ def _run_bundle_with_cache(
         sanitized_table_id = sanitize_table_id(table.table_id, index)
         table_key = table.table_id or sanitized_table_id
         cache_key = _compose_cache_key(article_slug, sanitized_table_id)
-        cached = cache.get_cached_create_analyses_result(
-            settings,
-            cache_key,
-            extractor_name,
-            identifier=bundle.article_data.identifier,
-            sanitized_table_id=sanitized_table_id,
-        )
-        if cached:
-            table_results[table_key] = cached.analysis_collection
-            bundle_results.append(cached)
-            stats.cached += 1
-            continue
+        cached = None
+        ignore_cache = "create_analyses" in getattr(settings, "ignore_cache_stages", [])
+        if not ignore_cache:
+            cached = cache.get_cached_create_analyses_result(
+                settings,
+                cache_key,
+                extractor_name,
+                identifier=bundle.article_data.identifier,
+                sanitized_table_id=sanitized_table_id,
+            )
+            if cached:
+                table_results[table_key] = cached.analysis_collection
+                bundle_results.append(cached)
+                stats.cached += 1
+                continue
         pending_tables.append(table)
         stats.pending += 1
         pending_info[table_key] = {

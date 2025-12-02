@@ -118,6 +118,7 @@ def run_downloads(
     collected_results: List[DownloadResult] = []
     total_requested = len(remaining)
     successful_slugs: set[str] = set()
+    ignore_cache = "download" in getattr(resolved_settings, "ignore_cache_stages", [])
 
     for source_name in resolved_settings.download_sources:
         if not remaining:
@@ -132,11 +133,15 @@ def run_downloads(
             continue
 
         extractor_identifiers = Identifiers(list(supported))
-        cached_results, missing = cache.partition_cached_downloads(
-            resolved_settings,
-            extractor_name=source.value,
-            identifiers=extractor_identifiers,
-        )
+        if resolved_settings.force_redownload or ignore_cache:
+            cached_results = []
+            missing = list(extractor_identifiers.identifiers)
+        else:
+            cached_results, missing = cache.partition_cached_downloads(
+                resolved_settings,
+                extractor_name=source.value,
+                identifiers=extractor_identifiers,
+            )
         collected_results.extend(cached_results)
         successful_slugs.update(
             result.identifier.slug

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import pytest
 
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     ArticleExtractionBundle,
     ArticleMetadata,
@@ -94,6 +95,46 @@ def test_run_extraction_returns_bundles(monkeypatch, download_result):
     assert bundle.article_data is extraction
     assert bundle.article_metadata is metadata_response[extraction.slug]
     assert recorder.seen == [extraction]
+
+
+def test_run_extraction_ignores_cache_when_requested(monkeypatch, download_result):
+    extraction = ExtractedContent(
+        slug="hash-ignore",
+        source=DownloadSource.ELSEVIER,
+        identifier=download_result.identifier,
+        has_coordinates=True,
+    )
+    fake_extractor = _FakeExtractor([extraction])
+    recorder = _MetadataRecorder({extraction.slug: ArticleMetadata(title="Ignore Cache")})
+
+    def _fail_partition(*_args, **_kwargs):
+        raise AssertionError("Cache partition should not be invoked when ignoring cache")
+
+    monkeypatch.setattr(
+        extract_module,
+        "_resolve_extractor_for_source",
+        lambda *_args, **_kwargs: fake_extractor,
+    )
+    monkeypatch.setattr(
+        extract_module.cache,
+        "partition_cached_extractions",
+        _fail_partition,
+    )
+    monkeypatch.setattr(
+        extract_module,
+        "MetadataService",
+        lambda *_args, **_kwargs: recorder,
+    )
+
+    bundles = extract_module.run_extraction(
+        [download_result],
+        settings=Settings(
+            ignore_cache_stages=["extract"],
+        ),
+    )
+
+    assert len(bundles) == 1
+    assert bundles[0].article_data is extraction
 
 
 def test_run_extraction_placeholder_metadata(monkeypatch, download_result):

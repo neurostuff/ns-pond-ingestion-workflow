@@ -66,6 +66,7 @@ show_progress: true  # Show tqdm progress bars on the console.
 
 manifest_path: null  # Path to identifiers manifest when skipping the gather stage.
 use_cached_inputs: true  # Hydrate skipped stages from cached outputs when available.
+ignore_cache_stages: []  # List of stage names whose caches should be ignored and regenerated.
 
 pubget_cache_root: null  # Optional override for the Pubget cache directory.
 ace_cache_root: null  # Optional override for the ACE cache directory.

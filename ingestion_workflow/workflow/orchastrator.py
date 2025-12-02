@@ -52,6 +52,11 @@ def run_pipeline(
     resolved_settings = settings or load_settings()
     resolved_settings.ensure_directories()
     _configure_logging_for_run(resolved_settings)
+    ignore_cache = {stage.lower() for stage in resolved_settings.ignore_cache_stages}
+    if "download" in ignore_cache:
+        resolved_settings.force_redownload = True
+    if "extract" in ignore_cache:
+        resolved_settings.force_reextract = True
     selected_stages = _normalize_stages(resolved_settings.stages)
     state = PipelineState()
     _seed_identifiers_from_manifest(

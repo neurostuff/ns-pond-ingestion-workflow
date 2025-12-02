@@ -189,6 +189,7 @@ def run_extraction(
         source_order=resolved_settings.download_sources,
     )
     ordered_results: List[Tuple[int, ExtractionResult]] = []
+    ignore_cache = "extract" in getattr(resolved_settings, "ignore_cache_stages", [])
 
     processed_count = 0
     for source, entries in grouped.items():
@@ -197,7 +198,7 @@ def run_extraction(
         extractor = _resolve_extractor_for_source(source, resolved_settings)
         subset = [download_result for _, download_result in entries]
 
-        if resolved_settings.force_reextract:
+        if resolved_settings.force_reextract or ignore_cache:
             cached_slots = [None] * len(subset)
             missing_results = list(subset)
         else:
