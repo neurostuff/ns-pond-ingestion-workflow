@@ -120,10 +120,15 @@ class CoordinateParsingClient(GenericLLMClient):
                 response = self.client.responses.create(
                     model=model,
                     input=messages,
-                    functions=[function_schema],
-                    function_call={"name": function_schema["name"]},
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": function_schema["name"],
+                            "schema": function_schema["parameters"],
+                        },
+                    },
                 )
-                return self._extract_function_call_from_response(response)
+                return self._extract_function_call_from_response(response, function_schema["name"])
             completion = self.client.chat.completions.create(
                 model=model,
                 messages=messages,
@@ -140,16 +145,15 @@ class CoordinateParsingClient(GenericLLMClient):
 
         return _send_request()
 
-    def _extract_function_call_from_response(self, response: Any) -> Optional[FunctionCallResult]:
+    def _extract_function_call_from_response(
+        self, response: Any, name: str
+    ) -> Optional[FunctionCallResult]:
         for output in getattr(response, "output", []):
             for content in output.get("content", []):
-                if content.get("type") != "function_call":
-                    continue
-                function_call = content.get("function_call", {})
-                name = function_call.get("name")
-                arguments = function_call.get("arguments")
-                if name and arguments:
-                    return FunctionCallResult(name=name, arguments=arguments)
+                if content.get("type") == "output_text":
+                    text = content.get("text")
+                    if text:
+                        return FunctionCallResult(name=name, arguments=text)
         return None
 
 
