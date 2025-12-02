@@ -27,6 +27,7 @@ from ingestion_workflow.services.logging import console_kwargs
 from ingestion_workflow.services.upload_models import Analysis as DbAnalysis
 from ingestion_workflow.services.upload_models import BaseStudy as DbBaseStudy
 from ingestion_workflow.services.upload_models import Point as DbPoint
+from ingestion_workflow.services.upload_models import PointValue as DbPointValue
 from ingestion_workflow.services.upload_models import Study as DbStudy
 from ingestion_workflow.services.upload_models import Table as DbTable
 
@@ -357,12 +358,7 @@ class UploadService:
         order_counter = 1
         for prepared in item.analyses:
             table_ref = table_map.get(prepared.table.table_id)
-            base_name = (
-                prepared.analysis.name
-                or prepared.table.label
-                or prepared.table.table_id
-                or prepared.table.title
-            )
+            base_name = self._resolve_analysis_base_name(prepared)
             counter_key = base_name or prepared.table.table_id
             count = name_counters.get(counter_key, 0) + 1
             name_counters[counter_key] = count
@@ -391,13 +387,28 @@ class UploadService:
                     y=coord.y,
                     z=coord.z,
                     space=coord.space.value if coord.space else prepared.coordinate_space,
-                    kind=coord.statistic_type,
                     cluster_size=coord.cluster_size,
                     subpeak=coord.is_subpeak,
                     deactivation=coord.is_deactivation,
                     order=p_index,
                 )
                 session.add(point)
+                if coord.statistic_type or coord.statistic_value is not None:
+                    try:
+                        value = (
+                            float(coord.statistic_value)
+                            if coord.statistic_value is not None
+                            else None
+                        )
+                    except (TypeError, ValueError):
+                        value = None
+                    session.add(
+                        DbPointValue(
+                            point=point,
+                            kind=coord.statistic_type,
+                            value=value,
+                        )
+                    )
 
         if item.analyses:
             base_study.has_coordinates = True
@@ -411,6 +422,20 @@ class UploadService:
             analysis_ids=analysis_ids,
             success=True,
         )
+
+    def _resolve_analysis_base_name(self, prepared: PreparedAnalysis) -> str:
+        candidate = _sanitize_text(prepared.analysis.name)
+        if candidate and candidate.upper() != "UNKNOWN":
+            return candidate
+        for fallback in (
+            prepared.table.label,
+            prepared.table.title,
+            prepared.table.table_id,
+        ):
+            sanitized = _sanitize_text(fallback)
+            if sanitized:
+                return sanitized
+        return _sanitize_text(prepared.table.table_id) or "analysis"
 
     def _get_or_create_base_study(
         self,

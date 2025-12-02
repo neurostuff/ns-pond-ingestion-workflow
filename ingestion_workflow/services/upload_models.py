@@ -9,6 +9,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -225,3 +226,33 @@ class Point(Base):
     order: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     analysis: Mapped[Analysis | None] = relationship(back_populates="points")
+    values: Mapped[list["PointValue"]] = relationship(
+        "PointValue",
+        back_populates="point",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class PointValue(Base):
+    __tablename__ = "point_values"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+    point_id: Mapped[str | None] = mapped_column(
+        Text, ForeignKey("points.id", ondelete="CASCADE"), index=True, nullable=True
+    )
+    kind: Mapped[str | None] = mapped_column(String, nullable=True)
+    value: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    point: Mapped[Point | None] = relationship(back_populates="values")
