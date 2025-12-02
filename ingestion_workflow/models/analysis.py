@@ -52,6 +52,11 @@ class CoordinatePoint:
     coordinates: List[float]
     space: Optional[str] = None
     values: Optional[List[PointsValue]] = None
+    cluster_size: Optional[int] = None
+    cluster_measure: Optional[str] = None
+    is_subpeak: bool = False
+    is_deactivation: bool = False
+    is_seed: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.coordinates, list):
@@ -83,6 +88,20 @@ class CoordinatePoint:
                 continue
             raise ValueError("values entries must be PointsValue, mapping, number, or string")
         self.values = parsed_values
+
+        if self.cluster_size is not None:
+            try:
+                size = int(self.cluster_size)
+                self.cluster_size = abs(size)
+            except (TypeError, ValueError):
+                self.cluster_size = None
+
+        if self.cluster_measure is not None:
+            normalized_measure = str(self.cluster_measure).strip().lower()
+            if normalized_measure in {"voxels", "mm^3", "mm3"}:
+                self.cluster_measure = "mm^3" if normalized_measure in {"mm^3", "mm3"} else "voxels"
+            else:
+                self.cluster_measure = None
 
 
 @dataclass
@@ -142,8 +161,10 @@ class Coordinate:
     statistic_value: Optional[float] = None
     statistic_type: Optional[str] = None
     cluster_size: Optional[int] = None
+    cluster_measure: Optional[str] = None
     is_subpeak: bool = False
     is_deactivation: bool = False
+    is_seed: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -154,8 +175,10 @@ class Coordinate:
             "statistic_value": self.statistic_value,
             "statistic_type": self.statistic_type,
             "cluster_size": self.cluster_size,
+            "cluster_measure": self.cluster_measure,
             "is_subpeak": self.is_subpeak,
             "is_deactivation": self.is_deactivation,
+            "is_seed": self.is_seed,
         }
 
     @classmethod
@@ -169,8 +192,10 @@ class Coordinate:
             statistic_value=payload.get("statistic_value"),
             statistic_type=payload.get("statistic_type"),
             cluster_size=payload.get("cluster_size"),
+            cluster_measure=payload.get("cluster_measure"),
             is_subpeak=bool(payload.get("is_subpeak", False)),
             is_deactivation=bool(payload.get("is_deactivation", False)),
+            is_seed=bool(payload.get("is_seed", False)),
         )
 
 

@@ -325,7 +325,7 @@ class UploadService:
         study = self._get_or_create_study(
             session,
             item.study,
-            base_study.id,
+            base_study,
             behavior,
             metadata_mode,
         )
@@ -357,9 +357,13 @@ class UploadService:
         order_counter = 1
         for prepared in item.analyses:
             table_ref = table_map.get(prepared.table.table_id)
-            base_name = prepared.table.label or prepared.table.table_id or prepared.table.title
-            table_key = prepared.table.label or prepared.table.table_id
-            counter_key = table_key or prepared.table.table_id
+            base_name = (
+                prepared.analysis.name
+                or prepared.table.label
+                or prepared.table.table_id
+                or prepared.table.title
+            )
+            counter_key = base_name or prepared.table.table_id
             count = name_counters.get(counter_key, 0) + 1
             name_counters[counter_key] = count
             analysis_name = base_name if count == 1 else f"{base_name}-{count}"
@@ -443,19 +447,20 @@ class UploadService:
         self,
         session,
         payload: StudyPayload,
-        base_study_id: str,
+        base_study: DbBaseStudy,
         behavior: UploadBehavior,
         metadata_mode: UploadMetadataMode,
     ) -> DbStudy:
-        study = session.execute(
-            select(DbStudy).where(
-                DbStudy.base_study_id == base_study_id, DbStudy.source == payload.source
-            )
-        ).scalar_one_or_none()
+        # Always treat uploads as coming from the LLM pipeline
+        payload.source = payload.source or "llm"
+        study = next(
+            (version for version in getattr(base_study, "versions", []) if version.source == payload.source),
+            None,
+        )
 
         if study is None or behavior == UploadBehavior.INSERT_NEW:
             study = DbStudy(
-                base_study_id=base_study_id,
+                base_study_id=base_study.id,
                 source=payload.source,
                 source_id=payload.metadata.get("source_id") if payload.metadata else None,
                 level="group",
