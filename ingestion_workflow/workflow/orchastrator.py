@@ -14,6 +14,7 @@ from ingestion_workflow.models import (
     DownloadResult,
     Identifier,
     Identifiers,
+    UploadOutcome,
 )
 from ingestion_workflow.services import cache
 from ingestion_workflow.services.logging import (
@@ -40,6 +41,7 @@ class PipelineState:
     downloads: List[DownloadResult] | None = None
     bundles: List[ArticleExtractionBundle] | None = None
     analyses: Dict[str, Dict[str, AnalysisCollection]] | None = None
+    upload_outcomes: List[UploadOutcome] | None = None
     stage_metrics: Dict[str, StageMetrics] = field(default_factory=dict)
 
 
@@ -175,6 +177,7 @@ def _run_upload_stage(settings: Settings, state: PipelineState) -> None:
     outcomes = run_upload(state, settings=settings)
     success = sum(1 for outcome in outcomes if outcome.success)
     failed = len(outcomes) - success
+    state.upload_outcomes = outcomes
     logger.info(
         "Upload completed: %d successes, %d failures",
         success,
@@ -184,7 +187,12 @@ def _run_upload_stage(settings: Settings, state: PipelineState) -> None:
 
 
 def _run_sync_stage(settings: Settings, state: PipelineState) -> None:
-    logger.info("Sync stage not yet implemented; skipping.")
+    if settings.dry_run:
+        logger.info("Dry-run enabled: sync stage skipped.")
+        return
+    from ingestion_workflow.workflow.sync import run_sync
+
+    run_sync(state, settings=settings)
 
 
 def _normalize_stages(stages: Sequence[str] | None) -> List[str]:

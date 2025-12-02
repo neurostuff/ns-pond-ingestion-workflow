@@ -154,6 +154,11 @@ class Settings(BaseSettings):
         description="Overwrite previously exported files if they exist",
     )
 
+    sync_overwrite: bool = Field(
+        default=True,
+        description="Overwrite individual files when writing ns-pond sync outputs",
+    )
+
     n_llm_workers: int = Field(
         default=2,
         description="Maximum number of concurrent LLM workers",
