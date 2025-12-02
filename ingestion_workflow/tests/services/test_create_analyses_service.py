@@ -66,7 +66,7 @@ def test_create_analyses_service_builds_collection(monkeypatch, tmp_path):
                     CoordinatePoint(
                         coordinates=[10.0, 12.0, 15.0],
                         space="MNI",
-                        values=[PointsValue(value=2.5, kind="t-statistic")],
+                        values=[PointsValue(value=2.5, kind="T")],
                     )
                 ],
             )

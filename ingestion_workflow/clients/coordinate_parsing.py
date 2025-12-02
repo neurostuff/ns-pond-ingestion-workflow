@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
+from ingestion_workflow.models.statistics import normalize_statistic_kind
 
 
 logger = logging.getLogger(__name__)
@@ -105,8 +106,8 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
                         coerced.append(normalized)
                     continue
                 if isinstance(value, (int, float)):
-                    kind = "T" if isinstance(value, float) else "other"
-                    coerced.append({"value": value, "kind": kind})
+                    kind = normalize_statistic_kind("t")
+                    coerced.append({"value": float(value), "kind": kind})
                     continue
                 # attempt to parse numeric strings
                 if isinstance(value, str):
@@ -114,10 +115,7 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
                         num = float(value)
                     except ValueError:
                         continue
-                    kind = "T"
-                    if num.is_integer():
-                        kind = "other"
-                        num = int(num)
+                    kind = normalize_statistic_kind("t")
                     coerced.append({"value": num, "kind": kind})
                     continue
             if coerced:
@@ -125,44 +123,13 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
 
 
 def _normalize_value_dict(value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    normalized_kind = _map_kind(value.get("kind"))
+    normalized_kind = normalize_statistic_kind(value.get("kind"))
     if normalized_kind is None:
         return None
-    result = dict(value)
-    result["kind"] = normalized_kind
-    return result
-
-
-def _map_kind(kind: Any) -> Optional[str]:
-    if kind is None:
+    number = value.get("value")
+    if not isinstance(number, (int, float)):
         return None
-    if isinstance(kind, str):
-        normalized = kind.strip().lower()
-        allowed = {
-            "Z",
-            "T",
-            "F",
-            "R",
-            "P",
-            "B",
-            "other",
-        }
-        if normalized in allowed:
-            return normalized
-        if "z" in normalized:
-            return "Z"
-        if "t" in normalized or "stat" in normalized:
-            return "T"
-        if "f" in normalized:
-            return "F"
-        if "r" in normalized or "correlation" in normalized:
-            return "R"
-        if normalized.startswith("p"):
-            return "P"
-        if "beta" in normalized:
-            return "B"
-        return "other"
-    return None
+    return {"value": float(number), "kind": normalized_kind}
 
 
 __all__ = ["CoordinateParsingClient"]

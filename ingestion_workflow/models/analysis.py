@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 from .ids import Identifier
+from .statistics import ALLOWED_STATISTIC_KINDS
 
 
 class CoordinateSpace(str, Enum):
@@ -17,16 +18,6 @@ class CoordinateSpace(str, Enum):
     TALAIRACH = "TAL"
     OTHER = "OTHER"
 
-
-_ALLOWED_VALUE_KINDS = {
-    "z-statistic",
-    "t-statistic",
-    "f-statistic",
-    "correlation",
-    "p-value",
-    "beta",
-    "other",
-}
 
 
 @dataclass
@@ -39,10 +30,11 @@ class PointsValue:
     def __post_init__(self) -> None:
         if self.kind is None:
             return
-        normalized = str(self.kind).strip().lower()
-        if normalized not in _ALLOWED_VALUE_KINDS:
+        normalized = str(self.kind).strip()
+        upper = normalized.upper()
+        if upper not in ALLOWED_STATISTIC_KINDS:
             raise ValueError(f"Invalid value kind: {self.kind}")
-        self.kind = normalized
+        self.kind = upper
 
 
 @dataclass
