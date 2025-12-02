@@ -38,7 +38,7 @@ class GenericLLMClient:
         elif settings and settings.llm_model:
             self.default_model = settings.llm_model
         else:
-            self.default_model = "gpt-4o-mini"
+            self.default_model = "gpt-5-mini"
 
     def _resolve_api_key(self, override: Optional[str]) -> Optional[str]:
         if override:

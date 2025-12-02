@@ -1,0 +1,121 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"system","content":"You are a helpful assistant that
+      parses neuroimaging results tables into structured JSON for downstream analysis.
+      Respond using the parse_analyses function."},{"role":"user","content":"\nYou
+      are a neuroimaging table curation assistant. Output JSON using parse_analyses.\nTable
+      snippet:\nAnalysis A\nX Y Z\n1 2 3\n"}],"model":"gpt-4o-mini","function_call":{"name":"parse_analyses"},"functions":[{"name":"parse_analyses","description":"Process
+      a task using the parse_analyses function","parameters":{"type":"object","properties":{"analyses":{"type":"array","items":{"$ref":"#/$defs/ParsedAnalysis"}}},"required":[],"$defs":{"CoordinatePoint":{"properties":{"coordinates":{"items":{"type":"number"},"title":"Coordinates","type":"array"},"space":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Space"},"values":{"anyOf":[{"items":{"$ref":"#/$defs/PointsValue"},"type":"array"},{"type":"null"}],"default":null,"title":"Values"},"cluster_size":{"anyOf":[{"type":"integer"},{"type":"null"}],"default":null,"title":"Cluster
+      Size"},"cluster_measure":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Cluster
+      Measure"},"is_subpeak":{"default":false,"title":"Is Subpeak","type":"boolean"},"is_deactivation":{"default":false,"title":"Is
+      Deactivation","type":"boolean"},"is_seed":{"default":false,"title":"Is Seed","type":"boolean"}},"required":["coordinates"],"title":"CoordinatePoint","type":"object"},"ParsedAnalysis":{"properties":{"name":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Name"},"description":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Description"},"points":{"items":{"$ref":"#/$defs/CoordinatePoint"},"title":"Points","type":"array"}},"title":"ParsedAnalysis","type":"object"},"PointsValue":{"properties":{"value":{"anyOf":[{"type":"number"},{"type":"string"},{"type":"null"}],"default":null,"title":"Value"},"kind":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Kind"}},"title":"PointsValue","type":"object"}}}}]}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2072'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 2.7.2
+      x-stainless-arch:
+      - x64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - Linux
+      x-stainless-package-version:
+      - 2.7.2
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.13.0
+    method: POST
+    uri: https://api.openai.com/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//jFPLbtswELzrK4g9y4Xt+JHolrQoWqQNeushMoQ1ubIZUyTBpdK6hv+9
+        kGRHcpICvQjQzM5wdrk8JEKAVpAJkFuMsvJm9FH/uLu7HU/sw5dPX/2vz/uHn2O3e9rPvn+7v4e0
+        Ubj1E8l4Vn2QrvKGona2o2UgjNS4TpaL2eLmZjpftkTlFJlGtvFxNHOjSls9mo6ns9F4OZpcn9Rb
+        pyUxZOIxEUKIQ/ttclpFvyET4/SMVMSMG4LspUgICM40CCCz5og2QtqT0tlItolua2MGRFlb2XRQ
+        SDTmwlAIsFi1lh4DU4EWzZ6JB75CAIZNXZGNTXA45HCuyiF7POStRQ5ZDrctrlnc5pDmoIhl0L45
+        OoesDZWDd9rGs1I6F5S2GDuvSTpNr1ZpDuxRUq95RlO3Fad/aWqOFArWf+gtWhFyHQaE5oLrtSfc
+        5ZCVaJg6UBHKqJ/xFHDAMJE6I8fVcXWEl3EcB4MNVNaM5u3E0VoXW9/2rlfJKy0Yt/HBrfmVFEpt
+        NW+LQMjONtPm6Hx3+DERYtVuUX2xGOCDq3wsottRe9z0+rrzg355e3YxPZHRRTQ9fjU/7d6lX6Eo
+        ojY8WBuQKLekemm/tFgr7QZEMuj6bZr3vLvOtd38j31PSEk+kip8IKXlZcd9WaDmbf+r7GXKbWBg
+        Cs9aUhE1heYmFJVYm+7FAe85UlWU2m4o+KDbZwelL9bz2XIxnqi1guSY/AUAAP//AwAan4T7hAQA
+        AA==
+    headers:
+      CF-RAY:
+      - 9a7ccd940ea8638a-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 02 Dec 2025 18:14:19 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=.V.rZcEU4TjfBpicfr6jIxgVCnVar9pIpCFwCARX9rU-1764699259-1.0.1.1-ZsjPXDUQDD4szar1DBf835Lwa2htQfeeGBzIQpbhiXq1zL3m789zPc_3GncoGkZcoqBUeOjp7JRvsS4cyDwmOo37UAi1prKV01NkxVETPU4;
+        path=/; expires=Tue, 02-Dec-25 18:44:19 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=axkKSilkIf6TPLIRs9vtAw5JsBbQwL46KwH74dK3wCw-1764699259421-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      access-control-expose-headers:
+      - X-Request-ID
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - user-1dqxvtbav4ixtycbaesgbibp
+      openai-processing-ms:
+      - '1902'
+      openai-project:
+      - proj_MqaFIc1ewIugnu5jdwMbPYHb
+      openai-version:
+      - '2020-10-01'
+      x-envoy-upstream-service-time:
+      - '2005'
+      x-openai-proxy-wasm:
+      - v0.1
+      x-ratelimit-limit-requests:
+      - '10000'
+      x-ratelimit-limit-tokens:
+      - '200000'
+      x-ratelimit-remaining-requests:
+      - '9998'
+      x-ratelimit-remaining-tokens:
+      - '199927'
+      x-ratelimit-reset-requests:
+      - 14.58s
+      x-ratelimit-reset-tokens:
+      - 21ms
+      x-request-id:
+      - req_873581df1daf49f9ac8d592c9572af2c
+    status:
+      code: 200
+      message: OK
+version: 1

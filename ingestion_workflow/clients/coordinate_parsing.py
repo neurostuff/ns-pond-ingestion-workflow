@@ -82,7 +82,7 @@ class CoordinateParsingClient(GenericLLMClient):
         if not function_call:
             raise ValueError("No function call returned from API")
 
-        result_dict = json.loads(function_call.arguments)
+        result_dict = json.loads(_strip_markdown_fence(function_call.arguments))
         for analysis in result_dict.get("analyses", []):
             valid_points: List[Dict[str, Any]] = []
             for point in analysis.get("points", []):
@@ -109,6 +109,27 @@ class CoordinateParsingClient(GenericLLMClient):
         function_schema: Dict[str, Any],
         model: str,
     ) -> Optional[FunctionCallResult]:
+        tool_name = function_schema["name"]
+        tool_parameters = function_schema.get("parameters", {})
+        tool_description = function_schema.get("description", "")
+        tool_chat = {
+            "type": "function",
+            "function": {
+                "name": tool_name,
+                "description": tool_description,
+                "parameters": tool_parameters,
+            },
+        }
+        tool_flex = {
+            "type": "function",
+            "name": tool_name,
+            "function": {
+                "name": tool_name,
+                "description": tool_description,
+                "parameters": tool_parameters,
+            },
+        }
+
         @retry(
             retry=retry_if_exception_type(RateLimitError),
             stop=stop_after_attempt(self._retry_attempts),
@@ -120,40 +141,60 @@ class CoordinateParsingClient(GenericLLMClient):
                 response = self.client.responses.create(
                     model=model,
                     input=messages,
-                    response_format={
-                        "type": "json_schema",
-                        "json_schema": {
-                            "name": function_schema["name"],
-                            "schema": function_schema["parameters"],
-                        },
-                    },
+                    tools=[tool_flex],
+                    tool_choice={"type": "function", "name": tool_name},
                 )
-                return self._extract_function_call_from_response(response, function_schema["name"])
+                return self._extract_flex_output(response)
+
             completion = self.client.chat.completions.create(
                 model=model,
                 messages=messages,
-                functions=[function_schema],
-                function_call={"name": function_schema["name"]},
+                tools=[tool_chat],
+                tool_choice={"type": "function", "function": {"name": tool_name}},
             )
-            raw_call = completion.choices[0].message.function_call
-            if not raw_call:
-                return None
-            return FunctionCallResult(
-                name=raw_call.name,
-                arguments=raw_call.arguments,
-            )
+            return self._extract_chat_tool_call(completion)
 
         return _send_request()
 
-    def _extract_function_call_from_response(
-        self, response: Any, name: str
-    ) -> Optional[FunctionCallResult]:
+    def _extract_flex_output(self, response: Any) -> Optional[FunctionCallResult]:
+        text_parts: List[str] = []
         for output in getattr(response, "output", []):
-            for content in output.get("content", []):
-                if content.get("type") == "output_text":
-                    text = content.get("text")
+            contents = getattr(output, "content", [])
+            for content in contents:
+                ctype = getattr(content, "type", None)
+                if ctype in {"function_call", "tool_call"}:
+                    func = getattr(content, "function", None) or getattr(content, "tool_call", None)
+                    if func and getattr(func, "name", None) and getattr(func, "arguments", None):
+                        return FunctionCallResult(name=func.name, arguments=func.arguments)
+                if ctype == "tool_use":
+                    tool_name = getattr(content, "name", None)
+                    tool_input = getattr(content, "input", None)
+                    if tool_name and tool_input is not None:
+                        try:
+                            arguments = json.dumps(tool_input)
+                        except Exception:
+                            arguments = str(tool_input)
+                        return FunctionCallResult(name=tool_name, arguments=arguments)
+                if ctype == "output_text":
+                    text = getattr(content, "text", None)
                     if text:
-                        return FunctionCallResult(name=name, arguments=text)
+                        text_parts.append(text)
+        if text_parts:
+            return FunctionCallResult(name="", arguments="".join(text_parts).strip())
+        return None
+
+    def _extract_chat_tool_call(self, completion: Any) -> Optional[FunctionCallResult]:
+        choices = getattr(completion, "choices", [])
+        if not choices:
+            return None
+        message = getattr(choices[0], "message", None)
+        tool_calls = getattr(message, "tool_calls", None)
+        if not tool_calls:
+            return None
+        call = tool_calls[0]
+        func = getattr(call, "function", None)
+        if func and getattr(func, "name", None) and getattr(func, "arguments", None):
+            return FunctionCallResult(name=func.name, arguments=func.arguments)
         return None
 
 
@@ -162,6 +203,14 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
     if not isinstance(analyses, list):
         return
     for analysis in analyses:
+        if "analysis_name" in analysis and "name" not in analysis:
+            analysis["name"] = analysis.pop("analysis_name")
+        if "coordinates" in analysis and "points" not in analysis:
+            coords = analysis.pop("coordinates")
+            if isinstance(coords, dict) and {"X", "Y", "Z"} <= set(coords.keys()):
+                analysis["points"] = [
+                    {"coordinates": [coords.get("X"), coords.get("Y"), coords.get("Z")]}
+                ]
         points = analysis.get("points")
         if not isinstance(points, list):
             continue
@@ -200,6 +249,18 @@ def _normalize_value_dict(value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not isinstance(number, (int, float)):
         return None
     return {"value": float(number), "kind": normalized_kind}
+
+
+def _strip_markdown_fence(payload: str) -> str:
+    text = payload.strip()
+    if text.startswith("```"):
+        # remove leading/trailing fenced blocks (``` or ```json)
+        parts = text.split("```")
+        if len(parts) >= 3:
+            text = parts[1].lstrip("json").strip()
+        else:
+            text = text.strip("`")
+    return text
 
 
 __all__ = ["CoordinateParsingClient"]

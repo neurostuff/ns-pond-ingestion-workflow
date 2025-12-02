@@ -1,0 +1,115 @@
+interactions:
+- request:
+    body: '{"input":[{"role":"system","content":"You are a helpful assistant that
+      parses neuroimaging results tables into structured JSON for downstream analysis.
+      Respond using the parse_analyses function."},{"role":"user","content":"\nYou
+      are a neuroimaging table curation assistant. Output JSON using parse_analyses.\nTable
+      snippet:\nAnalysis A\nX Y Z\n1 2 3\n"}],"model":"gpt-4o-mini"}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '377'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 2.7.2
+      x-stainless-arch:
+      - x64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - Linux
+      x-stainless-package-version:
+      - 2.7.2
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.13.0
+    method: POST
+    uri: https://api.openai.com/v1/responses
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//dFTbbqMwEH3vV1h+blZAUkj6tn+xl1RkYg+pt8aD7KHaqMq/r2wSLtvm
+        CThn5jD3jwchpNHyWUiPoaszUDtVVcf1+klXWbPOsnJXNIWqynJTZNt8l221zqv1ca3KcgdNpuRj
+        lKDjH1R8kyEXcMCVR2DUNUQur8pNudsVT5vEBQbuQ/RR1HYWGfXgdAT1dvLUuxhXAzbgABtrjTvJ
+        Z/HxIIQQsoMz+uhPHTow8kGIS7JE7ykSrrc2AcbdflFrZDA2LNnAvldsyC3wFv7W1HPXc830hp9J
+        JrK1AruUa0mjjWGdOl5taNUaZ1ZFVmxWWbXKt9eCJV35LH6nXIaMxl604XS/FVVRQmoFbIryqAuo
+        9Lbc5nmZlJMKnztMOhgCnHAi7tU8kYoco5uCmge2kL0VBf/y6J0MwDliuBXy98uCtHTqPB2/YJLQ
+        s5CHw+FPILd3H3snxF6CA3sOGPbRJUJCfAyPiTWhdtBiNNnL71dIfN/Lx8lSEXltHPAgNWpE7kdE
+        8sc59DNCxQL6FaH1DbkML+nxsneXvTscDnLM6HJ9G5OUnmwqHIRgAoPjwTgaJiPZgQdr0S5Hin0/
+        jH7n8d1QH+rbdtVpTsaR6zy1HdcK1CvWb3i+y3mMHTbk5hYeIZBbrBY2DXmeGcXZ6dsW/E17XLYA
+        DfK5NjoKNwYXixfQvxuFNQ+41NhAb4epkYHJ4zxNxrZDD9wnOP+WXdE0HdfIGvItTN+zqUx2Q12v
+        Eb+jP1IwfB52QZu+nY7EUOlXMmpoTc8kR2IaUsnU1bPRzUawm8foe6fgWlipTYCjvZ2zPq3gmIBx
+        i4NSPT1+xmdXakwzNVBPjtki1f/v1FP5FfGV7tj9e9JMDHYi83U+1rAPy3a3yKCBIepfHi7/AAAA
+        //8DAOkY3BJeBgAA
+    headers:
+      CF-RAY:
+      - 9a7ccd817bd1f0b5-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 02 Dec 2025 18:14:16 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=UGLlshEa0.VTQdZrHpZ0mSjlKlDTflgj6wuGZHml914-1764699256-1.0.1.1-ViyH6dSNlIzYD6V6vZ_36ZIBlyd4qAagJxoCIsryTZl19Hd6Vc2wFnq.VEAQe0qBmswNr4Ny2xNOgxRrtrEu36jPWAAKsD5qozn9AckufeM;
+        path=/; expires=Tue, 02-Dec-25 18:44:16 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=e8veSkHZMjTlsrWc0JP1e7lW75fxqDkB0mvEhVyJ.Ns-1764699256521-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - user-1dqxvtbav4ixtycbaesgbibp
+      openai-processing-ms:
+      - '2130'
+      openai-project:
+      - proj_MqaFIc1ewIugnu5jdwMbPYHb
+      openai-version:
+      - '2020-10-01'
+      x-envoy-upstream-service-time:
+      - '2134'
+      x-ratelimit-limit-requests:
+      - '10000'
+      x-ratelimit-limit-tokens:
+      - '200000'
+      x-ratelimit-remaining-requests:
+      - '9999'
+      x-ratelimit-remaining-tokens:
+      - '199906'
+      x-ratelimit-reset-requests:
+      - 8.64s
+      x-ratelimit-reset-tokens:
+      - 28ms
+      x-request-id:
+      - req_40ac86c16a984310a65e6e99454b8e35
+    status:
+      code: 200
+      message: OK
+version: 1
