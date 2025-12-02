@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         "-n",
         "--num",
         type=int,
-        required=True,
+        required=False,
         help="Number of identifiers to sample.",
     )
     parser.add_argument(
@@ -122,10 +122,10 @@ def write_manifest(
 def main() -> None:
     args = parse_args()
 
-    if args.num <= 0:
-        raise ValueError("The number of identifiers must be greater than zero.")
-
     identifiers = load_identifiers(args.index_path)
+
+    if not args.num or args.num <= 0:
+        args.num = len(identifiers)
     if args.num > len(identifiers):
         raise ValueError(
             f"Requested {args.num} identifiers, but only "
