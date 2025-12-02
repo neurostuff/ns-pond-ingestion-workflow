@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import logging
+import queue
+from logging.handlers import QueueHandler, QueueListener
 from pathlib import Path
 from typing import Optional
 
 
 _ROOT_LOGGER_NAME = "ingestion_workflow"
 _CONSOLE_FILTER_FLAG = "to_console"
+_queue_listener: Optional[QueueListener] = None
 
 
 class _ConsoleFilter(logging.Filter):
@@ -26,6 +29,14 @@ def configure_logging(
 ) -> None:
     """Configure logging sinks for this run."""
 
+    global _queue_listener
+    if _queue_listener is not None:
+        try:
+            _queue_listener.stop()
+        except Exception:  # pragma: no cover - best-effort shutdown
+            pass
+        _queue_listener = None
+
     formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     root_logger = logging.getLogger()
@@ -35,11 +46,12 @@ def configure_logging(
     for handler in list(root_logger.handlers):
         root_logger.removeHandler(handler)
 
+    handlers: list[logging.Handler] = []
     if log_to_file and log_file is not None:
         log_file.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
+        handlers.append(file_handler)
 
     ingestion_logger = logging.getLogger(_ROOT_LOGGER_NAME)
     ingestion_logger.setLevel(logging.DEBUG)
@@ -52,13 +64,19 @@ def configure_logging(
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
         console_handler.addFilter(_ConsoleFilter())
-        ingestion_logger.addHandler(console_handler)
+        handlers.append(console_handler)
 
-    if not ingestion_logger.handlers and not (log_to_file and log_file):
+    if not handlers:
         # Fallback to console output when no other handlers exist.
         fallback_handler = logging.StreamHandler()
         fallback_handler.setFormatter(formatter)
-        ingestion_logger.addHandler(fallback_handler)
+        handlers.append(fallback_handler)
+
+    log_queue: queue.Queue[logging.LogRecord] = queue.Queue(-1)
+    queue_handler = QueueHandler(log_queue)
+    root_logger.addHandler(queue_handler)
+    _queue_listener = QueueListener(log_queue, *handlers, respect_handler_level=True)
+    _queue_listener.start()
 
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:
