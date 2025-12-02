@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
@@ -23,6 +23,7 @@ from ingestion_workflow.services.upload_models import (
     Base as UploadBase,
     BaseStudy as DbBaseStudy,
     Point as DbPoint,
+    PointValue as DbPointValue,
     Study as DbStudy,
     Table as DbTable,
 )
@@ -45,19 +46,42 @@ def _engine():
     return engine
 
 
-def _sample_collection(identifier: Identifier) -> AnalysisCollection:
+def _sample_collection(
+    identifier: Identifier,
+    *,
+    analysis_name: str = "A1",
+    statistic_values: tuple[float, float] = (1.0, 2.0),
+    sanitized_table_id: str = "t1",
+) -> AnalysisCollection:
     analysis = Analysis(
-        name="A1",
+        name=analysis_name,
         description="desc",
         coordinates=[
-            Coordinate(x=1.0, y=2.0, z=3.0, space=CoordinateSpace.MNI, statistic_type="t"),
-            Coordinate(x=4.0, y=5.0, z=6.0, space=CoordinateSpace.MNI, statistic_type="t"),
+            Coordinate(
+                x=1.0,
+                y=2.0,
+                z=3.0,
+                space=CoordinateSpace.MNI,
+                statistic_type="t",
+                statistic_value=statistic_values[0],
+            ),
+            Coordinate(
+                x=4.0,
+                y=5.0,
+                z=6.0,
+                space=CoordinateSpace.MNI,
+                statistic_type="t",
+                statistic_value=statistic_values[1],
+            ),
         ],
         table_id="T1",
         table_number=1,
         table_caption="cap",
         table_footer="foot",
-        metadata={"table_metadata": {"foo": "bar"}, "sanitized_table_id": "t1"},
+        metadata={
+            "table_metadata": {"foo": "bar"},
+            "sanitized_table_id": sanitized_table_id,
+        },
     )
     collection = AnalysisCollection(
         slug="slug::t1",
@@ -140,6 +164,72 @@ def test_run_upload_inserts_records(tmp_path):
     assert tbl_count == 1
     assert anal_count == 1
     assert pt_count == 2
+
+
+def test_run_upload_records_point_values(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    stats = (4.25, 6.75)
+    analyses = {"slug": {"t1": _sample_collection(identifier, statistic_values=stats)}}
+    metadata = {"slug": _article_metadata()}
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    items = service.prepare_work_items(
+        analyses,
+        metadata,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+    service.run(
+        items,
+        behavior=UploadBehavior.UPDATE,
+        metadata_only=False,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+
+    with Session(engine, future=True) as session:
+        values = session.scalars(
+            select(DbPointValue.value).order_by(DbPointValue.value)
+        ).all()
+        kinds = session.scalars(select(DbPointValue.kind)).all()
+    assert values == list(stats)
+    assert all(kind == "t" for kind in kinds)
+
+
+def test_unknown_analysis_name_uses_table_label(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    custom_label = "custom-label"
+    analyses = {
+        "slug": {
+            "t1": _sample_collection(
+                identifier,
+                analysis_name="UNKNOWN",
+                sanitized_table_id=custom_label,
+            )
+        }
+    }
+    metadata = {"slug": _article_metadata()}
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    items = service.prepare_work_items(
+        analyses,
+        metadata,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+    service.run(
+        items,
+        behavior=UploadBehavior.UPDATE,
+        metadata_only=False,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+
+    with Session(engine, future=True) as session:
+        name = session.scalar(select(DbAnalysis.name))
+    assert name == custom_label
 
 
 def test_metadata_only_fill_and_overwrite(tmp_path):

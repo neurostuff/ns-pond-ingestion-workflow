@@ -105,7 +105,7 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
                         coerced.append(normalized)
                     continue
                 if isinstance(value, (int, float)):
-                    kind = "t-statistic" if isinstance(value, float) else "other"
+                    kind = "T" if isinstance(value, float) else "other"
                     coerced.append({"value": value, "kind": kind})
                     continue
                 # attempt to parse numeric strings
@@ -114,7 +114,7 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
                         num = float(value)
                     except ValueError:
                         continue
-                    kind = "t-statistic"
+                    kind = "T"
                     if num.is_integer():
                         kind = "other"
                         num = int(num)
@@ -139,26 +139,28 @@ def _map_kind(kind: Any) -> Optional[str]:
     if isinstance(kind, str):
         normalized = kind.strip().lower()
         allowed = {
-            "z-statistic",
-            "t-statistic",
-            "f-statistic",
-            "correlation",
-            "p-value",
-            "beta",
+            "Z",
+            "T",
+            "F",
+            "R",
+            "P",
+            "B",
             "other",
         }
         if normalized in allowed:
             return normalized
         if "z" in normalized:
-            return "z-statistic"
+            return "Z"
         if "t" in normalized or "stat" in normalized:
-            return "t-statistic"
+            return "T"
         if "f" in normalized:
-            return "f-statistic"
+            return "F"
+        if "r" in normalized or "correlation" in normalized:
+            return "R"
         if normalized.startswith("p"):
-            return "p-value"
+            return "P"
         if "beta" in normalized:
-            return "beta"
+            return "B"
         return "other"
     return None
 

@@ -35,7 +35,7 @@ _SCHEMA_TEMPLATE = """{
           "z": <float>,
           "space"?: "MNI" | "TAL" | null,
           "statistic_value"?: <float> | null,
-          "statistic_type"?: "t" | "Z" | "T" | null,
+          "statistic_type"?: "Z" | "T" | "F" | "R" | "P" | "B" | null,
           "cluster_size"?: <int> | null,
           "cluster_measure"?: "voxels" | "mm^3" | null,
           "is_subpeak"?: true | false,
@@ -312,9 +312,11 @@ Header, layout, and grouping semantics
 Statistic type, value, and cluster size inference rules
 - statistic_type:
   - If any header/legend contains "z", "Z", "z score", or "Zmax" => statistic_type = "Z".
-  - If header/legend contains "t", "T", "t-value", "T-value", "T score" => statistic_type = "t"
-    (lowercase) by default. Only set "T" (uppercase) if the table explicitly uses "T" as the
-    statistic label and context unambiguously suggests uppercase.
+  - If header/legend contains "t", "T", "t-value", "T-value", "T score" => statistic_type = "T".
+  - If header/legend contains "r", "R", "correlation coefficient", or "Pearson's r" => statistic_type = "R".
+  - If header/legend contains "p", "P", "p-value", or "significance" => statistic_type = "P".
+  - If header/legend contains "F", "F-value", or "F statistic" => statistic_type = "F".
+  - If header/legend contains "b", "B", "beta", or "regression coefficient" => statistic_type = "B".
   - If a numeric statistic value appears but no explicit type can be inferred from headers/legend/caption,
     set statistic_type = null.
 - statistic_value:
@@ -393,7 +395,7 @@ Ambiguities and conservative fallbacks
 Final validation checks (required before emitting JSON)
 - Every coordinate object must have numeric x, y, z values.
 - statistic_value must be numeric float or null.
-- statistic_type must be one of {"t","Z","T"} or null.
+- statistic_type must be one of {"Z","T","P","R","F","B"} or null.
 - cluster_size must be integer or null.
 - cluster_measure must be "voxels", "mm^3" or null.
 - space must be "MNI", "TAL" or null.
@@ -408,12 +410,12 @@ Final validation checks (required before emitting JSON)
 Processing workflow (recommended, must be followed)
 1. Read the entire raw table content first. Remove XML/HTML artifacts and normalize whitespace and
    minus signs.
-2. Inspect header/legend/caption for cues: statistic type ("t"/"Z"), coordinate space ("MNI"/"Talairach"),
+2. Inspect header/legend/caption for cues: statistic type ("T"/"Z"), coordinate space ("MNI"/"Talairach"),
    cluster units ("voxels"/"mm^3") and any "subpeak"/"submaxima" notation.
 3. Identify the column mapping for X/Y/Z, statistic, cluster extent, and the column containing
    contrast/analysis headers. Respect colspan/rowspan/morerows.
 4. Walk rows in reading order (top-to-bottom, left-to-right). Propagate any spanning
-   contrast/analysis name to subsequent rows as indicated by rowspan/morerows.
+   contrast/analysis name(s) to subsequent rows as indicated by rowspan/morerows.
 5. For each row block: parse a triplet only from the X/Y/Z columns or inline coordinate cells. If a
    valid triplet parsed, parse cluster size and statistic_value per the rules above.
 6. Set flags (is_subpeak, is_deactivation, is_seed) according to explicit indicators and structural
@@ -428,7 +430,7 @@ Examples of header cues (use these heuristics)
 - "MNI", "MNI coordinates" => space = "MNI"
 - "Talairach", "Talairach coordinates" or footnote mentioning Talairach => space = "TAL"
 - Header containing "<i>z</i>", "Zmax", "z score" => statistic_type = "Z"
-- Header containing "<i>t</i>", "t-value", "T score" => statistic_type = "t"
+- Header containing "<i>t</i>", "t-value", "T score" => statistic_type = "T"
 - "Voxels", "# voxels", "k", "kE", "extent", "Cluster extent" => cluster_measure = "voxels"
 - Units "mm^3" in header/legend => cluster_measure = "mm^3"
 
