@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+
+from openai import RateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
@@ -13,6 +17,12 @@ from ingestion_workflow.models.statistics import normalize_statistic_kind
 
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class FunctionCallResult:
+    name: str
+    arguments: str
 
 
 class CoordinateParsingClient(GenericLLMClient):
@@ -25,6 +35,8 @@ class CoordinateParsingClient(GenericLLMClient):
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         default_model: Optional[str] = None,
+        use_flex_processing: Optional[bool] = None,
+        retry_attempts: int = 5,
     ) -> None:
         super().__init__(
             settings,
@@ -32,6 +44,13 @@ class CoordinateParsingClient(GenericLLMClient):
             base_url=base_url,
             default_model=default_model,
         )
+        config = settings or Settings()
+        self.use_flex_processing = (
+            use_flex_processing
+            if use_flex_processing is not None
+            else getattr(config, "openai_flex_processing", True)
+        )
+        self._retry_attempts = retry_attempts
 
     def parse_analyses(
         self,
@@ -45,8 +64,7 @@ class CoordinateParsingClient(GenericLLMClient):
             ParseAnalysesOutput,
             "parse_analyses",
         )
-        response = self.client.chat.completions.create(
-            model=resolved_model,
+        function_call = self._call_function(
             messages=[
                 {
                     "role": "system",
@@ -58,10 +76,9 @@ class CoordinateParsingClient(GenericLLMClient):
                 },
                 {"role": "user", "content": prompt},
             ],
-            functions=[function_schema],
-            function_call={"name": "parse_analyses"},
+            function_schema=function_schema,
+            model=resolved_model,
         )
-        function_call = response.choices[0].message.function_call
         if not function_call:
             raise ValueError("No function call returned from API")
 
@@ -84,6 +101,56 @@ class CoordinateParsingClient(GenericLLMClient):
             logger.warning("LLM output validation failed; skipping table: %s", exc)
             logger.debug("Result payload: %s", result_dict)
             return ParseAnalysesOutput(analyses=[])
+
+    def _call_function(
+        self,
+        *,
+        messages: List[Dict[str, Any]],
+        function_schema: Dict[str, Any],
+        model: str,
+    ) -> Optional[FunctionCallResult]:
+        @retry(
+            retry=retry_if_exception_type(RateLimitError),
+            stop=stop_after_attempt(self._retry_attempts),
+            wait=wait_exponential(multiplier=1, min=1, max=120),
+            reraise=True,
+        )
+        def _send_request() -> Optional[FunctionCallResult]:
+            if self.use_flex_processing:
+                response = self.client.responses.create(
+                    model=model,
+                    input=messages,
+                    functions=[function_schema],
+                    function_call={"name": function_schema["name"]},
+                )
+                return self._extract_function_call_from_response(response)
+            completion = self.client.chat.completions.create(
+                model=model,
+                messages=messages,
+                functions=[function_schema],
+                function_call={"name": function_schema["name"]},
+            )
+            raw_call = completion.choices[0].message.function_call
+            if not raw_call:
+                return None
+            return FunctionCallResult(
+                name=raw_call.name,
+                arguments=raw_call.arguments,
+            )
+
+        return _send_request()
+
+    def _extract_function_call_from_response(self, response: Any) -> Optional[FunctionCallResult]:
+        for output in getattr(response, "output", []):
+            for content in output.get("content", []):
+                if content.get("type") != "function_call":
+                    continue
+                function_call = content.get("function_call", {})
+                name = function_call.get("name")
+                arguments = function_call.get("arguments")
+                if name and arguments:
+                    return FunctionCallResult(name=name, arguments=arguments)
+        return None
 
 
 def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
@@ -109,7 +176,6 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
                     kind = normalize_statistic_kind("t")
                     coerced.append({"value": float(value), "kind": kind})
                     continue
-                # attempt to parse numeric strings
                 if isinstance(value, str):
                     try:
                         num = float(value)

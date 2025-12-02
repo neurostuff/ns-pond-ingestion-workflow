@@ -74,6 +74,11 @@ def run(
         "--use-cached-inputs/--no-use-cached-inputs",
         help="Toggle hydration from cached outputs when stages are skipped.",
     ),
+    openai_flex_processing: Optional[bool] = typer.Option(
+        None,
+        "--openai-flex-processing/--no-openai-flex-processing",
+        help="Enable or disable OpenAI flex processing (responses API) for coordinate parsing.",
+    ),
 ) -> None:
     """Run the orchestrated ingestion workflow pipeline."""
 
@@ -86,6 +91,8 @@ def run(
         overrides["manifest_path"] = manifest_path
     if use_cached_inputs is not None:
         overrides["use_cached_inputs"] = use_cached_inputs
+    if openai_flex_processing is not None:
+        overrides["openai_flex_processing"] = openai_flex_processing
     settings = load_settings(config_path, overrides=overrides or None)
     run_pipeline(settings=settings)
 

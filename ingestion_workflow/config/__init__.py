@@ -144,6 +144,11 @@ class Settings(BaseSettings):
         description="Specific model to use for coordinate extraction",
     )
 
+    openai_flex_processing: bool = Field(
+        default=True,
+        description="Enable OpenAI flex processing (responses API) for coordinate parsing",
+    )
+
     export: bool = Field(
         default=False,
         description="Enable exporting extraction outputs to disk mirrors",
