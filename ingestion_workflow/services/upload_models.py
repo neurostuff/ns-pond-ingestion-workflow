@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -12,6 +14,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -31,6 +34,17 @@ class BaseStudy(Base):
     __tablename__ = "base_studies"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
     name: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     publication: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -64,6 +78,17 @@ class Study(Base):
     __tablename__ = "studies"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
     name: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     publication: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -103,6 +128,17 @@ class Table(Base):
     __tablename__ = "tables"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
     study_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("studies.id", ondelete="CASCADE"), index=True
     )
@@ -127,6 +163,17 @@ class Analysis(Base):
     __tablename__ = "analyses"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
     study_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("studies.id", ondelete="CASCADE"), index=True
     )
@@ -151,6 +198,17 @@ class Point(Base):
     __tablename__ = "points"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
     x: Mapped[float | None] = mapped_column()
     y: Mapped[float | None] = mapped_column()
     z: Mapped[float | None] = mapped_column()
