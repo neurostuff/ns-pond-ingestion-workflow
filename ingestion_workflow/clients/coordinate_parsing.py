@@ -66,9 +66,22 @@ class CoordinateParsingClient(GenericLLMClient):
             raise ValueError("No function call returned from API")
 
         result_dict = json.loads(function_call.arguments)
-        for analysis in result_dict.get("analyses", []):
+        analyses = result_dict.get("analyses", [])
+        if not isinstance(analyses, list):
+            analyses = []
+
+        cleaned_analyses: List[Dict[str, Any]] = []
+        for analysis in analyses:
+            if not isinstance(analysis, dict):
+                logger.warning("Skipping non-dict analysis from LLM output: %r", analysis)
+                continue
+
             valid_points: List[Dict[str, Any]] = []
             for point in analysis.get("points", []):
+                if not isinstance(point, dict):
+                    logger.debug("Skipping non-dict point from LLM output: %r", point)
+                    continue
+
                 coordinates = point.get("coordinates")
                 if (
                     isinstance(coordinates, list)
@@ -76,7 +89,11 @@ class CoordinateParsingClient(GenericLLMClient):
                     and all(isinstance(coord, (int, float)) for coord in coordinates)
                 ):
                     valid_points.append(point)
+
             analysis["points"] = valid_points
+            cleaned_analyses.append(analysis)
+
+        result_dict["analyses"] = cleaned_analyses
         _coerce_point_values_schema(result_dict)
         try:
             return ParseAnalysesOutput(**result_dict)
@@ -91,10 +108,14 @@ def _coerce_point_values_schema(payload: Dict[str, Any]) -> None:
     if not isinstance(analyses, list):
         return
     for analysis in analyses:
+        if not isinstance(analysis, dict):
+            continue
         points = analysis.get("points")
         if not isinstance(points, list):
             continue
         for point in points:
+            if not isinstance(point, dict):
+                continue
             values = point.get("values")
             if not isinstance(values, list):
                 continue

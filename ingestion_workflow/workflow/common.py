@@ -217,6 +217,42 @@ def log_success(stage: str, produced: int, total: int) -> None:
     )
 
 
+def identifier_aliases(identifier) -> set[str]:
+    """Return possible lookup tokens for an identifier (slug + component ids)."""
+    aliases = set()
+    for field in ("slug", "pmid", "doi", "pmcid", "neurostore"):
+        value = getattr(identifier, field, None)
+        if value:
+            aliases.add(str(value))
+    other_ids = getattr(identifier, "other_ids", None) or {}
+    for value in other_ids.values():
+        if value:
+            aliases.add(str(value))
+    return aliases
+
+
+def expand_target_aliases(identifiers, target_slugs: set[str] | None) -> set[str]:
+    """
+    Expand the target slug set to include pmid/doi/pmcid aliases.
+
+    When target_slugs is empty, returns all aliases for the provided identifiers.
+    """
+    if identifiers is None or not getattr(identifiers, "identifiers", None):
+        return set(target_slugs or [])
+
+    requested = set(target_slugs or [])
+    expanded: set[str] = set()
+    for ident in identifiers.identifiers:
+        aliases = identifier_aliases(ident)
+        if requested and aliases.isdisjoint(requested):
+            continue
+        expanded.update(aliases)
+    if not requested:
+        # No explicit filter provided; allow all aliases.
+        return expanded
+    return expanded.union(requested)
+
+
 __all__ = [
     "resolve_settings",
     "create_progress_bar",
@@ -227,4 +263,6 @@ __all__ = [
     "ensure_successful_download",
     "log_cache_hits",
     "log_success",
+    "identifier_aliases",
+    "expand_target_aliases",
 ]

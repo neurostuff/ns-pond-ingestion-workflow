@@ -445,13 +445,9 @@ class UploadService:
     ) -> DbBaseStudy:
         base = None
         if payload.doi:
-            base = session.execute(
-                select(DbBaseStudy).where(DbBaseStudy.doi == payload.doi)
-            ).scalar_one_or_none()
+            base = self._select_single_base_study(session, doi=payload.doi)
         if base is None and payload.pmid:
-            base = session.execute(
-                select(DbBaseStudy).where(DbBaseStudy.pmid == payload.pmid)
-            ).scalar_one_or_none()
+            base = self._select_single_base_study(session, pmid=payload.pmid)
 
         if base is None:
             base = DbBaseStudy(
@@ -498,6 +494,35 @@ class UploadService:
         study.source_updated_at = datetime.now(timezone.utc)
         session.flush()
         return study
+
+    def _select_single_base_study(self, session, *, doi: str | None = None, pmid: str | None = None) -> DbBaseStudy | None:
+        """Fetch a single base study; if duplicates exist, pick the first and log."""
+        if doi is None and pmid is None:
+            return None
+        query = select(DbBaseStudy)
+        label = ""
+        value = ""
+        if doi is not None:
+            query = query.where(DbBaseStudy.doi == doi)
+            label = "doi"
+            value = doi
+        elif pmid is not None:
+            query = query.where(DbBaseStudy.pmid == pmid)
+            label = "pmid"
+            value = pmid
+
+        results = session.execute(
+            query.order_by(DbBaseStudy.created_at).limit(2)
+        ).scalars().all()
+        if len(results) > 1:
+            logger.warning(
+                "Multiple base studies found for %s=%s; using first (id=%s)",
+                label,
+                value,
+                results[0].id,
+                extra=console_kwargs(),
+            )
+        return results[0] if results else None
 
     def _apply_payload_fields(self, target, payload, mode: UploadMetadataMode) -> None:
         scalars = {

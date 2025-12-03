@@ -77,13 +77,14 @@ from ingestion_workflow.models import (
 from ingestion_workflow.services import cache
 from ingestion_workflow.services.create_analyses import sanitize_table_id
 from ingestion_workflow.services.logging import console_kwargs, get_logger
-from ingestion_workflow.workflow.common import resolve_settings
+from ingestion_workflow.workflow.common import (
+    expand_target_aliases,
+    identifier_aliases,
+    resolve_settings,
+)
 from ingestion_workflow.workflow.upload import _hydrate_bundles_for_upload, _load_identifiers_from_manifest
+from ingestion_workflow.workflow.orchastrator import PipelineState
 
-try:  # pragma: no cover - imported lazily in runtime
-    from ingestion_workflow.workflow.orchastrator import PipelineState
-except Exception:  # pragma: no cover - type-checking only
-    PipelineState = object  # type: ignore
 
 logger = get_logger(__name__)
 
@@ -95,17 +96,31 @@ def run_sync(
 ) -> None:
     """Materialize uploaded articles into ns-pond layout."""
     resolved_settings = resolve_settings(settings)
+    identifier_set = _resolve_identifiers(state, resolved_settings)
+    manifest_aliases = expand_target_aliases(identifier_set, set())
+    alias_map = {}
+    if identifier_set:
+        for ident in identifier_set.identifiers:
+            for alias in identifier_aliases(ident):
+                alias_map[alias] = ident.slug
+
     outcomes = _resolve_upload_outcomes(state, resolved_settings)
-    successful = [outcome for outcome in outcomes if outcome.success and outcome.base_study_id]
+    successful = [
+        outcome
+        for outcome in outcomes
+        if outcome.success
+        and outcome.base_study_id
+        and (not manifest_aliases or outcome.slug in manifest_aliases or outcome.slug in alias_map)
+    ]
     if not successful:
         logger.info("Sync skipped: no successful upload outcomes available.", extra=console_kwargs())
         return
 
     target_slugs = {outcome.slug for outcome in successful}
-    identifier_set = _resolve_identifiers(state, resolved_settings)
-    downloads = _resolve_downloads(state, resolved_settings, identifier_set, target_slugs)
-    bundles = _resolve_bundles(state, resolved_settings, identifier_set, target_slugs)
-    analyses = _resolve_analyses(state, resolved_settings, target_slugs)
+    target_aliases = expand_target_aliases(identifier_set, target_slugs)
+    downloads = _resolve_downloads(state, resolved_settings, identifier_set, target_aliases)
+    bundles = _resolve_bundles(state, resolved_settings, identifier_set, target_aliases)
+    analyses = _resolve_analyses(state, resolved_settings, target_aliases, identifier_set)
 
     for outcome in successful:
         slug = outcome.slug
@@ -113,6 +128,13 @@ def run_sync(
         bundle = bundles.get(slug)
         per_table = analyses.get(slug, {})
         downloads_for_slug = downloads.get(slug, [])
+        if bundle and bundle.article_data and getattr(bundle.article_data, "source", None):
+            preferred_source = bundle.article_data.source
+            filtered = [
+                d for d in downloads_for_slug if getattr(d, "source", None) == preferred_source
+            ]
+            if filtered:
+                downloads_for_slug = filtered
         if bundle is None:
             logger.warning(
                 "Sync skipped for %s (no bundle available)", slug, extra=console_kwargs()
@@ -150,25 +172,37 @@ def _resolve_downloads(
     state: "PipelineState",
     settings: Settings,
     identifiers: Identifiers | None,
-    target_slugs: Set[str],
+    target_aliases: Set[str],
 ) -> Dict[str, List[DownloadResult]]:
     download_map: Dict[str, List[DownloadResult]] = {}
     for download in getattr(state, "downloads", []) or []:
-        slug = getattr(download.identifier, "slug", None)
-        if slug is None or slug not in target_slugs:
+        identifier = getattr(download, "identifier", None)
+        aliases = identifier_aliases(identifier) if identifier else set()
+        if target_aliases and aliases.isdisjoint(target_aliases):
             continue
-        download_map.setdefault(slug, []).append(download)
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        if not keys:
+            keys = [getattr(identifier, "slug", None)]
+        for key in keys:
+            if key is None:
+                continue
+            download_map.setdefault(key, []).append(download)
 
-    missing = target_slugs.difference(download_map.keys())
+    missing = target_aliases.difference(download_map.keys())
     if not missing and download_map:
         return download_map
 
-    cached = _hydrate_downloads_from_cache(settings, identifiers, missing or target_slugs)
+    cached = _hydrate_downloads_from_cache(settings, identifiers, missing or target_aliases)
     for download in cached:
         slug = getattr(download.identifier, "slug", None)
-        if slug is None or slug not in target_slugs:
-            continue
-        download_map.setdefault(slug, []).append(download)
+        aliases = identifier_aliases(download.identifier) if download.identifier else set()
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        if not keys:
+            keys = [slug]
+        for key in keys:
+            if key is None or (target_aliases and key not in target_aliases):
+                continue
+            download_map.setdefault(key, []).append(download)
     return download_map
 
 
@@ -176,70 +210,101 @@ def _resolve_bundles(
     state: "PipelineState",
     settings: Settings,
     identifiers: Identifiers | None,
-    target_slugs: Set[str],
+    target_aliases: Set[str],
 ) -> Dict[str, ArticleExtractionBundle]:
     bundle_map: Dict[str, ArticleExtractionBundle] = {}
     for bundle in getattr(state, "bundles", []) or []:
         slug = getattr(bundle.article_data.identifier, "slug", None) or bundle.article_data.slug
-        if slug in target_slugs:
-            bundle_map[slug] = bundle
+        aliases = identifier_aliases(bundle.article_data.identifier) if bundle.article_data.identifier else {slug}
+        if target_aliases and aliases.isdisjoint(target_aliases):
+            continue
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        if not keys:
+            keys = [slug]
+        for key in keys:
+            bundle_map[key] = bundle
 
-    missing = target_slugs.difference(bundle_map.keys())
+    missing = target_aliases.difference(bundle_map.keys())
     if not missing:
         return bundle_map
 
     hydrated = _hydrate_bundles_for_upload(settings, identifiers)
     for bundle in hydrated:
         slug = getattr(bundle.article_data.identifier, "slug", None) or bundle.article_data.slug
-        if slug in target_slugs and slug not in bundle_map:
-            bundle_map[slug] = bundle
+        aliases = identifier_aliases(bundle.article_data.identifier) if bundle.article_data.identifier else {slug}
+        if target_aliases and aliases.isdisjoint(target_aliases):
+            continue
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        if not keys:
+            keys = [slug]
+        for key in keys:
+            if key not in bundle_map:
+                bundle_map[key] = bundle
     return bundle_map
 
 
 def _resolve_analyses(
     state: "PipelineState",
     settings: Settings,
-    target_slugs: Set[str],
+    target_aliases: Set[str],
+    identifiers: Identifiers | None,
 ) -> Dict[str, Dict[str, AnalysisCollection]]:
     analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
+    alias_map: Dict[str, str] = {}
+    if identifiers:
+        for ident in identifiers.identifiers:
+            for alias in identifier_aliases(ident):
+                alias_map[alias] = ident.slug
     for slug, per_table in (getattr(state, "analyses", {}) or {}).items():
-        if slug in target_slugs:
-            analyses[slug] = dict(per_table)
+        canonical = alias_map.get(slug, slug)
+        aliases = {canonical, slug}
+        if target_aliases and aliases.isdisjoint(target_aliases):
+            continue
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        for key in keys:
+            analyses[key] = dict(per_table)
 
-    missing = target_slugs.difference(analyses.keys())
+    missing = target_aliases.difference(analyses.keys())
     if not missing:
         return analyses
 
     cached = cache.load_cached_analysis_collections(settings)
     for slug, per_table in cached.items():
-        if slug in target_slugs and slug not in analyses:
-            analyses[slug] = dict(per_table)
+        canonical = alias_map.get(slug, slug)
+        aliases = {canonical, slug}
+        if target_aliases and aliases.isdisjoint(target_aliases):
+            continue
+        keys = list(aliases & target_aliases) if target_aliases else list(aliases)
+        for key in keys:
+            if key not in analyses:
+                analyses[key] = dict(per_table)
     return analyses
 
 
 def _hydrate_downloads_from_cache(
     settings: Settings,
     identifiers: Identifiers | None,
-    target_slugs: Iterable[str],
+    target_aliases: Iterable[str],
 ) -> List[DownloadResult]:
     if identifiers is None:
         return []
-    requested = set(target_slugs)
+    requested = set(target_aliases)
     hydrated: Dict[str, DownloadResult] = {}
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
-            slug = getattr(identifier, "slug", None)
-            if slug is None or (requested and slug not in requested):
+            aliases = identifier_aliases(identifier)
+            if requested and aliases.isdisjoint(requested):
                 continue
-            if slug in hydrated:
+            if any(alias in hydrated for alias in aliases):
                 continue
             entry = index.get_download_by_identifier(identifier)
             if entry is None:
                 continue
             payload = entry.clone_payload()
             payload.identifier = identifier
-            hydrated[slug] = payload
+            key = next(iter(aliases & requested), identifier.slug)
+            hydrated[key] = payload
     return list(hydrated.values())
 
 

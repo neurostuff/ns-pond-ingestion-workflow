@@ -27,7 +27,11 @@ from ingestion_workflow.services.cache import cache_upload_results, load_cached_
 from ingestion_workflow.services.db import SSHTunnel, SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.upload import UploadService
-from ingestion_workflow.workflow.common import resolve_settings
+from ingestion_workflow.workflow.common import (
+    expand_target_aliases,
+    identifier_aliases,
+    resolve_settings,
+)
 if TYPE_CHECKING:  # pragma: no cover - for type hints only
     from ingestion_workflow.workflow.orchastrator import PipelineState
 
@@ -50,12 +54,20 @@ def run_upload(
         if manifest_identifiers and manifest_identifiers.identifiers
         else None
     )
+    manifest_aliases: Optional[Set[str]] = (
+        expand_target_aliases(manifest_identifiers, manifest_slugs) if manifest_identifiers else None
+    )
+    alias_map: Dict[str, str] = {}
+    if manifest_identifiers:
+        for ident in manifest_identifiers.identifiers:
+            for alias in identifier_aliases(ident):
+                alias_map[alias] = ident.slug
 
-    analyses = _filter_to_manifest(dict(state.analyses or {}), manifest_slugs)
+    analyses = _filter_to_manifest(dict(state.analyses or {}), manifest_aliases)
     cached_analyses = load_cached_analysis_collections(resolved_settings)
     # Merge cached analyses for slugs not already present in state
     for slug, per_table in cached_analyses.items():
-        if manifest_slugs is not None and slug not in manifest_slugs:
+        if manifest_aliases is not None and slug not in manifest_aliases:
             continue
         if slug not in analyses:
             analyses[slug] = per_table
@@ -67,7 +79,7 @@ def run_upload(
     existing_bundles = {b.article_data.slug: b for b in getattr(state, "bundles", []) or []}
     hydrated_bundles = _hydrate_bundles_for_upload(resolved_settings, manifest_identifiers)
     for bundle in hydrated_bundles:
-        if manifest_slugs is not None and bundle.article_data.slug not in manifest_slugs:
+        if manifest_aliases is not None and bundle.article_data.slug not in manifest_aliases:
             continue
         if bundle.article_data.slug not in existing_bundles:
             existing_bundles[bundle.article_data.slug] = bundle
@@ -78,13 +90,17 @@ def run_upload(
     metadata_mode = metadata_mode or resolved_settings.upload_metadata_mode
 
     metadata_by_slug: Dict[str, ArticleMetadata] = state_to_metadata(state)
-    if manifest_slugs is not None:
-        metadata_by_slug = {slug: meta for slug, meta in metadata_by_slug.items() if slug in manifest_slugs}
+    if manifest_aliases is not None:
+        metadata_by_slug = {slug: meta for slug, meta in metadata_by_slug.items() if slug in manifest_aliases}
     metadata_by_slug = _hydrate_metadata_from_cache(
         resolved_settings,
         analyses,
         metadata_by_slug,
     )
+    if alias_map:
+        for alias, canonical in alias_map.items():
+            if canonical in metadata_by_slug and alias not in metadata_by_slug:
+                metadata_by_slug[alias] = metadata_by_slug[canonical]
     outcomes: List[UploadOutcome] = []
 
     with SSHTunnel(resolved_settings) as tunnel:
@@ -157,15 +173,27 @@ def _hydrate_downloads_from_cache(
     for source_name in settings.download_sources:
         index = cache.load_download_index(settings, source_name)
         for identifier in identifiers.identifiers:
-            if identifier.slug in hydrated:
+            aliases = identifier_aliases(identifier)
+            if any(alias in hydrated for alias in aliases):
                 continue  # preserve first cached hit by configured source order
             entry = index.get_download_by_identifier(identifier)
             if entry is None:
                 continue
             payload = entry.clone_payload()
             payload.identifier = identifier
-            hydrated[identifier.slug] = payload
-    return list(hydrated.values())
+            key = identifier.slug
+            for alias in aliases:
+                hydrated.setdefault(alias, payload)
+            hydrated[key] = payload
+    deduped: List[DownloadResult] = []
+    seen: Set[int] = set()
+    for payload in hydrated.values():
+        marker = id(payload)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        deduped.append(payload)
+    return deduped
 
 
 def _hydrate_bundles_from_cache(
@@ -271,8 +299,8 @@ def _resolve_manifest_identifiers(
 
 def _filter_to_manifest(
     analyses: Mapping[str, Mapping[str, AnalysisCollection]],
-    manifest_slugs: Optional[Set[str]],
+    manifest_aliases: Optional[Set[str]],
 ) -> Dict[str, Mapping[str, AnalysisCollection]]:
-    if manifest_slugs is None:
+    if manifest_aliases is None:
         return dict(analyses)
-    return {slug: per_table for slug, per_table in analyses.items() if slug in manifest_slugs}
+    return {slug: per_table for slug, per_table in analyses.items() if slug in manifest_aliases}
