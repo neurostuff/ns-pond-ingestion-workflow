@@ -12,7 +12,6 @@ from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
-    Identifier,
     Identifiers,
     UploadOutcome,
 )
@@ -21,6 +20,7 @@ from ingestion_workflow.services.logging import (
     configure_logging,
     console_kwargs,
 )
+from ingestion_workflow.workflow.hydration import hydrate_bundles_from_cache, hydrate_downloads_from_cache
 from ingestion_workflow.workflow.stats import StageMetrics
 
 logger = logging.getLogger(__name__)
@@ -244,7 +244,7 @@ def _ensure_downloads(settings: Settings, state: PipelineState) -> bool:
     except ValueError as exc:
         logger.error("Unable to hydrate downloads from cache: %s", exc)
         return False
-    hydrated = _hydrate_downloads_from_cache(settings, state.identifiers)
+    hydrated = hydrate_downloads_from_cache(settings, state.identifiers)
     if not hydrated:
         logger.error(
             "No cached download results were found for the provided "
@@ -266,10 +266,7 @@ def _ensure_bundles(settings: Settings, state: PipelineState) -> bool:
         return False
     if not _ensure_downloads(settings, state):
         return False
-    hydrated = _hydrate_bundles_from_cache(
-        settings,
-        state.downloads or [],
-    )
+    hydrated = hydrate_bundles_from_cache(settings, state.downloads or [])
     if not hydrated:
         logger.error("No cached extraction bundles were found. Re-run the extract stage.")
         return False
@@ -356,84 +353,6 @@ def _load_identifiers_from_manifest(settings: Settings) -> Identifiers:
         manifest_path,
     )
     return identifiers
-
-
-def _hydrate_downloads_from_cache(
-    settings: Settings,
-    identifiers: Identifiers | None,
-) -> List[DownloadResult]:
-    if identifiers is None or not identifiers.identifiers:
-        return []
-    hydrated: Dict[str, DownloadResult] = {}
-    for source_name in settings.download_sources:
-        index = cache.load_download_index(settings, source_name)
-        for identifier in identifiers.identifiers:
-            if identifier.slug in hydrated:
-                continue  # keep first hit in configured source order
-            entry = index.get_download_by_identifier(identifier)
-            if entry is None:
-                continue
-            payload = entry.clone_payload()
-            payload.identifier = identifier
-            hydrated[identifier.slug] = payload
-    return list(hydrated.values())
-
-
-def _hydrate_bundles_from_cache(
-    settings: Settings,
-    downloads: List[DownloadResult],
-) -> List[ArticleExtractionBundle]:
-    if not downloads:
-        return []
-
-    bundles: Dict[str, ArticleExtractionBundle] = {}
-    downloads_by_source: Dict[str, List[DownloadResult]] = {}
-    for download in downloads:
-        downloads_by_source.setdefault(download.source.value, []).append(download)
-
-    def _has_coords(content: ArticleExtractionBundle) -> bool:
-        tables = getattr(content, "tables", []) or []
-        if any(len(getattr(t, "coordinates", []) or []) > 0 for t in tables):
-            return True
-        return bool(getattr(content, "has_coordinates", False))
-
-    for source_name in settings.download_sources:
-        download_list = downloads_by_source.get(source_name)
-        if not download_list:
-            continue
-        index = cache.load_extractor_index(settings, source_name)
-        for download in download_list:
-            entry = index.get_extraction_by_identifier(download.identifier)
-            if entry is None:
-                continue
-            content = entry.clone_payload()
-            content.identifier = download.identifier
-            content.slug = download.identifier.slug
-            metadata = cache.get_cached_article_metadata(
-                settings,
-                slug=content.slug,
-                identifier=download.identifier,
-            )
-            if metadata is None:
-                continue
-            slug = download.identifier.slug
-            existing = bundles.get(slug)
-            candidate_bundle = ArticleExtractionBundle(
-                article_data=content,
-                article_metadata=metadata,
-            )
-            if existing is None:
-                bundles[slug] = candidate_bundle
-                continue
-            existing_has = _has_coords(existing.article_data)
-            if existing_has:
-                continue  # keep the first bundle that has coordinates
-            candidate_has = _has_coords(candidate_bundle.article_data)
-            
-            if candidate_has:
-                bundles[slug] = candidate_bundle
-
-    return list(bundles.values())
 
 
 def _configure_logging_for_run(settings: Settings) -> None:

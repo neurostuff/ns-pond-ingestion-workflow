@@ -273,7 +273,7 @@ class UploadService:
                     table_id=_sanitize_text(table_id) or f"table-{a_index}",
                     caption=_sanitize_text(analysis.table_caption) or "",
                     footer=_sanitize_text(analysis.table_footer) or "",
-                    title=_sanitize_text(analysis.table_caption) or table_id or "",
+                    title=_sanitize_text(sanitized_id or analysis.table_id) or table_id or "",
                     label=_sanitize_text(sanitized_id or analysis.table_id),
                     metadata=_sanitize_mapping(
                         {

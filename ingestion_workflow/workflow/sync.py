@@ -63,7 +63,7 @@ import csv
 import json
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, MutableMapping, Sequence, Set
+from typing import Dict, List, Mapping, MutableMapping, Sequence, Set
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
@@ -82,7 +82,8 @@ from ingestion_workflow.workflow.common import (
     identifier_aliases,
     resolve_settings,
 )
-from ingestion_workflow.workflow.upload import _hydrate_bundles_for_upload, _load_identifiers_from_manifest
+from ingestion_workflow.workflow.hydration import hydrate_bundles_for_upload, hydrate_downloads_from_cache
+from ingestion_workflow.workflow.upload import _load_identifiers_from_manifest
 from ingestion_workflow.workflow.orchastrator import PipelineState
 
 
@@ -192,7 +193,7 @@ def _resolve_downloads(
     if not missing and download_map:
         return download_map
 
-    cached = _hydrate_downloads_from_cache(settings, identifiers, missing or target_aliases)
+    cached = hydrate_downloads_from_cache(settings, identifiers, missing or target_aliases)
     for download in cached:
         slug = getattr(download.identifier, "slug", None)
         aliases = identifier_aliases(download.identifier) if download.identifier else set()
@@ -228,7 +229,7 @@ def _resolve_bundles(
     if not missing:
         return bundle_map
 
-    hydrated = _hydrate_bundles_for_upload(settings, identifiers)
+    hydrated = hydrate_bundles_for_upload(settings, identifiers)
     for bundle in hydrated:
         slug = getattr(bundle.article_data.identifier, "slug", None) or bundle.article_data.slug
         aliases = identifier_aliases(bundle.article_data.identifier) if bundle.article_data.identifier else {slug}
@@ -279,33 +280,6 @@ def _resolve_analyses(
             if key not in analyses:
                 analyses[key] = dict(per_table)
     return analyses
-
-
-def _hydrate_downloads_from_cache(
-    settings: Settings,
-    identifiers: Identifiers | None,
-    target_aliases: Iterable[str],
-) -> List[DownloadResult]:
-    if identifiers is None:
-        return []
-    requested = set(target_aliases)
-    hydrated: Dict[str, DownloadResult] = {}
-    for source_name in settings.download_sources:
-        index = cache.load_download_index(settings, source_name)
-        for identifier in identifiers.identifiers:
-            aliases = identifier_aliases(identifier)
-            if requested and aliases.isdisjoint(requested):
-                continue
-            if any(alias in hydrated for alias in aliases):
-                continue
-            entry = index.get_download_by_identifier(identifier)
-            if entry is None:
-                continue
-            payload = entry.clone_payload()
-            payload.identifier = identifier
-            key = next(iter(aliases & requested), identifier.slug)
-            hydrated[key] = payload
-    return list(hydrated.values())
 
 
 def _sync_article(

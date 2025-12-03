@@ -169,12 +169,12 @@ def test_pipeline_hydrates_from_cache_when_only_create(monkeypatch, tmp_path):
 
     monkeypatch.setattr(
         orchastrator,
-        "_hydrate_downloads_from_cache",
+        "hydrate_downloads_from_cache",
         lambda settings, ids: downloads,
     )
     monkeypatch.setattr(
         orchastrator,
-        "_hydrate_bundles_from_cache",
+        "hydrate_bundles_from_cache",
         lambda settings, dls: bundles,
     )
     _install_stub_module(
