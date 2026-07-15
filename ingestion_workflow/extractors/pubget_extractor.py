@@ -413,7 +413,9 @@ def _extract_pubget_article(
     stylesheet = load_stylesheet("text_extraction.xsl")
 
     try:
-        transformed = stylesheet(article_tree)
+        transformed = stylesheet(
+            article_tree, **{"preserve-crossrefs": etree.XSLT.strparam("true")}
+        )
         text_parts: List[str] = []
         for field_name in ("title", "keywords", "abstract", "body"):
             elem = transformed.find(field_name)
