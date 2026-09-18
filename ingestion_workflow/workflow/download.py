@@ -9,6 +9,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import (
     ACEExtractor,
     ElsevierExtractor,
+    PdfExtractor,
     PubgetExtractor,
 )
 from ingestion_workflow.extractors.base import BaseExtractor
@@ -48,10 +49,16 @@ def _ace_factory(settings: Settings) -> BaseExtractor:
     return ACEExtractor(settings=settings)
 
 
+def _pdf_factory(settings: Settings) -> BaseExtractor:
+    """Construct the open-access PDF extractor with the resolved settings."""
+    return PdfExtractor(settings=settings)
+
+
 EXTRACTOR_FACTORIES: Dict[DownloadSource, ExtractorFactory] = {
     DownloadSource.ELSEVIER: _elsevier_factory,
     DownloadSource.PUBGET: _pubget_factory,
     DownloadSource.ACE: _ace_factory,
+    DownloadSource.PDF: _pdf_factory,
 }
 
 

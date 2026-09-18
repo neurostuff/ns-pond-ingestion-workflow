@@ -228,6 +228,7 @@ class SemanticScholarClient:
             "venue",
             "publicationDate",
             "isOpenAccess",
+            "openAccessPdf",
         ]
         response = self._session.post(
             self.BASE_URL,
@@ -262,6 +263,9 @@ class SemanticScholarClient:
                 if author.get("name")
             ]
 
+            open_access_pdf = record.get("openAccessPdf") or {}
+            pdf_url = open_access_pdf.get("url") if isinstance(open_access_pdf, dict) else None
+
             # Build metadata
             metadata = ArticleMetadata(
                 title=str(record.get("title", "")),
@@ -270,6 +274,7 @@ class SemanticScholarClient:
                 journal=record.get("venue"),
                 publication_year=record.get("year"),
                 open_access=record.get("isOpenAccess"),
+                pdf_url=pdf_url,
                 source="semantic_scholar",
                 raw_metadata={"semantic_scholar": record},
             )

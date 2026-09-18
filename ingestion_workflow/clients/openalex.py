@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict
+from typing import Dict, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -93,6 +93,70 @@ class OpenAlexClient:
                     identifier.other_ids["openalex"] = openalex_id
 
         return identifiers
+
+    def get_pdf_urls(self, identifiers: Identifiers) -> Dict[str, str]:
+        """Return a mapping of identifier slug to an open-access PDF URL.
+
+        Prefers `best_oa_location.pdf_url` (a direct PDF link) over
+        `open_access.oa_url`, which may point at a landing page.
+        """
+        pdf_urls: Dict[str, str] = {}
+
+        for id_type in ("doi", "pmid"):
+            values = [
+                str(getattr(identifier, id_type)).strip()
+                for identifier in identifiers
+                if getattr(identifier, id_type) and identifier.slug not in pdf_urls
+            ]
+            if not values:
+                continue
+
+            batches = [
+                values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
+                for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE)
+            ]
+            for batch in batches:
+                params = {
+                    "filter": f"{id_type}:{'|'.join(batch)}",
+                    "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
+                    "mailto": self.email,
+                    "select": "ids,best_oa_location,open_access",
+                }
+                try:
+                    payload = self._request_openalex(params)
+                except Exception:
+                    continue
+
+                for work in payload.get("results", []) or []:
+                    ids_data = work.get("ids", {}) or {}
+                    key = ids_data.get(id_type)
+                    if not key:
+                        continue
+                    identifier = identifiers.lookup(key, key=id_type)
+                    if identifier is None:
+                        continue
+
+                    url = self._pdf_url_from_work(work)
+                    if url:
+                        pdf_urls[identifier.slug] = url
+
+        return pdf_urls
+
+    @staticmethod
+    def _pdf_url_from_work(work: Dict) -> Optional[str]:
+        best_location = work.get("best_oa_location") or {}
+        if isinstance(best_location, dict):
+            url = best_location.get("pdf_url")
+            if url:
+                return str(url)
+
+        open_access = work.get("open_access") or {}
+        if isinstance(open_access, dict):
+            url = open_access.get("oa_url")
+            if url:
+                return str(url)
+
+        return None
 
     def _rate_limit_sleep(self) -> None:
         """Ensure we respect the 10 requests/sec polite pool limit."""
