@@ -19,6 +19,10 @@ from ingestion_workflow.models import (
     CreateAnalysesResult,
     ExtractedTable,
 )
+from ingestion_workflow.extractors.table_heuristics import looks_like_coordinate_table
+from ingestion_workflow.prompts.coordinate_parsing import (
+    COORDINATE_PARSING_PROMPT_VERSION,
+)
 from ingestion_workflow.services import cache
 from ingestion_workflow.services.create_analyses import (
     CreateAnalysesService,
@@ -210,8 +214,12 @@ def _run_bundle_with_cache(
 
     for index, table in enumerate(bundle.article_data.tables):
         if not table.contains_coordinates and not table.coordinates:
-            stats.skipped += 1
-            continue
+            # The deterministic parser found nothing, but it only recognises
+            # tables whose columns it can map to x/y/z. Let the LLM see the
+            # ones that still look like results tables.
+            if not looks_like_coordinate_table(table):
+                stats.skipped += 1
+                continue
 
         sanitized_table_id = sanitize_table_id(table.table_id, index)
         table_key = table.table_id or sanitized_table_id
@@ -226,7 +234,7 @@ def _run_bundle_with_cache(
                 identifier=bundle.article_data.identifier,
                 sanitized_table_id=sanitized_table_id,
             )
-            if cached:
+            if cached and _stamp_matches(cached, settings):
                 table_results[table_key] = cached.analysis_collection
                 bundle_results.append(cached)
                 stats.cached += 1
@@ -261,6 +269,33 @@ def _run_bundle_with_cache(
 
 def _compose_cache_key(article_slug: str, sanitized_table_id: str) -> str:
     return f"{article_slug}::{sanitized_table_id}"
+
+
+def _parsing_stamp(settings: Settings) -> Dict[str, object]:
+    """What the result depended on, beyond the table itself."""
+    return {
+        "prompt_version": COORDINATE_PARSING_PROMPT_VERSION,
+        "llm_model": settings.llm_model,
+    }
+
+
+def _stamp_matches(cached: CreateAnalysesResult, settings: Settings) -> bool:
+    """Whether a cached result came from the prompt and model in use now.
+
+    The cache key is the analysis slug, so it cannot carry this; without the
+    check, a prompt or model change silently serves the old parse.
+
+    Entries written before stamping existed carry no stamp and are accepted:
+    rejecting them would re-run the whole ingested corpus through the LLM the
+    first time anyone upgrades. Re-parse those deliberately with
+    `ignore_cache_stages: [create_analyses]`.
+    """
+    metadata = cached.metadata or {}
+    return all(
+        metadata.get(key) == value
+        for key, value in _parsing_stamp(settings).items()
+        if key in metadata
+    )
 
 
 @dataclass
@@ -305,6 +340,7 @@ def _process_pending_job(
             metadata={
                 "table_metadata": info["table_metadata"],
                 "table_number": info["table_number"],
+                **_parsing_stamp(settings),
             },
         )
         job.bundle_records.append(result_obj)
