@@ -13,6 +13,7 @@ from pubget._articles import extract_articles
 from pubget._coordinates import _extract_coordinates_from_table
 from pubget._coordinate_space import _neurosynth_guess_space
 from pubget._download import download_pmcids
+from pubget._text import _insert_tables
 from pubget._typing import ExitCode
 from pubget._utils import (
     get_pmcid_from_article_dir,
@@ -413,12 +414,20 @@ def _extract_pubget_article(
     stylesheet = load_stylesheet("text_extraction.xsl")
 
     try:
-        transformed = stylesheet(article_tree)
+        transformed = stylesheet(
+            article_tree,
+            **{
+                "preserve-crossrefs": etree.XSLT.strparam("true"),
+                "keep-tables": etree.XSLT.strparam("true"),
+            },
+        )
         text_parts: List[str] = []
         for field_name in ("title", "keywords", "abstract", "body"):
             elem = transformed.find(field_name)
             if elem is not None and elem.text:
                 part = elem.text.strip()
+                if field_name == "body" and part:
+                    part = _insert_tables(part, article_input_dir)
                 if part:
                     text_parts.append(part)
         full_text = "\n\n".join(text_parts)

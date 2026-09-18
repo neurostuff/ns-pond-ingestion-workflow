@@ -29,6 +29,7 @@ class DownloadSource(str, Enum):
     PUBGET = "pubget"
     ELSEVIER = "elsevier"
     ACE = "ace"
+    PDF = "pdf"
 
 
 @dataclass

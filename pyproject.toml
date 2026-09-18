@@ -28,13 +28,15 @@ dependencies = [
   "tqdm>=4.66",
   "filelock>=3.15",
   "paramiko>=3,<4",
-  "pubget @ git+https://github.com/neuroquery/pubget.git@main",
+  "pubget @ git+https://github.com/jdkent/pubget.git@enh/keep_references_option",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
-  "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",
+  "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@enh/keep_tables",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   "pydantic-settings>=2.5",
   "sshtunnel>=0.4",
   "psycopg[binary]>=3.1",
+  "docling>=2.0",
+  "pypdfium2>=4",
   "shortuuid>=1.0",
 ]
 

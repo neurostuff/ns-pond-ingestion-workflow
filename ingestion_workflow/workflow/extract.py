@@ -95,6 +95,19 @@ def _ensure_successful_download(download_result: DownloadResult) -> bool:
             )
             return False
 
+    if download_result.source is DownloadSource.PDF:
+        pdf_file = next(
+            (
+                downloaded
+                for downloaded in download_result.files
+                if downloaded.file_type is FileType.PDF
+            ),
+            None,
+        )
+        if pdf_file is None:
+            logger.error("%s missing PDF content for extraction", context)
+            return False
+
     if download_result.source is DownloadSource.ELSEVIER:
         xml_file = next(
             (

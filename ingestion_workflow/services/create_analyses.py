@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 from ingestion_workflow.clients import CoordinateParsingClient
+from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     Analysis,
@@ -299,15 +300,12 @@ Header, layout, and grouping semantics
   leading/trailing whitespace).
 - If a contrast label spans multiple rows (rowspan/morerows), propagate that name to all rows in
   that row block.
-- Repeated column-block headers (e.g., "Pattern identification n=15",
-  "Pattern validation n=32") are treated as distinct analyses; use the block header verbatim as
-  analysis "name".
-- Do NOT create separate analyses for hemispheres. If a hemisphere column is present (e.g.,
-  "L"/"R"), keep the single analysis name and include both hemisphere coordinates under it.
 - Respect colspan/rowspan/morerows semantics to determine which numeric columns map to X/Y/Z,
   statistic, cluster_size, region, etc.
 - Reading order and duplicates:
   - Within a single analysis, include each unique triplet only once.
+
+{ANALYSIS_BOUNDARY_RULES}
 
 Statistic type, value, and cluster size inference rules
 - statistic_type:
@@ -439,7 +437,6 @@ Failure modes to avoid
 - Do NOT invent analysis or contrast names.
 - Do NOT output anything other than the single JSON object described.
 - Do NOT add explanatory text, logs, or extraneous fields.
-- Do NOT create separate analyses for hemispheres.
 - Do NOT assign statistic_type unless header/legend supports it — use null if ambiguous.
 
 Edge cases

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from pyarty import Dir, File, bundle, twig
+from pyarty import Dir, File, at, bundle
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.services.cache import load_download_index
@@ -16,26 +16,20 @@ from .extract import ArticleExtractionBundle
 @bundle
 class ProcessedManifest:
     source: str
-    manifest: File[dict[str, Any]] = twig(name="processed", extension="json")
+    manifest: File[dict[str, Any]] = at("processed.json")
 
 
 @bundle
 class SourceManifest:
     source: str
-    manifest: File[dict[str, Any]] = twig(name="source", extension="json")
+    manifest: File[dict[str, Any]] = at("source.json")
 
 
 @bundle
 class ArticleExport:
     identifiers: File[dict[str, Any]]
-    processed: Dir[list[ProcessedManifest]] = twig(
-        prefix="processed",
-        name=("{source}", "field"),
-    )
-    source: Dir[list[SourceManifest]] = twig(
-        prefix="source",
-        name=("{source}", "field"),
-    )
+    processed: Dir[list[ProcessedManifest]] = at("processed/{source}")
+    source: Dir[list[SourceManifest]] = at("source/{source}")
 
 
 def build_article_export(

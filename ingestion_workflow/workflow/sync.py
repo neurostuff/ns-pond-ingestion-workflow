@@ -63,7 +63,7 @@ import csv
 import json
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, MutableMapping, Sequence, Set
+from typing import Dict, Iterable, List, Mapping, MutableMapping, Sequence, Set, Tuple
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
@@ -122,6 +122,7 @@ def run_sync(
     bundles = _resolve_bundles(state, resolved_settings, identifier_set, target_aliases)
     analyses = _resolve_analyses(state, resolved_settings, target_aliases, identifier_set)
 
+    synced: List[Tuple[str, ArticleExtractionBundle]] = []
     for outcome in successful:
         slug = outcome.slug
         base_id = outcome.base_study_id
@@ -147,6 +148,9 @@ def run_sync(
             downloads_for_slug,
             resolved_settings,
         )
+        synced.append((base_id, bundle))
+
+    _write_corpus_manifest(resolved_settings.ns_pond_root / "pmids.tsv", synced)
 
 
 def _resolve_upload_outcomes(state: "PipelineState", settings: Settings) -> List[UploadOutcome]:
@@ -340,6 +344,11 @@ def _sync_article(
         downloads,
         overwrite=settings.sync_overwrite,
     )
+    _write_stage1(
+        root / "stage1" / "analyses.json",
+        per_table_analyses,
+        overwrite=settings.sync_overwrite,
+    )
 
 
 def _write_processed(
@@ -469,6 +478,84 @@ def _write_analyses_jsonl(
                 }
                 handle.write(json.dumps(record))
                 handle.write("\n")
+
+
+def _write_corpus_manifest(
+    path: Path,
+    synced: Sequence[Tuple[str, ArticleExtractionBundle]],
+) -> None:
+    """List the synced studies in the form pondie's CLI parses.
+
+    `pmid<TAB>study_id<TAB>source`. pondie rejects a file of bare ids outright, so the
+    three columns are the contract rather than a convenience.
+    """
+    if not synced:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for base_study_id, bundle in synced:
+        identifier = bundle.article_data.identifier
+        pmid = (identifier.pmid if identifier else None) or ""
+        source = bundle.article_data.source.value
+        lines.append(f"{pmid}\t{base_study_id}\t{source}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _write_stage1(
+    path: Path,
+    per_table_analyses: Mapping[str, AnalysisCollection],
+    overwrite: bool,
+) -> None:
+    """Write the coordinate-table parse in the shape pondie reads it.
+
+    pondie treats `stage1/analyses.json` as an input it never writes, and reads each
+    point's xyz from a nested `coordinates` key; this repo stores x/y/z on the point
+    itself, so the nesting is added here rather than teaching pondie a third shape.
+    """
+    if path.exists() and not overwrite:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    analyses: list[dict[str, object]] = []
+    for table_id, collection in per_table_analyses.items():
+        for analysis in collection.analyses:
+            analyses.append(
+                {
+                    "name": analysis.name,
+                    "description": analysis.description,
+                    "table_id": analysis.table_id or table_id,
+                    "table_number": analysis.table_number,
+                    "table_caption": analysis.table_caption,
+                    "table_footer": analysis.table_footer,
+                    "coordinate_space": collection.coordinate_space.value,
+                    "points": [
+                        _stage1_point(coordinate, collection)
+                        for coordinate in analysis.coordinates
+                    ],
+                }
+            )
+
+    payload = {"analyses": analyses}
+    path.write_text(json.dumps(payload, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, object]:
+    space = coordinate.space or collection.coordinate_space
+    point: dict[str, object] = {
+        "coordinates": [coordinate.x, coordinate.y, coordinate.z],
+        "space": space.value if space else None,
+    }
+    if coordinate.statistic_value is not None:
+        point["values"] = [
+            {
+                "value": coordinate.statistic_value,
+                "kind": coordinate.statistic_type,
+            }
+        ]
+    if coordinate.cluster_size is not None:
+        point["cluster_size"] = coordinate.cluster_size
+        point["cluster_measure"] = coordinate.cluster_measure
+    return point
 
 
 def _write_coordinates_csv(
