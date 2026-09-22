@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-
 from ingestion_workflow.config import Settings
-from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+from ingestion_workflow.extractors.docling_convert import (
+    _cell_text_from_layer,
+    _is_unusable,
+    normalize_text_tokens,
+)
 from ingestion_workflow.extractors.pdf_extractor import (
     PdfExtractor,
     _has_suspect_numerics,
+    _merge_split_coordinate_columns,
     _table_label,
 )
 from ingestion_workflow.models import (
@@ -205,3 +209,114 @@ def test_extract_reports_failure_when_no_pdf_file(tmp_path):
 
     assert content.error_message == "No PDF file in download result."
     assert content.tables == []
+
+
+class _FakeBBox:
+    def __init__(self, left=10.0, bottom=20.0, right=40.0, top=30.0) -> None:
+        self.l = left
+        self.b = bottom
+        self.r = right
+        self.t = top
+        self.coord_origin = "BOTTOMLEFT"
+
+
+class _FakeCell:
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.bbox = _FakeBBox()
+
+
+class _FakeTextPage:
+    """Returns a fixed string for any bounding box query."""
+
+    def __init__(self, text: str, padded: str | None = None) -> None:
+        self._text = text
+        self._padded = padded
+
+    def get_text_bounded(self, left, bottom, right, top):
+        if self._padded is not None and left < 10.0:
+            return self._padded
+        return self._text
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("-48", False),
+        ("", False),
+        ("value\twith\ttabs", False),
+        ("\x0448", True),
+        ("\x0172", True),
+    ],
+)
+def test_is_unusable_flags_control_characters(text, expected):
+    assert _is_unusable(text) is expected
+
+
+def test_cell_text_from_layer_keeps_docling_read_when_layer_is_corrupt():
+    r"""A font with no ToUnicode for minus makes PyPDFium return "\x04" + digits.
+
+    Returning None leaves Docling's own (correct) "-48" in place; returning the
+    layer's text would strip the sign and flip the hemisphere.
+    """
+    cell = _FakeCell("-48")
+    text_page = _FakeTextPage("\x0448")
+
+    assert _cell_text_from_layer(cell, text_page, page_height=100.0) is None
+
+
+def test_cell_text_from_layer_still_recovers_a_dropped_minus():
+    """The widened read is accepted when it only adds a sign character."""
+    cell = _FakeCell("48")
+    text_page = _FakeTextPage("48", padded="-48")
+
+    assert _cell_text_from_layer(cell, text_page, page_height=100.0) == "-48"
+
+
+def test_merge_split_coordinate_columns_rejoins_a_broken_triplet():
+    frame = pd.DataFrame(
+        {
+            "Region": ["R postcentral", "L intraparietal", "L precentral", "R insula"],
+            "Coordinates": ["42,", "30,", "45,", "48,"],
+            "Coordinates.1": ["24, 45", "2, 33", "36, 36", "0, 48"],
+        }
+    )
+
+    merged = _merge_split_coordinate_columns(frame)
+
+    assert list(merged.columns) == ["Region", "Coordinates"]
+    assert merged["Coordinates"].tolist() == [
+        "42, 24, 45",
+        "30, 2, 33",
+        "45, 36, 36",
+        "48, 0, 48",
+    ]
+
+
+def test_merge_split_coordinate_columns_leaves_non_coordinate_tables_alone():
+    """Headers that do not name coordinates are never merged."""
+    frame = pd.DataFrame(
+        {
+            "Group": ["smokers", "controls"],
+            "Age": ["31, 4", "29, 5"],
+            "Sex": ["12, 8", "11, 9"],
+        }
+    )
+
+    merged = _merge_split_coordinate_columns(frame)
+
+    assert list(merged.columns) == ["Group", "Age", "Sex"]
+
+
+def test_merge_split_coordinate_columns_needs_enough_whole_triplets():
+    """Two coordinate columns that do not join into triplets are left as they are."""
+    frame = pd.DataFrame(
+        {
+            "MNI coordinate": ["42,", "30,"],
+            "MNI coordinate.1": ["24", "2"],
+        }
+    )
+
+    merged = _merge_split_coordinate_columns(frame)
+
+    assert list(merged.columns) == ["MNI coordinate", "MNI coordinate.1"]

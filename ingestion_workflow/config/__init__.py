@@ -403,6 +403,13 @@ class Settings(BaseSettings):
         default_factory=lambda: ["semantic_scholar", "openalex"],
         description="Ordered providers queried for an open-access PDF URL",
     )
+    pdf_extract_workers: Optional[int] = Field(
+        default=None,
+        description=(
+            "Docling worker processes for PDF extraction; None means one per "
+            "CUDA device, or 1 on CPU"
+        ),
+    )
 
     # ===== Upload configuration =====
     upload_use_ssh: bool = Field(

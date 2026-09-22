@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import functools
 import logging
+import os
 import re
+import subprocess
 from pathlib import Path
 from typing import Any, Optional
 
@@ -59,15 +61,81 @@ def normalize_text_tokens(text: Any) -> Any:
     return _DASH_BEFORE_DIGIT.sub("-", cleaned)
 
 
+# One warm Docling converter reserves ~1.4 GiB; the headroom leaves room for a
+# document with an unusually large page batch.
+_MIN_FREE_GPU_MIB = 2500
+
+
+def usable_cuda_devices() -> list[int]:
+    """Indices of CUDA devices with enough free memory for a Docling worker.
+
+    Probed with ``nvidia-smi`` rather than torch on purpose. The workers are
+    forked or spawned from whichever process calls this, and a parent that has
+    already initialised CUDA poisons forked children ("Cannot re-initialize
+    CUDA in forked subprocess"). A subprocess probe keeps the parent clean.
+    Devices busy with someone else's job are skipped rather than contended for.
+    """
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if completed.returncode != 0:
+        return []
+
+    usable = []
+    for index, line in enumerate(completed.stdout.splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            free_mib = int(line)
+        except ValueError:
+            continue
+        if free_mib >= _MIN_FREE_GPU_MIB:
+            usable.append(index)
+    return usable
+
+
+def cuda_device_count() -> int:
+    """How many CUDA devices are free enough to run a Docling worker on."""
+    return len(usable_cuda_devices())
+
+
+def _select_device() -> str:
+    """Pick this process's Docling device.
+
+    Each worker is pinned to a single GPU by ``CUDA_VISIBLE_DEVICES`` before it
+    gets here, so there is at most one device to choose and no way for two
+    workers to collide on the same card.
+    """
+    try:
+        import torch
+    except ImportError:
+        return "cpu"
+    try:
+        if torch.cuda.is_available() and torch.cuda.device_count() > 0:
+            return "cuda:0"
+    except Exception:  # pragma: no cover - driver/build mismatch
+        logger.warning("CUDA probe failed; Docling will run on CPU.", exc_info=True)
+    return "cpu"
+
+
 @functools.lru_cache(maxsize=1)
 def _converter() -> Any:
     from docling.datamodel.base_models import InputFormat
     from docling.datamodel.pipeline_options import (
+        AcceleratorOptions,
         TableFormerMode,
         ThreadedPdfPipelineOptions,
     )
     from docling.document_converter import DocumentConverter, PdfFormatOption
 
+    device = _select_device()
     pdf_options = ThreadedPdfPipelineOptions(
         do_ocr=False,
         do_formula_enrichment=False,
@@ -75,8 +143,10 @@ def _converter() -> Any:
         generate_page_images=False,
         generate_picture_images=False,
         generate_table_images=False,
+        accelerator_options=AcceleratorOptions(device=device),
     )
     pdf_options.table_structure_options.mode = TableFormerMode.ACCURATE
+    logger.info("Docling converter on %s (pid %d)", device, os.getpid())
 
     return DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_options)}
@@ -142,6 +212,21 @@ def _restore_cells_from_text_layer(document: Any, pdf_path: Path) -> tuple[int, 
     return (repaired, checked)
 
 
+def _is_unusable(text: Optional[str]) -> bool:
+    r"""True when a text-layer read carries C0 control characters.
+
+    Some publisher fonts ship no usable ToUnicode mapping for the minus glyph,
+    and PyPDFium then returns its raw character code: a peak at -48 reads back
+    as "\x0448". Docling's own read of the same cell is correct, so a cell like
+    this must keep Docling's text. Stripping the control character instead would
+    turn -48 into 48 and move the peak to the other hemisphere -- the exact
+    failure this whole re-read exists to prevent.
+    """
+    if not text:
+        return False
+    return any(ord(char) < 32 and char not in "\t\r\n" for char in text)
+
+
 def _cell_text_from_layer(cell: Any, text_page: Any, page_height: float) -> Optional[str]:
     """Read one cell's text out of the PDF text layer, by bounding box."""
     bbox = getattr(cell, "bbox", None)
@@ -154,11 +239,11 @@ def _cell_text_from_layer(cell: Any, text_page: Any, page_height: float) -> Opti
         bottom, top = bbox.b, bbox.t
 
     exact = _bounded_text(text_page, bbox.l, bottom, bbox.r, top)
-    if not exact:
+    if not exact or _is_unusable(exact):
         return None
 
     padded = _bounded_text(text_page, bbox.l - _SIGN_PAD, bottom, bbox.r, top)
-    if padded and padded != exact and padded.endswith(exact):
+    if padded and not _is_unusable(padded) and padded != exact and padded.endswith(exact):
         prefix = padded[: -len(exact)]
         if prefix in _SIGN_CHARS:
             return padded
@@ -177,4 +262,9 @@ def _bounded_text(
         return None
 
 
-__all__ = ["convert_pdf", "normalize_text_tokens"]
+__all__ = [
+    "convert_pdf",
+    "cuda_device_count",
+    "normalize_text_tokens",
+    "usable_cuda_devices",
+]
