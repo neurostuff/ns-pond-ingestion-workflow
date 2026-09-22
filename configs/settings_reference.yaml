@@ -1,90 +1,86 @@
-# Ingestion Workflow configuration reference.
-# Each option mirrors a field in ingestion_workflow.config.Settings along with its default.
+# Every option in ingestion_workflow.config.Settings, with its default.
+# Generated from the model; precedence is CLI flags > this file > environment.
 
-data_root: "./data"  # Root directory for workflow data (manifests, staging, etc.).
-cache_root: "./.cache"  # Base directory for cached indices by stage or provider.
-ns_pond_root: "./ns-pond"  # Local mirror of Neurostore content organized by base study ID.
+# ===== Where things live =====
+data_root: "data"  # Root directory for workflow data (manifests, staging, etc.)
+cache_root: ".cache"  # Root directory for all cached indices
+catalog_root: ".catalog"  # Directory holding catalog.sqlite and the blob store
+ns_pond_root: "ns-pond"  # Local mirror of Neurostore content organized by base study ID
+manifest_path: null  # Default identifiers manifest, when none is given on the command line
 
-pubmed_email: null  # Contact email for PubMed API (required by NCBI guidelines).
-pubmed_api_key: null  # Optional PubMed API key for higher rate limits.
-pubmed_batch_size: 500  # Number of records requested per PubMed API call.
+# ===== Retry policy =====
+max_attempts: 3  # Failed stage attempts before an article is left alone
+retry_after_hours: 24  # Hours to wait before retrying a failed stage attempt
 
-semantic_scholar_api_key: null  # Optional Semantic Scholar API key to raise rate limits.
-openalex_email: null  # Contact email for OpenAlex API (enables polite pool access).
-
-download_sources:  # Ordered download providers to attempt per identifier.
+# ===== Download sources =====
+download_sources:  # Ordered list of download sources to attempt (enum order)
   - pubget
   - elsevier
   - ace
-cache_only_mode: false  # If true, only use cached downloads and never fetch new content.
+  - pdf
+pubget_cache_root: "/tmp/pubget_cache"  # Optional override for Pubget cache root directory
+ace_cache_root: "/tmp/ace_cache"  # Optional override for ACE cache root directory
+elsevier_cache_root: "/tmp/elsevier_cache"  # Optional override for Elsevier cache root directory
+pdf_cache_root: null  # Optional override for downloaded-PDF cache root directory
+pdf_url_providers:  # Ordered providers queried for an open-access PDF URL
+  - semantic_scholar
+  - openalex
+pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
+ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
 
-elsevier_api_key: null  # API key for Elsevier full-text access.
-elsevier_http_proxy: null  # HTTP proxy URL for Elsevier requests (e.g., socks5://127.0.0.1:1080).
-elsevier_https_proxy: null  # HTTPS proxy URL for Elsevier requests.
-elsevier_use_proxy: false  # Toggle routing Elsevier traffic through the configured proxy.
-
-llm_api_key: null  # API key for the configured LLM provider used during extraction.
-llm_api_base: null  # Optional base URL for the configured LLM service.
-llm_model: "gpt-5-mini"  # Default LLM model name for coordinate extraction.
-
-export: false  # Enable exporting extraction outputs to disk mirrors under data_root.
-export_overwrite: true  # Overwrite exported files if they already exist.
-n_llm_workers: 2  # Maximum number of concurrent LLM workers during analysis creation.
-
-neurostore_base_url: "https://neurostore.org/api"  # Base URL for Neurostore REST API.
-neurostore_token: null  # Authentication token for Neurostore uploads.
-neurostore_batch_size: 50  # Number of studies uploaded in a single batch.
-
-pubmed_tool: null  # Optional tool name reported to NCBI for PubMed requests.
-
-metadata_providers:  # Ordered list of metadata providers queried during enrichment.
+# ===== External APIs =====
+pubmed_email: "MY_EMAIL_ADDRESS"  # Contact email for PubMed API (required by NCBI guidelines)
+pubmed_api_key: "MY_PUBMED_API_KEY"  # Optional API key for increased PubMed rate limits
+pubmed_batch_size: 500  # Number of records per PubMed API request
+pubmed_tool: "IngestionWorkflowProject"  # Optional tool name reported to NCBI; if not provided, API calls may use a library default
+semantic_scholar_api_key: "MY_SEMANTIC_SCHOLAR_API_KEY"  # Optional API key for Semantic Scholar (increases rate limits)
+openalex_email: "MY_EMAIL_ADDRESS"  # Contact email for OpenAlex API (enables polite pool)
+metadata_providers:  # Ordered list of metadata providers to query
   - semantic_scholar
   - pubmed
   - openalex
+elsevier_api_key: "MY_ELSEVIER_API_KEY"  # API key for Elsevier full-text access
+elsevier_http_proxy: "socks5://127.0.0.1:1080"  # HTTP proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
+elsevier_https_proxy: "socks5://127.0.0.1:1080"  # HTTPS proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
+elsevier_use_proxy: true  # Whether to route Elsevier requests through configured proxy
 
-max_workers: 4  # Maximum number of parallel workers for concurrent operations.
-ace_max_workers: 4  # Max workers dedicated specifically to ACE downloads.
+# ===== LLM =====
+llm_api_key: null  # API key for the configured LLM provider
+llm_api_base: null  # Optional base URL for the configured LLM provider
+llm_model: "gpt-5-mini"  # Specific model to use for coordinate extraction
+llm_reasoning_effort: null  # Reasoning effort to send with coordinate parsing; leave unset for models that reject the parameter. Reasoning models that refuse function tools alongside reasoning need 'none'
+n_llm_workers: 2  # Maximum number of concurrent LLM workers
 
-force_redownload: false  # Force new downloads even when cached files exist.
-force_reextract: false  # Force re-running extraction even if cached bundles exist.
+# ===== Parallelism =====
+max_workers: 4  # Maximum number of parallel workers for concurrent operations
 
-verbose: false  # Increase logging verbosity on the console.
-dry_run: false  # When true, skip external calls and file writes (planning mode).
+# ===== Output =====
+export: false  # Enable exporting extraction outputs to disk mirrors
+export_overwrite: true  # Overwrite previously exported files if they exist
+sync_overwrite: true  # Overwrite individual files when writing ns-pond sync outputs
 
-stages:  # Canonical order of pipeline stages to execute.
-  - gather
-  - download
-  - extract
-  - create_analyses
-  - upload
-  - sync
+# ===== Logging =====
+verbose: false  # Enable verbose logging output
+log_to_file: true  # Persist logs to a file (defaults to <data_root>/logs/pipeline.log)
+log_to_console: true  # Emit selected logs to the console in addition to the log file
+log_file: null  # Optional override for log file path
+show_progress: true  # Show tqdm progress bars on the console
+dry_run: false  # Perform dry run without making external API calls or file changes
 
-log_to_file: true  # Persist logs to a file (defaults to <data_root>/logs/pipeline.log).
-log_to_console: true  # Mirror selected log output to the console.
-log_file: null  # Optional explicit log file path override.
-show_progress: true  # Show tqdm progress bars on the console.
-
-manifest_path: null  # Path to identifiers manifest when skipping the gather stage.
-use_cached_inputs: true  # Hydrate skipped stages from cached outputs when available.
-ignore_cache_stages: []  # List of stage names whose caches should be ignored and regenerated.
-
-pubget_cache_root: null  # Optional override for the Pubget cache directory.
-ace_cache_root: null  # Optional override for the ACE cache directory.
-elsevier_cache_root: null  # Optional override for the Elsevier cache directory.
-
-# Upload configuration
-upload_use_ssh: true  # Enable SSH tunneling for upload database connections.
-upload_ssh_host: "neurostore.xyz"  # SSH host for tunneling to the remote database.
-upload_ssh_user: "jdkent"  # SSH user for tunneling to the remote database.
-upload_ssh_key: "~/.ssh/id_ed25519"  # Path to SSH private key for tunneling.
-upload_remote_bind_host: "store-store-pgsql17-1"  # Remote bind host inside the tunnel (container hostname).
-upload_remote_bind_port: 5432  # Remote bind port for the Postgres service.
-upload_local_forward_port: 6543  # Local port forwarded to the remote database via SSH.
-upload_db_host: "localhost"  # Database host used by SQLAlchemy (often localhost when tunneling).
-upload_db_name: "neurostore"  # Database name for uploads.
-upload_db_user: "postgres"  # Database user for uploads.
-upload_db_password: "example"  # Database password for uploads.
-upload_connect_timeout: 10  # Connection timeout (seconds) for upload database sessions.
-upload_behavior: "update"  # Behavior for existing studies with source 'llm': update in place or insert_new.
-upload_metadata_only: false  # When true, only update metadata fields without touching coordinates.
-upload_metadata_mode: "fill"  # Metadata strategy: fill empty fields or overwrite existing values.
+# ===== Upload =====
+upload_use_ssh: true  # Enable SSH tunneling for upload database connections
+upload_ssh_host: "neurostore.xyz"  # SSH host for tunneling to the remote database
+upload_ssh_user: "jdkent"  # SSH user for tunneling to the remote database
+upload_ssh_key: "~/.ssh/id_ed25519"  # Path to SSH private key for tunneling
+upload_remote_bind_host: "store-store-pgsql17-1"  # Remote bind host inside SSH tunnel (container hostname)
+upload_remote_container_network: "nginx-proxy"  # Docker network to look the remote bind host up on when it is a container name that does not resolve outside the remote host
+upload_remote_bind_port: 5432  # Remote bind port for the Postgres service
+upload_local_forward_port: 6543  # Local port to forward to the remote database via SSH
+upload_db_host: "localhost"  # Database host used by SQLAlchemy (often localhost when tunneling)
+upload_db_name: "neurostore"  # Database name for uploads
+upload_db_user: "postgres"  # Database user for uploads
+upload_db_password: "example"  # Database password for uploads
+upload_connect_timeout: 30  # Connection timeout (seconds) for upload database sessions
+upload_behavior: "update"  # Behavior for existing studies with source 'llm': 'update' to modify in place, 'insert_new' to create a new study
+upload_metadata_only: false  # When true, only update metadata fields without touching coordinates
+upload_metadata_mode: "fill"  # Metadata update strategy: 'fill' (only empty fields) or 'overwrite'

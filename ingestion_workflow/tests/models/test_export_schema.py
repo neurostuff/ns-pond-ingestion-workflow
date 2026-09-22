@@ -16,7 +16,6 @@ from ingestion_workflow.models.export_schema import ArticleExport, build_article
 from ingestion_workflow.models.extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.services import cache as cache_service
 
 
 def _bundle(tmp_path: Path) -> ArticleExtractionBundle:
@@ -62,24 +61,9 @@ def _analysis(bundle: ArticleExtractionBundle) -> CreateAnalysesResult:
 def test_build_article_export_round_trip(tmp_path: Path) -> None:
     bundle = _bundle(tmp_path)
     analysis = _analysis(bundle)
-    settings = Settings(
-        data_root=tmp_path,
-        cache_root=tmp_path / ".cache",
-        ns_pond_root=tmp_path / "ns",
-    )
-    settings.ensure_directories()
+    analysis.analysis_paths = [tmp_path / "analysis.jsonl"]
 
-    cache_service.cache_create_analyses_results(
-        settings,
-        bundle.article_data.source.value,
-        [analysis],
-    )
-
-    slug, export_bundle = build_article_export(
-        bundle,
-        [analysis],
-        settings=settings,
-    )
+    slug, export_bundle = build_article_export(bundle, [analysis])
     assert slug == bundle.article_data.identifier.slug
     assert isinstance(export_bundle, ArticleExport)
 
@@ -107,14 +91,9 @@ def test_build_article_export_round_trip(tmp_path: Path) -> None:
 
 def test_build_article_export_without_identifier_raises(tmp_path: Path) -> None:
     bundle = _bundle(tmp_path)
-    settings = Settings(
-        data_root=tmp_path,
-        cache_root=tmp_path / ".cache",
-        ns_pond_root=tmp_path / "ns",
-    )
     bundle.article_data.identifier = None  # type: ignore[assignment]
     try:
-        build_article_export(bundle, [], settings=settings)
+        build_article_export(bundle, [])
     except ValueError:
         return
     raise AssertionError("Expected ValueError when identifier missing")

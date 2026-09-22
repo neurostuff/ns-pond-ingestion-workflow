@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import socket
+import subprocess
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
 from typing import Callable, Iterator, Optional
-import socket
-import subprocess
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine

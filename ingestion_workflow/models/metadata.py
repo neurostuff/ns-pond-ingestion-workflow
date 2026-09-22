@@ -218,3 +218,26 @@ def merge_metadata_from_sources(
         merged = merged.merge_from(metadata)
 
     return merged
+
+
+#: Fields that make metadata worth keeping. Deliberately not "all of them":
+#: no provider returns keywords, license and open_access together, and treating
+#: their absence as incomplete is what made every run refetch every article.
+ENOUGH = ("title", "abstract", "journal", "publication_year")
+
+
+def is_sufficient(metadata: ArticleMetadata | None) -> bool:
+    if metadata is None:
+        return False
+    if not (metadata.title and metadata.title.strip()):
+        return False
+    populated = sum(1 for name in ENOUGH if _present(getattr(metadata, name, None)))
+    return populated >= 3 and bool(metadata.authors)
+
+
+def _present(value) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return bool(value)

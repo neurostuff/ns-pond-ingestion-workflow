@@ -1,80 +1,117 @@
 # Ingestion Workflow
 
-This repository specifies the ingestion pipeline
-for adding new studies to neurostore.
+Finds neuroimaging papers, downloads them from whichever source will serve them,
+pulls the coordinate tables out, turns those into analyses, and writes the
+result to Neurostore and to `ns-pond`.
 
-It is modular in design, the main file being
-orchastrator.py which calls up services to:
-1. find articles
-2. download articles
-3. extract tables from articles
-4. create analyses from tables
-5. upload studies and analyses to neurostore
-6. syncronize neurostore base-study ids with ns-pond
+## The model
 
-## Design Principles
-- re-using existing code from dependencies where possible
-- being DRY and modular
-- using batching parallel processing for cpu bound tasks
-- using batching when calling external APIs whenever possible (only have function signatures for batch calls, not single calls)
+The pipeline keeps a **catalog of articles**. Each article carries one
+**artifact per stage**, and an artifact is reused when its **fingerprint** still
+matches — otherwise it is recomputed. That is the whole idea; the rest is detail.
 
-## Running the Workflow
-
-### CLI quickstart (`ingest`)
-1. Install the project (editable mode keeps imports up to date): `python -m venv .venv && source .venv/bin/activate && pip install -e .[test]`.
-2. Provide credentials via environment variables or a YAML config file. Common ones include `PUBMED_EMAIL`, `SEMANTIC_SCHOLAR_API_KEY`, `OPENALEX_EMAIL`, `NEUROSTORE_TOKEN`, and `LLM_API_KEY`. Any option in `ingestion_workflow.config.Settings` can live in the YAML file.
-3. Use the Typer-powered CLI, exposed as the `ingest` command (see `ingest --help` for the full tree):
-   - Full pipeline (respects configured stages):  
-     `ingest run --config configs/pipeline.yaml`
-   - Run only certain stages:  
-     `ingest run --config configs/pipeline.yaml --stages gather download extract`
-   - Seed identifiers:  
-     `ingest search --config configs/pipeline.yaml --query "pain AND fmri" --start-year 2015`
-   - Reuse a cached manifest for downloads/extraction:  
-     `ingest download --manifest data/manifests/2024-06-ids.json`
-   - Kick off extraction on cached downloads:  
-     `ingest extract --manifest data/manifests/2024-06-ids.json`
-   - Turn bundles into analyses artifacts (writes JSON or stdout):  
-     `ingest create-analyses bundles/latest.json --output data/analyses/latest.json`
-
-Helpful flags:
-- `--use-cached-inputs/--no-use-cached-inputs` lets you control whether a skipped stage hydrates its inputs from cache.
-- `--manifest` lets you bypass the gather stage entirely once you have a saved identifiers file.
-- `--config` can point at any YAML file; relative paths resolve from the repo root.
-
-Outputs land under the configured `data_root` (defaults to `./data`), with logs in `data/logs`, manifests in `data/manifests`, cached payloads in `.cache`, and optional exports mirrored under `data/export`.
-
-### Working in a Python REPL
-If you prefer to script or poke at intermediate artifacts interactively, you can drive the same workflow objects directly:
-
-```python
->>> from pathlib import Path
->>> from ingestion_workflow.config import load_settings
->>> from ingestion_workflow.workflow.orchastrator import run_pipeline
->>> settings = load_settings(Path("configs/pipeline.yaml"))
->>> settings = settings.merge_overrides({"stages": ["gather", "download", "extract"]})
->>> state = run_pipeline(settings=settings)
->>> len(state.identifiers.identifiers)
-42
+```
+             ┌──────────┐
+ ingest add →│ catalog  │← ingest migrate
+             └────┬─────┘
+                  │  ingest run
+   download → extract → metadata → analyses → upload → sync
+      │          │                                        │
+   pubget     4 sources tried in order                ns-pond/
+   elsevier   until one succeeds                      + Neurostore
+   ace
+   pdf
 ```
 
-Tips for REPL work:
-- `load_settings()` already merges env vars, YAML, and ad-hoc overrides, so you can tweak behavior without editing files.
-- `run_pipeline` returns a `PipelineState` dataclass (`identifiers`, `downloads`, `bundles`, `analyses`, plus per-stage metrics), making it easy to inspect what happened:  
-  `state.stage_metrics["download"].cache_hits`
-- Need just one stage? Import the helpers directly, e.g.:
+## Getting started
 
-```python
->>> from ingestion_workflow.workflow.download import run_downloads
->>> downloads = run_downloads(state.identifiers, settings=settings)
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e '.[test]'
+
+# Credentials, via .env or a YAML config file
+cp .env.example .env
 ```
 
-This keeps REPL explorations in sync with the exact logic the CLI uses while giving you flexibility to experiment or prototype new stages.
+```bash
+ingest add 37961286 PMC10634720 10.1016/j.neuroimage.2023.120   # ids of any kind
+ingest add --query '(fmri OR PET) AND 2010:2025[dp]'            # or a PubMed search
+ingest run --dry-run                                            # what would happen
+ingest run                                                      # make it happen
+ingest status                                                   # where everything stands
+ingest show PMC10634720                                         # one article in detail
+```
 
-## Issues
+## Running it piecemeal
 
+Every stage can run on its own, over any subset, at any time. The cache decides
+what actually gets recomputed.
 
-- improve handling of inputs that have failed before and whether to retry them
-- invalidating cache for other stages (not just download)
-- implement upload stage
-- implement ns-pond syncronization stage
+```bash
+ingest run --stage download --stage extract        # just these stages
+ingest run --manifest staging/manifests/vbm.jsonl  # just these articles
+ingest run --select new                            # only never-attempted ones
+ingest run --select failed                         # retry transient failures
+ingest run --limit 50                              # a small bite
+ingest run --refresh analyses                      # recompute despite the cache
+ingest run --dry-run                               # print the plan, change nothing
+```
+
+`--dry-run` answers "what will this do?" without reading any code:
+
+```
+$ ingest run --manifest vbm-1995.jsonl --dry-run
+selection: 4,812 articles from vbm-1995.jsonl
+
+  plan
+    download          1,204 pending      3,608 fresh
+    extract             887 pending      3,201 fresh      724 blocked
+    metadata            887 pending      3,925 fresh
+    analyses            887 pending      2,918 fresh    1,007 skipped
+    upload            1,113 pending      3,699 fresh
+    sync              1,113 pending      3,699 fresh
+```
+
+`pending` is work. `fresh` is cached and still valid. `blocked` is waiting on an
+upstream stage. `skipped` means the stage has nothing to do for that article
+(no coordinate tables, or a source that cannot address it). `permanent` means it
+will never succeed and is no longer retried.
+
+## Long runs
+
+Runs are resumable by construction: everything a stage produces, including its
+failures, is recorded before the next batch starts. Killing a run and restarting
+it picks up where it left off.
+
+```bash
+nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
+      -s download -s extract &
+```
+
+## Configuration
+
+Precedence is CLI flags > YAML > environment > defaults. See
+[`configs/settings_reference.yaml`](configs/settings_reference.yaml) for every
+option, and [`docs/`](docs/) for why the ones that govern caching look the way
+they do.
+
+## Documentation
+
+| | |
+|---|---|
+| [01-current-behavior.md](docs/01-current-behavior.md) | what the pre-refactor pipeline did, measured, and where it went wrong |
+| [02-design.md](docs/02-design.md) | the catalog, fingerprints, stages, and the command line |
+| [benchmarks.md](docs/benchmarks.md) | before/after numbers, and what to optimise next |
+| [data-safety.md](docs/data-safety.md) | how migration avoids losing the corpus |
+| [migration.md](docs/migration.md) | command-by-command upgrade guide |
+
+## Development
+
+```bash
+pytest ingestion_workflow/tests -q
+ruff check ingestion_workflow
+```
+
+The pinned git dependencies (`pubget`, `ACE`, `elsevier-coordinate-extraction`,
+`pyarty`) track branches, so they drift. If imports fail after a fresh install,
+reinstall them with `--force-reinstall` before looking for a bug.

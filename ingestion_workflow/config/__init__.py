@@ -58,6 +58,11 @@ class Settings(BaseSettings):
         description="Root directory for all cached indices",
     )
 
+    catalog_root: Path = Field(
+        default=Path("./.catalog"),
+        description="Directory holding catalog.sqlite and the blob store",
+    )
+
     ns_pond_root: Path = Field(
         default=Path("./ns-pond"),
         description=("Local mirror of Neurostore content organized by base study ID"),
@@ -101,10 +106,6 @@ class Settings(BaseSettings):
         description="Ordered list of download sources to attempt (enum order)",
     )
 
-    cache_only_mode: bool = Field(
-        default=False,
-        description=("If True, only use cached downloads and never fetch new content"),
-    )
 
     elsevier_api_key: Optional[str] = Field(
         default=None,
@@ -174,20 +175,7 @@ class Settings(BaseSettings):
     )
 
     # ===== Neurostore configuration =====
-    neurostore_base_url: str = Field(
-        default="https://neurostore.org/api",
-        description="Base URL for Neurostore REST API",
-    )
 
-    neurostore_token: Optional[str] = Field(
-        default=None,
-        description="Authentication token for Neurostore API",
-    )
-
-    neurostore_batch_size: int = Field(
-        default=50,
-        description="Number of studies to upload in a single batch",
-    )
 
     # ===== PubMed tooling =====
     pubmed_tool: Optional[str] = Field(
@@ -216,20 +204,7 @@ class Settings(BaseSettings):
     )
 
     # ===== Behavior flags =====
-    force_redownload: bool = Field(
-        default=False,
-        description="Force re-download even if files exist in cache",
-    )
 
-    force_reextract: bool = Field(
-        default=False,
-        description="Force re-extraction even if results exist in cache",
-    )
-
-    ignore_cache_stages: List[str] = Field(
-        default_factory=list,
-        description="Pipeline stages whose caches should be ignored and regenerated",
-    )
 
     verbose: bool = Field(
         default=False,
@@ -241,17 +216,6 @@ class Settings(BaseSettings):
         description=("Perform dry run without making external API calls or file changes"),
     )
 
-    stages: List[str] = Field(
-        default_factory=lambda: [
-            "gather",
-            "download",
-            "extract",
-            "create_analyses",
-            "upload",
-            "sync",
-        ],
-        description="Ordered pipeline stages to execute",
-    )
 
     log_to_file: bool = Field(
         default=True,
@@ -272,13 +236,19 @@ class Settings(BaseSettings):
 
     manifest_path: Optional[Path] = Field(
         default=None,
-        description=("Path to an identifiers manifest when gather stage is skipped"),
+        description="Default identifiers manifest, when none is given on the command line",
     )
 
-    use_cached_inputs: bool = Field(
-        default=True,
-        description="Use cached outputs when prerequisite stages are skipped",
+    max_attempts: int = Field(
+        default=3,
+        description="Failed stage attempts before an article is left alone",
     )
+
+    retry_after_hours: int = Field(
+        default=24,
+        description="Hours to wait before retrying a failed stage attempt",
+    )
+
 
     @classmethod
     def from_yaml(cls, yaml_path: Path) -> Settings:
@@ -356,7 +326,12 @@ class Settings(BaseSettings):
         is properly set up.
         """
         # Always ensure the core directories exist
-        for directory in (self.data_root, self.cache_root, self.ns_pond_root):
+        for directory in (
+            self.data_root,
+            self.cache_root,
+            self.catalog_root,
+            self.ns_pond_root,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
 
         # Optionally ensure per-source cache roots exist if configured

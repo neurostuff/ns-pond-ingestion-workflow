@@ -9,18 +9,18 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 from ingestion_workflow.clients import CoordinateParsingClient
-from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
     ArticleExtractionBundle,
     Coordinate,
+    CoordinatePoint,
     CoordinateSpace,
     ExtractedTable,
-    CoordinatePoint,
     ParseAnalysesOutput,
 )
+from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)

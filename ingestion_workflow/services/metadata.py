@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from lxml import etree
+from pubget._utils import article_bucket_from_pmcid
 
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
@@ -25,10 +26,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
-from ingestion_workflow.services import cache
-from pubget._utils import article_bucket_from_pmcid
-
+from ingestion_workflow.models.metadata import ArticleMetadata, Author, is_sufficient
 
 logger = logging.getLogger(__name__)
 
@@ -160,17 +158,6 @@ class MetadataService:
                         item.slug,
                         exc,
                     )
-
-        identifiers_for_results: Dict[str, Optional[Identifier]] = {}
-        for slug, metadata in results.items():
-            content = id_to_content.get(slug)
-            identifiers_for_results[slug] = content.identifier if content else None
-        cache.cache_article_metadata(
-            self.settings,
-            results,
-            identifiers=identifiers_for_results,
-            sources_queried=sources_checked,
-        )
 
         return results
 
@@ -310,20 +297,13 @@ class MetadataService:
 
     @classmethod
     def _is_complete(cls, metadata: ArticleMetadata) -> bool:
-        """Return True when all primary metadata attributes are populated."""
-        return all(
-            [
-                bool(metadata.title and metadata.title.strip()),
-                bool(metadata.authors),
-                bool(metadata.abstract and metadata.abstract.strip()),
-                bool(metadata.journal and metadata.journal.strip()),
-                metadata.publication_year is not None,
-                bool(metadata.keywords),
-                bool(metadata.license and metadata.license.strip()),
-                bool(metadata.source and metadata.source.strip()),
-                metadata.open_access is not None,
-            ]
-        )
+        """Whether this metadata is good enough to stop querying providers.
+
+        Demanding every field (keywords, license, open_access included) meant no
+        provider ever satisfied it, so PubMed and the file fallback ran for
+        100% of articles on 100% of runs.
+        """
+        return is_sufficient(metadata)
 
     @classmethod
     def _needs_more_metadata(cls, metadata: Optional[ArticleMetadata]) -> bool:

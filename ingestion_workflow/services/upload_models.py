@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 
+import shortuuid
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -18,8 +19,6 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-import shortuuid
 
 
 def _gen_id() -> str:

@@ -1,80 +1,106 @@
+"""The CLI surface: five verbs over one catalog."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
-import importlib
 
-cli_module = importlib.import_module("ingestion_workflow.cli.main")
-from ingestion_workflow.config import Settings
-from ingestion_workflow.models import (
-    Analysis,
-    AnalysisCollection,
-    ArticleExtractionBundle,
-    ArticleMetadata,
-    ExtractedContent,
-    ExtractedTable,
-    Identifier,
-)
-from ingestion_workflow.models.download import DownloadSource
+from ingestion_workflow.catalog import Catalog
+from ingestion_workflow.cli.main import _parse_identifier, app
+from ingestion_workflow.models.ids import Identifier
 
 runner = CliRunner()
 
 
-def _bundle_payload(tmp_path: Path) -> list[dict]:
-    table_path = tmp_path / "table.html"
-    table_path.write_text("<table></table>", encoding="utf-8")
-    table = ExtractedTable(
-        table_id="Table 1",
-        raw_content_path=table_path,
-    )
-    content = ExtractedContent(
-        slug="article-1",
-        source=DownloadSource.ELSEVIER,
-        identifier=Identifier(pmid="12345"),
-        tables=[table],
-    )
-    metadata = ArticleMetadata(title="Example")
-    bundle = ArticleExtractionBundle(article_data=content, article_metadata=metadata)
-    return [bundle.to_dict()]
-
-
-def test_cli_create_analyses_writes_output(monkeypatch, tmp_path):
-    bundles_path = tmp_path / "bundles.json"
-    bundles_path.write_text(
-        json.dumps(_bundle_payload(tmp_path)),
+@pytest.fixture()
+def config(tmp_path):
+    path = tmp_path / "settings.yaml"
+    path.write_text(
+        json.dumps(
+            {
+                "data_root": str(tmp_path / "data"),
+                "cache_root": str(tmp_path / "cache"),
+                "catalog_root": str(tmp_path / "catalog"),
+                "ns_pond_root": str(tmp_path / "pond"),
+                "log_to_file": False,
+                "show_progress": False,
+            }
+        ),
         encoding="utf-8",
     )
-    output_path = tmp_path / "analyses.json"
+    return path
 
-    collection = AnalysisCollection(
-        slug="article-1::table-1",
-        analyses=[Analysis(name="Example")],
-    )
-    expected_serialized = {"article-1": {"Table 1": collection.to_dict()}}
-    expected_payload = {"article-1": {"Table 1": collection}}
 
-    monkeypatch.setattr(
-        cli_module,
-        "load_settings",
-        lambda *_args, **_kwargs: Settings(llm_api_key="test"),
-    )
-    monkeypatch.setattr(
-        cli_module.create_analyses_workflow,
-        "run_create_analyses",
-        lambda bundles, settings, extractor_name=None: expected_payload,
-    )
+def run(*args):
+    result = runner.invoke(app, list(args))
+    assert result.exit_code == 0, result.output
+    return result.output
 
-    result = runner.invoke(
-        cli_module.app,
-        [
-            "create-analyses",
-            str(bundles_path),
-            "--output",
-            str(output_path),
-        ],
-        catch_exceptions=False,
-    )
-    assert result.exit_code == 0
-    assert json.loads(output_path.read_text(encoding="utf-8")) == expected_serialized
+
+@pytest.mark.parametrize(
+    "token,field",
+    [
+        ("37961286", "pmid"),
+        ("PMC10634720", "pmcid"),
+        ("10.1101/2023.10.21.563317", "doi"),
+        ("doi:10.1/x", "doi"),
+    ],
+)
+def test_identifiers_are_recognised_without_being_labelled(token, field):
+    identifier = _parse_identifier(token)
+    assert getattr(identifier, field)
+
+
+def test_unrecognisable_identifiers_are_rejected():
+    with pytest.raises(Exception):
+        _parse_identifier("not-an-id")
+
+
+def test_add_registers_articles(config, tmp_path):
+    out = run("add", "37961286", "PMC10634720", "--config", str(config))
+    assert "2 new articles" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 2
+
+
+def test_add_is_idempotent(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("add", "37961286", "--config", str(config))
+    assert "0 new articles" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 1
+
+
+def test_add_from_a_file(config, tmp_path):
+    listing = tmp_path / "ids.txt"
+    listing.write_text("# a comment\n37961286\nPMC10634720\n\n", encoding="utf-8")
+    out = run("add", "--file", str(listing), "--config", str(config))
+    assert "2 new articles" in out
+
+
+def test_status_reports_an_empty_catalog(config):
+    out = run("status", "--config", str(config))
+    assert "0 articles" in out
+    assert "no stage has run yet" in out
+
+
+def test_dry_run_changes_nothing(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("run", "--stage", "download", "--dry-run", "--config", str(config))
+    assert "plan" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.status_counts() == {}
+
+
+def test_show_explains_an_unknown_article(config):
+    result = runner.invoke(app, ["show", "12345", "--config", str(config)])
+    assert result.exit_code == 1
+    assert "not in the catalog" in result.output
+
+
+def test_show_lists_what_is_known(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("show", "37961286", "--config", str(config))
+    assert "pmid 37961286" in out

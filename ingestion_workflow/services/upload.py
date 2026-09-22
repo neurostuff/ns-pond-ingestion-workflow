@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
-from datetime import datetime, timezone
 
-from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from sqlalchemy import delete, select
 from sqlalchemy.orm import selectinload
 
+from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import (
-    Analysis,
     AnalysisCollection,
     ArticleMetadata,
     BaseStudyPayload,
@@ -23,9 +22,7 @@ from ingestion_workflow.models import (
     UploadWorkItem,
 )
 from ingestion_workflow.services.db import SessionFactory
-from ingestion_workflow.services.logging import get_logger
-from ingestion_workflow.workflow.common import create_progress_bar
-from ingestion_workflow.services.logging import console_kwargs
+from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.upload_models import Analysis as DbAnalysis
 from ingestion_workflow.services.upload_models import Annotation as DbAnnotation
 from ingestion_workflow.services.upload_models import (
@@ -36,6 +33,7 @@ from ingestion_workflow.services.upload_models import Point as DbPoint
 from ingestion_workflow.services.upload_models import PointValue as DbPointValue
 from ingestion_workflow.services.upload_models import Study as DbStudy
 from ingestion_workflow.services.upload_models import Table as DbTable
+from ingestion_workflow.utils.console import progress_bar as create_progress_bar
 
 logger = get_logger(__name__)
 

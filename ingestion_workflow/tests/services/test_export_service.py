@@ -17,7 +17,6 @@ from ingestion_workflow.models import (
     Identifier,
 )
 from ingestion_workflow.models.download import DownloadSource
-from ingestion_workflow.services import cache as cache_service
 from ingestion_workflow.services.export import ExportService
 
 
@@ -115,12 +114,6 @@ def test_export_writes_analyses_jsonl(tmp_path):
         sanitized_table_id="table-a",
         analysis_collection=collection,
     )
-    cache_service.cache_create_analyses_results(
-        settings,
-        bundle.article_data.source.value,
-        [result],
-    )
-
     exporter.export(bundle, [result])
     processed_manifest = (
         settings.data_root
@@ -132,11 +125,10 @@ def test_export_writes_analyses_jsonl(tmp_path):
     )
     manifest_payload = json.loads(processed_manifest.read_text(encoding="utf-8"))
     analysis_entry = manifest_payload["article_data"]["analyses"][0]
-    assert analysis_entry["jsonl_path"] is not None
-    analysis_path = Path(analysis_entry["jsonl_path"])
-    assert analysis_path.exists()
-    payload = json.loads(analysis_path.read_text(encoding="utf-8"))
-    assert payload["analyses"][0]["name"] == "analysis"
+    # Analyses live in the catalog blob store now, so the manifest carries the
+    # collection inline rather than pointing at a separate jsonl file.
+    assert analysis_entry["jsonl_path"] is None
+    assert analysis_entry["analysis_collection"]["analyses"][0]["name"] == "analysis"
 
 
 def test_export_overwrites_existing_tree(tmp_path):

@@ -6,10 +6,8 @@ from typing import Any, Sequence
 
 from pyarty import Dir, File, at, bundle
 
-from ingestion_workflow.config import Settings
-from ingestion_workflow.services.cache import load_download_index
-
 from .analysis import CreateAnalysesResult
+from .download import DownloadResult
 from .extract import ArticleExtractionBundle
 
 
@@ -36,26 +34,19 @@ def build_article_export(
     bundle: ArticleExtractionBundle,
     analyses: Sequence[CreateAnalysesResult] | None = None,
     *,
-    settings: Settings | None = None,
+    downloads: Sequence[DownloadResult] | None = None,
 ) -> tuple[str, ArticleExport]:
-    """
-    Build the export bundle for a single article.
+    """Build the export bundle for a single article.
 
-    Parameters
-    ----------
-    bundle :
-        Extraction bundle containing article data and metadata.
-    analyses :
-        Optional cached or produced analyses results for the bundle.
-    settings :
-        Optional workflow settings used to resolve cache locations.
+    `downloads` are passed in by the caller, which already holds them; the
+    export no longer re-reads a cache to find out what was downloaded.
     """
     identifier = bundle.article_data.identifier
     if identifier is None:
         raise ValueError("Cannot build export without an identifier.")
 
     processed_manifest = _build_processed_manifest(bundle, analyses or ())
-    source_manifest = _build_source_manifest(bundle, settings)
+    source_manifest = _build_source_manifest(bundle, downloads)
 
     export_bundle = ArticleExport(
         identifiers=identifier.to_dict(),
@@ -99,34 +90,21 @@ def _analysis_entry(result: CreateAnalysesResult) -> dict[str, Any]:
 
 def _build_source_manifest(
     bundle: ArticleExtractionBundle,
-    settings: Settings | None,
+    downloads: Sequence[DownloadResult] | None,
 ) -> SourceManifest:
     source_name = bundle.article_data.source.value
     manifest_payload = {
         "source": source_name,
-        "raw_downloads": _download_entries(bundle, settings),
+        "raw_downloads": _download_entries(downloads),
         "tables": _table_entries(bundle),
     }
     return SourceManifest(source=source_name, manifest=manifest_payload)
 
 
 def _download_entries(
-    bundle: ArticleExtractionBundle,
-    settings: Settings | None,
+    download_results: Sequence[DownloadResult] | None,
 ) -> list[dict[str, Any]]:
-    if settings is None:
-        return []
-    identifier = bundle.article_data.identifier
-    if identifier is None:
-        return []
-
-    source_name = bundle.article_data.source.value
-    index = load_download_index(settings, source_name)
-    entry = index.get(identifier.slug)
-    if entry is None:
-        return []
-
-    downloads = [
+    return [
         {
             "filename": file.file_path.name,
             "path": str(file.file_path),
@@ -135,9 +113,9 @@ def _download_entries(
             "downloaded_at": file.downloaded_at.isoformat(),
             "md5_hash": file.md5_hash,
         }
-        for file in entry.result.files
+        for result in (download_results or ())
+        for file in result.files
     ]
-    return downloads
 
 
 def _table_entries(bundle: ArticleExtractionBundle) -> list[dict[str, Any]]:

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
-from .download import DownloadSource
 from .analysis import Coordinate, CoordinateSpace
+from .download import DownloadSource
 from .ids import Identifier
 from .metadata import ArticleMetadata
 

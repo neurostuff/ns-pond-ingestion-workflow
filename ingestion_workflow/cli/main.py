@@ -1,565 +1,293 @@
-"""
-Command line interface for the ingestion workflow.
+"""The `ingest` command line.
+
+Five verbs over one mental model: a catalog of articles, each advancing through
+stages. `add` puts articles in, `run` advances them, `status`/`show` report.
 """
 
 from __future__ import annotations
 
-import json
+import logging
+from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import List, Optional
 
 import typer
 
-from ingestion_workflow.config import (
-    Settings,
-    UploadBehavior,
-    UploadMetadataMode,
-    load_settings,
+from ingestion_workflow.catalog import Catalog, Status
+from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.models.ids import Identifier, Identifiers
+from ingestion_workflow.pipeline import (
+    Context,
+    Select,
+    Selection,
+    build,
+    everything,
+    from_manifest,
+    narrow,
+    run_stages,
 )
-from ingestion_workflow.models import (
-    AnalysisCollection,
-    ArticleExtractionBundle,
-    DownloadResult,
-    DownloadSource,
-    Identifiers,
-)
-from ingestion_workflow.services import cache
-from ingestion_workflow.workflow import (
-    SearchQuery,
-    gather_identifiers,
-)
-from ingestion_workflow.workflow import create_analyses as create_analyses_workflow
-from ingestion_workflow.workflow.download import run_downloads
-from ingestion_workflow.workflow.extract import run_extraction
-from ingestion_workflow.workflow.orchastrator import PipelineState, run_pipeline
-from ingestion_workflow.workflow.stats import StageMetrics
-from ingestion_workflow.workflow.upload import run_upload
+from ingestion_workflow.pipeline.stages import STAGE_ORDER
+from ingestion_workflow.services.logging import configure_logging
 
 app = typer.Typer(
-    name="Article Ingestion Workflow",
-    help="Neuroimaging article ingestion workflow for Neurostore",
+    name="ingest",
+    help="Ingest neuroimaging articles into Neurostore.",
+    no_args_is_help=True,
+    add_completion=False,
 )
+
+ConfigOption = typer.Option(None, "--config", "-c", help="YAML settings file.")
+
+
+# -- shared plumbing ---------------------------------------------------------
+
+
+def _settings(config: Optional[Path], **overrides) -> Settings:
+    overrides = {key: value for key, value in overrides.items() if value is not None}
+    settings = load_settings(config, overrides=overrides)
+    _configure_logging(settings)
+    return settings
+
+
+def _configure_logging(settings: Settings) -> None:
+    log_file = settings.log_file or (settings.data_root / "logs" / "pipeline.log")
+    if not Path(log_file).is_absolute():
+        log_file = settings.data_root / log_file
+    configure_logging(
+        log_to_file=settings.log_to_file,
+        log_file=Path(log_file) if settings.log_to_file else None,
+        log_to_console=settings.log_to_console,
+        level=logging.DEBUG if settings.verbose else logging.INFO,
+    )
+
+
+def _catalog(settings: Settings) -> Catalog:
+    return Catalog.open(settings.catalog_root)
+
+
+def _context(settings: Settings, catalog: Catalog, refresh: List[str]) -> Context:
+    return Context(
+        settings,
+        catalog,
+        refresh=refresh or (),
+        max_attempts=settings.max_attempts,
+        retry_after=timedelta(hours=settings.retry_after_hours),
+    )
+
+
+def _parse_identifier(token: str) -> Identifier:
+    """Recognise a bare pmid, a PMC id or a DOI without being told which."""
+    token = token.strip()
+    if not token:
+        raise typer.BadParameter("empty identifier")
+    lowered = token.lower()
+    if lowered.startswith("pmc") or lowered.startswith("https://www.ncbi.nlm.nih.gov/pmc"):
+        return Identifier(pmcid=token)
+    if token.isdigit():
+        return Identifier(pmid=token)
+    if lowered.startswith("10.") or "doi.org/" in lowered or lowered.startswith("doi:"):
+        return Identifier(doi=token)
+    if "pubmed.ncbi.nlm.nih.gov" in lowered:
+        return Identifier(pmid=token)
+    raise typer.BadParameter(f"could not tell what kind of identifier {token!r} is")
+
+
+# -- add ---------------------------------------------------------------------
+
+
+@app.command()
+def add(
+    identifiers: Optional[List[str]] = typer.Argument(
+        None, help="PMIDs, PMC ids or DOIs, mixed freely."
+    ),
+    file: Optional[Path] = typer.Option(
+        None, "--file", "-f", exists=True, help="Text file with one identifier per line."
+    ),
+    manifest: Optional[Path] = typer.Option(
+        None, "--manifest", "-m", exists=True, help="JSONL identifiers manifest."
+    ),
+    query: Optional[List[str]] = typer.Option(
+        None, "--query", "-q", help="PubMed query to search (repeatable)."
+    ),
+    start_year: Optional[int] = typer.Option(
+        None, "--start-year", help="Earliest year for queries."
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Register articles in the catalog. Downloads nothing."""
+    settings = _settings(config)
+    found: List[Identifier] = [_parse_identifier(token) for token in (identifiers or [])]
+
+    if file:
+        found += [
+            _parse_identifier(line)
+            for line in file.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
+    if manifest:
+        found += list(Identifiers.load(manifest).identifiers)
+    if query:
+        from ingestion_workflow.services.search import PubMedSearchService
+
+        for text in query:
+            service = PubMedSearchService(text, settings, start_year=start_year or 1990)
+            results = service.search()
+            typer.echo(f"query {text!r}: {len(results.identifiers):,} results")
+            found += list(results.identifiers)
+
+    if not found:
+        raise typer.BadParameter("give identifiers, --file, --manifest or --query")
+
+    with _catalog(settings) as catalog:
+        before = catalog.count_articles()
+        refs = catalog.register_many(found)
+        after = catalog.count_articles()
+
+    typer.echo(
+        f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
+        f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
+    )
+
+
+# -- run ---------------------------------------------------------------------
 
 
 @app.command()
 def run(
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
+    stage: Optional[List[str]] = typer.Option(
+        None, "--stage", "-s", help=f"Stages to run: {', '.join(STAGE_ORDER)} (repeatable)."
     ),
-    stages: Optional[List[str]] = typer.Option(
-        None,
-        "--stages",
-        "-s",
-        help="Subset of pipeline stages to execute in canonical order.",
+    select: Select = typer.Option(
+        Select.PENDING, "--select", help="Which articles, relative to what is already done."
     ),
-    ignore_cache: Optional[List[str]] = typer.Option(
-        None,
-        "--ignore-cache",
-        "-i",
-        help="Stage names whose caches should be ignored (repeatable).",
+    manifest: Optional[Path] = typer.Option(
+        None, "--manifest", "-m", exists=True, help="Restrict to a JSONL manifest."
     ),
-    manifest_path: Optional[Path] = typer.Option(
+    refresh: Optional[List[str]] = typer.Option(
         None,
-        "--manifest",
-        "-m",
-        exists=False,
-        help="Identifiers manifest to use when skipping gather stage.",
+        "--refresh",
+        "-r",
+        help="Ignore cached results for this stage (repeatable, or 'all').",
     ),
-    use_cached_inputs: Optional[bool] = typer.Option(
-        None,
-        "--use-cached-inputs/--no-use-cached-inputs",
-        help="Toggle hydration from cached outputs when stages are skipped.",
-    ),
+    limit: Optional[int] = typer.Option(None, "--limit", "-n", help="Stop after N articles."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and change nothing."),
+    config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Run the orchestrated ingestion workflow pipeline."""
+    """Advance articles through the pipeline."""
+    settings = _settings(config)
+    stages = build(stage, settings)
 
-    overrides: dict[str, object] = {}
-    if stages:
-        overrides["stages"] = [stage.lower() for stage in stages]
-    if ignore_cache:
-        overrides["ignore_cache_stages"] = [stage.lower() for stage in ignore_cache]
-    if manifest_path is not None:
-        overrides["manifest_path"] = manifest_path
-    if use_cached_inputs is not None:
-        overrides["use_cached_inputs"] = use_cached_inputs
-    settings = load_settings(config_path, overrides=overrides or None)
-    run_pipeline(settings=settings)
+    with _catalog(settings) as catalog:
+        selection = _select(catalog, manifest, select, stage)
+        if limit:
+            selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
+        typer.echo(f"selection: {selection.description}\n")
+        if not selection.refs:
+            typer.echo("nothing to do.")
+            return
+
+        ctx = _context(settings, catalog, refresh or [])
+        report = run_stages(ctx, stages, selection.refs, dry_run=dry_run)
+
+    typer.echo(_render(report, dry_run=dry_run))
+
+
+def _select(catalog: Catalog, manifest: Optional[Path], mode: Select, stage) -> Selection:
+    base = from_manifest(catalog, manifest) if manifest else everything(catalog)
+    only = stage[0] if stage and len(stage) == 1 else None
+    return narrow(catalog, base, mode, only)
+
+
+def _render(report, *, dry_run: bool) -> str:
+    lines = ["  plan" if dry_run else "  result"]
+    for stage_report in report.stages.values():
+        lines.append("    " + stage_report.line(planned_only=dry_run))
+    return "\n".join(lines)
+
+
+# -- status ------------------------------------------------------------------
 
 
 @app.command()
-def search(
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
-    queries: Optional[List[str]] = typer.Option(
-        None,
-        "--query",
-        "-q",
-        help="PubMed query to run (repeatable).",
-    ),
-    start_year: Optional[int] = typer.Option(
-        None,
-        "--start-year",
-        help="Earliest publication year for all queries.",
-    ),
-    manifest_path: Optional[Path] = typer.Option(
-        None,
-        "--manifest",
-        "-m",
-        exists=False,
-        help="Optional identifiers manifest to seed the search.",
-    ),
-    label: Optional[str] = typer.Option(
-        None,
-        "--label",
-        "-l",
-        help="Label to use when saving the manifest.",
-    ),
-) -> None:
-    """Gather identifiers via PubMed queries and persist a manifest."""
+def status(config: Optional[Path] = ConfigOption) -> None:
+    """Show how many articles sit in each stage and state."""
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        total = catalog.count_articles()
+        counts = catalog.status_counts()
 
-    settings = load_settings(config_path)
-    manifest_seed = manifest_path or settings.manifest_path
-    if not queries and manifest_seed is None:
-        raise typer.BadParameter("Provide at least one --query or --manifest to search.")
-
-    search_queries = (
-        [SearchQuery(query=query, start_year=start_year) for query in queries]
-        if queries
-        else None
-    )
-    result = gather_identifiers(
-        settings=settings,
-        manifest=manifest_seed,
-        queries=search_queries,
-        label=label,
-    )
-    typer.echo(
-        "Gather stage produced "
-        f"{len(result.identifiers)} identifiers; manifest saved to "
-        f"{settings.data_root / 'manifests'} (check logs for exact filename)."
-    )
-
-
-@app.command()
-def download(
-    manifest_path: Optional[Path] = typer.Option(
-        None,
-        "--manifest",
-        "-m",
-        exists=False,
-        help="Identifiers manifest to download content for.",
-    ),
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
-) -> None:
-    """Run the download stage for a manifest."""
-
-    settings = load_settings(config_path)
-    identifiers = _load_identifiers_from_manifest(settings, manifest_path)
-    if not identifiers.identifiers:
-        typer.echo("Manifest contains no identifiers; nothing to download.")
+    typer.echo(f"catalog: {total:,} articles at {settings.catalog_root}\n")
+    if not counts:
+        typer.echo("no stage has run yet.")
         return
 
-    metrics = StageMetrics()
-    results = run_downloads(identifiers, settings=settings, metrics=metrics)
-    success_slugs = {
-        result.identifier.slug
-        for result in results
-        if result.success and result.identifier
-    }
-    total = len(identifiers.identifiers)
-    typer.echo(
-        "Download stage complete: "
-        f"{len(success_slugs)}/{total} identifiers succeeded (cache hits: {metrics.cache_hits})."
-    )
+    states = [s.value for s in Status]
+    typer.echo(f"{'stage':<12}" + "".join(f"{state:>12}" for state in states))
+    for name in STAGE_ORDER:
+        row = counts.get(name)
+        if not row:
+            continue
+        typer.echo(f"{name:<12}" + "".join(f"{row.get(state, 0):>12,}" for state in states))
+
+
+# -- show --------------------------------------------------------------------
 
 
 @app.command()
-def extract(
-    manifest_path: Optional[Path] = typer.Option(
-        None,
-        "--manifest",
-        "-m",
-        exists=False,
-        help="Identifiers manifest to operate on.",
-    ),
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
+def show(
+    identifier: str = typer.Argument(..., help="A PMID, PMC id, DOI or article id."),
+    config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Run the extract stage using cached downloads."""
+    """Print everything the catalog knows about one article."""
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        try:
+            ref = catalog.resolve(_parse_identifier(identifier))
+        except typer.BadParameter:
+            ref = catalog.ref(identifier) if catalog.identifier(identifier) else None
+        if ref is None or not any(vars(ref.identifier).values()):
+            typer.echo(f"not in the catalog: {identifier}")
+            raise typer.Exit(code=1)
 
-    settings = load_settings(config_path)
-    identifiers = _load_identifiers_from_manifest(settings, manifest_path)
-    if not identifiers.identifiers:
-        typer.echo("Manifest contains no identifiers; nothing to extract.")
-        return
-
-    downloads = _hydrate_downloads_from_cache(settings, identifiers)
-    if not downloads:
-        typer.echo("No cached downloads found for the provided manifest.")
-        raise typer.Exit(code=1)
-
-    metrics = StageMetrics()
-    bundles = run_extraction(downloads, settings=settings, metrics=metrics)
-    typer.echo(
-        "Extract stage complete: "
-        f"{len(bundles)} bundles from {len(downloads)} downloads (cache hits: {metrics.cache_hits})."
-    )
-
-
-@app.command("index-legacy-downloads")
-def index_legacy_downloads_cli(
-    extractor_name: DownloadSource = typer.Argument(
-        ...,
-        case_sensitive=False,
-        help="Download source name whose legacy files should be indexed (ace|pubget).",
-    ),
-    legacy_directory: Path = typer.Argument(
-        ...,
-        exists=False,
-        file_okay=False,
-        dir_okay=True,
-        help="Path to the legacy download directory to index.",
-    ),
-    update: bool = typer.Option(
-        False,
-        "--update/--no-update",
-        help="Refresh existing cache entries with newly detected files instead of adding new entries.",
-    ),
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
-    namespace: Optional[str] = typer.Option(
-        None,
-        "--namespace",
-        "-n",
-        help="Cache namespace override (defaults to downloads namespace).",
-    ),
-) -> None:
-    """Index legacy download payloads for a given extractor into the cache."""
-
-    settings = load_settings(config_path)
-    resolved_dir = _resolve_working_path(settings, legacy_directory)
-
-    if not resolved_dir.exists():
-        raise typer.BadParameter(f"Legacy directory not found: {resolved_dir}")
-    if not resolved_dir.is_dir():
-        raise typer.BadParameter(f"Legacy path must be a directory: {resolved_dir}")
-
-    cache_namespace = namespace or cache.DOWNLOAD_CACHE_NAMESPACE
-    before_index = cache.load_download_index(
-        settings,
-        extractor_name.value,
-        namespace=cache_namespace,
-    )
-    before = before_index.count()
-
-    result = cache.index_legacy_downloads(
-        settings,
-        extractor_name.value,
-        resolved_dir,
-        update_existing=update,
-        namespace=cache_namespace,
-    )
-    after = result.index.count()
-    added = result.added if not update else 0
-    updated = result.updated
-
-    if update:
-        typer.echo(
-            "Legacy indexing update complete: "
-            f"{updated} entries refreshed (total {after} cached for {extractor_name.value})."
+        aliases = " · ".join(
+            f"{kind} {value}"
+            for kind, value in vars(ref.identifier).items()
+            if value and kind != "other_ids"
         )
-    else:
-        # fallback to before/after diff when add tracking was bypassed (e.g. no batches)
-        added = added or max(0, after - before)
-        typer.echo(
-            "Legacy indexing complete: "
-            f"{added} new entries added (total {after} cached for {extractor_name.value})."
-        )
-
-
-@app.command()
-def create_analyses(
-    bundles_path: Path = typer.Argument(
-        ...,
-        exists=True,
-        readable=True,
-        help="Path to JSON containing ArticleExtractionBundle payloads.",
-    ),
-    output_path: Optional[Path] = typer.Option(
-        None,
-        "--output",
-        "-o",
-        help="Optional output path for the analyses JSON (defaults to stdout).",
-    ),
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
-    extractor_name: Optional[str] = typer.Option(
-        None,
-        "--extractor",
-        "-e",
-        help="Extractor namespace to use for cache lookups.",
-    ),
-    export: Optional[bool] = typer.Option(
-        None,
-        "--export/--no-export",
-        help="Enable exporting bundle artifacts to the data-root export folder.",
-    ),
-    export_overwrite: Optional[bool] = typer.Option(
-        None,
-        "--export-overwrite/--no-export-overwrite",
-        help="Overwrite exported files when they already exist.",
-    ),
-    n_llm_workers: Optional[int] = typer.Option(
-        None,
-        "--n-llm-workers",
-        help="Number of parallel workers for LLM analysis creation.",
-    ),
-) -> None:
-    """Execute the create-analyses workflow step for serialized bundles."""
-
-    settings = load_settings(config_path)
-    overrides: dict[str, object] = {}
-    if export is not None:
-        overrides["export"] = export
-    if export_overwrite is not None:
-        overrides["export_overwrite"] = export_overwrite
-    if n_llm_workers is not None:
-        overrides["n_llm_workers"] = max(1, n_llm_workers)
-    if overrides:
-        settings = settings.merge_overrides(overrides)
-    payload = json.loads(bundles_path.read_text(encoding="utf-8"))
-    bundles = _load_bundles(payload)
-    results = create_analyses_workflow.run_create_analyses(
-        bundles,
-        settings=settings,
-        extractor_name=extractor_name,
-    )
-    serializable = {
-        article_slug: {
-            table_id: collection.to_dict() for table_id, collection in table_map.items()
-        }
-        for article_slug, table_map in results.items()
-    }
-    output = json.dumps(serializable, indent=2, sort_keys=True)
-    if output_path is None:
-        typer.echo(output)
-    else:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(output, encoding="utf-8")
-        typer.echo(f"Wrote analyses to {output_path}")
-
-
-@app.command(name="upload-analyses")
-def upload_analyses(
-    analyses_path: Optional[Path] = typer.Argument(
-        None,
-        exists=True,
-        readable=True,
-        help="Optional path to JSON mapping slug -> table_id -> AnalysisCollection. If omitted, hydrate from cache.",
-    ),
-    bundles_path: Optional[Path] = typer.Option(
-        None,
-        "--bundles",
-        "-b",
-        exists=True,
-        readable=True,
-        help="Optional JSON of ArticleExtractionBundle payloads to supply metadata.",
-    ),
-    config_path: Optional[Path] = typer.Option(
-        None,
-        "--config",
-        "-c",
-        exists=False,
-        help="Optional YAML settings override.",
-    ),
-    behavior: Optional[UploadBehavior] = typer.Option(
-        None,
-        "--behavior",
-        help="Conflict behavior for existing llm studies (update or insert_new).",
-    ),
-    metadata_only: Optional[bool] = typer.Option(
-        None,
-        "--metadata-only/--with-coordinates",
-        help="When set, only metadata is updated and coordinates are untouched.",
-    ),
-    metadata_mode: Optional[UploadMetadataMode] = typer.Option(
-        None,
-        "--metadata-mode",
-        help="Metadata update strategy: fill or overwrite.",
-    ),
-    output_path: Optional[Path] = typer.Option(
-        None,
-        "--output",
-        "-o",
-        help="Optional path to write upload outcomes JSON.",
-    ),
-) -> None:
-    """Execute the upload stage from serialized analyses output."""
-
-    settings = load_settings(config_path)
-    analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
-    if analyses_path is not None:
-        analyses = _load_analyses_collections(analyses_path)
-    else:
-        analyses = cache.load_cached_analysis_collections(settings)
-        if not analyses:
-            raise typer.BadParameter(
-                "No analyses found in cache; provide analyses_path or run create_analyses first."
+        typer.echo(f"article {ref.id}\n  aliases   {aliases}")
+        for artifact in catalog.artifacts_for_article(ref.id):
+            label = f"{artifact.stage}/{artifact.source}" if artifact.source else artifact.stage
+            summary = ", ".join(f"{k}={v}" for k, v in sorted(artifact.summary.items()) if v)
+            detail = artifact.error or summary or "-"
+            typer.echo(
+                f"  {label:<18} {artifact.status.value:<10} {artifact.updated_at[:10]}  {detail}"
             )
-    bundles: List[ArticleExtractionBundle] = []
-    metadata_by_slug: Dict[str, Any] = {}
-    if bundles_path is not None:
-        payload = json.loads(bundles_path.read_text(encoding="utf-8"))
-        bundles = list(_load_bundles(payload))
-        metadata_by_slug = {bundle.article_data.slug: bundle.article_metadata for bundle in bundles}
 
-    state = PipelineState(analyses=analyses, bundles=bundles)
-    outcomes = run_upload(
-        state,
-        settings=settings,
-        behavior=behavior,
-        metadata_only=metadata_only,
-        metadata_mode=metadata_mode,
-    )
 
-    summary = {
-        "success": sum(1 for outcome in outcomes if outcome.success),
-        "failed": sum(1 for outcome in outcomes if not outcome.success),
-    }
-    if output_path is None:
-        typer.echo(json.dumps({"summary": summary, "outcomes": [outcome.__dict__ for outcome in outcomes]}, indent=2))
-    else:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(
-            json.dumps(
-                {"summary": summary, "outcomes": [outcome.__dict__ for outcome in outcomes]},
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        typer.echo(f"Wrote upload outcomes to {output_path}")
+# -- migrate -----------------------------------------------------------------
 
 
 @app.command()
-def sync():
-    pass
+def migrate(
+    old_cache: Path = typer.Argument(
+        ..., exists=True, file_okay=False, help="Pre-refactor .cache directory"
+    ),
+    stage: Optional[List[str]] = typer.Option(None, "--stage", "-s", help="Only these stages."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Count what would be imported."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Import pre-refactor sqlite caches into the catalog. Reads only."""
+    from ingestion_workflow.migrate import migrate_caches
+
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
+    typer.echo(report.render())
 
 
 def main() -> None:
-    """Main entry point for CLI."""
     app()
 
 
 if __name__ == "__main__":
     main()
-
-
-def _load_bundles(payload: Any) -> Iterable[ArticleExtractionBundle]:
-    """Deserialize bundles from JSON-compatible payloads."""
-    if isinstance(payload, dict):
-        if "bundles" in payload:
-            payload = payload["bundles"]
-        elif all(isinstance(value, dict) for value in payload.values()):
-            payload = payload.values()
-    if not isinstance(payload, (list, tuple)):
-        raise typer.BadParameter("Expected a list or mapping of ArticleExtractionBundle payloads.")
-    return [
-        ArticleExtractionBundle.from_dict(item)  # type: ignore[arg-type]
-        for item in payload
-    ]
-
-
-def _load_analyses_collections(analyses_path: Path) -> Dict[str, Dict[str, AnalysisCollection]]:
-    """Load serialized analysis collections from JSON file."""
-    data = json.loads(analyses_path.read_text(encoding="utf-8"))
-    analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
-    for slug, table_map in data.items():
-        per_table: Dict[str, AnalysisCollection] = {}
-        for table_id, payload in table_map.items():
-            per_table[table_id] = AnalysisCollection.from_dict(payload)
-        analyses[str(slug)] = per_table
-    return analyses
-
-
-def _resolve_manifest_path(
-    settings: Settings,
-    manifest_path: Optional[Path],
-) -> Path:
-    candidate = manifest_path or settings.manifest_path
-    if candidate is None:
-        raise typer.BadParameter("Manifest path must be provided via --manifest or configuration.")
-
-    resolved = Path(candidate)
-    if not resolved.is_absolute():
-        resolved = settings.data_root / resolved
-
-    if not resolved.exists():
-        raise FileNotFoundError(f"Manifest file not found: {resolved}")
-
-    return resolved
-
-
-def _load_identifiers_from_manifest(
-    settings: Settings,
-    manifest_path: Optional[Path],
-) -> Identifiers:
-    path = _resolve_manifest_path(settings, manifest_path)
-    return Identifiers.load(path)
-
-
-def _hydrate_downloads_from_cache(
-    settings: Settings,
-    identifiers: Identifiers,
-) -> List[DownloadResult]:
-    if not identifiers.identifiers:
-        return []
-
-    hydrated: dict[str, DownloadResult] = {}
-    for source_name in settings.download_sources:
-        index = cache.load_download_index(settings, source_name)
-        for identifier in identifiers.identifiers:
-            slug = identifier.slug
-            if slug in hydrated:
-                continue
-            entry = index.get_download(slug)
-            if entry is None:
-                continue
-            hydrated[slug] = entry.result
-
-    return list(hydrated.values())
-
-
-def _resolve_working_path(settings: Settings, path: Path) -> Path:
-    """Resolve user-provided directories relative to data_root when applicable."""
-    resolved = path if path.is_absolute() else settings.data_root / path
-    return resolved

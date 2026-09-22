@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import MutableMapping
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional
-
 import json
 import re
+from collections.abc import MutableMapping
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from ingestion_workflow.utils import slugify
 
