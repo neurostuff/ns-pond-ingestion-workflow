@@ -174,33 +174,63 @@ def _resolve_remote_bind_host(settings: Settings) -> str:
     except Exception:
         logger.debug("Local DNS lookup failed for %s; attempting remote docker inspect.", host)
 
-    network_name = getattr(settings, "upload_remote_container_network", "nginx-proxy")
-    inspect_cmd = (
-        f"docker inspect -f '{{{{ (index .NetworkSettings.Networks \"{network_name}\").IPAddress }}}}' "
-        f"{host}"
+    network_name = settings.upload_remote_container_network
+    address = _container_ip(settings, host, network_name)
+    if address:
+        logger.info(
+            "Resolved remote container %s on network %s to %s",
+            host,
+            network_name,
+            address,
+        )
+        return address
+
+    # The container need not be on the configured network -- a compose stack
+    # names its own. Rather than fail the tunnel, take whichever address it
+    # does have; a container on several networks is reachable on any of them.
+    address = _container_ip(settings, host, network=None)
+    if address:
+        logger.info(
+            "Remote container %s is not on %s; using its address %s",
+            host,
+            network_name,
+            address,
+        )
+        return address
+
+    logger.warning(
+        "Could not resolve remote container %s to an address; using the name, "
+        "which only works if the remote host can resolve it.",
+        host,
     )
+    return host
+
+
+def _container_ip(settings: Settings, host: str, network: Optional[str]) -> Optional[str]:
+    """Ask the remote docker for a container's IP, on one network or any."""
+    if network:
+        template = (
+            '{{ (index .NetworkSettings.Networks "' + network + '").IPAddress }}'
+        )
+    else:
+        template = "{{ range .NetworkSettings.Networks }}{{ .IPAddress }} {{ end }}"
+
     try:
-        result = subprocess.check_output(
+        output = subprocess.check_output(
             [
                 "ssh",
                 f"{settings.upload_ssh_user}@{settings.upload_ssh_host}",
-                inspect_cmd,
+                f"docker inspect -f '{template}' {host}",
             ],
             text=True,
+            stderr=subprocess.DEVNULL,
             timeout=10,
         ).strip()
-        if result:
-            logger.info(
-                "Resolved remote container %s on network %s to %s",
-                host,
-                network_name,
-                result,
-            )
-            return result
     except Exception as exc:  # pragma: no cover - best-effort resolution
-        logger.warning(
-            "Failed to resolve remote bind host %s via docker inspect: %s",
-            host,
-            exc,
-        )
-    return host
+        logger.debug("docker inspect for %s failed: %s", host, exc)
+        return None
+
+    for candidate in output.split():
+        if candidate and candidate != "<no value>":
+            return candidate
+    return None

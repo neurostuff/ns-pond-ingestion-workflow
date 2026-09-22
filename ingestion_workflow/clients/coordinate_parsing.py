@@ -45,6 +45,15 @@ class CoordinateParsingClient(GenericLLMClient):
             ParseAnalysesOutput,
             "parse_analyses",
         )
+        # Some reasoning models reject function tools unless reasoning is
+        # switched off: "Function tools with reasoning_effort are not supported
+        # ... set reasoning_effort to 'none'". Only sent when configured, since
+        # models that do not know the parameter reject it in turn.
+        extra = {}
+        effort = getattr(self.settings, "llm_reasoning_effort", None)
+        if effort:
+            extra["reasoning_effort"] = effort
+
         response = self.client.chat.completions.create(
             model=resolved_model,
             messages=[
@@ -60,6 +69,7 @@ class CoordinateParsingClient(GenericLLMClient):
             ],
             functions=[function_schema],
             function_call={"name": "parse_analyses"},
+            **extra,
         )
         function_call = response.choices[0].message.function_call
         if not function_call:

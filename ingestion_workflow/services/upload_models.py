@@ -256,3 +256,34 @@ class PointValue(Base):
     value: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     point: Mapped[Point | None] = relationship(back_populates="values")
+
+
+class Annotation(Base):
+    """Read-only view of an annotation, for its ``note_keys`` defaults."""
+
+    __tablename__ = "annotations"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True, default=_gen_id)
+    name: Mapped[str | None] = mapped_column(String, nullable=True)
+    note_keys: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+
+class AnnotationAnalysis(Base):
+    """Link between an annotation and an analysis, carrying the annotator's note.
+
+    Deleting an analysis cascades to this row, so re-uploading a study would
+    silently discard whatever an annotator had recorded against it. Upload reads
+    this table to decide which analyses it is allowed to remove.
+    """
+
+    __tablename__ = "annotation_analyses"
+
+    annotation_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("annotations.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    analysis_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("analyses.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    study_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    studyset_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    note: Mapped[dict | None] = mapped_column(JSON, nullable=True)

@@ -144,6 +144,15 @@ class Settings(BaseSettings):
         description="Specific model to use for coordinate extraction",
     )
 
+    llm_reasoning_effort: Optional[str] = Field(
+        default=None,
+        description=(
+            "Reasoning effort to send with coordinate parsing; leave unset for "
+            "models that reject the parameter. Reasoning models that refuse "
+            "function tools alongside reasoning need 'none'"
+        ),
+    )
+
     export: bool = Field(
         default=False,
         description="Enable exporting extraction outputs to disk mirrors",
@@ -431,6 +440,13 @@ class Settings(BaseSettings):
     upload_remote_bind_host: str = Field(
         default="store-store-pgsql17-1",
         description="Remote bind host inside SSH tunnel (container hostname)",
+    )
+    upload_remote_container_network: str = Field(
+        default="nginx-proxy",
+        description=(
+            "Docker network to look the remote bind host up on when it is a "
+            "container name that does not resolve outside the remote host"
+        ),
     )
     upload_remote_bind_port: int = Field(
         default=5432,

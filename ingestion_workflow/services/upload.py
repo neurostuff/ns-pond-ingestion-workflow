@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-from typing import Dict, Iterable, List, Mapping, Optional
+from dataclasses import dataclass, replace
+from difflib import SequenceMatcher
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from datetime import datetime, timezone
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from sqlalchemy import delete, select
+from sqlalchemy.orm import selectinload
 
 from ingestion_workflow.models import (
     Analysis,
@@ -25,6 +27,10 @@ from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.workflow.common import create_progress_bar
 from ingestion_workflow.services.logging import console_kwargs
 from ingestion_workflow.services.upload_models import Analysis as DbAnalysis
+from ingestion_workflow.services.upload_models import Annotation as DbAnnotation
+from ingestion_workflow.services.upload_models import (
+    AnnotationAnalysis as DbAnnotationAnalysis,
+)
 from ingestion_workflow.services.upload_models import BaseStudy as DbBaseStudy
 from ingestion_workflow.services.upload_models import Point as DbPoint
 from ingestion_workflow.services.upload_models import PointValue as DbPointValue
@@ -32,6 +38,194 @@ from ingestion_workflow.services.upload_models import Study as DbStudy
 from ingestion_workflow.services.upload_models import Table as DbTable
 
 logger = get_logger(__name__)
+
+
+# An analysis is matched to an existing one mostly on the coordinates it
+# reports: names drift between extractions ("Table 2" vs "Table 2-1") while the
+# peaks do not. Names only break ties, and carry a match on their own when
+# neither side has coordinates to compare.
+_COORD_MATCH_THRESHOLD = 0.5
+_NAME_MATCH_THRESHOLD = 0.9
+_COORD_ROUNDING = 0
+
+
+@dataclass
+class ReconcilePlan:
+    """What upload intends to do with one study's existing analyses."""
+
+    updated: List[Tuple[object, int]]     # (existing row, index into incoming)
+    inserted: List[int]                   # indices into incoming
+    deleted: List[object]                 # existing rows to remove
+    kept_annotated: List[object]          # unmatched, but annotated: left alone
+
+
+def _normalize_analysis_name(name: Optional[str]) -> str:
+    """Strip the -2, -3 suffixes extraction adds to repeated names.
+
+    Each pass must consume a hyphen, or a name that is entirely digits ("42")
+    would rsplit to itself and loop forever.
+    """
+    text = (name or "").strip().lower()
+    while "-" in text:
+        head, tail = text.rsplit("-", 1)
+        if not tail.strip().isdigit():
+            break
+        text = head.strip()
+    return " ".join(text.split())
+
+
+def _coordinate_key(x, y, z) -> Optional[Tuple[float, float, float]]:
+    try:
+        return (
+            round(float(x), _COORD_ROUNDING),
+            round(float(y), _COORD_ROUNDING),
+            round(float(z), _COORD_ROUNDING),
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def _coordinate_set(points: Iterable) -> set:
+    keys = set()
+    for point in points or []:
+        key = _coordinate_key(
+            getattr(point, "x", None), getattr(point, "y", None), getattr(point, "z", None)
+        )
+        if key is not None:
+            keys.add(key)
+    return keys
+
+
+def _jaccard(left: set, right: set) -> float:
+    if not left or not right:
+        return 0.0
+    union = left | right
+    return len(left & right) / len(union) if union else 0.0
+
+
+def _name_similarity(left: Optional[str], right: Optional[str]) -> float:
+    a, b = _normalize_analysis_name(left), _normalize_analysis_name(right)
+    if not a or not b:
+        return 0.0
+    if a == b:
+        return 1.0
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def _match_score(existing_coords: set, existing_name, incoming_coords: set, incoming_name):
+    """Score a candidate pairing, or None when the pair is not a match.
+
+    Coordinates decide it when either side has them. Two analyses with no
+    coordinates at all can still pair on a near-identical name, which is the
+    only evidence available for them.
+
+    Every pair in a study is scored, so the cheap test comes first: set
+    intersection rules out almost all pairs, and the name comparison -- a
+    SequenceMatcher, quadratic in name length -- runs only for the few that
+    survive it.
+    """
+    if not existing_coords and not incoming_coords:
+        name = _name_similarity(existing_name, incoming_name)
+        return name if name >= _NAME_MATCH_THRESHOLD else None
+    overlap = _jaccard(existing_coords, incoming_coords)
+    if overlap < _COORD_MATCH_THRESHOLD:
+        return None
+    # name only breaks ties between equally good coordinate matches
+    return overlap + _name_similarity(existing_name, incoming_name) / 100.0
+
+
+def plan_reconciliation(
+    existing: Sequence,
+    incoming_names: Sequence[Optional[str]],
+    incoming_coords: Sequence[set],
+    annotated_ids: set,
+) -> ReconcilePlan:
+    """Decide, for one study, what to update, insert, delete and leave alone.
+
+    Matched pairs are updated in place so the analysis keeps its id and any
+    annotation attached to it survives. An unmatched existing analysis is
+    removed only when nothing is annotated against it; when something is, it
+    stays and the new analysis is appended alongside.
+    """
+    existing_coords = [_coordinate_set(getattr(row, "points", [])) for row in existing]
+
+    candidates = []
+    for e_index, row in enumerate(existing):
+        for i_index, name in enumerate(incoming_names):
+            score = _match_score(
+                existing_coords[e_index],
+                getattr(row, "name", None),
+                incoming_coords[i_index],
+                name,
+            )
+            if score is not None:
+                candidates.append((score, e_index, i_index))
+    candidates.sort(key=lambda c: (-c[0], c[1], c[2]))
+
+    taken_existing: set = set()
+    taken_incoming: set = set()
+    updated = []
+    for _score, e_index, i_index in candidates:
+        if e_index in taken_existing or i_index in taken_incoming:
+            continue
+        taken_existing.add(e_index)
+        taken_incoming.add(i_index)
+        updated.append((existing[e_index], i_index))
+
+    deleted, kept = [], []
+    for e_index, row in enumerate(existing):
+        if e_index in taken_existing:
+            continue
+        if getattr(row, "id", None) in annotated_ids:
+            kept.append(row)
+        else:
+            deleted.append(row)
+
+    inserted = [i for i in range(len(incoming_names)) if i not in taken_incoming]
+    return ReconcilePlan(
+        updated=updated, inserted=inserted, deleted=deleted, kept_annotated=kept
+    )
+
+
+def _default_note_for(note_keys) -> dict:
+    """Mirror of neurostore's build_default_note, for recognising an untouched note.
+
+    A row created by neurostore's backfill carries the annotation's defaults,
+    which means the analysis merely belongs to an annotated studyset. Only a
+    note that differs from those defaults represents work someone did.
+    """
+    if not note_keys:
+        return {}
+    if not isinstance(note_keys, dict):
+        return {key: None for key in note_keys}
+    defaults = {}
+    for key, descriptor in note_keys.items():
+        if isinstance(descriptor, dict):
+            if "default" in descriptor:
+                defaults[key] = descriptor.get("default")
+                continue
+            note_type = descriptor.get("type")
+        else:
+            note_type = descriptor
+        defaults[key] = (key == "included") if note_type == "boolean" else None
+    return defaults
+
+
+def _note_is_substantive(note, note_keys) -> bool:
+    """True when a note holds something other than the annotation's defaults."""
+    if not note:
+        return False
+    if not isinstance(note, dict):
+        return True
+    defaults = _default_note_for(note_keys)
+    for key, value in note.items():
+        if value in (None, "", [], {}):
+            continue
+        if key in defaults and value == defaults[key]:
+            continue
+        return True
+    return False
+
 
 
 def _sanitize_text(value: str | None) -> str | None:
@@ -331,9 +525,8 @@ class UploadService:
             metadata_mode,
         )
 
-        # When updating, replace analyses/points/tables content (skip in metadata-only mode)
-        if not metadata_only and behavior == UploadBehavior.UPDATE and study.id:
-            self._clear_study_content(session, study.id)
+        # Analyses are reconciled below rather than cleared: dropping them all
+        # would cascade to annotation_analyses and discard annotator work.
 
         table_map: Dict[str, DbTable] = {}
         analysis_ids: List[str] = []
@@ -355,6 +548,9 @@ class UploadService:
                 success=True,
             )
 
+        # Describe what this extraction wants the study to contain, before
+        # touching any row, so it can be matched against what is already there.
+        desired = []
         order_counter = 1
         for prepared in item.analyses:
             table_ref = table_map.get(prepared.table.table_id)
@@ -362,24 +558,82 @@ class UploadService:
             counter_key = base_name or prepared.table.table_id
             count = name_counters.get(counter_key, 0) + 1
             name_counters[counter_key] = count
-            analysis_name = base_name if count == 1 else f"{base_name}-{count}"
-            analysis_row = DbAnalysis(
-                study_id=study.id,
-                table_id=table_ref.id if table_ref else None,
-                name=analysis_name,
-                description=prepared.analysis.description or prepared.table.caption or "",
-                metadata_={
-                    **(prepared.analysis.metadata or {}),
-                    "table": prepared.table.metadata,
-                },
-                order=order_counter,
+            desired.append(
+                {
+                    "name": base_name if count == 1 else f"{base_name}-{count}",
+                    "table_id": table_ref.id if table_ref else None,
+                    "description": prepared.analysis.description or prepared.table.caption or "",
+                    "metadata_": {
+                        **(prepared.analysis.metadata or {}),
+                        "table": prepared.table.metadata,
+                    },
+                    "order": order_counter,
+                    "prepared": prepared,
+                }
             )
             order_counter += 1
-            session.add(analysis_row)
+
+        # selectinload, not lazy: matching reads every analysis's points, and
+        # over an SSH tunnel one query per analysis dominates the whole stage.
+        existing_rows = (
+            list(
+                session.execute(
+                    select(DbAnalysis)
+                    .where(DbAnalysis.study_id == study.id)
+                    .options(selectinload(DbAnalysis.points))
+                ).scalars()
+            )
+            if study.id and behavior == UploadBehavior.UPDATE
+            else []
+        )
+        annotated_ids = self._annotated_analysis_ids(
+            session, [row.id for row in existing_rows]
+        )
+        plan = plan_reconciliation(
+            existing_rows,
+            [entry["name"] for entry in desired],
+            [
+                _coordinate_set(entry["prepared"].analysis.coordinates)
+                for entry in desired
+            ],
+            annotated_ids,
+        )
+        if existing_rows:
+            logger.info(
+                "[upload id=%s] analyses: %d updated, %d added, %d removed, "
+                "%d kept for their annotations",
+                item.slug,
+                len(plan.updated),
+                len(plan.inserted),
+                len(plan.deleted),
+                len(plan.kept_annotated),
+            )
+
+        for row in plan.deleted:
+            self._delete_points(session, row.id)
+            # Core delete rather than session.delete: the ORM would try to
+            # cascade to points this has already removed and warn about it.
+            session.expunge(row)
+            session.execute(delete(DbAnalysis).where(DbAnalysis.id == row.id))
+
+        assignments = [(row, desired[index]) for row, index in plan.updated]
+        for index in plan.inserted:
+            new_row = DbAnalysis(study_id=study.id)
+            session.add(new_row)
+            assignments.append((new_row, desired[index]))
+
+        for analysis_row, entry in assignments:
+            prepared = entry["prepared"]
+            analysis_row.table_id = entry["table_id"]
+            analysis_row.name = entry["name"]
+            analysis_row.description = entry["description"]
+            analysis_row.metadata_ = entry["metadata_"]
+            analysis_row.order = entry["order"]
             session.flush()  # ensure id for points
             analysis_ids.append(analysis_row.id)
 
             # Replace coordinates: insert fresh set.
+            self._delete_points(session, analysis_row.id)
             for p_index, coord in enumerate(prepared.analysis.coordinates, start=1):
                 point = DbPoint(
                     analysis_id=analysis_row.id,
@@ -574,11 +828,54 @@ class UploadService:
                     merged[key] = value
         return merged
 
-    def _clear_study_content(self, session, study_id: str) -> None:
-        analysis_ids = select(DbAnalysis.id).where(DbAnalysis.study_id == study_id)
-        session.execute(delete(DbPoint).where(DbPoint.analysis_id.in_(analysis_ids)))
-        session.execute(delete(DbAnalysis).where(DbAnalysis.study_id == study_id))
-        session.execute(delete(DbTable).where(DbTable.study_id == study_id))
+    def _delete_points(self, session, analysis_id: str) -> None:
+        """Remove an analysis's points and their values.
+
+        point_values is cleared explicitly rather than left to the database's
+        cascade so the behaviour is the same on any backend.
+        """
+        point_ids = select(DbPoint.id).where(DbPoint.analysis_id == analysis_id)
+        session.execute(delete(DbPointValue).where(DbPointValue.point_id.in_(point_ids)))
+        session.execute(delete(DbPoint).where(DbPoint.analysis_id == analysis_id))
+
+    def _annotated_analysis_ids(self, session, analysis_ids: Sequence[str]) -> set:
+        """Which of these analyses carry a note someone actually filled in.
+
+        Belonging to an annotated studyset is not enough: neurostore backfills a
+        row of defaults for every analysis it contains. Only a note that differs
+        from those defaults counts, otherwise nothing would ever be removable.
+        On any error this reports every analysis as annotated, so a failure here
+        can only make upload more conservative.
+        """
+        if not analysis_ids:
+            return set()
+        try:
+            rows = session.execute(
+                select(
+                    DbAnnotationAnalysis.analysis_id,
+                    DbAnnotationAnalysis.note,
+                    DbAnnotation.note_keys,
+                )
+                .join(
+                    DbAnnotation,
+                    DbAnnotation.id == DbAnnotationAnalysis.annotation_id,
+                    isouter=True,
+                )
+                .where(DbAnnotationAnalysis.analysis_id.in_(list(analysis_ids)))
+            ).all()
+        except Exception:
+            logger.warning(
+                "Could not read annotation_analyses; treating every analysis as "
+                "annotated and removing none.",
+                exc_info=True,
+            )
+            return set(analysis_ids)
+
+        annotated = set()
+        for analysis_id, note, note_keys in rows:
+            if _note_is_substantive(note, note_keys):
+                annotated.add(analysis_id)
+        return annotated
 
     def _upsert_table(
         self,
