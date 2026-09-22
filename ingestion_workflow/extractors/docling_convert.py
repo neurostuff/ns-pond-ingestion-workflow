@@ -9,14 +9,6 @@ is re-read from the text layer.
 
 OCR is off: these are born-digital PDFs, and OCR is both slower and worse on
 numeric table cells than the embedded text layer.
-
-Docling's own default already prefers CUDA and falls back to CPU, but which one
-it picked was only visible in Docling's debug log -- and a torch build that does
-not match the driver falls back silently, which is how a GPU box ends up doing
-30s/document instead of 2s. The device is therefore chosen and logged here.
-Workers are separate processes (see PdfExtractor.extract), so each holds its own
-model copy; when there is more than one GPU they are handed out round-robin
-rather than all piling onto cuda:0.
 """
 
 from __future__ import annotations
