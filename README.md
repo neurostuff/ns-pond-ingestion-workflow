@@ -101,7 +101,8 @@ they do.
 |---|---|
 | [01-current-behavior.md](docs/01-current-behavior.md) | what the pre-refactor pipeline did, measured, and where it went wrong |
 | [02-design.md](docs/02-design.md) | the catalog, fingerprints, stages, and the command line |
-| [benchmarks.md](docs/benchmarks.md) | before/after numbers, and what to optimise next |
+| [benchmarks.md](docs/benchmarks.md) | before/after numbers for the refactor |
+| [profiling.md](docs/profiling.md) | growth curves, where the time actually goes, and what did not work |
 | [data-safety.md](docs/data-safety.md) | how migration avoids losing the corpus |
 | [migration.md](docs/migration.md) | command-by-command upgrade guide |
 

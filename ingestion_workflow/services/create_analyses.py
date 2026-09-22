@@ -23,6 +23,8 @@ from ingestion_workflow.models import (
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.utils.progress import emit_progress
 
+from ingestion_workflow.services.naming import sanitize_table_id
+
 logger = logging.getLogger(__name__)
 
 _SCHEMA_TEMPLATE = """{
@@ -57,15 +59,6 @@ _SCHEMA_TEMPLATE = """{
     ...
   ]
 }"""
-
-
-def sanitize_table_id(table_id: str | None, index: int) -> str:
-    """Sanitize table identifiers for filesystem-safe usage."""
-    if table_id:
-        normalized = re.sub(r"[^A-Za-z0-9_-]+", "-", table_id).strip("-")
-        if normalized:
-            return normalized.lower()
-    return f"table-{index + 1}"
 
 
 class CreateAnalysesService:

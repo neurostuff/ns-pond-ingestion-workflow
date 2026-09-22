@@ -102,3 +102,45 @@ def test_status_counts_group_by_stage(catalog):
 
     counts = catalog.status_counts()["download"]
     assert counts == {"ok": 1, "failed": 1, "permanent": 1}
+
+
+def test_blob_address_does_not_depend_on_compression(tmp_path):
+    """The digest is taken before compression, so tuning the level is safe.
+
+    If this breaks, every blob written at the old level is orphaned and the
+    store doubles.
+    """
+    import hashlib
+    import json
+
+    from ingestion_workflow.catalog.blobs import BlobStore
+
+    payload = {"tables": [{"id": f"t{i}", "coords": [1.0, 2.0, 3.0]} for i in range(8)]}
+    store = BlobStore(tmp_path / "blobs")
+    digest = store.put(payload)
+
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    assert digest == hashlib.sha256(raw).hexdigest()
+    assert store.get(digest) == payload
+
+
+def test_blobs_written_at_any_level_are_readable(tmp_path):
+    import gzip
+    import hashlib
+    import json
+
+    from ingestion_workflow.catalog.blobs import BlobStore
+
+    store = BlobStore(tmp_path / "blobs")
+    payload = {"a": 1, "b": [1, 2, 3]}
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    digest = hashlib.sha256(raw).hexdigest()
+
+    # Hand-write the blob the way an older version would have, at level 9.
+    target = store.root / digest[:2] / f"{digest}.json.gz"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(gzip.compress(raw, compresslevel=9))
+
+    assert store.get(digest) == payload
+    assert store.put(payload) == digest          # existing blob left alone
+    assert target.read_bytes() == gzip.compress(raw, compresslevel=9)

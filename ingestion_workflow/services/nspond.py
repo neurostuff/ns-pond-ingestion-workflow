@@ -20,8 +20,8 @@ from ingestion_workflow.models import (
     DownloadResult,
     Identifier,
 )
-from ingestion_workflow.services.create_analyses import sanitize_table_id
 from ingestion_workflow.services.logging import get_logger
+from ingestion_workflow.services.naming import sanitize_table_id
 
 logger = get_logger(__name__)
 
@@ -327,7 +327,11 @@ def _write_coordinates_csv(
                     "x": coord.x,
                     "y": coord.y,
                     "z": coord.z,
-                    "p_value": coord.statistic_value if getattr(coord, "statistic_type", None) == "P" else "",
+                    "p_value": (
+                        coord.statistic_value
+                        if getattr(coord, "statistic_type", None) == "P"
+                        else ""
+                    ),
                     "region": "",
                     "size": coord.cluster_size if hasattr(coord, "cluster_size") else "",
                     "statistic": coord.statistic_value

@@ -3,21 +3,19 @@ import shutil
 from pathlib import Path
 
 import pytest
-
-from pubget._typing import ExitCode
-from pubget._utils import article_bucket_from_pmcid
-
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.elsevier_extractor import ElsevierExtractor
 from ingestion_workflow.extractors.pubget_extractor import PubgetExtractor
 from ingestion_workflow.models import (
+    DownloadedFile,
     DownloadResult,
     DownloadSource,
-    DownloadedFile,
     FileType,
     Identifier,
     Identifiers,
 )
+from pubget._typing import ExitCode
+from pubget._utils import article_bucket_from_pmcid
 
 
 @pytest.mark.usefixtures("manifest_identifiers")

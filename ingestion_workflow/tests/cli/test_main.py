@@ -5,11 +5,9 @@ from __future__ import annotations
 import json
 
 import pytest
-from typer.testing import CliRunner
-
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.cli.main import _parse_identifier, app
-from ingestion_workflow.models.ids import Identifier
+from typer.testing import CliRunner
 
 runner = CliRunner()
 

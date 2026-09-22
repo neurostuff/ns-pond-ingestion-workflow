@@ -131,20 +131,14 @@ would have dropped from 14,293 articles to 4,872 — and on a rerun, to zero.
 
 ## What to optimise next
 
-Ranked by measured cost against expected benefit:
+Superseded by [profiling.md](profiling.md), which measured it. The short
+version of what that pass found, against the guesses made here:
 
-1. **`extract` is the only CPU-bound stage** and already runs under a
-   `ProcessPoolExecutor`. Docling PDF extraction is the long pole; beast has 4
-   GPUs and `pdf_extract_workers` defaults to one per CUDA device. Worth
-   profiling per-source throughput before touching anything else.
-2. **`record()` writes one blob per artifact** (154 µs/artifact). Batching the
-   gzip work across a thread pool would cut the write path, but at 6 s per
-   40,000 articles it is not yet the bottleneck.
-3. **`register_many` resolves aliases one identifier at a time** (68 µs each).
-   A single `SELECT … WHERE (kind,value) IN (…)` per batch would help a first
-   import of several hundred thousand ids; it is irrelevant on reruns.
-4. **The blob store never garbage-collects.** Superseded blobs stay on disk.
-   A `ingest gc` that deletes blobs no artifact references is worth adding once
-   fingerprints start turning over in anger.
-5. **Do not optimise `plan`.** At 10.7 µs/article, planning the entire 463,584
-   article corpus costs 5 seconds.
+- The dominant cost is **work that fails and repeats** — 1.5 h in one log
+  fragment — not any hot loop. Recording failures is worth 134–182 min across
+  four runs.
+- The extraction process pool was **slower than no pool**, 2–50x, because
+  `spawn` re-imported nilearn and sklearn in every worker. Now 1.4x faster on
+  the production path and up to 52x on small batches.
+- `ingest --help` took **3.3 s**; it now takes 0.46 s.
+- The catalog write path is within 1.16x of its floor and was never the problem.
