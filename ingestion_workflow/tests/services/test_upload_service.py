@@ -17,9 +17,16 @@ from ingestion_workflow.models import (
     Identifier,
 )
 from ingestion_workflow.services.db import SessionFactory
-from ingestion_workflow.services.upload import UploadService
+from ingestion_workflow.services.upload import (
+    UploadService,
+    _normalize_analysis_name,
+    _note_is_substantive,
+    plan_reconciliation,
+)
 from ingestion_workflow.services.upload_models import (
     Analysis as DbAnalysis,
+    Annotation as DbAnnotation,
+    AnnotationAnalysis as DbAnnotationAnalysis,
     Base as UploadBase,
     BaseStudy as DbBaseStudy,
     Point as DbPoint,
@@ -292,3 +299,245 @@ def select_count(model):
     from sqlalchemy import func, select
 
     return select(func.count()).select_from(model)
+
+
+# --------------------------------------------------------------------------
+# Re-upload reconciliation: what happens to analyses that already exist.
+# --------------------------------------------------------------------------
+
+
+def _upload_once(service, settings, identifier, collection, metadata):
+    items = service.prepare_work_items(
+        {"slug": {"t1": collection}},
+        {"slug": metadata},
+        metadata_mode=settings.upload_metadata_mode,
+    )
+    return service.run(
+        items,
+        behavior=UploadBehavior.UPDATE,
+        metadata_only=False,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+
+
+def _annotate(session, analysis_id, note, note_keys=None):
+    session.add(DbAnnotation(id="ann1", name="a", note_keys=note_keys))
+    session.add(
+        DbAnnotationAnalysis(
+            annotation_id="ann1", analysis_id=analysis_id, note=note
+        )
+    )
+    session.commit()
+
+
+def _coords(*triples):
+    return [
+        Coordinate(x=x, y=y, z=z, space=CoordinateSpace.MNI)
+        for x, y, z in triples
+    ]
+
+
+def _collection(identifier, analyses):
+    return AnalysisCollection(
+        slug="slug::t1",
+        analyses=analyses,
+        coordinate_space=CoordinateSpace.MNI,
+        identifier=identifier,
+    )
+
+
+def _analysis(name, coordinates, sanitized_table_id="t1"):
+    return Analysis(
+        name=name,
+        description="desc",
+        coordinates=coordinates,
+        table_id="T1",
+        table_number=1,
+        table_caption="cap",
+        table_footer="foot",
+        metadata={"sanitized_table_id": sanitized_table_id},
+    )
+
+
+def test_reupload_updates_a_matching_analysis_in_place(tmp_path):
+    """Matching on coordinates keeps the analysis id, so annotations survive."""
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    first = _collection(identifier, [_analysis("Table 1", _coords((1, 2, 3), (4, 5, 6)))])
+    _upload_once(service, settings, identifier, first, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        original_id = session.execute(select(DbAnalysis.id)).scalar_one()
+        _annotate(session, original_id, {"included": False})
+
+    # same peaks, renamed, one extra coordinate
+    second = _collection(
+        identifier, [_analysis("Table 1 renamed", _coords((1, 2, 3), (4, 5, 6), (7, 8, 9)))]
+    )
+    _upload_once(service, settings, identifier, second, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        rows = list(session.execute(select(DbAnalysis)).scalars())
+        assert len(rows) == 1
+        assert rows[0].id == original_id, "analysis was replaced, annotation would be lost"
+        assert rows[0].name == "Table 1 renamed"
+        points = list(
+            session.execute(
+                select(DbPoint).where(DbPoint.analysis_id == original_id)
+            ).scalars()
+        )
+        assert len(points) == 3
+        link = session.execute(select(DbAnnotationAnalysis)).scalar_one()
+        assert link.analysis_id == original_id
+
+
+def test_reupload_keeps_an_unmatched_annotated_analysis_and_appends(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    first = _collection(identifier, [_analysis("Old", _coords((1, 2, 3), (4, 5, 6)))])
+    _upload_once(service, settings, identifier, first, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        original_id = session.execute(select(DbAnalysis.id)).scalar_one()
+        _annotate(session, original_id, {"included": False, "note": "checked by hand"})
+
+    # wholly different peaks and name: no match
+    second = _collection(
+        identifier, [_analysis("New", _coords((50, 51, 52), (53, 54, 55)))]
+    )
+    _upload_once(service, settings, identifier, second, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        rows = list(session.execute(select(DbAnalysis)).scalars())
+        names = sorted(r.name for r in rows)
+        assert names == ["New", "Old"], "annotated analysis should have been kept"
+        assert original_id in {r.id for r in rows}
+        assert session.execute(select(DbAnnotationAnalysis)).scalar_one() is not None
+
+
+def test_reupload_deletes_an_unmatched_analysis_with_no_annotation(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    first = _collection(identifier, [_analysis("Old", _coords((1, 2, 3), (4, 5, 6)))])
+    _upload_once(service, settings, identifier, first, _article_metadata())
+    with Session(engine, future=True) as session:
+        original_id = session.execute(select(DbAnalysis.id)).scalar_one()
+
+    second = _collection(
+        identifier, [_analysis("New", _coords((50, 51, 52), (53, 54, 55)))]
+    )
+    _upload_once(service, settings, identifier, second, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        rows = list(session.execute(select(DbAnalysis)).scalars())
+        assert [r.name for r in rows] == ["New"]
+        assert original_id not in {r.id for r in rows}
+        orphans = list(
+            session.execute(
+                select(DbPoint).where(DbPoint.analysis_id == original_id)
+            ).scalars()
+        )
+        assert orphans == []
+
+
+def test_reupload_treats_a_default_note_as_unannotated(tmp_path):
+    """A backfilled note of defaults means nobody annotated the analysis."""
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    settings = _settings(tmp_path)
+    engine = _engine()
+    factory = SessionFactory(settings, engine=engine)
+    service = UploadService(settings, factory)
+
+    first = _collection(identifier, [_analysis("Old", _coords((1, 2, 3)))])
+    _upload_once(service, settings, identifier, first, _article_metadata())
+    with Session(engine, future=True) as session:
+        original_id = session.execute(select(DbAnalysis.id)).scalar_one()
+        _annotate(
+            session,
+            original_id,
+            {"included": True, "comment": None},
+            note_keys={"included": "boolean", "comment": "string"},
+        )
+
+    second = _collection(identifier, [_analysis("New", _coords((50, 51, 52)))])
+    _upload_once(service, settings, identifier, second, _article_metadata())
+
+    with Session(engine, future=True) as session:
+        rows = list(session.execute(select(DbAnalysis)).scalars())
+        assert [r.name for r in rows] == ["New"]
+
+
+@pytest.mark.parametrize(
+    ("note", "note_keys", "expected"),
+    [
+        (None, None, False),
+        ({}, None, False),
+        ({"included": True}, {"included": "boolean"}, False),
+        ({"included": None, "x": None}, {"included": "boolean", "x": "string"}, False),
+        ({"included": False}, {"included": "boolean"}, True),
+        ({"comment": "looks wrong"}, {"comment": "string"}, True),
+        ({"n": 3}, None, True),
+    ],
+)
+def test_note_is_substantive(note, note_keys, expected):
+    assert _note_is_substantive(note, note_keys) is expected
+
+
+def test_plan_reconciliation_matches_on_coordinates_not_order():
+    class _Row:
+        def __init__(self, id, name, points):
+            self.id = id
+            self.name = name
+            self.points = points
+
+    class _P:
+        def __init__(self, x, y, z):
+            self.x, self.y, self.z = x, y, z
+
+    existing = [
+        _Row("a", "Table 2", [_P(10, 10, 10), _P(11, 11, 11)]),
+        _Row("b", "Table 1", [_P(1, 1, 1), _P(2, 2, 2)]),
+    ]
+    incoming_names = ["Table 1", "Table 2"]
+    incoming_coords = [
+        {(1.0, 1.0, 1.0), (2.0, 2.0, 2.0)},
+        {(10.0, 10.0, 10.0), (11.0, 11.0, 11.0)},
+    ]
+
+    plan = plan_reconciliation(existing, incoming_names, incoming_coords, set())
+
+    assert plan.inserted == []
+    assert plan.deleted == []
+    pairs = {row.id: index for row, index in plan.updated}
+    assert pairs == {"b": 0, "a": 1}
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("Table 1", "table 1"),
+        ("Table 1-2", "table 1"),
+        ("Table 1-2-3", "table 1"),
+        ("a-1-b", "a-1-b"),
+        ("-3", ""),
+        ("", ""),
+        (None, ""),
+        # an all-digit name used to rsplit to itself and spin forever
+        ("42", "42"),
+        ("7-7", "7"),
+    ],
+)
+def test_normalize_analysis_name_terminates(raw, expected):
+    assert _normalize_analysis_name(raw) == expected
