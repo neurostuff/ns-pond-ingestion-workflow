@@ -357,6 +357,7 @@ class Settings(BaseSettings):
             getattr(self, "pubget_cache_root", None),
             getattr(self, "ace_cache_root", None),
             getattr(self, "elsevier_cache_root", None),
+            getattr(self, "pdf_cache_root", None),
         ):
             if isinstance(optional_dir, Path):
                 optional_dir.mkdir(parents=True, exist_ok=True)
@@ -393,6 +394,14 @@ class Settings(BaseSettings):
     elsevier_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for Elsevier cache root directory",
+    )
+    pdf_cache_root: Optional[Path] = Field(
+        default=None,
+        description="Optional override for downloaded-PDF cache root directory",
+    )
+    pdf_url_providers: List[str] = Field(
+        default_factory=lambda: ["semantic_scholar", "openalex"],
+        description="Ordered providers queried for an open-access PDF URL",
     )
 
     # ===== Upload configuration =====

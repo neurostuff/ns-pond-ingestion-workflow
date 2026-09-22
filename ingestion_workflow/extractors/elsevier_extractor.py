@@ -659,6 +659,8 @@ def _extract_elsevier_article(
             article_content,
             output_dir,
             stem="article",
+            preserve_cross_references=True,
+            keep_tables=True,
         )
     except Exception as exc:
         logger.warning(

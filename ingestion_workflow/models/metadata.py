@@ -75,6 +75,9 @@ class ArticleMetadata:
     # Whether the article is open access
     open_access: Optional[bool] = None
 
+    # Direct link to an open-access PDF, when a provider reports one
+    pdf_url: Optional[str] = None
+
     # Raw metadata from external sources for reference
     raw_metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -128,6 +131,7 @@ class ArticleMetadata:
             license=self.license or other.license,
             source=self.source or other.source,
             open_access=merged_open_access,
+            pdf_url=self.pdf_url or other.pdf_url,
             raw_metadata=merged_raw,
         )
 
@@ -143,6 +147,7 @@ class ArticleMetadata:
             "license": self.license,
             "source": self.source,
             "open_access": self.open_access,
+            "pdf_url": self.pdf_url,
             "raw_metadata": self.raw_metadata,
         }
 
@@ -161,6 +166,7 @@ class ArticleMetadata:
             license=data.get("license"),
             source=data.get("source"),
             open_access=data.get("open_access"),
+            pdf_url=data.get("pdf_url"),
             raw_metadata=data.get("raw_metadata", {}),
         )
 

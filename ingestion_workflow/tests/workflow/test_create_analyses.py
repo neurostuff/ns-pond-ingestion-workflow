@@ -232,3 +232,68 @@ def test_run_create_analyses_skips_tables_without_coordinates(monkeypatch, tmp_p
 
     assert results["article-1"] == {}
     assert not run_calls
+
+
+def _stamped_result(metadata):
+    from ingestion_workflow.models import AnalysisCollection, CreateAnalysesResult
+
+    return CreateAnalysesResult(
+        slug="article::t1",
+        article_slug="article",
+        table_id="t1",
+        sanitized_table_id="t1",
+        analysis_collection=AnalysisCollection(slug="article::t1"),
+        metadata=metadata,
+    )
+
+
+def test_cached_result_is_reused_when_prompt_and_model_match():
+    """A cache hit requires the same prompt version and model that produced it."""
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.models import CreateAnalysesResult
+    from ingestion_workflow.prompts.coordinate_parsing import (
+        COORDINATE_PARSING_PROMPT_VERSION,
+    )
+    from ingestion_workflow.workflow.create_analyses import _stamp_matches
+
+    settings = Settings(llm_model="gpt-5-mini")
+    cached = _stamped_result(
+        {
+            "prompt_version": COORDINATE_PARSING_PROMPT_VERSION,
+            "llm_model": "gpt-5-mini",
+        }
+    )
+
+    assert _stamp_matches(cached, settings) is True
+
+
+def test_cached_result_is_rejected_after_a_prompt_or_model_change():
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.models import CreateAnalysesResult
+    from ingestion_workflow.prompts.coordinate_parsing import (
+        COORDINATE_PARSING_PROMPT_VERSION,
+    )
+    from ingestion_workflow.workflow.create_analyses import _stamp_matches
+
+    settings = Settings(llm_model="gpt-5-mini")
+
+    stale_prompt = _stamped_result(
+        {"prompt_version": "older-prompt", "llm_model": "gpt-5-mini"}
+    )
+    stale_model = _stamped_result(
+        {
+            "prompt_version": COORDINATE_PARSING_PROMPT_VERSION,
+            "llm_model": "some-other-model",
+        }
+    )
+
+    assert _stamp_matches(stale_prompt, settings) is False
+    assert _stamp_matches(stale_model, settings) is False
+
+
+def test_unstamped_cache_entries_are_grandfathered():
+    """Pre-stamping entries must not trigger a corpus-wide LLM re-run."""
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.workflow.create_analyses import _stamp_matches
+
+    assert _stamp_matches(_stamped_result({}), Settings(llm_model="gpt-5-mini")) is True
