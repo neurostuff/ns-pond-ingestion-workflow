@@ -8,6 +8,8 @@ Elsevier serve as XML. PDF locations come from Semantic Scholar's
 from __future__ import annotations
 
 import logging
+import multiprocessing
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -19,6 +21,7 @@ from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.docling_convert import usable_cuda_devices
 from ingestion_workflow.extractors.utils import safe_hash_stem, sanitize_table_id
 from ingestion_workflow.models import (
     DownloadedFile,
@@ -200,17 +203,114 @@ class PdfExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> List[ExtractionResult]:
         extraction_root = Path(self.settings.data_root) / "extractions" / "pdf"
+        gpus = usable_cuda_devices()
+        worker_count = self._worker_count(gpus)
+        logger.info(
+            "PDF extraction: %d worker(s) over %s",
+            worker_count,
+            f"GPU(s) {gpus}" if gpus else "CPU",
+        )
         return self._run_extraction_pipeline(
             download_results,
             extraction_root=extraction_root,
             worker=_extract_pdf_article,
-            # Docling holds a model per process; parallelism here is memory-bound.
-            worker_count=1,
+            worker_count=worker_count,
+            worker_initializer=_pin_worker_to_gpu if gpus else None,
+            worker_initargs=(
+                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
+            ),
             source_name="PDF",
             failure_message="PDF extraction did not produce a result.",
             failure_builder=_build_failure_content,
             progress_hook=progress_hook,
         )
+
+
+    def _worker_count(self, gpus: List[int]) -> int:
+        """How many Docling processes to run at once.
+
+        Docling holds a model per process, so this is bounded by memory rather
+        than by cores: one worker per usable GPU, and one on CPU, where a second
+        worker would contend for the cores the pipeline already threads across.
+        """
+        configured = self.settings.pdf_extract_workers
+        if configured:
+            return max(1, configured)
+        return max(1, len(gpus))
+
+
+_COORD_COLUMN = re.compile(
+    r"coordinate|\bcoords?\b|talairach|\btal\b|\bmni\b|location", re.IGNORECASE
+)
+_TRIPLET_CELL = re.compile(
+    r"^\s*[-+]?\d+(?:\.\d+)?\s*[,;\s]\s*[-+]?\d+(?:\.\d+)?\s*[,;\s]\s*[-+]?\d+(?:\.\d+)?\s*$"
+)
+_MIN_MERGED_TRIPLETS = 3
+
+
+def _merge_split_coordinate_columns(frame: Any) -> Any:
+    """Rejoin an x/y/z triplet that Docling split across coordinate columns.
+
+    Docling sometimes cuts a single "42, 30, 45" cell down the middle, leaving
+    "42," in one column and "30, 45" in the next. Downstream detection needs
+    either three columns headed x/y/z or one column holding whole triplets, so a
+    split like this yields nothing at all.
+
+    Only runs of adjacent columns whose headers already say coordinate/MNI/
+    Talairach are considered, and the merge is kept only if it produces whole
+    triplets for at least a few rows. A demographics table cannot qualify: its
+    headers do not match, and pasting its columns together does not make
+    triplets.
+    """
+    columns = [str(c) for c in frame.columns]
+    runs = []
+    start = None
+    for index, name in enumerate(columns + [""]):
+        if index < len(columns) and _COORD_COLUMN.search(name):
+            start = index if start is None else start
+            continue
+        if start is not None:
+            if index - start >= 2:
+                runs.append((start, index))
+            start = None
+
+    if not runs:
+        return frame
+
+    result = frame
+    # right to left, so earlier column positions stay valid as columns collapse
+    for begin, end in reversed(runs):
+        block = result.iloc[:, begin:end]
+        joined = block.apply(
+            lambda row: " ".join(str(v).strip() for v in row if str(v).strip()), axis=1
+        )
+        whole = joined.apply(lambda v: bool(_TRIPLET_CELL.match(v))).sum()
+        if whole < _MIN_MERGED_TRIPLETS:
+            continue
+        kept = [i for i in range(result.shape[1]) if not begin <= i < end]
+        rebuilt = result.iloc[:, kept]
+        rebuilt.insert(begin, "Coordinates", joined.values, allow_duplicates=True)
+        result = rebuilt
+        logger.debug(
+            "merged %d coordinate columns into one, %d whole triplets",
+            end - begin,
+            int(whole),
+        )
+    return result
+
+
+def _pin_worker_to_gpu(counter: Any, gpus: List[int]) -> None:
+    """Give this worker process exactly one GPU, before torch is imported.
+
+    Each worker takes the next index off a shared counter, so two workers never
+    land on the same card. Setting CUDA_VISIBLE_DEVICES rather than choosing a
+    device later means the worker's torch only ever sees the one it owns.
+    """
+    with counter.get_lock():
+        ordinal = counter.value
+        counter.value += 1
+    device = gpus[ordinal % len(gpus)]
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(device)
 
 
 def _build_failure_content(
@@ -232,8 +332,8 @@ def _extract_pdf_article(
     extraction_root: Path | str,
 ) -> ExtractedContent:
     """Convert one downloaded PDF into text plus per-table CSV files."""
-    from pubget._coordinates import _extract_coordinates_from_table
     from pubget._coordinate_space import _neurosynth_guess_space
+    from pubget._coordinates import _extract_coordinates_from_table
 
     from ingestion_workflow.extractors.docling_convert import (
         convert_pdf,
@@ -273,6 +373,7 @@ def _extract_pdf_article(
         table_id = sanitize_table_id(None, _table_label(caption), index)
 
         frame = table.export_to_dataframe(doc=document).map(normalize_text_tokens)
+        frame = _merge_split_coordinate_columns(frame)
         csv_path = tables_dir / f"{table_id}.csv"
         frame.to_csv(csv_path, index=False)
 

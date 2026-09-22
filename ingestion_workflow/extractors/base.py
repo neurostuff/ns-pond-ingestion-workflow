@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Callable, Dict, List, Sequence
+from typing import Any, Callable, Dict, List, Sequence, Tuple
 
-from ingestion_workflow.models import DownloadResult, ExtractionResult, Identifiers, Identifier
+from ingestion_workflow.models import DownloadResult, ExtractionResult, Identifier, Identifiers
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,8 @@ class BaseExtractor:
         failure_message: str,
         failure_builder: FailureBuilder,
         progress_hook: Callable[[int], None] | None = None,
+        worker_initializer: Callable[..., None] | None = None,
+        worker_initargs: Tuple[Any, ...] = (),
     ) -> List[ExtractionResult]:
         if not download_results:
             return []
@@ -76,7 +79,15 @@ class BaseExtractor:
                 emit_progress(progress_hook)
         else:
             root_arg = str(extraction_root)
-            with ProcessPoolExecutor(max_workers=worker_count) as executor:
+            # spawn, not the platform default fork: a worker that touches CUDA
+            # cannot inherit a parent's address space ("Cannot re-initialize
+            # CUDA in forked subprocess"), and the cost is paid once per worker.
+            with ProcessPoolExecutor(
+                max_workers=worker_count,
+                mp_context=multiprocessing.get_context("spawn"),
+                initializer=worker_initializer,
+                initargs=worker_initargs,
+            ) as executor:
                 future_map = {
                     executor.submit(worker, download_result, root_arg): index
                     for index, download_result in enumerate(download_results)
