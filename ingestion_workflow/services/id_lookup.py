@@ -108,7 +108,7 @@ class IDLookupService:
     def _is_complete(self, identifier: Identifier) -> bool:
         return bool(identifier.pmid and identifier.doi and identifier.pmcid)
 
-    def _merge_cached_entry(self, identifier: Identifier, entry: IdentifierCacheEntry) -> None:
+    def _merge_cached_entry(self, identifier: Identifier, entry) -> None:
         for cached_identifier in entry.identifiers.identifiers:
             self._merge_identifier(identifier, cached_identifier)
 
