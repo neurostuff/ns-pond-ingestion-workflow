@@ -8,7 +8,6 @@ from typing import Any
 #: Imported lazily so that pulling in one service does not drag in every
 #: optional dependency (docling, sqlalchemy, seleniumbase) at import time.
 _LAZY = {
-    "ExportService": ".export",
     "IDLookupService": ".id_lookup",
     "MetadataService": ".metadata",
     "OpenAlexIDLookupService": ".id_lookup",

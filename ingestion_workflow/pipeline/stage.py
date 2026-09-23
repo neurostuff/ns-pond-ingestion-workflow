@@ -36,14 +36,24 @@ class Context:
         self.max_attempts = max_attempts
         self.retry_after = retry_after
 
-    def refreshing(self, stage: str) -> bool:
-        return stage in self.refresh or "all" in self.refresh
+    def refreshing(self, stage: str, source: str = "") -> bool:
+        """Whether the operator asked for this work to be redone.
+
+        `--refresh extract` covers the whole stage; `--refresh extract:ace`
+        covers one source of it, which is what a single extractor changing
+        calls for. Targeting matters for migrated artifacts especially: they
+        carry no fingerprint, so a version bump cannot reach them and an
+        explicit instruction is the only way.
+        """
+        if "all" in self.refresh or stage in self.refresh:
+            return True
+        return bool(source) and f"{stage}:{source}" in self.refresh
 
     def is_fresh(self, artifact: Optional[Artifact], expected: str) -> bool:
         """Reusable iff it succeeded, its inputs are unchanged, and its blob survives."""
         if artifact is None or artifact.status is not Status.OK:
             return False
-        if self.refreshing(artifact.stage):
+        if self.refreshing(artifact.stage, artifact.source):
             return False
         if expected and artifact.fingerprint and artifact.fingerprint != expected:
             return False
@@ -57,9 +67,10 @@ class Context:
         attempts: int,
         last_attempt: Optional[str],
         stage: str,
+        source: str = "",
     ) -> bool:
         """Whether a non-fresh artifact is worth (re)trying now."""
-        if self.refreshing(stage):
+        if self.refreshing(stage, source):
             return True
         if artifact is None:
             return True
