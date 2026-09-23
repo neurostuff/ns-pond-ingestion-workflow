@@ -126,3 +126,27 @@ def test_show_still_rejects_an_unknown_token(config):
     result = runner.invoke(app, ["show", "zzzzzzzzzzzz", "--config", str(config)])
     assert result.exit_code == 1
     assert "not in the catalog" in result.output
+
+
+def test_add_accepts_a_neurostore_id(config, tmp_path):
+    """base_study_ids are opaque, so they cannot be sniffed like a PMID or DOI
+    and need their own flag."""
+    from ingestion_workflow.catalog import Catalog
+    from ingestion_workflow.models.ids import Identifier
+
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        ref = catalog.resolve(Identifier(neurostore="5Qk2mNpXyJKH"))
+        assert ref is not None
+        assert catalog.identifier(ref.id).neurostore == "5Qk2mNpXyJKH"
+
+
+def test_a_neurostore_only_article_has_nothing_to_download(config):
+    """No extractor can address an article by base_study_id alone -- pubget
+    needs a pmcid, elsevier a pmid or doi. Such an article is inert until its
+    bibliographic ids are known."""
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    out = run("run", "--select", "all", "--dry-run", "--config", str(config))
+    download = next(line for line in out.splitlines() if "download" in line)
+    assert "0 pending" in download
+    assert "1 skipped" in download

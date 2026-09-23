@@ -112,11 +112,17 @@ def add(
     start_year: Optional[int] = typer.Option(
         None, "--start-year", help="Earliest year for queries."
     ),
+    neurostore: Optional[List[str]] = typer.Option(
+        None,
+        "--neurostore",
+        help="Neurostore base_study_id (repeatable). Opaque, so it needs naming.",
+    ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Register articles in the catalog. Downloads nothing."""
     settings = _settings(config)
     found: List[Identifier] = [_parse_identifier(token) for token in (identifiers or [])]
+    found += [Identifier(neurostore=token) for token in (neurostore or []) if token.strip()]
 
     if file:
         found += [
@@ -136,7 +142,9 @@ def add(
             found += list(results.identifiers)
 
     if not found:
-        raise typer.BadParameter("give identifiers, --file, --manifest or --query")
+        raise typer.BadParameter(
+            "give identifiers, --file, --manifest, --query or --neurostore"
+        )
 
     with _catalog(settings) as catalog:
         before = catalog.count_articles()
