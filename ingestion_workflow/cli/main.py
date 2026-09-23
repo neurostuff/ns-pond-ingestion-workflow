@@ -200,7 +200,11 @@ def run(
         None,
         "--refresh",
         "-r",
-        help="Ignore cached results for this stage (repeatable, or 'all').",
+        help=(
+            "Ignore cached results and redo the work. Takes a stage "
+            "(`extract`), one source of a stage (`extract:ace`), or `all`. "
+            "Repeatable."
+        ),
     ),
     limit: Optional[int] = typer.Option(None, "--limit", "-n", help="Stop after N articles."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and change nothing."),
