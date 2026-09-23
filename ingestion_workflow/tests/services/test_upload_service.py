@@ -1,17 +1,11 @@
-import json
-from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
-
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
     ArticleMetadata,
     Author,
-    BaseStudyPayload,
     Coordinate,
     CoordinateSpace,
     Identifier,
@@ -25,15 +19,33 @@ from ingestion_workflow.services.upload import (
 )
 from ingestion_workflow.services.upload_models import (
     Analysis as DbAnalysis,
+)
+from ingestion_workflow.services.upload_models import (
     Annotation as DbAnnotation,
+)
+from ingestion_workflow.services.upload_models import (
     AnnotationAnalysis as DbAnnotationAnalysis,
+)
+from ingestion_workflow.services.upload_models import (
     Base as UploadBase,
+)
+from ingestion_workflow.services.upload_models import (
     BaseStudy as DbBaseStudy,
+)
+from ingestion_workflow.services.upload_models import (
     Point as DbPoint,
+)
+from ingestion_workflow.services.upload_models import (
     PointValue as DbPointValue,
+)
+from ingestion_workflow.services.upload_models import (
     Study as DbStudy,
+)
+from ingestion_workflow.services.upload_models import (
     Table as DbTable,
 )
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
 
 def _settings(tmp_path, *, metadata_mode: UploadMetadataMode = UploadMetadataMode.FILL) -> Settings:

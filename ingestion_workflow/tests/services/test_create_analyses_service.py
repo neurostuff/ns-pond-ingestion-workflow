@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
-
+from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
     ArticleMetadata,
     Coordinate,
-    CoordinateSpace,
     CoordinatePoint,
+    CoordinateSpace,
     ExtractedContent,
     ExtractedTable,
     Identifier,
@@ -22,7 +21,6 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.services.create_analyses import CreateAnalysesService
-from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
 
 
 @pytest.fixture(autouse=True)

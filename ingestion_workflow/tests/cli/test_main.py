@@ -150,3 +150,43 @@ def test_a_neurostore_only_article_has_nothing_to_download(config):
     download = next(line for line in out.splitlines() if "download" in line)
     assert "0 pending" in download
     assert "1 skipped" in download
+
+
+def test_add_from_neurostore_registers_what_discovery_returns(config, tmp_path, monkeypatch):
+    """The database is mocked; what is under test is that `add` registers the
+    identifiers discovery hands back, aliases and all."""
+    import ingestion_workflow.cli.main as cli
+    from ingestion_workflow.models.ids import Identifier
+
+    monkeypatch.setattr(
+        cli,
+        "_discover_from_neurostore",
+        lambda settings, limit: [
+            Identifier(neurostore="bs-1", doi="10.1/a", pmid="1"),
+            Identifier(neurostore="bs-2", pmcid="PMC2"),
+        ],
+    )
+
+    out = run("add", "--from-neurostore", "--config", str(config))
+    assert "2 new articles" in out
+
+    from ingestion_workflow.catalog import Catalog
+
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        first = catalog.resolve(Identifier(neurostore="bs-1"))
+        assert first is not None
+        known = catalog.identifier(first.id)
+        assert (known.doi, known.pmid) == ("10.1/a", "1")
+        assert catalog.resolve(Identifier(pmcid="PMC2")) is not None
+
+
+def test_the_cli_module_is_not_shadowed_by_its_own_function():
+    """`cli/__init__` re-exporting `main` would make
+    `import ingestion_workflow.cli.main` return the function, which silently
+    breaks patching and any `from ... import` of a module member."""
+    import types
+
+    import ingestion_workflow.cli.main as module
+
+    assert isinstance(module, types.ModuleType)
+    assert hasattr(module, "app")

@@ -117,6 +117,14 @@ def add(
         "--neurostore",
         help="Neurostore base_study_id (repeatable). Opaque, so it needs naming.",
     ),
+    from_neurostore: bool = typer.Option(
+        False,
+        "--from-neurostore",
+        help="Pull in group-level base studies that are in a studyset and have no llm study yet.",
+    ),
+    limit: Optional[int] = typer.Option(
+        None, "--limit", "-n", help="Cap how many --from-neurostore results to take."
+    ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Register articles in the catalog. Downloads nothing."""
@@ -132,6 +140,9 @@ def add(
         ]
     if manifest:
         found += list(Identifiers.load(manifest).identifiers)
+    if from_neurostore:
+        found += _discover_from_neurostore(settings, limit)
+
     if query:
         from ingestion_workflow.services.search import PubMedSearchService
 
@@ -155,6 +166,20 @@ def add(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
         f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
     )
+
+
+def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[Identifier]:
+    """Read the database the upload stage writes to, and take nothing else."""
+    from ingestion_workflow.services.db import SessionFactory, SSHTunnel
+    from ingestion_workflow.services.discover import unprocessed_base_studies
+
+    with SSHTunnel(settings) as tunnel:
+        sessions = SessionFactory(settings, tunnel=tunnel)
+        sessions.configure()
+        with sessions.session() as session:
+            found = list(unprocessed_base_studies(session, limit=limit))
+    typer.echo(f"neurostore: {len(found):,} base studies with no llm study yet")
+    return found
 
 
 # -- run ---------------------------------------------------------------------

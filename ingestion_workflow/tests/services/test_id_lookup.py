@@ -1,5 +1,4 @@
 import pytest
-
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import Identifier, Identifiers

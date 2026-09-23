@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ingestion_workflow.config import Settings
 from ingestion_workflow.models.analysis import (
     Analysis,
     AnalysisCollection,
@@ -13,9 +12,13 @@ from ingestion_workflow.models.analysis import (
 )
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.export_schema import ArticleExport, build_article_export
-from ingestion_workflow.models.extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
-from ingestion_workflow.models.metadata import ArticleMetadata
+from ingestion_workflow.models.extract import (
+    ArticleExtractionBundle,
+    ExtractedContent,
+    ExtractedTable,
+)
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.metadata import ArticleMetadata
 
 
 def _bundle(tmp_path: Path) -> ArticleExtractionBundle:

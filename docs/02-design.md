@@ -208,6 +208,23 @@ ingest add --query '(fmri OR PET) AND ...' --start-year 2010     # PubMed search
 `add` resolves and registers; it downloads nothing. It prints what was new and
 what was already known, so adding a manifest twice is visibly a no-op.
 
+#### Discovering work from Neurostore
+
+The pipeline is otherwise one-way: `sync` writes `ns-pond`, and nothing reads
+Neurostore looking for articles. `--from-neurostore` is the inbound path. It
+reads the database the upload stage writes to, so the two cannot drift, and
+takes group-level base studies that **are in a studyset** and have **no
+`source='llm'` study**:
+
+- *in a studyset*, because that is what marks a base study as one someone wants;
+- *no llm study*, because that is exactly what this pipeline would add;
+- *group level*, because meta-analyses are not papers to extract coordinates from.
+
+It registers the `base_study_id` alongside the DOI, PMID and PMCID from the same
+row. That matters: an article known only by its `base_study_id` is inert — no
+download source can address it — so the bibliographic ids are what make it
+actionable. Base studies with none of the three are skipped and counted.
+
 ### `run` — advance the catalog
 
 ```bash

@@ -1,8 +1,10 @@
-"""Command line application entry points."""
+"""Command line application entry point.
 
-from .main import app, main
+Only `app` is re-exported. Re-exporting `main` too would shadow the
+`ingestion_workflow.cli.main` *module* with the function of the same name, so
+`import ingestion_workflow.cli.main` would hand back the function instead.
+"""
 
-__all__ = [
-    "app",
-    "main",
-]
+from .main import app
+
+__all__ = ["app"]

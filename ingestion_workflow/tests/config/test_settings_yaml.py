@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import textwrap
+from pathlib import Path
 
 from ingestion_workflow.config import load_settings
 

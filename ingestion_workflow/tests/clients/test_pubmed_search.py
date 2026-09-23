@@ -1,6 +1,5 @@
 import pytest
 import requests
-
 from ingestion_workflow.clients.pubmed import (
     ESEARCH_MAX_RESULTS,
     PubMedClient,

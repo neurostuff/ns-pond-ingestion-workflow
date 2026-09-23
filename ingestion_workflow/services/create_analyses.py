@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -21,9 +20,8 @@ from ingestion_workflow.models import (
     ParseAnalysesOutput,
 )
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
-from ingestion_workflow.utils.progress import emit_progress
-
 from ingestion_workflow.services.naming import sanitize_table_id
+from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
 

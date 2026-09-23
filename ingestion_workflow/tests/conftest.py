@@ -2,9 +2,8 @@ import json
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 import pytest
-
+from dotenv import load_dotenv
 from ingestion_workflow.models.ids import Identifier, Identifiers
 
 

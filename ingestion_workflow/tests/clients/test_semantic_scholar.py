@@ -1,5 +1,4 @@
 import pytest
-
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
 

@@ -36,6 +36,7 @@ cp .env.example .env
 ```bash
 ingest add 37961286 PMC10634720 10.1016/j.neuroimage.2023.120   # ids of any kind
 ingest add --query '(fmri OR PET) AND 2010:2025[dp]'            # or a PubMed search
+ingest add --from-neurostore                                    # or work Neurostore is missing
 ingest run --dry-run                                            # what would happen
 ingest run                                                      # make it happen
 ingest status                                                   # where everything stands
