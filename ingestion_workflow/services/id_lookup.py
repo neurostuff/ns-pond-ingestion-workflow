@@ -108,7 +108,7 @@ class IDLookupService:
     def _is_complete(self, identifier: Identifier) -> bool:
         return bool(identifier.pmid and identifier.doi and identifier.pmcid)
 
-    def _merge_cached_entry(self, identifier: Identifier, entry: IdentifierCacheEntry) -> None:
+    def _merge_cached_entry(self, identifier: Identifier, entry) -> None:
         for cached_identifier in entry.identifiers.identifiers:
             self._merge_identifier(identifier, cached_identifier)
 
@@ -179,8 +179,8 @@ class SemanticScholarIDLookupService(IDLookupService):
     extractor_name = "semantic_scholar"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._api_key = settings.semantic_scholar_api_key
         self._client: Optional[SemanticScholarClient]
         if self._api_key:
@@ -206,8 +206,8 @@ class OpenAlexIDLookupService(IDLookupService):
     extractor_name = "openalex"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._email = settings.openalex_email
         self._client: Optional[OpenAlexClient]
         if self._email:
@@ -233,8 +233,8 @@ class PubMedIDLookupService(IDLookupService):
     extractor_name = "pubmed"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._email = settings.pubmed_email
         self._api_key = settings.pubmed_api_key
         self._tool = settings.pubmed_tool or "ingestion-workflow"

@@ -13,7 +13,7 @@ from typing import List, Optional, Sequence
 
 import typer
 
-from ingestion_workflow.catalog import Catalog, Status
+from ingestion_workflow.catalog import ArticleRef, Catalog, Status
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.pipeline import (
@@ -117,6 +117,15 @@ def add(
         "--neurostore",
         help="Neurostore base_study_id (repeatable). Opaque, so it needs naming.",
     ),
+    enrich: bool = typer.Option(
+        True,
+        "--enrich/--no-enrich",
+        help=(
+            "Fill in missing pmcid/doi from Semantic Scholar, PubMed and "
+            "OpenAlex. A PubMed search returns PMIDs only, and pubget needs a "
+            "PMCID, so without this those articles cannot be downloaded."
+        ),
+    ),
     from_neurostore: bool = typer.Option(
         False,
         "--from-neurostore",
@@ -160,11 +169,58 @@ def add(
     with _catalog(settings) as catalog:
         before = catalog.count_articles()
         refs = catalog.register_many(found)
+        if enrich:
+            refs = _enrich(settings, catalog, refs)
         after = catalog.count_articles()
 
     typer.echo(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
         f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
+    )
+
+
+def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) -> List[ArticleRef]:
+    """Fill in the identifiers a source needs to address an article.
+
+    A PubMed search yields PMIDs; pubget addresses articles by PMCID, so
+    without this every searched article is unreachable to it. Each provider
+    consults the catalog first, so an article that already has all three ids
+    costs nothing.
+    """
+    from ingestion_workflow.services.id_lookup import (
+        OpenAlexIDLookupService,
+        PubMedIDLookupService,
+        SemanticScholarIDLookupService,
+    )
+
+    providers = {
+        "semantic_scholar": SemanticScholarIDLookupService,
+        "pubmed": PubMedIDLookupService,
+        "openalex": OpenAlexIDLookupService,
+    }
+    identifiers = Identifiers([ref.identifier for ref in refs])
+    identifiers.set_index("pmid", "doi", "pmcid")
+
+    for name in settings.metadata_providers:
+        factory = providers.get(name)
+        if factory is None:
+            typer.echo(f"  unknown metadata provider {name!r}, skipping")
+            continue
+        service = factory(settings, catalog)
+        if not service.can_run():
+            typer.echo(f"  {name}: not configured, skipping")
+            continue
+        before = _complete(identifiers)
+        service.find_identifiers(identifiers)
+        gained = _complete(identifiers) - before
+        typer.echo(f"  {name}: completed {gained:,} more")
+
+    return catalog.register_many(list(identifiers.identifiers))
+
+
+def _complete(identifiers: Identifiers) -> int:
+    return sum(
+        1 for i in identifiers.identifiers if i.pmid and i.doi and i.pmcid
     )
 
 
