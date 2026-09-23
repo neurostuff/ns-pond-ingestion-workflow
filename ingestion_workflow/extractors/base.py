@@ -81,8 +81,23 @@ class BaseExtractor:
 
         if worker_count == 1 or len(download_results) < max(2, min_batch_for_pool):
             for index, download_result in enumerate(download_results):
-                ordered_results[index] = worker(download_result, extraction_root)
-                emit_progress(progress_hook)
+                # Same isolation as the pool path below. Without it a single
+                # article that raises before reaching its worker's own guard
+                # escapes to ExtractStage.execute, which fails the whole batch.
+                try:
+                    ordered_results[index] = worker(download_result, extraction_root)
+                except Exception as exc:
+                    logger.exception(
+                        "%s extraction raised exception for %s",
+                        source_name,
+                        download_result.identifier.slug,
+                    )
+                    ordered_results[index] = failure_builder(
+                        download_result,
+                        f"{source_name} extraction raised an exception: {exc}",
+                    )
+                finally:
+                    emit_progress(progress_hook)
         else:
             root_arg = str(extraction_root)
             with ProcessPoolExecutor(
