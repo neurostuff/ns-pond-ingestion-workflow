@@ -55,8 +55,6 @@ n_llm_workers: 2  # Maximum number of concurrent LLM workers
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
 
 # ===== Output =====
-export: false  # Enable exporting extraction outputs to disk mirrors
-export_overwrite: true  # Overwrite previously exported files if they exist
 sync_overwrite: true  # Overwrite individual files when writing ns-pond sync outputs
 
 # ===== Logging =====

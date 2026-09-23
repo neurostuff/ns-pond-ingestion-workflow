@@ -40,7 +40,7 @@ def test_load_settings_respects_lists_and_booleans(tmp_path: Path) -> None:
               - pubget
             metadata_providers:
               - pubmed
-            export: true
+            log_to_file: true
             show_progress: false
             """
         ),
@@ -51,5 +51,5 @@ def test_load_settings_respects_lists_and_booleans(tmp_path: Path) -> None:
 
     assert settings.download_sources == ["ace", "pubget"]
     assert settings.metadata_providers == ["pubmed"]
-    assert settings.export is True
+    assert settings.log_to_file is True
     assert settings.show_progress is False

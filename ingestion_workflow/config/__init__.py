@@ -197,15 +197,6 @@ class Settings(BaseSettings):
         ),
     )
 
-    export: bool = Field(
-        default=False,
-        description="Enable exporting extraction outputs to disk mirrors",
-    )
-
-    export_overwrite: bool = Field(
-        default=True,
-        description="Overwrite previously exported files if they exist",
-    )
 
     sync_overwrite: bool = Field(
         default=True,
