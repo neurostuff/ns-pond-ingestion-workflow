@@ -53,7 +53,8 @@ Article ids are derived from identifiers:
 
 ```python
 def _article_id(seed: str) -> str:
-    return shortuuid.uuid(name=_UUID_NAMESPACE + seed)[:12]
+    digest = hashlib.blake2b(seed.encode("utf-8"), digest_size=10).digest()
+    return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 ```
 
 so the same row always lands on the same article. Re-running a migration that

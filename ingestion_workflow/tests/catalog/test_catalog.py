@@ -147,39 +147,73 @@ def test_blobs_written_at_any_level_are_readable(tmp_path):
 
 
 def test_article_ids_are_frozen():
-    """Article ids are the catalog's primary key and appear in ns-pond paths.
+    """Article ids are the catalog's primary key.
 
-    These are hardcoded on purpose: if the namespace, the name prefix or the id
+    Hardcoded on purpose: if the hash, the digest size, the encoding or the id
     length is ever edited, this fails rather than silently re-keying every
     article in every existing catalog.
     """
     from ingestion_workflow.catalog.store import _article_id
 
-    assert _article_id("pmcid:PMC10634720") == "9MhD53KvhQmi"
-    assert _article_id("pmid:37961286") == "TaFbUwZmxBYn"
-    assert _article_id("doi:10.1016/j.neuroimage.2023.120") == "knJAq5thbeGr"
+    assert _article_id("pmcid:PMC10634720") == "lsfb2vznhrfz"
+    assert _article_id("pmid:37961286") == "ckw3v7eecmlk"
+    assert _article_id("doi:10.1016/j.neuroimage.2023.120") == "6rgtrdiydfza"
 
 
-def test_the_namespace_is_explicit_not_inferred():
-    """`shortuuid.uuid(name=)` chooses its namespace by string-matching the name
-    for an `http` prefix. Relying on that means a cosmetic edit to the prefix
-    silently changes every id, so the namespace is passed directly instead.
+def test_article_ids_cannot_be_mistaken_for_neurostore_ids():
+    """Neurostore's base_study_id is a mixed-case shortuuid-12. Both appear in
+    `ingest show` output, so the catalog's own ids are deliberately a different
+    shape: lowercase base32."""
+    from ingestion_workflow.catalog.store import ID_LENGTH, _article_id
 
-    Checked behaviourally: the id must equal an explicit uuid5 against
-    NAMESPACE_URL, which is true of the direct call and not of the DNS
-    namespace shortuuid would fall back to.
+    for seed in ("pmcid:PMC1", "pmid:2", "doi:10.1/x"):
+        article_id = _article_id(seed)
+        assert len(article_id) == ID_LENGTH
+        assert article_id == article_id.lower()
+        assert set(article_id) <= set("abcdefghijklmnopqrstuvwxyz234567")
+
+
+def test_a_random_id_would_also_be_correct(catalog, monkeypatch):
+    """Determinism is for cross-catalog agreement, not for correctness.
+
+    Idempotent registration and stability under enrichment come from the alias
+    table. This pins that, so nobody later "fixes" a bug here that is not one.
     """
-    import uuid as uuid_module
+    import uuid
 
-    import shortuuid
     from ingestion_workflow.catalog import store
 
-    assert store.ARTICLE_NAMESPACE == uuid_module.NAMESPACE_URL
+    monkeypatch.setattr(store, "_article_id", lambda seed: uuid.uuid4().hex[:12])
 
-    seed = "pmcid:PMC10634720"
-    name = store.ARTICLE_NAME_PREFIX + seed
-    expected = shortuuid.encode(uuid_module.uuid5(uuid_module.NAMESPACE_URL, name))
-    assert store._article_id(seed) == expected[: store.ID_LENGTH]
+    first = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")])
+    again = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")])
+    enriched = catalog.register_many([Identifier(pmid="5", pmcid="PMC5", doi="10.1/e")])
 
-    dns = shortuuid.encode(uuid_module.uuid5(uuid_module.NAMESPACE_DNS, name))
-    assert store._article_id(seed) != dns[: store.ID_LENGTH]
+    assert [r.id for r in first] == [r.id for r in again] == [r.id for r in enriched]
+    assert catalog.count_articles() == 1
+
+
+def test_the_neurostore_id_becomes_an_alias(catalog):
+    """base_study_id is assigned by Neurostore during upload, so it is not
+    knowable at registration. Once learned it must be resolvable."""
+    ref = catalog.register(Identifier(pmcid="PMC10634720"))
+    assert ref.id != "5Qk2mNpXyJKH"
+
+    catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
+
+    found = catalog.resolve(Identifier(neurostore="5Qk2mNpXyJKH"))
+    assert found is not None and found.id == ref.id
+    assert catalog.identifier(ref.id).neurostore == "5Qk2mNpXyJKH"
+    assert catalog.count_articles() == 1
+
+
+def test_add_aliases_ignores_unknown_kinds_and_blanks(catalog):
+    ref = catalog.register(Identifier(pmid="9"))
+    catalog.add_aliases(
+        [
+            (ref.id, "not_a_kind", "x"),
+            (ref.id, "neurostore", ""),
+            ("", "neurostore", "y"),
+        ]
+    )
+    assert catalog.identifier(ref.id).neurostore is None

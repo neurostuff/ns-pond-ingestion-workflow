@@ -6,15 +6,14 @@ question in the pipeline is answered here and nowhere else.
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import sqlite3
-import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
-
-import shortuuid
 
 from ingestion_workflow.models.ids import Identifier
 
@@ -22,28 +21,27 @@ from .blobs import BlobStore
 from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
 from .schema import DDL, PRAGMAS, SCHEMA_VERSION
 
-#: Namespace for article ids. Not an endpoint -- a UUID v5 name, hashed and
-#: never dereferenced. Changing either of these re-keys every article in every
-#: catalog, so they are frozen.
-ARTICLE_NAMESPACE = uuid.UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")  # RFC 4122 URL
-ARTICLE_NAME_PREFIX = "https://neurostore.org/ingestion/article/"
-
+#: Article ids are 12 lowercase base32 characters. Deliberately not the
+#: mixed-case shortuuid-12 that Neurostore uses for base_study_id, so the two
+#: cannot be mistaken for each other where both appear.
 ID_LENGTH = 12
 
 
 def _article_id(seed: str) -> str:
-    """Derive an article id from its strongest identifier.
+    """A stable, opaque key for an article.
 
-    Deterministic so that re-registering the same article, or re-running a
-    migration, yields the same id instead of a duplicate.
+    Hashed from the identifier rather than random so two catalogs built from the
+    same source agree on ids, which is how a migration gets checked. The catalog
+    does not otherwise depend on it: idempotent registration and stability under
+    enrichment both come from the alias table, and a random id passes every test
+    here except cross-catalog agreement.
 
-    The namespace is passed explicitly rather than via `shortuuid.uuid(name=)`,
-    which picks between NAMESPACE_URL and NAMESPACE_DNS by string-matching the
-    name for an `http` prefix -- so editing the prefix to something that reads
-    less like a live URL would silently change every id.
+    This is not the Neurostore base_study_id. That one is assigned by Neurostore
+    during upload, does not exist until then, and is recorded as a `neurostore`
+    alias once known.
     """
-    digest = uuid.uuid5(ARTICLE_NAMESPACE, ARTICLE_NAME_PREFIX + seed)
-    return shortuuid.encode(digest)[:ID_LENGTH]
+    digest = hashlib.blake2b(seed.encode("utf-8"), digest_size=10).digest()
+    return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 
 
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
@@ -155,6 +153,26 @@ class Catalog:
         if not refs:
             raise ValueError("Identifier carries no pmid, pmcid, doi or neurostore id")
         return refs[0]
+
+    def add_aliases(self, pairs: Sequence[Tuple[str, str, str]]) -> None:
+        """Attach identifiers to articles that already exist.
+
+        Used for ids that are only learned later -- a Neurostore base_study_id
+        is not known until the upload stage has run.
+        """
+        rows = [
+            (kind, value, article_id)
+            for article_id, kind, value in pairs
+            if article_id and kind in ALIAS_KINDS and value
+        ]
+        if not rows:
+            return
+        with self._write() as conn:
+            conn.executemany(
+                "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
+                "ON CONFLICT(kind, value) DO UPDATE SET article_id=excluded.article_id",
+                rows,
+            )
 
     def _merge(self, conn: sqlite3.Connection, ids: Sequence[str]) -> str:
         """Point every id at the oldest one. Nothing is deleted."""

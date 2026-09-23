@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Sequence
+from typing import Dict, Iterator, List, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import AnalysisCollection
@@ -92,6 +92,7 @@ class UploadStage:
             return
 
         seen = set()
+        learned: List[Tuple[str, str, str]] = []
         for outcome in outcomes:
             work = by_slug.get(outcome.slug)
             if work is None:
@@ -103,6 +104,11 @@ class UploadStage:
                     fingerprint=work.fingerprint,
                 )
                 continue
+            if outcome.base_study_id:
+                # Neurostore assigns this during upload, so it is only knowable
+                # now. Recording it as an alias makes the mapping queryable and
+                # lets `ingest show <base_study_id>` find the article.
+                learned.append((work.article_id, "neurostore", outcome.base_study_id))
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
@@ -115,6 +121,8 @@ class UploadStage:
                     "analyses": len(outcome.analysis_ids),
                 },
             )
+        ctx.catalog.add_aliases(learned)
+
         for work in works:
             if work.article_id not in seen:
                 yield Outcome.failure(

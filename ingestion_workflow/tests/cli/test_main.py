@@ -102,3 +102,27 @@ def test_show_lists_what_is_known(config, tmp_path):
     run("add", "37961286", "--config", str(config))
     out = run("show", "37961286", "--config", str(config))
     assert "pmid 37961286" in out
+
+
+def test_show_resolves_every_kind_of_id(config, tmp_path):
+    """A user has four different strings that name the same article, and should
+    not have to know which kind the CLI wants."""
+    from ingestion_workflow.catalog import Catalog
+    from ingestion_workflow.models.ids import Identifier
+
+    run("add", "PMC10634720", "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        ref = catalog.resolve(Identifier(pmcid="PMC10634720"))
+        catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
+        article_id = ref.id
+
+    for token in ("PMC10634720", "5Qk2mNpXyJKH", article_id):
+        out = run("show", token, "--config", str(config))
+        assert article_id in out, f"{token} did not resolve"
+
+
+def test_show_still_rejects_an_unknown_token(config):
+    run("add", "PMC10634720", "--config", str(config))
+    result = runner.invoke(app, ["show", "zzzzzzzzzzzz", "--config", str(config)])
+    assert result.exit_code == 1
+    assert "not in the catalog" in result.output

@@ -233,19 +233,37 @@ def status(config: Optional[Path] = ConfigOption) -> None:
 # -- show --------------------------------------------------------------------
 
 
+def _find(catalog: Catalog, token: str):
+    """Resolve whatever the user typed: a bibliographic id, a Neurostore
+    base_study_id, or the catalog's own article id."""
+    try:
+        found = catalog.resolve(_parse_identifier(token))
+    except typer.BadParameter:
+        found = None
+    if found is not None:
+        return found
+    # Neurostore base_study_ids and article ids are both opaque strings; try the
+    # alias table before assuming the token is an article id.
+    found = catalog.resolve(Identifier(neurostore=token))
+    if found is not None:
+        return found
+    if any(vars(catalog.identifier(token)).values()):
+        return catalog.ref(token)
+    return None
+
+
 @app.command()
 def show(
-    identifier: str = typer.Argument(..., help="A PMID, PMC id, DOI or article id."),
+    identifier: str = typer.Argument(
+        ..., help="A PMID, PMC id, DOI, Neurostore base_study_id or article id."
+    ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Print everything the catalog knows about one article."""
     settings = _settings(config)
     with _catalog(settings) as catalog:
-        try:
-            ref = catalog.resolve(_parse_identifier(identifier))
-        except typer.BadParameter:
-            ref = catalog.ref(identifier) if catalog.identifier(identifier) else None
-        if ref is None or not any(vars(ref.identifier).values()):
+        ref = _find(catalog, identifier)
+        if ref is None:
             typer.echo(f"not in the catalog: {identifier}")
             raise typer.Exit(code=1)
 

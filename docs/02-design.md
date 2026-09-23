@@ -31,11 +31,30 @@ cat.register(Identifier(pmcid="PMC10634720",
                         pmid="37961286"))              # -> "a7Kq2mNp", + alias
 ```
 
-Article ids come from `uuid5(NAMESPACE_URL, ARTICLE_NAME_PREFIX + seed)`.
-`ARTICLE_NAME_PREFIX` is a UUID v5 *name* — hashed, never dereferenced, and it
-does not resolve to anything. It is URI-shaped because RFC 4122's URL namespace
-expects that. Both it and the namespace are frozen: editing either re-keys every
-article in every catalog, which `test_article_ids_are_frozen` exists to catch.
+### Two ids, and they are not the same
+
+| | assigned | shape | exists when |
+|---|---|---|---|
+| `article_id` | by the catalog, at registration | 12 lowercase base32, `lsfb2vznhrfz` | always |
+| `base_study_id` | by **Neurostore**, during upload | mixed-case shortuuid-12, `5Qk2mNpXyJKH` | only after a successful upload |
+
+`article_id` has to exist before anything is downloaded, because download,
+extract, metadata and analyses all key on it. `base_study_id` cannot exist until
+upload has run — where it is either created or *discovered* by matching an
+existing base study on DOI or PMID — and most articles never get one. So they
+are separate, and the catalog records the mapping: on a successful upload the
+`base_study_id` is written as a `neurostore` alias, which makes
+`ingest show <base_study_id>` work.
+
+The two shapes are deliberately different so they cannot be confused where both
+appear.
+
+`article_id` is a truncated blake2b of the article's strongest identifier. It is
+hashed rather than random only so that two catalogs built from the same source
+agree on ids, which is how a migration gets checked — nothing else depends on
+it. Idempotent registration and stability under enrichment come from the alias
+table, and `test_a_random_id_would_also_be_correct` pins that, so nobody later
+"fixes" a bug here that is not one.
 
 This is the fix for [finding 1](01-current-behavior.md). Resolution is a single
 indexed lookup on `aliases`, so `identifier_aliases`, `expand_target_aliases`
@@ -210,13 +229,14 @@ download     463,584       2,110      18,442         0
 extract      226,523       1,004       5,118   231,053
 …
 
-$ ingest show PMC10634720
-article a7Kq2mNp
+$ ingest show PMC10634720          # or 5Qk2mNpXyJKH, once uploaded
+article lsfb2vznhrfz
   aliases   pmcid PMC10634720 · pmid 37961286 · doi 10.1101/2023.10.21.563317
+            · neurostore 5Qk2mNpXyJKH
   download  pubget    ok    2026-04-29  blob 3f2a…  2 files
   extract   pubget    ok    2026-04-29  blob 91bc…  6 tables, 4 with coordinates
   analyses  —         ok    2026-04-29  blob c40d…  4 collections, 61 coordinates
-  upload    —         ok    2026-04-29  base_study 5Qk2mNpXy
+  upload    —         ok    2026-04-29  base_study 5Qk2mNpXyJKH
 ```
 
 ## Configuration
