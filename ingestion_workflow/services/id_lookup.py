@@ -179,8 +179,8 @@ class SemanticScholarIDLookupService(IDLookupService):
     extractor_name = "semantic_scholar"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._api_key = settings.semantic_scholar_api_key
         self._client: Optional[SemanticScholarClient]
         if self._api_key:
@@ -206,8 +206,8 @@ class OpenAlexIDLookupService(IDLookupService):
     extractor_name = "openalex"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._email = settings.openalex_email
         self._client: Optional[OpenAlexClient]
         if self._email:
@@ -233,8 +233,8 @@ class PubMedIDLookupService(IDLookupService):
     extractor_name = "pubmed"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
 
-    def __init__(self, settings: Settings) -> None:
-        super().__init__(settings)
+    def __init__(self, settings: Settings, catalog=None) -> None:
+        super().__init__(settings, catalog)
         self._email = settings.pubmed_email
         self._api_key = settings.pubmed_api_key
         self._tool = settings.pubmed_tool or "ingestion-workflow"
