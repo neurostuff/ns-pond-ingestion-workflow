@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 import typer
 
@@ -215,7 +215,7 @@ def run(
     stages = build(stage, settings)
 
     with _catalog(settings) as catalog:
-        selection = _select(catalog, manifest, select, stage)
+        selection = _select(catalog, manifest, select, stage, refresh or [])
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
         typer.echo(f"selection: {selection.description}\n")
@@ -229,10 +229,16 @@ def run(
     typer.echo(_render(report, dry_run=dry_run))
 
 
-def _select(catalog: Catalog, manifest: Optional[Path], mode: Select, stage) -> Selection:
+def _select(
+    catalog: Catalog,
+    manifest: Optional[Path],
+    mode: Select,
+    stage,
+    refresh: Sequence[str] = (),
+) -> Selection:
     base = from_manifest(catalog, manifest) if manifest else everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
-    return narrow(catalog, base, mode, only)
+    return narrow(catalog, base, mode, only, refresh)
 
 
 def _render(report, *, dry_run: bool) -> str:

@@ -49,22 +49,41 @@ def everything(catalog: Catalog) -> Selection:
 
 
 def narrow(
-    catalog: Catalog, selection: Selection, mode: Select, stage: Optional[str]
+    catalog: Catalog,
+    selection: Selection,
+    mode: Select,
+    stage: Optional[str],
+    refresh: Sequence[str] = (),
 ) -> Selection:
-    """Restrict a selection by what the catalog already knows about it."""
+    """Restrict a selection by what the catalog already knows about it.
+
+    Work the operator asked to redo counts as pending however finished it
+    looks, otherwise `--refresh` and the default `--select pending` contradict
+    each other: the artifacts named for redoing are exactly the ones that look
+    done, so they would be dropped here and the refresh would do nothing.
+    """
     if mode is Select.ALL or not selection.refs:
         return selection
 
     ids = [ref.id for ref in selection.refs]
     stages = [stage] if stage else _stages_present(catalog)
     per_stage = {name: catalog.artifacts(ids, name) for name in stages}
+    wanted = {name.lower() for name in refresh}
+
+    def redoing(artifact) -> bool:
+        if "all" in wanted or artifact.stage in wanted:
+            return True
+        return f"{artifact.stage}:{artifact.source}" in wanted
 
     def keep(ref: ArticleRef) -> bool:
-        states = [
-            artifact.status
+        artifacts = [
+            artifact
             for name in stages
             for artifact in per_stage[name].get(ref.id, {}).values()
         ]
+        if any(redoing(artifact) for artifact in artifacts):
+            return True
+        states = [artifact.status for artifact in artifacts]
         if mode is Select.NEW:
             return not states
         if mode is Select.FAILED:
