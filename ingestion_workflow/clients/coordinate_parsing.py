@@ -53,6 +53,11 @@ class CoordinateParsingClient(GenericLLMClient):
         effort = getattr(self.settings, "llm_reasoning_effort", None)
         if effort:
             extra["reasoning_effort"] = effort
+        # Flex runs on spare capacity: about half price, but it queues, and
+        # returns 429 resource_unavailable rather than throttling.
+        tier = getattr(self.settings, "llm_service_tier", None)
+        if tier:
+            extra["service_tier"] = tier
 
         response = self.client.chat.completions.create(
             model=resolved_model,

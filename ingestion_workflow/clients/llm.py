@@ -24,19 +24,35 @@ class GenericLLMClient:
     ) -> None:
         self.settings = settings
         self.api_key = self._resolve_api_key(api_key)
-        self.base_url = base_url or (
-            settings.llm_api_base if settings and settings.llm_api_base else None
+        # OPENAI_API_GATEWAY is how the Portkey gateway is named across these
+        # projects; a gateway routes by an `@provider/model` id, so the model
+        # name carries the provider and only the base url changes here.
+        self.base_url = (
+            base_url
+            or (settings.llm_api_base if settings and settings.llm_api_base else None)
+            or os.getenv("OPENAI_API_GATEWAY")
         )
         if not self.api_key:
             raise ValueError(
                 "LLM API key must be provided via arguments, "
                 "settings.llm_api_key, or environment variables.",
             )
-        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        timeout = settings.llm_timeout if settings and settings.llm_timeout else None
+        retries = settings.llm_max_retries if settings and settings.llm_max_retries else None
+        # The SDK already backs off exponentially on 429 and 5xx; this only
+        # widens the budget, which flex needs and the default tier does not.
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.base_url,
+            **({"timeout": timeout} if timeout else {}),
+            **({"max_retries": retries} if retries else {}),
+        )
         if default_model:
             self.default_model = default_model
         elif settings and settings.llm_model:
             self.default_model = settings.llm_model
+        elif os.getenv("OPENAI_EMBEDDING_MODEL"):
+            self.default_model = os.environ["OPENAI_EMBEDDING_MODEL"]
         else:
             self.default_model = "gpt-4o-mini"
 
