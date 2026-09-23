@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,7 +22,13 @@ from .blobs import BlobStore
 from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
 from .schema import DDL, PRAGMAS, SCHEMA_VERSION
 
-_UUID_NAMESPACE = "https://neurostore.org/ingestion/article/"
+#: Namespace for article ids. Not an endpoint -- a UUID v5 name, hashed and
+#: never dereferenced. Changing either of these re-keys every article in every
+#: catalog, so they are frozen.
+ARTICLE_NAMESPACE = uuid.UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8")  # RFC 4122 URL
+ARTICLE_NAME_PREFIX = "https://neurostore.org/ingestion/article/"
+
+ID_LENGTH = 12
 
 
 def _article_id(seed: str) -> str:
@@ -29,8 +36,14 @@ def _article_id(seed: str) -> str:
 
     Deterministic so that re-registering the same article, or re-running a
     migration, yields the same id instead of a duplicate.
+
+    The namespace is passed explicitly rather than via `shortuuid.uuid(name=)`,
+    which picks between NAMESPACE_URL and NAMESPACE_DNS by string-matching the
+    name for an `http` prefix -- so editing the prefix to something that reads
+    less like a live URL would silently change every id.
     """
-    return shortuuid.uuid(name=_UUID_NAMESPACE + seed)[:12]
+    digest = uuid.uuid5(ARTICLE_NAMESPACE, ARTICLE_NAME_PREFIX + seed)
+    return shortuuid.encode(digest)[:ID_LENGTH]
 
 
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:

@@ -31,6 +31,12 @@ cat.register(Identifier(pmcid="PMC10634720",
                         pmid="37961286"))              # -> "a7Kq2mNp", + alias
 ```
 
+Article ids come from `uuid5(NAMESPACE_URL, ARTICLE_NAME_PREFIX + seed)`.
+`ARTICLE_NAME_PREFIX` is a UUID v5 *name* — hashed, never dereferenced, and it
+does not resolve to anything. It is URI-shaped because RFC 4122's URL namespace
+expects that. Both it and the namespace are frozen: editing either re-keys every
+article in every catalog, which `test_article_ids_are_frozen` exists to catch.
+
 This is the fix for [finding 1](01-current-behavior.md). Resolution is a single
 indexed lookup on `aliases`, so `identifier_aliases`, `expand_target_aliases`
 and the four `_hydrate_*_from_cache` copies all disappear.

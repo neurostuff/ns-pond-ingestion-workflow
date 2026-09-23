@@ -144,3 +144,42 @@ def test_blobs_written_at_any_level_are_readable(tmp_path):
     assert store.get(digest) == payload
     assert store.put(payload) == digest          # existing blob left alone
     assert target.read_bytes() == gzip.compress(raw, compresslevel=9)
+
+
+def test_article_ids_are_frozen():
+    """Article ids are the catalog's primary key and appear in ns-pond paths.
+
+    These are hardcoded on purpose: if the namespace, the name prefix or the id
+    length is ever edited, this fails rather than silently re-keying every
+    article in every existing catalog.
+    """
+    from ingestion_workflow.catalog.store import _article_id
+
+    assert _article_id("pmcid:PMC10634720") == "9MhD53KvhQmi"
+    assert _article_id("pmid:37961286") == "TaFbUwZmxBYn"
+    assert _article_id("doi:10.1016/j.neuroimage.2023.120") == "knJAq5thbeGr"
+
+
+def test_the_namespace_is_explicit_not_inferred():
+    """`shortuuid.uuid(name=)` chooses its namespace by string-matching the name
+    for an `http` prefix. Relying on that means a cosmetic edit to the prefix
+    silently changes every id, so the namespace is passed directly instead.
+
+    Checked behaviourally: the id must equal an explicit uuid5 against
+    NAMESPACE_URL, which is true of the direct call and not of the DNS
+    namespace shortuuid would fall back to.
+    """
+    import uuid as uuid_module
+
+    import shortuuid
+    from ingestion_workflow.catalog import store
+
+    assert store.ARTICLE_NAMESPACE == uuid_module.NAMESPACE_URL
+
+    seed = "pmcid:PMC10634720"
+    name = store.ARTICLE_NAME_PREFIX + seed
+    expected = shortuuid.encode(uuid_module.uuid5(uuid_module.NAMESPACE_URL, name))
+    assert store._article_id(seed) == expected[: store.ID_LENGTH]
+
+    dns = shortuuid.encode(uuid_module.uuid5(uuid_module.NAMESPACE_DNS, name))
+    assert store._article_id(seed) != dns[: store.ID_LENGTH]
