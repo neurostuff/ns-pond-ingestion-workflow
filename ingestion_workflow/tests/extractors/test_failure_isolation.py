@@ -7,7 +7,6 @@ _run_extraction_pipeline fails every article in that batch -- up to 500.
 from __future__ import annotations
 
 import pytest
-
 from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import (
     DownloadResult,
