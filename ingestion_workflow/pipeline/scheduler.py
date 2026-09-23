@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Outcome, Status
+from ingestion_workflow.utils.console import progress_bar
 
 from .plan import StagePlan
 from .stage import Context, Stage
@@ -78,23 +79,32 @@ def run_stages(
     refs: Sequence[ArticleRef],
     *,
     dry_run: bool = False,
-    progress=None,
 ) -> RunReport:
     """Advance a selection of articles through the given stages, in order."""
     report = RunReport()
     for stage in stages:
         stage_report = report.for_stage(stage.name)
+        # One bar per stage, stepped per batch: these runs are unattended and
+        # hours long, so silence is indistinguishable from a hang.
+        bar = None if dry_run else progress_bar(
+            ctx.settings, len(refs), stage.name, unit="article"
+        )
         for batch in batched(refs):
             plan = _plan_batch(ctx, stage, batch)
             stage_report.absorb(plan)
+            if bar is not None:
+                bar.update(len(batch))
+                bar.set_postfix_str(
+                    f"{stage_report.ok:,} done, {stage_report.fresh:,} fresh", refresh=False
+                )
             if dry_run or not plan.pending:
                 continue
             outcomes = list(stage.execute(ctx, plan.pending))
             ctx.catalog.record(outcomes)
             stage_report.ok += sum(1 for o in outcomes if o.status is Status.OK)
             stage_report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
-            if progress is not None:
-                progress(stage.name, stage_report)
+        if bar is not None:
+            bar.close()
         if not dry_run and hasattr(stage, "finish"):
             stage.finish()
         logger.info("%s", stage_report.line(planned_only=dry_run))

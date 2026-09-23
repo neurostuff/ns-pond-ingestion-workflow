@@ -142,3 +142,48 @@ def test_memory_does_not_scale_with_the_corpus(env):
     run_stages(Context(settings, catalog), [Watcher()], refs)
     assert max(sizes) <= 500
     assert sum(sizes) == 1200
+
+
+def test_each_stage_shows_progress_when_asked(env, monkeypatch):
+    """These runs are unattended and hours long; silence reads as a hang."""
+    made = []
+
+    class FakeBar:
+        def __init__(self, total, desc):
+            self.total, self.desc, self.seen = total, desc, 0
+            made.append(self)
+
+        def update(self, n):
+            self.seen += n
+
+        def set_postfix_str(self, *a, **k):
+            pass
+
+        def close(self):
+            self.closed = True
+
+    import ingestion_workflow.pipeline.scheduler as sched
+
+    monkeypatch.setattr(
+        sched, "progress_bar", lambda settings, total, desc, **kw: FakeBar(total, desc)
+    )
+
+    settings, catalog, refs = env
+    run_stages(Context(settings, catalog), [CountingStage()], refs)
+
+    assert [b.desc for b in made] == ["download"]
+    assert made[0].total == len(refs)
+    assert made[0].seen == len(refs)
+    assert made[0].closed
+
+
+def test_a_dry_run_shows_no_progress_bar(env, monkeypatch):
+    import ingestion_workflow.pipeline.scheduler as sched
+
+    made = []
+    monkeypatch.setattr(
+        sched, "progress_bar", lambda *a, **k: made.append(1) or None
+    )
+    settings, catalog, refs = env
+    run_stages(Context(settings, catalog), [CountingStage()], refs, dry_run=True)
+    assert made == []
