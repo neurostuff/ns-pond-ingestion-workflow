@@ -35,7 +35,9 @@ BASE = "22tHjbNRU8t2"
 
 @pytest.fixture()
 def written(tmp_path):
-    identifier = Identifier(pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873")
+    identifier = Identifier(
+        pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
+    )
     # coordinates.csv is built from the table's coordinates, not the analysis'
     # -- the two carry the same points by different routes.
     table = ExtractedTable(
