@@ -185,16 +185,46 @@ class ExtractStage:
         return usable, rejected
 
     def _outcome(self, work: Work, source: str, content: ExtractedContent) -> Outcome:
-        if content is None or content.error_message:
+        """Judge an extraction by what it produced, not by whether it had
+        something to say.
+
+        An article with no coordinate tables is a fact about the article, and
+        an extraction that skipped one table of five still produced four. Both
+        set `error_message`, and treating that as failure marked 55,140 pubget
+        articles broken for having no tables -- burning retry attempts on an
+        answer that cannot change, and hiding the nine that were genuinely
+        malformed.
+        """
+        if content is None:
             return Outcome.failure(
                 work.article_id,
                 self.name,
                 source,
-                (content.error_message if content else "extractor returned nothing"),
+                "extractor returned nothing",
                 fingerprint=work.fingerprint,
             )
+
         tables = content.tables or []
+        produced_something = bool(content.full_text_path) or bool(tables)
+        if content.error_message and not produced_something:
+            return Outcome.failure(
+                work.article_id,
+                self.name,
+                source,
+                content.error_message,
+                fingerprint=work.fingerprint,
+            )
+
         with_coords = sum(1 for table in tables if table.coordinates)
+        summary = {
+            "tables": len(tables),
+            "tables_with_coordinates": with_coords,
+            "has_text": bool(content.full_text_path),
+        }
+        if content.error_message:
+            # Kept, because "four of five tables parsed" is worth knowing; it
+            # is just not a failure.
+            summary["notes"] = content.error_message
         return Outcome(
             article_id=work.article_id,
             stage=self.name,
@@ -202,9 +232,5 @@ class ExtractStage:
             status=Status.OK,
             fingerprint=work.fingerprint,
             payload=content.to_dict(),
-            summary={
-                "tables": len(tables),
-                "tables_with_coordinates": with_coords,
-                "has_text": bool(content.full_text_path),
-            },
+            summary=summary,
         )
