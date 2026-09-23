@@ -14,8 +14,19 @@ from .download import build_extractor
 
 logger = logging.getLogger(__name__)
 
-#: Bump when an extractor change should invalidate stored extractions.
-EXTRACT_VERSION = 1
+#: Bump a source's entry when its extractor changes in a way that could give a
+#: different answer for the same input. Only that source's extractions go
+#: stale; the others keep their fingerprints and are not recomputed.
+#:
+#: ace 1 -> 2: ACE gained table detection that finds tables in articles it
+#: previously reported as having none (neurosynth/ACE).
+EXTRACTOR_VERSIONS = {
+    "pubget": 1,
+    "elsevier": 1,
+    "ace": 2,
+    "pdf": 1,
+}
+DEFAULT_EXTRACTOR_VERSION = 1
 
 
 class ExtractStage:
@@ -39,7 +50,8 @@ class ExtractStage:
         return self._extractors[source]
 
     def fingerprint_for(self, source: str, upstream: Artifact) -> str:
-        return fingerprint("extract", source, EXTRACT_VERSION, upstream=upstream.fingerprint)
+        version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
+        return fingerprint("extract", source, version, upstream=upstream.fingerprint)
 
     def plan(
         self,
