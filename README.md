@@ -99,25 +99,29 @@ One line moves the ssh host, ssh user, container name, docker network and
 forward port together, because Docker names containers per compose project and
 those cannot be derived from the hostname. Every connection logs which
 deployment it reached. `production` is inferred from the compose file and not
-yet verified against the live host — see [docs/02-design.md](docs/02-design.md).
+yet verified against the live host — see [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design).
 
 ## Configuration
 
 Precedence is CLI flags > YAML > environment > environment profile > defaults. See
 [`configs/settings_reference.yaml`](configs/settings_reference.yaml) for every
-option, and [`docs/`](docs/) for why the ones that govern caching look the way
-they do.
+option, and the [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design) page for why the ones that govern caching
+look the way they do.
 
 ## Documentation
 
+The architecture, the measurements behind it, and the reasoning live in the
+[wiki](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki).
+
 | | |
 |---|---|
-| [01-current-behavior.md](docs/01-current-behavior.md) | what the pre-refactor pipeline did, measured, and where it went wrong |
-| [02-design.md](docs/02-design.md) | the catalog, fingerprints, stages, and the command line |
-| [benchmarks.md](docs/benchmarks.md) | before/after numbers for the refactor |
-| [profiling.md](docs/profiling.md) | growth curves, where the time actually goes, and what did not work |
-| [data-safety.md](docs/data-safety.md) | how migration avoids losing the corpus |
-| [migration.md](docs/migration.md) | command-by-command upgrade guide |
+| [Catalog refactor](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Catalog-Refactor) | why the design is what it is, and the questions that shaped it |
+| [Current behavior](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Current-Behavior) | what the pipeline did before, measured against the live corpus |
+| [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design) | identity, fingerprints, stages, the command line, choosing a deployment |
+| [Benchmarks](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Benchmarks) | before/after numbers |
+| [Profiling](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Profiling) | growth curves, where the time goes, and what did not work |
+| [Data safety](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Data-Safety) | how migration avoids losing the corpus |
+| [Migration](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Migration) | command-by-command upgrade guide |
 
 ## Development
 
