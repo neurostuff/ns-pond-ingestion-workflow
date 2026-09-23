@@ -307,6 +307,56 @@ article lsfb2vznhrfz
   upload    —         ok    2026-04-29  base_study 5Qk2mNpXyJKH
 ```
 
+## Choosing a deployment
+
+Switching between staging and production used to mean editing six coupled
+settings — ssh host, ssh user, container name, docker network, forward port,
+password — with nothing checking the combination. `main` shipped a mismatched
+pair as its defaults: `upload_ssh_host: neurostore.xyz` (staging) alongside
+`store-store-pgsql17-1` and `nginx-proxy`, which is what an unprefixed `store`
+compose project on the shared network looks like. That is why the shipped
+config did not work anywhere.
+
+It is now one line:
+
+```yaml
+neurostore_env: staging     # or dev, or production
+```
+
+| | ssh | container | port |
+|---|---|---|---|
+| `staging` | `jdkent@neurostore.xyz` | `neurostore-staging-store-store-pgsql17-1` | 6543 |
+| `dev` | `jdkent@neurostore.xyz` | `neurostore-dev-store-store-pgsql17-1` | 6544 |
+| `production` | `james@neurostore.org` | `store-store-pgsql17-1` | 6545 |
+
+Docker names containers `<compose-project>-<service>-<index>`, so these are
+deployment facts that cannot be derived from the hostname — hence a table
+rather than a rule. The forward ports differ so two environments can be open at
+once without colliding on localhost.
+
+The profile sits above the field defaults and below everything an operator
+sets, so a single value can still be overridden:
+
+```yaml
+neurostore_env: production
+upload_local_forward_port: 7000     # this wins
+```
+
+Precedence, highest first: CLI flags > YAML > environment variables >
+environment profile > field defaults.
+
+`staging` and `dev` were read off `docker ps` on the live host. **`production`
+is inferred** from `store/docker-compose.yml` and has not been verified against
+the live host — confirm it before uploading there.
+
+Every connection logs which deployment it reached, to the console as well as
+the file:
+
+```
+[INFO] Connecting to the staging database: jdkent@neurostore.xyz
+       -> neurostore-staging-store-store-pgsql17-1:5432
+```
+
 ## Configuration
 
 `Settings` loses the dead fields (`neurostore_*`, `verbose` which nothing read)

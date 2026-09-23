@@ -68,6 +68,7 @@ show_progress: true  # Show tqdm progress bars on the console
 dry_run: false  # Perform dry run without making external API calls or file changes
 
 # ===== Upload =====
+neurostore_env: "staging"  # Which deployment to upload to. Sets the ssh host, ssh user, container name, docker network and forward port together; any of those set explicitly still wins
 upload_use_ssh: true  # Enable SSH tunneling for upload database connections
 upload_ssh_host: "neurostore.xyz"  # SSH host for tunneling to the remote database
 upload_ssh_user: "jdkent"  # SSH user for tunneling to the remote database

@@ -89,9 +89,21 @@ nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
       -s download -s extract &
 ```
 
+## Choosing a deployment
+
+```yaml
+neurostore_env: staging     # or dev, or production
+```
+
+One line moves the ssh host, ssh user, container name, docker network and
+forward port together, because Docker names containers per compose project and
+those cannot be derived from the hostname. Every connection logs which
+deployment it reached. `production` is inferred from the compose file and not
+yet verified against the live host — see [docs/02-design.md](docs/02-design.md).
+
 ## Configuration
 
-Precedence is CLI flags > YAML > environment > defaults. See
+Precedence is CLI flags > YAML > environment > environment profile > defaults. See
 [`configs/settings_reference.yaml`](configs/settings_reference.yaml) for every
 option, and [`docs/`](docs/) for why the ones that govern caching look the way
 they do.
