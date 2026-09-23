@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from typing import Dict, Iterator, List, Sequence
@@ -25,6 +26,32 @@ class AnalysesStage:
 
     def __init__(self, settings) -> None:
         self.settings = settings
+        self._shared_service = None
+        self._service_lock = threading.Lock()
+
+    def _service(self):
+        """One service for the whole run, built on first use.
+
+        The connection pool is the reason it is shared. Constructing the
+        service builds an `OpenAI` client, and every client builds its own
+        httpx pool, so one per article reuses no connection and pays a TLS
+        handshake per article. The service holds no per-article state, so
+        nothing is lost by sharing it.
+
+        Locked and double-checked because the batch is run on a thread pool
+        and the first calls arrive together: without it the first N workers
+        each build a service and all but one is discarded, on the one batch
+        where that cost is largest.
+        """
+        if self._shared_service is None:
+            with self._service_lock:
+                if self._shared_service is None:
+                    from ingestion_workflow.services.create_analyses import (
+                        CreateAnalysesService,
+                    )
+
+                    self._shared_service = CreateAnalysesService(self.settings)
+        return self._shared_service
 
     def fingerprint_for(self, upstream: Artifact) -> str:
         return fingerprint(
@@ -117,14 +144,12 @@ class AnalysesStage:
         return found
 
     def _run_one(self, work: Work, content: ExtractedContent, metadata) -> Outcome:
-        from ingestion_workflow.services.create_analyses import CreateAnalysesService
-
         bundle = ArticleExtractionBundle(
             article_data=content,
             article_metadata=metadata or ArticleMetadata(title=content.slug),
         )
         try:
-            collections = CreateAnalysesService(self.settings).run(bundle)
+            collections = self._service().run(bundle)
         except Exception as exc:
             logger.warning("analyses failed for %s: %s", work.article_id, exc)
             return Outcome.failure(
