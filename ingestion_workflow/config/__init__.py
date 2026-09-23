@@ -188,6 +188,31 @@ class Settings(BaseSettings):
         description="Specific model to use for coordinate extraction",
     )
 
+    llm_service_tier: Optional[str] = Field(
+        default=None,
+        description=(
+            "OpenAI service tier for coordinate parsing. 'flex' trades latency "
+            "for roughly half the price; leave unset for the default tier"
+        ),
+    )
+
+    llm_timeout: Optional[float] = Field(
+        default=None,
+        description=(
+            "Per-request timeout in seconds. Flex queues behind spare capacity, "
+            "so it needs far longer than the 10 minute default"
+        ),
+    )
+
+    llm_max_retries: Optional[int] = Field(
+        default=None,
+        description=(
+            "Retries for a call that never landed. Flex is capacity-scheduled "
+            "and answers 429 when there is none, so it needs more than the "
+            "SDK default of 2"
+        ),
+    )
+
     llm_reasoning_effort: Optional[str] = Field(
         default=None,
         description=(
