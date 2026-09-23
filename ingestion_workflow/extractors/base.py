@@ -18,6 +18,11 @@ FailureBuilder = Callable[[DownloadResult, str], ExtractionResult]
 class BaseExtractor:
     """Shared interface for extractor implementations."""
 
+    #: Start method for the extraction pool. `spawn` re-imports this package in
+    #: every worker, which costs ~3.2s each because `pubget` pulls in nilearn
+    #: and sklearn; only an extractor that touches CUDA needs to pay it.
+    mp_start_method: str = "fork"
+
     def download(
         self,
         identifiers: Identifiers,
@@ -58,6 +63,7 @@ class BaseExtractor:
         progress_hook: Callable[[int], None] | None = None,
         worker_initializer: Callable[..., None] | None = None,
         worker_initargs: Tuple[Any, ...] = (),
+        min_batch_for_pool: int = 2,
     ) -> List[ExtractionResult]:
         if not download_results:
             return []
@@ -73,18 +79,15 @@ class BaseExtractor:
         ordered_results: List[ExtractionResult | None] = [None] * len(download_results)
         worker_count = max(1, worker_count)
 
-        if worker_count == 1 or len(download_results) == 1:
+        if worker_count == 1 or len(download_results) < max(2, min_batch_for_pool):
             for index, download_result in enumerate(download_results):
                 ordered_results[index] = worker(download_result, extraction_root)
                 emit_progress(progress_hook)
         else:
             root_arg = str(extraction_root)
-            # spawn, not the platform default fork: a worker that touches CUDA
-            # cannot inherit a parent's address space ("Cannot re-initialize
-            # CUDA in forked subprocess"), and the cost is paid once per worker.
             with ProcessPoolExecutor(
                 max_workers=worker_count,
-                mp_context=multiprocessing.get_context("spawn"),
+                mp_context=multiprocessing.get_context(self.mp_start_method),
                 initializer=worker_initializer,
                 initargs=worker_initargs,
             ) as executor:

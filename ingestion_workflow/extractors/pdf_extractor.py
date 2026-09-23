@@ -53,6 +53,10 @@ class PdfExtractor(BaseExtractor):
 
     _SUPPORTED_IDS = {"doi", "pmid"}
 
+    #: CUDA cannot be re-initialised in a forked child ("Cannot re-initialize
+    #: CUDA in forked subprocess"), so this extractor alone pays for spawn.
+    mp_start_method = "spawn"
+
     def __init__(
         self,
         settings: Settings | None = None,

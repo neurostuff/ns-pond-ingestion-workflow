@@ -1,80 +1,192 @@
+"""The CLI surface: five verbs over one catalog."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
+import pytest
+from ingestion_workflow.catalog import Catalog
+from ingestion_workflow.cli.main import _parse_identifier, app
 from typer.testing import CliRunner
-import importlib
-
-cli_module = importlib.import_module("ingestion_workflow.cli.main")
-from ingestion_workflow.config import Settings
-from ingestion_workflow.models import (
-    Analysis,
-    AnalysisCollection,
-    ArticleExtractionBundle,
-    ArticleMetadata,
-    ExtractedContent,
-    ExtractedTable,
-    Identifier,
-)
-from ingestion_workflow.models.download import DownloadSource
 
 runner = CliRunner()
 
 
-def _bundle_payload(tmp_path: Path) -> list[dict]:
-    table_path = tmp_path / "table.html"
-    table_path.write_text("<table></table>", encoding="utf-8")
-    table = ExtractedTable(
-        table_id="Table 1",
-        raw_content_path=table_path,
-    )
-    content = ExtractedContent(
-        slug="article-1",
-        source=DownloadSource.ELSEVIER,
-        identifier=Identifier(pmid="12345"),
-        tables=[table],
-    )
-    metadata = ArticleMetadata(title="Example")
-    bundle = ArticleExtractionBundle(article_data=content, article_metadata=metadata)
-    return [bundle.to_dict()]
-
-
-def test_cli_create_analyses_writes_output(monkeypatch, tmp_path):
-    bundles_path = tmp_path / "bundles.json"
-    bundles_path.write_text(
-        json.dumps(_bundle_payload(tmp_path)),
+@pytest.fixture()
+def config(tmp_path):
+    path = tmp_path / "settings.yaml"
+    path.write_text(
+        json.dumps(
+            {
+                "data_root": str(tmp_path / "data"),
+                "cache_root": str(tmp_path / "cache"),
+                "catalog_root": str(tmp_path / "catalog"),
+                "ns_pond_root": str(tmp_path / "pond"),
+                "log_to_file": False,
+                "show_progress": False,
+            }
+        ),
         encoding="utf-8",
     )
-    output_path = tmp_path / "analyses.json"
+    return path
 
-    collection = AnalysisCollection(
-        slug="article-1::table-1",
-        analyses=[Analysis(name="Example")],
-    )
-    expected_serialized = {"article-1": {"Table 1": collection.to_dict()}}
-    expected_payload = {"article-1": {"Table 1": collection}}
+
+def run(*args):
+    result = runner.invoke(app, list(args))
+    assert result.exit_code == 0, result.output
+    return result.output
+
+
+@pytest.mark.parametrize(
+    "token,field",
+    [
+        ("37961286", "pmid"),
+        ("PMC10634720", "pmcid"),
+        ("10.1101/2023.10.21.563317", "doi"),
+        ("doi:10.1/x", "doi"),
+    ],
+)
+def test_identifiers_are_recognised_without_being_labelled(token, field):
+    identifier = _parse_identifier(token)
+    assert getattr(identifier, field)
+
+
+def test_unrecognisable_identifiers_are_rejected():
+    with pytest.raises(Exception):
+        _parse_identifier("not-an-id")
+
+
+def test_add_registers_articles(config, tmp_path):
+    out = run("add", "37961286", "PMC10634720", "--config", str(config))
+    assert "2 new articles" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 2
+
+
+def test_add_is_idempotent(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("add", "37961286", "--config", str(config))
+    assert "0 new articles" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 1
+
+
+def test_add_from_a_file(config, tmp_path):
+    listing = tmp_path / "ids.txt"
+    listing.write_text("# a comment\n37961286\nPMC10634720\n\n", encoding="utf-8")
+    out = run("add", "--file", str(listing), "--config", str(config))
+    assert "2 new articles" in out
+
+
+def test_status_reports_an_empty_catalog(config):
+    out = run("status", "--config", str(config))
+    assert "0 articles" in out
+    assert "no stage has run yet" in out
+
+
+def test_dry_run_changes_nothing(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("run", "--stage", "download", "--dry-run", "--config", str(config))
+    assert "plan" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.status_counts() == {}
+
+
+def test_show_explains_an_unknown_article(config):
+    result = runner.invoke(app, ["show", "12345", "--config", str(config)])
+    assert result.exit_code == 1
+    assert "not in the catalog" in result.output
+
+
+def test_show_lists_what_is_known(config, tmp_path):
+    run("add", "37961286", "--config", str(config))
+    out = run("show", "37961286", "--config", str(config))
+    assert "pmid 37961286" in out
+
+
+def test_show_resolves_every_kind_of_id(config, tmp_path):
+    """A user has four different strings that name the same article, and should
+    not have to know which kind the CLI wants."""
+    from ingestion_workflow.catalog import Catalog
+    from ingestion_workflow.models.ids import Identifier
+
+    run("add", "PMC10634720", "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        ref = catalog.resolve(Identifier(pmcid="PMC10634720"))
+        catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
+        article_id = ref.id
+
+    for token in ("PMC10634720", "5Qk2mNpXyJKH", article_id):
+        out = run("show", token, "--config", str(config))
+        assert article_id in out, f"{token} did not resolve"
+
+
+def test_show_still_rejects_an_unknown_token(config):
+    run("add", "PMC10634720", "--config", str(config))
+    result = runner.invoke(app, ["show", "zzzzzzzzzzzz", "--config", str(config)])
+    assert result.exit_code == 1
+    assert "not in the catalog" in result.output
+
+
+def test_add_accepts_a_neurostore_id(config, tmp_path):
+    """base_study_ids are opaque, so they cannot be sniffed like a PMID or DOI
+    and need their own flag."""
+    from ingestion_workflow.catalog import Catalog
+    from ingestion_workflow.models.ids import Identifier
+
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        ref = catalog.resolve(Identifier(neurostore="5Qk2mNpXyJKH"))
+        assert ref is not None
+        assert catalog.identifier(ref.id).neurostore == "5Qk2mNpXyJKH"
+
+
+def test_a_neurostore_only_article_has_nothing_to_download(config):
+    """No extractor can address an article by base_study_id alone -- pubget
+    needs a pmcid, elsevier a pmid or doi. Such an article is inert until its
+    bibliographic ids are known."""
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    out = run("run", "--select", "all", "--dry-run", "--config", str(config))
+    download = next(line for line in out.splitlines() if "download" in line)
+    assert "0 pending" in download
+    assert "1 skipped" in download
+
+
+def test_add_from_neurostore_registers_what_discovery_returns(config, tmp_path, monkeypatch):
+    """The database is mocked; what is under test is that `add` registers the
+    identifiers discovery hands back, aliases and all."""
+    import ingestion_workflow.cli.main as cli
+    from ingestion_workflow.models.ids import Identifier
 
     monkeypatch.setattr(
-        cli_module,
-        "load_settings",
-        lambda *_args, **_kwargs: Settings(llm_api_key="test"),
-    )
-    monkeypatch.setattr(
-        cli_module.create_analyses_workflow,
-        "run_create_analyses",
-        lambda bundles, settings, extractor_name=None: expected_payload,
-    )
-
-    result = runner.invoke(
-        cli_module.app,
-        [
-            "create-analyses",
-            str(bundles_path),
-            "--output",
-            str(output_path),
+        cli,
+        "_discover_from_neurostore",
+        lambda settings, limit: [
+            Identifier(neurostore="bs-1", doi="10.1/a", pmid="1"),
+            Identifier(neurostore="bs-2", pmcid="PMC2"),
         ],
-        catch_exceptions=False,
     )
-    assert result.exit_code == 0
-    assert json.loads(output_path.read_text(encoding="utf-8")) == expected_serialized
+
+    out = run("add", "--from-neurostore", "--config", str(config))
+    assert "2 new articles" in out
+
+    from ingestion_workflow.catalog import Catalog
+
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        first = catalog.resolve(Identifier(neurostore="bs-1"))
+        assert first is not None
+        known = catalog.identifier(first.id)
+        assert (known.doi, known.pmid) == ("10.1/a", "1")
+        assert catalog.resolve(Identifier(pmcid="PMC2")) is not None
+
+
+def test_the_cli_module_is_not_shadowed_by_its_own_function():
+    """`cli/__init__` re-exporting `main` would make
+    `import ingestion_workflow.cli.main` return the function, which silently
+    breaks patching and any `from ... import` of a module member."""
+    import types
+
+    import ingestion_workflow.cli.main as module
+
+    assert isinstance(module, types.ModuleType)
+    assert hasattr(module, "app")

@@ -7,9 +7,12 @@ import shutil
 from typing import Sequence
 
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models import ArticleExtractionBundle, CreateAnalysesResult
+from ingestion_workflow.models import (
+    ArticleExtractionBundle,
+    CreateAnalysesResult,
+    DownloadResult,
+)
 from ingestion_workflow.models.export_schema import build_article_export
-
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +28,7 @@ class ExportService:
         self,
         bundle: ArticleExtractionBundle,
         analyses: Sequence[CreateAnalysesResult] | None = None,
+        downloads: Sequence[DownloadResult] | None = None,
     ) -> None:
         identifier = bundle.article_data.identifier
         if identifier is None:
@@ -40,7 +44,7 @@ class ExportService:
         slug, export_bundle = build_article_export(
             bundle,
             analyses or (),
-            settings=self.settings,
+            downloads=downloads,
         )
         article_path = export_root / slug
         if article_path.exists():

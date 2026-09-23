@@ -1,4 +1,4 @@
-"""Convenience re-exports for core workflow data models."""
+"""Data models shared across the pipeline."""
 
 from .analysis import (
     Analysis,
@@ -6,16 +6,15 @@ from .analysis import (
     Condition,
     Contrast,
     Coordinate,
+    CoordinatePoint,
     CoordinateSpace,
     CreateAnalysesResult,
     Image,
-    CoordinatePoint,
     ParseAnalysesOutput,
     ParsedAnalysis,
     PointsValue,
 )
-from .download import DownloadResult, DownloadSource, DownloadedFile, FileType
-from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
+from .download import DownloadedFile, DownloadResult, DownloadSource, FileType
 from .export_dir import (
     AnalysisFile,
     ArticleDataFile,
@@ -30,101 +29,65 @@ from .export_dir import (
     TablesIndexFile,
     TextFile,
 )
+from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
 from .ids import Identifier, IdentifierExpansion, Identifiers
-from .metadata import (
-    ArticleMetadata,
-    Author,
-    merge_metadata_from_sources,
-)
-from .cache import (
-    CACHE_SCHEMA_VERSION,
-    CacheEnvelope,
-    CacheIndex,
-    CreateAnalysesResultEntry,
-    CreateAnalysesResultIndex,
-    DownloadCacheEntry,
-    DownloadIndex,
-    ExtractionResultEntry,
-    ExtractionResultIndex,
-    IdentifierCacheEntry,
-    IdentifierCacheIndex,
-    MetadataCache,
-    MetadataCacheIndex,
-    UploadCacheEntry,
-    UploadCacheIndex,
-)
+from .metadata import ArticleMetadata, Author, is_sufficient, merge_metadata_from_sources
 from .upload import (
     BaseStudyPayload,
+    PreparedAnalysis,
     StudyPayload,
     TablePayload,
     UploadOutcome,
     UploadWorkItem,
-    PreparedAnalysis,
 )
 
-# Align with earlier interface expectations.
+#: Kept for callers that predate the rename to ExtractedContent.
 ExtractionResult = ExtractedContent
-ExtractionIndex = ExtractionResultIndex
 
 __all__ = [
     "Analysis",
+    "AnalysisCollection",
     "AnalysisFile",
     "ArticleDataFile",
     "ArticleDirectory",
-    "AnalysisCollection",
     "ArticleExtractionBundle",
     "ArticleMetadata",
-    "Author",
     "ArticleMetadataFile",
-    "CACHE_SCHEMA_VERSION",
-    "CacheEnvelope",
-    "CacheIndex",
+    "Author",
+    "BaseStudyPayload",
+    "BinaryFile",
     "Condition",
     "Contrast",
     "Coordinate",
     "CoordinatePoint",
     "CoordinateSpace",
     "CreateAnalysesResult",
-    "ParseAnalysesOutput",
-    "ParsedAnalysis",
-    "CreateAnalysesResultEntry",
-    "CreateAnalysesResultIndex",
-    "PointsValue",
-    "DownloadCacheEntry",
-    "DownloadIndex",
     "DownloadResult",
     "DownloadSource",
     "DownloadedFile",
-    "ExtractionIndex",
-    "ExtractionResult",
     "ExtractedContent",
     "ExtractedTable",
-    "ExtractionResultEntry",
-    "ExtractionResultIndex",
-    "BinaryFile",
+    "ExtractionResult",
+    "ExtractorSourceTree",
     "FileType",
     "Identifier",
     "IdentifierExpansion",
-    "Identifiers",
-    "IdentifierCacheEntry",
-    "IdentifierCacheIndex",
-    "Image",
-    "ExtractorSourceTree",
     "IdentifierFile",
+    "Identifiers",
+    "Image",
     "JsonFile",
     "JsonLinesFile",
-    "MetadataCache",
-    "MetadataCacheIndex",
+    "ParseAnalysesOutput",
+    "ParsedAnalysis",
+    "PointsValue",
+    "PreparedAnalysis",
     "ProcessedExtractorTree",
-    "TablesIndexFile",
-    "TextFile",
-    "merge_metadata_from_sources",
-    "BaseStudyPayload",
     "StudyPayload",
     "TablePayload",
+    "TablesIndexFile",
+    "TextFile",
     "UploadOutcome",
     "UploadWorkItem",
-    "PreparedAnalysis",
-    "UploadCacheEntry",
-    "UploadCacheIndex",
+    "is_sufficient",
+    "merge_metadata_from_sources",
 ]

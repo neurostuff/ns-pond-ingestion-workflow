@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import socket
+import subprocess
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
 from typing import Callable, Iterator, Optional
-import socket
-import subprocess
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
@@ -43,11 +43,16 @@ class SSHTunnel(AbstractContextManager):
             logger.debug("SSH tunnel already running.")
             return
 
+        # Name the environment, so a log or a console never leaves it ambiguous
+        # which deployment a run wrote to.
         logger.info(
-            "Starting SSH tunnel %s -> %s:%s",
+            "Connecting to the %s database: %s@%s -> %s:%s",
+            getattr(self.settings.neurostore_env, "value", self.settings.neurostore_env),
+            self.settings.upload_ssh_user,
             self.settings.upload_ssh_host,
             self.settings.upload_remote_bind_host,
             self.settings.upload_remote_bind_port,
+            extra={"to_console": True},
         )
         remote_target = _resolve_remote_bind_host(self.settings)
         self.forwarder = SSHTunnelForwarder(

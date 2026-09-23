@@ -1,8 +1,7 @@
 import pytest
-
+from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import Identifier, Identifiers
-from ingestion_workflow.services import cache
 from ingestion_workflow.services.id_lookup import (
     IDLookupService,
     PubMedIDLookupService,
@@ -16,38 +15,50 @@ class _DummyLookup(IDLookupService):
         raise NotImplementedError
 
 
-def test_hydrate_skips_complete_identifier(monkeypatch, tmp_path):
-    settings = Settings(
+def _settings(tmp_path) -> Settings:
+    return Settings(
         cache_root=tmp_path / "cache",
         data_root=tmp_path / "data",
-    )
-    service = _DummyLookup(settings)
-
-    called = False
-
-    def fake_get_identifier_cache_entry(
-        settings_param: Settings,
-        extractor_name_param: str,
-        identifier_param: Identifier,
-        *,
-        namespace: str = cache.GATHER_CACHE_NAMESPACE,
-    ) -> None:
-        nonlocal called
-        called = True
-        return None
-
-    monkeypatch.setattr(
-        cache,
-        "get_identifier_cache_entry",
-        fake_get_identifier_cache_entry,
+        catalog_root=tmp_path / "catalog",
     )
 
-    identifiers = Identifiers([Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456")])
 
-    pending = service._hydrate_from_cache(identifiers)
+def test_hydrate_skips_an_identifier_that_needs_nothing(tmp_path):
+    settings = _settings(tmp_path)
+    with Catalog.open(settings.catalog_root) as catalog:
+        service = _DummyLookup(settings, catalog)
+        complete = Identifiers([Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456")])
+        assert service._hydrate_from_cache(complete) == []
 
-    assert pending == []
-    assert not called
+
+def test_hydrate_fills_gaps_the_catalog_already_knows(tmp_path):
+    settings = _settings(tmp_path)
+    with Catalog.open(settings.catalog_root) as catalog:
+        catalog.register(Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456"))
+        service = _DummyLookup(settings, catalog)
+
+        partial = Identifier(pmid="123")
+        pending = service._hydrate_from_cache(Identifiers([partial]))
+
+        assert pending == []
+        assert partial.doi == "10.1000/xyz"
+        assert partial.pmcid == "PMC456"
+
+
+def test_hydrate_returns_what_is_still_unknown(tmp_path):
+    settings = _settings(tmp_path)
+    with Catalog.open(settings.catalog_root) as catalog:
+        service = _DummyLookup(settings, catalog)
+        unknown = Identifier(pmid="999")
+        assert service._hydrate_from_cache(Identifiers([unknown])) == [unknown]
+
+
+def test_discovered_ids_become_aliases(tmp_path):
+    settings = _settings(tmp_path)
+    with Catalog.open(settings.catalog_root) as catalog:
+        service = _DummyLookup(settings, catalog)
+        service._persist_cache_entries([Identifier(pmid="55", pmcid="PMC55")])
+        assert catalog.resolve(Identifier(pmcid="PMC55")) is not None
 
 
 @pytest.mark.vcr()

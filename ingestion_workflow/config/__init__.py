@@ -8,9 +8,10 @@ There are three levels of configuration in order of priority
 
 from __future__ import annotations
 
+import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
 from pydantic import AliasChoices, Field
@@ -19,6 +20,48 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ingestion_workflow.models import (
     DownloadSource,
 )
+
+
+class NeurostoreEnv(str, Enum):
+    """Which Neurostore deployment to talk to."""
+
+    STAGING = "staging"
+    DEV = "dev"
+    PRODUCTION = "production"
+
+
+#: Infrastructure that has to move together when the environment changes.
+#: Docker names containers `<compose-project>-<service>-<index>`, so the
+#: container name and its network are deployment-specific and cannot be
+#: guessed from the hostname.
+#:
+#: staging and dev are observed from `docker ps` on neurostore.xyz. production
+#: is derived from store/docker-compose.yml -- an unprefixed `store` project on
+#: the external `nginx-proxy` network -- and has NOT been verified against the
+#: live host. Confirm before uploading to it.
+NEUROSTORE_PROFILES: Dict[str, Dict[str, Any]] = {
+    NeurostoreEnv.STAGING.value: {
+        "upload_ssh_host": "neurostore.xyz",
+        "upload_ssh_user": "jdkent",
+        "upload_remote_bind_host": "neurostore-staging-store-store-pgsql17-1",
+        "upload_remote_container_network": "neurostore-staging-store_default",
+        "upload_local_forward_port": 6543,
+    },
+    NeurostoreEnv.DEV.value: {
+        "upload_ssh_host": "neurostore.xyz",
+        "upload_ssh_user": "jdkent",
+        "upload_remote_bind_host": "neurostore-dev-store-store-pgsql17-1",
+        "upload_remote_container_network": "neurostore-dev-store_default",
+        "upload_local_forward_port": 6544,
+    },
+    NeurostoreEnv.PRODUCTION.value: {
+        "upload_ssh_host": "neurostore.org",
+        "upload_ssh_user": "james",
+        "upload_remote_bind_host": "store-store-pgsql17-1",
+        "upload_remote_container_network": "nginx-proxy",
+        "upload_local_forward_port": 6545,
+    },
+}
 
 
 class UploadBehavior(str, Enum):
@@ -56,6 +99,11 @@ class Settings(BaseSettings):
     cache_root: Path = Field(
         default=Path("./.cache"),
         description="Root directory for all cached indices",
+    )
+
+    catalog_root: Path = Field(
+        default=Path("./.catalog"),
+        description="Directory holding catalog.sqlite and the blob store",
     )
 
     ns_pond_root: Path = Field(
@@ -101,10 +149,6 @@ class Settings(BaseSettings):
         description="Ordered list of download sources to attempt (enum order)",
     )
 
-    cache_only_mode: bool = Field(
-        default=False,
-        description=("If True, only use cached downloads and never fetch new content"),
-    )
 
     elsevier_api_key: Optional[str] = Field(
         default=None,
@@ -174,20 +218,7 @@ class Settings(BaseSettings):
     )
 
     # ===== Neurostore configuration =====
-    neurostore_base_url: str = Field(
-        default="https://neurostore.org/api",
-        description="Base URL for Neurostore REST API",
-    )
 
-    neurostore_token: Optional[str] = Field(
-        default=None,
-        description="Authentication token for Neurostore API",
-    )
-
-    neurostore_batch_size: int = Field(
-        default=50,
-        description="Number of studies to upload in a single batch",
-    )
 
     # ===== PubMed tooling =====
     pubmed_tool: Optional[str] = Field(
@@ -216,20 +247,7 @@ class Settings(BaseSettings):
     )
 
     # ===== Behavior flags =====
-    force_redownload: bool = Field(
-        default=False,
-        description="Force re-download even if files exist in cache",
-    )
 
-    force_reextract: bool = Field(
-        default=False,
-        description="Force re-extraction even if results exist in cache",
-    )
-
-    ignore_cache_stages: List[str] = Field(
-        default_factory=list,
-        description="Pipeline stages whose caches should be ignored and regenerated",
-    )
 
     verbose: bool = Field(
         default=False,
@@ -241,17 +259,6 @@ class Settings(BaseSettings):
         description=("Perform dry run without making external API calls or file changes"),
     )
 
-    stages: List[str] = Field(
-        default_factory=lambda: [
-            "gather",
-            "download",
-            "extract",
-            "create_analyses",
-            "upload",
-            "sync",
-        ],
-        description="Ordered pipeline stages to execute",
-    )
 
     log_to_file: bool = Field(
         default=True,
@@ -272,13 +279,19 @@ class Settings(BaseSettings):
 
     manifest_path: Optional[Path] = Field(
         default=None,
-        description=("Path to an identifiers manifest when gather stage is skipped"),
+        description="Default identifiers manifest, when none is given on the command line",
     )
 
-    use_cached_inputs: bool = Field(
-        default=True,
-        description="Use cached outputs when prerequisite stages are skipped",
+    max_attempts: int = Field(
+        default=3,
+        description="Failed stage attempts before an article is left alone",
     )
+
+    retry_after_hours: int = Field(
+        default=24,
+        description="Hours to wait before retrying a failed stage attempt",
+    )
+
 
     @classmethod
     def from_yaml(cls, yaml_path: Path) -> Settings:
@@ -356,7 +369,12 @@ class Settings(BaseSettings):
         is properly set up.
         """
         # Always ensure the core directories exist
-        for directory in (self.data_root, self.cache_root, self.ns_pond_root):
+        for directory in (
+            self.data_root,
+            self.cache_root,
+            self.catalog_root,
+            self.ns_pond_root,
+        ):
             directory.mkdir(parents=True, exist_ok=True)
 
         # Optionally ensure per-source cache roots exist if configured
@@ -421,6 +439,14 @@ class Settings(BaseSettings):
     )
 
     # ===== Upload configuration =====
+    neurostore_env: NeurostoreEnv = Field(
+        default=NeurostoreEnv.STAGING,
+        description=(
+            "Which deployment to upload to. Sets the ssh host, ssh user, "
+            "container name, docker network and forward port together; any of "
+            "those set explicitly still wins"
+        ),
+    )
     upload_use_ssh: bool = Field(
         default=True,
         description="Enable SSH tunneling for upload database connections",
@@ -438,11 +464,15 @@ class Settings(BaseSettings):
         description="Path to SSH private key for tunneling",
     )
     upload_remote_bind_host: str = Field(
-        default="store-store-pgsql17-1",
-        description="Remote bind host inside SSH tunnel (container hostname)",
+        default="neurostore-staging-store-store-pgsql17-1",
+        description=(
+            "Container name of the Postgres service on the remote host. "
+            "Compose namespaces these per deployment, so find yours with "
+            "`ssh <host> docker ps --format '{{.Names}}' | grep pgsql`"
+        ),
     )
     upload_remote_container_network: str = Field(
-        default="nginx-proxy",
+        default="neurostore-staging-store_default",
         description=(
             "Docker network to look the remote bind host up on when it is a "
             "container name that does not resolve outside the remote host"
@@ -493,6 +523,52 @@ class Settings(BaseSettings):
     )
 
 
+def _read_yaml_mapping(yaml_path: Path) -> Dict[str, Any]:
+    if not yaml_path.exists():
+        raise FileNotFoundError(f"Settings file not found: {yaml_path}")
+    with yaml_path.open("r", encoding="utf-8") as fh:
+        data = yaml.safe_load(fh) or {}
+    if not isinstance(data, dict):
+        raise ValueError("Settings YAML must contain a mapping at the root")
+    return data
+
+
+def _was_given(name: str, yaml_data: Mapping[str, Any], overrides: Mapping[str, Any]) -> bool:
+    """Whether the operator named this field, at any layer."""
+    return name in overrides or name in yaml_data or name.upper() in os.environ
+
+
+def environment_profile(
+    yaml_data: Mapping[str, Any] | None = None,
+    overrides: Mapping[str, Any] | None = None,
+) -> Dict[str, Any]:
+    """The profile values for the selected environment, minus anything already given.
+
+    Sits above the hardcoded field defaults and below everything the operator
+    set, so `neurostore_env: production` moves all five infrastructure settings
+    at once while `upload_local_forward_port: 7000` still takes effect.
+    """
+    yaml_data = yaml_data or {}
+    overrides = overrides or {}
+    selected = (
+        overrides.get("neurostore_env")
+        or yaml_data.get("neurostore_env")
+        or os.environ.get("NEUROSTORE_ENV")
+        or NeurostoreEnv.STAGING.value
+    )
+    name = selected.value if isinstance(selected, NeurostoreEnv) else str(selected).lower()
+    if name not in NEUROSTORE_PROFILES:
+        raise ValueError(
+            f"Unknown neurostore_env {name!r}; expected one of "
+            f"{', '.join(sorted(NEUROSTORE_PROFILES))}"
+        )
+    return {
+        field: value
+        for field, value in NEUROSTORE_PROFILES[name].items()
+        if not _was_given(field, yaml_data, overrides)
+    }
+
+
 def load_settings(
     yaml_path: Optional[Path] = None,
     overrides: Optional[Dict[str, Any]] = None,
@@ -500,31 +576,14 @@ def load_settings(
     """
     Load settings with proper precedence handling.
 
-    Precedence order (highest to lowest):
-    1. Overrides (typically from CLI args)
-    2. YAML config file
-    3. Environment variables
-    4. Defaults
-
-    Parameters
-    ----------
-    yaml_path : Path, optional
-        Path to YAML configuration file
-    overrides : dict, optional
-        Dictionary of override values (typically from CLI)
-
-    Returns
-    -------
-    Settings
-        Configured settings instance
+    Precedence, highest first: overrides (CLI) > YAML > environment >
+    environment profile > field defaults.
     """
     overrides = overrides or {}
+    yaml_data = _read_yaml_mapping(Path(yaml_path)) if yaml_path is not None else {}
 
-    settings = Settings()
-
-    if yaml_path is not None:
-        yaml_settings = Settings.from_yaml(yaml_path)
-        settings = settings.merge_overrides(yaml_settings.model_dump())
+    profile = environment_profile(yaml_data, overrides)
+    settings = Settings(**{**profile, **yaml_data})
 
     if overrides:
         settings = settings.merge_overrides(overrides)

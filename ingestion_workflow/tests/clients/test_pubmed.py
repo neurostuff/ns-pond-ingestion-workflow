@@ -1,5 +1,4 @@
 import pytest
-
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
 

@@ -77,3 +77,6 @@ node_modules/
 .tmp_repos
 .tmp
 downloaded_files/
+
+# Catalog (identity + artifacts + blob store)
+.catalog/

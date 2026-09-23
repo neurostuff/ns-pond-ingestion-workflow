@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from ingestion_workflow.extractors.table_heuristics import looks_like_coordinate_table
 from ingestion_workflow.models import ExtractedTable
 

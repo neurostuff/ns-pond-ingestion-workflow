@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 
+import shortuuid
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -18,8 +19,6 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-import shortuuid
 
 
 def _gen_id() -> str:
@@ -256,6 +255,21 @@ class PointValue(Base):
     value: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     point: Mapped[Point | None] = relationship(back_populates="values")
+
+
+class StudysetStudy(Base):
+    """Association between a study and a studyset.
+
+    Read-only here: discovery uses it to tell which base studies someone has
+    actually put in a studyset.
+    """
+
+    __tablename__ = "studyset_studies"
+
+    study_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("studies.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    studyset_id: Mapped[str] = mapped_column(Text, primary_key=True, index=True)
 
 
 class Annotation(Base):

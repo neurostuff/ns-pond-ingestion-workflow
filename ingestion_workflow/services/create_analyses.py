@@ -4,23 +4,23 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 from ingestion_workflow.clients import CoordinateParsingClient
-from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
     ArticleExtractionBundle,
     Coordinate,
+    CoordinatePoint,
     CoordinateSpace,
     ExtractedTable,
-    CoordinatePoint,
     ParseAnalysesOutput,
 )
+from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
+from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -57,15 +57,6 @@ _SCHEMA_TEMPLATE = """{
     ...
   ]
 }"""
-
-
-def sanitize_table_id(table_id: str | None, index: int) -> str:
-    """Sanitize table identifiers for filesystem-safe usage."""
-    if table_id:
-        normalized = re.sub(r"[^A-Za-z0-9_-]+", "-", table_id).strip("-")
-        if normalized:
-            return normalized.lower()
-    return f"table-{index + 1}"
 
 
 class CreateAnalysesService:

@@ -1,4 +1,9 @@
-"""Identifier lookup services with cache integration."""
+"""Ask external providers for the identifiers an article is missing.
+
+Results are remembered by the catalog's alias table: an article that already
+carries a pmid, a doi and a pmcid has nothing left to look up, so no provider
+is queried for it again.
+"""
 
 from __future__ import annotations
 
@@ -8,14 +13,8 @@ from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models import (
-    Identifier,
-    IdentifierCacheEntry,
-    IdentifierExpansion,
-    Identifiers,
-)
-from ingestion_workflow.services import cache, logging
-
+from ingestion_workflow.models import Identifier, Identifiers
+from ingestion_workflow.services import logging
 
 LookupOrder = Sequence[str]
 
@@ -34,8 +33,9 @@ class IDLookupService:
     extractor_name: str = "id_lookup"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, catalog=None) -> None:
         self.settings = settings
+        self.catalog = catalog
         self.logger = logging.get_logger(self.__class__.__name__)
 
     # -- Public API -----------------------------------------------------
@@ -87,23 +87,22 @@ class IDLookupService:
 
     # -- Internal helpers ------------------------------------------------
     def _hydrate_from_cache(self, identifiers: Identifiers) -> List[Identifier]:
+        """Fill in what the catalog already knows; return what still needs asking."""
         pending: List[Identifier] = []
+        filled = False
         for identifier in identifiers.identifiers:
             if self._is_complete(identifier):
                 continue
-            entry = cache.get_identifier_cache_entry(
-                self.settings,
-                self.extractor_name,
-                identifier,
-            )
-            if entry is None:
-                pending.append(identifier)
-                continue
-            self._merge_cached_entry(identifier, entry)
+            known = self.catalog.resolve(identifier) if self.catalog is not None else None
+            if known is not None:
+                self._merge_identifier(identifier, known.identifier)
+                if self._is_complete(identifier):
+                    filled = True
+                    continue
+            pending.append(identifier)
 
-        if len(pending) != len(identifiers.identifiers):
+        if filled:
             identifiers.set_index("pmid", "doi", "pmcid")
-
         return pending
 
     def _is_complete(self, identifier: Identifier) -> bool:
@@ -143,29 +142,11 @@ class IDLookupService:
         if updated:
             target.normalize()
 
-    def _persist_cache_entries(
-        self,
-        identifiers: Sequence[Identifier],
-    ) -> None:
-        if not identifiers:
+    def _persist_cache_entries(self, identifiers: Sequence[Identifier]) -> None:
+        """Newly discovered ids become aliases, so nobody looks them up twice."""
+        if not identifiers or self.catalog is None:
             return
-
-        entries: List[IdentifierCacheEntry] = []
-        for identifier in identifiers:
-            clone = _clone_identifier(identifier)
-            expansion = IdentifierExpansion(
-                seed_identifier=_clone_identifier(identifier),
-                identifiers=Identifiers([clone]),
-                sources=[self.extractor_name],
-            )
-            entries.append(IdentifierCacheEntry.from_expansion(expansion))
-
-        if entries:
-            cache.cache_identifier_entries(
-                self.settings,
-                self.extractor_name,
-                entries,
-            )
+        self.catalog.register_many([_clone_identifier(i) for i in identifiers])
 
     def _log_missing_credentials(self) -> None:
         self.logger.warning(

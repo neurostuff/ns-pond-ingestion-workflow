@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Optional
-
+from typing import Any, Optional
 
 ALLOWED_STATISTIC_KINDS = frozenset(
     {

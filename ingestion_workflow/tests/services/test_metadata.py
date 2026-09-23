@@ -1,13 +1,12 @@
 """Tests for metadata service."""
 
-import os
 import hashlib
 import json
+import os
 from unittest.mock import patch
 
 import pytest
 from dotenv import load_dotenv
-
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent

@@ -8,7 +8,6 @@ from logging.handlers import QueueHandler, QueueListener
 from pathlib import Path
 from typing import Optional
 
-
 _ROOT_LOGGER_NAME = "ingestion_workflow"
 _CONSOLE_FILTER_FLAG = "to_console"
 _queue_listener: Optional[QueueListener] = None
@@ -26,8 +25,14 @@ def configure_logging(
     log_to_file: bool,
     log_file: Optional[Path],
     log_to_console: bool,
+    level: int = logging.INFO,
 ) -> None:
-    """Configure logging sinks for this run."""
+    """Configure logging sinks for this run.
+
+    `level` applies to the file sink. Leaving the root logger at DEBUG with an
+    unlevelled file handler is how `pipeline.log` reached 8.1 GB of `filelock`
+    chatter; third-party loggers are pinned to WARNING regardless.
+    """
 
     global _queue_listener
     if _queue_listener is not None:
@@ -40,8 +45,11 @@ def configure_logging(
     formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(level)
     root_logger.propagate = False
+
+    for noisy in ("filelock", "urllib3", "seleniumbase", "httpx", "httpcore", "openai"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
 
     for handler in list(root_logger.handlers):
         root_logger.removeHandler(handler)
@@ -51,10 +59,11 @@ def configure_logging(
         log_file.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setFormatter(formatter)
+        file_handler.setLevel(level)
         handlers.append(file_handler)
 
     ingestion_logger = logging.getLogger(_ROOT_LOGGER_NAME)
-    ingestion_logger.setLevel(logging.DEBUG)
+    ingestion_logger.setLevel(level)
     ingestion_logger.propagate = True
 
     for handler in list(ingestion_logger.handlers):

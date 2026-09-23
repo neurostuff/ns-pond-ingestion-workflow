@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import textwrap
+from pathlib import Path
 
 from ingestion_workflow.config import load_settings
 
@@ -38,9 +38,8 @@ def test_load_settings_respects_lists_and_booleans(tmp_path: Path) -> None:
             download_sources:
               - ace
               - pubget
-            stages:
-              - download
-              - extract
+            metadata_providers:
+              - pubmed
             export: true
             show_progress: false
             """
@@ -51,6 +50,6 @@ def test_load_settings_respects_lists_and_booleans(tmp_path: Path) -> None:
     settings = load_settings(yaml_path=config_path)
 
     assert settings.download_sources == ["ace", "pubget"]
-    assert settings.stages == ["download", "extract"]
+    assert settings.metadata_providers == ["pubmed"]
     assert settings.export is True
     assert settings.show_progress is False

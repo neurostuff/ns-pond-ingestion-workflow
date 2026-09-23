@@ -1,18 +1,16 @@
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
-
 from ace.config import reset_config
-
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import ace_extractor as ace_module
 from ingestion_workflow.extractors.ace_extractor import ACEExtractor
 from ingestion_workflow.models import (
     CoordinateSpace,
+    DownloadedFile,
     DownloadResult,
     DownloadSource,
-    DownloadedFile,
     FileType,
     Identifier,
     Identifiers,
