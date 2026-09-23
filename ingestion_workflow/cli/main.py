@@ -26,7 +26,7 @@ from ingestion_workflow.pipeline import (
     narrow,
     run_stages,
 )
-from ingestion_workflow.pipeline.stages import STAGE_ORDER
+from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.services.logging import configure_logging
 
 app = typer.Typer(
@@ -243,24 +243,41 @@ def _render(report, *, dry_run: bool) -> str:
 
 @app.command()
 def status(config: Optional[Path] = ConfigOption) -> None:
-    """Show how many articles sit in each stage and state."""
+    """Show what each stage has done, and what it could do next."""
     settings = _settings(config)
+    requirements = {name: STAGE_TYPES[name].requires for name in STAGE_ORDER}
     with _catalog(settings) as catalog:
         total = catalog.count_articles()
         counts = catalog.status_counts()
+        ready = catalog.ready_counts(requirements)
+        stranded = catalog.stranded_artifacts()
 
     typer.echo(f"catalog: {total:,} articles at {settings.catalog_root}\n")
-    if not counts:
-        typer.echo("no stage has run yet.")
+    if not counts and not any(ready.values()):
+        typer.echo("no stage has run yet, and nothing is queued.")
         return
 
     states = [s.value for s in Status]
-    typer.echo(f"{'stage':<12}" + "".join(f"{state:>12}" for state in states))
+    header = f"{'stage':<12}" + "".join(f"{state:>12}" for state in states) + f"{'ready':>12}"
+    typer.echo(header)
     for name in STAGE_ORDER:
-        row = counts.get(name)
-        if not row:
+        row = counts.get(name, {})
+        waiting = ready.get(name, 0)
+        if not row and not waiting:
             continue
-        typer.echo(f"{name:<12}" + "".join(f"{row.get(state, 0):>12,}" for state in states))
+        typer.echo(
+            f"{name:<12}"
+            + "".join(f"{row.get(state, 0):>12,}" for state in states)
+            + f"{waiting:>12,}"
+        )
+    typer.echo(
+        "\nready = the upstream stage succeeded and this stage has no entry yet."
+    )
+    if stranded:
+        typer.echo(
+            f"\n{stranded:,} artifacts are attached to articles a merge retired "
+            "and nothing can reach. Run `ingest repair` to hand them over."
+        )
 
 
 # -- show --------------------------------------------------------------------
@@ -313,6 +330,20 @@ def show(
             typer.echo(
                 f"  {label:<18} {artifact.status.value:<10} {artifact.updated_at[:10]}  {detail}"
             )
+
+
+@app.command()
+def repair(config: Optional[Path] = ConfigOption) -> None:
+    """Hand over artifacts left attached to articles a merge retired."""
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        before = catalog.stranded_artifacts()
+        moved = catalog.repair_merges()
+        after = catalog.stranded_artifacts()
+    if not before:
+        typer.echo("nothing to repair.")
+        return
+    typer.echo(f"reattached artifacts from {moved:,} articles: {before:,} stranded -> {after:,}")
 
 
 # -- migrate -----------------------------------------------------------------

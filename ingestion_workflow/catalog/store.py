@@ -13,7 +13,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.models.ids import Identifier
 
@@ -190,15 +190,55 @@ class Catalog:
         ties to keep the choice deterministic.
         """
         survivor = self._oldest(conn, ids)
-        ids = [survivor] + [other for other in ids if other != survivor]
-        for other in ids[1:]:
+        for other in [i for i in ids if i != survivor]:
             conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (survivor, other))
             conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (survivor, other))
-            conn.execute(
-                "UPDATE OR IGNORE artifacts SET article_id=? WHERE article_id=?",
-                (survivor, other),
-            )
+            self._move_artifacts(conn, other, survivor)
         return survivor
+
+    @staticmethod
+    def _move_artifacts(conn: sqlite3.Connection, loser: str, survivor: str) -> None:
+        """Carry the loser's artifacts over, keeping the better of any clash.
+
+        `UPDATE OR IGNORE` alone silently leaves a clashing artifact attached to
+        an article that no longer exists, where nothing can reach it again.
+        """
+        conn.execute(
+            """
+            DELETE FROM artifacts WHERE article_id = ?
+              AND EXISTS (
+                SELECT 1 FROM artifacts keep
+                WHERE keep.article_id = ?
+                  AND keep.stage = artifacts.stage
+                  AND keep.source = artifacts.source
+                  AND (
+                    (keep.status = 'ok' AND artifacts.status != 'ok')
+                    OR (
+                      (keep.status = 'ok') = (artifacts.status = 'ok')
+                      AND keep.updated_at >= artifacts.updated_at
+                    )
+                  )
+              )
+            """,
+            (loser, survivor),
+        )
+        # Whatever is left is either unclashed or the better of the pair.
+        conn.execute(
+            """
+            DELETE FROM artifacts WHERE article_id = ?
+              AND EXISTS (
+                SELECT 1 FROM artifacts loser
+                WHERE loser.article_id = ?
+                  AND loser.stage = artifacts.stage
+                  AND loser.source = artifacts.source
+              )
+            """,
+            (survivor, loser),
+        )
+        conn.execute(
+            "UPDATE artifacts SET article_id = ? WHERE article_id = ?", (survivor, loser)
+        )
+        conn.execute("UPDATE attempts SET article_id = ? WHERE article_id = ?", (survivor, loser))
 
     @staticmethod
     def _oldest(conn: sqlite3.Connection, ids: Sequence[str]) -> str:
@@ -370,13 +410,98 @@ class Catalog:
     # -- reporting -----------------------------------------------------------
 
     def status_counts(self) -> Dict[str, Dict[str, int]]:
-        """{stage: {status: count}} across the whole catalog."""
+        """{stage: {status: articles}} across the whole catalog.
+
+        Counts articles, not artifacts, so the columns are comparable with
+        `ready_counts` and with the catalog total. A stage that runs per source
+        can hold several artifacts for one article; that article's state is the
+        best any of its sources reached, so the columns stay mutually
+        exclusive.
+        """
         out: Dict[str, Dict[str, int]] = {}
         for row in self._conn.execute(
-            "SELECT stage, status, COUNT(*) AS n FROM artifacts GROUP BY stage, status"
+            """
+            SELECT stage, state, COUNT(*) AS n FROM (
+                SELECT stage, article_id,
+                    CASE
+                        WHEN MAX(status = 'ok') THEN 'ok'
+                        WHEN MAX(status = 'failed') THEN 'failed'
+                        WHEN MAX(status = 'permanent') THEN 'permanent'
+                        ELSE 'skipped'
+                    END AS state
+                FROM artifacts GROUP BY stage, article_id
+            ) GROUP BY stage, state
+            """
         ):
-            out.setdefault(row["stage"], {})[row["status"]] = int(row["n"])
+            out.setdefault(row["stage"], {})[row["state"]] = int(row["n"])
         return out
+
+    def ready_counts(self, requirements: Mapping[str, Optional[str]]) -> Dict[str, int]:
+        """How many articles each stage could process right now.
+
+        Ready means the upstream stage succeeded and this stage has no entry
+        yet, so it counts the queue standing at each stage independently. A
+        run's plan cascades instead -- a downstream stage reports `blocked`
+        because its upstream has not run *in that pass* -- which answers a
+        different question.
+        """
+        counts: Dict[str, int] = {}
+        for stage, upstream in requirements.items():
+            if upstream is None:
+                row = self._conn.execute(
+                    """
+                    SELECT COUNT(*) AS n FROM articles ar
+                    WHERE ar.merged_into IS NULL
+                      AND NOT EXISTS (
+                        SELECT 1 FROM artifacts a
+                        WHERE a.article_id = ar.id AND a.stage = ?
+                      )
+                    """,
+                    (stage,),
+                ).fetchone()
+            else:
+                row = self._conn.execute(
+                    """
+                    SELECT COUNT(DISTINCT up.article_id) AS n FROM artifacts up
+                    WHERE up.stage = ? AND up.status = 'ok'
+                      AND NOT EXISTS (
+                        SELECT 1 FROM artifacts a
+                        WHERE a.article_id = up.article_id AND a.stage = ?
+                      )
+                    """,
+                    (upstream, stage),
+                ).fetchone()
+            counts[stage] = int(row["n"])
+        return counts
+
+    def stranded_artifacts(self) -> int:
+        """Artifacts attached to an article that a merge retired."""
+        row = self._conn.execute(
+            """
+            SELECT COUNT(*) AS n FROM artifacts a
+            JOIN articles ar ON ar.id = a.article_id
+            WHERE ar.merged_into IS NOT NULL
+            """
+        ).fetchone()
+        return int(row["n"])
+
+    def repair_merges(self) -> int:
+        """Re-run artifact hand-over for merges that stranded something."""
+        rows = self._conn.execute(
+            """
+            SELECT DISTINCT a.article_id AS loser, ar.merged_into AS survivor
+            FROM artifacts a JOIN articles ar ON ar.id = a.article_id
+            WHERE ar.merged_into IS NOT NULL
+            """
+        ).fetchall()
+        if not rows:
+            return 0
+        with self._write() as conn:
+            for row in rows:
+                self._move_artifacts(
+                    conn, row["loser"], self._follow_merge(row["survivor"])
+                )
+        return len(rows)
 
     def vacuum(self) -> None:
         self._conn.execute("VACUUM")
