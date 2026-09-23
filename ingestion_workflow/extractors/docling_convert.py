@@ -18,6 +18,7 @@ import logging
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Optional
 
@@ -66,6 +67,41 @@ def normalize_text_tokens(text: Any) -> Any:
 _MIN_FREE_GPU_MIB = 2500
 
 
+#: Result of the torch probe, which costs an interpreter start.
+_TORCH_CUDA_OK: Optional[tuple[bool, str]] = None
+
+_PROBE = (
+    "import torch;"
+    "torch.zeros(1).cuda();"
+    "print('ok')"
+)
+
+
+def _torch_can_use_cuda() -> tuple[bool, str]:
+    """Whether torch can actually allocate on a GPU, asked in a subprocess.
+
+    `nvidia-smi` reports the hardware; it says nothing about whether this
+    torch build can drive it. A torch compiled for a newer CUDA than the
+    installed driver lists every device and then refuses to initialise, so
+    the two have to be asked separately.
+
+    In a subprocess for the reason the caller is: initialising CUDA in this
+    process would poison forked children.
+    """
+    global _TORCH_CUDA_OK
+    if _TORCH_CUDA_OK is None:
+        try:
+            done = subprocess.run(
+                [sys.executable, "-c", _PROBE],
+                capture_output=True, text=True, timeout=120,
+            )
+            ok = done.returncode == 0 and "ok" in done.stdout
+            _TORCH_CUDA_OK = (ok, (done.stderr or "").strip().splitlines()[-1] if not ok else "")
+        except (OSError, subprocess.SubprocessError) as exc:
+            _TORCH_CUDA_OK = (False, f"{type(exc).__name__}: {exc}")
+    return _TORCH_CUDA_OK
+
+
 def usable_cuda_devices() -> list[int]:
     """Indices of CUDA devices with enough free memory for a Docling worker.
 
@@ -74,6 +110,12 @@ def usable_cuda_devices() -> list[int]:
     already initialised CUDA poisons forked children ("Cannot re-initialize
     CUDA in forked subprocess"). A subprocess probe keeps the parent clean.
     Devices busy with someone else's job are skipped rather than contended for.
+
+    Hardware alone is not enough: a torch built for a newer CUDA than the
+    driver lists every device and then refuses to initialise, so Docling falls
+    back to the CPU silently and runs an order of magnitude slower. Returning
+    no device when torch cannot use one makes that visible and stops workers
+    being handed a GPU they cannot reach.
     """
     try:
         completed = subprocess.run(
@@ -98,6 +140,17 @@ def usable_cuda_devices() -> list[int]:
             continue
         if free_mib >= _MIN_FREE_GPU_MIB:
             usable.append(index)
+
+    if usable:
+        ok, why = _torch_can_use_cuda()
+        if not ok:
+            logger.warning(
+                "nvidia-smi reports %d usable GPU(s) but torch cannot use them, "
+                "so Docling will run on the CPU: %s",
+                len(usable),
+                why or "unknown",
+            )
+            return []
     return usable
 
 
