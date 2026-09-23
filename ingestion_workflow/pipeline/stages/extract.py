@@ -185,15 +185,11 @@ class ExtractStage:
         return usable, rejected
 
     def _outcome(self, work: Work, source: str, content: ExtractedContent) -> Outcome:
-        """Judge an extraction by what it produced, not by whether it had
-        something to say.
+        """Judge whether tables were successfully extracted from an article.
 
-        An article with no coordinate tables is a fact about the article, and
-        an extraction that skipped one table of five still produced four. Both
-        set `error_message`, and treating that as failure marked 55,140 pubget
-        articles broken for having no tables -- burning retry attempts on an
-        answer that cannot change, and hiding the nine that were genuinely
-        malformed.
+        if an article does not have tables, that is a fact about an article, not a failure
+        Unless the table detection is broken. If 4/5 table are extracted, that is
+        a success.
         """
         if content is None:
             return Outcome.failure(
