@@ -413,11 +413,15 @@ class Settings(BaseSettings):
         description="Path to SSH private key for tunneling",
     )
     upload_remote_bind_host: str = Field(
-        default="store-store-pgsql17-1",
-        description="Remote bind host inside SSH tunnel (container hostname)",
+        default="neurostore-staging-store-store-pgsql17-1",
+        description=(
+            "Container name of the Postgres service on the remote host. "
+            "Compose namespaces these per deployment, so find yours with "
+            "`ssh <host> docker ps --format '{{.Names}}' | grep pgsql`"
+        ),
     )
     upload_remote_container_network: str = Field(
-        default="nginx-proxy",
+        default="neurostore-staging-store_default",
         description=(
             "Docker network to look the remote bind host up on when it is a "
             "container name that does not resolve outside the remote host"

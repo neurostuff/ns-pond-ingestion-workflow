@@ -225,6 +225,36 @@ row. That matters: an article known only by its `base_study_id` is inert — no
 download source can address it — so the bibliographic ids are what make it
 actionable. Base studies with none of the three are skipped and counted.
 
+Run against the staging database, the filter picks out:
+
+```
+base_studies, all levels          :    42,930
+level = 'group'                   :    42,751
+... and in a studyset             :    41,999
+... and already has an llm study  :    27,126
+... and has NO llm study  <-- work:    14,873
+    of those, no doi/pmid/pmcid   :       218  (skipped)
+    actionable                    :    14,655
+```
+
+The 27,126 with an llm study line up with the 27,411 rows in the legacy upload
+cache, which is a useful check that the filter means what it says.
+
+Discovery composes with migration rather than duplicating it. Migrating the
+legacy caches first and then discovering 295 base studies:
+
+```
+$ ingest migrate <legacy>   ->  catalog articles: 0 -> 96,418
+$ ingest add --from-neurostore --limit 300
+  neurostore: 295 base studies with no llm study yet
+  295 identifiers resolved to 65 new articles (230 already known)
+```
+
+230 of the 295 were already in the catalog from migrated downloads, so they
+gained a `neurostore` alias on their existing article instead of becoming
+duplicates, and they plan as `fresh` at download — the work already done is not
+redone.
+
 ### `run` — advance the catalog
 
 ```bash
