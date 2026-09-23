@@ -254,3 +254,87 @@ def test_a_merge_keeps_the_older_article(catalog):
     assert merged.id == old.id
     assert catalog.count_articles() == 1
     assert catalog.artifact(old.id, "download", "elsevier") is not None
+
+
+def test_a_merge_carries_artifacts_over(catalog):
+    a = catalog.register(Identifier(doi="10.1/m"))
+    b = catalog.register(Identifier(pmcid="PMC7"))
+    catalog.record([Outcome(article_id=a.id, stage="download", source="ace", payload={"n": 1})])
+    catalog.record([Outcome(article_id=b.id, stage="extract", source="ace", payload={"n": 2})])
+
+    merged = catalog.register(Identifier(doi="10.1/m", pmcid="PMC7"))
+
+    stages = {art.stage for art in catalog.artifacts_for_article(merged.id)}
+    assert stages == {"download", "extract"}
+    assert catalog.stranded_artifacts() == 0
+
+
+def test_a_clashing_artifact_is_not_stranded(catalog):
+    """Both sides holding the same (stage, source) is the case that used to
+    leave one attached to an article nothing can reach."""
+    a = catalog.register(Identifier(doi="10.1/n"))
+    b = catalog.register(Identifier(pmcid="PMC8"))
+    catalog.record([Outcome(article_id=a.id, stage="download", source="ace", payload={"n": 1})])
+    catalog.record([Outcome(article_id=b.id, stage="download", source="ace", payload={"n": 2})])
+
+    merged = catalog.register(Identifier(doi="10.1/n", pmcid="PMC8"))
+
+    assert catalog.stranded_artifacts() == 0
+    kept = catalog.artifacts_for_article(merged.id)
+    assert len(kept) == 1
+
+
+def test_a_merge_keeps_the_successful_side_of_a_clash(catalog):
+    a = catalog.register(Identifier(doi="10.1/o"))
+    b = catalog.register(Identifier(pmcid="PMC9"))
+    catalog.record([Outcome.failure(a.id, "download", "ace", "timeout")])
+    catalog.record([Outcome(article_id=b.id, stage="download", source="ace", payload={"n": 2})])
+
+    merged = catalog.register(Identifier(doi="10.1/o", pmcid="PMC9"))
+
+    artifact = catalog.artifact(merged.id, "download", "ace")
+    assert artifact.status is Status.OK
+    assert catalog.payload(artifact) == {"n": 2}
+    assert catalog.stranded_artifacts() == 0
+
+
+def test_status_counts_articles_not_artifacts(catalog):
+    """A stage that runs per source holds several artifacts for one article;
+    the table has to stay comparable with the catalog total."""
+    ref = catalog.register(Identifier(pmid="30"))
+    catalog.record(
+        [
+            Outcome(article_id=ref.id, stage="download", source="ace"),
+            Outcome(article_id=ref.id, stage="download", source="pubget"),
+        ]
+    )
+    assert catalog.status_counts()["download"] == {"ok": 1}
+
+
+def test_an_articles_state_is_the_best_its_sources_reached(catalog):
+    ref = catalog.register(Identifier(pmid="31"))
+    catalog.record(
+        [
+            Outcome.failure(ref.id, "download", "pubget", "no pmcid"),
+            Outcome(article_id=ref.id, stage="download", source="ace"),
+        ]
+    )
+    assert catalog.status_counts()["download"] == {"ok": 1}
+
+
+def test_ready_counts_the_queue_at_each_stage(catalog):
+    requirements = {"download": None, "extract": "download", "metadata": "extract"}
+    refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(40, 45)])
+    catalog.record([Outcome(article_id=r.id, stage="download", source="ace") for r in refs[:3]])
+
+    ready = catalog.ready_counts(requirements)
+    assert ready["download"] == 2      # never attempted
+    assert ready["extract"] == 3       # download ok, no extract entry
+    assert ready["metadata"] == 0      # nothing has been extracted
+
+
+def test_a_failed_upstream_is_not_ready(catalog):
+    requirements = {"extract": "download"}
+    ref = catalog.register(Identifier(pmid="50"))
+    catalog.record([Outcome.failure(ref.id, "download", "ace", "boom")])
+    assert catalog.ready_counts(requirements)["extract"] == 0
