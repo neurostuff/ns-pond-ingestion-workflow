@@ -25,6 +25,13 @@ class ExtractStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self._extractors: Dict[DownloadSource, object] = {}
+        self._order = list(settings.download_sources)
+
+    def _priority(self, sources: Sequence[str]) -> List[str]:
+        """Configured order first; anything else after, so a source that has
+        been dropped from the config is still reachable."""
+        known = [s for s in self._order if s in sources]
+        return known + sorted(set(sources) - set(known))
 
     def extractor(self, source: DownloadSource):
         if source not in self._extractors:
@@ -41,9 +48,22 @@ class ExtractStage:
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
+        """Queue at most one extraction per article.
+
+        An article downloaded from several sources only needs extracting once:
+        the analyses stage consumes a single extraction, so doing the others is
+        work whose result is thrown away. The configured `download_sources`
+        order decides which one, and a source is only tried when every source
+        above it has been ruled out.
+        """
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         attempts_cache: Dict[str, Dict[str, tuple]] = {}
+
+        def attempts(source: str) -> Dict[str, tuple]:
+            if source not in attempts_cache:
+                attempts_cache[source] = ctx.catalog.attempt_counts(ids, self.name, source)
+            return attempts_cache[source]
 
         for ref in refs:
             downloads = {
@@ -54,33 +74,35 @@ class ExtractStage:
             if not downloads:
                 plan.blocked += 1
                 continue
+
             existing = artifacts.get(ref.id, {})
-            wanted = [
-                (source, download)
+            if any(
+                ctx.is_fresh(existing.get(source), self.fingerprint_for(source, download))
                 for source, download in downloads.items()
-                if not ctx.is_fresh(existing.get(source), self.fingerprint_for(source, download))
-            ]
-            if not wanted:
+            ):
                 plan.fresh += 1
                 continue
-            queued = False
-            for source, download in wanted:
-                if source not in attempts_cache:
-                    attempts_cache[source] = ctx.catalog.attempt_counts(ids, self.name, source)
-                count, last = attempts_cache[source].get(ref.id, (0, None))
-                if not ctx.should_attempt(existing.get(source), count, last, self.name):
-                    continue
-                plan.pending.append(
-                    Work(
-                        ref=ref,
-                        source=source,
-                        fingerprint=self.fingerprint_for(source, download),
-                        upstream=download,
-                    )
-                )
-                queued = True
-            if not queued:
+
+            chosen = None
+            for source in self._priority(list(downloads)):
+                count, last = attempts(source).get(ref.id, (0, None))
+                if ctx.should_attempt(existing.get(source), count, last, self.name):
+                    chosen = (source, downloads[source])
+                    break
+
+            if chosen is None:
                 plan.permanent += 1
+                continue
+
+            source, download = chosen
+            plan.pending.append(
+                Work(
+                    ref=ref,
+                    source=source,
+                    fingerprint=self.fingerprint_for(source, download),
+                    upstream=download,
+                )
+            )
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
