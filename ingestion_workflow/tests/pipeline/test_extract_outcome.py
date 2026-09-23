@@ -53,7 +53,9 @@ def a_table(with_coords: bool):
 
 
 def test_no_tables_but_full_text_is_a_success(stage, work, tmp_path):
-    outcome = stage._outcome(work, "pubget", content(text=tmp_path / "article.txt", error=NO_TABLES))
+    outcome = stage._outcome(
+        work, "pubget", content(text=tmp_path / "article.txt", error=NO_TABLES)
+    )
     assert outcome.status is Status.OK
     assert outcome.summary["tables"] == 0
     assert outcome.summary["has_text"] is True
@@ -87,7 +89,9 @@ def test_nothing_at_all_is_a_failure(stage, work):
 
 
 def test_a_clean_extraction_carries_no_note(stage, work, tmp_path):
-    outcome = stage._outcome(work, "pubget", content(text=tmp_path / "a.txt", tables=[a_table(True)]))
+    outcome = stage._outcome(
+        work, "pubget", content(text=tmp_path / "a.txt", tables=[a_table(True)])
+    )
     assert outcome.status is Status.OK
     assert "notes" not in outcome.summary
     assert outcome.summary["tables_with_coordinates"] == 1
