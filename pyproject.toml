@@ -37,6 +37,7 @@ dependencies = [
   "docling>=2.0",
   "pypdfium2>=4",
   "shortuuid>=1.0",
+  "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
 ]
 
 [project.optional-dependencies]

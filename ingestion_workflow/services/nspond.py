@@ -8,7 +8,6 @@ pre-refactor sync stage.
 from __future__ import annotations
 
 import csv
-import json
 import shutil
 from pathlib import Path
 from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
@@ -22,6 +21,12 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
+from ingestion_workflow.services.nspond_schema import (
+    encode_csv,
+    encode_jsonl,
+    encode_pretty_json,
+    encode_stage1_json,
+)
 
 logger = get_logger(__name__)
 
@@ -126,7 +131,7 @@ def _write_json(path: Path, payload: Mapping[str, object], overwrite: bool) -> N
     if path.exists() and not overwrite:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    path.write_bytes(encode_pretty_json(payload))
 
 
 def _write_text(processed_root: Path, text_path: Path | None, overwrite: bool) -> None:
@@ -168,10 +173,7 @@ def _write_tables_jsonl(path: Path, bundle: ArticleExtractionBundle, overwrite: 
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     records = [table.to_dict() for table in bundle.article_data.tables]
-    with path.open("w", encoding="utf-8") as handle:
-        for record in records:
-            handle.write(json.dumps(record))
-            handle.write("\n")
+    path.write_bytes(encode_jsonl(records))
 
 
 def _write_analyses_jsonl(
@@ -182,16 +184,16 @@ def _write_analyses_jsonl(
     if path.exists() and not overwrite:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        for table_id, collection in per_table_analyses.items():
-            for analysis in collection.analyses:
-                record = {
-                    **analysis.to_dict(),
-                    "table_id": analysis.table_id or table_id,
-                    "coordinate_space": collection.coordinate_space.value,
-                }
-                handle.write(json.dumps(record))
-                handle.write("\n")
+    records = [
+        {
+            **analysis.to_dict(),
+            "table_id": analysis.table_id or table_id,
+            "coordinate_space": collection.coordinate_space.value,
+        }
+        for table_id, collection in per_table_analyses.items()
+        for analysis in collection.analyses
+    ]
+    path.write_bytes(encode_jsonl(records))
 
 
 def _write_corpus_manifest(
@@ -249,8 +251,7 @@ def _write_stage1(
                 }
             )
 
-    payload = {"analyses": analyses}
-    path.write_text(json.dumps(payload, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_bytes(encode_stage1_json({"analyses": analyses}))
 
 
 def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, object]:
@@ -345,11 +346,7 @@ def _write_coordinates_csv(
         if field not in headers:
             headers.append(field)
 
-    with path.open("w", encoding="utf-8", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow({key: row.get(key, "") for key in headers})
+    path.write_bytes(encode_csv(rows, headers))
 
 
 def _copy_file(source: Path, destination: Path, overwrite: bool) -> None:
