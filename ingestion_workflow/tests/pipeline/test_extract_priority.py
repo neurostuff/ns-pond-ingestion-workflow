@@ -44,7 +44,12 @@ def plan_for(settings, catalog, refs, **ctx_kwargs):
     stage = ExtractStage(settings)
     ctx = Context(settings, catalog, **ctx_kwargs)
     ids = [r.id for r in refs]
-    return stage.plan(ctx, refs, catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "download"))
+    return stage.plan(
+        ctx,
+        refs,
+        catalog.artifacts(ids, "extract"),
+        catalog.artifacts(ids, "download"),
+    )
 
 
 def test_one_source_one_unit_of_work(env):
