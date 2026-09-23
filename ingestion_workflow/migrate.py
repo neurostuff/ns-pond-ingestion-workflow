@@ -13,7 +13,7 @@ import re
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 BATCH = 2000
 
 #: (old namespace dir, table, new stage). Sources come from the subdirectory.
+#: The one stage whose legacy rows are per (article, table) rather than per
+#: article, so its rows are grouped before they become artifacts.
+PER_TABLE_STAGE = "analyses"
+
 LAYOUTS: Tuple[Tuple[str, str, str, bool], ...] = (
     ("download", "downloads", "download", True),
     ("extract", "extractions", "extract", True),
@@ -127,6 +131,8 @@ def _import_table(
         columns = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
         if not columns:
             return 0, 0
+        if stage == PER_TABLE_STAGE:
+            return _import_grouped(catalog, conn, table, columns, stage, source, dry_run)
         imported = skipped = 0
         pending: List[Tuple[Identifier, dict]] = []
         for row in conn.execute(f"SELECT * FROM {table}"):
@@ -221,6 +227,70 @@ def _payload(row: sqlite3.Row) -> dict:
         return json.loads(row["payload_json"]) if row["payload_json"] else {}
     except (TypeError, ValueError):
         return {}
+
+
+def _analyses_payload(row_payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """One legacy create_analyses row as `{table_id: collection}`.
+
+    The stage writes, and upload and sync read, a mapping of table to
+    collection for the whole article. A legacy row is one table of one article
+    wrapped in a CreateAnalysesResult, so storing it verbatim hands consumers a
+    shape they cannot read.
+    """
+    collection = row_payload.get("analysis_collection")
+    if not isinstance(collection, dict):
+        return {}
+    table_id = row_payload.get("table_id") or row_payload.get("sanitized_table_id") or ""
+    return {str(table_id): collection}
+
+
+def _import_grouped(
+    catalog: Catalog,
+    conn: sqlite3.Connection,
+    table: str,
+    columns: set,
+    stage: str,
+    source: str,
+    dry_run: bool,
+) -> Tuple[int, int]:
+    """Import a per-table stage, one artifact per article.
+
+    Legacy slugs are `<article>::<table>`, so ordering by slug makes an
+    article's tables contiguous and they can be merged as they stream. Without
+    this each table overwrote the last: 49,345 legacy rows became 26,148
+    artifacts, losing about 22,000 table parses.
+    """
+    order = " ORDER BY slug" if "slug" in columns else ""
+    imported = skipped = 0
+    pending: List[Tuple[Identifier, dict]] = []
+    current_slug: Optional[str] = None
+    current: Optional[Tuple[Identifier, dict]] = None
+
+    def close_group() -> None:
+        nonlocal current, current_slug
+        if current is not None:
+            pending.append(current)
+        current, current_slug = None, None
+
+    for row in conn.execute(f"SELECT * FROM {table}{order}"):
+        identifier = _identifier(row, columns)
+        if identifier is None:
+            skipped += 1
+            continue
+        tables = _analyses_payload(_payload(row))
+        slug = identifier.slug
+        if slug != current_slug:
+            close_group()
+            current_slug, current = slug, (identifier, dict(tables))
+        else:
+            current[1].update(tables)
+        if len(pending) >= BATCH:
+            imported += _flush(catalog, pending, stage, source, dry_run)
+            pending.clear()
+
+    close_group()
+    imported += _flush(catalog, pending, stage, source, dry_run)
+    return imported, skipped
 
 
 def _flush(
