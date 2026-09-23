@@ -49,12 +49,33 @@ are separate, and the catalog records the mapping: on a successful upload the
 The two shapes are deliberately different so they cannot be confused where both
 appear.
 
-`article_id` is a truncated blake2b of the article's strongest identifier. It is
-hashed rather than random only so that two catalogs built from the same source
-agree on ids, which is how a migration gets checked — nothing else depends on
-it. Idempotent registration and stability under enrichment come from the alias
-table, and `test_a_random_id_would_also_be_correct` pins that, so nobody later
-"fixes" a bug here that is not one.
+#### What goes into an `article_id`
+
+One string: `"<kind>:<value>"`, from the strongest identifier the article had
+when it was **first registered** — pmcid, else pmid, else doi, else neurostore.
+Nothing else contributes.
+
+| identifiers held at first registration | seed | id |
+|---|---|---|
+| pmcid, pmid, doi | `pmcid:PMC10634720` | `lsfb2vznhrfz` |
+| pmid, doi | `pmid:37961286` | `ckw3v7eecmlk` |
+| doi only | `doi:10.1016/j.neuroimage.2023.120` | `6rgtrdiydfza` |
+
+**The id never changes once assigned.** A doi-seeded article that later learns
+its pmcid keeps `6rgtrdiydfza` and gains an alias; its artifacts are untouched.
+That is the invariant the rest of the catalog rests on.
+
+The consequence is that the id is reproducible for a given first-observation,
+not canonical: a catalog that happened to see the pmcid first would have named
+the same article `lsfb2vznhrfz`. Two catalogs agree only when they saw the same
+identifier first — true for a repeated migration over the same caches, which is
+what the reproducibility is for, and false in general. Nothing depends on it
+being canonical: `article_id` never leaves the catalog, `ns-pond` paths use the
+Neurostore `base_study_id`, and a random id passes every test here except
+cross-catalog agreement (`test_a_random_id_would_also_be_correct`).
+
+When a merge does happen, the **older** article keeps its id, since it has had
+longer to accumulate artifacts and is therefore the smaller rewrite.
 
 This is the fix for [finding 1](01-current-behavior.md). Resolution is a single
 indexed lookup on `aliases`, so `identifier_aliases`, `expand_target_aliases`

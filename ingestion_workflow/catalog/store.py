@@ -30,13 +30,20 @@ ID_LENGTH = 12
 def _article_id(seed: str) -> str:
     """A stable, opaque key for an article.
 
-    Hashed from the identifier rather than random so two catalogs built from the
-    same source agree on ids, which is how a migration gets checked. The catalog
-    does not otherwise depend on it: idempotent registration and stability under
-    enrichment both come from the alias table, and a random id passes every test
-    here except cross-catalog agreement.
+    `seed` is one string, `"<kind>:<value>"`, built from the strongest
+    identifier the article had when it was first registered -- pmcid, else
+    pmid, else doi, else neurostore. Nothing else contributes: not the other
+    identifiers, not the source, not the time.
 
-    This is not the Neurostore base_study_id. That one is assigned by Neurostore
+    So the id is reproducible for a given first-observation, and two catalogs
+    agree only if they saw the same identifier first. That is the case for a
+    repeated migration over the same caches, which is what the reproducibility
+    is for; it is not a canonical name for the article, and nothing depends on
+    it being one. The id also never changes once assigned -- a later pmcid on a
+    doi-seeded article becomes an alias -- so a random id would be equally
+    correct here, as `test_a_random_id_would_also_be_correct` shows.
+
+    This is not the Neurostore base_study_id. That is assigned by Neurostore
     during upload, does not exist until then, and is recorded as a `neurostore`
     alias once known.
     """
@@ -175,8 +182,15 @@ class Catalog:
             )
 
     def _merge(self, conn: sqlite3.Connection, ids: Sequence[str]) -> str:
-        """Point every id at the oldest one. Nothing is deleted."""
-        survivor = ids[0]
+        """Point every id at the oldest article. Nothing is deleted.
+
+        Oldest rather than lowest-hash: it has had longer to accumulate
+        artifacts, so keeping it is the smaller rewrite. `created_at` has
+        second resolution and a batch shares one timestamp, so the id breaks
+        ties to keep the choice deterministic.
+        """
+        survivor = self._oldest(conn, ids)
+        ids = [survivor] + [other for other in ids if other != survivor]
         for other in ids[1:]:
             conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (survivor, other))
             conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (survivor, other))
@@ -185,6 +199,15 @@ class Catalog:
                 (survivor, other),
             )
         return survivor
+
+    @staticmethod
+    def _oldest(conn: sqlite3.Connection, ids: Sequence[str]) -> str:
+        marks = ",".join("?" * len(ids))
+        row = conn.execute(
+            f"SELECT id FROM articles WHERE id IN ({marks}) ORDER BY created_at, id LIMIT 1",
+            tuple(ids),
+        ).fetchone()
+        return row["id"] if row else sorted(ids)[0]
 
     def _follow_merge(self, article_id: str) -> str:
         seen = set()

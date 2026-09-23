@@ -217,3 +217,40 @@ def test_add_aliases_ignores_unknown_kinds_and_blanks(catalog):
         ]
     )
     assert catalog.identifier(ref.id).neurostore is None
+
+
+def test_an_id_never_changes_once_assigned(catalog):
+    """The invariant the whole catalog rests on: learning a stronger identifier
+    attaches an alias, it does not re-key the article."""
+    first = catalog.register(Identifier(doi="10.1/x"))
+    catalog.record(
+        [Outcome(article_id=first.id, stage="download", source="elsevier", payload={"a": 1})]
+    )
+
+    after_pmcid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1"))
+    after_pmid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1", pmid="111"))
+
+    assert first.id == after_pmcid.id == after_pmid.id
+    assert catalog.count_articles() == 1
+    assert catalog.artifact(first.id, "download", "elsevier") is not None
+
+    known = catalog.identifier(first.id)
+    assert (known.doi, known.pmcid, known.pmid) == ("10.1/x", "PMC1", "111")
+
+
+def test_a_merge_keeps_the_older_article(catalog):
+    """Merging picks the article that has had longer to accumulate artifacts,
+    so the rewrite is the smaller one."""
+    import time
+
+    old = catalog.register(Identifier(doi="10.1/y"))
+    catalog.record([Outcome(article_id=old.id, stage="download", source="elsevier")])
+    time.sleep(1.1)  # created_at has second resolution
+    new = catalog.register(Identifier(pmcid="PMC2"))
+    assert old.id != new.id
+
+    merged = catalog.register(Identifier(doi="10.1/y", pmcid="PMC2"))
+
+    assert merged.id == old.id
+    assert catalog.count_articles() == 1
+    assert catalog.artifact(old.id, "download", "elsevier") is not None
