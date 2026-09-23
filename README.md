@@ -110,18 +110,24 @@ look the way they do.
 
 ## Documentation
 
-The architecture, the measurements behind it, and the reasoning live in the
-[wiki](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki).
+Lives in the [wiki](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki).
+
+**The system as it stands** — each change edits these:
 
 | | |
 |---|---|
-| [Catalog refactor](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Catalog-Refactor) | why the design is what it is, and the questions that shaped it |
-| [Current behavior](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Current-Behavior) | what the pipeline did before, measured against the live corpus |
 | [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design) | identity, fingerprints, stages, the command line, choosing a deployment |
-| [Benchmarks](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Benchmarks) | before/after numbers |
-| [Profiling](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Profiling) | growth curves, where the time goes, and what did not work |
 | [Data safety](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Data-Safety) | how migration avoids losing the corpus |
 | [Migration](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Migration) | command-by-command upgrade guide |
+
+**[Changes](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Changes)** — records of changes worth explaining, frozen once merged:
+
+| | |
+|---|---|
+| [#11 Catalog refactor](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/PR-11-Catalog-Refactor) | why the design is what it is, and the questions that shaped it |
+| [What it replaced](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/PR-11-Before) | the pre-catalog pipeline, measured against the live corpus |
+| [Benchmarks](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/PR-11-Benchmarks) | before/after numbers |
+| [Profiling](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/PR-11-Profiling) | growth curves, where the time goes, and what did not work |
 
 ## Development
 
