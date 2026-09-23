@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from ingestion_workflow.config import (
     NEUROSTORE_PROFILES,
     NeurostoreEnv,
