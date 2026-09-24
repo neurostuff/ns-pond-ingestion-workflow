@@ -69,8 +69,18 @@ class AnalysesStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        ids = [ref.id for ref in refs]
+        attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        # The prompt carries the title and abstract, and an article whose
+        # metadata has not been attempted yet is one the stage would parse
+        # without them -- and cache that result. Attempted is the bar, not
+        # succeeded: plenty of articles have no metadata to find, and they
+        # should still be parsed.
+        metadata_attempted = ctx.catalog.artifacts(ids, "metadata")
         for ref in refs:
+            if not metadata_attempted.get(ref.id):
+                plan.blocked += 1
+                continue
             extraction = self._best_extraction(upstream.get(ref.id, {}))
             if extraction is None:
                 plan.blocked += 1
