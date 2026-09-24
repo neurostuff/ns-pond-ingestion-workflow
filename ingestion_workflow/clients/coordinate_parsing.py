@@ -11,9 +11,14 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
 from ingestion_workflow.models.statistics import normalize_statistic_kind
 
-
 logger = logging.getLogger(__name__)
 
+
+
+def _is_flex_exhausted(error: BaseException) -> bool:
+    """A 429 that means "no flex capacity", not "you are going too fast"."""
+    text = str(error)
+    return "429" in text and "flex" in text.lower()
 
 class CoordinateParsingClient(GenericLLMClient):
     """Client responsible for parsing coordinate tables via LLM."""
@@ -32,6 +37,44 @@ class CoordinateParsingClient(GenericLLMClient):
             base_url=base_url,
             default_model=default_model,
         )
+
+    def _create(self, model: str, prompt: str, function_schema: dict, extra: dict):
+        """Send the call, and do not lose it when flex has no capacity.
+
+        Flex is scheduled on spare capacity and answers
+        ``429 Flex does not have sufficient resources`` when there is none --
+        a refusal, not a throttle, so retrying flex only spends the budget
+        again. Dropping to the default tier costs more per token and finishes
+        the work; observed at 22.7s on flex against 1.1s on the default when
+        capacity was tight.
+        """
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant that parses neuroimaging "
+                    "results tables into structured JSON for downstream analysis. "
+                    "Respond using the parse_analyses function."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ]
+        kwargs = dict(
+            model=model,
+            messages=messages,
+            functions=[function_schema],
+            function_call={"name": "parse_analyses"},
+            **extra,
+        )
+        try:
+            return self.client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            fallback = getattr(self.settings, "llm_tier_fallback", True)
+            if not (fallback and extra.get("service_tier") and _is_flex_exhausted(exc)):
+                raise
+            logger.warning("flex has no capacity; retrying on the default tier")
+            kwargs.pop("service_tier", None)
+            return self.client.chat.completions.create(**kwargs)
 
     def parse_analyses(
         self,
@@ -59,23 +102,7 @@ class CoordinateParsingClient(GenericLLMClient):
         if tier:
             extra["service_tier"] = tier
 
-        response = self.client.chat.completions.create(
-            model=resolved_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a helpful assistant that parses neuroimaging "
-                        "results tables into structured JSON for downstream analysis. "
-                        "Respond using the parse_analyses function."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-            functions=[function_schema],
-            function_call={"name": "parse_analyses"},
-            **extra,
-        )
+        response = self._create(resolved_model, prompt, function_schema, extra)
         function_call = response.choices[0].message.function_call
         if not function_call:
             raise ValueError("No function call returned from API")

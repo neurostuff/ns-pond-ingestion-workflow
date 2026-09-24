@@ -204,6 +204,14 @@ class Settings(BaseSettings):
         ),
     )
 
+    llm_tier_fallback: bool = Field(
+        default=True,
+        description=(
+            "When the gateway says flex has no capacity, retry the same call "
+            "on the default tier instead of losing it"
+        ),
+    )
+
     llm_max_retries: Optional[int] = Field(
         default=None,
         description=(
