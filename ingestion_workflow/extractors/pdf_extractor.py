@@ -483,7 +483,50 @@ def _footnote_texts(table: Any, document: Any) -> List[str]:
         text = getattr(resolved, "text", None) or getattr(resolved, "content", None)
         if text:
             notes.append(str(text))
-    return notes
+    return notes or _footnotes_below(table, document)
+
+
+#: A footnote sits against the table; body prose starts further down. Measured
+#: on sampled PDFs, legends were 5-8pt below the table and the next paragraph
+#: 28-40pt, so the boundary is comfortably wide.
+_FOOTNOTE_GAP_PT = 14.0
+#: Docling sometimes labels an item `footnote` without linking it to the table.
+#: Trust that label further down the page than an unlabelled one.
+_LABELLED_FOOTNOTE_GAP_PT = 60.0
+
+
+def _footnotes_below(table: Any, document: Any) -> List[str]:
+    """Text sitting immediately under the table, when nothing was linked.
+
+    Docling classifies a table's footnote as ordinary body text and leaves
+    `TableItem.footnotes` empty: across sampled PDFs every table had zero linked
+    footnotes while the legend sat 5-8pt beneath it, and some items were even
+    labelled `footnote` without being attached. Only 3.9% of tables carried a
+    footnote before this fallback.
+    """
+    prov = (getattr(table, "prov", None) or [None])[0]
+    page, box = getattr(prov, "page_no", None), getattr(prov, "bbox", None)
+    if page is None or box is None:
+        return []
+
+    found = []
+    for item in getattr(document, "texts", []) or []:
+        ip = (getattr(item, "prov", None) or [None])[0]
+        if ip is None or getattr(ip, "page_no", None) != page:
+            continue
+        ib = getattr(ip, "bbox", None)
+        text = (getattr(item, "text", "") or "").strip()
+        if ib is None or not text:
+            continue
+        # Docling's y axis runs bottom-up, so an item below the table has its
+        # top edge under the table's bottom edge.
+        gap = box.b - ib.t
+        label = str(getattr(item, "label", "") or "")
+        limit = _LABELLED_FOOTNOTE_GAP_PT if "footnote" in label else _FOOTNOTE_GAP_PT
+        if 0 <= gap <= limit:
+            found.append((gap, text))
+    found.sort()
+    return [text for _, text in found]
 
 
 def _caption_texts(table: Any, document: Any) -> List[str]:
