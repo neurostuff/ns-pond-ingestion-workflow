@@ -252,6 +252,26 @@ _TRIPLET_CELL = re.compile(
 _MIN_MERGED_TRIPLETS = 3
 
 
+def _write_table_html(table, document, tables_dir: Path, table_id: str) -> Optional[Path]:
+    """Docling's HTML for one table, or None if it could not be produced.
+
+    `export_to_html` needs the document; without it Docling logs a deprecation
+    and returns an empty string. Returning None on any failure lets the caller
+    fall back to the CSV rather than lose the table -- a table that cannot be
+    read is not counted as a miss by anything downstream.
+    """
+    try:
+        html = table.export_to_html(doc=document, add_caption=False)
+    except Exception as exc:  # pragma: no cover - depends on the docling build
+        logger.warning("%s: HTML export failed, keeping CSV: %s", table_id, exc)
+        return None
+    if not html or "<table" not in html.lower():
+        return None
+    path = tables_dir / f"{table_id}.html"
+    path.write_text(html, encoding="utf-8")
+    return path
+
+
 def _merge_split_coordinate_columns(frame: Any) -> Any:
     """Rejoin an x/y/z triplet that Docling split across coordinate columns.
 
@@ -376,10 +396,27 @@ def _extract_pdf_article(
         caption = " ".join(_caption_texts(table, document)).strip()
         table_id = sanitize_table_id(None, _table_label(caption), index)
 
+        # Normalise the cells on the document, before either export reads them.
+        # `normalize_text_tokens` turns Docling's minus glyphs into ASCII, and a
+        # coordinate whose sign is a typographic dash lands in the wrong
+        # hemisphere. Applying it per DataFrame cell left the HTML export
+        # unnormalised; doing it here keeps the two exports agreeing.
+        for cell in getattr(getattr(table, "data", None), "table_cells", []) or []:
+            cell.text = normalize_text_tokens(cell.text)
+
         frame = table.export_to_dataframe(doc=document).map(normalize_text_tokens)
         frame = _merge_split_coordinate_columns(frame)
         csv_path = tables_dir / f"{table_id}.csv"
         frame.to_csv(csv_path, index=False)
+
+        # HTML is what the serialiser reads best: `<th>` marks the header and
+        # colspan/rowspan survive, where a DataFrame has neither. Docling
+        # detects that structure and `export_to_dataframe` discards it, so a pdf
+        # table arrived with no header marking at all and its coordinates often
+        # packed into one space-separated cell. The CSV stays, because
+        # `_extract_coordinates_from_table` and `_merge_split_coordinate_columns`
+        # both want the frame.
+        html_path = _write_table_html(table, document, tables_dir, table_id)
 
         try:
             coordinates_frame = _extract_coordinates_from_table(frame)
@@ -397,7 +434,7 @@ def _extract_pdf_article(
         extracted_tables.append(
             ExtractedTable(
                 table_id=table_id,
-                raw_content_path=csv_path,
+                raw_content_path=html_path or csv_path,
                 table_number=index + 1,
                 caption=caption,
                 footer="",

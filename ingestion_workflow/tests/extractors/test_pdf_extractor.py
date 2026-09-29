@@ -320,3 +320,62 @@ def test_merge_split_coordinate_columns_needs_enough_whole_triplets():
     merged = _merge_split_coordinate_columns(frame)
 
     assert list(merged.columns) == ["MNI coordinate", "MNI coordinate.1"]
+
+
+class _TableCellStub:
+    def __init__(self, text):
+        self.text = text
+
+
+class _TableDataStub:
+    def __init__(self, texts):
+        self.table_cells = [_TableCellStub(t) for t in texts]
+
+
+class _TableItemStub:
+    """Stands in for a docling TableItem, which needs the whole library."""
+
+    def __init__(self, html, texts=(), raises=False):
+        self._html = html
+        self._raises = raises
+        self.data = _TableDataStub(texts)
+
+    def export_to_html(self, doc=None, add_caption=True):
+        if self._raises:
+            raise RuntimeError("no serializer available")
+        return self._html
+
+
+def test_html_is_written_for_the_serialiser_to_read(tmp_path):
+    """A DataFrame has no header flag and no spans; the HTML has both."""
+    from ingestion_workflow.extractors.pdf_extractor import _write_table_html
+
+    html = ('<table><tbody><tr><th rowspan="2">Region</th>'
+            '<th colspan="3">MNI</th></tr><tr><th>x</th><th>y</th><th>z</th></tr>'
+            '<tr><td>L IFG</td><td>-42</td><td>18</td><td>4</td></tr></tbody></table>')
+    path = _write_table_html(_TableItemStub(html), object(), tmp_path, "table_000")
+    assert path is not None
+    assert path.name == "table_000.html"
+    assert 'colspan="3"' in path.read_text(encoding="utf-8")
+
+
+def test_a_failed_html_export_falls_back_rather_than_losing_the_table(tmp_path):
+    from ingestion_workflow.extractors.pdf_extractor import _write_table_html
+
+    assert _write_table_html(_TableItemStub("", raises=True), object(),
+                             tmp_path, "t") is None
+    assert _write_table_html(_TableItemStub(""), object(), tmp_path, "t") is None
+    assert _write_table_html(_TableItemStub("no markup here"), object(),
+                             tmp_path, "t") is None
+    assert not list(tmp_path.iterdir())
+
+
+def test_minus_glyphs_are_normalised_on_the_document_not_just_the_frame():
+    """A coordinate whose sign is a glyph token or a dash lands in the wrong
+    hemisphere, and the HTML export never saw the per-frame normalisation."""
+    from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+
+    data = _TableDataStub(["\u201342", "GLYPH<0>18", "\u2212 12", "4"])
+    for cell in data.table_cells:
+        cell.text = normalize_text_tokens(cell.text)
+    assert [c.text for c in data.table_cells] == ["-42", "-18", "-12", "4"]
