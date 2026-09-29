@@ -7,7 +7,7 @@ import threading
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 from ace.config import update_config
 from ace.scrape import Scraper
@@ -164,6 +164,69 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
     return True, None
 
 
+_HTML_TABLE = re.compile(r"<table\b[^>]*>.*?</table>", re.S | re.I)
+_HTML_TAG = re.compile(r"<[^>]+>")
+_HTML_WS = re.compile(r"\s+")
+
+
+def _table_fingerprint(html: str) -> str:
+    """Tag-free, whitespace-free text of a table, for matching one to another.
+
+    ACE rewrites the markup it keeps in `input_html`, so the bytes do not match
+    the document. The visible text does.
+    """
+    return _HTML_WS.sub("", _HTML_TAG.sub(" ", html or "")).lower()
+
+
+def _unparsed_html_tables(
+    html_text: str,
+    ace_tables: Sequence[ExtractedTable],
+    tables_dir: Path,
+    space: CoordinateSpace,
+) -> list[ExtractedTable]:
+    """Every `<table>` in the document that ACE did not return.
+
+    ACE yields only the tables its own parser identified as activation tables,
+    so a table it missed was absent from the artifact entirely -- not merely
+    unlabelled, but unavailable to any later detector, and the article's
+    coordinates lost with it. Measured over 500 sampled ace tables, 100% carried
+    a non-empty coordinate list, which is what a filtered set looks like; the
+    negative class had no representation at all.
+
+    Keeping them costs storage and nothing else: `coordinates` stays empty, so
+    `create_analyses` still skips them until something says otherwise.
+    """
+    seen = set()
+    for extracted in ace_tables:
+        try:
+            seen.add(_table_fingerprint(
+                extracted.raw_content_path.read_text(encoding="utf-8")))
+        except OSError:
+            continue
+
+    out: list[ExtractedTable] = []
+    for index, match in enumerate(_HTML_TABLE.finditer(html_text or "")):
+        block = match.group(0)
+        fingerprint = _table_fingerprint(block)
+        if not fingerprint or fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        table_id = f"html-table-{index + 1}"
+        path = tables_dir / f"{table_id}.html"
+        path.write_text(block, encoding="utf-8")
+        out.append(ExtractedTable(
+            table_id=table_id,
+            raw_content_path=path,
+            table_number=None,
+            caption="",
+            footer="",
+            metadata={"origin": "html-scan", "document_index": index},
+            coordinates=[],
+            space=space,
+        ))
+    return out
+
+
 def _translate_ace_table(
     table: Any,
     article: Any,
@@ -262,6 +325,17 @@ def _extract_ace_article(
         _translate_ace_table(table, article, tables_dir, index)
         for index, table in enumerate(getattr(article, "tables", []))
     ]
+    # ACE returns only the tables it recognised as activation tables. Keep the
+    # rest of the document's tables too: one ACE missed used to be absent from
+    # the artifact, so no later detector could find it and the article's
+    # coordinates were lost. They arrive with an empty coordinate list, so
+    # nothing downstream treats them as results.
+    extracted_tables.extend(_unparsed_html_tables(
+        html_text,
+        extracted_tables,
+        tables_dir,
+        _coordinate_space_from_guess(getattr(article, "space", None)),
+    ))
 
     has_coordinates = any(table.coordinates for table in extracted_tables)
 

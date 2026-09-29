@@ -220,3 +220,78 @@ def test_ace_extract_reports_missing_html(tmp_path):
     assert result.full_text_path is None
     assert result.tables == []
     assert result.has_coordinates is False
+
+
+def test_tables_ace_did_not_parse_are_still_kept(tmp_path):
+    """ACE returns only the tables it recognised as activation tables.
+
+    One it missed used to be absent from the artifact entirely, so no later
+    detector could look at it and the article's coordinates were lost. Keeping
+    them with an empty coordinate list leaves `create_analyses` unaffected --
+    it already skips a table with no coordinates -- while making the miss
+    recoverable.
+    """
+    from ingestion_workflow.extractors.ace_extractor import (
+        _table_fingerprint,
+        _unparsed_html_tables,
+    )
+    from ingestion_workflow.models import CoordinateSpace, ExtractedTable
+
+    activations = (
+        '<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>'
+        '<tr><td>L IFG</td><td>-42</td><td>18</td><td>4</td></tr></table>'
+    )
+    demographics = (
+        '<table><tr><th>Group</th><th>Age</th></tr>'
+        '<tr><td>Patients</td><td>34</td></tr></table>'
+    )
+    missed = (
+        '<table><tr><th>Region</th><th>MNI</th></tr>'
+        '<tr><td>R IFG</td><td>44 16 2</td></tr></table>'
+    )
+    document = "<html>%s<p>prose</p>%s%s</html>" % (activations, demographics, missed)
+
+    tables_dir = tmp_path / "tables"
+    tables_dir.mkdir()
+    # ACE rewrites the markup it keeps, so the bytes differ while the text does not
+    ace_copy = tables_dir / "table-1.html"
+    ace_copy.write_text(
+        '<table border="1"><tbody><tr><th>Region</th><th>x</th><th>y</th>'
+        '<th>z</th></tr><tr><td>L IFG</td><td>-42</td><td>18</td>'
+        '<td>4</td></tr></tbody></table>',
+        encoding="utf-8",
+    )
+    already = ExtractedTable(
+        table_id="table-1",
+        raw_content_path=ace_copy,
+        table_number=1,
+        caption="Activations",
+        footer="",
+        coordinates=[],
+        space=CoordinateSpace.MNI,
+    )
+
+    extra = _unparsed_html_tables(document, [already], tables_dir, CoordinateSpace.MNI)
+
+    ids = [t.table_id for t in extra]
+    assert len(extra) == 2, ids
+    # the one ACE already returned is not duplicated, despite the rewritten markup
+    kept = [_table_fingerprint(t.raw_content_path.read_text(encoding="utf-8"))
+            for t in extra]
+    assert _table_fingerprint(activations) not in kept
+    assert _table_fingerprint(demographics) in kept
+    assert _table_fingerprint(missed) in kept
+    # they arrive with nothing claimed, so nothing downstream treats them as results
+    assert all(t.coordinates == [] for t in extra)
+    assert all(t.metadata.get("origin") == "html-scan" for t in extra)
+    assert all(t.raw_content_path.exists() for t in extra)
+
+
+def test_the_html_scan_ignores_a_document_with_no_tables(tmp_path):
+    from ingestion_workflow.extractors.ace_extractor import _unparsed_html_tables
+    from ingestion_workflow.models import CoordinateSpace
+
+    tables_dir = tmp_path / "tables"
+    tables_dir.mkdir()
+    assert _unparsed_html_tables("<html><p>no tables here</p></html>", [],
+                                 tables_dir, CoordinateSpace.OTHER) == []
