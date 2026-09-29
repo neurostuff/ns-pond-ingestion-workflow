@@ -141,15 +141,76 @@ def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction():
     assert stage.fingerprint_for(_Art("meta-1"), _Art("extract-2")) != base
 
 
-def test_only_the_abstract_is_taken_from_metadata():
-    """`visible_space` reads a sentence naming the coordinate space, which a
-    title never carries."""
+def test_the_abstract_and_the_title_are_both_taken_from_metadata():
+    """The abstract is for the reader -- a paper often names its coordinate
+    space there and nowhere in the table. The title is for deciding whether
+    the article is a meta-analysis."""
     import inspect
 
     from ingestion_workflow.pipeline.stages import triage as t
 
-    src = inspect.getsource(t.TriageStage._abstract)
-    assert 'payload.get("abstract")' in src and "title" not in src.split('"""')[2]
+    src = inspect.getsource(t.TriageStage._context)
+    assert 'payload.get("abstract")' in src and 'payload.get("title")' in src
+
+
+# -- articles that collect other papers' coordinates ----------------------
+
+def test_a_meta_analysis_is_marked_and_its_tables_still_judged():
+    """Its coordinates are real; what they are *for* is a later stage's
+    question. Dropping the article here would throw away tables nothing else
+    has looked at."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t.TriageStage.execute)
+    assert '"is_meta_analysis": meta' in src
+    assert "Status.SKIPPED" not in src
+
+
+def test_a_meta_analysis_is_recognised_by_its_mesh_type():
+    """PubMed indexes it, and it is on 99.9% of articles with a PubMed record,
+    so it catches papers whose title never says so."""
+    from ingestion_workflow.pipeline.stages.triage import (
+        is_a_meta_analysis, publication_types)
+
+    md = {"raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {
+        "PublicationTypeList": {"PublicationType": [
+            {"#text": "Journal Article", "@UI": "D016428"},
+            {"#text": "Meta-Analysis", "@UI": "D017418"}]}}}}}}
+    assert publication_types(md) == ["Journal Article", "Meta-Analysis"]
+    assert is_a_meta_analysis("Amygdala responses to faces", publication_types(md))
+
+
+def test_one_publication_type_arrives_as_a_dict_not_a_list():
+    """xmltodict gives a single element bare, and unwrapping only lists would
+    miss every article that carries exactly one type."""
+    from ingestion_workflow.pipeline.stages.triage import publication_types
+
+    md = {"raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {
+        "PublicationTypeList": {"PublicationType": {
+            "#text": "Systematic Review", "@UI": "D000078182"}}}}}}}
+    assert publication_types(md) == ["Systematic Review"]
+
+
+def test_the_title_catches_what_mesh_does_not():
+    """Not every article has a PubMed record, and not every meta-analysis is
+    indexed as one."""
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert is_a_meta_analysis("An ALE meta-analysis of working memory", [])
+    assert is_a_meta_analysis("A metaanalysis of reward processing", [])
+    assert is_a_meta_analysis("Activation likelihood estimation of pain", [])
+    assert not is_a_meta_analysis("Amygdala responses to faces", ["Journal Article"])
+
+
+def test_an_article_with_no_metadata_is_not_taken_for_a_meta_analysis():
+    """Attempted is the bar, so triage runs on articles with no metadata at
+    all. Those must not be dropped for lacking a title."""
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis, publication_types
+
+    assert publication_types({}) == []
+    assert not is_a_meta_analysis("", [])
 
 
 def test_an_article_with_no_metadata_to_find_is_still_triaged():

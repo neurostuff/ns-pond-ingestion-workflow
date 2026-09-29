@@ -29,7 +29,8 @@ inspected afterwards: the record says which gate made it and on what score.
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Optional, Sequence
+import re
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import ExtractedContent
@@ -41,7 +42,52 @@ logger = logging.getLogger(__name__)
 
 #: Bump when a change could give a different verdict for the same table: a new
 #: reader, a refitted gate, a different threshold. Only triage goes stale.
-TRIAGE_VERSION = 1
+TRIAGE_VERSION = 2
+
+#: A meta-analysis reports coordinates taken from other papers. They are real
+#: coordinates and its tables are judged like any other; the article is only
+#: marked, so a later stage can decide what to do about foci that are already
+#: in the corpus under the paper that found them.
+#:
+#: Marked, not dropped. The evidence is good but not certain: of 7,662 articles
+#: this catches, 415 are caught by MeSH alone and at least one of those reads
+#: like a PubMed indexing slip, while 6,516 are caught by the title alone.
+#: Neither is a reason to discard an article's tables outright.
+#:
+#: MeSH first: PubMed indexes the type, it is on 99.9% of articles that have a
+#: PubMed record, and it catches papers whose title never says so. The title
+#: catches the 58% of articles with no publication type at all.
+META_ANALYSIS_TYPES = frozenset({"meta-analysis", "systematic review"})
+META_ANALYSIS_TITLE = re.compile(
+    r"meta[-\s]?analy[sz]|\bALE\b|activation\s+likelihood\s+estimation", re.I)
+
+
+def publication_types(metadata: Dict) -> List[str]:
+    """MeSH publication types, from wherever PubMed's raw record put them.
+
+    `xmltodict` gives a single type as a dict and several as a list, and each
+    is `{"#text": ..., "@UI": ...}`, so both shapes have to be unwrapped.
+    """
+    article = (((metadata.get("raw_metadata") or {}).get("pubmed") or {})
+               .get("MedlineCitation") or {}).get("Article") or {}
+    listed = (article.get("PublicationTypeList") or {}).get("PublicationType")
+    if listed is None:
+        return []
+    if not isinstance(listed, list):
+        listed = [listed]
+    out = []
+    for item in listed:
+        text = item.get("#text") if isinstance(item, dict) else item
+        if isinstance(text, str):
+            out.append(text)
+    return out
+
+
+def is_a_meta_analysis(title: str, types: Sequence[str]) -> bool:
+    """Whether this article collects other papers' coordinates."""
+    if any(t.strip().lower() in META_ANALYSIS_TYPES for t in types):
+        return True
+    return bool(META_ANALYSIS_TITLE.search(title or ""))
 
 
 class TriageStage:
@@ -126,7 +172,8 @@ class TriageStage:
                     fingerprint=work.fingerprint)
                 continue
             content = ExtractedContent.from_dict(payload)
-            abstract = self._abstract(ctx, work.article_id)
+            abstract, title, types = self._context(ctx, work.article_id)
+            meta = is_a_meta_analysis(title, types)
             verdicts = [self.judge(table, abstract) for table in content.tables]
             kept = [v for v in verdicts if v["passes"]]
             yield Outcome(
@@ -139,24 +186,30 @@ class TriageStage:
                 # ids are only unique within one extraction, so `analyses` has
                 # to read the same one triage judged or the ids name different
                 # tables.
-                payload={"source": work.upstream.source, "tables": verdicts},
+                payload={"source": work.upstream.source,
+                         "is_meta_analysis": meta,
+                         "publication_types": types,
+                         "tables": verdicts},
                 summary={
                     "source": work.upstream.source,
                     "tables": len(verdicts),
                     "passed": len(kept),
                     "read_outright": sum(1 for v in verdicts if v["points"] >= 3),
+                    "is_meta_analysis": meta,
                 },
             )
 
-    def _abstract(self, ctx: Context, article_id: str) -> str:
-        """The article's abstract, or nothing if metadata has none.
+    def _context(self, ctx: Context, article_id: str) -> Tuple[str, str, List[str]]:
+        """Abstract, title and publication types, or empty when there is none.
 
-        Only the abstract, not the title: `visible_space` reads it for a
-        sentence naming the coordinate space, which a title never carries.
+        The abstract is for `read.extract`: a paper often names its coordinate
+        space there and nowhere in the table. The title and the types are for
+        deciding whether the article is a meta-analysis.
         """
         found = ctx.catalog.artifacts([article_id], "metadata").get(article_id, {})
         payload = ctx.payload(found.get("")) or {}
-        return payload.get("abstract") or ""
+        return (payload.get("abstract") or "", payload.get("title") or "",
+                publication_types(payload))
 
     def judge(self, table, abstract: str = "") -> Dict:
         """One table's verdict, and enough of the reasoning to audit it."""
