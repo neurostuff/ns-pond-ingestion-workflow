@@ -46,7 +46,11 @@ TRIAGE_VERSION = 1
 
 class TriageStage:
     name = "triage"
-    requires = "extract"
+    #: metadata, so the abstract is available: a paper often names its
+    #: coordinate space in the abstract and nowhere in the table, and
+    #: `read.extract` reads it from there when the table and caption are
+    #: silent. Attempted is the bar, not succeeded -- see `plan`.
+    requires = "metadata"
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -69,8 +73,17 @@ class TriageStage:
             self._gate = RoutedGate.load(path)
         return self._gate
 
-    def fingerprint_for(self, upstream: Artifact) -> str:
-        return fingerprint("triage", TRIAGE_VERSION, upstream=upstream.fingerprint)
+    def fingerprint_for(self, metadata: Artifact, extraction: Artifact) -> str:
+        """Both parents, because `requires` only names one.
+
+        `metadata`'s own fingerprint does not run through `extract` -- it is
+        the provider list and a version, nothing more -- so fingerprinting from
+        it alone would leave triage looking fresh after a re-extraction, with
+        verdicts about tables that no longer exist. The extraction's
+        fingerprint therefore goes in as a part.
+        """
+        return fingerprint("triage", TRIAGE_VERSION, extraction.fingerprint,
+                           upstream=metadata.fingerprint)
 
     def plan(
         self,
@@ -81,12 +94,17 @@ class TriageStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        extractions = ctx.catalog.artifacts([ref.id for ref in refs], "extract")
         for ref in refs:
-            extraction = _most_tables(upstream.get(ref.id, {}))
-            if extraction is None:
+            # Attempted is the bar, not succeeded. Plenty of articles have no
+            # metadata to find, and blocking those would strand them here
+            # forever; the abstract is a help when it exists, not a condition.
+            meta = upstream.get(ref.id, {}).get("")
+            extraction = _most_tables(extractions.get(ref.id, {}))
+            if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(extraction)
+            fp = self.fingerprint_for(meta, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -108,7 +126,8 @@ class TriageStage:
                     fingerprint=work.fingerprint)
                 continue
             content = ExtractedContent.from_dict(payload)
-            verdicts = [self.judge(table) for table in content.tables]
+            abstract = self._abstract(ctx, work.article_id)
+            verdicts = [self.judge(table, abstract) for table in content.tables]
             kept = [v for v in verdicts if v["passes"]]
             yield Outcome(
                 article_id=work.article_id,
@@ -129,7 +148,17 @@ class TriageStage:
                 },
             )
 
-    def judge(self, table) -> Dict:
+    def _abstract(self, ctx: Context, article_id: str) -> str:
+        """The article's abstract, or nothing if metadata has none.
+
+        Only the abstract, not the title: `visible_space` reads it for a
+        sentence naming the coordinate space, which a title never carries.
+        """
+        found = ctx.catalog.artifacts([article_id], "metadata").get(article_id, {})
+        payload = ctx.payload(found.get("")) or {}
+        return payload.get("abstract") or ""
+
+    def judge(self, table, abstract: str = "") -> Dict:
         """One table's verdict, and enough of the reasoning to audit it."""
         text = _serialised(table)
         caption = table.caption or ""
@@ -140,7 +169,7 @@ class TriageStage:
                     "reason": "the table did not serialise"}
         from nspond_tables import read
 
-        got = read.extract(text, caption=caption, footer=footer)
+        got = read.extract(text, caption=caption, footer=footer, abstract=abstract)
         decided = self.gate().decide(text, caption, footer)
         return {
             "table_id": table.table_id,

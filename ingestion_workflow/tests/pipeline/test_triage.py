@@ -24,9 +24,10 @@ def test_triage_runs_after_metadata_and_before_analyses():
     """It needs the tables extract keeps, and it decides what analyses spends
     a call on, so it can only sit between them."""
     order = list(STAGE_ORDER)
-    assert order.index("extract") < order.index("triage") < order.index("analyses")
+    assert order.index("extract") < order.index("metadata") < order.index("triage")
+    assert order.index("triage") < order.index("analyses")
     assert STAGE_TYPES["triage"] is TriageStage
-    assert TriageStage.requires == "extract"
+    assert TriageStage.requires == "metadata"
 
 
 def test_a_table_that_does_not_serialise_is_refused_not_guessed_at():
@@ -122,6 +123,33 @@ def test_analyses_reads_the_extraction_triage_named_not_the_richest_one():
     got = AnalysesStage._extraction_for(_Ctx(), "a1", "pubget")
     assert got.name == "pubget"
     assert AnalysesStage._extraction_for(_Ctx(), "a1", "elsevier") is None
+
+
+def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction():
+    """`metadata`'s fingerprint is the provider list and a version -- it does
+    not run through `extract`. Fingerprinting from it alone would leave triage
+    looking fresh after a re-extraction, holding verdicts about tables that no
+    longer exist, so the extraction's fingerprint goes in as a part."""
+    class _Art:
+        def __init__(self, fp):
+            self.fingerprint = fp
+
+    assert TriageStage.requires == "metadata"
+    stage = TriageStage(settings=object())
+    base = stage.fingerprint_for(_Art("meta-1"), _Art("extract-1"))
+    assert stage.fingerprint_for(_Art("meta-2"), _Art("extract-1")) != base
+    assert stage.fingerprint_for(_Art("meta-1"), _Art("extract-2")) != base
+
+
+def test_only_the_abstract_is_taken_from_metadata():
+    """`visible_space` reads a sentence naming the coordinate space, which a
+    title never carries."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t.TriageStage._abstract)
+    assert 'payload.get("abstract")' in src and "title" not in src.split('"""')[2]
 
 
 def test_an_article_with_no_metadata_to_find_is_still_triaged():
