@@ -7,7 +7,7 @@ import threading
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 from ace.config import update_config
 from ace.scrape import Scraper
@@ -36,6 +36,7 @@ from ingestion_workflow.models import (
 
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.patches import apply_ace_patch
+from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
 from ingestion_workflow.utils.progress import emit_progress
 
 
@@ -164,6 +165,136 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
     return True, None
 
 
+_HTML_TABLE = re.compile(r"<table\b[^>]*>.*?</table>", re.S | re.I)
+_HTML_TAG = re.compile(r"<[^>]+>")
+_HTML_WS = re.compile(r"\s+")
+
+
+def _table_fingerprint(html: str) -> str:
+    """Tag-free, whitespace-free text of a table, for matching one to another.
+
+    ACE rewrites the markup it keeps in `input_html`, so the bytes do not match
+    the document. The visible text does.
+    """
+    return _HTML_WS.sub("", _HTML_TAG.sub(" ", html or "")).lower()
+
+
+_WHITESPACE = re.compile(r"[\s\u00a0]+")
+_ENTITIES = {"&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"'}
+
+
+def _plain(raw: str) -> str:
+    """Tags out, entities decoded, whitespace collapsed."""
+    text = _HTML_TAG.sub(" ", raw or "")
+    for k, v in _ENTITIES.items():
+        text = text.replace(k, v)
+    text = re.sub(r"&[a-z#0-9]+;", " ", text)
+    return _WHITESPACE.sub(" ", text).strip()
+
+
+_CAPTION_TAG = re.compile(r"<caption\b[^>]*>(.*?)</caption>", re.S | re.I)
+# A caption usually sits immediately before the table in a block whose class or
+# id says so, or begins "Table 3." A footnote sits immediately after.
+_CAPTION_BLOCK = re.compile(
+    r"<(?:div|p|span|h\d)\b[^>]*(?:class|id)=\"[^\"]*(?:caption|tblCaption|table-title"
+    r"|label)[^\"]*\"[^>]*>(.*?)</(?:div|p|span|h\d)>", re.S | re.I)
+_TABLE_LABEL = re.compile(r"(?:^|>)\s*(Table\s+[IVXLC\d]+[.:]?\s[^<]{0,300})", re.I)
+_FOOTER_BLOCK = re.compile(
+    r"<(?:div|p|span)\b[^>]*(?:class|id)=\"[^\"]*(?:foot|note|legend|tblFn)[^\"]*\""
+    r"[^>]*>(.*?)</(?:div|p|span)>", re.S | re.I)
+
+
+def _caption_and_footer(html_text: str, start: int, end: int, block: str) -> tuple[str, str]:
+    """Text belonging to a table that the markup keeps outside it.
+
+    A caption names the contrast and often the coordinate space, and a footnote
+    carries the threshold and the statistic -- 15.7% of real tables state their
+    space only in that surrounding text. Scanning the table element alone drops
+    it, which left every rescued table with nothing but its cells.
+
+    Looks inside the table for <caption>, then in a window just before it for a
+    captioned block or a "Table N." line, and in a window just after for a
+    footnote block.
+    """
+    inside = _CAPTION_TAG.search(block)
+    caption = _plain(inside.group(1)) if inside else ""
+
+    # Never look past another table. A caption sitting before a previous
+    # </table> belongs to that table, and inheriting it is worse than having
+    # none -- a wrong caption feeds the space rule a wrong answer.
+    before = html_text[max(0, start - 2500):start]
+    cut = before.lower().rfind("</table>")
+    if cut != -1:
+        before = before[cut + len("</table>"):]
+    if not caption:
+        hits = _CAPTION_BLOCK.findall(before)
+        if hits:
+            caption = _plain(hits[-1])
+    if not caption:
+        labels = _TABLE_LABEL.findall(_HTML_TAG.sub(" ", before))
+        if labels:
+            caption = _plain(labels[-1])
+
+    after = html_text[end:end + 2500]
+    stop = after.lower().find("<table")
+    if stop != -1:
+        after = after[:stop]
+    notes = _FOOTER_BLOCK.findall(after)
+    footer = _plain(notes[0]) if notes else ""
+    return caption[:1200], footer[:1200]
+
+
+def _unparsed_html_tables(
+    html_text: str,
+    ace_tables: Sequence[ExtractedTable],
+    tables_dir: Path,
+    space: CoordinateSpace,
+) -> list[ExtractedTable]:
+    """Every `<table>` in the document that ACE did not return.
+
+    ACE yields only the tables its own parser identified as activation tables,
+    so a table it missed was absent from the artifact entirely -- not merely
+    unlabelled, but unavailable to any later detector, and the article's
+    coordinates lost with it. Measured over 500 sampled ace tables, 100% carried
+    a non-empty coordinate list, which is what a filtered set looks like; the
+    negative class had no representation at all.
+
+    Keeping them costs storage and nothing else: `coordinates` stays empty, so
+    `create_analyses` still skips them until something says otherwise.
+    """
+    seen = set()
+    for extracted in ace_tables:
+        try:
+            seen.add(_table_fingerprint(
+                extracted.raw_content_path.read_text(encoding="utf-8")))
+        except OSError:
+            continue
+
+    out: list[ExtractedTable] = []
+    for index, match in enumerate(_HTML_TABLE.finditer(html_text or "")):
+        block = match.group(0)
+        fingerprint = _table_fingerprint(block)
+        if not fingerprint or fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        table_id = f"html-table-{index + 1}"
+        path = tables_dir / f"{table_id}.html"
+        path.write_text(block, encoding="utf-8")
+        caption, footer = _caption_and_footer(
+            html_text, match.start(), match.end(), block)
+        out.append(ExtractedTable(
+            table_id=table_id,
+            raw_content_path=path,
+            table_number=None,
+            caption=caption,
+            footer=footer,
+            metadata={"origin": "html-scan", "document_index": index},
+            coordinates=[],
+            space=space,
+        ))
+    return out
+
+
 def _translate_ace_table(
     table: Any,
     article: Any,
@@ -262,6 +393,17 @@ def _extract_ace_article(
         _translate_ace_table(table, article, tables_dir, index)
         for index, table in enumerate(getattr(article, "tables", []))
     ]
+    # ACE returns only the tables it recognised as activation tables. Keep the
+    # rest of the document's tables too: one ACE missed used to be absent from
+    # the artifact, so no later detector could find it and the article's
+    # coordinates were lost. They arrive with an empty coordinate list, so
+    # nothing downstream treats them as results.
+    extracted_tables.extend(_unparsed_html_tables(
+        html_text,
+        extracted_tables,
+        tables_dir,
+        _coordinate_space_from_guess(getattr(article, "space", None)),
+    ))
 
     has_coordinates = any(table.coordinates for table in extracted_tables)
 
@@ -301,6 +443,10 @@ class ACEExtractor(BaseExtractor):
     ) -> None:
         self.settings = settings or load_settings()
         self.settings.ensure_directories()
+
+        # Into the environment, not a module flag: extraction runs in a process
+        # pool and a spawned worker does not inherit the parent's globals.
+        set_skip_remote_tables(bool(self.settings.ace_skip_remote_tables))
 
         self._cache_root = self._resolve_cache_root()
         self._extraction_root = self._resolve_extraction_root()

@@ -787,7 +787,12 @@ def _extract_elsevier_article(
                 raw_content_path=raw_table_path,
                 table_number=table_number,
                 caption=table_metadata.caption or "",
-                footer=table_metadata.foot or "",
+                # Elsevier puts the footnote in ce:legend, not ce:table-foot:
+                # across 753 sampled tables, `foot` was populated 0% of the time
+                # and `legend` 59.9%, so every footnote was being discarded. The
+                # text is the useful kind -- "L, left; R, right; BA, Brodmann
+                # area" -- which the space and laterality rules both read.
+                footer=table_metadata.foot or table_metadata.legend or "",
                 metadata={k: v for k, v in extraction_metadata.items() if v},
                 coordinates=coordinates,
                 space=article_space,

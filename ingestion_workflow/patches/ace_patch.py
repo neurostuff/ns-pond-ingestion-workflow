@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -11,6 +12,25 @@ from ace import sources as ace_sources
 logger = logging.getLogger(__name__)
 
 _PATCH_APPLIED = False
+
+#: Set to skip tables ACE would fetch from a separate URL.
+#:
+#: An environment variable rather than a module flag, because extraction runs in
+#: a process pool: a flag set in the parent does not reach a spawned worker,
+#: while the environment does.
+SKIP_REMOTE_ENV = "NSPOND_ACE_SKIP_REMOTE_TABLES"
+
+
+def set_skip_remote_tables(skip: bool) -> None:
+    """Turn the skip on or off for this process and any it spawns."""
+    if skip:
+        os.environ[SKIP_REMOTE_ENV] = "1"
+    else:
+        os.environ.pop(SKIP_REMOTE_ENV, None)
+
+
+def skipping_remote_tables() -> bool:
+    return os.environ.get(SKIP_REMOTE_ENV, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _ensure_parent_dir(path: Path) -> None:
@@ -21,20 +41,31 @@ def _ensure_parent_dir(path: Path) -> None:
 
 
 def _patched_download_table(self, url: str):
-    """Patched version of Source._download_table that writes text safely."""
+    """Source._download_table, writing text safely and optionally offline.
+
+    A cached table is always used. Only the fetch is skipped, so a run with the
+    skip on still returns every table downloaded by an earlier run.
+    """
 
     table_html: Optional[str] = None
     table_dir = getattr(self, "table_dir", None)
+    skip = skipping_remote_tables()
 
     if table_dir is not None:
         filename = Path(table_dir) / url.replace("/", "_")
         _ensure_parent_dir(filename)
         if filename.exists():
             table_html = filename.read_text(encoding="utf-8")
+        elif skip:
+            logger.debug("Skipping remote table %s", url)
+            return None
         else:
             table_html = ace_sources.scrape.get_url(url)
             if table_html:
                 filename.write_text(table_html, encoding="utf-8")
+    elif skip:
+        logger.debug("Skipping remote table %s", url)
+        return None
     else:
         table_html = ace_sources.scrape.get_url(url)
 

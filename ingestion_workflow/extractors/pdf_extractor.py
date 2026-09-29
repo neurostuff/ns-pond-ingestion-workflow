@@ -252,6 +252,26 @@ _TRIPLET_CELL = re.compile(
 _MIN_MERGED_TRIPLETS = 3
 
 
+def _write_table_html(table, document, tables_dir: Path, table_id: str) -> Optional[Path]:
+    """Docling's HTML for one table, or None if it could not be produced.
+
+    `export_to_html` needs the document; without it Docling logs a deprecation
+    and returns an empty string. Returning None on any failure lets the caller
+    fall back to the CSV rather than lose the table -- a table that cannot be
+    read is not counted as a miss by anything downstream.
+    """
+    try:
+        html = table.export_to_html(doc=document, add_caption=False)
+    except Exception as exc:  # pragma: no cover - depends on the docling build
+        logger.warning("%s: HTML export failed, keeping CSV: %s", table_id, exc)
+        return None
+    if not html or "<table" not in html.lower():
+        return None
+    path = tables_dir / f"{table_id}.html"
+    path.write_text(html, encoding="utf-8")
+    return path
+
+
 def _merge_split_coordinate_columns(frame: Any) -> Any:
     """Rejoin an x/y/z triplet that Docling split across coordinate columns.
 
@@ -374,12 +394,30 @@ def _extract_pdf_article(
     extracted_tables: List[ExtractedTable] = []
     for index, table in enumerate(document.tables):
         caption = " ".join(_caption_texts(table, document)).strip()
+        footer = " ".join(_footnote_texts(table, document)).strip()
         table_id = sanitize_table_id(None, _table_label(caption), index)
+
+        # Normalise the cells on the document, before either export reads them.
+        # `normalize_text_tokens` turns Docling's minus glyphs into ASCII, and a
+        # coordinate whose sign is a typographic dash lands in the wrong
+        # hemisphere. Applying it per DataFrame cell left the HTML export
+        # unnormalised; doing it here keeps the two exports agreeing.
+        for cell in getattr(getattr(table, "data", None), "table_cells", []) or []:
+            cell.text = normalize_text_tokens(cell.text)
 
         frame = table.export_to_dataframe(doc=document).map(normalize_text_tokens)
         frame = _merge_split_coordinate_columns(frame)
         csv_path = tables_dir / f"{table_id}.csv"
         frame.to_csv(csv_path, index=False)
+
+        # HTML is what the serialiser reads best: `<th>` marks the header and
+        # colspan/rowspan survive, where a DataFrame has neither. Docling
+        # detects that structure and `export_to_dataframe` discards it, so a pdf
+        # table arrived with no header marking at all and its coordinates often
+        # packed into one space-separated cell. The CSV stays, because
+        # `_extract_coordinates_from_table` and `_merge_split_coordinate_columns`
+        # both want the frame.
+        html_path = _write_table_html(table, document, tables_dir, table_id)
 
         try:
             coordinates_frame = _extract_coordinates_from_table(frame)
@@ -397,10 +435,10 @@ def _extract_pdf_article(
         extracted_tables.append(
             ExtractedTable(
                 table_id=table_id,
-                raw_content_path=csv_path,
+                raw_content_path=html_path or csv_path,
                 table_number=index + 1,
                 caption=caption,
-                footer="",
+                footer=footer,
                 coordinates=coordinates,
                 space=article_space,
                 metadata={
@@ -426,6 +464,69 @@ def _table_label(caption: str) -> Optional[str]:
     """Pull a 'Table 3'-style label out of a caption, for use as a filename."""
     match = _TABLE_LABEL.search(caption)
     return match.group(1) if match else None
+
+
+def _footnote_texts(table: Any, document: Any) -> List[str]:
+    """Docling resolves footnotes exactly as it resolves captions.
+
+    A table footnote carries the threshold, the statistic and the laterality
+    key -- "L, left; R, right; BA, Brodmann area" -- which the space and
+    laterality rules both read. This was passed as an empty string, so every
+    pdf table arrived without one.
+    """
+    notes: List[str] = []
+    for note_ref in getattr(table, "footnotes", []) or []:
+        try:
+            resolved = note_ref.resolve(doc=document)
+        except Exception:
+            continue
+        text = getattr(resolved, "text", None) or getattr(resolved, "content", None)
+        if text:
+            notes.append(str(text))
+    return notes or _footnotes_below(table, document)
+
+
+#: A footnote sits against the table; body prose starts further down. Measured
+#: on sampled PDFs, legends were 5-8pt below the table and the next paragraph
+#: 28-40pt, so the boundary is comfortably wide.
+_FOOTNOTE_GAP_PT = 14.0
+#: Docling sometimes labels an item `footnote` without linking it to the table.
+#: Trust that label further down the page than an unlabelled one.
+_LABELLED_FOOTNOTE_GAP_PT = 60.0
+
+
+def _footnotes_below(table: Any, document: Any) -> List[str]:
+    """Text sitting immediately under the table, when nothing was linked.
+
+    Docling classifies a table's footnote as ordinary body text and leaves
+    `TableItem.footnotes` empty: across sampled PDFs every table had zero linked
+    footnotes while the legend sat 5-8pt beneath it, and some items were even
+    labelled `footnote` without being attached. Only 3.9% of tables carried a
+    footnote before this fallback.
+    """
+    prov = (getattr(table, "prov", None) or [None])[0]
+    page, box = getattr(prov, "page_no", None), getattr(prov, "bbox", None)
+    if page is None or box is None:
+        return []
+
+    found = []
+    for item in getattr(document, "texts", []) or []:
+        ip = (getattr(item, "prov", None) or [None])[0]
+        if ip is None or getattr(ip, "page_no", None) != page:
+            continue
+        ib = getattr(ip, "bbox", None)
+        text = (getattr(item, "text", "") or "").strip()
+        if ib is None or not text:
+            continue
+        # Docling's y axis runs bottom-up, so an item below the table has its
+        # top edge under the table's bottom edge.
+        gap = box.b - ib.t
+        label = str(getattr(item, "label", "") or "")
+        limit = _LABELLED_FOOTNOTE_GAP_PT if "footnote" in label else _FOOTNOTE_GAP_PT
+        if 0 <= gap <= limit:
+            found.append((gap, text))
+    found.sort()
+    return [text for _, text in found]
 
 
 def _caption_texts(table: Any, document: Any) -> List[str]:

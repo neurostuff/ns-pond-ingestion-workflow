@@ -220,3 +220,212 @@ def test_ace_extract_reports_missing_html(tmp_path):
     assert result.full_text_path is None
     assert result.tables == []
     assert result.has_coordinates is False
+
+
+def test_tables_ace_did_not_parse_are_still_kept(tmp_path):
+    """ACE returns only the tables it recognised as activation tables.
+
+    One it missed used to be absent from the artifact entirely, so no later
+    detector could look at it and the article's coordinates were lost. Keeping
+    them with an empty coordinate list leaves `create_analyses` unaffected --
+    it already skips a table with no coordinates -- while making the miss
+    recoverable.
+    """
+    from ingestion_workflow.extractors.ace_extractor import (
+        _table_fingerprint,
+        _unparsed_html_tables,
+    )
+    from ingestion_workflow.models import CoordinateSpace, ExtractedTable
+
+    activations = (
+        '<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>'
+        '<tr><td>L IFG</td><td>-42</td><td>18</td><td>4</td></tr></table>'
+    )
+    demographics = (
+        '<table><tr><th>Group</th><th>Age</th></tr>'
+        '<tr><td>Patients</td><td>34</td></tr></table>'
+    )
+    missed = (
+        '<table><tr><th>Region</th><th>MNI</th></tr>'
+        '<tr><td>R IFG</td><td>44 16 2</td></tr></table>'
+    )
+    document = "<html>%s<p>prose</p>%s%s</html>" % (activations, demographics, missed)
+
+    tables_dir = tmp_path / "tables"
+    tables_dir.mkdir()
+    # ACE rewrites the markup it keeps, so the bytes differ while the text does not
+    ace_copy = tables_dir / "table-1.html"
+    ace_copy.write_text(
+        '<table border="1"><tbody><tr><th>Region</th><th>x</th><th>y</th>'
+        '<th>z</th></tr><tr><td>L IFG</td><td>-42</td><td>18</td>'
+        '<td>4</td></tr></tbody></table>',
+        encoding="utf-8",
+    )
+    already = ExtractedTable(
+        table_id="table-1",
+        raw_content_path=ace_copy,
+        table_number=1,
+        caption="Activations",
+        footer="",
+        coordinates=[],
+        space=CoordinateSpace.MNI,
+    )
+
+    extra = _unparsed_html_tables(document, [already], tables_dir, CoordinateSpace.MNI)
+
+    ids = [t.table_id for t in extra]
+    assert len(extra) == 2, ids
+    # the one ACE already returned is not duplicated, despite the rewritten markup
+    kept = [_table_fingerprint(t.raw_content_path.read_text(encoding="utf-8"))
+            for t in extra]
+    assert _table_fingerprint(activations) not in kept
+    assert _table_fingerprint(demographics) in kept
+    assert _table_fingerprint(missed) in kept
+    # they arrive with nothing claimed, so nothing downstream treats them as results
+    assert all(t.coordinates == [] for t in extra)
+    assert all(t.metadata.get("origin") == "html-scan" for t in extra)
+    assert all(t.raw_content_path.exists() for t in extra)
+
+
+def test_the_html_scan_ignores_a_document_with_no_tables(tmp_path):
+    from ingestion_workflow.extractors.ace_extractor import _unparsed_html_tables
+    from ingestion_workflow.models import CoordinateSpace
+
+    tables_dir = tmp_path / "tables"
+    tables_dir.mkdir()
+    assert _unparsed_html_tables("<html><p>no tables here</p></html>", [],
+                                 tables_dir, CoordinateSpace.OTHER) == []
+
+
+def test_a_remote_table_is_skipped_when_asked(tmp_path, monkeypatch):
+    """Many publishers serve a table on its own page, and ACE fetches each one
+    while parsing. That makes extraction network-bound and fails outright when
+    the publisher is unreachable."""
+    from ingestion_workflow.patches import ace_patch
+
+    calls = []
+    monkeypatch.setattr(ace_patch.ace_sources.scrape, "get_url",
+                        lambda url: calls.append(url) or "<table><tr><td>1</td></tr></table>")
+
+    class _Source:
+        table_dir = str(tmp_path)
+
+        def decode_html_entities(self, html):
+            return html
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        assert ace_patch._patched_download_table(_Source(), "http://x/tbl1") is None
+        assert calls == []
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+
+    # with the skip off it fetches as before
+    assert ace_patch._patched_download_table(_Source(), "http://x/tbl1") is not None
+    assert calls == ["http://x/tbl1"]
+
+
+def test_a_cached_table_is_used_even_when_skipping(tmp_path, monkeypatch):
+    """Only the fetch is skipped. A table an earlier run downloaded is still
+    returned, so the skip does not silently shrink the corpus."""
+    from ingestion_workflow.patches import ace_patch
+
+    monkeypatch.setattr(ace_patch.ace_sources.scrape, "get_url",
+                        lambda url: pytest.fail("should not have been called"))
+    cached = tmp_path / "http:__x_tbl1"
+    cached.write_text("<table><tr><td>cached</td></tr></table>", encoding="utf-8")
+
+    class _Source:
+        table_dir = str(tmp_path)
+
+        def decode_html_entities(self, html):
+            return html
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        soup = ace_patch._patched_download_table(_Source(), "http://x/tbl1")
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+    assert soup is not None
+    assert "cached" in str(soup)
+
+
+def test_the_skip_travels_through_the_environment_to_a_worker():
+    """A module flag does not reach a spawned worker; the environment does."""
+    import os
+
+    from ingestion_workflow.patches import ace_patch
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        assert os.environ[ace_patch.SKIP_REMOTE_ENV] == "1"
+        assert ace_patch.skipping_remote_tables() is True
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+    assert ace_patch.SKIP_REMOTE_ENV not in os.environ
+    assert ace_patch.skipping_remote_tables() is False
+
+
+def test_a_rescued_table_keeps_its_caption_and_footnote():
+    """A caption names the contrast and often the coordinate space; a footnote
+    carries the threshold and the statistic. 15.7% of real tables state their
+    space only in that surrounding text, so a table scanned out of the document
+    without it arrives strictly poorer than one the parser returned."""
+    import re
+
+    from ingestion_workflow.extractors.ace_extractor import (
+        _HTML_TABLE,
+        _caption_and_footer,
+    )
+
+    doc = (
+        '<html><body>'
+        '<div class="tblCaption">Table 3. Regions showing activation in MNI space.</div>'
+        '<table><tr><th>Region</th><th>x</th></tr>'
+        '<tr><td>L IFG</td><td>-42</td></tr></table>'
+        '<div class="tblFn">Threshold p&lt;0.05 FWE-corrected. L: left; R: right.</div>'
+        '<p>Unrelated prose.</p>'
+        '<table><tr><th>Group</th><th>Age</th></tr>'
+        '<tr><td>Patients</td><td>34</td></tr></table>'
+        '</body></html>'
+    )
+    blocks = list(_HTML_TABLE.finditer(doc))
+    assert len(blocks) == 2
+
+    caption, footer = _caption_and_footer(doc, blocks[0].start(), blocks[0].end(),
+                                          blocks[0].group(0))
+    assert "Regions showing activation in MNI space" in caption
+    assert "FWE-corrected" in footer
+
+    # the second table has no captioned block of its own; it must not inherit
+    # the first table's footnote as a caption
+    caption2, _ = _caption_and_footer(doc, blocks[1].start(), blocks[1].end(),
+                                      blocks[1].group(0))
+    assert "Regions showing activation" not in caption2
+
+
+def test_an_inline_caption_element_is_preferred():
+    from ingestion_workflow.extractors.ace_extractor import (
+        _HTML_TABLE,
+        _caption_and_footer,
+    )
+
+    doc = ('<div class="caption">Wrong one</div>'
+           '<table><caption>Table 1. Peak activations.</caption>'
+           '<tr><td>x</td></tr></table>')
+    m = next(_HTML_TABLE.finditer(doc))
+    caption, _ = _caption_and_footer(doc, m.start(), m.end(), m.group(0))
+    assert caption == "Table 1. Peak activations."
+
+
+def test_a_bare_table_label_is_used_when_no_captioned_block_exists():
+    from ingestion_workflow.extractors.ace_extractor import (
+        _HTML_TABLE,
+        _caption_and_footer,
+    )
+
+    doc = ('<p>Table 2. Clusters surviving correction.</p>'
+           '<table><tr><td>-42</td></tr></table>')
+    m = next(_HTML_TABLE.finditer(doc))
+    caption, _ = _caption_and_footer(doc, m.start(), m.end(), m.group(0))
+    assert caption.startswith("Table 2.")

@@ -320,3 +320,155 @@ def test_merge_split_coordinate_columns_needs_enough_whole_triplets():
     merged = _merge_split_coordinate_columns(frame)
 
     assert list(merged.columns) == ["MNI coordinate", "MNI coordinate.1"]
+
+
+class _TableCellStub:
+    def __init__(self, text):
+        self.text = text
+
+
+class _TableDataStub:
+    def __init__(self, texts):
+        self.table_cells = [_TableCellStub(t) for t in texts]
+
+
+class _TableItemStub:
+    """Stands in for a docling TableItem, which needs the whole library."""
+
+    def __init__(self, html, texts=(), raises=False):
+        self._html = html
+        self._raises = raises
+        self.data = _TableDataStub(texts)
+
+    def export_to_html(self, doc=None, add_caption=True):
+        if self._raises:
+            raise RuntimeError("no serializer available")
+        return self._html
+
+
+def test_html_is_written_for_the_serialiser_to_read(tmp_path):
+    """A DataFrame has no header flag and no spans; the HTML has both."""
+    from ingestion_workflow.extractors.pdf_extractor import _write_table_html
+
+    html = ('<table><tbody><tr><th rowspan="2">Region</th>'
+            '<th colspan="3">MNI</th></tr><tr><th>x</th><th>y</th><th>z</th></tr>'
+            '<tr><td>L IFG</td><td>-42</td><td>18</td><td>4</td></tr></tbody></table>')
+    path = _write_table_html(_TableItemStub(html), object(), tmp_path, "table_000")
+    assert path is not None
+    assert path.name == "table_000.html"
+    assert 'colspan="3"' in path.read_text(encoding="utf-8")
+
+
+def test_a_failed_html_export_falls_back_rather_than_losing_the_table(tmp_path):
+    from ingestion_workflow.extractors.pdf_extractor import _write_table_html
+
+    assert _write_table_html(_TableItemStub("", raises=True), object(),
+                             tmp_path, "t") is None
+    assert _write_table_html(_TableItemStub(""), object(), tmp_path, "t") is None
+    assert _write_table_html(_TableItemStub("no markup here"), object(),
+                             tmp_path, "t") is None
+    assert not list(tmp_path.iterdir())
+
+
+def test_minus_glyphs_are_normalised_on_the_document_not_just_the_frame():
+    """A coordinate whose sign is a glyph token or a dash lands in the wrong
+    hemisphere, and the HTML export never saw the per-frame normalisation."""
+    from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+
+    data = _TableDataStub(["\u201342", "GLYPH<0>18", "\u2212 12", "4"])
+    for cell in data.table_cells:
+        cell.text = normalize_text_tokens(cell.text)
+    assert [c.text for c in data.table_cells] == ["-42", "-18", "-12", "4"]
+
+
+def test_table_footnotes_are_carried_through(tmp_path):
+    """Docling resolves footnotes exactly as it resolves captions, and a table
+    footnote carries the threshold, the statistic and the laterality key."""
+    from ingestion_workflow.extractors.pdf_extractor import _footnote_texts
+
+    class _Ref:
+        def __init__(self, text):
+            self._text = text
+
+        def resolve(self, doc=None):
+            return type("R", (), {"text": self._text})()
+
+    class _Broken:
+        def resolve(self, doc=None):
+            raise RuntimeError("dangling reference")
+
+    class _Table:
+        footnotes = [_Ref("L, left; R, right; BA, Brodmann area."), _Broken(),
+                     _Ref("Threshold p<0.05 FWE.")]
+
+    got = _footnote_texts(_Table(), object())
+    assert got == ["L, left; R, right; BA, Brodmann area.", "Threshold p<0.05 FWE."]
+    # a table with no footnotes yields nothing rather than failing
+    assert _footnote_texts(type("T", (), {"footnotes": []})(), object()) == []
+    assert _footnote_texts(object(), object()) == []
+
+
+class _Box:
+    def __init__(self, top, bottom):
+        self.t, self.b = top, bottom
+
+
+class _Prov:
+    def __init__(self, page, top, bottom):
+        self.page_no = page
+        self.bbox = _Box(top, bottom)
+
+
+class _Text:
+    def __init__(self, text, page, top, label="text"):
+        self.text = text
+        self.label = label
+        self.prov = [_Prov(page, top, top - 8)]
+
+
+class _Doc:
+    def __init__(self, texts):
+        self.texts = texts
+
+
+def test_a_footnote_under_the_table_is_recovered_when_docling_links_none():
+    """Docling classifies a table's footnote as body text and leaves
+    TableItem.footnotes empty. The legend sits 5-8pt under the table while the
+    next paragraph starts around 30pt, so proximity separates them."""
+    from ingestion_workflow.extractors.pdf_extractor import _footnotes_below
+
+    table = type("T", (), {"prov": [_Prov(8, 400.0, 300.0)], "footnotes": []})()
+    doc = _Doc([
+        _Text("TTFF = time to first fixation, nFix = number of fixations", 8, 294.0),
+        _Text("On the other hand, the Aad showed a moderate correlation", 8, 260.0),
+        _Text("** Correlation significant at 0.01", 8, 272.0, label="footnote"),
+        _Text("something on another page", 3, 294.0),
+        _Text("above the table", 8, 500.0),
+    ])
+    got = _footnotes_below(table, doc)
+    # the legend 6pt below is kept; the paragraph 40pt below is not
+    assert "TTFF = time to first fixation, nFix = number of fixations" in got
+    assert not any("On the other hand" in g for g in got)
+    # an item docling labelled `footnote` is trusted further down
+    assert any("Correlation significant" in g for g in got)
+    # other pages and anything above the table are ignored
+    assert not any("another page" in g or "above the table" in g for g in got)
+
+
+def test_the_fallback_is_skipped_when_docling_did_link_a_footnote():
+    from ingestion_workflow.extractors.pdf_extractor import _footnote_texts
+
+    class _Ref:
+        def resolve(self, doc=None):
+            return type("R", (), {"text": "linked footnote"})()
+
+    table = type("T", (), {"footnotes": [_Ref()], "prov": [_Prov(1, 400.0, 300.0)]})()
+    doc = _Doc([_Text("proximity candidate", 1, 294.0)])
+    assert _footnote_texts(table, doc) == ["linked footnote"]
+
+
+def test_a_table_with_no_provenance_yields_nothing_rather_than_failing():
+    from ingestion_workflow.extractors.pdf_extractor import _footnotes_below
+
+    assert _footnotes_below(type("T", (), {"prov": []})(), _Doc([])) == []
+    assert _footnotes_below(object(), _Doc([])) == []
