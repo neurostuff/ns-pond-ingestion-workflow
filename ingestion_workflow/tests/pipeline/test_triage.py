@@ -67,3 +67,71 @@ def test_an_article_triage_has_not_reached_falls_back_rather_than_dropping():
     holds = _Table("t1", contains_coordinates=True)
     assert _worth_parsing(holds, None) is True
     assert _worth_parsing(holds, set()) is False
+
+
+# -- the chain: extract -> triage -> analyses -----------------------------
+
+def test_analyses_hangs_off_triage_so_a_refitted_gate_makes_it_stale():
+    """If analyses fingerprinted from extract, changing the gate would leave
+    every existing analysis looking fresh while the set of tables it was built
+    from had changed underneath it."""
+    from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+
+    assert AnalysesStage.requires == "triage"
+
+    class _Art:
+        def __init__(self, fp):
+            self.fingerprint = fp
+
+    class _S:
+        llm_model = "m"
+
+    stage = AnalysesStage(settings=_S())
+    before = stage.fingerprint_for(_Art("triage-v1"))
+    after = stage.fingerprint_for(_Art("triage-v2"))
+    assert before != after
+
+
+def test_triage_names_the_extraction_it_judged():
+    """Table ids are unique only within one extraction, so analyses has to read
+    the same one or the ids name different tables."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t.TriageStage.execute)
+    assert '"source": work.upstream.source' in src
+
+
+def test_analyses_reads_the_extraction_triage_named_not_the_richest_one():
+    from ingestion_workflow.catalog import Status
+    from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+
+    class _Art:
+        def __init__(self, name):
+            self.status = Status.OK
+            self.name = name
+
+    class _Cat:
+        def artifacts(self, ids, stage):
+            return {"a1": {"ace": _Art("ace"), "pubget": _Art("pubget")}}
+
+    class _Ctx:
+        catalog = _Cat()
+
+    got = AnalysesStage._extraction_for(_Ctx(), "a1", "pubget")
+    assert got.name == "pubget"
+    assert AnalysesStage._extraction_for(_Ctx(), "a1", "elsevier") is None
+
+
+def test_an_article_with_no_metadata_to_find_is_still_triaged():
+    """Attempted is the bar, not succeeded. Plenty of articles have no
+    metadata, and blocking those would strand them here forever -- the
+    abstract is a help when it exists, not a condition."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t.TriageStage.plan)
+    assert "meta is None or extraction is None" in src
+    assert "meta.status" not in src

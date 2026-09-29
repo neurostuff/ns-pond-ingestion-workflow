@@ -116,8 +116,13 @@ class TriageStage:
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                payload={"tables": verdicts},
+                # The source is part of the verdict, not a note about it: table
+                # ids are only unique within one extraction, so `analyses` has
+                # to read the same one triage judged or the ids name different
+                # tables.
+                payload={"source": work.upstream.source, "tables": verdicts},
                 summary={
+                    "source": work.upstream.source,
                     "tables": len(verdicts),
                     "passed": len(kept),
                     "read_outright": sum(1 for v in verdicts if v["points"] >= 3),

@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 
 class AnalysesStage:
     name = "analyses"
-    requires = "extract"
+    #: triage, not extract. Which tables are worth a call is triage's answer,
+    #: so a refitted gate or a new reader has to make these analyses stale --
+    #: and it only does if the fingerprint runs through triage.
+    requires = "triage"
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -54,6 +57,9 @@ class AnalysesStage:
         return self._shared_service
 
     def fingerprint_for(self, upstream: Artifact) -> str:
+        """`upstream` is the triage artifact, whose own fingerprint runs
+        through the extraction it judged. So the chain is extract -> triage ->
+        analyses, and a change anywhere along it lands here."""
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
@@ -71,21 +77,16 @@ class AnalysesStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
-        # The prompt carries the title and abstract, and an article whose
-        # metadata has not been attempted yet is one the stage would parse
-        # without them -- and cache that result. Attempted is the bar, not
-        # succeeded: plenty of articles have no metadata to find, and they
-        # should still be parsed.
-        metadata_attempted = ctx.catalog.artifacts(ids, "metadata")
+        # Waiting for metadata to have been attempted moved into `triage`,
+        # which now requires it and is required in turn. The reason is
+        # unchanged: the prompt carries the title and abstract, and an article
+        # parsed without them caches that result.
         for ref in refs:
-            if not metadata_attempted.get(ref.id):
+            triaged = upstream.get(ref.id, {}).get("")
+            if triaged is None or triaged.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            extraction = self._best_extraction(upstream.get(ref.id, {}))
-            if extraction is None:
-                plan.blocked += 1
-                continue
-            fp = self.fingerprint_for(extraction)
+            fp = self.fingerprint_for(triaged)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -94,31 +95,39 @@ class AnalysesStage:
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
-            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=extraction))
+            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=triaged))
         return plan
 
     @staticmethod
-    def _best_extraction(candidates: Dict[str, Artifact]) -> Artifact | None:
-        """Prefer the source that actually found coordinate tables."""
-        usable = [a for a in candidates.values() if a.status is Status.OK]
-        if not usable:
-            return None
-        return max(usable, key=lambda a: a.summary.get("tables_with_coordinates", 0))
+    def _extraction_for(ctx: Context, article_id: str, source: str) -> Artifact | None:
+        """The extraction triage judged, named in its payload.
+
+        Not the one with the most coordinates, which is what this used to pick.
+        Table ids are unique only within an extraction, so reading a different
+        one would apply triage's verdicts to different tables.
+        """
+        found = ctx.catalog.artifacts([article_id], "extract").get(article_id, {})
+        artifact = found.get(source)
+        return artifact if artifact and artifact.status is Status.OK else None
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         jobs = []
         for work in works:
-            payload = ctx.payload(work.upstream)
+            verdicts = ctx.payload(work.upstream) or {}
+            extraction = self._extraction_for(
+                ctx, work.article_id, verdicts.get("source", ""))
+            payload = ctx.payload(extraction)
             if payload is None:
                 yield Outcome.failure(
-                    work.article_id, self.name, "", "extraction payload missing",
+                    work.article_id, self.name, "",
+                    "the extraction triage judged is gone",
                     fingerprint=work.fingerprint,
                 )
                 continue
             content = ExtractedContent.from_dict(payload)
             content.identifier = work.ref.identifier
             content.slug = work.ref.identifier.slug
-            passed = self._triaged(ctx, work.article_id)
+            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
             tables = [t for t in content.tables if _worth_parsing(t, passed)]
             if not tables:
                 yield Outcome(
@@ -144,19 +153,6 @@ class AnalysesStage:
             ]
             for future in futures:
                 yield future.result()
-
-    def _triaged(self, ctx: Context, article_id: str) -> Optional[Set[str]]:
-        """The table ids triage passed, or None if it has not run for this article.
-
-        None and an empty set mean different things: nothing decided yet, and
-        nothing worth a call. Returning an empty set for a missing artifact
-        would silently drop every table of every article triage has not reached.
-        """
-        artifacts = ctx.catalog.artifacts([article_id], "triage")
-        payload = ctx.payload(artifacts.get(article_id, {}).get(""))
-        if not payload:
-            return None
-        return {v["table_id"] for v in payload.get("tables", []) if v.get("passes")}
 
     def _metadata_for(self, ctx: Context, works: Sequence[Work]) -> Dict[str, ArticleMetadata]:
         found: Dict[str, ArticleMetadata] = {}
