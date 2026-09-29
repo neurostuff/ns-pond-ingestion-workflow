@@ -36,6 +36,7 @@ from ingestion_workflow.models import (
 
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.patches import apply_ace_patch
+from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
 from ingestion_workflow.utils.progress import emit_progress
 
 
@@ -375,6 +376,10 @@ class ACEExtractor(BaseExtractor):
     ) -> None:
         self.settings = settings or load_settings()
         self.settings.ensure_directories()
+
+        # Into the environment, not a module flag: extraction runs in a process
+        # pool and a spawned worker does not inherit the parent's globals.
+        set_skip_remote_tables(bool(self.settings.ace_skip_remote_tables))
 
         self._cache_root = self._resolve_cache_root()
         self._extraction_root = self._resolve_extraction_root()

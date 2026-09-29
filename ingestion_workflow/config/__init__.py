@@ -262,6 +262,17 @@ class Settings(BaseSettings):
         description=("Maximum number of parallel workers dedicated to ACE downloads"),
     )
 
+    ace_skip_remote_tables: bool = Field(
+        default=False,
+        description=(
+            "Skip tables ACE would fetch from a separate URL. Many publishers "
+            "serve a table on its own page, and ACE downloads each one during "
+            "parsing, which makes extraction network-bound and fails when the "
+            "publisher is unreachable. With this set, a table already in the "
+            "table cache is still used and only the fetch is skipped"
+        ),
+    )
+
     # ===== Behavior flags =====
 
 

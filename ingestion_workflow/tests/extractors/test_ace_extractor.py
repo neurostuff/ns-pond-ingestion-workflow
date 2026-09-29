@@ -295,3 +295,72 @@ def test_the_html_scan_ignores_a_document_with_no_tables(tmp_path):
     tables_dir.mkdir()
     assert _unparsed_html_tables("<html><p>no tables here</p></html>", [],
                                  tables_dir, CoordinateSpace.OTHER) == []
+
+
+def test_a_remote_table_is_skipped_when_asked(tmp_path, monkeypatch):
+    """Many publishers serve a table on its own page, and ACE fetches each one
+    while parsing. That makes extraction network-bound and fails outright when
+    the publisher is unreachable."""
+    from ingestion_workflow.patches import ace_patch
+
+    calls = []
+    monkeypatch.setattr(ace_patch.ace_sources.scrape, "get_url",
+                        lambda url: calls.append(url) or "<table><tr><td>1</td></tr></table>")
+
+    class _Source:
+        table_dir = str(tmp_path)
+
+        def decode_html_entities(self, html):
+            return html
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        assert ace_patch._patched_download_table(_Source(), "http://x/tbl1") is None
+        assert calls == []
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+
+    # with the skip off it fetches as before
+    assert ace_patch._patched_download_table(_Source(), "http://x/tbl1") is not None
+    assert calls == ["http://x/tbl1"]
+
+
+def test_a_cached_table_is_used_even_when_skipping(tmp_path, monkeypatch):
+    """Only the fetch is skipped. A table an earlier run downloaded is still
+    returned, so the skip does not silently shrink the corpus."""
+    from ingestion_workflow.patches import ace_patch
+
+    monkeypatch.setattr(ace_patch.ace_sources.scrape, "get_url",
+                        lambda url: pytest.fail("should not have been called"))
+    cached = tmp_path / "http:__x_tbl1"
+    cached.write_text("<table><tr><td>cached</td></tr></table>", encoding="utf-8")
+
+    class _Source:
+        table_dir = str(tmp_path)
+
+        def decode_html_entities(self, html):
+            return html
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        soup = ace_patch._patched_download_table(_Source(), "http://x/tbl1")
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+    assert soup is not None
+    assert "cached" in str(soup)
+
+
+def test_the_skip_travels_through_the_environment_to_a_worker():
+    """A module flag does not reach a spawned worker; the environment does."""
+    import os
+
+    from ingestion_workflow.patches import ace_patch
+
+    ace_patch.set_skip_remote_tables(True)
+    try:
+        assert os.environ[ace_patch.SKIP_REMOTE_ENV] == "1"
+        assert ace_patch.skipping_remote_tables() is True
+    finally:
+        ace_patch.set_skip_remote_tables(False)
+    assert ace_patch.SKIP_REMOTE_ENV not in os.environ
+    assert ace_patch.skipping_remote_tables() is False
