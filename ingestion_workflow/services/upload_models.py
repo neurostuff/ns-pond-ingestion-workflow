@@ -106,6 +106,10 @@ class Study(Base):
     base_study_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("base_studies.id", ondelete="CASCADE"), index=True
     )
+    # Derived, and read by the API to decide what to show. Unmapped, they kept
+    # their column default, so a study with points still reported having none.
+    has_coordinates: Mapped[bool] = mapped_column(Boolean, default=False)
+    has_images: Mapped[bool] = mapped_column(Boolean, default=False)
 
     tables: Mapped[list["Table"]] = relationship(
         back_populates="study",
@@ -184,6 +188,9 @@ class Analysis(Base):
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     metadata_: Mapped[dict | None] = mapped_column("metadata_", JSON, nullable=True)
     order: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    #: Kept in step with `points` so readers need no join to count them.
+    point_count: Mapped[int] = mapped_column(Integer, default=0)
+    has_coordinates: Mapped[bool] = mapped_column(Boolean, default=False)
 
     study: Mapped[Study | None] = relationship(back_populates="analyses")
     table: Mapped[Table | None] = relationship(back_populates="analyses")

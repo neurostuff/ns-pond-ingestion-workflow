@@ -627,6 +627,9 @@ class UploadService:
             analysis_row.description = entry["description"]
             analysis_row.metadata_ = entry["metadata_"]
             analysis_row.order = entry["order"]
+            n_points = len(prepared.analysis.coordinates or ())
+            analysis_row.point_count = n_points
+            analysis_row.has_coordinates = bool(n_points)
             session.flush()  # ensure id for points
             analysis_ids.append(analysis_row.id)
 
@@ -662,8 +665,16 @@ class UploadService:
                         )
                     )
 
-        if item.analyses:
+        # The flag lives on both rows and the API reads each; setting only the
+        # base study left the study itself claiming no coordinates.
+        any_points = any(
+            (prepared.analysis.coordinates or ())
+            for prepared in (entry["prepared"] for _, entry in assignments)
+        )
+        study.has_coordinates = any_points
+        if any_points:
             base_study.has_coordinates = True
+        if item.analyses:
             study.level = "group"  # ensure level is set
 
         session.flush()

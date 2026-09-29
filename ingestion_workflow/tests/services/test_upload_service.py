@@ -185,6 +185,42 @@ def test_run_upload_inserts_records(tmp_path):
     assert pt_count == 2
 
 
+def test_upload_sets_derived_coordinate_fields(tmp_path):
+    """The API reads these; unmapped, they kept their column default.
+
+    A study holding points reported having none, and every analysis reported a
+    point_count of 0.
+    """
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    analyses = {"slug": {"t1": _sample_collection(identifier)}}
+    metadata = {"slug": _article_metadata()}
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+
+    items = service.prepare_work_items(
+        analyses, metadata, metadata_mode=settings.upload_metadata_mode
+    )
+    service.run(
+        items,
+        behavior=UploadBehavior.UPDATE,
+        metadata_only=False,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+
+    with Session(engine, future=True) as session:
+        analysis = session.scalars(select(DbAnalysis)).one()
+        study = session.scalars(select(DbStudy)).one()
+        base_study = session.scalars(select(DbBaseStudy)).one()
+        points = session.scalar(select_count(DbPoint))
+
+    assert points == 2
+    assert analysis.point_count == points
+    assert analysis.has_coordinates is True
+    assert study.has_coordinates is True
+    assert base_study.has_coordinates is True
+
+
 def test_run_upload_records_point_values(tmp_path):
     identifier = Identifier(doi="10.1/abc", pmid="123")
     stats = (4.25, 6.75)
