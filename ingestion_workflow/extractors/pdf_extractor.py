@@ -394,6 +394,7 @@ def _extract_pdf_article(
     extracted_tables: List[ExtractedTable] = []
     for index, table in enumerate(document.tables):
         caption = " ".join(_caption_texts(table, document)).strip()
+        footer = " ".join(_footnote_texts(table, document)).strip()
         table_id = sanitize_table_id(None, _table_label(caption), index)
 
         # Normalise the cells on the document, before either export reads them.
@@ -437,7 +438,7 @@ def _extract_pdf_article(
                 raw_content_path=html_path or csv_path,
                 table_number=index + 1,
                 caption=caption,
-                footer="",
+                footer=footer,
                 coordinates=coordinates,
                 space=article_space,
                 metadata={
@@ -463,6 +464,26 @@ def _table_label(caption: str) -> Optional[str]:
     """Pull a 'Table 3'-style label out of a caption, for use as a filename."""
     match = _TABLE_LABEL.search(caption)
     return match.group(1) if match else None
+
+
+def _footnote_texts(table: Any, document: Any) -> List[str]:
+    """Docling resolves footnotes exactly as it resolves captions.
+
+    A table footnote carries the threshold, the statistic and the laterality
+    key -- "L, left; R, right; BA, Brodmann area" -- which the space and
+    laterality rules both read. This was passed as an empty string, so every
+    pdf table arrived without one.
+    """
+    notes: List[str] = []
+    for note_ref in getattr(table, "footnotes", []) or []:
+        try:
+            resolved = note_ref.resolve(doc=document)
+        except Exception:
+            continue
+        text = getattr(resolved, "text", None) or getattr(resolved, "content", None)
+        if text:
+            notes.append(str(text))
+    return notes
 
 
 def _caption_texts(table: Any, document: Any) -> List[str]:

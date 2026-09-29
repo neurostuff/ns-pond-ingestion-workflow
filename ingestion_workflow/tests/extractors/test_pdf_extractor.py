@@ -379,3 +379,30 @@ def test_minus_glyphs_are_normalised_on_the_document_not_just_the_frame():
     for cell in data.table_cells:
         cell.text = normalize_text_tokens(cell.text)
     assert [c.text for c in data.table_cells] == ["-42", "-18", "-12", "4"]
+
+
+def test_table_footnotes_are_carried_through(tmp_path):
+    """Docling resolves footnotes exactly as it resolves captions, and a table
+    footnote carries the threshold, the statistic and the laterality key."""
+    from ingestion_workflow.extractors.pdf_extractor import _footnote_texts
+
+    class _Ref:
+        def __init__(self, text):
+            self._text = text
+
+        def resolve(self, doc=None):
+            return type("R", (), {"text": self._text})()
+
+    class _Broken:
+        def resolve(self, doc=None):
+            raise RuntimeError("dangling reference")
+
+    class _Table:
+        footnotes = [_Ref("L, left; R, right; BA, Brodmann area."), _Broken(),
+                     _Ref("Threshold p<0.05 FWE.")]
+
+    got = _footnote_texts(_Table(), object())
+    assert got == ["L, left; R, right; BA, Brodmann area.", "Threshold p<0.05 FWE."]
+    # a table with no footnotes yields nothing rather than failing
+    assert _footnote_texts(type("T", (), {"footnotes": []})(), object()) == []
+    assert _footnote_texts(object(), object()) == []
