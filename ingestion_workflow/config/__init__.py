@@ -104,6 +104,14 @@ class Settings(BaseSettings):
         description="Root directory for all cached indices",
     )
 
+    coordinate_gate_path: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Fitted RoutedGate the triage stage loads, deciding which tables are "
+            "worth an LLM call. Produced by nspond_tables.classify.fit_routed."
+        ),
+    )
+
     catalog_root: Path = Field(
         default=Path("./.catalog"),
         description=(

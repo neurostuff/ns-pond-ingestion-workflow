@@ -6,7 +6,7 @@ import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from typing import Dict, Iterator, List, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence, Set
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.extractors.table_heuristics import looks_like_coordinate_table
@@ -118,7 +118,8 @@ class AnalysesStage:
             content = ExtractedContent.from_dict(payload)
             content.identifier = work.ref.identifier
             content.slug = work.ref.identifier.slug
-            tables = [t for t in content.tables if _worth_parsing(t)]
+            passed = self._triaged(ctx, work.article_id)
+            tables = [t for t in content.tables if _worth_parsing(t, passed)]
             if not tables:
                 yield Outcome(
                     article_id=work.article_id,
@@ -143,6 +144,19 @@ class AnalysesStage:
             ]
             for future in futures:
                 yield future.result()
+
+    def _triaged(self, ctx: Context, article_id: str) -> Optional[Set[str]]:
+        """The table ids triage passed, or None if it has not run for this article.
+
+        None and an empty set mean different things: nothing decided yet, and
+        nothing worth a call. Returning an empty set for a missing artifact
+        would silently drop every table of every article triage has not reached.
+        """
+        artifacts = ctx.catalog.artifacts([article_id], "triage")
+        payload = ctx.payload(artifacts.get(article_id, {}).get(""))
+        if not payload:
+            return None
+        return {v["table_id"] for v in payload.get("tables", []) if v.get("passes")}
 
     def _metadata_for(self, ctx: Context, works: Sequence[Work]) -> Dict[str, ArticleMetadata]:
         found: Dict[str, ArticleMetadata] = {}
@@ -184,8 +198,21 @@ class AnalysesStage:
         )
 
 
-def _worth_parsing(table) -> bool:
-    """Deterministic parse found coordinates, or the table still looks like results."""
+def _worth_parsing(table, passed: Optional[Set[str]] = None) -> bool:
+    """Whether this table earns a model call.
+
+    `triage` decides it when it has run: it serialises the table, reads what it
+    can, and puts the rest to a gate fitted on hand-adjudicated tables. That is
+    a better answer than anything here, and it is recorded per table, so the
+    set of ids it passed is all this needs.
+
+    The fallback below is what ran before triage existed, kept for a catalog
+    that has no triage artifact yet. It is a word search over the caption and
+    the first forty lines, and it cannot tell an odds ratio beside its interval
+    from a coordinate, which is most of what it lets through.
+    """
+    if passed is not None:
+        return table.table_id in passed
     if table.contains_coordinates or table.coordinates:
         return True
     return looks_like_coordinate_table(table)

@@ -1,0 +1,69 @@
+"""Triage decides which tables earn a model call, and records why."""
+
+from __future__ import annotations
+
+import pytest
+
+from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
+from ingestion_workflow.pipeline.stages.analyses import _worth_parsing
+from ingestion_workflow.pipeline.stages.triage import TriageStage, _most_tables
+
+
+class _Table:
+    def __init__(self, table_id, path="", caption="", footer="",
+                 coordinates=(), contains_coordinates=False):
+        self.table_id = table_id
+        self.raw_content_path = path
+        self.caption = caption
+        self.footer = footer
+        self.coordinates = list(coordinates)
+        self.contains_coordinates = contains_coordinates
+
+
+def test_triage_runs_after_metadata_and_before_analyses():
+    """It needs the tables extract keeps, and it decides what analyses spends
+    a call on, so it can only sit between them."""
+    order = list(STAGE_ORDER)
+    assert order.index("extract") < order.index("triage") < order.index("analyses")
+    assert STAGE_TYPES["triage"] is TriageStage
+    assert TriageStage.requires == "extract"
+
+
+def test_a_table_that_does_not_serialise_is_refused_not_guessed_at():
+    stage = TriageStage(settings=object())
+    got = stage.judge(_Table("t1", path="/nonexistent/table.html"))
+    assert got == {"table_id": "t1", "passes": False, "points": 0,
+                   "route": "unreadable", "score": 0.0,
+                   "reason": "the table did not serialise"}
+
+
+def test_the_source_with_the_most_tables_is_triaged(monkeypatch):
+    """analyses picks the source with the most tables *with coordinates*, which
+    is the old filter wearing a different hat. Triage has judged nothing yet."""
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, tables, coords):
+            self.status = Status.OK
+            self.summary = {"tables": tables, "tables_with_coordinates": coords}
+
+    eager = _Art(tables=2, coords=2)
+    complete = _Art(tables=40, coords=0)
+    assert _most_tables({"ace": eager, "pubget": complete}) is complete
+    assert _most_tables({}) is None
+
+
+def test_analyses_sends_exactly_what_triage_passed():
+    passed = {"t2"}
+    tables = [_Table("t1", contains_coordinates=True), _Table("t2"), _Table("t3")]
+    kept = [t.table_id for t in tables if _worth_parsing(t, passed)]
+    assert kept == ["t2"]
+
+
+def test_an_article_triage_has_not_reached_falls_back_rather_than_dropping():
+    """None and an empty set mean different things: nothing decided yet, and
+    nothing worth a call. Treating the first as the second would silently drop
+    every table of every article triage has not reached."""
+    holds = _Table("t1", contains_coordinates=True)
+    assert _worth_parsing(holds, None) is True
+    assert _worth_parsing(holds, set()) is False
