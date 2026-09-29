@@ -29,7 +29,9 @@ inspected afterwards: the record says which gate made it and on what score.
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import re
+from concurrent.futures import ProcessPoolExecutor
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -164,6 +166,7 @@ class TriageStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        jobs, meta_of, tables_of = [], {}, {}
         for work in works:
             payload = ctx.payload(work.upstream)
             if payload is None:
@@ -173,8 +176,19 @@ class TriageStage:
                 continue
             content = ExtractedContent.from_dict(payload)
             abstract, title, types = self._context(ctx, work.article_id)
-            meta = is_a_meta_analysis(title, types)
-            verdicts = [self.judge(table, abstract) for table in content.tables]
+            meta_of[work.article_id] = (is_a_meta_analysis(title, types), types)
+            tables_of[work.article_id] = len(content.tables)
+            jobs.append((work.article_id, abstract,
+                         [_as_dict(t) for t in content.tables]))
+        if not jobs:
+            return
+
+        by_article = dict(self._judge_all(jobs))
+        for work in works:
+            verdicts = by_article.get(work.article_id)
+            if verdicts is None:
+                continue
+            meta, types = meta_of[work.article_id]
             kept = [v for v in verdicts if v["passes"]]
             yield Outcome(
                 article_id=work.article_id,
@@ -182,10 +196,6 @@ class TriageStage:
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                # The source is part of the verdict, not a note about it: table
-                # ids are only unique within one extraction, so `analyses` has
-                # to read the same one triage judged or the ids name different
-                # tables.
                 payload={"source": work.upstream.source,
                          "is_meta_analysis": meta,
                          "publication_types": types,
@@ -211,29 +221,101 @@ class TriageStage:
         return (payload.get("abstract") or "", payload.get("title") or "",
                 publication_types(payload))
 
+    def _judge_all(self, jobs):
+        """Every article's tables, across a pool when the batch earns one.
+
+        The work is parsing and a forest, so it is processor-bound and threads
+        would queue behind the interpreter lock. The gate loads once per worker
+        rather than travelling with each task: it is 400 trees and over a
+        megabyte, which costs more to pickle than the judging costs to do.
+
+        A batch of one or two does not earn a pool -- starting the workers and
+        loading a gate in each costs more than judging them here.
+        """
+        workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
+        path = getattr(self.settings, "coordinate_gate_path", None)
+        if workers == 1 or len(jobs) < 4 or not path:
+            gate = self.gate()
+            for article_id, abstract, tables in jobs:
+                yield article_id, [judge_table(gate, t, abstract) for t in tables]
+            return
+        with ProcessPoolExecutor(
+            max_workers=workers,
+            mp_context=multiprocessing.get_context("spawn"),
+            initializer=_load_gate,
+            initargs=(str(path),),
+        ) as pool:
+            for article_id, verdicts in pool.map(_judge_article, jobs, chunksize=8):
+                yield article_id, verdicts
+
     def judge(self, table, abstract: str = "") -> Dict:
-        """One table's verdict, and enough of the reasoning to audit it."""
-        text = _serialised(table)
-        caption = table.caption or ""
-        footer = table.footer or ""
-        if not text.strip():
-            return {"table_id": table.table_id, "passes": False, "points": 0,
-                    "route": "unreadable", "score": 0.0,
-                    "reason": "the table did not serialise"}
-        from nspond_tables import read
+        """One table's verdict, for a caller holding an `ExtractedTable`."""
+        return judge_table(self.gate(), _as_dict(table), abstract)
 
-        got = read.extract(text, caption=caption, footer=footer, abstract=abstract)
-        decided = self.gate().decide(text, caption, footer)
-        return {
-            "table_id": table.table_id,
-            "passes": bool(decided["passes"]),
-            "points": len(got.points),
-            "route": decided["route"],
-            "score": round(float(decided["score"]), 4),
-            "located_by": got.located_by,
-            "space": got.space,
-        }
 
+#: One gate per worker process, loaded once. A fitted forest is 400 trees and
+#: over a megabyte; pickling it with every task would cost more than the work.
+_GATE = None
+
+
+def _load_gate(path: str) -> None:
+    global _GATE
+    from nspond_tables.classify import RoutedGate
+
+    _GATE = RoutedGate.load(path)
+
+
+def _judge_article(job: Tuple[str, str, List[Dict]]) -> Tuple[str, List[Dict]]:
+    """One article's tables, in a worker.
+
+    Failures are caught per table rather than per batch: one unreadable table
+    must not take the other few thousand articles with it.
+    """
+    article_id, abstract, tables = job
+    out = []
+    for table in tables:
+        try:
+            out.append(judge_table(_GATE, table, abstract))
+        except Exception as exc:  # noqa: BLE001 - one table must not lose the rest
+            out.append({"table_id": table.get("table_id"), "passes": False,
+                        "points": 0, "route": "error", "score": 0.0,
+                        "reason": "%s: %s" % (type(exc).__name__, exc)})
+    return article_id, out
+
+
+def judge_table(gate, table: Dict, abstract: str = "") -> Dict:
+    """One table's verdict, and enough of the reasoning to audit it.
+
+    Takes a plain dict rather than an `ExtractedTable`, so the same call works
+    in a worker process without the model layer having to be picklable.
+    """
+    text = _serialised(table.get("raw_content_path"))
+    caption = table.get("caption") or ""
+    footer = table.get("footer") or ""
+    if not text.strip():
+        return {"table_id": table.get("table_id"), "passes": False, "points": 0,
+                "route": "unreadable", "score": 0.0,
+                "reason": "the table did not serialise"}
+    from nspond_tables import read
+
+    got = read.extract(text, caption=caption, footer=footer, abstract=abstract)
+    decided = gate.decide(text, caption, footer)
+    return {
+        "table_id": table.get("table_id"),
+        "passes": bool(decided["passes"]),
+        "points": len(got.points),
+        "route": decided["route"],
+        "score": round(float(decided["score"]), 4),
+        "located_by": got.located_by,
+        "space": got.space,
+    }
+
+
+def _as_dict(table) -> Dict:
+    return {"table_id": getattr(table, "table_id", None),
+            "raw_content_path": getattr(table, "raw_content_path", None),
+            "caption": getattr(table, "caption", "") or "",
+            "footer": getattr(table, "footer", "") or ""}
 
 def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     """The source that produced the most tables, coordinates or not.
@@ -249,9 +331,8 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     return max(usable, key=lambda a: a.summary.get("tables", 0))
 
 
-def _serialised(table) -> str:
+def _serialised(path) -> str:
     """The table as one text form, whatever the publisher stored."""
-    path = getattr(table, "raw_content_path", None)
     if not path:
         return ""
     from nspond_tables import serialize

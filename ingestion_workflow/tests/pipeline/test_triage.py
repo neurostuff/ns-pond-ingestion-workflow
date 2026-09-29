@@ -31,11 +31,40 @@ def test_triage_runs_after_metadata_and_before_analyses():
 
 
 def test_a_table_that_does_not_serialise_is_refused_not_guessed_at():
-    stage = TriageStage(settings=object())
-    got = stage.judge(_Table("t1", path="/nonexistent/table.html"))
+    """No gate is consulted: there is nothing to judge, and refusing costs
+    one wasted table where guessing costs a wrong answer on every one."""
+    from ingestion_workflow.pipeline.stages.triage import judge_table
+
+    got = judge_table(None, {"table_id": "t1",
+                             "raw_content_path": "/nonexistent/table.html"})
     assert got == {"table_id": "t1", "passes": False, "points": 0,
                    "route": "unreadable", "score": 0.0,
                    "reason": "the table did not serialise"}
+
+
+def test_judging_is_done_in_a_pool_with_one_gate_per_worker():
+    """The work is parsing and a forest, so it is processor-bound and threads
+    would queue behind the interpreter lock. A fitted forest is over a
+    megabyte, so it loads once per worker instead of travelling with each
+    task."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t.TriageStage._judge_all)
+    assert "ProcessPoolExecutor" in src
+    assert "initializer=_load_gate" in src
+    assert "len(jobs) < 4" in src          # a tiny batch does not earn a pool
+
+
+def test_one_bad_table_does_not_lose_the_batch():
+    """A pool that raises loses every article in flight, not just the one."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    src = inspect.getsource(t._judge_article)
+    assert "except Exception" in src and '"route": "error"' in src
 
 
 def test_the_source_with_the_most_tables_is_triaged(monkeypatch):
