@@ -27,6 +27,12 @@ class AnalysesStage:
     #: and it only does if the fingerprint runs through triage.
     requires = "triage"
 
+    #: Triage records how many tables it passed. An article it passed none for
+    #: has no work here whatever else is true, so the selection drops it rather
+    #: than planning it and writing an artifact that says nothing -- 477,625 of
+    #: them in the first corpus run, duplicating what `triage` already recorded.
+    requires_flag = "passed"
+
     def __init__(self, settings) -> None:
         self.settings = settings
         self._shared_service = None
@@ -121,22 +127,6 @@ class AnalysesStage:
         for work in works:
             verdicts = ctx.payload(work.upstream) or {}
             passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
-            if not passed:
-                # Triage passed nothing, so there is no work whatever the
-                # extraction holds. Asked after the extraction was loaded, this
-                # cost a gzip decompress and a full parse per article to reach
-                # the same answer -- 4 articles a second over the 92% of the
-                # corpus that has no passing table, which was 47 hours of the
-                # first run's 56.
-                yield Outcome(
-                    article_id=work.article_id,
-                    stage=self.name,
-                    source="",
-                    status=Status.SKIPPED,
-                    fingerprint=work.fingerprint,
-                    summary={"tables": 0, "reason": "triage passed no table"},
-                )
-                continue
             extraction = self._extraction_for(
                 ctx, work.article_id, verdicts.get("source", ""))
             payload = ctx.payload(extraction)

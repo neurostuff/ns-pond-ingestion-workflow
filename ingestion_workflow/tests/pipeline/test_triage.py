@@ -326,18 +326,3 @@ def test_the_digest_is_read_once_not_per_article(tmp_path):
     first = stage.gate_id()
     path.unlink()                      # gone: a second read would raise
     assert stage.gate_id() == first
-
-
-def test_an_article_triage_passed_nothing_for_never_loads_its_extraction():
-    """The extraction blob is a gzip decompress and a full parse, and 92% of
-    the corpus has no passing table. Asked after the load, that cost 4
-    articles a second -- 47 hours of the first corpus run's 56. Triage's
-    verdicts already hold the answer."""
-    import inspect
-
-    from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
-
-    src = inspect.getsource(AnalysesStage.execute)
-    head = src[:src.index("extraction = self._extraction_for")]
-    assert "if not passed:" in head, "the check must come before the blob is read"
-    assert "triage passed no table" in head
