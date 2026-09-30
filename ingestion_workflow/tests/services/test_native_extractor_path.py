@@ -108,3 +108,40 @@ def test_flipping_the_prompt_shape_makes_analyses_stale():
 
     assert fp(True) != fp(False)
     assert fp(True) == fp(True)
+
+
+# -- the two bugs the first corpus run found -----------------------------
+
+def test_every_table_reaches_the_model_because_triage_already_chose():
+    """The service used to re-test `contains_coordinates`, which is the old
+    reader-based filter applied a second time. It dropped every table triage
+    passed on the residual route -- where the reader finds nothing by
+    definition -- and cost 1,438 of 1,461 articles in the first corpus run."""
+    import inspect
+
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    src = inspect.getsource(CreateAnalysesService.run)
+    # the guard itself, not the word -- the comment explaining its removal
+    # names it too
+    assert "if not table.contains_coordinates" not in src
+    assert "no coordinates detected" not in src
+
+
+def test_the_output_budget_leaves_room_for_the_prompt():
+    """A long table is the one worth reading, and the server refuses -- with a
+    400, not a truncation -- when the requested output will not fit beside the
+    prompt. Two articles failed this way before the budget was computed."""
+    import inspect
+
+    from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
+
+    src = inspect.getsource(CoordinateParsingClient.parse_analyses_native)
+    assert "max_completion_tokens=allowed" in src
+    assert "window - estimated_prompt" in src
+
+    # a 12k-token document must not ask for 4,096 more
+    window, doc = CoordinateParsingClient.CONTEXT_WINDOW, "x" * 36000
+    allowed = max(256, min(4096, window - len(doc) // 3 - 512))
+    assert allowed + len(doc) // 3 < window
+    assert allowed >= 256          # always asks for something usable

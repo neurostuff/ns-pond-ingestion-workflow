@@ -60,12 +60,18 @@ class CoordinateParsingClient(GenericLLMClient):
         ensure_ascii=False,
     )
 
+    #: What the server will hold. Asking for output that does not fit beside
+    #: the prompt is refused outright, not truncated, so the budget has to be
+    #: worked out before the call rather than discovered from a 400.
+    CONTEXT_WINDOW = 16384
+
     def parse_analyses_native(
         self,
         document: str,
         *,
         model: Optional[str] = None,
         max_tokens: int = 4096,
+        context_window: Optional[int] = None,
     ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
         """Parse a table with the fine-tuned extractor, and report its space.
 
@@ -76,12 +82,24 @@ class CoordinateParsingClient(GenericLLMClient):
 
         Greedy, because every evaluation of this model was greedy and a
         sampled coordinate is a wrong coordinate.
+
+        The output budget is what is left of the context after the document,
+        not a fixed number. A long table is exactly the one worth reading, and
+        asking for 4,096 tokens beside a 12,000 token prompt is refused with a
+        400 rather than truncated -- so the request would fail on precisely
+        the richest tables.
         """
+        window = context_window or self.CONTEXT_WINDOW
+        # Four characters per token is the usual rough ratio; the margin
+        # absorbs the template and the chat scaffolding the server adds.
+        estimated_prompt = len(document) // 3
+        budget = window - estimated_prompt - 512
+        allowed = max(256, min(max_tokens, budget))
         response = self.client.chat.completions.create(
             model=model or self.default_model,
             messages=[{"role": "user", "content": document}],
             temperature=0.0,
-            max_completion_tokens=max_tokens,
+            max_completion_tokens=allowed,
             extra_body={
                 "chat_template_kwargs": {
                     "template": self.NATIVE_TEMPLATE,

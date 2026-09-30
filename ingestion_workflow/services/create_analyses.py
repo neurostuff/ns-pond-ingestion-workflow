@@ -86,14 +86,13 @@ class CreateAnalysesService:
         article_slug = bundle.article_data.slug
         identifier = bundle.article_data.identifier
 
+        # Which tables are worth a call is triage's decision, and it is made
+        # before this runs. Re-testing `contains_coordinates` here applied the
+        # old reader-based filter a second time and silently dropped every
+        # table triage passed on the residual route -- where the reader found
+        # nothing by definition, which is the whole reason that route exists.
+        # It cost 1,438 of 1,461 articles in the first corpus run.
         for index, table in enumerate(bundle.article_data.tables):
-            if not table.contains_coordinates and not table.coordinates:
-                logger.debug(
-                    "Skipping table %s for article %s (no coordinates detected).",
-                    table.table_id,
-                    bundle.article_data.slug,
-                )
-                continue
             sanitized_table_id = sanitize_table_id(table.table_id, index)
             table_key = table.table_id or sanitized_table_id
 
