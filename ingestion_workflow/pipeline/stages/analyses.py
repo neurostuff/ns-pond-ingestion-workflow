@@ -120,6 +120,23 @@ class AnalysesStage:
         jobs = []
         for work in works:
             verdicts = ctx.payload(work.upstream) or {}
+            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
+            if not passed:
+                # Triage passed nothing, so there is no work whatever the
+                # extraction holds. Asked after the extraction was loaded, this
+                # cost a gzip decompress and a full parse per article to reach
+                # the same answer -- 4 articles a second over the 92% of the
+                # corpus that has no passing table, which was 47 hours of the
+                # first run's 56.
+                yield Outcome(
+                    article_id=work.article_id,
+                    stage=self.name,
+                    source="",
+                    status=Status.SKIPPED,
+                    fingerprint=work.fingerprint,
+                    summary={"tables": 0, "reason": "triage passed no table"},
+                )
+                continue
             extraction = self._extraction_for(
                 ctx, work.article_id, verdicts.get("source", ""))
             payload = ctx.payload(extraction)
@@ -133,9 +150,9 @@ class AnalysesStage:
             content = ExtractedContent.from_dict(payload)
             content.identifier = work.ref.identifier
             content.slug = work.ref.identifier.slug
-            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
             tables = [t for t in content.tables if _worth_parsing(t, passed)]
             if not tables:
+                # Triage named a table this extraction no longer has.
                 yield Outcome(
                     article_id=work.article_id,
                     stage=self.name,

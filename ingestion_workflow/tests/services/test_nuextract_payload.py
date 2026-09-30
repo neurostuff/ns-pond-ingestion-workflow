@@ -107,13 +107,40 @@ def test_an_unnamed_statistic_is_still_kept():
     assert value.value == -4.5 and value.kind is None
 
 
-def test_malformed_output_costs_one_table_not_the_article():
-    """Two of 869 benchmark tables came back unparseable. None of these may
-    raise."""
-    for bad in ("", "   ", "no json here", '{"space": "MNI", ', "[]",
-                '{"analyses": "nope"}', '{"analyses": [null, 3]}'):
-        out, space = parse_payload(bad)
-        assert out.analyses == []
+def test_an_unreadable_answer_is_a_failure_not_an_empty_result():
+    """`{"analyses": []}` is the model saying the table holds nothing, which
+    is a result. Output that is not JSON is a failure, and recording the two
+    the same way hid data loss behind a legitimate-looking outcome: re-asking
+    25 tables recorded as "no analyses", 3 (12%) were actually this."""
+    import pytest
+
+    from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
+
+    for bad in ("", "   ", "no json here", '{"space": "MNI", ', "[]"):
+        with pytest.raises(UnreadableAnswer):
+            parse_payload(bad)
+
+
+def test_the_number_that_broke_a_real_table_raises():
+    """A serialiser that fused two cells turned two statistics into
+    `7.264.17`, which has two decimal points. The model echoed it and the
+    whole table's 57 coordinates were lost."""
+    import pytest
+
+    from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
+
+    with pytest.raises(UnreadableAnswer):
+        parse_payload('{"space":"MNI","analyses":[{"name":"a",'
+                      '"points":[[33,39,15,"T",7.264.17,178]]}]}')
+
+
+def test_a_well_formed_answer_with_odd_contents_is_still_read():
+    """Only unreadable output raises; a parseable object that says something
+    strange is handled as before."""
+    out, _ = parse_payload('{"analyses": "nope"}')
+    assert out.analyses == []
+    out, _ = parse_payload('{"analyses": [null, 3]}')
+    assert out.analyses == []
 
 
 def test_prose_around_the_json_is_tolerated():

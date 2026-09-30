@@ -34,7 +34,18 @@ from ingestion_workflow.models import (
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["parse_payload", "ALLOWED_MEASURES"]
+__all__ = ["parse_payload", "UnreadableAnswer", "ALLOWED_MEASURES"]
+
+
+class UnreadableAnswer(ValueError):
+    """The extractor answered, and the answer is not JSON.
+
+    Distinct from an empty answer on purpose. `{"analyses": []}` is the
+    model saying the table holds nothing, which is a result; unreadable
+    output is a failure, and recording the two the same way hid data loss
+    behind a legitimate-looking outcome. Measured by re-asking 25 tables
+    recorded as "no analyses", 3 of them (12%) were this.
+    """
 
 ALLOWED_MEASURES = {"voxels", "mm^3"}
 _STAT_KINDS = {"T", "Z", "F", "P", "R", "B"}
@@ -114,19 +125,23 @@ def parse_payload(text: str) -> Tuple[ParseAnalysesOutput, Optional[str]]:
     return no analyses for a table that holds no coordinates.
     """
     if not text or not text.strip():
-        return ParseAnalysesOutput(analyses=[]), None
+        raise UnreadableAnswer("the extractor returned nothing at all")
 
     match = _JSON.search(text)
     if not match:
-        logger.warning("extractor returned no JSON object (%d chars)", len(text))
-        return ParseAnalysesOutput(analyses=[]), None
+        raise UnreadableAnswer(
+            "no JSON object in %d characters of output" % len(text))
     try:
         payload = json.loads(match.group(0))
     except ValueError as exc:
-        logger.warning("extractor returned unparseable JSON: %s", exc)
-        return ParseAnalysesOutput(analyses=[]), None
+        # Usually the model copying a mangled cell: a serialiser that merged
+        # two rows turns two statistics into `7.264.17`, which has two decimal
+        # points and is not a number. The model is not wrong to echo what it
+        # was shown; the table it was shown was wrong.
+        raise UnreadableAnswer("%s" % exc) from exc
     if not isinstance(payload, dict):
-        return ParseAnalysesOutput(analyses=[]), None
+        raise UnreadableAnswer("the answer is a %s, not an object"
+                               % type(payload).__name__)
 
     space = _space(payload.get("space"))
     analyses: List[ParsedAnalysis] = []
