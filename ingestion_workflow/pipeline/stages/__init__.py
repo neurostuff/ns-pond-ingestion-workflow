@@ -1,19 +1,24 @@
-"""The six stages, in the order they run."""
+"""The seven stages, in the order they run."""
 
 from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .metadata import MetadataStage
 from .sync import SyncStage
+from .triage import TriageStage
 from .upload import UploadStage
 
 #: Canonical order. A stage may only require one that appears before it.
-STAGE_ORDER = ("download", "extract", "metadata", "analyses", "upload", "sync")
+#: `triage` sits between `metadata` and `analyses`: it needs the tables
+#: `extract` keeps and it decides which of them `analyses` spends a call on.
+STAGE_ORDER = ("download", "extract", "metadata", "triage", "analyses",
+               "upload", "sync")
 
 STAGE_TYPES = {
     "download": DownloadStage,
     "extract": ExtractStage,
     "metadata": MetadataStage,
+    "triage": TriageStage,
     "analyses": AnalysesStage,
     "upload": UploadStage,
     "sync": SyncStage,
@@ -37,6 +42,7 @@ __all__ = [
     "STAGE_ORDER",
     "STAGE_TYPES",
     "SyncStage",
+    "TriageStage",
     "UploadStage",
     "build",
 ]

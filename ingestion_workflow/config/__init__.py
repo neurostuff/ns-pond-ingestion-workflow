@@ -8,6 +8,7 @@ There are three levels of configuration in order of priority
 
 from __future__ import annotations
 
+import logging
 import os
 from enum import Enum
 from pathlib import Path
@@ -21,6 +22,8 @@ from ingestion_workflow.models import (
     DownloadSource,
 )
 
+
+logger = logging.getLogger(__name__)
 
 class NeurostoreEnv(str, Enum):
     """Which Neurostore deployment to talk to."""
@@ -101,9 +104,22 @@ class Settings(BaseSettings):
         description="Root directory for all cached indices",
     )
 
+    coordinate_gate_path: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Fitted RoutedGate the triage stage loads, deciding which tables are "
+            "worth an LLM call. Produced by nspond_tables.classify.fit_routed."
+        ),
+    )
+
     catalog_root: Path = Field(
         default=Path("./.catalog"),
-        description="Directory holding catalog.sqlite and the blob store",
+        description=(
+            "Directory holding catalog.sqlite and the blob store. The default is "
+            "relative to the working directory, so a run launched from elsewhere "
+            "writes to a different catalog. Set it explicitly whenever the caches "
+            "are shared."
+        ),
     )
 
     ns_pond_root: Path = Field(
@@ -404,6 +420,8 @@ class Settings(BaseSettings):
         ):
             directory.mkdir(parents=True, exist_ok=True)
 
+        self._warn_if_the_catalog_is_not_where_the_caches_are()
+
         # Optionally ensure per-source cache roots exist if configured
         # These are separate from the unified cache_root and are used by
         # specific providers
@@ -415,6 +433,36 @@ class Settings(BaseSettings):
         ):
             if isinstance(optional_dir, Path):
                 optional_dir.mkdir(parents=True, exist_ok=True)
+
+    def _warn_if_the_catalog_is_not_where_the_caches_are(self) -> None:
+        """A shared cache beside a private catalog is almost always a mistake.
+
+        `catalog_root` defaults to a relative path, so a run started from a
+        different working directory quietly gets its own catalog while still
+        reading and writing the shared cache. The stage then completes, the
+        cache fills, and nothing records the result where the rest of the
+        project looks for it. A re-extraction of 131,667 articles was lost that
+        way: the payloads were in the cache and the catalog never heard of them.
+
+        Both roots are logged either way, because the cheapest version of this
+        check is being able to read which catalog a run used.
+        """
+        logger.info(
+            "catalog_root=%s cache_root=%s data_root=%s",
+            self.catalog_root.resolve(),
+            self.cache_root.resolve(),
+            self.data_root.resolve(),
+        )
+        if self.cache_root.is_absolute() and not self.catalog_root.is_absolute():
+            logger.warning(
+                "cache_root is absolute (%s) but catalog_root is relative (%s -> %s). "
+                "The caches are shared and the catalog is not, so this run's results "
+                "will not reach %s. Set catalog_root explicitly.",
+                self.cache_root,
+                self.catalog_root,
+                self.catalog_root.resolve(),
+                self.cache_root.parent / "catalog",
+            )
 
     def get_cache_dir(self, cache_type: str) -> Path:
         """
