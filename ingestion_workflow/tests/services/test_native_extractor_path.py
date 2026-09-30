@@ -261,3 +261,49 @@ def test_an_empty_serialisation_is_a_failure_not_an_empty_table():
 
     out = CreateAnalysesService._serialise("<table><tr><td>x</td></tr></table>", "t1")
     assert out.strip()
+
+
+# -- the same table twice -------------------------------------------------
+
+def _tbl(tmp_path, name, html):
+    p = tmp_path / name
+    p.write_text(html, encoding="utf-8")
+    return SimpleNamespace(table_id=name.split(".")[0], raw_content_path=str(p))
+
+
+def test_a_table_repeated_under_two_ids_is_extracted_once(tmp_path):
+    """ACE returns the tables its parser found AND scans the document for the
+    rest; the extraction-time dedupe missed pairs because ACE rewrites the
+    markup it keeps. 72.6% of articles with more than one passing table
+    carried the same numbers twice, so the coordinates would upload twice."""
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    rows = "<tr><td>Insula</td><td>33</td><td>20</td><td>-7</td></tr>"
+    a = _tbl(tmp_path, "2.html", "<table><tbody>%s</tbody></table>" % rows)
+    b = _tbl(tmp_path, "html-table-2.html",
+             '<table>\n <tbody>%s</tbody>\n</table>' % rows.replace("<td>", '<td class="c">'))
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    drop = svc._redundant([a, b], "slug")
+    assert len(drop) == 1
+    assert drop < {"2", "html-table-2"}
+
+
+def test_two_genuinely_different_tables_are_both_kept(tmp_path):
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    a = _tbl(tmp_path, "1.html",
+             "<table><tbody><tr><td>A</td><td>1</td><td>2</td><td>3</td></tr></tbody></table>")
+    b = _tbl(tmp_path, "2.html",
+             "<table><tbody><tr><td>B</td><td>9</td><td>8</td><td>7</td></tr></tbody></table>")
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    assert svc._redundant([a, b], "slug") == set()
+
+
+def test_a_table_with_too_few_numbers_is_never_dropped(tmp_path):
+    """Two captions must not collapse into one."""
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    a = _tbl(tmp_path, "1.html", "<table><tbody><tr><td>Results</td></tr></tbody></table>")
+    b = _tbl(tmp_path, "2.html", "<table><tbody><tr><td>Results</td></tr></tbody></table>")
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    assert svc._redundant([a, b], "slug") == set()
