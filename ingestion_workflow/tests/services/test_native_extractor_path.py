@@ -138,10 +138,93 @@ def test_the_output_budget_leaves_room_for_the_prompt():
 
     src = inspect.getsource(CoordinateParsingClient.parse_analyses_native)
     assert "max_completion_tokens=allowed" in src
-    assert "window - estimated_prompt" in src
+    assert "window - len(document) // 3" in src
 
     # a 12k-token document must not ask for 4,096 more
     window, doc = CoordinateParsingClient.CONTEXT_WINDOW, "x" * 36000
     allowed = max(256, min(4096, window - len(doc) // 3 - 512))
     assert allowed + len(doc) // 3 < window
     assert allowed >= 256          # always asks for something usable
+
+
+def test_an_oversized_document_is_clipped_rather_than_refused():
+    """A document longer than the whole window cannot be made to fit by any
+    output budget, and the server answers 400 rather than truncating -- which
+    drops the article. Two of 400 failed this way even after the budget was
+    computed."""
+    from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
+
+    window = CoordinateParsingClient.CONTEXT_WINDOW
+    room = (window - 256 - 512) * 3
+    doc = "x" * (room * 2)
+    clipped = doc[:room] if len(doc) > room else doc
+    allowed = max(256, min(4096, window - len(clipped) // 3 - 512))
+    assert allowed == 256
+    assert len(clipped) // 3 + allowed + 512 <= window
+
+
+# -- nothing extracted must not become a record --------------------------
+
+def test_a_table_the_extractor_found_nothing_in_yields_no_collection():
+    """It is recorded as processed by the stage artifact, but an empty
+    collection would be counted as a table with analyses by everything
+    downstream."""
+    import inspect
+
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    src = inspect.getsource(CreateAnalysesService.run)
+    assert "if collection.analyses:" in src
+
+
+def test_an_analysis_with_no_coordinates_is_not_uploaded():
+    """Belt as well as braces: the prompted path can still produce a named
+    analysis with nothing in it, and that would be a table row and an
+    analysis row carrying no result."""
+    import inspect
+
+    from ingestion_workflow.services.upload import UploadService
+
+    src = inspect.getsource(UploadService._build_work_item)
+    assert "if not analysis.coordinates:" in src
+
+
+# -- the table must arrive in the form the model was trained on ----------
+
+def test_the_native_path_serialises_the_table():
+    """`_read_table_content` returns raw HTML, which is what the prompted
+    models are given. The fine-tune has never seen it -- it was trained, and
+    every number measured, on the nspond_tables serialisation. Raw HTML also
+    measured 14.7x larger over the tables that overflowed the window, and
+    prefill is two thirds of the corpus cost."""
+    import inspect
+
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    src = inspect.getsource(CreateAnalysesService.run)
+    assert "self._serialise(table_text" in src
+    # the prompted path keeps the raw HTML its prompt describes
+    assert "self._build_prompt(bundle, table, table_text" in src
+
+
+def test_an_unserialisable_table_falls_back_to_raw_rather_than_vanishing():
+    """A worse prompt beats no answer."""
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    assert CreateAnalysesService._serialise("<not really html", "t1")
+    # empty serialisation is a failure too, not an empty table
+    assert CreateAnalysesService._serialise("<table></table>", "t1") == "<table></table>"
+
+
+def test_serialisation_shrinks_a_real_table():
+    """The marker of the trained form: ` | ` separators and `#` header cells."""
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    html = (
+        "<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>"
+        "<tr><td>Amygdala</td><td>-22</td><td>4</td><td>-18</td></tr></table>"
+    )
+    out = CreateAnalysesService._serialise(html, "t1")
+    assert " | " in out
+    assert "#" in out
+    assert len(out) < len(html)

@@ -90,11 +90,22 @@ class CoordinateParsingClient(GenericLLMClient):
         the richest tables.
         """
         window = context_window or self.CONTEXT_WINDOW
-        # Four characters per token is the usual rough ratio; the margin
-        # absorbs the template and the chat scaffolding the server adds.
-        estimated_prompt = len(document) // 3
-        budget = window - estimated_prompt - 512
-        allowed = max(256, min(max_tokens, budget))
+        # Three characters per token is the conservative ratio for serialised
+        # tables, which are mostly digits and separators; the margin absorbs
+        # the template and the chat scaffolding the server adds.
+        floor = 256
+        room = (window - floor - 512) * 3
+        if len(document) > room:
+            # Longer than the window itself, so no output budget can make it
+            # fit. Clipping the tail costs the last rows of the table; sending
+            # it whole costs the table. Both are losses, and this one is
+            # visible in the log rather than a 400 that drops the article.
+            logger.warning(
+                "clipping a %d character document to %d to fit the context window",
+                len(document), room,
+            )
+            document = document[:room]
+        allowed = max(floor, min(max_tokens, window - len(document) // 3 - 512))
         response = self.client.chat.completions.create(
             model=model or self.default_model,
             messages=[{"role": "user", "content": document}],
