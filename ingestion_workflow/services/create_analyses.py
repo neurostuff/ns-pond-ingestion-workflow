@@ -20,6 +20,7 @@ from ingestion_workflow.models import (
     ParseAnalysesOutput,
 )
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
+from ingestion_workflow.services.coordinate_flags import is_deactivation, subpeak_flags
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -170,54 +171,72 @@ class CreateAnalysesService:
         points: List[CoordinatePoint],
         default_space: CoordinateSpace,
     ) -> List[Coordinate]:
-        coordinates: List[Coordinate] = []
-        for point in points:
-            space = self._coerce_space(point.space, default_space)
-            statistic_value = None
-            statistic_type = None
-            cluster_size = point.cluster_size
-            cluster_measure = point.cluster_measure
-            is_subpeak = bool(point.is_subpeak)
-            is_deactivation = bool(point.is_deactivation)
-            is_seed = bool(point.is_seed)
-            if cluster_size is not None:
-                try:
-                    cluster_size = abs(int(cluster_size))
-                except (TypeError, ValueError):
-                    cluster_size = None
-            if cluster_measure is not None:
-                normalized_measure = str(cluster_measure).strip().lower()
-                if normalized_measure not in {"voxels", "mm^3", "mm3"}:
-                    cluster_measure = None
-                elif normalized_measure in {"mm^3", "mm3"}:
-                    cluster_measure = "mm^3"
-                else:
-                    cluster_measure = "voxels"
-            if point.values:
-                primary_value = point.values[0]
-                statistic_type = primary_value.kind
-                try:
-                    statistic_value = (
-                        float(primary_value.value) if primary_value.value is not None else None
-                    )
-                except (TypeError, ValueError):
-                    statistic_value = None
-            coordinates.append(
-                Coordinate(
-                    x=point.coordinates[0],
-                    y=point.coordinates[1],
-                    z=point.coordinates[2],
-                    space=space,
-                    statistic_value=statistic_value,
-                    statistic_type=statistic_type,
-                    cluster_size=cluster_size,
-                    cluster_measure=cluster_measure,
-                    is_subpeak=is_subpeak,
-                    is_deactivation=is_deactivation,
-                    is_seed=is_seed,
-                )
+        # Two passes: `is_subpeak` is a property of the analysis, not of a row.
+        # A blank extent means nothing until the other rows are known to have
+        # one, so every row's numbers are read first and the flags derived
+        # from the whole set.
+        rows = [self._read_point(point, default_space) for point in points]
+        subpeaks = subpeak_flags([row["cluster_size"] for row in rows])
+        return [
+            Coordinate(
+                x=row["x"],
+                y=row["y"],
+                z=row["z"],
+                space=row["space"],
+                statistic_value=row["statistic_value"],
+                statistic_type=row["statistic_type"],
+                cluster_size=row["cluster_size"],
+                cluster_measure=row["cluster_measure"],
+                is_subpeak=subpeak,
+                is_deactivation=is_deactivation(row["statistic_value"]),
+                is_seed=row["is_seed"],
             )
-        return coordinates
+            for row, subpeak in zip(rows, subpeaks)
+        ]
+
+    def _read_point(
+        self,
+        point: CoordinatePoint,
+        default_space: CoordinateSpace,
+    ) -> Dict[str, object]:
+        """Normalise one point's numbers, without deciding any flag."""
+        cluster_size = point.cluster_size
+        cluster_measure = point.cluster_measure
+        statistic_value = None
+        statistic_type = None
+        if cluster_size is not None:
+            try:
+                cluster_size = abs(int(cluster_size))
+            except (TypeError, ValueError):
+                cluster_size = None
+        if cluster_measure is not None:
+            normalized_measure = str(cluster_measure).strip().lower()
+            if normalized_measure not in {"voxels", "mm^3", "mm3"}:
+                cluster_measure = None
+            elif normalized_measure in {"mm^3", "mm3"}:
+                cluster_measure = "mm^3"
+            else:
+                cluster_measure = "voxels"
+        if point.values:
+            primary_value = point.values[0]
+            statistic_type = primary_value.kind
+            try:
+                statistic_value = (
+                    float(primary_value.value) if primary_value.value is not None else None
+                )
+            except (TypeError, ValueError):
+                statistic_value = None
+        return {
+            "x": point.coordinates[0],
+            "y": point.coordinates[1],
+            "z": point.coordinates[2],
+            "space": self._coerce_space(point.space, default_space),
+            "statistic_value": statistic_value,
+            "statistic_type": statistic_type,
+            "cluster_size": cluster_size,
+            "cluster_measure": cluster_measure,
+            "is_seed": bool(point.is_seed),
+        }
 
     def _coerce_space(
         self, space_label: Optional[str], fallback: CoordinateSpace
