@@ -89,3 +89,22 @@ def test_the_native_path_is_off_by_default():
     from ingestion_workflow.config import Settings
 
     assert Settings.model_fields["llm_native_schema"].default is False
+
+
+def test_flipping_the_prompt_shape_makes_analyses_stale():
+    """The prompt is a stage input. Without it in the fingerprint, a
+    deployment that switched to the native schema while keeping the model name
+    would leave every existing analysis looking fresh, and the run would do
+    nothing -- silently, which is the worst way for a pipeline to do nothing."""
+    from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+
+    class _Art:
+        fingerprint = "triage-1"
+
+    def fp(native):
+        return AnalysesStage(
+            settings=SimpleNamespace(llm_model="nu-v19", llm_native_schema=native)
+        ).fingerprint_for(_Art())
+
+    assert fp(True) != fp(False)
+    assert fp(True) == fp(True)

@@ -36,7 +36,10 @@ class StudyPayload:
     pmcid: Optional[str] = None
     authors: Optional[str] = None
     year: Optional[int] = None
-    source: str = "llm"
+    #: Which extractor produced these analyses. Left unset here on purpose:
+    #: the upload service fills it from `upload_source`, and a default of
+    #: "llm" would be truthy and silently win over the setting.
+    source: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

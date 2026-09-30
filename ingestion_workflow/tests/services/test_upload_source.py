@@ -57,3 +57,20 @@ def test_the_cli_passes_the_configured_source_to_discover():
 def test_a_configured_source_survives_settings_construction():
     settings = Settings(upload_source="nuextract-v19")
     assert settings.upload_source == "nuextract-v19"
+
+
+def test_the_payload_default_does_not_shadow_the_setting():
+    """`payload.source or settings.upload_source` only reaches the setting if
+    the payload default is falsy. A default of "llm" is truthy and would win
+    silently, which is how this was wrong the first time."""
+    from ingestion_workflow.models.upload import StudyPayload
+
+    assert StudyPayload().source is None
+
+
+def test_an_explicit_payload_source_still_wins():
+    """A caller that names the source means it."""
+    from ingestion_workflow.models.upload import StudyPayload
+
+    payload = StudyPayload(source="hand-curated")
+    assert (payload.source or "llm") == "hand-curated"

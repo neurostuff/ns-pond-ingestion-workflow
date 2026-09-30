@@ -64,6 +64,12 @@ class AnalysesStage:
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
             self.settings.llm_model,
+            # The prompt shape is an input too. Flipping this swaps a four
+            # thousand token rule prompt for a fifty token schema, which is a
+            # bigger change than most model swaps -- and without it here, a
+            # deployment that flipped the flag while keeping the model name
+            # would leave the whole corpus looking fresh.
+            str(bool(getattr(self.settings, "llm_native_schema", False))),
             upstream=upstream.fingerprint,
         )
 
