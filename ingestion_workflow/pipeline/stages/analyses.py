@@ -23,7 +23,7 @@ from ingestion_workflow.prompts.coordinate_parsing import COORDINATE_PARSING_PRO
 #:
 #: Bump it when the text sent to the model changes for reasons the model
 #: and the prompt do not describe.
-EXTRACTION_VERSION = "2026-09-30.serialised+minus+dedupe"
+EXTRACTION_VERSION = "2026-09-30.serialised+minus+dedupe+thinspace"
 
 from ..plan import StagePlan, Work
 from ..stage import Context
