@@ -307,3 +307,49 @@ def test_a_table_with_too_few_numbers_is_never_dropped(tmp_path):
     b = _tbl(tmp_path, "2.html", "<table><tbody><tr><td>Results</td></tr></tbody></table>")
     svc = CreateAnalysesService.__new__(CreateAnalysesService)
     assert svc._redundant([a, b], "slug") == set()
+
+
+# -- the coordinate space -------------------------------------------------
+
+def _collection(table_space, model_space):
+    from ingestion_workflow.models import CoordinateSpace, ParseAnalysesOutput
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    svc.settings = SimpleNamespace(llm_native_schema=True)
+    table = SimpleNamespace(space=table_space, table_id="t1", table_number=1,
+                            caption="", footer="", metadata={})
+    coll = svc._build_collection(ParseAnalysesOutput(analyses=[]), table, None,
+                                 "t1", "t1", "slug", model_space=model_space)
+    return coll.coordinate_space, CoordinateSpace
+
+
+def test_a_space_the_extraction_read_beats_the_model():
+    """It came from the article, not from this one table."""
+    got, Space = _collection(None, "TAL")
+    assert got is Space.TALAIRACH
+    got, Space = _collection(Space.MNI, "TAL")
+    assert got is Space.MNI
+
+
+def test_the_extractions_OTHER_does_not_beat_a_model_that_knew():
+    """`OTHER` is the enum saying it does not know, and it is truthy, so it
+    used to win the `or`. 19.3% of tables stored OTHER and 68% of those name
+    MNI or Talairach in their own caption, footer or abstract -- which is
+    exactly what the model reads."""
+    from ingestion_workflow.models import CoordinateSpace
+
+    got, _ = _collection(CoordinateSpace.OTHER, "MNI")
+    assert got is CoordinateSpace.MNI
+    got, _ = _collection(CoordinateSpace.OTHER, "TAL")
+    assert got is CoordinateSpace.TALAIRACH
+
+
+def test_neither_knowing_stays_OTHER():
+    """Most articles never state a space anywhere the extractor can see."""
+    from ingestion_workflow.models import CoordinateSpace
+
+    got, _ = _collection(CoordinateSpace.OTHER, None)
+    assert got is CoordinateSpace.OTHER
+    got, _ = _collection(None, None)
+    assert got is CoordinateSpace.OTHER

@@ -185,11 +185,14 @@ class CreateAnalysesService:
         article_slug: str,
         model_space: Optional[str] = None,
     ) -> AnalysisCollection:
-        # The extraction's own space wins: it was read from the article, not
-        # inferred from the table. The model's reading is the fallback, and it
-        # is a real one -- most articles never state a space anywhere the
-        # extractor can see, and those correctly come back as None.
-        table_space = table.space or self._coerce_space(model_space, CoordinateSpace.OTHER)
+        # A space the extraction actually read wins: it came from the article,
+        # not from this table. But `OTHER` is the enum's way of saying it does
+        # not know, and it is truthy, so it used to beat a model that did --
+        # 19.3% of tables stored `OTHER`, and 68% of those name MNI or
+        # Talairach in their own caption, footer or abstract, which is exactly
+        # what the model reads. Unknown is not an answer, so it defers.
+        read = table.space if table.space not in (None, CoordinateSpace.OTHER) else None
+        table_space = read or self._coerce_space(model_space, CoordinateSpace.OTHER)
         collection = AnalysisCollection(
             slug=f"{article_slug}::{sanitized_table_id}",
             coordinate_space=table_space,
