@@ -24,10 +24,16 @@ from ingestion_workflow.pipeline.stages.triage import TriageStage
 
 @pytest.fixture()
 def env(tmp_path):
+    # Triage digests the gate into its fingerprint, so a stage built without
+    # one cannot plan. Raising then rather than mid-run is the point: a run
+    # with no gate should stop before it does any work.
+    gate = tmp_path / "gate.joblib"
+    gate.write_bytes(b"a fitted gate")
     settings = Settings(
         data_root=tmp_path / "d",
         cache_root=tmp_path / "c",
         catalog_root=tmp_path / "k",
+        coordinate_gate_path=gate,
     )
     with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog

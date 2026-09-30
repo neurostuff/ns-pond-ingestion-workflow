@@ -28,6 +28,8 @@ inspected afterwards: the record says which gate made it and on what score.
 
 from __future__ import annotations
 
+import hashlib
+
 import logging
 import multiprocessing
 import re
@@ -103,6 +105,7 @@ class TriageStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self._gate = None
+        self._gate_id = None
 
     def gate(self):
         """The fitted pair, loaded once.
@@ -121,17 +124,42 @@ class TriageStage:
             self._gate = RoutedGate.load(path)
         return self._gate
 
+    def gate_id(self) -> str:
+        """What identifies the gate this stage is judging with.
+
+        The digest of the fitted file. A refitted gate is a different gate
+        even at the same path, and the path alone would not say so.
+        """
+        if self._gate_id is None:
+            path = getattr(self.settings, "coordinate_gate_path", None)
+            if not path:
+                raise RuntimeError(
+                    "triage needs coordinate_gate_path, the fitted RoutedGate")
+            digest = hashlib.blake2b(digest_size=16)
+            with open(path, "rb") as fh:
+                for block in iter(lambda: fh.read(1 << 20), b""):
+                    digest.update(block)
+            self._gate_id = digest.hexdigest()
+        return self._gate_id
+
     def fingerprint_for(self, metadata: Artifact, extraction: Artifact) -> str:
-        """Both parents, because `requires` only names one.
+        """Both parents, because `requires` only names one -- and the gate.
 
         `metadata`'s own fingerprint does not run through `extract` -- it is
         the provider list and a version, nothing more -- so fingerprinting from
         it alone would leave triage looking fresh after a re-extraction, with
         verdicts about tables that no longer exist. The extraction's
         fingerprint therefore goes in as a part.
+
+        **So does the gate.** It is the stage's other input: change it and
+        every verdict changes, while both parents sit still. Without it,
+        pointing the config at a refitted gate leaves the whole corpus looking
+        fresh and the run does nothing, silently -- which is exactly the
+        failure `analyses` already avoids by hanging off `triage` rather than
+        off `extract`.
         """
         return fingerprint("triage", TRIAGE_VERSION, extraction.fingerprint,
-                           upstream=metadata.fingerprint)
+                           self.gate_id(), upstream=metadata.fingerprint)
 
     def plan(
         self,

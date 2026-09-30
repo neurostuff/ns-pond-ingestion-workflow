@@ -154,7 +154,7 @@ def test_analyses_reads_the_extraction_triage_named_not_the_richest_one():
     assert AnalysesStage._extraction_for(_Ctx(), "a1", "elsevier") is None
 
 
-def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction():
+def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction(tmp_path):
     """`metadata`'s fingerprint is the provider list and a version -- it does
     not run through `extract`. Fingerprinting from it alone would leave triage
     looking fresh after a re-extraction, holding verdicts about tables that no
@@ -163,8 +163,16 @@ def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction():
         def __init__(self, fp):
             self.fingerprint = fp
 
+    class _S:
+        coordinate_gate_path = None
+
+    gate = tmp_path / "gate.joblib"
+    gate.write_bytes(b"a gate")
+    settings = _S()
+    settings.coordinate_gate_path = str(gate)
+
     assert TriageStage.requires == "metadata"
-    stage = TriageStage(settings=object())
+    stage = TriageStage(settings=settings)
     base = stage.fingerprint_for(_Art("meta-1"), _Art("extract-1"))
     assert stage.fingerprint_for(_Art("meta-2"), _Art("extract-1")) != base
     assert stage.fingerprint_for(_Art("meta-1"), _Art("extract-2")) != base
@@ -253,3 +261,68 @@ def test_an_article_with_no_metadata_to_find_is_still_triaged():
     src = inspect.getsource(t.TriageStage.plan)
     assert "meta is None or extraction is None" in src
     assert "meta.status" not in src
+
+
+# -- the gate is an input, so it belongs in the fingerprint ----------------
+
+def test_a_refitted_gate_makes_triage_stale(tmp_path):
+    """The gate is the stage's other input: change it and every verdict
+    changes while both parents sit still. Without it in the fingerprint,
+    pointing the config at a refitted gate leaves the whole corpus looking
+    fresh and the run does nothing -- silently, which is the worst way for a
+    pipeline to do nothing."""
+    from ingestion_workflow.pipeline.stages.triage import TriageStage
+
+    class _Art:
+        def __init__(self, fp):
+            self.fingerprint = fp
+
+    class _S:
+        def __init__(self, path):
+            self.coordinate_gate_path = str(path)
+
+    one, two = tmp_path / "a.joblib", tmp_path / "b.joblib"
+    one.write_bytes(b"gate-one")
+    two.write_bytes(b"gate-two")
+
+    meta, extract = _Art("meta-1"), _Art("extract-1")
+    first = TriageStage(_S(one)).fingerprint_for(meta, extract)
+    again = TriageStage(_S(one)).fingerprint_for(meta, extract)
+    other = TriageStage(_S(two)).fingerprint_for(meta, extract)
+
+    assert first == again, "the same gate must not invalidate anything"
+    assert first != other, "a different gate must"
+
+
+def test_the_gate_is_identified_by_its_CONTENT_not_its_path(tmp_path):
+    """Refitting writes to the same path. A path-based identity would call
+    the new gate the old one."""
+    from ingestion_workflow.pipeline.stages.triage import TriageStage
+
+    class _S:
+        def __init__(self, path):
+            self.coordinate_gate_path = str(path)
+
+    path = tmp_path / "gate.joblib"
+    path.write_bytes(b"before")
+    before = TriageStage(_S(path)).gate_id()
+    path.write_bytes(b"after")
+    after = TriageStage(_S(path)).gate_id()
+    assert before != after
+
+
+def test_the_digest_is_read_once_not_per_article(tmp_path):
+    """The fitted forest is four megabytes and `fingerprint_for` is called
+    once per article."""
+    from ingestion_workflow.pipeline.stages.triage import TriageStage
+
+    class _S:
+        def __init__(self, path):
+            self.coordinate_gate_path = str(path)
+
+    path = tmp_path / "gate.joblib"
+    path.write_bytes(b"x" * 4096)
+    stage = TriageStage(_S(path))
+    first = stage.gate_id()
+    path.unlink()                      # gone: a second read would raise
+    assert stage.gate_id() == first
