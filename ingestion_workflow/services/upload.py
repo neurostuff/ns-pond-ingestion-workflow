@@ -454,19 +454,12 @@ class UploadService:
                 )
                 continue
             for a_index, analysis in enumerate(collection.analyses, start=1):
-                if not analysis.coordinates:
-                    # An analysis with no coordinates is a table row and an
-                    # analysis row carrying nothing. The extractor is trained
-                    # to answer "nothing here" and does so on roughly a third
-                    # of what triage sends it, so uploading these would fill
-                    # neurostore with empty records that no query wants and
-                    # every count would then include.
-                    logger.debug(
-                        "Skipping empty analysis %r for %s; nothing was extracted.",
-                        analysis.name,
-                        slug,
-                    )
-                    continue
+                # An analysis with no coordinates is uploaded on purpose. A
+                # table that names a contrast and reports `n.s.` has run that
+                # contrast and found nothing, and that is a result someone
+                # meta-analysing will want. What is not uploaded is a table
+                # the extractor returned no analyses for at all -- the empty
+                # collection skipped just above.
                 table_meta = analysis.metadata.get("table_metadata", {}) if analysis.metadata else {}
                 sanitized_id = None
                 if analysis.metadata:

@@ -76,10 +76,24 @@ def test_a_row_whose_first_three_entries_are_not_numbers_is_dropped():
     assert len(out.analyses[0].points) == 1
 
 
-def test_an_analysis_with_no_usable_point_is_dropped():
-    """It would otherwise add a named, empty analysis to the database."""
+def test_a_named_analysis_with_no_points_is_kept():
+    """A table that names a contrast and reports `n.s.` has run it and found
+    nothing, which is a result. Dropping it would say the paper never looked.
+    This is the opposite of an empty payload, where the table reports no
+    contrasts at all."""
     out, _ = parse_payload(_payload(analyses=[
-        {"name": "empty", "points": []},
+        {"name": "Down-regulate vs. look aversive", "points": []},
+        {"name": "real", "points": [[1, 2, 3]]}]))
+    assert [a.name for a in out.analyses] == [
+        "Down-regulate vs. look aversive", "real"]
+    assert out.analyses[0].points == []
+
+
+def test_an_analysis_with_neither_name_nor_point_is_dropped():
+    """Nothing was reported, so there is no analysis to record."""
+    out, _ = parse_payload(_payload(analyses=[
+        {"name": "", "points": []},
+        {"name": None, "points": []},
         {"name": "real", "points": [[1, 2, 3]]}]))
     assert [a.name for a in out.analyses] == ["real"]
 

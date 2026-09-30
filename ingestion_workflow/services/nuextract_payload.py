@@ -139,11 +139,17 @@ def parse_payload(text: str) -> Tuple[ParseAnalysesOutput, Optional[str]]:
             for point in (_point(row, space, measure) for row in entry.get("points") or [])
             if point is not None
         ]
-        if not points:
-            # An analysis the model named but pulled no coordinate out of adds
-            # an empty row to the database and nothing else.
-            continue
         name = entry.get("name")
+        named = bool(name is not None and str(name).strip())
+        if not points and not named:
+            # Neither a name nor a coordinate: nothing was reported, so there
+            # is no analysis to record.
+            continue
+        # A NAMED analysis with no points is kept. The table names a contrast
+        # and reports `n.s.`, so the paper ran it and found nothing -- which
+        # is a result. Dropping it would say the paper never looked. This is
+        # the opposite case to an empty payload, where the table reports no
+        # contrasts at all and the whole answer is `{"analyses": []}`.
         analyses.append(
             ParsedAnalysis(name=str(name) if name is not None else None, points=points)
         )

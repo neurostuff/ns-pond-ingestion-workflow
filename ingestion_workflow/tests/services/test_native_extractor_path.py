@@ -177,16 +177,18 @@ def test_a_table_the_extractor_found_nothing_in_yields_no_collection():
     assert "if collection.analyses:" in src
 
 
-def test_an_analysis_with_no_coordinates_is_not_uploaded():
-    """Belt as well as braces: the prompted path can still produce a named
-    analysis with nothing in it, and that would be a table row and an
-    analysis row carrying no result."""
+def test_a_named_analysis_with_no_coordinates_is_still_uploaded():
+    """A contrast reported as `n.s.` is an analysis that ran and found
+    nothing -- a result a meta-analyst wants. Only a table the extractor
+    returned NO analyses for is withheld, and that is the empty collection
+    skipped one level up."""
     import inspect
 
     from ingestion_workflow.services.upload import UploadService
 
     src = inspect.getsource(UploadService._build_work_item)
-    assert "if not analysis.coordinates:" in src
+    assert "if not analysis.coordinates:" not in src
+    assert "if not collection.analyses:" in src
 
 
 # -- the table must arrive in the form the model was trained on ----------
