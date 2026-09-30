@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import threading
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
@@ -19,6 +19,7 @@ from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
+    normalize_minus,
 )
 from ingestion_workflow.models import (
     Identifier,
@@ -190,7 +191,7 @@ def _table_fingerprint(html: str) -> str:
     Numbers survive the rewrite. A table with fewer than three is not
     identified this way at all, so captions and layout tables cannot collide.
     """
-    text = _HTML_TAG.sub(" ", html or "")
+    text = _HTML_TAG.sub(" ", normalize_minus(html))
     numbers = _FP_NUMBER.findall(_FP_THOUSANDS.sub("", text))
     if len(numbers) >= 3:
         return "n:" + ",".join(numbers)
@@ -299,7 +300,10 @@ def _unparsed_html_tables(
         seen.add(fingerprint)
         table_id = f"html-table-{index + 1}"
         path = tables_dir / f"{table_id}.html"
-        path.write_text(block, encoding="utf-8")
+        # Decoded on the way to disk: everything downstream reads this
+        # file, and an undecoded minus is a coordinate in the wrong
+        # hemisphere.
+        path.write_text(normalize_minus(block), encoding="utf-8")
         caption, footer = _caption_and_footer(
             html_text, match.start(), match.end(), block)
         out.append(ExtractedTable(

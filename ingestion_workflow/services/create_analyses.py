@@ -21,6 +21,7 @@ from ingestion_workflow.models import (
     ExtractedTable,
     ParseAnalysesOutput,
 )
+from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.services.coordinate_flags import is_deactivation, subpeak_flags
 from ingestion_workflow.services.naming import sanitize_table_id
@@ -606,7 +607,7 @@ Raw Table Content:
         return drop
 
     @staticmethod
-    def _serialise(html: str, table_key: str) -> str:
+    def _serialise(markup: str, table_key: str) -> str:
         """The table in the form the fine-tune was trained on.
 
         `_read_table_content` returns the raw HTML, which is what the prompted
@@ -629,8 +630,9 @@ Raw Table Content:
         """
         from nspond_tables import serialize
 
+        markup = normalize_minus(markup)
         try:
-            out = serialize.serialize(html)
+            out = serialize.serialize(markup)
         except Exception as exc:                       # noqa: BLE001 - any parse failure
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
@@ -638,7 +640,7 @@ Raw Table Content:
             return out
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
-        return _text_of(html) or html
+        return _text_of(markup) or markup
 
     def _read_table_content(self, table: ExtractedTable) -> str:
         path = Path(table.raw_content_path)
