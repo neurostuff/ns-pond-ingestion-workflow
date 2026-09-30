@@ -84,3 +84,39 @@ def test_there_is_no_second_gate_in_the_stage(catalog):
     from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 
     assert "requires_flag" not in inspect.getsource(AnalysesStage.plan)
+
+
+def test_upload_is_gated_on_analyses_having_found_something(tmp_path):
+    """An article the model read and found nothing in is a legitimate `ok`, so
+    the status check does not exclude it. 30,741 of them would be planned to
+    upload nothing."""
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    assert UploadStage.requires == "analyses"
+    assert UploadStage.requires_flag == "tables"
+
+    cat = Catalog.open(tmp_path / "up")
+    ids = {}
+    for name, tables in (("has", 2), ("none", 0)):
+        ref = cat.register(Identifier(pmid=f"200{name}"))
+        ids[name] = ref.id
+        cat.record([Outcome(
+            article_id=ref.id, stage="analyses", source="", status=Status.OK,
+            fingerprint=f"fp-{name}",
+            summary={"tables": tables, "coordinates": tables * 5})])
+    got = {r.id for r in narrow(cat, everything(cat), Select.ALL, "upload").refs}
+    assert got == {ids["has"]}
+
+
+def test_every_stage_that_gates_uses_the_same_declaration():
+    """One mechanism. A stage either declares the upstream field it needs or
+    it is not gated; there is no second way to express it."""
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES
+
+    declared = {n: getattr(t, "requires_flag", None) for n, t in STAGE_TYPES.items()}
+    assert {n: f for n, f in declared.items() if f} == {
+        "analyses": "passed", "upload": "tables"}
+    for name, flag in declared.items():
+        if flag:
+            assert getattr(STAGE_TYPES[name], "requires", None), \
+                f"{name} gates on a flag but names no upstream stage"

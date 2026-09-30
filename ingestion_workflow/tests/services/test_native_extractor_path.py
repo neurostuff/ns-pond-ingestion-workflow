@@ -353,3 +353,31 @@ def test_neither_knowing_stays_OTHER():
     assert got is CoordinateSpace.OTHER
     got, _ = _collection(None, None)
     assert got is CoordinateSpace.OTHER
+
+
+def test_changing_what_reaches_the_model_makes_the_corpus_stale():
+    """The fingerprint named the prompt and the model but not the code that
+    builds the table they read. A serialiser fix therefore left every existing
+    analysis looking fresh: 1,679 articles kept a reading of tables the
+    pipeline had dropped, and ~13,000 kept cells that had been fused."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages import analyses as mod
+
+    src = inspect.getsource(mod.AnalysesStage.fingerprint_for)
+    assert "EXTRACTION_VERSION" in src
+    assert mod.EXTRACTION_VERSION
+
+    class _Art:
+        fingerprint = "triage-1"
+
+    stage = mod.AnalysesStage(
+        settings=SimpleNamespace(llm_model="nu-v19", llm_native_schema=True))
+    before = stage.fingerprint_for(_Art())
+    original = mod.EXTRACTION_VERSION
+    try:
+        mod.EXTRACTION_VERSION = original + ".next"
+        assert stage.fingerprint_for(_Art()) != before
+    finally:
+        mod.EXTRACTION_VERSION = original
+    assert stage.fingerprint_for(_Art()) == before

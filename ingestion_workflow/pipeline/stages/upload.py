@@ -21,6 +21,12 @@ class UploadStage:
     name = "upload"
     requires = "analyses"
 
+    #: `analyses` records how many tables produced a collection. An article it
+    #: found nothing in is a legitimate `ok` -- the model read the tables and
+    #: they held no coordinates -- so the status check does not exclude it, and
+    #: 30,741 such articles would be planned to upload nothing.
+    requires_flag = "tables"
+
     def __init__(self, settings) -> None:
         self.settings = settings
 

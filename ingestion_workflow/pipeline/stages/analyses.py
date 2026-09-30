@@ -14,6 +14,17 @@ from ingestion_workflow.models import ArticleExtractionBundle, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.prompts.coordinate_parsing import COORDINATE_PARSING_PROMPT_VERSION
 
+#: What reaches the model besides the prompt and the model itself: how the
+#: table is serialised, and the document built around it. Neither is named
+#: by the prompt version or the model, so without this a corpus extracted
+#: before a serialiser fix looks fresh forever and keeps its old reading.
+#: That is how 1,679 articles held a table the pipeline had dropped, and
+#: 13,000 more kept cells that had been fused together.
+#:
+#: Bump it when the text sent to the model changes for reasons the model
+#: and the prompt do not describe.
+EXTRACTION_VERSION = "2026-09-30.serialised+minus+dedupe"
+
 from ..plan import StagePlan, Work
 from ..stage import Context
 
@@ -69,6 +80,7 @@ class AnalysesStage:
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
+            EXTRACTION_VERSION,
             self.settings.llm_model,
             # The prompt shape is an input too. Flipping this swaps a four
             # thousand token rule prompt for a fifty token schema, which is a
