@@ -209,12 +209,13 @@ def test_the_native_path_serialises_the_table():
     assert "self._build_prompt(bundle, table, table_text" in src
 
 
-def test_an_unserialisable_table_falls_back_to_raw_rather_than_vanishing():
-    """A worse prompt beats no answer."""
+def test_an_unserialisable_table_falls_back_rather_than_vanishing():
+    """A worse prompt beats no answer -- the model can only answer about what
+    it is sent."""
     from ingestion_workflow.services.create_analyses import CreateAnalysesService
 
     assert CreateAnalysesService._serialise("<not really html", "t1")
-    # empty serialisation is a failure too, not an empty table
+    # nothing readable either way: markup beats an empty prompt
     assert CreateAnalysesService._serialise("<table></table>", "t1") == "<table></table>"
 
 
@@ -230,3 +231,33 @@ def test_serialisation_shrinks_a_real_table():
     assert " | " in out
     assert "#" in out
     assert len(out) < len(html)
+
+
+def test_a_table_the_serialiser_cannot_read_falls_back_to_text_not_markup():
+    """The tags are what made the raw form large -- 14.7x on average -- and a
+    model trained on ` | `-separated cells gains nothing from
+    `<td class="...">`. The grid survives; the decoration does not."""
+    from ingestion_workflow.services.create_analyses import _text_of
+
+    html = ('<table class="c"><tr><th>Region</th><th>x</th></tr>'
+            '<tr><td style="s">Amygdala</td><td>-22</td></tr></table>')
+    out = _text_of(html)
+    assert out == "Region | x\nAmygdala | -22"
+    assert "<" not in out and "class" not in out
+    assert len(out) < len(html) / 2
+
+
+def test_the_fallback_keeps_row_and_cell_boundaries():
+    """Which column a number sits in is the whole answer, so the grid cannot
+    be flattened into prose."""
+    from ingestion_workflow.services.create_analyses import _text_of
+
+    out = _text_of("<tr><td>a</td><td>1</td></tr><tr><td>b</td><td>2</td></tr>")
+    assert out.split("\n") == ["a | 1", "b | 2"]
+
+
+def test_an_empty_serialisation_is_a_failure_not_an_empty_table():
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    out = CreateAnalysesService._serialise("<table><tr><td>x</td></tr></table>", "t1")
+    assert out.strip()

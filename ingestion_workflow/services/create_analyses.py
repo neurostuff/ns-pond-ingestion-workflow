@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -58,6 +59,29 @@ _SCHEMA_TEMPLATE = """{
     ...
   ]
 }"""
+
+
+#: Tag boundaries that carry table structure. Everything else is decoration.
+_CELL_END = re.compile(r"(?i)</t[dh]>")
+_ROW_END = re.compile(r"(?i)</tr>|</row>")
+_ANY_TAG = re.compile(r"<[^>]+>")
+_RUNS = re.compile(r"[ \t]{2,}")
+
+
+def _text_of(markup: str) -> str:
+    """The words in a table, with its grid kept and its tags dropped.
+
+    Only used when the serialiser could not read the table. The tags are what
+    made the raw form large -- 14.7x on average -- and a model trained on
+    ` | `-separated cells gains nothing from `<td class="...">`. Cell and row
+    boundaries survive as ` | ` and newlines, because which column a number
+    sits in is the whole answer.
+    """
+    text = _ROW_END.sub("\n", _CELL_END.sub(" | ", markup))
+    text = _ANY_TAG.sub("", text)
+    text = text.replace("&nbsp;", " ").replace("&amp;", "&")
+    lines = [_RUNS.sub(" ", line).strip(" |\t") for line in text.split("\n")]
+    return "\n".join(line for line in lines if line.strip())
 
 
 class CreateAnalysesService:
@@ -551,17 +575,24 @@ Raw Table Content:
         form put the model off-distribution and spent most of the context on
         markup -- and prefill is two thirds of the corpus's cost.
 
-        A table the serialiser cannot read falls back to the raw text rather
-        than being dropped: a worse prompt beats no answer.
+        A table the serialiser cannot read falls back to its **text**, not its
+        markup: the tags are what made the raw form large, and a model that
+        has never seen HTML gains nothing from `<td class="...">`. Cell and
+        row boundaries are kept as ` | ` and newlines so the grid survives,
+        which is the part the answer depends on.
         """
         from nspond_tables import serialize
 
         try:
             out = serialize.serialize(html)
         except Exception as exc:                       # noqa: BLE001 - any parse failure
-            logger.warning("could not serialise table %s (%s); sending raw", table_key, exc)
-            return html
-        return out if out.strip() else html
+            logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
+            out = ""
+        if out.strip():
+            return out
+        # Neither form read as a table. Text beats markup, and markup beats
+        # nothing at all -- the model can only answer about what it is sent.
+        return _text_of(html) or html
 
     def _read_table_content(self, table: ExtractedTable) -> str:
         path = Path(table.raw_content_path)
