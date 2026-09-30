@@ -17,7 +17,9 @@ from ingestion_workflow.services.upload_models import BaseStudy, Study, Studyset
 logger = logging.getLogger(__name__)
 
 #: Studies this pipeline produced. A base study that already has one has been
-#: processed and is not work.
+#: processed and is not work. Which source counts is a setting, because it
+#: names the extractor: switching extractors makes the corpus work again, on
+#: purpose, since each extractor gets its own study version.
 LLM_SOURCE = "llm"
 
 #: `base_studies.level` is one of 'group' or 'meta'. Meta-analyses are not
@@ -25,12 +27,21 @@ LLM_SOURCE = "llm"
 GROUP_LEVEL = "group"
 
 
-def unprocessed_base_studies(session, *, limit: Optional[int] = None) -> Iterator[Identifier]:
-    """Group-level base studies that are in a studyset and have no llm study.
+def unprocessed_base_studies(
+    session,
+    *,
+    limit: Optional[int] = None,
+    source: str = LLM_SOURCE,
+) -> Iterator[Identifier]:
+    """Group-level base studies in a studyset with no study from `source`.
 
     In a studyset, because that is what marks a base study as one someone
-    actually wants; without an llm study, because that is what this pipeline
-    would add.
+    actually wants; without a study from this source, because that is what
+    this pipeline would add.
+
+    `source` names the extractor, so pointing it at a new one makes every
+    article work again -- deliberately: the new extractor owes each base study
+    its own version, beside whatever the old one left.
     """
     in_a_studyset = (
         select(Study.id)
@@ -40,7 +51,7 @@ def unprocessed_base_studies(session, *, limit: Optional[int] = None) -> Iterato
     )
     already_processed = (
         select(Study.id)
-        .where(and_(Study.base_study_id == BaseStudy.id, Study.source == LLM_SOURCE))
+        .where(and_(Study.base_study_id == BaseStudy.id, Study.source == source))
         .exists()
     )
 

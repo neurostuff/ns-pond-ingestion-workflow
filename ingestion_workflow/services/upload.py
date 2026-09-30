@@ -735,8 +735,10 @@ class UploadService:
         behavior: UploadBehavior,
         metadata_mode: UploadMetadataMode,
     ) -> DbStudy:
-        # Always treat uploads as coming from the LLM pipeline
-        payload.source = payload.source or "llm"
+        # The source names the extractor that produced the analyses, and it
+        # is what neurostore versions a study by -- so a different extractor
+        # adds a version beside the old one rather than replacing it.
+        payload.source = payload.source or getattr(self.settings, "upload_source", "llm")
         study = next(
             (version for version in getattr(base_study, "versions", []) if version.source == payload.source),
             None,

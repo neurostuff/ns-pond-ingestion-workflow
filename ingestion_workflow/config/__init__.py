@@ -204,6 +204,17 @@ class Settings(BaseSettings):
         description="Specific model to use for coordinate extraction",
     )
 
+    llm_native_schema: bool = Field(
+        default=False,
+        description=(
+            "Send the fine-tuned extractor's native schema instead of the "
+            "prompted rules. The fine-tune was trained on a fifty-token "
+            "template and has never seen the four-thousand-token prompt, so "
+            "this must be set when llm_api_base points at the vLLM server and "
+            "left unset for every hosted model"
+        ),
+    )
+
     llm_service_tier: Optional[str] = Field(
         default=None,
         description=(
@@ -581,10 +592,24 @@ class Settings(BaseSettings):
         default=30,
         description="Connection timeout (seconds) for upload database sessions",
     )
+    upload_source: str = Field(
+        default="llm",
+        description=(
+            "Which extractor produced these analyses, recorded on the study "
+            "version. This is a key, not a label: neurostore holds one study "
+            "version per source, `upload` matches an existing version by it, "
+            "and `discover` treats a base study as done when a version with "
+            "this source exists. Set it to 'nuextract-v19' when llm_native_"
+            "schema is on, and articles already extracted under 'llm' will be "
+            "picked up again and given a second version rather than "
+            "overwriting the first"
+        ),
+    )
+
     upload_behavior: UploadBehavior = Field(
         default=UploadBehavior.UPDATE,
         description=(
-            "Behavior for existing studies with source 'llm': "
+            "Behavior for an existing study with the configured upload_source: "
             "'update' to modify in place, 'insert_new' to create a new study"
         ),
     )

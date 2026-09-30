@@ -233,8 +233,12 @@ def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[
         sessions = SessionFactory(settings, tunnel=tunnel)
         sessions.configure()
         with sessions.session() as session:
-            found = list(unprocessed_base_studies(session, limit=limit))
-    typer.echo(f"neurostore: {len(found):,} base studies with no llm study yet")
+            found = list(
+                unprocessed_base_studies(session, limit=limit, source=settings.upload_source)
+            )
+    typer.echo(
+        f"neurostore: {len(found):,} base studies with no {settings.upload_source} study yet"
+    )
     return found
 
 

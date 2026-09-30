@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
 from ingestion_workflow.models.statistics import normalize_statistic_kind
+from ingestion_workflow.services.nuextract_payload import parse_payload
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,63 @@ class CoordinateParsingClient(GenericLLMClient):
             base_url=base_url,
             default_model=default_model,
         )
+
+    # NuExtract's structured mode. The schema is a *chat template variable*,
+    # not a system message: the template renders it between 【template_start】
+    # and 【template_end】, and the fine-tune has only ever seen it there.
+    NATIVE_TEMPLATE = json.dumps(
+        {
+            "space": ["MNI", "TAL"],
+            "analyses": [
+                {
+                    "name": "verbatim-string",
+                    "measure": ["voxels", "mm^3"],
+                    "points": [
+                        [
+                            "number",
+                            "number",
+                            "number",
+                            ["T", "Z", "F", "P", "R", "B"],
+                            "number",
+                            "integer",
+                        ]
+                    ],
+                }
+            ],
+        },
+        ensure_ascii=False,
+    )
+
+    def parse_analyses_native(
+        self,
+        document: str,
+        *,
+        model: Optional[str] = None,
+        max_tokens: int = 4096,
+    ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
+        """Parse a table with the fine-tuned extractor, and report its space.
+
+        No function tool and no instructions: the schema goes in the template
+        slot and the document in the message, which is the shape the model was
+        trained on. Sending it the prompted path's four thousand tokens of
+        rules would be an input it has never seen.
+
+        Greedy, because every evaluation of this model was greedy and a
+        sampled coordinate is a wrong coordinate.
+        """
+        response = self.client.chat.completions.create(
+            model=model or self.default_model,
+            messages=[{"role": "user", "content": document}],
+            temperature=0.0,
+            max_completion_tokens=max_tokens,
+            extra_body={
+                "chat_template_kwargs": {
+                    "template": self.NATIVE_TEMPLATE,
+                    "enable_thinking": False,
+                }
+            },
+        )
+        return parse_payload(response.choices[0].message.content or "")
 
     def parse_analyses(
         self,

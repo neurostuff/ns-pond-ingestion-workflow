@@ -107,11 +107,19 @@ class CreateAnalysesService:
                     exc,
                 )
                 continue
-            prompt = self._build_prompt(bundle, table, table_text, table_key)
-            parsed_output = self.client.parse_analyses(prompt)
+            model_space = None
+            if getattr(self.settings, "llm_native_schema", False):
+                document = self._build_document(bundle, table, table_text)
+                parsed_output, model_space = self.client.parse_analyses_native(document)
+            else:
+                prompt = self._build_prompt(bundle, table, table_text, table_key)
+                parsed_output = self.client.parse_analyses(prompt)
             if not parsed_output.analyses:
-                logger.warning(
-                    "LLM returned no analyses for article %s table %s",
+                # Expected on the native path: the fine-tune is trained to
+                # return nothing for a table that holds no coordinates, and
+                # roughly a third of what reaches it does not.
+                logger.debug(
+                    "no analyses for article %s table %s",
                     article_slug,
                     table_key,
                 )
@@ -123,6 +131,7 @@ class CreateAnalysesService:
                 sanitized_table_id,
                 table_key,
                 article_slug,
+                model_space=model_space,
             )
             results[table_key] = collection
             emit_progress(progress_hook)
@@ -137,8 +146,13 @@ class CreateAnalysesService:
         sanitized_table_id: str,
         table_key: str,
         article_slug: str,
+        model_space: Optional[str] = None,
     ) -> AnalysisCollection:
-        table_space = table.space or CoordinateSpace.OTHER
+        # The extraction's own space wins: it was read from the article, not
+        # inferred from the table. The model's reading is the fallback, and it
+        # is a real one -- most articles never state a space anywhere the
+        # extractor can see, and those correctly come back as None.
+        table_space = table.space or self._coerce_space(model_space, CoordinateSpace.OTHER)
         collection = AnalysisCollection(
             slug=f"{article_slug}::{sanitized_table_id}",
             coordinate_space=table_space,
@@ -249,6 +263,39 @@ class CreateAnalysesService:
         if normalized in {"TAL", "TALAIRACH"}:
             return CoordinateSpace.TALAIRACH
         return fallback
+
+    def _build_document(
+        self,
+        bundle: ArticleExtractionBundle,
+        table: ExtractedTable,
+        table_text: str,
+    ) -> str:
+        """The document the fine-tuned extractor was trained on.
+
+        Field order and labels are load-bearing -- this is reproduced from the
+        trainer, not designed here, and a reordering is an input the model has
+        not seen. Absent fields are omitted rather than sent empty, because
+        that is how the training rows were built.
+
+        The abstract earns its place: a paper often states its normalisation
+        space there and nowhere in the table, and it is where the table's
+        abbreviations are spelled out. It is also most of the prompt's tokens,
+        which is the first thing to measure if cost ever matters.
+
+        There is no `Space:` line. That was an input in earlier versions and
+        is a *target* now -- feeding it back would tell the model the answer.
+        """
+        parts = [f"Title: {bundle.article_metadata.title or ''}"]
+        for label, value in (
+            ("Abstract", bundle.article_metadata.abstract),
+            ("Caption", table.caption),
+            ("Footer", table.footer),
+        ):
+            if value:
+                parts.append(f"{label}: {value}")
+        parts.append("")
+        parts.append(table_text)
+        return "\n".join(parts)
 
     def _build_prompt(
         self,
