@@ -34,6 +34,12 @@ class UploadStage:
         return fingerprint(
             "upload",
             UPLOAD_VERSION,
+            # neurostore keeps one study version per source, so this is not a
+            # label on the same row -- a different source writes a different
+            # study. Without it here, pointing the run at a new extractor left
+            # 32,947 already-uploaded articles looking fresh, and the new
+            # source would never have been written for any of them.
+            self.settings.upload_source,
             self.settings.upload_behavior.value,
             self.settings.upload_metadata_mode.value,
             self.settings.upload_metadata_only,

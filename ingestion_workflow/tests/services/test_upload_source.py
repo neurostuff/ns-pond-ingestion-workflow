@@ -74,3 +74,14 @@ def test_an_explicit_payload_source_still_wins():
 
     payload = StudyPayload(source="hand-curated")
     assert (payload.source or "llm") == "hand-curated"
+
+
+def test_the_source_is_part_of_the_upload_fingerprint():
+    """A different source is a different study version in neurostore, not a
+    relabelling of the same one. Leaving it out of the fingerprint made every
+    already-uploaded article look fresh when the extractor changed."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    assert "self.settings.upload_source," in inspect.getsource(UploadStage.fingerprint_for)
