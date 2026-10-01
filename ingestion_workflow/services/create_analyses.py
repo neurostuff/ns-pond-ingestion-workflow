@@ -88,6 +88,36 @@ def _text_of(markup: str) -> str:
     return "\n".join(line for line in lines if line.strip())
 
 
+#: Appended to the name of the negative half when one analysis reports both
+#: directions. Not a translation of the contrast: `A > B` with a negative t
+#: means B > A, but a name like `Interaction` or `Main effect of group` cannot
+#: be inverted at all, so the marker says what is true of the numbers and
+#: leaves the contrast as the paper wrote it.
+NEGATIVE_SUFFIX = " (negative)"
+
+
+def _by_direction(name, coordinates):
+    """Split an analysis that reports both directions under one name.
+
+    A positive and a negative statistic are different directions, and pooling
+    them pools an increase with a decrease -- 4.66% of analyses with a
+    statistic hold both, 2,095 of 44,965, carrying 8,367 negative points.
+
+    The direction normally lives in the contrast name, which is why
+    `is_deactivation` reads the statistic rather than the name. Where one
+    contrast reports both, the sign is the only thing that separates them.
+
+    Yields `(name, coordinates)` in table order, the positive half first. An
+    analysis whose statistics are all one sign, or which has none, is returned
+    unchanged so nothing is renamed without cause.
+    """
+    positive = [c for c in coordinates if not c.is_deactivation]
+    negative = [c for c in coordinates if c.is_deactivation]
+    if not (positive and negative):
+        return [(name, coordinates)]
+    return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
+
+
 class CreateAnalysesService:
     """Create AnalysisCollection objects from extracted tables."""
 
@@ -204,20 +234,20 @@ class CreateAnalysesService:
                 table_space,
             )
             analysis_name = parsed.name or f"{table_key} analysis {idx}"
-            analysis = Analysis(
-                name=analysis_name,
-                description=parsed.description,
-                coordinates=coordinates,
-                table_id=table_key,
-                table_number=table.table_number,
-                table_caption=table.caption or "",
-                table_footer=table.footer or "",
-                metadata={
-                    "table_metadata": dict(table.metadata),
-                    "sanitized_table_id": sanitized_table_id,
-                },
-            )
-            collection.add_analysis(analysis)
+            for name, subset in _by_direction(analysis_name, coordinates):
+                collection.add_analysis(Analysis(
+                    name=name,
+                    description=parsed.description,
+                    coordinates=subset,
+                    table_id=table_key,
+                    table_number=table.table_number,
+                    table_caption=table.caption or "",
+                    table_footer=table.footer or "",
+                    metadata={
+                        "table_metadata": dict(table.metadata),
+                        "sanitized_table_id": sanitized_table_id,
+                    },
+                ))
         return collection
 
     def _convert_points(

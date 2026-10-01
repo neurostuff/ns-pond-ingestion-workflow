@@ -445,3 +445,43 @@ def test_the_prompt_stops_matching_a_letter_inside_a_word():
     assert 'contains "t", "T"' not in src
     assert "is a COORDINATE column, never a Z statistic" in src
     assert "T, Z, D, G, F, R, B, P" in src
+
+
+def test_one_contrast_reporting_both_directions_is_split_by_sign():
+    """A positive and a negative statistic are different directions, and
+    pooling them pools an increase with a decrease. 4.66% of corpus analyses
+    carrying a statistic hold both -- 2,095 of 44,965, with 8,367 negative
+    points among them."""
+    from ingestion_workflow.models import Coordinate
+    from ingestion_workflow.services.create_analyses import _by_direction
+
+    def point(value):
+        return Coordinate(x=1.0, y=2.0, z=3.0, statistic_value=value,
+                          statistic_type="T",
+                          is_deactivation=value is not None and value < 0)
+
+    both = [point(4.2), point(-3.1), point(2.0)]
+    out = _by_direction("Patients > controls", both)
+    assert [n for n, _ in out] == ["Patients > controls",
+                                   "Patients > controls (negative)"]
+    assert [len(c) for _, c in out] == [2, 1]
+
+    # one direction is left exactly as it was, name included
+    for only in ([point(4.2), point(2.0)], [point(-4.2)], [point(None)], []):
+        assert _by_direction("Main effect", only) == [("Main effect", only)]
+
+
+def test_is_deactivation_reads_the_statistic_and_not_the_name():
+    """The contrast names the direction; the flag marks a sign-flipped
+    statistic inside it. Reading the name would double-count the direction and
+    mark every point of a `Deactivation` table, including ones whose statistic
+    the paper printed as a positive magnitude."""
+    import inspect
+
+    from ingestion_workflow.services.coordinate_flags import is_deactivation
+
+    params = list(inspect.signature(is_deactivation).parameters)
+    assert params == ["statistic_value"], params
+    assert is_deactivation(-3.1) is True
+    assert is_deactivation(3.1) is False
+    assert is_deactivation(None) is False
