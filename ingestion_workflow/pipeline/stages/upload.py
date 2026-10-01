@@ -70,7 +70,23 @@ class UploadStage:
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
         from ingestion_workflow.services.upload import UploadService
 
-        analyses, metadata = self._gather(ctx, works)
+        analyses, metadata, empty = self._gather(ctx, works)
+        # An article whose every collection came back with no analyses has
+        # nothing to say. Uploading it would create a study claiming the paper
+        # reports no coordinates, when what the extractor said is that these
+        # are not coordinate tables. Recorded as skipped rather than failed:
+        # the stage did its job, and a failure would be retried forever.
+        for work in empty:
+            yield Outcome(
+                article_id=work.article_id,
+                stage=self.name,
+                source="",
+                status=Status.SKIPPED,
+                fingerprint=work.fingerprint,
+                summary={"reason": "no analyses to upload"},
+            )
+        skipped = {work.article_id for work in empty}
+        works = [work for work in works if work.article_id not in skipped]
         if not analyses:
             return
 
@@ -137,13 +153,24 @@ class UploadStage:
                 )
 
     def _gather(self, ctx: Context, works: Sequence[Work]):
-        """Load only this batch's analyses and metadata, never the whole cache."""
+        """Load only this batch's analyses and metadata, never the whole cache.
+
+        Also returns the works holding nothing to upload. The gate in `narrow`
+        gets as far as `summary.tables`, which counts collections rather than
+        analyses, so a table the extractor returned an empty answer for still
+        reaches here -- 22 of 49,778 articles in the v19 corpus run.
+        """
         analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
         metadata: Dict[str, ArticleMetadata] = {}
+        empty: List[Work] = []
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         for work in works:
             payload = ctx.payload(work.upstream)
             if not payload:
+                empty.append(work)
+                continue
+            if not any((blob or {}).get("analyses") for blob in payload.values()):
+                empty.append(work)
                 continue
             slug = work.ref.identifier.slug
             analyses[slug] = {
@@ -153,4 +180,4 @@ class UploadStage:
             meta_payload = ctx.payload(meta_artifacts.get(work.article_id, {}).get(""))
             if meta_payload:
                 metadata[slug] = ArticleMetadata.from_dict(meta_payload)
-        return analyses, metadata
+        return analyses, metadata, empty

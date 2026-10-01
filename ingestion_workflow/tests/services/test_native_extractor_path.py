@@ -381,3 +381,32 @@ def test_changing_what_reaches_the_model_makes_the_corpus_stale():
     finally:
         mod.EXTRACTION_VERSION = original
     assert stage.fingerprint_for(_Art()) == before
+
+
+def test_an_article_with_no_analyses_anywhere_is_not_uploaded():
+    """`summary.tables` counts collections, not analyses, so the upload gate
+    passes an article whose every table came back empty -- 22 of 49,778 in the
+    v19 corpus run. Uploading one creates a study saying the paper reports no
+    coordinates, which is not what the extractor said."""
+    import inspect
+
+    from ingestion_workflow.services.upload import UploadService
+
+    src = inspect.getsource(UploadService._build_work_item)
+    assert "if not prepared_analyses and not getattr(" in src
+
+
+def test_an_empty_article_is_skipped_rather_than_failed():
+    """The stage did its job. A failure would be retried on every run, and
+    would never succeed."""
+    import inspect
+
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    gather = inspect.getsource(UploadStage._gather)
+    assert 'if not any((blob or {}).get("analyses") for blob in payload.values()):' in gather
+    assert "return analyses, metadata, empty" in gather
+
+    execute = inspect.getsource(UploadStage.execute)
+    assert "status=Status.SKIPPED" in execute
+    assert '"reason": "no analyses to upload"' in execute

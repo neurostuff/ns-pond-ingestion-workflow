@@ -497,6 +497,23 @@ class UploadService:
                     )
                 )
 
+        if not prepared_analyses and not getattr(
+            self.settings, "upload_metadata_only", False
+        ):
+            # Every collection was empty. Returning an item here creates a base
+            # study and a study holding nothing, which says the paper was read
+            # and reports no coordinates -- and that is a different claim from
+            # the one the extractor made, which is that these tables are not
+            # coordinate tables. 22 of 49,778 articles in the v19 corpus run
+            # land here. The `n.s.` case is unaffected: a named analysis with
+            # no points is a prepared analysis, so the list is not empty.
+            logger.warning(
+                "No analyses in any collection for %s; skipping.",
+                slug,
+                extra=console_kwargs(),
+            )
+            return None
+
         return UploadWorkItem(
             slug=slug,
             identifier=identifier,
