@@ -74,7 +74,12 @@ class UploadStage:
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
-        from ingestion_workflow.services.upload import UploadService
+        from ingestion_workflow.services.upload import UploadService, resolve_upload_source
+
+        # Before the tunnel and before a single row is written. Checked here
+        # rather than in `__init__` so that planning and `--dry-run`, which
+        # change nothing, still work on a config that has not named a source.
+        resolve_upload_source(self.settings)
 
         analyses, metadata, empty = self._gather(ctx, works)
         # An article whose every collection came back with no analyses has

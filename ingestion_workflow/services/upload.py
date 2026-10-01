@@ -132,6 +132,30 @@ def _match_score(existing_coords: set, existing_name, incoming_coords: set, inco
     return overlap + _name_similarity(existing_name, incoming_name) / 100.0
 
 
+class UploadSourceNotSet(ValueError):
+    """`upload_source` was not configured and an upload was attempted.
+
+    It is the key neurostore versions a study by, so it decides which version
+    `update` reconciles against -- and reconciling deletes the analyses it
+    replaces. With the old default of "llm", a run that forgot to set it
+    resolved to another extractor's version and deleted its work. Refusing is
+    the only safe reading of silence: there is no source that is right to
+    guess.
+    """
+
+
+def resolve_upload_source(settings) -> str:
+    source = getattr(settings, "upload_source", None)
+    if source is None or not str(source).strip():
+        raise UploadSourceNotSet(
+            "upload_source is not set. It names the extractor on the study "
+            "version, and `upload` reconciles against the version carrying it "
+            "-- deleting the analyses it replaces. Set it in the config "
+            "(for example `upload_source: nuextract-v19`)."
+        )
+    return str(source).strip()
+
+
 def plan_reconciliation(
     existing: Sequence,
     incoming_names: Sequence[Optional[str]],
@@ -761,7 +785,7 @@ class UploadService:
         # The source names the extractor that produced the analyses, and it
         # is what neurostore versions a study by -- so a different extractor
         # adds a version beside the old one rather than replacing it.
-        payload.source = payload.source or getattr(self.settings, "upload_source", "llm")
+        payload.source = payload.source or resolve_upload_source(self.settings)
         study = next(
             (version for version in getattr(base_study, "versions", []) if version.source == payload.source),
             None,

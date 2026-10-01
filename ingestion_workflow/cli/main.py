@@ -224,6 +224,14 @@ def _complete(identifiers: Identifiers) -> int:
     )
 
 
+def _upload_source(settings: Settings) -> str:
+    """`discover` asks which base studies have no study from this extractor,
+    so an unset source would silently answer about the wrong one."""
+    from ingestion_workflow.services.upload import resolve_upload_source
+
+    return resolve_upload_source(settings)
+
+
 def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[Identifier]:
     """Read the database the upload stage writes to, and take nothing else."""
     from ingestion_workflow.services.db import SessionFactory, SSHTunnel
@@ -234,10 +242,10 @@ def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[
         sessions.configure()
         with sessions.session() as session:
             found = list(
-                unprocessed_base_studies(session, limit=limit, source=settings.upload_source)
+                unprocessed_base_studies(session, limit=limit, source=_upload_source(settings))
             )
     typer.echo(
-        f"neurostore: {len(found):,} base studies with no {settings.upload_source} study yet"
+        f"neurostore: {len(found):,} base studies with no {_upload_source(settings)} study yet"
     )
     return found
 

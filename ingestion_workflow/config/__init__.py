@@ -592,8 +592,8 @@ class Settings(BaseSettings):
         default=30,
         description="Connection timeout (seconds) for upload database sessions",
     )
-    upload_source: str = Field(
-        default="llm",
+    upload_source: Optional[str] = Field(
+        default=None,
         description=(
             "Which extractor produced these analyses, recorded on the study "
             "version. This is a key, not a label: neurostore holds one study "
@@ -602,7 +602,12 @@ class Settings(BaseSettings):
             "this source exists. Set it to 'nuextract-v19' when llm_native_"
             "schema is on, and articles already extracted under 'llm' will be "
             "picked up again and given a second version rather than "
-            "overwriting the first"
+            "overwriting the first. "
+            "There is no default on purpose. It used to be 'llm', and under "
+            "the default 'update' behaviour a run that forgot to set it would "
+            "resolve the study to another extractor's version and delete its "
+            "analyses to put its own in their place. `upload` refuses to start "
+            "without it"
         ),
     )
 
