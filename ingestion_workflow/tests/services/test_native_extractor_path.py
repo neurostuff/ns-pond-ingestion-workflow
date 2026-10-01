@@ -410,3 +410,38 @@ def test_an_empty_article_is_skipped_rather_than_failed():
     execute = inspect.getsource(UploadStage.execute)
     assert "status=Status.SKIPPED" in execute
     assert '"reason": "no analyses to upload"' in execute
+
+
+def test_the_statistic_priority_is_one_rule_in_one_place():
+    """It was written twice -- once per header cell in `fields.statistic_type`
+    and once per document in `synth.statistic_named_by` -- which is why adding
+    Cohen's d to one broke a test that used the other."""
+    from nspond_tables.fields import STATISTIC_PRIORITY, best_of
+    from nspond_tables.synth.trainset import statistic_named_by
+
+    assert STATISTIC_PRIORITY == ("T", "Z", "D", "G", "F", "R", "B", "P")
+    assert best_of({"P", "T"}) == "T"
+    # the document reader resolves through the same rule, not its own copy
+    assert statistic_named_by("#Region | #x | #y | #z | #t | #p (FWE)") == "T"
+    assert statistic_named_by("#Region | #MNI | #p (FWE) | #Cohen's d") == "D"
+
+
+def test_the_extractor_accepts_the_effect_size_kinds():
+    from ingestion_workflow.services.nuextract_payload import ALLOWED_MEASURES  # noqa
+    from ingestion_workflow.services import nuextract_payload
+
+    assert nuextract_payload._STAT_KINDS == {"T", "Z", "D", "G", "F", "P", "R", "B"}
+
+
+def test_the_prompt_stops_matching_a_letter_inside_a_word():
+    """`contains "t"` matched Extent, Cluster and Talairach -- every table --
+    so the rules discriminated nothing and the model fell back on a prior that
+    the statistic is always T. It answered T in 199 of 200 parses."""
+    import inspect
+
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    src = inspect.getsource(CreateAnalysesService._build_prompt)
+    assert 'contains "t", "T"' not in src
+    assert "is a COORDINATE column, never a Z statistic" in src
+    assert "T, Z, D, G, F, R, B, P" in src

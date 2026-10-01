@@ -20,7 +20,7 @@ from textwrap import dedent
 
 # Mirrors autonima's constant. Included in the create_analyses cache key, so
 # bumping it re-parses tables rather than serving output from the old prompt.
-COORDINATE_PARSING_PROMPT_VERSION = "2026-07-30.annotations-v3"
+COORDINATE_PARSING_PROMPT_VERSION = "2026-10-01.statistic-priority"
 
 ANALYSIS_BOUNDARY_RULES = dedent(
     """

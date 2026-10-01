@@ -40,7 +40,7 @@ _SCHEMA_TEMPLATE = """{
           "z": <float>,
           "space"?: "MNI" | "TAL" | null,
           "statistic_value"?: <float> | null,
-          "statistic_type"?: "Z" | "T" | "F" | "R" | "P" | "B" | null,
+          "statistic_type"?: "T" | "Z" | "D" | "G" | "F" | "R" | "B" | "P" | null,
           "cluster_size"?: <int> | null,
           "cluster_measure"?: "voxels" | "mm^3" | null,
           "is_subpeak"?: true | false,
@@ -405,15 +405,25 @@ Header, layout, and grouping semantics
 {ANALYSIS_BOUNDARY_RULES}
 
 Statistic type, value, and cluster size inference rules
-- statistic_type:
-  - If any header/legend contains "z", "Z", "z score", or "Zmax" => statistic_type = "Z".
-  - If header/legend contains "t", "T", "t-value", "T-value", "T score" => statistic_type = "T".
-  - If header/legend contains "r", "R", "correlation coefficient", or "Pearson's r" => statistic_type = "R".
-  - If header/legend contains "p", "P", "p-value", or "significance" => statistic_type = "P".
-  - If header/legend contains "F", "F-value", or "F statistic" => statistic_type = "F".
-  - If header/legend contains "b", "B", "beta", or "regression coefficient" => statistic_type = "B".
-  - If a numeric statistic value appears but no explicit type can be inferred from headers/legend/caption,
-    set statistic_type = null.
+- statistic_type: read the COLUMN HEADER, and match a whole word or a header
+  that is the bare letter by itself. A letter inside another word is not a
+  statistic: "Extent", "Cluster" and "Talairach" all contain a "t", and the "z"
+  of an "x | y | z" run is a COORDINATE column, never a Z statistic.
+  - "z score", "Z-value", "Zmax", "Peak Z", or a column headed exactly "Z" => "Z".
+  - "t-value", "T score", "t(38)", "Peak t", or a column headed exactly "T" => "T".
+  - "Cohen's d", "effect size (d)", or a column headed exactly "d" => "D".
+  - "Hedges' g" => "G".
+  - "F-value", "F(2,38)", or a column headed exactly "F" => "F".
+  - "correlation coefficient", "Pearson's r", "r value" => "R".
+  - "beta", "regression coefficient", "parameter estimate" => "B".
+  - "p-value", "p(FWE)", "p(unc.)", "pFDR" => "P".
+  - If the table names MORE THAN ONE, report the first of these that appears:
+    T, Z, D, G, F, R, B, P. A p-value is a significance level rather than a
+    test statistic, so a table printing "#t | #p(FWE)" reports the t, and
+    statistic_value is the number in THAT column.
+  - If a numeric statistic value appears but no type can be read from the
+    header, legend or caption, set statistic_type = null. Do not guess, and do
+    not default to "T".
 - statistic_value:
   - Parse the numeric statistic value as a float. If the cell contains extra text (e.g.,
     "0.32 (p<0.05)"), parse the leading numeric token only.

@@ -48,7 +48,10 @@ class UnreadableAnswer(ValueError):
     """
 
 ALLOWED_MEASURES = {"voxels", "mm^3"}
-_STAT_KINDS = {"T", "Z", "F", "P", "R", "B"}
+#: Kept in step with `nspond_tables.fields.STATISTIC_PRIORITY`, which is
+#: where the rule lives. D is Cohen's d and G is Hedges' g: both are
+#: real in the corpus, g almost always in an SDM or ALE meta-analysis.
+_STAT_KINDS = {"T", "Z", "D", "G", "F", "P", "R", "B"}
 _JSON = re.compile(r"\{.*\}", re.S)
 
 
