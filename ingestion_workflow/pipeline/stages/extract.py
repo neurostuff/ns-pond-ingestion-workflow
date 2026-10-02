@@ -24,11 +24,14 @@ logger = logging.getLogger(__name__)
 #: pubget 1 -> 2, elsevier 1 -> 2, ace 2 -> 3: the article text keeps every
 #: table (neuroquery/pubget#65, neurostuff/elsevier_coordinate_extractor#6,
 #: neurosynth/ACE#67).
+#:
+#: pdf 1 -> 2: its text already kept tables; bumped so the whole corpus is
+#: re-extracted in one pass under the same code.
 EXTRACTOR_VERSIONS = {
     "pubget": 2,
     "elsevier": 2,
     "ace": 3,
-    "pdf": 1,
+    "pdf": 2,
 }
 DEFAULT_EXTRACTOR_VERSION = 1
 
