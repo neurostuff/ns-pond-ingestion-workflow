@@ -9,7 +9,10 @@ from typing import Any, Dict, List, Optional, Tuple
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
-from ingestion_workflow.models.statistics import normalize_statistic_kind
+from ingestion_workflow.models.statistics import (
+    STATISTIC_KINDS,
+    normalize_statistic_kind,
+)
 from ingestion_workflow.services.nuextract_payload import parse_payload
 
 
@@ -49,7 +52,12 @@ class CoordinateParsingClient(GenericLLMClient):
                             "number",
                             "number",
                             "number",
-                            ["T", "Z", "F", "P", "R", "B"],
+                            # Not a list written here: the kinds the rest of
+                            # the system accepts. Written here, it offered six
+                            # where the reader took eight, and a model trained
+                            # to report Cohen's d was forbidden it by its own
+                            # prompt.
+                            list(STATISTIC_KINDS),
                             "number",
                             "integer",
                         ]
@@ -64,6 +72,120 @@ class CoordinateParsingClient(GenericLLMClient):
     #: the prompt is refused outright, not truncated, so the budget has to be
     #: worked out before the call rather than discovered from a 400.
     CONTEXT_WINDOW = 16384
+
+    @classmethod
+    def native_schema(cls) -> Dict[str, Any]:
+        """The template as a JSON schema, for grammar-constrained decoding.
+
+        Derived from `NATIVE_TEMPLATE` rather than written beside it. Written
+        beside it, the statistic slot was declared a free string while the
+        template declared an enum, and the model answered `"T=5.53"` -- legal
+        under the grammar, so the type and the value fused into the type slot
+        and every statistic was dropped without an error. A grammar forbids
+        exactly what the schema forbids, so the schema has to come from the
+        same characters the model is shown.
+
+        `minItems` 3 keeps the short point the reader already accepts, where
+        the statistic tail is absent.
+        """
+        template = json.loads(cls.NATIVE_TEMPLATE)
+        point = template["analyses"][0]["points"][0]
+
+        def slot(declared: Any) -> Dict[str, Any]:
+            if isinstance(declared, list):
+                # A closed set in the template is a closed set in the grammar,
+                # plus null for the point that carries no statistic.
+                return {"enum": [*declared, None]}
+            if declared == "integer":
+                return {"type": ["integer", "null"]}
+            return {"type": ["number", "null"]}
+
+        return {
+            "type": "object",
+            "properties": {
+                "space": {"enum": [*template["space"], None]},
+                "analyses": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": ["string", "null"]},
+                            "measure": slot(template["analyses"][0]["measure"]),
+                            "points": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "prefixItems": [
+                                        {"type": "number"},
+                                        {"type": "number"},
+                                        {"type": "number"},
+                                        *[slot(d) for d in point[3:]],
+                                    ],
+                                    "minItems": 3,
+                                    "maxItems": len(point),
+                                },
+                            },
+                        },
+                        "required": ["name", "points"],
+                    },
+                },
+            },
+            "required": ["space", "analyses"],
+        }
+
+    def native_request(
+        self,
+        document: str,
+        *,
+        model: Optional[str] = None,
+        max_tokens: int = 8192,
+        context_window: Optional[int] = None,
+        constrain: bool = False,
+    ) -> Dict[str, Any]:
+        """The request the native path sends, as keyword arguments.
+
+        Everything that decides what the model sees is computed here and
+        nowhere else: the template, the budget, the clip, the temperature.
+        A benchmark that rebuilds the call instead of using this one measures
+        a prompt production never sends -- which is what happened: a hand
+        copied template declared the statistic slot a number where this one
+        declares an enum, and every figure taken under it was void.
+        """
+        window = context_window or self.CONTEXT_WINDOW
+        # Three characters per token is the conservative ratio for serialised
+        # tables, which are mostly digits and separators; the margin absorbs
+        # the template and the chat scaffolding the server adds.
+        floor = 256
+        room = (window - floor - 512) * 3
+        if len(document) > room:
+            # Longer than the window itself, so no output budget can make it
+            # fit. Clipping the tail costs the last rows of the table; sending
+            # it whole costs the table. Both are losses, and this one is
+            # visible in the log rather than a 400 that drops the article.
+            logger.warning(
+                "clipping a %d character document to %d to fit the context window",
+                len(document), room,
+            )
+            document = document[:room]
+        extra: Dict[str, Any] = {
+            "chat_template_kwargs": {
+                "template": self.NATIVE_TEMPLATE,
+                "enable_thinking": False,
+            }
+        }
+        if constrain:
+            # vLLM 0.28 accepts `guided_json` in extra_body, raises nothing and
+            # applies no constraint; `structured_outputs` is the one that binds.
+            extra["structured_outputs"] = {"json": self.native_schema()}
+        return {
+            "model": model or self.default_model,
+            "messages": [{"role": "user", "content": document}],
+            "temperature": 0.0,
+            "max_completion_tokens": max(
+                floor, min(max_tokens, window - len(document) // 3 - 512)
+            ),
+            "extra_body": extra,
+        }
 
     def parse_analyses_native(
         self,
@@ -102,34 +224,13 @@ class CoordinateParsingClient(GenericLLMClient):
         below what the window affords throws away the long answers the
         subtraction was written to protect.
         """
-        window = context_window or self.CONTEXT_WINDOW
-        # Three characters per token is the conservative ratio for serialised
-        # tables, which are mostly digits and separators; the margin absorbs
-        # the template and the chat scaffolding the server adds.
-        floor = 256
-        room = (window - floor - 512) * 3
-        if len(document) > room:
-            # Longer than the window itself, so no output budget can make it
-            # fit. Clipping the tail costs the last rows of the table; sending
-            # it whole costs the table. Both are losses, and this one is
-            # visible in the log rather than a 400 that drops the article.
-            logger.warning(
-                "clipping a %d character document to %d to fit the context window",
-                len(document), room,
-            )
-            document = document[:room]
-        allowed = max(floor, min(max_tokens, window - len(document) // 3 - 512))
         response = self.client.chat.completions.create(
-            model=model or self.default_model,
-            messages=[{"role": "user", "content": document}],
-            temperature=0.0,
-            max_completion_tokens=allowed,
-            extra_body={
-                "chat_template_kwargs": {
-                    "template": self.NATIVE_TEMPLATE,
-                    "enable_thinking": False,
-                }
-            },
+            **self.native_request(
+                document,
+                model=model,
+                max_tokens=max_tokens,
+                context_window=context_window,
+            )
         )
         return parse_payload(response.choices[0].message.content or "")
 

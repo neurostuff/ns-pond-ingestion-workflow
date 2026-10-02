@@ -118,6 +118,48 @@ def _by_direction(name, coordinates):
     return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
 
 
+
+def build_document(
+    *,
+    title: Optional[str],
+    abstract: Optional[str],
+    caption: Optional[str],
+    footer: Optional[str],
+    table_text: str,
+) -> str:
+    """The document the fine-tuned extractor was trained on.
+
+    Field order and labels are load-bearing -- this is reproduced from the
+    trainer, not designed here, and a reordering is an input the model has
+    not seen. Absent fields are omitted rather than sent empty, because
+    that is how the training rows were built.
+
+    The abstract earns its place: a paper often states its normalisation
+    space there and nowhere in the table, and it is where the table's
+    abbreviations are spelled out. It is also most of the prompt's tokens,
+    which is the first thing to measure if cost ever matters.
+
+    There is no `Space:` line. That was an input in earlier versions and
+    is a *target* now -- feeding it back would tell the model the answer.
+
+    A module function, not a method, so an offline evaluation can build the
+    same document from a bare row without a bundle. Rebuilt by hand in a
+    benchmark it drifts, and a benchmark on a document production never
+    sends measures nothing.
+    """
+    parts = [f"Title: {title or ''}"]
+    for label, value in (
+        ("Abstract", abstract),
+        ("Caption", caption),
+        ("Footer", footer),
+    ):
+        if value:
+            parts.append(f"{label}: {value}")
+    parts.append("")
+    parts.append(table_text)
+    return "\n".join(parts)
+
+
 class CreateAnalysesService:
     """Create AnalysisCollection objects from extracted tables."""
 
@@ -340,32 +382,14 @@ class CreateAnalysesService:
         table: ExtractedTable,
         table_text: str,
     ) -> str:
-        """The document the fine-tuned extractor was trained on.
-
-        Field order and labels are load-bearing -- this is reproduced from the
-        trainer, not designed here, and a reordering is an input the model has
-        not seen. Absent fields are omitted rather than sent empty, because
-        that is how the training rows were built.
-
-        The abstract earns its place: a paper often states its normalisation
-        space there and nowhere in the table, and it is where the table's
-        abbreviations are spelled out. It is also most of the prompt's tokens,
-        which is the first thing to measure if cost ever matters.
-
-        There is no `Space:` line. That was an input in earlier versions and
-        is a *target* now -- feeding it back would tell the model the answer.
-        """
-        parts = [f"Title: {bundle.article_metadata.title or ''}"]
-        for label, value in (
-            ("Abstract", bundle.article_metadata.abstract),
-            ("Caption", table.caption),
-            ("Footer", table.footer),
-        ):
-            if value:
-                parts.append(f"{label}: {value}")
-        parts.append("")
-        parts.append(table_text)
-        return "\n".join(parts)
+        """The document the fine-tuned extractor was trained on."""
+        return build_document(
+            title=bundle.article_metadata.title,
+            abstract=bundle.article_metadata.abstract,
+            caption=table.caption,
+            footer=table.footer,
+            table_text=table_text,
+        )
 
     def _build_prompt(
         self,

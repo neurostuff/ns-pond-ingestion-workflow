@@ -215,6 +215,34 @@ class Settings(BaseSettings):
         ),
     )
 
+    extractor_weights: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Merged model directory for `ingest serve` to serve. The adapter "
+            "must already be merged into the base: a server cannot be given "
+            "an adapter directory, and merging needs the cards the old server "
+            "is holding, so stop before merging"
+        ),
+    )
+
+    vllm_bin: Optional[Path] = Field(
+        default=None,
+        description=(
+            "The vllm executable. Its directory is put on PATH for the "
+            "server, because ninja ships beside it and the engine core dies "
+            "at startup without one. Defaults to whatever is on PATH"
+        ),
+    )
+
+    extractor_gpus: Optional[str] = Field(
+        default=None,
+        description=(
+            "Comma-separated GPU indexes for `ingest serve`; all of them by "
+            "default. The split between sharding the weights and running "
+            "copies is computed from the weights and the cards, not set here"
+        ),
+    )
+
     llm_service_tier: Optional[str] = Field(
         default=None,
         description=(
