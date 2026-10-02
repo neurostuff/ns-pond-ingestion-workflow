@@ -124,7 +124,9 @@ def test_ace_extract_translates_tables(tmp_path, monkeypatch):
             pmid: str | None,
             metadata_dir,
             skip_metadata: bool = False,
+            keep_tables: bool = False,
         ):
+            assert keep_tables, "tables must be kept in the article text"
             table = SimpleNamespace(
                 number="1",
                 input_html="<table><tr><td>X</td></tr></table>",
@@ -168,7 +170,9 @@ def test_ace_extract_translates_tables(tmp_path, monkeypatch):
     result = extraction_results[0]
     assert result.error_message is None
     assert result.full_text_path is not None
-    assert result.full_text_path.read_text(encoding="utf-8") == ("Full article text")
+    # The table ACE parsed is not in its text, as one fetched from another
+    # page would not be, so it is appended.
+    assert result.full_text_path.read_text(encoding="utf-8") == "Full article text\n\nX"
     assert result.has_coordinates is True
     assert len(result.tables) == 1
 
@@ -429,3 +433,16 @@ def test_a_bare_table_label_is_used_when_no_captioned_block_exists():
     m = next(_HTML_TABLE.finditer(doc))
     caption, _ = _caption_and_footer(doc, m.start(), m.end(), m.group(0))
     assert caption.startswith("Table 2.")
+
+
+def test_ace_refuses_to_extract_without_readability(monkeypatch):
+    """A failed node step would silently switch ACE to its fallback cleaner."""
+    import readabilipy
+
+    def broken(*args, **kwargs):
+        raise RuntimeError("node: ERR_REQUIRE_ESM")
+
+    monkeypatch.setattr(ace_module, "_READABILITY_OK", False)
+    monkeypatch.setattr(readabilipy, "simple_json_from_html_string", broken)
+    with pytest.raises(RuntimeError, match="node >= 20.19"):
+        ace_module._require_readability()
