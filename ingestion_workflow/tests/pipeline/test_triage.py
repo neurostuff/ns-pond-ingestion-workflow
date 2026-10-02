@@ -326,3 +326,87 @@ def test_the_digest_is_read_once_not_per_article(tmp_path):
     first = stage.gate_id()
     path.unlink()                      # gone: a second read would raise
     assert stage.gate_id() == first
+
+
+# -- an old extraction must not outbid the current one -----------------------
+
+def _catalog_with(tmp_path, extractions):
+    """An article downloaded from ace and elsevier, with the given extractions.
+
+    `extractions` maps source -> (tables, current?). A current one carries the
+    fingerprint the extract stage computes today; a stale one an older one.
+    """
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.models.ids import Identifier
+    from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
+
+    gate = tmp_path / "gate.joblib"
+    gate.write_bytes(b"a gate")
+    settings = Settings(
+        data_root=tmp_path / "d", cache_root=tmp_path / "c",
+        catalog_root=tmp_path / "k", coordinate_gate_path=str(gate),
+    )
+    catalog = Catalog.open(settings.catalog_root)
+    ref = catalog.register(Identifier(pmid="1"))
+    for source in ("ace", "elsevier"):
+        catalog.record([Outcome(article_id=ref.id, stage="download", source=source,
+                                fingerprint=f"dl-{source}", payload={"files": []})])
+    for source, (tables, current) in extractions.items():
+        download = catalog.artifact(ref.id, "download", source)
+        fp = extraction_fingerprint(source, download) if current else "an-older-version"
+        catalog.record([Outcome(article_id=ref.id, stage="extract", source=source,
+                                fingerprint=fp, payload={"tables": []},
+                                summary={"tables": tables})])
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint="meta", payload={})])
+    return settings, catalog, ref
+
+
+def _triaged_source(settings, catalog, ref):
+    from ingestion_workflow.pipeline import Context
+
+    plan = TriageStage(settings).plan(
+        Context(settings, catalog), [ref], {},
+        catalog.artifacts([ref.id], "metadata"),
+    )
+    return [work.upstream.source for work in plan.pending]
+
+
+def test_a_stale_extraction_with_more_tables_does_not_outbid_the_current_one(tmp_path):
+    """An old ACE extraction holding each table twice outnumbered the new
+    elsevier one for 14,991 articles; triage judged the old one."""
+    settings, catalog, ref = _catalog_with(
+        tmp_path, {"ace": (10, False), "elsevier": (3, True)})
+    with catalog:
+        assert _triaged_source(settings, catalog, ref) == ["elsevier"]
+
+
+def test_with_nothing_current_the_stale_extraction_is_still_triaged(tmp_path):
+    settings, catalog, ref = _catalog_with(
+        tmp_path, {"ace": (10, False), "elsevier": (3, False)})
+    with catalog:
+        assert _triaged_source(settings, catalog, ref) == ["ace"]
+
+
+def test_sync_writes_the_extraction_triage_judged(tmp_path):
+    """Table ids are unique only within an extraction, so sync must write the
+    one the analyses came from, not the one with the most coordinates."""
+    from ingestion_workflow.catalog import Outcome
+    from ingestion_workflow.pipeline import Context
+    from ingestion_workflow.pipeline.stages.sync import _synced_extraction
+
+    settings, catalog, ref = _catalog_with(
+        tmp_path, {"ace": (10, False), "elsevier": (3, True)})
+    with catalog:
+        ctx = Context(settings, catalog)
+        extractions = catalog.artifacts([ref.id], "extract")[ref.id]
+        downloads = catalog.artifacts([ref.id], "download")[ref.id]
+        untriaged = _synced_extraction(ctx, extractions, downloads, None)
+        assert untriaged.source == "elsevier"
+
+        catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                                fingerprint="t", payload={"source": "ace"},
+                                summary={"source": "ace"})])
+        triage = catalog.artifact(ref.id, "triage", "")
+        assert _synced_extraction(ctx, extractions, downloads, triage).source == "ace"

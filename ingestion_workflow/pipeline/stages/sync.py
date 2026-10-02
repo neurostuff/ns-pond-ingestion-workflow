@@ -17,6 +17,7 @@ from ingestion_workflow.services import nspond
 
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .extract import current_extractions
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +64,13 @@ class SyncStage:
         metadata = ctx.catalog.artifacts(ids, "metadata")
         analyses = ctx.catalog.artifacts(ids, "analyses")
         downloads = ctx.catalog.artifacts(ids, "download")
+        triaged = ctx.catalog.artifacts(ids, "triage")
 
         for work in works:
             base_study_id = work.upstream.summary.get("base_study_id")
             try:
                 bundle, per_table, files = self._assemble(
-                    ctx, work, extractions, metadata, analyses, downloads
+                    ctx, work, extractions, metadata, analyses, downloads, triaged
                 )
             except LookupError as exc:
                 yield Outcome.failure(
@@ -101,8 +103,13 @@ class SyncStage:
                 summary={"base_study_id": base_study_id, "path": str(target)},
             )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads):
-        extraction = _best(extractions.get(work.article_id, {}))
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged):
+        extraction = _synced_extraction(
+            ctx,
+            extractions.get(work.article_id, {}),
+            downloads.get(work.article_id, {}),
+            triaged.get(work.article_id, {}).get(""),
+        )
         if extraction is None:
             raise LookupError("no successful extraction to sync")
         payload = ctx.payload(extraction)
@@ -139,6 +146,24 @@ class SyncStage:
             return
         nspond.write_corpus_manifest(self.settings.ns_pond_root / "pmids.tsv", self._synced)
         self._synced.clear()
+
+
+def _synced_extraction(
+    ctx: Context,
+    extractions: Dict[str, Artifact],
+    downloads: Dict[str, Artifact],
+    triage: Artifact | None,
+) -> Artifact | None:
+    """The extraction triage judged, which is the one the analyses came from.
+
+    Table ids are unique only within an extraction, so writing another one
+    beside these analyses would pair them with different tables. An article
+    triage has not reached takes its best current extraction.
+    """
+    judged = extractions.get((triage.summary or {}).get("source", "")) if triage else None
+    if judged is not None and judged.status is Status.OK:
+        return judged
+    return _best(current_extractions(ctx, extractions, downloads) or extractions)
 
 
 def _best(candidates: Dict[str, Artifact]) -> Artifact | None:

@@ -41,6 +41,7 @@ from ingestion_workflow.models import ExtractedContent
 
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .extract import current_extractions
 
 logger = logging.getLogger(__name__)
 
@@ -169,14 +170,18 @@ class TriageStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
-        extractions = ctx.catalog.artifacts([ref.id for ref in refs], "extract")
+        ids = [ref.id for ref in refs]
+        attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        extractions = ctx.catalog.artifacts(ids, "extract")
+        downloads = ctx.catalog.artifacts(ids, "download")
         for ref in refs:
             # Attempted is the bar, not succeeded. Plenty of articles have no
             # metadata to find, and blocking those would strand them here
             # forever; the abstract is a help when it exists, not a condition.
             meta = upstream.get(ref.id, {}).get("")
-            extraction = _most_tables(extractions.get(ref.id, {}))
+            found = extractions.get(ref.id, {})
+            current = current_extractions(ctx, found, downloads.get(ref.id, {}))
+            extraction = _most_tables(current or found)
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
