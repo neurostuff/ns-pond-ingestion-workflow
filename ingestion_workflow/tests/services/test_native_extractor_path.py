@@ -485,3 +485,21 @@ def test_is_deactivation_reads_the_statistic_and_not_the_name():
     assert is_deactivation(-3.1) is True
     assert is_deactivation(3.1) is False
     assert is_deactivation(None) is False
+
+
+def test_the_output_budget_is_not_capped_below_what_the_window_affords():
+    """92 of 871 benchmark tables came back severed, every one stopping
+    exactly at the 4,096 cap -- while the median case held a 982-token
+    document inside a 16,384-token window, so ~14,900 tokens sat unused.
+
+    The subtraction protects the request from a 400. The cap was doing
+    something else: discarding the long answers the subtraction exists for."""
+    import inspect
+
+    from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
+
+    sig = inspect.signature(CoordinateParsingClient.parse_analyses_native)
+    assert sig.parameters["max_tokens"].default == 8192
+    src = inspect.getsource(CoordinateParsingClient.parse_analyses_native)
+    # the window-aware subtraction must survive the raise
+    assert "window - len(document) // 3 - 512" in src

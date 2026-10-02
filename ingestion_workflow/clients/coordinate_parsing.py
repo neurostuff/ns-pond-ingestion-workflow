@@ -70,7 +70,14 @@ class CoordinateParsingClient(GenericLLMClient):
         document: str,
         *,
         model: Optional[str] = None,
-        max_tokens: int = 4096,
+        #: The ceiling on the answer, not on the window. 4,096 severed 92 of
+        #: the 871 benchmark tables -- every one of them stopped exactly here,
+        #: with a median document of 982 tokens leaving ~14,900 free. The
+        #: subtraction below is what protects the request; this only stopped
+        #: it using what the window could already afford.
+        #:
+        #: It had been raised once before, from 2,048, for the same reason.
+        max_tokens: int = 8192,
         context_window: Optional[int] = None,
     ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
         """Parse a table with the fine-tuned extractor, and report its space.
@@ -85,9 +92,15 @@ class CoordinateParsingClient(GenericLLMClient):
 
         The output budget is what is left of the context after the document,
         not a fixed number. A long table is exactly the one worth reading, and
-        asking for 4,096 tokens beside a 12,000 token prompt is refused with a
+        asking for 8,192 tokens beside a 12,000 token prompt is refused with a
         400 rather than truncated -- so the request would fail on precisely
         the richest tables.
+
+        The cap matters as much as the subtraction. Measured on the benchmark,
+        every truncated answer stopped at the cap and none ran out of window:
+        the median case held a 982-token document inside 16,384. A ceiling
+        below what the window affords throws away the long answers the
+        subtraction was written to protect.
         """
         window = context_window or self.CONTEXT_WINDOW
         # Three characters per token is the conservative ratio for serialised
