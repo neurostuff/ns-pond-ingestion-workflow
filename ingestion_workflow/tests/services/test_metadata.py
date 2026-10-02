@@ -125,6 +125,62 @@ class TestMetadataService:
         assert extracted.slug in result
         assert result[extracted.slug].title == "PubMed Article"
 
+    def test_a_sufficient_record_is_still_filled_by_the_next_provider(self, metadata_service):
+        """`sufficient` marks an article ready for the next stage; it does not
+        stop the providers. Semantic Scholar's record had title, journal and
+        year but no abstract, and PubMed, never asked, had the abstract."""
+        identifier = Identifier(pmid="12345678")
+        extracted = ExtractedContent(
+            slug=identifier.slug,
+            source=DownloadSource.PUBGET,
+            identifier=identifier,
+            has_coordinates=True,
+        )
+        s2 = ArticleMetadata(
+            title="An Article", authors=[Author(name="A")], journal="J",
+            publication_year=2020, license="CC-BY",
+        )
+        pubmed = ArticleMetadata(title="An Article", abstract="What it found.")
+
+        with (
+            patch.object(metadata_service, "_get_semantic_scholar_metadata_cached",
+                         return_value={identifier.slug: s2}),
+            patch.object(metadata_service, "_get_pubmed_metadata_cached",
+                         return_value={identifier.slug: pubmed}) as asked,
+        ):
+            result = metadata_service.enrich_metadata([extracted])
+
+        asked.assert_called_once()
+        merged = result[extracted.slug]
+        assert merged.abstract == "What it found."
+        assert merged.license == "CC-BY"
+        assert merged.journal == "J"
+
+    def test_a_filled_record_skips_the_later_providers(self, metadata_service):
+        identifier = Identifier(pmid="12345678")
+        extracted = ExtractedContent(
+            slug=identifier.slug,
+            source=DownloadSource.PUBGET,
+            identifier=identifier,
+            has_coordinates=True,
+        )
+        s2 = ArticleMetadata(
+            title="An Article", authors=[Author(name="A")], journal="J",
+            publication_year=2020, abstract="What it found.",
+        )
+        with (
+            patch.object(metadata_service, "_get_semantic_scholar_metadata_cached",
+                         return_value={identifier.slug: s2}),
+            patch.object(metadata_service, "_get_pubmed_metadata_cached",
+                         return_value={}) as asked,
+            patch.object(metadata_service, "_get_fallback_metadata") as fallback,
+        ):
+            result = metadata_service.enrich_metadata([extracted])
+
+        asked.assert_not_called()
+        fallback.assert_not_called()
+        assert result[extracted.slug].abstract == "What it found."
+
     def test_get_elsevier_fallback(self, metadata_service):
         """Test fallback metadata extraction from Elsevier files."""
         # Create mock metadata.json in the expected location
