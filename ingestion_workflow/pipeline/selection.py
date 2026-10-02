@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -9,6 +10,8 @@ from typing import List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
 from ingestion_workflow.models.ids import Identifier, Identifiers
+
+logger = logging.getLogger(__name__)
 
 
 class Select(str, Enum):
@@ -62,6 +65,7 @@ def narrow(
     each other: the artifacts named for redoing are exactly the ones that look
     done, so they would be dropped here and the refresh would do nothing.
     """
+    selection = _gated(catalog, selection, stage)
     if mode is Select.ALL or not selection.refs:
         return selection
 
@@ -93,6 +97,42 @@ def narrow(
 
     refs = [ref for ref in selection.refs if keep(ref)]
     return Selection(refs, f"{len(refs):,} {mode.value} of {selection.description}")
+
+
+def _gated(catalog: Catalog, selection: Selection, stage: Optional[str]) -> Selection:
+    """Drop the articles a stage has declared it cannot work on.
+
+    A stage may name an upstream summary field that must be truthy before it
+    has anything to do -- `analyses` needs `triage` to have passed a table.
+    Asking the catalog once is a query over an index; the alternative is
+    planning every article to reach the same answer, which for one corpus run
+    meant 477,625 artifacts recording that there was nothing to record.
+
+    Only applied when exactly one stage is named, because that is the only
+    time the gate is knowable: running `triage` and `analyses` together, the
+    articles triage has not reached yet are precisely the ones to keep.
+
+    Applied here rather than in the stage's `plan`, so it holds however the
+    selection was built -- a manifest included.
+    """
+    if not stage or not selection.refs:
+        return selection
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES     # noqa: PLC0415
+
+    stage_type = STAGE_TYPES.get(stage)
+    upstream = getattr(stage_type, "requires", None)
+    flag = getattr(stage_type, "requires_flag", None)
+    if not (upstream and flag):
+        return selection
+
+    allowed = catalog.article_ids_where_summary(upstream, flag)
+    refs = [ref for ref in selection.refs if ref.id in allowed]
+    dropped = len(selection.refs) - len(refs)
+    if dropped:
+        logger.info("%s: %s has nothing for %d of %d articles",
+                    stage, upstream, dropped, len(selection.refs))
+    return Selection(
+        refs, f"{len(refs):,} of {selection.description} that {upstream} passed")
 
 
 def _stages_present(catalog: Catalog) -> List[str]:

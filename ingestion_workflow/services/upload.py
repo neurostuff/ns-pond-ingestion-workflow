@@ -132,6 +132,30 @@ def _match_score(existing_coords: set, existing_name, incoming_coords: set, inco
     return overlap + _name_similarity(existing_name, incoming_name) / 100.0
 
 
+class UploadSourceNotSet(ValueError):
+    """`upload_source` was not configured and an upload was attempted.
+
+    It is the key neurostore versions a study by, so it decides which version
+    `update` reconciles against -- and reconciling deletes the analyses it
+    replaces. With the old default of "llm", a run that forgot to set it
+    resolved to another extractor's version and deleted its work. Refusing is
+    the only safe reading of silence: there is no source that is right to
+    guess.
+    """
+
+
+def resolve_upload_source(settings) -> str:
+    source = getattr(settings, "upload_source", None)
+    if source is None or not str(source).strip():
+        raise UploadSourceNotSet(
+            "upload_source is not set. It names the extractor on the study "
+            "version, and `upload` reconciles against the version carrying it "
+            "-- deleting the analyses it replaces. Set it in the config "
+            "(for example `upload_source: nuextract-v19`)."
+        )
+    return str(source).strip()
+
+
 def plan_reconciliation(
     existing: Sequence,
     incoming_names: Sequence[Optional[str]],
@@ -454,6 +478,12 @@ class UploadService:
                 )
                 continue
             for a_index, analysis in enumerate(collection.analyses, start=1):
+                # An analysis with no coordinates is uploaded on purpose. A
+                # table that names a contrast and reports `n.s.` has run that
+                # contrast and found nothing, and that is a result someone
+                # meta-analysing will want. What is not uploaded is a table
+                # the extractor returned no analyses for at all -- the empty
+                # collection skipped just above.
                 table_meta = analysis.metadata.get("table_metadata", {}) if analysis.metadata else {}
                 sanitized_id = None
                 if analysis.metadata:
@@ -490,6 +520,23 @@ class UploadService:
                         else None,
                     )
                 )
+
+        if not prepared_analyses and not getattr(
+            self.settings, "upload_metadata_only", False
+        ):
+            # Every collection was empty. Returning an item here creates a base
+            # study and a study holding nothing, which says the paper was read
+            # and reports no coordinates -- and that is a different claim from
+            # the one the extractor made, which is that these tables are not
+            # coordinate tables. 22 of 49,778 articles in the v19 corpus run
+            # land here. The `n.s.` case is unaffected: a named analysis with
+            # no points is a prepared analysis, so the list is not empty.
+            logger.warning(
+                "No analyses in any collection for %s; skipping.",
+                slug,
+                extra=console_kwargs(),
+            )
+            return None
 
         return UploadWorkItem(
             slug=slug,
@@ -735,8 +782,10 @@ class UploadService:
         behavior: UploadBehavior,
         metadata_mode: UploadMetadataMode,
     ) -> DbStudy:
-        # Always treat uploads as coming from the LLM pipeline
-        payload.source = payload.source or "llm"
+        # The source names the extractor that produced the analyses, and it
+        # is what neurostore versions a study by -- so a different extractor
+        # adds a version beside the old one rather than replacing it.
+        payload.source = payload.source or resolve_upload_source(self.settings)
         study = next(
             (version for version in getattr(base_study, "versions", []) if version.source == payload.source),
             None,

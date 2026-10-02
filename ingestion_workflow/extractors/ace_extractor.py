@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import threading
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
@@ -19,6 +19,7 @@ from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
+    normalize_minus,
 )
 from ingestion_workflow.models import (
     Identifier,
@@ -170,13 +171,33 @@ _HTML_TAG = re.compile(r"<[^>]+>")
 _HTML_WS = re.compile(r"\s+")
 
 
-def _table_fingerprint(html: str) -> str:
-    """Tag-free, whitespace-free text of a table, for matching one to another.
+#: A table's figures, free of thousands separators. Two renderings of one
+#: table disagree about markup and whitespace but not about its numbers.
+_FP_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
+_FP_THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}\b)")
 
-    ACE rewrites the markup it keeps in `input_html`, so the bytes do not match
-    the document. The visible text does.
+
+def _table_fingerprint(html: str) -> str:
+    """The figures a table states, in order, for matching one to another.
+
+    ACE rewrites the markup it keeps in `input_html`, and the rewrite changes
+    the *text* as well: entities are decoded differently and `Empty Cell`
+    placeholders appear, so the tag-free text of the two renderings differs by
+    tens of characters -- 497 against 557 for one measured table. Matching on
+    that text therefore missed the duplicates it was written to catch, and the
+    same table entered the corpus twice under two ids. Over articles with more
+    than one table that triage passed, 72.6% carried the same numbers twice.
+
+    Numbers survive the rewrite. A table with fewer than three is not
+    identified this way at all, so captions and layout tables cannot collide.
     """
-    return _HTML_WS.sub("", _HTML_TAG.sub(" ", html or "")).lower()
+    text = _HTML_TAG.sub(" ", normalize_minus(html))
+    numbers = _FP_NUMBER.findall(_FP_THOUSANDS.sub("", text))
+    if len(numbers) >= 3:
+        return "n:" + ",".join(numbers)
+    # Nothing numeric to match on; fall back to the visible text, which is
+    # still enough to spot a byte-for-byte repeat.
+    return _HTML_WS.sub("", text).lower()
 
 
 _WHITESPACE = re.compile(r"[\s\u00a0]+")
@@ -279,7 +300,10 @@ def _unparsed_html_tables(
         seen.add(fingerprint)
         table_id = f"html-table-{index + 1}"
         path = tables_dir / f"{table_id}.html"
-        path.write_text(block, encoding="utf-8")
+        # Decoded on the way to disk: everything downstream reads this
+        # file, and an undecoded minus is a coordinate in the wrong
+        # hemisphere.
+        path.write_text(normalize_minus(block), encoding="utf-8")
         caption, footer = _caption_and_footer(
             html_text, match.start(), match.end(), block)
         out.append(ExtractedTable(

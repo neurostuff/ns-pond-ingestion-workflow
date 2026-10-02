@@ -14,6 +14,17 @@ from ingestion_workflow.models import ArticleExtractionBundle, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.prompts.coordinate_parsing import COORDINATE_PARSING_PROMPT_VERSION
 
+#: What reaches the model besides the prompt and the model itself: how the
+#: table is serialised, and the document built around it. Neither is named
+#: by the prompt version or the model, so without this a corpus extracted
+#: before a serialiser fix looks fresh forever and keeps its old reading.
+#: That is how 1,679 articles held a table the pipeline had dropped, and
+#: 13,000 more kept cells that had been fused together.
+#:
+#: Bump it when the text sent to the model changes for reasons the model
+#: and the prompt do not describe.
+EXTRACTION_VERSION = "2026-10-01.serialised+minus+dedupe+thinspace+selfclosing+bysign"
+
 from ..plan import StagePlan, Work
 from ..stage import Context
 
@@ -26,6 +37,12 @@ class AnalysesStage:
     #: so a refitted gate or a new reader has to make these analyses stale --
     #: and it only does if the fingerprint runs through triage.
     requires = "triage"
+
+    #: Triage records how many tables it passed. An article it passed none for
+    #: has no work here whatever else is true, so the selection drops it rather
+    #: than planning it and writing an artifact that says nothing -- 477,625 of
+    #: them in the first corpus run, duplicating what `triage` already recorded.
+    requires_flag = "passed"
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -63,7 +80,14 @@ class AnalysesStage:
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
+            EXTRACTION_VERSION,
             self.settings.llm_model,
+            # The prompt shape is an input too. Flipping this swaps a four
+            # thousand token rule prompt for a fifty token schema, which is a
+            # bigger change than most model swaps -- and without it here, a
+            # deployment that flipped the flag while keeping the model name
+            # would leave the whole corpus looking fresh.
+            str(bool(getattr(self.settings, "llm_native_schema", False))),
             upstream=upstream.fingerprint,
         )
 
@@ -114,6 +138,7 @@ class AnalysesStage:
         jobs = []
         for work in works:
             verdicts = ctx.payload(work.upstream) or {}
+            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
             extraction = self._extraction_for(
                 ctx, work.article_id, verdicts.get("source", ""))
             payload = ctx.payload(extraction)
@@ -127,9 +152,9 @@ class AnalysesStage:
             content = ExtractedContent.from_dict(payload)
             content.identifier = work.ref.identifier
             content.slug = work.ref.identifier.slug
-            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
             tables = [t for t in content.tables if _worth_parsing(t, passed)]
             if not tables:
+                # Triage named a table this extraction no longer has.
                 yield Outcome(
                     article_id=work.article_id,
                     stage=self.name,

@@ -151,3 +151,61 @@ __all__ = [
     "safe_hash_stem",
     "sanitize_table_id",
 ]
+
+
+# -- minus signs ---------------------------------------------------------
+#
+# Journals do not write a coordinate's minus as a hyphen. Measured over 1,200
+# tables triage passed, elsevier uses U+2212 MINUS SIGN 2,000 times against 30
+# ASCII hyphens, and pubget 423 against 20; ACE's document HTML writes it as
+# the entity `&#x02212;`. v19's training data contains **no** U+2212 at all --
+# 91.6% of rows use an ASCII hyphen -- so normalising here does not shift the
+# model off its distribution, it puts it back on.
+#
+# Two failures came of not doing this. An entity minus survived tag-stripping
+# as the literal text `&#x02212;`, so the sign vanished and a left-hemisphere
+# focus was stored on the right: 13.3% of passed tables gained negative
+# numbers once decoded. And the same table rendered two ways disagreed about
+# its own numbers, so the duplicate check missed it.
+
+_MINUS_CHARS = (
+    "−",  # minus sign
+    "‐",  # hyphen
+    "‑",  # non-breaking hyphen
+    "‒",  # figure dash
+    "–",  # en dash
+    "—",  # em dash
+    "―",  # horizontal bar
+    "⁃",  # hyphen bullet
+    "⁻",  # superscript minus
+    "₋",  # subscript minus
+    "﹣",  # small hyphen-minus
+    "－",  # fullwidth hyphen-minus
+)
+
+_MINUS_TABLE = dict.fromkeys(map(ord, _MINUS_CHARS), "-")
+
+#: Only the minus entities are decoded. A blanket `html.unescape` would turn
+#: `&lt;0.05&gt;` into `<0.05>`, which the serialiser then strips as a tag --
+#: `&lt;` appears 1,357 times and `&#x0003c;` 739 in the same sample.
+_MINUS_ENTITY = re.compile(
+    "&(?:"
+    + "|".join(
+        [r"#x0*%x" % ord(c) for c in _MINUS_CHARS]
+        + [r"#0*%d" % ord(c) for c in _MINUS_CHARS]
+        + ["minus", "ndash", "mdash", "dash", "hyphen", "horbar"]
+    )
+    + ");",
+    re.IGNORECASE,
+)
+
+
+def normalize_minus(markup: str) -> str:
+    """Every way a paper writes a minus, turned into an ASCII hyphen.
+
+    Applied to markup, before tags are stripped, so the entity forms are
+    caught too. Nothing else is decoded -- see `_MINUS_ENTITY`.
+    """
+    if not markup:
+        return markup
+    return _MINUS_ENTITY.sub("-", markup).translate(_MINUS_TABLE)

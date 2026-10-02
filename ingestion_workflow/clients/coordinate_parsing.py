@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
 from ingestion_workflow.models.statistics import normalize_statistic_kind
+from ingestion_workflow.services.nuextract_payload import parse_payload
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,105 @@ class CoordinateParsingClient(GenericLLMClient):
             base_url=base_url,
             default_model=default_model,
         )
+
+    # NuExtract's structured mode. The schema is a *chat template variable*,
+    # not a system message: the template renders it between 【template_start】
+    # and 【template_end】, and the fine-tune has only ever seen it there.
+    NATIVE_TEMPLATE = json.dumps(
+        {
+            "space": ["MNI", "TAL"],
+            "analyses": [
+                {
+                    "name": "verbatim-string",
+                    "measure": ["voxels", "mm^3"],
+                    "points": [
+                        [
+                            "number",
+                            "number",
+                            "number",
+                            ["T", "Z", "F", "P", "R", "B"],
+                            "number",
+                            "integer",
+                        ]
+                    ],
+                }
+            ],
+        },
+        ensure_ascii=False,
+    )
+
+    #: What the server will hold. Asking for output that does not fit beside
+    #: the prompt is refused outright, not truncated, so the budget has to be
+    #: worked out before the call rather than discovered from a 400.
+    CONTEXT_WINDOW = 16384
+
+    def parse_analyses_native(
+        self,
+        document: str,
+        *,
+        model: Optional[str] = None,
+        #: The ceiling on the answer, not on the window. 4,096 severed 92 of
+        #: the 871 benchmark tables -- every one of them stopped exactly here,
+        #: with a median document of 982 tokens leaving ~14,900 free. The
+        #: subtraction below is what protects the request; this only stopped
+        #: it using what the window could already afford.
+        #:
+        #: It had been raised once before, from 2,048, for the same reason.
+        max_tokens: int = 8192,
+        context_window: Optional[int] = None,
+    ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
+        """Parse a table with the fine-tuned extractor, and report its space.
+
+        No function tool and no instructions: the schema goes in the template
+        slot and the document in the message, which is the shape the model was
+        trained on. Sending it the prompted path's four thousand tokens of
+        rules would be an input it has never seen.
+
+        Greedy, because every evaluation of this model was greedy and a
+        sampled coordinate is a wrong coordinate.
+
+        The output budget is what is left of the context after the document,
+        not a fixed number. A long table is exactly the one worth reading, and
+        asking for 8,192 tokens beside a 12,000 token prompt is refused with a
+        400 rather than truncated -- so the request would fail on precisely
+        the richest tables.
+
+        The cap matters as much as the subtraction. Measured on the benchmark,
+        every truncated answer stopped at the cap and none ran out of window:
+        the median case held a 982-token document inside 16,384. A ceiling
+        below what the window affords throws away the long answers the
+        subtraction was written to protect.
+        """
+        window = context_window or self.CONTEXT_WINDOW
+        # Three characters per token is the conservative ratio for serialised
+        # tables, which are mostly digits and separators; the margin absorbs
+        # the template and the chat scaffolding the server adds.
+        floor = 256
+        room = (window - floor - 512) * 3
+        if len(document) > room:
+            # Longer than the window itself, so no output budget can make it
+            # fit. Clipping the tail costs the last rows of the table; sending
+            # it whole costs the table. Both are losses, and this one is
+            # visible in the log rather than a 400 that drops the article.
+            logger.warning(
+                "clipping a %d character document to %d to fit the context window",
+                len(document), room,
+            )
+            document = document[:room]
+        allowed = max(floor, min(max_tokens, window - len(document) // 3 - 512))
+        response = self.client.chat.completions.create(
+            model=model or self.default_model,
+            messages=[{"role": "user", "content": document}],
+            temperature=0.0,
+            max_completion_tokens=allowed,
+            extra_body={
+                "chat_template_kwargs": {
+                    "template": self.NATIVE_TEMPLATE,
+                    "enable_thinking": False,
+                }
+            },
+        )
+        return parse_payload(response.choices[0].message.content or "")
 
     def parse_analyses(
         self,

@@ -56,6 +56,9 @@ def _settings(tmp_path, *, metadata_mode: UploadMetadataMode = UploadMetadataMod
         ns_pond_root=tmp_path / "ns",
         upload_use_ssh=False,
         upload_metadata_mode=metadata_mode,
+        # No default any more: it used to be "llm", and a forgotten setting
+        # resolved the study to another extractor's version and deleted it.
+        upload_source="llm",
     )
 
 

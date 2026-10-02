@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import re
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
@@ -19,7 +21,9 @@ from ingestion_workflow.models import (
     ExtractedTable,
     ParseAnalysesOutput,
 )
+from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
+from ingestion_workflow.services.coordinate_flags import is_deactivation, subpeak_flags
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -36,7 +40,7 @@ _SCHEMA_TEMPLATE = """{
           "z": <float>,
           "space"?: "MNI" | "TAL" | null,
           "statistic_value"?: <float> | null,
-          "statistic_type"?: "Z" | "T" | "F" | "R" | "P" | "B" | null,
+          "statistic_type"?: "T" | "Z" | "D" | "G" | "F" | "R" | "B" | "P" | null,
           "cluster_size"?: <int> | null,
           "cluster_measure"?: "voxels" | "mm^3" | null,
           "is_subpeak"?: true | false,
@@ -57,6 +61,61 @@ _SCHEMA_TEMPLATE = """{
     ...
   ]
 }"""
+
+
+#: Tag boundaries that carry table structure. Everything else is decoration.
+_CELL_END = re.compile(r"(?i)</t[dh]>")
+_ROW_END = re.compile(r"(?i)</tr>|</row>")
+_ANY_TAG = re.compile(r"<[^>]+>")
+_RUNS = re.compile(r"[ \t]{2,}")
+#: Two renderings of one table agree on every figure, whatever the markup.
+_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _text_of(markup: str) -> str:
+    """The words in a table, with its grid kept and its tags dropped.
+
+    Only used when the serialiser could not read the table. The tags are what
+    made the raw form large -- 14.7x on average -- and a model trained on
+    ` | `-separated cells gains nothing from `<td class="...">`. Cell and row
+    boundaries survive as ` | ` and newlines, because which column a number
+    sits in is the whole answer.
+    """
+    text = _ROW_END.sub("\n", _CELL_END.sub(" | ", markup))
+    text = _ANY_TAG.sub("", text)
+    text = text.replace("&nbsp;", " ").replace("&amp;", "&")
+    lines = [_RUNS.sub(" ", line).strip(" |\t") for line in text.split("\n")]
+    return "\n".join(line for line in lines if line.strip())
+
+
+#: Appended to the name of the negative half when one analysis reports both
+#: directions. Not a translation of the contrast: `A > B` with a negative t
+#: means B > A, but a name like `Interaction` or `Main effect of group` cannot
+#: be inverted at all, so the marker says what is true of the numbers and
+#: leaves the contrast as the paper wrote it.
+NEGATIVE_SUFFIX = " (negative)"
+
+
+def _by_direction(name, coordinates):
+    """Split an analysis that reports both directions under one name.
+
+    A positive and a negative statistic are different directions, and pooling
+    them pools an increase with a decrease -- 4.66% of analyses with a
+    statistic hold both, 2,095 of 44,965, carrying 8,367 negative points.
+
+    The direction normally lives in the contrast name, which is why
+    `is_deactivation` reads the statistic rather than the name. Where one
+    contrast reports both, the sign is the only thing that separates them.
+
+    Yields `(name, coordinates)` in table order, the positive half first. An
+    analysis whose statistics are all one sign, or which has none, is returned
+    unchanged so nothing is renamed without cause.
+    """
+    positive = [c for c in coordinates if not c.is_deactivation]
+    negative = [c for c in coordinates if c.is_deactivation]
+    if not (positive and negative):
+        return [(name, coordinates)]
+    return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
 
 
 class CreateAnalysesService:
@@ -85,16 +144,18 @@ class CreateAnalysesService:
         article_slug = bundle.article_data.slug
         identifier = bundle.article_data.identifier
 
+        # Which tables are worth a call is triage's decision, and it is made
+        # before this runs. Re-testing `contains_coordinates` here applied the
+        # old reader-based filter a second time and silently dropped every
+        # table triage passed on the residual route -- where the reader found
+        # nothing by definition, which is the whole reason that route exists.
+        # It cost 1,438 of 1,461 articles in the first corpus run.
+        redundant = self._redundant(bundle.article_data.tables, article_slug)
         for index, table in enumerate(bundle.article_data.tables):
-            if not table.contains_coordinates and not table.coordinates:
-                logger.debug(
-                    "Skipping table %s for article %s (no coordinates detected).",
-                    table.table_id,
-                    bundle.article_data.slug,
-                )
-                continue
             sanitized_table_id = sanitize_table_id(table.table_id, index)
             table_key = table.table_id or sanitized_table_id
+            if table_key in redundant:
+                continue
 
             try:
                 table_text = self._read_table_content(table)
@@ -106,11 +167,21 @@ class CreateAnalysesService:
                     exc,
                 )
                 continue
-            prompt = self._build_prompt(bundle, table, table_text, table_key)
-            parsed_output = self.client.parse_analyses(prompt)
+            model_space = None
+            if getattr(self.settings, "llm_native_schema", False):
+                document = self._build_document(
+                    bundle, table, self._serialise(table_text, table_key)
+                )
+                parsed_output, model_space = self.client.parse_analyses_native(document)
+            else:
+                prompt = self._build_prompt(bundle, table, table_text, table_key)
+                parsed_output = self.client.parse_analyses(prompt)
             if not parsed_output.analyses:
-                logger.warning(
-                    "LLM returned no analyses for article %s table %s",
+                # Expected on the native path: the fine-tune is trained to
+                # return nothing for a table that holds no coordinates, and
+                # roughly a third of what reaches it does not.
+                logger.debug(
+                    "no analyses for article %s table %s",
                     article_slug,
                     table_key,
                 )
@@ -122,8 +193,14 @@ class CreateAnalysesService:
                 sanitized_table_id,
                 table_key,
                 article_slug,
+                model_space=model_space,
             )
-            results[table_key] = collection
+            # A table the extractor found nothing in is recorded as processed
+            # by the stage's artifact, but it does not become a collection: an
+            # empty one carries no result and would be counted as a table with
+            # analyses by everything downstream.
+            if collection.analyses:
+                results[table_key] = collection
             emit_progress(progress_hook)
 
         return results
@@ -136,8 +213,16 @@ class CreateAnalysesService:
         sanitized_table_id: str,
         table_key: str,
         article_slug: str,
+        model_space: Optional[str] = None,
     ) -> AnalysisCollection:
-        table_space = table.space or CoordinateSpace.OTHER
+        # A space the extraction actually read wins: it came from the article,
+        # not from this table. But `OTHER` is the enum's way of saying it does
+        # not know, and it is truthy, so it used to beat a model that did --
+        # 19.3% of tables stored `OTHER`, and 68% of those name MNI or
+        # Talairach in their own caption, footer or abstract, which is exactly
+        # what the model reads. Unknown is not an answer, so it defers.
+        read = table.space if table.space not in (None, CoordinateSpace.OTHER) else None
+        table_space = read or self._coerce_space(model_space, CoordinateSpace.OTHER)
         collection = AnalysisCollection(
             slug=f"{article_slug}::{sanitized_table_id}",
             coordinate_space=table_space,
@@ -149,20 +234,20 @@ class CreateAnalysesService:
                 table_space,
             )
             analysis_name = parsed.name or f"{table_key} analysis {idx}"
-            analysis = Analysis(
-                name=analysis_name,
-                description=parsed.description,
-                coordinates=coordinates,
-                table_id=table_key,
-                table_number=table.table_number,
-                table_caption=table.caption or "",
-                table_footer=table.footer or "",
-                metadata={
-                    "table_metadata": dict(table.metadata),
-                    "sanitized_table_id": sanitized_table_id,
-                },
-            )
-            collection.add_analysis(analysis)
+            for name, subset in _by_direction(analysis_name, coordinates):
+                collection.add_analysis(Analysis(
+                    name=name,
+                    description=parsed.description,
+                    coordinates=subset,
+                    table_id=table_key,
+                    table_number=table.table_number,
+                    table_caption=table.caption or "",
+                    table_footer=table.footer or "",
+                    metadata={
+                        "table_metadata": dict(table.metadata),
+                        "sanitized_table_id": sanitized_table_id,
+                    },
+                ))
         return collection
 
     def _convert_points(
@@ -170,54 +255,72 @@ class CreateAnalysesService:
         points: List[CoordinatePoint],
         default_space: CoordinateSpace,
     ) -> List[Coordinate]:
-        coordinates: List[Coordinate] = []
-        for point in points:
-            space = self._coerce_space(point.space, default_space)
-            statistic_value = None
-            statistic_type = None
-            cluster_size = point.cluster_size
-            cluster_measure = point.cluster_measure
-            is_subpeak = bool(point.is_subpeak)
-            is_deactivation = bool(point.is_deactivation)
-            is_seed = bool(point.is_seed)
-            if cluster_size is not None:
-                try:
-                    cluster_size = abs(int(cluster_size))
-                except (TypeError, ValueError):
-                    cluster_size = None
-            if cluster_measure is not None:
-                normalized_measure = str(cluster_measure).strip().lower()
-                if normalized_measure not in {"voxels", "mm^3", "mm3"}:
-                    cluster_measure = None
-                elif normalized_measure in {"mm^3", "mm3"}:
-                    cluster_measure = "mm^3"
-                else:
-                    cluster_measure = "voxels"
-            if point.values:
-                primary_value = point.values[0]
-                statistic_type = primary_value.kind
-                try:
-                    statistic_value = (
-                        float(primary_value.value) if primary_value.value is not None else None
-                    )
-                except (TypeError, ValueError):
-                    statistic_value = None
-            coordinates.append(
-                Coordinate(
-                    x=point.coordinates[0],
-                    y=point.coordinates[1],
-                    z=point.coordinates[2],
-                    space=space,
-                    statistic_value=statistic_value,
-                    statistic_type=statistic_type,
-                    cluster_size=cluster_size,
-                    cluster_measure=cluster_measure,
-                    is_subpeak=is_subpeak,
-                    is_deactivation=is_deactivation,
-                    is_seed=is_seed,
-                )
+        # Two passes: `is_subpeak` is a property of the analysis, not of a row.
+        # A blank extent means nothing until the other rows are known to have
+        # one, so every row's numbers are read first and the flags derived
+        # from the whole set.
+        rows = [self._read_point(point, default_space) for point in points]
+        subpeaks = subpeak_flags([row["cluster_size"] for row in rows])
+        return [
+            Coordinate(
+                x=row["x"],
+                y=row["y"],
+                z=row["z"],
+                space=row["space"],
+                statistic_value=row["statistic_value"],
+                statistic_type=row["statistic_type"],
+                cluster_size=row["cluster_size"],
+                cluster_measure=row["cluster_measure"],
+                is_subpeak=subpeak,
+                is_deactivation=is_deactivation(row["statistic_value"]),
+                is_seed=row["is_seed"],
             )
-        return coordinates
+            for row, subpeak in zip(rows, subpeaks)
+        ]
+
+    def _read_point(
+        self,
+        point: CoordinatePoint,
+        default_space: CoordinateSpace,
+    ) -> Dict[str, object]:
+        """Normalise one point's numbers, without deciding any flag."""
+        cluster_size = point.cluster_size
+        cluster_measure = point.cluster_measure
+        statistic_value = None
+        statistic_type = None
+        if cluster_size is not None:
+            try:
+                cluster_size = abs(int(cluster_size))
+            except (TypeError, ValueError):
+                cluster_size = None
+        if cluster_measure is not None:
+            normalized_measure = str(cluster_measure).strip().lower()
+            if normalized_measure not in {"voxels", "mm^3", "mm3"}:
+                cluster_measure = None
+            elif normalized_measure in {"mm^3", "mm3"}:
+                cluster_measure = "mm^3"
+            else:
+                cluster_measure = "voxels"
+        if point.values:
+            primary_value = point.values[0]
+            statistic_type = primary_value.kind
+            try:
+                statistic_value = (
+                    float(primary_value.value) if primary_value.value is not None else None
+                )
+            except (TypeError, ValueError):
+                statistic_value = None
+        return {
+            "x": point.coordinates[0],
+            "y": point.coordinates[1],
+            "z": point.coordinates[2],
+            "space": self._coerce_space(point.space, default_space),
+            "statistic_value": statistic_value,
+            "statistic_type": statistic_type,
+            "cluster_size": cluster_size,
+            "cluster_measure": cluster_measure,
+            "is_seed": bool(point.is_seed),
+        }
 
     def _coerce_space(
         self, space_label: Optional[str], fallback: CoordinateSpace
@@ -230,6 +333,39 @@ class CreateAnalysesService:
         if normalized in {"TAL", "TALAIRACH"}:
             return CoordinateSpace.TALAIRACH
         return fallback
+
+    def _build_document(
+        self,
+        bundle: ArticleExtractionBundle,
+        table: ExtractedTable,
+        table_text: str,
+    ) -> str:
+        """The document the fine-tuned extractor was trained on.
+
+        Field order and labels are load-bearing -- this is reproduced from the
+        trainer, not designed here, and a reordering is an input the model has
+        not seen. Absent fields are omitted rather than sent empty, because
+        that is how the training rows were built.
+
+        The abstract earns its place: a paper often states its normalisation
+        space there and nowhere in the table, and it is where the table's
+        abbreviations are spelled out. It is also most of the prompt's tokens,
+        which is the first thing to measure if cost ever matters.
+
+        There is no `Space:` line. That was an input in earlier versions and
+        is a *target* now -- feeding it back would tell the model the answer.
+        """
+        parts = [f"Title: {bundle.article_metadata.title or ''}"]
+        for label, value in (
+            ("Abstract", bundle.article_metadata.abstract),
+            ("Caption", table.caption),
+            ("Footer", table.footer),
+        ):
+            if value:
+                parts.append(f"{label}: {value}")
+        parts.append("")
+        parts.append(table_text)
+        return "\n".join(parts)
 
     def _build_prompt(
         self,
@@ -299,15 +435,25 @@ Header, layout, and grouping semantics
 {ANALYSIS_BOUNDARY_RULES}
 
 Statistic type, value, and cluster size inference rules
-- statistic_type:
-  - If any header/legend contains "z", "Z", "z score", or "Zmax" => statistic_type = "Z".
-  - If header/legend contains "t", "T", "t-value", "T-value", "T score" => statistic_type = "T".
-  - If header/legend contains "r", "R", "correlation coefficient", or "Pearson's r" => statistic_type = "R".
-  - If header/legend contains "p", "P", "p-value", or "significance" => statistic_type = "P".
-  - If header/legend contains "F", "F-value", or "F statistic" => statistic_type = "F".
-  - If header/legend contains "b", "B", "beta", or "regression coefficient" => statistic_type = "B".
-  - If a numeric statistic value appears but no explicit type can be inferred from headers/legend/caption,
-    set statistic_type = null.
+- statistic_type: read the COLUMN HEADER, and match a whole word or a header
+  that is the bare letter by itself. A letter inside another word is not a
+  statistic: "Extent", "Cluster" and "Talairach" all contain a "t", and the "z"
+  of an "x | y | z" run is a COORDINATE column, never a Z statistic.
+  - "z score", "Z-value", "Zmax", "Peak Z", or a column headed exactly "Z" => "Z".
+  - "t-value", "T score", "t(38)", "Peak t", or a column headed exactly "T" => "T".
+  - "Cohen's d", "effect size (d)", or a column headed exactly "d" => "D".
+  - "Hedges' g" => "G".
+  - "F-value", "F(2,38)", or a column headed exactly "F" => "F".
+  - "correlation coefficient", "Pearson's r", "r value" => "R".
+  - "beta", "regression coefficient", "parameter estimate" => "B".
+  - "p-value", "p(FWE)", "p(unc.)", "pFDR" => "P".
+  - If the table names MORE THAN ONE, report the first of these that appears:
+    T, Z, D, G, F, R, B, P. A p-value is a significance level rather than a
+    test statistic, so a table printing "#t | #p(FWE)" reports the t, and
+    statistic_value is the number in THAT column.
+  - If a numeric statistic value appears but no type can be read from the
+    header, legend or caption, set statistic_type = null. Do not guess, and do
+    not default to "T".
 - statistic_value:
   - Parse the numeric statistic value as a float. If the cell contains extra text (e.g.,
     "0.32 (p<0.05)"), parse the leading numeric token only.
@@ -462,6 +608,82 @@ Raw Table Content:
 {table_text}
 """
         return prompt.strip()
+
+    def _redundant(self, tables: Sequence[ExtractedTable], article_slug: str) -> set:
+        """Table ids that repeat another table's numbers, and can be skipped.
+
+        ACE renders the same physical table twice -- once from the CSV it
+        parsed and once from the article HTML -- under different ids (`2` and
+        `html-table-2`). Both pass triage, so both would be extracted and both
+        uploaded, and the paper's coordinates counted twice. Measured over 800
+        articles with more than one passing table, **72.6%** carry the same
+        numbers twice and **36%** of extractions are redundant.
+
+        Identity is the numbers in order, not the bytes: the two renderings
+        differ in markup and whitespace but agree on every figure, and the
+        figures are what gets stored. The longer serialisation wins, because
+        the two renderings are not always equally complete.
+        """
+        best: Dict[str, tuple] = {}
+        found = []
+        for index, table in enumerate(tables):
+            key = table.table_id or sanitize_table_id(table.table_id, index)
+            try:
+                text = self._serialise(self._read_table_content(table), key)
+            except (FileNotFoundError, OSError):
+                continue
+            numbers = _NUMBER.findall(text)
+            if len(numbers) < 3:
+                continue                    # nothing numeric to collide on
+            digest = hashlib.sha1(",".join(numbers).encode()).hexdigest()
+            found.append((digest, key))
+            if digest not in best or len(text) > best[digest][1]:
+                best[digest] = (key, len(text))
+
+        winners = {key for key, _ in best.values()}
+        drop = {key for _, key in found if key not in winners}
+        if drop:
+            logger.info(
+                "article %s: skipping %d table(s) repeating another's numbers: %s",
+                article_slug, len(drop), sorted(drop),
+            )
+        return drop
+
+    @staticmethod
+    def _serialise(markup: str, table_key: str) -> str:
+        """The table in the form the fine-tune was trained on.
+
+        `_read_table_content` returns the raw HTML, which is what the prompted
+        models are given and what their prompt describes. The fine-tune has
+        never seen it: it was trained, and every number was measured, on
+        `nspond_tables`' serialisation -- ` | ` between cells, `#` on a header
+        cell, `<N` a colspan and `^N` a rowspan.
+
+        The difference is not cosmetic. Measured over the tables that
+        overflowed the context window, the raw HTML is **14.7x** larger, up to
+        27.8x; one 23,692 token table serialises to 1,499. Sending the raw
+        form put the model off-distribution and spent most of the context on
+        markup -- and prefill is two thirds of the corpus's cost.
+
+        A table the serialiser cannot read falls back to its **text**, not its
+        markup: the tags are what made the raw form large, and a model that
+        has never seen HTML gains nothing from `<td class="...">`. Cell and
+        row boundaries are kept as ` | ` and newlines so the grid survives,
+        which is the part the answer depends on.
+        """
+        from nspond_tables import serialize
+
+        markup = normalize_minus(markup)
+        try:
+            out = serialize.serialize(markup)
+        except Exception as exc:                       # noqa: BLE001 - any parse failure
+            logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
+            out = ""
+        if out.strip():
+            return out
+        # Neither form read as a table. Text beats markup, and markup beats
+        # nothing at all -- the model can only answer about what it is sent.
+        return _text_of(markup) or markup
 
     def _read_table_content(self, table: ExtractedTable) -> str:
         path = Path(table.raw_content_path)
