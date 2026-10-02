@@ -21,16 +21,15 @@ def stage(tmp_path):
     return ExtractStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c"))
 
 
-def test_a_source_at_version_one_keeps_its_original_fingerprint(stage):
-    """pdf was written under a single global EXTRACT_VERSION = 1. If its
-    fingerprint moves, every stored pdf extraction is silently discarded and
-    recomputed, on the GPU."""
-    assert EXTRACTOR_VERSIONS["pdf"] == 1
-    original = fingerprint("extract", "pdf", 1, upstream="DL")
-    assert stage.fingerprint_for("pdf", UPSTREAM) == original
+def test_a_source_fingerprint_is_its_own_version(stage, monkeypatch):
+    """Bumping one source moves only that source's fingerprint."""
+    before = {s: stage.fingerprint_for(s, UPSTREAM) for s in EXTRACTOR_VERSIONS}
+    monkeypatch.setitem(EXTRACTOR_VERSIONS, "ace", EXTRACTOR_VERSIONS["ace"] + 1)
+    after = {s: stage.fingerprint_for(s, UPSTREAM) for s in EXTRACTOR_VERSIONS}
+    assert [s for s in before if before[s] != after[s]] == ["ace"]
 
 
-@pytest.mark.parametrize("source", ["pubget", "elsevier", "ace"])
+@pytest.mark.parametrize("source", ["pubget", "elsevier", "ace", "pdf"])
 def test_sources_whose_extractor_changed_moved(stage, source):
     assert EXTRACTOR_VERSIONS[source] > 1
     original = fingerprint("extract", source, 1, upstream="DL")
@@ -42,7 +41,7 @@ def test_an_unlisted_source_falls_back_rather_than_crashing(stage):
     assert stage.fingerprint_for("mystery", UPSTREAM) == expected
 
 
-def test_a_bump_only_requeues_that_source(tmp_path):
+def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch):
     """An article extracted by pdf stays fresh; one extracted only by ace
     comes back as work."""
     settings = Settings(
@@ -66,7 +65,7 @@ def test_a_bump_only_requeues_that_source(tmp_path):
                     )
                 ]
             )
-            # An extraction recorded under the old, global version 1.
+            # An extraction recorded under the current version.
             download = catalog.artifact(ref.id, "download", source)
             catalog.record(
                 [
@@ -74,14 +73,15 @@ def test_a_bump_only_requeues_that_source(tmp_path):
                         article_id=ref.id,
                         stage="extract",
                         source=source,
-                        fingerprint=fingerprint(
-                            "extract", source, 1, upstream=download.fingerprint
+                        fingerprint=ExtractStage(settings).fingerprint_for(
+                            source, download
                         ),
                         payload={"tables": []},
                     )
                 ]
             )
 
+        monkeypatch.setitem(EXTRACTOR_VERSIONS, "ace", EXTRACTOR_VERSIONS["ace"] + 1)
         refs = [by_pdf, by_ace]
         ids = [r.id for r in refs]
         plan = ExtractStage(settings).plan(
