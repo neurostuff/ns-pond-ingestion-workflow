@@ -20,10 +20,14 @@ logger = logging.getLogger(__name__)
 #:
 #: ace 1 -> 2: ACE gained table detection that finds tables in articles it
 #: previously reported as having none (neurosynth/ACE).
+#:
+#: pubget 1 -> 2, elsevier 1 -> 2, ace 2 -> 3: the article text keeps every
+#: table (neuroquery/pubget#65, neurostuff/elsevier_coordinate_extractor#6,
+#: neurosynth/ACE#67).
 EXTRACTOR_VERSIONS = {
-    "pubget": 1,
-    "elsevier": 1,
-    "ace": 2,
+    "pubget": 2,
+    "elsevier": 2,
+    "ace": 3,
     "pdf": 1,
 }
 DEFAULT_EXTRACTOR_VERSION = 1

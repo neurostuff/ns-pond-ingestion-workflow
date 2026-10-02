@@ -11,7 +11,8 @@ from typing import Any, Callable, Optional, Sequence
 
 from ace.config import update_config
 from ace.scrape import Scraper
-from ace.sources import SourceManager
+from ace.sources import SourceManager, table_text
+from bs4 import BeautifulSoup
 from ace import extract as ace_extract
 
 from ingestion_workflow.config import Settings, load_settings
@@ -378,6 +379,51 @@ def _translate_ace_table(
     )
 
 
+def _require_readability() -> None:
+    """Refuse to extract when readabilipy cannot run.
+
+    When its node step fails, ACE falls back to a cruder cleaner and says so
+    only in a per-article warning, so a whole run's text changes silently.
+    readabilipy's bundled jsdom needs node >= 20.19; beast's /usr/bin/node is
+    16, and nvm's newer node is on PATH only in interactive shells.
+    """
+    global _READABILITY_OK
+    if _READABILITY_OK:
+        return
+    from readabilipy import simple_json_from_html_string
+
+    try:
+        simple_json_from_html_string(
+            "<html><body><p>probe</p></body></html>", use_readability=True
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "readabilipy cannot run, so ACE would extract text with its "
+            "fallback cleaner. Put node >= 20.19 first on PATH (on beast: "
+            "~/.nvm/versions/node/v22.19.0/bin)."
+        ) from exc
+    _READABILITY_OK = True
+
+
+_READABILITY_OK = False
+
+
+def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
+    """Append the tables ACE fetched from pages other than the article's.
+
+    `keep_tables` places the tables the article page holds. Some publishers
+    serve tables on separate pages, which ACE downloads after the text is
+    built; those are added here, rendered the same way.
+    """
+    for table in tables:
+        markup = getattr(table, "input_html", None)
+        element = BeautifulSoup(markup, "lxml").find("table") if markup else None
+        rendered = table_text(element) if element is not None else ""
+        if rendered and rendered not in text:
+            text = f"{text.rstrip()}\n\n{rendered}"
+    return text
+
+
 def _extract_ace_article(
     download_result: DownloadResult,
     extraction_root: Path,
@@ -405,11 +451,14 @@ def _extract_ace_article(
         pmid=download_result.identifier.pmid,
         metadata_dir=None,
         skip_metadata=True,
+        keep_tables=True,
     )
     if not article:
         raise ValueError("ACE failed to parse the article content.")
 
-    article_text = getattr(article, "text", "") or ""
+    article_text = _with_fetched_tables(
+        getattr(article, "text", "") or "", getattr(article, "tables", [])
+    )
     full_text_path = article_dir / "article.txt"
     full_text_path.write_text(article_text, encoding="utf-8")
 
@@ -553,6 +602,8 @@ class ACEExtractor(BaseExtractor):
         progress_hook: Callable[[int], None] | None = None,
     ) -> list[ExtractionResult]:
         """Extract tables from downloaded articles using ACE."""
+        if download_results:
+            _require_readability()
         return self._run_extraction_pipeline(
             download_results,
             extraction_root=self._extraction_root,
