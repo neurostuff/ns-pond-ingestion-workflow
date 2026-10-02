@@ -21,20 +21,20 @@ def stage(tmp_path):
     return ExtractStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c"))
 
 
-@pytest.mark.parametrize("source", ["pubget", "elsevier", "pdf"])
-def test_sources_at_version_one_keep_their_original_fingerprint(stage, source):
-    """These were written under a single global EXTRACT_VERSION = 1. If their
-    fingerprint moves, every stored extraction for them is silently discarded
-    and recomputed -- around 197,000 of them on the live corpus."""
-    assert EXTRACTOR_VERSIONS[source] == 1
+def test_a_source_at_version_one_keeps_its_original_fingerprint(stage):
+    """pdf was written under a single global EXTRACT_VERSION = 1. If its
+    fingerprint moves, every stored pdf extraction is silently discarded and
+    recomputed, on the GPU."""
+    assert EXTRACTOR_VERSIONS["pdf"] == 1
+    original = fingerprint("extract", "pdf", 1, upstream="DL")
+    assert stage.fingerprint_for("pdf", UPSTREAM) == original
+
+
+@pytest.mark.parametrize("source", ["pubget", "elsevier", "ace"])
+def test_sources_whose_extractor_changed_moved(stage, source):
+    assert EXTRACTOR_VERSIONS[source] > 1
     original = fingerprint("extract", source, 1, upstream="DL")
-    assert stage.fingerprint_for(source, UPSTREAM) == original
-
-
-def test_ace_moved_because_its_extractor_changed(stage):
-    assert EXTRACTOR_VERSIONS["ace"] > 1
-    original = fingerprint("extract", "ace", 1, upstream="DL")
-    assert stage.fingerprint_for("ace", UPSTREAM) != original
+    assert stage.fingerprint_for(source, UPSTREAM) != original
 
 
 def test_an_unlisted_source_falls_back_rather_than_crashing(stage):
@@ -43,7 +43,7 @@ def test_an_unlisted_source_falls_back_rather_than_crashing(stage):
 
 
 def test_a_bump_only_requeues_that_source(tmp_path):
-    """An article extracted by pubget stays fresh; one extracted only by ace
+    """An article extracted by pdf stays fresh; one extracted only by ace
     comes back as work."""
     settings = Settings(
         data_root=tmp_path / "d",
@@ -52,9 +52,9 @@ def test_a_bump_only_requeues_that_source(tmp_path):
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        by_pubget = catalog.register(Identifier(pmcid="PMC1"))
+        by_pdf = catalog.register(Identifier(doi="10.1/pdf"))
         by_ace = catalog.register(Identifier(pmid="2"))
-        for ref, source in ((by_pubget, "pubget"), (by_ace, "ace")):
+        for ref, source in ((by_pdf, "pdf"), (by_ace, "ace")):
             catalog.record(
                 [
                     Outcome(
@@ -82,7 +82,7 @@ def test_a_bump_only_requeues_that_source(tmp_path):
                 ]
             )
 
-        refs = [by_pubget, by_ace]
+        refs = [by_pdf, by_ace]
         ids = [r.id for r in refs]
         plan = ExtractStage(settings).plan(
             Context(settings, catalog),
@@ -91,7 +91,7 @@ def test_a_bump_only_requeues_that_source(tmp_path):
             catalog.artifacts(ids, "download"),
         )
 
-    assert plan.fresh == 1, "the pubget article must not be recomputed"
+    assert plan.fresh == 1, "the pdf article must not be recomputed"
     assert [(w.ref.id, w.source) for w in plan.pending] == [(by_ace.id, "ace")]
 
 
