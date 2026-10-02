@@ -26,7 +26,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author, is_sufficient
+from ingestion_workflow.models.metadata import ArticleMetadata, Author
 
 logger = logging.getLogger(__name__)
 
@@ -103,20 +103,23 @@ class MetadataService:
                 len(s2_results),
             )
 
-        # Try PubMed for remaining items
+        # Each provider fills what the earlier ones left empty, and is skipped
+        # only for an article with nothing left to fill. Stopping instead at the
+        # first `sufficient` record left 69% of one batch without an abstract
+        # that PubMed had for 98.5% of them.
         if self._pubmed_client and identified_items:
-            missing = [
+            identifiers = [
                 item.identifier
                 for item in identified_items
-                if self._needs_more_metadata(results.get(item.slug))
+                if not _filled(results.get(item.slug))
             ]
-            if missing:
+            if identifiers:
                 logger.info(
                     "Fetching metadata from PubMed for %d articles",
-                    len(missing),
+                    len(identifiers),
                 )
                 sources_checked.append("pubmed")
-                pubmed_results = self._get_pubmed_metadata_cached(missing)
+                pubmed_results = self._get_pubmed_metadata_cached(identifiers)
                 # Merge with existing results
                 for identifier_slug, pubmed_meta in pubmed_results.items():
                     content = id_to_content.get(identifier_slug)
@@ -134,17 +137,15 @@ class MetadataService:
                     len(pubmed_results),
                 )
 
-        # Fallback to extractor metadata for remaining items
-        still_missing = [
-            item for item in extracted_contents if self._needs_more_metadata(results.get(item.slug))
-        ]
-        if still_missing:
+        # The extractor's own metadata last, to fill what the APIs did not.
+        unfilled = [item for item in extracted_contents if not _filled(results.get(item.slug))]
+        if unfilled:
             logger.info(
-                "Falling back to extractor metadata for %d articles",
-                len(still_missing),
+                "Reading extractor metadata for %d articles",
+                len(unfilled),
             )
             sources_checked.append("fallback")
-            for item in still_missing:
+            for item in unfilled:
                 try:
                     fallback_meta = self._get_fallback_metadata(item)
                     if fallback_meta and self._has_useful_metadata(fallback_meta):
@@ -294,22 +295,6 @@ class MetadataService:
                 metadata.open_access is not None,
             ]
         )
-
-    @classmethod
-    def _is_complete(cls, metadata: ArticleMetadata) -> bool:
-        """Whether this metadata is good enough to stop querying providers.
-
-        Demanding every field (keywords, license, open_access included) meant no
-        provider ever satisfied it, so PubMed and the file fallback ran for
-        100% of articles on 100% of runs.
-        """
-        return is_sufficient(metadata)
-
-    @classmethod
-    def _needs_more_metadata(cls, metadata: Optional[ArticleMetadata]) -> bool:
-        if metadata is None:
-            return True
-        return not cls._is_complete(metadata)
 
     def _get_elsevier_fallback(
         self, extracted_content: ExtractedContent
@@ -537,3 +522,22 @@ class MetadataService:
                 exc,
             )
             return None
+
+
+#: What a later provider is still asked for. Keywords, license and open
+#: access are left out: no provider fills them reliably, so demanding them
+#: sent every article to every provider.
+FILLED = ("title", "abstract", "journal", "publication_year", "authors")
+
+
+def _filled(metadata: Optional[ArticleMetadata]) -> bool:
+    """Nothing left for a later provider to add."""
+    if metadata is None:
+        return False
+    for name in FILLED:
+        value = getattr(metadata, name, None)
+        if value is None or (isinstance(value, (str, list)) and not value):
+            return False
+        if isinstance(value, str) and not value.strip():
+            return False
+    return True
