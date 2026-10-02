@@ -77,9 +77,11 @@ def test_the_schema_is_the_positional_form_the_model_was_trained_on():
     analysis = template["analyses"][0]
     assert list(analysis) == ["name", "measure", "points"]
     # a point is a fixed tuple, not an object
+    from ingestion_workflow.models.statistics import STATISTIC_KINDS
+
     assert analysis["points"][0] == [
         "number", "number", "number",
-        ["T", "Z", "F", "P", "R", "B"], "number", "integer",
+        list(STATISTIC_KINDS), "number", "integer",
     ]
 
 
@@ -132,17 +134,15 @@ def test_the_output_budget_leaves_room_for_the_prompt():
     """A long table is the one worth reading, and the server refuses -- with a
     400, not a truncation -- when the requested output will not fit beside the
     prompt. Two articles failed this way before the budget was computed."""
-    import inspect
-
     from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
 
-    src = inspect.getsource(CoordinateParsingClient.parse_analyses_native)
-    assert "max_completion_tokens=allowed" in src
-    assert "window - len(document) // 3" in src
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.default_model = "nu"
+    window = CoordinateParsingClient.CONTEXT_WINDOW
 
-    # a 12k-token document must not ask for 4,096 more
-    window, doc = CoordinateParsingClient.CONTEXT_WINDOW, "x" * 36000
-    allowed = max(256, min(4096, window - len(doc) // 3 - 512))
+    # a 12k-token document must not ask for the full budget on top of itself
+    doc = "x" * 36000
+    allowed = client.native_request(doc)["max_completion_tokens"]
     assert allowed + len(doc) // 3 < window
     assert allowed >= 256          # always asks for something usable
 
@@ -498,8 +498,28 @@ def test_the_output_budget_is_not_capped_below_what_the_window_affords():
 
     from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
 
-    sig = inspect.signature(CoordinateParsingClient.parse_analyses_native)
+    sig = inspect.signature(CoordinateParsingClient.native_request)
     assert sig.parameters["max_tokens"].default == 8192
-    src = inspect.getsource(CoordinateParsingClient.parse_analyses_native)
-    # the window-aware subtraction must survive the raise
-    assert "window - len(document) // 3 - 512" in src
+
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.default_model = "nu"
+    # a short document gets the whole raised cap, not the old 4,096
+    assert client.native_request("x" * 300)["max_completion_tokens"] == 8192
+    # and the window-aware subtraction still binds the long one
+    long = "x" * (CoordinateParsingClient.CONTEXT_WINDOW * 2)
+    assert client.native_request(long)["max_completion_tokens"] < 8192
+
+
+def test_the_template_offers_every_kind_the_reader_accepts():
+    """The template is the contract the model is given. It listed six kinds
+    while `_STAT_KINDS` accepted eight, so a model trained to emit Cohen's d
+    was forbidden it by its own prompt -- the same shape of contradiction that
+    makes a model fuse a letter and a number into one slot."""
+    import json
+
+    from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
+    from ingestion_workflow.services.nuextract_payload import _STAT_KINDS
+
+    template = json.loads(CoordinateParsingClient.NATIVE_TEMPLATE)
+    slot = template["analyses"][0]["points"][0][3]
+    assert set(slot) == set(_STAT_KINDS), (set(slot) ^ set(_STAT_KINDS))

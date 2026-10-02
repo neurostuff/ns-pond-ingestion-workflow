@@ -25,6 +25,7 @@ import logging
 import re
 from typing import Any, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.models.statistics import STATISTIC_KINDS
 from ingestion_workflow.models import (
     CoordinatePoint,
     ParseAnalysesOutput,
@@ -48,10 +49,7 @@ class UnreadableAnswer(ValueError):
     """
 
 ALLOWED_MEASURES = {"voxels", "mm^3"}
-#: Kept in step with `nspond_tables.fields.STATISTIC_PRIORITY`, which is
-#: where the rule lives. D is Cohen's d and G is Hedges' g: both are
-#: real in the corpus, g almost always in an SDM or ALE meta-analysis.
-_STAT_KINDS = {"T", "Z", "D", "G", "F", "P", "R", "B"}
+_STAT_KINDS = frozenset(STATISTIC_KINDS)
 _JSON = re.compile(r"\{.*\}", re.S)
 
 

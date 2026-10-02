@@ -320,6 +320,43 @@ def _render(report, *, dry_run: bool) -> str:
 
 
 @app.command()
+def serve(
+    config: Optional[Path] = ConfigOption,
+    weights: Optional[Path] = typer.Option(
+        None, "--weights", "-w", help="Merged model directory to serve."
+    ),
+    stop: bool = typer.Option(False, "--stop", help="Stop the server and exit."),
+    check: bool = typer.Option(
+        False, "--check", help="Report what a running server is serving, and exit."
+    ),
+    log_file: Optional[Path] = typer.Option(None, "--log-file"),
+) -> None:
+    """Serve the fine-tuned extractor for the native path.
+
+    The launch is derived from the same settings the client reads -- the served
+    name from `llm_model`, the address from `llm_api_base`, the window from the
+    client itself, the card split from the weights and the cards present -- so
+    there is nothing here to get wrong by remembering it differently.
+    """
+    from ingestion_workflow.services import extractor_server
+
+    settings = _settings(config)
+    if stop:
+        extractor_server.stop()
+        typer.echo("stopped")
+        return
+    if check:
+        typer.echo(extractor_server.check(settings))
+        return
+    plan = extractor_server.start(settings, weights=weights, log_file=log_file)
+    typer.echo(
+        f"serving {plan.served_name} at {plan.base_url} "
+        f"(tp={plan.tensor_parallel} dp={plan.data_parallel}, "
+        f"window {plan.max_model_len})"
+    )
+
+
+@app.command()
 def status(config: Optional[Path] = ConfigOption) -> None:
     """Show what each stage has done, and what it could do next."""
     settings = _settings(config)
