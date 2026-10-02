@@ -36,6 +36,29 @@ EXTRACTOR_VERSIONS = {
 DEFAULT_EXTRACTOR_VERSION = 1
 
 
+def extraction_fingerprint(source: str, download: Artifact) -> str:
+    version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
+    return fingerprint("extract", source, version, upstream=download.fingerprint)
+
+
+def current_extractions(
+    ctx: Context, extractions: Dict[str, Artifact], downloads: Dict[str, Artifact]
+) -> Dict[str, Artifact]:
+    """The extractions an extract run would leave as they are.
+
+    An article keeps every extraction it ever had, and one from a source the
+    extract stage no longer picks for it stays OK under an old version. Choosing
+    among them by size picks that one: on 2026-10-02, 14,991 articles had an old
+    ACE extraction, holding each table twice, that outnumbered their new one.
+    """
+    return {
+        source: artifact
+        for source, artifact in extractions.items()
+        if source in downloads
+        and ctx.is_fresh(artifact, extraction_fingerprint(source, downloads[source]))
+    }
+
+
 class ExtractStage:
     name = "extract"
     requires = "download"
@@ -57,8 +80,7 @@ class ExtractStage:
         return self._extractors[source]
 
     def fingerprint_for(self, source: str, upstream: Artifact) -> str:
-        version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
-        return fingerprint("extract", source, version, upstream=upstream.fingerprint)
+        return extraction_fingerprint(source, upstream)
 
     def plan(
         self,
