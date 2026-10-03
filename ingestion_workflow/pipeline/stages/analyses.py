@@ -77,6 +77,12 @@ class AnalysesStage:
         """`upstream` is the triage artifact, whose own fingerprint runs
         through the extraction it judged. So the chain is extract -> triage ->
         analyses, and a change anywhere along it lands here."""
+        # Constrained decoding changes what the model can answer, so it is an
+        # input -- appended only when on, so the corpus decoded without it
+        # keeps the fingerprints it has.
+        constrained = (
+            ["constrained"] if getattr(self.settings, "llm_constrained_decoding", False) else []
+        )
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
@@ -88,6 +94,7 @@ class AnalysesStage:
             # deployment that flipped the flag while keeping the model name
             # would leave the whole corpus looking fresh.
             str(bool(getattr(self.settings, "llm_native_schema", False))),
+            *constrained,
             upstream=upstream.fingerprint,
         )
 

@@ -214,6 +214,15 @@ class Settings(BaseSettings):
             "left unset for every hosted model"
         ),
     )
+    llm_constrained_decoding: bool = Field(
+        default=False,
+        description=(
+            "On the native path, constrain decoding to the template's JSON "
+            "schema (vLLM structured_outputs), so every answer parses. Greedy "
+            "decoding repeats a malformed answer exactly, so without this the "
+            "tables it breaks on are lost on every run"
+        ),
+    )
 
     extractor_weights: Optional[Path] = Field(
         default=None,
