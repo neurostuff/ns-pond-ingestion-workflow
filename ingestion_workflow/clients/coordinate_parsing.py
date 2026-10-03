@@ -203,6 +203,7 @@ class CoordinateParsingClient(GenericLLMClient):
         #: It had been raised once before, from 2,048, for the same reason.
         max_tokens: int = 8192,
         context_window: Optional[int] = None,
+        constrain: bool = False,
     ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
         """Parse a table with the fine-tuned extractor, and report its space.
 
@@ -227,7 +228,8 @@ class CoordinateParsingClient(GenericLLMClient):
         subtraction was written to protect.
         """
         request = self.fit_to_window(
-            document, model=model, max_tokens=max_tokens, context_window=context_window
+            document, model=model, max_tokens=max_tokens, context_window=context_window,
+            constrain=constrain,
         )
         response = self.client.chat.completions.create(**request)
         return parse_payload(response.choices[0].message.content or "")
@@ -243,6 +245,7 @@ class CoordinateParsingClient(GenericLLMClient):
         model: Optional[str] = None,
         max_tokens: int = 8192,
         context_window: Optional[int] = None,
+        constrain: bool = False,
     ) -> Dict[str, Any]:
         """`native_request`, with the budget set from the prompt's real size.
 
@@ -259,7 +262,8 @@ class CoordinateParsingClient(GenericLLMClient):
         window = context_window or self.CONTEXT_WINDOW
         floor = 256
         request = self.native_request(
-            document, model=model, max_tokens=max_tokens, context_window=context_window
+            document, model=model, max_tokens=max_tokens, context_window=context_window,
+            constrain=constrain,
         )
         for _ in range(4):
             count = self._prompt_tokens(request)
@@ -276,7 +280,8 @@ class CoordinateParsingClient(GenericLLMClient):
                 "no room for an answer", len(sent), keep, count,
             )
             request = self.native_request(
-                sent[:keep], model=model, max_tokens=max_tokens, context_window=context_window
+                sent[:keep], model=model, max_tokens=max_tokens, context_window=context_window,
+                constrain=constrain,
             )
         return request
 
