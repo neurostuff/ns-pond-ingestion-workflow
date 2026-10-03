@@ -523,3 +523,39 @@ def test_the_template_offers_every_kind_the_reader_accepts():
     template = json.loads(CoordinateParsingClient.NATIVE_TEMPLATE)
     slot = template["analyses"][0]["points"][0][3]
     assert set(slot) == set(_STAT_KINDS), (set(slot) ^ set(_STAT_KINDS))
+
+
+# -- the budget is set from the prompt's real size --------------------------
+
+def _counting_client(per_char: float):
+    """A client whose server tokenizer charges `per_char` tokens a character."""
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.default_model = "nu"
+    client._prompt_tokens = lambda request: int(len(request["messages"][0]["content"]) * per_char)
+    return client
+
+
+def test_the_budget_is_what_the_counted_prompt_leaves():
+    client = _counting_client(1.0)
+    window = CoordinateParsingClient.CONTEXT_WINDOW
+    request = client.fit_to_window("x" * 9000)
+    assert request["max_completion_tokens"] == window - 9000 - client.WINDOW_MARGIN
+
+
+def test_a_prompt_that_fills_the_window_is_clipped_until_an_answer_fits():
+    """Dense tables run past three characters a token: a document the estimate
+    passed whole can fill the window on its own, which the server refuses."""
+    client = _counting_client(1.0)
+    window = CoordinateParsingClient.CONTEXT_WINDOW
+    request = client.fit_to_window("x" * 30000)
+    sent = len(request["messages"][0]["content"])
+    assert sent < 30000
+    assert sent + request["max_completion_tokens"] + client.WINDOW_MARGIN <= window
+    assert request["max_completion_tokens"] >= 256
+
+
+def test_without_a_token_count_the_estimate_stands():
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.default_model = "nu"
+    client._prompt_tokens = lambda request: None
+    assert client.fit_to_window("x" * 9000) == client.native_request("x" * 9000)
