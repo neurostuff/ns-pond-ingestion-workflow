@@ -559,3 +559,42 @@ def test_without_a_token_count_the_estimate_stands():
     client.default_model = "nu"
     client._prompt_tokens = lambda request: None
     assert client.fit_to_window("x" * 9000) == client.native_request("x" * 9000)
+
+
+# -- constrained decoding ----------------------------------------------------
+
+def test_the_grammar_is_sent_only_when_asked_for():
+    client = _counting_client(0.3)
+    assert "structured_outputs" not in client.fit_to_window("x" * 900)["extra_body"]
+    constrained = client.fit_to_window("x" * 900, constrain=True)["extra_body"]
+    assert constrained["structured_outputs"] == {"json": CoordinateParsingClient.native_schema()}
+
+
+def test_a_clipped_request_keeps_its_grammar():
+    client = _counting_client(1.0)
+    request = client.fit_to_window("x" * 30000, constrain=True)
+    assert len(request["messages"][0]["content"]) < 30000
+    assert "structured_outputs" in request["extra_body"]
+
+
+def test_constraining_changes_the_analyses_fingerprint_and_off_changes_nothing():
+    """Off must leave every existing fingerprint as it was, or the whole corpus
+    goes stale; on is a different input and must not look fresh."""
+    from ingestion_workflow.catalog import fingerprint
+    from ingestion_workflow.pipeline.stages import analyses as A
+
+    class _Art:
+        fingerprint = "triage-fp"
+
+    class _Off:
+        llm_model = "nu-v21"
+        llm_native_schema = True
+        llm_constrained_decoding = False
+
+    class _On(_Off):
+        llm_constrained_decoding = True
+
+    before = fingerprint("analyses", A.COORDINATE_PARSING_PROMPT_VERSION, A.EXTRACTION_VERSION,
+                         "nu-v21", "True", upstream="triage-fp")
+    assert A.AnalysesStage(settings=_Off()).fingerprint_for(_Art()) == before
+    assert A.AnalysesStage(settings=_On()).fingerprint_for(_Art()) != before

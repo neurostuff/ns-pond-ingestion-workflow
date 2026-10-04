@@ -214,7 +214,10 @@ class CreateAnalysesService:
                 document = self._build_document(
                     bundle, table, self._serialise(table_text, table_key)
                 )
-                parsed_output, model_space = self.client.parse_analyses_native(document)
+                parsed_output, model_space = self.client.parse_analyses_native(
+                    document,
+                    constrain=bool(getattr(self.settings, "llm_constrained_decoding", False)),
+                )
             else:
                 prompt = self._build_prompt(bundle, table, table_text, table_key)
                 parsed_output = self.client.parse_analyses(prompt)
