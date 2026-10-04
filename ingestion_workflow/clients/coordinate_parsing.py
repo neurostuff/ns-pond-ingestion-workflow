@@ -6,6 +6,8 @@ import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
+import httpx
+
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import ParseAnalysesOutput
@@ -224,15 +226,78 @@ class CoordinateParsingClient(GenericLLMClient):
         below what the window affords throws away the long answers the
         subtraction was written to protect.
         """
-        response = self.client.chat.completions.create(
-            **self.native_request(
-                document,
-                model=model,
-                max_tokens=max_tokens,
-                context_window=context_window,
-            )
+        request = self.fit_to_window(
+            document, model=model, max_tokens=max_tokens, context_window=context_window
         )
+        response = self.client.chat.completions.create(**request)
         return parse_payload(response.choices[0].message.content or "")
+
+    #: Tokens kept free between the prompt and the answer's budget. The count is
+    #: exact, so this covers only what the server adds after tokenizing.
+    WINDOW_MARGIN = 16
+
+    def fit_to_window(
+        self,
+        document: str,
+        *,
+        model: Optional[str] = None,
+        max_tokens: int = 8192,
+        context_window: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """`native_request`, with the budget set from the prompt's real size.
+
+        `native_request` estimates three characters per token, and dense
+        tables run past that: on 2026-10-02, 74 of 49,368 articles were refused
+        with a 400 because the prompt plus the budget it allowed overran the
+        window -- one with the prompt alone filling it after the clip. The
+        server's own tokenizer, run over the request with its chat template,
+        gives the size exactly; the document is clipped by the ratio it
+        measured until the floor fits, and the budget is what is left.
+
+        A server without `/tokenize` keeps the estimate, as before.
+        """
+        window = context_window or self.CONTEXT_WINDOW
+        floor = 256
+        request = self.native_request(
+            document, model=model, max_tokens=max_tokens, context_window=context_window
+        )
+        for _ in range(4):
+            count = self._prompt_tokens(request)
+            if count is None:
+                return request
+            spare = window - count - self.WINDOW_MARGIN
+            if spare >= floor:
+                request["max_completion_tokens"] = min(max_tokens, spare)
+                return request
+            sent = request["messages"][0]["content"]
+            keep = int(len(sent) * (window - floor - self.WINDOW_MARGIN) / count * 0.97)
+            logger.warning(
+                "clipping a %d character document to %d: its %d prompt tokens leave "
+                "no room for an answer", len(sent), keep, count,
+            )
+            request = self.native_request(
+                sent[:keep], model=model, max_tokens=max_tokens, context_window=context_window
+            )
+        return request
+
+    def _prompt_tokens(self, request: Dict[str, Any]) -> Optional[int]:
+        """The prompt's size by the server's tokenizer, or None if it cannot say."""
+        base = str(self.client.base_url).rstrip("/")
+        if base.endswith("/v1"):
+            base = base[: -len("/v1")]
+        body = {
+            "model": request["model"],
+            "messages": request["messages"],
+            "add_generation_prompt": True,
+            "chat_template_kwargs": request["extra_body"]["chat_template_kwargs"],
+        }
+        try:
+            response = httpx.post(f"{base}/tokenize", json=body, timeout=60)
+            response.raise_for_status()
+            return int(response.json()["count"])
+        except Exception as exc:  # noqa: BLE001 - any failure falls back to the estimate
+            logger.debug("no token count from %s/tokenize: %s", base, exc)
+            return None
 
     def parse_analyses(
         self,
