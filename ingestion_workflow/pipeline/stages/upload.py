@@ -9,6 +9,7 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.models import AnalysisCollection
 from ingestion_workflow.models.metadata import ArticleMetadata
 
+from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
 
@@ -30,7 +31,12 @@ class UploadStage:
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, upstream: Artifact) -> str:
+    def fingerprint_for(self, upstream: Artifact, excluded=None) -> str:
+        # A person's exclusions are an input like any other: marking a table
+        # makes the article stale, so the next upload takes it back out of
+        # neurostore. Appended only when there is one, so the fingerprint of
+        # every article nobody has marked is exactly what it was.
+        marked = excl.digest(excluded or {})
         return fingerprint(
             "upload",
             UPLOAD_VERSION,
@@ -43,6 +49,7 @@ class UploadStage:
             self.settings.upload_behavior.value,
             self.settings.upload_metadata_mode.value,
             self.settings.upload_metadata_only,
+            *([marked] if marked else []),
             upstream=upstream.fingerprint,
         )
 
@@ -55,12 +62,13 @@ class UploadStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        excluded = ctx.catalog.exclusions([ref.id for ref in refs])
         for ref in refs:
             analyses = upstream.get(ref.id, {}).get("")
             if analyses is None or analyses.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(analyses)
+            fp = self.fingerprint_for(analyses, excluded.get(ref.id))
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -81,7 +89,15 @@ class UploadStage:
         # change nothing, still work on a config that has not named a source.
         resolve_upload_source(self.settings)
 
-        analyses, metadata, empty = self._gather(ctx, works)
+        excluded = ctx.catalog.exclusions([work.article_id for work in works])
+        analyses, metadata, empty = self._gather(ctx, works, excluded)
+        # An article left with nothing because a person marked its tables is
+        # not "nothing to upload": what it uploaded before is still there, and
+        # still claims coordinates the paper does not report. Those are
+        # retracted. One that was never uploaded has nothing to take back.
+        previous = ctx.catalog.artifacts([w.article_id for w in empty if w.article_id in excluded], "upload")
+        retract, empty = self._retractable(ctx, empty, excluded, previous)
+        yield from self._retract(retract)
         # An article whose every collection came back with no analyses has
         # nothing to say. Uploading it would create a study claiming the paper
         # reports no coordinates, when what the extractor said is that these
@@ -94,9 +110,10 @@ class UploadStage:
                 source="",
                 status=Status.SKIPPED,
                 fingerprint=work.fingerprint,
-                summary={"reason": "no analyses to upload"},
+                summary=({"reason": "excluded by hand"} if work.article_id in excluded
+                         else {"reason": "no analyses to upload"}),
             )
-        skipped = {work.article_id for work in empty}
+        skipped = {work.article_id for work in empty} | {work.article_id for work, _ in retract}
         works = [work for work in works if work.article_id not in skipped]
         if not analyses:
             return
@@ -163,7 +180,64 @@ class UploadStage:
                     fingerprint=work.fingerprint,
                 )
 
-    def _gather(self, ctx: Context, works: Sequence[Work]):
+    def _retractable(self, ctx, empty, excluded, previous):
+        """Split the empty works into those to retract and those to skip."""
+        retract, skip = [], []
+        for work in empty:
+            prior = previous.get(work.article_id, {}).get("")
+            base_study_id = (prior.summary or {}).get("base_study_id") if prior and prior.status is Status.OK else None
+            base_study_id = base_study_id or work.ref.identifier.neurostore
+            if work.article_id in excluded and base_study_id:
+                retract.append((work, base_study_id))
+            else:
+                skip.append(work)
+        return retract, skip
+
+    def _retract(self, retract) -> Iterator[Outcome]:
+        if not retract:
+            return
+        from ingestion_workflow.services.db import SessionFactory, SSHTunnel
+        from ingestion_workflow.services.upload import UploadService
+
+        by_slug = {work.ref.identifier.slug: work for work, _ in retract}
+        try:
+            with SSHTunnel(self.settings) as tunnel:
+                service = UploadService(self.settings, SessionFactory(self.settings, tunnel=tunnel))
+                outcomes = service.retract([(work.ref.identifier.slug, bsid) for work, bsid in retract])
+        except Exception as exc:
+            logger.error("retraction batch failed: %s", exc)
+            for work, _ in retract:
+                yield Outcome.failure(work.article_id, self.name, "", f"{type(exc).__name__}: {exc}",
+                                      fingerprint=work.fingerprint)
+            return
+        for outcome in outcomes:
+            work = by_slug.get(outcome.slug)
+            if work is None:
+                continue
+            if not outcome.success:
+                yield Outcome.failure(work.article_id, self.name, "", outcome.error or "retraction failed",
+                                      fingerprint=work.fingerprint)
+                continue
+            # OK, not SKIPPED: sync reads the summary and takes the article out
+            # of the corpus as well.
+            yield Outcome(
+                article_id=work.article_id,
+                stage=self.name,
+                source="",
+                status=Status.OK,
+                fingerprint=work.fingerprint,
+                summary={
+                    "base_study_id": outcome.base_study_id,
+                    "study_id": outcome.study_id,
+                    "retracted": outcome.action,
+                    "removed": outcome.removed,
+                    "kept_annotated": outcome.kept_annotated,
+                    "studysets": len(outcome.studysets or []),
+                    "analyses": 0,
+                },
+            )
+
+    def _gather(self, ctx: Context, works: Sequence[Work], excluded=None):
         """Load only this batch's analyses and metadata, never the whole cache.
 
         Also returns the works holding nothing to upload. The gate in `narrow`
@@ -175,8 +249,9 @@ class UploadStage:
         metadata: Dict[str, ArticleMetadata] = {}
         empty: List[Work] = []
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
+        excluded = excluded or {}
         for work in works:
-            payload = ctx.payload(work.upstream)
+            payload = excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {}))
             if not payload:
                 empty.append(work)
                 continue

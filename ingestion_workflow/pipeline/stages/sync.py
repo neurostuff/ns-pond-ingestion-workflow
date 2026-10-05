@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import logging
+import shutil
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, Iterator, List, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -15,6 +18,7 @@ from ingestion_workflow.models import (
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import nspond
 
+from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .extract import current_extractions
@@ -31,6 +35,7 @@ class SyncStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self._synced: List[Tuple[str, ArticleExtractionBundle]] = []
+        self._retracted: List[str] = []
 
     def fingerprint_for(self, upstream: Artifact) -> str:
         return fingerprint("sync", SYNC_VERSION, upstream=upstream.fingerprint)
@@ -66,11 +71,16 @@ class SyncStage:
         downloads = ctx.catalog.artifacts(ids, "download")
         triaged = ctx.catalog.artifacts(ids, "triage")
 
+        excluded = ctx.catalog.exclusions(ids)
         for work in works:
             base_study_id = work.upstream.summary.get("base_study_id")
+            if work.upstream.summary.get("retracted"):
+                yield self._retract(work, base_study_id)
+                continue
             try:
                 bundle, per_table, files = self._assemble(
-                    ctx, work, extractions, metadata, analyses, downloads, triaged
+                    ctx, work, extractions, metadata, analyses, downloads, triaged,
+                    excluded.get(work.article_id, {}),
                 )
             except LookupError as exc:
                 yield Outcome.failure(
@@ -103,7 +113,33 @@ class SyncStage:
                 summary={"base_study_id": base_study_id, "path": str(target)},
             )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged):
+    def _retract(self, work: Work, base_study_id: str) -> Outcome:
+        """Take a retracted article out of the corpus.
+
+        Moved, not deleted: the corpus is not reproducible from the catalog
+        alone, so the directory goes to a sibling `<root>-retracted/` tree,
+        stamped with the time, where it can be put back by hand.
+        """
+        root = Path(self.settings.ns_pond_root)
+        source = root / base_study_id
+        moved = None
+        if source.exists():
+            stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            moved = root.parent / f"{root.name}-retracted" / f"{base_study_id}-{stamp}"
+            moved.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(source), str(moved))
+        self._retracted.append(base_study_id)
+        return Outcome(
+            article_id=work.article_id,
+            stage=self.name,
+            source="",
+            status=Status.OK,
+            fingerprint=work.fingerprint,
+            summary={"base_study_id": base_study_id, "retracted": True,
+                     "moved_to": str(moved) if moved else None},
+        )
+
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),
@@ -126,7 +162,9 @@ class SyncStage:
             else ArticleMetadata(title=content.slug)
         )
 
-        analysis_payload = ctx.payload(analyses.get(work.article_id, {}).get("")) or {}
+        analysis_payload = excl.kept(
+            ctx.payload(analyses.get(work.article_id, {}).get("")), excluded or {}
+        )
         per_table = {
             table_id: AnalysisCollection.from_dict(blob)
             for table_id, blob in analysis_payload.items()
@@ -142,10 +180,13 @@ class SyncStage:
 
     def finish(self) -> None:
         """Write the corpus-level manifest once the run is over."""
-        if not self._synced:
+        if not self._synced and not self._retracted:
             return
-        nspond.write_corpus_manifest(self.settings.ns_pond_root / "pmids.tsv", self._synced)
+        nspond.write_corpus_manifest(
+            self.settings.ns_pond_root / "pmids.tsv", self._synced, drop=self._retracted
+        )
         self._synced.clear()
+        self._retracted.clear()
 
 
 def _synced_extraction(

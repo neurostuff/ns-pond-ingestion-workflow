@@ -6,6 +6,7 @@ stages. `add` puts articles in, `run` advances them, `status`/`show` report.
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import timedelta
 from pathlib import Path
@@ -445,6 +446,78 @@ def show(
             typer.echo(
                 f"  {label:<18} {artifact.status.value:<10} {artifact.updated_at[:10]}  {detail}"
             )
+
+
+@app.command()
+def exclude(
+    identifiers: Optional[List[str]] = typer.Argument(
+        None, help="Articles to mark: PMID, PMC id, DOI, Neurostore base_study_id or article id."
+    ),
+    table: Optional[List[str]] = typer.Option(
+        None, "--table", "-t", help="Mark only this table (repeatable). Without it, the whole article."
+    ),
+    file: Optional[Path] = typer.Option(
+        None, "--file", "-f", exists=True, dir_okay=False,
+        help="JSON list of {article_id, table_id, reason?, note?}; rows whose `verdict` is "
+             "present and not 'not coordinates' are ignored, so a review file can be given as is.",
+    ),
+    reason: str = typer.Option("not coordinates", "--reason", help="Why: recorded with the mark."),
+    note: str = typer.Option("", "--note", help="Free text recorded with the mark."),
+    remove: bool = typer.Option(False, "--remove", help="Withdraw the marks instead of adding them."),
+    list_: bool = typer.Option(False, "--list", help="Print the marks on the given articles, or all."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Mark tables as holding no coordinates, so upload and sync leave them out.
+
+    Marks are a person's verdict and stay in the catalog until withdrawn. The
+    next `ingest run -s upload -s sync` acts on them: a marked table's analyses
+    are removed from the study version, and an article with nothing left is
+    retracted -- its version deleted unless a studyset or an annotation uses it,
+    and its corpus directory moved to `<ns_pond_root>-retracted/`.
+    """
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        rows: List[tuple] = []
+        for token in identifiers or []:
+            ref = _find(catalog, token)
+            if ref is None:
+                typer.echo(f"not in the catalog: {token}")
+                raise typer.Exit(code=1)
+            # A pmid can alias several articles; say which one this resolved to.
+            typer.echo(f"{token} -> article {ref.id} ({ref.identifier.slug})")
+            for table_id in table or [Catalog.WHOLE_ARTICLE]:
+                rows.append((ref.id, str(table_id), reason, note))
+        if file is not None:
+            for entry in json.loads(file.read_text()):
+                verdict = entry.get("verdict")
+                if verdict is not None and verdict != "not coordinates":
+                    continue
+                if not any(vars(catalog.identifier(entry["article_id"])).values()):
+                    typer.echo(f"  skipped, not an article id in this catalog: {entry['article_id']}")
+                    continue
+                rows.append((entry["article_id"], str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
+                             entry.get("reason") or entry.get("kind") or reason,
+                             entry.get("note") or note))
+
+        if list_:
+            marks = catalog.exclusions([r[0] for r in rows] if rows else None)
+            for article_id, tables in sorted(marks.items()):
+                for table_id, mark in sorted(tables.items()):
+                    typer.echo(f"{article_id}  {table_id:<24} {mark['reason']}  {mark['note']}")
+            typer.echo(f"{sum(len(t) for t in marks.values()):,} marks on {len(marks):,} articles")
+            return
+        if not rows:
+            raise typer.BadParameter("give articles, --file, or --list")
+        if remove:
+            n = sum(catalog.unexclude(a, None if t == Catalog.WHOLE_ARTICLE and not table else t)
+                    for a, t, _, _ in rows)
+            typer.echo(f"withdrew {n:,} marks")
+            return
+        catalog.exclude(rows)
+        typer.echo(
+            f"marked {len(rows):,} tables on {len({r[0] for r in rows}):,} articles; "
+            "run upload and sync to act on them"
+        )
 
 
 @app.command()
