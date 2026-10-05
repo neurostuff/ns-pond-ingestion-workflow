@@ -338,3 +338,68 @@ def test_a_failed_upstream_is_not_ready(catalog):
     ref = catalog.register(Identifier(pmid="50"))
     catalog.record([Outcome.failure(ref.id, "download", "ace", "boom")])
     assert catalog.ready_counts(requirements)["extract"] == 0
+
+
+# -- the registration guard ----------------------------------------------------
+
+
+def _pmids(catalog, article_id):
+    return {v for k, v in catalog._conn.execute(
+        "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)) if k == "pmid"}
+
+
+def test_a_shared_pmcid_does_not_fuse_papers(tmp_path):
+    """The pattern that built 244cm4x6up53: one cache stamped the same PMCID on
+    hundreds of papers, each beside its own correct PMID and DOI."""
+    with Catalog.open(tmp_path / "cat") as catalog:
+        refs = catalog.register_many(
+            [Identifier(pmid=str(1000 + i), doi=f"10.1/p{i}", pmcid="PMC7976178") for i in range(50)]
+        )
+        ids = {ref.id for ref in refs}
+        assert len(ids) == 50
+        assert all(len(_pmids(catalog, i)) == 1 for i in ids)
+        holders = {row[0] for row in catalog._conn.execute(
+            "SELECT article_id FROM aliases WHERE kind='pmcid'")}
+        assert holders == {refs[0].id}
+        assert catalog.conflicts >= 49   # each stamped record is refused, and says so
+
+
+def test_a_known_doi_does_not_claim_a_different_paper(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+        b = catalog.register(Identifier(pmid="2", doi="10.1/a"))   # wrong DOI on paper 2
+        assert a.id != b.id
+        assert _pmids(catalog, a.id) == {"1"} and _pmids(catalog, b.id) == {"2"}
+        assert catalog.resolve(Identifier(doi="10.1/a")).id == a.id
+
+
+def test_two_halves_of_one_paper_still_merge(tmp_path):
+    """The point of merging survives: a DOI-only and a PMID-only record of the same
+    paper become one article once a record ties them together."""
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(doi="10.1/a"))
+        b = catalog.register(Identifier(pmid="1"))
+        merged = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+        assert {a.id, b.id} >= {merged.id}
+        assert catalog.resolve(Identifier(doi="10.1/a")).id == catalog.resolve(Identifier(pmid="1")).id
+        assert catalog.conflicts == 0
+
+
+def test_two_papers_are_not_merged_by_a_record_naming_both(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+        b = catalog.register(Identifier(pmid="2", doi="10.1/b"))
+        got = catalog.register(Identifier(pmid="1", doi="10.1/b"))   # pairs 1 with 2's DOI
+        assert got.id == a.id
+        assert catalog.resolve(Identifier(pmid="2")).id == b.id
+        assert catalog.resolve(Identifier(doi="10.1/b")).id == b.id
+
+
+def test_a_learned_alias_does_not_move_from_its_article(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1"))
+        b = catalog.register(Identifier(pmid="2"))
+        catalog.add_aliases([(a.id, "neurostore", "BASE1")])
+        catalog.add_aliases([(b.id, "neurostore", "BASE1")])
+        assert catalog.resolve(Identifier(neurostore="BASE1")).id == a.id
+        assert catalog.conflicts == 1
