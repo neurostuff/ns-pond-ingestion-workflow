@@ -233,15 +233,23 @@ class Catalog:
             "SELECT value FROM aliases WHERE article_id=? AND kind=?", (article_id, kind))}
 
     def _compatible(self, conn, article_ids: Sequence[str], incoming: Mapping[str, str]) -> bool:
-        """Whether these articles and the record's own ids hold at most one PMID and one PMCID."""
+        """Whether fusing these articles with the record would bring two papers together.
+
+        Judged pairwise, by what each side holds: two sides clash on a kind when
+        both hold values of it and neither holds all of the other's. An article
+        that is already wrong -- one holding many PMIDs from before this guard --
+        is not made worse by a record that brings nothing new, so it still
+        resolves; otherwise every lookup of it would make an empty new article.
+        """
+        sides = [{kind: self._held(conn, a, kind) for kind in self.SINGULAR} for a in article_ids]
+        sides.append({kind: ({incoming[kind]} if incoming.get(kind) else set()) for kind in self.SINGULAR})
         for kind in self.SINGULAR:
-            values = set()
-            for article_id in article_ids:
-                values |= self._held(conn, article_id, kind)
-            if incoming.get(kind):
-                values.add(incoming[kind])
-            if len(values) > 1:
-                return False
+            seen: set = set()
+            for side in sides:
+                values = side[kind]
+                if values and seen and not (values <= seen or seen <= values):
+                    return False
+                seen |= values
         return True
 
     def register(self, identifier: Identifier) -> ArticleRef:
