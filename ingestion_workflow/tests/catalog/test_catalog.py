@@ -403,3 +403,18 @@ def test_a_learned_alias_does_not_move_from_its_article(tmp_path):
         catalog.add_aliases([(b.id, "neurostore", "BASE1")])
         assert catalog.resolve(Identifier(neurostore="BASE1")).id == a.id
         assert catalog.conflicts == 1
+
+
+def test_an_already_fused_article_still_resolves(tmp_path):
+    """Looking up an article that holds two PMIDs from before the guard must
+    find it, not make an empty new article for every lookup."""
+    with Catalog.open(tmp_path / "cat") as catalog:
+        fused = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+        catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '2', ?)", (fused.id,))
+        catalog.add_aliases([(fused.id, "neurostore", "BASE1")])
+        before = catalog._conn.execute("SELECT count(*) FROM articles").fetchone()[0]
+        assert catalog.register(Identifier(neurostore="BASE1")).id == fused.id
+        assert catalog.register(Identifier(pmid="2")).id == fused.id
+        assert catalog._conn.execute("SELECT count(*) FROM articles").fetchone()[0] == before
+        # a new paper's PMID beside the fused article's DOI is still refused
+        assert catalog.register(Identifier(pmid="3", doi="10.1/a")).id != fused.id
