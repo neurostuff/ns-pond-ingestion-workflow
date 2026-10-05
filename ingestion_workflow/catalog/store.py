@@ -7,6 +7,7 @@ question in the pipeline is answered here and nowhere else.
 from __future__ import annotations
 
 import base64
+import logging
 import hashlib
 import json
 import sqlite3
@@ -20,6 +21,8 @@ from ingestion_workflow.models.ids import Identifier
 from .blobs import BlobStore
 from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
 from .schema import DDL, PRAGMAS, SCHEMA_VERSION
+
+logger = logging.getLogger(__name__)
 
 #: Article ids are 12 lowercase base32 characters. Deliberately not the
 #: mixed-case shortuuid-12 that Neurostore uses for base_study_id, so the two
@@ -117,43 +120,129 @@ class Catalog:
                 return self.ref(self._follow_merge(row["article_id"]))
         return None
 
+    #: Kinds an article may hold only one of. Two PMIDs on one article means two
+    #: papers were fused; the same for two PMCIDs. DOIs are not on the list --
+    #: one paper legitimately has several (a preprint, an erratum, case variants).
+    SINGULAR = ("pmid", "pmcid")
+
     def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
-        """Register articles, adding aliases to existing ones. Idempotent."""
+        """Register articles, adding aliases to existing ones. Idempotent.
+
+        Returns one ref per identifier that carries any id, in order.
+
+        A known id is evidence that a record is an existing article, not proof.
+        It used to be treated as proof: every article any of a record's ids
+        pointed to was merged into one, and the record's other ids were moved
+        onto it. One cache had stamped the same PMCID on about 1,300 different
+        papers, and migrating it fused all of them into a single article that
+        held 1,322 PMIDs. So now:
+
+        * the record anchors on the article holding its PMID, else its PMCID,
+          else a DOI, else its neurostore id;
+        * an anchor that holds a different PMID is not this paper: a new
+          article is made instead;
+        * other matched articles are merged in only if the result would still
+          hold at most one PMID and one PMCID;
+        * an id another article owns is never taken from it.
+
+        Every refusal is logged and counted on `self.conflicts`.
+        """
         if not identifiers:
             return []
-        refs: List[ArticleRef] = []
+        refs: List[str] = []
         now = utcnow()
         with self._write() as conn:
             for identifier in identifiers:
                 pairs = _alias_pairs(identifier)
                 if not pairs:
                     continue
-                found = {
-                    self._follow_merge(row["article_id"])
-                    for kind, value in pairs
-                    if (
-                        row := conn.execute(
-                            "SELECT article_id FROM aliases WHERE kind=? AND value=?",
-                            (kind, value),
-                        ).fetchone()
-                    )
-                }
-                if not found:
-                    article_id = _article_id(f"{pairs[0][0]}:{pairs[0][1]}")
+                owners: Dict[Tuple[str, str], str] = {}
+                for kind, value in pairs:
+                    row = conn.execute(
+                        "SELECT article_id FROM aliases WHERE kind=? AND value=?", (kind, value)
+                    ).fetchone()
+                    if row:
+                        owners[(kind, value)] = self._follow_merge(row["article_id"])
+                incoming = {k: v for k, v in pairs if k in self.SINGULAR}
+
+                anchor = None
+                for kind in ("pmid", "pmcid", "doi", "neurostore"):
+                    hit = next((owners[p] for p in pairs if p[0] == kind and p in owners), None)
+                    if hit:
+                        anchor = hit
+                        break
+                if anchor is not None and not self._compatible(conn, [anchor], incoming):
+                    self._conflict(identifier, f"{anchor} holds a different "
+                                   f"{'/'.join(self.SINGULAR)}; registering a new article")
+                    anchor = None
+                if anchor is None:
+                    seed = next(((k, v) for k, v in pairs if (k, v) not in owners), pairs[0])
+                    anchor = _article_id(f"{seed[0]}:{seed[1]}")
+                    if self._follow_merge(anchor) != anchor or conn.execute(
+                        "SELECT 1 FROM aliases WHERE article_id=? LIMIT 1", (anchor,)
+                    ).fetchone():
+                        # The seed's natural id is taken by another paper.
+                        anchor = _article_id(f"{seed[0]}:{seed[1]}:{now}:{len(refs)}")
                     conn.execute(
                         "INSERT INTO articles(id, created_at) VALUES(?, ?) "
                         "ON CONFLICT(id) DO NOTHING",
-                        (article_id, now),
+                        (anchor, now),
                     )
-                else:
-                    article_id = self._merge(conn, sorted(found))
-                conn.executemany(
-                    "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
-                    "ON CONFLICT(kind, value) DO UPDATE SET article_id=excluded.article_id",
-                    [(kind, value, article_id) for kind, value in pairs],
-                )
+
+                group = [anchor]
+                for other in dict.fromkeys(owners.values()):
+                    if other in group:
+                        continue
+                    if self._compatible(conn, group + [other], incoming):
+                        group.append(other)
+                    else:
+                        self._conflict(identifier, f"not merging {other} into {anchor}: "
+                                       "they would hold two PMIDs or PMCIDs")
+                article_id = self._merge(conn, group) if len(group) > 1 else anchor
+
+                for kind, value in pairs:
+                    owner = owners.get((kind, value))
+                    owner = self._follow_merge(owner) if owner else None
+                    if owner == article_id:
+                        continue
+                    if owner is not None:
+                        self._conflict(identifier, f"{kind} {value} belongs to {owner}; left there")
+                        continue
+                    if kind in self.SINGULAR and self._held(conn, article_id, kind) - {value}:
+                        self._conflict(identifier, f"{article_id} already has a {kind}; "
+                                       f"{value} not attached")
+                        continue
+                    conn.execute(
+                        "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
+                        "ON CONFLICT(kind, value) DO NOTHING",
+                        (kind, value, article_id),
+                    )
                 refs.append(article_id)
         return [self.ref(article_id) for article_id in refs]
+
+    #: Refusals since this catalog was opened, for callers that report them.
+    conflicts: int = 0
+
+    def _conflict(self, identifier: Identifier, why: str) -> None:
+        self.conflicts += 1
+        logger.warning("catalog: %s -- %s", identifier.slug, why)
+
+    @staticmethod
+    def _held(conn: sqlite3.Connection, article_id: str, kind: str) -> set:
+        return {row[0] for row in conn.execute(
+            "SELECT value FROM aliases WHERE article_id=? AND kind=?", (article_id, kind))}
+
+    def _compatible(self, conn, article_ids: Sequence[str], incoming: Mapping[str, str]) -> bool:
+        """Whether these articles and the record's own ids hold at most one PMID and one PMCID."""
+        for kind in self.SINGULAR:
+            values = set()
+            for article_id in article_ids:
+                values |= self._held(conn, article_id, kind)
+            if incoming.get(kind):
+                values.add(incoming[kind])
+            if len(values) > 1:
+                return False
+        return True
 
     def register(self, identifier: Identifier) -> ArticleRef:
         refs = self.register_many([identifier])
@@ -175,11 +264,22 @@ class Catalog:
         if not rows:
             return
         with self._write() as conn:
-            conn.executemany(
-                "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
-                "ON CONFLICT(kind, value) DO UPDATE SET article_id=excluded.article_id",
-                rows,
-            )
+            for kind, value, article_id in rows:
+                row = conn.execute(
+                    "SELECT article_id FROM aliases WHERE kind=? AND value=?", (kind, value)
+                ).fetchone()
+                if row and self._follow_merge(row["article_id"]) != self._follow_merge(article_id):
+                    # Taking it would leave the other article unreachable by an id it
+                    # was registered under; the clash is a fault to report, not resolve.
+                    self.conflicts += 1
+                    logger.warning("catalog: %s %s belongs to %s, not %s; left there",
+                                   kind, value, row["article_id"], article_id)
+                    continue
+                conn.execute(
+                    "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
+                    "ON CONFLICT(kind, value) DO NOTHING",
+                    (kind, value, article_id),
+                )
 
     def _merge(self, conn: sqlite3.Connection, ids: Sequence[str]) -> str:
         """Point every id at the oldest article. Nothing is deleted.
