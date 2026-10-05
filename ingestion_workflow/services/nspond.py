@@ -199,22 +199,39 @@ def _write_analyses_jsonl(
 def _write_corpus_manifest(
     path: Path,
     synced: Sequence[Tuple[str, ArticleExtractionBundle]],
+    drop: Sequence[str] = (),
 ) -> None:
     """List the synced studies in the form pondie's CLI parses.
 
     `pmid<TAB>study_id<TAB>source`. pondie rejects a file of bare ids outright, so the
     three columns are the contract rather than a convenience.
+
+    Merged into what is there, not written over it. Writing only this run's
+    articles turned a 37,135-row manifest into one of the 3,341 just synced,
+    and every earlier article fell out of the corpus pondie sees until the old
+    rows were merged back by hand. A row is replaced when its study is synced
+    again, and removed when the study is in `drop` (retracted).
     """
-    if not synced:
+    if not synced and not drop:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
-    lines = []
+    fresh = {}
     for base_study_id, bundle in synced:
         identifier = bundle.article_data.identifier
         pmid = (identifier.pmid if identifier else None) or ""
         source = bundle.article_data.source.value
-        lines.append(f"{pmid}\t{base_study_id}\t{source}")
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        fresh[base_study_id] = f"{pmid}\t{base_study_id}\t{source}"
+    gone = set(drop)
+    lines = []
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            parts = line.split("\t")
+            study = parts[1] if len(parts) > 1 else None
+            if not line.strip() or study in gone or study in fresh:
+                continue
+            lines.append(line)
+    lines.extend(row for study, row in fresh.items() if study not in gone)
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
 
 def _write_stage1(
@@ -391,9 +408,9 @@ class _Target:
 
 
 def write_corpus_manifest(
-    path: Path, synced: Sequence[Tuple[str, ArticleExtractionBundle]]
+    path: Path, synced: Sequence[Tuple[str, ArticleExtractionBundle]], drop: Sequence[str] = ()
 ) -> None:
-    _write_corpus_manifest(Path(path), synced)
+    _write_corpus_manifest(Path(path), synced, drop)
 
 
 __all__ = ["write_article", "write_corpus_manifest"]

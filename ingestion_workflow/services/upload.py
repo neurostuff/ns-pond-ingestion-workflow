@@ -32,6 +32,7 @@ from ingestion_workflow.services.upload_models import BaseStudy as DbBaseStudy
 from ingestion_workflow.services.upload_models import Point as DbPoint
 from ingestion_workflow.services.upload_models import PointValue as DbPointValue
 from ingestion_workflow.services.upload_models import Study as DbStudy
+from ingestion_workflow.services.upload_models import StudysetStudy as DbStudysetStudy
 from ingestion_workflow.services.upload_models import Table as DbTable
 from ingestion_workflow.utils.console import progress_bar as create_progress_bar
 
@@ -272,6 +273,23 @@ def _sanitize_mapping(obj):
     return obj
 
 
+@dataclass
+class RetractOutcome:
+    """What retracting one article did to its study version."""
+
+    slug: str
+    base_study_id: str
+    study_id: Optional[str] = None
+    #: `deleted`, `emptied` (kept because a studyset or an annotation uses it),
+    #: or `absent` (this source never had a version there).
+    action: str = ""
+    removed: int = 0
+    kept_annotated: int = 0
+    studysets: List[str] = None  # type: ignore[assignment]
+    success: bool = False
+    error: Optional[str] = None
+
+
 class UploadService:
     """High-level coordination of upload operations."""
 
@@ -388,6 +406,76 @@ class UploadService:
                     progress.close()
 
         return outcomes
+
+    def retract(self, targets: Sequence[Tuple[str, str]]) -> List["RetractOutcome"]:
+        """Take this source's study version back for each (slug, base_study_id).
+
+        Used when a person has marked every table of an article as holding no
+        coordinates, so there is nothing left to upload. The version is deleted
+        only when nothing anyone made depends on it: deleting a study cascades
+        through `studyset_studies`, which would silently drop it from a user's
+        studyset in Compose, and through `annotation_analyses`, which would
+        discard an annotator's notes. Otherwise its unannotated analyses are
+        removed and the version is kept, reported as `emptied`.
+
+        Only the configured source's version is touched; other extractors'
+        versions and the base study itself are left alone.
+        """
+        source = resolve_upload_source(self.settings)
+        outcomes: List[RetractOutcome] = []
+        if not targets:
+            return outcomes
+        self.session_factory.configure()
+        with self.session_factory.session() as session:
+            outer = session.begin()
+            try:
+                for slug, base_study_id in targets:
+                    try:
+                        with session.begin_nested():
+                            outcomes.append(self._retract_one(session, slug, base_study_id, source))
+                    except Exception as exc:  # pragma: no cover - defensive
+                        logger.error("Retraction failed for %s: %s", slug, exc, extra=console_kwargs())
+                        outcomes.append(RetractOutcome(slug=slug, base_study_id=base_study_id,
+                                                       success=False, error=str(exc)))
+                outer.commit()
+            except Exception:
+                outer.rollback()
+                raise
+        return outcomes
+
+    def _retract_one(self, session, slug: str, base_study_id: str, source: str) -> "RetractOutcome":
+        study = session.execute(
+            select(DbStudy).where(DbStudy.base_study_id == base_study_id, DbStudy.source == source)
+        ).scalars().first()
+        if study is None:
+            return RetractOutcome(slug=slug, base_study_id=base_study_id, action="absent", success=True)
+        analysis_ids = list(session.execute(
+            select(DbAnalysis.id).where(DbAnalysis.study_id == study.id)
+        ).scalars())
+        annotated = self._annotated_analysis_ids(session, analysis_ids)
+        studysets = sorted(set(session.execute(
+            select(DbStudysetStudy.studyset_id).where(DbStudysetStudy.study_id == study.id)
+        ).scalars()))
+        removable = [a for a in analysis_ids if a not in annotated]
+        for analysis_id in removable:
+            self._delete_points(session, analysis_id)
+        if removable:
+            session.execute(delete(DbAnalysis).where(DbAnalysis.id.in_(removable)))
+        study_id = study.id
+        if annotated or studysets:
+            logger.info(
+                "[retract id=%s] kept version %s: %d analyses removed, %d annotated kept, in %d studysets",
+                slug, study_id, len(removable), len(annotated), len(studysets),
+            )
+            return RetractOutcome(slug=slug, base_study_id=base_study_id, study_id=study_id,
+                                  action="emptied", removed=len(removable), kept_annotated=len(annotated),
+                                  studysets=studysets, success=True)
+        session.execute(delete(DbTable).where(DbTable.study_id == study_id))
+        session.expunge(study)
+        session.execute(delete(DbStudy).where(DbStudy.id == study_id))
+        logger.info("[retract id=%s] deleted version %s (%d analyses)", slug, study_id, len(removable))
+        return RetractOutcome(slug=slug, base_study_id=base_study_id, study_id=study_id,
+                              action="deleted", removed=len(removable), success=True)
 
     def _apply_metadata(
         self,

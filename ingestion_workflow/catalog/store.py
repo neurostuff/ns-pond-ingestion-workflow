@@ -328,6 +328,59 @@ class Catalog:
         ).fetchone()
         return _artifact(row) if row else None
 
+    # -- exclusions ----------------------------------------------------------
+
+    #: The table id that stands for every table of an article.
+    WHOLE_ARTICLE = "*"
+
+    def exclude(self, rows: Sequence[Tuple[str, str, str, str]]) -> int:
+        """Record (article_id, table_id, reason, note) verdicts. Idempotent:
+        marking a table again replaces its reason and note."""
+        now = utcnow()
+        with self._write() as conn:
+            conn.executemany(
+                "INSERT INTO exclusions(article_id, table_id, reason, note, created_at) "
+                "VALUES(?, ?, ?, ?, ?) ON CONFLICT(article_id, table_id) DO UPDATE SET "
+                "reason=excluded.reason, note=excluded.note",
+                [(a, str(t), r, n or "", now) for a, t, r, n in rows],
+            )
+        return len(rows)
+
+    def unexclude(self, article_id: str, table_id: Optional[str] = None) -> int:
+        """Withdraw a verdict, or every verdict on the article when no table is given."""
+        with self._write() as conn:
+            if table_id is None:
+                cur = conn.execute("DELETE FROM exclusions WHERE article_id=?", (article_id,))
+            else:
+                cur = conn.execute(
+                    "DELETE FROM exclusions WHERE article_id=? AND table_id=?",
+                    (article_id, str(table_id)),
+                )
+        return cur.rowcount
+
+    def exclusions(self, article_ids: Optional[Sequence[str]] = None) -> Dict[str, Dict[str, Dict[str, str]]]:
+        """article_id -> table_id -> {reason, note, created_at}; every article when none are given."""
+        out: Dict[str, Dict[str, Dict[str, str]]] = {}
+        if article_ids is None:
+            rows = self._conn.execute(
+                "SELECT article_id, table_id, reason, note, created_at FROM exclusions"
+            ).fetchall()
+        else:
+            ids = list(dict.fromkeys(article_ids))
+            rows = []
+            for i in range(0, len(ids), 500):
+                chunk = ids[i:i + 500]
+                rows += self._conn.execute(
+                    "SELECT article_id, table_id, reason, note, created_at FROM exclusions "
+                    "WHERE article_id IN (%s)" % ",".join("?" * len(chunk)),
+                    chunk,
+                ).fetchall()
+        for row in rows:
+            out.setdefault(row["article_id"], {})[row["table_id"]] = {
+                "reason": row["reason"], "note": row["note"], "created_at": row["created_at"],
+            }
+        return out
+
     def artifacts(
         self, article_ids: Sequence[str], stage: str
     ) -> Dict[str, Dict[str, Artifact]]:

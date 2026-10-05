@@ -44,6 +44,20 @@ CREATE TABLE IF NOT EXISTS attempts (
 );
 CREATE INDEX IF NOT EXISTS attempts_lookup_idx ON attempts(article_id, stage, source);
 
+-- A person's verdict that a table holds no coordinates, whatever the extractor
+-- made of it. `table_id` '*' covers the whole article. Upload leaves excluded
+-- tables out, and retracts an article once nothing of it is left; sync does the
+-- same to the corpus. Kept apart from `artifacts` because it is not produced by
+-- a stage: rerunning the pipeline must never overwrite a human judgment.
+CREATE TABLE IF NOT EXISTS exclusions (
+    article_id TEXT NOT NULL,
+    table_id   TEXT NOT NULL,
+    reason     TEXT NOT NULL,
+    note       TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (article_id, table_id)
+);
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
