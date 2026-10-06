@@ -86,14 +86,15 @@ def test_there_is_no_second_gate_in_the_stage(catalog):
     assert "requires_flag" not in inspect.getsource(AnalysesStage.plan)
 
 
-def test_upload_is_gated_on_analyses_having_found_something(tmp_path):
+@pytest.mark.parametrize("stage, upstream", [("space", "analyses"), ("upload", "space")])
+def test_space_and_upload_are_gated_on_analyses_having_found_something(tmp_path, stage, upstream):
     """An article the model read and found nothing in is a legitimate `ok`, so
     the status check does not exclude it. 30,741 of them would be planned to
-    upload nothing."""
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    upload nothing. `space` carries the count through to `upload`."""
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES
 
-    assert UploadStage.requires == "analyses"
-    assert UploadStage.requires_flag == "tables"
+    assert STAGE_TYPES[stage].requires == upstream
+    assert STAGE_TYPES[stage].requires_flag == "tables"
 
     cat = Catalog.open(tmp_path / "up")
     ids = {}
@@ -101,10 +102,10 @@ def test_upload_is_gated_on_analyses_having_found_something(tmp_path):
         ref = cat.register(Identifier(pmid=f"200{name}"))
         ids[name] = ref.id
         cat.record([Outcome(
-            article_id=ref.id, stage="analyses", source="", status=Status.OK,
+            article_id=ref.id, stage=upstream, source="", status=Status.OK,
             fingerprint=f"fp-{name}",
             summary={"tables": tables, "coordinates": tables * 5})])
-    got = {r.id for r in narrow(cat, everything(cat), Select.ALL, "upload").refs}
+    got = {r.id for r in narrow(cat, everything(cat), Select.ALL, stage).refs}
     assert got == {ids["has"]}
 
 
@@ -115,7 +116,7 @@ def test_every_stage_that_gates_uses_the_same_declaration():
 
     declared = {n: getattr(t, "requires_flag", None) for n, t in STAGE_TYPES.items()}
     assert {n: f for n, f in declared.items() if f} == {
-        "analyses": "passed", "upload": "tables"}
+        "analyses": "passed", "space": "tables", "upload": "tables"}
     for name, flag in declared.items():
         if flag:
             assert getattr(STAGE_TYPES[name], "requires", None), \

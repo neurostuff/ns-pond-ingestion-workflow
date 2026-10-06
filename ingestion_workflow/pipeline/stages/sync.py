@@ -67,7 +67,8 @@ class SyncStage:
         ids = [work.article_id for work in works]
         extractions = ctx.catalog.artifacts(ids, "extract")
         metadata = ctx.catalog.artifacts(ids, "metadata")
-        analyses = ctx.catalog.artifacts(ids, "analyses")
+        # The analyses as uploaded: `space` is `analyses` with unknown spaces read in.
+        analyses = ctx.catalog.artifacts(ids, "space")
         downloads = ctx.catalog.artifacts(ids, "download")
         triaged = ctx.catalog.artifacts(ids, "triage")
 
