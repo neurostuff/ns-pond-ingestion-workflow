@@ -463,6 +463,11 @@ class UploadService:
             session.execute(delete(DbAnalysis).where(DbAnalysis.id.in_(removable)))
         study_id = study.id
         if annotated or studysets:
+            session.flush()
+            study.has_coordinates = bool(session.execute(
+                select(DbPoint.id).join(DbAnalysis, DbAnalysis.id == DbPoint.analysis_id)
+                .where(DbAnalysis.study_id == study_id).limit(1)).first())
+            self._refresh_base_flag(session, base_study_id)
             logger.info(
                 "[retract id=%s] kept version %s: %d analyses removed, %d annotated kept, in %d studysets",
                 slug, study_id, len(removable), len(annotated), len(studysets),
@@ -473,6 +478,7 @@ class UploadService:
         session.execute(delete(DbTable).where(DbTable.study_id == study_id))
         session.expunge(study)
         session.execute(delete(DbStudy).where(DbStudy.id == study_id))
+        self._refresh_base_flag(session, base_study_id)
         logger.info("[retract id=%s] deleted version %s (%d analyses)", slug, study_id, len(removable))
         return RetractOutcome(slug=slug, base_study_id=base_study_id, study_id=study_id,
                               action="deleted", removed=len(removable), success=True)
@@ -807,8 +813,8 @@ class UploadService:
             for prepared in (entry["prepared"] for _, entry in assignments)
         )
         study.has_coordinates = any_points
-        if any_points:
-            base_study.has_coordinates = True
+        session.flush()
+        self._refresh_base_flag(session, base_study.id)
         if item.analyses:
             study.level = "group"  # ensure level is set
 
@@ -973,6 +979,25 @@ class UploadService:
                 if merged.get(key) in (None, "", [], {}) and value not in (None, "", [], {}):
                     merged[key] = value
         return merged
+
+    def _refresh_base_flag(self, session, base_study_id: str) -> None:
+        """Set the base study's `has_coordinates` from what its versions now hold.
+
+        Upload used to set it true and nothing ever set it false, so retracting a
+        study or re-uploading one with no points left the flag claiming
+        coordinates: 287 retracted base studies and 78 others still came back from
+        the API's coordinate search with nothing in them.
+        """
+        base = session.get(DbBaseStudy, base_study_id)
+        if base is None:
+            return
+        base.has_coordinates = bool(session.execute(
+            select(DbPoint.id)
+            .join(DbAnalysis, DbAnalysis.id == DbPoint.analysis_id)
+            .join(DbStudy, DbStudy.id == DbAnalysis.study_id)
+            .where(DbStudy.base_study_id == base_study_id)
+            .limit(1)
+        ).first())
 
     def _delete_points(self, session, analysis_id: str) -> None:
         """Remove an analysis's points and their values.

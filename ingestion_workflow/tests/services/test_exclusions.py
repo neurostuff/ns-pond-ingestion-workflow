@@ -219,3 +219,41 @@ def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path):
         assert set(catalog.exclusions()[a]) == {Catalog.WHOLE_ARTICLE}
     out = runner.invoke(app, ["exclude", "1", "--remove", "--config", str(config)])
     assert out.exit_code == 0 and "withdrew 1 marks" in out.output
+
+
+def _base_flag(engine):
+    from ingestion_workflow.services.upload_models import BaseStudy as DbBaseStudy
+    with Session(engine, future=True) as session:
+        return session.execute(select(DbBaseStudy.has_coordinates)).scalar_one()
+
+
+def test_retracting_clears_the_base_study_flag(tmp_path):
+    """Upload set has_coordinates and nothing unset it: 287 retracted base studies
+    still came back from the coordinate search with no points."""
+    service, engine, uploaded = _uploaded(tmp_path)
+    assert _base_flag(engine) is True
+    service.retract([("slug", uploaded.base_study_id)])
+    assert _base_flag(engine) is False
+
+
+def test_a_reupload_with_no_points_clears_the_flag(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    _upload_once(service, settings, identifier, _collection(identifier, [_analysis("A", _coords((1, 2, 3)))]), _article_metadata())
+    assert _base_flag(engine) is True
+    _upload_once(service, settings, identifier, _collection(identifier, [_analysis("A", [])]), _article_metadata())
+    assert _base_flag(engine) is False
+
+
+def test_another_versions_points_keep_the_flag(tmp_path):
+    service, engine, uploaded = _uploaded(tmp_path)
+    with Session(engine, future=True) as session:
+        other = DbStudy(base_study_id=uploaded.base_study_id, source="neurosynth")
+        session.add(other); session.flush()
+        a = DbAnalysis(study_id=other.id, name="ns"); session.add(a); session.flush()
+        from ingestion_workflow.services.upload_models import Point as DbPoint
+        session.add(DbPoint(analysis_id=a.id, x=1, y=2, z=3)); session.commit()
+    service.retract([("slug", uploaded.base_study_id)])
+    assert _base_flag(engine) is True
