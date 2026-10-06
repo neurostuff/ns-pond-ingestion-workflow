@@ -132,6 +132,14 @@ def add(
             "permanent home."
         ),
     ),
+    prefer_over: Optional[List[str]] = typer.Option(
+        None,
+        "--prefer-over",
+        help=(
+            "Attach a --pdfs file even to an article already downloaded, when "
+            "every download it has is from this source (repeatable), e.g. ace."
+        ),
+    ),
     neurostore: Optional[List[str]] = typer.Option(
         None,
         "--neurostore",
@@ -195,7 +203,9 @@ def add(
             refs = _enrich(settings, catalog, refs)
         after = catalog.count_articles()
         if local:
-            _attach_pdfs(settings, catalog, pdfs, local, in_place=in_place)
+            _attach_pdfs(
+                settings, catalog, pdfs, local, in_place=in_place, prefer_over=prefer_over or ()
+            )
 
     typer.echo(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
@@ -229,7 +239,13 @@ def _read_pdfs(settings: Settings, folder: Path) -> list:
 
 
 def _attach_pdfs(
-    settings: Settings, catalog: Catalog, folder: Path, local: list, *, in_place: bool
+    settings: Settings,
+    catalog: Catalog,
+    folder: Path,
+    local: list,
+    *,
+    in_place: bool,
+    prefer_over: Sequence[str] = (),
 ) -> None:
     """Make each PDF its article's download, and write what became of each.
 
@@ -246,7 +262,7 @@ def _attach_pdfs(
     if not in_place:
         store = Path(settings.pdf_cache_root or settings.get_cache_dir("pdf")) / "local"
     fp = DownloadStage(settings).fingerprint_for(DownloadSource.PDF)
-    outcome = attach(catalog, local, fp, store)
+    outcome = attach(catalog, local, fp, store, prefer_over)
 
     out_dir = settings.data_root / "manifests"
     out_dir.mkdir(parents=True, exist_ok=True)

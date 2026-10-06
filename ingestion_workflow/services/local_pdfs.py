@@ -358,14 +358,19 @@ def attach(
     pdfs: Sequence[LocalPdf],
     fingerprint: str,
     store: Optional[Path] = None,
+    prefer_over: Sequence[str] = (),
 ) -> Dict[Path, str]:
     """Record each resolved PDF as its article's `download/pdf` artifact.
 
     With a `store`, the file is copied into it, named by its hash, so the
     catalog does not depend on the shared folder staying where it is. Without
     one the catalog points at the file where it lies, for a folder that is
-    already the PDFs' permanent home. An article that already has a download
-    keeps it. Returns each PDF's outcome, by path.
+    already the PDFs' permanent home.
+
+    An article that already has a download keeps it and gets no PDF, unless
+    every download it has is from a source in `prefer_over`; then it gets the
+    PDF as well, and extraction, which takes sources in `download_sources`
+    order, reads the PDF first. Returns each PDF's outcome, by path.
     """
     status: Dict[Path, str] = {}
     outcomes: List[Outcome] = []
@@ -387,7 +392,8 @@ def attach(
             continue
         claimed[ref.id] = pdf.path
         existing = catalog.artifacts([ref.id], "download").get(ref.id, {})
-        if any(artifact.status is Status.OK for artifact in existing.values()):
+        held = sorted(s for s, a in existing.items() if a.status is Status.OK)
+        if held and not set(held) <= set(prefer_over):
             status[pdf.path] = "already downloaded"
             continue
 
@@ -413,7 +419,7 @@ def attach(
                 summary={"files": 1, "types": ["pdf"], "from": str(pdf.path)},
             )
         )
-        status[pdf.path] = "attached"
+        status[pdf.path] = f"attached over {','.join(held)}" if held else "attached"
 
     catalog.record(outcomes)
     return status

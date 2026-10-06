@@ -356,6 +356,24 @@ def test_an_existing_download_supplements_and_repeats_are_left_alone(tmp_path, s
     }
 
 
+def test_a_pdf_is_attached_over_the_sources_it_should_outrank(tmp_path, settings):
+    over_ace = _local(tmp_path, "a.pdf", doi="10.1/a")
+    beside_pubget = _local(tmp_path, "b.pdf", doi="10.1/b")
+    with Catalog.open(settings.catalog_root) as catalog:
+        a = catalog.register(Identifier(doi="10.1/a"))
+        b = catalog.register(Identifier(doi="10.1/b"))
+        catalog.record([
+            Outcome(article_id=a.id, stage="download", source="ace", status=Status.OK),
+            Outcome(article_id=b.id, stage="download", source="ace", status=Status.OK),
+            Outcome(article_id=b.id, stage="download", source="pubget", status=Status.OK),
+        ])
+        status = attach(catalog, [over_ace, beside_pubget], "fp", prefer_over=["ace"])
+        assert catalog.artifact(a.id, "download", "pdf").ok
+        assert catalog.artifact(b.id, "download", "pdf") is None
+
+    assert status == {over_ace.path: "attached over ace", beside_pubget.path: "already downloaded"}
+
+
 # -- the command ---------------------------------------------------------------
 
 
