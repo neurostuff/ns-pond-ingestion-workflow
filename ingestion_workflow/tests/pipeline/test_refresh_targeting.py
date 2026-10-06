@@ -8,11 +8,11 @@ targetable or redoing one extractor means redoing all of them.
 from __future__ import annotations
 
 import pytest
-from ingestion_workflow.catalog import Artifact, Catalog, Outcome
+from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
-from ingestion_workflow.pipeline.stages import ExtractStage
+from ingestion_workflow.pipeline.stages import DownloadStage, ExtractStage
 
 
 def artifact(stage="extract", source="ace", fingerprint="fp"):
@@ -101,3 +101,40 @@ def test_it_requeues_only_articles_with_nothing_higher(settings):
 
     assert [(w.ref.id, w.source) for w in plan.pending] == [(ace_only.id, "ace")]
     assert plan.fresh == 1
+
+
+def _failed_ace(catalog, stage):
+    """An article whose ACE attempt failed moments ago, so backoff holds it."""
+    ref = catalog.register(Identifier(pmid="1"))
+    if stage == "extract":
+        catalog.record([Outcome(article_id=ref.id, stage="download", source="ace",
+                                fingerprint="dl-ace", payload={"files": []})])
+    catalog.record([Outcome(article_id=ref.id, stage=stage, source="ace", status=Status.FAILED,
+                            fingerprint="fp", error="readabilipy cannot run")])
+    return ref
+
+
+def test_naming_the_source_retries_a_failed_extraction(settings):
+    """It was ignored: the planner asked about the stage, not the source, so a
+    failed ACE extraction inside its backoff stayed out of the plan."""
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = _failed_ace(catalog, "extract")
+        ids = [ref.id]
+        args = ([ref], catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "download"))
+        stage = ExtractStage(settings)
+        held = stage.plan(Context(settings, catalog), *args)
+        named = stage.plan(Context(settings, catalog, refresh=["extract:ace"]), *args)
+    assert not held.pending
+    assert [w.source for w in named.pending] == ["ace"]
+
+
+def test_naming_the_source_retries_a_failed_download(settings):
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = _failed_ace(catalog, "download")
+        settings.download_sources = ["ace"]
+        args = ([ref], catalog.artifacts([ref.id], "download"), {})
+        stage = DownloadStage(settings)
+        held = stage.plan(Context(settings, catalog), *args)
+        named = stage.plan(Context(settings, catalog, refresh=["download:ace"]), *args)
+    assert not held.pending
+    assert [w.source for w in named.pending] == ["ace"]

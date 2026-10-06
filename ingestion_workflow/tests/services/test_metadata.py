@@ -7,6 +7,8 @@ from unittest.mock import patch
 
 import pytest
 from dotenv import load_dotenv
+from ingestion_workflow.clients.openalex import OpenAlexClient
+from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
@@ -31,7 +33,21 @@ def test_settings(tmp_path):
 @pytest.fixture
 def metadata_service(test_settings):
     """Create a metadata service instance."""
-    return MetadataService(test_settings)
+    service = MetadataService(test_settings)
+    # An EMAIL in the environment switches OpenAlex on, and these tests do not
+    # patch it, so it would reach the network.
+    service._openalex_client = None
+    return service
+
+
+def _with_openalex(tmp_path) -> MetadataService:
+    """`openalex_email` is read through its alias, so it is set on the client."""
+    service = MetadataService(Settings(
+        data_root=tmp_path / "data", cache_root=tmp_path / "cache",
+        ns_pond_root=tmp_path / "ns-pond",
+    ))
+    service._openalex_client = OpenAlexClient("test@example.com")
+    return service
 
 
 class TestMetadataService:
@@ -180,6 +196,50 @@ class TestMetadataService:
         asked.assert_not_called()
         fallback.assert_not_called()
         assert result[extracted.slug].abstract == "What it found."
+
+    def test_openalex_fills_what_semantic_scholar_and_pubmed_did_not(self, tmp_path):
+        """A preprint: no record at Semantic Scholar or PubMed, all of it at OpenAlex."""
+        service = _with_openalex(tmp_path)
+        identifier = Identifier(doi="10.1101/2022.09.20.508750")
+        extracted = ExtractedContent(
+            slug=identifier.slug, source=DownloadSource.PDF, identifier=identifier,
+            has_coordinates=False,
+        )
+        openalex = ArticleMetadata(
+            title="Pre- and post-task resting-state differs in clinical populations",
+            authors=[Author(name="A")], abstract="What it found.", journal="bioRxiv",
+            publication_year=2022, source="openalex",
+        )
+        with (
+            patch.object(service, "_get_semantic_scholar_metadata_cached", return_value={}),
+            patch.object(service, "_get_pubmed_metadata_cached", return_value={}),
+            patch.object(service, "_get_openalex_metadata_cached",
+                         return_value={identifier.slug: openalex}) as asked,
+        ):
+            result = service.enrich_metadata([extracted])
+
+        asked.assert_called_once_with([identifier])
+        assert result[extracted.slug].journal == "bioRxiv"
+
+    def test_openalex_is_not_asked_for_a_filled_record(self, tmp_path):
+        service = _with_openalex(tmp_path)
+        service._s2_client = SemanticScholarClient("test_s2_key")
+        identifier = Identifier(pmid="12345678")
+        extracted = ExtractedContent(
+            slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier,
+            has_coordinates=True,
+        )
+        s2 = ArticleMetadata(
+            title="An Article", authors=[Author(name="A")], journal="J",
+            publication_year=2020, abstract="What it found.",
+        )
+        with (
+            patch.object(service, "_get_semantic_scholar_metadata_cached",
+                         return_value={identifier.slug: s2}),
+            patch.object(service, "_get_openalex_metadata_cached", return_value={}) as asked,
+        ):
+            service.enrich_metadata([extracted])
+        asked.assert_not_called()
 
     def test_get_elsevier_fallback(self, metadata_service):
         """Test fallback metadata extraction from Elsevier files."""

@@ -2,18 +2,59 @@
 
 from __future__ import annotations
 
+import re
 import time
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from ingestion_workflow.models import Identifiers
+from ingestion_workflow.models import Identifier, Identifiers
+from ingestion_workflow.models.metadata import ArticleMetadata, Author
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
+
+
+_METADATA_FIELDS = (
+    "ids,display_name,authorships,publication_year,abstract_inverted_index,"
+    "primary_location,open_access"
+)
+
+
+def _identifier_from(ids: Optional[Dict]) -> Identifier:
+    ids = ids or {}
+    pmcid = re.search(r"(\d+)/?$", ids.get("pmcid") or "")
+    return Identifier(
+        doi=ids.get("doi"), pmid=ids.get("pmid"), pmcid=pmcid.group(1) if pmcid else None
+    )
+
+
+def _metadata_from(work: Dict) -> ArticleMetadata:
+    source = ((work.get("primary_location") or {}).get("source") or {})
+    return ArticleMetadata(
+        title=str(work.get("display_name") or ""),
+        authors=[
+            Author(name=str(authorship["author"]["display_name"]))
+            for authorship in work.get("authorships", []) or []
+            if (authorship.get("author") or {}).get("display_name")
+        ],
+        abstract=_abstract(work.get("abstract_inverted_index")),
+        journal=source.get("display_name"),
+        publication_year=work.get("publication_year"),
+        open_access=(work.get("open_access") or {}).get("is_oa"),
+        source="openalex",
+    )
+
+
+def _abstract(inverted: Optional[Dict[str, List[int]]]) -> Optional[str]:
+    """OpenAlex ships an abstract as word -> positions, for licensing reasons."""
+    if not inverted:
+        return None
+    placed = sorted((at, word) for word, positions in inverted.items() for at in positions)
+    return " ".join(word for _, word in placed) or None
 
 
 class OpenAlexClient:
@@ -92,6 +133,16 @@ class OpenAlexClient:
                         identifier.other_ids = {}
                     identifier.other_ids["openalex"] = openalex_id
 
+                # OpenAlex carries the PubMed ids as well. For an article
+                # outside PMC that Semantic Scholar does not index, it is the
+                # only provider that does: without this, a DOI-only article
+                # never gained the PMID its PubMed metadata is fetched by.
+                found = _identifier_from(ids_data)
+                for kind in ("pmid", "pmcid", "doi"):
+                    if not getattr(identifier, kind) and getattr(found, kind):
+                        setattr(identifier, kind, getattr(found, kind))
+                identifier.normalize()
+
         return identifiers
 
     def get_pdf_urls(self, identifiers: Identifiers) -> Dict[str, str]:
@@ -141,6 +192,54 @@ class OpenAlexClient:
                         pdf_urls[identifier.slug] = url
 
         return pdf_urls
+
+    def search_title(self, title: str, limit: int = 5) -> List[Tuple[Identifier, ArticleMetadata]]:
+        """Works whose title matches `title`, best first, with their authors.
+
+        A comma separates filters in OpenAlex's syntax, so punctuation is
+        dropped from the title before it is sent. `title.search` wants every
+        word; when it finds nothing -- a truncated title -- the relevance
+        search over all fields is asked instead.
+        """
+        words = " ".join(re.findall(r"\w+", title))
+        if not words:
+            return []
+        params = {"per_page": str(limit), "mailto": self.email, "select": _METADATA_FIELDS}
+        works = self._request_openalex({**params, "filter": f"title.search:{words}"}).get(
+            "results"
+        ) or self._request_openalex({**params, "search": words}).get("results")
+        return [(_identifier_from(work.get("ids")), _metadata_from(work)) for work in works or []]
+
+    def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
+        """Article metadata by DOI or PMID, keyed by identifier slug.
+
+        The provider of last resort: it indexes preprints and articles that
+        neither Semantic Scholar nor PubMed carries.
+        """
+        results: Dict[str, ArticleMetadata] = {}
+        for id_type in ("doi", "pmid"):
+            wanted = {
+                str(getattr(identifier, id_type)).lower(): identifier
+                for identifier in identifiers
+                if getattr(identifier, id_type) and identifier.slug not in results
+            }
+            values = list(wanted)
+            for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
+                batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
+                payload = self._request_openalex(
+                    {
+                        "filter": f"{id_type}:{'|'.join(batch)}",
+                        "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
+                        "mailto": self.email,
+                        "select": _METADATA_FIELDS,
+                    }
+                )
+                for work in payload.get("results", []) or []:
+                    value = getattr(_identifier_from(work.get("ids")), id_type)
+                    identifier = wanted.get(str(value).lower()) if value else None
+                    if identifier is not None:
+                        results[identifier.slug] = _metadata_from(work)
+        return results
 
     @staticmethod
     def _pdf_url_from_work(work: Dict) -> Optional[str]:

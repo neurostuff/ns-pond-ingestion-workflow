@@ -446,3 +446,48 @@ def test_ace_refuses_to_extract_without_readability(monkeypatch):
     monkeypatch.setattr(readabilipy, "simple_json_from_html_string", broken)
     with pytest.raises(RuntimeError, match="node >= 20.19"):
         ace_module._require_readability()
+
+
+def test_a_page_no_publisher_claims_goes_to_the_generic_parser(tmp_path, monkeypatch):
+    """ACE's own ingest falls back to DefaultSource; ours raised instead, and
+    every table on the page was lost -- 11 of 43 autonima coordinate articles."""
+    html_path = tmp_path / "article.html"
+    html_path.write_text("<html><body>Unclaimed journal</body></html>", encoding="utf-8")
+    download_result = DownloadResult(
+        identifier=Identifier(pmid="25142296"),
+        source=DownloadSource.ACE,
+        success=True,
+        files=[DownloadedFile(file_path=html_path, file_type=FileType.HTML,
+                              content_type="text/html", source=DownloadSource.ACE)],
+    )
+    monkeypatch.setattr(ace_module.ace_extract, "guess_space", lambda _: "MNI")
+    parsed = []
+
+    class Generic:
+        def parse_article(self, html_text, pmid, metadata_dir, skip_metadata=False,
+                          keep_tables=False):
+            parsed.append(pmid)
+            table = SimpleNamespace(
+                number="2", input_html="<table><tr><td>24</td></tr></table>",
+                caption="Peaks", notes="", label="Table 2", position="Main",
+                activations=[SimpleNamespace(x="24", y="33", z="15", statistic="4.48",
+                                             size="106")],
+                n_activations=1, n_columns=8,
+            )
+            return SimpleNamespace(text="Article text", tables=[table], space=None)
+
+    class Manager:
+        def __init__(self, table_dir):
+            self.default_source = Generic()
+
+        def identify_source(self, html_text):
+            return None
+
+    monkeypatch.setattr(ace_module, "SourceManager", Manager)
+    try:
+        content = ace_module._extract_ace_article(download_result, tmp_path / "out")
+    finally:
+        reset_config("SAVE_ORIGINAL_HTML")
+
+    assert parsed == ["25142296"]
+    assert [(c.x, c.y, c.z) for c in content.tables[0].coordinates] == [(24.0, 33.0, 15.0)]

@@ -300,6 +300,7 @@ class PubMedClient:
         retmax: int,
         mindate: Optional[str | int] = None,
         maxdate: Optional[str | int] = None,
+        sort: Optional[str] = None,
     ) -> Dict[str, object]:
         params: List[Tuple[str, str]] = [
             ("db", "pubmed"),
@@ -320,6 +321,8 @@ class PubMedClient:
             params.append(("maxdate", str(maxdate)))
         if mindate is not None or maxdate is not None:
             params.append(("datetype", "pdat"))
+        if sort is not None:
+            params.append(("sort", sort))
 
         return self._request_json(self.ESEARCH_URL, params)
 
@@ -376,6 +379,21 @@ class PubMedClient:
         response = self._session.get(url, params=params, timeout=30)
         response.raise_for_status()
         return xmltodict.parse(response.text)
+
+    def search_title(self, title: str, limit: int = 5) -> List[Tuple[Identifier, ArticleMetadata]]:
+        """PubMed's best matches for `title`, with their authors.
+
+        Searched as free text rather than `[ti]` terms: a misspelt word in the
+        title then lowers a match's rank instead of excluding it.
+        """
+        words = " ".join(re.findall(r"\w+", title))
+        if not words:
+            return []
+        payload = self._esearch(words, retstart=0, retmax=limit, sort="relevance")
+        pmids = [str(pmid) for pmid in payload.get("esearchresult", {}).get("idlist", []) or []]
+        identifiers = [Identifier(pmid=pmid) for pmid in pmids]
+        found = self.get_metadata(identifiers)
+        return [(i, found[i.slug]) for i in identifiers if i.slug in found]
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """

@@ -73,14 +73,30 @@ def test_the_source_with_the_most_tables_is_triaged(monkeypatch):
     from ingestion_workflow.catalog import Status
 
     class _Art:
-        def __init__(self, tables, coords):
+        def __init__(self, tables, coords, source=""):
             self.status = Status.OK
+            self.source = source
             self.summary = {"tables": tables, "tables_with_coordinates": coords}
 
-    eager = _Art(tables=2, coords=2)
-    complete = _Art(tables=40, coords=0)
+    eager = _Art(tables=2, coords=2, source="ace")
+    complete = _Art(tables=40, coords=0, source="pubget")
     assert _most_tables({"ace": eager, "pubget": complete}) is complete
     assert _most_tables({}) is None
+
+
+def test_ace_is_read_only_when_nothing_else_found_a_table():
+    """ACE's extra tables are copies and uncaptioned fragments, so counting
+    them let it outvote the PDF of the same article."""
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables):
+            self.status, self.source, self.summary = Status.OK, source, {"tables": tables}
+
+    ace, pdf = _Art("ace", 5), _Art("pdf", 3)
+    assert _most_tables({"ace": ace, "pdf": pdf}) is pdf
+    assert _most_tables({"ace": ace, "pdf": _Art("pdf", 0)}) is ace
+    assert _most_tables({"ace": ace}) is ace
 
 
 def test_analyses_sends_exactly_what_triage_passed():
@@ -384,9 +400,9 @@ def test_a_stale_extraction_with_more_tables_does_not_outbid_the_current_one(tmp
 
 def test_with_nothing_current_the_stale_extraction_is_still_triaged(tmp_path):
     settings, catalog, ref = _catalog_with(
-        tmp_path, {"ace": (10, False), "elsevier": (3, False)})
+        tmp_path, {"ace": (3, False), "elsevier": (10, False)})
     with catalog:
-        assert _triaged_source(settings, catalog, ref) == ["ace"]
+        assert _triaged_source(settings, catalog, ref) == ["elsevier"]
 
 
 def test_sync_writes_the_extraction_triage_judged(tmp_path):

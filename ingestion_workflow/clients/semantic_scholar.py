@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Tuple
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -21,6 +21,7 @@ class SemanticScholarClient:
     """Client for Semantic Scholar paper identifier enrichment."""
 
     BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
+    MATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/search/match"
     _SUPPORTED_ID_TYPES = {"doi", "pmid"}
 
     def __init__(self, api_key: str) -> None:
@@ -161,6 +162,41 @@ class SemanticScholarClient:
         )
         response.raise_for_status()
         return response.json()
+
+    def search_title(self, title: str) -> List[Tuple[Identifier, ArticleMetadata]]:
+        """The one paper Semantic Scholar matches to `title`, with its authors.
+
+        The match endpoint answers 404 when nothing is close enough.
+        """
+        self._rate_limit_sleep()
+        response = self._session.get(
+            self.MATCH_URL,
+            params={"query": title, "fields": "title,authors,year,externalIds"},
+            timeout=30,
+        )
+        if response.status_code == 404:
+            return []
+        response.raise_for_status()
+        found = []
+        for record in response.json().get("data", []) or []:
+            ids = record.get("externalIds") or {}
+            identifier = Identifier(
+                doi=ids.get("DOI"),
+                pmid=str(ids["PubMed"]) if ids.get("PubMed") else None,
+                pmcid=str(ids["PubMedCentral"]) if ids.get("PubMedCentral") else None,
+            )
+            metadata = ArticleMetadata(
+                title=str(record.get("title") or ""),
+                authors=[
+                    Author(name=str(author["name"]))
+                    for author in record.get("authors") or []
+                    if author.get("name")
+                ],
+                publication_year=record.get("year"),
+                source="semantic_scholar",
+            )
+            found.append((identifier, metadata))
+        return found
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """
