@@ -643,7 +643,9 @@ class ACEExtractor(BaseExtractor):
                 journal,
                 delay=None,
                 mode=self._download_mode,
-                overwrite=self.settings.force_redownload,
+                # Whether to fetch again is the catalog's call (`--refresh download:ace`);
+                # by the time this runs it has decided to, so a file already on disk is reused.
+                overwrite=False,
                 prefer_pmc_source=False,
             )
         except Exception as exc:  # pragma: no cover - surfaced to caller
