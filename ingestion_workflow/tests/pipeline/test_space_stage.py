@@ -128,3 +128,22 @@ def test_an_article_with_nothing_to_fill_writes_the_analyses_blob_again(env):
     catalog.record(list(stage.execute(ctx, plan.pending)))
     space, analyses = (catalog.artifact(ref.id, stage, "") for stage in ("space", "analyses"))
     assert space.blob == analyses.blob
+
+
+def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch):
+    from ingestion_workflow.pipeline.stages import space
+
+    def unexpected(*args):
+        raise AssertionError("read the text of an article with nothing to fill")
+
+    monkeypatch.setattr(space, "_article_text", unexpected)
+    settings, catalog, _ = env
+    ref = catalog.register(Identifier(pmid="789"))
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                            payload={"t1": _collection("TAL")}, summary={"tables": 1})])
+    ctx = Context(settings, catalog)
+    stage = SpaceStage(settings)
+    plan = stage.plan(ctx, [ref], {}, catalog.artifacts([ref.id], "analyses"))
+    (outcome,) = list(stage.execute(ctx, plan.pending))
+    assert outcome.status is Status.OK
+    assert outcome.payload["t1"]["coordinate_space"] == "TAL"

@@ -78,10 +78,14 @@ class SpaceStage:
                 )
                 continue
             try:
-                text = _article_text(
-                    triaged.get(work.article_id, {}).get(""),
-                    extractions.get(work.article_id, {}),
-                    ctx,
+                text = (
+                    _article_text(
+                        triaged.get(work.article_id, {}).get(""),
+                        extractions.get(work.article_id, {}),
+                        ctx,
+                    )
+                    if _needs_filling(payload)
+                    else None
                 )
                 filled, summary = fill_spaces(payload, text)
             except Exception as exc:
@@ -100,6 +104,13 @@ class SpaceStage:
                 payload=filled,
                 summary=summary,
             )
+
+
+def _needs_filling(payload: Dict[str, dict]) -> bool:
+    return any(
+        collection.get("coordinate_space") in _UNKNOWN and collection.get("analyses")
+        for collection in payload.values()
+    )
 
 
 def _article_text(
