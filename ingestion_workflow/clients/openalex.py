@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import re
 import time
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from ingestion_workflow.models import Identifiers
+from ingestion_workflow.models import Identifier, Identifiers
+from ingestion_workflow.models.metadata import ArticleMetadata, Author
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
@@ -141,6 +143,48 @@ class OpenAlexClient:
                         pdf_urls[identifier.slug] = url
 
         return pdf_urls
+
+    def search_title(self, title: str, limit: int = 5) -> List[Tuple[Identifier, ArticleMetadata]]:
+        """Works whose title matches `title`, best first, with their authors.
+
+        A comma separates filters in OpenAlex's syntax, so punctuation is
+        dropped from the title before it is sent. `title.search` wants every
+        word; when it finds nothing -- a truncated title -- the relevance
+        search over all fields is asked instead.
+        """
+        words = " ".join(re.findall(r"\w+", title))
+        if not words:
+            return []
+        params = {
+            "per_page": str(limit),
+            "mailto": self.email,
+            "select": "ids,display_name,authorships,publication_year",
+        }
+        works = self._request_openalex({**params, "filter": f"title.search:{words}"}).get(
+            "results"
+        ) or self._request_openalex({**params, "search": words}).get("results")
+        found = []
+        for work in works or []:
+            ids = work.get("ids", {}) or {}
+            pmcid = re.search(r"(\d+)/?$", ids.get("pmcid") or "")
+            identifier = Identifier(
+                doi=ids.get("doi"),
+                pmid=ids.get("pmid"),
+                pmcid=pmcid.group(1) if pmcid else None,
+            )
+            authors = [
+                Author(name=str(authorship["author"]["display_name"]))
+                for authorship in work.get("authorships", []) or []
+                if (authorship.get("author") or {}).get("display_name")
+            ]
+            metadata = ArticleMetadata(
+                title=str(work.get("display_name") or ""),
+                authors=authors,
+                publication_year=work.get("publication_year"),
+                source="openalex",
+            )
+            found.append((identifier, metadata))
+        return found
 
     @staticmethod
     def _pdf_url_from_work(work: Dict) -> Optional[str]:

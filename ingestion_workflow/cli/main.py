@@ -113,6 +113,25 @@ def add(
     start_year: Optional[int] = typer.Option(
         None, "--start-year", help="Earliest year for queries."
     ),
+    pdfs: Optional[Path] = typer.Option(
+        None,
+        "--pdfs",
+        exists=True,
+        file_okay=False,
+        help=(
+            "Folder of PDFs already downloaded. Their ids are read off each PDF, "
+            "or found by title, and each PDF becomes its article's download."
+        ),
+    ),
+    in_place: bool = typer.Option(
+        False,
+        "--in-place",
+        help=(
+            "Point the catalog at the --pdfs files where they are, instead of "
+            "copying them into the PDF cache. For a folder that is their "
+            "permanent home."
+        ),
+    ),
     neurostore: Optional[List[str]] = typer.Option(
         None,
         "--neurostore",
@@ -152,6 +171,8 @@ def add(
         found += list(Identifiers.load(manifest).identifiers)
     if from_neurostore:
         found += _discover_from_neurostore(settings, limit)
+    local = _read_pdfs(settings, pdfs) if pdfs else []
+    found += [pdf.identifier for pdf in local if pdf.identifier and not pdf.supplement]
 
     if query:
         from ingestion_workflow.services.search import PubMedSearchService
@@ -164,7 +185,7 @@ def add(
 
     if not found:
         raise typer.BadParameter(
-            "give identifiers, --file, --manifest, --query or --neurostore"
+            "give identifiers, --file, --manifest, --query, --pdfs or --neurostore"
         )
 
     with _catalog(settings) as catalog:
@@ -173,10 +194,97 @@ def add(
         if enrich:
             refs = _enrich(settings, catalog, refs)
         after = catalog.count_articles()
+        if local:
+            _attach_pdfs(settings, catalog, pdfs, local, in_place=in_place)
 
     typer.echo(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
         f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
+    )
+
+
+def _read_pdfs(settings: Settings, folder: Path) -> list:
+    import requests
+
+    from ingestion_workflow.services.local_pdfs import (
+        confirm_dois,
+        doi_registered,
+        find_pdfs,
+        match_titles,
+        read_pdf,
+        title_searchers,
+    )
+
+    local = [read_pdf(path) for path in find_pdfs(folder)]
+    confirm_dois(local, doi_registered(requests.Session()))
+    match_titles(local, title_searchers(settings))
+    found_by: dict = {}
+    for pdf in local:
+        found_by[pdf.found_by or "nothing"] = found_by.get(pdf.found_by or "nothing", 0) + 1
+    typer.echo(
+        f"pdfs {folder}: {len(local):,} files; ids from "
+        + ", ".join(f"{how} {n:,}" for how, n in sorted(found_by.items()))
+    )
+    return local
+
+
+def _attach_pdfs(
+    settings: Settings, catalog: Catalog, folder: Path, local: list, *, in_place: bool
+) -> None:
+    """Make each PDF its article's download, and write what became of each.
+
+    The manifest names the articles, for `ingest run --manifest`; the report
+    names the files, so the unresolved ones can be identified by hand.
+    """
+    import csv
+
+    from ingestion_workflow.models import DownloadSource
+    from ingestion_workflow.pipeline.stages.download import DownloadStage
+    from ingestion_workflow.services.local_pdfs import attach
+
+    store = None
+    if not in_place:
+        store = Path(settings.pdf_cache_root or settings.get_cache_dir("pdf")) / "local"
+    fp = DownloadStage(settings).fingerprint_for(DownloadSource.PDF)
+    outcome = attach(catalog, local, fp, store)
+
+    out_dir = settings.data_root / "manifests"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = out_dir / f"{folder.resolve().name}.jsonl"
+    report_path = out_dir / f"{folder.resolve().name}.tsv"
+
+    refs = {}
+    with report_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, delimiter="\t")
+        writer.writerow(
+            ["status", "found_by", "article_id", "doi", "pmid", "pmcid", "title", "path"]
+        )
+        for pdf in local:
+            ref = catalog.resolve(pdf.identifier) if pdf.identifier else None
+            if ref is not None and not pdf.supplement:
+                refs[ref.id] = ref
+            ids = ref.identifier if ref is not None else pdf.identifier
+            writer.writerow(
+                [
+                    outcome[pdf.path] if not pdf.error else f"unreadable: {pdf.error}",
+                    pdf.found_by or "",
+                    ref.id if ref is not None else "",
+                    (ids.doi if ids else "") or "",
+                    (ids.pmid if ids else "") or "",
+                    (ids.pmcid if ids else "") or "",
+                    pdf.title or "",
+                    str(pdf.path),
+                ]
+            )
+    Identifiers([ref.identifier for ref in refs.values()]).save(manifest_path)
+
+    counts: dict = {}
+    for status in outcome.values():
+        key = "duplicate" if status.startswith("duplicate") else status
+        counts[key] = counts.get(key, 0) + 1
+    typer.echo(
+        "  " + ", ".join(f"{status} {n:,}" for status, n in sorted(counts.items()))
+        + f"\n  manifest {manifest_path}\n  report   {report_path}"
     )
 
 
