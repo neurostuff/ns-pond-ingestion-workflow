@@ -5,7 +5,8 @@ The metadata will be retrieved from the following sources
 in this order:
 1. Semantic Scholar
 2. PubMed
-3. fallback to processed metadata from extractors
+3. OpenAlex
+4. fallback to processed metadata from extractors
    (information from the downloaded article)
 """
 
@@ -20,6 +21,7 @@ from typing import Dict, List, Optional
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 
+from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
@@ -38,13 +40,15 @@ class MetadataService:
     Coordinates metadata fetching from multiple sources:
     1. Semantic Scholar (if API key available)
     2. PubMed (if email configured)
-    3. Fallback to extractor-specific files
+    3. OpenAlex (if email configured)
+    4. Fallback to extractor-specific files
     """
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self._s2_client: Optional[SemanticScholarClient] = None
         self._pubmed_client: Optional[PubMedClient] = None
+        self._openalex_client: Optional[OpenAlexClient] = None
 
         # Initialize clients if credentials available
         if settings.semantic_scholar_api_key:
@@ -55,6 +59,9 @@ class MetadataService:
                 email=settings.pubmed_email,
                 api_key=settings.pubmed_api_key,
             )
+
+        if settings.openalex_email:
+            self._openalex_client = OpenAlexClient(settings.openalex_email)
 
     def enrich_metadata(
         self, extracted_contents: List[ExtractedContent]
@@ -137,6 +144,29 @@ class MetadataService:
                     len(pubmed_results),
                 )
 
+        # OpenAlex indexes what the other two miss: preprints, and articles
+        # outside PMC that Semantic Scholar has no record of. Of three PDFs in
+        # one shared folder that no provider answered for, it had all three.
+        if self._openalex_client and identified_items:
+            identifiers = [
+                item.identifier
+                for item in identified_items
+                if not _filled(results.get(item.slug))
+            ]
+            if identifiers:
+                logger.info("Fetching metadata from OpenAlex for %d articles", len(identifiers))
+                sources_checked.append("openalex")
+                for identifier_slug, meta in self._get_openalex_metadata_cached(
+                    identifiers
+                ).items():
+                    content = id_to_content.get(identifier_slug)
+                    if content is None or not self._has_useful_metadata(meta):
+                        continue
+                    if content.slug in results:
+                        results[content.slug] = results[content.slug].merge_from(meta)
+                    else:
+                        results[content.slug] = meta
+
         # The extractor's own metadata last, to fill what the APIs did not.
         unfilled = [item for item in extracted_contents if not _filled(results.get(item.slug))]
         if unfilled:
@@ -165,103 +195,54 @@ class MetadataService:
     def _get_semantic_scholar_metadata_cached(
         self, identifiers: List[Identifier]
     ) -> Dict[str, ArticleMetadata]:
-        """Fetch S2 metadata with caching."""
-        metadata_dir = self.settings.get_cache_dir("metadata")
-        cache_dir = metadata_dir / "semantic_scholar"
-        cache_dir.mkdir(parents=True, exist_ok=True)
-
-        results: Dict[str, ArticleMetadata] = {}
-        uncached: List[Identifier] = []
-
-        # Check cache first
-        for identifier in identifiers:
-            cache_file = cache_dir / f"{identifier.slug}.json"
-            if cache_file.exists():
-                try:
-                    data = json.loads(cache_file.read_text(encoding="utf-8"))
-                    results[identifier.slug] = ArticleMetadata.from_dict(data)
-                except Exception as exc:
-                    logger.warning(
-                        "Failed to load cached S2 metadata for %s: %s",
-                        identifier.slug,
-                        exc,
-                    )
-                    uncached.append(identifier)
-            else:
-                uncached.append(identifier)
-
-        # Fetch uncached items
-        if uncached and self._s2_client:
-            try:
-                fresh_results = self._s2_client.get_metadata(uncached)
-                # Cache and add to results
-                for slug, metadata in fresh_results.items():
-                    cache_file = cache_dir / f"{slug}.json"
-                    try:
-                        cache_file.write_text(
-                            json.dumps(metadata.to_dict(), indent=2),
-                            encoding="utf-8",
-                        )
-                    except Exception as exc:
-                        logger.warning(
-                            "Failed to cache S2 metadata for %s: %s",
-                            slug,
-                            exc,
-                        )
-                    results[slug] = metadata
-            except Exception as exc:
-                logger.error("Semantic Scholar metadata request failed: %s", exc)
-
-        return results
+        return self._cached("semantic_scholar", self._s2_client, identifiers)
 
     def _get_pubmed_metadata_cached(
         self, identifiers: List[Identifier]
     ) -> Dict[str, ArticleMetadata]:
-        """Fetch PubMed metadata with caching."""
-        cache_dir = self.settings.get_cache_dir("metadata") / "pubmed"
+        return self._cached("pubmed", self._pubmed_client, identifiers)
+
+    def _get_openalex_metadata_cached(
+        self, identifiers: List[Identifier]
+    ) -> Dict[str, ArticleMetadata]:
+        return self._cached("openalex", self._openalex_client, identifiers)
+
+    def _cached(
+        self, name: str, client, identifiers: List[Identifier]
+    ) -> Dict[str, ArticleMetadata]:
+        """A provider's metadata, from `<cache>/metadata/<name>/<slug>.json` when held."""
+        cache_dir = self.settings.get_cache_dir("metadata") / name
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         results: Dict[str, ArticleMetadata] = {}
         uncached: List[Identifier] = []
-
-        # Check cache first
         for identifier in identifiers:
             cache_file = cache_dir / f"{identifier.slug}.json"
-            if cache_file.exists():
-                try:
-                    data = json.loads(cache_file.read_text(encoding="utf-8"))
-                    results[identifier.slug] = ArticleMetadata.from_dict(data)
-                except Exception as exc:
-                    logger.warning(
-                        "Failed to load cached PubMed metadata for %s: %s",
-                        identifier.slug,
-                        exc,
-                    )
-                    uncached.append(identifier)
-            else:
+            if not cache_file.exists():
+                uncached.append(identifier)
+                continue
+            try:
+                data = json.loads(cache_file.read_text(encoding="utf-8"))
+                results[identifier.slug] = ArticleMetadata.from_dict(data)
+            except Exception as exc:
+                logger.warning("Failed to load cached %s metadata for %s: %s",
+                               name, identifier.slug, exc)
                 uncached.append(identifier)
 
-        # Fetch uncached items
-        if uncached and self._pubmed_client:
+        if uncached and client:
             try:
-                fresh_results = self._pubmed_client.get_metadata(uncached)
-                # Cache and add to results
-                for slug, metadata in fresh_results.items():
-                    cache_file = cache_dir / f"{slug}.json"
-                    try:
-                        cache_file.write_text(
-                            json.dumps(metadata.to_dict(), indent=2),
-                            encoding="utf-8",
-                        )
-                    except Exception as exc:
-                        logger.warning(
-                            "Failed to cache PubMed metadata for %s: %s",
-                            slug,
-                            exc,
-                        )
-                    results[slug] = metadata
+                fresh_results = client.get_metadata(uncached)
             except Exception as exc:
-                logger.error("PubMed metadata request failed: %s", exc)
+                logger.error("%s metadata request failed: %s", name, exc)
+                return results
+            for slug, metadata in fresh_results.items():
+                try:
+                    (cache_dir / f"{slug}.json").write_text(
+                        json.dumps(metadata.to_dict(), indent=2), encoding="utf-8"
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to cache %s metadata for %s: %s", name, slug, exc)
+                results[slug] = metadata
 
         return results
 
