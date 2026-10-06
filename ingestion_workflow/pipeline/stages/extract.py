@@ -127,7 +127,7 @@ class ExtractStage:
             chosen = None
             for source in self._priority(list(downloads)):
                 count, last = attempts(source).get(ref.id, (0, None))
-                if ctx.should_attempt(existing.get(source), count, last, self.name):
+                if ctx.should_attempt(existing.get(source), count, last, self.name, source):
                     chosen = (source, downloads[source])
                     break
 

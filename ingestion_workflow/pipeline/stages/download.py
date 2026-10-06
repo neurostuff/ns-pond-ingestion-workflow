@@ -109,7 +109,7 @@ class DownloadStage:
                 continue
             artifact = existing.get(source.value)
             count, last = attempts[source.value].get(ref.id, (0, None))
-            if ctx.should_attempt(artifact, count, last, self.name):
+            if ctx.should_attempt(artifact, count, last, self.name, source.value):
                 return source
         return None
 
