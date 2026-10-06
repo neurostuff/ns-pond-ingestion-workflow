@@ -50,10 +50,30 @@ logger = logging.getLogger(__name__)
 _HTML_INVALID_MARKERS: list[tuple[str, str]] = [
     ("<title>new tab</title>", "HTML payload captured a browser new-tab page."),
     ("api rate limit exceeded", "HTML payload contains an API rate limit error."),
-    ("captcha", "HTML payload appears to be a CAPTCHA challenge."),
     ("access to this page has been denied", "HTML payload was an access-denied page."),
 ]
 _MIN_HTML_LENGTH = 500
+
+# A challenge page names itself in its title, or carries little but the
+# challenge. "captcha" alone is no sign: publishers put a reCAPTCHA login
+# widget on article pages. Of 261 pages rejected for containing it, 242 were
+# articles with 7,000-128,000 characters of text; the one real challenge
+# ("Checking your browser - reCAPTCHA") had 167.
+_CHALLENGE_TITLE = re.compile(
+    r"captcha|checking your browser|are you a robot|just a moment|verify you are human",
+    re.I,
+)
+_CHALLENGE_MAX_TEXT = 3000
+_TITLE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
+_INVISIBLE = re.compile(r"<script\b.*?</script>|<style\b.*?</style>|<[^>]+>", re.S | re.I)
+
+
+def _is_challenge(html_text: str) -> bool:
+    title = _TITLE.search(html_text)
+    if title and _CHALLENGE_TITLE.search(title.group(1)):
+        return True
+    visible = _HTML_WS.sub(" ", _INVISIBLE.sub(" ", html_text)).strip()
+    return len(visible) < _CHALLENGE_MAX_TEXT
 
 
 def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
@@ -160,6 +180,8 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
     for marker, reason in _HTML_INVALID_MARKERS:
         if marker in lowered:
             return False, reason
+    if "captcha" in lowered and _is_challenge(normalized):
+        return False, "HTML payload appears to be a CAPTCHA challenge."
 
     if len(normalized) < _MIN_HTML_LENGTH:
         return False, (f"HTML payload is unexpectedly small ({len(normalized)} characters).")
