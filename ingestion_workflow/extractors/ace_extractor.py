@@ -464,7 +464,11 @@ def _extract_ace_article(
 
     html_text = html_file.file_path.read_text(encoding="utf-8")
     manager = SourceManager(table_dir=str(source_tables_dir))
-    source = manager.identify_source(html_text)
+    # A page no publisher's identifiers match goes to ACE's generic parser, as
+    # ACE's own ingest does with force_ingest. Raising instead lost every table
+    # on such a page: 11 of 43 articles whose coordinate tables autonima had,
+    # each found by DefaultSource.
+    source = manager.identify_source(html_text) or manager.default_source
     if source is None:
         raise ValueError("ACE could not identify an article source.")
 
