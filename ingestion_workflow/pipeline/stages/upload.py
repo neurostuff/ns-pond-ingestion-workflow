@@ -20,12 +20,13 @@ UPLOAD_VERSION = 1
 
 class UploadStage:
     name = "upload"
-    requires = "analyses"
+    #: `space` is the analyses with their unknown spaces filled in.
+    requires = "space"
 
-    #: `analyses` records how many tables produced a collection. An article it
-    #: found nothing in is a legitimate `ok` -- the model read the tables and
-    #: they held no coordinates -- so the status check does not exclude it, and
-    #: 30,741 such articles would be planned to upload nothing.
+    #: `space` carries `analyses`' count of tables that produced a collection.
+    #: An article it found nothing in is a legitimate `ok` -- the model read
+    #: the tables and they held no coordinates -- so the status check does not
+    #: exclude it, and 30,741 such articles would be planned to upload nothing.
     requires_flag = "tables"
 
     def __init__(self, settings) -> None:
@@ -64,11 +65,11 @@ class UploadStage:
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         excluded = ctx.catalog.exclusions([ref.id for ref in refs])
         for ref in refs:
-            analyses = upstream.get(ref.id, {}).get("")
-            if analyses is None or analyses.status is not Status.OK:
+            spaced = upstream.get(ref.id, {}).get("")
+            if spaced is None or spaced.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(analyses, excluded.get(ref.id))
+            fp = self.fingerprint_for(spaced, excluded.get(ref.id))
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -77,7 +78,7 @@ class UploadStage:
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
-            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=analyses))
+            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=spaced))
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
