@@ -35,10 +35,10 @@ class SpaceStage:
 
     def __init__(self, settings) -> None:
         self.settings = settings
-        self.requires, self.requires_flag = self.gate(settings)
+        self.requires, self.requires_flag = self.upstream_for(settings)
 
     @classmethod
-    def gate(cls, settings):
+    def upstream_for(cls, settings):
         """Read `resolve` when prose is on: it holds the tables' analyses and the prose's."""
         if getattr(settings, "prose_model", None):
             return "resolve", "tables"

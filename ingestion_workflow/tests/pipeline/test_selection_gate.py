@@ -109,6 +109,19 @@ def test_space_and_upload_are_gated_on_analyses_having_found_something(tmp_path,
     assert got == {ids["has"]}
 
 
+@pytest.mark.parametrize("prose", [None, "nu-prose"])
+def test_every_stage_can_be_selected_alone(catalog, tmp_path, prose):
+    """Selection asks a stage for the upstream it reads; triage's `gate` is its
+    coordinate gate, and calling that with settings crashed `-s triage`."""
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.pipeline.stages import STAGE_ORDER
+
+    cat, _ = catalog
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model=prose)
+    for stage in STAGE_ORDER:
+        narrow(cat, everything(cat), Select.PENDING, stage, settings=settings)
+
+
 def test_every_stage_that_gates_uses_the_same_declaration():
     """One mechanism. A stage either declares the upstream field it needs or
     it is not gated; there is no second way to express it."""
