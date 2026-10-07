@@ -40,7 +40,7 @@ class SpaceStage:
     @classmethod
     def gate(cls, settings):
         """Read `resolve` when prose is on: it holds the tables' analyses and the prose's."""
-        if getattr(settings, "prose_enabled", False):
+        if getattr(settings, "prose_model", None):
             return "resolve", "tables"
         return cls.requires, cls.requires_flag
 

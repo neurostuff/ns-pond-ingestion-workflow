@@ -122,7 +122,7 @@ def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], setting
 
     stage_type = STAGE_TYPES.get(stage)
     if settings is not None and hasattr(stage_type, "gate"):
-        upstream, flag = stage_type.gate(settings)   # space follows prose_enabled
+        upstream, flag = stage_type.gate(settings)   # space follows prose_model
     else:
         upstream = getattr(stage_type, "requires", None)
         flag = getattr(stage_type, "requires_flag", None)

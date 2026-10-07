@@ -20,8 +20,9 @@ from ingestion_workflow.services.create_analyses import build_document
 from ingestion_workflow.services.prose_passages import MINUS, Passage
 
 #: P: the passage alone. H: with its section heading. W: with the sentences
-#: around it. HW: both.
+#: around it. HW: both -- what the fine-tune was trained on and the stage sends.
 CONTEXTS = ("P", "H", "W", "HW")
+CONTEXT = "HW"
 
 
 def passage_body(passage: Passage, context: str = "HW") -> str:
@@ -88,11 +89,12 @@ class ProseCoordinateClient(GenericLLMClient):
     def __init__(self, settings: Optional[Settings] = None) -> None:
         super().__init__(
             settings,
-            api_key=getattr(settings, "prose_api_key", None),
+            # A local vLLM server takes any key; a hosted one needs llm_api_key.
+            api_key=(getattr(settings, "llm_api_key", None) or "none"),
             base_url=getattr(settings, "prose_api_base", None),
             default_model=getattr(settings, "prose_model", None),
         )
-        self.context = getattr(settings, "prose_context", None) or "HW"
+        self.context = CONTEXT
 
     def request(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
         wide = "W" in self.context and bool(passage.before or passage.after)
@@ -115,4 +117,4 @@ class ProseCoordinateClient(GenericLLMClient):
         return clean_answer(json.loads(response.choices[0].message.content or "{}"), passage.text)
 
 
-__all__ = ["CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body"]
+__all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body"]

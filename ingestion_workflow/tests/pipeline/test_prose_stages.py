@@ -42,15 +42,15 @@ def test_prose_and_resolve_run_after_analyses_and_before_space():
 def test_the_prose_stages_are_left_out_unless_switched_on(tmp_path):
     off = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c")
     assert not {s.name for s in build(None, off)} & set(PROSE_STAGES)
-    with pytest.raises(ValueError, match="prose_enabled"):
+    with pytest.raises(ValueError, match="prose_model"):
         build(["prose"], off)
-    on = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_enabled=True)
+    on = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model="nu-prose")
     assert set(PROSE_STAGES) <= {s.name for s in build(None, on)}
 
 
 def test_space_reads_resolve_only_when_prose_is_on(tmp_path):
     off = SpaceStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c"))
-    on = SpaceStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_enabled=True))
+    on = SpaceStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model="nu-prose"))
     assert (off.requires, on.requires) == ("analyses", "resolve")
     assert SpaceStage.requires == "analyses"   # the class keeps the default
 
@@ -101,24 +101,32 @@ def test_an_unstated_space_is_left_for_the_space_stage():
     assert out["prose"]["coordinate_space"] == "OTHER"
 
 
+ARTICLE = """<article><front><article-meta><title-group><article-title>T</article-title></title-group>
+</article-meta></front><body>
+<sec><title>Methods</title><p>Coordinates are reported in MNI space.</p></sec>
+<sec><title>Results</title><p>Patients showed greater activation than controls in the left amygdala
+(x = &#x02212;22, y = &#x02212;4, z = &#x02212;18; t = 4.1). The reverse contrast revealed no clusters.</p>
+<table-wrap><table><tr><td>-40</td><td>20</td><td>10</td></tr></table></table-wrap></sec>
+<sec><title>Discussion</title><p>Prior work found the amygdala at (x = 30, y = 2, z = -20).</p></sec>
+</body></article>"""
+
+
 @pytest.fixture()
 def env(tmp_path):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
-                        catalog_root=tmp_path / "k", prose_enabled=True, llm_api_key="x")
-    text = tmp_path / "article.txt"
-    text.write_text(TEXT)
+                        catalog_root=tmp_path / "k", prose_model="nu-prose", llm_api_key="x")
+    path = tmp_path / "article.xml"
+    path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
-        yield settings, catalog, text
+        yield settings, catalog, path
 
 
-def _record_upstream(catalog, ref, text, *, tables=None):
+def _record_upstream(catalog, ref, path, *, tables=None):
     rows = [
-        Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
-                payload={"full_text_path": str(text)}, summary={}),
+        Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
+                payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
                 payload={"title": "T", "abstract": "A"}, summary={}),
-        Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
-                payload={"source": "pubget"}, summary={"source": "pubget", "passed": 1 if tables else 0}),
     ]
     if tables:
         rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
@@ -143,23 +151,48 @@ class _Reader:
     def extract(self, passage, *, title="", abstract=""):
         if self.fail:
             raise RuntimeError("server down")
-        return {"space": passage.space, "analyses": [{"name": "patients > controls", "measure": None, "points": [
+        return {"space": None, "analyses": [{"name": "patients > controls", "measure": None, "points": [
             {"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1, "cluster_size": None,
              "role": "result"} for h in passage.hits]}]}
 
 
-def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
-    settings, catalog, text = env
+def test_prose_reads_the_download_s_methods_and_results_only(env, monkeypatch):
+    """Not the tables, not the discussion's cited peak -- and no extraction needed."""
+    settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="1"))
-    _record_upstream(catalog, ref, text)
+    _record_upstream(catalog, ref, path)
+    prose = ProseStage(settings)
+    monkeypatch.setattr(prose, "client", lambda: _Reader())
+    _, (read,) = _run(prose, Context(settings, catalog), catalog, ref)
+    assert read.status is Status.OK and read.summary["read"] == "methods+results"
+    points = [(q["x"], q["y"], q["z"]) for p in read.payload["passages"] for a in p["analyses"] for q in a["points"]]
+    assert points == [(-22.0, -4.0, -18.0)]
+    assert read.payload["passages"][0]["heading"] == "Results"
+    assert read.payload["space"] == "MNI"   # read from the Methods
+
+
+def test_a_download_with_no_coordinate_is_filtered_before_it_is_parsed(env, monkeypatch, tmp_path):
+    settings, catalog, _ = env
+    plain = tmp_path / "plain.xml"
+    plain.write_text("<article><body><sec><title>Results</title><p>Accuracy was 85% (70, 85, 92).</p></sec></body></article>")
+    ref = catalog.register(Identifier(pmid="5"))
+    _record_upstream(catalog, ref, plain)
+    from ingestion_workflow.services import prose_text
+
+    monkeypatch.setattr(prose_text, "read_download", lambda *a: (_ for _ in ()).throw(AssertionError("parsed")))
+    prose = ProseStage(settings)
+    _, (read,) = _run(prose, Context(settings, catalog), catalog, ref)
+    assert read.summary == {"source": "pubget", "read": "filtered", "passages": 0, "coordinates": 0, "results": 0}
+
+
+def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="2"))
+    _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     prose = ProseStage(settings)
     monkeypatch.setattr(prose, "client", lambda: _Reader())
-
-    _, (read,) = _run(prose, ctx, catalog, ref)
-    assert read.status is Status.OK and read.summary["results"] == 1
-    assert read.payload["passages"][0]["heading"] == "Results"
-
+    _run(prose, ctx, catalog, ref)
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["prose_points"] == 1 and merged.summary["basis"] == ""
     _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
@@ -170,13 +203,12 @@ def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch
 def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch):
     """Resolve names the analyses it passed through, so space -- and upload
     after it -- keep the fingerprints they had before prose existed."""
-    settings, catalog, text = env
-    ref = catalog.register(Identifier(pmid="2"))
-    _record_upstream(catalog, ref, text, tables={"t1": _table([(-22, -4, -18)])})
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="3"))
+    _record_upstream(catalog, ref, path, tables={"t1": _table([(-22, -4, -18)])})
     ctx = Context(settings, catalog)
     before = SpaceStage(Settings(data_root=settings.data_root, cache_root=settings.cache_root))
     expected = before.fingerprint_for(catalog.artifact(ref.id, "analyses", ""))
-
     prose = ProseStage(settings)
     monkeypatch.setattr(prose, "client", lambda: _Reader())
     _run(prose, ctx, catalog, ref)
@@ -187,24 +219,25 @@ def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch)
 
 
 def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
-    settings, catalog, text = env
-    ref = catalog.register(Identifier(pmid="3"))
-    _record_upstream(catalog, ref, text)
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="4"))
+    _record_upstream(catalog, ref, path)
     prose = ProseStage(settings)
     monkeypatch.setattr(prose, "client", lambda: _Reader(fail=True))
     _, (outcome,) = _run(prose, Context(settings, catalog), catalog, ref)
     assert outcome.status is Status.FAILED
 
 
-def test_resolve_waits_for_tables_triage_passed(env, monkeypatch):
-    settings, catalog, text = env
-    ref = catalog.register(Identifier(pmid="4"))
-    _record_upstream(catalog, ref, text)
-    catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-2",
-                            payload={"source": "pubget"}, summary={"source": "pubget", "passed": 2})])
+def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="6"))
+    _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     prose = ProseStage(settings)
     monkeypatch.setattr(prose, "client", lambda: _Reader())
     _run(prose, ctx, catalog, ref)
-    plan, _ = _run(ResolveStage(settings), ctx, catalog, ref)
-    assert plan.blocked == 1 and not plan.pending
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-2",
+                            payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])
+    plan, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert len(plan.pending) == 1 and merged.summary["restated"] == 1

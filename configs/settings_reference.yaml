@@ -52,12 +52,8 @@ llm_reasoning_effort: null  # Reasoning effort to send with coordinate parsing; 
 n_llm_workers: 2  # Maximum number of concurrent LLM workers
 
 # ===== Coordinates in prose =====
-prose_enabled: false  # Run the prose and resolve stages, and have space read resolve. Off, nothing changes
-prose_model: null  # Model for coordinates in prose (base NuExtract3 on vLLM); defaults to llm_model
-prose_api_base: null  # Its server; defaults to llm_api_base
-prose_api_key: null  # Its key; defaults to llm_api_key
-prose_context: "HW"  # What it reads besides the passage: P none, H section heading, W surrounding sentences, HW both
-prose_max_passages: 40  # Most passages read in one article
+prose_model: null  # Model that reads coordinates written in the text; setting it runs prose and resolve
+prose_api_base: null  # Its server, apart from the table model's; defaults to llm_api_base
 
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations

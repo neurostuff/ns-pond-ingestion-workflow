@@ -70,8 +70,11 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
     dropped = collections.Counter()
     restated = at_table_peak = 0
     spaces = collections.Counter()
+    article_space = _space((prose or {}).get("space"))
     for index, passage in enumerate((prose or {}).get("passages", [])):
         space = _space(passage.get("space"))
+        if space is CoordinateSpace.OTHER:
+            space = article_space  # the space the article's Methods state
         for a in passage.get("analyses", []):
             name = (a.get("name") or "").strip() or UNNAMED
             for p in a.get("points", []):
@@ -105,8 +108,11 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
 
     out = dict(tables or {})
     if groups:
+        stated = _space((prose or {}).get("space"))
         if spaces:
             space = spaces.most_common(1)[0][0]
+        elif stated is not CoordinateSpace.OTHER:
+            space = stated
         elif table_spaces:
             space = CoordinateSpace(table_spaces.most_common(1)[0][0])
         else:
@@ -126,8 +132,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
 
 class ResolveStage:
     name = "resolve"
-    #: prose, and `analyses` read alongside: `requires` names one parent, and
-    #: an article with no table worth parsing has no analyses at all.
+    #: prose, and `analyses` read alongside when it exists: `requires` names
+    #: one parent, and an article with no table that parsed has no analyses.
     requires = "prose"
 
     def __init__(self, settings) -> None:
@@ -148,18 +154,15 @@ class ResolveStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
-        triaged = ctx.catalog.artifacts(ids, "triage")
         analysed = ctx.catalog.artifacts(ids, "analyses")
         for ref in refs:
             prose = upstream.get(ref.id, {}).get("")
             if prose is None or prose.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            passed = (triaged.get(ref.id, {}).get("") or Artifact(ref.id, "triage")).summary.get("passed", 0)
+            # The tables' analyses when there are any. Nothing waits for them:
+            # when they arrive the fingerprint below changes, and this re-runs.
             analyses = analysed.get(ref.id, {}).get("")
-            if passed and (analyses is None or analyses.status is Status.FAILED):
-                plan.blocked += 1  # the tables are still to be read
-                continue
             tables = analyses if analyses is not None and analyses.status is Status.OK else None
             if not prose.summary.get("results") and not (tables and tables.summary.get("tables")):
                 plan.skipped += 1  # neither the tables nor the prose hold a result

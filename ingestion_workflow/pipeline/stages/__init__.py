@@ -15,8 +15,8 @@ from .upload import UploadStage
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
 #: `extract` keeps and it decides which of them `analyses` spends a call on.
 #: `space` sits between `analyses` and `upload`, so a table goes out with the
-#: space its article states. `prose` and `resolve` run only with
-#: `prose_enabled`: prose reads the coordinates written in the text, resolve
+#: space its article states. `prose` and `resolve` run only when `prose_model`
+#: is set: prose reads the coordinates written in the text, resolve
 #: merges them with the tables', and `space` then reads resolve instead.
 STAGE_ORDER = ("download", "extract", "metadata", "triage", "analyses",
                "prose", "resolve", "space", "upload", "sync")
@@ -40,14 +40,14 @@ STAGE_TYPES = {
 
 def build(names, settings):
     """Instantiate the requested stages in canonical order."""
-    enabled = bool(getattr(settings, "prose_enabled", False))
+    enabled = bool(getattr(settings, "prose_model", None))
     wanted = {name.lower() for name in names} if names else {
         name for name in STAGE_ORDER if enabled or name not in PROSE_STAGES}
     unknown = wanted - set(STAGE_ORDER)
     if unknown:
         raise ValueError(f"Unknown stages: {', '.join(sorted(unknown))}")
     if wanted & set(PROSE_STAGES) and not enabled:
-        raise ValueError("the prose and resolve stages need prose_enabled: space reads "
+        raise ValueError("the prose and resolve stages need prose_model: space reads "
                          "analyses without it, so their output would go nowhere")
     return [STAGE_TYPES[name](settings) for name in STAGE_ORDER if name in wanted]
 
