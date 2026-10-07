@@ -18,8 +18,10 @@ from .upload import UploadStage
 #: space its article states. `prose` and `resolve` run only when `prose_model`
 #: is set: prose reads the coordinates written in the text, resolve
 #: merges them with the tables', and `space` then reads resolve instead.
-STAGE_ORDER = ("download", "extract", "metadata", "triage", "analyses",
-               "prose", "resolve", "space", "upload", "sync")
+#: prose needs only a download, and comes before metadata so that an article
+#: found only through its prose is fetched metadata in the same run.
+STAGE_ORDER = ("download", "extract", "prose", "metadata", "triage", "analyses",
+               "resolve", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("prose", "resolve")

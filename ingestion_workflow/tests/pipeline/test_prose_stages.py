@@ -34,9 +34,10 @@ def _passage(*analyses, space="MNI"):
         for name, points in analyses]}
 
 
-def test_prose_and_resolve_run_after_analyses_and_before_space():
+def test_prose_runs_before_metadata_and_resolve_after_analyses():
     order = list(STAGE_ORDER)
-    assert order.index("analyses") < order.index("prose") < order.index("resolve") < order.index("space")
+    assert order.index("download") < order.index("prose") < order.index("metadata")
+    assert order.index("analyses") < order.index("resolve") < order.index("space")
 
 
 def test_the_prose_stages_are_left_out_unless_switched_on(tmp_path):
@@ -240,6 +241,35 @@ def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
     monkeypatch.setattr(prose, "client", lambda: _Reader(fail=True))
     _, (outcome,) = _run(prose, Context(settings, catalog), catalog, ref)
     assert outcome.status is Status.FAILED
+
+
+def test_an_article_found_only_through_its_prose_is_fetched_metadata(env, monkeypatch):
+    """No extraction, so metadata had no way to reach it; its prose kept a point."""
+    from ingestion_workflow.models.metadata import ArticleMetadata
+    from ingestion_workflow.pipeline.stages.metadata import MetadataStage
+
+    settings, catalog, path = env
+    found, empty = catalog.register(Identifier(pmid="7")), catalog.register(Identifier(pmid="8"))
+    catalog.record([Outcome(article_id=r.id, stage="download", source="pubget", fingerprint="dl-1",
+                            payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={})
+                    for r in (found, empty)])
+    ctx = Context(settings, catalog)
+    prose = ProseStage(settings)
+    monkeypatch.setattr(prose, "client", lambda: _Reader())
+    _run(prose, ctx, catalog, found)
+    catalog.record([Outcome(article_id=empty.id, stage="prose", source="", fingerprint="pr-0",
+                            payload={"source": "pubget", "read": "filtered", "space": None, "passages": []},
+                            summary={"kept": 0})])
+    meta = MetadataStage(settings)
+    asked = []
+    monkeypatch.setattr(MetadataStage, "service", property(lambda self: self))
+    monkeypatch.setattr(meta, "enrich_metadata", lambda contents: asked.extend(c.identifier.pmid for c in contents)
+                        or {c.slug: ArticleMetadata(title="T") for c in contents}, raising=False)
+    plan = meta.plan(ctx, [found, empty], catalog.artifacts([found.id, empty.id], "metadata"),
+                     catalog.artifacts([found.id, empty.id], "extract"))
+    assert [w.article_id for w in plan.pending] == [found.id] and plan.blocked == 1
+    (outcome,) = meta.execute(ctx, plan.pending)
+    assert outcome.status is Status.OK and asked == ["7"]
 
 
 def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
