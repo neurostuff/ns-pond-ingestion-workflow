@@ -12,18 +12,24 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 MINUS = "−–—‐‑‒﹣－"
-NUM = rf"(?:±|[+{MINUS}-])?\s?\d{{1,3}}(?:\.\d+)?"
+#: The space after a sign only: a space before one is left to the patterns,
+#: whose own `\s*` would otherwise overlap it and backtrack without end on a
+#: long run of whitespace.
+NUM = rf"(?:(?:±|[+{MINUS}-])\s?)?\d{{1,3}}(?:\.\d+)?"
 #: Comma, semicolon, slash or whitespace between values, or nothing before a
 #: minus: "MNI -6–8 22" is (-6, -8, 22). "(−48, −34, and 42)" too.
 SEP = rf"\s*[,;/]\s*(?:and\s+)?|\s+|(?=[{MINUS}-])"
+#: Runs of spaces are closed up before any pattern runs: tag-stripped XML has
+#: hundreds of them between a bare "x" and the next number.
+SPACES = re.compile(r"[ \t\u00a0]{2,}")
 
 LABELLED = re.compile(
-    rf"\bx\s*[=:]?\s*(?P<x>{NUM})\s*[,;]?\s*(?:and\s+)?\by\s*[=:]?\s*(?P<y>{NUM})"
-    rf"\s*[,;]?\s*(?:and\s+)?\bz\s*[=:]?\s*(?P<z>{NUM})",
+    rf"\bx\s*(?:[=:]\s*)?(?P<x>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?\by\s*(?:[=:]\s*)?(?P<y>{NUM})"
+    rf"\s*(?:[,;]\s*)?(?:and\s+)?\bz\s*(?:[=:]\s*)?(?P<z>{NUM})",
     re.I,
 )
 HEADED = re.compile(
-    rf"\(?\s*x\s*,\s*y\s*,\s*z\s*\)?\s*[=:]\s*[\(\[]?\s*(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})"
+    rf"(?:\(\s*)?\bx\s*,\s*y\s*,\s*z\s*(?:\)\s*)?[=:]\s*(?:[\(\[]\s*)?(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})"
     rf"(?P<z>{NUM})\s*[\)\]]?",
     re.I,
 )
@@ -241,7 +247,7 @@ def passages(text: str, *, max_chars: int = 4000, before: int = 3) -> List[Passa
     """
     # A PDF's column or page break can fall inside a triplet ("[-21, -6,\n\n-27]"),
     # and a paragraph break ends a sentence, so it is closed up first.
-    clean = BROKEN_LIST.sub(r"\1 ", table_free(text or ""))
+    clean = BROKEN_LIST.sub(r"\1 ", SPACES.sub(" ", table_free(text or "")))
     sents = sentences(HEADING.sub(lambda m: f"\n\n#{m.group(1)}\n\n", clean))
     found = [[] if s.startswith("#") else find(s) for s in sents]
     out, i = [], 0

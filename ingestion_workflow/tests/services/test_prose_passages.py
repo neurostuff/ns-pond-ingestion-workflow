@@ -83,6 +83,17 @@ def test_n_s_does_not_end_the_sentence():
     assert [(h.x, h.y, h.z) for p in passages(text) for h in p.hits] == [(4, -27, 5), (-36, -85, 8)]
 
 
+def test_a_long_run_of_whitespace_does_not_hang_the_patterns():
+    # Tag-stripped XML: a bare "x", then hundreds of spaces before each number.
+    # Overlapping whitespace quantifiers took minutes on one such file.
+    from ingestion_workflow.services.prose_passages import PATTERNS
+
+    bad = ("x \n" + " " * 600 + "1 \n" + (" " * 500 + "\n") * 4) * 40
+    for _, rx in PATTERNS:
+        assert list(rx.finditer(bad)) == []
+    assert passages(bad) == []
+
+
 def test_a_page_break_inside_a_triplet_is_closed_up():
     text = "Activity was found in the bilateral amygdala ([-21, -6,\n\n-27], T = 6.94). Nothing else."
     (p,) = passages(text)

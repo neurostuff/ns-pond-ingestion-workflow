@@ -46,7 +46,7 @@ def may_hold_coordinates(raw: str) -> bool:
     it. A no here is final; a yes still goes through the real reader.
     """
     text = _TAG.sub(" ", _TABLE_BLOCK.sub(" ", raw))
-    text = normalize_minus(_ENTITY_SPACE.sub(" ", text))
+    text = " ".join(normalize_minus(_ENTITY_SPACE.sub(" ", text)).split())
     for _, pattern in PATTERNS:
         for m in pattern.finditer(text):
             if find(text[max(m.start() - 300, 0):m.end() + 120]):
