@@ -60,6 +60,7 @@ COORD_CUE = re.compile(
 )
 SPACE = re.compile(r"\b(MNI|Montreal Neurological|Talairach|Tournoux)\b", re.I)
 HEADING = re.compile(r"^\s*#{1,6}\s+(.+?)\s*$", re.M)
+BROKEN_LIST = re.compile(rf"([,;(\[]|\d)[ \t]*\n\s*\n\s*(?=[{MINUS}-]?\d)")
 ABBREV = re.compile(
     r"(?:\b(?:e\.g|i\.e|et al|Fig|Figs|Tab|vs|approx|ca|cf|resp|No|Eq|Ref|Dr|Mr|Ms|Inc|Ltd|al)\.|\b[A-Z]\.)$")
 CANDIDATE_END = re.compile(r"[.!?](?:[\"')\]]*)\s+(?=[A-Z(\[\"'])")
@@ -186,7 +187,9 @@ def passages(text: str, *, max_chars: int = 4000, before: int = 3) -> List[Passa
     heading above it are kept alongside: they often name the contrast the
     passage only refers to ("This comparison revealed ...").
     """
-    clean = table_free(text or "")
+    # A PDF's column or page break can fall inside a triplet ("[-21, -6,\n\n-27]"),
+    # and a paragraph break ends a sentence, so it is closed up first.
+    clean = BROKEN_LIST.sub(r"\1 ", table_free(text or ""))
     sents = sentences(HEADING.sub(lambda m: f"\n\n#{m.group(1)}\n\n", clean))
     found = [[] if s.startswith("#") else find(s) for s in sents]
     out, i = [], 0

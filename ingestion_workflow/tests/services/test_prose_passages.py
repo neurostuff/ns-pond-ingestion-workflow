@@ -61,3 +61,9 @@ def test_a_passage_keeps_its_heading_and_neighbours_and_drops_table_rows():
     assert p.text.startswith("Patients showed reduced activation")
     assert "We compared the groups." in p.before
     assert p.after == "Nothing else did."
+
+
+def test_a_page_break_inside_a_triplet_is_closed_up():
+    text = "Activity was found in the bilateral amygdala ([-21, -6,\n\n-27], T = 6.94). Nothing else."
+    (p,) = passages(text)
+    assert [(h.x, h.y, h.z) for h in p.hits] == [(-21, -6, -27)]
