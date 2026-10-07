@@ -13,13 +13,22 @@ from ingestion_workflow.models.analysis import CoordinateSpace
 from ..plan import StagePlan, Work
 from ..stage import Context
 
-RESOLVE_VERSION = 1
+RESOLVE_VERSION = 2
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
 SAME_PEAK_MM = 1.0
 
 UNNAMED = "unnamed prose analysis"
+
+#: Analyses that are computed at a peak rather than finding it. Of 277
+#: hand-labelled prose results sitting on one of their article's table peaks,
+#: 85 were a different analysis there -- mostly a correlation, a conjunction
+#: or a follow-up -- and this keeps 46 of them while re-keeping 20 of the 192
+#: that restate the table (79% agreement with a judge reading both).
+COMPUTED_AT_PEAK = re.compile(
+    r"correlat|regress|conjunction|interaction|\bx\b|\u00d7|\bppi\b|connectivity|coupling|parametric|modulat|covar",
+    re.I)
 
 
 def _norm(name: Optional[str]) -> str:
@@ -42,11 +51,13 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
 
     Only results are kept: ROI centres, seeds, targets, display locations and
     other studies' peaks are not this study's findings. A result already in
-    one of the article's tables is the text restating it. A coordinate the
-    prose reports under two contrasts stays under both.
+    one of the article's tables is the text restating it -- unless the prose
+    reports an analysis computed at that peak (a correlation, a conjunction)
+    that no table analysis there is. A coordinate the prose reports under two
+    contrasts stays under both.
     """
     table_points = [
-        (c["x"], c["y"], c["z"])
+        ((c["x"], c["y"], c["z"]), a.get("name") or "")
         for blob in (tables or {}).values()
         for a in (blob or {}).get("analyses", [])
         for c in a.get("coordinates", [])
@@ -57,7 +68,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
     groups: Dict[str, Analysis] = {}
     seen = set()
     dropped = collections.Counter()
-    restated = 0
+    restated = at_table_peak = 0
     spaces = collections.Counter()
     for index, passage in enumerate((prose or {}).get("passages", [])):
         space = _space(passage.get("space"))
@@ -68,9 +79,13 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
                     dropped[p.get("role") or "none"] += 1
                     continue
                 xyz = (float(p["x"]), float(p["y"]), float(p["z"]))
-                if any(all(abs(u - v) <= SAME_PEAK_MM for u, v in zip(xyz, t)) for t in table_points):
+                at_peak = [n for t, n in table_points
+                           if all(abs(u - v) <= SAME_PEAK_MM for u, v in zip(xyz, t))]
+                if at_peak and not (COMPUTED_AT_PEAK.search(name)
+                                    and not any(COMPUTED_AT_PEAK.search(n) for n in at_peak)):
                     restated += 1
                     continue
+                at_table_peak += bool(at_peak)
                 key = (_norm(name), tuple(round(v) for v in xyz))
                 if key in seen:
                     continue
@@ -103,6 +118,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
         "prose_analyses": len(groups),
         "prose_points": sum(len(a.coordinates) for a in groups.values()),
         "restated": restated,
+        "at_table_peaks": at_table_peak,
         "not_results": dict(dropped),
     }
     return out, summary
@@ -118,7 +134,7 @@ class ResolveStage:
         self.settings = settings
 
     def fingerprint_for(self, prose: Artifact, analyses: Optional[Artifact]) -> str:
-        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM,
+        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM, COMPUTED_AT_PEAK.pattern,
                            analyses.fingerprint if analyses is not None else "no tables",
                            upstream=prose.fingerprint)
 

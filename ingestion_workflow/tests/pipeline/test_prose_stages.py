@@ -63,6 +63,17 @@ def test_a_restated_table_peak_is_not_uploaded_twice():
     assert summary["restated"] == 1 and summary["prose_analyses"] == 0
 
 
+def test_a_correlation_computed_at_a_table_peak_is_its_own_analysis():
+    """Of 277 labelled prose results on a table peak, 85 were a different
+    analysis there; most were correlations and conjunctions."""
+    tables = {"t1": _table([(-22, -4, -18)])}
+    prose = {"passages": [_passage(("negative correlation with craving", [(-22, -4, -18, "result")]),
+                                   ("patients > controls", [(-22, -4, -18, "result")]))]}
+    out, summary = resolve(tables, prose, "slug")
+    assert [a["name"] for a in out["prose"]["analyses"]] == ["negative correlation with craving"]
+    assert summary["restated"] == 1 and summary["at_table_peaks"] == 1
+
+
 def test_only_results_are_kept_and_the_rest_are_counted():
     prose = {"passages": [_passage(
         ("amygdala seed", [(-22, -4, -18, "seed")]),
