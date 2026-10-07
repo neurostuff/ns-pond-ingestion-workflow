@@ -252,8 +252,12 @@ def _write_stage1(
     analyses: list[dict[str, object]] = []
     for table_id, collection in per_table_analyses.items():
         for analysis in collection.analyses:
+            # A prose analysis says it is one, and what its points are: a seed
+            # or ROI is not a result, and pondie cannot tell them apart otherwise.
+            prose = (analysis.metadata or {}).get("source") == "prose"
             analyses.append(
                 {
+                    **({"source": "prose", "role": analysis.metadata.get("role")} if prose else {}),
                     "name": analysis.name,
                     "description": analysis.description,
                     "table_id": analysis.table_id or table_id,
