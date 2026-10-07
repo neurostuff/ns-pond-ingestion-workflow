@@ -7,7 +7,9 @@ import json
 from ingestion_workflow.clients.prose_coordinates import (
     ProseCoordinateClient,
     clean_answer,
+    numbers_in,
     passage_body,
+    written,
 )
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
@@ -44,6 +46,18 @@ def test_a_looping_answer_and_context_coordinates_are_dropped():
     assert [a["name"] for a in got["analyses"]] == ["faces > houses", "other"]
     assert got["analyses"][0]["points"] == [{**point, "x": 40.0, "y": -50.0, "z": -20.0, "statistic": "T"}]
     assert got["analyses"][1]["points"][0]["role"] == "other"
+
+
+def test_a_point_made_of_numbers_that_are_not_a_coordinate_is_dropped():
+    text = "thinning in the superior midfrontal cortex (BA 8, 32, 34) and the precentral region (BA 9, 47)."
+    assert not written((47, 47, 47), numbers_in(text))
+    assert not written((32, 34, 34), numbers_in(text))
+    assert not written((2.96, 2.96, 2.96), numbers_in("higher [t(14) = 2.96, P < 0.05] in precuneus"))
+    # signs dropped, a minus glued to a digit, a statistic or a list joiner between
+    assert written((-6, -8, 22), numbers_in("left ventral striatum (MNI -6–8 22)"))
+    assert written((-30, 22, -8), numbers_in("(Left: −30, 22, −8, max z: 3.11)"))
+    assert written((36, -75, 33), numbers_in("(−30, −81, 30 and 36, −75, 33)"))
+    assert written((-48, -34, 42), numbers_in("left IPL (−48, −34, and 42)"))
 
 
 def test_the_document_carries_the_context_asked_for():

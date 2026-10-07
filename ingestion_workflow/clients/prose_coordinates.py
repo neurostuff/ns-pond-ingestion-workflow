@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
@@ -41,18 +41,40 @@ def passage_body(passage: Passage, context: str = "HW") -> str:
     return "\n\n".join(parts)
 
 
-def numbers_in(text: str) -> Set[float]:
+def numbers_in(text: str) -> List[float]:
+    """The passage's numbers in the order written, without their signs."""
     flat = re.sub(rf"[{MINUS}]", "-", text)
     flat = re.sub(r"-\s+(?=\d)", "-", flat)
-    values = {float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", flat)}
-    return values | {abs(v) for v in values}
+    return [abs(float(v)) for v in re.findall(r"-?\d+(?:\.\d+)?", flat)]
+
+
+#: Most numbers between x and y, or y and z: "x = 4, y = 30" has none,
+#: "(−30, −81, 30 and 36, −75, 33)" none, a cluster size or a statistic one.
+GAP = 3
+
+
+def written(xyz: Sequence[float], numbers: List[float]) -> bool:
+    """Whether x, y and z are written in that order, close together.
+
+    The model, given numbers that are not a coordinate, makes one of them:
+    "(BA 9, 47)" read as (47, 47, 47), "t(14) = 2.96" as (2.96, 2.96, 2.96).
+    Of 14,265 labelled points, 3 fail this, each a glyph or label error.
+    """
+    x, y, z = (abs(v) for v in xyz)
+    for i, v in enumerate(numbers):
+        if v != x:
+            continue
+        for j in range(i + 1, min(i + 1 + GAP, len(numbers))):
+            if numbers[j] == y and z in numbers[j + 1:j + 1 + GAP]:
+                return True
+    return False
 
 
 def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     """The model's answer, kept to what the passage says.
 
-    A repeated analysis is a loop, not a second result. A point whose numbers
-    are not all in the passage came from the surrounding context or nowhere.
+    A repeated analysis is a loop, not a second result. A point not written
+    in the passage came from the surrounding context or nowhere.
     """
     nums = numbers_in(passage_text)
     seen, analyses = set(), []
@@ -67,7 +89,7 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
                 xyz = [float(p[k]) for k in "xyz"]
             except (KeyError, TypeError, ValueError):
                 continue
-            if not all(v in nums or abs(v) in nums for v in xyz):
+            if not written(xyz, nums):
                 continue
             role = p.get("role") if p.get("role") in ROLES else "other"
             points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
@@ -117,4 +139,4 @@ class ProseCoordinateClient(GenericLLMClient):
         return clean_answer(json.loads(response.choices[0].message.content or "{}"), passage.text)
 
 
-__all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body"]
+__all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body", "written"]

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 #: Bump when the passages sent to the model change for a reason the prompt
 #: version and the model do not describe: the reader, the filter, the detector.
-PROSE_VERSION = "2026-10-07.downloads+methods-results"
+PROSE_VERSION = "2026-10-07.downloads+lists+in-order"
 
 #: Which download is read, best first: XML marks its sections and its tables,
 #: publisher HTML less reliably, a PDF's text layer not at all.

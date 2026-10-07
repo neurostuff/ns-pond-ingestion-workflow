@@ -14,8 +14,8 @@ from typing import List, Optional, Tuple
 MINUS = "−–—‐‑‒﹣－"
 NUM = rf"(?:±|[+{MINUS}-])?\s?\d{{1,3}}(?:\.\d+)?"
 #: Comma, semicolon, slash or whitespace between values, or nothing before a
-#: minus: "MNI -6–8 22" is (-6, -8, 22).
-SEP = rf"\s*[,;/]\s*|\s+|(?=[{MINUS}-])"
+#: minus: "MNI -6–8 22" is (-6, -8, 22). "(−48, −34, and 42)" too.
+SEP = rf"\s*[,;/]\s*(?:and\s+)?|\s+|(?=[{MINUS}-])"
 
 LABELLED = re.compile(
     rf"\bx\s*[=:]?\s*(?P<x>{NUM})\s*[,;]?\s*(?:and\s+)?\by\s*[=:]?\s*(?P<y>{NUM})"
@@ -42,27 +42,38 @@ LOOSE = re.compile(
 PATTERNS = (("labelled", LABELLED), ("headed", HEADED), ("bracketed", BRACKETED),
             ("prefixed", PREFIXED), ("loose", LOOSE))
 
+#: One bracket holding several triplets, of which the patterns above see only
+#: the first: "[−24, −96, 9; 42, −81, −6]", "(−30, −81, 30 and 36, −75, 33)",
+#: "(coordinates of −36, 6, 30; −51, 18, 27)". Every item must be a triplet.
+GROUP = re.compile(r"[\(\[]([^()\[\]]{10,600})[\)\]]")
+ITEM = re.compile(rf"\s*(?:[A-Za-z][^\d{MINUS}+-]{{0,40}}?)?(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})(?P<z>{NUM})\s*")
+ITEM_SEP = re.compile(r"\s*;\s*|,?\s+and\s+")
+
 #: Anatomy and imaging words: enough for a negative bracketed triplet.
 CUE = re.compile(
     r"\b(MNI|Talairach|stereotax\w*|coordinates?|peak\w*|local maxim\w*|maxima|"
-    r"voxels?|clusters?|gyrus|gyri|cortex|cortices|sulcus|lobule|nucleus|"
+    r"voxels?|clusters?|gyrus|gyri|cortex|cortices|sulcus|sulci|lobules?|nucleus|nuclei|"
     r"amygdala|hippocamp\w*|insula\w*|thalam\w*|striatum|putamen|caudate|cerebell\w*|"
-    r"precuneus|cuneus|BA\s?\d+|Brodmann|ROI|seed|sphere|activation|x\s*,\s*y\s*,\s*z)\b",
+    r"precuneus|cuneus|BA\s?\d+|Brodmann|ROI|seed|sphere|activations?|x\s*,\s*y\s*,\s*z)\b",
     re.I,
 )
+#: Regions papers abbreviate, which count as anatomy as CUE does: "the MPFC (−6 58 24)".
+ANATOMY_ABBR = re.compile(
+    r"\b[a-z]{0,3}(?:STS|STG|MTG|ITG|IFG|MFG|SFG|IFC|IPL|SPL|IPS|TPJ|PFC|ACC|PCC|SMA|OFC|FEF|TP|PMC|MFC|"
+    r"MPFC|PPC|IOG|MOG|LOC|FFA|PPA|EBA|NAcc|VTA|SN|PAG|BA)\b")
 #: What a bare triplet must sit beside. Anatomy alone is not enough: citation
 #: lists ("[ 29 , 33 , 37 ]") turn up in sentences about the cortex.
 COORD_CUE = re.compile(
     r"\b(MNI|Talairach|stereotax\w*|coordinates?|co-ordinates?|peak\w*|local maxim\w*|maxima|"
     r"voxels?|seeds?|spheres?|cent(?:er|re)d?|x\s*,\s*y\s*,\s*z|xyz|clusters?|cluster size|"
-    r"Brodmann|BA\s?\d+|ROIs?|max(?:imum)?\s*[zt])\b|\b[ZTFzt]\s*(?:\(\d+\))?\s*[=:]\s*[-−]?\d",
+    r"Brodmann|BA\s?\d+|ROIs?|crosshairs?|max(?:imum)?\s*[zt])\b|\b[ZTFzt]\s*(?:\(\d+\))?\s*[=:]\s*[-−]?\d",
     re.I,
 )
 SPACE = re.compile(r"\b(MNI|Montreal Neurological|Talairach|Tournoux)\b", re.I)
 HEADING = re.compile(r"^\s*#{1,6}\s+(.+?)\s*$", re.M)
 BROKEN_LIST = re.compile(rf"([,;(\[]|\d)[ \t]*\n\s*\n\s*(?=[{MINUS}-]?\d)")
 ABBREV = re.compile(
-    r"(?:\b(?:e\.g|i\.e|et al|Fig|Figs|Tab|vs|approx|ca|cf|resp|No|Eq|Ref|Dr|Mr|Ms|Inc|Ltd|al)\.|\b[A-Z]\.)$")
+    r"(?:\b(?:e\.g|i\.e|n\.s|et al|Fig|Figs|Tab|vs|approx|ca|cf|resp|No|Eq|Ref|Dr|Mr|Ms|Inc|Ltd|al)\.|\b[A-Z]\.)$")
 CANDIDATE_END = re.compile(r"[.!?](?:[\"')\]]*)\s+(?=[A-Z(\[\"'])")
 
 
@@ -129,9 +140,45 @@ CITED = re.compile(r"^\[\s*\d")
 SPATIAL_BEFORE = re.compile(r"(?i)(coordinates?|MNI|Talairach|peak\w*|maxim\w*|cent(?:er|re)d?\s+(?:at|on)|seeds?|at)\W{0,12}$")
 
 
+def _anatomy(text: str) -> bool:
+    return bool(CUE.search(text) or ANATOMY_ABBR.search(text))
+
+
+def _listed(sentence: str) -> Tuple[List[Hit], List[Hit], List[Tuple[int, int]]]:
+    """The triplets of brackets that list several -- those beside a cue, those
+    not -- and the brackets' spans."""
+    hits, unsure, spans = [], [], []
+    for g in GROUP.finditer(sentence):
+        start, items = g.start(1), []
+        for part in ITEM_SEP.split(g.group(1)) + [None]:
+            if part is None:
+                break
+            m = ITEM.fullmatch(part)
+            if m is None:
+                items = []
+                break
+            at = sentence.index(part, start)
+            items.append((m, at))
+            start = at + len(part)
+        if len(items) < 2:
+            continue
+        xyz = [tuple(_num(m.group(k)) for k in "xyz") for m, _ in items]
+        raw = [m.group(k) for m, _ in items for k in "xyz"]
+        if not all(plausible(*v) for v in xyz) or any(re.match(r"^[^\d]*0\d", r) for r in raw):
+            continue
+        near = sentence[max(g.start() - 80, 0):g.end() + 80]
+        negative = min(min(v) for v in xyz) < 0
+        cued = COORD_CUE.search(near) or negative and _anatomy(sentence[max(g.start() - 60, 0):g.start()])
+        (hits if cued else unsure).extend(
+            Hit("listed", *v, (at + m.start("x"), at + m.end("z"))) for v, (m, at) in zip(xyz, items))
+        spans.append(g.span())
+    return hits, unsure, spans
+
+
 def find(sentence: str) -> List[Hit]:
     """The coordinate triplets in one sentence."""
-    hits, pending, taken = [], [], []
+    hits, unsure, taken = _listed(sentence)
+    pending, cited = [], []
     for name, rx in PATTERNS:
         for m in rx.finditer(sentence):
             if any(a < m.end() and m.start() < b for a, b in taken):
@@ -148,16 +195,19 @@ def find(sentence: str) -> List[Hit]:
             raw = [m.group(k) for k in "xyz"]
             if any(re.match(r"^[^\d]*0\d", r) or "\u00b1" in r for r in raw):
                 continue  # "1,000/34.0" is a number with a separator; "0.37 \u00b1 0.01" a statistic
+            hit = Hit(name, x, y, z, m.span())
             if (CITED.match(m.group(0)) and x > 0 and 0 < x < y < z and all(v == int(v) for v in (x, y, z))
                     and not SPATIAL_BEFORE.search(sentence[max(m.start() - 40, 0):m.start()])):
+                cited.append(hit)
+                taken.append(m.span())
                 continue
-            hit = Hit(name, x, y, z, m.span())
             taken.append(m.span())
             if name == "loose":
                 ranged = re.search(r"\d\s+[–—]\s*\d|\d[–—]\s+\d", m.group(0))
-                anatomy = min(x, y, z) < 0 and CUE.search(sentence[max(m.start() - 60, 0):m.start()])
-                if (COORD_CUE.search(sentence) or anatomy) and not ranged:
-                    hits.append(hit)
+                anatomy = min(x, y, z) < 0 and _anatomy(sentence[max(m.start() - 60, 0):m.start()])
+                if ranged:
+                    continue
+                (hits if COORD_CUE.search(sentence) or anatomy else unsure).append(hit)
                 continue
             if name != "bracketed":
                 hits.append(hit)
@@ -172,11 +222,13 @@ def find(sentence: str) -> List[Hit]:
     def qualifies(hit, m):
         if COORD_CUE.search(sentence[max(m.start() - 80, 0):m.end() + 80]):
             return True
-        return min(hit.x, hit.y, hit.z) < 0 and bool(CUE.search(sentence[max(m.start() - 60, 0):m.start()]))
+        return min(hit.x, hit.y, hit.z) < 0 and _anatomy(sentence[max(m.start() - 60, 0):m.start()])
 
+    # A sentence that reports coordinates reports its doubtful-looking ones
+    # too: "pre-SMA [3, 9, 63]" among "[−3, −21, −21; 9, −24, −6]".
     good = [h for h, m in pending if qualifies(h, m)]
     if good or hits:
-        good = [h for h, _ in pending]
+        good = [h for h, _ in pending] + unsure + cited
     return sorted(hits + good, key=lambda h: h.span)
 
 

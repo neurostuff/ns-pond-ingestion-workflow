@@ -26,6 +26,21 @@ def _xyz(sentence):
     # a minus written straight after a digit
     ("left ventral striatum (MNI -6–8 22)", [(-6, -8, 22)]),
     ("the ROIs that showed greater activity at 8/46/36 (MCC/dMPFC)", [(8, 46, 36)]),
+    ("three local maxima: left IPL (−48, −34, and 42)", [(-48, -34, 42)]),
+    # several triplets in one bracket
+    ("occipital/parietal cortex [−24, −96, 9; 42, −81, −6], prefrontal cortex [−36, 3, 42; 42, 30, 21]",
+     [(-24, -96, 9), (42, -81, -6), (-36, 3, 42), (42, 30, 21)]),
+    ("greater LIPC activation (coordinates of −36, 6, 30; −51, 18, 27; and −36, 27, 3)",
+     [(-36, 6, 30), (-51, 18, 27), (-36, 27, 3)]),
+    ("parietal lobules (−42, −51, 48 and 36, −48, 48)", [(-42, -51, 48), (36, -48, 48)]),
+    # an abbreviated region is anatomy
+    ("within the MPFC (−6 58 24) and the bilateral PMC (40 22 28 and −42 26 14)",
+     [(-6, 58, 24), (40, 22, 28), (-42, 26, 14)]),
+    # a sentence reporting coordinates reports its doubtful-looking ones too
+    ("in occipital cortex [−48, −72, 0], midbrain [−3, −21, −21; 9, −24, −6], pre-SMA [3, 9, 63]",
+     [(-48, -72, 0), (-3, -21, -21), (9, -24, -6), (3, 9, 63)]),
+    ("the left STS (−62, −23, 0; P < 0.05 corrected and posterior portion: −65, −51, 18; P = 0.001)",
+     [(-62, -23, 0), (-65, -51, 18)]),
 ])
 def test_the_forms_papers_write(sentence, expected):
     assert _xyz(sentence) == expected
@@ -61,6 +76,11 @@ def test_a_passage_keeps_its_heading_and_neighbours_and_drops_table_rows():
     assert p.text.startswith("Patients showed reduced activation")
     assert "We compared the groups." in p.before
     assert p.after == "Nothing else did."
+
+
+def test_n_s_does_not_end_the_sentence():
+    text = "in the thalamus (r =−0.14, p >0.1, n.s. [4 −27 5]), and gyrus (r =−0.06, n.s. [−36 −85 8])."
+    assert [(h.x, h.y, h.z) for p in passages(text) for h in p.hits] == [(4, -27, 5), (-36, -85, 8)]
 
 
 def test_a_page_break_inside_a_triplet_is_closed_up():
