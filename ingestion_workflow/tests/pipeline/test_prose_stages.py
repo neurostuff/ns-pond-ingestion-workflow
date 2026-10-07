@@ -138,10 +138,19 @@ def env(tmp_path):
         yield settings, catalog, path
 
 
+def _download(ref, path):
+    """A download payload as the download stage writes it."""
+    from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
+
+    return DownloadResult(identifier=ref.identifier, source=DownloadSource.PUBGET, success=True, files=[
+        DownloadedFile(file_path=path, file_type=FileType.XML, content_type="application/xml",
+                       source=DownloadSource.PUBGET)]).to_dict()
+
+
 def _record_upstream(catalog, ref, path, *, tables=None):
     rows = [
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
-                payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={}),
+                payload=_download(ref, path), summary={}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
                 payload={"title": "T", "abstract": "A"}, summary={}),
     ]
@@ -297,6 +306,42 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
     assert len(plan.pending) == 1 and seen == ["", "T"]
     plan, _ = _read_prose(ctx, catalog, ref, Recorder())
     assert plan.fresh == 1 and seen == ["", "T"]
+
+
+def test_passages_keeps_the_text_it_read_for_an_article_with_a_passage(env, tmp_path):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="10"))
+    _record_upstream(catalog, ref, path)
+    _, (found,) = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    text = open(found.payload["full_text_path"]).read()
+    assert "greater activation than controls" in text and "# Results" in text
+
+
+def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeypatch, tmp_path):
+    """124 of the first sync's failures were pages ACE could not identify, whose
+    prose the generic reader had read: its download, its text, its analyses."""
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.nspond_schema import read_record
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="11"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS11", "study_id": "S11"})])
+    sync = SyncStage(settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert synced.status is Status.OK, synced.error
+    record = read_record(settings.ns_pond_root, "BS11")
+    processed = record.processed["pubget"]
+    assert "greater activation than controls" in processed.text
+    assert [a["table_id"] for a in record.stage1["analyses"]] == ["prose"]
+    assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["11", "BS11"]
 
 
 def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):

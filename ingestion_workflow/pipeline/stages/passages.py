@@ -43,11 +43,13 @@ def _choose(downloads: Dict[str, Artifact]) -> Optional[Artifact]:
     return ok[ranked[0]] if ranked else None
 
 
-def find_passages(files: List[dict]) -> Tuple[str, list, Optional[str]]:
-    """How the article's prose was read, its passages, and the space it states.
+def find_passages(files: List[dict]) -> Tuple[str, list, Optional[str], str]:
+    """How the article's prose was read, its passages, the space it states, and its text.
 
     The space is read from the same Methods and Results by `space`'s rules,
     for an article whose extraction -- which `space` reads -- never succeeded.
+    The text (all of it, legends after) is returned only with a passage: it
+    is kept for sync and `space` when the article has no extraction.
 
     A module function so a process pool can run it: reading a download and
     the detector are processor-bound.
@@ -63,18 +65,19 @@ def find_passages(files: List[dict]) -> Tuple[str, list, Optional[str]]:
 
     f = main_file(files)
     if f is None:
-        return "no file", [], None
+        return "no file", [], None, ""
     path = Path(f["file_path"])
     try:
         if f["file_type"] != "pdf" and not may_hold_coordinates(path.read_text(errors="ignore")):
-            return "filtered", [], None
+            return "filtered", [], None, ""
         text, legends = read_download(path, f["file_type"])
         prose, how = methods_and_results(text, legends)
         found = passages(prose)[:MAX_PASSAGES]
         reading = read_space(text) if found else None
-        return how, found, reading.space.value if reading else None
+        kept = (text + ("\n\n" + legends if legends else "")) if found else ""
+        return how, found, reading.space.value if reading else None, kept
     except Exception as exc:  # noqa: BLE001 - an unreadable file is that article's problem only
-        return f"unreadable: {type(exc).__name__}", [], None
+        return f"unreadable: {type(exc).__name__}", [], None, ""
 
 
 class _TooSlow(BaseException):
@@ -91,9 +94,15 @@ def _find_in_worker(files: List[dict]) -> Tuple[str, list, Optional[str]]:
     try:
         return find_passages(files)
     except _TooSlow:
-        return "timeout", [], None
+        return "timeout", [], None, ""
     finally:
         signal.alarm(0)
+
+
+def text_path(settings, article_id: str) -> Path:
+    """Where the text an article's passages came from is kept: a .txt with Markdown
+    headings, as extract keeps its own, which sync writes as `text.txt`."""
+    return Path(settings.data_root) / "passages" / f"{article_id}.txt"
 
 
 def passage_dict(passage) -> dict:
@@ -160,14 +169,22 @@ class PassagesStage:
             with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
                 found = list(pool.map(_find_in_worker, files, chunksize=8))
 
-        for work, (how, ps, article_space) in zip(works, found):
+        for work, (how, ps, article_space, text) in zip(works, found):
             if how in ("timeout",) or how.startswith("unreadable"):
                 yield Outcome.failure(work.article_id, self.name, "", how, fingerprint=work.fingerprint)
                 continue
+            # The text is kept for an article with a passage: sync writes it,
+            # and `space` reads it, when extract could not read the article.
+            kept = None
+            if text:
+                kept = text_path(self.settings, work.article_id)
+                kept.parent.mkdir(parents=True, exist_ok=True)
+                kept.write_text(text, encoding="utf-8")
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                 fingerprint=work.fingerprint,
                 payload={"source": work.upstream.source, "read": how, "space": article_space,
+                         "full_text_path": str(kept) if kept else None,
                          "passages": [passage_dict(p) for p in ps]},
                 summary={"source": work.upstream.source, "read": how, "passages": len(ps),
                          "hits": sum(len(p.hits) for p in ps)},
