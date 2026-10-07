@@ -9,6 +9,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
+from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage, resolve
 from ingestion_workflow.pipeline.stages.space import SpaceStage
@@ -34,10 +35,11 @@ def _passage(*analyses, space="MNI"):
         for name, points in analyses]}
 
 
-def test_prose_runs_before_metadata_and_resolve_after_analyses():
+def test_both_extractions_then_metadata_then_both_model_stages():
     order = list(STAGE_ORDER)
-    assert order.index("download") < order.index("prose") < order.index("metadata")
-    assert order.index("analyses") < order.index("resolve") < order.index("space")
+    assert order.index("extract") < order.index("passages") < order.index("metadata")
+    assert order.index("metadata") < order.index("analyses") < order.index("prose")
+    assert order.index("prose") < order.index("resolve") < order.index("space") < order.index("upload")
 
 
 def test_the_prose_stages_are_left_out_unless_switched_on(tmp_path):
@@ -157,6 +159,14 @@ def _run(stage, ctx, catalog, ref):
     return plan, outcomes
 
 
+def _read_prose(ctx, catalog, ref, reader):
+    """passages, then prose with `reader` standing in for the model."""
+    _run(PassagesStage(ctx.settings), ctx, catalog, ref)
+    prose = ProseStage(ctx.settings)
+    prose.client = lambda: reader
+    return _run(prose, ctx, catalog, ref)
+
+
 class _Reader:
     """Stands in for the model: reports every coordinate the passage holds as a result."""
 
@@ -176,9 +186,7 @@ def test_prose_reads_the_download_s_methods_and_results_only(env, monkeypatch):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="1"))
     _record_upstream(catalog, ref, path)
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader())
-    _, (read,) = _run(prose, Context(settings, catalog), catalog, ref)
+    _, (read,) = _read_prose(Context(settings, catalog), catalog, ref, _Reader())
     assert read.status is Status.OK and read.summary["read"] == "methods+results"
     points = [(q["x"], q["y"], q["z"]) for p in read.payload["passages"] for a in p["analyses"] for q in a["points"]]
     assert points == [(-22.0, -4.0, -18.0)]
@@ -195,9 +203,14 @@ def test_a_download_with_no_coordinate_is_filtered_before_it_is_parsed(env, monk
     from ingestion_workflow.services import prose_text
 
     monkeypatch.setattr(prose_text, "read_download", lambda *a: (_ for _ in ()).throw(AssertionError("parsed")))
+    ctx = Context(settings, catalog)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert found.summary == {"source": "pubget", "read": "filtered", "passages": 0, "hits": 0}
+    # and prose records the empty result without a call
     prose = ProseStage(settings)
-    _, (read,) = _run(prose, Context(settings, catalog), catalog, ref)
-    assert read.summary == {"source": "pubget", "read": "filtered", "passages": 0, "coordinates": 0, "kept": 0}
+    prose.client = lambda: (_ for _ in ()).throw(AssertionError("called"))
+    _, (read,) = _run(prose, ctx, catalog, ref)
+    assert read.status is Status.OK and read.summary["kept"] == 0
 
 
 def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
@@ -205,9 +218,7 @@ def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch
     ref = catalog.register(Identifier(pmid="2"))
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader())
-    _run(prose, ctx, catalog, ref)
+    _read_prose(ctx, catalog, ref, _Reader())
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["prose_points"] == 1 and merged.summary["basis"] == ""
     _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
@@ -224,9 +235,7 @@ def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch)
     ctx = Context(settings, catalog)
     before = SpaceStage(Settings(data_root=settings.data_root, cache_root=settings.cache_root))
     expected = before.fingerprint_for(catalog.artifact(ref.id, "analyses", ""))
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader())
-    _run(prose, ctx, catalog, ref)
+    _read_prose(ctx, catalog, ref, _Reader())
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["restated"] == 1
     assert merged.summary["basis"] == "an-1"
@@ -237,29 +246,25 @@ def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="4"))
     _record_upstream(catalog, ref, path)
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader(fail=True))
-    _, (outcome,) = _run(prose, Context(settings, catalog), catalog, ref)
+    _, (outcome,) = _read_prose(Context(settings, catalog), catalog, ref, _Reader(fail=True))
     assert outcome.status is Status.FAILED
 
 
-def test_an_article_found_only_through_its_prose_is_fetched_metadata(env, monkeypatch):
-    """No extraction, so metadata had no way to reach it; its prose kept a point."""
+def test_an_article_found_only_through_its_prose_is_fetched_metadata(env, monkeypatch, tmp_path):
+    """No extraction, so metadata had no way to reach it; its passages do."""
     from ingestion_workflow.models.metadata import ArticleMetadata
     from ingestion_workflow.pipeline.stages.metadata import MetadataStage
 
     settings, catalog, path = env
+    plain = tmp_path / "plain.xml"
+    plain.write_text("<article><body><sec><title>Results</title><p>No coordinates.</p></sec></body></article>")
     found, empty = catalog.register(Identifier(pmid="7")), catalog.register(Identifier(pmid="8"))
     catalog.record([Outcome(article_id=r.id, stage="download", source="pubget", fingerprint="dl-1",
-                            payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={})
-                    for r in (found, empty)])
+                            payload={"files": [{"file_path": str(f), "file_type": "xml"}]}, summary={})
+                    for r, f in ((found, path), (empty, plain))])
     ctx = Context(settings, catalog)
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader())
-    _run(prose, ctx, catalog, found)
-    catalog.record([Outcome(article_id=empty.id, stage="prose", source="", fingerprint="pr-0",
-                            payload={"source": "pubget", "read": "filtered", "space": None, "passages": []},
-                            summary={"kept": 0})])
+    for ref in (found, empty):
+        _run(PassagesStage(settings), ctx, catalog, ref)
     meta = MetadataStage(settings)
     asked = []
     monkeypatch.setattr(MetadataStage, "service", property(lambda self: self))
@@ -272,14 +277,34 @@ def test_an_article_found_only_through_its_prose_is_fetched_metadata(env, monkey
     assert outcome.status is Status.OK and asked == ["7"]
 
 
+def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="9"))
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
+                            payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={})])
+    ctx = Context(settings, catalog)
+    seen = []
+
+    class Recorder(_Reader):
+        def extract(self, passage, *, title="", abstract=""):
+            seen.append(title)
+            return super().extract(passage, title=title, abstract=abstract)
+
+    _read_prose(ctx, catalog, ref, Recorder())
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
+                            payload={"title": "T", "abstract": "A"}, summary={})])
+    plan, _ = _read_prose(ctx, catalog, ref, Recorder())
+    assert len(plan.pending) == 1 and seen == ["", "T"]
+    plan, _ = _read_prose(ctx, catalog, ref, Recorder())
+    assert plan.fresh == 1 and seen == ["", "T"]
+
+
 def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="6"))
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
-    prose = ProseStage(settings)
-    monkeypatch.setattr(prose, "client", lambda: _Reader())
-    _run(prose, ctx, catalog, ref)
+    _read_prose(ctx, catalog, ref, _Reader())
     _run(ResolveStage(settings), ctx, catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-2",
                             payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])

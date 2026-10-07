@@ -283,7 +283,7 @@ class Settings(BaseSettings):
         default=None,
         description=(
             "Model that reads coordinates written in an article's text; setting it runs "
-            "the prose and resolve stages and has space read resolve. Unset, nothing changes"
+            "the passages, prose and resolve stages and has space read resolve. Unset, nothing changes"
         ),
     )
     prose_api_base: Optional[str] = Field(

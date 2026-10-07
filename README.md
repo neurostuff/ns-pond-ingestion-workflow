@@ -15,13 +15,19 @@ matches — otherwise it is recomputed. That is the whole idea; the rest is deta
  ingest add →│ catalog  │← ingest migrate
              └────┬─────┘
                   │  ingest run
-   download → extract → metadata → triage → analyses → [prose → resolve] → space → upload → sync
-      │          │                                                                           │
-   pubget     4 sources tried in order                                                   ns-pond/
-   elsevier   until one succeeds                                                         + Neurostore
-   ace
-   pdf
+                  │       tables
+   download ─┬→ extract ───┐              ┌→ triage → analyses ─┐
+      │      │             ├→ metadata ───┤                     ├→ [resolve] → space → upload → sync
+      │      └→ [passages]─┘              └→ [prose] ───────────┘                                │
+      │             prose                                                                    ns-pond/
+   pubget, elsevier, ace, pdf: tried in order until one succeeds                             + Neurostore
 ```
+
+Each track is an extraction and then a model call: `extract` keeps an
+article's tables and `analyses` reads them; `passages` finds the coordinates
+written in its Methods and Results and `prose` reads them. `metadata` sits
+between, after both extractions and before both models. The bracketed stages
+run only when `prose_model` is set; `resolve` merges what the two tracks found.
 
 ## Getting started
 

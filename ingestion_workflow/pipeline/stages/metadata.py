@@ -6,7 +6,8 @@ should not refetch anything at all.
 
 Every provider is asked by identifier, so an extraction is not needed: an
 article whose tables never parsed but whose prose holds coordinates gets its
-metadata too, which is why `metadata` runs after `prose`.
+metadata too, which is why `metadata` runs after `passages` -- and before
+`prose`, whose model reads the title and abstract.
 """
 
 from __future__ import annotations
@@ -58,21 +59,21 @@ class MetadataStage:
         fp = self.fingerprint_for()
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         # With prose on, an article without an extraction is reached through
-        # its prose, when that kept a point to upload.
-        prose_kept = {}
+        # its prose, when that holds a passage for `prose` to read.
+        with_passages = {}
         if getattr(self.settings, "prose_model", None):
-            for article_id, by in ctx.catalog.artifacts([ref.id for ref in refs], "prose").items():
-                prose = by.get("")
-                if prose is not None and prose.status is Status.OK and prose.summary.get("kept"):
-                    prose_kept[article_id] = prose
+            for article_id, by in ctx.catalog.artifacts([ref.id for ref in refs], "passages").items():
+                found = by.get("")
+                if found is not None and found.status is Status.OK and found.summary.get("passages"):
+                    with_passages[article_id] = found
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
             extractions = [a for a in upstream.get(ref.id, {}).values() if a.status is Status.OK]
-            if not extractions and ref.id in prose_kept:
-                extractions = [prose_kept[ref.id]]
+            if not extractions and ref.id in with_passages:
+                extractions = [with_passages[ref.id]]
             if not extractions:
                 plan.blocked += 1
                 continue
@@ -89,8 +90,8 @@ class MetadataStage:
         contents: List[ExtractedContent] = []
         by_slug: Dict[str, Work] = {}
         for work in works:
-            if work.upstream.stage == "prose":
-                # Only the identifier is asked for; the prose has no extraction to lend.
+            if work.upstream.stage == "passages":
+                # Only the identifier is asked for; passages have no extraction to lend.
                 content = ExtractedContent(slug=work.ref.identifier.slug, identifier=work.ref.identifier,
                                            source=DownloadSource(ctx.payload(work.upstream)["source"]))
                 contents.append(content)

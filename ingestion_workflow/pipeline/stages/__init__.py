@@ -4,6 +4,7 @@ from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .metadata import MetadataStage
+from .passages import PassagesStage
 from .prose import ProseStage
 from .resolve import ResolveStage
 from .space import SpaceStage
@@ -15,16 +16,20 @@ from .upload import UploadStage
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
 #: `extract` keeps and it decides which of them `analyses` spends a call on.
 #: `space` sits between `analyses` and `upload`, so a table goes out with the
-#: space its article states. `prose` and `resolve` run only when `prose_model`
-#: is set: prose reads the coordinates written in the text, resolve
-#: merges them with the tables', and `space` then reads resolve instead.
-#: prose needs only a download, and comes before metadata so that an article
-#: found only through its prose is fetched metadata in the same run.
-STAGE_ORDER = ("download", "extract", "prose", "metadata", "triage", "analyses",
-               "resolve", "space", "upload", "sync")
+#: space its article states.
+#:
+#: Prose has the same two steps as tables, and they run only when
+#: `prose_model` is set: `passages` is its extraction (the download's Methods
+#: and Results, the passages holding coordinates) and `prose` its model call.
+#: `metadata` runs between them, after both extractions, so that an article
+#: found only through its prose is fetched metadata and the prose model reads
+#: its title and abstract. `resolve` merges prose results with the tables',
+#: and `space` then reads resolve instead of analyses.
+STAGE_ORDER = ("download", "extract", "passages", "metadata", "triage", "analyses",
+               "prose", "resolve", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
-PROSE_STAGES = ("prose", "resolve")
+PROSE_STAGES = ("passages", "prose", "resolve")
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -32,6 +37,7 @@ STAGE_TYPES = {
     "metadata": MetadataStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
+    "passages": PassagesStage,
     "prose": ProseStage,
     "resolve": ResolveStage,
     "space": SpaceStage,
@@ -49,8 +55,8 @@ def build(names, settings):
     if unknown:
         raise ValueError(f"Unknown stages: {', '.join(sorted(unknown))}")
     if wanted & set(PROSE_STAGES) and not enabled:
-        raise ValueError("the prose and resolve stages need prose_model: space reads "
-                         "analyses without it, so their output would go nowhere")
+        raise ValueError("the passages, prose and resolve stages need prose_model: space "
+                         "reads analyses without it, so their output would go nowhere")
     return [STAGE_TYPES[name](settings) for name in STAGE_ORDER if name in wanted]
 
 
@@ -60,6 +66,7 @@ __all__ = [
     "ExtractStage",
     "MetadataStage",
     "PROSE_STAGES",
+    "PassagesStage",
     "ProseStage",
     "ResolveStage",
     "STAGE_ORDER",
