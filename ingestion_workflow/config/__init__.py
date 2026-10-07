@@ -278,6 +278,35 @@ class Settings(BaseSettings):
     )
 
 
+    # ===== Coordinates in prose =====
+    prose_enabled: bool = Field(
+        default=False,
+        description=(
+            "Run the prose and resolve stages, and upload from resolve. Off, "
+            "upload reads analyses exactly as before"
+        ),
+    )
+    prose_model: Optional[str] = Field(
+        default=None,
+        description="Model for coordinates in prose; base NuExtract3 served by vLLM. Defaults to llm_model",
+    )
+    prose_api_base: Optional[str] = Field(
+        default=None, description="Base URL of the prose model's server. Defaults to llm_api_base",
+    )
+    prose_api_key: Optional[str] = Field(
+        default=None, description="API key for the prose model's server. Defaults to llm_api_key",
+    )
+    prose_context: str = Field(
+        default="HW",
+        description=(
+            "What the prose model reads besides the passage: P none, H its section "
+            "heading, W the sentences around it, HW both"
+        ),
+    )
+    prose_max_passages: int = Field(
+        default=40, description="Most passages read in one article; the rest are skipped and counted",
+    )
+
     sync_overwrite: bool = Field(
         default=True,
         description="Overwrite individual files when writing ns-pond sync outputs",

@@ -35,9 +35,21 @@ class SpaceStage:
 
     def __init__(self, settings) -> None:
         self.settings = settings
+        self.requires, self.requires_flag = self.gate(settings)
+
+    @classmethod
+    def gate(cls, settings):
+        """Read `resolve` when prose is on: it holds the tables' analyses and the prose's."""
+        if getattr(settings, "prose_enabled", False):
+            return "resolve", "tables"
+        return cls.requires, cls.requires_flag
 
     def fingerprint_for(self, upstream: Artifact) -> str:
-        return fingerprint("space", SPACE_VERSION, upstream=upstream.fingerprint)
+        # Where resolve added nothing from the prose, it names the analyses
+        # artifact it passed through, so an article already read from its
+        # tables -- and uploaded -- stays fresh when prose is switched on.
+        basis = (upstream.summary or {}).get("basis") if upstream.stage == "resolve" else None
+        return fingerprint("space", SPACE_VERSION, upstream=basis or upstream.fingerprint)
 
     def plan(
         self,
@@ -73,7 +85,7 @@ class SpaceStage:
             payload = ctx.payload(work.upstream)
             if payload is None:
                 yield Outcome.failure(
-                    work.article_id, self.name, "", "the analyses payload is gone",
+                    work.article_id, self.name, "", f"the {self.requires} payload is gone",
                     fingerprint=work.fingerprint,
                 )
                 continue

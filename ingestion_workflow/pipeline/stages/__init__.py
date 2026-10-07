@@ -4,6 +4,8 @@ from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .metadata import MetadataStage
+from .prose import ProseStage
+from .resolve import ResolveStage
 from .space import SpaceStage
 from .sync import SyncStage
 from .triage import TriageStage
@@ -13,9 +15,14 @@ from .upload import UploadStage
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
 #: `extract` keeps and it decides which of them `analyses` spends a call on.
 #: `space` sits between `analyses` and `upload`, so a table goes out with the
-#: space its article states.
+#: space its article states. `prose` and `resolve` run only with
+#: `prose_enabled`: prose reads the coordinates written in the text, resolve
+#: merges them with the tables', and `space` then reads resolve instead.
 STAGE_ORDER = ("download", "extract", "metadata", "triage", "analyses",
-               "space", "upload", "sync")
+               "prose", "resolve", "space", "upload", "sync")
+
+#: Stages that exist only when prose is switched on.
+PROSE_STAGES = ("prose", "resolve")
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -23,6 +30,8 @@ STAGE_TYPES = {
     "metadata": MetadataStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
+    "prose": ProseStage,
+    "resolve": ResolveStage,
     "space": SpaceStage,
     "upload": UploadStage,
     "sync": SyncStage,
@@ -31,10 +40,15 @@ STAGE_TYPES = {
 
 def build(names, settings):
     """Instantiate the requested stages in canonical order."""
-    wanted = {name.lower() for name in names} if names else set(STAGE_ORDER)
+    enabled = bool(getattr(settings, "prose_enabled", False))
+    wanted = {name.lower() for name in names} if names else {
+        name for name in STAGE_ORDER if enabled or name not in PROSE_STAGES}
     unknown = wanted - set(STAGE_ORDER)
     if unknown:
         raise ValueError(f"Unknown stages: {', '.join(sorted(unknown))}")
+    if wanted & set(PROSE_STAGES) and not enabled:
+        raise ValueError("the prose and resolve stages need prose_enabled: space reads "
+                         "analyses without it, so their output would go nowhere")
     return [STAGE_TYPES[name](settings) for name in STAGE_ORDER if name in wanted]
 
 
@@ -43,6 +57,9 @@ __all__ = [
     "DownloadStage",
     "ExtractStage",
     "MetadataStage",
+    "PROSE_STAGES",
+    "ProseStage",
+    "ResolveStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
     "SpaceStage",
