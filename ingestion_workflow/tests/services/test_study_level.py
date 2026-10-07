@@ -21,6 +21,9 @@ from ingestion_workflow.services.study_level import is_meta, level_for
     "Voxel-based morphometry in bipolar disorder: seed-based d mapping",
     "Signed differential mapping of anxiety",
     "Meta-regression of age effects on default-mode connectivity",
+    # a meta-analysis that names its method still is one
+    "Using ALE coordinate-based meta-analysis to observe resting-state abnormalities in tinnitus",
+    "Basal ganglia functional connectivity based on a meta-analysis of 126 PET and fMRI publications",
 ])
 def test_a_title_naming_a_meta_analysis_or_review_is_meta(title):
     assert is_meta(title) and level_for(title) == "meta"
@@ -32,6 +35,12 @@ def test_a_title_naming_a_meta_analysis_or_review_is_meta(title):
     "Neural basis of meta-memory judgements",
     "A review of the amygdala",                                    # not a systematic review
     "Activation of the striatum during reward anticipation",
+    # primary studies that took their regions from a meta-analysis
+    "Meta-analytically informed network analysis of resting state FMRI reveals hyperconnectivity",
+    "Real-time fMRI neurofeedback: regulating a meta-analytically defined target network",
+    "Altered functional connectivity of brain regions based on a meta\u2010analysis in patients with T2DM: "
+    "A resting-state fMRI study",
+    "Seeds derived from a prior meta-analysis predict craving",
     "",
     None,
 ])

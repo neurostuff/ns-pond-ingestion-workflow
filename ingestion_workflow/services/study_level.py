@@ -28,8 +28,19 @@ META_TITLE = re.compile(
 )
 
 
+#: A primary study that took its regions from a meta-analysis: "meta-analytically
+#: defined", "regions based on a meta-analysis ... a resting-state fMRI study".
+USES_A_META_ANALYSIS = re.compile(
+    rf"\bmeta{_DASH}analytically{_DASH}(?:defined|derived|informed|guided|selected)\b"
+    rf"|\b(?:defined|derived|selected|identified)\s+(?:from|by|using)\s+(?:an?\s+|the\s+|prior\s+|previous\s+)?"
+    rf"(?:[\w\-\u2010]+\s+){{0,2}}meta{_DASH}analy[szt]"
+    rf"|\bregions?\s+based\s+on\s+an?\s+meta{_DASH}analy[szt]",
+    re.I,
+)
+
+
 def is_meta(title: Optional[str]) -> bool:
-    return bool(title and META_TITLE.search(title))
+    return bool(title and META_TITLE.search(title) and not USES_A_META_ANALYSIS.search(title))
 
 
 def level_for(title: Optional[str], current: Optional[str] = None) -> str:
@@ -43,4 +54,4 @@ def level_for(title: Optional[str], current: Optional[str] = None) -> str:
     return current if current in (GROUP, META) else GROUP
 
 
-__all__ = ["GROUP", "META", "META_TITLE", "is_meta", "level_for"]
+__all__ = ["GROUP", "META", "META_TITLE", "USES_A_META_ANALYSIS", "is_meta", "level_for"]
