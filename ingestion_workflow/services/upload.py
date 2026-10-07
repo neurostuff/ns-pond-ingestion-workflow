@@ -23,6 +23,7 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
+from ingestion_workflow.services.study_level import level_for
 from ingestion_workflow.services.upload_models import Analysis as DbAnalysis
 from ingestion_workflow.services.upload_models import Annotation as DbAnnotation
 from ingestion_workflow.services.upload_models import (
@@ -816,7 +817,7 @@ class UploadService:
         session.flush()
         self._refresh_base_flag(session, base_study.id)
         if item.analyses:
-            study.level = "group"  # ensure level is set
+            study.level = level_for(study.name or base_study.name, study.level)
 
         session.flush()
         return UploadOutcome(
@@ -855,14 +856,14 @@ class UploadService:
 
         if base is None:
             base = DbBaseStudy(
-                level="group",
+                level=level_for(payload.name),
                 public=True,
             )
             session.add(base)
 
-        # ensure level
-        if base.level != "group":
-            base.level = "group"
+        # A meta-analysis is stored as one, whatever level it had; otherwise
+        # the level already there stands, so a correction is not undone.
+        base.level = level_for(payload.name or base.name, base.level)
 
         self._apply_payload_fields(base, payload, metadata_mode)
         session.flush()
@@ -890,12 +891,12 @@ class UploadService:
                 base_study_id=base_study.id,
                 source=payload.source,
                 source_id=payload.metadata.get("source_id") if payload.metadata else None,
-                level="group",
+                level=level_for(payload.name or base_study.name),
             )
             session.add(study)
 
         self._apply_payload_fields(study, payload, metadata_mode)
-        study.level = "group"
+        study.level = level_for(payload.name or base_study.name, study.level)
         study.source = payload.source
         study.source_updated_at = datetime.now(timezone.utc)
         session.flush()

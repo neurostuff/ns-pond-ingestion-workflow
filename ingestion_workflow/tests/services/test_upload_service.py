@@ -357,6 +357,26 @@ def select_count(model):
 # --------------------------------------------------------------------------
 
 
+def test_a_meta_analysis_is_uploaded_as_meta_and_stays_so(tmp_path):
+    """And a group study's level is not overwritten when a correction set it."""
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    meta_id, group_id = Identifier(doi="10.1/meta", pmid="1"), Identifier(doi="10.1/grp", pmid="2")
+    _upload_once(service, settings, meta_id, _sample_collection(meta_id),
+                 _article_metadata("Reward processing: a coordinate-based meta-analysis"))
+    _upload_once(service, settings, group_id, _sample_collection(group_id), _article_metadata("Reward in the striatum"))
+    with Session(engine, future=True) as session:
+        levels = {b.doi: b.level for b in session.query(DbBaseStudy)}
+        study_levels = sorted(s.level for s in session.query(DbStudy))
+        session.query(DbBaseStudy).filter_by(doi="10.1/grp").one().level = "meta"   # a curator's correction
+        session.commit()
+    assert levels == {"10.1/meta": "meta", "10.1/grp": "group"} and study_levels == ["group", "meta"]
+    _upload_once(service, settings, group_id, _sample_collection(group_id), _article_metadata("Reward in the striatum"))
+    with Session(engine, future=True) as session:
+        assert session.query(DbBaseStudy).filter_by(doi="10.1/grp").one().level == "meta"
+
+
 def _upload_once(service, settings, identifier, collection, metadata):
     items = service.prepare_work_items(
         {"slug": {"t1": collection}},
