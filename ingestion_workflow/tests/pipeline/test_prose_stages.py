@@ -74,15 +74,29 @@ def test_a_correlation_computed_at_a_table_peak_is_its_own_analysis():
     assert summary["restated"] == 1 and summary["at_table_peaks"] == 1
 
 
-def test_only_results_are_kept_and_the_rest_are_counted():
+def test_results_and_the_regions_defined_to_get_them_are_kept_one_role_per_analysis():
     prose = {"passages": [_passage(
         ("amygdala seed", [(-22, -4, -18, "seed")]),
+        ("insula ROI", [(36, 20, 2, "roi")]),
+        ("left DLPFC TMS target", [(-40, 30, 30, "target")]),
         ("Smith et al. (2010)", [(30, 20, 10, "prior_study")]),
-        ("faces > houses", [(40, -50, -20, "result")]))]}
+        ("slice shown", [(0, 0, 10, "figure")]),
+        ("faces > houses", [(40, -50, -20, "result"), (12, 10, 8, "seed")]))]}
     out, summary = resolve({}, prose, "slug")
-    names = [a["name"] for a in out["prose"]["analyses"]]
-    assert names == ["faces > houses"]
-    assert summary["not_results"] == {"seed": 1, "prior_study": 1}
+    got = [(a["name"], a["metadata"]["role"], [c["is_seed"] for c in a["coordinates"]])
+           for a in out["prose"]["analyses"]]
+    assert got == [("amygdala seed", "seed", [True]), ("insula ROI", "roi", [False]),
+                   ("left DLPFC TMS target", "target", [False]), ("faces > houses", "result", [False]),
+                   ("faces > houses", "seed", [True])]
+    assert summary["kept"] == {"seed": 2, "roi": 1, "target": 1, "result": 1}
+    assert summary["dropped"] == {"prior_study": 1, "figure": 1}
+
+
+def test_a_seed_at_a_table_peak_is_the_tables_result_reused():
+    tables = {"t1": _table([(-22, -4, -18)])}
+    prose = {"passages": [_passage(("PPI with amygdala seed", [(-22, -4, -18, "seed")]))]}
+    out, summary = resolve(tables, prose, "slug")
+    assert out == tables and summary["restated"] == 1
 
 
 def test_one_peak_reported_for_two_contrasts_stays_under_both():
@@ -182,7 +196,7 @@ def test_a_download_with_no_coordinate_is_filtered_before_it_is_parsed(env, monk
     monkeypatch.setattr(prose_text, "read_download", lambda *a: (_ for _ in ()).throw(AssertionError("parsed")))
     prose = ProseStage(settings)
     _, (read,) = _run(prose, Context(settings, catalog), catalog, ref)
-    assert read.summary == {"source": "pubget", "read": "filtered", "passages": 0, "coordinates": 0, "results": 0}
+    assert read.summary == {"source": "pubget", "read": "filtered", "passages": 0, "coordinates": 0, "kept": 0}
 
 
 def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
