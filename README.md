@@ -15,10 +15,10 @@ matches — otherwise it is recomputed. That is the whole idea; the rest is deta
  ingest add →│ catalog  │← ingest migrate
              └────┬─────┘
                   │  ingest run
-   download → extract → metadata → triage → analyses → space → upload → sync
-      │          │                                                       │
-   pubget     4 sources tried in order                               ns-pond/
-   elsevier   until one succeeds                                     + Neurostore
+   download → extract → metadata → triage → analyses → [prose → resolve] → space → upload → sync
+      │          │                                                                           │
+   pubget     4 sources tried in order                                                   ns-pond/
+   elsevier   until one succeeds                                                         + Neurostore
    ace
    pdf
 ```
