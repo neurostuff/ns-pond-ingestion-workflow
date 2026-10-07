@@ -37,6 +37,11 @@ def test_the_forms_papers_write(sentence, expected):
     "References 12, 13, 14 and 15 were cited in the cortex.",
     "Sagittal slices at x = 30, y = 50, z = 16 are shown.",
     "Peak effects were described previously [ 24 , 32 – 34 ].",
+    "most patients are state patients [ 4 ,  6 ,  27 ] in the cortex.",
+    "reported different results ( 8 ,  17 ,  18 ,  24 ,  27 ,  29 ,  33 ) in the cortex",
+    "temporal gyri (BA 20, 21, 22) as well as temporopolar cortex (BA 38)",
+    "a multiband sequence (TR/TE = 1,000/34.0 ms, 66 slices, 2 mm voxels)",
+    "VMPFC group: 0.37 ± 0.01, 95% CI = [0.34, 0.40] in the cortex",
 ])
 def test_what_is_not_a_coordinate(sentence):
     assert _xyz(sentence) == []

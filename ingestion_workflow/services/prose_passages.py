@@ -36,8 +36,8 @@ PREFIXED = re.compile(
 #: "(-8, -96, 2, Z = 9.15)", "Left: -30, 22, -8, max z", "peak voxel, -6, 22, -8;".
 #: A fourth number after a semicolon is a field ("(-3, 53, -4; 1253; p < .001)").
 LOOSE = re.compile(
-    rf"(?<![\d.+{MINUS}-])(?<!\d[,;/]\s)(?<!\d\s)(?<!\d[,;/])(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})"
-    rf"(?P<z>{NUM})(?![\d.])(?!\s*[,/]?\s*[+{MINUS}-]?\d)"
+    rf"(?<![\d.+{MINUS}\u00b1-])(?<!\d[,;/]\s)(?<!\d\s[,;/]\s)(?<!\d\s[,;/])(?<!\d\s)(?<!\d[,;/])"
+    rf"(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})(?P<z>{NUM})(?![\d.])(?!\s*[,/]?\s*[+{MINUS}-]?\d)"
 )
 PATTERNS = (("labelled", LABELLED), ("headed", HEADED), ("bracketed", BRACKETED),
             ("prefixed", PREFIXED), ("loose", LOOSE))
@@ -116,7 +116,16 @@ def _num(s: str) -> float:
 
 
 def plausible(x: float, y: float, z: float) -> bool:
-    return -90 <= x <= 90 and -125 <= y <= 90 and -75 <= z <= 95 and not x == y == z == 0
+    if not (-90 <= x <= 90 and -125 <= y <= 90 and -75 <= z <= 95) or x == y == z == 0:
+        return False
+    # "BA 20, 21, 22", "j = 3, 4, 5": no reported peak is three consecutive numbers.
+    return not (y == x + 1 and z == y + 1)
+
+
+#: All positive, ascending, in square brackets: how a citation list looks, and
+#: how 1.4% of 14,556 curated peaks do. Kept only after a coordinate word.
+CITED = re.compile(r"^\[\s*\d")
+SPATIAL_BEFORE = re.compile(r"(?i)(coordinates?|MNI|Talairach|peak\w*|maxim\w*|cent(?:er|re)d?\s+(?:at|on)|seeds?|at)\W{0,12}$")
 
 
 def find(sentence: str) -> List[Hit]:
@@ -135,6 +144,12 @@ def find(sentence: str) -> List[Hit]:
             # Where a figure is cut ("slices at x = 30, y = 50"), not a result.
             if re.search(r"\bslices?\b[^.;]{0,40}$", sentence[:m.start()], re.I):
                 continue
+            raw = [m.group(k) for k in "xyz"]
+            if any(re.match(r"^[^\d]*0\d", r) or "\u00b1" in r for r in raw):
+                continue  # "1,000/34.0" is a number with a separator; "0.37 \u00b1 0.01" a statistic
+            if (CITED.match(m.group(0)) and x > 0 and 0 < x < y < z and all(v == int(v) for v in (x, y, z))
+                    and not SPATIAL_BEFORE.search(sentence[max(m.start() - 40, 0):m.start()])):
+                continue
             hit = Hit(name, x, y, z, m.span())
             taken.append(m.span())
             if name == "loose":
@@ -148,8 +163,6 @@ def find(sentence: str) -> List[Hit]:
                 continue
             if re.search(r"\d\s*[–—]\s*\d", m.group(0)):
                 continue  # "[ 24 , 32 – 34 ]" is a range
-            if all(v == int(v) for v in (x, y, z)) and y == x + 1 and z == y + 1:
-                continue
             pending.append((hit, m))
 
     # A bare bracketed triplet counts beside a coordinate word, as one item of
