@@ -13,13 +13,13 @@ max_attempts: 3  # Failed stage attempts before an article is left alone
 retry_after_hours: 24  # Hours to wait before retrying a failed stage attempt
 
 # ===== Download sources =====
-download_sources:  # Ordered list of download sources to attempt (enum order)
+download_sources:  # Ordered list of download sources to attempt
+  - pmc  # PMC's Cloud Service, then NCBI efetch: the OA subset and author manuscripts
+  - europepmc  # Europe PMC full text: its OA subset and funders' manuscripts
   - pubget
   - elsevier
   - ace
   - pdf
-  - pmc  # NCBI efetch: PMC full text pubget skips (author manuscripts)
-  - europepmc  # Europe PMC full text: its OA subset and funders' manuscripts
 pubget_cache_root: "/tmp/pubget_cache"  # Optional override for Pubget cache root directory
 ace_cache_root: "/tmp/ace_cache"  # Optional override for ACE cache root directory
 elsevier_cache_root: "/tmp/elsevier_cache"  # Optional override for Elsevier cache root directory

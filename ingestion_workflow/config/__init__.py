@@ -18,10 +18,6 @@ import yaml
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from ingestion_workflow.models import (
-    DownloadSource,
-)
-
 
 logger = logging.getLogger(__name__)
 
@@ -160,9 +156,10 @@ class Settings(BaseSettings):
 
     # ===== Download configuration =====
     download_sources: List[str] = Field(
-        # Preserve enum declaration order
-        default_factory=lambda: [src.value for src in DownloadSource],
-        description="Ordered list of download sources to attempt (enum order)",
+        # PMC first: its Cloud Service holds the Open Access subset pubget reads
+        # and the author manuscripts pubget cannot, each with its licence
+        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf"],
+        description="Ordered list of download sources to attempt",
     )
 
 

@@ -199,3 +199,9 @@ def test_pmc_falls_back_to_efetch_for_what_the_bucket_lacks(settings, monkeypatc
     (result,) = PmcExtractor(settings=settings).download(ids("9056519"))
     assert result.success and asked == ["9056519"]
     assert not any(f.file_path.name == PmcExtractor.CLOUD_METADATA for f in result.files)
+
+
+def test_the_default_order_names_every_source_once_with_pmc_first():
+    order = Settings().download_sources
+    assert sorted(order) == sorted(s.value for s in DownloadSource) and len(order) == len(set(order))
+    assert order[:3] == ["pmc", "europepmc", "pubget"]
