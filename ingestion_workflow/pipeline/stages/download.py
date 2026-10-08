@@ -22,7 +22,9 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
     from ingestion_workflow.extractors import (
         ACEExtractor,
         ElsevierExtractor,
+        EuropePmcExtractor,
         PdfExtractor,
+        PmcExtractor,
         PubgetExtractor,
     )
 
@@ -31,6 +33,8 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         DownloadSource.ELSEVIER: ElsevierExtractor,
         DownloadSource.ACE: ACEExtractor,
         DownloadSource.PDF: PdfExtractor,
+        DownloadSource.PMC: PmcExtractor,
+        DownloadSource.EUROPEPMC: EuropePmcExtractor,
     }
     return factories[source](settings=settings)
 
@@ -208,6 +212,7 @@ _PERMANENT_MARKERS = (
     "404",
     "unsupported identifier",
     "no pdf url",
+    "does not allow full-text download",
 )
 
 

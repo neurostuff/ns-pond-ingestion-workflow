@@ -252,7 +252,7 @@ class MetadataService:
         """Extract metadata from extractor-specific files."""
         if extracted_content.source == DownloadSource.ELSEVIER:
             return self._get_elsevier_fallback(extracted_content)
-        elif extracted_content.source == DownloadSource.PUBGET:
+        elif extracted_content.source in (DownloadSource.PUBGET, DownloadSource.PMC, DownloadSource.EUROPEPMC):
             return self._get_pubget_fallback(extracted_content)
         elif extracted_content.source == DownloadSource.ACE:
             # ACE doesn't provide reliable metadata
@@ -392,11 +392,10 @@ class MetadataService:
             if pmcid_value.isdigit():
                 pmcid_value = str(int(pmcid_value))
 
-            base_dir = (
-                self.settings.pubget_cache_root
-                if self.settings.pubget_cache_root is not None
-                else self.settings.cache_root / "pubget"
-            )
+            # PMC and Europe PMC lay their XML out as pubget does, under their own root
+            source = extracted_content.source.value
+            configured = getattr(self.settings, f"{source}_cache_root", None)
+            base_dir = configured if configured is not None else self.settings.cache_root / source
 
             bucket = article_bucket_from_pmcid(int(pmcid_value))
             pmcid_dir = f"pmcid_{pmcid_value}"

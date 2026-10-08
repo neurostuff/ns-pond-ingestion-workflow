@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -55,6 +56,9 @@ class PubgetExtractor(BaseExtractor):
     """Extractor that uses Pubget for article and table downloads."""
 
     _SUPPORTED_IDS = {"pmcid"}
+    #: Subclasses that fetch PMC-style XML elsewhere reuse this class's article
+    #: layout and extraction under their own source.
+    SOURCE = DownloadSource.PUBGET
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or load_settings()
@@ -214,33 +218,36 @@ class PubgetExtractor(BaseExtractor):
         return self._run_extraction_pipeline(
             download_results,
             extraction_root=self._extraction_root,
-            worker=_run_pubget_extraction_task,
+            worker=partial(_run_pubget_extraction_task, source=self.SOURCE),
             worker_count=self.settings.max_workers,
-            source_name="Pubget",
-            failure_message="Pubget extraction did not produce a result.",
+            source_name=self.SOURCE.value,
+            failure_message=f"{self.SOURCE.value} extraction did not produce a result.",
             failure_builder=lambda download_result, message: build_failure_extraction(
                 download_result,
-                DownloadSource.PUBGET,
+                self.SOURCE,
                 message,
             ),
             progress_hook=progress_hook,
         )
 
+    def _source_cache_root(self) -> Optional[Path]:
+        return getattr(self.settings, f"{self.SOURCE.value}_cache_root", None)
+
     def _resolve_extraction_root(self) -> Path:
-        if self.settings.pubget_cache_root is not None:
-            base = self.settings.pubget_cache_root
-            root = base / "extracted"
+        configured = self._source_cache_root()
+        if configured is not None:
+            root = configured / "extracted"
         else:
-            base = self.settings.get_cache_dir("extract")
-            root = base / "pubget"
+            root = self.settings.get_cache_dir("extract") / self.SOURCE.value
         root.mkdir(parents=True, exist_ok=True)
         return root
 
     def _resolve_data_dir(self) -> Path:
-        if self.settings.pubget_cache_root is not None:
-            self.settings.pubget_cache_root.mkdir(parents=True, exist_ok=True)
-            return self.settings.pubget_cache_root
-        return self.settings.get_cache_dir("pubget")
+        configured = self._source_cache_root()
+        if configured is not None:
+            configured.mkdir(parents=True, exist_ok=True)
+            return configured
+        return self.settings.get_cache_dir(self.SOURCE.value)
 
     def _normalize_pmcid(self, pmcid: str | None) -> str | None:
         if not pmcid:
@@ -285,7 +292,7 @@ class PubgetExtractor(BaseExtractor):
                 build_downloaded_file(
                     article_xml,
                     FileType.XML,
-                    source=DownloadSource.PUBGET,
+                    source=self.SOURCE,
                 )
             )
             seen_paths.add(article_xml)
@@ -298,7 +305,7 @@ class PubgetExtractor(BaseExtractor):
                 build_downloaded_file(
                     tables_xml,
                     FileType.XML,
-                    source=DownloadSource.PUBGET,
+                    source=self.SOURCE,
                 )
             )
             seen_paths.add(tables_xml)
@@ -318,7 +325,7 @@ class PubgetExtractor(BaseExtractor):
                     build_downloaded_file(
                         info_path,
                         FileType.JSON,
-                        source=DownloadSource.PUBGET,
+                        source=self.SOURCE,
                     )
                 )
                 seen_paths.add(info_path)
@@ -341,7 +348,7 @@ class PubgetExtractor(BaseExtractor):
                     build_downloaded_file(
                         data_path,
                         FileType.CSV,
-                        source=DownloadSource.PUBGET,
+                        source=self.SOURCE,
                     )
                 )
                 seen_paths.add(data_path)
@@ -361,7 +368,7 @@ class PubgetExtractor(BaseExtractor):
 
         return DownloadResult(
             identifier=identifier,
-            source=DownloadSource.PUBGET,
+            source=self.SOURCE,
             success=success,
             files=files,
             error_message=error_message,
@@ -370,7 +377,7 @@ class PubgetExtractor(BaseExtractor):
     def _build_failure(self, identifier: Identifier, message: str) -> DownloadResult:
         return DownloadResult(
             identifier=identifier,
-            source=DownloadSource.PUBGET,
+            source=self.SOURCE,
             success=False,
             files=[],
             error_message=message,
@@ -380,29 +387,32 @@ class PubgetExtractor(BaseExtractor):
 def _run_pubget_extraction_task(
     download_result: DownloadResult,
     extraction_root: Path | str,
+    source: DownloadSource = DownloadSource.PUBGET,
 ) -> ExtractedContent:
     root_path = Path(extraction_root)
     try:
-        return _extract_pubget_article(download_result, root_path)
+        return _extract_pubget_article(download_result, root_path, source)
     except Exception as exc:  # pragma: no cover - worker safeguard
         logger.exception(
-            "Pubget extraction failed for %s",
+            "%s extraction failed for %s",
+            source.value,
             download_result.identifier.slug,
         )
-        return build_failure_extraction(download_result, DownloadSource.PUBGET, str(exc))
+        return build_failure_extraction(download_result, source, str(exc))
 
 
 def _extract_pubget_article(
     download_result: DownloadResult,
     extraction_root: Path,
+    source: DownloadSource = DownloadSource.PUBGET,
 ) -> ExtractedContent:
     article_file = _select_article_file(download_result)
     if article_file is None:
-        raise ValueError("Pubget extraction requires article.xml content.")
+        raise ValueError("Extraction requires article.xml content.")
 
     tables_file = _select_tables_file(download_result)
     if tables_file is None:
-        raise ValueError("Pubget extraction requires tables.xml content.")
+        raise ValueError("Extraction requires tables.xml content.")
 
     article_input_dir = article_file.file_path.parent
     slug = download_result.identifier.slug
@@ -451,11 +461,11 @@ def _extract_pubget_article(
 
     info_files = get_table_info_files_from_article_dir(article_input_dir)
     if not info_files:
-        message = "Pubget tables metadata not found; returning empty extraction."
+        message = "Tables metadata not found; returning empty extraction."
         logger.info("%s: %s", slug, message)
         return ExtractedContent(
             slug=slug,
-            source=DownloadSource.PUBGET,
+            source=source,
             identifier=download_result.identifier,
             full_text_path=full_text_path,
             tables=[],
@@ -579,7 +589,7 @@ def _extract_pubget_article(
         logger.error("%s: %s", slug, message)
         return build_failure_extraction(
             download_result,
-            DownloadSource.PUBGET,
+            source,
             message,
             full_text_path,
         )
@@ -598,7 +608,7 @@ def _extract_pubget_article(
 
     return ExtractedContent(
         slug=slug,
-        source=DownloadSource.PUBGET,
+        source=source,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
         tables=extracted_tables,
