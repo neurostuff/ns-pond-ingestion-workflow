@@ -5,12 +5,18 @@ over anyway -- an author manuscript deposited under a funder mandate -- never
 reaches the pipeline. These sources fetch the XML directly, keep the articles
 that came with a body, and hand them to pubget's own article and table
 splitting, so extraction is pubget's, unchanged, under their own source name.
+
+The PMC source reads PMC's Cloud Service first: it keeps every version of an
+article, so an author manuscript later superseded by a publisher version that
+may not be downloaded is still there, and it states each article's licence.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -21,7 +27,8 @@ from lxml import etree
 from pubget._articles import extract_articles
 
 from ingestion_workflow.extractors.pubget_extractor import PubgetExtractor
-from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
+from ingestion_workflow.extractors.utils import build_downloaded_file
+from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType, Identifiers
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +50,10 @@ class _PmcXmlExtractor(PubgetExtractor):
     def _fetch(self, pmcids: List[str]) -> Tuple[Dict[str, etree._Element], Dict[str, str]]:
         """Articles with a body by PMCID, and a reason for every PMCID without one."""
         raise NotImplementedError
+
+    def _extra_files(self, pmcid: str, article_dir: Path) -> List[DownloadedFile]:
+        """Files a source keeps beside pubget's layout of the article."""
+        return []
 
     def download(
         self,
@@ -74,7 +85,9 @@ class _PmcXmlExtractor(PubgetExtractor):
             for idx in indices:
                 identifier = identifiers.identifiers[idx]
                 if article_dir is not None:
-                    results[idx] = self._build_success(identifier, article_dir, None)
+                    result = self._build_success(identifier, article_dir, None)
+                    result.files.extend(self._extra_files(pmcid, article_dir))
+                    results[idx] = result
                 else:
                     results[idx] = self._build_failure(
                         identifier, reasons.get(pmcid, f"{self.SOURCE.value} returned no article")
@@ -105,12 +118,69 @@ class _PmcXmlExtractor(PubgetExtractor):
 
 
 class PmcExtractor(_PmcXmlExtractor):
-    """NCBI's PMC efetch: the Open Access subset and author manuscripts."""
+    """PMC's Cloud Service, then NCBI's efetch: the Open Access subset and author manuscripts."""
 
     SOURCE = DownloadSource.PMC
     EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    #: Public bucket of PMC's Cloud Service (registry.opendata.aws/ncbi-pmc), no account needed.
+    CLOUD = "https://pmc-oa-opendata.s3.amazonaws.com"
+    #: The bucket publishes no request limit; this is restraint, with S3's 503 SlowDown honoured.
+    cloud_concurrency = 8
+    CLOUD_METADATA = "pmc_cloud.json"
+
+    def __init__(self, settings=None) -> None:
+        super().__init__(settings)
+        self._cloud_metadata: Dict[str, dict] = {}
 
     def _fetch(self, pmcids: List[str]) -> Tuple[Dict[str, etree._Element], Dict[str, str]]:
+        articles, reasons = self._fetch_cloud(pmcids)
+        rest = [p for p in pmcids if p not in articles]
+        if rest:
+            more, more_reasons = self._fetch_efetch(rest)
+            articles.update(more)
+            reasons.update({p: r for p, r in more_reasons.items() if p not in articles})
+        return articles, {p: r for p, r in reasons.items() if p not in articles}
+
+    def _fetch_cloud(self, pmcids: List[str]) -> Tuple[Dict[str, etree._Element], Dict[str, str]]:
+        """The newest version the bucket holds of each article, with its metadata record."""
+        session = requests.Session()
+
+        def one(pmcid: str):
+            listing = _with_retries(
+                lambda: session.get(self.CLOUD, params={"list-type": "2", "prefix": f"PMC{pmcid}."}, timeout=60)
+            )
+            keys = re.findall(r"<Key>([^<]+)</Key>", listing.text)
+            versions = sorted(
+                {int(m.group(1)) for k in keys if (m := re.match(rf"PMC{pmcid}\.(\d+)/", k))}
+            )
+            if not versions:
+                return pmcid, None, None
+            stem = f"PMC{pmcid}.{versions[-1]}/PMC{pmcid}.{versions[-1]}"
+            if f"{stem}.xml" not in keys:
+                return pmcid, None, None
+            meta = {}
+            if f"{stem}.json" in keys:
+                meta = _with_retries(lambda: session.get(f"{self.CLOUD}/{stem}.json", timeout=60)).json()
+            xml = _with_retries(lambda: session.get(f"{self.CLOUD}/{stem}.xml", timeout=120)).content
+            root = etree.fromstring(xml, etree.XMLParser(recover=True, huge_tree=True))
+            article = root if root is not None and root.tag == "article" else (
+                root.find("article") if root is not None else None
+            )
+            return pmcid, article, meta
+
+        articles: Dict[str, etree._Element] = {}
+        reasons: Dict[str, str] = {}
+        with ThreadPoolExecutor(self.cloud_concurrency) as pool:
+            for pmcid, article, meta in pool.map(_quietly(one), pmcids):
+                if article is not None and has_body(article):
+                    _set_pmc_article_id(article, pmcid)
+                    articles[pmcid] = article
+                    self._cloud_metadata[pmcid] = meta or {}
+                elif article is not None:
+                    reasons[pmcid] = RESTRICTED
+        return articles, reasons
+
+    def _fetch_efetch(self, pmcids: List[str]) -> Tuple[Dict[str, etree._Element], Dict[str, str]]:
         articles: Dict[str, etree._Element] = {}
         reasons: Dict[str, str] = {}
         # E-utilities allow 3 requests a second, 10 with an API key
@@ -139,6 +209,15 @@ class PmcExtractor(_PmcXmlExtractor):
                 if pmcid not in articles:
                     reasons.setdefault(pmcid, "PMC returned no article for this PMCID")
         return articles, reasons
+
+    def _extra_files(self, pmcid: str, article_dir: Path) -> List[DownloadedFile]:
+        """The Cloud Service's record of the article: licence code, manuscript, open access, retraction."""
+        meta = self._cloud_metadata.get(pmcid)
+        if not meta:
+            return []
+        path = article_dir / self.CLOUD_METADATA
+        path.write_text(json.dumps(meta, indent=2, sort_keys=True), encoding="utf-8")
+        return [build_downloaded_file(path, FileType.JSON, source=self.SOURCE)]
 
 
 class EuropePmcExtractor(_PmcXmlExtractor):
@@ -200,6 +279,19 @@ def _set_pmc_article_id(article: etree._Element, pmcid: str) -> None:
         pmc = etree.Element("article-id", {"pub-id-type": "pmc"})
         meta.insert(0, pmc)
     pmc.text = pmcid
+
+
+def _quietly(fn):
+    """A per-article fetch whose failure leaves that article to the next route."""
+
+    def wrapped(pmcid):
+        try:
+            return fn(pmcid)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("PMC Cloud Service lookup failed for PMC%s: %s", pmcid, exc)
+            return pmcid, None, None
+
+    return wrapped
 
 
 def _with_retries(call, ok=(200,), attempts: int = 5):
