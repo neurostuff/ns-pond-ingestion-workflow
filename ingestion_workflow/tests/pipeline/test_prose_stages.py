@@ -230,6 +230,7 @@ def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch
     _read_prose(ctx, catalog, ref, _Reader())
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["prose_points"] == 1 and merged.summary["basis"] == ""
+    assert merged.payload["prose"]["identifier"]["pmid"] == "2"   # upload matches the paper by it
     _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
     assert spaced.payload["prose"]["analyses"][0]["coordinates"][0]["x"] == -22.0
     assert spaced.payload["prose"]["coordinate_space"] == "MNI"

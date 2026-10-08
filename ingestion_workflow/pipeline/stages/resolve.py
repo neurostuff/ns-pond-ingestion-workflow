@@ -52,7 +52,8 @@ def _number(value: Any) -> Optional[float]:
         return None
 
 
-def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
+            identifier=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The table collections, plus one collection of what the prose adds.
 
     Points of the `KEPT_ROLES` are kept, in analyses of one role each. A point
@@ -127,7 +128,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str) -> Tuple[D
             space = CoordinateSpace(table_spaces.most_common(1)[0][0])
         else:
             space = CoordinateSpace.OTHER
-        out["prose"] = AnalysisCollection(slug=slug, analyses=list(groups.values()),
+        out["prose"] = AnalysisCollection(slug=slug, identifier=identifier, analyses=list(groups.values()),
                                           coordinate_space=space).to_dict()
     summary = {
         "tables": sum(1 for blob in out.values() if (blob or {}).get("analyses")),
@@ -196,7 +197,7 @@ class ResolveStage:
             tables_artifact = analysed.get(work.article_id, {}).get("")
             tables = ctx.payload(tables_artifact) if tables_artifact is not None and tables_artifact.ok else {}
             payload, summary = resolve(tables or {}, ctx.payload(work.upstream) or {},
-                                       work.ref.identifier.slug)
+                                       work.ref.identifier.slug, work.ref.identifier)
             # What upload's freshness should follow. When the prose adds
             # nothing, the upload is the tables' upload, so it keeps the
             # fingerprint it already had.

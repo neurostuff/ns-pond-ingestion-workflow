@@ -21,6 +21,7 @@ from ingestion_workflow.models import (
     UploadOutcome,
     UploadWorkItem,
 )
+from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.study_level import level_for
@@ -304,8 +305,13 @@ class UploadService:
         metadata: Mapping[str, ArticleMetadata],
         *,
         metadata_mode: UploadMetadataMode,
+        identifiers: Optional[Mapping[str, Identifier]] = None,
     ) -> List[UploadWorkItem]:
-        """Build UploadWorkItem payloads from cached analyses and metadata with progress."""
+        """Build UploadWorkItem payloads from cached analyses and metadata with progress.
+
+        `identifiers` are the articles' own, by slug: the ids of an article
+        whose collections carry none -- a prose collection need not.
+        """
         if not analyses:
             return []
 
@@ -329,6 +335,7 @@ class UploadService:
                     slug,
                     per_table,
                     metadata.get(slug),
+                    identifier=(identifiers or {}).get(slug),
                     metadata_mode=metadata_mode,
                 )
                 if item is not None:
@@ -534,17 +541,20 @@ class UploadService:
         article_metadata: Optional[ArticleMetadata],
         *,
         metadata_mode: UploadMetadataMode,
+        identifier: Optional[Identifier] = None,
     ) -> Optional[UploadWorkItem]:
         """Create a single UploadWorkItem; returns None on skip."""
         if not per_table:
             logger.warning("No analyses found for %s; skipping.", slug, extra=console_kwargs())
             return None
 
-        identifier = None
-        for collection in per_table.values():
-            if collection.identifier is not None:
-                identifier = collection.identifier
-                break
+        # A collection's identifier, else the article's own. Without either,
+        # the base study is created with no doi, pmid or pmcid -- and cannot
+        # be matched to the paper's existing base study, so it duplicates it.
+        # 11,892 prose-only articles were uploaded so on 2026-10-07.
+        identifier = next(
+            (c.identifier for c in per_table.values() if c.identifier is not None), identifier
+        )
 
         base_payload = BaseStudyPayload()
         study_payload = StudyPayload()

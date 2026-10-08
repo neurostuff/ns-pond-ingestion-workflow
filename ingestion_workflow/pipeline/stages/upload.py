@@ -125,7 +125,8 @@ class UploadStage:
                 sessions = SessionFactory(self.settings, tunnel=tunnel)
                 service = UploadService(self.settings, sessions)
                 items = service.prepare_work_items(
-                    analyses, metadata, metadata_mode=self.settings.upload_metadata_mode
+                    analyses, metadata, metadata_mode=self.settings.upload_metadata_mode,
+                    identifiers={slug: work.ref.identifier for slug, work in by_slug.items()},
                 )
                 outcomes = service.run(
                     items,
