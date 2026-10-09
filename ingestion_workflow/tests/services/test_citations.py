@@ -2,7 +2,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from ingestion_workflow.extractors.pubget_extractor import article_text
+from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUPERSCRIPTS, article_text
 from ingestion_workflow.services import citations as C
 
 JATS = """<?xml version="1.0"?>
@@ -76,15 +76,18 @@ def test_jats_links_land_on_their_markers_in_the_extracted_text(tmp_path):
     assert _sentence(text, first).startswith("Attention shapes perception")
 
 
-def test_a_superscript_marker_pubget_drops_still_names_its_sentence(tmp_path):
+def test_a_superscript_marker_names_its_sentence_whether_or_not_pubget_keeps_it(tmp_path):
     path = _jats(tmp_path)
     text = article_text(etree.parse(str(path)), tmp_path)
 
     sup = next(c for c in C.read_jats(path, text).citations if c["references"] == ["B2"])
 
-    assert not sup["marker_in_text"]
-    assert sup["text_span"]["start_char"] == sup["text_span"]["end_char"]
     assert _sentence(text, sup).startswith("It is a filter")
+    if KEEPS_SUPERSCRIPTS:
+        assert sup["marker_in_text"] and _span(text, sup) == "2"
+    else:  # an older pubget drops it: a zero-width anchor where it was
+        assert not sup["marker_in_text"]
+        assert sup["text_span"]["start_char"] == sup["text_span"]["end_char"]
 
 
 def test_a_range_linked_at_its_ends_cites_everything_between(tmp_path):

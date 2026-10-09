@@ -384,6 +384,18 @@ class PubgetExtractor(BaseExtractor):
         )
 
 
+def _stylesheet_declares(param: str) -> bool:
+    from importlib.resources import files
+
+    xsl = files("pubget").joinpath("_data", "stylesheets", "text_extraction.xsl").read_text(encoding="utf-8")
+    return f'name="{param}"' in xsl
+
+
+#: Whether the installed pubget keeps superscripts in the text (jdkent/pubget
+#: enh/keep-superscripts); before it, a superscript citation marker was dropped.
+KEEPS_SUPERSCRIPTS = _stylesheet_declares("keep-superscripts")
+
+
 def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> str:
     """An article's text as extraction keeps it: title, keywords, abstract and body, tables in place.
 
@@ -396,6 +408,8 @@ def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> s
         **{
             "preserve-crossrefs": etree.XSLT.strparam("true"),
             "keep-tables": etree.XSLT.strparam("true"),
+            # a superscript is often a citation marker ("previously.<sup>12</sup>")
+            "keep-superscripts": etree.XSLT.strparam("true"),
         },
     )
     text_parts: List[str] = []

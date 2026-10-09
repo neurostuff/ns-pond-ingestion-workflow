@@ -32,7 +32,7 @@ dependencies = [
   # generator iterated on without touching the pipeline.
   "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@main",
   "paramiko>=3,<4",
-  "pubget @ git+https://github.com/jdkent/pubget.git@enh/keep_references_option",
+  "pubget @ git+https://github.com/jdkent/pubget.git@enh/keep-superscripts",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
   "elsevier-coordinate-extraction @ git+https://github.com/neurostuff/elsevier_coordinate_extractor.git@main",
   "pydantic-settings>=2.5",
