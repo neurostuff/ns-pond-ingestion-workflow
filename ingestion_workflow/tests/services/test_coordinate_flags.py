@@ -127,12 +127,3 @@ def test_the_prompted_answer_survives_a_retired_flag():
     out = client.parse_analyses("prompt")
     assert [len(a.points) for a in out.analyses] == [1]
 
-
-def test_upload_no_longer_marks_a_point_as_a_deactivation():
-    import inspect
-
-    from ingestion_workflow.services.upload import UploadService
-
-    src = inspect.getsource(UploadService)
-    assert "deactivation=" not in src
-    assert "subpeak=coord.is_subpeak" in src

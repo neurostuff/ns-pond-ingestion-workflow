@@ -155,10 +155,12 @@ class Coordinate:
     cluster_measure: Optional[str] = None
     is_subpeak: bool = False
 
-    #: Keys older payloads carry and nothing reads any more. A negative point
-    #: is the inverse contrast, its own analysis by the sign split, and a seed
-    #: is a set's role (`Analysis.metadata["role"]`), not a row's.
-    RETIRED_KEYS = ("is_deactivation", "is_seed", "sign")
+    #: Keys a payload may carry that are not constructor fields: the two
+    #: retired flags, which nothing reads any more (a negative point is the
+    #: inverse contrast, its own analysis by the sign split, and a seed is a
+    #: set's role, `Analysis.metadata["role"]`), and `sign`, which `to_dict`
+    #: writes but is always derived again on read.
+    NON_FIELD_KEYS = ("is_deactivation", "is_seed", "sign")
 
     @property
     def sign(self) -> str:

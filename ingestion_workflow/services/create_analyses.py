@@ -23,7 +23,11 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
-from ingestion_workflow.services.coordinate_flags import subpeak_flags
+from ingestion_workflow.services.coordinate_flags import (
+    PLACEHOLDER_NAME,
+    is_placeholder,
+    subpeak_flags,
+)
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -116,25 +120,6 @@ def _by_direction(name, coordinates):
     if not (positive and negative):
         return [(name, coordinates)]
     return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
-
-
-#: What the prompted rules told the model to answer for a table with no
-#: coordinates, and the name it falls back on for points it cannot label.
-PLACEHOLDER_NAME = "UNKNOWN"
-
-
-def _is_placeholder(parsed) -> bool:
-    """An `UNKNOWN` analysis with no points: a table reading, not an analysis.
-
-    The prompt used to ask for one on every table with no coordinates, and it
-    looks exactly like a named contrast reported `n.s.` -- zero points -- so
-    pondie read each one as a null result. A zero-point analysis must mean the
-    table named a contrast; a table with none is `no_coordinates` in the
-    stage's readings. An `UNKNOWN` analysis *with* points is kept: those are
-    real coordinates whose label the model could not read.
-    """
-    name = (parsed.name or "").strip().upper()
-    return name == PLACEHOLDER_NAME and not parsed.points
 
 
 def table_reading(collection: AnalysisCollection) -> str:
@@ -317,7 +302,7 @@ class CreateAnalysesService:
             identifier=identifier,
         )
         for idx, parsed in enumerate(parsed_output.analyses, start=1):
-            if _is_placeholder(parsed):
+            if is_placeholder(parsed.name, parsed.points):
                 continue
             coordinates = self._convert_points(
                 parsed.points,

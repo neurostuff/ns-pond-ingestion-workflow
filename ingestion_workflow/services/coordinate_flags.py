@@ -19,7 +19,34 @@ from __future__ import annotations
 
 from typing import Iterable, List, Optional, Sequence
 
-__all__ = ["NON_DIRECTIONAL_KINDS", "point_sign", "subpeak_flags", "reports_extent"]
+__all__ = [
+    "NON_DIRECTIONAL_KINDS",
+    "PLACEHOLDER_NAME",
+    "is_placeholder",
+    "point_sign",
+    "subpeak_flags",
+    "reports_extent",
+]
+
+#: What the prompted rules told the model to answer for a table with no
+#: coordinates, and the name it falls back on for points it cannot label.
+PLACEHOLDER_NAME = "UNKNOWN"
+
+
+def is_placeholder(name: Optional[str], points: Sequence) -> bool:
+    """An `UNKNOWN` analysis with no points: a table reading, not an analysis.
+
+    The prompt used to ask for one on every table with no coordinates, and it
+    looks exactly like a named contrast reported `n.s.` -- zero points -- so
+    pondie read each one as a null result. A zero-point analysis must mean the
+    table named a contrast; a table with none is `no_coordinates` in the
+    analyses stage's readings. An `UNKNOWN` analysis *with* points is kept:
+    those are real coordinates whose label the model could not read.
+
+    Checked where analyses are made and again where they leave for pondie and
+    neurostore, because analyses stored before the check still hold them.
+    """
+    return (name or "").strip().upper() == PLACEHOLDER_NAME and not points
 
 #: Kinds whose value has no direction: a p value and an F are positive
 #: whichever way the contrast runs. study_schema's `StatisticKind` says the

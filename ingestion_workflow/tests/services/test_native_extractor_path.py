@@ -188,7 +188,7 @@ def test_a_named_analysis_with_no_coordinates_is_still_uploaded():
 
     src = inspect.getsource(UploadService._build_work_item)
     assert "if not analysis.coordinates:" not in src
-    assert "if not collection.analyses:" in src
+    assert "if not kept:" in src
 
 
 # -- the table must arrive in the form the model was trained on ----------

@@ -50,7 +50,7 @@ opening a blob. The payload is `{table_id: AnalysisCollection}`:
           {"x": 46.0, "y": -4.0, "z": 8.0,
            "space": "MNI", "statistic_type": "Z", "statistic_value": 4.5,
            "cluster_size": null, "cluster_measure": null,
-           "is_subpeak": false, "is_deactivation": false, "is_seed": false}
+           "is_subpeak": false, "sign": "positive"}
         ]
       }
     ]
