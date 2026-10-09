@@ -7,6 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
+from ..services.coordinate_flags import point_sign
 from .ids import Identifier
 from .statistics import ALLOWED_STATISTIC_KINDS
 
@@ -47,8 +48,6 @@ class CoordinatePoint:
     cluster_size: Optional[int] = None
     cluster_measure: Optional[str] = None
     is_subpeak: bool = False
-    is_deactivation: bool = False
-    is_seed: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.coordinates, list):
@@ -155,8 +154,20 @@ class Coordinate:
     cluster_size: Optional[int] = None
     cluster_measure: Optional[str] = None
     is_subpeak: bool = False
-    is_deactivation: bool = False
-    is_seed: bool = False
+
+    #: Keys older payloads carry and nothing reads any more. A negative point
+    #: is the inverse contrast, its own analysis by the sign split, and a seed
+    #: is a set's role (`Analysis.metadata["role"]`), not a row's.
+    RETIRED_KEYS = ("is_deactivation", "is_seed", "sign")
+
+    @property
+    def sign(self) -> str:
+        """`positive`, `negative` or `unsigned`, from the statistic.
+
+        Derived, never stored, so it cannot disagree with the value it reads,
+        and a payload written before it existed reads the same.
+        """
+        return point_sign(self.statistic_value, self.statistic_type)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -169,8 +180,7 @@ class Coordinate:
             "cluster_size": self.cluster_size,
             "cluster_measure": self.cluster_measure,
             "is_subpeak": self.is_subpeak,
-            "is_deactivation": self.is_deactivation,
-            "is_seed": self.is_seed,
+            "sign": self.sign,
         }
 
     @classmethod
@@ -186,8 +196,6 @@ class Coordinate:
             cluster_size=payload.get("cluster_size"),
             cluster_measure=payload.get("cluster_measure"),
             is_subpeak=bool(payload.get("is_subpeak", False)),
-            is_deactivation=bool(payload.get("is_deactivation", False)),
-            is_seed=bool(payload.get("is_seed", False)),
         )
 
 

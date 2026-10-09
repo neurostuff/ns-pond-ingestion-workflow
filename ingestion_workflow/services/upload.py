@@ -796,7 +796,10 @@ class UploadService:
                     space=coord.space.value if coord.space else prepared.coordinate_space,
                     cluster_size=coord.cluster_size,
                     subpeak=coord.is_subpeak,
-                    deactivation=coord.is_deactivation,
+                    # `deactivation` is left at its default. A negative set is
+                    # its own analysis, the inverse contrast, so direction is
+                    # the analysis's and no point is marked; NiMARE never read
+                    # the flag anyway.
                     order=p_index,
                 )
                 session.add(point)

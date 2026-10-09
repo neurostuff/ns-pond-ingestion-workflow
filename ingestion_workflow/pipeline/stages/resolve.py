@@ -113,7 +113,6 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                     statistic_value=_number(p.get("value")), statistic_type=p.get("statistic"),
                     cluster_size=int(size) if isinstance(size, (int, float)) else None,
                     cluster_measure=a.get("measure") if size is not None else None,
-                    is_seed=role == "seed",
                 ))
                 spaces[space] += 1
 

@@ -29,7 +29,7 @@ EXTRACTION_VERSION = "2026-10-01.serialised+minus+dedupe+thinspace+selfclosing+b
 #: COORDINATE_PARSING_PROMPT_VERSION does not cover. Only that path sends them,
 #: so only its fingerprint carries this: bumping it must not make the
 #: fine-tune's corpus stale, which never saw the prompt.
-PROMPT_RULES_VERSION = "2026-10-09.no-placeholder"
+PROMPT_RULES_VERSION = "2026-10-09.no-placeholder+no-deactivation-seed"
 
 from ..plan import StagePlan, Work
 from ..stage import Context

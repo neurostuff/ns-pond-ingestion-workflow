@@ -1,6 +1,6 @@
-"""Derive the coordinate flags from what the table printed.
+"""Derive a coordinate's sign and subpeak flag from what the table printed.
 
-`is_subpeak` and `is_deactivation` were read off by the model, which had to be
+`is_subpeak` and the direction were read off by the model, which had to be
 told what to look for in thirty lines of prompt and could disagree with itself
 between two rows of one table. Both are decidable from the numbers already
 extracted, so they are decided here instead: same answer every time, and no
@@ -10,32 +10,45 @@ The fine-tuned extractor settles it either way -- its points are bare
 ``[x, y, z, statistic_type, statistic, extent]`` tuples with no flag fields at
 all, so for that path these are the only place the flags can come from.
 
-``is_seed`` stays with the model. A seed region is named, not computed: nothing
-in the numbers distinguishes a seed from a peak.
+There is no deactivation flag and no seed flag. A negative point belongs to
+the inverse contrast, which the sign split makes its own analysis; a seed is
+what a whole set of points is for, its role, not a property of one row.
 """
 
 from __future__ import annotations
 
 from typing import Iterable, List, Optional, Sequence
 
-__all__ = ["is_deactivation", "subpeak_flags", "reports_extent"]
+__all__ = ["NON_DIRECTIONAL_KINDS", "point_sign", "subpeak_flags", "reports_extent"]
+
+#: Kinds whose value has no direction: a p value and an F are positive
+#: whichever way the contrast runs. study_schema's `StatisticKind` says the
+#: same of chi-square, which this workflow does not report.
+NON_DIRECTIONAL_KINDS = frozenset({"P", "F"})
 
 
-def is_deactivation(statistic_value: Optional[float]) -> bool:
-    """True when the statistic is explicitly negative.
+def point_sign(statistic_value, statistic_type: Optional[str] = None) -> str:
+    """`positive`, `negative` or `unsigned`: study_schema's `PointSign`.
 
-    Only an explicit negative counts. Plenty of tables print magnitudes and
-    put the direction in the contrast name ("A > B", "decreases"); reading
-    that is the model's job, and inferring it from an unsigned number here
-    would invent a result. So this is deliberately conservative: it marks
-    what the table states and nothing else.
+    Read from the statistic, whatever a model said. `negative` only when it is
+    explicitly below zero: plenty of tables print magnitudes and put the
+    direction in the contrast name, and inferring a direction from an unsigned
+    number would invent a result. `unsigned` when there is no directional
+    statistic to read -- none printed, a p value or an F only, or a value that
+    is not a number. In a split analysis those points join the positive half
+    and keep the tag, so the placement stays visible.
     """
     if statistic_value is None:
-        return False
+        return "unsigned"
+    if statistic_type is not None and str(statistic_type).upper() in NON_DIRECTIONAL_KINDS:
+        return "unsigned"
     try:
-        return float(statistic_value) < 0
+        value = float(statistic_value)
     except (TypeError, ValueError):
-        return False
+        return "unsigned"
+    if value != value:                      # NaN
+        return "unsigned"
+    return "negative" if value < 0 else "positive"
 
 
 def reports_extent(cluster_sizes: Iterable[Optional[int]]) -> bool:

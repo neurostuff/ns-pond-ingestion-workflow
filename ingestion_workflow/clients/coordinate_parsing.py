@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
@@ -10,7 +11,7 @@ import httpx
 
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models import ParseAnalysesOutput
+from ingestion_workflow.models import CoordinatePoint, ParseAnalysesOutput
 from ingestion_workflow.models.statistics import (
     STATISTIC_KINDS,
     normalize_statistic_kind,
@@ -19,6 +20,8 @@ from ingestion_workflow.services.nuextract_payload import parse_payload
 
 
 logger = logging.getLogger(__name__)
+
+_POINT_FIELDS = frozenset(field.name for field in dataclasses.fields(CoordinatePoint))
 
 
 class CoordinateParsingClient(GenericLLMClient):
@@ -369,7 +372,9 @@ class CoordinateParsingClient(GenericLLMClient):
                     and len(coordinates) == 3
                     and all(isinstance(coord, (int, float)) for coord in coordinates)
                 ):
-                    valid_points.append(point)
+                    # A flag the schema no longer has (`is_deactivation`,
+                    # `is_seed`) would fail the whole table, not one field.
+                    valid_points.append({k: v for k, v in point.items() if k in _POINT_FIELDS})
 
             analysis["points"] = valid_points
             cleaned_analyses.append(analysis)

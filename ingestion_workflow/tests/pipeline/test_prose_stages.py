@@ -86,11 +86,13 @@ def test_results_and_the_regions_defined_to_get_them_are_kept_one_role_per_analy
         ("slice shown", [(0, 0, 10, "figure")]),
         ("faces > houses", [(40, -50, -20, "result"), (12, 10, 8, "seed")]))]}
     out, summary = resolve({}, prose, "slug")
-    got = [(a["name"], a["metadata"]["role"], [c["is_seed"] for c in a["coordinates"]])
+    got = [(a["name"], a["metadata"]["role"], len(a["coordinates"]))
            for a in out["prose"]["analyses"]]
-    assert got == [("amygdala seed", "seed", [True]), ("insula ROI", "roi", [False]),
-                   ("left DLPFC TMS target", "target", [False]), ("faces > houses", "result", [False]),
-                   ("faces > houses", "seed", [True])]
+    assert got == [("amygdala seed", "seed", 1), ("insula ROI", "roi", 1),
+                   ("left DLPFC TMS target", "target", 1), ("faces > houses", "result", 1),
+                   ("faces > houses", "seed", 1)]
+    # A seed is the set's role; no point carries a seed flag of its own.
+    assert not any("is_seed" in c for a in out["prose"]["analyses"] for c in a["coordinates"])
     assert summary["kept"] == {"seed": 2, "roi": 1, "target": 1, "result": 1}
     assert summary["dropped"] == {"prior_study": 1, "figure": 1}
 

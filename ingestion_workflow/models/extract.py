@@ -63,7 +63,8 @@ class ExtractedTable:
         coordinates_payload = payload.get("coordinates", [])
         resolved_coordinates: List[Coordinate] = []
         for item in coordinates_payload:
-            coord_data = dict(item)
+            # An extraction stored before the flags were retired still carries them.
+            coord_data = {k: v for k, v in item.items() if k not in Coordinate.RETIRED_KEYS}
             space = coord_data.pop("space", None)
             coord_space: Optional[CoordinateSpace] = None
             if space:
