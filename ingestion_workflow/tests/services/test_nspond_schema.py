@@ -119,6 +119,25 @@ def test_stage1_keeps_the_shape_pondie_reads(written):
     assert point["space"] == "MNI"
 
 
+def test_a_prose_analysis_keeps_its_role_in_stage1(tmp_path):
+    """A table analysis keeps the shape pondie reads; a prose one says what it is."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    prose = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
+        Analysis(name="amygdala seed", table_id="prose", metadata={"source": "prose", "role": "seed"},
+                 coordinates=[Coordinate(x=-22.0, y=-4.0, z=-18.0, is_seed=True)]),
+        Analysis(name="faces > houses", table_id="prose", metadata={"source": "prose", "role": "result"},
+                 coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
+    root = tmp_path / "pond"
+    nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"prose": prose}, [])
+    got = [(a["source"], a["role"], a["table_id"]) for a in read_record(root, BASE).stage1["analyses"]]
+    assert got == [("prose", "seed", "prose"), ("prose", "result", "prose")]
+
+
+def test_a_table_analysis_has_no_prose_keys_in_stage1(written):
+    assert "role" not in read_record(written, BASE).stage1["analyses"][0]
+
+
 def test_a_missing_text_file_is_not_an_error(written):
     """Not every article has full text, and its absence is ordinary."""
     assert read_record(written, BASE).processed["ace"].text is None

@@ -278,6 +278,19 @@ class Settings(BaseSettings):
     )
 
 
+    # ===== Coordinates in prose =====
+    prose_model: Optional[str] = Field(
+        default=None,
+        description=(
+            "Model that reads coordinates written in an article's text; setting it runs "
+            "the passages, prose and resolve stages and has space read resolve. Unset, nothing changes"
+        ),
+    )
+    prose_api_base: Optional[str] = Field(
+        default=None,
+        description="Server of the prose model, which runs apart from the table model. Defaults to llm_api_base",
+    )
+
     sync_overwrite: bool = Field(
         default=True,
         description="Overwrite individual files when writing ns-pond sync outputs",

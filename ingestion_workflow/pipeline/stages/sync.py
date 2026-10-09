@@ -13,6 +13,7 @@ from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
+    DownloadSource,
     ExtractedContent,
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
@@ -71,6 +72,8 @@ class SyncStage:
         analyses = ctx.catalog.artifacts(ids, "space")
         downloads = ctx.catalog.artifacts(ids, "download")
         triaged = ctx.catalog.artifacts(ids, "triage")
+        # What the prose read, for an article extract could not read.
+        passages = ctx.catalog.artifacts(ids, "passages")
 
         excluded = ctx.catalog.exclusions(ids)
         for work in works:
@@ -81,7 +84,7 @@ class SyncStage:
             try:
                 bundle, per_table, files = self._assemble(
                     ctx, work, extractions, metadata, analyses, downloads, triaged,
-                    excluded.get(work.article_id, {}),
+                    excluded.get(work.article_id, {}), passages.get(work.article_id, {}).get(""),
                 )
             except LookupError as exc:
                 yield Outcome.failure(
@@ -140,19 +143,24 @@ class SyncStage:
                      "moved_to": str(moved) if moved else None},
         )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None):
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None,
+                  passages=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),
             downloads.get(work.article_id, {}),
             triaged.get(work.article_id, {}).get(""),
         )
-        if extraction is None:
-            raise LookupError("no successful extraction to sync")
-        payload = ctx.payload(extraction)
-        if payload is None:
-            raise LookupError("extraction payload missing from blob store")
-        content = ExtractedContent.from_dict(payload)
+        if extraction is not None:
+            payload = ctx.payload(extraction)
+            if payload is None:
+                raise LookupError("extraction payload missing from blob store")
+            content = ExtractedContent.from_dict(payload)
+            source = extraction.source
+        else:
+            # No extraction, but the prose read the article: its download and
+            # its text stand in, with no tables to write.
+            content, source = _from_passages(ctx, work, passages)
         content.identifier = work.ref.identifier
         content.slug = work.ref.identifier.slug
 
@@ -172,7 +180,7 @@ class SyncStage:
         }
 
         files: List[DownloadResult] = []
-        download = downloads.get(work.article_id, {}).get(extraction.source)
+        download = downloads.get(work.article_id, {}).get(source)
         download_payload = ctx.payload(download)
         if download_payload:
             files.append(DownloadResult.from_dict(download_payload))
@@ -188,6 +196,20 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+def _from_passages(ctx: Context, work: Work, passages: Artifact | None) -> Tuple[ExtractedContent, str]:
+    payload = ctx.payload(passages) if passages is not None and passages.status is Status.OK else None
+    if not payload or not payload.get("passages"):
+        raise LookupError("no successful extraction, and no prose read, to sync")
+    path = payload.get("full_text_path")
+    content = ExtractedContent(
+        slug=work.ref.identifier.slug,
+        source=DownloadSource(payload["source"]),
+        identifier=work.ref.identifier,
+        full_text_path=Path(path) if path and Path(path).is_file() else None,
+    )
+    return content, payload["source"]
 
 
 def _synced_extraction(

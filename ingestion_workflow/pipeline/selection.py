@@ -57,6 +57,7 @@ def narrow(
     mode: Select,
     stage: Optional[str],
     refresh: Sequence[str] = (),
+    settings=None,
 ) -> Selection:
     """Restrict a selection by what the catalog already knows about it.
 
@@ -65,7 +66,7 @@ def narrow(
     each other: the artifacts named for redoing are exactly the ones that look
     done, so they would be dropped here and the refresh would do nothing.
     """
-    selection = _gated(catalog, selection, stage)
+    selection = _gated(catalog, selection, stage, settings)
     if mode is Select.ALL or not selection.refs:
         return selection
 
@@ -99,7 +100,7 @@ def narrow(
     return Selection(refs, f"{len(refs):,} {mode.value} of {selection.description}")
 
 
-def _gated(catalog: Catalog, selection: Selection, stage: Optional[str]) -> Selection:
+def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], settings=None) -> Selection:
     """Drop the articles a stage has declared it cannot work on.
 
     A stage may name an upstream summary field that must be truthy before it
@@ -120,8 +121,12 @@ def _gated(catalog: Catalog, selection: Selection, stage: Optional[str]) -> Sele
     from ingestion_workflow.pipeline.stages import STAGE_TYPES     # noqa: PLC0415
 
     stage_type = STAGE_TYPES.get(stage)
-    upstream = getattr(stage_type, "requires", None)
-    flag = getattr(stage_type, "requires_flag", None)
+    # Not `gate`: triage already has one, its coordinate gate.
+    if settings is not None and hasattr(stage_type, "upstream_for"):
+        upstream, flag = stage_type.upstream_for(settings)   # space follows prose_model
+    else:
+        upstream = getattr(stage_type, "requires", None)
+        flag = getattr(stage_type, "requires_flag", None)
     if not (upstream and flag):
         return selection
 

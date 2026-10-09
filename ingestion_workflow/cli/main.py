@@ -408,7 +408,7 @@ def run(
     stages = build(stage, settings)
 
     with _catalog(settings) as catalog:
-        selection = _select(catalog, manifest, select, stage, refresh or [])
+        selection = _select(catalog, manifest, select, stage, refresh or [], settings)
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
         typer.echo(f"selection: {selection.description}\n")
@@ -428,10 +428,11 @@ def _select(
     mode: Select,
     stage,
     refresh: Sequence[str] = (),
+    settings=None,
 ) -> Selection:
     base = from_manifest(catalog, manifest) if manifest else everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
-    return narrow(catalog, base, mode, only, refresh)
+    return narrow(catalog, base, mode, only, refresh, settings)
 
 
 def _render(report, *, dry_run: bool) -> str:

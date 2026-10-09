@@ -35,9 +35,21 @@ class SpaceStage:
 
     def __init__(self, settings) -> None:
         self.settings = settings
+        self.requires, self.requires_flag = self.upstream_for(settings)
+
+    @classmethod
+    def upstream_for(cls, settings):
+        """Read `resolve` when prose is on: it holds the tables' analyses and the prose's."""
+        if getattr(settings, "prose_model", None):
+            return "resolve", "tables"
+        return cls.requires, cls.requires_flag
 
     def fingerprint_for(self, upstream: Artifact) -> str:
-        return fingerprint("space", SPACE_VERSION, upstream=upstream.fingerprint)
+        # Where resolve added nothing from the prose, it names the analyses
+        # artifact it passed through, so an article already read from its
+        # tables -- and uploaded -- stays fresh when prose is switched on.
+        basis = (upstream.summary or {}).get("basis") if upstream.stage == "resolve" else None
+        return fingerprint("space", SPACE_VERSION, upstream=basis or upstream.fingerprint)
 
     def plan(
         self,
@@ -69,11 +81,12 @@ class SpaceStage:
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
+        passages = ctx.catalog.artifacts(ids, "passages")
         for work in works:
             payload = ctx.payload(work.upstream)
             if payload is None:
                 yield Outcome.failure(
-                    work.article_id, self.name, "", "the analyses payload is gone",
+                    work.article_id, self.name, "", f"the {self.requires} payload is gone",
                     fingerprint=work.fingerprint,
                 )
                 continue
@@ -83,6 +96,7 @@ class SpaceStage:
                         triaged.get(work.article_id, {}).get(""),
                         extractions.get(work.article_id, {}),
                         ctx,
+                        passages.get(work.article_id, {}).get(""),
                     )
                     if _needs_filling(payload)
                     else None
@@ -114,18 +128,24 @@ def _needs_filling(payload: Dict[str, dict]) -> bool:
 
 
 def _article_text(
-    triage: Optional[Artifact], extractions: Dict[str, Artifact], ctx: Context
+    triage: Optional[Artifact], extractions: Dict[str, Artifact], ctx: Context,
+    passages: Optional[Artifact] = None,
 ) -> Optional[str]:
     """The text of the extraction the analyses were read from.
 
-    That is the one triage judged. Without it there is no text, and only the
-    tables' own captions are read.
+    That is the one triage judged. Without it, the text `passages` read, for
+    an article only its prose reached; without either, only the tables' own
+    captions are read.
     """
     source = (triage.summary or {}).get("source") if triage else None
     extraction = extractions.get(source) if source is not None else None
-    if extraction is None or extraction.status is not Status.OK:
+    if extraction is not None and extraction.status is Status.OK:
+        holder = extraction
+    elif passages is not None and passages.status is Status.OK:
+        holder = passages
+    else:
         return None
-    path = (ctx.payload(extraction) or {}).get("full_text_path")
+    path = (ctx.payload(holder) or {}).get("full_text_path")
     if not path or not Path(path).is_file():
         return None
     return Path(path).read_text(encoding="utf-8", errors="replace")

@@ -357,6 +357,50 @@ def select_count(model):
 # --------------------------------------------------------------------------
 
 
+def test_a_meta_analysis_is_uploaded_as_meta_and_stays_so(tmp_path):
+    """And a group study's level is not overwritten when a correction set it."""
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    meta_id, group_id = Identifier(doi="10.1/meta", pmid="1"), Identifier(doi="10.1/grp", pmid="2")
+    _upload_once(service, settings, meta_id, _sample_collection(meta_id),
+                 _article_metadata("Reward processing: a coordinate-based meta-analysis"))
+    _upload_once(service, settings, group_id, _sample_collection(group_id), _article_metadata("Reward in the striatum"))
+    with Session(engine, future=True) as session:
+        levels = {b.doi: b.level for b in session.query(DbBaseStudy)}
+        study_levels = sorted(s.level for s in session.query(DbStudy))
+        session.query(DbBaseStudy).filter_by(doi="10.1/grp").one().level = "meta"   # a curator's correction
+        session.commit()
+    assert levels == {"10.1/meta": "meta", "10.1/grp": "group"} and study_levels == ["group", "meta"]
+    _upload_once(service, settings, group_id, _sample_collection(group_id), _article_metadata("Reward in the striatum"))
+    with Session(engine, future=True) as session:
+        assert session.query(DbBaseStudy).filter_by(doi="10.1/grp").one().level == "meta"
+
+
+def test_a_collection_without_ids_takes_the_articles_own(tmp_path):
+    """A prose collection carried no identifier, so 11,892 prose-only articles
+    were uploaded with no doi, pmid or pmcid, 2,236 of them beside the paper's
+    existing base study. The article's own ids now fill in."""
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    with Session(engine, future=True) as session:
+        session.add(DbBaseStudy(id="old", name="Existing", level="group", public=True, doi="10.1/prose", pmid="77"))
+        session.commit()
+    ids = Identifier(doi="10.1/prose", pmid="77")
+    prose = _sample_collection(ids)
+    prose.identifier = None
+    items = service.prepare_work_items({"slug": {"prose": prose}}, {"slug": _article_metadata("Prose only")},
+                                       metadata_mode=settings.upload_metadata_mode, identifiers={"slug": ids})
+    (outcome,) = service.run(items, behavior=UploadBehavior.UPDATE, metadata_only=False,
+                             metadata_mode=settings.upload_metadata_mode)
+    assert outcome.success and outcome.base_study_id == "old"
+    with Session(engine, future=True) as session:
+        assert session.scalar(select_count(DbBaseStudy)) == 1
+        study = session.query(DbStudy).one()
+        assert (study.doi, study.pmid) == ("10.1/prose", "77")
+
+
 def _upload_once(service, settings, identifier, collection, metadata):
     items = service.prepare_work_items(
         {"slug": {"t1": collection}},

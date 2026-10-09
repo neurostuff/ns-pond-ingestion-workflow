@@ -51,6 +51,10 @@ llm_model: "gpt-5-mini"  # Specific model to use for coordinate extraction
 llm_reasoning_effort: null  # Reasoning effort to send with coordinate parsing; leave unset for models that reject the parameter. Reasoning models that refuse function tools alongside reasoning need 'none'
 n_llm_workers: 2  # Maximum number of concurrent LLM workers
 
+# ===== Coordinates in prose =====
+prose_model: null  # Model that reads coordinates written in the text; setting it runs passages, prose and resolve
+prose_api_base: null  # Its server, apart from the table model's; defaults to llm_api_base
+
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
 
