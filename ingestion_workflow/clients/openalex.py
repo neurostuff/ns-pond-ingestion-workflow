@@ -62,10 +62,18 @@ class OpenAlexClient:
     LOOKUP_ENDPOINT = "/works"
     ID_QUERY_ARGS = "select=ids,doi"
 
-    def __init__(self, email: str) -> None:
+    def __init__(self, email: Optional[str] = None, api_key: Optional[str] = None) -> None:
         self.email = email
+        self.api_key = api_key
         self._session = requests.Session()
         self._last_request = 0.0
+
+    @classmethod
+    def from_settings(cls, settings) -> Optional["OpenAlexClient"]:
+        """A client with the configured email and key, or None when neither is set."""
+        if not (settings.openalex_email or settings.openalex_api_key):
+            return None
+        return cls(settings.openalex_email, settings.openalex_api_key)
 
     def get_ids(self, id_type: str, identifiers: Identifiers) -> Identifiers:
         """
@@ -273,6 +281,15 @@ class OpenAlexClient:
         """Issue a GET request to the OpenAlex Works endpoint."""
         self._rate_limit_sleep()
         url = urljoin(self.BASE_URL, self.LOOKUP_ENDPOINT)
-        response = self._session.get(url, params=params, timeout=30)
-        response.raise_for_status()
+        if self.api_key:
+            params = {**params, "api_key": self.api_key}
+        try:
+            response = self._session.get(url, params=params, timeout=30)
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            if not self.api_key:
+                raise
+            # requests quotes the full URL, key included, in its messages; logs must not
+            status = getattr(exc.response, "status_code", None) or type(exc).__name__
+            raise type(exc)(f"OpenAlex request failed ({status}) for {url}", response=exc.response) from None
         return response.json()

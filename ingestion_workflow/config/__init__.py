@@ -154,6 +154,14 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OPENALEX_EMAIL", "EMAIL"),
     )
 
+    openalex_api_key: Optional[str] = Field(
+        default=None,
+        description=(
+            "OpenAlex API key. Keyless use is metered at $0.10/day of list calls; "
+            "a free key raises it to $1/day"
+        ),
+    )
+
     # ===== Download configuration =====
     download_sources: List[str] = Field(
         # PMC first: its Cloud Service holds the Open Access subset pubget reads
