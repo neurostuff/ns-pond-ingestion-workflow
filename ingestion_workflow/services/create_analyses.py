@@ -118,6 +118,39 @@ def _by_direction(name, coordinates):
     return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
 
 
+#: What the prompted rules told the model to answer for a table with no
+#: coordinates, and the name it falls back on for points it cannot label.
+PLACEHOLDER_NAME = "UNKNOWN"
+
+
+def _is_placeholder(parsed) -> bool:
+    """An `UNKNOWN` analysis with no points: a table reading, not an analysis.
+
+    The prompt used to ask for one on every table with no coordinates, and it
+    looks exactly like a named contrast reported `n.s.` -- zero points -- so
+    pondie read each one as a null result. A zero-point analysis must mean the
+    table named a contrast; a table with none is `no_coordinates` in the
+    stage's readings. An `UNKNOWN` analysis *with* points is kept: those are
+    real coordinates whose label the model could not read.
+    """
+    name = (parsed.name or "").strip().upper()
+    return name == PLACEHOLDER_NAME and not parsed.points
+
+
+def table_reading(collection: AnalysisCollection) -> str:
+    """What reading one table found, in the coordinate parse's vocabulary.
+
+    `TableReadingKind` in study_schema's paper parse: `coordinates` when any
+    analysis has points, `contrasts_without_coordinates` when it only names
+    contrasts with none, `no_coordinates` when nothing was read from it.
+    """
+    if any(analysis.coordinates for analysis in collection.analyses):
+        return "coordinates"
+    if collection.analyses:
+        return "contrasts_without_coordinates"
+    return "no_coordinates"
+
+
 
 def build_document(
     *,
@@ -177,8 +210,18 @@ class CreateAnalysesService:
         self,
         bundle: ArticleExtractionBundle,
         progress_hook: Callable[[int], None] | None = None,
+        readings: Optional[Dict[str, str]] = None,
+        unread: Optional[Dict[str, str]] = None,
     ) -> Dict[str, AnalysisCollection]:
-        """Create analyses for every table in the bundle."""
+        """Create analyses for every table in the bundle.
+
+        `readings`, when given, is filled with what reading each table found
+        (`table_reading`), including the tables that yield no collection; and
+        `unread` with why a table was not read. Passed in rather than kept on
+        the service, which is shared across threads.
+        """
+        readings = {} if readings is None else readings
+        unread = {} if unread is None else unread
         if not bundle.article_data.tables:
             return {}
 
@@ -197,6 +240,7 @@ class CreateAnalysesService:
             sanitized_table_id = sanitize_table_id(table.table_id, index)
             table_key = table.table_id or sanitized_table_id
             if table_key in redundant:
+                unread[table_key] = "repeats another table's numbers"
                 continue
 
             try:
@@ -208,6 +252,7 @@ class CreateAnalysesService:
                     article_slug,
                     exc,
                 )
+                unread[table_key] = "raw content missing"
                 continue
             model_space = None
             if getattr(self.settings, "llm_native_schema", False):
@@ -241,6 +286,7 @@ class CreateAnalysesService:
             # by the stage's artifact, but it does not become a collection: an
             # empty one carries no result and would be counted as a table with
             # analyses by everything downstream.
+            readings[table_key] = table_reading(collection)
             if collection.analyses:
                 results[table_key] = collection
             emit_progress(progress_hook)
@@ -271,6 +317,8 @@ class CreateAnalysesService:
             identifier=identifier,
         )
         for idx, parsed in enumerate(parsed_output.analyses, start=1):
+            if _is_placeholder(parsed):
+                continue
             coordinates = self._convert_points(
                 parsed.points,
                 table_space,
@@ -416,8 +464,8 @@ Top-level and formatting constraints (enforce every time)
 - Do NOT add any other fields anywhere in the JSON.
 - analysis "name" must be copied verbatim from the table (trim only leading/trailing whitespace;
   preserve punctuation and case).
-- If the table contains no coordinates at all: return exactly one analysis object with name
-  "UNKNOWN" and coordinates: [] and do NOT include contrasts.
+- If the table contains no coordinates at all and names no contrast: return "analyses": [].
+  Never invent a placeholder analysis for such a table.
 - If coordinates exist but you cannot confidently assign them to any explicit analysis/contrast
   label, group those coordinates into one analysis named "UNKNOWN".
 - If an analysis or contrast header is explicitly present in the table but has no coordinate rows
@@ -435,7 +483,7 @@ Parsing sources and coordinate identification
 - If a row lacks a complete numeric triplet, skip that row's coordinate (do not fabricate
   missing numbers).
 - If many or all rows lack parseable triplets and no coordinates can be obtained, return
-  "UNKNOWN" with coordinates: [].
+  "analyses": [] -- except for contrasts the table names, each kept with coordinates: [].
 
 Cleaning and normalization (apply before parsing)
 - Remove HTML/XML formatting artifacts (tags like <i>, <sup>, <hsp/>, <ce:...>, &nbsp;, invisible
@@ -563,8 +611,8 @@ Final validation checks (required before emitting JSON)
   first-occurrence reading-order rule).
 - analysis.name values must be copied verbatim from the table (trim only leading/trailing
   whitespace).
-- If the table contains no coordinates, return exactly one analysis with name "UNKNOWN" and
-  coordinates: [].
+- If the table contains no coordinates and names no contrast, "analyses" is []. An analysis
+  with coordinates: [] is only ever a contrast the table names.
 
 Processing workflow (recommended, must be followed)
 1. Read the entire raw table content first. Remove XML/HTML artifacts and normalize whitespace and
@@ -719,4 +767,4 @@ Raw Table Content:
             return path.read_text(encoding="utf-8", errors="ignore")
 
 
-__all__ = ["CreateAnalysesService", "sanitize_table_id"]
+__all__ = ["CreateAnalysesService", "PLACEHOLDER_NAME", "sanitize_table_id", "table_reading"]
