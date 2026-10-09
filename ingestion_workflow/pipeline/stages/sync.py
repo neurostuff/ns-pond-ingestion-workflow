@@ -26,7 +26,8 @@ from .extract import current_extractions
 
 logger = logging.getLogger(__name__)
 
-SYNC_VERSION = 1
+#: 2: stage1 points carry `sign` and `is_subpeak`.
+SYNC_VERSION = 2
 
 
 class SyncStage:

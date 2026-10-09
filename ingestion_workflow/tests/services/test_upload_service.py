@@ -636,3 +636,41 @@ def test_plan_reconciliation_matches_on_coordinates_not_order():
 )
 def test_normalize_analysis_name_terminates(raw, expected):
     assert _normalize_analysis_name(raw) == expected
+
+
+def _upload(tmp_path, collection):
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    items = service.prepare_work_items(
+        {"slug": {"t1": collection}}, {"slug": _article_metadata()},
+        metadata_mode=settings.upload_metadata_mode,
+    )
+    service.run(items, behavior=UploadBehavior.UPDATE, metadata_only=False,
+                metadata_mode=settings.upload_metadata_mode)
+    return engine
+
+
+def test_a_negative_point_is_not_marked_as_a_deactivation(tmp_path):
+    """The negative set is its own analysis, the inverse contrast, so no point
+    carries the direction; its subpeak flag still goes up."""
+    collection = _sample_collection(Identifier(doi="10.1/abc", pmid="123"),
+                                    statistic_values=(-3.0, -2.0))
+    collection.analyses[0].coordinates[1].is_subpeak = True
+    engine = _upload(tmp_path, collection)
+    with Session(engine, future=True) as session:
+        rows = session.execute(
+            select(DbPoint.deactivation, DbPoint.subpeak).order_by(DbPoint.order)).all()
+    assert [tuple(row) for row in rows] == [(False, False), (False, True)]
+
+
+def test_a_stored_placeholder_is_not_uploaded(tmp_path):
+    """Analyses stored before the analyses stage dropped them still hold the
+    no-coordinates placeholder; a named n.s. contrast is still uploaded."""
+    collection = _sample_collection(Identifier(doi="10.1/abc", pmid="123"))
+    collection.analyses += [Analysis(name=" unknown ", table_id="T1"),
+                            Analysis(name="A > B", table_id="T1")]
+    engine = _upload(tmp_path, collection)
+    with Session(engine, future=True) as session:
+        names = session.scalars(select(DbAnalysis.name).order_by(DbAnalysis.order)).all()
+    assert names == ["A1", "A > B"]

@@ -25,6 +25,12 @@ from ingestion_workflow.prompts.coordinate_parsing import COORDINATE_PARSING_PRO
 #: and the prompt do not describe.
 EXTRACTION_VERSION = "2026-10-01.serialised+minus+dedupe+thinspace+selfclosing+bysign"
 
+#: This repo's own rules in the prompted path's prompt, which the vendored
+#: COORDINATE_PARSING_PROMPT_VERSION does not cover. Only that path sends them,
+#: so only its fingerprint carries this: bumping it must not make the
+#: fine-tune's corpus stale, which never saw the prompt.
+PROMPT_RULES_VERSION = "2026-10-09.no-placeholder+no-deactivation-seed"
+
 from ..plan import StagePlan, Work
 from ..stage import Context
 
@@ -77,6 +83,7 @@ class AnalysesStage:
         """`upstream` is the triage artifact, whose own fingerprint runs
         through the extraction it judged. So the chain is extract -> triage ->
         analyses, and a change anywhere along it lands here."""
+        native = bool(getattr(self.settings, "llm_native_schema", False))
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
@@ -87,7 +94,8 @@ class AnalysesStage:
             # bigger change than most model swaps -- and without it here, a
             # deployment that flipped the flag while keeping the model name
             # would leave the whole corpus looking fresh.
-            str(bool(getattr(self.settings, "llm_native_schema", False))),
+            str(native),
+            *(() if native else (PROMPT_RULES_VERSION,)),
             upstream=upstream.fingerprint,
         )
 
@@ -193,8 +201,10 @@ class AnalysesStage:
             article_data=content,
             article_metadata=metadata or ArticleMetadata(title=content.slug),
         )
+        readings: Dict[str, str] = {}
+        unread: Dict[str, str] = {}
         try:
-            collections = self._service().run(bundle)
+            collections = self._service().run(bundle, readings=readings, unread=unread)
         except Exception as exc:
             logger.warning("analyses failed for %s: %s", work.article_id, exc)
             return Outcome.failure(
@@ -215,7 +225,15 @@ class AnalysesStage:
             payload={
                 table_id: collection.to_dict() for table_id, collection in collections.items()
             },
-            summary={"tables": len(collections), "coordinates": coordinates},
+            # `readings` covers every table read, the ones with no collection
+            # included: a table with no coordinates is recorded here, as
+            # `no_coordinates`, and never as an analysis with no points.
+            summary={
+                "tables": len(collections),
+                "coordinates": coordinates,
+                "readings": readings,
+                **({"unread": unread} if unread else {}),
+            },
         )
 
 

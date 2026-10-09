@@ -11,7 +11,7 @@ four thousand:
 Two things differ from the prompted schema and both are deliberate. The space
 is stated once for the table rather than repeated on every coordinate, because
 a paper normalises once. And a point is a fixed tuple with no flag fields, so
-`is_subpeak` and `is_deactivation` are not read here -- they are derived from
+`is_subpeak` and the point's sign are not read here -- they are derived from
 the numbers downstream, in `coordinate_flags`.
 
 Nothing in here raises on a malformed answer. Two of 869 benchmark tables came
@@ -105,7 +105,7 @@ def _point(row: Sequence[Any], space: Optional[str], measure: Optional[str]):
         values.append(PointsValue(value=statistic, kind=kind))
     elif statistic is not None:
         # A statistic whose type the model did not name is still a statistic,
-        # and its sign is what decides is_deactivation.
+        # and its sign is what decides the sign split.
         values.append(PointsValue(value=statistic, kind=None))
 
     return CoordinatePoint(

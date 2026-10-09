@@ -14,11 +14,13 @@ from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
+    Analysis,
     AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
     Identifier,
 )
+from ingestion_workflow.services.coordinate_flags import is_placeholder
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.nspond_schema import (
@@ -191,7 +193,7 @@ def _write_analyses_jsonl(
             "coordinate_space": collection.coordinate_space.value,
         }
         for table_id, collection in per_table_analyses.items()
-        for analysis in collection.analyses
+        for analysis in _kept(collection)
     ]
     path.write_bytes(encode_jsonl(records))
 
@@ -234,6 +236,15 @@ def _write_corpus_manifest(
     path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
 
+def _kept(collection: AnalysisCollection) -> List[Analysis]:
+    """The collection's analyses without a no-coordinates placeholder.
+
+    Analyses stored before the analyses stage stopped writing them still hold
+    one, and pondie lists every zero-point entry as a null contrast.
+    """
+    return [a for a in collection.analyses if not is_placeholder(a.name, a.coordinates)]
+
+
 def _write_stage1(
     path: Path,
     per_table_analyses: Mapping[str, AnalysisCollection],
@@ -251,7 +262,7 @@ def _write_stage1(
 
     analyses: list[dict[str, object]] = []
     for table_id, collection in per_table_analyses.items():
-        for analysis in collection.analyses:
+        for analysis in _kept(collection):
             # A prose analysis says it is one, and what its points are: a seed
             # or ROI is not a result, and pondie cannot tell them apart otherwise.
             prose = (analysis.metadata or {}).get("source") == "prose"
@@ -277,9 +288,14 @@ def _write_stage1(
 
 def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, object]:
     space = coordinate.space or collection.coordinate_space
+    # `sign` and `is_subpeak` are study_schema's ParsedPoint fields. pondie
+    # reads neither yet; `sign: unsigned` is what lets it see that a point in
+    # the positive half of a split had no statistic to place it by.
     point: dict[str, object] = {
         "coordinates": [coordinate.x, coordinate.y, coordinate.z],
         "space": space.value if space else None,
+        "sign": coordinate.sign,
+        "is_subpeak": coordinate.is_subpeak,
     }
     if coordinate.statistic_value is not None:
         point["values"] = [
