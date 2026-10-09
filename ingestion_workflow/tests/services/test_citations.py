@@ -2,7 +2,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUPERSCRIPTS, article_text
+from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUBSCRIPTS, KEEPS_SUPERSCRIPTS, article_text
 from ingestion_workflow.services import citations as C
 
 JATS = """<?xml version="1.0"?>
@@ -11,6 +11,7 @@ JATS = """<?xml version="1.0"?>
 <abstract><p>An abstract.</p></abstract>
 </article-meta></front>
 <body><sec><title>Introduction</title>
+<p>Corrected at p<sub>FWE</sub> &lt; 0.05.</p>
 <p>Attention shapes perception (<xref ref-type="bibr" rid="B1">Smith et al., 2001</xref>). It is a filter.<sup><xref ref-type="bibr" rid="B2">2</xref></sup> Many agree [<xref ref-type="bibr" rid="B3">3</xref>&#8211;<xref ref-type="bibr" rid="B5">5</xref>].</p>
 </sec></body>
 <back><ref-list>
@@ -155,3 +156,9 @@ def test_the_offset_map_skips_inserted_lines():
     b = "zero\none\ntwo\nthree\n"
     m = C.OffsetMap(a, b)
     assert b[m(a.index("two")) :].startswith("two")
+
+
+def test_subscripts_stay_in_the_text_when_pubget_keeps_them(tmp_path):
+    text = article_text(etree.parse(str(_jats(tmp_path))), tmp_path)
+
+    assert ("FWE" in text) == KEEPS_SUBSCRIPTS
