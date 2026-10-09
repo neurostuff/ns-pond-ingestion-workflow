@@ -66,3 +66,17 @@ def test_only_a_byte_identical_corpus_copy_is_replaced(tmp_path):
     assert [p for p, _ in done] == [copy]
     assert copy.read_text(encoding="utf-8") == "new text"
     assert other.read_text(encoding="utf-8") == "old text, edited"
+
+
+def test_a_carriage_return_the_builder_keeps_is_compared_and_copied_as_is(tmp_path):
+    """read_text would turn it into a newline: the text would never compare equal to its rebuild."""
+    rebuilt = tmp_path / "article.txt"
+    rebuilt.write_bytes("Input:\r x\n".encode("utf-8"))
+    corpus = tmp_path / "corpus"
+    copy = corpus / "rec1" / "processed" / "pubget" / "text.txt"
+    copy.parent.mkdir(parents=True)
+    copy.write_bytes(b"old")
+
+    list(R.refresh_corpus(corpus, {R.sha256("old"): str(rebuilt)}, ["pubget"], write=True))
+
+    assert copy.read_bytes() == "Input:\r x\n".encode("utf-8")
