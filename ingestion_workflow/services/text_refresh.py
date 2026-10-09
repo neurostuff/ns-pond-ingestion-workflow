@@ -47,9 +47,14 @@ class Result:
     new_sha256: Optional[str] = None
 
 
+def _read(path: Path) -> str:
+    """The text as stored: `read_text` would turn a `\r` the builder kept into `\n`."""
+    return path.read_bytes().decode("utf-8")
+
+
 def _write_atomically(path: Path, text: str) -> None:
     tmp = path.with_name(path.name + ".refresh-tmp")
-    tmp.write_text(text, encoding="utf-8")
+    tmp.write_text(text, encoding="utf-8", newline="")
     try:
         os.chmod(tmp, path.stat().st_mode & 0o7777)
     except OSError:
@@ -71,7 +76,7 @@ def rebuild(job: Job, write: bool) -> Result:
         result.status = "no_download"
         return result
     path = Path(job.text_path)
-    old = path.read_text(encoding="utf-8")
+    old = _read(path)
     result.old_sha256 = sha256(old)
     try:
         xml = Path(job.article_xml)
@@ -154,9 +159,9 @@ def refresh_corpus(ns_pond_root: Path, replaced: Dict[str, str], sources: Sequen
             target = record / "processed" / source / "text.txt"
             if not target.is_file():
                 continue
-            old_sha = sha256(target.read_text(encoding="utf-8"))
+            old_sha = sha256(_read(target))
             if old_sha not in replaced:
                 continue
             if write:
-                _write_atomically(target, Path(replaced[old_sha]).read_text(encoding="utf-8"))
+                _write_atomically(target, _read(Path(replaced[old_sha])))
             yield target, old_sha
