@@ -5,7 +5,7 @@ from lxml import etree
 
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
-from ingestion_workflow.extractors.pubget_extractor import article_text
+from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUPERSCRIPTS, article_text
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER, build
@@ -71,7 +71,8 @@ def test_an_extraction_gets_its_references_and_citations(env):
     assert outcome.status is Status.OK and outcome.source == "pubget"
     payload = outcome.payload
     assert len(payload["references"]) == 5 and payload["references"][0]["doi"] == "10.1523/x.2001"
-    assert outcome.summary["citations"] == 3 and outcome.summary["markers_not_in_text"] == 1
+    assert outcome.summary["citations"] == 3
+    assert outcome.summary["markers_not_in_text"] == (0 if KEEPS_SUPERSCRIPTS else 1)
     stored = text.read_text(encoding="utf-8")
     first = payload["citations"][0]["text_span"]
     assert stored[first["start_char"] : first["end_char"]] == "Smith et al., 2001"
