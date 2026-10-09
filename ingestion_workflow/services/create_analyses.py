@@ -23,7 +23,11 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
-from ingestion_workflow.services.coordinate_flags import is_deactivation, subpeak_flags
+from ingestion_workflow.services.coordinate_flags import (
+    PLACEHOLDER_NAME,
+    is_placeholder,
+    subpeak_flags,
+)
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -43,9 +47,7 @@ _SCHEMA_TEMPLATE = """{
           "statistic_type"?: "T" | "Z" | "D" | "G" | "F" | "R" | "B" | "P" | null,
           "cluster_size"?: <int> | null,
           "cluster_measure"?: "voxels" | "mm^3" | null,
-          "is_subpeak"?: true | false,
-          "is_deactivation"?: true | false,
-          "is_seed"?: true | false
+          "is_subpeak"?: true | false
         }, ...
       ],
       "contrasts"?: [
@@ -103,38 +105,21 @@ def _by_direction(name, coordinates):
     them pools an increase with a decrease -- 4.66% of analyses with a
     statistic hold both, 2,095 of 44,965, carrying 8,367 negative points.
 
-    The direction normally lives in the contrast name, which is why
-    `is_deactivation` reads the statistic rather than the name. Where one
-    contrast reports both, the sign is the only thing that separates them.
+    The direction normally lives in the contrast name, which is why a point's
+    `sign` reads the statistic rather than the name. Where one contrast
+    reports both, the sign is the only thing that separates them, and the
+    negative half is its own analysis: the inverse contrast.
 
-    Yields `(name, coordinates)` in table order, the positive half first. An
-    analysis whose statistics are all one sign, or which has none, is returned
-    unchanged so nothing is renamed without cause.
+    Yields `(name, coordinates)` in table order, the positive half first.
+    Points with no directional statistic (`sign` unsigned) join the positive
+    half and keep their tag. An analysis whose statistics are all one sign, or
+    which has none, is returned unchanged so nothing is renamed without cause.
     """
-    positive = [c for c in coordinates if not c.is_deactivation]
-    negative = [c for c in coordinates if c.is_deactivation]
+    positive = [c for c in coordinates if c.sign != "negative"]
+    negative = [c for c in coordinates if c.sign == "negative"]
     if not (positive and negative):
         return [(name, coordinates)]
     return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
-
-
-#: What the prompted rules told the model to answer for a table with no
-#: coordinates, and the name it falls back on for points it cannot label.
-PLACEHOLDER_NAME = "UNKNOWN"
-
-
-def _is_placeholder(parsed) -> bool:
-    """An `UNKNOWN` analysis with no points: a table reading, not an analysis.
-
-    The prompt used to ask for one on every table with no coordinates, and it
-    looks exactly like a named contrast reported `n.s.` -- zero points -- so
-    pondie read each one as a null result. A zero-point analysis must mean the
-    table named a contrast; a table with none is `no_coordinates` in the
-    stage's readings. An `UNKNOWN` analysis *with* points is kept: those are
-    real coordinates whose label the model could not read.
-    """
-    name = (parsed.name or "").strip().upper()
-    return name == PLACEHOLDER_NAME and not parsed.points
 
 
 def table_reading(collection: AnalysisCollection) -> str:
@@ -317,7 +302,7 @@ class CreateAnalysesService:
             identifier=identifier,
         )
         for idx, parsed in enumerate(parsed_output.analyses, start=1):
-            if _is_placeholder(parsed):
+            if is_placeholder(parsed.name, parsed.points):
                 continue
             coordinates = self._convert_points(
                 parsed.points,
@@ -362,8 +347,6 @@ class CreateAnalysesService:
                 cluster_size=row["cluster_size"],
                 cluster_measure=row["cluster_measure"],
                 is_subpeak=subpeak,
-                is_deactivation=is_deactivation(row["statistic_value"]),
-                is_seed=row["is_seed"],
             )
             for row, subpeak in zip(rows, subpeaks)
         ]
@@ -409,7 +392,6 @@ class CreateAnalysesService:
             "statistic_type": statistic_type,
             "cluster_size": cluster_size,
             "cluster_measure": cluster_measure,
-            "is_seed": bool(point.is_seed),
         }
 
     def _coerce_space(
@@ -530,10 +512,8 @@ Statistic type, value, and cluster size inference rules
   - Parse the numeric statistic value as a float. If the cell contains extra text (e.g.,
     "0.32 (p<0.05)"), parse the leading numeric token only.
   - If statistic_value is non-numeric or missing, set statistic_value = null.
-  - If statistic_value is explicitly negative, set is_deactivation = true. Otherwise
-    is_deactivation = false unless the table explicitly labels the coordinate as a "deactivation"
-    or "negative".
-  - Do NOT infer deactivation from negative x/y/z coordinate components.
+  - Keep the sign the table prints on statistic_value. Never flip it, and never take a sign
+    from negative x/y/z coordinate components.
 - cluster_size and cluster_measure:
   - Map cluster-count headers to cluster_measure = "voxels" when header text says "Voxels",
     "# voxels", "vox", "k", "kE", "extent", "Cluster extent", "No. of voxels" or similar.
@@ -550,11 +530,7 @@ Statistic type, value, and cluster size inference rules
     => space = "TAL".
   - If not stated/confident, set space = null.
 
-Subpeak, seed, and deactivation flags (booleans)
-- is_deactivation:
-  - true only if statistic_value is explicitly negative OR the table explicitly labels that
-    coordinate as a deactivation/negative.
-  - Otherwise set is_deactivation = false.
+Subpeak flag (boolean)
 - is_subpeak:
   - true only if table explicitly denotes "subpeak", "submaxima", "submaxima", "subpeak",
     or legend states "submaxima"/"subpeaks" OR the table structure clearly indicates submaxima:
@@ -564,10 +540,6 @@ Subpeak, seed, and deactivation flags (booleans)
   - Otherwise set is_subpeak = false.
   - When is_subpeak = true, set cluster_size = null and cluster_measure = null for that coordinate
     unless cluster size is explicitly provided for the specific subpeak row.
-- is_seed:
-  - true only if the row/coordinate is explicitly labeled as a "seed", "seed region",
-    "seed location", or similar explicit seed label, such as Region of Interest or ROI.
-  - Otherwise set is_seed = false.
 
 Cleaning numeric parsing rules
 - Accept integers or floats for x, y, z.
@@ -606,7 +578,7 @@ Final validation checks (required before emitting JSON)
 - cluster_size must be integer or null.
 - cluster_measure must be "voxels", "mm^3" or null.
 - space must be "MNI", "TAL" or null.
-- is_subpeak, is_deactivation, is_seed must be explicit booleans for each coordinate.
+- is_subpeak must be an explicit boolean for each coordinate.
 - No coordinate triplet may appear more than once across different analyses (apply
   first-occurrence reading-order rule).
 - analysis.name values must be copied verbatim from the table (trim only leading/trailing
@@ -625,8 +597,7 @@ Processing workflow (recommended, must be followed)
    contrast/analysis name(s) to subsequent rows as indicated by rowspan/morerows.
 5. For each row block: parse a triplet only from the X/Y/Z columns or inline coordinate cells. If a
    valid triplet parsed, parse cluster size and statistic_value per the rules above.
-6. Set flags (is_subpeak, is_deactivation, is_seed) according to explicit indicators and structural
-   cues.
+6. Set is_subpeak according to explicit indicators and structural cues.
 7. Deduplicate coordinates: if an identical triplet was already included earlier (in reading order)
    under any analysis, skip the later occurrence.
 8. If coordinates are present but cannot be confidently assigned to an explicit analysis/contrast
@@ -642,7 +613,7 @@ Examples of header cues (use these heuristics)
 - Units "mm^3" in header/legend => cluster_measure = "mm^3"
 
 Failure modes to avoid
-- Do NOT infer deactivation from negative coordinate components.
+- Do NOT take a statistic's sign from negative coordinate components.
 - Do NOT invent analysis or contrast names.
 - Do NOT output anything other than the single JSON object described.
 - Do NOT add explanatory text, logs, or extraneous fields.

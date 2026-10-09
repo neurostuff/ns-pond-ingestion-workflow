@@ -188,7 +188,7 @@ def test_a_named_analysis_with_no_coordinates_is_still_uploaded():
 
     src = inspect.getsource(UploadService._build_work_item)
     assert "if not analysis.coordinates:" not in src
-    assert "if not collection.analyses:" in src
+    assert "if not kept:" in src
 
 
 # -- the table must arrive in the form the model was trained on ----------
@@ -457,8 +457,7 @@ def test_one_contrast_reporting_both_directions_is_split_by_sign():
 
     def point(value):
         return Coordinate(x=1.0, y=2.0, z=3.0, statistic_value=value,
-                          statistic_type="T",
-                          is_deactivation=value is not None and value < 0)
+                          statistic_type="T")
 
     both = [point(4.2), point(-3.1), point(2.0)]
     out = _by_direction("Patients > controls", both)
@@ -470,21 +469,26 @@ def test_one_contrast_reporting_both_directions_is_split_by_sign():
     for only in ([point(4.2), point(2.0)], [point(-4.2)], [point(None)], []):
         assert _by_direction("Main effect", only) == [("Main effect", only)]
 
+    # A row with no statistic joins the positive half, tagged unsigned.
+    out = _by_direction("A > B", [point(4.2), point(None), point(-3.1)])
+    assert [[c.sign for c in half] for _, half in out] == [
+        ["positive", "unsigned"], ["negative"]]
 
-def test_is_deactivation_reads_the_statistic_and_not_the_name():
-    """The contrast names the direction; the flag marks a sign-flipped
+
+def test_the_sign_reads_the_statistic_and_not_the_name():
+    """The contrast names the direction; the sign marks a sign-flipped
     statistic inside it. Reading the name would double-count the direction and
     mark every point of a `Deactivation` table, including ones whose statistic
     the paper printed as a positive magnitude."""
     import inspect
 
-    from ingestion_workflow.services.coordinate_flags import is_deactivation
+    from ingestion_workflow.services.coordinate_flags import point_sign
 
-    params = list(inspect.signature(is_deactivation).parameters)
-    assert params == ["statistic_value"], params
-    assert is_deactivation(-3.1) is True
-    assert is_deactivation(3.1) is False
-    assert is_deactivation(None) is False
+    params = list(inspect.signature(point_sign).parameters)
+    assert params == ["statistic_value", "statistic_type"], params
+    assert point_sign(-3.1) == "negative"
+    assert point_sign(3.1) == "positive"
+    assert point_sign(None) == "unsigned"
 
 
 def test_the_output_budget_is_not_capped_below_what_the_window_affords():

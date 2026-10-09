@@ -3,43 +3,52 @@
 from __future__ import annotations
 
 from ingestion_workflow.services.coordinate_flags import (
-    is_deactivation,
+    point_sign,
     reports_extent,
     subpeak_flags,
 )
 
 
-# -- is_deactivation ------------------------------------------------------
+# -- point_sign -----------------------------------------------------------
 
-def test_a_negative_statistic_is_a_deactivation():
-    assert is_deactivation(-4.31) is True
-    assert is_deactivation(4.31) is False
+def test_a_negative_statistic_is_negative():
+    assert point_sign(-4.31) == "negative"
+    assert point_sign(4.31) == "positive"
 
 
-def test_no_statistic_is_not_a_deactivation():
+def test_no_statistic_is_unsigned():
     """Absence of evidence. A row with no statistic says nothing about
-    direction, and defaulting to True would mark most of the corpus."""
-    assert is_deactivation(None) is False
+    direction; in a split it joins the positive half, and the tag says so."""
+    assert point_sign(None) == "unsigned"
 
 
-def test_zero_is_not_a_deactivation():
-    """`< 0`, not `<= 0`. A zero statistic is not a decrease, and it is
-    usually a parse of an empty cell anyway."""
-    assert is_deactivation(0.0) is False
+def test_zero_is_positive():
+    """`< 0`, not `<= 0`: study_schema's PointSign puts zero with the positive
+    half. A zero statistic is not a decrease."""
+    assert point_sign(0.0) == "positive"
 
 
-def test_an_unparseable_statistic_is_not_a_deactivation():
+def test_an_unparseable_statistic_is_unsigned():
     """The field reaches here from a model, so it can hold anything. It must
     not raise in the middle of converting an article."""
-    assert is_deactivation("n.s.") is False
+    assert point_sign("n.s.") == "unsigned"
+    assert point_sign(float("nan")) == "unsigned"
 
 
-def test_a_magnitude_only_table_yields_no_deactivations():
+def test_a_p_value_or_an_f_has_no_direction():
+    """Positive whichever way the contrast runs, so reading a sign off one
+    would place every row of a p-only table in the positive half as if it
+    were known to be there."""
+    assert point_sign(0.001, "P") == "unsigned"
+    assert point_sign(12.0, "F") == "unsigned"
+    assert point_sign(-3.0, "t") == "negative"
+
+
+def test_a_magnitude_only_table_yields_no_negatives():
     """Many papers print unsigned magnitudes and put the direction in the
-    contrast name. Inferring a deactivation from an unsigned number would
-    invent a result, so this stays deliberately conservative -- reading the
-    contrast name is the model's job."""
-    assert [is_deactivation(v) for v in (3.1, 4.8, 2.2)] == [False, False, False]
+    contrast name. Inferring a direction from an unsigned number would
+    invent a result."""
+    assert [point_sign(v, "T") for v in (3.1, 4.8, 2.2)] == ["positive"] * 3
 
 
 # -- is_subpeak -----------------------------------------------------------
@@ -77,3 +86,44 @@ def test_no_points_is_not_an_error():
 def test_reports_extent_needs_only_one():
     assert reports_extent([None, None, 5]) is True
     assert reports_extent([None, None]) is False
+
+
+# -- the retired flags ----------------------------------------------------
+
+def test_a_payload_written_with_the_retired_flags_still_reads():
+    """Every analysis and extraction stored before the flags were retired
+    carries `is_deactivation` and `is_seed`. They are ignored, and the sign is
+    derived from the statistic, so the old payload reads as a new one."""
+    from ingestion_workflow.models import Coordinate, ExtractedTable
+
+    old = {"x": 1.0, "y": 2.0, "z": 3.0, "space": "MNI", "statistic_value": -2.5,
+           "statistic_type": "T", "cluster_size": None, "cluster_measure": None,
+           "is_subpeak": False, "is_deactivation": True, "is_seed": True}
+    coord = Coordinate.from_dict(old)
+    assert coord.sign == "negative"
+    assert not {"is_deactivation", "is_seed"} & set(coord.to_dict())
+
+    table = ExtractedTable.from_dict(
+        {"table_id": "t", "raw_content_path": "t.html", "coordinates": [old]})
+    assert table.coordinates[0].sign == "negative"
+
+
+def test_the_prompted_answer_survives_a_retired_flag():
+    """The function schema no longer has the flags, but a model may still
+    send one; an unexpected key would fail the whole table."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.clients.coordinate_parsing import CoordinateParsingClient
+
+    arguments = ('{"analyses": [{"name": "a", "points": [{"coordinates": [1, 2, 3], '
+                 '"is_deactivation": true, "is_seed": false}]}]}')
+    message = SimpleNamespace(function_call=SimpleNamespace(arguments=arguments))
+    response = SimpleNamespace(choices=[SimpleNamespace(message=message)])
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.settings = None
+    client.default_model = "m"
+    client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda **kwargs: response)))
+    out = client.parse_analyses("prompt")
+    assert [len(a.points) for a in out.analyses] == [1]
+

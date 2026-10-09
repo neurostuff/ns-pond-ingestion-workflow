@@ -43,13 +43,13 @@ def test_the_measure_is_per_analysis_not_per_point():
 
 
 def test_no_flags_are_read_from_the_payload():
-    """v19's points carry no flag fields at all. is_subpeak and
-    is_deactivation are derived from the numbers in `coordinate_flags`, and
-    inventing defaults here would shadow that."""
+    """v19's points carry no flag fields at all. is_subpeak and the sign are
+    derived from the numbers in `coordinate_flags`, and inventing defaults
+    here would shadow that."""
     out, _ = parse_payload(_payload(analyses=[
         {"name": "a", "points": [[1, 2, 3, "T", -2.0, None]]}]))
     point = out.analyses[0].points[0]
-    assert point.is_subpeak is False and point.is_deactivation is False
+    assert point.is_subpeak is False and not hasattr(point, "is_deactivation")
     assert point.values[0].value == -2.0      # the sign survives, to be read later
 
 
@@ -99,7 +99,7 @@ def test_an_analysis_with_neither_name_nor_point_is_dropped():
 
 
 def test_an_unnamed_statistic_is_still_kept():
-    """Its sign is what decides is_deactivation, so discarding it for lacking
+    """Its sign is what decides the sign split, so discarding it for lacking
     a type would lose the only evidence of direction."""
     out, _ = parse_payload(_payload(analyses=[
         {"name": "a", "points": [[1, 2, 3, None, -4.5]]}]))

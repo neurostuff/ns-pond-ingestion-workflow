@@ -22,6 +22,7 @@ from ingestion_workflow.models import (
     UploadWorkItem,
 )
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.services.coordinate_flags import is_placeholder
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.study_level import level_for
@@ -575,14 +576,17 @@ class UploadService:
 
         prepared_analyses: List[PreparedAnalysis] = []
         for collection in per_table.values():
-            if not collection.analyses:
+            # A stored no-coordinates placeholder is a table reading, not an
+            # analysis; `is_placeholder` says why.
+            kept = [a for a in collection.analyses if not is_placeholder(a.name, a.coordinates)]
+            if not kept:
                 logger.warning(
                     "No analyses found in collection for %s; skipping collection.",
                     slug,
                     extra=console_kwargs(),
                 )
                 continue
-            for a_index, analysis in enumerate(collection.analyses, start=1):
+            for a_index, analysis in enumerate(kept, start=1):
                 # An analysis with no coordinates is uploaded on purpose. A
                 # table that names a contrast and reports `n.s.` has run that
                 # contrast and found nothing, and that is a result someone
@@ -796,7 +800,10 @@ class UploadService:
                     space=coord.space.value if coord.space else prepared.coordinate_space,
                     cluster_size=coord.cluster_size,
                     subpeak=coord.is_subpeak,
-                    deactivation=coord.is_deactivation,
+                    # `deactivation` is left at its default. A negative set is
+                    # its own analysis, the inverse contrast, so direction is
+                    # the analysis's and no point is marked; NiMARE never read
+                    # the flag anyway.
                     order=p_index,
                 )
                 session.add(point)

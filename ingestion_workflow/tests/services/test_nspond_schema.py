@@ -119,13 +119,43 @@ def test_stage1_keeps_the_shape_pondie_reads(written):
     assert point["space"] == "MNI"
 
 
+def test_a_stored_placeholder_is_not_synced(tmp_path):
+    """pondie lists every zero-point entry as a null contrast, and analyses
+    stored before the analyses stage dropped the placeholder still hold one."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET,
+                               identifier=identifier)
+    tables = AnalysisCollection(slug="s", identifier=identifier, analyses=[
+        Analysis(name="UNKNOWN", table_id="t1"),
+        Analysis(name="A > B", table_id="t1"),
+        Analysis(name="UNKNOWN", table_id="t2",
+                 coordinates=[Coordinate(x=1.0, y=2.0, z=3.0)])])
+    root = tmp_path / "pond"
+    nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")),
+                         {"t1": tables}, [])
+    record = read_record(root, BASE)
+    assert [(a["name"], len(a["points"])) for a in record.stage1["analyses"]] == [
+        ("A > B", 0), ("UNKNOWN", 1)]
+    assert [a["name"] for a in record.processed["pubget"].analyses] == ["A > B", "UNKNOWN"]
+
+
+def test_stage1_points_carry_sign_and_subpeak_but_no_retired_flag(written):
+    """A point's sign is read from its statistic; `unsigned` marks one placed
+    in the positive half with no statistic to place it by."""
+    for analysis in read_record(written, BASE).stage1["analyses"]:
+        for point in analysis["points"]:
+            assert point["sign"] in {"positive", "negative", "unsigned"}
+            assert isinstance(point["is_subpeak"], bool)
+            assert not {"is_deactivation", "deactivation", "is_seed"} & set(point)
+
+
 def test_a_prose_analysis_keeps_its_role_in_stage1(tmp_path):
     """A table analysis keeps the shape pondie reads; a prose one says what it is."""
     identifier = Identifier(pmid="1")
     content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
     prose = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
         Analysis(name="amygdala seed", table_id="prose", metadata={"source": "prose", "role": "seed"},
-                 coordinates=[Coordinate(x=-22.0, y=-4.0, z=-18.0, is_seed=True)]),
+                 coordinates=[Coordinate(x=-22.0, y=-4.0, z=-18.0)]),
         Analysis(name="faces > houses", table_id="prose", metadata={"source": "prose", "role": "result"},
                  coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
     root = tmp_path / "pond"
