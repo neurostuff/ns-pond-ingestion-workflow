@@ -7,6 +7,7 @@ from .metadata import MetadataStage
 from .passages import PassagesStage
 from .prose import ProseStage
 from .references import ReferencesStage
+from .reflist import ReflistStage
 from .resolve import ResolveStage
 from .space import SpaceStage
 from .sync import SyncStage
@@ -27,16 +28,17 @@ from .upload import UploadStage
 #: its title and abstract. `resolve` merges prose results with the tables',
 #: and `space` then reads resolve instead of analyses.
 #:
-#: `references` reads each extraction's reference list and citations; nothing
-#: downstream reads it yet, so it runs only when asked for by name.
-STAGE_ORDER = ("download", "extract", "references", "passages", "metadata", "triage", "analyses",
+#: `reflist` fetches each paper's Crossref list and `references` reads each
+#: extraction's list and citations, the Crossref list filling its gaps. Nothing
+#: downstream reads them yet, so they run only when asked for by name.
+STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "triage", "analyses",
                "prose", "resolve", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("references",)
+OPT_IN_STAGES = ("reflist", "references")
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -47,6 +49,7 @@ STAGE_TYPES = {
     "passages": PassagesStage,
     "prose": ProseStage,
     "references": ReferencesStage,
+    "reflist": ReflistStage,
     "resolve": ResolveStage,
     "space": SpaceStage,
     "upload": UploadStage,
@@ -79,6 +82,7 @@ __all__ = [
     "PassagesStage",
     "ProseStage",
     "ReferencesStage",
+    "ReflistStage",
     "ResolveStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
