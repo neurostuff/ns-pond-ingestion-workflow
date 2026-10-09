@@ -140,3 +140,28 @@ def test_an_ace_article_with_a_better_extraction_stays_fresh(tmp_path):
 
     assert plan.pending == []
     assert plan.fresh == 1
+
+
+def test_every_download_source_is_registered():
+    """A source missing here silently runs at the default version, so a bump
+    meant for it never reaches it; one missing from the passages preference is
+    read after a PDF."""
+    from ingestion_workflow.models.download import DownloadSource
+    from ingestion_workflow.pipeline.stages.passages import SOURCE_PREFERENCE
+
+    sources = {source.value for source in DownloadSource}
+    assert sources <= set(EXTRACTOR_VERSIONS)
+    assert sources <= set(SOURCE_PREFERENCE)
+
+
+@pytest.mark.parametrize("source", ["pmc", "europepmc"])
+def test_registering_the_pmc_sources_re_extracts_nothing(stage, source):
+    assert stage.fingerprint_for(source, UPSTREAM) == fingerprint(
+        "extract", source, DEFAULT_EXTRACTOR_VERSION, upstream="DL")
+
+
+def test_the_pmc_sources_are_read_as_xml_before_html():
+    from ingestion_workflow.pipeline.stages.passages import SOURCE_PREFERENCE
+
+    order = SOURCE_PREFERENCE.index
+    assert order("pubget") < order("pmc") < order("europepmc") < order("elsevier")
