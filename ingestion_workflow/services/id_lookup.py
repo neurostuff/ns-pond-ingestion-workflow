@@ -208,18 +208,13 @@ class OpenAlexIDLookupService(IDLookupService):
 
     def __init__(self, settings: Settings, catalog=None) -> None:
         super().__init__(settings, catalog)
-        self._email = settings.openalex_email
-        self._client: Optional[OpenAlexClient]
-        if self._email:
-            self._client = OpenAlexClient(self._email)
-        else:
-            self._client = None
+        self._client: Optional[OpenAlexClient] = OpenAlexClient.from_settings(settings)
 
     def can_run(self) -> bool:  # pragma: no cover - trivial
         return self._client is not None
 
     def _missing_credentials_reason(self) -> str:
-        return "openalex_email is not configured"
+        return "neither openalex_email nor openalex_api_key is configured"
 
     def _lookup_by_type(self, id_type: str, identifiers: Identifiers) -> None:
         if self._client is None:

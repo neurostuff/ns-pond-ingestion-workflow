@@ -146,10 +146,8 @@ class PdfExtractor(BaseExtractor):
         return {slug: meta.pdf_url for slug, meta in metadata.items() if meta.pdf_url}
 
     def _openalex_pdf_urls(self, identifiers: Identifiers) -> Dict[str, str]:
-        email = self.settings.openalex_email
-        if not email:
-            return {}
-        return OpenAlexClient(email).get_pdf_urls(identifiers)
+        client = OpenAlexClient.from_settings(self.settings)
+        return client.get_pdf_urls(identifiers) if client else {}
 
     def _download_single(
         self,

@@ -60,8 +60,7 @@ class MetadataService:
                 api_key=settings.pubmed_api_key,
             )
 
-        if settings.openalex_email:
-            self._openalex_client = OpenAlexClient(settings.openalex_email)
+        self._openalex_client = OpenAlexClient.from_settings(settings)
 
     def enrich_metadata(
         self, extracted_contents: List[ExtractedContent]

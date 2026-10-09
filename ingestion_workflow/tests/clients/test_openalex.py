@@ -83,3 +83,52 @@ def test_a_pmid_only_article_is_looked_up_by_pmid(monkeypatch):
 
     assert identifier.slug in client.get_metadata([identifier])
     assert asked == ["pmid:28351544"]
+
+
+class _Response:
+    def __init__(self, status_code, url):
+        self.status_code, self.url = status_code, url
+
+    def raise_for_status(self):
+        import requests
+
+        if self.status_code >= 400:
+            raise requests.HTTPError(f"{self.status_code} Client Error for url: {self.url}", response=self)
+
+    def json(self):
+        return {"results": []}
+
+
+def test_the_api_key_is_sent_with_every_request(monkeypatch):
+    client = OpenAlexClient(email="test@example.com", api_key="sekrit")
+    sent = {}
+
+    def get(url, params, timeout):
+        sent.update(params)
+        return _Response(200, url)
+
+    monkeypatch.setattr(client._session, "get", get)
+    client._request_openalex({"filter": "doi:10.1/x"})
+    assert sent["api_key"] == "sekrit"
+
+
+def test_an_error_does_not_quote_the_api_key(monkeypatch):
+    import requests
+
+    client = OpenAlexClient(api_key="sekrit")
+    monkeypatch.setattr(
+        client._session, "get", lambda url, params, timeout: _Response(429, f"{url}?api_key=sekrit")
+    )
+    with pytest.raises(requests.HTTPError) as err:
+        OpenAlexClient._request_openalex.__wrapped__(client, {})  # one attempt, no retries
+    assert "sekrit" not in str(err.value)
+    assert "429" in str(err.value)
+    assert err.value.__cause__ is None and err.value.__suppress_context__
+
+
+def test_a_client_needs_an_email_or_a_key():
+    from types import SimpleNamespace
+
+    assert OpenAlexClient.from_settings(SimpleNamespace(openalex_email=None, openalex_api_key=None)) is None
+    client = OpenAlexClient.from_settings(SimpleNamespace(openalex_email=None, openalex_api_key="k"))
+    assert client is not None and client.api_key == "k"

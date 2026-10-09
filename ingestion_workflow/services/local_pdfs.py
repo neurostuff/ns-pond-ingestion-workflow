@@ -296,8 +296,7 @@ def title_searchers(settings) -> List[tuple]:
     from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 
     factories = {
-        "openalex": lambda: settings.openalex_email
-        and OpenAlexClient(settings.openalex_email),
+        "openalex": lambda: OpenAlexClient.from_settings(settings),
         "semantic_scholar": lambda: settings.semantic_scholar_api_key
         and SemanticScholarClient(settings.semantic_scholar_api_key),
         "pubmed": lambda: settings.pubmed_email
