@@ -2,7 +2,9 @@
 
 One artifact per extracted source, because a citation's offsets belong to one text. No
 network: the source's own markup is read (JATS `xref`, Elsevier `ce:cross-ref`,
-publisher HTML links). A PDF marks nothing, so it is not read here.
+publisher HTML links). Where `reflist` has the paper's Crossref list, its DOIs and
+PMIDs fill the source's entries, and for a source that marks nothing (a PDF, a page
+without links) it is the list the text's citations are matched to.
 """
 
 from __future__ import annotations
@@ -25,27 +27,54 @@ from .extract import current_extractions
 logger = logging.getLogger(__name__)
 
 #: Bump when the readers change in a way the extraction does not describe.
-REFERENCES_VERSION = 1
+#: 1 -> 2: the Crossref list from `reflist`.
+REFERENCES_VERSION = 2
 
 #: Longest a worker may spend on one article.
 ARTICLE_SECONDS = 120
 
 
-def read_article(source: str, download: dict, text_path: Optional[str]) -> Tuple[str, Optional[dict]]:
-    """("ok", payload) or (why it failed, None). A module function so a process pool can run it."""
-    from ingestion_workflow.services.citations import read
+def read_article(source: str, download: dict, text_path: Optional[str],
+                 listed: Optional[List[dict]] = None) -> Tuple[str, Optional[dict]]:
+    """("ok", payload) or (why it failed, None). A module function so a process pool can run it.
+
+    `listed` is the paper's Crossref list, when `reflist` has one.
+    """
+    from ingestion_workflow.services.citation_markers import find
+    from ingestion_workflow.services.citations import JATS_SOURCES, READABLE_SOURCES, ReadResult, read
+    from ingestion_workflow.services.reference_lists import fill_identifiers
 
     if not text_path or not Path(text_path).exists():
         return "extraction kept no text", None
     text = Path(text_path).read_text(encoding="utf-8")
-    try:
-        result = read(source, DownloadResult.from_dict(download), text)
-    except Exception as exc:  # noqa: BLE001 - one unreadable download is that article's problem
-        return f"unreadable: {type(exc).__name__}: {exc}", None
+    result: Optional[ReadResult] = None
+    if source in READABLE_SOURCES:
+        try:
+            result = read(source, DownloadResult.from_dict(download), text)
+        except Exception as exc:  # noqa: BLE001 - one unreadable download is that article's problem
+            return f"unreadable: {type(exc).__name__}: {exc}", None
+    from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUPERSCRIPTS
+
+    provider = "source"
+    # JATS text holds a loose superscript number only when pubget kept superscripts
+    loose = source not in JATS_SOURCES or KEEPS_SUPERSCRIPTS
+    if result is not None and result.references:
+        if not result.citations:
+            # a list but no link that landed in the text: match the text to the source's own list
+            result.citations, style = find(text, result.references, loose_numbers=loose)
+            result.notes["style_" + style] = 1
+        if listed:
+            result.notes["ids_from_crossref"] = fill_identifiers(result.references, listed)
+    elif listed:
+        # the download marks nothing it can be read by: match the text to Crossref's list
+        citations, style = find(text, listed, loose_numbers=loose)
+        result = ReadResult([dict(r) for r in listed], citations, {"style_" + style: 1})
+        provider = "crossref"
     if result is None:
         return "download has no file to read", None
     return "ok", {
         "source": source,
+        "list_provider": provider,
         "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "references": result.references,
         "citations": result.citations,
@@ -61,7 +90,7 @@ def _alarm(*_):
     raise _TooSlow
 
 
-def _read_in_worker(job: Tuple[str, dict, Optional[str]]) -> Tuple[str, Optional[dict]]:
+def _read_in_worker(job: Tuple[str, dict, Optional[str], Optional[List[dict]]]) -> Tuple[str, Optional[dict]]:
     signal.signal(signal.SIGALRM, _alarm)
     signal.alarm(ARTICLE_SECONDS)
     try:
@@ -79,8 +108,10 @@ class ReferencesStage:
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, extraction: Artifact) -> str:
-        return fingerprint("references", REFERENCES_VERSION, extraction.source, upstream=extraction.fingerprint)
+    def fingerprint_for(self, extraction: Artifact, reflist: Optional[Artifact] = None) -> str:
+        listed = reflist.fingerprint if reflist is not None and reflist.status is Status.OK else ""
+        return fingerprint("references", REFERENCES_VERSION, extraction.source, listed,
+                           upstream=extraction.fingerprint)
 
     def plan(
         self,
@@ -94,15 +125,18 @@ class ReferencesStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         downloads = ctx.catalog.artifacts(ids, "download")
+        reflists = ctx.catalog.artifacts(ids, "reflist")
         attempts: Dict[str, Dict[str, tuple]] = {}
         for ref in refs:
             current = current_extractions(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
-            readable = {s: a for s, a in current.items() if s in READABLE_SOURCES}
+            reflist = reflists.get(ref.id, {}).get("")
+            has_list = bool(reflist and reflist.status is Status.OK and reflist.summary.get("references"))
+            readable = {s: a for s, a in current.items() if s in READABLE_SOURCES or has_list}
             if not readable:
                 plan.blocked += 1
                 continue
             for source, extraction in readable.items():
-                fp = self.fingerprint_for(extraction)
+                fp = self.fingerprint_for(extraction, reflist)
                 existing = artifacts.get(ref.id, {}).get(source)
                 if ctx.is_fresh(existing, fp):
                     plan.fresh += 1
@@ -118,6 +152,7 @@ class ReferencesStage:
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         jobs, ready = [], []
+        reflists = ctx.catalog.artifacts([w.article_id for w in works], "reflist")
         for work in works:
             download = ctx.catalog.artifact(work.article_id, "download", work.source)
             download_payload = ctx.payload(download) if download else None
@@ -127,7 +162,9 @@ class ReferencesStage:
                                       "download or extraction payload missing from blob store",
                                       fingerprint=work.fingerprint)
                 continue
-            jobs.append((work.source, download_payload, extraction.get("full_text_path")))
+            reflist = reflists.get(work.article_id, {}).get("")
+            listed = (ctx.payload(reflist) or {}).get("references") if reflist and reflist.status is Status.OK else None
+            jobs.append((work.source, download_payload, extraction.get("full_text_path"), listed or None))
             ready.append(work)
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
         if len(jobs) < 8 or workers == 1:
@@ -144,8 +181,9 @@ class ReferencesStage:
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source=work.source, status=Status.OK,
                 fingerprint=work.fingerprint, payload=payload,
-                summary={"references": len(payload["references"]), "citations": len(citations),
+                summary={"list": payload["list_provider"], "references": len(payload["references"]),
+                         "citations": len(citations),
                          "with_sentence": sum(c["sentence"] is not None for c in citations),
                          "markers_not_in_text": sum(not c["marker_in_text"] for c in citations),
-                         **{k: v for k, v in payload["notes"].items() if k == "links_not_in_text"}},
+                         **{k: v for k, v in payload["notes"].items() if k in ("links_not_in_text", "ids_from_crossref")}},
             )

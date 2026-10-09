@@ -11,7 +11,9 @@ from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 from ingestion_workflow.pipeline.stages.references import ReferencesStage
+from ingestion_workflow.pipeline.stages.reflist import ReflistStage
 from ingestion_workflow.tests.services.test_citations import JATS
+from ingestion_workflow.tests.services.test_reference_lists import MESSAGE, _OpenAlex
 
 
 @pytest.fixture()
@@ -89,3 +91,86 @@ def test_a_pdf_marks_no_citations_and_is_not_read(env):
     plan, outcomes = _run(ReferencesStage(settings), Context(settings, catalog), catalog, ref)
 
     assert plan.blocked == 1 and not outcomes
+
+
+# -- reflist: the Crossref list, and references falling back on it ----------------
+
+
+class _Crossref:
+    def __init__(self, message):
+        self.message = message
+
+    def work(self, doi):
+        return self.message
+
+
+def _reflist(settings, message):
+    stage = ReflistStage(settings)
+    stage._crossref, stage._openalex = _Crossref(message), _OpenAlex()
+    return stage
+
+
+def test_reflist_keeps_crossref_s_list_named_by_openalex(env):
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(pmid="3", doi="10.1016/j.test.2020.1"))
+    _record(catalog, ref, article, text)
+
+    _, (outcome,) = _run(_reflist(settings, MESSAGE), Context(settings, catalog), catalog, ref)
+
+    assert outcome.status is Status.OK and outcome.summary["references"] == 3
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+
+
+def test_a_paper_crossref_does_not_know_is_not_a_failure(env):
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(pmid="4", doi="10.1/unknown"))
+    _record(catalog, ref, article, text)
+
+    _, (outcome,) = _run(_reflist(settings, None), Context(settings, catalog), catalog, ref)
+
+    assert outcome.status is Status.OK and outcome.payload["found"] is False
+
+
+def test_reflist_needs_a_doi(env):
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(pmid="5"))
+    _record(catalog, ref, article, text)
+
+    plan, _ = _run(_reflist(settings, MESSAGE), Context(settings, catalog), catalog, ref)
+
+    assert plan.blocked == 1
+
+
+def test_a_pdf_is_matched_against_crossref_s_list(env, tmp_path):
+    settings, catalog, article, _ = env
+    ref = catalog.register(Identifier(pmid="6", doi="10.1016/j.test.2020.1"))
+    pdf_text = tmp_path / "pdf.txt"
+    pdf_text.write_text("Attention shapes perception (Smith et al., 2001). Gusnard (2001) agreed.\n",
+                        encoding="utf-8")
+    _record(catalog, ref, article, pdf_text, source="pdf")
+    ctx = Context(settings, catalog)
+    _run(_reflist(settings, MESSAGE), ctx, catalog, ref)
+
+    _, (outcome,) = _run(ReferencesStage(settings), ctx, catalog, ref)
+
+    assert outcome.status is Status.OK and outcome.payload["list_provider"] == "crossref"
+    assert [(c["text_span"]["text"], c["references"]) for c in outcome.payload["citations"]] == [
+        ("Smith et al., 2001", ["cr1"]), ("Gusnard (2001", ["cr2"])]
+
+
+def test_a_new_crossref_list_makes_the_references_stale_and_fills_their_dois(env):
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(pmid="7", doi="10.1016/j.test.2020.1"))
+    _record(catalog, ref, article, text)
+    ctx = Context(settings, catalog)
+    _run(ReferencesStage(settings), ctx, catalog, ref)
+    # B2 (Lee B. Filters. 2002) has no DOI in the XML; Crossref's list has it
+    message = {"reference": [{"key": "B2", "DOI": "10.1/filters", "author": "Lee", "year": "2002"}]}
+    _run(_reflist(settings, message), ctx, catalog, ref)
+
+    plan, (outcome,) = _run(ReferencesStage(settings), ctx, catalog, ref)
+
+    assert len(plan.pending) == 1 and outcome.payload["list_provider"] == "source"
+    b2 = next(r for r in outcome.payload["references"] if r["id"] == "B2")
+    assert b2["doi"] == "10.1/filters" and b2["id_providers"] == {"doi": "crossref"}
+    assert outcome.summary["ids_from_crossref"] == 1
