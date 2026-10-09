@@ -308,9 +308,13 @@ def _jats_references(root) -> List[dict]:
 
 
 def read_jats(xml_path: Path, text: str) -> ReadResult:
-    from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUPERSCRIPTS, article_text
+    from ingestion_workflow.extractors.pubget_extractor import (
+        KEEPS_SUBSCRIPTS,
+        KEEPS_SUPERSCRIPTS,
+        article_text,
+    )
 
-    dropped_tags = ("sub",) if KEEPS_SUPERSCRIPTS else ("sup", "sub")
+    dropped_tags = tuple(tag for tag, kept in (("sup", KEEPS_SUPERSCRIPTS), ("sub", KEEPS_SUBSCRIPTS)) if not kept)
     tree = etree.parse(str(xml_path))
     root = tree.getroot()
     refs = _jats_references(root)
@@ -326,8 +330,7 @@ def read_jats(xml_path: Path, text: str) -> ReadResult:
             continue
         i = len(links)
         links.append({"references": resolved, "has_text": bool(_text_of(x))})
-        # pubget's stylesheet drops <sub> whole, and <sup> before keep-superscripts:
-        # anchor such a marker after it
+        # an older pubget drops <sup> and <sub> whole: anchor such a marker after it
         outer = None
         for a in x.iterancestors():
             if _local(a) in dropped_tags:

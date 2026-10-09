@@ -391,9 +391,11 @@ def _stylesheet_declares(param: str) -> bool:
     return f'name="{param}"' in xsl
 
 
-#: Whether the installed pubget keeps superscripts in the text (jdkent/pubget
-#: enh/keep-superscripts); before it, a superscript citation marker was dropped.
+#: Whether the installed pubget keeps superscripts and subscripts in the text
+#: (jdkent/pubget enh/keep-superscripts); before it, both were dropped, and a
+#: superscript citation marker with them.
 KEEPS_SUPERSCRIPTS = _stylesheet_declares("keep-superscripts")
+KEEPS_SUBSCRIPTS = _stylesheet_declares("keep-subscripts")
 
 
 def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> str:
@@ -408,8 +410,10 @@ def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> s
         **{
             "preserve-crossrefs": etree.XSLT.strparam("true"),
             "keep-tables": etree.XSLT.strparam("true"),
-            # a superscript is often a citation marker ("previously.<sup>12</sup>")
+            # a superscript is often a citation marker ("previously.<sup>12</sup>"),
+            # a subscript part of a term ("p<sub>FWE</sub>")
             "keep-superscripts": etree.XSLT.strparam("true"),
+            "keep-subscripts": etree.XSLT.strparam("true"),
         },
     )
     text_parts: List[str] = []
