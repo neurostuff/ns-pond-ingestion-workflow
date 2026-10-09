@@ -26,8 +26,10 @@ logger = logging.getLogger(__name__)
 PASSAGES_VERSION = "2026-10-07.downloads+lists"
 
 #: Which download is read, best first: XML marks its sections and its tables,
-#: publisher HTML less reliably, a PDF's text layer not at all.
-SOURCE_PREFERENCE = ("pubget", "elsevier", "ace", "pdf")
+#: publisher HTML less reliably, a PDF's text layer not at all. pmc and
+#: europepmc are the same JATS XML pubget downloads; pubget leads so an
+#: article already read from it keeps its passages.
+SOURCE_PREFERENCE = ("pubget", "pmc", "europepmc", "elsevier", "ace", "pdf")
 
 #: Most passages kept from one article. Set above what any real paper needed.
 MAX_PASSAGES = 40
