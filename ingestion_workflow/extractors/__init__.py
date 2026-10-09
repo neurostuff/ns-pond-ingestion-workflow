@@ -15,7 +15,9 @@ from .base import BaseExtractor
 _LAZY = {
     "ACEExtractor": ".ace_extractor",
     "ElsevierExtractor": ".elsevier_extractor",
+    "EuropePmcExtractor": ".pmc_extractor",
     "PdfExtractor": ".pdf_extractor",
+    "PmcExtractor": ".pmc_extractor",
     "PubgetExtractor": ".pubget_extractor",
 }
 

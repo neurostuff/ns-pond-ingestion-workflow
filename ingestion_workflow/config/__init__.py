@@ -18,10 +18,6 @@ import yaml
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from ingestion_workflow.models import (
-    DownloadSource,
-)
-
 
 logger = logging.getLogger(__name__)
 
@@ -160,9 +156,10 @@ class Settings(BaseSettings):
 
     # ===== Download configuration =====
     download_sources: List[str] = Field(
-        # Preserve enum declaration order
-        default_factory=lambda: [src.value for src in DownloadSource],
-        description="Ordered list of download sources to attempt (enum order)",
+        # PMC first: its Cloud Service holds the Open Access subset pubget reads
+        # and the author manuscripts pubget cannot, each with its licence
+        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf"],
+        description="Ordered list of download sources to attempt",
     )
 
 
@@ -482,6 +479,8 @@ class Settings(BaseSettings):
             getattr(self, "ace_cache_root", None),
             getattr(self, "elsevier_cache_root", None),
             getattr(self, "pdf_cache_root", None),
+            getattr(self, "pmc_cache_root", None),
+            getattr(self, "europepmc_cache_root", None),
         ):
             if isinstance(optional_dir, Path):
                 optional_dir.mkdir(parents=True, exist_ok=True)
@@ -552,6 +551,14 @@ class Settings(BaseSettings):
     pdf_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for downloaded-PDF cache root directory",
+    )
+    pmc_cache_root: Optional[Path] = Field(
+        default=None,
+        description="Optional override for the cache of XML fetched from NCBI's PMC",
+    )
+    europepmc_cache_root: Optional[Path] = Field(
+        default=None,
+        description="Optional override for the cache of XML fetched from Europe PMC",
     )
     pdf_url_providers: List[str] = Field(
         default_factory=lambda: ["semantic_scholar", "openalex"],

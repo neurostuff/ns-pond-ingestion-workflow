@@ -30,6 +30,8 @@ class DownloadSource(str, Enum):
     ELSEVIER = "elsevier"
     ACE = "ace"
     PDF = "pdf"
+    PMC = "pmc"
+    EUROPEPMC = "europepmc"
 
 
 @dataclass
