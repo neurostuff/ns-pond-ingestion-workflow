@@ -6,6 +6,7 @@ from .extract import ExtractStage
 from .metadata import MetadataStage
 from .passages import PassagesStage
 from .prose import ProseStage
+from .references import ReferencesStage
 from .resolve import ResolveStage
 from .space import SpaceStage
 from .sync import SyncStage
@@ -25,11 +26,17 @@ from .upload import UploadStage
 #: found only through its prose is fetched metadata and the prose model reads
 #: its title and abstract. `resolve` merges prose results with the tables',
 #: and `space` then reads resolve instead of analyses.
-STAGE_ORDER = ("download", "extract", "passages", "metadata", "triage", "analyses",
+#:
+#: `references` reads each extraction's reference list and citations; nothing
+#: downstream reads it yet, so it runs only when asked for by name.
+STAGE_ORDER = ("download", "extract", "references", "passages", "metadata", "triage", "analyses",
                "prose", "resolve", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
+
+#: Stages a run without `--stage` leaves out.
+OPT_IN_STAGES = ("references",)
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -39,6 +46,7 @@ STAGE_TYPES = {
     "analyses": AnalysesStage,
     "passages": PassagesStage,
     "prose": ProseStage,
+    "references": ReferencesStage,
     "resolve": ResolveStage,
     "space": SpaceStage,
     "upload": UploadStage,
@@ -50,7 +58,8 @@ def build(names, settings):
     """Instantiate the requested stages in canonical order."""
     enabled = bool(getattr(settings, "prose_model", None))
     wanted = {name.lower() for name in names} if names else {
-        name for name in STAGE_ORDER if enabled or name not in PROSE_STAGES}
+        name for name in STAGE_ORDER
+        if (enabled or name not in PROSE_STAGES) and name not in OPT_IN_STAGES}
     unknown = wanted - set(STAGE_ORDER)
     if unknown:
         raise ValueError(f"Unknown stages: {', '.join(sorted(unknown))}")
@@ -65,9 +74,11 @@ __all__ = [
     "DownloadStage",
     "ExtractStage",
     "MetadataStage",
+    "OPT_IN_STAGES",
     "PROSE_STAGES",
     "PassagesStage",
     "ProseStage",
+    "ReferencesStage",
     "ResolveStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
