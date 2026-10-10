@@ -1,4 +1,4 @@
-"""In-text citations found in plain text and tied to a reference list (roadmap L3).
+"""In-text citations found in plain text and tied to a reference list.
 
 For a source that marks nothing (a PDF) or links nothing: numbered markers ("[12]",
 "(3, 4)", a superscript whose formatting was lost: "in OCD, 7,9 we") and author-year
