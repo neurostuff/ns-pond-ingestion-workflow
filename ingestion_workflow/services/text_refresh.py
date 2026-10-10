@@ -183,7 +183,7 @@ def _remap_passages(payload: dict, offset_map) -> Optional[dict]:
 
 
 def carried(catalog, result: Result) -> Tuple[list, str]:
-    """The catalog rows a rewritten text changes, and what became of its passages:
+    """The catalog rows a rewritten (or unchanged) text changes, and what became of its passages:
     `remapped`, `stale` (a span the map could not carry), or `none` (no passages of it)."""
     from ingestion_workflow.catalog import Outcome, Status
     from ingestion_workflow.pipeline.stages.passages import PassagesStage
@@ -194,6 +194,14 @@ def carried(catalog, result: Result) -> Tuple[list, str]:
     extraction = found.get("extract")
     if extraction is None:
         return [], "none"
+    if result.status == "unchanged":
+        # The text stays; its hash is recorded where passages looks for it, once.
+        if extraction.summary.get("text_sha256") == result.old_sha256 or not result.old_sha256:
+            return [], "none"
+        return [Outcome(article_id=result.article_id, stage="extract", source=result.source,
+                        status=extraction.status, fingerprint=extraction.fingerprint,
+                        payload=catalog.payload(extraction),
+                        summary={**extraction.summary, "text_sha256": result.old_sha256})], "none"
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
                     fingerprint=extraction.fingerprint, payload=catalog.payload(extraction),
                     summary={**extraction.summary, "text_sha256": result.new_sha256})]
