@@ -9,6 +9,7 @@ from ingestion_workflow.services.set_roles import (
     Prediction,
     ProseSetContext,
     SetRole,
+    UPLOADED_ROLES,
     decide,
     prose_context,
     table_context,
