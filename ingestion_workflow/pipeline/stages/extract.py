@@ -252,6 +252,12 @@ class ExtractStage:
             "tables_with_coordinates": with_coords,
             "has_text": bool(content.full_text_path),
         }
+        if content.generic_text_reason:
+            # Text from a generic page reader: its zero tables say nothing
+            # about the article, so nothing may read them as "has no tables".
+            summary["text_reader"] = "generic"
+            summary["tables_reliable"] = False
+            summary["tables_unreliable_reason"] = content.generic_text_reason
         if content.error_message:
             # Kept, because "four of five tables parsed" is worth knowing; it
             # is just not a failure.

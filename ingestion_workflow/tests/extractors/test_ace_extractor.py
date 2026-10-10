@@ -11,6 +11,7 @@ from ingestion_workflow.models import (
     DownloadedFile,
     DownloadResult,
     DownloadSource,
+    ExtractedContent,
     FileType,
     Identifier,
     Identifiers,
@@ -555,3 +556,87 @@ def test_a_table_and_article_that_never_say_have_a_null_space(monkeypatch):
     assert ace_module._resolve_table_space(table, SimpleNamespace(space="UNKNOWN")) is None
     tal = ace_module._resolve_table_space(table, SimpleNamespace(space="TAL"))
     assert tal is CoordinateSpace.TALAIRACH
+
+
+_UNKNOWN_PUBLISHER = (
+    Path(__file__).parents[1] / "data" / "test_html" / "unknown_publisher_article.html"
+)
+
+
+def _download_of(html_path):
+    return DownloadResult(
+        identifier=Identifier(pmid="25142296"),
+        source=DownloadSource.ACE,
+        success=True,
+        files=[DownloadedFile(file_path=html_path, file_type=FileType.HTML,
+                              content_type="text/html", source=DownloadSource.ACE)],
+    )
+
+
+class _Unparsable:
+    def parse_article(self, *args, **kwargs):
+        raise AttributeError("'NoneType' object has no attribute 'find_all'")
+
+
+class _Textless:
+    def parse_article(self, *args, **kwargs):
+        return SimpleNamespace(text="  ", tables=[], space=None)
+
+
+@pytest.mark.parametrize(
+    "default_source, reason",
+    [
+        (None, "ACE could not identify an article source."),
+        (_Textless(), "ACE's _Textless found no text."),
+        (_Unparsable(), "ACE's _Unparsable could not parse the article: "
+                        "'NoneType' object has no attribute 'find_all'"),
+    ],
+)
+def test_a_page_ace_cannot_read_still_gets_its_text(tmp_path, monkeypatch,
+                                                     default_source, reason):
+    """Before, these articles got no extraction at all, so no stage owned
+    their text. Now the generic reader gives the text, and no tables."""
+
+    class Manager:
+        def __init__(self, table_dir):
+            self.default_source = default_source
+
+        def identify_source(self, html_text):
+            return None
+
+    monkeypatch.setattr(ace_module, "SourceManager", Manager)
+    try:
+        content = ace_module._extract_ace_article(
+            _download_of(_UNKNOWN_PUBLISHER), tmp_path / "out")
+    finally:
+        reset_config("SAVE_ORIGINAL_HTML")
+
+    text = content.full_text_path.read_text(encoding="utf-8")
+    assert content.tables == [] and not content.has_coordinates
+    assert content.generic_text_reason == reason
+    assert text.startswith("Abstract\n\nWe scanned")  # headings kept, one block each
+    assert "\n\nMethods\n\nParticipants performed" in text
+    assert "\n\nFigure 1. Load effects rendered" in text  # where the figure stood
+    assert "peak in left DLPFC at -42, 28, 30" in text  # the minus is ASCII
+    assert "Right IPS" not in text  # no table rows
+    assert "should not appear" not in text and ".nav" not in text
+    assert ExtractedContent.from_dict(content.to_dict()).generic_text_reason == reason
+
+
+def test_a_page_with_no_text_at_all_is_still_a_failure(tmp_path, monkeypatch):
+    html_path = tmp_path / "article.html"
+    html_path.write_text("<html><body><table><tr><td>1</td></tr></table></body></html>")
+
+    class Manager:
+        def __init__(self, table_dir):
+            self.default_source = None
+
+        def identify_source(self, html_text):
+            return None
+
+    monkeypatch.setattr(ace_module, "SourceManager", Manager)
+    try:
+        with pytest.raises(ValueError, match="generic reader found no text"):
+            ace_module._extract_ace_article(_download_of(html_path), tmp_path / "out")
+    finally:
+        reset_config("SAVE_ORIGINAL_HTML")

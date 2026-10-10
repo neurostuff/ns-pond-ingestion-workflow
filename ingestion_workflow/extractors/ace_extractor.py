@@ -478,6 +478,31 @@ def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
     return text
 
 
+_TEXT_TAGS = ["p", "h1", "h2", "h3", "h4", "h5", "h6"]
+
+
+def generic_article_text(html_text: str) -> str:
+    """The page's text as ACE's readabilipy cleaning reads it, without tables.
+
+    For a page ACE's publisher parsers cannot read. Paragraphs and headings
+    are kept, one per block, as ACE keeps them. Tables are dropped rather than
+    flattened: nothing here knows where a publisher puts a table's caption,
+    footnotes or split pages, so a reader could not trust what came out. If
+    readability finds no article, every paragraph and heading on the page is
+    used, so an article never ends up without text.
+    """
+    from readabilipy import simple_json_from_html_string
+
+    soup = BeautifulSoup(normalize_minus(html_text), "lxml")
+    for tag in soup(["script", "style", "noscript", "table"]):
+        tag.decompose()
+    article = simple_json_from_html_string(str(soup), use_readability=True)
+    content = (article or {}).get("content")
+    blocks = BeautifulSoup(content, "lxml") if content else soup
+    parts = (element.get_text().strip() for element in blocks.find_all(_TEXT_TAGS))
+    return "\n\n".join(part for part in parts if part)
+
+
 def _extract_ace_article(
     download_result: DownloadResult,
     extraction_root: Path,
@@ -495,29 +520,46 @@ def _extract_ace_article(
     source_tables_dir.mkdir(parents=True, exist_ok=True)
 
     html_text = html_file.file_path.read_text(encoding="utf-8")
+    full_text_path = article_dir / "article.txt"
     manager = SourceManager(table_dir=str(source_tables_dir))
     # A page no publisher's identifiers match goes to ACE's generic parser, as
     # ACE's own ingest does with force_ingest. Raising instead lost every table
     # on such a page: 11 of 43 articles whose coordinate tables autonima had,
     # each found by DefaultSource.
     source = manager.identify_source(html_text) or manager.default_source
-    if source is None:
-        raise ValueError("ACE could not identify an article source.")
-
-    article = source.parse_article(
-        html_text,
-        pmid=download_result.identifier.pmid,
-        metadata_dir=None,
-        skip_metadata=True,
-        keep_tables=True,
-    )
+    article, reason = None, "ACE could not identify an article source."
+    if source is not None:
+        reason = "ACE failed to parse the article content."
+        try:
+            article = source.parse_article(
+                html_text,
+                pmid=download_result.identifier.pmid,
+                metadata_dir=None,
+                skip_metadata=True,
+                keep_tables=True,
+            )
+        except Exception as exc:
+            reason = f"ACE's {type(source).__name__} could not parse the article: {exc}"
+        if article and not (getattr(article, "text", "") or "").strip():
+            article, reason = None, f"ACE's {type(source).__name__} found no text."
     if not article:
-        raise ValueError("ACE failed to parse the article content.")
+        # The download is still an article; without this it got no text at
+        # all, and 2,401 articles had only the passages stage's own reading.
+        text = generic_article_text(html_text)
+        if not text:
+            raise ValueError(f"{reason} The generic reader found no text either.")
+        full_text_path.write_text(text, encoding="utf-8")
+        return ExtractedContent(
+            slug=slug,
+            source=DownloadSource.ACE,
+            identifier=download_result.identifier,
+            full_text_path=full_text_path,
+            generic_text_reason=reason,
+        )
 
     article_text = _with_fetched_tables(
         getattr(article, "text", "") or "", getattr(article, "tables", [])
     )
-    full_text_path = article_dir / "article.txt"
     full_text_path.write_text(article_text, encoding="utf-8")
 
     extracted_tables = [

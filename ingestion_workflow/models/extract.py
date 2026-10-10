@@ -99,6 +99,10 @@ class ExtractedContent:
     has_coordinates: bool = False
     extracted_at: datetime = field(default_factory=datetime.utcnow)
     error_message: Optional[str] = None
+    #: Set when the text came from the generic reader because the extractor's
+    #: own parser could not read the page: why. Such an extraction has text
+    #: and no tables, whatever tables the page holds.
+    generic_text_reason: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -110,6 +114,7 @@ class ExtractedContent:
             "has_coordinates": self.has_coordinates,
             "extracted_at": self.extracted_at.isoformat(),
             "error_message": self.error_message,
+            "generic_text_reason": self.generic_text_reason,
         }
 
     @classmethod
@@ -129,6 +134,7 @@ class ExtractedContent:
             has_coordinates=bool(payload.get("has_coordinates", False)),
             extracted_at=datetime.fromisoformat(str(payload["extracted_at"])),
             error_message=payload.get("error_message") or None,
+            generic_text_reason=payload.get("generic_text_reason") or None,
         )
 
 

@@ -101,3 +101,23 @@ def test_tables_without_text_still_count_as_produced(stage, work):
     outcome = stage._outcome(work, "pubget", content(tables=[a_table(False)], error=PARTIAL))
     assert outcome.status is Status.OK
     assert outcome.summary["has_text"] is False
+
+
+def test_generic_text_says_its_tables_cannot_be_trusted(stage, work, tmp_path):
+    reason = "ACE could not identify an article source."
+    extracted = ExtractedContent(
+        slug="s", source=DownloadSource.ACE, full_text_path=tmp_path / "article.txt",
+        generic_text_reason=reason,
+    )
+    outcome = stage._outcome(work, "ace", extracted)
+    assert outcome.status is Status.OK
+    assert outcome.summary["has_text"] is True
+    assert outcome.summary["text_reader"] == "generic"
+    assert outcome.summary["tables_reliable"] is False
+    assert outcome.summary["tables_unreliable_reason"] == reason
+    assert outcome.payload["generic_text_reason"] == reason
+
+
+def test_a_publisher_parse_carries_no_reader_flag(stage, work, tmp_path):
+    outcome = stage._outcome(work, "pubget", content(text=tmp_path / "a.txt"))
+    assert "text_reader" not in outcome.summary and "tables_reliable" not in outcome.summary
