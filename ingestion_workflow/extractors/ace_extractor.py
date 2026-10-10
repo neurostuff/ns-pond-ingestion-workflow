@@ -17,6 +17,7 @@ from ace import extract as ace_extract
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.figure_captions import append_legends, take_html_figures
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
@@ -446,6 +447,35 @@ def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
     return text
 
 
+def article_text_and_captions(html_text: str, pmid: Optional[str], table_dir: Path):
+    """ACE's article, its text as extraction keeps it (tables in place, fetched tables
+    after), the figure captions under "Figure legends" at the end, and each caption's
+    `{"ids", "span"}` in the text. Tables fetched before are read from `table_dir`.
+    """
+    html_text, captions = take_html_figures(html_text)
+    manager = SourceManager(table_dir=str(table_dir))
+    # A page no publisher's identifiers match goes to ACE's generic parser, as
+    # ACE's own ingest does with force_ingest. Raising instead lost every table
+    # on such a page: 11 of 43 articles whose coordinate tables autonima had,
+    # each found by DefaultSource.
+    source = manager.identify_source(html_text) or manager.default_source
+    if source is None:
+        raise ValueError("ACE could not identify an article source.")
+
+    article = source.parse_article(
+        html_text,
+        pmid=pmid,
+        metadata_dir=None,
+        skip_metadata=True,
+        keep_tables=True,
+    )
+    if not article:
+        raise ValueError("ACE failed to parse the article content.")
+
+    text = _with_fetched_tables(getattr(article, "text", "") or "", getattr(article, "tables", []))
+    return (article, *append_legends(text, captions))
+
+
 def _extract_ace_article(
     download_result: DownloadResult,
     extraction_root: Path,
@@ -463,27 +493,8 @@ def _extract_ace_article(
     source_tables_dir.mkdir(parents=True, exist_ok=True)
 
     html_text = html_file.file_path.read_text(encoding="utf-8")
-    manager = SourceManager(table_dir=str(source_tables_dir))
-    # A page no publisher's identifiers match goes to ACE's generic parser, as
-    # ACE's own ingest does with force_ingest. Raising instead lost every table
-    # on such a page: 11 of 43 articles whose coordinate tables autonima had,
-    # each found by DefaultSource.
-    source = manager.identify_source(html_text) or manager.default_source
-    if source is None:
-        raise ValueError("ACE could not identify an article source.")
-
-    article = source.parse_article(
-        html_text,
-        pmid=download_result.identifier.pmid,
-        metadata_dir=None,
-        skip_metadata=True,
-        keep_tables=True,
-    )
-    if not article:
-        raise ValueError("ACE failed to parse the article content.")
-
-    article_text = _with_fetched_tables(
-        getattr(article, "text", "") or "", getattr(article, "tables", [])
+    article, article_text, figure_captions = article_text_and_captions(
+        html_text, download_result.identifier.pmid, source_tables_dir
     )
     full_text_path = article_dir / "article.txt"
     full_text_path.write_text(article_text, encoding="utf-8")
@@ -514,6 +525,7 @@ def _extract_ace_article(
         tables=extracted_tables,
         has_coordinates=has_coordinates,
         error_message=None,
+        figure_captions=figure_captions,
     )
 
 

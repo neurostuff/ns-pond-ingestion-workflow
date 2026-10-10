@@ -20,7 +20,7 @@ from pubget._coordinates import _extract_coordinates_from_table
 
 from elsevier_coordinate_extraction.client import ScienceDirectClient
 from elsevier_coordinate_extraction.download.api import download_articles
-from elsevier_coordinate_extraction.extract.text import save_article_text
+from elsevier_coordinate_extraction.extract.text import extract_text_from_article, format_article_text
 from elsevier_coordinate_extraction.settings import (
     Settings as ElsevierSettings,
     get_settings as get_elsevier_settings,
@@ -28,10 +28,10 @@ from elsevier_coordinate_extraction.settings import (
 from elsevier_coordinate_extraction.table_extraction import (
     extract_tables_from_article,
 )
-from elsevier_coordinate_extraction.types import ArticleContent
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.figure_captions import append_legends, take_xml_figures
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
@@ -611,6 +611,18 @@ def _run_elsevier_extraction_task(
         return build_failure_extraction(download_result, DownloadSource.ELSEVIER, str(exc))
 
 
+def article_text_and_captions(payload: bytes) -> Tuple[str, List[dict]]:
+    """An Elsevier article's text as extraction keeps it (cross-references kept, tables in
+    place), the figure captions under "Figure legends" at the end, and each caption's
+    `{"ids", "span"}` in it. Public so citations rebuild the very text the extraction stored.
+    """
+    root = etree.fromstring(payload)
+    # the stylesheet writes no ce:figure caption; the legends are written after the text
+    captions = take_xml_figures(root, "figure")
+    stripped = etree.tostring(root, encoding="utf-8", xml_declaration=True)
+    return append_legends(format_article_text(extract_text_from_article(stripped, True, True)), captions)
+
+
 def _extract_elsevier_article(
     download_result: DownloadResult,
     extraction_root: Path,
@@ -629,7 +641,7 @@ def _extract_elsevier_article(
         raise ValueError("Elsevier extraction requires metadata.json.")
 
     try:
-        metadata = json.loads(metadata_file.file_path.read_text(encoding="utf-8"))
+        json.loads(metadata_file.file_path.read_text(encoding="utf-8"))  # a download without it is not one
     except (json.JSONDecodeError, OSError) as exc:
         raise ValueError(f"Failed to load Elsevier metadata: {exc}") from exc
 
@@ -642,26 +654,13 @@ def _extract_elsevier_article(
     # Read XML payload
     payload = content_file.file_path.read_bytes()
 
-    # Build ArticleContent for text extraction
-    doi = metadata.get("doi") or download_result.identifier.doi or ""
-    article_content = ArticleContent(
-        doi=doi,
-        payload=payload,
-        content_type=content_file.content_type,
-        format=content_file.file_path.suffix.lstrip("."),
-        retrieved_at=metadata.get("retrieved_at") or "",
-        metadata=metadata,
-    )
-
     # Extract and save article text
+    output_dir.mkdir(parents=True, exist_ok=True)
+    full_text_path = output_dir / "article.txt"
+    figure_captions: List[dict] = []
     try:
-        full_text_path = save_article_text(
-            article_content,
-            output_dir,
-            stem="article",
-            preserve_cross_references=True,
-            keep_tables=True,
-        )
+        text, figure_captions = article_text_and_captions(payload)
+        full_text_path.write_text(text, encoding="utf-8")
     except Exception as exc:
         logger.warning(
             "Failed to extract text for %s: %s",
@@ -669,8 +668,6 @@ def _extract_elsevier_article(
             exc,
         )
         # Create a fallback text file
-        output_dir.mkdir(parents=True, exist_ok=True)
-        full_text_path = output_dir / "article.txt"
         try:
             tree = etree.fromstring(payload)
             text = " ".join(tree.xpath(".//text()"))
@@ -834,6 +831,7 @@ def _extract_elsevier_article(
         tables=extracted_tables,
         has_coordinates=has_coordinates,
         error_message=error_message,
+        figure_captions=figure_captions,
     )
 
 

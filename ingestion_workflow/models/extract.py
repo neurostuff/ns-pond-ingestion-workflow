@@ -99,6 +99,8 @@ class ExtractedContent:
     has_coordinates: bool = False
     extracted_at: datetime = field(default_factory=datetime.utcnow)
     error_message: Optional[str] = None
+    #: Each figure caption's `{"ids", "span"}` in the text (`extractors.figure_captions`).
+    figure_captions: List[Dict[str, object]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -110,6 +112,7 @@ class ExtractedContent:
             "has_coordinates": self.has_coordinates,
             "extracted_at": self.extracted_at.isoformat(),
             "error_message": self.error_message,
+            "figure_captions": self.figure_captions,
         }
 
     @classmethod
@@ -129,6 +132,7 @@ class ExtractedContent:
             has_coordinates=bool(payload.get("has_coordinates", False)),
             extracted_at=datetime.fromisoformat(str(payload["extracted_at"])),
             error_message=payload.get("error_message") or None,
+            figure_captions=list(payload.get("figure_captions") or []),
         )
 
 

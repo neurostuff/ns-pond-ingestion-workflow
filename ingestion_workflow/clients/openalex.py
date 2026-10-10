@@ -249,6 +249,38 @@ class OpenAlexClient:
                         results[identifier.slug] = _metadata_from(work)
         return results
 
+    def get_cited_works(self, dois: List[str]) -> Dict[str, Dict]:
+        """Authors, year and PMID of works by DOI, keyed by lower-case DOI.
+
+        For a reference list that names its entries by DOI alone (most of
+        Crossref's): author-year citations are matched on these.
+        """
+        found: Dict[str, Dict] = {}
+        wanted = sorted({d.lower().strip() for d in dois if d})
+        for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
+            batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
+            payload = self._request_openalex(
+                {
+                    "filter": f"doi:{'|'.join(batch)}",
+                    "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
+                    "mailto": self.email,
+                    "select": "ids,publication_year,authorships",
+                }
+            )
+            for work in payload.get("results", []) or []:
+                ids = _identifier_from(work.get("ids"))
+                if not ids.doi:
+                    continue
+                found[ids.doi.lower()] = {
+                    "authors": [
+                        str((a.get("author") or {}).get("display_name") or "")
+                        for a in work.get("authorships", []) or []
+                    ],
+                    "year": work.get("publication_year"),
+                    "pmid": ids.pmid,
+                }
+        return found
+
     @staticmethod
     def _pdf_url_from_work(work: Dict) -> Optional[str]:
         best_location = work.get("best_oa_location") or {}

@@ -1,8 +1,14 @@
 """Find the passages of an article's prose that report coordinates: prose's extraction stage.
 
 What `extract` is to the tables this is to the text: no model, only the
-download read and the detector run, so `metadata` can follow it and `prose`
-can read each passage with the article's title and abstract.
+detector run, so `metadata` can follow it and `prose` can read each passage
+with the article's title and abstract.
+
+The text read is the article's text: the text of the extraction triage judges,
+which sync copies as `text.txt`. It is the only text read. An article with no
+extraction text has no passages until its extraction is fixed. A passage is
+`(start, end)` spans into the text, whose sha256 the payload records and the
+fingerprint chains on.
 """
 
 from __future__ import annotations
@@ -17,19 +23,13 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import NO_TEXT, Context, needs_taking_back
 
 logger = logging.getLogger(__name__)
 
-#: Bump when the passages change for a reason the download does not
-#: describe: the reader, the raw filter, the detector.
-PASSAGES_VERSION = "2026-10-07.downloads+lists"
-
-#: Which download is read, best first: XML marks its sections and its tables,
-#: publisher HTML less reliably, a PDF's text layer not at all. pmc and
-#: europepmc are the same JATS XML pubget downloads; pubget leads so an
-#: article already read from it keeps its passages.
-SOURCE_PREFERENCE = ("pubget", "pmc", "europepmc", "elsevier", "ace", "pdf")
+#: Bump when the passages change for a reason the text does not describe:
+#: the filter, the detector.
+PASSAGES_VERSION = "2026-10-10.extraction-text-only"
 
 #: Most passages kept from one article. Set above what any real paper needed.
 MAX_PASSAGES = 40
@@ -39,47 +39,80 @@ MAX_PASSAGES = 40
 FILE_SECONDS = 60
 
 
-def _choose(downloads: Dict[str, Artifact]) -> Optional[Artifact]:
-    ok = {source: a for source, a in downloads.items() if a.status is Status.OK}
-    ranked = sorted(ok, key=lambda s: SOURCE_PREFERENCE.index(s) if s in SOURCE_PREFERENCE else len(SOURCE_PREFERENCE))
-    return ok[ranked[0]] if ranked else None
-
-
-def find_passages(files: List[dict]) -> Tuple[str, list, Optional[str], str]:
+def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     """How the article's prose was read, its passages, the space it states, and its text.
 
-    The space is read from the same Methods and Results by `space`'s rules,
-    for an article whose extraction -- which `space` reads -- never succeeded.
-    The text (all of it, legends after) is returned only with a passage: it
-    is kept for sync and `space` when the article has no extraction.
+    `job` names the extraction text (`text_path`) and its `figure_captions`. The
+    space is read from the same Methods and Results by `space`'s rules.
 
-    A module function so a process pool can run it: reading a download and
-    the detector are processor-bound.
+    Figure legends are read: about half the coordinates in them are the study's
+    results (2026-10-10 sample). They are where the extractor wrote them, the
+    `figure_captions` spans (`extractors.figure_captions`), never searched for.
+    A passage whose hits all lie in a legend is marked `from_legend`.
+
+    A module function so a process pool can run it: the detector is
+    processor-bound.
     """
     from ingestion_workflow.services.coordinate_space import read_space
-    from ingestion_workflow.services.prose_passages import passages
-    from ingestion_workflow.services.prose_text import (
-        main_file,
-        may_hold_coordinates,
-        methods_and_results,
-        read_download,
-    )
+    from ingestion_workflow.services.prose_text import kept_spans, may_hold_coordinates
 
-    f = main_file(files)
-    if f is None:
-        return "no file", [], None, ""
-    path = Path(f["file_path"])
     try:
-        if f["file_type"] != "pdf" and not may_hold_coordinates(path.read_text(errors="ignore")):
-            return "filtered", [], None, ""
-        text, legends = read_download(path, f["file_type"])
-        prose, how = methods_and_results(text, legends)
-        found = passages(prose)[:MAX_PASSAGES]
-        reading = read_space(text) if found else None
-        kept = (text + ("\n\n" + legends if legends else "")) if found else ""
-        return how, found, reading.space.value if reading else None, kept
+        text = Path(job["text_path"]).read_bytes().decode("utf-8")
+        if not may_hold_coordinates(text):
+            return "filtered", [], None, text
+        legends = _caption_spans(text, job.get("figure_captions") or [])
+        # the legends are the text's last section: the body ends where they begin
+        body = text[: _legends_start(text, legends)]
+        spans, how = kept_spans(body)
+        spans += legends
+        found = [p for a, b in spans for p in _shifted(text, a, b)][:MAX_PASSAGES]
+        for p in found:
+            p.from_legend = bool(p.hits) and all(
+                any(a <= h.span[0] and h.span[1] <= b for a, b in legends) for h in p.hits)
+        reading = read_space(body) if found else None
+        return how, found, reading.space.value if reading else None, text
     except Exception as exc:  # noqa: BLE001 - an unreadable file is that article's problem only
         return f"unreadable: {type(exc).__name__}", [], None, ""
+
+
+def _caption_spans(text: str, captions: list) -> list:
+    """The extraction payload's caption spans, in order, those that fit `text`."""
+    out = []
+    for c in captions:
+        a, b = c.get("span") or (0, 0)
+        if 0 <= a < b <= len(text):
+            out.append((a, b))
+    return sorted(set(out))
+
+
+def _legends_start(text: str, legends: list) -> int:
+    """Where the "Figure legends" section begins: its heading's line, before the first caption."""
+    if not legends:
+        return len(text)
+    from ingestion_workflow.extractors.figure_captions import HEADING
+
+    at = text.rfind(HEADING, 0, legends[0][0])
+    if at < 0:
+        return legends[0][0]
+    line = text.rfind("\n", 0, at)
+    return line + 1 if line >= 0 else 0
+
+
+def _shifted(text: str, a: int, b: int) -> list:
+    """The passages of text[a:b], their spans moved into `text`."""
+    from ingestion_workflow.services.prose_passages import passages
+
+    def move(span):
+        return (span[0] + a, span[1] + a) if span else None
+
+    out = []
+    for p in passages(text[a:b]):
+        p.span, p.before_span, p.after_span, p.heading_span = (
+            move(p.span), move(p.before_span), move(p.after_span), move(p.heading_span))
+        for h in p.hits:
+            h.span = move(h.span)
+        out.append(p)
+    return out
 
 
 class _TooSlow(BaseException):
@@ -90,49 +123,96 @@ def _alarm(*_):
     raise _TooSlow
 
 
-def _find_in_worker(files: List[dict]) -> Tuple[str, list, Optional[str]]:
+def _find_in_worker(job: dict) -> Tuple[str, list, Optional[str], str]:
     signal.signal(signal.SIGALRM, _alarm)
     signal.alarm(FILE_SECONDS)
     try:
-        return find_passages(files)
+        return find_passages(job)
     except _TooSlow:
         return "timeout", [], None, ""
     finally:
         signal.alarm(0)
 
 
-def text_path(settings, article_id: str) -> Path:
-    """Where the text an article's passages came from is kept: a .txt with Markdown
-    headings, as extract keeps its own, which sync writes as `text.txt`."""
-    return Path(settings.data_root) / "passages" / f"{article_id}.txt"
+def _span(span) -> Optional[list]:
+    return list(span) if span else None
 
 
 def passage_dict(passage) -> dict:
-    return {"text": passage.text, "before": passage.before, "after": passage.after,
-            "heading": passage.heading, "space": passage.space,
+    """A passage as stored: spans into the text, none of its characters."""
+    return {"span": list(passage.span), "before": _span(passage.before_span), "after": _span(passage.after_span),
+            "heading": _span(passage.heading_span), "space": passage.space,
+            "from_legend": passage.from_legend,
             "hits": [{"pattern": h.pattern, "x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
                      for h in passage.hits]}
 
 
-def passage_from(payload: dict):
-    from ingestion_workflow.services.prose_passages import Hit, Passage
+def passage_from(payload: dict, text: str):
+    """A stored passage read back from the text its spans index."""
+    from ingestion_workflow.services.prose_passages import Hit, Passage, heading_text, view
 
-    return Passage(text=payload["text"], before=payload.get("before", ""), after=payload.get("after", ""),
-                   heading=payload.get("heading"), space=payload.get("space"),
-                   hits=[Hit(h["pattern"], h["x"], h["y"], h["z"], tuple(h["span"])) for h in payload.get("hits", [])])
+    def span(key):
+        return tuple(payload[key]) if payload.get(key) else None
+
+    return Passage(text=view(text, span("span")), before=view(text, span("before")), after=view(text, span("after")),
+                   heading=heading_text(text, span("heading")), space=payload.get("space"),
+                   hits=[Hit(h["pattern"], h["x"], h["y"], h["z"], tuple(h["span"])) for h in payload.get("hits", [])],
+                   span=span("span"), before_span=span("before"), after_span=span("after"),
+                   heading_span=span("heading"), from_legend=payload.get("from_legend", False))
+
+
+def read_text(ctx: Context, payload: dict) -> str:
+    """The text a passages payload indexes; raises when it is gone or has changed since."""
+    from ingestion_workflow.services.offsets import sha256
+
+    path = ctx.recorded_path(payload.get("full_text_path"))
+    text = path.read_bytes().decode("utf-8") if path is not None and path.is_file() else None
+    if text is None or sha256(text) != payload.get("text_sha256"):
+        raise LookupError("the text the passages index is gone or has changed")
+    return text
+
+
+def text_of(ctx: Context, extraction: Optional[Artifact]) -> Tuple[Optional[str], Optional[str]]:
+    """An extraction's text file and the sha256 its summary records (None when it records none).
+
+    The plan never hashes the file: across the corpus that is tens of GB read on every plan.
+    Extract records the hash; `ingest refresh-text` records it for older extractions."""
+    if extraction is None or extraction.status is not Status.OK or not extraction.summary.get("has_text", True):
+        return None, None
+    path = ctx.recorded_path((ctx.payload(extraction) or {}).get("full_text_path"))
+    if path is None or not path.is_file():
+        return None, None
+    return str(path), extraction.summary.get("text_sha256")
+
+
+def holds_no_text(extractions: Dict[str, Artifact]) -> bool:
+    """Whether the article is known to have no text: every source's extractor ran and
+    found none.
+
+    Only that takes back what was made from its old text. A failed extraction (an
+    exception, a timeout, downloaded files gone, the extractor returning nothing) or a
+    text file or blob that cannot be found says something about the machine, not the
+    article, so it only blocks: one failed re-run of an article's only source must not
+    retract it from neurostore."""
+    return bool(extractions) and all(
+        e.status is Status.OK and e.summary.get("has_text", True) is False
+        for e in extractions.values()
+    )
 
 
 class PassagesStage:
     name = "passages"
-    #: download, not extract: a paper reporting its peaks only in the text
-    #: often has no table that parsed, or none at all.
-    requires = "download"
+    #: An extraction with no table still has its text, so a paper that reports
+    #: its peaks only in the text is read.
+    requires = "extract"
 
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, download: Artifact) -> str:
-        return fingerprint("passages", PASSAGES_VERSION, download.source, upstream=download.fingerprint)
+    @staticmethod
+    def fingerprint_for(extraction: Artifact, text_sha256: str) -> str:
+        return fingerprint("passages", PASSAGES_VERSION, "extract", extraction.source, text_sha256,
+                           upstream=extraction.fingerprint)
 
     def plan(
         self,
@@ -142,14 +222,29 @@ class PassagesStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        from .triage import judged_extraction
+
+        ids = [ref.id for ref in refs]
+        attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        downloads = ctx.catalog.artifacts(ids, "download")
+        unhashed = 0
         for ref in refs:
-            download = _choose(upstream.get(ref.id, {}))
-            if download is None:
+            extraction = judged_extraction(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
+            path, sha = text_of(ctx, extraction)
+            existing = artifacts.get(ref.id, {}).get("")
+            if path is None:
+                if holds_no_text(upstream.get(ref.id, {})) and needs_taking_back(existing):
+                    # passages of a text that is no longer the article's: taken back, so status
+                    # shows the article blocked and prose stops reading them
+                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
+                else:
+                    plan.blocked += 1
+                continue
+            if sha is None:
+                unhashed += 1
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(download)
-            existing = artifacts.get(ref.id, {}).get("")
+            fp = self.fingerprint_for(extraction, sha)
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
@@ -157,36 +252,44 @@ class PassagesStage:
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
-            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=download))
+            work = Work(ref=ref, source="", fingerprint=fp, upstream=extraction)
+            plan.pending.append(work)
+        if unhashed:
+            logger.warning("passages: %d extractions record no text hash; run `ingest refresh-text` "
+                           "to record them", unhashed)
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        files = [(ctx.payload(work.upstream) or {}).get("files", []) for work in works]
+        for work in [w for w in works if w.upstream is None]:
+            yield Outcome.failure(work.article_id, self.name, "", NO_TEXT, fingerprint=work.fingerprint)
+        works = [w for w in works if w.upstream is not None]
+        jobs = []
+        for work in works:
+            payload = ctx.payload(work.upstream) or {}
+            text_path = ctx.recorded_path(payload.get("full_text_path"))
+            jobs.append({"text_path": str(text_path) if text_path else None,
+                         "figure_captions": payload.get("figure_captions") or []})
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
         if len(works) < 8 or workers == 1:
-            found = [find_passages(f) for f in files]
+            found = [find_passages(job) for job in jobs]
         else:
             # fork: nothing here touches CUDA, and spawn would re-import the
             # package in every worker. The pool lives for one batch.
             with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
-                found = list(pool.map(_find_in_worker, files, chunksize=8))
+                found = list(pool.map(_find_in_worker, jobs, chunksize=8))
 
-        for work, (how, ps, article_space, text) in zip(works, found):
+        from ingestion_workflow.services.offsets import sha256
+
+        for work, job, (how, ps, article_space, text) in zip(works, jobs, found):
             if how in ("timeout",) or how.startswith("unreadable"):
                 yield Outcome.failure(work.article_id, self.name, "", how, fingerprint=work.fingerprint)
                 continue
-            # The text is kept for an article with a passage: sync writes it,
-            # and `space` reads it, when extract could not read the article.
-            kept = None
-            if text:
-                kept = text_path(self.settings, work.article_id)
-                kept.parent.mkdir(parents=True, exist_ok=True)
-                kept.write_text(text, encoding="utf-8")
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                 fingerprint=work.fingerprint,
                 payload={"source": work.upstream.source, "read": how, "space": article_space,
-                         "full_text_path": str(kept) if kept else None,
+                         "full_text_path": job["text_path"] if ps else None,
+                         "text_sha256": sha256(text) if ps else None,
                          "passages": [passage_dict(p) for p in ps]},
                 summary={"source": work.upstream.source, "read": how, "passages": len(ps),
                          "hits": sum(len(p.hits) for p in ps)},

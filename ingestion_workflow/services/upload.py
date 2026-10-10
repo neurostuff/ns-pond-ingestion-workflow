@@ -284,7 +284,8 @@ class RetractOutcome:
     base_study_id: str
     study_id: Optional[str] = None
     #: `deleted`, `emptied` (kept because a studyset or an annotation uses it),
-    #: or `absent` (this source never had a version there).
+    #: `held` (left untouched for review because a studyset holds it), or
+    #: `absent` (this source never had a version there).
     action: str = ""
     removed: int = 0
     kept_annotated: int = 0
@@ -416,7 +417,8 @@ class UploadService:
 
         return outcomes
 
-    def retract(self, targets: Sequence[Tuple[str, str]]) -> List["RetractOutcome"]:
+    def retract(self, targets: Sequence[Tuple[str, str]], *,
+                hold_studyset_members: bool = False) -> List["RetractOutcome"]:
         """Take this source's study version back for each (slug, base_study_id).
 
         Used when a person has marked every table of an article as holding no
@@ -429,6 +431,10 @@ class UploadService:
 
         Only the configured source's version is touched; other extractors'
         versions and the base study itself are left alone.
+
+        With `hold_studyset_members`, a version any studyset holds is not touched
+        at all and comes back `held`: a retraction nobody asked for must not change
+        the coordinates under someone's meta-analysis, so a person reviews it.
         """
         source = resolve_upload_source(self.settings)
         outcomes: List[RetractOutcome] = []
@@ -441,7 +447,8 @@ class UploadService:
                 for slug, base_study_id in targets:
                     try:
                         with session.begin_nested():
-                            outcomes.append(self._retract_one(session, slug, base_study_id, source))
+                            outcomes.append(self._retract_one(session, slug, base_study_id, source,
+                                                              hold_studyset_members))
                     except Exception as exc:  # pragma: no cover - defensive
                         logger.error("Retraction failed for %s: %s", slug, exc, extra=console_kwargs())
                         outcomes.append(RetractOutcome(slug=slug, base_study_id=base_study_id,
@@ -452,19 +459,25 @@ class UploadService:
                 raise
         return outcomes
 
-    def _retract_one(self, session, slug: str, base_study_id: str, source: str) -> "RetractOutcome":
+    def _retract_one(self, session, slug: str, base_study_id: str, source: str,
+                     hold_studyset_members: bool = False) -> "RetractOutcome":
         study = session.execute(
             select(DbStudy).where(DbStudy.base_study_id == base_study_id, DbStudy.source == source)
         ).scalars().first()
         if study is None:
             return RetractOutcome(slug=slug, base_study_id=base_study_id, action="absent", success=True)
+        studysets = sorted(set(session.execute(
+            select(DbStudysetStudy.studyset_id).where(DbStudysetStudy.study_id == study.id)
+        ).scalars()))
+        if studysets and hold_studyset_members:
+            logger.warning("[retract id=%s] held version %s for review: in %d studysets",
+                           slug, study.id, len(studysets))
+            return RetractOutcome(slug=slug, base_study_id=base_study_id, study_id=study.id,
+                                  action="held", studysets=studysets, success=True)
         analysis_ids = list(session.execute(
             select(DbAnalysis.id).where(DbAnalysis.study_id == study.id)
         ).scalars())
         annotated = self._annotated_analysis_ids(session, analysis_ids)
-        studysets = sorted(set(session.execute(
-            select(DbStudysetStudy.studyset_id).where(DbStudysetStudy.study_id == study.id)
-        ).scalars()))
         removable = [a for a in analysis_ids if a not in annotated]
         for analysis_id in removable:
             self._delete_points(session, analysis_id)

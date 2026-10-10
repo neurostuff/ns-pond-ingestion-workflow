@@ -11,7 +11,7 @@ from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.models.analysis import CoordinateSpace
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
 
 RESOLVE_VERSION = 3
 
@@ -169,7 +169,7 @@ class ResolveStage:
         for ref in refs:
             prose = upstream.get(ref.id, {}).get("")
             if prose is None or prose.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, prose, artifacts.get(ref.id, {}).get(""))
                 continue
             # The tables' analyses when there are any. Nothing waits for them:
             # when they arrive the fingerprint below changes, and this re-runs.
@@ -191,6 +191,8 @@ class ResolveStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         analysed = ctx.catalog.artifacts([w.article_id for w in works], "analyses")
         for work in works:
             tables_artifact = analysed.get(work.article_id, {}).get("")

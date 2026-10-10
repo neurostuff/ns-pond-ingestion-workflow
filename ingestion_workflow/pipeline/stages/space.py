@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -11,7 +10,7 @@ from ingestion_workflow.models import CoordinateSpace
 from ingestion_workflow.services.coordinate_space import read_space
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,7 @@ class SpaceStage:
         for ref in refs:
             analyses = upstream.get(ref.id, {}).get("")
             if analyses is None or analyses.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, analyses, artifacts.get(ref.id, {}).get(""))
                 continue
             fp = self.fingerprint_for(analyses)
             existing = artifacts.get(ref.id, {}).get("")
@@ -78,10 +77,11 @@ class SpaceStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
-        passages = ctx.catalog.artifacts(ids, "passages")
         for work in works:
             payload = ctx.payload(work.upstream)
             if payload is None:
@@ -96,7 +96,6 @@ class SpaceStage:
                         triaged.get(work.article_id, {}).get(""),
                         extractions.get(work.article_id, {}),
                         ctx,
-                        passages.get(work.article_id, {}).get(""),
                     )
                     if _needs_filling(payload)
                     else None
@@ -129,26 +128,19 @@ def _needs_filling(payload: Dict[str, dict]) -> bool:
 
 def _article_text(
     triage: Optional[Artifact], extractions: Dict[str, Artifact], ctx: Context,
-    passages: Optional[Artifact] = None,
 ) -> Optional[str]:
-    """The text of the extraction the analyses were read from.
+    """The text of the extraction the analyses were read from: the one triage judged.
 
-    That is the one triage judged. Without it, the text `passages` read, for
-    an article only its prose reached; without either, only the tables' own
-    captions are read.
+    Without it, only the tables' own captions are read.
     """
     source = (triage.summary or {}).get("source") if triage else None
     extraction = extractions.get(source) if source is not None else None
-    if extraction is not None and extraction.status is Status.OK:
-        holder = extraction
-    elif passages is not None and passages.status is Status.OK:
-        holder = passages
-    else:
+    if extraction is None or extraction.status is not Status.OK:
         return None
-    path = (ctx.payload(holder) or {}).get("full_text_path")
-    if not path or not Path(path).is_file():
+    path = ctx.recorded_path((ctx.payload(extraction) or {}).get("full_text_path"))
+    if path is None or not path.is_file():
         return None
-    return Path(path).read_text(encoding="utf-8", errors="replace")
+    return path.read_text(encoding="utf-8", errors="replace")
 
 
 def fill_spaces(payload: Dict[str, dict], text: Optional[str]):

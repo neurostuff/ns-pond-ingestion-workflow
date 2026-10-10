@@ -85,6 +85,38 @@ upstream stage. `skipped` means the stage has nothing to do for that article
 (no coordinate tables, or a source that cannot address it). `permanent` means it
 will never succeed and is no longer retried.
 
+## When an article turns out to have no text
+
+What `prose` and the stages after it made came from an article's text. If every
+source's extractor has since run on the article and found no text (an OK
+extraction recording `has_text: false`), that work is no longer the article's,
+so it is taken back: `passages`, `prose`, `resolve` and `space` record their
+artifacts failed with `no extraction text`, whatever state they were in,
+`upload` retracts the article's study version from neurostore (annotated
+analyses stay), and `sync` moves its corpus directory to
+`<ns_pond_root>-retracted/<base_study_id>-<time>/`. The run's summary counts
+these per stage as `taken back`.
+
+Nothing else takes work back. A failed extraction (an exception, a timeout,
+downloaded files missing on disk, the extractor returning nothing), a text file
+or payload blob that cannot be found, or any one source failing beside one that
+found no text only blocks the article until it is fixed. A relative text path
+recorded in the catalog is read from the directory holding the catalog, never
+from the directory a run was started in.
+
+A study any studyset holds is not retracted: upload records it failed with
+`held for review: in N studysets`, keeps its `base_study_id`, leaves it in the
+corpus, and counts it as `held for review`; the run's log lists their base
+study ids, and the catalog keeps them (`stage = 'upload' AND error LIKE 'held for review%'`).
+They are looked at again on every run, and retracted once no studyset holds them.
+A retraction that fails (the tunnel drops, say) also keeps `base_study_id` and is
+tried again on the next run; sync leaves the article in the corpus until
+neurostore has confirmed it.
+
+To undo one: once the article has text again, the next run makes everything
+again from it and uploads a new study version; a moved corpus directory can be
+moved back from `-retracted/`.
+
 ## Long runs
 
 Runs are resumable by construction: everything a stage produces, including its

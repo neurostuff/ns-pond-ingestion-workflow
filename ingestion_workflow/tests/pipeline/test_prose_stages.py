@@ -120,6 +120,15 @@ def test_an_unstated_space_is_left_for_the_space_stage():
     assert out["prose"]["coordinate_space"] == "OTHER"
 
 
+#: The extraction's text of ARTICLE: what passages read.
+EXTRACTED = (
+    "# T\n\n## Methods\n\nCoordinates are reported in MNI space.\n\n"
+    "## Results\n\nPatients showed greater activation than controls in the left amygdala\n"
+    "(x = \u221222, y = \u22124, z = \u221218; t = 4.1). The reverse contrast revealed no clusters.\n\n"
+    "Table 1\n-40\t20\t10\n\n"
+    "## Discussion\n\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n"
+)
+
 ARTICLE = """<article><front><article-meta><title-group><article-title>T</article-title></title-group>
 </article-meta></front><body>
 <sec><title>Methods</title><p>Coordinates are reported in MNI space.</p></sec>
@@ -149,7 +158,11 @@ def _download(ref, path):
                        source=DownloadSource.PUBGET)]).to_dict()
 
 
-def _record_upstream(catalog, ref, path, *, tables=None):
+def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
+    """The download, its extraction's text, and the metadata."""
+    text_file = path.parent / f"{ref.id}.txt"
+    text_file.write_text(text, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
     rows = [
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                 payload=_download(ref, path), summary={}),
@@ -192,8 +205,8 @@ class _Reader:
              "role": "result"} for h in passage.hits]}]}
 
 
-def test_prose_reads_the_download_s_methods_and_results_only(env, monkeypatch):
-    """Not the tables, not the discussion's cited peak -- and no extraction needed."""
+def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeypatch):
+    """Not the tables, not the discussion's cited peak."""
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="1"))
     _record_upstream(catalog, ref, path)
@@ -205,15 +218,13 @@ def test_prose_reads_the_download_s_methods_and_results_only(env, monkeypatch):
     assert read.payload["space"] == "MNI"   # read from the Methods
 
 
-def test_a_download_with_no_coordinate_is_filtered_before_it_is_parsed(env, monkeypatch, tmp_path):
-    settings, catalog, _ = env
-    plain = tmp_path / "plain.xml"
-    plain.write_text("<article><body><sec><title>Results</title><p>Accuracy was 85% (70, 85, 92).</p></sec></body></article>")
+def test_a_text_with_no_coordinate_is_filtered_before_the_detector_reads_it(env, monkeypatch, tmp_path):
+    settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="5"))
-    _record_upstream(catalog, ref, plain)
-    from ingestion_workflow.services import prose_text
+    _record_upstream(catalog, ref, path, text="## Results\n\nAccuracy was 85% (70, 85, 92).\n")
+    from ingestion_workflow.services import prose_passages
 
-    monkeypatch.setattr(prose_text, "read_download", lambda *a: (_ for _ in ()).throw(AssertionError("parsed")))
+    monkeypatch.setattr(prose_passages, "passages", lambda *a, **k: (_ for _ in ()).throw(AssertionError("read")))
     ctx = Context(settings, catalog)
     _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
     assert found.summary == {"source": "pubget", "read": "filtered", "passages": 0, "hits": 0}
@@ -262,31 +273,6 @@ def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
     assert outcome.status is Status.FAILED
 
 
-def test_an_article_found_only_through_its_prose_is_fetched_metadata(env, monkeypatch, tmp_path):
-    """No extraction, so metadata had no way to reach it; its passages do."""
-    from ingestion_workflow.models.metadata import ArticleMetadata
-    from ingestion_workflow.pipeline.stages.metadata import MetadataStage
-
-    settings, catalog, path = env
-    plain = tmp_path / "plain.xml"
-    plain.write_text("<article><body><sec><title>Results</title><p>No coordinates.</p></sec></body></article>")
-    found, empty = catalog.register(Identifier(pmid="7")), catalog.register(Identifier(pmid="8"))
-    catalog.record([Outcome(article_id=r.id, stage="download", source="pubget", fingerprint="dl-1",
-                            payload={"files": [{"file_path": str(f), "file_type": "xml"}]}, summary={})
-                    for r, f in ((found, path), (empty, plain))])
-    ctx = Context(settings, catalog)
-    for ref in (found, empty):
-        _run(PassagesStage(settings), ctx, catalog, ref)
-    meta = MetadataStage(settings)
-    asked = []
-    monkeypatch.setattr(MetadataStage, "service", property(lambda self: self))
-    monkeypatch.setattr(meta, "enrich_metadata", lambda contents: asked.extend(c.identifier.pmid for c in contents)
-                        or {c.slug: ArticleMetadata(title="T") for c in contents}, raising=False)
-    plan = meta.plan(ctx, [found, empty], catalog.artifacts([found.id, empty.id], "metadata"),
-                     catalog.artifacts([found.id, empty.id], "extract"))
-    assert [w.article_id for w in plan.pending] == [found.id] and plan.blocked == 1
-    (outcome,) = meta.execute(ctx, plan.pending)
-    assert outcome.status is Status.OK and asked == ["7"]
 
 
 def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
@@ -294,6 +280,9 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
     ref = catalog.register(Identifier(pmid="9"))
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                             payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={})])
+    text_file = path.parent / "nine.txt"
+    text_file.write_text(EXTRACTED, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
     ctx = Context(settings, catalog)
     seen = []
 
@@ -311,18 +300,8 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
     assert plan.fresh == 1 and seen == ["", "T"]
 
 
-def test_passages_keeps_the_text_it_read_for_an_article_with_a_passage(env, tmp_path):
-    settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="10"))
-    _record_upstream(catalog, ref, path)
-    _, (found,) = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
-    text = open(found.payload["full_text_path"]).read()
-    assert "greater activation than controls" in text and "# Results" in text
-
-
-def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeypatch, tmp_path):
-    """124 of the first sync's failures were pages ACE could not identify, whose
-    prose the generic reader had read: its download, its text, its analyses."""
+def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(env, monkeypatch, tmp_path):
+    """Sync writes the extraction's text, the one the passages index, and the prose's analyses."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
     from ingestion_workflow.services.nspond_schema import read_record
 
@@ -341,18 +320,15 @@ def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeyp
     sync.finish()
     assert synced.status is Status.OK, synced.error
     record = read_record(settings.ns_pond_root, "BS11")
-    processed = record.processed["pubget"]
-    assert "greater activation than controls" in processed.text
+    passages = catalog.payload(catalog.artifact(ref.id, "passages", ""))
+    assert record.processed["pubget"].text == open(passages["full_text_path"], encoding="utf-8").read()
     assert [a["table_id"] for a in record.stage1["analyses"]] == ["prose"]
-    assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["11", "BS11"]
-    # Beside stage1, the paper-parse files, which agree with each other and the text.
     from pyarty import read_bundle
     from study_schema.layouts import PaperParse, check_paper
 
     parse = read_bundle(PaperParse, settings.ns_pond_root / "BS11" / "parse")
     assert check_paper(parse, settings.ns_pond_root / "BS11") == []
     assert [a.origin for a in parse.coordinate_parse.analyses] == ["text"]
-    assert synced.summary["parse_id"] == parse.coordinate_parse.parse_id
 
 
 def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
@@ -400,3 +376,435 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
                             payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])
     plan, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
+
+
+def _record_extraction(catalog, ref, text_file, figure_captions=(), source="pubget", tables=0, hashed=True):
+    from ingestion_workflow.pipeline.stages.extract import file_sha256
+
+    summary = {"tables": tables, "has_text": True}
+    if hashed:
+        summary["text_sha256"] = file_sha256(text_file)
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source=source, fingerprint="ex-1",
+                            payload={"full_text_path": str(text_file), "tables": [],
+                                     "figure_captions": list(figure_captions), "slug": ref.identifier.slug,
+                                     "source": source, "identifier": ref.identifier.to_dict(),
+                                     "extracted_at": "2026-10-10T00:00:00"},
+                            summary=summary)])
+
+
+def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="20"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "article.txt"
+    # A table inlined in the text, its rows tab-separated, is left to the table path.
+    text_file.write_text(TEXT + "Table 1\nAmygdala\t-22\t-4\t-18\n", encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    ctx = Context(settings, catalog)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    payload = found.payload
+    text = text_file.read_text()
+    assert payload["full_text_path"] == str(text_file)
+    (stored,) = payload["passages"]
+    assert "text" not in stored
+    passage = passage_from(stored, text)
+    a, b = stored["span"]
+    assert passage.text.startswith("Patients showed") and text[a:b].startswith("Patients showed")
+    assert [text[h["span"][0]:h["span"][1]] for h in stored["hits"]] == ["x = -22, y = -4, z = -18"]
+    assert passage.heading == "Results"
+
+    # The text rewritten in place, and its hash with it: the passages are stale.
+    text_file.write_text(text.replace("greater", "stronger"), encoding="utf-8")
+    plan = PassagesStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "passages"),
+                                        catalog.artifacts([ref.id], "extract"))
+    assert plan.fresh == 1  # the summary still names the old text
+    _record_extraction(catalog, ref, text_file)
+    plan = PassagesStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "passages"),
+                                        catalog.artifacts([ref.id], "extract"))
+    assert len(plan.pending) == 1
+
+
+def test_prose_reads_no_passage_of_a_text_that_changed_under_it(env, tmp_path):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="21"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "article.txt"
+    text_file.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    ctx = Context(settings, catalog)
+    _run(PassagesStage(settings), ctx, catalog, ref)
+    text_file.write_text("## Results\nSomething else entirely.\n", encoding="utf-8")
+    prose = ProseStage(settings)
+    prose.client = lambda: _Reader()
+    _, (read,) = _run(prose, ctx, catalog, ref)
+    assert read.status is Status.FAILED and "changed" in read.error
+
+
+LEGEND = ("Figure 2. Greater insula activation in patients than controls "
+          "(x = &#x02212;34, y = 16, z = &#x02212;6; p &lt; 0.05 corrected).")
+
+
+def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
+    """A legend the download sets in the Discussion, which the extraction text sets after it."""
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    settings, catalog, _ = env
+    xml = tmp_path / "legend.xml"
+    xml.write_text(ARTICLE.replace("</p></sec>\n</body>", f"</p><fig><caption><p>{LEGEND}</p></caption></fig></sec>\n</body>"))
+    ctx = Context(settings, catalog)
+
+    # The legend where the extractor wrote it, after the Discussion.
+    from ingestion_workflow.extractors.figure_captions import append_legends
+
+    caption = "Figure 2. Greater insula activation in patients than controls (x = -34, y = 16, z = -6; p < 0.05 corrected)."
+    ref = catalog.register(Identifier(pmid="31"))
+    _record_upstream(catalog, ref, xml)
+    text_file = tmp_path / "legend.txt"
+    text, spans = append_legends(TEXT + "\n## Discussion\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n",
+                                 [(["F2"], caption)])
+    text_file.write_text(text, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, spans)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    stored = found.payload["passages"]
+    assert [(p["hits"][0]["x"], p["from_legend"]) for p in stored] == [(-22.0, False), (-34.0, True)]
+    assert passage_from(stored[1], text).from_legend
+    assert text[slice(*stored[1]["span"])].startswith("Figure 2.")
+
+
+def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first_quotes_it(env, tmp_path):
+    """A caption the Results also print, and a second figure captioned alike: the caption is
+    read once, at its span under "Figure legends", never searched for."""
+    from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
+
+    settings, catalog, path = env
+    caption = "Figure 2. Greater insula activation in patients than controls (x = -34, y = 16, z = -6)."
+    body = TEXT.replace("The reverse contrast", caption + " The reverse contrast")
+    text, spans = append_legends(body, dedupe([("F2", caption), ("F3", caption)]))
+    assert [c["ids"] for c in spans] == [["F2", "F3"]]
+    ref = catalog.register(Identifier(pmid="32"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "quoted.txt"
+    text_file.write_text(text, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, spans)
+    _, (found,) = _run(PassagesStage(settings), ctx := Context(settings, catalog), catalog, ref)
+    legend = [p for p in found.payload["passages"] if p["from_legend"]]
+    assert len(legend) == 1
+    assert legend[0]["span"][0] >= spans[0]["span"][0]
+    # the body's copy is a body passage, read in the Results
+    assert any(not p["from_legend"] and p["hits"][0]["x"] == -34.0 for p in found.payload["passages"])
+
+
+def test_an_article_without_an_extraction_text_has_no_passages(env):
+    """The extraction's text is the only one read: a download with no extraction is not
+    read some other way, and sync has no text of its own to fall back on."""
+    from ingestion_workflow.pipeline.stages.sync import _synced_extraction
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="40"))
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
+                            payload=_download(ref, path), summary={})])
+    plan, outcomes = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    ctx = Context(settings, catalog)
+    assert _synced_extraction(ctx, {}, catalog.artifacts([ref.id], "download")[ref.id], None) is None
+
+
+def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="41"))
+    ace, pubget = tmp_path / "ace.txt", tmp_path / "pubget.txt"
+    ace.write_text("## Results\n\nNothing at (x = 1, y = 2, z = 3).\n", encoding="utf-8")
+    pubget.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, ace, source="ace")  # first in the catalog's order
+    _record_extraction(catalog, ref, pubget, source="pubget", tables=1)
+    _, (found,) = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    assert (found.payload["source"], found.payload["full_text_path"]) == ("pubget", str(pubget))
+
+
+def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, tmp_path):
+    """Passages a download reader wrote, for an article whose extractor ran and found no
+    text: the article shows as blocked, and prose takes back what it read from them."""
+    from ingestion_workflow.pipeline.stages.passages import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="42"))
+    old = tmp_path / "passages" / f"{ref.id}.txt"
+    old.parent.mkdir()
+    old.write_text(EXTRACTED, encoding="utf-8")
+    catalog.record([
+        Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
+                payload=_download(ref, path), summary={}),
+        Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                payload={"full_text_path": None}, summary={"tables": 0, "has_text": False}),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-reader",
+                payload={"full_text_path": str(old), "passages": []}, summary={"passages": 1}),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+    ])
+    ctx = Context(settings, catalog)
+    plan, (taken,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (taken.status, taken.error) == (Status.FAILED, NO_TEXT)
+    assert catalog.artifacts([ref.id], "passages")[ref.id][""].status is Status.FAILED
+    again, outcomes = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (again.blocked, outcomes) == (1, [])
+    prose, (back,) = _run(ProseStage(settings), ctx, catalog, ref)
+    assert (prose.fresh, back.status, back.error) == (0, Status.FAILED, NO_TEXT)
+
+
+def test_an_uploaded_article_whose_passages_are_taken_back_leaves_neurostore_and_the_corpus(
+        env, monkeypatch):
+    """Old prose with kept points, and the resolve, space, upload and sync made from it: once
+    passages are taken back, each stage takes back its own, upload retracts the study's
+    pipeline analyses, and sync takes the article out of the corpus."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="44"))
+    catalog.record([
+        Outcome.failure(ref.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={},
+                summary={"kept": 2}),
+        Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve",
+                payload={}, summary={"tables": 1}),
+        Outcome(article_id=ref.id, stage="space", source="", fingerprint="old-space", payload={},
+                summary={"tables": 1}),
+        Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
+                summary={"base_study_id": "bs-1", "analyses": 2}),
+        Outcome(article_id=ref.id, stage="sync", source="", fingerprint="old-sync", summary={}),
+    ])
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
+    resolved = ResolveStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "resolve"),
+                                           catalog.artifacts([ref.id], "prose"))
+    assert (resolved.fresh, resolved.pending, resolved.blocked) == (0, [], 1)
+
+    retracted = []
+
+    def retract(self, targets, **_):
+        for work, base_study_id in targets:
+            retracted.append(base_study_id)
+            yield Outcome(article_id=work.article_id, stage="upload", source="",
+                          fingerprint=work.fingerprint,
+                          summary={"base_study_id": base_study_id, "retracted": "emptied"})
+
+    monkeypatch.setattr(UploadStage, "_retract", retract)
+    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
+    upload = UploadStage(settings)
+    _run(upload, ctx, catalog, ref)
+    assert retracted == ["bs-1"]
+    again, outcomes = _run(upload, ctx, catalog, ref)  # retracted once, not on every run
+    assert (again.blocked, outcomes) == (1, [])
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert [w.upstream.summary["retracted"] for w in sync.pending] == ["emptied"]
+
+
+def test_prose_taken_back_is_read_again_as_soon_as_its_passages_return(env):
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="45"))
+    catalog.record([
+        Outcome.failure(ref.id, "prose", "", NO_TEXT, fingerprint=NO_TEXT),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="new-text",
+                payload={"passages": []}, summary={"passages": 0}),
+    ])
+    ctx = Context(settings, catalog, max_attempts=1)  # the take-back is not a failed try
+    plan = ProseStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "prose"),
+                                     catalog.artifacts([ref.id], "passages"))
+    assert [w.fingerprint != NO_TEXT for w in plan.pending] == [True]
+
+
+def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashed(env, tmp_path, monkeypatch):
+    from ingestion_workflow.pipeline.stages import extract
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="43"))
+    text_file = tmp_path / "t.txt"
+    text_file.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, hashed=False)
+    monkeypatch.setattr(extract, "file_sha256", lambda p: pytest.fail("the plan hashed a text"))
+    plan, outcomes = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+
+
+def _uploaded_chain(catalog, ref, *, upload=None):
+    """passages taken back, with the prose, resolve, space and upload made from the old text."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    catalog.record([
+        Outcome.failure(ref.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+        Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve", payload={}, summary={}),
+        Outcome(article_id=ref.id, stage="space", source="", fingerprint="old-space", payload={}, summary={}),
+        upload or Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
+                          summary={"base_study_id": "bs-1", "analyses": 2}),
+    ])
+
+
+@pytest.mark.parametrize("extractions", [
+    "downloaded files missing on disk: 1",
+    "TimeoutError: the extractor timed out",
+    "extractor returned nothing",
+    "text file gone",
+    "payload blob gone",
+    "one source found no text, another failed",
+])
+def test_a_transient_failure_upstream_only_blocks_and_takes_nothing_back(env, tmp_path, monkeypatch, extractions):
+    """A failed re-run of an article's only source, or its text file or blob gone, says
+    something about the machine, not the article: the passages and everything made from
+    them stay, so nothing reaches neurostore."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="46"))
+    gone = tmp_path / "gone" / "article.txt"
+    found = {"tables": 0, "has_text": True, "text_sha256": "abc"}
+    rows = {
+        "text file gone": [Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                                   payload={"full_text_path": str(gone)}, summary=found)],
+        "payload blob gone": [Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                                      payload={"full_text_path": str(path)}, summary=found)],
+        "one source found no text, another failed": [
+            Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="ex-1",
+                    payload={"full_text_path": None}, summary={"tables": 0, "has_text": False}),
+            Outcome.failure(ref.id, "extract", "pubget", "TimeoutError", fingerprint="ex-2")],
+    }.get(extractions) or [Outcome.failure(ref.id, "extract", "pubget", extractions, fingerprint="ex-1")]
+    catalog.record(rows + [
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-passages",
+                payload={"full_text_path": str(path), "passages": []}, summary={"passages": 1}),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+    ])
+    ctx = Context(settings, catalog)
+    if extractions == "payload blob gone":
+        monkeypatch.setattr(ctx, "payload", lambda artifact: None)
+    plan, outcomes = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    assert catalog.artifacts([ref.id], "passages")[ref.id][""].status is Status.OK
+
+
+def test_a_relative_text_path_is_read_from_beside_the_catalog_whatever_the_cwd(env, tmp_path, monkeypatch):
+    """Extractions run with a relative cache_root recorded `.cache/extract/...`; from another
+    cwd those texts must still be found, not taken back."""
+    from ingestion_workflow.pipeline.stages.passages import read_text
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="47"))
+    text_file = tmp_path / ".cache" / "extract" / "article.txt"  # tmp_path holds the catalog, k/
+    text_file.parent.mkdir(parents=True)
+    text_file.write_text(EXTRACTED, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    extraction = catalog.artifacts([ref.id], "extract")[ref.id]["pubget"]
+    payload = dict(catalog.payload(extraction), full_text_path=".cache/extract/article.txt")
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                            payload=payload, summary=extraction.summary)])
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    ctx = Context(settings, catalog)
+    plan, (made,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert made.status is Status.OK and made.summary["passages"] > 0
+    assert made.payload["full_text_path"] == str(text_file)
+    assert read_text(ctx, {"full_text_path": ".cache/extract/article.txt",
+                           "text_sha256": made.payload["text_sha256"]}) == EXTRACTED
+
+
+def test_the_take_back_runs_through_a_stage_that_last_failed_for_another_reason(env):
+    """prose last failed on a timeout while resolve still holds what an older prose made:
+    both are taken back, so nothing downstream counts the old text fresh."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="48"))
+    _uploaded_chain(catalog, ref)
+    catalog.record([Outcome.failure(ref.id, "prose", "", "timeout", fingerprint="newer-prose")])
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
+
+
+class _Tunnel:
+    def __init__(self, *_, fails=False):
+        self.fails = fails
+
+    def __enter__(self):
+        if self.fails:
+            raise ConnectionError("the tunnel dropped")
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def _upload_through(monkeypatch, settings, *, fails=False, retracted=None):
+    """UploadStage with neurostore stood in for: the tunnel fails, or each retraction comes back
+    as `retracted` returns."""
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    from ingestion_workflow.services import db, upload
+
+    monkeypatch.setattr(db, "SSHTunnel", lambda *a, **k: _Tunnel(fails=fails))
+    monkeypatch.setattr(db, "SessionFactory", lambda *a, **k: None)
+    monkeypatch.setattr(upload.UploadService, "retract",
+                        lambda self, targets, **kw: [retracted(slug, bsid, kw) for slug, bsid in targets])
+    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
+    return UploadStage(settings)
+
+
+def test_a_failed_retraction_keeps_its_base_study_and_is_tried_again(env, monkeypatch):
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="49"))
+    _uploaded_chain(catalog, ref)
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    _, (failed,) = _run(_upload_through(monkeypatch, settings, fails=True), ctx, catalog, ref)
+    assert (failed.status, failed.fingerprint, failed.summary) == (Status.FAILED, NO_TEXT, {"base_study_id": "bs-1"})
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert sync.pending == []  # the article stays in the corpus until neurostore confirms
+
+    asked = []
+
+    def deleted(slug, bsid, kw):
+        asked.append((bsid, kw))
+        return RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted", success=True)
+
+    upload = _upload_through(monkeypatch, settings, retracted=deleted)
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert asked == [("bs-1", {"hold_studyset_members": True})]
+    assert (done.status, done.summary["base_study_id"], done.summary["retracted"]) == (Status.OK, "bs-1", "deleted")
+    again, outcomes = _run(upload, ctx, catalog, ref)
+    assert (again.blocked, outcomes) == (1, [])
+
+
+def test_a_study_a_studyset_holds_is_held_for_review_not_retracted(env, monkeypatch):
+    from ingestion_workflow.pipeline.scheduler import StageReport
+    from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="50"))
+    _uploaded_chain(catalog, ref)
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: RetractOutcome(
+        slug=slug, base_study_id=bsid, study_id="s-1", action="held", studysets=["ss1"], success=True))
+    _, (held,) = _run(upload, ctx, catalog, ref)
+    assert held.status is Status.FAILED and held.error.startswith(HELD_FOR_REVIEW)
+    assert held.summary["base_study_id"] == "bs-1" and held.summary["studysets"] == ["ss1"]
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert sync.pending == []
+    again = upload.plan(ctx, [ref], catalog.artifacts([ref.id], "upload"), catalog.artifacts([ref.id], "space"))
+    assert len(again.pending) == 1  # looked at again, so it goes once no studyset holds it
+    assert "1 held for review" in StageReport(stage="upload", failed=1, held=1).line()

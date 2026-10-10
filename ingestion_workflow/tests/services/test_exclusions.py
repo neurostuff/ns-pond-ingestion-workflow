@@ -122,6 +122,26 @@ def test_a_version_in_a_studyset_is_emptied_not_deleted(tmp_path):
         assert list(session.execute(select(DbAnalysis)).scalars()) == []
 
 
+def test_a_retraction_nobody_asked_for_leaves_a_studyset_member_untouched(tmp_path):
+    """When the article's text was taken back, no person decided: the coordinates under
+    someone's meta-analysis stay, and the study comes back held for review."""
+    service, engine, uploaded = _uploaded(tmp_path)
+    with Session(engine, future=True) as session:
+        session.add(DbStudysetStudy(study_id=uploaded.study_id, studyset_id="ss1"))
+        session.commit()
+    [done] = service.retract([("slug", uploaded.base_study_id)], hold_studyset_members=True)
+    assert (done.success, done.action, done.studysets, done.removed) == (True, "held", ["ss1"], 0)
+    with Session(engine, future=True) as session:
+        assert session.execute(select(DbStudy.id)).scalar_one() == uploaded.study_id
+        assert len(list(session.execute(select(DbAnalysis)).scalars())) == 1
+
+
+def test_holding_studyset_members_still_retracts_a_study_no_studyset_holds(tmp_path):
+    service, engine, uploaded = _uploaded(tmp_path)
+    [done] = service.retract([("slug", uploaded.base_study_id)], hold_studyset_members=True)
+    assert done.action == "deleted" and done.removed == 1
+
+
 def test_an_annotated_analysis_survives_a_retraction(tmp_path):
     service, engine, uploaded = _uploaded(tmp_path)
     with Session(engine, future=True) as session:

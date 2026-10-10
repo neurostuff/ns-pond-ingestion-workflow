@@ -180,8 +180,7 @@ class TriageStage:
             # forever; the abstract is a help when it exists, not a condition.
             meta = upstream.get(ref.id, {}).get("")
             found = extractions.get(ref.id, {})
-            current = current_extractions(ctx, found, downloads.get(ref.id, {}))
-            extraction = _most_tables(current or found)
+            extraction = judged_extraction(ctx, found, downloads.get(ref.id, {}))
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
@@ -199,7 +198,7 @@ class TriageStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        jobs, meta_of, tables_of = [], {}, {}
+        jobs, meta_of, tables_of, skipped_of = [], {}, {}, {}
         for work in works:
             payload = ctx.payload(work.upstream)
             if payload is None:
@@ -211,6 +210,10 @@ class TriageStage:
             abstract, title, types = self._context(ctx, work.article_id)
             meta_of[work.article_id] = (is_a_meta_analysis(title, types), types)
             tables_of[work.article_id] = len(content.tables)
+            found = ctx.catalog.artifacts([work.article_id], "extract").get(work.article_id, {})
+            downloads = ctx.catalog.artifacts([work.article_id], "download").get(work.article_id, {})
+            skipped_of[work.article_id] = skipped_for_text(
+                current_extractions(ctx, found, downloads) or found, work.upstream)
             jobs.append((work.article_id, abstract,
                          [_as_dict(t) for t in content.tables]))
         if not jobs:
@@ -239,6 +242,8 @@ class TriageStage:
                     "passed": len(kept),
                     "read_outright": sum(1 for v in verdicts if v["points"] >= 3),
                     "is_meta_analysis": meta,
+                    **({"skipped_no_text": skipped_of[work.article_id]}
+                       if skipped_of.get(work.article_id) else {}),
                 },
             )
 
@@ -350,6 +355,30 @@ def _as_dict(table) -> Dict:
             "caption": getattr(table, "caption", "") or "",
             "footer": getattr(table, "footer", "") or ""}
 
+def judged_extraction(ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]) -> Optional[Artifact]:
+    """The extraction triage judges, whose text sync writes and passages reads."""
+    return _most_tables(current_extractions(ctx, found, downloads) or found)
+
+
+def skipped_for_text(candidates: Dict[str, Artifact], chosen: Artifact) -> List[Dict]:
+    """The no-text extractions with tables that `_most_tables` passed over, by source.
+
+    Their tables are not judged, so triage records which source it left and how
+    many tables it held. Nothing is skipped when the chosen extraction has no text
+    either, or when the no-text ones have no tables.
+    """
+    if not chosen.summary.get("has_text", True):
+        return []
+    return [
+        {"source": a.source, "tables": a.summary.get("tables", 0)}
+        for a in candidates.values()
+        if a.status is Status.OK
+        and a is not chosen
+        and not a.summary.get("has_text", True)
+        and a.summary.get("tables", 0)
+    ]
+
+
 def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     """The source that produced the most tables, coordinates or not.
 
@@ -361,13 +390,25 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     usable = [a for a in candidates.values() if a.status is Status.OK]
     if not usable:
         return None
+    # An extraction with no text is chosen only when none has any: the article's
+    # one text is what sync writes and passages index.
+    usable = [a for a in usable if a.summary.get("has_text", True)] or usable
     # ACE only when nothing else found a table. Its extra tables are copies
     # and uncaptioned fragments: of 111 articles also extracted from a shared
     # PDF, ACE had more tables in 31, and each one checked was a duplicate.
     # On 2026-10-06 no article had ACE beside another source with tables, so
     # this changed no verdict already made.
     preferred = [a for a in usable if a.source != "ace" and a.summary.get("tables", 0)]
-    return max(preferred or usable, key=lambda a: a.summary.get("tables", 0))
+    return min(preferred or usable, key=lambda a: (-a.summary.get("tables", 0), _rank(a.source), a.source))
+
+
+#: A tie on tables goes to the first of these (a source not listed comes after them, by
+#: name): publisher XML before ACE's page, a PDF's conversion last.
+TIE_ORDER = ("pubget", "pmc", "europepmc", "elsevier", "ace", "pdf")
+
+
+def _rank(source: str) -> int:
+    return TIE_ORDER.index(source) if source in TIE_ORDER else len(TIE_ORDER)
 
 
 def _serialised(path) -> str:
