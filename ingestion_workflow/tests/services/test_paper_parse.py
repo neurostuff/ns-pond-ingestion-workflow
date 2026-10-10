@@ -297,6 +297,27 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
     assert built[0].key != built[1].key
 
 
+def test_a_figure_analysis_proposes_no_role():
+    passage = "The peak is marked in Figure 2 (40, -52, -18)."
+    text = f"Results\n\n{passage}\n"
+    collection = _collection(
+        [
+            Analysis(
+                name="marked peak",
+                table_id="prose",
+                metadata={"source": "prose", "role": "figure", "passages": [0]},
+                coordinates=[Coordinate(x=40, y=-52, z=-18)],
+            )
+        ]
+    )
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    built = paper_parse._prose_analysis(
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+    )
+    assert (built.role, built.anchor_kind, built.from_prior_study) == (None, None, None)
+    assert built.role_source is None
+
+
 def test_every_table_gets_its_reading(written):
     _, parse, _ = written
     readings = {t["table_id"]: t["reading"] for t in parse["tables"]}

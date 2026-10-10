@@ -56,14 +56,15 @@ STATISTIC_KINDS = {
     "P": "p",
 }
 
-#: The prose model's roles, as CoordinateParse.role describes the mapping.
+#: The prose model's roles, as CoordinateParse.role describes the mapping. A
+#: figure analysis proposes no role: what its coordinates are is decided later.
 PROSE_ROLES = {
     "result": ("result", None),
     "roi": ("anchor", "roi"),
     "seed": ("anchor", "seed"),
     "target": ("anchor", "stimulation_target"),
     "prior_study": ("reference", None),
-    "figure": ("display", None),
+    "figure": (None, None),
 }
 
 _SECTIONS = {
@@ -893,7 +894,7 @@ def _analysis(
         role=role,
         anchor_kind=anchor_kind,
         from_prior_study=from_prior_study,
-        role_source="proposal",
+        role_source="proposal" if role else None,
         statistic=kinds.pop() if len(kinds) == 1 else None,
         points=points,
     )
