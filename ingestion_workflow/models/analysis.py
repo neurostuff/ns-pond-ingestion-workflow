@@ -7,6 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
+from study_schema.spaces import normalize_space
+
 from ..services.coordinate_flags import point_sign
 from .ids import Identifier
 from .statistics import ALLOWED_STATISTIC_KINDS
@@ -18,6 +20,16 @@ class CoordinateSpace(str, Enum):
     MNI = "MNI"
     TALAIRACH = "TAL"
     OTHER = "OTHER"
+
+    @classmethod
+    def from_label(cls, label: Any) -> Optional["CoordinateSpace"]:
+        """Any spelling of a space, through study_schema's alias table.
+
+        None when the label states no space or names both ("mni2tal"); a caller
+        that needs a member picks its own fallback.
+        """
+        space = normalize_space(label)
+        return cls(space) if space else None
 
 
 

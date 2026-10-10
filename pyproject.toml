@@ -42,6 +42,9 @@ dependencies = [
   "pypdfium2>=4",
   "shortuuid>=1.0",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
+  # study_schema.spaces, the coordinate-space alias table shared with pondie and
+  # neurostore. Pinned to neurostuff/study_schema#22; repin to main once it merges.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@4a9c305858e63687a704ba429376b7b8cb17aa56",
 ]
 
 [project.optional-dependencies]

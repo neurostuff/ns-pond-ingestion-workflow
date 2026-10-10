@@ -6,6 +6,8 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Sequence
 
+from study_schema.spaces import normalize_space
+
 from ingestion_workflow.clients.llm import GenericLLMClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.statistics import normalize_statistic_kind
@@ -100,7 +102,7 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
             analyses.append({"name": (a.get("name") or "").strip() or None,
                              "measure": a.get("measure"), "points": points})
     space = (answer or {}).get("space")
-    return {"space": space if space in ("MNI", "TAL") else None, "analyses": analyses}
+    return {"space": normalize_space(space), "analyses": analyses}
 
 
 class ProseCoordinateClient(GenericLLMClient):
