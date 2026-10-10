@@ -332,27 +332,25 @@ def test_a_space_the_extraction_read_beats_the_model():
     assert got is Space.MNI
 
 
-def test_the_extractions_OTHER_does_not_beat_a_model_that_knew():
-    """`OTHER` is the enum saying it does not know, and it is truthy, so it
-    used to win the `or`. 19.3% of tables stored OTHER and 68% of those name
-    MNI or Talairach in their own caption, footer or abstract -- which is
-    exactly what the model reads."""
+def test_a_stated_other_is_kept_over_the_model():
+    """`OTHER` is a stated space (neither MNI nor TAL); only null defers."""
     from ingestion_workflow.models import CoordinateSpace
 
     got, _ = _collection(CoordinateSpace.OTHER, "MNI")
-    assert got is CoordinateSpace.MNI
-    got, _ = _collection(CoordinateSpace.OTHER, "TAL")
+    assert got is CoordinateSpace.OTHER
+    got, _ = _collection(None, "TAL")
     assert got is CoordinateSpace.TALAIRACH
 
 
-def test_neither_knowing_stays_OTHER():
-    """Most articles never state a space anywhere the extractor can see."""
+def test_neither_knowing_is_null():
+    """Most articles never state a space anywhere the extractor can see.
+    Not stated is null: never MNI, and not `OTHER`, which is a stated space."""
     from ingestion_workflow.models import CoordinateSpace
 
     got, _ = _collection(CoordinateSpace.OTHER, None)
     assert got is CoordinateSpace.OTHER
     got, _ = _collection(None, None)
-    assert got is CoordinateSpace.OTHER
+    assert got is None
 
 
 def test_changing_what_reaches_the_model_makes_the_corpus_stale():
@@ -563,3 +561,11 @@ def test_without_a_token_count_the_estimate_stands():
     client.default_model = "nu"
     client._prompt_tokens = lambda request: None
     assert client.fit_to_window("x" * 9000) == client.native_request("x" * 9000)
+
+
+def test_a_point_with_no_label_in_an_unstated_table_is_null():
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    assert svc._coerce_space(None, None) is None
+    assert svc._coerce_space("", None) is None

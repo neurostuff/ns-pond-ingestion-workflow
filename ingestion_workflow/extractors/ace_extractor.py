@@ -85,7 +85,11 @@ def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
     return sanitized.lower() or fallback
 
 
-def _resolve_table_space(table: Any, article: Any) -> CoordinateSpace:
+def _coordinate_space_from_guess(guess: Optional[str]) -> Optional[CoordinateSpace]:
+    return coordinate_space_from_guess(str(guess) if guess is not None else None)
+
+
+def _resolve_table_space(table: Any, article: Any) -> Optional[CoordinateSpace]:
     parts = [
         getattr(table, "caption", None),
         getattr(table, "label", None),

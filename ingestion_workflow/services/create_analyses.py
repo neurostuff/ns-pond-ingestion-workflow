@@ -11,6 +11,7 @@ from typing import Callable, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.models.analysis import UNKNOWN_SPACES
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -289,13 +290,10 @@ class CreateAnalysesService:
         model_space: Optional[str] = None,
     ) -> AnalysisCollection:
         # A space the extraction actually read wins: it came from the article,
-        # not from this table. But `OTHER` is the enum's way of saying it does
-        # not know, and it is truthy, so it used to beat a model that did --
-        # 19.3% of tables stored `OTHER`, and 68% of those name MNI or
-        # Talairach in their own caption, footer or abstract, which is exactly
-        # what the model reads. Unknown is not an answer, so it defers.
-        read = table.space if table.space not in (None, CoordinateSpace.OTHER) else None
-        table_space = read or self._coerce_space(model_space, CoordinateSpace.OTHER)
+        # not from this table. Unknown is not an answer, so it defers to the
+        # model; with neither, it is None. A stated `OTHER` is kept.
+        read = table.space if table.space not in UNKNOWN_SPACES else None
+        table_space = read or self._coerce_space(model_space, None)
         collection = AnalysisCollection(
             slug=f"{article_slug}::{sanitized_table_id}",
             coordinate_space=table_space,
@@ -328,7 +326,7 @@ class CreateAnalysesService:
     def _convert_points(
         self,
         points: List[CoordinatePoint],
-        default_space: CoordinateSpace,
+        default_space: Optional[CoordinateSpace],
     ) -> List[Coordinate]:
         # Two passes: `is_subpeak` is a property of the analysis, not of a row.
         # A blank extent means nothing until the other rows are known to have
@@ -354,7 +352,7 @@ class CreateAnalysesService:
     def _read_point(
         self,
         point: CoordinatePoint,
-        default_space: CoordinateSpace,
+        default_space: Optional[CoordinateSpace],
     ) -> Dict[str, object]:
         """Normalise one point's numbers, without deciding any flag."""
         cluster_size = point.cluster_size
@@ -395,8 +393,8 @@ class CreateAnalysesService:
         }
 
     def _coerce_space(
-        self, space_label: Optional[str], fallback: CoordinateSpace
-    ) -> CoordinateSpace:
+        self, space_label: Optional[str], fallback: Optional[CoordinateSpace]
+    ) -> Optional[CoordinateSpace]:
         return CoordinateSpace.from_label(space_label) or fallback
 
     def _build_document(

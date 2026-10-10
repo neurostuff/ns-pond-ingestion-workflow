@@ -491,3 +491,25 @@ def test_a_page_no_publisher_claims_goes_to_the_generic_parser(tmp_path, monkeyp
 
     assert parsed == ["25142296"]
     assert [(c.x, c.y, c.z) for c in content.tables[0].coordinates] == [(24.0, 33.0, 15.0)]
+
+
+@pytest.mark.parametrize("guess, expected", [
+    (None, None), ("", None), ("UNKNOWN", None), ("unknown", None),
+    ("MNI", CoordinateSpace.MNI), ("tal", CoordinateSpace.TALAIRACH),
+    ("Talairach", CoordinateSpace.TALAIRACH), ("native", CoordinateSpace.OTHER),
+])
+def test_a_guess_that_found_nothing_is_null(guess, expected):
+    """Not stated is null, never MNI; `OTHER` is a space stated but neither."""
+    from ingestion_workflow.extractors.utils import coordinate_space_from_guess
+
+    assert coordinate_space_from_guess(guess) is expected
+    assert ace_module._coordinate_space_from_guess(guess) is expected
+
+
+def test_a_table_and_article_that_never_say_have_a_null_space(monkeypatch):
+    monkeypatch.setattr(ace_module.ace_extract, "guess_space", lambda text: "UNKNOWN")
+    table = SimpleNamespace(caption="Activations", label="Table 1", notes="")
+    assert ace_module._resolve_table_space(table, SimpleNamespace(space=None)) is None
+    assert ace_module._resolve_table_space(table, SimpleNamespace(space="UNKNOWN")) is None
+    tal = ace_module._resolve_table_space(table, SimpleNamespace(space="TAL"))
+    assert tal is CoordinateSpace.TALAIRACH

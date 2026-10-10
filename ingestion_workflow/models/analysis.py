@@ -32,6 +32,11 @@ class CoordinateSpace(str, Enum):
         return cls(space) if space else None
 
 
+#: A space nothing states. `OTHER` is a stated space (neither MNI nor TAL)
+#: and is kept.
+UNKNOWN_SPACES = (None, "")
+
+
 
 @dataclass
 class PointsValue:
@@ -160,7 +165,8 @@ class Coordinate:
     x: float
     y: float
     z: float
-    space: CoordinateSpace = CoordinateSpace.MNI
+    #: None when nothing states it. Never defaulted to MNI.
+    space: Optional[CoordinateSpace] = None
     statistic_value: Optional[float] = None
     statistic_type: Optional[str] = None
     cluster_size: Optional[int] = None
@@ -188,7 +194,7 @@ class Coordinate:
             "x": self.x,
             "y": self.y,
             "z": self.z,
-            "space": self.space.value,
+            "space": self.space.value if self.space else None,
             "statistic_value": self.statistic_value,
             "statistic_type": self.statistic_type,
             "cluster_size": self.cluster_size,
@@ -199,12 +205,12 @@ class Coordinate:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "Coordinate":
-        space_value = payload.get("space", CoordinateSpace.MNI.value)
+        space_value = payload.get("space")
         return cls(
             x=float(payload["x"]),
             y=float(payload["y"]),
             z=float(payload["z"]),
-            space=CoordinateSpace(space_value),
+            space=CoordinateSpace(space_value) if space_value else None,
             statistic_value=payload.get("statistic_value"),
             statistic_type=payload.get("statistic_type"),
             cluster_size=payload.get("cluster_size"),
@@ -337,7 +343,7 @@ class AnalysisCollection:
 
     slug: str
     analyses: List[Analysis] = field(default_factory=list)
-    coordinate_space: CoordinateSpace = CoordinateSpace.MNI
+    coordinate_space: Optional[CoordinateSpace] = None
     identifier: Optional[Identifier] = None
 
     def add_analysis(self, analysis: Analysis) -> None:
@@ -346,7 +352,7 @@ class AnalysisCollection:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "slug": self.slug,
-            "coordinate_space": self.coordinate_space.value,
+            "coordinate_space": self.coordinate_space.value if self.coordinate_space else None,
             "analyses": [analysis.to_dict() for analysis in self.analyses],
             "identifier": (self.identifier.__dict__.copy() if self.identifier else None),
         }
@@ -356,12 +362,11 @@ class AnalysisCollection:
         identifier_payload = payload.get("identifier")
         identifier = Identifier(**identifier_payload) if identifier_payload is not None else None
         slug = payload.get("slug") or ""
+        space = payload.get("coordinate_space")
         return cls(
             slug=str(slug),
             analyses=[Analysis.from_dict(item) for item in payload.get("analyses", [])],
-            coordinate_space=CoordinateSpace(
-                payload.get("coordinate_space", CoordinateSpace.MNI.value)
-            ),
+            coordinate_space=CoordinateSpace(space) if space else None,
             identifier=identifier,
         )
 
