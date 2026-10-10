@@ -47,18 +47,20 @@ NS_POND = Path("/data/alejandro/projects/ns-pond")
 CATALOG = NS_POND / "catalog"
 
 
-def stratum(text: str, proposed=()) -> str:
-    """The rarest thing a unit's text or proposal points at."""
+def stratum(text: str, proposed=(), strong: str = "") -> str:
+    """The rarest thing a unit points at: a non-result proposal, then cues in `strong` (a
+    table's caption and footer), then cues anywhere in `text`."""
     for role in ("figure", "target", "prior_study", "seed", "roi", "other"):
         if role in proposed:
             return f"proposed:{role}"
-    if _PRIOR_CUES.search(text) or _CITATION.search(text):
-        return "prior"
-    if _DISPLAY_CUES.search(text):
-        return "display"
-    if _ANCHOR_CUES.search(text):
-        return "anchor"
-    return "plain"
+    for where, body in (("caption", strong), ("text", text)):
+        if _DISPLAY_CUES.search(body):
+            return f"{where}:display"
+        if _PRIOR_CUES.search(body):
+            return f"{where}:prior"
+        if _ANCHOR_CUES.search(body):
+            return f"{where}:anchor"
+    return "citation" if _CITATION.search(text) else "plain"
 
 
 class Corpus:
@@ -165,7 +167,9 @@ def table_units():
                     {"name": a.get("name"), "points": a.get("points") or []} for a in analyses
                 ],
                 "base_row": row,
-                "stratum": stratum(cue),
+                "stratum": stratum(
+                    cue, strong=f"{row.get('caption') or ''} {row.get('footer') or ''}"
+                ),
             }
     print("table units", dict(found))
 
