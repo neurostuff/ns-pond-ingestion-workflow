@@ -13,8 +13,12 @@ from typing import Any, Dict, Mapping, Optional
 
 from .labels import ANCHOR_KINDS, COORDINATE_ROLES, SetRole, role_error
 
-#: Bump when the schema or the instructions change; recorded on every label.
-LABEL_VERSION = 2
+#: Bump when the schema or the instructions change; recorded on every label. Version 1
+#: rows were answered under the earlier role vocabulary and converted one-for-one to
+#: study_schema's fields afterwards; they keep 1 (the instructions that produced them),
+#: which separates them from answers that could say `other` (2) or knew the nuisance
+#: regressor rule (3).
+LABEL_VERSION = 3
 
 SET_LABEL: Dict[str, Any] = {
     "type": "object",

@@ -24,7 +24,7 @@ ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 #: defined to get them. A peak quoted from another study, a display position
 #: an electrode location or an `other` coordinate is kept in the parse for pondie and not
 #: uploaded.
-UPLOADED_ROLES = frozenset({CoordinateRole.result.value, CoordinateRole.anchor.value})
+UPLOADED_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
 
 def role_error(fields: Mapping[str, Any]) -> Optional[str]:

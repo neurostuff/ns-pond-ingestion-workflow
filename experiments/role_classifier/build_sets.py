@@ -11,7 +11,7 @@ Writes OUT_DIR/table_units.jsonl and OUT_DIR/prose_units.jsonl
 - Table units are nu-v21's real training rows (curated, real-positive,
   hand-judged; /home/james/train-data/train_v21.jsonl), one per table with
   analyses. Each target analysis is a set, and the row itself is kept as
-  `base_row`, so `export.nu_v21_rows` returns it in its own format with roles.
+  `base_row`.
   The article's sentences citing the table are read from its extracted text.
 - Prose units are the prose dataset's rows (jk-prose-coords v3), one per
   passage, sets in order of first appearance, the row kept as `base_row`.

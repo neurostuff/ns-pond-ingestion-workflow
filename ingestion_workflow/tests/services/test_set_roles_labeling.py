@@ -212,7 +212,7 @@ def test_rows_record_label_provenance_and_their_origin_s_context_version(tmp_pat
     assert (
         lee["prose_context_version"] == 2 and lee["from_prior_study"] is True
     )  # a reference is prior
-    assert lee["model"] == "gpt-6.1-sol" and lee["label_version"] == 2
+    assert lee["model"] == "gpt-6.1-sol" and lee["label_version"] == 3
 
 
 def test_the_job_resumes_skips_done_units_and_keeps_a_ledger(tmp_path):
@@ -282,61 +282,6 @@ def test_synthetic_units_bring_their_own_labels():
     )
 
 
-def test_nu_v21_rows_keep_their_format_and_gain_a_role_per_analysis(tmp_path):
-    [row] = export.nu_v21_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path))
-    assert set(TABLE_ROW) <= set(row) and row["table_serialised"] == TABLE_ROW["table_serialised"]
-    target = json.loads(row["target_json"])
-    assert [
-        (a["name"], a["role"], a["anchor_kind"], a["from_prior_study"]) for a in target["analyses"]
-    ] == [
-        ("seed", "anchor", "seed", True),
-        ("PPI", "result", None, False),
-    ]
-    assert target["analyses"][1]["measure"] == "voxels" and list(target["analyses"][0])[:4] == [
-        "name",
-        *export.ROLE_FIELDS,
-    ]
-    template = json.loads(export.NU_V21_TEMPLATE)["analyses"][0]
-    assert template["role"] == ["result", "anchor", "localization", "reference", "display", "other"]
-    assert template["anchor_kind"] == ["roi", "seed", "stimulation_target", "node"]
-    for a in target["analyses"]:
-        for k in export.ROLE_FIELDS:
-            del a[k]
-    assert json.dumps(target, separators=(",", ":")) == TABLE_ROW["target_json"]
-    assert row["target_json"].startswith('{"space":"MNI","analyses":[{"name":"seed","role":')
-
-
-def test_prose_rows_keep_their_format_and_take_each_set_s_role(tmp_path):
-    [row] = export.prose_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path))
-    assert [(p["role"], p["from_prior_study"]) for p in row["points"]] == [
-        ("reference", True),
-        ("result", False),
-    ]
-    assert (
-        row["text"] == PROSE_ROW["text"]
-        and row["id"] == "silver-1"
-        and row["prose_context_version"] == 2
-    )
-
-
-def test_a_unit_with_an_unlabelled_set_is_not_exported_to_the_extractors(tmp_path):
-    labels = _labels(tmp_path)
-    del labels["t:123-10-1000-x:t2#1"]
-    assert list(export.nu_v21_rows([TABLE_UNIT], labels)) == []
-
-
-def test_the_prose_export_can_replace_the_dataset(tmp_path):
-    unlabelled = {
-        **PROSE_UNIT,
-        "unit_id": "p:silver-2",
-        "base_row": {**PROSE_ROW, "id": "silver-2"},
-    }
-    labels = _labels(tmp_path)
-    rows = list(export.prose_rows([PROSE_UNIT, unlabelled], labels, keep_unlabelled=True))
-    assert [r["id"] for r in rows] == ["silver-1", "silver-2"]
-    assert rows[1] == unlabelled["base_row"]
-
-
 def _held_out_unit(split="test", label_source="neurometabench+luna"):
     return {
         **PROSE_UNIT,
@@ -344,29 +289,6 @@ def _held_out_unit(split="test", label_source="neurometabench+luna"):
         "dataset_split": split,
         "base_row": {**PROSE_ROW, "id": "nmb-9", "label_source": label_source},
     }
-
-
-def test_held_out_prose_rows_pass_through_and_are_not_labelled(tmp_path):
-    test_unit = _held_out_unit()
-    hand = {**_held_out_unit("train", "hand"), "unit_id": "p:gold-1"}
-    hand["base_row"] = {**hand["base_row"], "id": "gold-1"}
-    assert labeling.held_out(test_unit) and labeling.held_out(hand)
-    assert not labeling.held_out(PROSE_UNIT)
-    # Labels for these sets (an old job's) are ignored: the rows stay as they were.
-    labels = _labels(tmp_path)
-    for unit in (test_unit, hand):
-        for i in range(2):
-            labels[f"{unit['unit_id']}#{i}"] = labels[f"p:silver-1#{i}"]
-    rows = list(export.prose_rows([test_unit, hand], labels, keep_unlabelled=True))
-    assert rows == [test_unit["base_row"], hand["base_row"]]
-    assert list(export.prose_rows([test_unit, hand], labels)) == []
-
-
-def test_a_relabelled_prose_row_keeps_its_own_label_source(tmp_path):
-    unit = {**PROSE_UNIT, "base_row": {**PROSE_ROW, "label_source": "luna"}}
-    [row] = export.prose_rows([unit], _labels(tmp_path))
-    assert row["label_source"] == "luna"
-    assert row["role_label_source"] == "gpt-6.1-sol"
 
 
 def test_hand_rows_are_the_prose_gold_set_in_test():
@@ -434,8 +356,6 @@ def test_an_article_with_a_gold_label_is_test(tmp_path):
 
 def test_repeated_tables_take_their_first_copy_s_labels(tmp_path):
     copy = {**TABLE_UNIT, "unit_id": "t:zzzzzzzzzzzz:t1", "article_id": "zzzzzzzzzzzz"}
-    rows = list(export.nu_v21_rows([TABLE_UNIT, copy], _labels(tmp_path)))
-    assert len(rows) == 2 and rows[0]["target_json"] == rows[1]["target_json"]
     assert [r["set_id"] for r in export.encoder_rows([TABLE_UNIT, copy], _labels(tmp_path))] == [
         "t:123-10-1000-x:t2#0",
         "t:123-10-1000-x:t2#1",
@@ -537,14 +457,8 @@ def _role_values(value, found):
 
 def test_every_exported_role_is_study_schema_s(tmp_path):
     labels = _labels(tmp_path)
-    # A set labelled not coordinates is dropped from the extractors' targets.
     labels["t:123-10-1000-x:t2#1"].update(role=None, anchor_kind=None, from_prior_study=False)
-    unlabelled = {**PROSE_UNIT, "unit_id": "p:other", "article_id": "other"}
-    rows = [
-        *export.encoder_rows([TABLE_UNIT, PROSE_UNIT], labels),
-        *export.nu_v21_rows([TABLE_UNIT, PROSE_UNIT], labels),
-        *export.prose_rows([TABLE_UNIT, PROSE_UNIT, unlabelled], labels, keep_unlabelled=True),
-    ]
+    rows = list(export.encoder_rows([TABLE_UNIT, PROSE_UNIT], labels))
     found = _role_values(rows, [])
     assert {k for k, _ in found} == {"role", "anchor_kind"}
     for key, value in found:
@@ -552,17 +466,9 @@ def test_every_exported_role_is_study_schema_s(tmp_path):
             COORDINATE_ROLES if key == "role" else ("roi", "seed", "stimulation_target", "node")
         )
         assert value in (*allowed, None), f"{key} {value!r} is not study_schema's"
-    [v21] = [r for r in rows if "target_json" in r]
-    assert [a["name"] for a in json.loads(v21["target_json"])["analyses"]] == ["seed"]
 
 
 def test_a_legacy_role_in_an_exported_row_is_refused(tmp_path):
-    legacy = {
-        **PROSE_UNIT,
-        "base_row": {**PROSE_ROW, "points": [{**PROSE_ROW["points"][0], "role": "prior_study"}]},
-    }
-    with pytest.raises(ValueError, match="not a CoordinateRole"):
-        list(export.prose_rows([legacy], {}, keep_unlabelled=True))
     with pytest.raises(ValueError, match="not a CoordinateRole"):
         list(
             export.encoder_rows(

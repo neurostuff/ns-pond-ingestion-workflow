@@ -18,7 +18,7 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION, s
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .passages import passage_from
-from .resolve import KEPT_ROLES
+from .resolve import UPLOADED_ROLES
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +107,7 @@ class ProseStage:
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
                 kept += sum(1 for q in points
-                            if study_schema_role(q["role"])["role"] in KEPT_ROLES)
+                            if study_schema_role(q["role"])["role"] in UPLOADED_ROLES)
                 out.append({"text": p["text"], "heading": p.get("heading"),
                             "space": answer.get("space") or p.get("space"),
                             "analyses": answer.get("analyses", []), "error": error})

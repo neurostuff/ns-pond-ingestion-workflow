@@ -6,24 +6,17 @@ import collections
 import re
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
-from study_schema.models.paper_parse import CoordinateRole
-
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 from ingestion_workflow.prompts.prose_coordinates import study_schema_role
 
+from ingestion_workflow.services.set_roles.labels import UPLOADED_ROLES
+
 from ..plan import StagePlan, Work
 from ..stage import Context
 
 RESOLVE_VERSION = 4
-
-#: The roles uploaded (study_schema `CoordinateRole`s): this study's results,
-#: and the regions it defined to get them (an anchor: ROI, seed, stimulation
-#: target). Another study's peaks, a display location and numbers that are not
-#: coordinates are counted and dropped. Each prose analysis holds one role and
-#: anchor kind, recorded in its metadata with `from_prior_study`.
-KEPT_ROLES = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -64,7 +57,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             identifier=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The table collections, plus one collection of what the prose adds.
 
-    Points of the `KEPT_ROLES` are kept, in analyses of one role each. A point
+    Points of the `UPLOADED_ROLES` are kept, in analyses of one role each. A point
     already in one of the article's tables is the text restating it -- unless
     it is a result of an analysis computed at that peak (a correlation, a
     conjunction) that no table analysis there is. An ROI or seed at a table
@@ -97,7 +90,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             for p in a.get("points", []):
                 fields = study_schema_role(p.get("role"))
                 role, kind = fields["role"], fields["anchor_kind"]
-                if role not in KEPT_ROLES:
+                if role not in UPLOADED_ROLES:
                     dropped[role or "not_coordinates"] += 1
                     continue
                 xyz = (float(p["x"]), float(p["y"]), float(p["z"]))
@@ -164,7 +157,7 @@ class ResolveStage:
         self.settings = settings
 
     def fingerprint_for(self, prose: Artifact, analyses: Optional[Artifact]) -> str:
-        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM, COMPUTED_AT_PEAK.pattern, KEPT_ROLES,
+        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM, COMPUTED_AT_PEAK.pattern, UPLOADED_ROLES,
                            analyses.fingerprint if analyses is not None else "no tables",
                            upstream=prose.fingerprint)
 

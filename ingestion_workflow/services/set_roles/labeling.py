@@ -52,7 +52,8 @@ coordinates, a phantom's positions -- and then role, anchor_kind and from_prior_
 and false. For coordinates, the role:
 - result: a finding of THIS study -- peaks of an effect it tested, whatever the statistic.
 - anchor: a location the study placed or defined and then used: anchor_kind roi (a region of
-  interest or sphere), seed (connectivity, PPI), stimulation_target (TMS, tDCS, DBS, focused
+  interest or sphere; also white-matter or CSF voxels whose timeseries are regressed out as
+  nuisance, as in PMID 26589451), seed (connectivity, PPI), stimulation_target (TMS, tDCS, DBS, focused
   ultrasound), node (a network node or parcel centre).
 - localization: where electrodes, optodes or sources were placed or recorded.
 - reference: coordinates quoted from other publications for comparison, not used as anchors.

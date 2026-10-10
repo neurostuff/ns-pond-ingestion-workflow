@@ -42,8 +42,8 @@ dependencies = [
   "pypdfium2>=4",
   "shortuuid>=1.0",
   # CoordinateRole and AnchorKind, the role vocabulary of every set (services.set_roles).
-  # neurostuff/study_schema#25 (CoordinateRole.other); repin to main once it merges.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@78dd4d440fb194d2176c01c137858839a3e63090",
+  # Needs CoordinateRole.other.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@a0c2e1d19b5795f9a601328eea3de8a5fac65e59",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   # study_schema.spaces, the coordinate-space alias table shared with pondie and
   # neurostore. Pinned to study_schema main.
