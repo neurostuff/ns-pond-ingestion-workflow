@@ -885,7 +885,7 @@ def _analysis(
         name=name,
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
-        coordinate_space=collection.coordinate_space.value,
+        coordinate_space=_space_value(collection.coordinate_space),
         role=role,
         anchor_kind=anchor_kind,
         from_prior_study=from_prior_study,
@@ -921,6 +921,11 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) ->
         half.name = name
 
 
+def _space_value(space) -> Optional[str]:
+    """The space's string, or None when the table states none (null space)."""
+    return space.value if space else None
+
+
 def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     space = coordinate.space.value if coordinate.space else None
     values = None
@@ -936,7 +941,7 @@ def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     )
     return pp.ParsedPoint(
         coordinates=[coordinate.x, coordinate.y, coordinate.z],
-        space=space if space and space != collection.coordinate_space.value else None,
+        space=space if space and space != _space_value(collection.coordinate_space) else None,
         row=found[0] if found else None,
         column_group=found[1] if found else None,
         text_span=pp.TextSpan(start_char=span[0], end_char=span[1]) if span else None,
