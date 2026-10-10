@@ -461,7 +461,7 @@ class UploadService:
         `clear` lists base studies whose retraction was withdrawn: the flag goes
         to False and the notice to NULL, as neurostore's own ingester does.
 
-        The columns arrive with neurostore's migration f1a3c5e7b9d2 (M7). Until
+        The columns arrive with neurostore's migration f1a3c5e7b9d2. Until
         a database has them this logs and returns None, changing nothing; the
         study itself is never deleted or emptied for a retraction.
         """
