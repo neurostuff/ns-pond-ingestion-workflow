@@ -264,7 +264,7 @@ def test_a_prose_analysis_is_keyed_by_where_its_points_are_printed(written):
     span = {"start_char": start, "end_char": start + len("-22, -4, -20")}
     assert seed["text_spans"] == [span]
     assert seed["points"][0]["text_span"] == span
-    assert seed["key"] == keys.span_key("text", [(span["start_char"], span["end_char"])])
+    assert seed["key"] == keys.span_key("text", [(span["start_char"], span["end_char"])], seed["name"])
     assert (seed["role"], seed["anchor_kind"]) == ("anchor", "seed")
 
 
@@ -501,21 +501,17 @@ def test_the_legacy_negative_spelling_is_declared_and_stripped_too(tmp_path):
     assert parse.analyses[1].split.original_analysis == parse.analyses[0].key
 
 
-def test_two_prose_contrasts_on_one_peak_are_told_apart_by_their_names():
-    passage = (
-        "The poor reader and ASD groups shared a peak in the left fusiform (-42, -55, -18), "
-        "more for poor readers than for the ASD group."
-    )
+def _prose_parse(passage, names_and_points):
     text = f"Results\n\n{passage}\n"
     collection = _collection(
         [
             Analysis(
                 name=name,
                 table_id="prose",
-                metadata={"source": "prose", "passages": [0]},
-                coordinates=[Coordinate(x=-42, y=-55, z=-18)],
+                metadata={"source": "prose", "passages": passages},
+                coordinates=[Coordinate(x=x, y=y, z=z) for x, y, z in points],
             )
-            for name in ("poor reader", "ASD group", "controls")
+            for name, points, passages in names_and_points
         ]
     )
     paper = SimpleNamespace(
@@ -523,20 +519,62 @@ def test_two_prose_contrasts_on_one_peak_are_told_apart_by_their_names():
         text_sha256="0" * 64,
         tables=[],
     )
-    parse, omitted = paper_parse.coordinate_parse(
+    return paper_parse.coordinate_parse(
         paper,
         text,
         {},
         {"prose": collection},
         ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
     )
+
+
+def test_one_sentence_naming_four_analyses_on_two_point_sets_keeps_all_four():
+    passage = (
+        "Relative to silence, PO and PC both activated the right insula (12, -2, 8), "
+        "and NO and NC both activated the left putamen (14, -6, -4)."
+    )
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("PO > Sil", [(12, -2, 8)], [0]),
+            ("PC > Sil", [(12, -2, 8)], [0]),
+            ("NO > Sil", [(14, -6, -4)], [0]),
+            ("NC > Sil", [(14, -6, -4)], [0]),
+        ],
+    )
+    assert [a.name for a in parse.analyses] == ["PO > Sil", "PC > Sil", "NO > Sil", "NC > Sil"]
+    assert len({a.key for a in parse.analyses}) == 4
+    assert omitted == [] and parse.omitted_analyses is None
+
+
+def test_a_prose_duplicate_is_omitted_and_recorded_with_its_reason():
+    passage = "The poor reader group had a peak in the left fusiform (-42, -55, -18)."
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("poor reader", [(-42, -55, -18)], [0]),
+            ("Poor  Reader", [(-42, -55, -18)], [0]),
+            ("ASD group", [(-42, -55, -18)], [0]),
+        ],
+    )
     first, second = parse.analyses
-    assert first.key != second.key and len(second.text_spans) == 2
-    named = second.text_spans[0]
-    assert text[named.start_char : named.end_char] == "ASD group"
-    assert [str(o) for o in omitted] == [
-        f"text: 'controls': the same points as {first.key} ('poor reader')"
-    ]
+    assert (first.name, second.name) == ("poor reader", "ASD group")
+    assert [o.name for o in parse.omitted_analyses] == ["Poor  Reader"]
+    reason = parse.omitted_analyses[0].reason
+    assert reason == f"the same spans and name as {first.key} ('poor reader')"
+    assert parse.omitted_analyses[0].text_spans == first.text_spans
+    assert [str(o) for o in omitted] == [f"text: 'Poor  Reader': {reason}"]
+
+
+def test_a_prose_analysis_whose_passage_is_missing_is_recorded_as_omitted():
+    parse, _ = _prose_parse(
+        "A sentence with a peak (1, 2, 3).",
+        [("kept", [(1, 2, 3)], [0]), ("lost", [(40, 41, 42)], [7])],
+    )
+    assert [a.name for a in parse.analyses] == ["kept"]
+    assert [o.name for o in parse.omitted_analyses] == ["lost"] and parse.omitted_analyses[
+        0
+    ].text_spans is None
 
 
 def test_an_inlined_table_has_text_spans_for_it_and_its_rows():

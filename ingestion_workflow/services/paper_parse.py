@@ -504,10 +504,10 @@ def coordinate_parse(
     """The CoordinateParse, and the analyses that could not be written into it.
 
     An analysis whose cells or characters cannot be found has no key, and one whose
-    key another analysis already holds would overwrite it, so each is left out with
-    its reason rather than given a made-up key. The reasons of a table's analyses are
-    also the `reason` of its TableReading; the contract has no slot for those of the
-    text (see `Omitted`).
+    key another analysis already holds is a duplicate (a text key covers the spans and
+    the normalized name), so each is left out with its reason rather than given a
+    made-up key. The reasons of a table's analyses are also the `reason` of its
+    TableReading; those of the text are the parse's `omitted_analyses`.
     """
     text = text if isinstance(text, _Text) else _Text(text)
     omitted: List[Omitted] = []
@@ -523,10 +523,7 @@ def coordinate_parse(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
         if prose:
-            # One at a time, so each sees the keys of those before it.
-            built = (
-                _prose_analysis(a, collection, text, inputs, omitted, seen) for a in table_analyses
-            )
+            built = (_prose_analysis(a, collection, text, inputs, omitted) for a in table_analyses)
         else:
             built = _table_analyses(
                 table_id, table_analyses, collection, grids.get(table_id), omitted
@@ -535,11 +532,13 @@ def coordinate_parse(
             if analysis is None:
                 continue
             if analysis.key in seen:
+                what = "cells" if analysis.origin == "table" else "spans and name"
                 omitted.append(
                     Omitted(
                         analysis.name,
                         analysis.table_id,
-                        f"the same cells as {analysis.key} ({seen[analysis.key]!r})",
+                        f"the same {what} as {analysis.key} ({seen[analysis.key]!r})",
+                        _span_pairs(analysis),
                     )
                 )
                 continue
@@ -562,6 +561,16 @@ def coordinate_parse(
         text_sha256=paper.text_sha256,
         analyses=analyses,
         tables=_readings(paper, per_table, inputs, omitted) or None,
+        omitted_analyses=[
+            pp.OmittedAnalysis(
+                name=o.name,
+                text_spans=[pp.TextSpan(start_char=a, end_char=b) for a, b in o.spans] or None,
+                reason=o.reason,
+            )
+            for o in omitted
+            if o.table_id is None
+        ]
+        or None,
         text_sweep=_text_sweep(inputs),
     )
     return parse, omitted
@@ -571,17 +580,21 @@ def coordinate_parse(
 class Omitted:
     """A stage1 analysis the parse could not hold, and why.
 
-    study_schema's CoordinateParse has no slot for these yet (an `omitted[]` of
-    name, table and reason would be one); until it does, a table's are written into
-    its TableReading's `reason`, and all of them into the sync summary.
+    A table's are written into its TableReading's `reason`, a text analysis's into
+    the parse's `omitted_analyses`, and all of them into the sync summary.
     """
 
     name: str
     table_id: Optional[str]
     reason: str
+    spans: Sequence[Tuple[int, int]] = ()
 
     def __str__(self) -> str:
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
+
+
+def _span_pairs(analysis: pp.ParsedAnalysis) -> List[Tuple[int, int]]:
+    return [(s.start_char, s.end_char) for s in analysis.text_spans or []]
 
 
 def _table_analyses(
@@ -726,16 +739,12 @@ def _prose_analysis(
     text: _Text,
     inputs: ParseInputs,
     omitted: List[Omitted],
-    seen: Optional[Mapping[str, str]] = None,
 ) -> Optional[pp.ParsedAnalysis]:
-    """A text analysis, keyed by where its points are printed.
+    """A text analysis, keyed by where its points are printed and by its name.
 
-    Several analyses can come from one passage, so the passage alone would give
-    them one key; the characters of each point are what tell them apart. When
-    another analysis already holds those characters (one peak reported for two
-    contrasts) the place its own name is printed is added; failing that, it is
-    omitted as the same points. The passage is the fallback for an analysis none
-    of whose points can be found.
+    One sentence can state several analyses, and two of them can share their
+    points, so the name is part of the key. The passage is the fallback for an
+    analysis none of whose points can be found.
     """
     passages = (inputs.prose or {}).get("passages") or []
     windows: List[Tuple[int, int]] = []
@@ -754,19 +763,7 @@ def _prose_analysis(
             )
         )
         return None
-    key = keys.span_key("text", spans)
-    if key in (seen or {}):
-        named = next(
-            (s for w in windows for s in [text.find(analysis.name, w[0])] if s and s[1] <= w[1]),
-            None,
-        )
-        if named is None or named in spans:
-            omitted.append(
-                Omitted(analysis.name, None, f"the same points as {key} ({seen[key]!r})")
-            )
-            return None
-        spans = sorted(spans + [named])
-        key = keys.span_key("text", spans)
+    key = keys.span_key("text", spans, analysis.name)
     role, anchor = PROSE_ROLES.get(
         (analysis.metadata or {}).get("role") or "result", ("result", None)
     )
