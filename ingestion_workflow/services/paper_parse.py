@@ -899,12 +899,12 @@ def _analysis(
 def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) -> None:
     """Declare the analyses stage's sign split as `split{}` on both halves.
 
-    The stage names the inverse half (the negative values) `<name> (inverse)` (older payloads: `(negative)`)
-    and emits it right after the original; that adjacency and the name are
-    the only record of the split, so this is where it becomes a field, and
-    only then is the suffix dropped from the name. The inverse half's
-    `original_analysis` is the original's key. An `(inverse)` or `(negative)` name with no
-    such original keeps it.
+    The stage names the inverse half (the negative values) `<name> (inverse)`
+    (older payloads: `(negative)`) and emits it right after the original;
+    that adjacency and the name are the only record of the split, so this is
+    where it becomes a field, and only then is the suffix dropped from the
+    name. The inverse half's `original_analysis` is the original's key. An
+    `(inverse)` or `(negative)` name with no such original keeps it.
     """
     for i, (half, negative) in enumerate(analyses):
         if half is None or not negative or i == 0:
