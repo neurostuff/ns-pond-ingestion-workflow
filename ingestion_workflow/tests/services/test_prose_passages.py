@@ -112,3 +112,23 @@ def test_a_passage_is_spans_of_the_text_it_was_found_in():
     assert heading_text(text, p.heading_span) == p.heading == "Results"
     assert [text[a:b] for a, b in (h.span for h in p.hits)] == ["x = -22,  y = -4, z = -18", "[−34, 18, 2]"]
     assert text[p.span[0]:p.span[1]].startswith("We compared") and "\t" not in p.text
+
+
+# The forms realign_passages' second hit pattern missed (review of #67, beast sample): the
+# passages stage re-reads them with this one detector, and each hit's span prints its x, y, z.
+@pytest.mark.parametrize("text, printed", [
+    # ax3isvj6nst4: a coordinate ending the sentence
+    ("Docking used the coordinates X = −1.106; Y = −22.327; "
+     "Z = 31.732. The structures were minimized.",
+     [("X = −1.106; Y = −22.327; Z = 31.732", (-1.106, -22.327, 31.732))]),
+    # aik5ptrpx3yu: a triplet broken across lines
+    ("Activation was in the right insula (40, 18, and -2) and the left (-40,\n            14, and -2).",
+     [("(40, 18, and -2)", (40, 18, -2)), ("(-40,\n            14, and -2)", (-40, 14, -2))]),
+    # rjmurjfl6hc7: negatives run together, the sign the only separator
+    ("ROIs were primary visual cortex (left: -8.7-92-1; right: 12.3-92.6-1) in MNI space.",
+     [("-8.7-92-1", (-8.7, -92, -1)), ("12.3-92.6-1", (12.3, -92.6, -1))]),
+])
+def test_a_passage_re_read_places_the_hits_realignment_missed(text, printed):
+    (p,) = passages(text)
+    got = [(text[a:b], (h.x, h.y, h.z)) for h in p.hits for a, b in [h.span]]
+    assert [(s.strip("()"), xyz) for s, xyz in got] == [(s.strip("()"), xyz) for s, xyz in printed]

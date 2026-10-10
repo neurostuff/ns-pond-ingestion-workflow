@@ -98,6 +98,8 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
                 "passages": [{"span": [a, len(old) - 1], "before": None, "after": None, "heading": [3, 10],
                               "hits": [{"pattern": "labelled", "x": -22, "y": -4, "z": -18,
                                         "span": [hit, hit + len("x = -22, y = -4, z = -18")]}]}]}
+    citations = {"text_sha256": R.sha256(old),
+                 "citations": [{"text_span": {"start_char": a + 4, "end_char": a + 8, "text": "peak"}}]}
     with Catalog.open(tmp_path / "k") as catalog:
         ref_id = catalog.register(Identifier(pmid="1")).id
         catalog.record([
@@ -106,6 +108,8 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
             Outcome(article_id=ref_id, stage="passages", source="", fingerprint="pa-1", payload=passages,
                     summary={"passages": 1}),
             Outcome(article_id=ref_id, stage="sync", source="", fingerprint="sy-1", payload={}, summary={}),
+            Outcome(article_id=ref_id, stage="references", source="pubget", fingerprint="re-1",
+                    payload=citations, summary={"citations": 1}),
         ])
         result = R.Result(ref_id, "pubget", "rewritten", str(text), R.sha256(old), R.sha256(new),
                           [list(e) for e in diff(old, new).edits])
@@ -121,7 +125,9 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
     assert new[slice(*p["heading"])] == "Results"
     assert payload["text_sha256"] == R.sha256(new) == got["extract"].summary["text_sha256"]
     assert got["passages"].fingerprint == PassagesStage.fingerprint_for(None, got["extract"], R.sha256(new))
-    assert got["sync"].fingerprint == R.STALE_SYNC
+    assert got["sync"].fingerprint == R.STALE
+    # The citations' offsets index the old text: the references stage reads the new one again.
+    assert got["references"].fingerprint == R.STALE and got["references"].status.value == "ok"
 
     # A span the map cannot carry leaves the passages on the old text, for the stage to read again.
     s = p["span"][0]
@@ -146,3 +152,63 @@ def test_an_unchanged_text_has_its_hash_recorded_once(tmp_path):
         assert (what, extraction.summary["text_sha256"], extraction.fingerprint) == (
             "none", R.sha256("same"), "ex-1")
         assert R.carried(catalog, result)[0] == []
+
+
+def _rewritten_with_passages(tmp_path, old, new, n=1):
+    """A catalog holding `n` articles whose text went from `old` to `new`, with passages on `old`."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.models.ids import Identifier
+    from ingestion_workflow.services.offsets import diff
+    from ingestion_workflow.services.prose_passages import passages
+
+    found = passages(old)
+    payload = lambda path: {"text_from": "extract", "full_text_path": path, "text_sha256": R.sha256(old),
+                            "passages": [{"span": list(p.span), "before": None, "after": None, "heading": None,
+                                          "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
+                                                   for h in p.hits]} for p in found]}
+    results = []
+    with Catalog.open(tmp_path / "k") as catalog:
+        for i in range(n):
+            ref_id = catalog.register(Identifier(pmid=str(100 + i))).id
+            path = str(tmp_path / f"{i}.txt")
+            catalog.record([
+                Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                        payload={"full_text_path": path}, summary={"text_sha256": R.sha256(old)}),
+                Outcome(article_id=ref_id, stage="passages", source="", fingerprint="pa-1",
+                        payload=payload(path), summary={}),
+            ])
+            results.append(R.Result(ref_id, "pubget", "rewritten", path, R.sha256(old), R.sha256(new),
+                                    [list(e) for e in diff(old, new).edits]))
+    return results
+
+
+def test_a_hit_whose_characters_an_edit_changed_is_read_again_not_moved(tmp_path):
+    from ingestion_workflow.catalog import Catalog
+
+    old = "## Results\nThe peak (x = -22, y = -4, z = -18) was in the amygdala.\n"
+    # a superscript kept inside the triplet: the old x, y, z are no longer what it prints
+    new = old.replace("y = -4", "y = -4\u00b9")
+    (result,) = _rewritten_with_passages(tmp_path, old, new)
+    with Catalog.open(tmp_path / "k") as catalog:
+        rows, what = R.carried(catalog, result)
+    assert what == "stale" and {r.stage for r in rows} == {"extract"}
+
+
+def test_carry_all_reads_and_records_in_batches(tmp_path):
+    from ingestion_workflow.catalog import Catalog
+
+    old = "## Results\nThe peak (x = -22, y = -4, z = -18) was in the amygdala.\n"
+    new = "## Results\nA note\u00b2 first.\n" + old[len("## Results\n"):]
+    results = _rewritten_with_passages(tmp_path, old, new, n=5)
+    with Catalog.open(tmp_path / "k") as catalog:
+        reads = []
+        artifacts = catalog.artifacts
+        catalog.artifacts = lambda ids, stage: reads.append(len(ids)) or artifacts(ids, stage)
+        counts = R.carry_all(catalog, results, write=True, batch=2)
+        catalog.artifacts = artifacts
+        moved = catalog.artifacts([r.article_id for r in results], "passages")
+        payloads = [catalog.payload(moved[r.article_id][""]) for r in results]
+    assert counts == {"remapped": 5}
+    assert reads == [2] * 4 + [2] * 4 + [1] * 4  # one query per stage per batch
+    for payload in payloads:
+        assert new[slice(*payload["passages"][0]["hits"][0]["span"])] == "x = -22, y = -4, z = -18"
