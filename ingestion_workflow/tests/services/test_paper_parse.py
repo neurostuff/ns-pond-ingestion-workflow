@@ -88,7 +88,7 @@ def _written(tmp_path):
     per_table = {
         "tbl1": _collection(
             [
-                # The analyses stage's sign split: the positive half, then "<name> (negative)".
+                # The analyses stage's sign split: the original half, then "<name> (negative)".
                 Analysis(
                     name="Faces > Houses",
                     table_id="tbl1",
@@ -235,9 +235,8 @@ def test_keys_are_minted_from_the_cells_the_points_sit_in(written):
 def test_the_sign_split_is_declared_not_left_in_the_name(written):
     _, parse, _ = written
     halves = [a for a in parse["analyses"] if a["name"] == "Faces > Houses"]
-    assert [a["split"]["direction"] for a in halves] == ["positive", "negative"]
-    assert {a["split"]["group"] for a in halves} == {halves[0]["key"]}
-    assert [a["split"]["primary"] for a in halves] == [True, False]
+    assert [a["split"]["half"] for a in halves] == ["original", "inverse"]
+    assert [a["split"].get("original_analysis") for a in halves] == [None, halves[0]["key"]]
     assert not any(a["name"].endswith("(negative)") for a in parse["analyses"])
 
 
@@ -479,7 +478,7 @@ def test_negative_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
         [
             Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
             Analysis(name="Other", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
-            # Not right after its primary: no split, so the name keeps its direction.
+            # Not right after its original: no split, so the name keeps its direction.
             Analysis(name="Fear > Neutral (negative)", coordinates=point),
         ]
     )
