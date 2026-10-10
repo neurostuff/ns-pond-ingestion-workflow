@@ -473,6 +473,18 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
     assert "omitted 'a > b'" in reading.reason and "omitted 'Unprinted'" in reading.reason
 
 
+def test_a_placeholder_analysis_with_no_points_is_recorded_as_omitted(tmp_path):
+    collection = _collection(
+        [
+            Analysis(name="UNKNOWN", coordinates=[]),
+            Analysis(name="A > B", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+        ]
+    )
+    parse, omitted = _parse(tmp_path, SHARED, {"tbl1": collection})
+    assert [a.name for a in parse.analyses] == ["A > B"]
+    assert [str(o) for o in omitted] == ["tbl1: 'UNKNOWN': a placeholder analysis with no points"]
+
+
 def test_inverse_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     collection = _collection(
