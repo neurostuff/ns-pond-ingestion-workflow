@@ -154,6 +154,12 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OPENALEX_EMAIL", "EMAIL"),
     )
 
+    crossref_email: Optional[str] = Field(
+        default=None,
+        description="Contact email for Crossref (its polite pool: 10 requests/s, no key)",
+        validation_alias=AliasChoices("CROSSREF_EMAIL", "EMAIL"),
+    )
+
     openalex_api_key: Optional[str] = Field(
         default=None,
         description=(
