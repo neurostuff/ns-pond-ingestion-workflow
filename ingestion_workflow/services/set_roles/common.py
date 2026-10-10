@@ -111,7 +111,7 @@ def cue_summary(text: str) -> str:
             f"citations={len(_CITATION.findall(text))}",
             f"prior_words={len(_PRIOR_CUES.findall(text))}",
             f"anchor_words={len(_ANCHOR_CUES.findall(text))}",
-            f"display_words={len(_SLICE_CUES.findall(text))}",
+            f"figure_words={len(_SLICE_CUES.findall(text))}",
         ]
     )
 

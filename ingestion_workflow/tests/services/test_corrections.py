@@ -307,6 +307,7 @@ def _notices(retracted=False, notice=False, status=Status.OK):
 
 class _Upstream:
     fingerprint = "abc"
+    summary = {}
 
 
 def test_only_a_retraction_moves_the_upload_fingerprint():
@@ -386,7 +387,9 @@ def _execute(monkeypatch, notices, base_study_id="BASE1", empty=False, prior=Non
     monkeypatch.setattr(
         svc.UploadService, "retract", lambda self, t: calls["retract"].append(t) or []
     )
-    return list(stage.execute(SimpleNamespace(catalog=catalog), [work])), calls
+    # The space payload holds no set, so upload's check for decided roles passes.
+    ctx = SimpleNamespace(catalog=catalog, payload=lambda artifact: {})
+    return list(stage.execute(ctx, [work])), calls
 
 
 def test_a_retracted_paper_is_uploaded_kept_and_marked(monkeypatch):

@@ -293,6 +293,9 @@ def _write_stage1(
                 {
                     **({"source": "prose"} if prose else {}),
                     **_stage1_role(analysis),
+                    # Kept in its place, so pondie's `table_id#ordinal` keys never
+                    # move, and marked: it is not this study's to analyse.
+                    "held": bool((analysis.metadata or {}).get("held")),
                     "name": analysis.name,
                     "description": analysis.description,
                     "table_id": analysis.table_id or table_id,

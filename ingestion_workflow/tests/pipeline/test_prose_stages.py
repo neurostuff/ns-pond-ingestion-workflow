@@ -115,6 +115,42 @@ def test_one_peak_reported_for_two_contrasts_stays_under_both():
     assert summary["prose_points"] == 2
 
 
+def test_a_seed_and_the_results_connected_to_it_stay_apart_across_passages():
+    """A Methods passage's seed and a Results passage's PPI peaks share a name;
+    they are different sets, and the peak at the seed's xyz is kept."""
+    prose = {"passages": [_passage(("amygdala PPI", [(-20, -4, -18, "seed")])),
+                          _passage(("amygdala PPI", [(-20, -4, -18, "result"), (30, 20, 4, "result")]))]}
+    out, summary = resolve({}, prose, "slug")
+    got = [(a["name"], a["metadata"]["passages"], len(a["coordinates"])) for a in out["prose"]["analyses"]]
+    assert got == [("amygdala PPI", [0], 1), ("amygdala PPI", [1], 2)]
+    assert summary["prose_points"] == 3 and summary["repeated"] == 0
+
+
+def test_unnamed_analyses_are_each_their_own_set_in_the_model_s_order():
+    """An unnamed peak quoted in the Introduction never joins an unnamed result."""
+    prose = {"passages": [_passage((None, [(10, 10, 10, "prior_study")])),
+                          _passage((None, [(40, -50, -20, "result")]), (None, [(1, 2, 3, "result")]))]}
+    out, _ = resolve({}, prose, "slug")
+    got = [(a["name"], a["metadata"]["passages"], a["coordinates"][0]["x"])
+           for a in out["prose"]["analyses"]]
+    assert got == [("unnamed prose analysis", [0], 10.0), ("unnamed prose analysis", [1], 40.0),
+                   ("unnamed prose analysis", [1], 1.0)]
+
+
+def test_a_point_dropped_from_a_set_is_recorded_with_its_reason():
+    tables = {"t1": _table([(-22, -4, -18)])}
+    prose = {"passages": [_passage(("faces > houses", [(40, -50, -20, "result"), (40.2, -50, -20, "result"),
+                                                       (-22, -4, -18, "result")]))]}
+    out, summary = resolve(tables, prose, "slug")
+    [analysis] = out["prose"]["analyses"]
+    assert len(analysis["coordinates"]) == 1
+    assert analysis["metadata"]["dropped"] == [
+        {"x": 40.2, "y": -50.0, "z": -20.0, "reason": "repeats a point of this analysis"},
+        {"x": -22.0, "y": -4.0, "z": -18.0, "reason": "restates a table peak"},
+    ]
+    assert (summary["repeated"], summary["restated"]) == (1, 1)
+
+
 def test_an_unstated_space_is_left_for_the_space_stage():
     out, _ = resolve({}, {"passages": [_passage(("a > b", [(1, 2, 3, "result")]), space=None)]}, "s")
     assert out["prose"]["coordinate_space"] is None
@@ -188,6 +224,7 @@ class _Results:
 def _roles(settings, monkeypatch):
     stage = RolesStage(settings)
     monkeypatch.setattr(stage, "classifier", lambda origin: _Results())
+    monkeypatch.setattr(stage, "model_state", lambda origin: (f"fake-{origin}@1", None))
     return stage
 
 

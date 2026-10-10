@@ -340,11 +340,13 @@ def test_each_set_takes_its_latest_label_version(tmp_path):
     write(sol, row("p:u#0", 3, "display"), row("p:u#1", 3, "result"), row("p:u#2", 2, "display"))
     write(relabel, row("p:u#0", 4, "other"))
     write(gold, row("p:u#1", 3, "anchor", "seed"))
-    got = labeling.latest_labels([gold, sol, relabel])
+    dropped = {}
+    got = labeling.latest_labels([gold, sol, relabel], dropped)
     assert {k: (v["label_version"], v["role"]) for k, v in got.items()} == {
         "p:u#0": (4, "other"),  # relabelled: the later version wins wherever it was written
         "p:u#1": (3, "anchor"),  # same version: the first directory (gold) wins
     }  # p:u#2's display was never relabelled: it is no study_schema role, so it is left out
+    assert list(dropped) == ["p:u#2"] and "display" in dropped["p:u#2"]  # and counted
     assert labeling.read_labels(sol)["p:u#2"]["role"] == "display"  # the job still sees it done
 
 

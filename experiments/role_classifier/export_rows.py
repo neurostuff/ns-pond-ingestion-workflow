@@ -7,7 +7,8 @@
 Each set takes its label of the highest `label_version` in any `--labels`
 directory; between equal versions the first directory given wins (list a gold
 set first). A label no version made study_schema's (an old `display`) is left
-out. Writes one file per origin, one row per set, for train_encoder.py:
+out, and listed with its reason in the summary printed at the end: relabel those
+before training. Writes one file per origin, one row per set, for train_encoder.py:
 OUT_DIR/encoder-table.jsonl for the table model and OUT_DIR/encoder-text.jsonl
 for the prose model. `--id-map` maps slug article ids to database ids for the split.
 """
@@ -31,7 +32,8 @@ def main():
     parser.add_argument("--id-map", type=Path, help="slug article id -> database id (JSON)")
     args = parser.parse_args()
     id_map = json.loads(args.id_map.read_text()) if args.id_map else {}
-    labels = labeling.latest_labels(args.labels)
+    dropped = {}
+    labels = labeling.latest_labels(args.labels, dropped)
     units = [u for path in args.units for u in labeling.read_units(path)]
     args.out.mkdir(parents=True, exist_ok=True)
     counts = collections.Counter()
@@ -46,7 +48,11 @@ def main():
     finally:
         for handle in handles.values():
             handle.close()
-    print(json.dumps(dict(sorted(counts.items())), indent=2))
+    # Sets whose latest label is not study_schema's (a `display` no later version
+    # replaced): not trained on, and listed so they can be relabelled.
+    counts["dropped_labels"] = len(dropped)
+    print(json.dumps({**dict(sorted(counts.items())), "dropped": dict(sorted(dropped.items()))},
+                     indent=2))
 
 
 if __name__ == "__main__":

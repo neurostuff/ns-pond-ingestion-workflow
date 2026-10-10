@@ -12,7 +12,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
-from .roles import refuse_unassigned, with_roles
+from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,9 @@ class UploadStage:
             self.settings.upload_metadata_only,
             *([marked] if marked else []),
             *([notice] if notice else []),
-            upstream=upstream.fingerprint,
+            # The sets and their decided roles, not the role models: a retrained
+            # model that decides every set as before uploads nothing again.
+            upstream=(upstream.summary or {}).get("upload_basis") or upstream.fingerprint,
         )
 
     def plan(
@@ -391,7 +393,11 @@ class UploadStage:
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         excluded = excluded or {}
         for work in works:
-            payload = excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {}))
+            # Held sets stay in the payload, in place, for the exclusions' and
+            # pondie's positions; neurostore gets only the uploaded ones.
+            payload = uploaded_sets(
+                excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {})) or {}
+            )
             if not payload:
                 empty.append(work)
                 continue

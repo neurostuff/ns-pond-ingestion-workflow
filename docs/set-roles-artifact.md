@@ -41,32 +41,42 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    The values of `role` and `anchor_kind` are study_schema's enums
    (`study_schema.models.paper_parse`), and the field names are `CoordinateParse`'s.
 
-2. A set whose role is not uploaded (anything but `result` and `anchor`) moves from the
-   collection's `analyses` to its `held` list. `held` keeps the set, with its `set_role`, for
-   readers of the parse; `space` and `upload` read only `analyses`.
+2. Every analysis gains `metadata.held`: true for a set whose role is not uploaded (anything
+   but `result` and `anchor`). A held set stays in the collection's `analyses`, in its place, so
+   a set's position -- pondie's `table_id#ordinal` key -- never moves. `upload` leaves held sets
+   out (`roles.uploaded_sets`); `space` and stage1 keep them.
 
-The summary is `{tables, sets, sets_by_origin, roles, held, sources}`: `tables` counts
-collections that still have an analysis (the selection gate reads it), `roles` counts sets by
-role (an anchor by its kind, a null role as `not_coordinates`), and `sources` names each
-origin's model.
+The summary is `{tables, sets, sets_by_origin, roles, held, sources, role_values, input}`:
+`tables` counts collections that have an analysis (the selection gate reads it), `roles` counts
+sets by role (an anchor by its kind, a null role as `not_coordinates`), `sources` names each
+origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
+`from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the
+stage read.
 
-**Failed.** When a set's origin has no usable model (not configured, missing, for another
-origin, or built on another context version), the whole article fails with
-`no role for its sets: <reason>`, for example
-`no role for its sets: no prose role model is configured (role_model_prose)`. No set of that
-article gets a role, and everything downstream of it stays blocked. The fingerprint includes
-each origin's model, so configuring or retraining one makes the articles it reads stale.
+**Blocked, not failed.** When a set's origin has no usable model (not configured, missing, for
+another origin, or built on another context version), the articles with sets of that origin are
+not attempted: the plan counts them as blocked, with the reason (for example
+`no prose role model is configured (role_model_prose)`), and logs the reason once. Nothing is
+recorded for them, so no retry is used up, and they are planned on the first run with the model
+configured, with no `--refresh`. Everything downstream of them stays blocked. A missing role
+only ever blocks: it never takes anything back from neurostore or ns-pond. The fingerprint
+includes each origin's model, so configuring or retraining one makes the articles it reads stale.
 
 ## Downstream
 
 - `space` requires `roles`, and its payload is the roles payload with spaces filled in.
 - `upload` and `sync` count an article as blocked unless its `roles` artifact is OK. Before
-  writing, each refuses a payload with any set, in `analyses` or `held`, that lacks a complete
-  `set_role` (`sets without a role from the roles stage: ...`).
+  writing, each refuses a payload with any set, held or not, that lacks `metadata.held` or a
+  complete study_schema `set_role` (`sets without a role from the roles stage: ...`).
+- `upload`'s fingerprint follows space's `upload_basis`: the roles stage's `input` and
+  `role_values`, not the models. A retrained model re-uploads only the articles where a set's
+  role changed; elsewhere neurostore keeps the earlier `role_confidence` and `role_source` until
+  the article is uploaded again for another reason.
 - ns-pond `stage1/analyses.json` writes each analysis's role fields at its top level: `role`,
   `anchor_kind`, `from_prior_study`, `prior_study_evidence`, `role_confidence`, `role_source`,
-  `role_origin`, plus `source: "prose"` for a prose set. An analysis without `set_role` is
-  never written.
+  `role_origin`, and `held`, plus `source: "prose"` for a prose set. Held sets are written in
+  their place, so the positional keys pondie derives do not move. An analysis without
+  `set_role` is never written.
 
 ## Reading a role
 

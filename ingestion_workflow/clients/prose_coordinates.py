@@ -13,7 +13,6 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.statistics import normalize_statistic_kind
 from ingestion_workflow.prompts.prose_coordinates import (
     INSTRUCTION,
-    ROLES,
     TEMPLATE,
     WITH_CONTEXT,
     schema,
@@ -93,11 +92,11 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
                 continue
             if not written(xyz, nums):
                 continue
-            role = p.get("role") if p.get("role") in ROLES else "other"
+            # The model still answers a role word per point; it is not kept:
+            # what a set is for is the roles stage's to decide.
             points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                            "statistic": normalize_statistic_kind(p.get("statistic")),
-                           "value": p.get("value"), "cluster_size": p.get("cluster_size"),
-                           "role": role})
+                           "value": p.get("value"), "cluster_size": p.get("cluster_size")})
         if points:
             analyses.append({"name": (a.get("name") or "").strip() or None,
                              "measure": a.get("measure"), "points": points})

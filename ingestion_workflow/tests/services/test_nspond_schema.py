@@ -175,6 +175,23 @@ def test_every_analysis_carries_its_decided_role_in_stage1(tmp_path):
     assert got == [("prose", "anchor", "seed", "text", "prose"), ("prose", "result", None, "text", "prose")]
 
 
+def test_a_held_set_keeps_its_place_so_pondie_s_keys_do_not_shift(tmp_path):
+    """pondie keys stage1 entries `table_id#ordinal`: a held middle set stays,
+    marked, so `t1#3` still names the third set of t1."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    t1 = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
+        Analysis(name=name, table_id="t1", metadata={**_decided(role), "held": held},
+                 coordinates=[Coordinate(x=float(i), y=0.0, z=0.0)])
+        for i, (name, role, held) in enumerate([("a > b", "result", False),
+                                                ("Lee et al.", "reference", True),
+                                                ("b > a", "result", False)])])
+    root = tmp_path / "pond"
+    nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"t1": t1}, [])
+    got = [(a["name"], a["role"], a["held"]) for a in read_record(root, BASE).stage1["analyses"]]
+    assert got == [("a > b", "result", False), ("Lee et al.", "reference", True), ("b > a", "result", False)]
+
+
 def test_a_table_analysis_carries_its_role_and_no_prose_keys(written):
     [analysis] = read_record(written, BASE).stage1["analyses"]
     assert "source" not in analysis
@@ -232,7 +249,7 @@ def test_an_unstated_space_is_null_in_stage1(tmp_path):
         slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
     prose = AnalysisCollection(slug="s", identifier=identifier, analyses=[
         Analysis(name="faces > houses", table_id="prose",
-                 metadata={"source": "prose", "role": "result"},
+                 metadata=_decided(origin="text", source="prose"),
                  coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
     root = tmp_path / "pond"
     bundle = ArticleExtractionBundle(content, ArticleMetadata(title="T"))

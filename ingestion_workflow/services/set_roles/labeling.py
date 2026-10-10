@@ -298,17 +298,28 @@ def read_labels(out_dir: Path) -> Dict[str, Dict[str, Any]]:
     return _latest(_batch_rows(out_dir))
 
 
-def latest_labels(directories: Sequence[Path]) -> Dict[str, Dict[str, Any]]:
+def latest_labels(
+    directories: Sequence[Path], dropped: Optional[Dict[str, str]] = None
+) -> Dict[str, Dict[str, Any]]:
     """Every set's label across job directories: the highest `label_version` wins.
 
     A set relabelled under a later version (as version 4 relabelled the sets an
     earlier one called `display`) takes the later label wherever it was written;
     between equal versions the first directory given wins, so a gold set listed
     first keeps its label. A row whose fields are not study_schema's (a `display`
-    no later version replaced) is left out: it cannot be trained on.
+    no later version replaced) is left out: it cannot be trained on. Each one
+    left out is added to `dropped`, `{set_id: reason}`, for the export to report.
     """
     found = _latest(row for directory in directories for row in _batch_rows(directory))
-    return {set_id: row for set_id, row in found.items() if not role_error(row)}
+    out = {}
+    for set_id, row in found.items():
+        error = role_error(row)
+        if error:
+            if dropped is not None:
+                dropped[set_id] = error
+            continue
+        out[set_id] = row
+    return out
 
 
 def _latest(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Dict[str, Any]]:

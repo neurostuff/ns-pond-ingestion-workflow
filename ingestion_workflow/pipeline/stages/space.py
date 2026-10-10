@@ -98,6 +98,7 @@ class SpaceStage:
                     else None
                 )
                 filled, summary = fill_spaces(payload, text)
+                summary.update(upload_basis(work.upstream))
             except Exception as exc:
                 logger.warning("space failed for %s: %s", work.article_id, exc)
                 yield Outcome.failure(
@@ -114,6 +115,21 @@ class SpaceStage:
                 payload=filled,
                 summary=summary,
             )
+
+
+def upload_basis(roles: Artifact) -> Dict[str, str]:
+    """`{"upload_basis": ...}`: what upload's freshness follows, or {} for an older roles artifact.
+
+    The roles stage's input and the roles it decided, without the models that
+    decided them, so a retrained model re-uploads only the articles where a
+    set's role changed. Its confidences and model name, which neurostore also
+    keeps, are refreshed with the next upload the article has for any reason.
+    """
+    summary = roles.summary or {}
+    if not summary.get("input") or not summary.get("role_values"):
+        return {}
+    return {"upload_basis": fingerprint("space", SPACE_VERSION, summary["role_values"],
+                                        upstream=summary["input"])}
 
 
 def _needs_filling(payload: Dict[str, dict]) -> bool:

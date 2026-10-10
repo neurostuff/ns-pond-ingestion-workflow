@@ -6,9 +6,10 @@ role comes from a fine-tuned classifier of its origin (`services.set_roles`):
 table sets from the table model (`role_model_table`), prose sets from the
 prose model (`role_model_prose`), each reading its own context builder's input.
 There is no proposal and no default role: an article with a set whose origin's
-model is not configured, or cannot be used, fails here with the reason, and
-everything downstream of it stays blocked. The payload it writes is described
-in docs/set-roles-artifact.md.
+model is not configured, or cannot be used, is not attempted -- the plan counts
+it as blocked, with the reason -- so it uses up no retries, and it runs as soon
+as the model is configured. Everything downstream of it stays blocked meanwhile.
+The payload it writes is described in docs/set-roles-artifact.md.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ from .space import _article_text
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
-ROLES_VERSION = 2
+ROLES_VERSION = 3
 
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
@@ -119,11 +120,12 @@ def assign_roles(
 
     `classifiers` maps an origin (`table`, `text`) to its classifier. A set
     whose origin has none raises `MissingRoleModel`: no set is given a role
-    any other way. Each analysis gains `metadata.set_role` (`SET_ROLE_FIELDS`).
-    Sets of a role that is not uploaded -- a reference, a bare slice position
-    (other), a localization, numbers that are not coordinates -- move from the
-    collection's `analyses` to its `held`, which upload and space do not read,
-    so they stay with the article without becoming this study's analyses.
+    any other way. Each analysis gains `metadata.set_role` (`SET_ROLE_FIELDS`)
+    and `metadata.held`. Sets of a role that is not uploaded -- a reference, a
+    bare slice position (other), a localization, numbers that are not
+    coordinates -- are held: they stay in the collection's `analyses`, in their
+    place, so a set's position (pondie's `table_id#ordinal`) never moves, and
+    upload leaves them out (`uploaded_sets`).
     """
     found = list(set_contexts(payload, passages, text))
     by_origin: Dict[str, list] = collections.defaultdict(list)
@@ -153,8 +155,9 @@ def assign_roles(
             )
     out: Dict[str, Any] = {}
     roles, held = collections.Counter(), 0
+    values = []
     for table_id, collection in (payload or {}).items():
-        kept, set_aside = [], list((collection or {}).get("held", []))
+        kept = []
         for index, analysis in enumerate((collection or {}).get("analyses", [])):
             decision = decisions[(table_id, index)]
             metadata = decision.to_metadata()
@@ -163,20 +166,19 @@ def assign_roles(
             ]
             analysis = {
                 **analysis,
-                "metadata": {**(analysis.get("metadata") or {}), "set_role": metadata},
+                "metadata": {
+                    **(analysis.get("metadata") or {}),
+                    "set_role": metadata,
+                    "held": not decision.uploaded,
+                },
             }
             # An anchor by its kind; numbers set aside as not coordinates as such.
             roles[decision.anchor_kind or decision.role or "not_coordinates"] += 1
-            if decision.uploaded:
-                kept.append(analysis)
-            else:
-                held += 1
-                set_aside.append(analysis)
-        out[table_id] = {
-            **collection,
-            "analyses": kept,
-            **({"held": set_aside} if set_aside else {}),
-        }
+            held += not decision.uploaded
+            kept.append(analysis)
+            values.append([table_id, index, decision.role, decision.anchor_kind,
+                           decision.from_prior_study, not decision.uploaded])
+        out[table_id] = {**collection, "analyses": kept}
     summary = {
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
         "sets": len(found),
@@ -184,27 +186,43 @@ def assign_roles(
         "roles": dict(roles),
         "held": held,
         "sources": {o: c.source for o, c in chosen.items()},
+        # The decided roles alone, without confidences or the model that
+        # decided them: what upload's freshness follows, so a retrained model
+        # re-uploads only the articles where a set's role changed.
+        "role_values": fingerprint("role-values", values),
     }
     return out, summary
+
+
+def uploaded_sets(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """The payload without its held sets: what upload writes to neurostore."""
+    return {
+        table_id: {
+            **(collection or {}),
+            "analyses": [
+                a for a in (collection or {}).get("analyses") or []
+                if not ((a or {}).get("metadata") or {}).get("held")
+            ],
+        }
+        for table_id, collection in (payload or {}).items()
+    }
 
 
 def unassigned(payload: Mapping[str, Any]) -> List[str]:
     """`table_id#index` of every set, uploaded or held, without a role the roles stage decided.
 
     What upload and sync check before writing anything: a set missing its
-    `metadata.set_role`, or carrying one that is incomplete or not
-    study_schema's, is never written with a guessed role.
+    `metadata.set_role` or `metadata.held`, or carrying a role that is
+    incomplete or not study_schema's, is never written with a guessed role.
     """
     out = []
     for table_id, collection in (payload or {}).items():
-        sets = [
-            *((collection or {}).get("analyses") or []),
-            *((collection or {}).get("held") or []),
-        ]
-        for index, analysis in enumerate(sets):
-            role = ((analysis or {}).get("metadata") or {}).get("set_role")
+        for index, analysis in enumerate((collection or {}).get("analyses") or []):
+            metadata = (analysis or {}).get("metadata") or {}
+            role = metadata.get("set_role")
             if (
-                not isinstance(role, Mapping)
+                not isinstance(metadata.get("held"), bool)
+                or not isinstance(role, Mapping)
                 or any(k not in role for k in SET_ROLE_FIELDS)
                 or not role.get("role_source")
                 or role_error(role)
@@ -250,6 +268,7 @@ class RolesStage:
         self.requires, self.requires_flag = self.upstream_for(settings)
         self._classifiers: Dict[str, Any] = {}
         self._lock = threading.Lock()
+        self._said: Set[str] = set()
 
     @classmethod
     def upstream_for(cls, settings):
@@ -319,6 +338,17 @@ class RolesStage:
             "roles", ROLES_VERSION, sorted(models.items()), upstream=basis or upstream.fingerprint
         )
 
+    @staticmethod
+    def needs(parent: Artifact) -> Tuple[str, ...]:
+        """The origins of the sets in `parent`, read from its summary; both when it cannot tell."""
+        summary = parent.summary or {}
+        origins = []
+        if summary.get("tables", 1):
+            origins.append("table")
+        if parent.stage == "resolve" and summary.get("prose_analyses", 1):
+            origins.append("text")
+        return tuple(origins)
+
     def plan(
         self,
         ctx: Context,
@@ -327,12 +357,24 @@ class RolesStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        models = self.models()
+        states = {o: self.model_state(o) for o in self.origins()}
+        models = {o: self.model_fingerprint(o, state) for o, state in states.items()}
+        missing = {o: reason for o, (source, reason) in states.items() if source is None}
+        for reason in missing.values():
+            if reason not in self._said:
+                self._said.add(reason)
+                logger.warning("roles: articles with such sets are blocked: %s", reason)
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
                 plan.blocked += 1
+                continue
+            # Not a failure: nothing is attempted, so no retry is used up, and
+            # the article is planned on the first run with the model configured.
+            lacking = [missing[o] for o in self.needs(parent) if o in missing]
+            if lacking:
+                plan.block(lacking[0])
                 continue
             fp = self.fingerprint_for(parent, models)
             existing = artifacts.get(ref.id, {}).get("")
@@ -398,6 +440,11 @@ class RolesStage:
                     fingerprint=work.fingerprint,
                 )
                 continue
+            # What the roles were decided on, for upload's freshness (`space.upload_basis`).
+            parent = work.upstream
+            basis = (parent.summary or {}).get("basis") if parent.stage == "resolve" else None
+            summary["input"] = fingerprint("roles-input", ROLES_VERSION,
+                                           upstream=basis or parent.fingerprint)
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
