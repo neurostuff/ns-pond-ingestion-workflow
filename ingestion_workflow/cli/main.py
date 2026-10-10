@@ -699,6 +699,8 @@ def refresh_text(
         if result.status in ("rewritten", "would_rewrite"):
             new_of.setdefault(result.old_sha256, set()).add((result.new_sha256, result.text_path))
             rewritten.append(result)
+        elif result.status == "unchanged" and not dry_run:
+            rewritten.append(result)  # to record its hash
         if out:
             out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))

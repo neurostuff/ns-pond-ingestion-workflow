@@ -17,9 +17,8 @@ from typing import Callable, Iterable, List, Optional, Sequence, Tuple, Union
 Edit = Tuple[int, int, int, int]  # old start, old end, new start, new end
 Span = Tuple[int, int]
 
-#: Longest run either side of a changed block that is diffed character by character;
-#: a longer one is kept as one replacement, and spans inside it are lost.
-CHAR_DIFF = 20000
+#: Longest changed run diffed character by character; a longer one is diffed word by word.
+CHARS = 400
 
 
 def sha256(text: str) -> str:
@@ -109,13 +108,43 @@ class Chain:
         return Chain([m.inverse() for m in reversed(self.maps)])
 
 
-def _refine(old: str, new: str, a: int, c: int) -> List[Edit]:
-    """The edits turning old into new, character by character, at offsets a and c."""
-    if not old or not new or len(old) > CHAR_DIFF or len(new) > CHAR_DIFF:
+TOKEN = re.compile(r"\s+|[^\W_]+|.", re.S)
+
+
+def _trim(old: str, new: str, a: int, c: int) -> Tuple[str, str, int, int]:
+    """Both strings without their common ends, and the offsets moved past the head."""
+    head = 0
+    while head < min(len(old), len(new)) and old[head] == new[head]:
+        head += 1
+    tail = 0
+    while tail < min(len(old), len(new)) - head and old[-1 - tail] == new[-1 - tail]:
+        tail += 1
+    return old[head:len(old) - tail], new[head:len(new) - tail], a + head, c + head
+
+
+def _chars(old: str, new: str, a: int, c: int) -> List[Edit]:
+    """Character by character when short; one replacement when long."""
+    old, new, a, c = _trim(old, new, a, c)
+    if not old or not new or len(old) > CHARS or len(new) > CHARS:
         return [(a, a + len(old), c, c + len(new))]
+    matcher = SequenceMatcher(None, old, new, autojunk=False)
     return [(a + i1, a + i2, c + j1, c + j2)
-            for tag, i1, i2, j1, j2 in SequenceMatcher(None, old, new, autojunk=False).get_opcodes()
-            if tag != "equal"]
+            for tag, i1, i2, j1, j2 in matcher.get_opcodes() if tag != "equal"]
+
+
+def _refine(old: str, new: str, a: int, c: int) -> List[Edit]:
+    """The edits turning old into new, at offsets a and c: word by word, then character
+    by character inside each changed run of words."""
+    old, new, a, c = _trim(old, new, a, c)
+    if not old or not new or (len(old) <= CHARS and len(new) <= CHARS):
+        return _chars(old, new, a, c)
+    olds, news = TOKEN.findall(old), TOKEN.findall(new)
+    o_at, n_at = _starts(olds), _starts(news)
+    edits: List[Edit] = []
+    for tag, i1, i2, j1, j2 in SequenceMatcher(None, olds, news).get_opcodes():
+        if tag != "equal":
+            edits += _chars(old[o_at[i1]:o_at[i2]], new[n_at[j1]:n_at[j2]], a + o_at[i1], c + n_at[j1])
+    return edits
 
 
 def sub(pattern: Union[str, "re.Pattern"], repl: Union[str, Callable], text: str,

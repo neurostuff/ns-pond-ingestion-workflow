@@ -129,3 +129,20 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
                     [[s + 1, s + 20, s + 1, s + 3]])
     with Catalog.open(tmp_path / "k") as catalog:
         assert R.carried(catalog, lost)[1] == "stale"
+
+
+def test_an_unchanged_text_has_its_hash_recorded_once(tmp_path):
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.models.ids import Identifier
+
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(pmid="2")).id
+        catalog.record([Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                                payload={"full_text_path": "t"}, summary={"has_text": True})])
+        result = R.Result(ref_id, "pubget", "unchanged", "t", R.sha256("same"), R.sha256("same"))
+        rows, what = R.carried(catalog, result)
+        catalog.record(rows)
+        (extraction,) = catalog.artifacts([ref_id], "extract")[ref_id].values()
+        assert (what, extraction.summary["text_sha256"], extraction.fingerprint) == (
+            "none", R.sha256("same"), "ex-1")
+        assert R.carried(catalog, result)[0] == []
