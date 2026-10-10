@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
-from ingestion_workflow.models.analysis import CoordinateSpace
+from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -73,11 +73,10 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         for a in (blob or {}).get("analyses", [])
         for c in a.get("coordinates", [])
     ]
-    # `OTHER` is how tables written before null existed said "not stated".
     table_spaces = collections.Counter(
         (blob or {}).get("coordinate_space") for blob in (tables or {}).values()
         if (blob or {}).get("analyses")
-        and (blob or {}).get("coordinate_space") not in (None, "", CoordinateSpace.OTHER.value))
+        and (blob or {}).get("coordinate_space") not in UNKNOWN_SPACES)
 
     groups: Dict[Tuple[str, str], Analysis] = {}
     seen = set()
@@ -121,7 +120,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                     cluster_size=int(size) if isinstance(size, (int, float)) else None,
                     cluster_measure=a.get("measure") if size is not None else None,
                 ))
-                spaces[space] += 1
+                if space is not None:
+                    spaces[space] += 1
 
     out = dict(tables or {})
     if groups:

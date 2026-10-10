@@ -332,16 +332,13 @@ def test_a_space_the_extraction_read_beats_the_model():
     assert got is Space.MNI
 
 
-def test_the_extractions_OTHER_does_not_beat_a_model_that_knew():
-    """`OTHER` is the enum saying it does not know, and it is truthy, so it
-    used to win the `or`. 19.3% of tables stored OTHER and 68% of those name
-    MNI or Talairach in their own caption, footer or abstract -- which is
-    exactly what the model reads."""
+def test_a_stated_other_is_kept_over_the_model():
+    """`OTHER` is a stated space (neither MNI nor TAL); only null defers."""
     from ingestion_workflow.models import CoordinateSpace
 
     got, _ = _collection(CoordinateSpace.OTHER, "MNI")
-    assert got is CoordinateSpace.MNI
-    got, _ = _collection(CoordinateSpace.OTHER, "TAL")
+    assert got is CoordinateSpace.OTHER
+    got, _ = _collection(None, "TAL")
     assert got is CoordinateSpace.TALAIRACH
 
 
@@ -351,7 +348,7 @@ def test_neither_knowing_is_null():
     from ingestion_workflow.models import CoordinateSpace
 
     got, _ = _collection(CoordinateSpace.OTHER, None)
-    assert got is None
+    assert got is CoordinateSpace.OTHER
     got, _ = _collection(None, None)
     assert got is None
 

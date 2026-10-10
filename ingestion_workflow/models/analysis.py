@@ -32,6 +32,11 @@ class CoordinateSpace(str, Enum):
         return cls(space) if space else None
 
 
+#: A space nothing states. `OTHER` is a stated space (neither MNI nor TAL)
+#: and is kept.
+UNKNOWN_SPACES = (None, "")
+
+
 
 @dataclass
 class PointsValue:

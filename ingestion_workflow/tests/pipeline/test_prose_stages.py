@@ -121,14 +121,14 @@ def test_an_unstated_space_is_left_for_the_space_stage():
     assert out["prose"]["analyses"][0]["coordinates"][0]["space"] is None
 
 
-def test_a_legacy_other_table_does_not_give_the_prose_a_space():
-    """`OTHER` on a table written before null existed means not stated."""
+def test_a_stated_other_table_gives_the_prose_that_space():
+    """`OTHER` is a stated space, so the prose inherits it."""
     point = {"x": 9.0, "y": 9.0, "z": 9.0, "space": "OTHER"}
     tables = {"t1": {"slug": "s::t1", "coordinate_space": "OTHER", "identifier": None,
                      "analyses": [{"name": "x", "coordinates": [point]}]}}
     prose = {"passages": [_passage(("a > b", [(1, 2, 3, "result")]), space=None)]}
     out, _ = resolve(tables, prose, "s")
-    assert out["prose"]["coordinate_space"] is None
+    assert out["prose"]["coordinate_space"] == "OTHER"
 
 
 ARTICLE = """<article><front><article-meta><title-group><article-title>T</article-title></title-group>

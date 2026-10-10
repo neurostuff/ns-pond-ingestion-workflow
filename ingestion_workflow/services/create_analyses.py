@@ -11,6 +11,7 @@ from typing import Callable, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.models.analysis import UNKNOWN_SPACES
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -289,12 +290,9 @@ class CreateAnalysesService:
         model_space: Optional[str] = None,
     ) -> AnalysisCollection:
         # A space the extraction actually read wins: it came from the article,
-        # not from this table. An extraction stored before null existed says
-        # "not stated" as `OTHER`, which is truthy, so it used to beat a model
-        # that did know -- 19.3% of tables stored `OTHER`, and 68% of those
-        # name MNI or Talairach in their own caption, footer or abstract.
-        # Unknown is not an answer, so it defers; with neither, it is None.
-        read = table.space if table.space not in (None, CoordinateSpace.OTHER) else None
+        # not from this table. Unknown is not an answer, so it defers to the
+        # model; with neither, it is None. A stated `OTHER` is kept.
+        read = table.space if table.space not in UNKNOWN_SPACES else None
         table_space = read or self._coerce_space(model_space, None)
         collection = AnalysisCollection(
             slug=f"{article_slug}::{sanitized_table_id}",
