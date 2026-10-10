@@ -56,6 +56,8 @@ class Job:
     text_path: Optional[str]
     #: The download's article file: article.xml (JATS), content.xml (Elsevier), the page (ACE).
     article_file: Optional[str]
+    #: The extraction's PMID, which ACE needs for a page that does not print one.
+    pmid: Optional[str] = None
 
 
 @dataclass
@@ -102,7 +104,7 @@ def rebuild(job: Job, write: bool) -> Result:
     old = _read(path)
     result.old_sha256 = sha256(old)
     try:
-        new, result.figure_captions = build(job.source, Path(job.article_file), path)
+        new, result.figure_captions = build(job.source, Path(job.article_file), path, job.pmid)
     except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
         result.status = f"failed: {type(exc).__name__}: {exc}"[:300]
         return result
@@ -126,7 +128,8 @@ def rebuild(job: Job, write: bool) -> Result:
     return result
 
 
-def build(source: str, article_file: Path, text_path: Path) -> Tuple[str, List[dict]]:
+def build(source: str, article_file: Path, text_path: Path,
+          pmid: Optional[str] = None) -> Tuple[str, List[dict]]:
     """The text the source's extractor writes for this download, and its caption spans."""
     if source in JATS_SOURCES:
         from lxml import etree
@@ -144,7 +147,7 @@ def build(source: str, article_file: Path, text_path: Path) -> Tuple[str, List[d
 
         set_skip_remote_tables(True)  # the tables fetched at extraction are in its cache
         _, text, captions = ace_extractor.article_text_and_captions(
-            article_file.read_text(encoding="utf-8"), None, text_path.parent / "downloaded_tables")
+            article_file.read_text(encoding="utf-8"), pmid, text_path.parent / "downloaded_tables")
         return text, captions
     raise ValueError(f"cannot rebuild the text of {source}")
 
@@ -172,8 +175,9 @@ def jobs(catalog, sources: Sequence[str]) -> Iterator[Job]:
                     continue
                 payload = catalog.payload(extraction) or {}
                 download = catalog.payload(downloads.get(article_id, {}).get(source)) or {}
+                identifier = payload.get("identifier") or download.get("identifier") or {}
                 yield Job(article_id, source, payload.get("full_text_path"),
-                          _article_file(source, download.get("files", [])))
+                          _article_file(source, download.get("files", [])), identifier.get("pmid"))
 
 
 def _article_file(source: str, files: Sequence[dict]) -> Optional[str]:
@@ -218,10 +222,13 @@ BATCH = 1000
 
 
 def _remap_citations(payload: dict, offset_map) -> dict:
-    """The references payload with its citations' spans on the new text; one the map
-    cannot carry is dropped (the stage, marked stale, reads them all again)."""
+    """The references payload with its citations' spans on the new text. A citation whose
+    marker an edit changed is dropped, and a sentence an edit changed is cleared (the stage,
+    marked stale, reads them all again)."""
     def move(span):
-        got = offset_map.span(span["start_char"], span["end_char"]) if span else None
+        if not span or offset_map.touches(span["start_char"], span["end_char"]):
+            return None
+        got = offset_map.span(span["start_char"], span["end_char"])
         return {**span, "start_char": got[0], "end_char": got[1]} if got else None
 
     citations = []

@@ -297,3 +297,65 @@ def test_jobs_find_each_source_s_article_file():
     assert R._article_file("ace", files) == "/d/page.html"
     assert R._article_file("pmc", files) == "/d/pmcid_1/article.xml"
     assert R._article_file("pdf", files) is None
+
+
+INLINE_FIG = """<article><front><article-meta><title-group><article-title>T</article-title></title-group>
+</article-meta></front><body><sec><title>Results</title><p>Patients showed more (Smith, 2001).</p>
+<fig id="F1"><label>Figure 1</label><caption><p>Insula map.</p></caption></fig>
+<p>Controls did not (Jones, 2003).</p><p>Done.</p></sec></body></article>"""
+
+
+def test_a_body_figure_taken_out_moves_the_citations_after_it(tmp_path):
+    """The old text printed the caption in the body; the new one prints it in the legends,
+    so a citation after it moves back, and a sentence that held it is cleared."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+    from ingestion_workflow.models.ids import Identifier
+
+    xml = tmp_path / "pmcid_8" / "article.xml"
+    xml.parent.mkdir()
+    xml.write_text(INLINE_FIG)
+    new, _ = article_text_and_captions(etree.parse(str(xml)), xml.parent)
+    from ingestion_workflow.extractors.figure_captions import HEADING
+
+    old = new[: new.index(HEADING)].rstrip().removesuffix("##").rstrip().replace("Controls", "Figure 1 Insula map.\n\nControls")
+    text = tmp_path / "article.txt"
+    text.write_text(old, encoding="utf-8")
+
+    def citation(marker, sentence_from):
+        start = old.index(marker)
+        return {"text_span": {"start_char": start, "end_char": start + len(marker), "text": marker},
+                "sentence": {"start_char": old.index(sentence_from), "end_char": start + len(marker) + 2}}
+
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(pmid="8")).id
+        catalog.record([
+            Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                    payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),
+            Outcome(article_id=ref_id, stage="references", source="pubget", fingerprint="re-1", summary={},
+                    payload={"citations": [citation("Jones, 2003", "Controls"),
+                                           citation("Jones, 2003", "Figure 1"),  # its sentence held the caption
+                                           citation("Insula", "Figure 1")]}),  # inside the caption
+        ])
+        result = R.rebuild(R.Job(ref_id, "pubget", str(text), str(xml)), write=True)
+        R.carry_all(catalog, [result], write=True)
+        rebuilt = text.read_text(encoding="utf-8")
+        assert rebuilt == new and old.index("Jones") != new.index("Jones")
+        moved = catalog.payload(catalog.artifacts([ref_id], "references")[ref_id]["pubget"])["citations"]
+        assert [rebuilt[c["text_span"]["start_char"]:c["text_span"]["end_char"]] for c in moved] == ["Jones, 2003"] * 2
+        assert rebuilt[moved[0]["sentence"]["start_char"]:moved[0]["sentence"]["end_char"]] == "Controls did not (Jones, 2003)."
+        assert moved[1]["sentence"] is None
+
+
+def test_an_ace_rebuild_gives_ace_the_extraction_s_pmid(tmp_path, monkeypatch):
+    """Without it ACE returns no article for a page that does not print its PMID
+    (14 of 61 ScienceDirect, OUP and MDPI pages on beast)."""
+    from ingestion_workflow.extractors import ace_extractor
+
+    seen = []
+    monkeypatch.setattr(ace_extractor, "article_text_and_captions",
+                        lambda html, pmid, table_dir: seen.append(pmid) or (None, "text", []))
+    page = tmp_path / "1.html"
+    page.write_text("<html></html>")
+    R.build("ace", page, tmp_path / "article.txt", "14597300")
+    assert seen == ["14597300"]
