@@ -38,7 +38,7 @@ from ingestion_workflow.services.naming import sanitize_table_id
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 3
+PAPER_PARSE_VERSION = 4
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -532,12 +532,12 @@ def coordinate_parse(
             if analysis is None:
                 continue
             if analysis.key in seen:
-                what = "cells" if analysis.origin == "table" else "spans and name"
+                what = "cells" if analysis.origin == "table" else "spans"
                 omitted.append(
                     Omitted(
                         analysis.name,
                         analysis.table_id,
-                        f"the same {what} as {analysis.key} ({seen[analysis.key]!r})",
+                        f"the same {what} and name as {analysis.key} ({seen[analysis.key]!r})",
                         _span_pairs(analysis),
                     )
                 )
@@ -641,7 +641,7 @@ def _table_analyses(
                 points,
                 origin="table",
                 table_id=table_id,
-                key=keys.table_key(table_id, cells),
+                key=keys.table_key(table_id, cells, analysis.name),
                 cells=[pp.CellRef(row=r, column_group=g) for r, g in sorted(cells)],
             )
         )
@@ -914,6 +914,9 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) ->
         original.split = pp.SignSplit(half="original", rule=rule)
         half.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
         half.name = name
+        half.key = keys.table_key(
+            half.table_id, [(c.row, c.column_group) for c in half.cells], name
+        )
 
 
 def _space_value(space) -> Optional[str]:
