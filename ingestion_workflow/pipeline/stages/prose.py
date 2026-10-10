@@ -17,7 +17,7 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
 from ..stage import Context
-from .passages import passage_from
+from .passages import passage_from, read_text
 from .resolve import KEPT_ROLES
 
 logger = logging.getLogger(__name__)
@@ -86,12 +86,19 @@ class ProseStage:
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         found = [ctx.payload(work.upstream) or {} for work in works]
         metadata = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
-        reading = []
+        reading, unreadable, read = [], {}, {}
         for work, payload in zip(works, found):
             meta_artifact = metadata.get(work.article_id, {}).get("")
             meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None and meta_artifact.ok else {}
-            reading += [(passage_from(p), meta.get("title") or "", meta.get("abstract") or "")
-                        for p in payload.get("passages", [])]
+            try:
+                text = read_text(payload) if payload.get("passages") else ""
+            except LookupError as exc:
+                # Read nothing rather than a passage the text no longer holds;
+                # passages, re-run on the text as it is, will index it again.
+                unreadable[work.article_id] = str(exc)
+                continue
+            read[work.article_id] = [passage_from(p, text) for p in payload.get("passages", [])]
+            reading += [(p, meta.get("title") or "", meta.get("abstract") or "") for p in read[work.article_id]]
         answers: List = []
         if reading:
             with ThreadPoolExecutor(max_workers=max(1, self.settings.n_llm_workers)) as pool:
@@ -100,14 +107,18 @@ class ProseStage:
         answered = iter(answers)
 
         for work, payload in zip(works, found):
+            if work.article_id in unreadable:
+                yield Outcome.failure(work.article_id, self.name, "", unreadable[work.article_id],
+                                      fingerprint=work.fingerprint)
+                continue
             out, errors, coords, kept = [], 0, 0, 0
-            for p in payload.get("passages", []):
+            for p, passage in zip(payload.get("passages", []), read[work.article_id]):
                 answer, error = next(answered)
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
                 kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
-                out.append({"text": p["text"], "heading": p.get("heading"),
+                out.append({"span": p["span"], "text": passage.text, "heading": passage.heading,
                             "space": answer.get("space") or p.get("space"),
                             "analyses": answer.get("analyses", []), "error": error})
             if errors:
@@ -119,7 +130,8 @@ class ProseStage:
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                 fingerprint=work.fingerprint,
                 payload={"source": payload.get("source"), "read": payload.get("read"),
-                         "space": payload.get("space"), "passages": out},
+                         "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
+                         "passages": out},
                 summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
                          "coordinates": coords, "kept": kept},
             )

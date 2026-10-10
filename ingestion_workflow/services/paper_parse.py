@@ -93,7 +93,7 @@ class ParseInputs:
     #: The analyses stage's summary `readings` / `unread`; None when not recorded.
     readings: Optional[Mapping[str, str]] = None
     unread: Optional[Mapping[str, str]] = None
-    #: The prose stage payload (its `passages[].text` locate a prose analysis).
+    #: The prose stage payload (its `passages[].span` locate a prose analysis).
     prose: Optional[Mapping[str, Any]] = None
     #: How many passages the passages stage kept, and resolve's restatement count.
     passages_kept: Optional[int] = None
@@ -124,7 +124,7 @@ class _Table:
         return self._index
 
 
-#: Characters a passage and the text print differently: superscript digits.
+#: Characters a table cell and the text print differently: superscript digits.
 _FOLD = str.maketrans("\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079", "0123456789")
 _ALNUM = re.compile(r"[^\W_]+")
 
@@ -144,12 +144,13 @@ def _squash(text: str) -> Tuple[str, array]:
 class _Text:
     """The parsed paper's text, and its letters and digits alone, built on first use.
 
-    The passages stage and the extractor print one sentence with different spaces,
-    minus signs, punctuation and superscripts; their letters and digits agree.
+    A table's cells and the text inlining them differ in spaces, minus signs,
+    punctuation and superscripts; their letters and digits agree.
     """
 
     def __init__(self, text: str) -> None:
         self.text = text
+        self.sha256 = hashlib.sha256(text.encode("utf-8", errors="surrogatepass")).hexdigest()
         self._squashed: Optional[Tuple[str, array]] = None
 
     def __len__(self) -> int:
@@ -738,22 +739,21 @@ def _prose_analysis(
     omitted as the same points. The passage is the fallback for an analysis none
     of whose points can be found.
     """
-    passages = (inputs.prose or {}).get("passages") or []
+    prose = inputs.prose or {}
+    passages = prose.get("passages") or []
+    if prose.get("text_sha256") != text.sha256:
+        # Spans into another text (or a prose result older than spans) place nothing.
+        omitted.append(Omitted(analysis.name, None, "its passages index another text than the parsed paper's"))
+        return None
     windows: List[Tuple[int, int]] = []
     for index in (analysis.metadata or {}).get("passages") or []:
-        passage = passages[index].get("text") if 0 <= index < len(passages) else None
-        if passage:
-            windows += _locate(passage, text)
+        span = passages[index].get("span") if 0 <= index < len(passages) else None
+        if span:
+            windows.append((span[0], span[1]))
     point_spans = [_find_point(c, text.text, windows) for c in analysis.coordinates]
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
     if not spans:
-        omitted.append(
-            Omitted(
-                analysis.name,
-                None,
-                "neither its passages nor its points are in the parsed paper's text",
-            )
-        )
+        omitted.append(Omitted(analysis.name, None, "it names no passage of the parsed paper's text"))
         return None
     key = keys.span_key("text", spans)
     if key in (seen or {}):
@@ -799,17 +799,8 @@ def _number(value: float) -> str:
     return rf"(?<![{_MINUS}\d.])\+?{digits}"
 
 
-#: Furthest a point found outside its passages may sit from one of them.
-_NEAR = 3000
-
-
 def _find_point(coordinate, text: str, windows) -> Optional[Tuple[int, int]]:
-    """The characters printing a point's x, y and z.
-
-    Within one of its passages first. A passage cut differently from the text may
-    not hold it, so then anywhere in the text: where it is printed once, or the
-    copy nearest one of its passages.
-    """
+    """The characters printing a point's x, y and z, inside one of its passages only."""
     sep = r"[^\d\n]{1,12}?"
     pattern = re.compile(
         sep.join(_number(v) for v in (coordinate.x, coordinate.y, coordinate.z)) + r"(?![\d.])"
@@ -818,47 +809,7 @@ def _find_point(coordinate, text: str, windows) -> Optional[Tuple[int, int]]:
         match = pattern.search(text, start, end)
         if match:
             return match.start(), match.end()
-    found = [m.span() for m in pattern.finditer(text)]
-    if len(found) == 1:
-        return found[0]
-    if found and windows:
-        near = min(
-            ((min(abs(s - a), abs(s - b)), (s, e)) for s, e in found for a, b in windows),
-        )
-        if near[0] <= _NEAR:
-            return near[1]
     return None
-
-
-#: Fewest letters and digits a piece of a passage needs to be placed on its own.
-_PIECE = 24
-
-
-def _locate(passage: str, text: _Text) -> List[Tuple[int, int]]:
-    """Where a prose passage sits in the parsed paper's text, as (start, end) pieces.
-
-    The passages stage cuts passages from its own reading of the download, joined
-    sentence by sentence, so a passage is rarely a verbatim slice of text.txt: its
-    spaces, minus signs and punctuation differ, a figure legend may be joined to the
-    sentence after it, and a table inlined in text.txt may split a sentence. Exact
-    first, then by its letters and digits, then sentence by sentence; a sentence the
-    text does not hold is left out.
-    """
-    start = text.text.find(passage)
-    if start >= 0:
-        return [(start, start + len(passage))]
-    whole = text.find(passage)
-    if whole is not None:
-        return [whole]
-    pieces, at = [], 0
-    for sentence in re.split(r"(?<=[.;!?])\s+|\n+", passage):
-        if len(_squash(sentence)[0]) < _PIECE:
-            continue
-        found = text.find(sentence, at) or text.find(sentence)
-        if found is not None:
-            pieces.append(found)
-            at = found[1]
-    return pieces
 
 
 def _analysis(

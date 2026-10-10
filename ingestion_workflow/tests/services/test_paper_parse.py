@@ -44,6 +44,13 @@ PASSAGE = "A seed was placed in the left amygdala (-22, -4, -20), as in our earl
 TEXT = f"Title\n\nMethods\n\n{PASSAGE}\n\nResults\n\nTable 1 ...\n"
 
 
+def _prose(text, *passages):
+    """A prose payload whose passages are spans of `text`, as the prose stage writes it."""
+    spans = [(text.index(p), text.index(p) + len(p)) for p in passages]
+    return {"text_sha256": paper_parse._Text(text).sha256,
+            "passages": [{"span": list(s), "text": p} for s, p in zip(spans, passages)]}
+
+
 def _collection(analyses):
     return AnalysisCollection(slug="t", coordinate_space=CoordinateSpace.MNI, analyses=analyses)
 
@@ -151,7 +158,7 @@ def _written(tmp_path):
         },
         excluded={"tbl3": {"reason": "not_coordinates", "note": "a design matrix"}},
         readings={"tbl1": "coordinates"},
-        prose={"passages": [{"text": PASSAGE}]},
+        prose=_prose(TEXT, PASSAGE),
         passages_kept=1,
         restated=2,
         fingerprints={"extract": "fp-extract", "space": "fp-space"},
@@ -286,7 +293,7 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
             for name, (x, y, z) in (("faces", (40, -52, -18)), ("houses", (28, -46, -8)))
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, passage))
     built = [
         paper_parse._prose_analysis(a, collection, paper_parse._Text(text), inputs, [])
         for a in collection.analyses
@@ -323,38 +330,7 @@ def test_the_parse_id_is_the_analyses_fingerprint(written, tmp_path):
     }
 
 
-def test_a_passage_is_placed_in_the_text_despite_its_whitespace():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    text = "ab  The seed\nwas  here. cd"
-    ((start, end),) = _locate("The seed was here.", _Text(text))
-    assert text[start:end] == "The seed\nwas  here"
-
-
-def test_a_passage_is_placed_despite_its_minus_signs_and_punctuation():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    text = "x Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2) y"
-    ((start, end),) = _locate(
-        "Talaraich coordinates, x : \u221249.5, y : \u221214.3 (302.47 mm \u00b2)", _Text(text)
-    )
-    assert text[start:end] == "Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2"
-
-
-def test_a_passage_split_by_an_inlined_table_is_placed_sentence_by_sentence():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    head = "A seed was placed in the left amygdala at the peak."
-    legend = "Figure 2. Colour bar displays t values for the comparison."
-    tail = "It was placed as in the earlier study of the same group of patients."
-    text = f"x {head} | 1 | 2 | {tail} y"
-    pieces = _locate(f"{legend} {head} {tail}", _Text(text))
-    assert [text[a:b] for a, b in pieces] == [head[:-1], tail[:-1]]
-    assert _locate("Nothing like this is in the text at all, anywhere in it.", _Text(text)) == []
-
-
-def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once():
-    text = "Results\n\nThe peak lay in the left insula (x = \u221234, y = 18, z = 2).\n"
+def _insula(text, prose):
     collection = _collection(
         [
             Analysis(
@@ -365,34 +341,46 @@ def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once()
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Not in the text."}]})
+    omitted = []
     built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+        collection.analyses[0],
+        collection,
+        paper_parse._Text(text),
+        ParseInputs(article_id="a", prose=prose),
+        omitted,
     )
+    return built, [o.reason for o in omitted]
+
+
+def test_a_repeated_passage_is_placed_at_its_own_copy_not_the_first():
+    # htv7t5aoho5n: the abstract repeats the result sentence; the passage is the second.
+    passage = "The peak lay in the left insula (x = \u221234, y = 18, z = 2)."
+    text = f"Abstract\n\n{passage}\n\nResults\n\n{passage}\n"
+    second = text.rindex(passage)
+    prose = {"text_sha256": paper_parse._Text(text).sha256,
+             "passages": [{"span": [second, second + len(passage)], "text": passage}]}
+    built, _ = _insula(text, prose)
     (span,) = built.text_spans
+    assert span.start_char > second
     assert text[span.start_char : span.end_char] == "\u221234, y = 18, z = 2"
 
 
-def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
-    collection = _collection(
-        [
-            Analysis(
-                name="lost",
-                table_id="prose",
-                metadata={"source": "prose", "passages": [0]},
-                coordinates=[Coordinate(x=1, y=2, z=3)],
-            )
-        ]
-    )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Elsewhere."}]})
-    omitted = []
-    built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text("Results only."), inputs, omitted
-    )
-    assert built is None
-    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
-        ("lost", None, "neither its passages nor its points are in the parsed paper's text")
-    ]
+def test_a_point_printed_outside_its_passage_is_not_placed_there():
+    # d47umdi7b5aj: a prose point printed once, in an inlined table far from its passage.
+    passage = "The insula was active in both groups."
+    text = f"Results\n\n{passage}\n\nTable 2\nInsula\t\u221234\t18\t2\n"
+    built, _ = _insula(text, _prose(text, passage))
+    (span,) = built.text_spans
+    assert text[span.start_char : span.end_char] == passage
+    assert built.points[0].text_span is None
+
+
+def test_passages_indexing_another_text_place_nothing():
+    text = "Results\n\nThe peak lay in the left insula (x = \u221234, y = 18, z = 2).\n"
+    stale = _prose(text, "The peak")
+    stale["text_sha256"] = "0" * 64
+    assert _insula(text, stale) == (None, ["its passages index another text than the parsed paper's"])
+    assert _insula(text, {"passages": [{"text": "The peak"}]})[0] is None  # a prose result from before spans
 
 
 def _parse(tmp_path, markup, per_table, text="Results\n", **inputs):
@@ -515,7 +503,7 @@ def test_two_prose_contrasts_on_one_peak_are_told_apart_by_their_names():
         text,
         {},
         {"prose": collection},
-        ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
+        ParseInputs(article_id="a", prose=_prose(text, passage)),
     )
     first, second = parse.analyses
     assert first.key != second.key and len(second.text_spans) == 2

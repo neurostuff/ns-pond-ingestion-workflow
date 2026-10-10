@@ -98,3 +98,17 @@ def test_a_page_break_inside_a_triplet_is_closed_up():
     text = "Activity was found in the bilateral amygdala ([-21, -6,\n\n-27], T = 6.94). Nothing else."
     (p,) = passages(text)
     assert [(h.x, h.y, h.z) for h in p.hits] == [(-21, -6, -27)]
+
+
+def test_a_passage_is_spans_of_the_text_it_was_found_in():
+    from ingestion_workflow.services.prose_passages import heading_text, view
+
+    text = ("## Methods\nScans  were\tacquired.\n\n## Results\n"
+            "We compared   the groups.\nPatients showed activation in the amygdala\n(x = -22,  y = -4, z = -18;"
+            " t = 4.1) and the insula [−34, 18, 2].\nCol\tx\ty\tz\nA\t1\t2\t3\nNothing else did. Done.\n")
+    (p,) = passages(text)
+    assert view(text, p.span) == p.text and view(text, p.before_span) == p.before
+    assert view(text, p.after_span) == p.after == "Done." and p.text.endswith("Nothing else did.")
+    assert heading_text(text, p.heading_span) == p.heading == "Results"
+    assert [text[a:b] for a, b in (h.span for h in p.hits)] == ["x = -22,  y = -4, z = -18", "[−34, 18, 2]"]
+    assert text[p.span[0]:p.span[1]].startswith("We compared") and "\t" not in p.text

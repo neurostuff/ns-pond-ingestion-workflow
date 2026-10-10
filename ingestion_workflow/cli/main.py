@@ -671,11 +671,12 @@ def refresh_text(
     report: Optional[Path] = typer.Option(None, "--report", help="Write one JSON line per extraction here."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Rebuild extractions' text from their downloads, without re-running any stage.
+    """Rebuild extractions' text from their downloads, without re-running extract.
 
-    The extraction keeps its tables, payload and fingerprint, so nothing downstream
-    goes stale; only the text file changes. For a change to the text alone (pubget
-    keeping superscripts): the stages that read the text, space and sync, are not re-run.
+    The extraction keeps its tables, payload and fingerprint; its text hash and the
+    passages' spans move to the new text in the same catalog write, and the sync is
+    marked stale so the parse files are written again. For a change to the text alone
+    (pubget keeping superscripts).
     """
     from collections import Counter
 
@@ -692,13 +693,25 @@ def refresh_text(
     with _catalog(settings) as catalog:
         jobs = list(text_refresh.jobs(catalog, sources))
     typer.echo(f"{len(jobs):,} extractions to check ({', '.join(sources)})")
+    rewritten = []
     for result in text_refresh.run(jobs, write=not dry_run, workers=settings.max_workers):
         counts[result.status.split(":")[0]] += 1
         if result.status in ("rewritten", "would_rewrite"):
             new_of.setdefault(result.old_sha256, set()).add((result.new_sha256, result.text_path))
+            rewritten.append(result)
         if out:
-            out.write(json.dumps(result.__dict__) + "\n")
+            out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
+    # What the catalog stores against each rewritten text moves with it, in one write each.
+    carried: Counter = Counter()
+    with _catalog(settings) as catalog:
+        for result in rewritten:
+            rows, passages = text_refresh.carried(catalog, result)
+            carried[passages] += 1
+            if not dry_run:
+                catalog.record(rows)
+    typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
+               f"{carried['stale']:,} left for the passages stage to read again")
     if corpus:
         # an old text two extractions shared, rebuilt two ways, names no single replacement
         replaced = {old: next(iter(news))[1] for old, news in new_of.items()
