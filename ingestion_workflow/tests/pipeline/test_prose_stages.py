@@ -345,6 +345,48 @@ def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeyp
     assert "greater activation than controls" in processed.text
     assert [a["table_id"] for a in record.stage1["analyses"]] == ["prose"]
     assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["11", "BS11"]
+    # Beside stage1, the paper-parse files, which agree with each other and the text.
+    from pyarty import read_bundle
+    from study_schema.layouts import PaperParse, check_paper
+
+    parse = read_bundle(PaperParse, settings.ns_pond_root / "BS11" / "parse")
+    assert check_paper(parse, settings.ns_pond_root / "BS11") == []
+    assert [a.origin for a in parse.coordinate_parse.analyses] == ["text"]
+    assert synced.summary["parse_id"] == parse.coordinate_parse.parse_id
+
+
+def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
+    """stage1 is written, but the article is not synced until its parse is."""
+    from ingestion_workflow.pipeline.stages import sync as sync_stage
+    from ingestion_workflow.services import paper_parse
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="12"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS12", "study_id": "S12"})])
+
+    def broken(*args, **kwargs):
+        raise ValueError("the parse addresses a different text")
+
+    monkeypatch.setattr(sync_stage.paper_parse, "write", broken)
+    sync = sync_stage.SyncStage(settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert synced.status is Status.FAILED
+    assert "the parse addresses a different text" in synced.error
+    assert (settings.ns_pond_root / "BS12" / "stage1").exists()
+
+    # A new parser version re-syncs every article.
+    upload = catalog.artifacts([ref.id], "upload")[ref.id][""]
+    before = sync.fingerprint_for(upload)
+    monkeypatch.setattr(paper_parse, "PAPER_PARSE_VERSION", paper_parse.PAPER_PARSE_VERSION + 1)
+    assert sync.fingerprint_for(upload) != before
 
 
 def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
