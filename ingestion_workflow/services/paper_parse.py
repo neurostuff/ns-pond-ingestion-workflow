@@ -899,25 +899,23 @@ def _analysis(
 def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) -> None:
     """Declare the analyses stage's sign split as `split{}` on both halves.
 
-    The stage names the negative half `<name> (negative)` and emits it right
-    after the positive one; that adjacency and the name are the only record of
-    the split, so this is where it becomes a field, and only then is the suffix
-    dropped from the name. A `(negative)` name with no such primary keeps it.
+    The stage names the inverse half (the negative values) `<name> (negative)`
+    and emits it right after the original; that adjacency and the name are
+    the only record of the split, so this is where it becomes a field, and
+    only then is the suffix dropped from the name. The inverse half's
+    `original_analysis` is the original's key. A `(negative)` name with no
+    such original keeps it.
     """
     for i, (half, negative) in enumerate(analyses):
         if half is None or not negative or i == 0:
             continue
-        primary, primary_negative = analyses[i - 1]
+        original, original_negative = analyses[i - 1]
         name = half.name[: -len(NEGATIVE_SUFFIX)]
-        if primary is None or primary_negative or primary.name != name:
+        if original is None or original_negative or original.name != name:
             continue
         rule = "sign_of_directional_statistic"
-        primary.split = pp.SignSplit(
-            group=primary.key, direction="positive", rule=rule, primary=True
-        )
-        half.split = pp.SignSplit(
-            group=primary.key, direction="negative", rule=rule, primary=False
-        )
+        original.split = pp.SignSplit(half="original", rule=rule)
+        half.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
         half.name = name
 
 
