@@ -407,7 +407,7 @@ def test_an_empty_article_is_skipped_rather_than_failed():
     assert 'if not any((blob or {}).get("analyses") for blob in payload.values()):' in gather
     assert "return analyses, metadata, empty" in gather
 
-    execute = inspect.getsource(UploadStage.execute)
+    execute = inspect.getsource(UploadStage._execute)
     assert "status=Status.SKIPPED" in execute
     assert '"reason": "no analyses to upload"' in execute
 
