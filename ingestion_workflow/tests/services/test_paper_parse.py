@@ -487,6 +487,20 @@ def test_inverse_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
     assert all(a.split is None for a in parse.analyses)
 
 
+def test_the_legacy_negative_spelling_is_declared_and_stripped_too(tmp_path):
+    point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
+    collection = _collection(
+        [
+            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
+            Analysis(name="Fear > Neutral (negative)", coordinates=point),
+        ]
+    )
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    assert [a.name for a in parse.analyses] == ["Fear > Neutral", "Fear > Neutral"]
+    assert [a.split.half for a in parse.analyses] == ["original", "inverse"]
+    assert parse.analyses[1].split.original_analysis == parse.analyses[0].key
+
+
 def test_two_prose_contrasts_on_one_peak_are_told_apart_by_their_names():
     passage = (
         "The poor reader and ASD groups shared a peak in the left fusiform (-42, -55, -18), "
