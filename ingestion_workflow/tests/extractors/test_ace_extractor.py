@@ -578,10 +578,16 @@ class _Unparsable:
         raise AttributeError("'NoneType' object has no attribute 'find_all'")
 
 
+class _Textless:
+    def parse_article(self, *args, **kwargs):
+        return SimpleNamespace(text="  ", tables=[], space=None)
+
+
 @pytest.mark.parametrize(
     "default_source, reason",
     [
         (None, "ACE could not identify an article source."),
+        (_Textless(), "ACE's _Textless found no text."),
         (_Unparsable(), "ACE's _Unparsable could not parse the article: "
                         "'NoneType' object has no attribute 'find_all'"),
     ],

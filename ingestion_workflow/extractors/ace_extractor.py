@@ -540,6 +540,8 @@ def _extract_ace_article(
             )
         except Exception as exc:
             reason = f"ACE's {type(source).__name__} could not parse the article: {exc}"
+        if article and not (getattr(article, "text", "") or "").strip():
+            article, reason = None, f"ACE's {type(source).__name__} found no text."
     if not article:
         # The download is still an article; without this it got no text at
         # all, and 2,401 articles had only the passages stage's own reading.
