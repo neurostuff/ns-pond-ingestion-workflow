@@ -514,11 +514,18 @@ def coordinate_parse(
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, str] = {}
     for table_id, collection in per_table.items():
-        table_analyses = [
-            a
-            for a in collection.analyses
-            if not (a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates)
-        ]
+        table_analyses = []
+        for a in collection.analyses:
+            if a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
+                omitted.append(
+                    Omitted(
+                        a.name,
+                        None if table_id == "prose" else table_id,
+                        "a placeholder analysis with no points",
+                    )
+                )
+            else:
+                table_analyses.append(a)
         prose = table_id == "prose" or any(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
