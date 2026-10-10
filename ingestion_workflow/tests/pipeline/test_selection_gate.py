@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.selection import Select, everything, narrow
@@ -65,7 +64,6 @@ def test_the_gate_is_not_a_freshness_filter(catalog):
 def test_the_gate_holds_for_a_manifest_too(catalog, tmp_path):
     """It is applied in `narrow`, not in the stage's `plan`, so it does not
     matter how the selection was built."""
-    from ingestion_workflow.models.ids import Identifiers
     from ingestion_workflow.pipeline.selection import from_manifest
 
     path = tmp_path / "m.jsonl"
@@ -86,7 +84,7 @@ def test_there_is_no_second_gate_in_the_stage(catalog):
     assert "requires_flag" not in inspect.getsource(AnalysesStage.plan)
 
 
-@pytest.mark.parametrize("stage, upstream", [("space", "analyses"), ("upload", "space")])
+@pytest.mark.parametrize("stage, upstream", [("space", "roles"), ("upload", "space")])
 def test_space_and_upload_are_gated_on_analyses_having_found_something(tmp_path, stage, upstream):
     """An article the model read and found nothing in is a legitimate `ok`, so
     the status check does not exclude it. 30,741 of them would be planned to

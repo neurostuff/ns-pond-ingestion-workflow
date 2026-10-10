@@ -2,23 +2,20 @@
 
 from __future__ import annotations
 
-from ingestion_workflow.prompts.prose_coordinates import ROLES, study_schema_role
+import pytest
 from ingestion_workflow.services.set_roles import (
     ANCHOR_KINDS,
     COORDINATE_ROLES,
+    UPLOADED_ROLES,
     Prediction,
     ProseSetContext,
     SetRole,
-    UPLOADED_ROLES,
     decide,
     prose_context,
     table_context,
 )
 from ingestion_workflow.services.set_roles.common import cue_summary, point_summary
-from ingestion_workflow.services.set_roles.labels import RESULT
 from study_schema.models.paper_parse import AnchorKind, CoordinateRole
-
-SEED = SetRole("anchor", "seed")
 
 ARTICLE = (
     "Seeds were placed in both amygdalae. As shown in Table 2, seeds were placed bilaterally. "
@@ -52,10 +49,10 @@ def test_short_fields_come_first_and_truncation_keeps_them():
         name="amygdala seed",
         passage="word " * 2000,
         points=[_point(20, -4, -18)],
-        proposed=SEED,
     )
     text = prose_context.serialize(context)
-    assert text.startswith("[ORIGIN] text [PROPOSED] anchor seed [POINTS] n=1 ")
+    assert text.startswith("[ORIGIN] text [POINTS] n=1 ")
+    assert "[PROPOSED]" not in text  # no role is proposed: the classifier decides
     assert text.index("[CUES]") < text.index("[NAME]") < text.index("[PASSAGE]")
     assert len(text) <= 2400 and text.endswith("…")
 
@@ -90,13 +87,12 @@ def test_table_sets_read_their_caption_header_rows_neighbours_and_citing_sentenc
     context = table_context.build(
         rois, index=0, siblings=[rois, peaks], table_text=TABLE, article_text=ARTICLE
     )
-    assert context.proposed == RESULT
     assert context.citing == ["As shown in Table 2, seeds were placed bilaterally."]
     assert context.header == ["#Region | #x | #y | #z | #t"]
     assert context.rows == ["Amygdala L | -24 | -4 | -18 |", "Amygdala R | 24 | -4 | -18 |"]
     assert context.neighbours == ["faces > houses (1)"]
     text = table_context.serialize(context)
-    assert text.startswith("[ORIGIN] table [PROPOSED] result [POINTS] n=2 ")
+    assert text.startswith("[ORIGIN] table [POINTS] n=2 ")
     assert (
         "[TABLE] Table 2 [NEIGHBOURS] faces > houses (1) [CAPTION] Regions of interest used"
         in text
@@ -127,9 +123,9 @@ def test_prose_sets_read_their_passage_heading_and_citation_markers():
         },
     }
     context = prose_context.build(analysis, passages)
-    assert (context.proposed, context.heading) == (SEED, "Seed-based connectivity")
+    assert context.heading == "Seed-based connectivity"
     text = prose_context.serialize(context)
-    assert text.startswith("[ORIGIN] text [PROPOSED] anchor seed")
+    assert text.startswith("[ORIGIN] text [POINTS] n=1 ")
     assert (
         "[CITATIONS] (41) [PASSAGE] We extracted" in text
         and "[BEFORE] Preprocessing. [AFTER] Then." in text
@@ -160,22 +156,6 @@ def test_the_role_vocabulary_is_study_schema_s():
     assert ANCHOR_KINDS == tuple(k.value for k in AnchorKind)
 
 
-def test_the_legacy_adapter_reads_the_prose_model_s_roles_as_study_schema_s():
-    got = [study_schema_role(r) for r in (*ROLES, None)]
-    assert [(g["role"], g["anchor_kind"], g["from_prior_study"]) for g in got] == [
-        ("result", None, False),
-        ("anchor", "roi", False),
-        ("anchor", "seed", False),
-        ("anchor", "stimulation_target", False),
-        ("reference", None, True),
-        (None, None, False),  # figure: no proposal, the roles stage decides
-        (None, None, False),  # other: indistinguishable from not coordinates; see the adapter
-        ("result", None, False),
-    ]
-    for fields in got:
-        SetRole.of(fields)  # each is valid study_schema
-
-
 def test_a_role_outside_study_schema_is_refused():
     for bad in (
         {"role": "simulation"},
@@ -200,39 +180,40 @@ def _prediction(role, p, prior=0.0, kind=None, coordinates=0.99):
     )
 
 
-def test_the_proposal_stands_below_the_threshold():
-    decision = decide(RESULT, _prediction("reference", 0.7), source="enc@1", min_confidence=0.8)
-    assert (decision.role, decision.source, decision.uploaded) == ("result", "proposal", True)
-    assert decision.confidence < 0.1  # the classifier's probability for the label recorded
+def test_the_role_is_the_model_s_answer_however_sure_it_is():
+    decision = decide(_prediction("reference", 0.4), source="enc@1", origin="table")
+    assert (decision.role, decision.source, decision.confidence) == ("reference", "enc@1", 0.4)
+    assert not decision.uploaded
 
 
-def test_a_confident_prediction_overrides_and_says_so():
+def test_a_decision_without_a_prediction_is_refused():
+    with pytest.raises(TypeError):
+        decide(None, source="enc@1", origin="table")
+
+
+def test_the_decision_records_its_model_origin_and_confidence():
     decision = decide(
-        RESULT,
         _prediction("reference", 0.9),
         source="enc@1",
-        min_confidence=0.8,
+        origin="text",
         evidence=["As reported by Lee et al. (2008)."],
     )
-    meta = decision.to_metadata()
-    assert meta == {
+    assert decision.to_metadata() == {
         "role": "reference",
         "anchor_kind": None,
         "from_prior_study": True,
         "prior_study_evidence": [{"text": "As reported by Lee et al. (2008)."}],
         "role_confidence": 0.9,
         "role_source": "enc@1",
-        "proposal": {"role": "result", "anchor_kind": None, "from_prior_study": False},
+        "role_origin": "text",
     }
-    assert not decision.uploaded
 
 
 def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
     decision = decide(
-        SEED,
         _prediction("anchor", 0.95, prior=0.8, kind="seed"),
         source="enc@1",
-        min_confidence=0.8,
+        origin="text",
         evidence=["The seed came from Smith et al. (2010)."],
     )
     assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.uploaded) == (
@@ -245,24 +226,20 @@ def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
 
 def test_no_evidence_is_recorded_for_the_study_s_own_set():
     decision = decide(
-        RESULT,
         _prediction("result", 0.99),
         source="enc@1",
-        min_confidence=0.8,
+        origin="table",
         evidence=["(Smith et al., 2010)"],
     )
     assert decision.prior_study_evidence == () and not decision.from_prior_study
 
 
-def test_confident_not_coordinates_are_set_aside_without_a_role():
+def test_not_coordinates_are_set_aside_without_a_role():
     decision = decide(
-        SEED,
-        _prediction("anchor", 0.9, kind="seed", coordinates=0.05),
-        source="enc@1",
-        min_confidence=0.8,
+        _prediction("anchor", 0.9, kind="seed", coordinates=0.05), source="enc@1", origin="text"
     )
     assert (decision.role, decision.anchor_kind, decision.uploaded) == (None, None, False)
-    assert decision.to_metadata()["proposal"]["anchor_kind"] == "seed"
+    assert decision.confidence == pytest.approx(0.95)
 
 
 def test_other_is_a_role_that_is_not_uploaded():

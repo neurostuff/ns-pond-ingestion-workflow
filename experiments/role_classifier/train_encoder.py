@@ -1,16 +1,21 @@
-"""Fine-tune the set-role encoder on export_rows.py's encoder.jsonl.
+"""Fine-tune one origin's set-role encoder on export_rows.py's rows for that origin.
 
-    CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py encoder.jsonl MODEL_DIR \
-        [--base microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext] [--epochs 4]
+    CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py table out/encoder-table.jsonl \
+        models/set-roles-table-1 \
+        [--base microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext]
+    CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py text out/encoder-text.jsonl \
+        models/set-roles-prose-1
 
-One model for table and prose sets: every input starts with its origin, and
-the role fields are study_schema's. Four heads (`services.set_roles.model`):
+One model per origin, a table model and a prose model: each reads its own
+context builder's input and learns from its own origin's labels only, and the
+saved model records the origin and its context version. The role fields are
+study_schema's, and the heads are the same for both (`services.set_roles.model`):
 whether the numbers are coordinates, the `CoordinateRole` and the `AnchorKind`
 (class-weighted cross-entropy so rare ones count; the kind on anchors only), and
 the prior-study flag. Rows are split by article (`export.split_of`); evaluation
 is on real articles only (a synthetic row's label is its generator's), per role,
-per anchor kind, per origin and for the prior flag. The saved directory is what `role_model`
-points at; it records the context versions it was trained on.
+per anchor kind and for the prior flag. The saved directory is what `role_model_table`
+or `role_model_prose` points at.
 """
 
 from __future__ import annotations
@@ -49,33 +54,29 @@ def evaluate(model, tokenizer, rows, device):
             model, tokenizer, [r["text"] for r in rows], device=device
         )
     ]
-    report = {}
-    for origin in ("table", "text", "all"):
-        pairs = [(r, p) for r, p in zip(rows, out) if origin == "all" or r["origin"] == origin]
-        if not pairs:
-            continue
-        # A set judged not coordinates has role None.
-        roles = [
-            (r["role"], p.role if p.coordinates_probability >= 0.5 else None) for r, p in pairs
-        ]
-        kinds = [(r["anchor_kind"], p.anchor_kind) for r, p in pairs if r["role"] == "anchor"]
-        prior = [
-            (r["from_prior_study"], p.prior_probability >= 0.5)
-            for r, p in pairs
-            if r["role"] is not None
-        ]
-        tp = sum(1 for g, p in prior if g and p)
-        report[origin] = {
-            "n": len(pairs),
-            "role_accuracy": round(sum(g == p for g, p in roles) / len(roles), 3),
-            "roles": _per_value(roles),
-            "anchor_kinds": _per_value(kinds),
-            "prior": {
-                "n": sum(g for g, _ in prior),
-                "precision": round(tp / max(1, sum(p for _, p in prior)), 3),
-                "recall": round(tp / max(1, sum(g for g, _ in prior)), 3),
-            },
-        }
+    pairs = list(zip(rows, out))
+    # A set judged not coordinates has role None.
+    roles = [
+        (r["role"], p.role if p.coordinates_probability >= 0.5 else None) for r, p in pairs
+    ]
+    kinds = [(r["anchor_kind"], p.anchor_kind) for r, p in pairs if r["role"] == "anchor"]
+    prior = [
+        (r["from_prior_study"], p.prior_probability >= 0.5)
+        for r, p in pairs
+        if r["role"] is not None
+    ]
+    tp = sum(1 for g, p in prior if g and p)
+    report = {
+        "n": len(pairs),
+        "role_accuracy": round(sum(g == p for g, p in roles) / len(roles), 3),
+        "roles": _per_value(roles),
+        "anchor_kinds": _per_value(kinds),
+        "prior": {
+            "n": sum(g for g, _ in prior),
+            "precision": round(tp / max(1, sum(p for _, p in prior)), 3),
+            "recall": round(tp / max(1, sum(g for g, _ in prior)), 3),
+        },
+    }
     return report
 
 
@@ -89,6 +90,7 @@ def _weights(torch, values, counts, n, device):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("origin", choices=model_io.ORIGINS, help="table or text (prose) sets")
     parser.add_argument("rows", type=Path)
     parser.add_argument("out", type=Path)
     parser.add_argument(
@@ -99,6 +101,8 @@ def main():
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--version", default="1")
+    parser.add_argument("--name", help="default set-roles-table or set-roles-prose")
+    parser.add_argument("--limit", type=int, help="train on the first N rows only (a smoke run)")
     args = parser.parse_args()
 
     import torch  # noqa: PLC0415
@@ -109,6 +113,12 @@ def main():
     )
 
     rows = [json.loads(line) for line in open(args.rows, encoding="utf-8") if line.strip()]
+    other = collections.Counter(r["origin"] for r in rows if r["origin"] != args.origin)
+    if other:
+        raise SystemExit(
+            f"{args.rows} holds sets of other origins {dict(other)}, not only {args.origin}"
+        )
+    rows = rows[: args.limit] if args.limit else rows
     train = [r for r in rows if r["split"] == "train"]
     real = [r for r in rows if r.get("label_source") != "dataset"]
     val = [r for r in real if r["split"] == "val"]
@@ -192,7 +202,7 @@ def main():
         model.eval()
         print(
             f"epoch {epoch + 1} loss {total / max(1, len(train) // args.batch_size):.4f} "
-            f"val {evaluate(model, tokenizer, val, device).get('all', {}).get('role_accuracy')}",
+            f"val {evaluate(model, tokenizer, val, device).get('role_accuracy')}",
             flush=True,
         )
     report = {
@@ -203,7 +213,8 @@ def main():
         model,
         tokenizer,
         args.out,
-        name="set-roles",
+        origin=args.origin,
+        name=args.name or f"set-roles-{'prose' if args.origin == 'text' else 'table'}",
         version=args.version,
         base_model=args.base,
         extra={"train_rows": len(train), "evaluation": report},

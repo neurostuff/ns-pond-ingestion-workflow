@@ -1,14 +1,27 @@
-"""`roles` decides each set's role where its classifier is confident, and holds back the rest."""
+"""`roles` gives every set its origin's classifier's role, and nothing passes without one."""
 
 from __future__ import annotations
 
 import json
+import re
+from pathlib import Path
 
 import pytest
+from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import AnalysisCollection
+from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, build
-from ingestion_workflow.pipeline.stages.roles import RolesStage, assign_roles
+from ingestion_workflow.pipeline.stages.roles import (
+    MissingRoleModel,
+    RolesStage,
+    assign_roles,
+    unassigned,
+)
+from ingestion_workflow.pipeline.stages.space import SpaceStage
+from ingestion_workflow.pipeline.stages.sync import SyncStage
+from ingestion_workflow.pipeline.stages.upload import UploadStage
 from ingestion_workflow.services.set_roles import ANCHOR_KINDS, COORDINATE_ROLES, Prediction
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, META_FILE
 
@@ -18,10 +31,9 @@ TEXT = "Peaks from earlier work are listed in Table 2. Table 2 quotes Lee et al.
 class FakeClassifier:
     """Answers from the set's name: what a model trained on these names would say."""
 
-    source = "fake@1"
-
-    def __init__(self, answers):
+    def __init__(self, answers, source="fake-table@1"):
         self.answers = answers
+        self.source = source
         self.seen = []
 
     def predict(self, texts):
@@ -54,7 +66,7 @@ def _analysis(name, caption="", **meta):
     }
 
 
-def _payload():
+def _tables():
     return {
         "t2": {
             "slug": "a::t2",
@@ -68,133 +80,248 @@ def _payload():
     }
 
 
-def test_roles_runs_between_resolve_and_space():
+def _prose():
+    return {
+        "slug": "a",
+        "coordinate_space": "MNI",
+        "identifier": None,
+        "analyses": [
+            {
+                "name": "amygdala seed",
+                "coordinates": [{"x": 20.0, "y": -4.0, "z": -18.0, "space": "MNI"}],
+                "metadata": {"source": "prose", "passages": [0]},
+            }
+        ],
+    }
+
+
+PASSAGES = [{"text": "The amygdala seed (20, -4, -18) was a 6 mm sphere.", "heading": "PPI"}]
+TABLE_ANSWERS = {
+    "patients > controls": ("result", 0.97, 0.01),
+    "Lee et al. (2008)": ("reference", 0.93, 0.9),
+}
+
+
+def test_roles_is_required_between_resolve_and_space(tmp_path):
     order = list(STAGE_ORDER)
     assert order.index("resolve") < order.index("roles") < order.index("space")
+    # On by default, with no model configured: it is the articles that fail, not the build.
+    assert "roles" in [s.name for s in build([], Settings(data_root=tmp_path))]
+    assert [s.name for s in build(["roles"], Settings(data_root=tmp_path))] == ["roles"]
+    off = Settings(data_root=tmp_path)
+    on = Settings(data_root=tmp_path, prose_model="nu-prose")
+    assert RolesStage.upstream_for(off) == ("analyses", "tables")
+    assert RolesStage.upstream_for(on) == ("resolve", "tables")
+    assert SpaceStage.upstream_for(off) == SpaceStage.upstream_for(on) == ("roles", "tables")
 
 
-def test_roles_is_off_unless_a_model_is_configured(tmp_path):
-    assert "roles" not in [s.name for s in build([], Settings(data_root=tmp_path))]
-    with pytest.raises(ValueError, match="role_model"):
-        build(["roles"], Settings(data_root=tmp_path))
-    on = Settings(data_root=tmp_path, role_model=tmp_path / "model")
-    assert "roles" in [s.name for s in build([], on)]
-    assert RolesStage.upstream_for(on) == ("analyses", "tables")
-    both = Settings(data_root=tmp_path, role_model=tmp_path / "model", prose_model="nu-prose")
-    assert RolesStage.upstream_for(both) == ("resolve", "tables")
-
-
-def test_a_confident_reference_is_held_back_with_its_citation():
-    classifier = FakeClassifier(
-        {
-            "patients > controls": ("result", 0.97, 0.01),
-            "Lee et al. (2008)": ("reference", 0.93, 0.9),
-        }
-    )
-    out, summary = assign_roles(_payload(), [], TEXT, classifier, min_confidence=0.8)
+def test_every_set_gets_its_role_from_its_origin_s_model():
+    table = FakeClassifier(TABLE_ANSWERS)
+    prose = FakeClassifier({"amygdala seed": ("anchor", 0.99, 0.02, "seed")}, "fake-prose@2")
+    payload = {**_tables(), "prose": _prose()}
+    out, summary = assign_roles(payload, PASSAGES, TEXT, {"table": table, "text": prose})
+    assert all(t.startswith("[ORIGIN] table") for t in table.seen) and len(table.seen) == 2
+    assert prose.seen and all(t.startswith("[ORIGIN] text") for t in prose.seen)
+    assert "[PASSAGE] The amygdala seed" in prose.seen[0]
     [kept] = out["t2"]["analyses"]
     [held] = out["t2"]["held"]
-    assert kept["name"] == "patients > controls"
-    assert kept["metadata"]["set_role"]["role_source"] == "fake@1"
+    [seed] = out["prose"]["analyses"]
+    assert kept["metadata"]["set_role"] == {
+        "role": "result",
+        "anchor_kind": None,
+        "from_prior_study": False,
+        "prior_study_evidence": [],
+        "role_confidence": 0.97,
+        "role_source": "fake-table@1",
+        "role_origin": "table",
+    }
     role = held["metadata"]["set_role"]
-    assert (role["role"], role["from_prior_study"], role["proposal"]["role"]) == (
+    assert (role["role"], role["from_prior_study"], role["role_source"]) == (
         "reference",
         True,
-        "result",
+        "fake-table@1",
     )
     span = role["prior_study_evidence"][0]
-    assert (
-        TEXT[span["start_char"] : span["end_char"]]
-        == span["text"]
-        == "Table 2 quotes Lee et al. (2008)."
-    )
+    assert TEXT[span["start_char"] : span["end_char"]] == span["text"]
+    assert span["text"] == "Table 2 quotes Lee et al. (2008)."
     assert held["metadata"]["table_metadata"] == {"table_label": "Table 2"}  # metadata kept
+    seed_role = seed["metadata"]["set_role"]
+    assert (seed_role["role"], seed_role["anchor_kind"], seed_role["role_origin"]) == (
+        "anchor",
+        "seed",
+        "text",
+    )
+    assert seed_role["role_source"] == "fake-prose@2"
     assert summary == {
-        "tables": 1,
-        "sets": 2,
-        "roles": {"result": 1, "reference": 1},
-        "overridden": 1,
+        "tables": 2,
+        "sets": 3,
+        "sets_by_origin": {"table": 2, "text": 1},
+        "roles": {"result": 1, "reference": 1, "seed": 1},
         "held": 1,
-        "source": "fake@1",
+        "sources": {"table": "fake-table@1", "text": "fake-prose@2"},
     }
+    assert unassigned(out) == []
     # Upload reads the collection as before; `held` is not an analysis.
     assert [a.name for a in AnalysisCollection.from_dict(out["t2"]).analyses] == [
         "patients > controls"
     ]
 
 
-def test_an_unsure_classifier_leaves_the_proposal():
-    classifier = FakeClassifier(
-        {
-            "patients > controls": ("result", 0.97, 0.0),
-            "Lee et al. (2008)": ("reference", 0.6, 0.4),
-        }
+def test_an_unsure_answer_is_still_the_model_s_and_says_how_unsure():
+    table = FakeClassifier({**TABLE_ANSWERS, "Lee et al. (2008)": ("reference", 0.4, 0.4)})
+    out, _ = assign_roles(_tables(), [], TEXT, {"table": table})
+    role = out["t2"]["held"][0]["metadata"]["set_role"]
+    assert (role["role"], role["role_source"], role["role_confidence"]) == (
+        "reference",
+        "fake-table@1",
+        0.4,
     )
-    out, summary = assign_roles(_payload(), [], TEXT, classifier, min_confidence=0.8)
-    assert len(out["t2"]["analyses"]) == 2 and "held" not in out["t2"]
-    role = out["t2"]["analyses"][1]["metadata"]["set_role"]
-    assert (role["role"], role["role_source"], role["from_prior_study"]) == (
-        "result",
-        "proposal",
-        False,
-    )
-    assert summary["overridden"] == 0
 
 
-def test_a_prose_seed_keeps_its_prose_role_and_metadata():
-    payload = {
-        "prose": {
-            "slug": "a",
-            "coordinate_space": "MNI",
-            "identifier": None,
-            "analyses": [
-                {
-                    "name": "amygdala seed",
-                    "coordinates": [{"x": 20.0, "y": -4.0, "z": -18.0, "space": "MNI"}],
-                    "metadata": {
-                        "source": "prose",
-                        "role": "anchor",
-                        "anchor_kind": "seed",
-                        "from_prior_study": False,
-                        "passages": [0],
-                    },
-                }
-            ],
-        }
+def test_a_set_whose_origin_has_no_model_gets_no_role_at_all():
+    table = FakeClassifier(TABLE_ANSWERS)
+    payload = {**_tables(), "prose": _prose()}
+    with pytest.raises(MissingRoleModel, match="prose"):
+        assign_roles(payload, PASSAGES, TEXT, {"table": table})
+    assert table.seen == []  # nothing is decided for an article it cannot finish
+    with pytest.raises(MissingRoleModel, match="table"):
+        assign_roles(_tables(), [], TEXT, {"text": FakeClassifier({})})
+
+
+def test_unassigned_names_every_set_without_a_decided_role():
+    out, _ = assign_roles(_tables(), [], TEXT, {"table": FakeClassifier(TABLE_ANSWERS)})
+    assert unassigned(_tables()) == ["t2#0", "t2#1"]
+    out["t2"]["held"][0]["metadata"]["set_role"]["role_source"] = None
+    assert unassigned(out) == ["t2#1"]  # a held set counts too
+    out["t2"]["held"][0]["metadata"]["set_role"] = {"role": "result"}  # incomplete
+    assert unassigned(out) == ["t2#1"]
+
+
+def _meta(path: Path, origin: str, **extra):
+    path.mkdir(parents=True, exist_ok=True)
+    fields = {
+        "name": f"set-roles-{origin}",
+        "version": "1",
+        "roles": list(COORDINATE_ROLES),
+        "anchor_kinds": list(ANCHOR_KINDS),
+        "origin": origin,
+        "context_version": CONTEXT_VERSIONS[origin],
+        **extra,
     }
-    passages = [{"text": "The amygdala seed (20, -4, -18) was a 6 mm sphere.", "heading": "PPI"}]
-    classifier = FakeClassifier({"amygdala seed": ("anchor", 0.99, 0.02, "seed")})
-    out, _ = assign_roles(payload, passages, None, classifier, min_confidence=0.8)
-    [analysis] = out["prose"]["analyses"]
-    assert analysis["metadata"]["anchor_kind"] == "seed"  # the proposal, as resolve wrote it
-    assert analysis["metadata"]["set_role"]["anchor_kind"] == "seed"
-    assert "[PASSAGE] The amygdala seed" in classifier.seen[0]
+    (path / META_FILE).write_text(json.dumps(fields))
+    return path
 
 
-def test_the_stage_refuses_a_model_built_for_another_context(tmp_path):
-    (tmp_path / META_FILE).write_text(
-        json.dumps(
-            {
-                "name": "enc",
-                "version": "1",
-                "roles": list(COORDINATE_ROLES),
-                "anchor_kinds": list(ANCHOR_KINDS),
-                "context_versions": {**CONTEXT_VERSIONS, "table": 0},
-            }
-        )
+def test_each_origin_s_model_is_checked_on_its_own(tmp_path):
+    table = _meta(tmp_path / "table", "table")
+    prose = _meta(tmp_path / "prose", "text")
+    stage = RolesStage(
+        Settings(data_root=tmp_path, prose_model="nu-prose", role_model_table=table,
+                 role_model_prose=table)
     )
-    stage = RolesStage(Settings(data_root=tmp_path, role_model=tmp_path))
-    with pytest.raises(ValueError, match="context versions"):
-        stage.model_source()
-    (tmp_path / META_FILE).write_text(
-        json.dumps(
-            {
-                "name": "enc",
-                "version": "1",
-                "roles": list(COORDINATE_ROLES),
-                "anchor_kinds": list(ANCHOR_KINDS),
-                "context_versions": CONTEXT_VERSIONS,
-            }
-        )
+    assert stage.model_state("table") == ("set-roles-table@1", None)
+    source, reason = stage.model_state("text")
+    assert source is None and "reads 'table' sets, not 'text'" in reason
+    stale = _meta(tmp_path / "stale", "text", context_version=0)
+    stage.settings.role_model_prose = stale
+    assert "context version 0" in stage.model_state("text")[1]
+    stage.settings.role_model_prose = None
+    assert stage.model_state("text") == (
+        None,
+        "no prose role model is configured (role_model_prose)",
     )
-    assert stage.model_source() == "enc@1"
+    # Each model is its own part of the fingerprint.
+    stage.settings.role_model_prose = prose
+    fps = {o: stage.model_fingerprint(o, stage.model_state(o)) for o in ("table", "text")}
+    stage.settings.role_model_prose = _meta(tmp_path / "prose2", "text", version="2")
+    assert stage.model_fingerprint("table", stage.model_state("table")) == fps["table"]
+    assert stage.model_fingerprint("text", stage.model_state("text")) != fps["text"]
+
+
+@pytest.fixture
+def env(tmp_path):
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond")
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(Identifier(pmid="7"))
+        catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                                payload=_tables(), summary={"tables": 1})])
+        yield settings, catalog, ref
+
+
+def _run(stage, ctx, catalog, ref):
+    plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], stage.name),
+                      catalog.artifacts([ref.id], stage.requires))
+    outcomes = list(stage.execute(ctx, plan.pending))
+    catalog.record(outcomes)
+    return plan, outcomes
+
+
+def test_without_a_table_model_the_stage_fails_and_everything_after_it_is_blocked(env):
+    settings, catalog, ref = env
+    ctx = Context(settings, catalog)
+    _, (failed,) = _run(RolesStage(settings), ctx, catalog, ref)
+    assert failed.status is Status.FAILED
+    assert failed.error == (
+        "no role for its sets: no table role model is configured (role_model_table)"
+    )
+    plan, outcomes = _run(SpaceStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    # A space artifact from before the roles stage existed is not enough for upload or sync.
+    catalog.record([Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp-0",
+                            payload=_tables(), summary={"tables": 1}),
+                    Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-0",
+                            payload={}, summary={"tables": 1, "base_study_id": "b1"})])
+    for stage in (UploadStage(settings), SyncStage(settings)):
+        plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], stage.name),
+                          catalog.artifacts([ref.id], stage.requires))
+        assert (stage.name, plan.blocked, plan.pending) == (stage.name, 1, [])
+
+
+def test_with_its_model_the_stage_writes_every_role(env, monkeypatch, tmp_path):
+    settings, catalog, ref = env
+    settings.role_model_table = _meta(tmp_path / "table", "table")
+    stage = RolesStage(settings)
+    fake = FakeClassifier(TABLE_ANSWERS, "set-roles-table@1")
+    monkeypatch.setattr(stage, "classifier", lambda origin: {"table": fake}[origin])
+    _, (done,) = _run(stage, Context(settings, catalog), catalog, ref)
+    assert done.status is Status.OK and unassigned(done.payload) == []
+    assert done.summary["sources"] == {"table": "set-roles-table@1"}
+
+
+def test_upload_and_sync_refuse_a_payload_with_a_set_without_a_role(env):
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stages.roles import refuse_unassigned
+
+    _, catalog, ref = env
+    work = Work(ref=ref, source="", fingerprint="fp", upstream=None)
+    refused = refuse_unassigned("upload", work, _tables())
+    assert refused.status is Status.FAILED
+    assert refused.error.startswith("sets without a role from the roles stage: t2#0, t2#1")
+    out, _ = assign_roles(_tables(), [], TEXT, {"table": FakeClassifier(TABLE_ANSWERS)})
+    assert refuse_unassigned("upload", work, out) is None
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "pipeline/stages/roles.py",
+        *sorted(
+            str(p.relative_to(ROOT))
+            for p in (ROOT / "services" / "set_roles").glob("*.py")
+            if p.name not in ("labeling.py", "label_schema.py", "export.py")
+        ),
+    ],
+)
+def test_no_role_is_given_by_default(path):
+    """No code that decides a pipeline set's role names `result` as a fallback or default."""
+    source = (ROOT / path).read_text(encoding="utf-8")
+    defaults = re.findall(
+        r"""(?:=\s*|\bor\s+|get\([^)]*,\s*|default\s*=\s*)(?:SetRole\()?["']result["']"""
+        r"""|\bRESULT\b|=\s*(?:SetRole\()?CoordinateRole\.result\b""",
+        source,
+    )
+    assert defaults == [], f"{path} gives a default role: {defaults}"

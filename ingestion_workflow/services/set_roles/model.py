@@ -12,11 +12,12 @@ A saved model is a directory:
     encoder/        the fine-tuned encoder (save_pretrained)
     tokenizer/      its tokenizer
     heads.pt        the heads' weights
-    set_roles.json  roles and anchor kinds, each origin's context version, name and
-                    version, base model
+    set_roles.json  roles and anchor kinds, the origin it reads and that origin's
+                    context version, name and version, base model
 
-One model reads table and prose sets alike: each input starts with its origin
-(`[ORIGIN] table` or `[ORIGIN] text`), and the role vocabulary is shared.
+There is one model per origin, a table model and a prose model: the two read
+different evidence, so each is trained on its own origin's labels and inputs.
+The heads and the role vocabulary are the same for both.
 """
 
 from __future__ import annotations
@@ -31,17 +32,19 @@ from .table_context import TABLE_CONTEXT_VERSION
 
 META_FILE = "set_roles.json"
 
-#: The context version of each origin this code builds.
+#: The context version of each origin this code builds: `table` sets and `text` (prose) sets.
 CONTEXT_VERSIONS = {"table": TABLE_CONTEXT_VERSION, "text": PROSE_CONTEXT_VERSION}
+ORIGINS = tuple(CONTEXT_VERSIONS)
 
 
-def check_meta(meta: Dict[str, Any], path: Any = "the model") -> None:
-    """Refuse a model trained on contexts shaped differently from the ones this code builds."""
-    trained = meta.get("context_versions") or {}
-    if trained != CONTEXT_VERSIONS:
+def check_meta(meta: Dict[str, Any], origin: str, path: Any = "the model") -> None:
+    """Refuse a model for another origin, or trained on contexts shaped differently."""
+    if meta.get("origin") != origin:
+        raise ValueError(f"{path} reads {meta.get('origin')!r} sets, not {origin!r} sets")
+    if meta.get("context_version") != CONTEXT_VERSIONS[origin]:
         raise ValueError(
-            f"{path} was trained on context versions {trained or None}; this code builds "
-            f"{CONTEXT_VERSIONS}; retrain it"
+            f"{path} was trained on {origin} context version {meta.get('context_version')}; "
+            f"this code builds {CONTEXT_VERSIONS[origin]}; retrain it"
         )
     for key, values in (("roles", COORDINATE_ROLES), ("anchor_kinds", ANCHOR_KINDS)):
         if list(meta.get(key) or []) != list(values):
@@ -94,6 +97,7 @@ def save(
     tokenizer,
     path: Path,
     *,
+    origin: str,
     name: str,
     version: str,
     base_model: str,
@@ -114,7 +118,8 @@ def save(
         "base_model": base_model,
         "roles": list(COORDINATE_ROLES),
         "anchor_kinds": list(ANCHOR_KINDS),
-        "context_versions": CONTEXT_VERSIONS,
+        "origin": origin,
+        "context_version": CONTEXT_VERSIONS[origin],
         **(extra or {}),
     }
     (path / META_FILE).write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -125,14 +130,14 @@ def read_meta(path: Path) -> Dict[str, Any]:
     return json.loads((Path(path) / META_FILE).read_text(encoding="utf-8"))
 
 
-def load(path: Path, device: str = "cpu"):
-    """(model, tokenizer, meta) from a directory `save` wrote."""
+def load(path: Path, origin: str, device: str = "cpu"):
+    """(model, tokenizer, meta) from a directory `save` wrote for `origin`."""
     torch = _torch()
     from transformers import AutoModel, AutoTokenizer  # noqa: PLC0415
 
     path = Path(path)
     meta = read_meta(path)
-    check_meta(meta, path)
+    check_meta(meta, origin, path)
     model = build_model(AutoModel.from_pretrained(path / "encoder"))
     heads = torch.load(path / "heads.pt", map_location=device)
     for head in HEADS:

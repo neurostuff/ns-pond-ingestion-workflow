@@ -7,45 +7,15 @@ the table extractor's tuple form is something only its fine-tune learned.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
-
-from study_schema.models.paper_parse import AnchorKind, CoordinateRole
+from typing import Any, Dict
 
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
 PROSE_PROMPT_VERSION = "2026-10-06.n5"
 
-#: The current nu-prose model's own role vocabulary: its template and the
-#: dataset it was trained on use it. Nothing past `study_schema_role` sees it.
+#: The current nu-prose model's own role vocabulary, which its template and
+#: dataset use. Nothing reads the role it answers: the roles stage decides.
 ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
-
-_A = CoordinateRole.anchor.value
-#: LEGACY ADAPTER -- nu-prose answers in its own role words; this reads them into
-#: study_schema's fields, where they are only the roles stage's proposal (the
-#: roles stage decides). Keep it while nu-prose emits these words. The model's `other` is "anything
-#: else" and does not separate a real brain coordinate that fits no role
-#: (study_schema's `other`) from numbers that are not coordinates; the second is
-#: most of it, so it maps to not-coordinates. The real ones come from the roles
-#: classifier, not from this adapter.
-_STUDY_SCHEMA_ROLES = {
-    "result": (CoordinateRole.result.value, None, False),
-    "roi": (_A, AnchorKind.roi.value, False),
-    "seed": (_A, AnchorKind.seed.value, False),
-    "target": (_A, AnchorKind.stimulation_target.value, False),
-    "prior_study": (CoordinateRole.reference.value, None, True),
-    # A figure word names no role: figure-shown peaks are often results, so the roles stage decides.
-    "figure": (None, None, False),
-}
-
-
-def study_schema_role(role: Optional[str]) -> Dict[str, Any]:
-    """A nu-prose role as study_schema's `role`, `anchor_kind` and `from_prior_study`.
-
-    No role is a result; `other` (or anything outside `ROLES`) is `role` None: not
-    coordinates, even where it was a real coordinate (see `_STUDY_SCHEMA_ROLES`).
-    """
-    fields = _STUDY_SCHEMA_ROLES.get(role or "result", (None, None, False))
-    return dict(zip(("role", "anchor_kind", "from_prior_study"), fields))
 
 INSTRUCTION = (
     "List every brain coordinate in the passage, including region-of-interest centres, seeds, "
@@ -147,4 +117,4 @@ def schema() -> Dict[str, Any]:
 
 
 __all__ = ["INSTRUCTION", "MAX_ANALYSES", "MAX_NAME", "MAX_POINTS", "PROSE_PROMPT_VERSION",
-           "ROLES", "TEMPLATE", "study_schema_role", "WITH_CONTEXT", "schema"]
+           "ROLES", "TEMPLATE", "WITH_CONTEXT", "schema"]

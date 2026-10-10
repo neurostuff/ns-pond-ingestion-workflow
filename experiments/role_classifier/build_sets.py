@@ -32,14 +32,14 @@ import random
 import sqlite3
 from pathlib import Path
 
-from ingestion_workflow.prompts.prose_coordinates import study_schema_role
 from ingestion_workflow.services.set_roles.common import (
     _ANCHOR_CUES,
     _CITATION,
-    _SLICE_CUES,
     _PRIOR_CUES,
+    _SLICE_CUES,
     citing_sentences,
 )
+from study_schema.models.paper_parse import AnchorKind, CoordinateRole
 
 TRAIN_V21 = Path("/home/james/train-data/train_v21.jsonl")
 REAL_TABLE_ORIGINS = {"curated", "real-positive", "hand-judged"}
@@ -48,15 +48,34 @@ NS_POND = Path("/data/alejandro/projects/ns-pond")
 CATALOG = NS_POND / "catalog"
 
 
-#: Non-result proposals, rarest first, as `role_key` names them.
+#: The prose datasets' own role words (the current nu-prose model's too), read as
+#: study_schema's fields. They are the labels of a dataset's synthetic rows, which
+#: no labeller sees, and what corpus passages are sampled by; nothing in the
+#: pipeline reads them. `other` was "anything else", mostly numbers that are not
+#: coordinates; `figure` names no role.
+_DATASET_ROLES = {
+    "result": (CoordinateRole.result.value, None, False),
+    "roi": (CoordinateRole.anchor.value, AnchorKind.roi.value, False),
+    "seed": (CoordinateRole.anchor.value, AnchorKind.seed.value, False),
+    "target": (CoordinateRole.anchor.value, AnchorKind.stimulation_target.value, False),
+    "prior_study": (CoordinateRole.reference.value, None, True),
+}
+
+
+def dataset_role(role):
+    """A prose dataset's role word as `role`, `anchor_kind` and `from_prior_study`."""
+    fields = _DATASET_ROLES.get(role or "result", (None, None, False))
+    return dict(zip(("role", "anchor_kind", "from_prior_study"), fields))
+
+
+#: Roles other than result, rarest first, as `role_key` names them.
 RARE_FIRST = ("stimulation_target", "reference", "seed", "roi", "not_coordinates")
 
 
 def study_schema_points(points):
-    """Points with the prose model's own role (the prose dataset's too) as study_schema's
-    role fields, through the prose stage's legacy adapter."""
+    """Points with the prose dataset's own role word as study_schema's role fields."""
     return [
-        {**{k: v for k, v in p.items() if k != "role"}, **study_schema_role(p.get("role"))}
+        {**{k: v for k, v in p.items() if k != "role"}, **dataset_role(p.get("role"))}
         if isinstance(p, dict)
         else p
         for p in points
@@ -74,16 +93,16 @@ def with_role(name, points):
 
 
 def role_key(s) -> str:
-    """A set's proposal for stratifying: an anchor by its kind."""
+    """A set's role for stratifying: an anchor by its kind."""
     return s.get("anchor_kind") or s.get("role") or "not_coordinates"
 
 
-def stratum(text: str, proposed=(), strong: str = "") -> str:
-    """The rarest thing a unit points at: a non-result proposal, then cues in `strong` (a
-    table's caption and footer), then cues anywhere in `text`."""
+def stratum(text: str, roles=(), strong: str = "") -> str:
+    """The rarest thing a unit points at: a role other than result its source row gives,
+    then cues in `strong` (a table's caption and footer), then cues anywhere in `text`."""
     for key in RARE_FIRST:
-        if key in proposed:
-            return f"proposed:{key}"
+        if key in roles:
+            return f"role:{key}"
     for where, body in (("caption", strong), ("text", text)):
         if _SLICE_CUES.search(body):
             return f"{where}:slice"
@@ -251,7 +270,7 @@ def prose_units(wild: int):
 
 
 def wild_passages(n: int, found):
-    """Passages the prose stage read from the corpus, sampled evenly over their proposed roles."""
+    """Passages the prose stage read from the corpus, sampled evenly over its model's roles."""
     from ingestion_workflow.catalog.blobs import BlobStore  # noqa: PLC0415
 
     conn = sqlite3.connect(f"file:{CATALOG / 'catalog.sqlite'}?mode=ro", uri=True)

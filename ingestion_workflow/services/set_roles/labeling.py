@@ -39,7 +39,7 @@ from typing import (
 
 from . import prose_context, table_context
 from .label_schema import LABEL_VERSION, SCHEMA, check, set_role
-from .labels import SetRole
+from .labels import role_error
 
 #: (system, prompt, schema, unit id) -> (answer, cost). `codex_caller` builds one.
 Caller = Callable[[str, str, Dict[str, Any], str], Tuple[Dict[str, Any], Dict[str, Any]]]
@@ -119,19 +119,7 @@ def contexts(unit: Mapping[str, Any]) -> List[Any]:
             out.append(ctx)
         return out
     passage = {k: unit.get(k) for k in ("heading", "text", "before", "after")}
-    return [prose_context.build(s, passage=passage, proposed=proposal(unit, s)) for s in sets]
-
-
-def proposal(unit: Mapping[str, Any], set_: Mapping[str, Any]) -> Optional[SetRole]:
-    """What the pipeline proposed for a prose unit's set, or None when nothing did.
-
-    Only a corpus passage (`dataset` "wild") carries the prose model's own role; a
-    dataset row's roles are its labels, and proposing them would teach the encoder to
-    copy `[PROPOSED]`.
-    """
-    if unit.get("dataset") != "wild":
-        return None
-    return SetRole.of(set_)
+    return [prose_context.build(s, passage=passage) for s in sets]
 
 
 #: The prose datasets' splits that are evaluation data: never relabelled, never trained on.
@@ -306,8 +294,31 @@ def done_units(out_dir: Path) -> set:
 
 
 def read_labels(out_dir: Path) -> Dict[str, Dict[str, Any]]:
-    """Every set's label in a job directory, by set id."""
-    return {row["set_id"]: row for row in _batch_rows(out_dir)}
+    """Every set's label in a job directory, by set id: its highest `label_version`."""
+    return _latest(_batch_rows(out_dir))
+
+
+def latest_labels(directories: Sequence[Path]) -> Dict[str, Dict[str, Any]]:
+    """Every set's label across job directories: the highest `label_version` wins.
+
+    A set relabelled under a later version (as version 4 relabelled the sets an
+    earlier one called `display`) takes the later label wherever it was written;
+    between equal versions the first directory given wins, so a gold set listed
+    first keeps its label. A row whose fields are not study_schema's (a `display`
+    no later version replaced) is left out: it cannot be trained on.
+    """
+    found = _latest(row for directory in directories for row in _batch_rows(directory))
+    return {set_id: row for set_id, row in found.items() if not role_error(row)}
+
+
+def _latest(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    """By set id, the first row of the highest `label_version`."""
+    out: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        held = out.get(row["set_id"])
+        if held is None or row.get("label_version", 0) > held.get("label_version", 0):
+            out[row["set_id"]] = dict(row)
+    return out
 
 
 def label_rows(

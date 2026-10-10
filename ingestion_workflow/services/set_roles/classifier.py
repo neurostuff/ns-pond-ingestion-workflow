@@ -1,9 +1,8 @@
 """Turning a classifier's answer into the role a set is recorded with.
 
-The classifier only overrides the proposal when it is confident: a table set is
-proposed `result` and a prose set its prose model's role, and a wrong override
-is costly -- a real result reclassified as a reference is not uploaded. Below
-`min_confidence` the proposal stands, and the record says so.
+Every set's role is its origin's classifier's answer: there is no proposal to
+fall back on and no default role. The answer is recorded with its confidence,
+so a reviewer can find the unsure ones.
 """
 
 from __future__ import annotations
@@ -48,54 +47,35 @@ class SetRoleClassifier(Protocol):
 
 
 def decide(
-    proposed: SetRole,
-    prediction: Optional[Prediction],
+    prediction: Prediction,
     *,
     source: str,
-    min_confidence: float,
+    origin: str,
+    coordinates_threshold: float = 0.5,
     prior_threshold: float = 0.5,
     evidence: Sequence[str] = (),
 ) -> RoleDecision:
-    """The recorded role for a set, from its proposal and the classifier's answer.
+    """The recorded role for a set, from its classifier's answer alone.
 
-    The classifier sets numbers aside as not coordinates, or overrides the
-    proposed role, only at `min_confidence`. `evidence` is the context's citing
-    sentences (`context.prior_evidence`), recorded only when the set is judged
-    to come from a prior study.
+    Below `coordinates_threshold` the numbers are not coordinates (`role` None);
+    otherwise the role is the role head's top answer. `evidence` is the
+    context's citing sentences (`context.prior_evidence`), recorded only when
+    the set is judged to come from a prior study.
     """
-    if prediction is None:
-        decided, confidence, decided_by = proposed, None, "proposal"
-    elif 1 - prediction.coordinates_probability >= min_confidence:
-        decided, confidence, decided_by = (
-            SetRole(None),
-            1 - prediction.coordinates_probability,
-            source,
-        )
+    if not isinstance(prediction, Prediction):
+        raise TypeError(f"a role needs the classifier's prediction, got {prediction!r}")
+    if prediction.coordinates_probability < coordinates_threshold:
+        decided, confidence = SetRole(None), 1 - prediction.coordinates_probability
     else:
-        if prediction.confidence >= min_confidence:
-            role, kind, confidence, decided_by = (
-                prediction.role,
-                prediction.anchor_kind,
-                prediction.confidence,
-                source,
-            )
-        else:
-            role, kind, confidence, decided_by = (
-                proposed.role,
-                proposed.anchor_kind,
-                prediction.role_probabilities.get(proposed.role),
-                "proposal",
-            )
+        role, confidence = prediction.role, prediction.confidence
         # A quoted peak is another study's by definition; otherwise the flag head decides.
-        prior = role is not None and (
-            role == "reference" or prediction.prior_probability >= prior_threshold
-        )
-        decided = SetRole(role, kind, prior)
+        prior = role == "reference" or prediction.prior_probability >= prior_threshold
+        decided = SetRole(role, prediction.anchor_kind, prior)
     return RoleDecision(
         decided=decided,
         confidence=confidence,
-        source=decided_by,
-        proposed=proposed,
+        source=source,
+        origin=origin,
         prior_study_evidence=(
             tuple({"text": s} for s in evidence) if decided.from_prior_study else ()
         ),
@@ -103,12 +83,15 @@ def decide(
 
 
 class EncoderClassifier:
-    """A fine-tuned encoder, loaded from a model directory (layout in `model.py`)."""
+    """One origin's fine-tuned encoder, loaded from a model directory (layout in `model.py`)."""
 
-    def __init__(self, path: Path, *, device: str = "cpu", batch_size: int = 32) -> None:
+    def __init__(
+        self, path: Path, origin: str, *, device: str = "cpu", batch_size: int = 32
+    ) -> None:
         from . import model as model_io  # noqa: PLC0415 - torch only when a model is configured
 
-        self._model, self._tokenizer, meta = model_io.load(Path(path), device=device)
+        self._model, self._tokenizer, meta = model_io.load(Path(path), origin, device=device)
+        self.origin = origin
         self._device = device
         self._batch_size = batch_size
         self.source = f"{meta['name']}@{meta['version']}"

@@ -32,8 +32,28 @@ from ingestion_workflow.services.nspond_schema import (
 
 logger = get_logger(__name__)
 
-#: A prose analysis's role in stage1: study_schema's fields, as resolve wrote them.
-PROSE_ROLE_FIELDS = ("role", "anchor_kind", "from_prior_study")
+#: Each analysis's role in stage1: study_schema's fields as the roles stage
+#: decided them (`metadata.set_role`), with its confidence and the model that decided.
+STAGE1_ROLE_FIELDS = (
+    "role",
+    "anchor_kind",
+    "from_prior_study",
+    "prior_study_evidence",
+    "role_confidence",
+    "role_source",
+    "role_origin",
+)
+
+
+def _stage1_role(analysis) -> dict[str, object]:
+    """An analysis's role fields; an analysis the roles stage did not decide is refused."""
+    decided = (analysis.metadata or {}).get("set_role")
+    if not isinstance(decided, dict) or not decided.get("role_source"):
+        raise ValueError(
+            f"analysis {analysis.name!r} of table {analysis.table_id!r} has no role from the "
+            "roles stage; it is not written"
+        )
+    return {k: decided.get(k) for k in STAGE1_ROLE_FIELDS}
 
 
 def _sync_article(
@@ -266,19 +286,13 @@ def _write_stage1(
     analyses: list[dict[str, object]] = []
     for table_id, collection in per_table_analyses.items():
         for analysis in _kept(collection):
-            # A prose analysis says it is one, and what its points are: a seed
-            # or ROI is not a result, and pondie cannot tell them apart otherwise.
+            # Every analysis says what its points are for: a seed or ROI is not
+            # a result, and pondie cannot tell them apart otherwise.
             prose = (analysis.metadata or {}).get("source") == "prose"
             analyses.append(
                 {
-                    **(
-                        {
-                            "source": "prose",
-                            **{k: analysis.metadata.get(k) for k in PROSE_ROLE_FIELDS},
-                        }
-                        if prose
-                        else {}
-                    ),
+                    **({"source": "prose"} if prose else {}),
+                    **_stage1_role(analysis),
                     "name": analysis.name,
                     "description": analysis.description,
                     "table_id": analysis.table_id or table_id,

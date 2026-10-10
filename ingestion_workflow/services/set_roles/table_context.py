@@ -24,11 +24,10 @@ from .common import (
     point_summary,
     sentences,
 )
-from .labels import RESULT, SetRole
 
 #: Bump when the serialisation changes: a model records the version it was
 #: trained on and the roles stage refuses one built for another.
-TABLE_CONTEXT_VERSION = 1
+TABLE_CONTEXT_VERSION = 2
 
 #: How many of the set's rows, header rows and neighbours the input keeps.
 MAX_ROWS, MAX_HEADER, MAX_NEIGHBOURS = 8, 3, 6
@@ -52,7 +51,6 @@ class TableSetContext:
     #: Sentences of the article that cite the table.
     citing: List[str] = field(default_factory=list)
     points: List[Mapping[str, Any]] = field(default_factory=list)
-    proposed: SetRole = RESULT
 
     def cue_text(self) -> str:
         return " ".join([self.name, self.description, self.caption, self.footer, *self.citing])
@@ -153,7 +151,6 @@ def serialize(context: TableSetContext, max_chars: int = MAX_CHARS) -> str:
     """The classifier's input string for one table set: short fields first."""
     parts = [
         "[ORIGIN] table",
-        f"[PROPOSED] {context.proposed.render()}",
         f"[POINTS] {point_summary(context.points)}",
         f"[CUES] {cue_summary(context.cue_text())}",
         f"[NAME] {clip(context.name, 200)}",

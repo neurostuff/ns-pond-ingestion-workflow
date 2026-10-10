@@ -25,13 +25,14 @@ _UNKNOWN = UNKNOWN_SPACES
 class SpaceStage:
     """Rewrite tables of unknown space with the space their article states.
 
-    Its payload is the analyses payload, with only those tables changed, so
-    upload and sync read it as they read `analyses`. An article with nothing
+    Its payload is the roles stage's, with only those tables changed, so
+    every set keeps the role the roles stage decided. An article with nothing
     to fill writes the same bytes, which the blob store keeps once.
     """
 
     name = "space"
-    requires = "analyses"
+    #: Required whatever else is on: nothing reaches upload without its role.
+    requires = "roles"
     requires_flag = "tables"
 
     def __init__(self, settings) -> None:
@@ -40,17 +41,11 @@ class SpaceStage:
 
     @classmethod
     def upstream_for(cls, settings):
-        """Read `resolve` when prose is on: it holds the tables' analyses and the prose's."""
-        if getattr(settings, "prose_model", None):
-            return "resolve", "tables"
+        """`roles`, with or without prose: it reads resolve's sets or analyses' itself."""
         return cls.requires, cls.requires_flag
 
     def fingerprint_for(self, upstream: Artifact) -> str:
-        # Where resolve added nothing from the prose, it names the analyses
-        # artifact it passed through, so an article already read from its
-        # tables -- and uploaded -- stays fresh when prose is switched on.
-        basis = (upstream.summary or {}).get("basis") if upstream.stage == "resolve" else None
-        return fingerprint("space", SPACE_VERSION, upstream=basis or upstream.fingerprint)
+        return fingerprint("space", SPACE_VERSION, upstream=upstream.fingerprint)
 
     def plan(
         self,

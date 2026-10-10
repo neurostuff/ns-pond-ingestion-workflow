@@ -12,6 +12,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +93,11 @@ class UploadStage:
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         excluded = ctx.catalog.exclusions([ref.id for ref in refs])
         notices = ctx.catalog.artifacts([ref.id for ref in refs], "notices")
+        roled = with_roles(ctx, [ref.id for ref in refs])
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
-            if spaced is None or spaced.status is not Status.OK:
+            # Without OK roles nothing is uploaded, whatever an older space artifact holds.
+            if spaced is None or spaced.status is not Status.OK or ref.id not in roled:
                 plan.blocked += 1
                 continue
             notice = notices.get(ref.id, {}).get("")
@@ -155,6 +158,14 @@ class UploadStage:
     def _execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
         from ingestion_workflow.services.upload import UploadService
+
+        refused = {}
+        for work in works:
+            outcome = refuse_unassigned(self.name, work, ctx.payload(work.upstream))
+            if outcome is not None:
+                refused[work.article_id] = outcome
+        yield from refused.values()
+        works = [work for work in works if work.article_id not in refused]
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
         found = ctx.catalog.artifacts([w.article_id for w in works], "notices")

@@ -1,9 +1,13 @@
 # Set-role classifier
 
 What each coordinate set is for -- a result of this study, a region it defined, a peak quoted
-from another study, a bare slice position -- decided by a small fine-tuned encoder in the `roles`
-stage (`ingestion_workflow/pipeline/stages/roles.py`, off unless `role_model` is set), the only
-place a role is decided. The extractors (nu-v21, nu-prose) are not trained for role. The code
+from another study, a bare slice position -- decided in the `roles` stage
+(`ingestion_workflow/pipeline/stages/roles.py`), the only place a role is decided. The stage is
+required: space, upload and sync read nothing it has not passed. There are two classifiers, a
+table model (`role_model_table`) for nu-v21's table sets and a prose model (`role_model_prose`)
+for nu-prose's sets, because different evidence matters for each. Neither extractor predicts a
+role, and an article with a set whose origin has no usable model fails the stage; nothing falls
+back to a default. The artifact the stage writes is described in `docs/set-roles-artifact.md`. The code
 is in `ingestion_workflow/services/set_roles/`; this directory holds the job scripts.
 
 ```
@@ -15,8 +19,8 @@ services/set_roles/
   label_schema.py   the labeller's strict JSON answer
   labeling.py       per-origin prompts, the resumable codex job, agreement, ledger
   export.py         encoder rows
-  classifier.py     when a prediction overrides the proposed role
-  model.py          the encoder with two heads (torch/transformers, imported lazily)
+  classifier.py     a prediction as the recorded role, with its confidence and model
+  model.py          the encoder and its heads, one model per origin (torch/transformers, lazily)
 experiments/role_classifier/
   build_sets.py     labelling units from nu-v21's and the prose model's real training rows (beast)
   label_sets.py     label / compare / totals
@@ -48,34 +52,33 @@ the uploads.
 anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
 for it, and one for the anchor kind.
 
-The current nu-prose model answers in its own vocabulary (`prompts.prose_coordinates.ROLES`).
-Its role is only the `[PROPOSED]` input of a prose set: resolve reads it through one legacy
-adapter, `prompts.prose_coordinates.study_schema_role` (`roi`/`seed`/`target` -> anchor of
-that kind, `prior_study` -> `reference` with `from_prior_study`, `figure` -> no proposal, `other`
--> not coordinates), and the roles stage decides the role after it. The model's `other` is
-anything else and does not separate real brain coordinates that fit no role from
-non-coordinates, which are most of it; the classifier finds the real ones.
+The current nu-prose model still answers with its own role words
+(`prompts.prose_coordinates.ROLES`); nothing reads them. Resolve keeps every prose point, in
+one analysis per name, and the prose role classifier decides each set's role.
 
 Labels carry `label_version`: 1 for the rows answered under the earlier role vocabulary and
 converted to study_schema's fields afterwards, 2 for answers that could say `other`, 3 once the
-instructions gave the nuisance-regressor rule.
+instructions gave the nuisance-regressor rule, 4 for the prose sets relabelled once `display`
+was no longer a role (`labels/relabel-v4-no-display`). Training reads every label directory
+given and takes each set's highest `label_version` (`labeling.latest_labels`); a set whose
+latest label is still `display` is left out.
 
-Decision rule (`classifier.decide`): a table set is proposed `result` and a prose set its prose
-model's role, as resolve recorded it. The classifier sets a set aside as not coordinates, or overrides the proposal only when its top probability is at least
-`min_confidence` (the design sets 0.8), because a wrong override is costly -- a real result
-relabelled `reference` is not uploaded. `from_prior_study` is set when the flag head reaches
-`prior_threshold` (0.5), and always for a `reference`. Each decision is
-recorded with its confidence, its source (`proposal` or the model's name and version) and the
-proposal it overrode.
+Decision rule (`classifier.decide`): the set's role is its origin's model's answer. Below a
+coordinates probability of 0.5 the numbers are not coordinates (`role` null); otherwise the role
+is the role head's top answer, however sure, and the record carries its confidence, so the
+unsure ones can be reviewed. `from_prior_study` is set when the flag head reaches
+`prior_threshold` (0.5), and always for a `reference`. Each decision is recorded with its
+confidence, its model (`name@version`) and its origin.
 
 ## Inputs
 
 Table and prose sets are read from different evidence, so each has its own builder and its
 own version (`TABLE_CONTEXT_VERSION`, `PROSE_CONTEXT_VERSION`). Every label and training row
-records the version of its origin, and a model records both; the stage refuses a model whose
-versions differ from the code's. Both strings start with `[ORIGIN] table|text`, then the
-short fields (`[PROPOSED]`, `[POINTS]`, `[CUES]`, `[NAME]`), so truncation cuts free text and
-never structure:
+records the version of its origin, and a model records its origin and that origin's version;
+the stage refuses a model for another origin or version. Both strings start with
+`[ORIGIN] table|text`, then the short fields (`[POINTS]`, `[CUES]`, `[NAME]`), so truncation
+cuts free text and never structure. No input carries a role: not the extractor's, not a
+dataset's label.
 
 ```
 table: ... [TABLE] [NEIGHBOURS] [CAPTION] [FOOTER] [HEADER] [ROWS] [CITED]...
@@ -105,10 +108,36 @@ python label_sets.py label units/table_units.jsonl labels/sol-table --model gpt-
 python label_sets.py label units/prose_units.jsonl labels/sol-prose --model gpt-6.1-sol --pace 30 \
     --skip-dataset-labelled
 python label_sets.py compare labels/pilot-sol labels/pilot-astra
-python export_rows.py out --units units/*.jsonl --labels labels/astra labels/sol-table labels/sol-prose \
-    --id-map units/slug_dbids.json
-CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py out/encoder.jsonl models/set-roles-1
 ```
+
+## Training the two models
+
+Export writes one file per origin, from every label directory given (highest `label_version`
+per set; between equal versions the first directory wins, so list a gold set first):
+
+```
+python export_rows.py out --units units/table_units.jsonl units/prose_units.jsonl \
+    --labels labels/sol-table labels/sol-prose labels/relabel-v4-no-display \
+    --id-map units/slug_dbids.json
+```
+
+The table model, from `labels/sol-table`'s sets (`out/encoder-table.jsonl`):
+
+```
+CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py table out/encoder-table.jsonl \
+    models/set-roles-table-1
+```
+
+The prose model, from `labels/sol-prose` and its version-4 relabels (`out/encoder-text.jsonl`):
+
+```
+CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py text out/encoder-text.jsonl \
+    models/set-roles-prose-1
+```
+
+Point `role_model_table` and `role_model_prose` at the two directories. A smoke run on CPU
+(`--limit 12 --epochs 1 --max-length 64 --base sentence-transformers/all-MiniLM-L6-v2`) checks
+either path in about a minute.
 
 A prose dataset row that is evaluation data (val, test) or hand-labelled is never sent to a
 labeller; the hand rows are the encoder's prose gold set.
@@ -121,6 +150,4 @@ name an atlas, mask, seed, ROI or prior study.
 Splits (`export.splits`): by article under its database id (`units/slug_dbids.json` maps the
 slug ids of 270 articles, 268 found in the corpus); articles sharing a table's text share a
 split; an article with a gold label (astra or hand) or a held-out prose row is test; synthetic
-sets are train only. `[PROPOSED]` is what the pipeline proposes: `result` for a table set, the
-prose stage's role for a corpus passage, and `unknown` for a dataset row, whose roles are its
-labels.
+sets are train only.

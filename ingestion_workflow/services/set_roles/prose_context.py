@@ -10,7 +10,7 @@ citation markers among them. Table sets have their own builder
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, List, Mapping, Sequence
 
 from .common import (
     MAX_CHARS,
@@ -22,15 +22,9 @@ from .common import (
     point_summary,
     sentences,
 )
-from .labels import RESULT, SetRole
 
 #: Bump when the serialisation changes (see `table_context.TABLE_CONTEXT_VERSION`).
-PROSE_CONTEXT_VERSION = 2
-
-#: `[PROPOSED]` for a training set no model proposed a role for.
-NO_PROPOSAL = "unknown"
-
-_FROM_ANALYSIS = object()
+PROSE_CONTEXT_VERSION = 3
 
 
 @dataclass
@@ -45,8 +39,6 @@ class ProseSetContext:
     before: str = ""
     after: str = ""
     points: List[Mapping[str, Any]] = field(default_factory=list)
-    #: The prose stage's role fields; None for a training set nothing proposed one for.
-    proposed: Optional[SetRole] = RESULT
 
     def cue_text(self) -> str:
         return " ".join(
@@ -69,14 +61,11 @@ def build(
     passages: Sequence[Mapping[str, Any]] = (),
     *,
     passage: Mapping[str, Any] = None,
-    proposed: Any = _FROM_ANALYSIS,
 ) -> ProseSetContext:
     """The context of a prose analysis: its passage(s), their heading and neighbours.
 
     The prose stage's sets name their passages by index (`metadata.passages`);
-    a training row that is itself one passage is given as `passage`. The proposal
-    is the role resolve recorded on the analysis (study_schema's fields) unless
-    `proposed` gives it (a training row passes its own, or None when it has none).
+    a training row that is itself one passage is given as `passage`.
     """
     meta = analysis.get("metadata") or {}
     read = (
@@ -85,13 +74,6 @@ def build(
         else [passages[i] for i in meta.get("passages", []) if 0 <= i < len(passages)]
     )
     points = analysis.get("coordinates") or analysis.get("points") or []
-    if proposed is _FROM_ANALYSIS:
-        source = (
-            meta
-            if "role" in meta
-            else next((p for p in points if isinstance(p, dict) and "role" in p), None)
-        )
-        proposed = SetRole.of(source) if source else RESULT
     return ProseSetContext(
         name=analysis.get("name") or "",
         description=analysis.get("description") or "",
@@ -100,7 +82,6 @@ def build(
         before=(read[0].get("before") or "") if read else "",
         after=(read[-1].get("after") or "") if read else "",
         points=[as_point(p) for p in points],
-        proposed=proposed,
     )
 
 
@@ -108,7 +89,6 @@ def serialize(context: ProseSetContext, max_chars: int = MAX_CHARS) -> str:
     """The classifier's input string for one prose set: short fields first."""
     parts = [
         "[ORIGIN] text",
-        f"[PROPOSED] {context.proposed.render() if context.proposed else NO_PROPOSAL}",
         f"[POINTS] {point_summary(context.points)}",
         f"[CUES] {cue_summary(context.cue_text())}",
         f"[NAME] {clip(context.name, 200)}",

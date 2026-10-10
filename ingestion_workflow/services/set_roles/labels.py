@@ -75,29 +75,19 @@ class SetRole:
             "from_prior_study": self.from_prior_study,
         }
 
-    def render(self) -> str:
-        """The proposal as the classifier's input shows it (`anchor seed`)."""
-        if self.role is None:
-            return "not coordinates"
-        return " ".join(v for v in (self.role, self.anchor_kind) if v)
-
-
-RESULT = SetRole(CoordinateRole.result.value)
-
 
 @dataclass(frozen=True)
 class RoleDecision:
-    """What the roles stage records for one set."""
+    """What the roles stage records for one set: the classifier's answer, never a default."""
 
     decided: SetRole
-    #: The classifier's probability for the role; None when the proposal stood
-    #: because no classifier ran.
-    confidence: Optional[float]
-    #: `proposal`, or the classifier's name and version.
+    #: The classifier's probability for what it decided: the role's, or that
+    #: the numbers are not coordinates.
+    confidence: float
+    #: The classifier that decided, `name@version`.
     source: str
-    #: The role proposed before the classifier ran, kept so a reviewer can see
-    #: what it overrode.
-    proposed: SetRole
+    #: The set's origin, `table` or `text`: which classifier read it.
+    origin: str
     #: The sentences showing the coordinates come from another publication.
     prior_study_evidence: Tuple[dict, ...] = field(default=())
 
@@ -118,11 +108,11 @@ class RoleDecision:
         return self.role in UPLOADED_ROLES
 
     def to_metadata(self) -> dict:
-        """The decision in CoordinateParse's field names, plus the proposal it started from."""
+        """The decision in CoordinateParse's field names, plus who decided and how surely."""
         return {
             **self.decided.fields(),
             "prior_study_evidence": list(self.prior_study_evidence),
             "role_confidence": self.confidence,
             "role_source": self.source,
-            "proposal": self.proposed.fields(),
+            "role_origin": self.origin,
         }

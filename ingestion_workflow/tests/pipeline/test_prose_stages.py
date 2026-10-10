@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
@@ -12,6 +11,7 @@ from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage, resolve
+from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 
 TEXT = (
@@ -51,11 +51,11 @@ def test_the_prose_stages_are_left_out_unless_switched_on(tmp_path):
     assert set(PROSE_STAGES) <= {s.name for s in build(None, on)}
 
 
-def test_space_reads_resolve_only_when_prose_is_on(tmp_path):
-    off = SpaceStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c"))
-    on = SpaceStage(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model="nu-prose"))
-    assert (off.requires, on.requires) == ("analyses", "resolve")
-    assert SpaceStage.requires == "analyses"   # the class keeps the default
+def test_roles_reads_resolve_only_when_prose_is_on_and_space_always_reads_roles(tmp_path):
+    off = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c")
+    on = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model="nu-prose")
+    assert (RolesStage(off).requires, RolesStage(on).requires) == ("analyses", "resolve")
+    assert SpaceStage(off).requires == SpaceStage(on).requires == "roles"
 
 
 def test_a_restated_table_peak_is_not_uploaded_twice():
@@ -77,34 +77,31 @@ def test_a_correlation_computed_at_a_table_peak_is_its_own_analysis():
     assert summary["restated"] == 1 and summary["at_table_peaks"] == 1
 
 
-def test_results_and_the_regions_defined_to_get_them_are_kept_one_role_per_analysis():
+def test_every_prose_point_is_kept_under_its_analysis_and_its_role_word_is_not_read():
+    """What a set is for is the roles stage's to decide: the prose model's own
+    role word neither drops a point nor splits an analysis."""
     prose = {"passages": [_passage(
         ("amygdala seed", [(-22, -4, -18, "seed")]),
-        ("insula ROI", [(36, 20, 2, "roi")]),
-        ("left DLPFC TMS target", [(-40, 30, 30, "target")]),
         ("Smith et al. (2010)", [(30, 20, 10, "prior_study")]),
-        ("slice shown", [(0, 0, 10, "figure")]),
         ("channel 12", [(1, 2, 3, "other")]),
         ("faces > houses", [(40, -50, -20, "result"), (12, 10, 8, "seed")]))]}
     out, summary = resolve({}, prose, "slug")
-    # The prose model's roles come out as study_schema's fields (the legacy adapter).
-    got = [(a["name"], a["metadata"]["role"], a["metadata"]["anchor_kind"], len(a["coordinates"]))
-           for a in out["prose"]["analyses"]]
-    assert got == [("amygdala seed", "anchor", "seed", 1), ("insula ROI", "anchor", "roi", 1),
-                   ("left DLPFC TMS target", "anchor", "stimulation_target", 1),
-                   ("faces > houses", "result", None, 1), ("faces > houses", "anchor", "seed", 1)]
-    assert all(a["metadata"]["from_prior_study"] is False for a in out["prose"]["analyses"])
-    # A seed is the set's role; no point carries a seed flag of its own.
-    assert not any("is_seed" in c for a in out["prose"]["analyses"] for c in a["coordinates"])
-    assert summary["kept"] == {"seed": 2, "roi": 1, "stimulation_target": 1, "result": 1}
-    assert summary["dropped"] == {"reference": 1, "not_coordinates": 2}
+    got = [(a["name"], len(a["coordinates"])) for a in out["prose"]["analyses"]]
+    assert got == [("amygdala seed", 1), ("Smith et al. (2010)", 1), ("channel 12", 1), ("faces > houses", 2)]
+    for analysis in out["prose"]["analyses"]:
+        assert analysis["metadata"] == {"source": "prose", "passages": [0]}
+    # No point carries a role or seed flag of its own.
+    assert not any({"role", "is_seed"} & set(c) for a in out["prose"]["analyses"] for c in a["coordinates"])
+    assert summary["prose_points"] == 5 and "dropped" not in summary
 
 
-def test_a_seed_at_a_table_peak_is_the_tables_result_reused():
+def test_a_ppi_seed_at_a_table_peak_is_its_own_set():
+    """The analysis is computed at the peak; the roles stage reads it as the seed it is."""
     tables = {"t1": _table([(-22, -4, -18)])}
     prose = {"passages": [_passage(("PPI with amygdala seed", [(-22, -4, -18, "seed")]))]}
     out, summary = resolve(tables, prose, "slug")
-    assert out == tables and summary["restated"] == 1
+    assert [a["name"] for a in out["prose"]["analyses"]] == ["PPI with amygdala seed"]
+    assert summary["at_table_peaks"] == 1
 
 
 def test_one_peak_reported_for_two_contrasts_stays_under_both():
@@ -176,6 +173,24 @@ def _record_upstream(catalog, ref, path, *, tables=None):
     catalog.record(rows)
 
 
+class _Results:
+    """A role classifier that calls every set a result."""
+
+    source = "results@1"
+
+    def predict(self, texts):
+        from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
+
+        return [Prediction(0.99, {r: float(r == "result") for r in COORDINATE_ROLES}, {}, 0.0)
+                for _ in texts]
+
+
+def _roles(settings, monkeypatch):
+    stage = RolesStage(settings)
+    monkeypatch.setattr(stage, "classifier", lambda origin: _Results())
+    return stage
+
+
 def _run(stage, ctx, catalog, ref):
     plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], stage.name),
                       catalog.artifacts([ref.id], stage.requires))
@@ -235,7 +250,7 @@ def test_a_download_with_no_coordinate_is_filtered_before_it_is_parsed(env, monk
     prose = ProseStage(settings)
     prose.client = lambda: (_ for _ in ()).throw(AssertionError("called"))
     _, (read,) = _run(prose, ctx, catalog, ref)
-    assert read.status is Status.OK and read.summary["kept"] == 0
+    assert read.status is Status.OK and read.summary["coordinates"] == 0
 
 
 def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
@@ -247,25 +262,29 @@ def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["prose_points"] == 1 and merged.summary["basis"] == ""
     assert merged.payload["prose"]["identifier"]["pmid"] == "2"   # upload matches the paper by it
+    _, (roled,) = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert roled.summary["sets_by_origin"] == {"text": 1}
     _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
     assert spaced.payload["prose"]["analyses"][0]["coordinates"][0]["x"] == -22.0
+    assert spaced.payload["prose"]["analyses"][0]["metadata"]["set_role"]["role_origin"] == "text"
     assert spaced.payload["prose"]["coordinate_space"] == "MNI"
 
 
 def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch):
-    """Resolve names the analyses it passed through, so space -- and upload
-    after it -- keep the fingerprints they had before prose existed."""
+    """Resolve names the analyses it passed through, so roles -- and space and
+    upload after it -- keep the fingerprints they had before prose existed."""
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="3"))
     _record_upstream(catalog, ref, path, tables={"t1": _table([(-22, -4, -18)])})
     ctx = Context(settings, catalog)
-    before = SpaceStage(Settings(data_root=settings.data_root, cache_root=settings.cache_root))
-    expected = before.fingerprint_for(catalog.artifact(ref.id, "analyses", ""))
+    before = RolesStage(Settings(data_root=settings.data_root, cache_root=settings.cache_root))
+    expected = before.fingerprint_for(catalog.artifact(ref.id, "analyses", ""), before.models())
     _read_prose(ctx, catalog, ref, _Reader())
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.summary["restated"] == 1
     assert merged.summary["basis"] == "an-1"
-    assert SpaceStage(settings).fingerprint_for(catalog.artifact(ref.id, "resolve", "")) == expected
+    after = RolesStage(settings)
+    assert after.fingerprint_for(catalog.artifact(ref.id, "resolve", ""), after.models()) == expected
 
 
 def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
@@ -347,6 +366,7 @@ def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeyp
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
     _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
     _run(SpaceStage(settings), ctx, catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
                             summary={"base_study_id": "BS11", "study_id": "S11"})])
@@ -357,7 +377,8 @@ def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeyp
     record = read_record(settings.ns_pond_root, "BS11")
     processed = record.processed["pubget"]
     assert "greater activation than controls" in processed.text
-    assert [a["table_id"] for a in record.stage1["analyses"]] == ["prose"]
+    assert [(a["table_id"], a["role"], a["role_source"]) for a in record.stage1["analyses"]] == [
+        ("prose", "result", "results@1")]
     assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["11", "BS11"]
 
 

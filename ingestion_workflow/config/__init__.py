@@ -309,18 +309,19 @@ class Settings(BaseSettings):
     )
 
     # ===== What each coordinate set is for =====
-    role_model: Optional[Path] = Field(
+    role_model_table: Optional[Path] = Field(
         default=None,
         description=(
-            "Directory of a trained set-role classifier; setting it runs the roles stage (space "
-            "does not read it yet). Unset, nothing changes"
+            "Directory of the trained set-role classifier for table sets. The roles stage always "
+            "runs; without it every article with a table set fails there, and nothing is uploaded"
         ),
     )
-    role_min_confidence: float = Field(
-        default=0.8,
-        ge=0.0,
-        le=1.0,
-        description="Below this probability the set's proposed role stands: result for a table, the prose role",
+    role_model_prose: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Directory of the trained set-role classifier for prose sets. Without it every "
+            "article with a prose set fails the roles stage"
+        ),
     )
     role_device: str = Field(default="cpu", description="Torch device the role classifier runs on")
 

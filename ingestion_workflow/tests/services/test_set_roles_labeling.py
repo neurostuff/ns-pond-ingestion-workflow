@@ -4,11 +4,17 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import textwrap
 
 import pytest
-from ingestion_workflow.services.set_roles import export, labeling
+from ingestion_workflow.services.set_roles import (
+    PROSE_CONTEXT_VERSION,
+    TABLE_CONTEXT_VERSION,
+    export,
+    labeling,
+)
 from ingestion_workflow.services.set_roles.label_schema import SCHEMA, check
 from ingestion_workflow.services.set_roles.labels import COORDINATE_ROLES, SetRole
 
@@ -207,10 +213,11 @@ def test_rows_record_label_provenance_and_their_origin_s_context_version(tmp_pat
         [1, 2],
     )
     assert seed["evidence_text"][0] == "Seeds from Lee et al. (2008)."
-    assert seed["table_context_version"] == 1 and "prose_context_version" not in seed
+    assert seed["table_context_version"] == TABLE_CONTEXT_VERSION
+    assert "prose_context_version" not in seed
     lee = labels["p:silver-1#0"]
     assert (
-        lee["prose_context_version"] == 2 and lee["from_prior_study"] is True
+        lee["prose_context_version"] == PROSE_CONTEXT_VERSION and lee["from_prior_study"] is True
     )  # a reference is prior
     assert lee["model"] == "gpt-6.1-sol" and lee["label_version"] == 3
 
@@ -263,7 +270,8 @@ def test_encoder_rows_are_one_string_per_set_split_by_article(tmp_path):
     assert rows[0]["text"].startswith("[ORIGIN] table") and rows[2]["text"].startswith(
         "[ORIGIN] text"
     )
-    assert rows[0]["table_context_version"] == 1 and rows[2]["prose_context_version"] == 2
+    assert rows[0]["table_context_version"] == TABLE_CONTEXT_VERSION
+    assert rows[2]["prose_context_version"] == PROSE_CONTEXT_VERSION
     assert rows[0]["split"] == rows[1]["split"] == export.split_of("123-10-1000-x")
 
 
@@ -300,7 +308,8 @@ def test_hand_rows_are_the_prose_gold_set_in_test():
     ]
 
 
-def test_proposed_is_the_pipeline_s_proposal_never_the_label():
+def test_no_input_carries_a_role():
+    """Neither a dataset's label nor the prose model's own role reaches the classifier's input."""
     synthetic = {
         **PROSE_UNIT,
         "unit_id": "p:syn",
@@ -309,12 +318,34 @@ def test_proposed_is_the_pipeline_s_proposal_never_the_label():
         "sets": [{"name": "x", **SEED, "points": [{"xyz": [1, 2, 3], **SEED}]}],
     }
     wild = {**synthetic, "unit_id": "w:a:0", "dataset": "wild", "labels_from": None}
-    [syn_ctx] = labeling.contexts(synthetic)
-    [wild_ctx] = labeling.contexts(wild)
-    assert labeling.serialize(synthetic, syn_ctx).startswith("[ORIGIN] text [PROPOSED] unknown ")
-    assert wild_ctx.proposed == SetRole("anchor", "seed")  # the prose stage's own role
-    [table_ctx, _] = labeling.contexts(TABLE_UNIT)
-    assert table_ctx.proposed == SetRole("result")
+    for unit in (synthetic, wild, TABLE_UNIT):
+        for ctx in labeling.contexts(unit):
+            text = labeling.serialize(unit, ctx)
+            assert re.match(r"\[ORIGIN\] (text|table) \[POINTS\] ", text), text[:60]
+            assert "seed" not in text.split("[CUES]")[0]
+
+
+def test_each_set_takes_its_latest_label_version(tmp_path):
+    def write(directory, *rows):
+        directory.mkdir(exist_ok=True)
+        with open(directory / "batch-00001.jsonl", "a", encoding="utf-8") as handle:
+            for row in rows:
+                handle.write(json.dumps(row) + "\n")
+
+    def row(set_id, version, role, kind=None, unit="p:u"):
+        return {"unit_id": unit, "set_id": set_id, "label_version": version, "role": role,
+                "anchor_kind": kind, "from_prior_study": False}
+
+    sol, relabel, gold = tmp_path / "sol", tmp_path / "relabel", tmp_path / "gold"
+    write(sol, row("p:u#0", 3, "display"), row("p:u#1", 3, "result"), row("p:u#2", 2, "display"))
+    write(relabel, row("p:u#0", 4, "other"))
+    write(gold, row("p:u#1", 3, "anchor", "seed"))
+    got = labeling.latest_labels([gold, sol, relabel])
+    assert {k: (v["label_version"], v["role"]) for k, v in got.items()} == {
+        "p:u#0": (4, "other"),  # relabelled: the later version wins wherever it was written
+        "p:u#1": (3, "anchor"),  # same version: the first directory (gold) wins
+    }  # p:u#2's display was never relabelled: it is no study_schema role, so it is left out
+    assert labeling.read_labels(sol)["p:u#2"]["role"] == "display"  # the job still sees it done
 
 
 def test_synthetic_sets_are_train_only():
