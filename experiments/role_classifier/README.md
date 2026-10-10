@@ -1,4 +1,4 @@
-# Set-role classifier (X1) and role-bearing extractor data (X3)
+# Set-role classifier and role-bearing extractor data
 
 What each coordinate set is for -- a result of this study, a region it defined, a peak quoted
 from another study, a display position -- decided by a small fine-tuned encoder in the `roles`

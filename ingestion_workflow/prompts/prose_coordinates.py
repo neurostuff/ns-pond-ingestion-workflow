@@ -20,7 +20,7 @@ PROSE_PROMPT_VERSION = "2026-10-06.n5"
 ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
 
 _A = CoordinateRole.anchor.value
-#: LEGACY ADAPTER -- delete with `ROLES` when the retrained nu-prose (X3, taught
+#: LEGACY ADAPTER -- delete with `ROLES` when the retrained nu-prose (taught
 #: study_schema's role fields directly) ships. The model's `other` is "anything
 #: else" and does not separate a real brain coordinate that fits no role
 #: (study_schema's `other`) from numbers that are not coordinates; the second is

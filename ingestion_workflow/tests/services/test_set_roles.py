@@ -61,7 +61,7 @@ def test_short_fields_come_first_and_truncation_keeps_them():
 
 
 def test_the_input_does_not_read_the_point_seed_flag():
-    """A seed is the set's role, which is what is predicted, not a point flag (S2 retires it)."""
+    """A seed is the set's role, which is what is predicted, not a point flag."""
     flagged = point_summary([_point(20, -4, -18, is_seed=True)])
     plain = point_summary([_point(20, -4, -18)])
     assert flagged == plain and "seeds=" not in plain
