@@ -698,7 +698,7 @@ def test_a_point_names_its_space_only_when_it_differs_from_its_analysis():
     other = paper_parse._point(
         Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TALAIRACH), collection, None
     )
-    assert (same.space, other.space) == ("MNI", "TAL")
+    assert (same.space, other.space) == (None, "TAL")
 
 
 def test_a_stated_other_space_is_written_as_other_and_validates():
