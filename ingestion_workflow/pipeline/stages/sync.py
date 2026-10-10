@@ -42,7 +42,9 @@ class SyncStage:
         self._retracted: List[str] = []
 
     def fingerprint_for(self, upstream: Artifact) -> str:
-        return fingerprint("sync", SYNC_VERSION, upstream=upstream.fingerprint)
+        return fingerprint(
+            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION, upstream=upstream.fingerprint
+        )
 
     def plan(
         self,
@@ -130,13 +132,17 @@ class SyncStage:
                     ("resolve", resolved), ("passages", passages))},
                 bundle.article_data.source.value,
             )
+            self._synced.append((base_study_id, bundle))
             try:
                 parse = paper_parse.write(target, bundle, per_table, inputs,
                                           overwrite=self.settings.sync_overwrite)
-            except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is reported
+            except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is retried
                 logger.warning("parse files failed for %s: %s", work.article_id, exc)
-                parse = {"parse": f"{type(exc).__name__}: {exc}"}
-            self._synced.append((base_study_id, bundle))
+                yield Outcome.failure(
+                    work.article_id, self.name, "", f"parse: {type(exc).__name__}: {exc}",
+                    fingerprint=work.fingerprint,
+                )
+                continue
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,

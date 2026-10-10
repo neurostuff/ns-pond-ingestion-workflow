@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 import pytest
 from ingestion_workflow.models import (
@@ -21,6 +22,7 @@ from ingestion_workflow.services import nspond, paper_parse
 from ingestion_workflow.services.paper_parse import ParseInputs, statistic_kind
 from study_schema import keys
 from study_schema.jsonschema import load
+from study_schema.models import paper_parse as pp
 
 BASE = "22tHjbNRU8t2"
 
@@ -153,9 +155,18 @@ def written(tmp_path):
     summary = paper_parse.write(
         target, ArticleExtractionBundle(content, metadata), per_table, inputs
     )
-    paper = json.loads((target / "parse" / "parsed_paper.json").read_text())
-    parse = json.loads((target / "parse" / "coordinate_parse.json").read_text())
-    return paper, parse, summary
+    # study_schema's layout writes unset fields as null; the assertions ignore them.
+    paper = _compact(json.loads((target / "parse" / "parsed_paper.json").read_text()))
+    parse = _compact(json.loads((target / "parse" / "coordinate_parse.json").read_text()))
+    return paper, parse, {**summary, "dir": target / "parse"}
+
+
+def _compact(value):
+    if isinstance(value, dict):
+        return {k: _compact(v) for k, v in value.items() if v is not None}
+    if isinstance(value, list):
+        return [_compact(v) for v in value]
+    return value
 
 
 def _validate(instance, name):
@@ -164,10 +175,13 @@ def _validate(instance, name):
 
 
 def test_both_files_validate_against_the_json_schema(written):
-    paper, parse, summary = written
-    _validate(paper, "parsed-paper")
-    _validate(parse, "coordinate-parse")
-    assert "parse_problems" not in summary
+    _, _, summary = written
+    # As written, nulls and all.
+    _validate(json.loads((summary["dir"] / "parsed_paper.json").read_text()), "parsed-paper")
+    _validate(
+        json.loads((summary["dir"] / "coordinate_parse.json").read_text()), "coordinate-parse"
+    )
+    assert "parse_omitted" not in summary
 
 
 def test_the_parsed_paper_points_at_the_synced_text(written):
@@ -270,7 +284,7 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
     )
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
     built = [
-        paper_parse._prose_analysis(a, collection, text, inputs, [])[0]
+        paper_parse._prose_analysis(a, collection, paper_parse._Text(text), inputs, [])
         for a in collection.analyses
     ]
     assert [text[a.text_spans[0].start_char : a.text_spans[0].end_char] for a in built] == [
@@ -306,22 +320,264 @@ def test_the_parse_id_is_the_analyses_fingerprint(written, tmp_path):
 
 
 def test_a_passage_is_placed_in_the_text_despite_its_whitespace():
-    from ingestion_workflow.services.paper_parse import _locate
+    from ingestion_workflow.services.paper_parse import _locate, _Text
 
     text = "ab  The seed\nwas  here. cd"
-    start, end = _locate("The seed was here.", text)
-    assert text[start:end] == "The seed\nwas  here."
+    ((start, end),) = _locate("The seed was here.", _Text(text))
+    assert text[start:end] == "The seed\nwas  here"
 
 
-def test_a_passage_split_by_an_inlined_table_is_placed_by_its_head_and_tail():
-    from ingestion_workflow.services.paper_parse import _locate
+def test_a_passage_is_placed_despite_its_minus_signs_and_punctuation():
+    from ingestion_workflow.services.paper_parse import _locate, _Text
 
-    head = "A seed was placed in the left amygdala at the peak,"
-    tail = "as in the earlier study of the same group of patients."
+    text = "x Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2) y"
+    ((start, end),) = _locate(
+        "Talaraich coordinates, x : \u221249.5, y : \u221214.3 (302.47 mm \u00b2)", _Text(text)
+    )
+    assert text[start:end] == "Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2"
+
+
+def test_a_passage_split_by_an_inlined_table_is_placed_sentence_by_sentence():
+    from ingestion_workflow.services.paper_parse import _locate, _Text
+
+    head = "A seed was placed in the left amygdala at the peak."
+    legend = "Figure 2. Colour bar displays t values for the comparison."
+    tail = "It was placed as in the earlier study of the same group of patients."
     text = f"x {head} | 1 | 2 | {tail} y"
-    start, end = _locate(f"{head} {tail}", text)
-    assert text[start:end] == f"{head} | 1 | 2 | {tail}"
-    assert _locate("Nothing like this is in the text at all, anywhere in it.", text) is None
+    pieces = _locate(f"{legend} {head} {tail}", _Text(text))
+    assert [text[a:b] for a, b in pieces] == [head[:-1], tail[:-1]]
+    assert _locate("Nothing like this is in the text at all, anywhere in it.", _Text(text)) == []
+
+
+def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once():
+    text = "Results\n\nThe peak lay in the left insula (x = \u221234, y = 18, z = 2).\n"
+    collection = _collection(
+        [
+            Analysis(
+                name="insula",
+                table_id="prose",
+                metadata={"source": "prose", "passages": [0]},
+                coordinates=[Coordinate(x=-34, y=18, z=2)],
+            )
+        ]
+    )
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Not in the text."}]})
+    built = paper_parse._prose_analysis(
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+    )
+    (span,) = built.text_spans
+    assert text[span.start_char : span.end_char] == "\u221234, y = 18, z = 2"
+
+
+def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
+    collection = _collection(
+        [
+            Analysis(
+                name="lost",
+                table_id="prose",
+                metadata={"source": "prose", "passages": [0]},
+                coordinates=[Coordinate(x=1, y=2, z=3)],
+            )
+        ]
+    )
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Elsewhere."}]})
+    omitted = []
+    built = paper_parse._prose_analysis(
+        collection.analyses[0], collection, paper_parse._Text("Results only."), inputs, omitted
+    )
+    assert built is None
+    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+        ("lost", None, "neither its passages nor its points are in the parsed paper's text")
+    ]
+
+
+def _parse(tmp_path, markup, per_table, text="Results\n", **inputs):
+    """coordinate_parse over one table `tbl1` read from `markup`."""
+    from ingestion_workflow.services.paper_parse import _grid
+
+    (tmp_path / "t.html").write_text(markup, encoding="utf-8")
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[SimpleNamespace(table_id="tbl1", triage=None)],
+    )
+    return paper_parse.coordinate_parse(
+        paper,
+        text,
+        {"tbl1": _grid(tmp_path / "t.html")},
+        per_table,
+        ParseInputs(article_id="a", **inputs),
+    )
+
+
+SHARED = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>
+<tr><td>Fear &gt; Neutral</td><td></td><td></td><td></td></tr>
+<tr><td>Amygdala</td><td>22</td><td>-4</td><td>-20</td></tr>
+<tr><td>Insula</td><td>36</td><td>20</td><td>4</td></tr>
+<tr><td>Surprise &gt; Neutral</td><td></td><td></td><td></td></tr>
+<tr><td>Precuneus</td><td>-10</td><td>-39</td><td>44</td></tr>
+<tr><td>Insula</td><td>36</td><td>20</td><td>4</td></tr>
+<tr><td>Fear intercept</td><td></td><td></td><td></td></tr>
+<tr><td>Insula</td><td>36</td><td>20</td><td>4</td></tr>
+</table>"""
+
+
+def test_a_coordinate_printed_in_two_rows_goes_to_its_own_analysis(tmp_path):
+    collection = _collection(
+        [
+            Analysis(
+                name="Fear > Neutral",
+                coordinates=[Coordinate(x=22, y=-4, z=-20), Coordinate(x=36, y=20, z=4)],
+            ),
+            Analysis(
+                name="Surprise > Neutral",
+                coordinates=[Coordinate(x=-10, y=-39, z=44), Coordinate(x=36, y=20, z=4)],
+            ),
+            # Its only point is printed in all three blocks; the row naming it decides.
+            Analysis(name="Fear intercept", coordinates=[Coordinate(x=36, y=20, z=4)]),
+        ]
+    )
+    parse, omitted = _parse(tmp_path, SHARED, {"tbl1": collection})
+    assert [[(c.row, c.column_group) for c in a.cells] for a in parse.analyses] == [
+        [(1, 0), (2, 0)],
+        [(4, 0), (5, 0)],
+        [(7, 0)],
+    ]
+    assert omitted == []
+
+
+def test_an_analysis_on_another_analysis_cells_is_omitted_not_dropped(tmp_path):
+    collection = _collection(
+        [
+            Analysis(name="A > B", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+            Analysis(name="A > B again", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+            Analysis(name="Unprinted", coordinates=[Coordinate(x=1, y=1, z=1)]),
+        ]
+    )
+    parse, omitted = _parse(
+        tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
+    )
+    assert [a.name for a in parse.analyses] == ["A > B"]
+    key = keys.table_key("tbl1", [(1, 0)])
+    assert [str(o) for o in omitted] == [
+        "tbl1: 'Unprinted': no row of the table prints its points",
+        f"tbl1: 'A > B again': the same cells as {key} ('A > B')",
+    ]
+    (reading,) = parse.tables
+    assert reading.reading == "coordinates"
+    assert "omitted 'A > B again'" in reading.reason and "omitted 'Unprinted'" in reading.reason
+
+
+def test_negative_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
+    point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
+    collection = _collection(
+        [
+            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
+            Analysis(name="Other", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
+            # Not right after its primary: no split, so the name keeps its direction.
+            Analysis(name="Fear > Neutral (negative)", coordinates=point),
+        ]
+    )
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    assert parse.analyses[2].name == "Fear > Neutral (negative)"
+    assert all(a.split is None for a in parse.analyses)
+
+
+def test_two_prose_contrasts_on_one_peak_are_told_apart_by_their_names():
+    passage = (
+        "The poor reader and ASD groups shared a peak in the left fusiform (-42, -55, -18), "
+        "more for poor readers than for the ASD group."
+    )
+    text = f"Results\n\n{passage}\n"
+    collection = _collection(
+        [
+            Analysis(
+                name=name,
+                table_id="prose",
+                metadata={"source": "prose", "passages": [0]},
+                coordinates=[Coordinate(x=-42, y=-55, z=-18)],
+            )
+            for name in ("poor reader", "ASD group", "controls")
+        ]
+    )
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[],
+    )
+    parse, omitted = paper_parse.coordinate_parse(
+        paper,
+        text,
+        {},
+        {"prose": collection},
+        ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
+    )
+    first, second = parse.analyses
+    assert first.key != second.key and len(second.text_spans) == 2
+    named = second.text_spans[0]
+    assert text[named.start_char : named.end_char] == "ASD group"
+    assert [str(o) for o in omitted] == [
+        f"text: 'controls': the same points as {first.key} ('poor reader')"
+    ]
+
+
+def test_an_inlined_table_has_text_spans_for_it_and_its_rows():
+    from ingestion_workflow.services.paper_parse import _inlined, _Table, _Text
+
+    grid = _Table(
+        ["Region", "x", "y", "z"],
+        [
+            [("Amygdala", 0), ("22", 1), ("-4", 2), ("-20", 3)],
+            [("Insula", 0), ("36", 1), ("20", 2), ("4", 3)],
+        ],
+    )
+    text = (
+        "The amygdala (22, -4, -20) was active.\n"
+        "Region\tx\ty\tz\nAmygdala\t22\t\u22124\t\u221220\nInsula\t36\t20\t4\n"
+    )
+    spans = _inlined(grid, _Text(text))
+    # Its first copy is mid-sentence; the row is the one starting a line.
+    assert text[slice(*spans[0])] == "Amygdala\t22\t\u22124\t\u221220"
+    assert text[slice(*spans[1])] == "Insula\t36\t20\t4"
+    assert spans["table"] == (spans[0][0], spans[1][1])
+
+
+def test_a_table_both_rejected_and_excluded_reads_as_excluded():
+    paper = SimpleNamespace(
+        tables=[SimpleNamespace(table_id="t", triage=pp.TableTriage(passes=False, route="gate"))]
+    )
+    inputs = ParseInputs(article_id="a", excluded={"t": {"reason": "not_coordinates"}})
+    (reading,) = paper_parse._readings(paper, {}, inputs)
+    assert (reading.reading, reading.reason) == ("excluded_by_hand", "not_coordinates")
+
+
+def test_a_full_passage_list_is_truncated():
+    from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
+
+    passages = {"passages": [{"text": "p"}] * MAX_PASSAGES}
+    full = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES)
+    assert paper_parse._text_sweep(full).truncated is True
+    short = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES - 1)
+    assert paper_parse._text_sweep(short).truncated is False
+
+
+def test_a_point_names_its_space_only_when_it_differs_from_its_analysis():
+    collection = _collection([])
+    same = paper_parse._point(
+        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.MNI), collection, None
+    )
+    other = paper_parse._point(
+        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TALAIRACH), collection, None
+    )
+    assert (same.space, other.space) == (None, "TAL")
+
+
+def test_the_meta_analysis_basis_names_what_said_so():
+    basis = paper_parse._meta_basis
+    assert basis("A meta-analysis of fear", ["Journal Article"]) == "title"
+    assert basis("Fear", ["Meta-Analysis"]) == "publication_type"
+    assert basis("A meta-analysis of fear", ["Meta-Analysis"]) == "publication_type_and_title"
 
 
 def test_side_by_side_contrasts_differ_by_column_group(tmp_path):
