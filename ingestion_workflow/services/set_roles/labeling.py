@@ -57,6 +57,9 @@ and false. For coordinates, the role:
 - localization: where electrodes, optodes or sources were placed or recorded.
 - reference: coordinates quoted from other publications for comparison, not used as anchors.
 - display: slice, crosshair or view positions of a figure.
+- other: a real brain coordinate that is none of the above -- a simulated source position or
+  lesion centre, a worked-example voxel of an atlas or method. Numbers that are not brain
+  coordinates are never "other": they are coordinates false.
 from_prior_study is true when the coordinates were taken from another publication (a
 meta-analysis, an earlier study, an atlas paper), whatever the role: a seed taken from a
 meta-analysis is anchor/seed with from_prior_study true. An ROI built from this study's own

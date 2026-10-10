@@ -168,7 +168,7 @@ def test_the_legacy_adapter_reads_the_prose_model_s_roles_as_study_schema_s():
         ("anchor", "stimulation_target", False),
         ("reference", None, True),
         ("display", None, False),
-        (None, None, False),  # other: not coordinates
+        (None, None, False),  # other: indistinguishable from not coordinates; see the adapter
         ("result", None, False),
     ]
     for fields in got:
@@ -177,7 +177,7 @@ def test_the_legacy_adapter_reads_the_prose_model_s_roles_as_study_schema_s():
 
 def test_a_role_outside_study_schema_is_refused():
     for bad in (
-        {"role": "other"},
+        {"role": "simulation"},
         {"role": "anchor:roi"},
         {"role": "anchor", "anchor_kind": None},
         {"role": "result", "anchor_kind": "seed"},
@@ -262,3 +262,9 @@ def test_confident_not_coordinates_are_set_aside_without_a_role():
     )
     assert (decision.role, decision.anchor_kind, decision.uploaded) == (None, None, False)
     assert decision.to_metadata()["proposal"]["anchor_kind"] == "seed"
+
+
+def test_other_is_a_role_that_is_not_uploaded():
+    assert "other" in COORDINATE_ROLES and "other" not in UPLOADED_ROLES
+    assert SetRole.of({"role": "other", "anchor_kind": None, "from_prior_study": False}).role == "other"
+    assert not SetRole("other").uploaded

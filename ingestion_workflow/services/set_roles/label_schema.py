@@ -29,7 +29,7 @@ SET_LABEL: Dict[str, Any] = {
         "role": {
             "type": ["string", "null"],
             "enum": [*COORDINATE_ROLES, None],
-            "description": "Null only when coordinates is false",
+            "description": "Null only when coordinates is false; other is for a brain coordinate that fits no other role",
         },
         "anchor_kind": {
             "type": ["string", "null"],

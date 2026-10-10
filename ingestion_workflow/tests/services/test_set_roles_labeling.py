@@ -297,7 +297,7 @@ def test_nu_v21_rows_keep_their_format_and_gain_a_role_per_analysis(tmp_path):
         *export.ROLE_FIELDS,
     ]
     template = json.loads(export.NU_V21_TEMPLATE)["analyses"][0]
-    assert template["role"] == ["result", "anchor", "localization", "reference", "display"]
+    assert template["role"] == ["result", "anchor", "localization", "reference", "display", "other"]
     assert template["anchor_kind"] == ["roi", "seed", "stimulation_target", "node"]
     for a in target["analyses"]:
         for k in export.ROLE_FIELDS:

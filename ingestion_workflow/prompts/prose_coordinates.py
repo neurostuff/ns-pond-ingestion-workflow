@@ -21,8 +21,11 @@ ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
 
 _A = CoordinateRole.anchor.value
 #: LEGACY ADAPTER -- delete with `ROLES` when the retrained nu-prose (X3, taught
-#: study_schema's role fields directly) ships. `other` has no CoordinateRole:
-#: what the model calls other is numbers that are not brain coordinates.
+#: study_schema's role fields directly) ships. The model's `other` is "anything
+#: else" and does not separate a real brain coordinate that fits no role
+#: (study_schema's `other`) from numbers that are not coordinates; the second is
+#: most of it, so it maps to not-coordinates. The real ones come from the roles
+#: classifier, not from this adapter.
 _STUDY_SCHEMA_ROLES = {
     "result": (CoordinateRole.result.value, None, False),
     "roi": (_A, AnchorKind.roi.value, False),
@@ -36,8 +39,8 @@ _STUDY_SCHEMA_ROLES = {
 def study_schema_role(role: Optional[str]) -> Dict[str, Any]:
     """A nu-prose role as study_schema's `role`, `anchor_kind` and `from_prior_study`.
 
-    No role is a result; `other` (or anything outside `ROLES`) is `role` None:
-    not coordinates.
+    No role is a result; `other` (or anything outside `ROLES`) is `role` None: not
+    coordinates, even where it was a real coordinate (see `_STUDY_SCHEMA_ROLES`).
     """
     fields = _STUDY_SCHEMA_ROLES.get(role or "result", (None, None, False))
     return dict(zip(("role", "anchor_kind", "from_prior_study"), fields))
@@ -54,7 +57,9 @@ INSTRUCTION = (
     "the region whose signal seeds a connectivity or PPI analysis; target = where the brain was "
     "stimulated (TMS, tDCS, ultrasound, DBS) or a lesion or electrode was placed; prior_study = "
     "coordinates quoted from other studies only for comparison; figure = a location used only to "
-    "display or illustrate (slice position, crosshairs, an example voxel); other = anything else. "
+    "display or illustrate (slice position, crosshairs, an example voxel); other = a brain "
+    "coordinate that is none of these (a simulated source position or lesion centre, a worked-example "
+    "voxel of an atlas). "
     "Ignore numbers that are not brain coordinates, such as voxel sizes or molecular docking grids. "
     "Name each analysis after the contrast, comparison, correlation or model its coordinates are a "
     "result of, in the paper's own words: 'faces > houses' when a direction is stated and 'faces vs "

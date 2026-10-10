@@ -38,9 +38,10 @@ uses them.
 | `localization` | Where electrodes or sources were placed | no |
 | `reference` | Coordinates quoted from another publication for comparison | no |
 | `display` | A slice or crosshair position for a figure | no |
+| `other` | A real brain coordinate that is none of the above: a simulated source position or lesion centre, a worked-example voxel of an atlas | no |
 
 Numbers that are not brain coordinates at all (channel numbers, lattice points, a phantom's
-positions, rodent stereotaxic coordinates) get no role: the labeller answers `coordinates:
+positions, rodent stereotaxic coordinates) get no role, not `other`: the labeller answers `coordinates:
 false` and `role: null`, the encoder's coordinates head learns them, and they are dropped from
 the uploads and from the extractors' targets.
 
@@ -52,7 +53,9 @@ The current nu-prose model answers in its own vocabulary (`prompts.prose_coordin
 One legacy adapter, `prompts.prose_coordinates.study_schema_role`, reads it where its output
 is read (resolve, and `build_sets.py` for the prose dataset): `roi`/`seed`/`target` -> anchor
 of that kind, `prior_study` -> `reference` with `from_prior_study`, `figure` -> `display`,
-`other` -> not coordinates. It goes when the retrained nu-prose, taught these fields by
+`other` -> not coordinates (the model's `other` is anything else and does not separate real
+brain coordinates that fit no role from non-coordinates, which are most of it; the classifier
+finds the real ones). It goes when the retrained nu-prose, taught these fields by
 `export.prose_rows`, ships.
 
 Decision rule (`classifier.decide`): a table set is proposed `result` and a prose set its prose
