@@ -98,6 +98,19 @@ class UploadStage:
         # retracted. One that was never uploaded has nothing to take back.
         previous = ctx.catalog.artifacts([w.article_id for w in empty if w.article_id in excluded], "upload")
         retract, empty = self._retractable(ctx, empty, excluded, previous)
+        # PubMed lists a retraction of the article: what it uploaded before is
+        # taken back the same way, and one never uploaded is not uploaded now.
+        ids_retracted = set()
+        doomed = [w for w in works if getattr(metadata.get(w.ref.identifier.slug), "retracted", False)]
+        if doomed:
+            ids = ids_retracted = {w.article_id for w in doomed}
+            more, never = self._retractable(
+                ctx, doomed, ids, ctx.catalog.artifacts(list(ids), "upload"))
+            retract += more
+            empty += never
+            for work in doomed:
+                metadata.pop(work.ref.identifier.slug, None)
+                analyses.pop(work.ref.identifier.slug, None)
         yield from self._retract(retract)
         # An article whose every collection came back with no analyses has
         # nothing to say. Uploading it would create a study claiming the paper
@@ -112,6 +125,7 @@ class UploadStage:
                 status=Status.SKIPPED,
                 fingerprint=work.fingerprint,
                 summary=({"reason": "excluded by hand"} if work.article_id in excluded
+                         else {"reason": "retracted in PubMed"} if work.article_id in ids_retracted
                          else {"reason": "no analyses to upload"}),
             )
         skipped = {work.article_id for work in empty} | {work.article_id for work, _ in retract}

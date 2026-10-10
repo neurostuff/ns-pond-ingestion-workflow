@@ -14,7 +14,7 @@ import xmltodict
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.metadata import ArticleMetadata, Author, corrections_from_pubmed
 
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
@@ -508,6 +508,7 @@ class PubMedClient:
         )
         publication_year = self._extract_publication_year(article_data, citation)
         keywords = self._parse_keywords(citation)
+        corrections, notice = corrections_from_pubmed(article)
 
         return ArticleMetadata(
             title=title,
@@ -517,6 +518,8 @@ class PubMedClient:
             publication_year=publication_year,
             keywords=keywords,
             source="pubmed",
+            corrections=corrections,
+            retraction_notice=notice,
             raw_metadata={"pubmed": article},
         )
 

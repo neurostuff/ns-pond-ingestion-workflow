@@ -2,8 +2,66 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+
+#: PubMed's `CommentsCorrections/@RefType` for a notice about this paper, mapped
+#: to study_schema's `CorrectionKind`. The "...Of" forms say this paper is the
+#: notice, so they are not corrections of it.
+CORRECTION_KINDS = {
+    "RetractionIn": "retraction",
+    "ErratumIn": "erratum",
+    "ExpressionOfConcernIn": "expression_of_concern",
+    "CommentIn": "comment",
+    "UpdateIn": "update",
+}
+
+_DOI = re.compile(r"\bdoi:\s*(10\.\S+?)\.?\s*$", re.IGNORECASE)
+
+
+def _as_list(value: Any) -> List[Any]:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def _text(value: Any) -> Optional[str]:
+    if isinstance(value, dict):
+        value = value.get("#text")
+    return str(value) if value else None
+
+
+def corrections_from_pubmed(article: Dict[str, Any]) -> tuple:
+    """Read the notices on one efetch `PubmedArticle` (xmltodict form).
+
+    Returns `(corrections, is_retraction_notice)`; each correction is
+    `{"kind", "pmid", "doi"}`, the doi taken from the notice's `RefSource`
+    citation when it carries one.
+    """
+    citation = article.get("MedlineCitation") or {}
+    listed = (citation.get("CommentsCorrectionsList") or {}).get("CommentsCorrections")
+    corrections: List[Dict[str, Optional[str]]] = []
+    notice = False
+    for ref in _as_list(listed):
+        if not isinstance(ref, dict):
+            continue
+        ref_type = ref.get("@RefType")
+        if ref_type == "RetractionOf":
+            notice = True
+        kind = CORRECTION_KINDS.get(ref_type)
+        if kind is None:
+            continue
+        match = _DOI.search(_text(ref.get("RefSource")) or "")
+        corrections.append({"kind": kind, "pmid": _text(ref.get("PMID")),
+                            "doi": match.group(1) if match else None})
+    # A retracted paper whose notice PubMed has not linked still says so here.
+    types = (((citation.get("Article") or {}).get("PublicationTypeList") or {})
+             .get("PublicationType"))
+    names = {_text(t) for t in _as_list(types)}
+    if "Retracted Publication" in names and not any(c["kind"] == "retraction" for c in corrections):
+        corrections.append({"kind": "retraction", "pmid": None, "doi": None})
+    return corrections, notice or "Retraction Notice" in names
 
 
 @dataclass
@@ -78,8 +136,19 @@ class ArticleMetadata:
     # Direct link to an open-access PDF, when a provider reports one
     pdf_url: Optional[str] = None
 
+    # Notices about this paper (study_schema `Correction`: kind, pmid, doi)
+    corrections: List[Dict[str, Optional[str]]] = field(default_factory=list)
+
+    # This paper is itself a retraction notice
+    retraction_notice: bool = False
+
     # Raw metadata from external sources for reference
     raw_metadata: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def retracted(self) -> bool:
+        """PubMed lists a retraction of this paper."""
+        return any(c.get("kind") == "retraction" for c in self.corrections)
 
     def merge_from(self, other: ArticleMetadata) -> ArticleMetadata:
         """
@@ -116,6 +185,11 @@ class ArticleMetadata:
         # Merge raw_metadata
         merged_raw = {**other.raw_metadata, **self.raw_metadata}
 
+        merged_corrections = list(self.corrections)
+        for c in other.corrections:
+            if c not in merged_corrections:
+                merged_corrections.append(c)
+
         # Determine open_access value
         merged_open_access = (
             self.open_access if self.open_access is not None else other.open_access
@@ -132,6 +206,8 @@ class ArticleMetadata:
             source=self.source or other.source,
             open_access=merged_open_access,
             pdf_url=self.pdf_url or other.pdf_url,
+            corrections=merged_corrections,
+            retraction_notice=self.retraction_notice or other.retraction_notice,
             raw_metadata=merged_raw,
         )
 
@@ -148,6 +224,8 @@ class ArticleMetadata:
             "source": self.source,
             "open_access": self.open_access,
             "pdf_url": self.pdf_url,
+            "corrections": self.corrections,
+            "retraction_notice": self.retraction_notice,
             "raw_metadata": self.raw_metadata,
         }
 
@@ -156,6 +234,12 @@ class ArticleMetadata:
         """Create ArticleMetadata from dictionary."""
         authors_data = data.get("authors", [])
         authors = [Author.from_dict(a) for a in authors_data]
+        raw = data.get("raw_metadata", {})
+        corrections = data.get("corrections")
+        notice = data.get("retraction_notice", False)
+        if corrections is None and isinstance(raw.get("pubmed"), dict):
+            # Written before corrections were read; the raw record has them.
+            corrections, notice = corrections_from_pubmed(raw["pubmed"])
         return cls(
             title=str(data["title"]),
             authors=authors,
@@ -167,7 +251,9 @@ class ArticleMetadata:
             source=data.get("source"),
             open_access=data.get("open_access"),
             pdf_url=data.get("pdf_url"),
-            raw_metadata=data.get("raw_metadata", {}),
+            corrections=corrections or [],
+            retraction_notice=notice,
+            raw_metadata=raw,
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:
