@@ -152,3 +152,52 @@ def test_pdf_writes_its_picture_captions_after_the_text_and_keeps_table_captions
     body = _check(text, spans)
     assert "Table 1. Peaks." in body
     assert spans[0]["ids"] == ["#/pictures/0"]
+
+
+MARKED_UP = """<article><body><sec><title>Results</title><p>Text.</p>
+<fig id="F1"><label>Figure 1</label><caption><title>V<sub>1</sub> response.</title>
+<p>Activation at <italic>p</italic>&lt;10<sup>−3</sup>; peak (−4<bold>2</bold>, 10, 5).</p>
+<p>Second paragraph.</p></caption></fig></sec></body></article>"""
+
+
+def test_a_caption_keeps_its_inline_markup_s_text_unspaced():
+    """As the stylesheet writes "p<sub>FWE</sub>" in the body: no space where the source has none."""
+    from ingestion_workflow.extractors.figure_captions import take_html_figures, take_xml_figures
+
+    root = etree.fromstring(MARKED_UP)
+    ((ids, caption),) = take_xml_figures(root, "fig")
+    assert caption == ("Figure 1 V1 response. Activation at p<10−3; peak (−42, 10, 5). Second paragraph.")
+    _, ((_, html_caption),) = take_html_figures(
+        '<figure id="Fig1"><figcaption><b>Fig. 1</b> V<sub>1</sub> at 10<sup>−3</sup>'
+        '<p>Second.</p></figcaption><img src="f.png"></figure>')
+    assert html_caption == "Fig. 1 V1 at 10−3 Second."
+
+
+SPRINGER = """<html><head><meta name="citation_publisher" content="Springer"></head><body>
+<p>Patients showed more activity in the insula.</p>
+<figure id="Fig1"><figcaption class="Caption"><div class="CaptionContent"><span class="CaptionNumber">Fig. 1</span>
+<p>Insula activation (x = -34, y = 16, z = -6).</p></div></figcaption></figure>
+<figure id="Tab1"><figcaption class="Caption"><div class="CaptionContent"><span class="CaptionNumber">Table 1</span>
+<p>Peaks</p></div></figcaption><table><thead><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr></thead>
+<tbody><tr><td>Insula</td><td>-34</td><td>16</td><td>-6</td></tr></tbody></table></figure>
+<figure id="T2"><figcaption>Table 2 Peaks, set apart</figcaption></figure>
+</body></html>"""
+
+
+def test_a_table_set_in_a_figure_keeps_its_caption_for_ace():
+    """Springer's <figure id="TabN">: ACE reads the table's label from its figcaption
+    (ace/sources.py OldSpringerSource), and cutting it lost every table on the page."""
+    from ace.sources import SourceManager
+
+    from ingestion_workflow.extractors.figure_captions import take_html_figures
+
+    page, captions = take_html_figures(SPRINGER)
+    assert captions == [(["Fig1"], "Fig. 1 Insula activation (x = -34, y = 16, z = -6).")]
+    assert "Insula activation" not in page
+    tables = SPRINGER[SPRINGER.index('<figure id="Tab1">'):]
+    assert page.endswith(tables)  # byte for byte
+
+    article = SourceManager(table_dir="/nonexistent").sources["OldSpringer"].parse_article(
+        page, pmid="1", skip_metadata=True, keep_tables=True)
+    (table,) = article.tables
+    assert table.label == "Table 1" and table.caption == "Peaks"

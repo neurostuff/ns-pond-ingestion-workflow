@@ -85,9 +85,25 @@ def _remove_keeping_tail(el) -> None:
     parent.remove(el)
 
 
+#: Elements whose text is a block of its own: a space goes around them and nowhere else,
+#: so "V<sub>1</sub>" reads "V1", as the extractors write inline markup in the body.
+_BLOCKS = frozenset({"p", "para", "simple-para", "title", "label", "caption", "list", "list-item",
+                     "def-item", "break", "br", "div", "li", "ul", "ol", "tr", "td", "th",
+                     "h1", "h2", "h3", "h4", "h5", "h6"})
+
+
+def _joined_text(el) -> str:
+    parts = [el.text or ""] if isinstance(el.tag, str) else []
+    for child in el:
+        if isinstance(child.tag, str):
+            block = _local(child) in _BLOCKS
+            parts += [" ", _joined_text(child), " "] if block else [_joined_text(child)]
+        parts.append(child.tail or "")
+    return "".join(parts)
+
+
 def _xml_caption(fig) -> str:
-    parts = [" ".join(c.itertext()) for c in fig if _local(c) in ("label", "caption")]
-    return squash(" ".join(parts))
+    return squash(" ".join(_joined_text(c) for c in fig if _local(c) in ("label", "caption")))
 
 
 def take_xml_figures(root, figure_tag: str) -> List[Caption]:
@@ -102,20 +118,60 @@ def take_xml_figures(root, figure_tag: str) -> List[Caption]:
 
 
 _FIGCAPTION = re.compile(r"(?is)<figcaption\b([^>]*)>(.*?)</figcaption\s*>")
+_FIGURE_TAG = re.compile(r"(?is)<(/?)figure\b([^>]*)>")
 _ID_ATTR = re.compile(r"""(?i)\bid\s*=\s*["']([^"']+)["']""")
+_CLASS_ATTR = re.compile(r"""(?i)\bclass\s*=\s*["']([^"']*)["']""")
+#: Table ids as publishers number them: Springer/Nature "Tab1", Frontiers "T1", Elsevier "tbl1".
+_TABLE_ID = re.compile(r"(?i)^(tab|tbl|table|t)[-_]?\d")
+
+
+def _figures(html: str) -> List[Tuple[int, int, str]]:
+    """Each `<figure>` element's (start, end, attributes), nested ones too."""
+    out, open_ = [], []
+    for m in _FIGURE_TAG.finditer(html):
+        if not m.group(1):
+            open_.append(m)
+        elif open_:
+            start = open_.pop()
+            out.append((start.start(), m.end(), start.group(2)))
+    return out
+
+
+def _is_table(html: str, figure: Tuple[int, int, str]) -> bool:
+    start, end, attrs = figure
+    fig_id, cls = _ID_ATTR.search(attrs), _CLASS_ATTR.search(attrs)
+    return bool((fig_id and _TABLE_ID.match(fig_id.group(1)))
+                or (cls and re.search(r"(?i)\btable\b", cls.group(1)))
+                or re.search(r"(?i)<table\b", html[start:end]))
+
+
+def _html_text(fragment: str) -> str:
+    import lxml.html
+
+    if not fragment.strip():
+        return ""
+    return _joined_text(lxml.html.fragment_fromstring(fragment, create_parent="div"))
 
 
 def take_html_figures(html: str) -> Tuple[str, List[Caption]]:
-    """The page with every `<figcaption>` cut out, the rest byte for byte as it was (the
-    publisher parsers match on it), and the captions' texts."""
-    from bs4 import BeautifulSoup
+    """The page with every figure's `<figcaption>` cut out, the rest byte for byte as it was
+    (the publisher parsers match on it), and the captions' texts.
 
-    captions = []
+    A table set in a `<figure>` (Springer's `<figure id="Tab1">`) keeps its caption: ACE reads
+    the table's label from it."""
+    figures = _figures(html)
+    captions, cuts = [], []
     for m in _FIGCAPTION.finditer(html):
-        fig_id = _ID_ATTR.search(m.group(1))
-        captions.append((fig_id.group(1) if fig_id else None,
-                         BeautifulSoup(m.group(2), "lxml").get_text(" ")))
-    return _FIGCAPTION.sub(" ", html), dedupe(captions)
+        inside = [f for f in figures if f[0] < m.start() and m.end() <= f[1]]
+        figure = max(inside, key=lambda f: f[0]) if inside else None
+        if figure and _is_table(html, figure):
+            continue
+        fig_id = _ID_ATTR.search(m.group(1)) or (figure and _ID_ATTR.search(figure[2]))
+        captions.append((fig_id.group(1) if fig_id else None, _html_text(m.group(2))))
+        cuts.append(m.span())
+    for start, end in reversed(cuts):
+        html = html[:start] + " " + html[end:]
+    return html, dedupe(captions)
 
 
 __all__ = ["HEADING", "Caption", "append_legends", "dedupe", "take_html_figures", "take_xml_figures"]
