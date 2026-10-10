@@ -168,19 +168,22 @@ def _strip(marked: str) -> Tuple[str, Dict[int, Tuple[int, int]]]:
     return "".join(out), spans
 
 
-def _place(rebuilt: str, spans: Dict[int, Tuple[int, int]], stored: str, notes: Dict[str, int]):
+def _place(rebuilt: str, spans: Dict[int, Tuple[int, int]], stored: str, notes: Dict[str, int],
+           words: bool = False):
     """Spans in the rebuilt text, carried onto the stored one by `offsets.diff`.
 
     The rebuild exists only to find the markers: the stored text has no markup
     to find an xref in. A span with an end inside text the two disagree on is
-    dropped (and counted as `links_not_in_text`), never shifted.
+    dropped (and counted as `links_not_in_text`), never shifted. `words` is `diff`'s: the
+    Elsevier rebuild spaces each marker its own way ("cortex  54  ;" against "cortex 54 ;"),
+    and a character diff there can replace the marker with the space beside it.
     """
     from ingestion_workflow.services.offsets import diff
 
     if rebuilt == stored:
         return spans
     notes["text_rebuilt_differs"] = 1
-    mapping = diff(rebuilt, stored)
+    mapping = diff(rebuilt, stored, words=words)
     placed = {}
     for i, (s, e) in spans.items():
         # space at a marker's edge is not the marker's, on either side of the map: the two texts
@@ -382,7 +385,7 @@ def read_elsevier(xml_path: Path, text: str) -> ReadResult:
     marked = article_text_and_captions(payload)[0]
     notes: Dict[str, int] = {}
     rebuilt, spans = _strip(marked)
-    spans = _place(rebuilt, spans, text, notes)
+    spans = _place(rebuilt, spans, text, notes, words=True)
     return ReadResult(refs, _citations(text, links, spans, "xref", notes), notes)
 
 

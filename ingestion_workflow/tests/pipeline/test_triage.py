@@ -138,6 +138,20 @@ def test_analyses_hangs_off_triage_so_a_refitted_gate_makes_it_stale():
     assert before != after
 
 
+
+def test_a_tie_on_tables_goes_by_source_not_by_catalog_order():
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables=0):
+            self.status, self.source, self.summary = Status.OK, source, {"tables": tables}
+
+    for pair, winner in ((("ace", "pubget"), "pubget"), (("ace", "pdf"), "ace"), (("elsevier", "pdf"), "elsevier"),
+                         (("pmc", "elsevier"), "pmc"), (("pdf", "zeta"), "pdf")):
+        arts = [_Art(s, 2 if "ace" not in pair else 0) for s in pair]
+        for order in (arts, arts[::-1]):
+            assert _most_tables({a.source: a for a in order}).source == winner
+
 def test_triage_names_the_extraction_it_judged():
     """Table ids are unique only within one extraction, so analyses has to read
     the same one or the ids name different tables."""

@@ -132,18 +132,29 @@ def _chars(old: str, new: str, a: int, c: int) -> List[Edit]:
             for tag, i1, i2, j1, j2 in matcher.get_opcodes() if tag != "equal"]
 
 
-def _refine(old: str, new: str, a: int, c: int) -> List[Edit]:
+def _refine(old: str, new: str, a: int, c: int, words: bool = False) -> List[Edit]:
     """The edits turning old into new, at offsets a and c: word by word, then character
-    by character inside each changed run of words."""
+    by character inside each changed run of words. A short run goes straight to characters
+    unless `words`."""
     old, new, a, c = _trim(old, new, a, c)
-    if not old or not new or (len(old) <= CHARS and len(new) <= CHARS):
+    if not old or not new or (not words and len(old) <= CHARS and len(new) <= CHARS):
         return _chars(old, new, a, c)
     olds, news = TOKEN.findall(old), TOKEN.findall(new)
     o_at, n_at = _starts(olds), _starts(news)
     edits: List[Edit] = []
-    for tag, i1, i2, j1, j2 in SequenceMatcher(None, olds, news).get_opcodes():
+    if words:
+        # any run of space matches any other; a pair that differs is replaced where it sits
+        key = [" " if t.isspace() else t for t in olds], [" " if t.isspace() else t for t in news]
+        matcher = SequenceMatcher(None, *key)
+    else:
+        matcher = SequenceMatcher(None, olds, news)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag != "equal":
             edits += _chars(old[o_at[i1]:o_at[i2]], new[n_at[j1]:n_at[j2]], a + o_at[i1], c + n_at[j1])
+            continue
+        for i, j in zip(range(i1, i2), range(j1, j2)):
+            if olds[i] != news[j]:
+                edits.append((a + o_at[i], a + o_at[i + 1], c + n_at[j], c + n_at[j + 1]))
     return edits
 
 
@@ -165,9 +176,15 @@ def sub(pattern: Union[str, "re.Pattern"], repl: Union[str, Callable], text: str
     return "".join(out), OffsetMap(edits)
 
 
-def diff(old: str, new: str) -> OffsetMap:
+def diff(old: str, new: str, words: bool = False) -> OffsetMap:
     """The map from `old` to `new`, read from their differences: line by line, then
-    character by character inside each changed block."""
+    character by character inside each changed block.
+
+    `words` diffs even a short block word by word first. Where two texts differ mostly in
+    how much space they put between the same words ("cortex  54  ;" against "cortex 54 ;"),
+    a character diff of the block can match each space to the wrong space and replace the
+    word between them; matching the words first keeps it.
+    """
     if old == new:
         return OffsetMap()
     a_lines, b_lines = old.splitlines(keepends=True), new.splitlines(keepends=True)
@@ -175,7 +192,7 @@ def diff(old: str, new: str) -> OffsetMap:
     edits: List[Edit] = []
     for tag, i1, i2, j1, j2 in SequenceMatcher(None, a_lines, b_lines, autojunk=False).get_opcodes():
         if tag != "equal":
-            edits += _refine(old[a_at[i1]:a_at[i2]], new[b_at[j1]:b_at[j2]], a_at[i1], b_at[j1])
+            edits += _refine(old[a_at[i1]:a_at[i2]], new[b_at[j1]:b_at[j2]], a_at[i1], b_at[j1], words)
     return OffsetMap(edits)
 
 

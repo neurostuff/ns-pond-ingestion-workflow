@@ -378,15 +378,18 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
 
 
-def _record_extraction(catalog, ref, text_file, figure_captions=()):
+def _record_extraction(catalog, ref, text_file, figure_captions=(), source="pubget", tables=0, hashed=True):
     from ingestion_workflow.pipeline.stages.extract import file_sha256
 
-    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+    summary = {"tables": tables, "has_text": True}
+    if hashed:
+        summary["text_sha256"] = file_sha256(text_file)
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source=source, fingerprint="ex-1",
                             payload={"full_text_path": str(text_file), "tables": [],
                                      "figure_captions": list(figure_captions), "slug": ref.identifier.slug,
-                                     "source": "pubget", "identifier": ref.identifier.to_dict(),
+                                     "source": source, "identifier": ref.identifier.to_dict(),
                                      "extracted_at": "2026-10-10T00:00:00"},
-                            summary={"tables": 0, "has_text": True, "text_sha256": file_sha256(text_file)})])
+                            summary=summary)])
 
 
 def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path):
@@ -506,3 +509,57 @@ def test_an_article_without_an_extraction_text_has_no_passages(env):
     assert (plan.blocked, outcomes) == (1, [])
     ctx = Context(settings, catalog)
     assert _synced_extraction(ctx, {}, catalog.artifacts([ref.id], "download")[ref.id], None) is None
+
+
+def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="41"))
+    ace, pubget = tmp_path / "ace.txt", tmp_path / "pubget.txt"
+    ace.write_text("## Results\n\nNothing at (x = 1, y = 2, z = 3).\n", encoding="utf-8")
+    pubget.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, ace, source="ace")  # first in the catalog's order
+    _record_extraction(catalog, ref, pubget, source="pubget", tables=1)
+    _, (found,) = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    assert (found.payload["source"], found.payload["full_text_path"]) == ("pubget", str(pubget))
+
+
+def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, tmp_path):
+    """Passages a download reader wrote before the extraction was the only text: the article
+    shows as blocked, and prose no longer counts them fresh."""
+    from ingestion_workflow.pipeline.stages.passages import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="42"))
+    old = tmp_path / "passages" / f"{ref.id}.txt"
+    old.parent.mkdir()
+    old.write_text(EXTRACTED, encoding="utf-8")
+    catalog.record([
+        Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
+                payload=_download(ref, path), summary={}),
+        Outcome.failure(ref.id, "extract", "pubget", "unreadable", fingerprint="ex-1"),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-reader",
+                payload={"full_text_path": str(old), "passages": []}, summary={"passages": 1}),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+    ])
+    ctx = Context(settings, catalog)
+    plan, (taken,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (taken.status, taken.error) == (Status.FAILED, NO_TEXT)
+    assert catalog.artifacts([ref.id], "passages")[ref.id][""].status is Status.FAILED
+    again, outcomes = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (again.blocked, outcomes) == (1, [])
+    prose = ProseStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "prose"),
+                                      catalog.artifacts([ref.id], "passages"))
+    assert (prose.fresh, prose.blocked) == (0, 1)
+
+
+def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashed(env, tmp_path, monkeypatch):
+    from ingestion_workflow.pipeline.stages import extract
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="43"))
+    text_file = tmp_path / "t.txt"
+    text_file.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, hashed=False)
+    monkeypatch.setattr(extract, "file_sha256", lambda p: pytest.fail("the plan hashed a text"))
+    plan, outcomes = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])

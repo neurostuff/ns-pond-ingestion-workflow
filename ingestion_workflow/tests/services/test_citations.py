@@ -168,6 +168,37 @@ def test_a_space_the_stored_text_adds_after_a_marker_is_not_the_marker_s():
     assert C._place(rebuilt, {0: (at, at + 1)}, stored, {}) == {0: (at, at + 1)}
 
 
+
+def test_space_the_rebuild_puts_inside_a_marker_is_trimmed_before_the_map():
+    """The rebuild's space is mapped onto the stored text's comma, which no trim after the map removes."""
+    rebuilt, stored = "found 19 Disruptions", "found,19 Disruptions"
+    at = rebuilt.index(" 19")
+    assert C._place(rebuilt, {0: (at, at + 3)}, stored, {}) == {0: (6, 8)}
+
+
+def test_space_the_map_carries_onto_a_marker_s_edge_is_trimmed_after_it():
+    rebuilt, stored = "found [19] Disruptions", "found  19  Disruptions"
+    at = rebuilt.index("[")
+    assert C._place(rebuilt, {0: (at, at + 4)}, stored, {}) == {0: (7, 9)}
+
+
+def test_an_elsevier_marker_between_spaces_the_stored_text_has_fewer_of_is_kept():
+    """The rebuild puts two spaces around each marker where the stored text has one. Diffed
+    character by character, runs like this lost 26 markers in 13 of 80 Elsevier articles;
+    matched word by word, any run of space matching any other, each space is its own edit
+    and every marker keeps its place."""
+    from ingestion_workflow.services.offsets import diff
+
+    sentences = [f"Finding {k} was replicated in the cortex of patients with the disease." for k in range(8)]
+    rebuilt = "".join(f"{t}  {k + 1}  " for k, t in enumerate(sentences))
+    stored = "".join(f"{t} {k + 1} " for k, t in enumerate(sentences))
+    spans = {k: (rebuilt.index(f"  {k + 1}  "), rebuilt.index(f"  {k + 1}  ") + 4) for k in range(8)}
+    placed = C._place(rebuilt, spans, stored, {}, words=True)
+    assert [stored[a:b] for a, b in placed.values()] == [str(k + 1) for k in range(8)]
+    edits = diff(rebuilt, stored, words=True).edits
+    assert len(edits) == 16 and all(not (rebuilt[a:b] + stored[c:d]).strip() for a, b, c, d in edits)
+
+
 def test_subscripts_stay_in_the_text_when_pubget_keeps_them(tmp_path):
     text = article_text(etree.parse(str(_jats(tmp_path))), tmp_path)
 

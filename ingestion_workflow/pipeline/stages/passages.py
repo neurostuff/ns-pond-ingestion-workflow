@@ -172,16 +172,21 @@ def read_text(payload: dict) -> str:
     return text
 
 
+#: Why an article whose old passages the plan takes back has none now.
+NO_TEXT = "no extraction text"
+
+
 def text_of(ctx: Context, extraction: Optional[Artifact]) -> Tuple[Optional[str], Optional[str]]:
-    """An extraction's text file and its sha256: from the summary, else the file."""
+    """An extraction's text file and the sha256 its summary records (None when it records none).
+
+    The plan never hashes the file: across the corpus that is tens of GB read on every plan.
+    Extract records the hash; `ingest refresh-text` records it for older extractions."""
     if extraction is None or extraction.status is not Status.OK or not extraction.summary.get("has_text", True):
         return None, None
-    from .extract import file_sha256
-
     path = (ctx.payload(extraction) or {}).get("full_text_path")
     if not path or not Path(path).is_file():
         return None, None
-    return path, extraction.summary.get("text_sha256") or file_sha256(path)
+    return path, extraction.summary.get("text_sha256")
 
 
 class PassagesStage:
@@ -211,14 +216,24 @@ class PassagesStage:
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         downloads = ctx.catalog.artifacts(ids, "download")
+        unhashed = 0
         for ref in refs:
             extraction = judged_extraction(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
             path, sha = text_of(ctx, extraction)
+            existing = artifacts.get(ref.id, {}).get("")
             if path is None:
+                if existing is not None and existing.status is Status.OK:
+                    # passages of a text that is no longer the article's: taken back, so status
+                    # shows the article blocked and prose stops reading them
+                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
+                else:
+                    plan.blocked += 1
+                continue
+            if sha is None:
+                unhashed += 1
                 plan.blocked += 1
                 continue
             fp = self.fingerprint_for(extraction, sha)
-            existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
@@ -228,9 +243,15 @@ class PassagesStage:
                 continue
             work = Work(ref=ref, source="", fingerprint=fp, upstream=extraction)
             plan.pending.append(work)
+        if unhashed:
+            logger.warning("passages: %d extractions record no text hash; run `ingest refresh-text` "
+                           "to record them", unhashed)
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        for work in [w for w in works if w.upstream is None]:
+            yield Outcome.failure(work.article_id, self.name, "", NO_TEXT, fingerprint=work.fingerprint)
+        works = [w for w in works if w.upstream is not None]
         jobs = []
         for work in works:
             payload = ctx.payload(work.upstream) or {}

@@ -662,7 +662,7 @@ def repair(config: Optional[Path] = ConfigOption) -> None:
 @app.command("refresh-text")
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
-        None, "--source", help="Extraction sources to rebuild (default: every JATS source)."
+        None, "--source", help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
@@ -683,8 +683,8 @@ def refresh_text(
     from ingestion_workflow.services import text_refresh
 
     settings = _settings(config)
-    sources = tuple(source or text_refresh.REFRESHABLE_SOURCES)
-    unknown = set(sources) - set(text_refresh.REFRESHABLE_SOURCES)
+    sources = tuple(source or text_refresh.SOURCES)
+    unknown = set(sources) - set(text_refresh.SOURCES)
     if unknown:
         raise typer.BadParameter(f"cannot rebuild the text of {', '.join(sorted(unknown))}")
     counts: Counter = Counter()
@@ -699,8 +699,8 @@ def refresh_text(
         if result.status in ("rewritten", "would_rewrite"):
             new_of.setdefault(result.old_sha256, set()).add((result.new_sha256, result.text_path))
             rewritten.append(result)
-        elif result.status == "unchanged" and not dry_run:
-            rewritten.append(result)  # to record its hash
+        elif result.old_sha256 and not dry_run:
+            rewritten.append(result)  # its text stays: to record its hash
         if out:
             out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))

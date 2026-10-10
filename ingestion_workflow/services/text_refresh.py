@@ -44,6 +44,9 @@ logger = logging.getLogger(__name__)
 #: stylesheet, Elsevier XML, and ACE's HTML (its fetched tables read from the extraction's
 #: cache). Not a PDF: its text is docling's conversion, which is not kept.
 REFRESHABLE_SOURCES = JATS_SOURCES + ("elsevier", "ace")
+#: The sources refresh-text reads: a text it cannot rebuild still has its hash recorded, the
+#: one the passages plan reads instead of hashing the file.
+SOURCES = REFRESHABLE_SOURCES + ("pdf",)
 
 
 def sha256(text: str) -> str:
@@ -65,7 +68,7 @@ class Job:
 class Result:
     article_id: str
     source: str
-    status: str  # unchanged | rewritten | would_rewrite | no_text | no_download | failed: ...
+    status: str  # unchanged | rewritten | would_rewrite | no_text | no_download | not_rebuilt | failed: ...
     text_path: Optional[str] = None
     old_sha256: Optional[str] = None
     new_sha256: Optional[str] = None
@@ -98,12 +101,15 @@ def rebuild(job: Job, write: bool) -> Result:
     if not job.text_path or not Path(job.text_path).is_file():
         result.status = "no_text"
         return result
+    path = Path(job.text_path)
+    old = _read(path)
+    result.old_sha256 = sha256(old)  # recorded even when the text cannot be rebuilt
+    if job.source not in REFRESHABLE_SOURCES:
+        result.status = "not_rebuilt"
+        return result
     if not job.article_file or not Path(job.article_file).is_file():
         result.status = "no_download"
         return result
-    path = Path(job.text_path)
-    old = _read(path)
-    result.old_sha256 = sha256(old)
     try:
         new, result.figure_captions = build(job.source, Path(job.article_file), path, job.pmid)
     except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
@@ -288,7 +294,7 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     extraction = found.get("extract")
     if extraction is None:
         return [], "none"
-    if result.status == "unchanged":
+    if result.status not in ("rewritten", "would_rewrite"):
         # The text stays; its hash is recorded where passages looks for it, once.
         if extraction.summary.get("text_sha256") == result.old_sha256 or not result.old_sha256:
             return [], "none"

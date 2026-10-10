@@ -115,6 +115,27 @@ def test_the_stage_reads_the_text_of_the_extraction_triage_judged(env):
     assert again.fresh == 1 and not again.pending
 
 
+
+def test_no_other_extraction_s_text_stands_in_for_the_judged_one(env):
+    settings, catalog, tmp_path = env
+    other = tmp_path / "other.txt"
+    other.write_text(TEXT)
+    ref = catalog.register(Identifier(pmid="124"))
+    catalog.record([
+        Outcome.failure(ref.id, "extract", "pubget", "unreadable", fingerprint="ex-1"),
+        Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="ex-2",
+                payload={"full_text_path": str(other)}, summary={}),
+        Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
+                payload={}, summary={"source": "pubget", "passed": 1}),
+        Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                payload={"t1": _collection("OTHER")}, summary={"tables": 1}),
+    ])
+    ctx = Context(settings, catalog)
+    stage = SpaceStage(settings)
+    plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], "space"), catalog.artifacts([ref.id], "analyses"))
+    (outcome,) = list(stage.execute(ctx, plan.pending))
+    assert outcome.payload["t1"]["coordinate_space"] == "OTHER"
+
 def test_an_article_with_nothing_to_fill_writes_the_analyses_blob_again(env):
     """Content-addressed: the same payload is the same blob, stored once."""
     settings, catalog, _ = env

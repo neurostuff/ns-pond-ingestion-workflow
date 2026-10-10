@@ -371,7 +371,16 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     # On 2026-10-06 no article had ACE beside another source with tables, so
     # this changed no verdict already made.
     preferred = [a for a in usable if a.source != "ace" and a.summary.get("tables", 0)]
-    return max(preferred or usable, key=lambda a: a.summary.get("tables", 0))
+    return min(preferred or usable, key=lambda a: (-a.summary.get("tables", 0), _rank(a.source), a.source))
+
+
+#: A tie on tables goes to the first of these (a source not listed comes after them, by
+#: name): publisher XML before ACE's page, a PDF's conversion last.
+TIE_ORDER = ("pubget", "pmc", "europepmc", "elsevier", "ace", "pdf")
+
+
+def _rank(source: str) -> int:
+    return TIE_ORDER.index(source) if source in TIE_ORDER else len(TIE_ORDER)
 
 
 def _serialised(path) -> str:
