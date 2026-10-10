@@ -524,8 +524,8 @@ def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path):
 
 
 def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, tmp_path):
-    """Passages a download reader wrote before the extraction was the only text: the article
-    shows as blocked, and prose takes back what it read from them."""
+    """Passages a download reader wrote, for an article whose extractor ran and found no
+    text: the article shows as blocked, and prose takes back what it read from them."""
     from ingestion_workflow.pipeline.stages.passages import NO_TEXT
 
     settings, catalog, path = env
@@ -536,7 +536,8 @@ def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, 
     catalog.record([
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                 payload=_download(ref, path), summary={}),
-        Outcome.failure(ref.id, "extract", "pubget", "unreadable", fingerprint="ex-1"),
+        Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                payload={"full_text_path": None}, summary={"tables": 0, "has_text": False}),
         Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-reader",
                 payload={"full_text_path": str(old), "passages": []}, summary={"passages": 1}),
         Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
@@ -584,7 +585,7 @@ def test_an_uploaded_article_whose_passages_are_taken_back_leaves_neurostore_and
 
     retracted = []
 
-    def retract(self, targets):
+    def retract(self, targets, **_):
         for work, base_study_id in targets:
             retracted.append(base_study_id)
             yield Outcome(article_id=work.article_id, stage="upload", source="",
@@ -630,3 +631,180 @@ def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashe
     monkeypatch.setattr(extract, "file_sha256", lambda p: pytest.fail("the plan hashed a text"))
     plan, outcomes = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
     assert (plan.blocked, outcomes) == (1, [])
+
+
+def _uploaded_chain(catalog, ref, *, upload=None):
+    """passages taken back, with the prose, resolve, space and upload made from the old text."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    catalog.record([
+        Outcome.failure(ref.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+        Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve", payload={}, summary={}),
+        Outcome(article_id=ref.id, stage="space", source="", fingerprint="old-space", payload={}, summary={}),
+        upload or Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
+                          summary={"base_study_id": "bs-1", "analyses": 2}),
+    ])
+
+
+@pytest.mark.parametrize("extractions", [
+    "downloaded files missing on disk: 1",
+    "TimeoutError: the extractor timed out",
+    "extractor returned nothing",
+    "text file gone",
+    "payload blob gone",
+    "one source found no text, another failed",
+])
+def test_a_transient_failure_upstream_only_blocks_and_takes_nothing_back(env, tmp_path, monkeypatch, extractions):
+    """A failed re-run of an article's only source, or its text file or blob gone, says
+    something about the machine, not the article: the passages and everything made from
+    them stay, so nothing reaches neurostore."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="46"))
+    gone = tmp_path / "gone" / "article.txt"
+    found = {"tables": 0, "has_text": True, "text_sha256": "abc"}
+    rows = {
+        "text file gone": [Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                                   payload={"full_text_path": str(gone)}, summary=found)],
+        "payload blob gone": [Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                                      payload={"full_text_path": str(path)}, summary=found)],
+        "one source found no text, another failed": [
+            Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="ex-1",
+                    payload={"full_text_path": None}, summary={"tables": 0, "has_text": False}),
+            Outcome.failure(ref.id, "extract", "pubget", "TimeoutError", fingerprint="ex-2")],
+    }.get(extractions) or [Outcome.failure(ref.id, "extract", "pubget", extractions, fingerprint="ex-1")]
+    catalog.record(rows + [
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-passages",
+                payload={"full_text_path": str(path), "passages": []}, summary={"passages": 1}),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
+    ])
+    ctx = Context(settings, catalog)
+    if extractions == "payload blob gone":
+        monkeypatch.setattr(ctx, "payload", lambda artifact: None)
+    plan, outcomes = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    assert catalog.artifacts([ref.id], "passages")[ref.id][""].status is Status.OK
+
+
+def test_a_relative_text_path_is_read_from_beside_the_catalog_whatever_the_cwd(env, tmp_path, monkeypatch):
+    """Extractions run with a relative cache_root recorded `.cache/extract/...`; from another
+    cwd those texts must still be found, not taken back."""
+    from ingestion_workflow.pipeline.stages.passages import read_text
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="47"))
+    text_file = tmp_path / ".cache" / "extract" / "article.txt"  # tmp_path holds the catalog, k/
+    text_file.parent.mkdir(parents=True)
+    text_file.write_text(EXTRACTED, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    extraction = catalog.artifacts([ref.id], "extract")[ref.id]["pubget"]
+    payload = dict(catalog.payload(extraction), full_text_path=".cache/extract/article.txt")
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                            payload=payload, summary=extraction.summary)])
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    ctx = Context(settings, catalog)
+    plan, (made,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert made.status is Status.OK and made.summary["passages"] > 0
+    assert made.payload["full_text_path"] == str(text_file)
+    assert read_text(ctx, {"full_text_path": ".cache/extract/article.txt",
+                           "text_sha256": made.payload["text_sha256"]}) == EXTRACTED
+
+
+def test_the_take_back_runs_through_a_stage_that_last_failed_for_another_reason(env):
+    """prose last failed on a timeout while resolve still holds what an older prose made:
+    both are taken back, so nothing downstream counts the old text fresh."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="48"))
+    _uploaded_chain(catalog, ref)
+    catalog.record([Outcome.failure(ref.id, "prose", "", "timeout", fingerprint="newer-prose")])
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
+
+
+class _Tunnel:
+    def __init__(self, *_, fails=False):
+        self.fails = fails
+
+    def __enter__(self):
+        if self.fails:
+            raise ConnectionError("the tunnel dropped")
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def _upload_through(monkeypatch, settings, *, fails=False, retracted=None):
+    """UploadStage with neurostore stood in for: the tunnel fails, or each retraction comes back
+    as `retracted` returns."""
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    from ingestion_workflow.services import db, upload
+
+    monkeypatch.setattr(db, "SSHTunnel", lambda *a, **k: _Tunnel(fails=fails))
+    monkeypatch.setattr(db, "SessionFactory", lambda *a, **k: None)
+    monkeypatch.setattr(upload.UploadService, "retract",
+                        lambda self, targets, **kw: [retracted(slug, bsid, kw) for slug, bsid in targets])
+    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
+    return UploadStage(settings)
+
+
+def test_a_failed_retraction_keeps_its_base_study_and_is_tried_again(env, monkeypatch):
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="49"))
+    _uploaded_chain(catalog, ref)
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    _, (failed,) = _run(_upload_through(monkeypatch, settings, fails=True), ctx, catalog, ref)
+    assert (failed.status, failed.fingerprint, failed.summary) == (Status.FAILED, NO_TEXT, {"base_study_id": "bs-1"})
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert sync.pending == []  # the article stays in the corpus until neurostore confirms
+
+    asked = []
+
+    def deleted(slug, bsid, kw):
+        asked.append((bsid, kw))
+        return RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted", success=True)
+
+    upload = _upload_through(monkeypatch, settings, retracted=deleted)
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert asked == [("bs-1", {"hold_studyset_members": True})]
+    assert (done.status, done.summary["base_study_id"], done.summary["retracted"]) == (Status.OK, "bs-1", "deleted")
+    again, outcomes = _run(upload, ctx, catalog, ref)
+    assert (again.blocked, outcomes) == (1, [])
+
+
+def test_a_study_a_studyset_holds_is_held_for_review_not_retracted(env, monkeypatch):
+    from ingestion_workflow.pipeline.scheduler import StageReport
+    from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="50"))
+    _uploaded_chain(catalog, ref)
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: RetractOutcome(
+        slug=slug, base_study_id=bsid, study_id="s-1", action="held", studysets=["ss1"], success=True))
+    _, (held,) = _run(upload, ctx, catalog, ref)
+    assert held.status is Status.FAILED and held.error.startswith(HELD_FOR_REVIEW)
+    assert held.summary["base_study_id"] == "bs-1" and held.summary["studysets"] == ["ss1"]
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert sync.pending == []
+    again = upload.plan(ctx, [ref], catalog.artifacts([ref.id], "upload"), catalog.artifacts([ref.id], "space"))
+    assert len(again.pending) == 1  # looked at again, so it goes once no studyset holds it
+    assert "1 held for review" in StageReport(stage="upload", failed=1, held=1).line()

@@ -23,7 +23,7 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context
+from ..stage import NO_TEXT, Context, needs_taking_back
 
 logger = logging.getLogger(__name__)
 
@@ -161,12 +161,12 @@ def passage_from(payload: dict, text: str):
                    heading_span=span("heading"), from_legend=payload.get("from_legend", False))
 
 
-def read_text(payload: dict) -> str:
+def read_text(ctx: Context, payload: dict) -> str:
     """The text a passages payload indexes; raises when it is gone or has changed since."""
     from ingestion_workflow.services.offsets import sha256
 
-    path = payload.get("full_text_path")
-    text = Path(path).read_bytes().decode("utf-8") if path and Path(path).is_file() else None
+    path = ctx.recorded_path(payload.get("full_text_path"))
+    text = path.read_bytes().decode("utf-8") if path is not None and path.is_file() else None
     if text is None or sha256(text) != payload.get("text_sha256"):
         raise LookupError("the text the passages index is gone or has changed")
     return text
@@ -179,10 +179,25 @@ def text_of(ctx: Context, extraction: Optional[Artifact]) -> Tuple[Optional[str]
     Extract records the hash; `ingest refresh-text` records it for older extractions."""
     if extraction is None or extraction.status is not Status.OK or not extraction.summary.get("has_text", True):
         return None, None
-    path = (ctx.payload(extraction) or {}).get("full_text_path")
-    if not path or not Path(path).is_file():
+    path = ctx.recorded_path((ctx.payload(extraction) or {}).get("full_text_path"))
+    if path is None or not path.is_file():
         return None, None
-    return path, extraction.summary.get("text_sha256")
+    return str(path), extraction.summary.get("text_sha256")
+
+
+def holds_no_text(extractions: Dict[str, Artifact]) -> bool:
+    """Whether the article is known to have no text: every source's extractor ran and
+    found none.
+
+    Only that takes back what was made from its old text. A failed extraction (an
+    exception, a timeout, downloaded files gone, the extractor returning nothing) or a
+    text file or blob that cannot be found says something about the machine, not the
+    article, so it only blocks: one failed re-run of an article's only source must not
+    retract it from neurostore."""
+    return bool(extractions) and all(
+        e.status is Status.OK and e.summary.get("has_text", True) is False
+        for e in extractions.values()
+    )
 
 
 class PassagesStage:
@@ -218,7 +233,7 @@ class PassagesStage:
             path, sha = text_of(ctx, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if path is None:
-                if existing is not None and existing.status is Status.OK:
+                if holds_no_text(upstream.get(ref.id, {})) and needs_taking_back(existing):
                     # passages of a text that is no longer the article's: taken back, so status
                     # shows the article blocked and prose stops reading them
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
@@ -251,7 +266,8 @@ class PassagesStage:
         jobs = []
         for work in works:
             payload = ctx.payload(work.upstream) or {}
-            jobs.append({"text_path": payload.get("full_text_path"),
+            text_path = ctx.recorded_path(payload.get("full_text_path"))
+            jobs.append({"text_path": str(text_path) if text_path else None,
                          "figure_captions": payload.get("figure_captions") or []})
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
         if len(works) < 8 or workers == 1:

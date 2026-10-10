@@ -93,7 +93,7 @@ class ProseStage:
             meta_artifact = metadata.get(work.article_id, {}).get("")
             meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None and meta_artifact.ok else {}
             try:
-                text = read_text(payload) if payload.get("passages") else ""
+                text = read_text(ctx, payload) if payload.get("passages") else ""
             except LookupError as exc:
                 # Read nothing rather than a passage the text no longer holds;
                 # passages, re-run on the text as it is, will index it again.

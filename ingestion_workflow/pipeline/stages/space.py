@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -138,10 +137,10 @@ def _article_text(
     extraction = extractions.get(source) if source is not None else None
     if extraction is None or extraction.status is not Status.OK:
         return None
-    path = (ctx.payload(extraction) or {}).get("full_text_path")
-    if not path or not Path(path).is_file():
+    path = ctx.recorded_path((ctx.payload(extraction) or {}).get("full_text_path"))
+    if path is None or not path.is_file():
         return None
-    return Path(path).read_text(encoding="utf-8", errors="replace")
+    return path.read_text(encoding="utf-8", errors="replace")
 
 
 def fill_spaces(payload: Dict[str, dict], text: Optional[str]):
