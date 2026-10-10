@@ -38,7 +38,7 @@ from ingestion_workflow.services.naming import sanitize_table_id
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 2
+PAPER_PARSE_VERSION = 3
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -207,22 +207,20 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         is_meta = is_a_meta_analysis(title, types)
     verdicts = {str(v.get("table_id")): v for v in triage.get("tables") or [] if v.get("table_id")}
 
-    grids: Dict[str, _Table] = {}
-    tables = []
-    for index, table in enumerate(content.tables):
-        grid = _grid(table.raw_content_path)
-        grids[table.table_id] = grid
-        tables.append(
-            _parsed_table(
-                root,
-                index,
-                table,
-                grid,
-                verdicts.get(table.table_id),
-                inputs.excluded.get(table.table_id),
-                _inlined(grid, text),
-            )
+    grids: Dict[str, _Table] = {t.table_id: _grid(t.raw_content_path) for t in content.tables}
+    inlined = _inlined_tables(content.tables, grids, text)
+    tables = [
+        _parsed_table(
+            root,
+            index,
+            table,
+            grids[table.table_id],
+            verdicts.get(table.table_id),
+            inputs.excluded.get(table.table_id),
+            spans,
         )
+        for index, (table, spans) in enumerate(zip(content.tables, inlined))
+    ]
 
     paper = pp.ParsedPaper(
         header=_header(
@@ -358,8 +356,76 @@ _ROW_CHARS = 8
 _ROW_GAP = 2000
 
 
-def _inlined(grid: _Table, text: _Text) -> Dict[Any, Tuple[int, int]]:
-    """Where the table's body rows are inlined in the text, row by row, and the table.
+#: How much of a caption's first line is looked for in the text.
+_CAPTION_CHARS = 80
+
+
+def _inlined_tables(tables, grids: Mapping[str, _Table], text: _Text) -> List[Dict]:
+    """`_inlined` for each of the paper's tables, each searched only in its own block.
+
+    Two tables can print the same row (a shared header), so a row is looked for only
+    between where its table is printed and where the next one is. A table is printed
+    where its caption, or failing that its "Table N" line, starts a line, in the
+    order the tables come; one found in neither way (a second parser's copy of a
+    table) is searched for after the table before it, up to the next one found.
+    """
+    anchors: List[Optional[Tuple[int, int]]] = []
+    at = 0
+    for table in tables:
+        anchor = _anchor(table, text, at)
+        anchors.append(anchor)
+        if anchor is not None:
+            at = anchor[1]
+    out = []
+    at = 0
+    for i, table in enumerate(tables):
+        lo = anchors[i][1] if anchors[i] is not None else at
+        hi = next((a[0] for a in anchors[i + 1 :] if a is not None and a[0] >= lo), len(text))
+        spans = _inlined(grids[table.table_id], text, lo, hi)
+        out.append(spans)
+        at = spans["table"][1] if "table" in spans else lo
+    return out
+
+
+def _anchor(table, text: _Text, start: int) -> Optional[Tuple[int, int]]:
+    """Where the table's caption, or its "Table N" line, starts a line at or after `start`."""
+    caption = (table.caption or "").strip().split("\n")[0][:_CAPTION_CHARS]
+    if len(_squash(caption)[0]) >= _ROW_CHARS:
+        found = _line_find(text, caption, start)
+        if found is not None:
+            return found
+    if table.table_number is not None:
+        label = f"Table {table.table_number}"
+        found = _line_find(text, label, start, whole=True)
+        if found is not None:
+            return found
+    return None
+
+
+def _line_find(
+    text: _Text, needle: str, start: int, end: Optional[int] = None, whole: bool = False
+) -> Optional[Tuple[int, int]]:
+    """The first copy of `needle` in [start, end) that starts a line (and, if `whole`,
+    ends it)."""
+    end = len(text) if end is None else end
+    while True:
+        span = text.find(needle, start)
+        if span is None or span[1] > end:
+            return None
+        line_start = text.text.rfind("\n", 0, span[0]) + 1
+        line_end = text.text.find("\n", span[1])
+        line_end = len(text) if line_end < 0 else line_end
+        if not _ALNUM.search(text.text, line_start, span[0]) and not (
+            whole and _ALNUM.search(text.text, span[1], line_end)
+        ):
+            return span
+        start = span[0] + 1
+
+
+def _inlined(
+    grid: _Table, text: _Text, lo: int = 0, hi: Optional[int] = None
+) -> Dict[Any, Tuple[int, int]]:
+    """Where the table's body rows are inlined in text[lo:hi], row by row, and the table.
 
     A source that inlines its tables (pubget, elsevier) prints each row on a line of
     its own, so a row is placed only where it starts a line, in order, near the row
@@ -367,21 +433,14 @@ def _inlined(grid: _Table, text: _Text) -> Dict[Any, Tuple[int, int]]:
     given only when most of its rows were placed.
     """
     found: Dict[Any, Tuple[int, int]] = {}
-    at = 0
+    at = lo
     for i, cells in enumerate(grid.rows):
         line = " ".join(cell for cell, _ in cells)
         if len(_squash(line)[0]) < _ROW_CHARS:
             continue
-        start = at
-        while True:
-            span = text.find(line, start)
-            if span is None or (found and span[0] - at > _ROW_GAP):
-                span = None
-                break
-            line_start = text.text.rfind("\n", 0, span[0]) + 1
-            if not _ALNUM.search(text.text, line_start, span[0]):
-                break
-            start = span[0] + 1
+        span = _line_find(text, line, at, hi)
+        if span is not None and found and span[0] - at > _ROW_GAP:
+            span = None
         if span is not None:
             found[i] = span
             at = span[1]
