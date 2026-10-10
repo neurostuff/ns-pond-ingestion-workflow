@@ -224,9 +224,9 @@ def test_keys_are_minted_from_the_cells_the_points_sit_in(written):
         by_name.setdefault(a["name"], []).append(a)
     positive, negative = by_name["Faces > Houses"]
     assert positive["cells"] == [{"row": 1, "column_group": 0}]
-    assert positive["key"] == keys.table_key("tbl1", [(1, 0)])
+    assert positive["key"] == keys.table_key("tbl1", [(1, 0)], "Faces > Houses")
     assert positive["points"][0]["row"] == 1
-    assert negative["key"] == keys.table_key("tbl1", [(2, 0)])
+    assert negative["key"] == keys.table_key("tbl1", [(2, 0)], "Faces > Houses")
     # A contrast with no coordinates is keyed by the row that names it.
     null = by_name["Houses > Faces"][0]
     assert null["points"] == [] and null["cells"] == [{"row": 3, "column_group": 0}]
@@ -450,26 +450,27 @@ def test_a_coordinate_printed_in_two_rows_goes_to_its_own_analysis(tmp_path):
     assert omitted == []
 
 
-def test_an_analysis_on_another_analysis_cells_is_omitted_not_dropped(tmp_path):
+def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_omitted(tmp_path):
     collection = _collection(
         [
             Analysis(name="A > B", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
-            Analysis(name="A > B again", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+            Analysis(name="a > b", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+            Analysis(name="C > D", coordinates=[Coordinate(x=22, y=-4, z=-20)]),
             Analysis(name="Unprinted", coordinates=[Coordinate(x=1, y=1, z=1)]),
         ]
     )
     parse, omitted = _parse(
         tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
     )
-    assert [a.name for a in parse.analyses] == ["A > B"]
-    key = keys.table_key("tbl1", [(1, 0)])
+    assert [a.name for a in parse.analyses] == ["A > B", "C > D"]
+    key = keys.table_key("tbl1", [(1, 0)], "A > B")
     assert [str(o) for o in omitted] == [
         "tbl1: 'Unprinted': no row of the table prints its points",
-        f"tbl1: 'A > B again': the same cells as {key} ('A > B')",
+        f"tbl1: 'a > b': the same cells and name as {key} ('A > B')",
     ]
     (reading,) = parse.tables
     assert reading.reading == "coordinates"
-    assert "omitted 'A > B again'" in reading.reason and "omitted 'Unprinted'" in reading.reason
+    assert "omitted 'a > b'" in reading.reason and "omitted 'Unprinted'" in reading.reason
 
 
 def test_inverse_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
@@ -802,7 +803,7 @@ def test_side_by_side_contrasts_differ_by_column_group(tmp_path):
         "tbl1", collection.analyses, collection, _grid(tmp_path / "t.html"), []
     )
     assert [[(c.row, c.column_group) for c in a.cells] for a in built] == [[(0, 0)], [(0, 1)]]
-    assert built[0].key == keys.table_key("tbl1", [(0, 0)]) != built[1].key
+    assert built[0].key == keys.table_key("tbl1", [(0, 0)], "A > B") != built[1].key
 
 
 def test_a_null_coordinate_space_leaves_the_parse_space_unset():
