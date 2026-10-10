@@ -352,6 +352,17 @@ class Settings(BaseSettings):
         ),
     )
 
+    node_path: Optional[Path] = Field(
+        default=None,
+        validation_alias=AliasChoices("node_path", "INGEST_NODE_PATH"),
+        description=(
+            "Directory holding a node binary (or the binary itself). It is put "
+            "first on PATH before ACE's readabilipy runs, which needs node >= "
+            "20.19. Needed where the node on PATH is older and the shell "
+            "profile is not sourced (nohup, ssh). Also read from INGEST_NODE_PATH"
+        ),
+    )
+
     # ===== Behavior flags =====
 
 

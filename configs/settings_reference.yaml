@@ -31,6 +31,7 @@ pdf_url_providers:  # Ordered providers queried for an open-access PDF URL
   - openalex
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
 ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
+# node_path: "/path/to/node/bin"  # Directory holding node (or the binary), put first on PATH. ACE/readabilipy needs node >= 20.19. Also INGEST_NODE_PATH
 
 # ===== External APIs =====
 pubmed_email: "MY_EMAIL_ADDRESS"  # Contact email for PubMed API (required by NCBI guidelines)

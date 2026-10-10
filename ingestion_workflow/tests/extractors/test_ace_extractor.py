@@ -493,6 +493,48 @@ def test_a_page_no_publisher_claims_goes_to_the_generic_parser(tmp_path, monkeyp
     assert [(c.x, c.y, c.z) for c in content.tables[0].coordinates] == [(24.0, 33.0, 15.0)]
 
 
+def _fake_node(directory, version):
+    directory.mkdir(parents=True, exist_ok=True)
+    node = directory / "node"
+    node.write_text(f"#!/bin/sh\necho {version}\n")
+    node.chmod(0o755)
+    return node
+
+
+def test_node_path_goes_first_on_path(tmp_path, monkeypatch):
+    import os
+
+    from ingestion_workflow.config import Settings
+
+    _fake_node(tmp_path / "bin", "v22.19.0")
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    ace_module.prepare_node(Settings(node_path=tmp_path / "bin"))
+    assert os.environ["PATH"].split(os.pathsep)[0] == str(tmp_path / "bin")
+
+
+def test_node_path_accepts_the_binary_and_env_var(tmp_path, monkeypatch):
+    import os
+
+    from ingestion_workflow.config import Settings
+
+    node = _fake_node(tmp_path / "bin", "v20.19.0")
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    monkeypatch.setenv("INGEST_NODE_PATH", str(node))
+    ace_module.prepare_node(Settings())
+    assert os.environ["PATH"].split(os.pathsep)[0] == str(tmp_path / "bin")
+
+
+def test_old_node_fails_fast(tmp_path, monkeypatch):
+    from ingestion_workflow.config import Settings
+
+    _fake_node(tmp_path / "bin", "v16.20.2")
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    with pytest.raises(RuntimeError) as err:
+        ace_module.prepare_node(Settings(node_path=tmp_path / "bin"))
+    message = str(err.value)
+    assert "v16.20.2" in message and "20.19" in message and "INGEST_NODE_PATH" in message
+
+
 @pytest.mark.parametrize("guess, expected", [
     (None, None), ("", None), ("UNKNOWN", None), ("unknown", None),
     ("MNI", CoordinateSpace.MNI), ("tal", CoordinateSpace.TALAIRACH),
