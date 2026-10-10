@@ -397,14 +397,7 @@ class CreateAnalysesService:
     def _coerce_space(
         self, space_label: Optional[str], fallback: CoordinateSpace
     ) -> CoordinateSpace:
-        if not space_label:
-            return fallback
-        normalized = str(space_label).strip().upper()
-        if normalized == "MNI":
-            return CoordinateSpace.MNI
-        if normalized in {"TAL", "TALAIRACH"}:
-            return CoordinateSpace.TALAIRACH
-        return fallback
+        return CoordinateSpace.from_label(space_label) or fallback
 
     def _build_document(
         self,

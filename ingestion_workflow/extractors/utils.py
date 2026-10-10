@@ -94,15 +94,8 @@ def sanitize_table_id(
 
 
 def coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
-    """Map heuristic guesses to the CoordinateSpace enum."""
-    if not guess:
-        return CoordinateSpace.OTHER
-    normalized = guess.strip().upper()
-    if normalized == "MNI":
-        return CoordinateSpace.MNI
-    if normalized in {"TAL", "TALAIRACH"}:
-        return CoordinateSpace.TALAIRACH
-    return CoordinateSpace.OTHER
+    """Map heuristic guesses to the CoordinateSpace enum; OTHER when none is stated."""
+    return CoordinateSpace.from_label(guess) or CoordinateSpace.OTHER
 
 
 def coordinate_from_row(

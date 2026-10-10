@@ -42,7 +42,7 @@ def _norm(name: Optional[str]) -> str:
 
 
 def _space(value: Optional[str]) -> CoordinateSpace:
-    return {"MNI": CoordinateSpace.MNI, "TAL": CoordinateSpace.TALAIRACH}.get(value or "", CoordinateSpace.OTHER)
+    return CoordinateSpace.from_label(value) or CoordinateSpace.OTHER
 
 
 def _number(value: Any) -> Optional[float]:

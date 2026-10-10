@@ -25,6 +25,8 @@ import logging
 import re
 from typing import Any, List, Optional, Sequence, Tuple
 
+from study_schema.spaces import normalize_space
+
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 from ingestion_workflow.models import (
     CoordinatePoint,
@@ -77,12 +79,7 @@ def _measure(value: Any) -> Optional[str]:
 
 
 def _space(value: Any) -> Optional[str]:
-    if value is None:
-        return None
-    text = str(value).strip().upper()
-    if text == "MNI":
-        return "MNI"
-    return "TAL" if text in {"TAL", "TALAIRACH"} else None
+    return normalize_space(value)
 
 
 def _point(row: Sequence[Any], space: Optional[str], measure: Optional[str]):

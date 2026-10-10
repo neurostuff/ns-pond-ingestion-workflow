@@ -20,6 +20,7 @@ from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
+    coordinate_space_from_guess,
     normalize_minus,
 )
 from ingestion_workflow.models import (
@@ -84,19 +85,6 @@ def _sanitize_table_id(candidate: Optional[str], index: int) -> str:
     return sanitized.lower() or fallback
 
 
-def _coordinate_space_from_guess(guess: Optional[str]) -> CoordinateSpace:
-    if not guess:
-        return CoordinateSpace.OTHER
-    normalized = str(guess).strip().upper()
-    if normalized == "MNI":
-        return CoordinateSpace.MNI
-    if normalized in {"TAL", "TALAIRACH"}:
-        return CoordinateSpace.TALAIRACH
-    if normalized == "UNKNOWN":
-        return CoordinateSpace.OTHER
-    return CoordinateSpace.OTHER
-
-
 def _resolve_table_space(table: Any, article: Any) -> CoordinateSpace:
     parts = [
         getattr(table, "caption", None),
@@ -107,7 +95,7 @@ def _resolve_table_space(table: Any, article: Any) -> CoordinateSpace:
     guess = ace_extract.guess_space(metadata_text)
     if guess == "UNKNOWN":
         guess = getattr(article, "space", None)
-    return _coordinate_space_from_guess(guess)
+    return coordinate_space_from_guess(guess)
 
 
 def _coordinate_from_activation(activation: Any, space: CoordinateSpace) -> Optional[Coordinate]:
@@ -501,7 +489,7 @@ def _extract_ace_article(
         html_text,
         extracted_tables,
         tables_dir,
-        _coordinate_space_from_guess(getattr(article, "space", None)),
+        coordinate_space_from_guess(getattr(article, "space", None)),
     ))
 
     has_coordinates = any(table.coordinates for table in extracted_tables)
