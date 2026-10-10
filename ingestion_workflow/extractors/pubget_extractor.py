@@ -384,6 +384,50 @@ class PubgetExtractor(BaseExtractor):
         )
 
 
+def _stylesheet_declares(param: str) -> bool:
+    from importlib.resources import files
+
+    xsl = files("pubget").joinpath("_data", "stylesheets", "text_extraction.xsl").read_text(encoding="utf-8")
+    return f'name="{param}"' in xsl
+
+
+#: Whether the installed pubget keeps superscripts and subscripts in the text
+#: (jdkent/pubget enh/keep-superscripts); before it, both were dropped, and a
+#: superscript citation marker with them.
+KEEPS_SUPERSCRIPTS = _stylesheet_declares("keep-superscripts")
+KEEPS_SUBSCRIPTS = _stylesheet_declares("keep-subscripts")
+
+
+def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> str:
+    """An article's text as extraction keeps it: title, keywords, abstract and body, tables in place.
+
+    Public so a reader of the same XML (citations) builds the very text the
+    extraction stored, and its offsets hold.
+    """
+    stylesheet = load_stylesheet("text_extraction.xsl")
+    transformed = stylesheet(
+        article_tree,
+        **{
+            "preserve-crossrefs": etree.XSLT.strparam("true"),
+            "keep-tables": etree.XSLT.strparam("true"),
+            # a superscript is often a citation marker ("previously.<sup>12</sup>"),
+            # a subscript part of a term ("p<sub>FWE</sub>")
+            "keep-superscripts": etree.XSLT.strparam("true"),
+            "keep-subscripts": etree.XSLT.strparam("true"),
+        },
+    )
+    text_parts: List[str] = []
+    for field_name in ("title", "keywords", "abstract", "body"):
+        elem = transformed.find(field_name)
+        if elem is not None and elem.text:
+            part = elem.text.strip()
+            if field_name == "body" and part:
+                part = _insert_tables(part, article_input_dir)
+            if part:
+                text_parts.append(part)
+    return "\n\n".join(text_parts)
+
+
 def _run_pubget_extraction_task(
     download_result: DownloadResult,
     extraction_root: Path | str,
@@ -421,26 +465,9 @@ def _extract_pubget_article(
     tables_output_dir.mkdir(parents=True, exist_ok=True)
 
     article_tree = etree.parse(str(article_file.file_path))
-    stylesheet = load_stylesheet("text_extraction.xsl")
 
     try:
-        transformed = stylesheet(
-            article_tree,
-            **{
-                "preserve-crossrefs": etree.XSLT.strparam("true"),
-                "keep-tables": etree.XSLT.strparam("true"),
-            },
-        )
-        text_parts: List[str] = []
-        for field_name in ("title", "keywords", "abstract", "body"):
-            elem = transformed.find(field_name)
-            if elem is not None and elem.text:
-                part = elem.text.strip()
-                if field_name == "body" and part:
-                    part = _insert_tables(part, article_input_dir)
-                if part:
-                    text_parts.append(part)
-        full_text = "\n\n".join(text_parts)
+        full_text = article_text(article_tree, article_input_dir)
     except Exception as exc:
         logger.warning(
             "Failed to transform article text for %s: %s",
