@@ -12,8 +12,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.notices import PartialAnswer
+from ingestion_workflow.utils.doi import normalize_doi
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100
+OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
 
@@ -279,6 +282,35 @@ class OpenAlexClient:
                     "year": work.get("publication_year"),
                     "pmid": ids.pmid,
                 }
+        return found
+
+    def get_retractions(self, dois: List[str]) -> Dict[str, bool]:
+        """OpenAlex's `is_retracted` by lower-case DOI, for the DOIs it knows.
+
+        A DOI OpenAlex does not return is absent, not False. A failed batch raises
+        `PartialAnswer`, which carries the earlier batches' results, rather than
+        reading as "not retracted".
+        """
+        found: Dict[str, bool] = {}
+        wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
+        wanted = list(dict.fromkeys(d.lower() for d in wanted))
+        for index in range(0, len(wanted), OPENALEX_RETRACTION_BATCH_SIZE):
+            batch = wanted[index : index + OPENALEX_RETRACTION_BATCH_SIZE]
+            try:
+                payload = self._request_openalex(
+                    {
+                        "filter": f"doi:{'|'.join(batch)}",
+                        "per_page": str(OPENALEX_RETRACTION_BATCH_SIZE),
+                        "mailto": self.email,
+                        "select": "doi,is_retracted",
+                    }
+                )
+            except Exception as exc:  # noqa: BLE001 - carries the earlier batches
+                raise PartialAnswer(str(exc), found) from exc
+            for work in payload.get("results", []) or []:
+                doi = normalize_doi(work.get("doi"))
+                if doi and work.get("is_retracted") is not None:
+                    found[doi.lower()] = bool(work["is_retracted"])
         return found
 
     @staticmethod

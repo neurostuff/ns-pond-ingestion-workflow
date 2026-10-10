@@ -43,7 +43,8 @@ def test_upload_refuses_to_start_without_a_source():
     assert UploadStage(Settings()) is not None
     execute = inspect.getsource(UploadStage.execute)
     assert "resolve_upload_source(self.settings)" in execute
-    assert execute.index("resolve_upload_source") < execute.index("SSHTunnel(self.settings)")
+    assert execute.index("resolve_upload_source") < execute.index("self._withdrawn")
+    assert execute.index("resolve_upload_source") < execute.index("self._execute")
 
 
 def test_upload_takes_the_source_from_settings_not_a_constant():

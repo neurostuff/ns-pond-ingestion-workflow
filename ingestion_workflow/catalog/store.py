@@ -29,6 +29,11 @@ logger = logging.getLogger(__name__)
 #: cannot be mistaken for each other where both appear.
 ID_LENGTH = 12
 
+#: Stages whose last OK answer outlives a later failed attempt. A refresh that
+#: fails (PubMed down) is recorded as an attempt only; what downstream stages
+#: read stays the last answer that worked.
+KEEPS_LAST_OK = ("notices",)
+
 
 def _article_id(seed: str) -> str:
     """A stable, opaque key for an article.
@@ -559,7 +564,9 @@ class Catalog:
                     status=excluded.status, fingerprint=excluded.fingerprint,
                     blob=excluded.blob, summary=excluded.summary,
                     error=excluded.error, updated_at=excluded.updated_at
-                """,
+                WHERE NOT (artifacts.status = 'ok' AND excluded.status <> 'ok'
+                           AND artifacts.stage IN ({keep}))
+                """.format(keep=",".join("'%s'" % s for s in KEEPS_LAST_OK)),
                 rows,
             )
             conn.executemany(

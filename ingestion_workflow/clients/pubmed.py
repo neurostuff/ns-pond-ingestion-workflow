@@ -15,10 +15,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
-_MIN_REQUEST_INTERVAL = 1 / PUBMED_REQUEST_LIMIT
+PUBMED_KEYED_REQUEST_LIMIT = 10  # what NCBI allows a request carrying an API key
 ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
 
@@ -37,6 +38,7 @@ class PubMedClient:
         self.tool = tool
         self._session = requests.Session()
         self._last_request = 0.0
+        self._min_interval = 1 / (PUBMED_KEYED_REQUEST_LIMIT if api_key else PUBMED_REQUEST_LIMIT)
 
     def get_ids(self, id_type: str, identifiers: Identifiers) -> Identifiers:
         """Fetch additional identifiers for the provided collection."""
@@ -230,8 +232,8 @@ class PubMedClient:
     def _rate_limit_sleep(self) -> None:
         now = time.monotonic()
         elapsed = now - self._last_request
-        if elapsed < _MIN_REQUEST_INTERVAL:
-            time.sleep(_MIN_REQUEST_INTERVAL - elapsed)
+        if elapsed < self._min_interval:
+            time.sleep(self._min_interval - elapsed)
         self._last_request = time.monotonic()
 
     def _collect_esearch_ids(
@@ -436,6 +438,26 @@ class PubMedClient:
                 continue
 
         return results
+
+    def get_notices(self, pmids: Sequence[str]) -> Dict[str, Tuple[List[Correction], bool]]:
+        """`(corrections, is_retraction_notice)` for each PMID PubMed returned.
+
+        Always asked of PubMed, never of a cache: a retraction can arrive years
+        after the record was first fetched. A failed batch raises `PartialAnswer`, which
+        carries the earlier batches' results, rather than reading as "no notices".
+        """
+        found: Dict[str, Tuple[List[Correction], bool]] = {}
+        pmids = list(dict.fromkeys(str(p) for p in pmids if p))
+        for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
+            try:
+                response = self._request_efetch(pmids[i : i + IDCONV_BATCH_SIZE])
+            except Exception as exc:  # noqa: BLE001 - carries the earlier batches
+                raise PartialAnswer(str(exc), found) from exc
+            articles = (response.get("PubmedArticleSet") or {}).get("PubmedArticle")
+            for article in self._ensure_list(articles):
+                if isinstance(article, dict) and (pmid := self._extract_pmid(article)):
+                    found[pmid] = corrections_from_pubmed(article)
+        return found
 
     @retry(
         stop=stop_after_attempt(3),

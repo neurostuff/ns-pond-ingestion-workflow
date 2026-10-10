@@ -4,6 +4,7 @@ from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .metadata import MetadataStage
+from .notices import NoticesStage
 from .passages import PassagesStage
 from .prose import ProseStage
 from .references import ReferencesStage
@@ -28,10 +29,13 @@ from .upload import UploadStage
 #: its title and abstract. `resolve` merges prose results with the tables',
 #: and `space` then reads resolve instead of analyses.
 #:
+#: `notices` is PubMed's retraction and erratum links for each paper. Only
+#: `upload` reads it, so looking them up again re-runs nothing upstream.
+#:
 #: `reflist` fetches each paper's Crossref list and `references` reads each
 #: extraction's list and citations, the Crossref list filling its gaps. Nothing
 #: downstream reads them yet, so they run only when asked for by name.
-STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "triage", "analyses",
+STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices", "triage", "analyses",
                "prose", "resolve", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
@@ -44,6 +48,7 @@ STAGE_TYPES = {
     "download": DownloadStage,
     "extract": ExtractStage,
     "metadata": MetadataStage,
+    "notices": NoticesStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
     "passages": PassagesStage,
@@ -77,6 +82,7 @@ __all__ = [
     "DownloadStage",
     "ExtractStage",
     "MetadataStage",
+    "NoticesStage",
     "OPT_IN_STAGES",
     "PROSE_STAGES",
     "PassagesStage",
