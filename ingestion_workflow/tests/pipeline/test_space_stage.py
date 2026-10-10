@@ -34,7 +34,7 @@ def test_space_runs_between_analyses_and_upload():
 
 
 def test_an_unknown_table_takes_the_space_its_article_states():
-    filled, summary = fill_spaces({"t1": _collection("OTHER")}, TEXT)
+    filled, summary = fill_spaces({"t1": _collection(None)}, TEXT)
     collection = AnalysisCollection.from_dict(filled["t1"])
     assert collection.coordinate_space.value == "TAL"
     assert [c.space.value for c in collection.analyses[0].coordinates] == ["TAL"]
@@ -52,22 +52,23 @@ def test_a_known_table_is_left_alone():
 
 
 def test_a_point_that_names_its_own_space_keeps_it():
-    filled, _ = fill_spaces({"t1": _collection("OTHER", point_space="MNI")}, TEXT)
+    filled, _ = fill_spaces({"t1": _collection(None, point_space="MNI")}, TEXT)
     assert filled["t1"]["analyses"][0]["coordinates"][0]["space"] == "MNI"
 
 
 def test_the_tables_own_footer_outranks_the_methods():
     filled, summary = fill_spaces(
-        {"t1": _collection("OTHER", footer="x, y, z: MNI coordinates.")}, TEXT)
+        {"t1": _collection(None, footer="x, y, z: MNI coordinates.")}, TEXT)
     assert filled["t1"]["coordinate_space"] == "MNI"
     assert summary["read"]["t1"]["where"] == "table"
 
 
 def test_an_article_that_never_says_stays_unknown():
-    payload = {"t1": _collection("OTHER")}
+    payload = {"t1": _collection(None)}
     filled, summary = fill_spaces(payload, "## Methods\nWe scanned people.\n")
     assert filled == payload
     assert summary["unknown"] == 1
+    assert summary["read"] == {}
 
 
 @pytest.fixture()
@@ -92,7 +93,7 @@ def test_the_stage_reads_the_text_of_the_extraction_triage_judged(env):
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
                 payload={}, summary={"source": "pubget", "passed": 2}),
         Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
-                payload={"t1": _collection("OTHER"), "t2": _collection("MNI")},
+                payload={"t1": _collection(None), "t2": _collection("MNI")},
                 summary={"tables": 2}),
     ])
     ctx = Context(settings, catalog)
@@ -147,3 +148,18 @@ def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch):
     (outcome,) = list(stage.execute(ctx, plan.pending))
     assert outcome.status is Status.OK
     assert outcome.payload["t1"]["coordinate_space"] == "TAL"
+
+
+def test_an_unread_table_is_written_as_null():
+    payload = {"t1": _collection(None), "t2": _collection("")}
+    filled, _ = fill_spaces(payload, "## Methods\nWe scanned people.\n")
+    for table_id in ("t1", "t2"):
+        assert filled[table_id]["coordinate_space"] is None
+        assert filled[table_id]["analyses"][0]["coordinates"][0]["space"] is None
+
+
+def test_a_stated_other_space_stays_other():
+    payload = {"t1": _collection("OTHER")}
+    filled, summary = fill_spaces(payload, TEXT)
+    assert filled == payload
+    assert summary["read"] == {}

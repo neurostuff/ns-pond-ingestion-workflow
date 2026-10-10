@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.models import CoordinateSpace
+from ingestion_workflow.models.analysis import UNKNOWN_SPACES
 from ingestion_workflow.services.coordinate_space import read_space
 
 from ..plan import StagePlan, Work
@@ -15,14 +15,15 @@ from ..stage import Context
 
 logger = logging.getLogger(__name__)
 
-#: Bump when `services.coordinate_space` reads differently.
-SPACE_VERSION = 1
+#: Bump when `services.coordinate_space` reads differently, or what an
+#: unread table is written as changes (2: null, not `OTHER`).
+SPACE_VERSION = 2
 
-_UNKNOWN = (None, "", CoordinateSpace.OTHER.value)
+_UNKNOWN = UNKNOWN_SPACES
 
 
 class SpaceStage:
-    """Rewrite `OTHER` tables with the space their article states.
+    """Rewrite tables of unknown space with the space their article states.
 
     Its payload is the analyses payload, with only those tables changed, so
     upload and sync read it as they read `analyses`. An article with nothing
@@ -170,11 +171,8 @@ def fill_spaces(payload: Dict[str, dict], text: Optional[str]):
             caption=first.get("table_caption") or "",
             footer=first.get("table_footer") or "",
         )
-        if reading is None:
-            unknown += 1
-            filled[table_id] = collection
-            continue
-        space = reading.space.value
+        space = reading.space.value if reading is not None else None
+        unknown += reading is None
         filled[table_id] = {
             **collection,
             "coordinate_space": space,
@@ -189,6 +187,8 @@ def fill_spaces(payload: Dict[str, dict], text: Optional[str]):
                 for analysis in collection["analyses"]
             ],
         }
+        if reading is None:
+            continue
         read[table_id] = {
             "space": space,
             "where": reading.where,

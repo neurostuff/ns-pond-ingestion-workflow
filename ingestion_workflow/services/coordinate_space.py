@@ -1,6 +1,7 @@
 """Read a table's coordinate space from the article's prose.
 
-For the tables the extractor left `OTHER`. The table's own caption and footer
+For the tables whose space nothing states (null, or `OTHER` in payloads written
+before null existed). The table's own caption and footer
 are read first, then the Methods, then the Results -- the sections that say
 what this paper did. The introduction and discussion describe other studies,
 the front matter carries affiliations ("Montreal Neurological Institute"), and

@@ -8,12 +8,12 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
-from ingestion_workflow.models.analysis import CoordinateSpace
+from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 
 from ..plan import StagePlan, Work
 from ..stage import Context
 
-RESOLVE_VERSION = 3
+RESOLVE_VERSION = 4
 
 #: The roles uploaded: this study's results, and the regions it defined to
 #: get them -- an ROI, a seed, a stimulation target. Another study's peaks, a
@@ -41,8 +41,12 @@ def _norm(name: Optional[str]) -> str:
     return re.sub(r"\s+", " ", (name or "").strip().lower())
 
 
-def _space(value: Optional[str]) -> CoordinateSpace:
-    return {"MNI": CoordinateSpace.MNI, "TAL": CoordinateSpace.TALAIRACH}.get(value or "", CoordinateSpace.OTHER)
+def _space(value: Optional[str]) -> Optional[CoordinateSpace]:
+    """The prose's MNI/TAL/null."""
+    # A deterministic reader returns only MNI, TAL or null, so a stated space
+    # it can't match is null.
+    space = CoordinateSpace.from_label(value)
+    return space if space in (CoordinateSpace.MNI, CoordinateSpace.TALAIRACH) else None
 
 
 def _number(value: Any) -> Optional[float]:
@@ -70,7 +74,9 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         for c in a.get("coordinates", [])
     ]
     table_spaces = collections.Counter(
-        (blob or {}).get("coordinate_space") for blob in (tables or {}).values() if (blob or {}).get("analyses"))
+        (blob or {}).get("coordinate_space") for blob in (tables or {}).values()
+        if (blob or {}).get("analyses")
+        and (blob or {}).get("coordinate_space") not in UNKNOWN_SPACES)
 
     groups: Dict[Tuple[str, str], Analysis] = {}
     seen = set()
@@ -80,7 +86,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     article_space = _space((prose or {}).get("space"))
     for index, passage in enumerate((prose or {}).get("passages", [])):
         space = _space(passage.get("space"))
-        if space is CoordinateSpace.OTHER:
+        if space is None:
             space = article_space  # the space the article's Methods state
         for a in passage.get("analyses", []):
             name = (a.get("name") or "").strip() or UNNAMED
@@ -114,19 +120,20 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                     cluster_size=int(size) if isinstance(size, (int, float)) else None,
                     cluster_measure=a.get("measure") if size is not None else None,
                 ))
-                spaces[space] += 1
+                if space is not None:
+                    spaces[space] += 1
 
     out = dict(tables or {})
     if groups:
         stated = _space((prose or {}).get("space"))
         if spaces:
             space = spaces.most_common(1)[0][0]
-        elif stated is not CoordinateSpace.OTHER:
+        elif stated is not None:
             space = stated
         elif table_spaces:
             space = CoordinateSpace(table_spaces.most_common(1)[0][0])
         else:
-            space = CoordinateSpace.OTHER
+            space = None
         out["prose"] = AnalysisCollection(slug=slug, identifier=identifier, analyses=list(groups.values()),
                                           coordinate_space=space).to_dict()
     summary = {

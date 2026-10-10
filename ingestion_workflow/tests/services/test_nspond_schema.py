@@ -200,3 +200,20 @@ def test_csv_headers_are_the_ones_given():
     out = encode_csv([{"b": 2, "a": 1}], ["a", "b"]).decode()
     assert out.splitlines()[0] == "a,b"
     assert out.splitlines()[1] == "1,2"
+
+
+def test_an_unstated_space_is_null_in_stage1(tmp_path):
+    """Never MNI: a point nothing places stays null all the way to pondie."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(
+        slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    prose = AnalysisCollection(slug="s", identifier=identifier, analyses=[
+        Analysis(name="faces > houses", table_id="prose",
+                 metadata={"source": "prose", "role": "result"},
+                 coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
+    root = tmp_path / "pond"
+    bundle = ArticleExtractionBundle(content, ArticleMetadata(title="T"))
+    nspond.write_article(root, BASE, bundle, {"prose": prose}, [])
+    analysis = read_record(root, BASE).stage1["analyses"][0]
+    assert analysis["coordinate_space"] is None
+    assert analysis["points"][0]["space"] is None
