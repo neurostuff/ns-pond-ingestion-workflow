@@ -54,22 +54,35 @@ def _near(a: Sequence[float], b: Sequence[float]) -> bool:
     return all(abs(u - v) <= SAME_PEAK_MM for u, v in zip(a, b))
 
 
+def _agrees(kind, value, table_kind, table_value) -> bool:
+    """Whether a prose statistic is the table row's: the same kind and the
+    same value to rounding, either being absent when it is not stated."""
+    if kind and table_kind and str(kind).strip().upper() != str(table_kind).strip().upper():
+        return False
+    table_value = _number(table_value)
+    return value is None or table_value is None or abs(abs(value) - abs(table_value)) <= 0.011
+
+
 def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             identifier=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The table collections, plus one collection of what the prose adds.
 
     A prose analysis is a passage's analysis, one role per analysis; each
     unnamed one is its own, in the order the passage gives them. The same
-    name in another passage is the same analysis when the two share a peak,
-    and another analysis when they share none. A point at a table peak
-    restates that table, whatever either is named: the analysis lists it in
+    name in another passage is the same analysis when the two share a peak
+    or sit under the same section heading, and another analysis otherwise.
+    A point at a table peak restates that table, whatever either is named,
+    when its statistic is the table row's (the same kind and the same value
+    to rounding, or either not stated); a different statistic at the peak,
+    such as a correlation with behaviour, is its own analysis. The analysis lists it in
     `restated_points` instead of its coordinates. An analysis whose every
     point restates a table keeps them and is marked `restatement`, so it is
     recorded but not uploaded as a second result. A coordinate the prose
     reports under two contrasts stays under both.
     """
     table_points = [
-        ((c["x"], c["y"], c["z"]), key, a.get("name") or "")
+        ((c["x"], c["y"], c["z"]), key, a.get("name") or "",
+         c.get("statistic_type"), c.get("statistic_value"))
         for key, blob in (tables or {}).items()
         for a in (blob or {}).get("analyses", [])
         for c in a.get("coordinates", [])
@@ -105,6 +118,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             for role in roles:
                 found.setdefault((index, identity, role), {
                     "name": name, "role": role, "named": named, "passages": [index],
+                    "heading": (passage.get("heading") or "").strip(),
                     "ordinal": ordinal, "unwritten": a.get("unwritten", 0), "points": []})
             for p in points:
                 xyz = (float(p["x"]), float(p["y"]), float(p["z"]))
@@ -116,7 +130,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     for (_, identity, role), entry in found.items():
         if entry["named"]:
             same = next((g for g in by_name[(identity, role)]
-                         if any(_near(p[0], q[0]) for p in entry["points"] for q in g["points"])),
+                         if (entry["heading"] and entry["heading"] == g["heading"])
+                         or any(_near(p[0], q[0]) for p in entry["points"] for q in g["points"])),
                         None)
             if same is not None:
                 same["passages"].append(entry["passages"][0])
@@ -151,8 +166,9 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                 cluster_measure=measure if size is not None else None,
             )
             restates = []
-            for t, table, n in table_points:
-                if _near(xyz, t) and {"table": table, "analysis": n} not in restates:
+            for t, table, n, kind, value in table_points:
+                if (_near(xyz, t) and _agrees(p.get("statistic"), _number(p.get("value")), kind, value)
+                        and {"table": table, "analysis": n} not in restates):
                     restates.append({"table": table, "analysis": n})
             (restating if restates else new).append((coordinate, restates))
         if restating:

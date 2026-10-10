@@ -530,3 +530,67 @@ def test_a_new_clean_rereads_the_stored_answers_not_the_model(env, monkeypatch):
     assert again.fingerprint != first.fingerprint
     assert again.summary["read_fingerprint"] == first.summary["read_fingerprint"]
     assert again.payload["passages"] == first.payload["passages"]
+
+
+def _stat_table(kind, value):
+    blob = _table([(-22, -4, -18)])
+    blob["analyses"][0]["coordinates"][0].update(statistic_type=kind, statistic_value=value)
+    return {"t1": blob}
+
+
+def _stat_prose(kind, value):
+    passage = _passage(("dorsal DMN cluster", [(-22, -4, -18, "result")]))
+    passage["analyses"][0]["points"][0].update(statistic=kind, value=value)
+    return {"passages": [passage]}
+
+
+def test_a_correlation_read_at_a_table_t_peak_is_its_own_analysis():
+    from ingestion_workflow.services.coordinate_flags import leaves_with_its_role
+
+    out, summary = resolve(_stat_table("T", 2.375), _stat_prose("R", -0.342), "slug")
+    (analysis,) = out["prose"]["analyses"]
+    assert "restatement" not in analysis["metadata"] and "restated_points" not in analysis["metadata"]
+    assert leaves_with_its_role(analysis["metadata"]) and len(analysis["coordinates"]) == 1
+    assert summary["restated"] == 0 and summary["prose_points"] == 1
+
+
+def test_a_value_that_differs_from_the_table_row_is_its_own_analysis():
+    out, summary = resolve(_stat_table("T", 2.375), _stat_prose("T", 5.1), "slug")
+    assert "restatement" not in out["prose"]["analyses"][0]["metadata"] and summary["restated"] == 0
+
+
+@pytest.mark.parametrize("kind, value", [("T", 2.38), ("t", -2.375), ("T", None), (None, 2.38)])
+def test_the_same_statistic_at_a_table_peak_is_still_a_restatement(kind, value):
+    out, summary = resolve(_stat_table("T", 2.375), _stat_prose(kind, value), "slug")
+    assert out["prose"]["analyses"][0]["metadata"]["restatement"] is True
+    assert summary["restated"] == 1 and summary["prose_points"] == 0
+
+
+def test_a_statistic_absent_from_the_table_row_is_a_restatement():
+    out, _ = resolve(_stat_table(None, None), _stat_prose("R", -0.342), "slug")
+    assert out["prose"]["analyses"][0]["metadata"]["restatement"] is True
+
+
+def _headed(heading, *analyses):
+    return {**_passage(*analyses), "heading": heading}
+
+
+def test_one_contrast_in_two_paragraphs_of_a_section_is_one_analysis():
+    prose = {"passages": [
+        _headed("Imaging data", ("single > two-tone", [(-38, 22, -6, "result")])),
+        _headed("Imaging data", ("single > two-tone", [(42, 18, -4, "result")])),
+    ]}
+    out, summary = resolve({}, prose, "slug")
+    (analysis,) = out["prose"]["analyses"]
+    assert analysis["metadata"]["passages"] == [0, 1] and len(analysis["coordinates"]) == 2
+    assert summary["prose_analyses"] == 1
+
+
+def test_the_same_name_under_two_section_headings_stays_two():
+    prose = {"passages": [
+        _headed("Experiment 1", ("faces > houses", [(-38, 22, -6, "result")])),
+        _headed("Experiment 2", ("faces > houses", [(42, 18, -4, "result")])),
+        _headed(None, ("faces > houses", [(4, 52, 18, "result")])),
+    ]}
+    out, summary = resolve({}, prose, "slug")
+    assert [a["metadata"]["passages"] for a in out["prose"]["analyses"]] == [[0], [1], [2]]
