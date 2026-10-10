@@ -317,7 +317,7 @@ def test_a_figure_analysis_proposes_no_role():
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, passage))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, []
     )
