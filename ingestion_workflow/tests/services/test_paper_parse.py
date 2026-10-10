@@ -763,6 +763,6 @@ def test_a_null_coordinate_space_leaves_the_parse_space_unset():
     assert paper_parse._space_value(collection.coordinate_space) is None
     bare = paper_parse._point(Coordinate(x=1, y=2, z=3), collection, None)
     named = paper_parse._point(
-        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TAL), collection, None
+        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TALAIRACH), collection, None
     )
     assert (bare.space, named.space) == (None, "TAL")
