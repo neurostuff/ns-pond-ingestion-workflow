@@ -31,7 +31,7 @@ from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME
 from ingestion_workflow.services.coordinate_space import sectionize
-from ingestion_workflow.services.create_analyses import NEGATIVE_SUFFIX, table_reading
+from ingestion_workflow.services.create_analyses import SPLIT_SUFFIXES, table_reading
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 
@@ -893,24 +893,24 @@ def _analysis(
         statistic=kinds.pop() if len(kinds) == 1 else None,
         points=points,
     )
-    return built, name.endswith(NEGATIVE_SUFFIX)
+    return built, name.endswith(SPLIT_SUFFIXES)
 
 
 def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) -> None:
     """Declare the analyses stage's sign split as `split{}` on both halves.
 
-    The stage names the inverse half (the negative values) `<name> (negative)`
+    The stage names the inverse half (the negative values) `<name> (inverse)` (older payloads: `(negative)`)
     and emits it right after the original; that adjacency and the name are
     the only record of the split, so this is where it becomes a field, and
     only then is the suffix dropped from the name. The inverse half's
-    `original_analysis` is the original's key. A `(negative)` name with no
+    `original_analysis` is the original's key. An `(inverse)` or `(negative)` name with no
     such original keeps it.
     """
     for i, (half, negative) in enumerate(analyses):
         if half is None or not negative or i == 0:
             continue
         original, original_negative = analyses[i - 1]
-        name = half.name[: -len(NEGATIVE_SUFFIX)]
+        name = half.name[: -len(next(x for x in SPLIT_SUFFIXES if half.name.endswith(x)))]
         if original is None or original_negative or original.name != name:
             continue
         rule = "sign_of_directional_statistic"
