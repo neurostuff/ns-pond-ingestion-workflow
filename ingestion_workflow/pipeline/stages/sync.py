@@ -17,7 +17,7 @@ from ingestion_workflow.models import (
     ExtractedContent,
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
-from ingestion_workflow.services import nspond
+from ingestion_workflow.services import nspond, paper_parse
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
@@ -27,7 +27,8 @@ from .extract import current_extractions
 logger = logging.getLogger(__name__)
 
 #: 2: stage1 points carry `sign` and `is_subpeak`.
-SYNC_VERSION = 2
+#: 3: parse/parsed_paper.json and parse/coordinate_parse.json beside stage1.
+SYNC_VERSION = 3
 
 
 class SyncStage:
@@ -75,6 +76,10 @@ class SyncStage:
         triaged = ctx.catalog.artifacts(ids, "triage")
         # What the prose read, for an article extract could not read.
         passages = ctx.catalog.artifacts(ids, "passages")
+        # For the coordinate parse: table readings, prose passages, restatements.
+        read = ctx.catalog.artifacts(ids, "analyses")
+        prose = ctx.catalog.artifacts(ids, "prose")
+        resolved = ctx.catalog.artifacts(ids, "resolve")
 
         excluded = ctx.catalog.exclusions(ids)
         for work in works:
@@ -108,6 +113,20 @@ class SyncStage:
                     fingerprint=work.fingerprint,
                 )
                 continue
+            inputs = _parse_inputs(
+                ctx, work, base_study_id, excluded.get(work.article_id, {}),
+                {stage: found.get(work.article_id, {}) for stage, found in (
+                    ("extract", extractions), ("metadata", metadata), ("space", analyses),
+                    ("triage", triaged), ("analyses", read), ("prose", prose),
+                    ("resolve", resolved), ("passages", passages))},
+                bundle.article_data.source.value,
+            )
+            try:
+                parse = paper_parse.write(target, bundle, per_table, inputs,
+                                          overwrite=self.settings.sync_overwrite)
+            except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is reported
+                logger.warning("parse files failed for %s: %s", work.article_id, exc)
+                parse = {"parse": f"{type(exc).__name__}: {exc}"}
             self._synced.append((base_study_id, bundle))
             yield Outcome(
                 article_id=work.article_id,
@@ -115,7 +134,7 @@ class SyncStage:
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                summary={"base_study_id": base_study_id, "path": str(target)},
+                summary={"base_study_id": base_study_id, "path": str(target), **parse},
             )
 
     def _retract(self, work: Work, base_study_id: str) -> Outcome:
@@ -197,6 +216,38 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+def _parse_inputs(
+    ctx: Context, work: Work, base_study_id, excluded, found, source
+) -> paper_parse.ParseInputs:
+    """What the parse files need from the catalog beyond the bundle."""
+    def ok(stage, key=""):
+        artifact = found[stage].get(key)
+        return artifact if artifact is not None and artifact.status is Status.OK else None
+
+    def payload(stage, key=""):
+        artifact = ok(stage, key)
+        return ctx.payload(artifact) if artifact is not None else None
+
+    analyses = ok("analyses")
+    summary = analyses.summary if analyses is not None else {}
+    passages = payload("passages")
+    resolved = ok("resolve")
+    picked = {"extract": ok("extract", source), "metadata": ok("metadata"), "space": ok("space"),
+              "triage": ok("triage")}
+    return paper_parse.ParseInputs(
+        article_id=work.article_id,
+        base_study_id=base_study_id,
+        triage=payload("triage"),
+        excluded=excluded or {},
+        readings=summary.get("readings"),
+        unread=summary.get("unread"),
+        prose=payload("prose"),
+        passages_kept=len(passages.get("passages") or []) if passages else None,
+        restated=(resolved.summary or {}).get("restated") if resolved is not None else None,
+        fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
+    )
 
 
 def _from_passages(ctx: Context, work: Work, passages: Artifact | None) -> Tuple[ExtractedContent, str]:

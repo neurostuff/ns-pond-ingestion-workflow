@@ -3,7 +3,7 @@ name = "ingestion-workflow"
 version = "0.1.0"
 description = "Modular ingestion workflow for Neurostore data pipeline"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
   { name = "Ingestion Workflow Team" }
@@ -42,6 +42,10 @@ dependencies = [
   "pypdfium2>=4",
   "shortuuid>=1.0",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
+  # The paper-parse contract (ParsedPaper, CoordinateParse) and its key rule.
+  # Pinned to neurostuff/study_schema#21 (no per-point sign); repin to main once
+  # #20 and #21 merge.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@0c78d9f2eaa19fb091a940319eb10348804b775e",
 ]
 
 [project.optional-dependencies]
