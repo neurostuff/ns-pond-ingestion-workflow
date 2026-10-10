@@ -15,14 +15,18 @@ from ..stage import Context
 
 logger = logging.getLogger(__name__)
 
-#: Bump when `services.coordinate_space` reads differently.
-SPACE_VERSION = 1
+#: Bump when `services.coordinate_space` reads differently, or what an
+#: unread table is written as changes (2: null, not `OTHER`).
+SPACE_VERSION = 2
 
+#: A space nothing states. `OTHER` is how payloads written before null
+#: existed said it; no writer produces it for that now, so it is read as
+#: unknown and written back as null.
 _UNKNOWN = (None, "", CoordinateSpace.OTHER.value)
 
 
 class SpaceStage:
-    """Rewrite `OTHER` tables with the space their article states.
+    """Rewrite tables of unknown space with the space their article states.
 
     Its payload is the analyses payload, with only those tables changed, so
     upload and sync read it as they read `analyses`. An article with nothing
@@ -170,11 +174,8 @@ def fill_spaces(payload: Dict[str, dict], text: Optional[str]):
             caption=first.get("table_caption") or "",
             footer=first.get("table_footer") or "",
         )
-        if reading is None:
-            unknown += 1
-            filled[table_id] = collection
-            continue
-        space = reading.space.value
+        space = reading.space.value if reading is not None else None
+        unknown += reading is None
         filled[table_id] = {
             **collection,
             "coordinate_space": space,
@@ -189,6 +190,8 @@ def fill_spaces(payload: Dict[str, dict], text: Optional[str]):
                 for analysis in collection["analyses"]
             ],
         }
+        if reading is None:
+            continue
         read[table_id] = {
             "space": space,
             "where": reading.where,

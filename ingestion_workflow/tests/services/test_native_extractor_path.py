@@ -345,14 +345,15 @@ def test_the_extractions_OTHER_does_not_beat_a_model_that_knew():
     assert got is CoordinateSpace.TALAIRACH
 
 
-def test_neither_knowing_stays_OTHER():
-    """Most articles never state a space anywhere the extractor can see."""
+def test_neither_knowing_is_null():
+    """Most articles never state a space anywhere the extractor can see.
+    Not stated is null: never MNI, and not `OTHER`, which is a stated space."""
     from ingestion_workflow.models import CoordinateSpace
 
     got, _ = _collection(CoordinateSpace.OTHER, None)
-    assert got is CoordinateSpace.OTHER
+    assert got is None
     got, _ = _collection(None, None)
-    assert got is CoordinateSpace.OTHER
+    assert got is None
 
 
 def test_changing_what_reaches_the_model_makes_the_corpus_stale():
@@ -563,3 +564,11 @@ def test_without_a_token_count_the_estimate_stands():
     client.default_model = "nu"
     client._prompt_tokens = lambda request: None
     assert client.fit_to_window("x" * 9000) == client.native_request("x" * 9000)
+
+
+def test_a_point_with_no_label_in_an_unstated_table_is_null():
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    assert svc._coerce_space(None, None) is None
+    assert svc._coerce_space("", None) is None

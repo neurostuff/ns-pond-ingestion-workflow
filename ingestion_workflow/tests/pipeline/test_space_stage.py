@@ -64,10 +64,11 @@ def test_the_tables_own_footer_outranks_the_methods():
 
 
 def test_an_article_that_never_says_stays_unknown():
-    payload = {"t1": _collection("OTHER")}
+    payload = {"t1": _collection(None)}
     filled, summary = fill_spaces(payload, "## Methods\nWe scanned people.\n")
     assert filled == payload
     assert summary["unknown"] == 1
+    assert summary["read"] == {}
 
 
 @pytest.fixture()
@@ -147,3 +148,12 @@ def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch):
     (outcome,) = list(stage.execute(ctx, plan.pending))
     assert outcome.status is Status.OK
     assert outcome.payload["t1"]["coordinate_space"] == "TAL"
+
+
+def test_an_unread_table_is_written_as_null_not_other():
+    """`OTHER` is what tables written before null existed said for "not stated"."""
+    payload = {"t1": _collection("OTHER"), "t2": _collection(None)}
+    filled, _ = fill_spaces(payload, "## Methods\nWe scanned people.\n")
+    for table_id in ("t1", "t2"):
+        assert filled[table_id]["coordinate_space"] is None
+        assert filled[table_id]["analyses"][0]["coordinates"][0]["space"] is None

@@ -10,7 +10,7 @@ from __future__ import annotations
 import csv
 import shutil
 from pathlib import Path
-from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
+from typing import Dict, List, Mapping, MutableMapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
@@ -151,7 +151,7 @@ def _write_metadata(
     overwrite: bool,
 ) -> None:
     collection = next(iter(per_table_analyses.values()), None)
-    coordinate_space = collection.coordinate_space.value if collection else None
+    coordinate_space = _space_value(collection.coordinate_space) if collection else None
     metadata = bundle.article_metadata
     authors = "; ".join(author.name for author in metadata.authors) if metadata.authors else None
     text_path = bundle.article_data.full_text_path
@@ -190,7 +190,7 @@ def _write_analyses_jsonl(
         {
             **analysis.to_dict(),
             "table_id": analysis.table_id or table_id,
-            "coordinate_space": collection.coordinate_space.value,
+            "coordinate_space": _space_value(collection.coordinate_space),
         }
         for table_id, collection in per_table_analyses.items()
         for analysis in _kept(collection)
@@ -275,7 +275,7 @@ def _write_stage1(
                     "table_number": analysis.table_number,
                     "table_caption": analysis.table_caption,
                     "table_footer": analysis.table_footer,
-                    "coordinate_space": collection.coordinate_space.value,
+                    "coordinate_space": _space_value(collection.coordinate_space),
                     "points": [
                         _stage1_point(coordinate, collection)
                         for coordinate in analysis.coordinates
@@ -284,6 +284,10 @@ def _write_stage1(
             )
 
     path.write_bytes(encode_stage1_json({"analyses": analyses}))
+
+
+def _space_value(space) -> Optional[str]:
+    return space.value if space else None
 
 
 def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, object]:
