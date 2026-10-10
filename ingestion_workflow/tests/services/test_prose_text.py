@@ -73,3 +73,13 @@ def test_the_article_file_not_its_tables(tmp_path):
     article.write_text("<article/>")
     got = main_file([{"file_path": str(table), "file_type": "csv"}, {"file_path": str(article), "file_type": "xml"}])
     assert got["file_path"] == str(article)
+
+
+def test_legend_spans_finds_a_legend_written_with_other_spaces_and_minus_signs():
+    from ingestion_workflow.services.prose_text import legend_spans
+
+    text = "## Results\nBody.\n\nFigure 1. Insula peak at\n(−34,  16, -6).\n## Discussion\n"
+    legends = "Figure 1. Insula peak at (-34, 16, −6).\n\nFigure 2. A legend the text left out."
+    (span,) = legend_spans(text, legends)
+    assert text[span[0]:span[1]] == "Figure 1. Insula peak at\n(−34,  16, -6)."
+    assert legend_spans(text, "") == []

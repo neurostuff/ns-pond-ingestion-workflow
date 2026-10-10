@@ -19,7 +19,7 @@ from typing import Iterable, List, Optional
 
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.services.coordinate_space import sectionize
-from ingestion_workflow.services.prose_passages import PATTERNS, find
+from ingestion_workflow.services.prose_passages import MINUS, PATTERNS, find
 
 #: Never read: tables are the table path's, the rest is not the paper's prose.
 _SKIP_XML = {"table-wrap", "table", "table-wrap-foot", "tables", "ref-list", "bibliography",
@@ -151,6 +151,24 @@ def kept_spans(text: str) -> tuple[list, str]:
     the whole text when neither section is recognised."""
     spans = [(a, b) for a, b, label in sectionize(text) if label in KEPT_SECTIONS]
     return (spans, "methods+results") if spans else ([(0, len(text))], "full text")
+
+
+_DASHES = str.maketrans({c: "-" for c in MINUS})
+
+
+def legend_spans(text: str, legends: str) -> list:
+    """`(start, end)` in `text` of each of a download's legends (`read_download`'s
+    second value) that `text` holds, white space and minus signs aside. A legend
+    the text left out, or wrote differently, is not found."""
+    keep = [i for i, c in enumerate(text) if not c.isspace()]
+    squashed = "".join(text[i] for i in keep).translate(_DASHES)
+    out = []
+    for legend in legends.split("\n\n"):
+        needle = "".join(legend.split()).translate(_DASHES)
+        at = squashed.find(needle) if len(needle) >= 20 else -1
+        if at >= 0:
+            out.append((keep[at], keep[at + len(needle) - 1] + 1))
+    return out
 
 
 def main_file(files: Iterable[dict]) -> Optional[dict]:
