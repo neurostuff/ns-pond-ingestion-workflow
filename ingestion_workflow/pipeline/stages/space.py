@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.models import CoordinateSpace
 from ingestion_workflow.services.coordinate_space import read_space
 
 from ..plan import StagePlan, Work
@@ -19,10 +18,9 @@ logger = logging.getLogger(__name__)
 #: unread table is written as changes (2: null, not `OTHER`).
 SPACE_VERSION = 2
 
-#: A space nothing states. `OTHER` is how payloads written before null
-#: existed said it; no writer produces it for that now, so it is read as
-#: unknown and written back as null.
-_UNKNOWN = (None, "", CoordinateSpace.OTHER.value)
+#: A space nothing states. `OTHER` is a stated space (neither MNI nor TAL)
+#: and is kept.
+_UNKNOWN = (None, "")
 
 
 class SpaceStage:
