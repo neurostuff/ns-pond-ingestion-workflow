@@ -76,33 +76,43 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     """The model's answer, kept to what the passage says.
 
     A repeated analysis is a loop, not a second result. A point not written
-    in the passage came from the surrounding context or nowhere.
+    in the passage came from the surrounding context or nowhere; each analysis
+    counts its own as `unwritten`. A named analysis the model gave no point
+    is kept (a contrast the passage reports nothing for). One whose every
+    point was unwritten, and an unnamed one left empty, are listed in
+    `omitted` with the count and the reason.
     """
     nums = numbers_in(passage_text)
-    seen, analyses = set(), []
+    seen, analyses, omitted = set(), [], []
     for a in (answer or {}).get("analyses") or []:
         key = (a.get("name"), json.dumps(a.get("points"), sort_keys=True))
         if key in seen:
             continue
         seen.add(key)
-        points = []
+        points, unwritten = [], 0
         for p in a.get("points") or []:
             try:
                 xyz = [float(p[k]) for k in "xyz"]
             except (KeyError, TypeError, ValueError):
+                unwritten += 1
                 continue
             if not written(xyz, nums):
+                unwritten += 1
                 continue
             role = p.get("role") if p.get("role") in ROLES else "other"
             points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                            "statistic": normalize_statistic_kind(p.get("statistic")),
                            "value": p.get("value"), "cluster_size": p.get("cluster_size"),
                            "role": role})
-        if points:
-            analyses.append({"name": (a.get("name") or "").strip() or None,
-                             "measure": a.get("measure"), "points": points})
+        name = (a.get("name") or "").strip() or None
+        if points or (name and not unwritten):
+            analyses.append({"name": name, "measure": a.get("measure"), "points": points,
+                             "unwritten": unwritten})
+        else:
+            reason = "points not in passage" if unwritten else "no name and no points"
+            omitted.append({"name": name, "unwritten": unwritten, "reason": reason})
     space = (answer or {}).get("space")
-    return {"space": normalize_space(space), "analyses": analyses}
+    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
 
 class ProseCoordinateClient(GenericLLMClient):
@@ -136,9 +146,13 @@ class ProseCoordinateClient(GenericLLMClient):
             },
         }
 
-    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+    def read(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        """The model's answer as it gave it."""
         response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
-        return clean_answer(json.loads(response.choices[0].message.content or "{}"), passage.text)
+        return json.loads(response.choices[0].message.content or "{}")
+
+    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        return clean_answer(self.read(passage, title=title, abstract=abstract), passage.text)
 
 
 __all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body", "written"]

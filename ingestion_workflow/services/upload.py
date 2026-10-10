@@ -23,7 +23,7 @@ from ingestion_workflow.models import (
     UploadWorkItem,
 )
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.services.coordinate_flags import is_placeholder
+from ingestion_workflow.services.coordinate_flags import is_placeholder, leaves_with_its_role
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.study_level import level_for
@@ -613,8 +613,11 @@ class UploadService:
         prepared_analyses: List[PreparedAnalysis] = []
         for collection in per_table.values():
             # A stored no-coordinates placeholder is a table reading, not an
-            # analysis; `is_placeholder` says why.
-            kept = [a for a in collection.analyses if not is_placeholder(a.name, a.coordinates)]
+            # analysis; `is_placeholder` says why. Neurostore takes no role
+            # from these rows, so a prose analysis of another role stays out.
+            kept = [a for a in collection.analyses
+                    if not is_placeholder(a.name, a.coordinates)
+                    and leaves_with_its_role(a.metadata)]
             if not kept:
                 logger.warning(
                     "No analyses found in collection for %s; skipping collection.",

@@ -4,22 +4,18 @@ from __future__ import annotations
 
 import collections
 import re
+import unicodedata
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
+from ingestion_workflow.services.coordinate_flags import UPLOADED_PROSE_ROLES
 
 from ..plan import StagePlan, Work
 from ..stage import Context
 
-RESOLVE_VERSION = 4
-
-#: The roles uploaded: this study's results, and the regions it defined to
-#: get them -- an ROI, a seed, a stimulation target. Another study's peaks, a
-#: display location and anything else are counted and dropped. Each prose
-#: analysis holds one role, recorded in its metadata.
-KEPT_ROLES = ("result", "roi", "seed", "target")
+RESOLVE_VERSION = 5
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -27,18 +23,15 @@ SAME_PEAK_MM = 1.0
 
 UNNAMED = "unnamed prose analysis"
 
-#: Analyses that are computed at a peak rather than finding it. Of 277
-#: hand-labelled prose results sitting on one of their article's table peaks,
-#: 85 were a different analysis there -- mostly a correlation, a conjunction
-#: or a follow-up -- and this keeps 46 of them while re-keeping 20 of the 192
-#: that restate the table (79% agreement with a judge reading both).
-COMPUTED_AT_PEAK = re.compile(
-    r"correlat|regress|conjunction|interaction|\bx\b|\u00d7|\bppi\b|connectivity|coupling|parametric|modulat|covar",
-    re.I)
-
 
 def _norm(name: Optional[str]) -> str:
-    return re.sub(r"\s+", " ", (name or "").strip().lower())
+    """The name compared: NFKC, casefolded, every dash a '-', whitespace collapsed.
+
+    study_schema's `keys.normalize_name`, which the pinned study_schema does not have yet.
+    """
+    text = unicodedata.normalize("NFKC", name or "").casefold()
+    text = re.sub(r"[\u2010-\u2015\u2212\ufe58\ufe63\uff0d]", "-", text)
+    return " ".join(re.sub(r"[\u200b-\u200d\u2060\ufeff]", "", text).split())
 
 
 def _space(value: Optional[str]) -> Optional[CoordinateSpace]:
@@ -56,20 +49,41 @@ def _number(value: Any) -> Optional[float]:
         return None
 
 
+def _near(a: Sequence[float], b: Sequence[float]) -> bool:
+    """Whether two points are one peak (`SAME_PEAK_MM`)."""
+    return all(abs(u - v) <= SAME_PEAK_MM for u, v in zip(a, b))
+
+
+def _agrees(kind, value, table_kind, table_value) -> bool:
+    """Whether a prose statistic is the table row's: the same kind and the
+    same value to rounding, either being absent when it is not stated."""
+    if kind and table_kind and str(kind).strip().upper() != str(table_kind).strip().upper():
+        return False
+    table_value = _number(table_value)
+    return value is None or table_value is None or abs(abs(value) - abs(table_value)) <= 0.011
+
+
 def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             identifier=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The table collections, plus one collection of what the prose adds.
 
-    Points of the `KEPT_ROLES` are kept, in analyses of one role each. A point
-    already in one of the article's tables is the text restating it -- unless
-    it is a result of an analysis computed at that peak (a correlation, a
-    conjunction) that no table analysis there is. An ROI or seed at a table
-    peak is the paper reusing its own result, which the table already holds.
-    A coordinate the prose reports under two contrasts stays under both.
+    A prose analysis is a passage's analysis, one role per analysis; each
+    unnamed one is its own, in the order the passage gives them. The same
+    name in another passage is the same analysis when the two share a peak
+    or sit under the same section heading, and another analysis otherwise.
+    A point at a table peak restates that table, whatever either is named,
+    when its statistic is the table row's (the same kind and the same value
+    to rounding, or either not stated); a different statistic at the peak,
+    such as a correlation with behaviour, is its own analysis. The analysis lists it in
+    `restated_points` instead of its coordinates. An analysis whose every
+    point restates a table keeps them and is marked `restatement`, so it is
+    recorded but not uploaded as a second result. A coordinate the prose
+    reports under two contrasts stays under both.
     """
     table_points = [
-        ((c["x"], c["y"], c["z"]), a.get("name") or "")
-        for blob in (tables or {}).values()
+        ((c["x"], c["y"], c["z"]), key, a.get("name") or "",
+         c.get("statistic_type"), c.get("statistic_value"))
+        for key, blob in (tables or {}).items()
         for a in (blob or {}).get("analyses", [])
         for c in a.get("coordinates", [])
     ]
@@ -78,53 +92,104 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         if (blob or {}).get("analyses")
         and (blob or {}).get("coordinate_space") not in UNKNOWN_SPACES)
 
-    groups: Dict[Tuple[str, str], Analysis] = {}
-    seen = set()
-    dropped, kept = collections.Counter(), collections.Counter()
-    restated = at_table_peak = 0
-    spaces = collections.Counter()
+    # Each passage's analyses, keyed by (passage, name or position, role).
+    found: Dict[Tuple, Dict[str, Any]] = {}
     article_space = _space((prose or {}).get("space"))
     for index, passage in enumerate((prose or {}).get("passages", [])):
         space = _space(passage.get("space"))
         if space is None:
             space = article_space  # the space the article's Methods state
-        for a in passage.get("analyses", []):
-            name = (a.get("name") or "").strip() or UNNAMED
-            for p in a.get("points", []):
-                role = p.get("role")
-                if role not in KEPT_ROLES:
-                    dropped[role or "none"] += 1
-                    continue
+        unnamed = 0
+        for ordinal, a in enumerate(passage.get("analyses", [])):
+            name = (a.get("name") or "").strip()
+            named = bool(name)
+            if named:
+                identity = _norm(name)
+            else:
+                unnamed += 1
+                name = UNNAMED if unnamed == 1 else f"{UNNAMED} {unnamed}"
+                identity = (index, ordinal)
+            points = a.get("points", [])
+            roles = list(dict.fromkeys(p.get("role") or "other" for p in points))
+            # A named analysis the passage reports no peak for is kept, empty:
+            # whether it found nothing is decided later.
+            if not roles and named:
+                roles = ["result"]
+            for role in roles:
+                found.setdefault((index, identity, role), {
+                    "name": name, "role": role, "named": named, "passages": [index],
+                    "heading": (passage.get("heading") or "").strip(),
+                    "ordinal": ordinal, "unwritten": a.get("unwritten", 0), "points": []})
+            for p in points:
                 xyz = (float(p["x"]), float(p["y"]), float(p["z"]))
-                at_peak = [n for t, n in table_points
-                           if all(abs(u - v) <= SAME_PEAK_MM for u, v in zip(xyz, t))]
-                computed = (role == "result" and COMPUTED_AT_PEAK.search(name)
-                            and not any(COMPUTED_AT_PEAK.search(n) for n in at_peak))
-                if at_peak and not computed:
-                    restated += 1
-                    continue
-                at_table_peak += bool(at_peak)
-                key = (_norm(name), role, tuple(round(v) for v in xyz))
-                if key in seen:
-                    continue
-                seen.add(key)
-                analysis = groups.setdefault((_norm(name), role), Analysis(
-                    name=name, table_id="prose", metadata={"source": "prose", "role": role, "passages": []}))
-                kept[role] += 1
-                if index not in analysis.metadata["passages"]:
-                    analysis.metadata["passages"].append(index)
-                size = p.get("cluster_size")
-                analysis.coordinates.append(Coordinate(
-                    x=xyz[0], y=xyz[1], z=xyz[2], space=space,
-                    statistic_value=_number(p.get("value")), statistic_type=p.get("statistic"),
-                    cluster_size=int(size) if isinstance(size, (int, float)) else None,
-                    cluster_measure=a.get("measure") if size is not None else None,
-                ))
-                if space is not None:
-                    spaces[space] += 1
+                found[(index, identity, p.get("role") or "other")]["points"].append(
+                    (xyz, p, space, a.get("measure")))
+
+    groups: List[Dict[str, Any]] = []
+    by_name: Dict[Tuple, List[Dict[str, Any]]] = collections.defaultdict(list)
+    for (_, identity, role), entry in found.items():
+        if entry["named"]:
+            same = next((g for g in by_name[(identity, role)]
+                         if (entry["heading"] and entry["heading"] == g["heading"])
+                         or any(_near(p[0], q[0]) for p in entry["points"] for q in g["points"])),
+                        None)
+            if same is not None:
+                same["passages"].append(entry["passages"][0])
+                same["unwritten"] += entry["unwritten"]
+                same["points"] += entry["points"]
+                continue
+            by_name[(identity, role)].append(entry)
+        groups.append(entry)
+
+    analyses: List[Analysis] = []
+    kept = collections.Counter()
+    restated: List[Dict[str, Any]] = []
+    spaces = collections.Counter()
+    for entry in groups:
+        role = entry["role"]
+        analysis = Analysis(name=entry["name"], table_id="prose", metadata={
+            "source": "prose", "role": role, "passages": entry["passages"],
+            "ordinal": entry["ordinal"], "unwritten": entry["unwritten"]})
+        seen, new, restating = set(), [], []
+        for xyz, p, space, measure in entry["points"]:
+            key = tuple(round(v) for v in xyz)
+            if key in seen:
+                continue  # the model repeating itself
+            seen.add(key)
+            if space is not None and role in UPLOADED_PROSE_ROLES:
+                spaces[space] += 1  # another study's peak may be in another space
+            size = p.get("cluster_size")
+            coordinate = Coordinate(
+                x=xyz[0], y=xyz[1], z=xyz[2], space=space,
+                statistic_value=_number(p.get("value")), statistic_type=p.get("statistic"),
+                cluster_size=int(size) if isinstance(size, (int, float)) else None,
+                cluster_measure=measure if size is not None else None,
+            )
+            restates = []
+            for t, table, n, kind, value in table_points:
+                if (_near(xyz, t) and _agrees(p.get("statistic"), _number(p.get("value")), kind, value)
+                        and {"table": table, "analysis": n} not in restates):
+                    restates.append({"table": table, "analysis": n})
+            (restating if restates else new).append((coordinate, restates))
+        if restating:
+            analysis.metadata["restated_points"] = [
+                {"x": c.x, "y": c.y, "z": c.z, "restates": r} for c, r in restating]
+            tables_restated = []
+            for _, r in restating:
+                tables_restated += [t for t in r if t not in tables_restated]
+            restated.append({"passages": entry["passages"], "analysis": entry["name"],
+                             "role": role, "points": len(restating),
+                             "restates": tables_restated, "restatement": not new})
+        if restating and not new:
+            analysis.metadata["restatement"] = True
+            analysis.coordinates = [c for c, _ in restating]
+        else:
+            analysis.coordinates = [c for c, _ in new]
+            kept[role] += len(new)
+        analyses.append(analysis)
 
     out = dict(tables or {})
-    if groups:
+    if analyses:
         stated = _space((prose or {}).get("space"))
         if spaces:
             space = spaces.most_common(1)[0][0]
@@ -134,16 +199,16 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             space = CoordinateSpace(table_spaces.most_common(1)[0][0])
         else:
             space = None
-        out["prose"] = AnalysisCollection(slug=slug, identifier=identifier, analyses=list(groups.values()),
+        out["prose"] = AnalysisCollection(slug=slug, identifier=identifier, analyses=analyses,
                                           coordinate_space=space).to_dict()
     summary = {
         "tables": sum(1 for blob in out.values() if (blob or {}).get("analyses")),
-        "prose_analyses": len(groups),
-        "prose_points": sum(len(a.coordinates) for a in groups.values()),
-        "restated": restated,
-        "at_table_peaks": at_table_peak,
+        "prose_analyses": len(analyses),
+        "restatements": sum(1 for a in analyses if a.metadata.get("restatement")),
+        "prose_points": sum(kept.values()),
+        "restated": sum(d["points"] for d in restated),
+        "restated_points": restated,
         "kept": dict(kept),
-        "dropped": dict(dropped),
     }
     return out, summary
 
@@ -158,7 +223,7 @@ class ResolveStage:
         self.settings = settings
 
     def fingerprint_for(self, prose: Artifact, analyses: Optional[Artifact]) -> str:
-        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM, COMPUTED_AT_PEAK.pattern, KEPT_ROLES,
+        return fingerprint("resolve", RESOLVE_VERSION, SAME_PEAK_MM,
                            analyses.fingerprint if analyses is not None else "no tables",
                            upstream=prose.fingerprint)
 
@@ -182,7 +247,8 @@ class ResolveStage:
             # when they arrive the fingerprint below changes, and this re-runs.
             analyses = analysed.get(ref.id, {}).get("")
             tables = analyses if analyses is not None and analyses.status is Status.OK else None
-            if not prose.summary.get("kept") and not (tables and tables.summary.get("tables")):
+            read = prose.summary.get("coordinates") or prose.summary.get("analyses")
+            if not read and not (tables and tables.summary.get("tables")):
                 plan.skipped += 1  # neither the tables nor the prose hold a point to upload
                 continue
             fp = self.fingerprint_for(prose, tables)
@@ -205,9 +271,10 @@ class ResolveStage:
             payload, summary = resolve(tables or {}, ctx.payload(work.upstream) or {},
                                        work.ref.identifier.slug, work.ref.identifier)
             # What upload's freshness should follow. When the prose adds
-            # nothing, the upload is the tables' upload, so it keeps the
-            # fingerprint it already had.
+            # nothing but restatements, the upload is the tables' upload, so
+            # it keeps the fingerprint it already had.
+            adds = summary["prose_analyses"] - summary["restatements"]
             summary["basis"] = (tables_artifact.fingerprint
-                                if not summary["prose_analyses"] and tables_artifact is not None else "")
+                                if not adds and tables_artifact is not None else "")
             yield Outcome(article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                           fingerprint=work.fingerprint, payload=payload, summary=summary)

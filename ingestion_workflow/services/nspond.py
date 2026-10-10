@@ -20,7 +20,7 @@ from ingestion_workflow.models import (
     DownloadResult,
     Identifier,
 )
-from ingestion_workflow.services.coordinate_flags import is_placeholder
+from ingestion_workflow.services.coordinate_flags import is_placeholder, leaves_with_its_role
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.nspond_schema import (
@@ -237,12 +237,14 @@ def _write_corpus_manifest(
 
 
 def _kept(collection: AnalysisCollection) -> List[Analysis]:
-    """The collection's analyses without a no-coordinates placeholder.
+    """The collection's analyses without a no-coordinates placeholder, or a
+    prose analysis of a role pondie would read as a result.
 
     Analyses stored before the analyses stage stopped writing them still hold
     one, and pondie lists every zero-point entry as a null contrast.
     """
-    return [a for a in collection.analyses if not is_placeholder(a.name, a.coordinates)]
+    return [a for a in collection.analyses
+            if not is_placeholder(a.name, a.coordinates) and leaves_with_its_role(a.metadata)]
 
 
 def _write_stage1(

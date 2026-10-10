@@ -18,12 +18,13 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .passages import passage_from
-from .resolve import KEPT_ROLES
 
 logger = logging.getLogger(__name__)
 
 #: Bump when what is kept of the model's answer changes: `clean_answer`.
-CLEAN_VERSION = "in-order"
+#: An article whose stored answers were read the same way is cleaned again
+#: from them, without the model.
+CLEAN_VERSION = "named-empty-kept"
 
 
 class ProseStage:
@@ -44,12 +45,19 @@ class ProseStage:
                     self._client = ProseCoordinateClient(self.settings)
         return self._client
 
-    def fingerprint_for(self, passages: Artifact, metadata: Optional[Artifact]) -> str:
+    def read_fingerprint(self, passages: Artifact, metadata: Optional[Artifact]) -> str:
+        """What the model's answers depend on."""
         # The metadata read with it: an article read before its title and
-        # abstract were fetched is read again once they are.
-        return fingerprint("prose", PROSE_PROMPT_VERSION, CLEAN_VERSION, self.settings.prose_model,
+        # abstract were fetched is read again once they are. No passage, no
+        # call, so then the metadata is not waited on.
+        metadata = metadata if passages.summary.get("passages") else None
+        return fingerprint("prose", PROSE_PROMPT_VERSION, self.settings.prose_model,
                            metadata.fingerprint if metadata is not None else "no metadata",
                            upstream=passages.fingerprint)
+
+    def fingerprint_for(self, passages: Artifact, metadata: Optional[Artifact]) -> str:
+        return fingerprint("prose clean", CLEAN_VERSION,
+                           upstream=self.read_fingerprint(passages, metadata))
 
     def plan(
         self,
@@ -69,9 +77,9 @@ class ProseStage:
                 continue
             metadata = fetched.get(ref.id, {}).get("")
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
-            # No passage, no call: the empty result costs nothing, lets resolve
-            # pass the tables through, and does not wait on metadata.
-            fp = self.fingerprint_for(passages, metadata if passages.summary.get("passages") else None)
+            # No passage, no call: the empty result costs nothing and lets
+            # resolve pass the tables through.
+            fp = self.fingerprint_for(passages, metadata)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -84,12 +92,27 @@ class ProseStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        from ingestion_workflow.clients.prose_coordinates import clean_answer
+
         found = [ctx.payload(work.upstream) or {} for work in works]
-        metadata = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
-        reading = []
+        ids = [w.article_id for w in works]
+        metadata = ctx.catalog.artifacts(ids, "metadata")
+        stored = ctx.catalog.artifacts(ids, self.name)
+        reading, read_fps, kept_answers = [], {}, {}
         for work, payload in zip(works, found):
             meta_artifact = metadata.get(work.article_id, {}).get("")
-            meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None and meta_artifact.ok else {}
+            if meta_artifact is not None and not meta_artifact.ok:
+                meta_artifact = None
+            read_fp = read_fps[work.article_id] = self.read_fingerprint(work.upstream, meta_artifact)
+            # Answers the model gave for this same reading are cleaned again, not re-read.
+            before = stored.get(work.article_id, {}).get("")
+            if before is not None and before.ok and before.summary.get("read_fingerprint") == read_fp:
+                answers = [p.get("answer")
+                           for p in (ctx.payload(before) or {}).get("passages", [])]
+                if len(answers) == len(payload.get("passages", [])) and None not in answers:
+                    kept_answers[work.article_id] = answers
+                    continue
+            meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None else {}
             reading += [(passage_from(p), meta.get("title") or "", meta.get("abstract") or "")
                         for p in payload.get("passages", [])]
         answers: List = []
@@ -100,16 +123,24 @@ class ProseStage:
         answered = iter(answers)
 
         for work, payload in zip(works, found):
-            out, errors, coords, kept = [], 0, 0, 0
-            for p in payload.get("passages", []):
-                answer, error = next(answered)
+            stored_answers = kept_answers.get(work.article_id)
+            out, errors, coords, named, unwritten = [], 0, 0, 0, 0
+            for i, p in enumerate(payload.get("passages", [])):
+                if stored_answers is not None:
+                    raw, error = stored_answers[i], None
+                else:
+                    raw, error = next(answered)
+                answer = clean_answer(raw, passage_from(p).text) if error is None else {}
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
-                kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
+                named += len(answer.get("analyses", []))
+                unwritten += sum(a.get("unwritten", 0)
+                                 for a in answer.get("analyses", []) + answer.get("omitted", []))
                 out.append({"text": p["text"], "heading": p.get("heading"),
                             "space": answer.get("space") or p.get("space"),
-                            "analyses": answer.get("analyses", []), "error": error})
+                            "analyses": answer.get("analyses", []),
+                            "omitted": answer.get("omitted", []), "error": error, "answer": raw})
             if errors:
                 # A partly read article would be cached as complete; retry it whole.
                 yield Outcome.failure(work.article_id, self.name, "",
@@ -121,12 +152,14 @@ class ProseStage:
                 payload={"source": payload.get("source"), "read": payload.get("read"),
                          "space": payload.get("space"), "passages": out},
                 summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
-                         "coordinates": coords, "kept": kept},
+                         "coordinates": coords, "analyses": named, "unwritten": unwritten,
+                         "read_fingerprint": read_fps[work.article_id]},
             )
 
     def _read(self, passage, title, abstract):
+        """The model's answer as it gave it, and the error if the call failed."""
         try:
-            return self.client().extract(passage, title=title, abstract=abstract), None
+            return self.client().read(passage, title=title, abstract=abstract), None
         except Exception as exc:  # noqa: BLE001 - one failed call fails its article, not the batch
             logger.warning("prose passage failed: %s", exc)
-            return {}, f"{type(exc).__name__}: {exc}"
+            return None, f"{type(exc).__name__}: {exc}"
