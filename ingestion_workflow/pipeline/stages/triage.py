@@ -365,6 +365,9 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     usable = [a for a in candidates.values() if a.status is Status.OK]
     if not usable:
         return None
+    # An extraction with no text is chosen only when none has any: the article's
+    # one text is what sync writes and passages index.
+    usable = [a for a in usable if a.summary.get("has_text", True)] or usable
     # ACE only when nothing else found a table. Its extra tables are copies
     # and uncaptioned fragments: of 111 articles also extracted from a shared
     # PDF, ACE had more tables in 31, and each one checked was a duplicate.

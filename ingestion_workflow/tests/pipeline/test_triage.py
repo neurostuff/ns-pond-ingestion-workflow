@@ -440,3 +440,34 @@ def test_sync_writes_the_extraction_triage_judged(tmp_path):
                                 summary={"source": "ace"})])
         triage = catalog.artifact(ref.id, "triage", "")
         assert _synced_extraction(ctx, extractions, downloads, triage).source == "ace"
+
+
+def test_an_extraction_with_text_beats_one_without_whatever_the_tables():
+    """Article phthz7nb6sut: ACE kept no text and no tables, the PDF kept the
+    text. Both tied on tables, and the fixed source order chose the empty one."""
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables, has_text):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    ace, pdf = _Art("ace", 0, False), _Art("pdf", 0, True)
+    assert _most_tables({"ace": ace, "pdf": pdf}) is pdf
+    # text outranks tables: the one with tables but no text loses
+    assert _most_tables({"pubget": _Art("pubget", 9, False), "pdf": pdf}) is pdf
+    # none has text: the usual choice stands
+    assert _most_tables({"ace": ace, "pdf": _Art("pdf", 0, False)}) is ace
+
+
+def test_table_count_still_decides_among_extractions_with_text():
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables, has_text=True):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    few, many = _Art("pubget", 2), _Art("pdf", 7)
+    assert _most_tables({"pubget": few, "pdf": many}) is many
+    assert _most_tables({"pubget": few, "pdf": many, "ace": _Art("ace", 30, False)}) is many
