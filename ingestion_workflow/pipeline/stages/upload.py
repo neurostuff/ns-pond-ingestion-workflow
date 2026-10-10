@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Sequence, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import AnalysisCollection
@@ -16,6 +16,18 @@ from ..stage import Context
 logger = logging.getLogger(__name__)
 
 UPLOAD_VERSION = 1
+
+
+def _notice_marker(notices: Optional[Artifact]) -> Optional[str]:
+    """What upload does differently for this article's PubMed notices, if anything."""
+    if notices is None or notices.status is not Status.OK:
+        return None
+    summary = notices.summary or {}
+    if summary.get("retraction_notice"):
+        return "retraction-notice"
+    if summary.get("retracted"):
+        return "retracted:" + ((summary.get("retraction") or {}).get("pmid") or "")
+    return None
 
 
 class UploadStage:
@@ -32,12 +44,19 @@ class UploadStage:
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, upstream: Artifact, excluded=None) -> str:
+    def fingerprint_for(
+        self, upstream: Artifact, excluded=None, notices: Optional[Artifact] = None
+    ) -> str:
         # A person's exclusions are an input like any other: marking a table
         # makes the article stale, so the next upload takes it back out of
         # neurostore. Appended only when there is one, so the fingerprint of
         # every article nobody has marked is exactly what it was.
         marked = excl.digest(excluded or {})
+        # A retraction PubMed lists, or the paper being a retraction notice, is
+        # an input too, so a paper retracted after its upload is uploaded again
+        # and marked. Appended the same way as exclusions: no other fingerprint
+        # moves.
+        notice = _notice_marker(notices)
         return fingerprint(
             "upload",
             UPLOAD_VERSION,
@@ -51,6 +70,7 @@ class UploadStage:
             self.settings.upload_metadata_mode.value,
             self.settings.upload_metadata_only,
             *([marked] if marked else []),
+            *([notice] if notice else []),
             upstream=upstream.fingerprint,
         )
 
@@ -64,14 +84,19 @@ class UploadStage:
         plan = StagePlan(stage=self.name)
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         excluded = ctx.catalog.exclusions([ref.id for ref in refs])
+        notices = ctx.catalog.artifacts([ref.id for ref in refs], "notices")
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
             if spaced is None or spaced.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(spaced, excluded.get(ref.id))
+            notice = notices.get(ref.id, {}).get("")
+            fp = self.fingerprint_for(spaced, excluded.get(ref.id), notice)
             existing = artifacts.get(ref.id, {}).get("")
-            if ctx.is_fresh(existing, fp):
+            # Uploaded while neurostore had no is_retracted column: tried again
+            # each run until the flag is set.
+            unmarked = existing is not None and existing.summary.get("retraction_marked") is False
+            if ctx.is_fresh(existing, fp) and not unmarked:
                 plan.fresh += 1
                 continue
             count, last = attempts.get(ref.id, (0, None))
@@ -91,6 +116,23 @@ class UploadStage:
         resolve_upload_source(self.settings)
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
+        found = ctx.catalog.artifacts([w.article_id for w in works], "notices")
+        markers = {w.article_id: _notice_marker(found.get(w.article_id, {}).get(""))
+                   for w in works}
+        # A paper that is itself a retraction notice is not a study, whatever
+        # the extractor found in it (a notice can reprint the table it retracts).
+        for work in works:
+            if markers[work.article_id] == "retraction-notice":
+                yield Outcome(article_id=work.article_id, stage=self.name, source="",
+                              status=Status.SKIPPED, fingerprint=work.fingerprint,
+                              summary={"reason": "retraction notice"})
+        works = [w for w in works if markers[w.article_id] != "retraction-notice"]
+        # Retracted papers are uploaded like any other and then marked: the
+        # decision is "marked, excluded by default", so the study is kept.
+        retractions = {
+            w.article_id: found[w.article_id][""].summary.get("retraction")
+            for w in works if (markers[w.article_id] or "").startswith("retracted")
+        }
         analyses, metadata, empty = self._gather(ctx, works, excluded)
         # An article left with nothing because a person marked its tables is
         # not "nothing to upload": what it uploaded before is still there, and
@@ -98,19 +140,6 @@ class UploadStage:
         # retracted. One that was never uploaded has nothing to take back.
         previous = ctx.catalog.artifacts([w.article_id for w in empty if w.article_id in excluded], "upload")
         retract, empty = self._retractable(ctx, empty, excluded, previous)
-        # PubMed lists a retraction of the article: what it uploaded before is
-        # taken back the same way, and one never uploaded is not uploaded now.
-        ids_retracted = set()
-        doomed = [w for w in works if getattr(metadata.get(w.ref.identifier.slug), "retracted", False)]
-        if doomed:
-            ids = ids_retracted = {w.article_id for w in doomed}
-            more, never = self._retractable(
-                ctx, doomed, ids, ctx.catalog.artifacts(list(ids), "upload"))
-            retract += more
-            empty += never
-            for work in doomed:
-                metadata.pop(work.ref.identifier.slug, None)
-                analyses.pop(work.ref.identifier.slug, None)
         yield from self._retract(retract)
         # An article whose every collection came back with no analyses has
         # nothing to say. Uploading it would create a study claiming the paper
@@ -125,7 +154,6 @@ class UploadStage:
                 status=Status.SKIPPED,
                 fingerprint=work.fingerprint,
                 summary=({"reason": "excluded by hand"} if work.article_id in excluded
-                         else {"reason": "retracted in PubMed"} if work.article_id in ids_retracted
                          else {"reason": "no analyses to upload"}),
             )
         skipped = {work.article_id for work in empty} | {work.article_id for work, _ in retract}
@@ -157,6 +185,13 @@ class UploadStage:
                 )
             return
 
+        marked = self._mark_retracted({
+            o.base_study_id: retractions[by_slug[o.slug].article_id]
+            for o in outcomes
+            if o.success and o.base_study_id and o.slug in by_slug
+            and by_slug[o.slug].article_id in retractions
+        })
+
         seen = set()
         learned: List[Tuple[str, str, str]] = []
         for outcome in outcomes:
@@ -185,7 +220,7 @@ class UploadStage:
                     "base_study_id": outcome.base_study_id,
                     "study_id": outcome.study_id,
                     "analyses": len(outcome.analysis_ids),
-                },
+                } | ({"retraction_marked": marked} if work.article_id in retractions else {}),
             )
         ctx.catalog.add_aliases(learned)
 
@@ -195,6 +230,21 @@ class UploadStage:
                     work.article_id, self.name, "", "upload returned no outcome",
                     fingerprint=work.fingerprint,
                 )
+
+    def _mark_retracted(self, targets: Dict[str, Optional[dict]]) -> bool:
+        """Set neurostore's retraction flag on these base studies; False if it could not."""
+        if not targets:
+            return True
+        from ingestion_workflow.services.db import SessionFactory, SSHTunnel
+        from ingestion_workflow.services.upload import UploadService
+
+        try:
+            with SSHTunnel(self.settings) as tunnel:
+                sessions = SessionFactory(self.settings, tunnel=tunnel)
+                return UploadService(self.settings, sessions).mark_retracted(targets) is not None
+        except Exception as exc:  # noqa: BLE001 - recorded as unmarked, so tried again
+            logger.error("marking %d retraction(s) failed: %s", len(targets), exc)
+            return False
 
     def _retractable(self, ctx, empty, excluded, previous):
         """Split the empty works into those to retract and those to skip."""

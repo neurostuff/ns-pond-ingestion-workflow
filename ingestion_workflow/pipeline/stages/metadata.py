@@ -24,10 +24,10 @@ from ..stage import Context
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 2  # 2: corrections and retraction_notice
+METADATA_VERSION = 1
 
 #: Kept in the catalog row for display and for the upload stage.
-SUMMARY_FIELDS = ("title", "journal", "publication_year", "license", "retracted")
+SUMMARY_FIELDS = ("title", "journal", "publication_year", "license")
 
 class MetadataStage:
     name = "metadata"

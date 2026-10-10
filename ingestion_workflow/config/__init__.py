@@ -136,6 +136,12 @@ class Settings(BaseSettings):
         description="Optional API key for increased PubMed rate limits",
     )
 
+    notices_max_age_days: int = Field(
+        default=30,
+        description=("Days before an article's PubMed retraction and erratum notices "
+                     "are looked up again; a retraction can come years after publication"),
+    )
+
     pubmed_batch_size: int = Field(
         default=500,
         description="Number of records per PubMed API request",

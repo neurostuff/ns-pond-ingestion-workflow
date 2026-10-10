@@ -15,7 +15,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import replace
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -115,12 +114,10 @@ class MetadataService:
         # first `sufficient` record left 69% of one batch without an abstract
         # that PubMed had for 98.5% of them.
         if self._pubmed_client and identified_items:
-            # Also an article the earlier providers filled: only PubMed lists its
-            # retractions and errata.
             identifiers = [
                 item.identifier
                 for item in identified_items
-                if item.identifier.pmid or not _filled(results.get(item.slug))
+                if not _filled(results.get(item.slug))
             ]
             if identifiers:
                 logger.info(
@@ -137,13 +134,7 @@ class MetadataService:
                     if not self._has_useful_metadata(pubmed_meta):
                         continue
                     article_slug = content.slug
-                    if _filled(results.get(article_slug)):
-                        results[article_slug] = replace(
-                            results[article_slug],
-                            corrections=pubmed_meta.corrections,
-                            retraction_notice=pubmed_meta.retraction_notice,
-                        )
-                    elif article_slug in results:
+                    if article_slug in results:
                         results[article_slug] = results[article_slug].merge_from(pubmed_meta)
                     else:
                         results[article_slug] = pubmed_meta

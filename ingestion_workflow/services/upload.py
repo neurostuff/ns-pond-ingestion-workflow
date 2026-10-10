@@ -7,7 +7,8 @@ from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-from sqlalchemy import delete, select
+from sqlalchemy import JSON, Boolean, Text, column, delete, inspect, select, table, update
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import selectinload
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
@@ -451,6 +452,33 @@ class UploadService:
                 outer.rollback()
                 raise
         return outcomes
+
+    def mark_retracted(self, targets: Mapping[str, Optional[dict]]) -> Optional[int]:
+        """Set `is_retracted` and `retraction_notice` on each base study id given.
+
+        The columns arrive with neurostore's migration f1a3c5e7b9d2 (M7). Until
+        a database has them this logs and returns None, changing nothing; the
+        study itself is never deleted or emptied for a retraction.
+        """
+        if not targets:
+            return 0
+        self.session_factory.configure()
+        with self.session_factory.session() as session:
+            columns = inspect(session.connection()).get_columns("base_studies")
+            names = {c["name"] for c in columns}
+            if not {"is_retracted", "retraction_notice"} <= names:
+                logger.warning(
+                    "base_studies has no is_retracted column (neurostore migration f1a3c5e7b9d2); "
+                    "%d retraction(s) not recorded", len(targets), extra=console_kwargs())
+                return None
+            notice_type = JSON().with_variant(postgresql.JSONB(), "postgresql")
+            base = table("base_studies", column("id", Text), column("is_retracted", Boolean),
+                         column("retraction_notice", notice_type))
+            for base_study_id, notice in targets.items():
+                session.execute(update(base).where(base.c.id == base_study_id)
+                                .values(is_retracted=True, retraction_notice=notice))
+            session.commit()
+        return len(targets)
 
     def _retract_one(self, session, slug: str, base_study_id: str, source: str) -> "RetractOutcome":
         study = session.execute(
