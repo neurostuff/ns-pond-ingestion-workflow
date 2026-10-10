@@ -312,8 +312,8 @@ class Settings(BaseSettings):
     role_model: Optional[Path] = Field(
         default=None,
         description=(
-            "Directory of a trained set-role classifier; setting it runs the roles stage, which "
-            "space then reads. Unset, nothing changes"
+            "Directory of a trained set-role classifier; setting it runs the roles stage (space "
+            "does not read it yet). Unset, nothing changes"
         ),
     )
     role_min_confidence: float = Field(
