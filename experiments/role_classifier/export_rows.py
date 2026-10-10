@@ -48,7 +48,7 @@ def main():
         s: open(args.out / "prose" / f"{s}.jsonl", "w", encoding="utf-8")
         for s in ("train", "val", "test")
     }
-    for row in export.prose_rows(units, labels):
+    for row in export.prose_rows(units, labels, keep_unlabelled=True):
         split = by_split.get(f"p:{row['id']}", "train")
         handles[split].write(json.dumps(row, ensure_ascii=False) + "\n")
         counts[f"prose:{split}"] += 1

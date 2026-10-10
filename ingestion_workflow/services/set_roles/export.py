@@ -136,17 +136,26 @@ def nu_v21_rows(
 
 
 def prose_rows(
-    units: Iterable[Mapping[str, Any]], labels: Mapping[str, Mapping[str, Any]]
+    units: Iterable[Mapping[str, Any]],
+    labels: Mapping[str, Mapping[str, Any]],
+    *,
+    keep_unlabelled: bool = False,
 ) -> Iterator[Dict[str, Any]]:
     """Prose dataset rows with each point's `role` set from its set's label.
 
     A prose unit's sets are its base row's analyses in order of first
     appearance; a point listed under several analyses takes each one's role.
+    `keep_unlabelled` passes the other rows through unchanged (a synthetic row
+    keeps its generator's roles), so the output can replace the dataset.
     """
     for unit in units:
         base = unit.get("base_row")
-        found = _all_labelled(unit, labels) if unit["origin"] == "text" and base else None
+        if unit["origin"] != "text" or not base:
+            continue
+        found = _all_labelled(unit, labels)
         if found is None:
+            if keep_unlabelled:
+                yield dict(base)
             continue
         roles = {
             s.get("name"): extractor_role(label["label"]) for s, label in zip(unit["sets"], found)

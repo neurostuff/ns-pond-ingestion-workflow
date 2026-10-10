@@ -286,3 +286,15 @@ def test_a_unit_with_an_unlabelled_set_is_not_exported_to_the_extractors(tmp_pat
     labels = _labels(tmp_path)
     del labels["t:123-10-1000-x:t2#1"]
     assert list(export.nu_v21_rows([TABLE_UNIT], labels)) == []
+
+
+def test_the_prose_export_can_replace_the_dataset(tmp_path):
+    unlabelled = {
+        **PROSE_UNIT,
+        "unit_id": "p:silver-2",
+        "base_row": {**PROSE_ROW, "id": "silver-2"},
+    }
+    labels = _labels(tmp_path)
+    rows = list(export.prose_rows([PROSE_UNIT, unlabelled], labels, keep_unlabelled=True))
+    assert [r["id"] for r in rows] == ["silver-1", "silver-2"]
+    assert rows[1] == unlabelled["base_row"]
