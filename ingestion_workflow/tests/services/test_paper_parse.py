@@ -752,3 +752,17 @@ def test_side_by_side_contrasts_differ_by_column_group(tmp_path):
     )
     assert [[(c.row, c.column_group) for c in a.cells] for a in built] == [[(0, 0)], [(0, 1)]]
     assert built[0].key == keys.table_key("tbl1", [(0, 0)]) != built[1].key
+
+
+def test_a_null_coordinate_space_leaves_the_parse_space_unset():
+    # Built directly: the model's space is not nullable until #72 merges.
+    collection = AnalysisCollection(
+        slug="t", coordinate_space=CoordinateSpace.MNI, analyses=[]
+    )
+    object.__setattr__(collection, "coordinate_space", None)
+    assert paper_parse._space_value(collection.coordinate_space) is None
+    bare = paper_parse._point(Coordinate(x=1, y=2, z=3), collection, None)
+    named = paper_parse._point(
+        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TAL), collection, None
+    )
+    assert (bare.space, named.space) == (None, "TAL")
