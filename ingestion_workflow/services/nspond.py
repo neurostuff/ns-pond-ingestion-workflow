@@ -32,6 +32,9 @@ from ingestion_workflow.services.nspond_schema import (
 
 logger = get_logger(__name__)
 
+#: A prose analysis's role in stage1: study_schema's fields, as resolve wrote them.
+PROSE_ROLE_FIELDS = ("role", "anchor_kind", "from_prior_study")
+
 
 def _sync_article(
     base_study_id: str,
@@ -268,7 +271,14 @@ def _write_stage1(
             prose = (analysis.metadata or {}).get("source") == "prose"
             analyses.append(
                 {
-                    **({"source": "prose", "role": analysis.metadata.get("role")} if prose else {}),
+                    **(
+                        {
+                            "source": "prose",
+                            **{k: analysis.metadata.get(k) for k in PROSE_ROLE_FIELDS},
+                        }
+                        if prose
+                        else {}
+                    ),
                     "name": analysis.name,
                     "description": analysis.description,
                     "table_id": analysis.table_id or table_id,

@@ -6,20 +6,24 @@ import collections
 import re
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
+from study_schema.models.paper_parse import CoordinateRole
+
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
+from ingestion_workflow.prompts.prose_coordinates import study_schema_role
 
 from ..plan import StagePlan, Work
 from ..stage import Context
 
 RESOLVE_VERSION = 4
 
-#: The roles uploaded: this study's results, and the regions it defined to
-#: get them -- an ROI, a seed, a stimulation target. Another study's peaks, a
-#: display location and anything else are counted and dropped. Each prose
-#: analysis holds one role, recorded in its metadata.
-KEPT_ROLES = ("result", "roi", "seed", "target")
+#: The roles uploaded (study_schema `CoordinateRole`s): this study's results,
+#: and the regions it defined to get them (an anchor: ROI, seed, stimulation
+#: target). Another study's peaks, a display location and numbers that are not
+#: coordinates are counted and dropped. Each prose analysis holds one role and
+#: anchor kind, recorded in its metadata with `from_prior_study`.
+KEPT_ROLES = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -91,9 +95,10 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         for a in passage.get("analyses", []):
             name = (a.get("name") or "").strip() or UNNAMED
             for p in a.get("points", []):
-                role = p.get("role")
+                fields = study_schema_role(p.get("role"))
+                role, kind = fields["role"], fields["anchor_kind"]
                 if role not in KEPT_ROLES:
-                    dropped[role or "none"] += 1
+                    dropped[role or "not_coordinates"] += 1
                     continue
                 xyz = (float(p["x"]), float(p["y"]), float(p["z"]))
                 at_peak = [n for t, n in table_points
@@ -104,13 +109,14 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                     restated += 1
                     continue
                 at_table_peak += bool(at_peak)
-                key = (_norm(name), role, tuple(round(v) for v in xyz))
+                key = (_norm(name), role, kind, tuple(round(v) for v in xyz))
                 if key in seen:
                     continue
                 seen.add(key)
-                analysis = groups.setdefault((_norm(name), role), Analysis(
-                    name=name, table_id="prose", metadata={"source": "prose", "role": role, "passages": []}))
-                kept[role] += 1
+                analysis = groups.setdefault((_norm(name), role, kind), Analysis(
+                    name=name, table_id="prose",
+                    metadata={"source": "prose", **fields, "passages": []}))
+                kept[kind or role] += 1  # an anchor by its kind
                 if index not in analysis.metadata["passages"]:
                     analysis.metadata["passages"].append(index)
                 size = p.get("cluster_size")

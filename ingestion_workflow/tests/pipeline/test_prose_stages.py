@@ -84,17 +84,20 @@ def test_results_and_the_regions_defined_to_get_them_are_kept_one_role_per_analy
         ("left DLPFC TMS target", [(-40, 30, 30, "target")]),
         ("Smith et al. (2010)", [(30, 20, 10, "prior_study")]),
         ("slice shown", [(0, 0, 10, "figure")]),
+        ("channel 12", [(1, 2, 3, "other")]),
         ("faces > houses", [(40, -50, -20, "result"), (12, 10, 8, "seed")]))]}
     out, summary = resolve({}, prose, "slug")
-    got = [(a["name"], a["metadata"]["role"], len(a["coordinates"]))
+    # The prose model's roles come out as study_schema's fields (the legacy adapter).
+    got = [(a["name"], a["metadata"]["role"], a["metadata"]["anchor_kind"], len(a["coordinates"]))
            for a in out["prose"]["analyses"]]
-    assert got == [("amygdala seed", "seed", 1), ("insula ROI", "roi", 1),
-                   ("left DLPFC TMS target", "target", 1), ("faces > houses", "result", 1),
-                   ("faces > houses", "seed", 1)]
+    assert got == [("amygdala seed", "anchor", "seed", 1), ("insula ROI", "anchor", "roi", 1),
+                   ("left DLPFC TMS target", "anchor", "stimulation_target", 1),
+                   ("faces > houses", "result", None, 1), ("faces > houses", "anchor", "seed", 1)]
+    assert all(a["metadata"]["from_prior_study"] is False for a in out["prose"]["analyses"])
     # A seed is the set's role; no point carries a seed flag of its own.
     assert not any("is_seed" in c for a in out["prose"]["analyses"] for c in a["coordinates"])
-    assert summary["kept"] == {"seed": 2, "roi": 1, "target": 1, "result": 1}
-    assert summary["dropped"] == {"prior_study": 1, "figure": 1}
+    assert summary["kept"] == {"seed": 2, "roi": 1, "stimulation_target": 1, "result": 1}
+    assert summary["dropped"] == {"reference": 1, "display": 1, "not_coordinates": 1}
 
 
 def test_a_seed_at_a_table_peak_is_the_tables_result_reused():

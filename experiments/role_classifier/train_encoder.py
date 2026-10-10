@@ -4,11 +4,12 @@
         [--base microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext] [--epochs 4]
 
 One model for table and prose sets: every input starts with its origin, and
-the label vocabulary is shared. Two heads (`services.set_roles.model`): the
-label, under class-weighted cross-entropy so rare roles count, and the
-prior-study flag. Rows are split by article (`export.split_of`); evaluation is
-on real articles only (a synthetic row's label is its generator's), per label,
-per origin and for the prior flag. The saved directory is what `role_model`
+the role fields are study_schema's. Four heads (`services.set_roles.model`):
+whether the numbers are coordinates, the `CoordinateRole` and the `AnchorKind`
+(class-weighted cross-entropy so rare ones count; the kind on anchors only), and
+the prior-study flag. Rows are split by article (`export.split_of`); evaluation
+is on real articles only (a synthetic row's label is its generator's), per role,
+per anchor kind, per origin and for the prior flag. The saved directory is what `role_model`
 points at; it records the context versions it was trained on.
 """
 
@@ -20,42 +21,55 @@ import json
 import random
 from pathlib import Path
 
-from ingestion_workflow.services.set_roles import ROLE_LABELS
+from ingestion_workflow.services.set_roles import ANCHOR_KINDS, COORDINATE_ROLES, Prediction
 from ingestion_workflow.services.set_roles import model as model_io
+
+
+def _per_value(pairs):
+    """Precision and recall per value of (gold, predicted) pairs."""
+    out = {}
+    for value in sorted({v for pair in pairs for v in pair}, key=str):
+        tp = sum(1 for g, p in pairs if g == value and p == value)
+        gold = sum(1 for g, _ in pairs if g == value)
+        pred = sum(1 for _, p in pairs if p == value)
+        out[str(value)] = {
+            "n": gold,
+            "precision": round(tp / pred, 3) if pred else None,
+            "recall": round(tp / gold, 3) if gold else None,
+        }
+    return out
 
 
 def evaluate(model, tokenizer, rows, device):
     if not rows:
         return {}
-    out = model_io.predict_batch(
-        model, tokenizer, [r["text"] for r in rows], ROLE_LABELS, device=device
-    )
+    out = [
+        Prediction(**fields)
+        for fields in model_io.predict_batch(
+            model, tokenizer, [r["text"] for r in rows], device=device
+        )
+    ]
     report = {}
     for origin in ("table", "text", "all"):
         pairs = [(r, p) for r, p in zip(rows, out) if origin == "all" or r["origin"] == origin]
         if not pairs:
             continue
-        per = {}
-        for label in ROLE_LABELS:
-            tp = sum(
-                1 for r, (pr, _) in pairs if r["label"] == label and max(pr, key=pr.get) == label
-            )
-            gold = sum(1 for r, _ in pairs if r["label"] == label)
-            pred = sum(1 for _, (pr, _) in pairs if max(pr, key=pr.get) == label)
-            if gold or pred:
-                per[label] = {
-                    "n": gold,
-                    "precision": round(tp / pred, 3) if pred else None,
-                    "recall": round(tp / gold, 3) if gold else None,
-                }
-        prior = [(r["from_prior_study"], pp >= 0.5) for r, (_, pp) in pairs]
+        # A set judged not coordinates has role None.
+        roles = [
+            (r["role"], p.role if p.coordinates_probability >= 0.5 else None) for r, p in pairs
+        ]
+        kinds = [(r["anchor_kind"], p.anchor_kind) for r, p in pairs if r["role"] == "anchor"]
+        prior = [
+            (r["from_prior_study"], p.prior_probability >= 0.5)
+            for r, p in pairs
+            if r["role"] is not None
+        ]
         tp = sum(1 for g, p in prior if g and p)
         report[origin] = {
             "n": len(pairs),
-            "accuracy": round(
-                sum(r["label"] == max(pr, key=pr.get) for r, (pr, _) in pairs) / len(pairs), 3
-            ),
-            "labels": per,
+            "role_accuracy": round(sum(g == p for g, p in roles) / len(roles), 3),
+            "roles": _per_value(roles),
+            "anchor_kinds": _per_value(kinds),
             "prior": {
                 "n": sum(g for g, _ in prior),
                 "precision": round(tp / max(1, sum(p for _, p in prior)), 3),
@@ -63,6 +77,14 @@ def evaluate(model, tokenizer, rows, device):
             },
         }
     return report
+
+
+def _weights(torch, values, counts, n, device):
+    """Square-root inverse-frequency class weights."""
+    return torch.tensor(
+        [(n / (len(values) * counts[v])) ** 0.5 if counts[v] else 0.0 for v in values],
+        device=device,
+    )
 
 
 def main():
@@ -91,21 +113,31 @@ def main():
     real = [r for r in rows if r.get("label_source") != "dataset"]
     val = [r for r in real if r["split"] == "val"]
     test = [r for r in real if r["split"] == "test"]
-    counts = collections.Counter(r["label"] for r in train)
-    print("train", len(train), dict(counts), "val", len(val), "test", len(test), flush=True)
+    counts = collections.Counter(r["role"] for r in train)
+    kind_counts = collections.Counter(r["anchor_kind"] for r in train if r["role"] == "anchor")
+    print(
+        "train",
+        len(train),
+        dict(counts),
+        dict(kind_counts),
+        "val",
+        len(val),
+        "test",
+        len(test),
+        flush=True,
+    )
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tokenizer = AutoTokenizer.from_pretrained(args.base)
     model = model_io.build_model(AutoModel.from_pretrained(args.base)).to(device)
-    index = {label: i for i, label in enumerate(ROLE_LABELS)}
-    weights = torch.tensor(
-        [
-            (len(train) / (len(ROLE_LABELS) * counts[label])) ** 0.5 if counts[label] else 0.0
-            for label in ROLE_LABELS
-        ],
-        device=device,
+    role_index = {v: i for i, v in enumerate(COORDINATE_ROLES)}
+    kind_index = {v: i for i, v in enumerate(ANCHOR_KINDS)}
+    role_loss = torch.nn.CrossEntropyLoss(
+        weight=_weights(torch, COORDINATE_ROLES, counts, len(train), device)
     )
-    role_loss = torch.nn.CrossEntropyLoss(weight=weights)
-    prior_loss = torch.nn.BCEWithLogitsLoss()
+    kind_loss = torch.nn.CrossEntropyLoss(
+        weight=_weights(torch, ANCHOR_KINDS, kind_counts, sum(kind_counts.values()), device)
+    )
+    binary_loss = torch.nn.BCEWithLogitsLoss()
     optimiser = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     steps = args.epochs * ((len(train) + args.batch_size - 1) // args.batch_size)
     schedule = get_linear_schedule_with_warmup(optimiser, int(0.06 * steps), steps)
@@ -123,13 +155,34 @@ def main():
                 padding=True,
                 return_tensors="pt",
             ).to(device)
-            role_logits, prior_logits = model(enc["input_ids"], enc["attention_mask"])
-            loss = role_loss(
-                role_logits, torch.tensor([index[r["label"]] for r in batch], device=device)
-            ) + prior_loss(
-                prior_logits,
-                torch.tensor([float(r["from_prior_study"]) for r in batch], device=device),
+            coords, roles, kinds, prior = model(enc["input_ids"], enc["attention_mask"])
+            loss = binary_loss(
+                coords, torch.tensor([float(r["role"] is not None) for r in batch], device=device)
             )
+            # The role and prior heads learn from coordinates only; the kind head from anchors.
+            have = [i for i, r in enumerate(batch) if r["role"] is not None]
+            anchors = [i for i in have if batch[i]["role"] == "anchor"]
+            if have:
+                loss = (
+                    loss
+                    + role_loss(
+                        roles[have],
+                        torch.tensor([role_index[batch[i]["role"]] for i in have], device=device),
+                    )
+                    + binary_loss(
+                        prior[have],
+                        torch.tensor(
+                            [float(batch[i]["from_prior_study"]) for i in have], device=device
+                        ),
+                    )
+                )
+            if anchors:
+                loss = loss + kind_loss(
+                    kinds[anchors],
+                    torch.tensor(
+                        [kind_index[batch[i]["anchor_kind"]] for i in anchors], device=device
+                    ),
+                )
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimiser.step()
@@ -139,7 +192,7 @@ def main():
         model.eval()
         print(
             f"epoch {epoch + 1} loss {total / max(1, len(train) // args.batch_size):.4f} "
-            f"val {evaluate(model, tokenizer, val, device).get('all', {}).get('accuracy')}",
+            f"val {evaluate(model, tokenizer, val, device).get('all', {}).get('role_accuracy')}",
             flush=True,
         )
     report = {

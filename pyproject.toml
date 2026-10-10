@@ -41,6 +41,9 @@ dependencies = [
   "docling>=2.0",
   "pypdfium2>=4",
   "shortuuid>=1.0",
+  # CoordinateRole and AnchorKind, the role vocabulary of every set (services.set_roles).
+  # Same pin as #64 (neurostuff/study_schema#21); repin to main with it.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@0c78d9f2eaa19fb091a940319eb10348804b775e",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   # study_schema.spaces, the coordinate-space alias table shared with pondie and
   # neurostore. Pinned to study_schema main.

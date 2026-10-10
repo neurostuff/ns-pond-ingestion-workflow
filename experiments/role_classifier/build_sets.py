@@ -32,6 +32,7 @@ import random
 import sqlite3
 from pathlib import Path
 
+from ingestion_workflow.prompts.prose_coordinates import study_schema_role
 from ingestion_workflow.services.set_roles.common import (
     _ANCHOR_CUES,
     _CITATION,
@@ -47,12 +48,42 @@ NS_POND = Path("/data/alejandro/projects/ns-pond")
 CATALOG = NS_POND / "catalog"
 
 
+#: Non-result proposals, rarest first, as `role_key` names them.
+RARE_FIRST = ("display", "stimulation_target", "reference", "seed", "roi", "not_coordinates")
+
+
+def study_schema_points(points):
+    """Points with the prose model's own role (the prose dataset's too) as study_schema's
+    role fields, through the prose stage's legacy adapter."""
+    return [
+        {**{k: v for k, v in p.items() if k != "role"}, **study_schema_role(p.get("role"))}
+        if isinstance(p, dict)
+        else p
+        for p in points
+    ]
+
+
+def with_role(name, points):
+    """A set of already converted points, with its first point's role fields."""
+    first = next((p for p in points if isinstance(p, dict)), {})
+    return {
+        "name": name,
+        "points": points,
+        **{k: first.get(k) for k in ("role", "anchor_kind", "from_prior_study")},
+    }
+
+
+def role_key(s) -> str:
+    """A set's proposal for stratifying: an anchor by its kind."""
+    return s.get("anchor_kind") or s.get("role") or "not_coordinates"
+
+
 def stratum(text: str, proposed=(), strong: str = "") -> str:
     """The rarest thing a unit points at: a non-result proposal, then cues in `strong` (a
     table's caption and footer), then cues anywhere in `text`."""
-    for role in ("figure", "target", "prior_study", "seed", "roi", "other"):
-        if role in proposed:
-            return f"proposed:{role}"
+    for key in RARE_FIRST:
+        if key in proposed:
+            return f"proposed:{key}"
     for where, body in (("caption", strong), ("text", text)):
         if _DISPLAY_CUES.search(body):
             return f"{where}:display"
@@ -178,9 +209,7 @@ def _sets_from_points(points):
     groups = collections.OrderedDict()
     for p in points:
         groups.setdefault(p.get("analysis"), []).append(p)
-    return [
-        {"name": name, "points": pts, "role": pts[0].get("role")} for name, pts in groups.items()
-    ]
+    return [with_role(name, pts) for name, pts in groups.items()]
 
 
 def prose_units(wild: int):
@@ -196,6 +225,7 @@ def prose_units(wild: int):
                 continue
             w = wide.get(row["id"]) or {}
             synthetic = row.get("dataset", "").startswith("synthetic")
+            row = {**row, "points": study_schema_points(row["points"])}
             sets = _sets_from_points(row["points"])
             unit = {
                 "unit_id": f"p:{row['id']}",
@@ -209,7 +239,7 @@ def prose_units(wild: int):
                 "after": row.get("after") or w.get("after"),
                 "sets": sets,
                 "base_row": row,
-                "stratum": stratum(row.get("text") or "", {s["role"] for s in sets}),
+                "stratum": stratum(row.get("text") or "", {role_key(s) for s in sets}),
             }
             if synthetic:
                 unit["labels_from"] = "dataset"
@@ -243,23 +273,15 @@ def wild_passages(n: int, found):
         context = (blobs.get(passages[0]) or {}).get("passages", []) if passages else []
         for i, passage in enumerate(payload.get("passages") or []):
             sets = [
-                {
-                    "name": a.get("name"),
-                    "points": a.get("points") or [],
-                    "role": next((p.get("role") for p in a.get("points") or []), None),
-                }
+                with_role(a.get("name"), study_schema_points(a["points"]))
                 for a in passage.get("analyses") or []
                 if a.get("points")
             ]
             if not sets:
                 continue
-            roles = {s["role"] for s in sets}
+            roles = {role_key(s) for s in sets}
             key = next(
-                (
-                    r
-                    for r in ("figure", "target", "prior_study", "seed", "roi", "other")
-                    if r in roles
-                ),
+                (r for r in RARE_FIRST if r in roles),
                 "result",
             )
             if len(by_role[key]) >= want:

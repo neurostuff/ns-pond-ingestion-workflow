@@ -7,7 +7,7 @@ is in `ingestion_workflow/services/set_roles/`; this directory holds the job scr
 
 ```
 services/set_roles/
-  labels.py         the label vocabulary, shared by table and prose sets
+  labels.py         study_schema's role fields, shared by table and prose sets
   common.py         point shape, cue counts, sentence and citation helpers
   table_context.py  a TABLE set's input: caption, footer, header, its rows, neighbours, citing sentences
   prose_context.py  a PROSE set's input: passage, heading, before/after, citation markers
@@ -25,38 +25,43 @@ experiments/role_classifier/
 
 ## Labels
 
-One label per set, from `ROLE_LABELS` in this order (it is the classifier head's output
-order: append, never reorder). The label is study_schema's `CoordinateRole`, with the
-`AnchorKind` folded in for anchors:
+Each set's label is study_schema's three role fields, the ones `CoordinateParse` has:
+`role` (a `CoordinateRole`), `anchor_kind` (an `AnchorKind`, for an anchor only) and
+`from_prior_study`. The values are imported from `study_schema.models.paper_parse`, never
+retyped (`labels.py`); every row the labeller, the encoder and the extractors' exports carry
+uses them.
 
-| Label | Meaning | Uploaded to neurostore |
+| `role` | Meaning | Uploaded to neurostore |
 |---|---|---|
 | `result` | A finding of this study: peaks of a tested effect | yes |
-| `anchor:roi` | A region of interest the study defined or used | yes, as a labelled set, not an analysis with statistics |
-| `anchor:seed` | A seed for connectivity or PPI | yes, as above |
-| `anchor:stimulation_target` | A TMS/tDCS/DBS target | yes, as above |
-| `anchor:node` | A network node or parcel centre | yes, as above |
+| `anchor` | A location the study defined and used; `anchor_kind` `roi`, `seed`, `stimulation_target` or `node` | yes, as a labelled set, not an analysis with statistics |
 | `localization` | Where electrodes or sources were placed | no |
 | `reference` | Coordinates quoted from another publication for comparison | no |
 | `display` | A slice or crosshair position for a figure | no |
-| `other` | None of the above | no |
 
-A second, independent answer is `from_prior_study`: whether the coordinates come from
-another publication. A seed taken from a meta-analysis is `anchor:seed` and
-`from_prior_study: true`. The model has a separate binary head for it.
+Numbers that are not brain coordinates at all (channel numbers, lattice points, a phantom's
+positions, rodent stereotaxic coordinates) get no role: the labeller answers `coordinates:
+false` and `role: null`, the encoder's coordinates head learns them, and they are dropped from
+the uploads and from the extractors' targets.
 
-The prose model's roles map onto labels as `result` -> `result`, `roi` -> `anchor:roi`,
-`seed` -> `anchor:seed`, `target` -> `anchor:stimulation_target`, `prior_study` ->
-`reference`, `figure` -> `display`, `other` -> `other` (`label_from_prose`). The extractors' training rows use that vocabulary
-(`extractor_role`): `anchor:node` becomes `roi`, `localization` becomes `other`.
+`from_prior_study` is independent of the role: a seed taken from a meta-analysis is `role:
+anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
+for it, and one for the anchor kind.
+
+The current nu-prose model answers in its own vocabulary (`prompts.prose_coordinates.ROLES`).
+One legacy adapter, `prompts.prose_coordinates.study_schema_role`, reads it where its output
+is read (resolve, and `build_sets.py` for the prose dataset): `roi`/`seed`/`target` -> anchor
+of that kind, `prior_study` -> `reference` with `from_prior_study`, `figure` -> `display`,
+`other` -> not coordinates. It goes when the retrained nu-prose, taught these fields by
+`export.prose_rows`, ships.
 
 Decision rule (`classifier.decide`): a table set is proposed `result` and a prose set its prose
-model's role. The classifier overrides the proposal only when its top probability is at least
+model's role, as resolve recorded it. The classifier sets a set aside as not coordinates, or overrides the proposal only when its top probability is at least
 `min_confidence` (the design sets 0.8), because a wrong override is costly -- a real result
 relabelled `reference` is not uploaded. `from_prior_study` is set when the flag head reaches
 `prior_threshold` (0.5), and always for a `reference`. Each decision is
 recorded with its confidence, its source (`proposal` or the model's name and version) and the
-label it overrode.
+proposal it overrode.
 
 ## Inputs
 

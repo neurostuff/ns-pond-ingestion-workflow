@@ -9,7 +9,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models import AnalysisCollection
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.roles import RolesStage, assign_roles
-from ingestion_workflow.services.set_roles import ROLE_LABELS, Prediction
+from ingestion_workflow.services.set_roles import ANCHOR_KINDS, COORDINATE_ROLES, Prediction
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, META_FILE
 
 TEXT = "Peaks from earlier work are listed in Table 2. Table 2 quotes Lee et al. (2008)."
@@ -28,9 +28,18 @@ class FakeClassifier:
         self.seen += texts
         out = []
         for text in texts:
-            label, p, prior = next(v for k, v in self.answers.items() if f"[NAME] {k}" in text)
-            rest = (1 - p) / (len(ROLE_LABELS) - 1)
-            out.append(Prediction({n: (p if n == label else rest) for n in ROLE_LABELS}, prior))
+            role, p, prior, *kind = next(
+                v for k, v in self.answers.items() if f"[NAME] {k}" in text
+            )
+            rest = (1 - p) / (len(COORDINATE_ROLES) - 1)
+            out.append(
+                Prediction(
+                    0.99,
+                    {n: (p if n == role else rest) for n in COORDINATE_ROLES},
+                    {k: (0.9 if [k] == kind else 0.1 / 3) for k in ANCHOR_KINDS},
+                    prior,
+                )
+            )
         return out
 
 
@@ -88,7 +97,7 @@ def test_a_confident_reference_is_held_back_with_its_citation():
     assert kept["name"] == "patients > controls"
     assert kept["metadata"]["set_role"]["role_source"] == "fake@1"
     role = held["metadata"]["set_role"]
-    assert (role["role"], role["from_prior_study"], role["proposal"]) == (
+    assert (role["role"], role["from_prior_study"], role["proposal"]["role"]) == (
         "reference",
         True,
         "result",
@@ -142,16 +151,22 @@ def test_a_prose_seed_keeps_its_prose_role_and_metadata():
                 {
                     "name": "amygdala seed",
                     "coordinates": [{"x": 20.0, "y": -4.0, "z": -18.0, "space": "MNI"}],
-                    "metadata": {"source": "prose", "role": "seed", "passages": [0]},
+                    "metadata": {
+                        "source": "prose",
+                        "role": "anchor",
+                        "anchor_kind": "seed",
+                        "from_prior_study": False,
+                        "passages": [0],
+                    },
                 }
             ],
         }
     }
     passages = [{"text": "The amygdala seed (20, -4, -18) was a 6 mm sphere.", "heading": "PPI"}]
-    classifier = FakeClassifier({"amygdala seed": ("anchor:seed", 0.99, 0.02)})
+    classifier = FakeClassifier({"amygdala seed": ("anchor", 0.99, 0.02, "seed")})
     out, _ = assign_roles(payload, passages, None, classifier, min_confidence=0.8)
     [analysis] = out["prose"]["analyses"]
-    assert analysis["metadata"]["role"] == "seed"  # the prose model's answer, as resolve wrote it
+    assert analysis["metadata"]["anchor_kind"] == "seed"  # the proposal, as resolve wrote it
     assert analysis["metadata"]["set_role"]["anchor_kind"] == "seed"
     assert "[PASSAGE] The amygdala seed" in classifier.seen[0]
 
@@ -162,7 +177,8 @@ def test_the_stage_refuses_a_model_built_for_another_context(tmp_path):
             {
                 "name": "enc",
                 "version": "1",
-                "labels": list(ROLE_LABELS),
+                "roles": list(COORDINATE_ROLES),
+                "anchor_kinds": list(ANCHOR_KINDS),
                 "context_versions": {**CONTEXT_VERSIONS, "table": 0},
             }
         )
@@ -175,7 +191,8 @@ def test_the_stage_refuses_a_model_built_for_another_context(tmp_path):
             {
                 "name": "enc",
                 "version": "1",
-                "labels": list(ROLE_LABELS),
+                "roles": list(COORDINATE_ROLES),
+                "anchor_kinds": list(ANCHOR_KINDS),
                 "context_versions": CONTEXT_VERSIONS,
             }
         )

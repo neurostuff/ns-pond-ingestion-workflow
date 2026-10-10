@@ -1,7 +1,8 @@
-"""The set-role encoder: a pretrained text encoder with two heads.
+"""The set-role encoder: a pretrained text encoder with four heads.
 
-One head picks a label from `ROLE_LABELS`; the other says whether the
-coordinates come from another publication. Both read the encoder's first-token
+One says whether the numbers are coordinates at all, one picks the
+`CoordinateRole`, one the `AnchorKind` (trained on anchors only), and one says
+whether the coordinates come from another publication. All read the encoder's first-token
 embedding of the serialised context. torch and transformers are imported only
 here, and only when a model is loaded or trained, so the pipeline runs without
 them when no role model is configured.
@@ -10,11 +11,12 @@ A saved model is a directory:
 
     encoder/        the fine-tuned encoder (save_pretrained)
     tokenizer/      its tokenizer
-    heads.pt        the two heads' weights
-    set_roles.json  labels, the context version of each origin, name and version, base model
+    heads.pt        the heads' weights
+    set_roles.json  roles and anchor kinds, each origin's context version, name and
+                    version, base model
 
 One model reads table and prose sets alike: each input starts with its origin
-(`[ORIGIN] table` or `[ORIGIN] text`), and the label vocabulary is shared.
+(`[ORIGIN] table` or `[ORIGIN] text`), and the role vocabulary is shared.
 """
 
 from __future__ import annotations
@@ -23,7 +25,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
-from .labels import ROLE_LABELS
+from .labels import ANCHOR_KINDS, COORDINATE_ROLES
 from .prose_context import PROSE_CONTEXT_VERSION
 from .table_context import TABLE_CONTEXT_VERSION
 
@@ -41,9 +43,11 @@ def check_meta(meta: Dict[str, Any], path: Any = "the model") -> None:
             f"{path} was trained on context versions {trained or None}; this code builds "
             f"{CONTEXT_VERSIONS}; retrain it"
         )
-    labels = list(meta.get("labels", []))
-    if not labels or labels != list(ROLE_LABELS)[: len(labels)]:
-        raise ValueError(f"{path} was trained on labels {labels}, not a prefix of ROLE_LABELS")
+    for key, values in (("roles", COORDINATE_ROLES), ("anchor_kinds", ANCHOR_KINDS)):
+        if list(meta.get(key) or []) != list(values):
+            raise ValueError(
+                f"{path} was trained on {key} {meta.get(key)}, not study_schema's {list(values)}"
+            )
 
 
 def _torch():
@@ -52,8 +56,11 @@ def _torch():
     return torch
 
 
-def build_model(base: Any, n_labels: int = len(ROLE_LABELS), dropout: float = 0.1):
-    """Wrap an encoder (a transformers `PreTrainedModel`) with the two heads."""
+HEADS = ("coordinates_head", "role_head", "kind_head", "prior_head")
+
+
+def build_model(base: Any, dropout: float = 0.1):
+    """Wrap an encoder (a transformers `PreTrainedModel`) with the heads."""
     torch = _torch()
     nn = torch.nn
 
@@ -63,13 +70,21 @@ def build_model(base: Any, n_labels: int = len(ROLE_LABELS), dropout: float = 0.
             self.encoder = base
             hidden = base.config.hidden_size
             self.dropout = nn.Dropout(dropout)
-            self.role_head = nn.Linear(hidden, n_labels)
+            self.coordinates_head = nn.Linear(hidden, 1)
+            self.role_head = nn.Linear(hidden, len(COORDINATE_ROLES))
+            self.kind_head = nn.Linear(hidden, len(ANCHOR_KINDS))
             self.prior_head = nn.Linear(hidden, 1)
 
         def forward(self, input_ids, attention_mask):
+            """(coordinates logit, role logits, anchor-kind logits, prior-study logit)."""
             out = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
             pooled = self.dropout(out.last_hidden_state[:, 0])
-            return self.role_head(pooled), self.prior_head(pooled).squeeze(-1)
+            return (
+                self.coordinates_head(pooled).squeeze(-1),
+                self.role_head(pooled),
+                self.kind_head(pooled),
+                self.prior_head(pooled).squeeze(-1),
+            )
 
     return SetRoleEncoder()
 
@@ -90,14 +105,15 @@ def save(
     model.encoder.save_pretrained(path / "encoder")
     tokenizer.save_pretrained(path / "tokenizer")
     torch.save(
-        {"role_head": model.role_head.state_dict(), "prior_head": model.prior_head.state_dict()},
+        {head: getattr(model, head).state_dict() for head in HEADS},
         path / "heads.pt",
     )
     meta = {
         "name": name,
         "version": version,
         "base_model": base_model,
-        "labels": list(ROLE_LABELS),
+        "roles": list(COORDINATE_ROLES),
+        "anchor_kinds": list(ANCHOR_KINDS),
         "context_versions": CONTEXT_VERSIONS,
         **(extra or {}),
     }
@@ -117,10 +133,10 @@ def load(path: Path, device: str = "cpu"):
     path = Path(path)
     meta = read_meta(path)
     check_meta(meta, path)
-    model = build_model(AutoModel.from_pretrained(path / "encoder"), n_labels=len(meta["labels"]))
+    model = build_model(AutoModel.from_pretrained(path / "encoder"))
     heads = torch.load(path / "heads.pt", map_location=device)
-    model.role_head.load_state_dict(heads["role_head"])
-    model.prior_head.load_state_dict(heads["prior_head"])
+    for head in HEADS:
+        getattr(model, head).load_state_dict(heads[head])
     model.to(device).eval()
     return model, AutoTokenizer.from_pretrained(path / "tokenizer"), meta
 
@@ -129,13 +145,12 @@ def predict_batch(
     model,
     tokenizer,
     texts: Sequence[str],
-    labels: Sequence[str],
     *,
     device: str = "cpu",
     max_length: int = 512,
     batch_size: int = 32,
 ):
-    """[(label probabilities, prior-study probability)] for each text."""
+    """A `Prediction`'s fields (as a dict) for each text."""
     torch = _torch()
     out = []
     with torch.no_grad():
@@ -147,9 +162,19 @@ def predict_batch(
                 padding=True,
                 return_tensors="pt",
             ).to(device)
-            role_logits, prior_logits = model(batch["input_ids"], batch["attention_mask"])
-            role_probs = torch.softmax(role_logits, dim=-1).cpu().tolist()
-            prior_probs = torch.sigmoid(prior_logits).cpu().tolist()
-            for probs, prior in zip(role_probs, prior_probs):
-                out.append(({label: p for label, p in zip(labels, probs)}, float(prior)))
+            coords, roles, kinds, prior = model(batch["input_ids"], batch["attention_mask"])
+            for c, r, k, p in zip(
+                torch.sigmoid(coords).cpu().tolist(),
+                torch.softmax(roles, dim=-1).cpu().tolist(),
+                torch.softmax(kinds, dim=-1).cpu().tolist(),
+                torch.sigmoid(prior).cpu().tolist(),
+            ):
+                out.append(
+                    {
+                        "coordinates_probability": float(c),
+                        "role_probabilities": dict(zip(COORDINATE_ROLES, r)),
+                        "kind_probabilities": dict(zip(ANCHOR_KINDS, k)),
+                        "prior_probability": float(p),
+                    }
+                )
     return out

@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
+from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION, study_schema_role
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -106,7 +106,8 @@ class ProseStage:
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
-                kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
+                kept += sum(1 for q in points
+                            if study_schema_role(q["role"])["role"] in KEPT_ROLES)
                 out.append({"text": p["text"], "heading": p.get("heading"),
                             "space": answer.get("space") or p.get("space"),
                             "analyses": answer.get("analyses", []), "error": error})

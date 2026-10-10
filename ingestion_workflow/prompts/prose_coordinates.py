@@ -7,13 +7,40 @@ the table extractor's tuple form is something only its fine-tune learned.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+from study_schema.models.paper_parse import AnchorKind, CoordinateRole
 
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
 PROSE_PROMPT_VERSION = "2026-10-06.n5"
 
+#: The current nu-prose model's own role vocabulary: its template and the
+#: dataset it was trained on use it. Nothing past `study_schema_role` sees it.
 ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
+
+_A = CoordinateRole.anchor.value
+#: LEGACY ADAPTER -- delete with `ROLES` when the retrained nu-prose (X3, taught
+#: study_schema's role fields directly) ships. `other` has no CoordinateRole:
+#: what the model calls other is numbers that are not brain coordinates.
+_STUDY_SCHEMA_ROLES = {
+    "result": (CoordinateRole.result.value, None, False),
+    "roi": (_A, AnchorKind.roi.value, False),
+    "seed": (_A, AnchorKind.seed.value, False),
+    "target": (_A, AnchorKind.stimulation_target.value, False),
+    "prior_study": (CoordinateRole.reference.value, None, True),
+    "figure": (CoordinateRole.display.value, None, False),
+}
+
+
+def study_schema_role(role: Optional[str]) -> Dict[str, Any]:
+    """A nu-prose role as study_schema's `role`, `anchor_kind` and `from_prior_study`.
+
+    No role is a result; `other` (or anything outside `ROLES`) is `role` None:
+    not coordinates.
+    """
+    fields = _STUDY_SCHEMA_ROLES.get(role or "result", (None, None, False))
+    return dict(zip(("role", "anchor_kind", "from_prior_study"), fields))
 
 INSTRUCTION = (
     "List every brain coordinate in the passage, including region-of-interest centres, seeds, "
@@ -113,4 +140,4 @@ def schema() -> Dict[str, Any]:
 
 
 __all__ = ["INSTRUCTION", "MAX_ANALYSES", "MAX_NAME", "MAX_POINTS", "PROSE_PROMPT_VERSION",
-           "ROLES", "TEMPLATE", "WITH_CONTEXT", "schema"]
+           "ROLES", "TEMPLATE", "study_schema_role", "WITH_CONTEXT", "schema"]

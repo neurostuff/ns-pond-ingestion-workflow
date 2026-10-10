@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+from ingestion_workflow.prompts.prose_coordinates import ROLES, study_schema_role
 from ingestion_workflow.services.set_roles import (
-    ROLE_LABELS,
+    ANCHOR_KINDS,
+    COORDINATE_ROLES,
     Prediction,
     ProseSetContext,
+    SetRole,
     decide,
-    extractor_role,
-    label_from_prose,
     prose_context,
     table_context,
 )
 from ingestion_workflow.services.set_roles.common import cue_summary, point_summary
+from ingestion_workflow.services.set_roles.labels import RESULT
+from study_schema.models.paper_parse import AnchorKind, CoordinateRole
+
+SEED = SetRole("anchor", "seed")
 
 ARTICLE = (
     "Seeds were placed in both amygdalae. As shown in Table 2, seeds were placed bilaterally. "
@@ -46,10 +51,10 @@ def test_short_fields_come_first_and_truncation_keeps_them():
         name="amygdala seed",
         passage="word " * 2000,
         points=[_point(20, -4, -18)],
-        proposed="anchor:seed",
+        proposed=SEED,
     )
     text = prose_context.serialize(context)
-    assert text.startswith("[ORIGIN] text [PROPOSED] anchor:seed [POINTS] n=1 ")
+    assert text.startswith("[ORIGIN] text [PROPOSED] anchor seed [POINTS] n=1 ")
     assert text.index("[CUES]") < text.index("[NAME]") < text.index("[PASSAGE]")
     assert len(text) <= 2400 and text.endswith("…")
 
@@ -84,7 +89,7 @@ def test_table_sets_read_their_caption_header_rows_neighbours_and_citing_sentenc
     context = table_context.build(
         rois, index=0, siblings=[rois, peaks], table_text=TABLE, article_text=ARTICLE
     )
-    assert context.proposed == "result"
+    assert context.proposed == RESULT
     assert context.citing == ["As shown in Table 2, seeds were placed bilaterally."]
     assert context.header == ["#Region | #x | #y | #z | #t"]
     assert context.rows == ["Amygdala L | -24 | -4 | -18 |", "Amygdala R | 24 | -4 | -18 |"]
@@ -112,12 +117,18 @@ def test_prose_sets_read_their_passage_heading_and_citation_markers():
     analysis = {
         "name": "mPFC seed",
         "coordinates": [_point(-3, 49, 16)],
-        "metadata": {"source": "prose", "role": "seed", "passages": [0]},
+        "metadata": {
+            "source": "prose",
+            "role": "anchor",
+            "anchor_kind": "seed",
+            "from_prior_study": False,
+            "passages": [0],
+        },
     }
     context = prose_context.build(analysis, passages)
-    assert (context.proposed, context.heading) == ("anchor:seed", "Seed-based connectivity")
+    assert (context.proposed, context.heading) == (SEED, "Seed-based connectivity")
     text = prose_context.serialize(context)
-    assert text.startswith("[ORIGIN] text [PROPOSED] anchor:seed")
+    assert text.startswith("[ORIGIN] text [PROPOSED] anchor seed")
     assert (
         "[CITATIONS] (41) [PASSAGE] We extracted" in text
         and "[BEFORE] Preprocessing. [AFTER] Then." in text
@@ -143,53 +154,60 @@ def test_citations_are_not_coordinates():
     assert "citations=2" in cue_summary(text)
 
 
-def test_prose_roles_map_onto_labels():
-    assert [
-        label_from_prose(r)
-        for r in ("result", "roi", "seed", "target", "prior_study", "figure", "other", None)
-    ] == [
-        "result",
-        "anchor:roi",
-        "anchor:seed",
-        "anchor:stimulation_target",
-        "reference",
-        "display",
-        "other",
-        "result",
+def test_the_role_vocabulary_is_study_schema_s():
+    assert COORDINATE_ROLES == tuple(r.value for r in CoordinateRole)
+    assert ANCHOR_KINDS == tuple(k.value for k in AnchorKind)
+
+
+def test_the_legacy_adapter_reads_the_prose_model_s_roles_as_study_schema_s():
+    got = [study_schema_role(r) for r in (*ROLES, None)]
+    assert [(g["role"], g["anchor_kind"], g["from_prior_study"]) for g in got] == [
+        ("result", None, False),
+        ("anchor", "roi", False),
+        ("anchor", "seed", False),
+        ("anchor", "stimulation_target", False),
+        ("reference", None, True),
+        ("display", None, False),
+        (None, None, False),  # other: not coordinates
+        ("result", None, False),
     ]
-    assert set(map(label_from_prose, ("roi", "prior_study"))) <= set(ROLE_LABELS)
+    for fields in got:
+        SetRole.of(fields)  # each is valid study_schema
 
 
-def test_every_label_has_an_extractor_role_and_prose_roles_round_trip():
-    assert [extractor_role(label) for label in ROLE_LABELS] == [
-        "result",
-        "roi",
-        "seed",
-        "target",
-        "roi",
-        "other",
-        "prior_study",
-        "figure",
-        "other",
-    ]
-    for role in ("result", "roi", "seed", "target", "prior_study", "figure", "other"):
-        assert extractor_role(label_from_prose(role)) == role
+def test_a_role_outside_study_schema_is_refused():
+    for bad in (
+        {"role": "other"},
+        {"role": "anchor:roi"},
+        {"role": "anchor", "anchor_kind": None},
+        {"role": "result", "anchor_kind": "seed"},
+    ):
+        try:
+            SetRole.of(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"{bad} accepted")
 
 
-def _prediction(label, p, prior=0.0):
-    rest = (1 - p) / (len(ROLE_LABELS) - 1)
-    return Prediction({name: (p if name == label else rest) for name in ROLE_LABELS}, prior)
+def _prediction(role, p, prior=0.0, kind=None, coordinates=0.99):
+    rest = (1 - p) / (len(COORDINATE_ROLES) - 1)
+    return Prediction(
+        coordinates,
+        {name: (p if name == role else rest) for name in COORDINATE_ROLES},
+        {k: (0.9 if k == kind else 0.1 / 3) for k in ANCHOR_KINDS},
+        prior,
+    )
 
 
 def test_the_proposal_stands_below_the_threshold():
-    decision = decide("result", _prediction("reference", 0.7), source="enc@1", min_confidence=0.8)
-    assert (decision.label, decision.source, decision.uploaded) == ("result", "proposal", True)
+    decision = decide(RESULT, _prediction("reference", 0.7), source="enc@1", min_confidence=0.8)
+    assert (decision.role, decision.source, decision.uploaded) == ("result", "proposal", True)
     assert decision.confidence < 0.1  # the classifier's probability for the label recorded
 
 
 def test_a_confident_prediction_overrides_and_says_so():
     decision = decide(
-        "result",
+        RESULT,
         _prediction("reference", 0.9),
         source="enc@1",
         min_confidence=0.8,
@@ -203,15 +221,15 @@ def test_a_confident_prediction_overrides_and_says_so():
         "prior_study_evidence": [{"text": "As reported by Lee et al. (2008)."}],
         "role_confidence": 0.9,
         "role_source": "enc@1",
-        "proposal": "result",
+        "proposal": {"role": "result", "anchor_kind": None, "from_prior_study": False},
     }
     assert not decision.uploaded
 
 
 def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
     decision = decide(
-        "anchor:seed",
-        _prediction("anchor:seed", 0.95, prior=0.8),
+        SEED,
+        _prediction("anchor", 0.95, prior=0.8, kind="seed"),
         source="enc@1",
         min_confidence=0.8,
         evidence=["The seed came from Smith et al. (2010)."],
@@ -226,10 +244,21 @@ def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
 
 def test_no_evidence_is_recorded_for_the_study_s_own_set():
     decision = decide(
-        "result",
+        RESULT,
         _prediction("result", 0.99),
         source="enc@1",
         min_confidence=0.8,
         evidence=["(Smith et al., 2010)"],
     )
     assert decision.prior_study_evidence == () and not decision.from_prior_study
+
+
+def test_confident_not_coordinates_are_set_aside_without_a_role():
+    decision = decide(
+        SEED,
+        _prediction("anchor", 0.9, kind="seed", coordinates=0.05),
+        source="enc@1",
+        min_confidence=0.8,
+    )
+    assert (decision.role, decision.anchor_kind, decision.uploaded) == (None, None, False)
+    assert decision.to_metadata()["proposal"]["anchor_kind"] == "seed"

@@ -154,14 +154,17 @@ def test_a_prose_analysis_keeps_its_role_in_stage1(tmp_path):
     identifier = Identifier(pmid="1")
     content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
     prose = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
-        Analysis(name="amygdala seed", table_id="prose", metadata={"source": "prose", "role": "seed"},
+        Analysis(name="amygdala seed", table_id="prose", metadata={"source": "prose", "role": "anchor", "anchor_kind": "seed",
+                                                                      "from_prior_study": False},
                  coordinates=[Coordinate(x=-22.0, y=-4.0, z=-18.0)]),
-        Analysis(name="faces > houses", table_id="prose", metadata={"source": "prose", "role": "result"},
+        Analysis(name="faces > houses", table_id="prose", metadata={"source": "prose", "role": "result", "anchor_kind": None,
+                                                                       "from_prior_study": False},
                  coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
     root = tmp_path / "pond"
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"prose": prose}, [])
-    got = [(a["source"], a["role"], a["table_id"]) for a in read_record(root, BASE).stage1["analyses"]]
-    assert got == [("prose", "seed", "prose"), ("prose", "result", "prose")]
+    got = [(a["source"], a["role"], a["anchor_kind"], a["table_id"])
+           for a in read_record(root, BASE).stage1["analyses"]]
+    assert got == [("prose", "anchor", "seed", "prose"), ("prose", "result", None, "prose")]
 
 
 def test_a_table_analysis_has_no_prose_keys_in_stage1(written):

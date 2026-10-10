@@ -22,10 +22,10 @@ from .common import (
     point_summary,
     sentences,
 )
-from .labels import label_from_prose
+from .labels import RESULT, SetRole
 
 #: Bump when the serialisation changes (see `table_context.TABLE_CONTEXT_VERSION`).
-PROSE_CONTEXT_VERSION = 1
+PROSE_CONTEXT_VERSION = 2
 
 #: `[PROPOSED]` for a training set no model proposed a role for.
 NO_PROPOSAL = "unknown"
@@ -45,7 +45,8 @@ class ProseSetContext:
     before: str = ""
     after: str = ""
     points: List[Mapping[str, Any]] = field(default_factory=list)
-    proposed: str = "result"
+    #: The prose stage's role fields; None for a training set nothing proposed one for.
+    proposed: Optional[SetRole] = RESULT
 
     def cue_text(self) -> str:
         return " ".join(
@@ -74,8 +75,8 @@ def build(
 
     The prose stage's sets name their passages by index (`metadata.passages`);
     a training row that is itself one passage is given as `passage`. The proposal
-    is the prose model's role on the analysis unless `proposed` gives it (a
-    training row passes the prose model's role, or None when it has none).
+    is the role resolve recorded on the analysis (study_schema's fields) unless
+    `proposed` gives it (a training row passes its own, or None when it has none).
     """
     meta = analysis.get("metadata") or {}
     read = (
@@ -84,12 +85,13 @@ def build(
         else [passages[i] for i in meta.get("passages", []) if 0 <= i < len(passages)]
     )
     points = analysis.get("coordinates") or analysis.get("points") or []
-    role: Optional[str] = (
-        meta.get("role")
-        or next((p.get("role") for p in points if isinstance(p, dict) and p.get("role")), None)
-        if proposed is _FROM_ANALYSIS
-        else proposed
-    )
+    if proposed is _FROM_ANALYSIS:
+        source = (
+            meta
+            if "role" in meta
+            else next((p for p in points if isinstance(p, dict) and "role" in p), None)
+        )
+        proposed = SetRole.of(source) if source else RESULT
     return ProseSetContext(
         name=analysis.get("name") or "",
         description=analysis.get("description") or "",
@@ -98,7 +100,7 @@ def build(
         before=(read[0].get("before") or "") if read else "",
         after=(read[-1].get("after") or "") if read else "",
         points=[as_point(p) for p in points],
-        proposed=NO_PROPOSAL if proposed is None else label_from_prose(role),
+        proposed=proposed,
     )
 
 
@@ -106,7 +108,7 @@ def serialize(context: ProseSetContext, max_chars: int = MAX_CHARS) -> str:
     """The classifier's input string for one prose set: short fields first."""
     parts = [
         "[ORIGIN] text",
-        f"[PROPOSED] {context.proposed}",
+        f"[PROPOSED] {context.proposed.render() if context.proposed else NO_PROPOSAL}",
         f"[POINTS] {point_summary(context.points)}",
         f"[CUES] {cue_summary(context.cue_text())}",
         f"[NAME] {clip(context.name, 200)}",

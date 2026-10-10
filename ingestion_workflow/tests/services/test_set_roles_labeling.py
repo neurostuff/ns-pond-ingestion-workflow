@@ -10,6 +10,11 @@ import textwrap
 import pytest
 from ingestion_workflow.services.set_roles import export, labeling
 from ingestion_workflow.services.set_roles.label_schema import SCHEMA, check
+from ingestion_workflow.services.set_roles.labels import COORDINATE_ROLES, SetRole
+
+RESULT = {"role": "result", "anchor_kind": None, "from_prior_study": False}
+SEED = {"role": "anchor", "anchor_kind": "seed", "from_prior_study": False}
+REFERENCE = {"role": "reference", "anchor_kind": None, "from_prior_study": True}
 
 TABLE_ROW = {
     "article_id": "123-10-1000-x",
@@ -69,6 +74,8 @@ PROSE_ROW = {
         {
             "xyz": [10.0, 16.0, 57.0],
             "role": "result",
+            "anchor_kind": None,
+            "from_prior_study": False,
             "stat": None,
             "cluster": None,
             "analysis": "Lee",
@@ -76,6 +83,8 @@ PROSE_ROW = {
         {
             "xyz": [58.0, 12.0, 12.0],
             "role": "result",
+            "anchor_kind": None,
+            "from_prior_study": False,
             "stat": ["F", 6.1],
             "cluster": None,
             "analysis": "Age x Group",
@@ -102,6 +111,7 @@ ANSWERS = {
         "sets": [
             {
                 "set": 0,
+                "coordinates": True,
                 "role": "anchor",
                 "anchor_kind": "seed",
                 "from_prior_study": True,
@@ -109,6 +119,7 @@ ANSWERS = {
             },
             {
                 "set": 1,
+                "coordinates": True,
                 "role": "result",
                 "anchor_kind": None,
                 "from_prior_study": False,
@@ -120,6 +131,7 @@ ANSWERS = {
         "sets": [
             {
                 "set": 0,
+                "coordinates": True,
                 "role": "reference",
                 "anchor_kind": None,
                 "from_prior_study": False,
@@ -127,6 +139,7 @@ ANSWERS = {
             },
             {
                 "set": 1,
+                "coordinates": True,
                 "role": "result",
                 "anchor_kind": None,
                 "from_prior_study": False,
@@ -187,8 +200,9 @@ def test_the_schema_is_strict_and_answers_are_checked():
 def test_rows_record_label_provenance_and_their_origin_s_context_version(tmp_path):
     labels = _labels(tmp_path)
     seed = labels["t:123-10-1000-x:t2#0"]
-    assert (seed["label"], seed["from_prior_study"], seed["evidence"]) == (
-        "anchor:seed",
+    assert (seed["role"], seed["anchor_kind"], seed["from_prior_study"], seed["evidence"]) == (
+        "anchor",
+        "seed",
         True,
         [1, 2],
     )
@@ -196,9 +210,9 @@ def test_rows_record_label_provenance_and_their_origin_s_context_version(tmp_pat
     assert seed["table_context_version"] == 1 and "prose_context_version" not in seed
     lee = labels["p:silver-1#0"]
     assert (
-        lee["prose_context_version"] == 1 and lee["from_prior_study"] is True
+        lee["prose_context_version"] == 2 and lee["from_prior_study"] is True
     )  # a reference is prior
-    assert lee["model"] == "gpt-6.1-sol" and lee["label_version"] == 1
+    assert lee["model"] == "gpt-6.1-sol" and lee["label_version"] == 2
 
 
 def test_the_job_resumes_skips_done_units_and_keeps_a_ledger(tmp_path):
@@ -229,21 +243,27 @@ def test_rare_strata_are_taken_in_turn():
 def test_agreement_is_reported_per_origin(tmp_path):
     a = _labels(tmp_path / "a")
     b = {k: dict(v) for k, v in a.items()}
-    b["p:silver-1#0"].update(label="anchor:roi", from_prior_study=False)
+    b["p:silver-1#0"].update(role="anchor", anchor_kind="roi", from_prior_study=False)
     out = labeling.agreement(a, b)
     assert out["table"]["label_agreement"] == 1.0
     assert out["text"]["label_agreement"] == 0.5 and out["text"]["disagreements"] == {
-        "reference | anchor:roi": 1
+        "reference | anchor roi": 1
     }
 
 
 def test_encoder_rows_are_one_string_per_set_split_by_article(tmp_path):
     rows = list(export.encoder_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path)))
-    assert [r["label"] for r in rows] == ["anchor:seed", "result", "reference", "result"]
+    assert [(r["role"], r["anchor_kind"]) for r in rows] == [
+        ("anchor", "seed"),
+        ("result", None),
+        ("reference", None),
+        ("result", None),
+    ]
+    assert all(r["coordinates"] for r in rows)
     assert rows[0]["text"].startswith("[ORIGIN] table") and rows[2]["text"].startswith(
         "[ORIGIN] text"
     )
-    assert rows[0]["table_context_version"] == 1 and rows[2]["prose_context_version"] == 1
+    assert rows[0]["table_context_version"] == 1 and rows[2]["prose_context_version"] == 2
     assert rows[0]["split"] == rows[1]["split"] == export.split_of("123-10-1000-x")
 
 
@@ -252,10 +272,10 @@ def test_synthetic_units_bring_their_own_labels():
         **PROSE_UNIT,
         "unit_id": "p:syn",
         "labels_from": "dataset",
-        "sets": [{"name": "x", "points": [{"xyz": [1, 2, 3], "role": "prior_study"}]}],
+        "sets": [{"name": "x", "points": [{"xyz": [1, 2, 3], **REFERENCE}]}],
     }
     [row] = export.encoder_rows([unit], {})
-    assert (row["label"], row["from_prior_study"], row["label_source"]) == (
+    assert (row["role"], row["from_prior_study"], row["label_source"]) == (
         "reference",
         True,
         "dataset",
@@ -266,28 +286,36 @@ def test_nu_v21_rows_keep_their_format_and_gain_a_role_per_analysis(tmp_path):
     [row] = export.nu_v21_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path))
     assert set(TABLE_ROW) <= set(row) and row["table_serialised"] == TABLE_ROW["table_serialised"]
     target = json.loads(row["target_json"])
-    assert [(a["name"], a["role"]) for a in target["analyses"]] == [
-        ("seed", "seed"),
-        ("PPI", "result"),
+    assert [
+        (a["name"], a["role"], a["anchor_kind"], a["from_prior_study"]) for a in target["analyses"]
+    ] == [
+        ("seed", "anchor", "seed", True),
+        ("PPI", "result", None, False),
     ]
-    assert target["analyses"][1]["measure"] == "voxels" and list(target["analyses"][0])[:2] == [
+    assert target["analyses"][1]["measure"] == "voxels" and list(target["analyses"][0])[:4] == [
         "name",
-        "role",
+        *export.ROLE_FIELDS,
     ]
-    assert "role" in json.loads(export.NU_V21_TEMPLATE)["analyses"][0]
+    template = json.loads(export.NU_V21_TEMPLATE)["analyses"][0]
+    assert template["role"] == ["result", "anchor", "localization", "reference", "display"]
+    assert template["anchor_kind"] == ["roi", "seed", "stimulation_target", "node"]
     for a in target["analyses"]:
-        del a["role"]
+        for k in export.ROLE_FIELDS:
+            del a[k]
     assert json.dumps(target, separators=(",", ":")) == TABLE_ROW["target_json"]
     assert row["target_json"].startswith('{"space":"MNI","analyses":[{"name":"seed","role":')
 
 
 def test_prose_rows_keep_their_format_and_take_each_set_s_role(tmp_path):
     [row] = export.prose_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path))
-    assert [p["role"] for p in row["points"]] == ["prior_study", "result"]
+    assert [(p["role"], p["from_prior_study"]) for p in row["points"]] == [
+        ("reference", True),
+        ("result", False),
+    ]
     assert (
         row["text"] == PROSE_ROW["text"]
         and row["id"] == "silver-1"
-        and row["prose_context_version"] == 1
+        and row["prose_context_version"] == 2
     )
 
 
@@ -344,7 +372,7 @@ def test_a_relabelled_prose_row_keeps_its_own_label_source(tmp_path):
 def test_hand_rows_are_the_prose_gold_set_in_test():
     hand = _held_out_unit("train", "hand")
     rows = list(export.encoder_rows([hand], {}))
-    assert [(r["label"], r["label_source"], r["split"]) for r in rows] == [
+    assert [(r["role"], r["label_source"], r["split"]) for r in rows] == [
         ("result", "hand", "test"),
         ("result", "hand", "test"),
     ]
@@ -356,15 +384,15 @@ def test_proposed_is_the_pipeline_s_proposal_never_the_label():
         "unit_id": "p:syn",
         "labels_from": "dataset",
         "dataset": "synthetic",
-        "sets": [{"name": "x", "role": "seed", "points": [{"xyz": [1, 2, 3], "role": "seed"}]}],
+        "sets": [{"name": "x", **SEED, "points": [{"xyz": [1, 2, 3], **SEED}]}],
     }
     wild = {**synthetic, "unit_id": "w:a:0", "dataset": "wild", "labels_from": None}
     [syn_ctx] = labeling.contexts(synthetic)
     [wild_ctx] = labeling.contexts(wild)
     assert labeling.serialize(synthetic, syn_ctx).startswith("[ORIGIN] text [PROPOSED] unknown ")
-    assert wild_ctx.proposed == "anchor:seed"  # the prose stage's own role
+    assert wild_ctx.proposed == SetRole("anchor", "seed")  # the prose stage's own role
     [table_ctx, _] = labeling.contexts(TABLE_UNIT)
-    assert table_ctx.proposed == "result"
+    assert table_ctx.proposed == SetRole("result")
 
 
 def test_synthetic_sets_are_train_only():
@@ -373,7 +401,7 @@ def test_synthetic_sets_are_train_only():
         for i in range(30)
     ]
     for u in units:
-        u["sets"] = [{"name": "x", "points": [{"xyz": [1, 2, 3], "role": "result"}]}]
+        u["sets"] = [{"name": "x", "points": [{"xyz": [1, 2, 3], **RESULT}]}]
     assert {r["split"] for r in export.encoder_rows(units, {})} == {"train"}
 
 
@@ -492,3 +520,79 @@ def test_a_spent_usage_limit_is_waited_out_then_the_unit_is_labelled(tmp_path, m
     assert (tmp_path / "calls").read_text() == "2"
     assert labeling.ledger_totals(out)["gpt-6.1-sol"]["input_tokens"] == 7
     assert not os.path.exists(out / "errors.jsonl")
+
+
+def _role_values(value, found):
+    """Every `role` and `anchor_kind` anywhere in a row, target_json included."""
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if k in ("role", "anchor_kind"):
+                found.append((k, v))
+            _role_values(json.loads(v) if k == "target_json" else v, found)
+    elif isinstance(value, list):
+        for v in value:
+            _role_values(v, found)
+    return found
+
+
+def test_every_exported_role_is_study_schema_s(tmp_path):
+    labels = _labels(tmp_path)
+    # A set labelled not coordinates is dropped from the extractors' targets.
+    labels["t:123-10-1000-x:t2#1"].update(role=None, anchor_kind=None, from_prior_study=False)
+    unlabelled = {**PROSE_UNIT, "unit_id": "p:other", "article_id": "other"}
+    rows = [
+        *export.encoder_rows([TABLE_UNIT, PROSE_UNIT], labels),
+        *export.nu_v21_rows([TABLE_UNIT, PROSE_UNIT], labels),
+        *export.prose_rows([TABLE_UNIT, PROSE_UNIT, unlabelled], labels, keep_unlabelled=True),
+    ]
+    found = _role_values(rows, [])
+    assert {k for k, _ in found} == {"role", "anchor_kind"}
+    for key, value in found:
+        allowed = (
+            COORDINATE_ROLES if key == "role" else ("roi", "seed", "stimulation_target", "node")
+        )
+        assert value in (*allowed, None), f"{key} {value!r} is not study_schema's"
+    [v21] = [r for r in rows if "target_json" in r]
+    assert [a["name"] for a in json.loads(v21["target_json"])["analyses"]] == ["seed"]
+
+
+def test_a_legacy_role_in_an_exported_row_is_refused(tmp_path):
+    legacy = {
+        **PROSE_UNIT,
+        "base_row": {**PROSE_ROW, "points": [{**PROSE_ROW["points"][0], "role": "prior_study"}]},
+    }
+    with pytest.raises(ValueError, match="not a CoordinateRole"):
+        list(export.prose_rows([legacy], {}, keep_unlabelled=True))
+    with pytest.raises(ValueError, match="not a CoordinateRole"):
+        list(
+            export.encoder_rows(
+                [TABLE_UNIT],
+                {
+                    "t:123-10-1000-x:t2#0": {
+                        "role": "anchor:roi",
+                        "anchor_kind": None,
+                        "from_prior_study": False,
+                    }
+                },
+            )
+        )
+
+
+def test_an_answer_that_is_not_coordinates_has_no_role():
+    from ingestion_workflow.services.set_roles.label_schema import set_role
+
+    answer = {
+        "set": 0,
+        "coordinates": False,
+        "role": None,
+        "anchor_kind": None,
+        "from_prior_study": False,
+        "evidence": [],
+    }
+    assert check({"sets": [answer]}, 1, 0) is None
+    assert set_role(answer) == SetRole(None)
+    assert "coordinates without a role" in check({"sets": [{**answer, "coordinates": True}]}, 1, 0)
+    assert SCHEMA["properties"]["sets"]["items"]["properties"]["role"]["enum"] == [
+        *COORDINATE_ROLES,
+        None,
+    ]

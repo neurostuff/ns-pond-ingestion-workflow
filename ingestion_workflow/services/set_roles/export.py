@@ -1,16 +1,19 @@
 """One set of labels, three kinds of training row.
 
-- `encoder_rows`: the set-role encoder's (one input string per set, its label
-  and prior-study flag), split by article (`splits`).
+- `encoder_rows`: the set-role encoder's (one input string per set, its role
+  fields), split by article (`splits`).
 - `nu_v21_rows`: nu-v21's own rows (`/home/james/train-data/train_v21.jsonl`
   on beast: title, abstract, caption, footer, `table_serialised`,
-  `target_json`, ...), with each target analysis given its `role`.
+  `target_json`, ...), with each target analysis given its role fields.
 - `prose_rows`: the prose dataset's own rows (the v3 `train.jsonl` that
   `jk-prose-coords/ft/build_ft.py` reads: text, heading, points with `xyz`,
-  `stat`, `analysis`, `role`), with each point's `role` set from its set's label.
+  `stat`, `analysis`), with each point's role fields set from its set's label.
 
-The extractors' rows keep their format; only the role is added or replaced, in
-the extractors' role vocabulary (`labels.extractor_role`). A unit is exported
+The extractors' rows keep their format; only the role fields are added or
+replaced: study_schema's `role`, `anchor_kind` and `from_prior_study`, the same
+fields the encoder and the paper parse use, so retrained extractors answer in
+them directly. Numbers labelled not coordinates are taken out of the
+extractors' targets, and every role a row carries is checked (`checked`). A unit is exported
 to an extractor only when every one of its sets is labelled, so no row teaches
 an unlabelled analysis's role by omission. A prose row that is evaluation data
 or a human's labels (`labeling.held_out`) is passed through unchanged.
@@ -23,16 +26,21 @@ import json
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence
 
 from .labeling import context_version_field, contexts, duplicates, held_out, serialize
-from .labels import EXTRACTOR_ROLES, extractor_role, label_from_prose
+from .labels import ANCHOR_KINDS, COORDINATE_ROLES, SetRole, role_error
 
-#: nu-v21's template (`train_nuex3_v2.py`'s TEMPLATE) with the analysis's role.
+#: The role fields every exported role carries.
+ROLE_FIELDS = ("role", "anchor_kind", "from_prior_study")
+
+#: nu-v21's template (`train_nuex3_v2.py`'s TEMPLATE) with the analysis's role fields.
 NU_V21_TEMPLATE = json.dumps(
     {
         "space": ["MNI", "TAL"],
         "analyses": [
             {
                 "name": "verbatim-string",
-                "role": list(EXTRACTOR_ROLES),
+                "role": list(COORDINATE_ROLES),
+                "anchor_kind": list(ANCHOR_KINDS),
+                "from_prior_study": "boolean",
                 "measure": ["voxels", "mm^3"],
                 "points": [
                     [
@@ -114,18 +122,24 @@ def splits(
 
 
 def _dataset_label(unit: Mapping[str, Any], index: int) -> Optional[Dict[str, Any]]:
-    """A synthetic or hand-labelled unit's own label: the role on each point."""
+    """A synthetic or hand-labelled unit's own label: the role fields on the set or its points."""
     s = unit["sets"][index]
-    role = s.get("role") or next(
-        (p.get("role") for p in s.get("points") or [] if isinstance(p, dict)), None
+    source = (
+        s
+        if "role" in s
+        else next((p for p in s.get("points") or [] if isinstance(p, dict) and "role" in p), None)
     )
-    if role is None:
+    if source is None:
         return None
-    return {
-        "label": label_from_prose(role),
-        "from_prior_study": role == "prior_study",
-        "model": "hand" if _is_hand(unit) else "dataset",
-    }
+    return {**SetRole.of(source).fields(), "model": "hand" if _is_hand(unit) else "dataset"}
+
+
+def checked(fields: Mapping[str, Any], where: str) -> Dict[str, Any]:
+    """`fields`' role fields, refused unless they are study_schema's."""
+    error = role_error(fields)
+    if error:
+        raise ValueError(f"{where}: {error}")
+    return {k: fields[k] for k in ROLE_FIELDS}
 
 
 def encoder_rows(
@@ -157,8 +171,8 @@ def encoder_rows(
                 "origin": unit["origin"],
                 field: version,
                 "text": serialize(unit, ctx),
-                "label": label["label"],
-                "from_prior_study": bool(label["from_prior_study"]),
+                **checked(label, set_id),
+                "coordinates": label["role"] is not None,
                 "label_source": label.get("model"),
                 "split": split[unit["unit_id"]],
             }
@@ -187,9 +201,10 @@ def _with_copies(
 def nu_v21_rows(
     units: Iterable[Mapping[str, Any]], labels: Mapping[str, Mapping[str, Any]]
 ) -> Iterator[Dict[str, Any]]:
-    """nu-v21 rows with `role` after each target analysis's name.
+    """nu-v21 rows with the role fields after each target analysis's name.
 
-    A table unit's sets are its base row's target analyses, in order.
+    A table unit's sets are its base row's target analyses, in order; an
+    analysis labelled not coordinates is dropped from the target.
     """
     units = list(units)
     labels = _with_copies(units, labels)
@@ -204,10 +219,11 @@ def nu_v21_rows(
         target["analyses"] = [
             {
                 "name": a.get("name"),
-                "role": extractor_role(label["label"]),
-                **{k: v for k, v in a.items() if k != "name"},
+                **checked(label, label.get("set_id", unit["unit_id"])),
+                **{k: v for k, v in a.items() if k != "name" and k not in ROLE_FIELDS},
             }
             for a, label in zip(target["analyses"], found)
+            if label["role"] is not None
         ]
         yield {
             **base,
@@ -223,13 +239,14 @@ def prose_rows(
     *,
     keep_unlabelled: bool = False,
 ) -> Iterator[Dict[str, Any]]:
-    """Prose dataset rows with each point's `role` set from its set's label.
+    """Prose dataset rows with each point's role fields set from its set's label.
 
     A prose unit's sets are its base row's analyses in order of first
     appearance; a point listed under several analyses takes each one's role.
     `keep_unlabelled` passes the other rows through unchanged (a synthetic row
     keeps its generator's roles), so the output can replace the dataset. A
-    held-out row (val, test, or hand-labelled) is never relabelled. The labellers
+    held-out row (val, test, or hand-labelled) is never relabelled. Points that
+    are not coordinates are dropped from every row. The labellers
     go in `role_label_source`; the row's own `label_source` stays.
     """
     for unit in units:
@@ -239,18 +256,27 @@ def prose_rows(
         found = None if held_out(unit) else _all_labelled(unit, labels)
         if found is None:
             if keep_unlabelled:
-                yield dict(base)
+                yield {**base, "points": _points(base, {}, unit["unit_id"])}
             continue
-        roles = {
-            s.get("name"): extractor_role(label["label"]) for s, label in zip(unit["sets"], found)
-        }
-        points = [
-            {**p, "role": roles.get(p.get("analysis"), p.get("role"))}
-            for p in base.get("points") or []
-        ]
+        roles = {s.get("name"): label for s, label in zip(unit["sets"], found)}
         yield {
             **base,
-            "points": points,
+            "points": _points(base, roles, unit["unit_id"]),
             "role_label_source": "+".join(sorted({label["model"] for label in found})),
             context_version_field("text")[0]: context_version_field("text")[1],
         }
+
+
+def _points(
+    base: Mapping[str, Any], roles: Mapping[Any, Mapping[str, Any]], unit_id: str
+) -> List[Dict[str, Any]]:
+    """A prose row's points with their analysis's role fields (`roles`) or their own.
+
+    Points that are not coordinates are dropped.
+    """
+    out = []
+    for p in base.get("points") or []:
+        fields = checked(roles.get(p.get("analysis"), p), f"{unit_id} point {p.get('xyz')}")
+        if fields["role"] is not None:
+            out.append({**p, **fields})
+    return out

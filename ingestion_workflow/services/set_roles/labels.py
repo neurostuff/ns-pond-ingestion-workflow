@@ -1,123 +1,116 @@
 """What a coordinate set can be for, in the study_schema's words.
 
-The classifier predicts one label per set: a `CoordinateRole`, with the
-`AnchorKind` folded in for anchors, since an ROI and a seed are told apart by
-the same evidence that tells either from a result. Whether the coordinates come
-from another publication is a second, independent answer
-(ns-pond-ingestion-workflow#55): a borrowed seed is still a seed.
+A set's answer is three fields, as the paper-parse `CoordinateParse` has them:
+`role` (a `CoordinateRole`), `anchor_kind` (an `AnchorKind`, for an anchor only)
+and `from_prior_study`, independent of the role (ns-pond-ingestion-workflow#55):
+a borrowed seed is still a seed. The values are study_schema's enums, imported,
+never retyped here. Numbers that are not brain coordinates at all (channel
+numbers, lattice points, a phantom's targets) have no role: `role` is None and
+the set is left out of what is uploaded and of the extractors' targets.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Mapping, Optional, Tuple
 
-#: Index order is the classifier head's output order; append, never reorder.
-ROLE_LABELS: Tuple[str, ...] = (
-    "result",
-    "anchor:roi",
-    "anchor:seed",
-    "anchor:stimulation_target",
-    "anchor:node",
-    "localization",
-    "reference",
-    "display",
-    "other",
-)
+from study_schema.models.paper_parse import AnchorKind, CoordinateRole
 
-#: study_schema's `CoordinateRole` and `AnchorKind`: what a labeller answers.
-COORDINATE_ROLES: Tuple[str, ...] = (
-    "result",
-    "anchor",
-    "localization",
-    "reference",
-    "display",
-    "other",
-)
-ANCHOR_KINDS: Tuple[str, ...] = ("roi", "seed", "stimulation_target", "node")
+#: Index order is the classifier heads' output order.
+COORDINATE_ROLES: Tuple[str, ...] = tuple(r.value for r in CoordinateRole)
+ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 
 #: The roles uploaded to neurostore: this study's results and the regions it
 #: defined to get them. A peak quoted from another study, a display position
 #: or an electrode location is kept in the parse for pondie and not uploaded.
-UPLOADED_ROLES = frozenset({"result", "anchor"})
-
-#: The prose model's vocabulary (prompts.prose_coordinates.ROLES) as labels.
-_FROM_PROSE = {
-    "result": "result",
-    "roi": "anchor:roi",
-    "seed": "anchor:seed",
-    "target": "anchor:stimulation_target",
-    "prior_study": "reference",
-    "figure": "display",
-    "other": "other",
-}
+UPLOADED_ROLES = frozenset({CoordinateRole.result.value, CoordinateRole.anchor.value})
 
 
-#: A label in the extractors' role vocabulary, which nu-prose's targets
-#: already use per point (and nu-v21's now carry per analysis). It has no node
-#: or localization: a node is an ROI centre, an electrode location is other.
-_TO_EXTRACTOR = {
-    "result": "result",
-    "anchor:roi": "roi",
-    "anchor:seed": "seed",
-    "anchor:stimulation_target": "target",
-    "anchor:node": "roi",
-    "localization": "other",
-    "reference": "prior_study",
-    "display": "figure",
-    "other": "other",
-}
-EXTRACTOR_ROLES: Tuple[str, ...] = tuple(_FROM_PROSE)
+def role_error(fields: Mapping[str, Any]) -> Optional[str]:
+    """Why `role`, `anchor_kind` and `from_prior_study` are not study_schema's, or None."""
+    role, kind = fields.get("role"), fields.get("anchor_kind")
+    if role is not None and role not in COORDINATE_ROLES:
+        return f"role {role!r} is not a CoordinateRole"
+    if role == CoordinateRole.anchor.value and kind not in ANCHOR_KINDS:
+        return f"anchor_kind {kind!r} is not an AnchorKind"
+    if role != CoordinateRole.anchor.value and kind is not None:
+        return f"anchor_kind {kind!r} on a {role} set"
+    if not isinstance(fields.get("from_prior_study"), bool):
+        return f"from_prior_study {fields.get('from_prior_study')!r} is not a boolean"
+    if role is None and fields["from_prior_study"]:
+        return "from_prior_study on numbers that are not coordinates"
+    return None
 
 
-def extractor_role(label: str) -> str:
-    """The extractors' role for a label (`anchor:seed` -> `seed`)."""
-    return _TO_EXTRACTOR.get(label, "other")
+@dataclass(frozen=True)
+class SetRole:
+    """One set's role fields; `role` None: the numbers are not coordinates."""
+
+    role: Optional[str]
+    anchor_kind: Optional[str] = None
+    from_prior_study: bool = False
+
+    def __post_init__(self) -> None:
+        error = role_error(self.fields())
+        if error:
+            raise ValueError(error)
+
+    @classmethod
+    def of(cls, fields: Mapping[str, Any]) -> "SetRole":
+        return cls(
+            fields.get("role"),
+            fields.get("anchor_kind"),
+            bool(fields.get("from_prior_study")),
+        )
+
+    @property
+    def coordinates(self) -> bool:
+        return self.role is not None
+
+    def fields(self) -> dict:
+        return {
+            "role": self.role,
+            "anchor_kind": self.anchor_kind,
+            "from_prior_study": self.from_prior_study,
+        }
+
+    def render(self) -> str:
+        """The proposal as the classifier's input shows it (`anchor seed`)."""
+        if self.role is None:
+            return "not coordinates"
+        return " ".join(v for v in (self.role, self.anchor_kind) if v)
 
 
-def label_from_prose(role: Optional[str]) -> str:
-    """The label a prose model's role proposes; `result` when it gave none."""
-    return _FROM_PROSE.get(role or "result", "other")
-
-
-def split_label(label: str) -> Tuple[str, Optional[str]]:
-    """(`CoordinateRole`, `AnchorKind` or None) for a label."""
-    role, _, kind = label.partition(":")
-    return role, kind or None
-
-
-def join_label(role: str, anchor_kind: Optional[str] = None) -> str:
-    """The label for a role and anchor kind; an anchor of unknown kind is an ROI."""
-    if role == "anchor":
-        label = f"anchor:{anchor_kind or 'roi'}"
-        return label if label in ROLE_LABELS else "anchor:roi"
-    return role if role in ROLE_LABELS else "other"
+RESULT = SetRole(CoordinateRole.result.value)
 
 
 @dataclass(frozen=True)
 class RoleDecision:
     """What the roles stage records for one set."""
 
-    label: str
-    from_prior_study: bool
-    #: The classifier's probability for `label`; None when the proposal stood
+    decided: SetRole
+    #: The classifier's probability for the role; None when the proposal stood
     #: because no classifier ran.
     confidence: Optional[float]
     #: `proposal`, or the classifier's name and version.
     source: str
-    #: The label proposed before the classifier ran, kept so a reviewer can see
+    #: The role proposed before the classifier ran, kept so a reviewer can see
     #: what it overrode.
-    proposed: str
+    proposed: SetRole
     #: The sentences showing the coordinates come from another publication.
-    prior_study_evidence: Tuple[dict, ...] = ()
+    prior_study_evidence: Tuple[dict, ...] = field(default=())
 
     @property
-    def role(self) -> str:
-        return split_label(self.label)[0]
+    def role(self) -> Optional[str]:
+        return self.decided.role
 
     @property
     def anchor_kind(self) -> Optional[str]:
-        return split_label(self.label)[1]
+        return self.decided.anchor_kind
+
+    @property
+    def from_prior_study(self) -> bool:
+        return self.decided.from_prior_study
 
     @property
     def uploaded(self) -> bool:
@@ -126,11 +119,9 @@ class RoleDecision:
     def to_metadata(self) -> dict:
         """The decision in CoordinateParse's field names, plus the proposal it started from."""
         return {
-            "role": self.role,
-            "anchor_kind": self.anchor_kind,
-            "from_prior_study": self.from_prior_study,
+            **self.decided.fields(),
             "prior_study_evidence": list(self.prior_study_evidence),
             "role_confidence": self.confidence,
             "role_source": self.source,
-            "proposal": self.proposed,
+            "proposal": self.proposed.fields(),
         }

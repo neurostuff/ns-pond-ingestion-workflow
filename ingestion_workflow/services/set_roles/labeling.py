@@ -38,13 +38,18 @@ from typing import (
 )
 
 from . import prose_context, table_context
-from .label_schema import LABEL_VERSION, SCHEMA, check, label_of
+from .label_schema import LABEL_VERSION, SCHEMA, check, set_role
+from .labels import SetRole
 
 #: (system, prompt, schema, unit id) -> (answer, cost). `codex_caller` builds one.
 Caller = Callable[[str, str, Dict[str, Any], str], Tuple[Dict[str, Any], Dict[str, Any]]]
 
 _ROLES = """\
-Labels, for each coordinate set:
+For each set, first coordinates: true when its numbers are locations in a brain (a template
+space such as MNI or Talairach, or a subject's brain); false for anything else -- channel or
+electrode numbers, isotope or lattice labels, vectors, contrast weights, animal stereotaxic
+coordinates, a phantom's positions -- and then role, anchor_kind and from_prior_study are null
+and false. For coordinates, the role:
 - result: a finding of THIS study -- peaks of an effect it tested, whatever the statistic.
 - anchor: a location the study placed or defined and then used: anchor_kind roi (a region of
   interest or sphere), seed (connectivity, PPI), stimulation_target (TMS, tDCS, DBS, focused
@@ -52,7 +57,6 @@ Labels, for each coordinate set:
 - localization: where electrodes, optodes or sources were placed or recorded.
 - reference: coordinates quoted from other publications for comparison, not used as anchors.
 - display: slice, crosshair or view positions of a figure.
-- other: none of these.
 from_prior_study is true when the coordinates were taken from another publication (a
 meta-analysis, an earlier study, an atlas paper), whatever the role: a seed taken from a
 meta-analysis is anchor/seed with from_prior_study true. An ROI built from this study's own
@@ -112,7 +116,7 @@ def contexts(unit: Mapping[str, Any]) -> List[Any]:
     return [prose_context.build(s, passage=passage, proposed=proposal(unit, s)) for s in sets]
 
 
-def proposal(unit: Mapping[str, Any], set_: Mapping[str, Any]) -> Optional[str]:
+def proposal(unit: Mapping[str, Any], set_: Mapping[str, Any]) -> Optional[SetRole]:
     """What the pipeline proposed for a prose unit's set, or None when nothing did.
 
     Only a corpus passage (`dataset` "wild") carries the prose model's own role; a
@@ -121,7 +125,7 @@ def proposal(unit: Mapping[str, Any], set_: Mapping[str, Any]) -> Optional[str]:
     """
     if unit.get("dataset") != "wild":
         return None
-    return set_.get("proposed") or set_.get("role")
+    return SetRole.of(set_)
 
 
 #: The prose datasets' splits that are evaluation data: never relabelled, never trained on.
@@ -321,10 +325,7 @@ def label_rows(
                 "origin": unit["origin"],
                 "article_id": unit.get("article_id"),
                 "name": unit["sets"][a["set"]].get("name"),
-                "role": a["role"],
-                "anchor_kind": a.get("anchor_kind") if a["role"] == "anchor" else None,
-                "label": label_of(a),
-                "from_prior_study": bool(a["from_prior_study"]) or a["role"] == "reference",
+                **set_role(a).fields(),
                 "evidence": evidence,
                 "evidence_text": [sentences[e] for e in evidence],
                 "model": model,
@@ -457,6 +458,15 @@ def _kappa(pairs: Sequence[Tuple[str, str]]) -> Optional[float]:
     return None if expected == 1 else round((observed - expected) / (1 - expected), 3)
 
 
+def _label(row: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+    return row.get("role"), row.get("anchor_kind")
+
+
+def _shown(label: Tuple[Optional[str], Optional[str]]) -> str:
+    """A report's key for a role and anchor kind (`anchor seed`)."""
+    return " ".join(v for v in label if v) or "not coordinates"
+
+
 def agreement(
     a: Mapping[str, Mapping[str, Any]], b: Mapping[str, Mapping[str, Any]]
 ) -> Dict[str, Any]:
@@ -465,20 +475,20 @@ def agreement(
     shared = sorted(set(a) & set(b))
     for origin in sorted({a[k]["origin"] for k in shared}):
         keys = [k for k in shared if a[k]["origin"] == origin]
-        labels = [(a[k]["label"], b[k]["label"]) for k in keys]
+        labels = [(_label(a[k]), _label(b[k])) for k in keys]
         prior = [(str(a[k]["from_prior_study"]), str(b[k]["from_prior_study"])) for k in keys]
         out[origin] = {
             "sets": len(keys),
             "label_agreement": round(sum(x == y for x, y in labels) / len(keys), 3),
             "label_kappa": _kappa(labels),
-            "role_agreement": round(
-                sum(x.split(":")[0] == y.split(":")[0] for x, y in labels) / len(keys), 3
-            ),
+            "role_agreement": round(sum(x[0] == y[0] for x, y in labels) / len(keys), 3),
             "prior_agreement": round(sum(x == y for x, y in prior) / len(keys), 3),
             "prior_kappa": _kappa(prior),
-            "labels_a": dict(collections.Counter(x for x, _ in labels)),
-            "labels_b": dict(collections.Counter(y for _, y in labels)),
-            "disagreements": dict(collections.Counter(f"{x} | {y}" for x, y in labels if x != y)),
+            "labels_a": dict(collections.Counter(_shown(x) for x, _ in labels)),
+            "labels_b": dict(collections.Counter(_shown(y) for _, y in labels)),
+            "disagreements": dict(
+                collections.Counter(f"{_shown(x)} | {_shown(y)}" for x, y in labels if x != y)
+            ),
         }
     return out
 

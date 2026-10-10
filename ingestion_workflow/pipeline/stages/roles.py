@@ -95,9 +95,10 @@ def assign_roles(
 
     Each analysis gains `metadata.set_role` (CoordinateParse's role fields plus
     the proposal). Sets of a role that is not uploaded -- a reference, a
-    display position, a localization, other -- move from the collection's
-    `analyses` to its `held`, which upload and space do not read, so they stay
-    with the article without becoming this study's analyses.
+    display position, a localization, numbers that are not coordinates -- move
+    from the collection's `analyses` to its `held`, which upload and space do
+    not read, so they stay with the article without becoming this study's
+    analyses.
     """
     found = list(set_contexts(payload, passages, text))
     texts = [module.serialize(context) for _, _, module, context in found]
@@ -125,8 +126,12 @@ def assign_roles(
                 **analysis,
                 "metadata": {**(analysis.get("metadata") or {}), "set_role": metadata},
             }
-            roles[decision.label] += 1
-            overridden += decision.label != decision.proposed
+            # An anchor by its kind; numbers set aside as not coordinates as such.
+            roles[decision.anchor_kind or decision.role or "not_coordinates"] += 1
+            overridden += (decision.role, decision.anchor_kind) != (
+                decision.proposed.role,
+                decision.proposed.anchor_kind,
+            )
             if decision.uploaded:
                 kept.append(analysis)
             else:
