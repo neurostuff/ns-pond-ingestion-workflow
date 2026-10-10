@@ -1,4 +1,4 @@
-"""What each coordinate set is for: a result, an anchor, a reference, a display.
+"""What each coordinate set is for: a result, an anchor, a reference or other.
 
 Its own step, between the parse and the space stage, rather than a side answer
 of the prose model: it reads table sets and prose sets, each with the context

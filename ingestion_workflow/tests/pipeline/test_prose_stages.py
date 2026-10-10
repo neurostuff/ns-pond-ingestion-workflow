@@ -97,7 +97,7 @@ def test_results_and_the_regions_defined_to_get_them_are_kept_one_role_per_analy
     # A seed is the set's role; no point carries a seed flag of its own.
     assert not any("is_seed" in c for a in out["prose"]["analyses"] for c in a["coordinates"])
     assert summary["kept"] == {"seed": 2, "roi": 1, "stimulation_target": 1, "result": 1}
-    assert summary["dropped"] == {"reference": 1, "display": 1, "not_coordinates": 1}
+    assert summary["dropped"] == {"reference": 1, "not_coordinates": 2}
 
 
 def test_a_seed_at_a_table_peak_is_the_tables_result_reused():

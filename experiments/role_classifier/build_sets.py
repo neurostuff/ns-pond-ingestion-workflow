@@ -36,7 +36,7 @@ from ingestion_workflow.prompts.prose_coordinates import study_schema_role
 from ingestion_workflow.services.set_roles.common import (
     _ANCHOR_CUES,
     _CITATION,
-    _DISPLAY_CUES,
+    _SLICE_CUES,
     _PRIOR_CUES,
     citing_sentences,
 )
@@ -49,7 +49,7 @@ CATALOG = NS_POND / "catalog"
 
 
 #: Non-result proposals, rarest first, as `role_key` names them.
-RARE_FIRST = ("display", "stimulation_target", "reference", "seed", "roi", "not_coordinates")
+RARE_FIRST = ("stimulation_target", "reference", "seed", "roi", "not_coordinates")
 
 
 def study_schema_points(points):
@@ -85,8 +85,8 @@ def stratum(text: str, proposed=(), strong: str = "") -> str:
         if key in proposed:
             return f"proposed:{key}"
     for where, body in (("caption", strong), ("text", text)):
-        if _DISPLAY_CUES.search(body):
-            return f"{where}:display"
+        if _SLICE_CUES.search(body):
+            return f"{where}:slice"
         if _PRIOR_CUES.search(body):
             return f"{where}:prior"
         if _ANCHOR_CUES.search(body):

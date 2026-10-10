@@ -168,7 +168,7 @@ def test_the_legacy_adapter_reads_the_prose_model_s_roles_as_study_schema_s():
         ("anchor", "seed", False),
         ("anchor", "stimulation_target", False),
         ("reference", None, True),
-        ("display", None, False),
+        (None, None, False),  # figure: no proposal, the roles stage decides
         (None, None, False),  # other: indistinguishable from not coordinates; see the adapter
         ("result", None, False),
     ]

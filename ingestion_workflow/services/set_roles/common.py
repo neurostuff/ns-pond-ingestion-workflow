@@ -36,7 +36,8 @@ _ANCHOR_CUES = re.compile(
     r"|stimulat\w*|tms|tdcs|electrode[s]?|target(?:ed|s)?|node[s]?|parcel\w*|a\s+priori)\b",
     re.I,
 )
-_DISPLAY_CUES = re.compile(
+#: Slice, crosshair and view words: a feature of the text. They imply no role of their own.
+_SLICE_CUES = re.compile(
     r"\b(slice[s]?|crosshair[s]?|displayed|shown\s+at|overlaid|axial|coronal|sagittal)\b", re.I
 )
 #: A sentence break, but not after "et al.", "e.g.", "i.e.", "Fig." or "vs.".
@@ -110,7 +111,7 @@ def cue_summary(text: str) -> str:
             f"citations={len(_CITATION.findall(text))}",
             f"prior_words={len(_PRIOR_CUES.findall(text))}",
             f"anchor_words={len(_ANCHOR_CUES.findall(text))}",
-            f"display_words={len(_DISPLAY_CUES.findall(text))}",
+            f"display_words={len(_SLICE_CUES.findall(text))}",
         ]
     )
 

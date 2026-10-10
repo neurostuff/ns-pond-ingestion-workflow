@@ -9,7 +9,7 @@ labels feed the encoder and both extractors' training rows (`export`).
 The job writes one JSONL per batch, one row per set, and skips units already
 in any batch, so it can be stopped and started again. Each call's tokens go
 to `ledger.jsonl`. Units are taken stratum by stratum in turn, so the rare
-cues (a citation beside a seed, a display word) are labelled early instead of
+cues (a citation beside a seed, a figure word) are labelled early instead of
 in proportion to how rarely they occur.
 """
 
@@ -50,15 +50,17 @@ space such as MNI or Talairach, or a subject's brain); false for anything else -
 electrode numbers, isotope or lattice labels, vectors, contrast weights, animal stereotaxic
 coordinates, a phantom's positions -- and then role, anchor_kind and from_prior_study are null
 and false. For coordinates, the role:
-- result: a finding of THIS study -- peaks of an effect it tested, whatever the statistic.
+- result: a finding of THIS study -- peaks of an effect it tested, whatever the statistic,
+  including peaks drawn in a figure.
 - anchor: a location the study placed or defined and then used: anchor_kind roi (a region of
   interest or sphere; also white-matter or CSF voxels whose timeseries are regressed out as
   nuisance, as in PMID 26589451), seed (connectivity, PPI), stimulation_target (TMS, tDCS, DBS, focused
-  ultrasound), node (a network node or parcel centre).
+  ultrasound; a target or seed drawn in a figure is still an anchor), node (a network node or parcel centre).
 - localization: where electrodes, optodes or sources were placed or recorded.
-- reference: coordinates quoted from other publications for comparison, not used as anchors.
-- display: slice, crosshair or view positions of a figure.
-- other: a real brain coordinate that is none of the above -- a simulated source position or
+- reference: coordinates quoted from other publications for comparison, not used as anchors,
+  including crosshairs placed at a prior study's coordinates (from_prior_study true).
+- other: a real brain coordinate that is none of the above -- bare slice or view positions
+  with no finding, a simulated source position or
   lesion centre, a worked-example voxel of an atlas or method. Numbers that are not brain
   coordinates are never "other": they are coordinates false.
 from_prior_study is true when the coordinates were taken from another publication (a

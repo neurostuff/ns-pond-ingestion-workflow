@@ -33,7 +33,8 @@ _STUDY_SCHEMA_ROLES = {
     "seed": (_A, AnchorKind.seed.value, False),
     "target": (_A, AnchorKind.stimulation_target.value, False),
     "prior_study": (CoordinateRole.reference.value, None, True),
-    "figure": (CoordinateRole.display.value, None, False),
+    # A figure word names no role: figure-shown peaks are often results, so the roles stage decides.
+    "figure": (None, None, False),
 }
 
 
@@ -57,8 +58,8 @@ INSTRUCTION = (
     "seed; roi = a region defined before the analysis and used to extract or restrict data; seed = "
     "the region whose signal seeds a connectivity or PPI analysis; target = where the brain was "
     "stimulated (TMS, tDCS, ultrasound, DBS) or a lesion or electrode was placed; prior_study = "
-    "coordinates quoted from other studies only for comparison; figure = a location used only to "
-    "display or illustrate (slice position, crosshairs, an example voxel); other = a brain "
+    "coordinates quoted from other studies only for comparison; figure = a location shown in a "
+    "figure (a slice position, crosshairs, a peak); other = a brain "
     "coordinate that is none of these (a simulated source position or lesion centre, a worked-example "
     "voxel of an atlas). "
     "Ignore numbers that are not brain coordinates, such as voxel sizes or molecular docking grids. "

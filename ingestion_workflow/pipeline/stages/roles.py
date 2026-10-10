@@ -95,7 +95,7 @@ def assign_roles(
 
     Each analysis gains `metadata.set_role` (CoordinateParse's role fields plus
     the proposal). Sets of a role that is not uploaded -- a reference, a
-    display position, a localization, numbers that are not coordinates -- move
+    bare slice position (other), a localization, numbers that are not coordinates -- move
     from the collection's `analyses` to its `held`, which upload and space do
     not read, so they stay with the article without becoming this study's
     analyses.

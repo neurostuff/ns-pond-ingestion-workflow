@@ -43,7 +43,7 @@ dependencies = [
   "shortuuid>=1.0",
   # CoordinateRole and AnchorKind, the role vocabulary of every set (services.set_roles).
   # Needs CoordinateRole.other.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@a0c2e1d19b5795f9a601328eea3de8a5fac65e59",
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@60565791330c65e06e9face019cbce4026d0c24b",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   # study_schema.spaces, the coordinate-space alias table shared with pondie and
   # neurostore. Pinned to study_schema main.

@@ -1,7 +1,7 @@
 # Set-role classifier
 
 What each coordinate set is for -- a result of this study, a region it defined, a peak quoted
-from another study, a display position -- decided by a small fine-tuned encoder in the `roles`
+from another study, a bare slice position -- decided by a small fine-tuned encoder in the `roles`
 stage (`ingestion_workflow/pipeline/stages/roles.py`, off unless `role_model` is set), the only
 place a role is decided. The extractors (nu-v21, nu-prose) are not trained for role. The code
 is in `ingestion_workflow/services/set_roles/`; this directory holds the job scripts.
@@ -33,12 +33,11 @@ retyped (`labels.py`); every row the labeller and the encoder carry uses them.
 
 | `role` | Meaning | Uploaded to neurostore |
 |---|---|---|
-| `result` | A finding of this study: peaks of a tested effect | yes |
+| `result` | A finding of this study: peaks of a tested effect, including peaks drawn in a figure | yes |
 | `anchor` | A location the study defined and used; `anchor_kind` `roi`, `seed`, `stimulation_target` or `node`. White-matter or CSF voxels whose timeseries are regressed out as nuisance are `roi` anchors (PMID 26589451) | yes, as a labelled set, not an analysis with statistics |
 | `localization` | Where electrodes or sources were placed | no |
-| `reference` | Coordinates quoted from another publication for comparison | no |
-| `display` | A slice or crosshair position for a figure | no |
-| `other` | A real brain coordinate that is none of the above: a simulated source position or lesion centre, a worked-example voxel of an atlas | no |
+| `reference` | Coordinates quoted from another publication for comparison, including crosshairs at a prior study's coordinates | no |
+| `other` | A real brain coordinate that is none of the above: bare slice positions with no finding, a simulated source position or lesion centre, a worked-example voxel of an atlas | no |
 
 Numbers that are not brain coordinates at all (channel numbers, lattice points, a phantom's
 positions, rodent stereotaxic coordinates) get no role, not `other`: the labeller answers `coordinates:
@@ -52,7 +51,7 @@ for it, and one for the anchor kind.
 The current nu-prose model answers in its own vocabulary (`prompts.prose_coordinates.ROLES`).
 Its role is only the `[PROPOSED]` input of a prose set: resolve reads it through one legacy
 adapter, `prompts.prose_coordinates.study_schema_role` (`roi`/`seed`/`target` -> anchor of
-that kind, `prior_study` -> `reference` with `from_prior_study`, `figure` -> `display`, `other`
+that kind, `prior_study` -> `reference` with `from_prior_study`, `figure` -> no proposal, `other`
 -> not coordinates), and the roles stage decides the role after it. The model's `other` is
 anything else and does not separate real brain coordinates that fit no role from
 non-coordinates, which are most of it; the classifier finds the real ones.

@@ -21,7 +21,7 @@ COORDINATE_ROLES: Tuple[str, ...] = tuple(r.value for r in CoordinateRole)
 ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 
 #: The roles uploaded to neurostore: this study's results and the regions it
-#: defined to get them. A peak quoted from another study, a display position
+#: defined to get them. A peak quoted from another study, a bare slice position,
 #: an electrode location or an `other` coordinate is kept in the parse for pondie and not
 #: uploaded.
 UPLOADED_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
