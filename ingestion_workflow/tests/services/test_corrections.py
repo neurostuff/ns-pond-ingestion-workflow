@@ -60,7 +60,7 @@ def test_a_retracted_paper_carries_its_notices():
         "source": "pubmed",
     } in corrections
     # The expression of concern's citation has a doi too; one without gives None.
-    assert {"kind": "comment", "pmid": "9525390", "doi": None} in corrections
+    assert {"kind": "comment", "pmid": "9525390", "doi": None, "source": "pubmed"} in corrections
     assert not notice
 
 
@@ -90,11 +90,11 @@ def test_an_erratum_alone_is_not_a_retraction():
     # One CommentsCorrections element is a dict, not a list, in xmltodict's form.
     refs = {
         "@RefType": "ErratumIn",
-        "RefSource": "J. 2001;1:2. doi: 10.1000/err.",
+        "RefSource": "J. 2001;1:2. doi: 10.1000/err1.",
         "PMID": {"#text": "7"},
     }
     assert corrections_from_pubmed(_article(refs)) == (
-        [{"kind": "erratum", "pmid": "7", "doi": "10.1000/err", "source": "pubmed"}],
+        [{"kind": "erratum", "pmid": "7", "doi": "10.1000/err1", "source": "pubmed"}],
         False,
     )
 
