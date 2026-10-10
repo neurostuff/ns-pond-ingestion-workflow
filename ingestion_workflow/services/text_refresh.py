@@ -1,7 +1,7 @@
 """Rebuild extractions' text from their downloads, leaving everything else about them alone.
 
-A change to a text builder that touches only the text (pubget keeping superscripts)
-would, as a version bump, re-run every stage the extraction feeds -- triage, the
+A change to a text builder that touches only the text (pubget keeping superscripts,
+every extractor writing the figure captions under "Figure legends") would, as a version bump, re-run every stage the extraction feeds -- triage, the
 analyses model, upload -- though none of them reads the text. This rewrites the text
 file in place instead: the extraction keeps its tables, its payload and its fingerprint.
 The ns-pond corpus's copy (`processed/<source>/text.txt`) is replaced only where it is
@@ -11,9 +11,11 @@ What is stored against the text moves with it: each rewrite carries the offset m
 the old text to the new, and `carried` turns it into one catalog write -- the extraction's
 text hash, the passages' spans remapped. Passages a map cannot carry (a span inside
 rewritten text, or a passage or hit whose characters an edit changed) are left on the
-old hash, so the passages stage reads the text again. The references and the sync are
-marked stale: the references stage reads the new text again (a kept superscript can be
-a citation marker, so its citations are not remapped), and the parse files' spans are
+old hash, so the passages stage reads the text again; so are passages whose text gained
+a caption holding a coordinate, which only a new read finds. The extraction's caption
+spans are the rebuilt text's. The references and the sync are marked stale: the
+references stage reads the new text again (a kept superscript, or a caption, can hold a
+citation marker), its citations' offsets moved meanwhile; and the parse files' spans are
 written again from the text.
 
 The texts are all rewritten before the catalog is: a run stopped in between leaves the
@@ -36,8 +38,11 @@ from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 logger = logging.getLogger(__name__)
 
-#: The sources whose text a rebuild reproduces: JATS, through pubget's stylesheet.
-REFRESHABLE_SOURCES = ("pubget", "pmc", "europepmc")
+#: The sources whose text a rebuild reproduces from the download: JATS through pubget's
+#: stylesheet, Elsevier XML, and ACE's HTML (its fetched tables read from the extraction's
+#: cache). Not a PDF: its text is docling's conversion, which is not kept.
+JATS_SOURCES = ("pubget", "pmc", "europepmc")
+REFRESHABLE_SOURCES = JATS_SOURCES + ("elsevier", "ace")
 
 
 def sha256(text: str) -> str:
@@ -49,7 +54,8 @@ class Job:
     article_id: str
     source: str
     text_path: Optional[str]
-    article_xml: Optional[str]
+    #: The download's article file: article.xml (JATS), content.xml (Elsevier), the page (ACE).
+    article_file: Optional[str]
 
 
 @dataclass
@@ -62,6 +68,10 @@ class Result:
     new_sha256: Optional[str] = None
     #: The offset map from the old text to the new, as its edits.
     edits: Optional[List[Tuple[int, int, int, int]]] = None
+    #: The rebuilt text's caption spans (`ExtractedContent.figure_captions`).
+    figure_captions: Optional[List[dict]] = None
+    #: Whether a caption of the rebuilt text holds a coordinate, which a remap cannot add.
+    captions_hold_coordinates: bool = False
 
 
 def _read(path: Path) -> str:
@@ -81,34 +91,32 @@ def _write_atomically(path: Path, text: str) -> None:
 
 def rebuild(job: Job, write: bool) -> Result:
     """One extraction: its text rebuilt from its download, written when it changed and `write`."""
-    from lxml import etree
-
-    from ingestion_workflow.extractors.pubget_extractor import article_text
-
     result = Result(job.article_id, job.source, "unchanged", job.text_path)
     if not job.text_path or not Path(job.text_path).is_file():
         result.status = "no_text"
         return result
-    if not job.article_xml or not Path(job.article_xml).is_file():
+    if not job.article_file or not Path(job.article_file).is_file():
         result.status = "no_download"
         return result
     path = Path(job.text_path)
     old = _read(path)
     result.old_sha256 = sha256(old)
     try:
-        xml = Path(job.article_xml)
-        new = article_text(etree.parse(str(xml)), xml.parent)
+        new, result.figure_captions = build(job.source, Path(job.article_file), path)
     except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
         result.status = f"failed: {type(exc).__name__}: {exc}"[:300]
         return result
     result.new_sha256 = sha256(new)
     if new == old:
+        result.figure_captions = None  # the payload's spans are the old text's, which stays
         return result
     if not new.strip():
         result.status = "failed: rebuilt text is empty"
         return result
     from ingestion_workflow.services.offsets import diff
+    from ingestion_workflow.services.prose_passages import find
 
+    result.captions_hold_coordinates = any(find(new[c["span"][0]:c["span"][1]]) for c in result.figure_captions or ())
     result.edits = [list(e) for e in diff(old, new).edits]
     if write:
         _write_atomically(path, new)
@@ -116,6 +124,29 @@ def rebuild(job: Job, write: bool) -> Result:
     else:
         result.status = "would_rewrite"
     return result
+
+
+def build(source: str, article_file: Path, text_path: Path) -> Tuple[str, List[dict]]:
+    """The text the source's extractor writes for this download, and its caption spans."""
+    if source in JATS_SOURCES:
+        from lxml import etree
+
+        from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+
+        return article_text_and_captions(etree.parse(str(article_file)), article_file.parent)
+    if source == "elsevier":
+        from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
+
+        return article_text_and_captions(article_file.read_bytes())
+    if source == "ace":
+        from ingestion_workflow.extractors import ace_extractor
+        from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
+
+        set_skip_remote_tables(True)  # the tables fetched at extraction are in its cache
+        _, text, captions = ace_extractor.article_text_and_captions(
+            article_file.read_text(encoding="utf-8"), None, text_path.parent / "downloaded_tables")
+        return text, captions
+    raise ValueError(f"cannot rebuild the text of {source}")
 
 
 def _rebuild_write(job: Job) -> Result:
@@ -141,9 +172,21 @@ def jobs(catalog, sources: Sequence[str]) -> Iterator[Job]:
                     continue
                 payload = catalog.payload(extraction) or {}
                 download = catalog.payload(downloads.get(article_id, {}).get(source)) or {}
-                xml = next((f["file_path"] for f in download.get("files", [])
-                            if str(f.get("file_path", "")).endswith("/article.xml")), None)
-                yield Job(article_id, source, payload.get("full_text_path"), xml)
+                yield Job(article_id, source, payload.get("full_text_path"),
+                          _article_file(source, download.get("files", [])))
+
+
+def _article_file(source: str, files: Sequence[dict]) -> Optional[str]:
+    """The download file the source's extractor builds the text from, as it picks it."""
+    for f in files:
+        path, kind = str(f.get("file_path", "")), str(f.get("file_type", "")).lower()
+        if source == "ace" and kind == "html":
+            return path
+        if source == "elsevier" and kind == "xml" and Path(path).name.startswith("content."):
+            return path
+        if source in JATS_SOURCES and path.endswith("/article.xml"):
+            return path
+    return None
 
 
 def run(all_jobs: Iterable[Job], *, write: bool, workers: int = 1) -> Iterator[Result]:
@@ -172,6 +215,22 @@ STALE = "stale: text refreshed"
 
 #: Rewritten texts whose catalog rows are read and recorded together.
 BATCH = 1000
+
+
+def _remap_citations(payload: dict, offset_map) -> dict:
+    """The references payload with its citations' spans on the new text; one the map
+    cannot carry is dropped (the stage, marked stale, reads them all again)."""
+    def move(span):
+        got = offset_map.span(span["start_char"], span["end_char"]) if span else None
+        return {**span, "start_char": got[0], "end_char": got[1]} if got else None
+
+    citations = []
+    for c in payload.get("citations") or []:
+        text_span = move(c.get("text_span"))
+        if text_span is None:
+            continue
+        citations.append({**c, "text_span": text_span, "sentence": move(c.get("sentence"))})
+    return {**payload, "citations": citations}
 
 
 def _remap_passages(payload: dict, offset_map) -> Optional[dict]:
@@ -229,27 +288,37 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
                         status=extraction.status, fingerprint=extraction.fingerprint,
                         payload=catalog.payload(extraction),
                         summary={**extraction.summary, "text_sha256": result.old_sha256})], "none"
+    offset_map = OffsetMap(tuple(e) for e in result.edits or ())
+    extract_payload = dict(catalog.payload(extraction) or {})
+    if result.figure_captions is not None:
+        extract_payload["figure_captions"] = result.figure_captions
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
-                    fingerprint=extraction.fingerprint, payload=catalog.payload(extraction),
+                    fingerprint=extraction.fingerprint, payload=extract_payload,
                     summary={**extraction.summary, "text_sha256": result.new_sha256})]
     for stage in ("references", "sync"):
         stale = found.get(stage)
         if stale is not None and stale.status is Status.OK:
+            payload = catalog.payload(stale)
+            if stage == "references" and payload:
+                payload = _remap_citations(payload, offset_map)
             rows.append(Outcome(article_id=result.article_id, stage=stage, source=stale.source, status=stale.status,
-                                fingerprint=STALE, payload=catalog.payload(stale), summary=stale.summary))
+                                fingerprint=STALE, payload=payload, summary=stale.summary))
     passages = found.get("passages")
     payload = catalog.payload(passages) if passages is not None and passages.status is Status.OK else None
     if (not payload or not payload.get("passages") or payload.get("text_sha256") != result.old_sha256
             or payload.get("full_text_path") != result.text_path):
         return rows, "none"
-    moved = _remap_passages(payload, OffsetMap(tuple(e) for e in result.edits or ()))
+    moved = _remap_passages(payload, offset_map)
     if moved is None:
         return rows, "stale"
     moved["text_sha256"] = result.new_sha256
+    # spans moved either way; a caption's coordinates are found only by reading the text again
+    read_again = result.captions_hold_coordinates
     rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
-                        fingerprint=PassagesStage.fingerprint_for(None, extraction, result.new_sha256),
+                        fingerprint=STALE if read_again else PassagesStage.fingerprint_for(
+                            None, extraction, result.new_sha256),
                         payload=moved, summary=passages.summary))
-    return rows, "remapped"
+    return rows, "captions" if read_again else "remapped"
 
 
 def carry_all(catalog, results: Iterable[Result], *, write: bool, batch: int = BATCH) -> Counter:

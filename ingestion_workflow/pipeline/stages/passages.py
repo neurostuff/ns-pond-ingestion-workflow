@@ -58,10 +58,10 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     for an article whose extraction -- which `space` reads -- never succeeded. The
     text is returned whole; a download's has its legends after.
 
-    Figure legends are read wherever they sit: about half the coordinates in them
-    are the study's results (2026-10-10 sample). The extraction text's legends are
-    found by the download's (`files`, when given). A passage whose hits all lie in
-    a legend is marked `from_legend`.
+    Figure legends are read: about half the coordinates in them are the study's
+    results (2026-10-10 sample). An extraction text's are where its extractor wrote
+    them, `figure_captions`' spans (`extractors.figure_captions`), never searched for.
+    A passage whose hits all lie in a legend is marked `from_legend`.
 
     A module function so a process pool can run it: reading a download and
     the detector are processor-bound.
@@ -69,7 +69,6 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     from ingestion_workflow.services.coordinate_space import read_space
     from ingestion_workflow.services.prose_text import (
         kept_spans,
-        legend_spans,
         main_file,
         may_hold_coordinates,
         read_download,
@@ -78,12 +77,13 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     try:
         if job.get("text_path"):
             text = Path(job["text_path"]).read_bytes().decode("utf-8")
-            if not may_hold_coordinates(text):
+            if not may_hold_coordinates(text, markup=False):
                 return "filtered", [], None, text
-            spans, how = kept_spans(text)
-            body = text
-            legends = legend_spans(text, _legends(job.get("files") or []))
-            spans += [s for s in legends if not any(a < s[1] and s[0] < b for a, b in spans)]
+            legends = _caption_spans(text, job.get("figure_captions") or [])
+            # the legends are the text's last section: the body ends where they begin
+            body = text[: _legends_start(text, legends)]
+            spans, how = kept_spans(body)
+            spans += legends
         else:
             f = main_file(job.get("files") or [])
             if f is None:
@@ -106,17 +106,27 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
         return f"unreadable: {type(exc).__name__}", [], None, ""
 
 
-def _legends(files: list) -> str:
-    """The figure legends of the article's download; none from a PDF or a download that fails to read."""
-    from ingestion_workflow.services.prose_text import main_file, read_download
+def _caption_spans(text: str, captions: list) -> list:
+    """The extraction payload's caption spans, in order, those that fit `text`."""
+    out = []
+    for c in captions:
+        a, b = c.get("span") or (0, 0)
+        if 0 <= a < b <= len(text):
+            out.append((a, b))
+    return sorted(set(out))
 
-    f = main_file(files)
-    if f is None or f["file_type"] == "pdf":
-        return ""
-    try:
-        return read_download(Path(f["file_path"]), f["file_type"])[1]
-    except Exception:  # noqa: BLE001 - the extraction text is still read
-        return ""
+
+def _legends_start(text: str, legends: list) -> int:
+    """Where the "Figure legends" section begins: its heading's line, before the first caption."""
+    if not legends:
+        return len(text)
+    from ingestion_workflow.extractors.figure_captions import HEADING
+
+    at = text.rfind(HEADING, 0, legends[0][0])
+    if at < 0:
+        return legends[0][0]
+    line = text.rfind("\n", 0, at)
+    return line + 1 if line >= 0 else 0
 
 
 def _shifted(text: str, a: int, b: int) -> list:
@@ -264,14 +274,11 @@ class PassagesStage:
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         jobs = []
-        downloads = ctx.catalog.artifacts([w.article_id for w in works if w.upstream.stage == "extract"], "download")
         for work in works:
             payload = ctx.payload(work.upstream) or {}
             if work.upstream.stage == "extract":
-                # the download names the legends to find in the extraction's text
-                download = _choose(downloads.get(work.article_id, {}))
-                files = (ctx.payload(download) or {}).get("files", []) if download else []
-                jobs.append({"text_path": payload.get("full_text_path"), "files": files})
+                jobs.append({"text_path": payload.get("full_text_path"),
+                             "figure_captions": payload.get("figure_captions") or []})
             else:
                 jobs.append({"files": payload.get("files", [])})
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)

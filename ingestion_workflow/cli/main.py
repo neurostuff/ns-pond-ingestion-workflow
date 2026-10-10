@@ -676,7 +676,7 @@ def refresh_text(
     The extraction keeps its tables, payload and fingerprint; its text hash and the
     passages' spans move to the new text in the same catalog write, and the references
     and the sync are marked stale so they are read and written again. For a change to the text alone
-    (pubget keeping superscripts).
+    (pubget keeping superscripts, the figure captions written under "Figure legends").
     """
     from collections import Counter
 
@@ -708,7 +708,8 @@ def refresh_text(
     with _catalog(settings) as catalog:
         carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
-               f"{carried['stale']:,} left for the passages stage to read again")
+               f"{carried['stale']:,} left for the passages stage to read again, "
+               f"{carried['captions']:,} remapped and read again for their captions' coordinates")
     if corpus:
         # an old text two extractions shared, rebuilt two ways, names no single replacement
         replaced = {old: next(iter(news))[1] for old, news in new_of.items()

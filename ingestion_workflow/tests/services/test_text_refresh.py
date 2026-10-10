@@ -212,3 +212,88 @@ def test_carry_all_reads_and_records_in_batches(tmp_path):
     assert reads == [2] * 4 + [2] * 4 + [1] * 4  # one query per stage per batch
     for payload in payloads:
         assert new[slice(*payload["passages"][0]["hits"][0]["span"])] == "x = -22, y = -4, z = -18"
+
+
+CAPTIONED = """<article><front><article-meta><title-group><article-title>T</article-title></title-group>
+</article-meta></front><body>
+<sec><title>Results</title><p>Patients showed greater activation in the left amygdala
+(x = -22, y = -4, z = -18; t = 4.1) than controls (Smith, 2001).</p></sec></body>
+<floats-group><fig id="F1"><label>Figure 1</label><caption><p>Insula activation
+(x = -34, y = 16, z = -6; p &lt; 0.05).</p></caption></fig></floats-group></article>"""
+
+
+def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_again(tmp_path):
+    """The rebuilt text gains its figure legends: the passages and citations move onto it,
+    the extraction records the captions' spans, and the passages are marked to be read again,
+    since only a read finds the caption's coordinate."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.extractors.figure_captions import HEADING
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+    from ingestion_workflow.models.ids import Identifier
+    from ingestion_workflow.services.prose_passages import passages
+
+    xml = tmp_path / "pmcid_9" / "article.xml"
+    xml.parent.mkdir()
+    xml.write_text(CAPTIONED)
+    new, captions = article_text_and_captions(etree.parse(str(xml)), xml.parent)
+    old = new[: new.index(HEADING)].rstrip().removesuffix("##").rstrip()  # what pubget wrote before
+    assert "Insula" not in old and new.startswith(old)
+    text = tmp_path / "article.txt"
+    text.write_text(old, encoding="utf-8")
+
+    found = passages(old)
+    cite = old.index("Smith, 2001")
+    sentence = (old.index("Patients"), old.index("2001).") + 6)
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(pmid="9")).id
+        catalog.record([
+            Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                    payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),
+            Outcome(article_id=ref_id, stage="passages", source="", fingerprint="pa-1", summary={},
+                    payload={"text_from": "extract", "full_text_path": str(text), "text_sha256": R.sha256(old),
+                             "passages": [{"span": list(p.span), "before": None, "after": None, "heading": None,
+                                           "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
+                                                    for h in p.hits]} for p in found]}),
+            Outcome(article_id=ref_id, stage="references", source="pubget", fingerprint="re-1", summary={},
+                    payload={"citations": [{"text_span": {"start_char": cite, "end_char": cite + 11,
+                                                          "text": "Smith, 2001"},
+                                            "sentence": {"start_char": sentence[0], "end_char": sentence[1]},
+                                            "references": ["r1"]}]}),
+        ])
+        result = R.rebuild(R.Job(ref_id, "pubget", str(text), str(xml)), write=True)
+        assert result.status == "rewritten" and result.captions_hold_coordinates
+        assert result.figure_captions == captions
+        assert R.carry_all(catalog, [result], write=True) == {"captions": 1}
+
+        rebuilt = text.read_text(encoding="utf-8")
+        assert rebuilt == new
+        extraction = catalog.artifacts([ref_id], "extract")[ref_id]["pubget"]
+        assert catalog.payload(extraction)["figure_captions"] == captions
+        assert extraction.summary["text_sha256"] == R.sha256(new)
+        stored = catalog.artifacts([ref_id], "passages")[ref_id][""]
+        assert stored.fingerprint == R.STALE  # read again: the caption's coordinate is new
+        moved = catalog.payload(stored)
+        assert moved["text_sha256"] == R.sha256(new)
+        for before, after in zip(found, moved["passages"]):
+            assert rebuilt[slice(*after["span"])] == old[slice(*before.span)]
+            assert [rebuilt[slice(*h["span"])] for h in after["hits"]] == [old[slice(*h.span)] for h in before.hits]
+        references = catalog.artifacts([ref_id], "references")[ref_id]["pubget"]
+        assert references.fingerprint == R.STALE
+        (citation,) = catalog.payload(references)["citations"]
+        assert rebuilt[citation["text_span"]["start_char"]:citation["text_span"]["end_char"]] == "Smith, 2001"
+        assert rebuilt[citation["sentence"]["start_char"]:citation["sentence"]["end_char"]] == old[slice(*sentence)]
+        # the passages stage, reading the text again, finds the caption where it was written
+        from ingestion_workflow.pipeline.stages.passages import find_passages
+
+        _, again, _, _ = find_passages({"text_path": str(text), "figure_captions": captions})
+        assert [(p.hits[0].x, p.from_legend) for p in again] == [(-22.0, False), (-34.0, True)]
+
+
+def test_jobs_find_each_source_s_article_file():
+    files = [{"file_path": "/d/meta/metadata.json", "file_type": "json"},
+             {"file_path": "/d/content.xml", "file_type": "xml"}, {"file_path": "/d/page.html", "file_type": "html"},
+             {"file_path": "/d/pmcid_1/article.xml", "file_type": "xml"}]
+    assert R._article_file("elsevier", files) == "/d/content.xml"
+    assert R._article_file("ace", files) == "/d/page.html"
+    assert R._article_file("pmc", files) == "/d/pmcid_1/article.xml"
+    assert R._article_file("pdf", files) is None
