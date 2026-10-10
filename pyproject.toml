@@ -43,8 +43,8 @@ dependencies = [
   "shortuuid>=1.0",
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   # study_schema.spaces, the coordinate-space alias table shared with pondie and
-  # neurostore. Pinned to neurostuff/study_schema#22; repin to main once it merges.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@4a9c305858e63687a704ba429376b7b8cb17aa56",
+  # neurostore. Pinned to study_schema main.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@d5b90460293ae1b7b379a9f0bdd20ec1c99b172a",
 ]
 
 [project.optional-dependencies]
