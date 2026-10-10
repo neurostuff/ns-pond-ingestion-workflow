@@ -787,7 +787,7 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
         ],
     )
     text = "Peak at 40, -52, -18."
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": text}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, text))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, []
     )
