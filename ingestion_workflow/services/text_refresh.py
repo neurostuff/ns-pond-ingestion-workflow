@@ -36,12 +36,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.services.citations import JATS_SOURCES
+
 logger = logging.getLogger(__name__)
 
 #: The sources whose text a rebuild reproduces from the download: JATS through pubget's
 #: stylesheet, Elsevier XML, and ACE's HTML (its fetched tables read from the extraction's
 #: cache). Not a PDF: its text is docling's conversion, which is not kept.
-JATS_SOURCES = ("pubget", "pmc", "europepmc")
 REFRESHABLE_SOURCES = JATS_SOURCES + ("elsevier", "ace")
 
 
@@ -323,7 +324,7 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     read_again = result.captions_hold_coordinates
     rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
                         fingerprint=STALE if read_again else PassagesStage.fingerprint_for(
-                            None, extraction, result.new_sha256),
+                            extraction, result.new_sha256),
                         payload=moved, summary=passages.summary))
     return rows, "captions" if read_again else "remapped"
 

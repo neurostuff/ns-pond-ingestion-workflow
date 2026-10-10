@@ -15,9 +15,8 @@ import logging
 import re
 from bisect import bisect_right
 from dataclasses import dataclass, field
-from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from lxml import etree
 from lxml import html as lhtml
@@ -141,44 +140,6 @@ class Sentences:
 
 
 # ------------------------------------------------------------------- alignment
-class OffsetMap:
-    """Offsets in one rendering of a text, carried onto another that differs in places.
-
-    Lines first (cheap and hashable), then characters inside runs of differing lines.
-    An offset inside a replaced run maps to None.
-    """
-
-    def __init__(self, a: str, b: str):
-        self.blocks: List[Tuple[int, int, int]] = []  # (a_start, b_start, length)
-        la, lb = a.splitlines(keepends=True), b.splitlines(keepends=True)
-        oa, ob = [0], [0]
-        for x in la:
-            oa.append(oa[-1] + len(x))
-        for x in lb:
-            ob.append(ob[-1] + len(x))
-        for tag, i1, i2, j1, j2 in SequenceMatcher(None, la, lb, autojunk=False).get_opcodes():
-            if tag == "equal":
-                self.blocks.append((oa[i1], ob[j1], oa[i2] - oa[i1]))
-            elif tag == "replace" and (oa[i2] - oa[i1]) * (ob[j2] - ob[j1]) < 4e8:
-                ca, cb = a[oa[i1] : oa[i2]], b[ob[j1] : ob[j2]]
-                for blk in SequenceMatcher(None, ca, cb, autojunk=False).get_matching_blocks():
-                    if blk.size:
-                        self.blocks.append((oa[i1] + blk.a, ob[j1] + blk.b, blk.size))
-        self.blocks.sort()
-        self.starts = [s for s, _, _ in self.blocks]
-
-    def __call__(self, pos: int) -> Optional[int]:
-        k = bisect_right(self.starts, pos) - 1
-        if k >= 0:
-            a0, b0, n = self.blocks[k]
-            if pos <= a0 + n:
-                return b0 + pos - a0
-            # inside a run only `a` has: it sits where b joins the two blocks
-            if k + 1 < len(self.blocks) and self.blocks[k + 1][1] == b0 + n:
-                return b0 + n
-        return None
-
-
 def _open(i: int) -> str:
     return _S + "".join(_DIGITS[c] for c in str(i)) + _M
 
@@ -208,16 +169,35 @@ def _strip(marked: str) -> Tuple[str, Dict[int, Tuple[int, int]]]:
 
 
 def _place(rebuilt: str, spans: Dict[int, Tuple[int, int]], stored: str, notes: Dict[str, int]):
-    """Spans in the rebuilt text, carried onto the stored one where the two differ."""
+    """Spans in the rebuilt text, carried onto the stored one by `offsets.diff`.
+
+    The rebuild exists only to find the markers: the stored text has no markup
+    to find an xref in. A span with an end inside text the two disagree on is
+    dropped (and counted as `links_not_in_text`), never shifted.
+    """
+    from ingestion_workflow.services.offsets import diff
+
     if rebuilt == stored:
         return spans
     notes["text_rebuilt_differs"] = 1
-    mapping = OffsetMap(rebuilt, stored)
+    mapping = diff(rebuilt, stored)
     placed = {}
     for i, (s, e) in spans.items():
-        ms, me = mapping(s), mapping(e)
-        if ms is not None and me is not None and me >= ms:
-            placed[i] = (ms, me)
+        # space at a marker's edge is not the marker's, on either side of the map: the two texts
+        # often space differently there, and the map puts space inserted at an edge inside
+        while s < e and rebuilt[s].isspace():
+            s += 1
+        while e > s and rebuilt[e - 1].isspace():
+            e -= 1
+        got = mapping.span(s, e)
+        if got is None:
+            continue
+        a, b = got
+        while a < b and stored[a].isspace():
+            a += 1
+        while b > a and stored[b - 1].isspace():
+            b -= 1
+        placed[i] = (a, b)
     return placed
 
 

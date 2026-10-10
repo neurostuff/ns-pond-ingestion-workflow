@@ -37,13 +37,13 @@ def _download(ref, path, source):
                        source=DownloadSource(source))]).to_dict()
 
 
-def _record(catalog, ref, path, text, source="pubget"):
+def _record(catalog, ref, path, text, source="pubget", tables=0):
     catalog.record([Outcome(article_id=ref.id, stage="download", source=source, fingerprint="dl-1",
                             payload=_download(ref, path, source), summary={})])
     download = catalog.artifact(ref.id, "download", source)
     catalog.record([Outcome(article_id=ref.id, stage="extract", source=source,
                             fingerprint=extraction_fingerprint(source, download),
-                            payload={"full_text_path": str(text)}, summary={})])
+                            payload={"full_text_path": str(text)}, summary={"tables": tables})])
 
 
 def _run(stage, ctx, catalog, ref):
@@ -62,15 +62,17 @@ def test_references_follow_extract_and_run_only_when_asked(tmp_path):
     assert [s.name for s in build(["references"], settings)] == ["references"]
 
 
-def test_an_extraction_gets_its_references_and_citations(env):
+@pytest.mark.parametrize("source", ["pubget", "pmc", "europepmc"])
+def test_an_extraction_gets_its_references_and_citations(env, source):
+    """pmc and europepmc are written in pubget's layout and read the same way."""
     settings, catalog, article, text = env
     ref = catalog.register(Identifier(pmid="1"))
-    _record(catalog, ref, article, text)
+    _record(catalog, ref, article, text, source=source)
     ctx = Context(settings, catalog)
 
     _, (outcome,) = _run(ReferencesStage(settings), ctx, catalog, ref)
 
-    assert outcome.status is Status.OK and outcome.source == "pubget"
+    assert outcome.status is Status.OK and outcome.source == source
     payload = outcome.payload
     assert len(payload["references"]) == 5 and payload["references"][0]["doi"] == "10.1523/x.2001"
     assert outcome.summary["citations"] == 3
@@ -81,6 +83,18 @@ def test_an_extraction_gets_its_references_and_citations(env):
 
     again, _ = _run(ReferencesStage(settings), ctx, catalog, ref)
     assert again.fresh == 1 and not again.pending
+
+
+def test_only_the_article_s_text_gets_references(env, tmp_path):
+    """Two extractions: the one triage judges is the article's text, and the only one read."""
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(pmid="3"))
+    _record(catalog, ref, article, text, source="pubget")
+    _record(catalog, ref, article, text, source="pmc", tables=2)
+
+    plan, outcomes = _run(ReferencesStage(settings), Context(settings, catalog), catalog, ref)
+
+    assert [o.source for o in outcomes] == ["pmc"]
 
 
 def test_a_pdf_marks_no_citations_and_is_not_read(env):

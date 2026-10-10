@@ -124,7 +124,7 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
     assert new[slice(*p["hits"][0]["span"])] == "x = -22, y = -4, z = -18"
     assert new[slice(*p["heading"])] == "Results"
     assert payload["text_sha256"] == R.sha256(new) == got["extract"].summary["text_sha256"]
-    assert got["passages"].fingerprint == PassagesStage.fingerprint_for(None, got["extract"], R.sha256(new))
+    assert got["passages"].fingerprint == PassagesStage.fingerprint_for(got["extract"], R.sha256(new))
     assert got["sync"].fingerprint == R.STALE
     # The citations' offsets index the old text: the references stage reads the new one again.
     assert got["references"].fingerprint == R.STALE and got["references"].status.value == "ok"

@@ -151,11 +151,21 @@ def test_a_marker_after_a_full_stop_belongs_to_the_sentence_before():
     assert C.Sentences(text).of(at) == (0, text.index(" [12]"))
 
 
-def test_the_offset_map_skips_inserted_lines():
-    a = "one\ntwo\nthree\n"
-    b = "zero\none\ntwo\nthree\n"
-    m = C.OffsetMap(a, b)
-    assert b[m(a.index("two")) :].startswith("two")
+def test_markers_are_carried_past_inserted_lines_and_dropped_inside_changed_text():
+    rebuilt = "one\ntwo [1]\nthree [22]\n"
+    stored = "zero\none\ntwo [1]\nthree [9]\n"
+    # the second marker ends inside "22", which the stored text replaced with "9"
+    at = {0: (rebuilt.index("[1]"), rebuilt.index("[1]") + 3), 1: (rebuilt.index("[22]"), rebuilt.index("[22]") + 2)}
+    notes = {}
+    placed = C._place(rebuilt, at, stored, notes)
+    assert stored[slice(*placed[0])] == "[1]"
+    assert 1 not in placed and notes == {"text_rebuilt_differs": 1}
+
+
+def test_a_space_the_stored_text_adds_after_a_marker_is_not_the_marker_s():
+    rebuilt, stored = "picture. 3At first", "picture. 3 At first"
+    at = rebuilt.index("3")
+    assert C._place(rebuilt, {0: (at, at + 1)}, stored, {}) == {0: (at, at + 1)}
 
 
 def test_subscripts_stay_in_the_text_when_pubget_keeps_them(tmp_path):

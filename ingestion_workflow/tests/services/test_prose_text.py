@@ -1,63 +1,35 @@
-"""Reading a download's Methods and Results, and the filter run before it."""
+"""The Methods and Results of an article's text, and the filter run before the detector."""
 
 from __future__ import annotations
 
-from ingestion_workflow.services.prose_text import (
-    kept_spans,
-    main_file,
-    may_hold_coordinates,
-    read_download,
-)
+from ingestion_workflow.services.prose_text import kept_spans, may_hold_coordinates
 
-JATS = """<article><body>
-<sec><title>Introduction</title><p>Earlier work found x = 30, y = 2, z = -20.</p></sec>
-<sec><title>Materials and methods</title><p>We scanned 20 people.</p></sec>
-<sec><title>Results</title><p>A peak in the ACC (x = 4, y = 30, z = 22).</p>
-<table-wrap><table><tr><td>-40</td><td>20</td><td>10</td></tr></table></table-wrap>
-<fig><caption><p>Crosshairs at MNI -6, 22, -8.</p></caption></fig></sec>
-</body></article>"""
+TEXT = """# Title
 
-ELSEVIER = """<doc xmlns:ce="http://www.elsevier.com/xml/common/dtd"><body><ce:sections>
-<ce:section><ce:section-title>Results</ce:section-title><ce:para>In the amygdala (x = &#x2212;22, y = &#x2212;4,
-z = &#x2212;18).</ce:para><ce:table><row><entry>1</entry></row></ce:table></ce:section>
-</ce:sections></body></doc>"""
+## Introduction
 
-HTML = """<html><body><nav>x = 1, y = 2, z = 3</nav><h2>Results</h2>
-<p>Peak at (x = 10, y = 12, z = 14; t = 3.2).</p><table><tr><td>40</td><td>20</td><td>10</td></tr></table>
-<figure><figcaption>Figure 1. Slices at the peak (MNI 10, 12, 14).</figcaption></figure></body></html>"""
+Earlier work found x = 30, y = 2, z = -20.
+
+## Materials and methods
+
+We scanned 20 people.
+
+## Results
+
+A peak in the ACC (x = 4, y = 30, z = 22).
+"""
 
 
-def test_jats_keeps_methods_results_and_legends(tmp_path):
-    path = tmp_path / "a.xml"
-    path.write_text(JATS)
-    text, legends = read_download(path, "xml")
-    spans, how = kept_spans(text)
-    prose = "\n\n".join(text[a:b] for a, b in spans) + "\n\n" + legends
+def test_the_methods_and_results_are_kept():
+    spans, how = kept_spans(TEXT)
+    prose = "\n\n".join(TEXT[a:b] for a, b in spans)
     assert how == "methods+results"
-    assert "x = 4, y = 30, z = 22" in prose and "-6, 22, -8" in prose
-    assert "x = 30" not in prose and "-40" not in prose
+    assert "x = 4, y = 30, z = 22" in prose and "x = 30" not in prose
 
 
-def test_elsevier_sections_and_entity_minus(tmp_path):
-    path = tmp_path / "e.xml"
-    path.write_text(ELSEVIER)
-    text, _ = read_download(path, "xml")
-    assert text.lstrip().startswith("## Results")
-    assert "−22" in text and "<" not in text
-
-
-def test_html_drops_tables_and_navigation(tmp_path):
-    path = tmp_path / "h.html"
-    path.write_text(HTML)
-    text, legends = read_download(path, "html")
-    assert "## Results" in text and "x = 10" in text and "x = 1," not in text and "40" not in text
-    assert "MNI 10, 12, 14" in legends
-
-
-def test_the_filter_ignores_table_cells_and_keeps_prose():
-    assert may_hold_coordinates(JATS)
-    assert not may_hold_coordinates("<p>Accuracy was 85% (70, 85, 92).</p>"
-                                    "<table-wrap><table><tr><td>x = -40, y = 20, z = 10</td></tr></table></table-wrap>")
+def test_the_filter_keeps_prose_and_drops_a_text_without_a_coordinate():
+    assert may_hold_coordinates(TEXT)
+    assert not may_hold_coordinates("Accuracy was 85% (70, 85, 92).")
 
 
 def test_without_sections_the_whole_text_is_read():
@@ -65,19 +37,5 @@ def test_without_sections_the_whole_text_is_read():
     assert kept_spans(text) == ([(0, len(text))], "full text")
 
 
-def test_the_article_file_not_its_tables(tmp_path):
-    (tmp_path / "tables").mkdir()
-    table = tmp_path / "tables" / "t.csv"
-    table.write_text("x")
-    article = tmp_path / "article.xml"
-    article.write_text("<article/>")
-    got = main_file([{"file_path": str(table), "file_type": "csv"}, {"file_path": str(article), "file_type": "xml"}])
-    assert got["file_path"] == str(article)
-
-
-def test_a_text_s_less_than_and_greater_than_signs_are_not_tags():
-    from ingestion_workflow.services.prose_text import may_hold_coordinates
-
-    text = "Insula (p < 0.05; x = -34, y = 16, z = -6; Z > 3.1)."
-    assert may_hold_coordinates(text, markup=False)
-    assert not may_hold_coordinates(text)  # read as markup, the coordinate sat inside a "tag"
+def test_a_text_s_less_than_and_greater_than_signs_are_kept():
+    assert may_hold_coordinates("Insula (p < 0.05; x = -34, y = 16, z = -6; Z > 3.1).")

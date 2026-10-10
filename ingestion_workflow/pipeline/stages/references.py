@@ -1,6 +1,8 @@
-"""Each extraction's reference list and in-text citations, placed in its text.
+"""The article's reference list and in-text citations, placed in its text.
 
-One artifact per extracted source, because a citation's offsets belong to one text. No
+The text is the article's: that of the extraction triage judges, which sync copies
+and passages index. The artifact is keyed by that extraction's source, because a
+citation's offsets belong to one text. No
 network: the source's own markup is read (JATS `xref`, Elsevier `ce:cross-ref`,
 publisher HTML links). Where `reflist` has the paper's Crossref list, its DOIs and
 PMIDs fill the source's entries, and for a source that marks nothing (a PDF, a page
@@ -22,7 +24,6 @@ from ingestion_workflow.models import DownloadResult
 
 from ..plan import StagePlan, Work
 from ..stage import Context
-from .extract import current_extractions
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +128,14 @@ class ReferencesStage:
         downloads = ctx.catalog.artifacts(ids, "download")
         reflists = ctx.catalog.artifacts(ids, "reflist")
         attempts: Dict[str, Dict[str, tuple]] = {}
+        from .triage import judged_extraction
+
         for ref in refs:
-            current = current_extractions(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
+            judged = judged_extraction(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
             reflist = reflists.get(ref.id, {}).get("")
             has_list = bool(reflist and reflist.status is Status.OK and reflist.summary.get("references"))
-            readable = {s: a for s, a in current.items() if s in READABLE_SOURCES or has_list}
+            readable = ({judged.source: judged}
+                        if judged is not None and (judged.source in READABLE_SOURCES or has_list) else {})
             if not readable:
                 plan.blocked += 1
                 continue
