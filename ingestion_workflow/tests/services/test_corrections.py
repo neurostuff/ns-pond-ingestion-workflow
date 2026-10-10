@@ -224,7 +224,7 @@ def test_only_a_retraction_moves_the_upload_fingerprint():
     )
 
 
-def _execute(monkeypatch, notices, base_study_id="BASE1"):
+def _execute(monkeypatch, notices, base_study_id="BASE1", empty=False, prior=None):
     from ingestion_workflow.services import db
     from ingestion_workflow.services import upload as svc
 
@@ -237,14 +237,20 @@ def _execute(monkeypatch, notices, base_study_id="BASE1"):
     catalog = SimpleNamespace(
         exclusions=lambda ids: {},
         add_aliases=lambda learned: None,
-        artifacts=lambda ids, stage: {"a1": {"": notices}} if stage == "notices" else {},
+        artifacts=lambda ids, stage: {"a1": {"": notices}}
+        if stage == "notices"
+        else ({"a1": {"": prior}} if prior and stage == "upload" else {}),
     )
     stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    calls = {"marked": [], "retract": [], "uploaded": []}
+    calls = {"marked": [], "retract": [], "uploaded": [], "cleared": []}
     monkeypatch.setattr(
         stage,
         "_gather",
-        lambda ctx, ws, ex: ({w.ref.identifier.slug: {"t": object()} for w in ws}, {}, []),
+        lambda ctx, ws, ex: (
+            ({}, {}, list(ws))
+            if empty
+            else ({w.ref.identifier.slug: {"t": object()} for w in ws}, {}, [])
+        ),
     )
 
     class Tunnel:
@@ -274,7 +280,7 @@ def _execute(monkeypatch, notices, base_study_id="BASE1"):
         ],
     )
     monkeypatch.setattr(
-        svc.UploadService, "mark_retracted", lambda self, t: calls["marked"].append(t) or len(t)
+        svc.UploadService, "mark_retracted", lambda self, t, clear=(): calls["marked"].append(t) or calls["cleared"].extend(clear) or 1,
     )
     monkeypatch.setattr(
         svc.UploadService, "retract", lambda self, t: calls["retract"].append(t) or []
@@ -349,3 +355,83 @@ def test_marking_sets_the_flag_and_keeps_the_study(tmp_path):
         assert flag and '"pmid": "8"' in stored
         assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
         assert conn.execute(text("SELECT count(*) FROM points")).scalar() == 2
+
+
+def test_a_failed_refresh_keeps_the_last_ok_notices_and_upload_still_sees_it(tmp_path, monkeypatch):
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.pipeline.stage import Context
+
+    stage = UploadStage(Settings(upload_source="nuextract-v21"))
+    with Catalog.open(tmp_path / "cat") as cat:
+        [retracted, notice_paper] = cat.register_many(
+            [Identifier(pmid="1"), Identifier(pmid="2")]
+        )
+
+        def ok(ref, **summary):
+            return Outcome(article_id=ref.id, stage="notices", source="", status=Status.OK,
+                           fingerprint="f", summary=summary, payload={})
+
+        cat.record([
+            ok(retracted, retracted=True, retraction={"kind": "retraction", "pmid": "8", "doi": None},
+               retraction_notice=False),
+            ok(notice_paper, retracted=False, retraction=None, retraction_notice=True),
+        ])
+        before = cat.artifacts([retracted.id], "notices")[retracted.id][""]
+        fp_before = stage.fingerprint_for(_Upstream(), None, before)
+        cat.record([Outcome.failure(r.id, "notices", "", "pubmed: down", fingerprint="f")
+                    for r in (retracted, notice_paper)])
+
+        kept = cat.artifacts([retracted.id, notice_paper.id], "notices")
+        assert kept[retracted.id][""].status is Status.OK
+        assert kept[retracted.id][""].summary["retracted"]
+        assert stage.fingerprint_for(_Upstream(), None, kept[retracted.id][""]) == fp_before
+        # The failure is still an attempt, so the scheduler's backoff sees it.
+        assert cat.attempt_counts([retracted.id], "notices", "")[retracted.id][0] == 1
+
+        # Upload still skips the notice paper.
+        [out], calls = _execute(monkeypatch, kept[notice_paper.id][""])
+        assert out.status is Status.SKIPPED and calls["uploaded"] == []
+
+        # Never answered: unknown, recorded as a failure, uploaded as if no notices.
+        [fresh] = cat.register_many([Identifier(pmid="3")])
+        cat.record([Outcome.failure(fresh.id, "notices", "", "pubmed: down", fingerprint="f")])
+        unknown = cat.artifacts([fresh.id], "notices")[fresh.id][""]
+        assert unknown.status is Status.FAILED
+        assert stage.fingerprint_for(_Upstream(), None, unknown) == stage.fingerprint_for(_Upstream())
+
+
+def test_a_retracted_paper_with_no_analyses_is_still_marked(monkeypatch):
+    prior = Artifact("a1", "upload", status=Status.OK, summary={"base_study_id": "OLD1"})
+    [out], calls = _execute(monkeypatch, _notices(retracted=True), empty=True, prior=prior)
+    assert out.status is Status.SKIPPED and out.summary["reason"] == "no analyses to upload"
+    assert out.summary["base_study_id"] == "OLD1" and out.summary["retraction_marked"] is True
+    assert calls["marked"] == [{"OLD1": {"kind": "retraction", "pmid": "8", "doi": None}}]
+    assert calls["uploaded"] == []
+
+
+def test_a_withdrawn_retraction_is_cleared(monkeypatch):
+    prior = Artifact(
+        "a1", "upload", status=Status.OK,
+        summary={"base_study_id": "OLD1", "retraction_marked": True},
+    )
+    [out], calls = _execute(monkeypatch, _notices(), prior=prior)
+    assert out.status is Status.OK and "retraction_marked" not in out.summary
+    assert calls["cleared"] == ["OLD1"] and calls["uploaded"]
+    # Never-marked papers have nothing to clear.
+    _, calls = _execute(monkeypatch, _notices())
+    assert calls["cleared"] == []
+
+
+def test_clearing_unsets_the_flag_and_keeps_the_study(tmp_path):
+    service, engine, uploaded = _uploaded(tmp_path)
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE base_studies ADD COLUMN is_retracted BOOLEAN"))
+        conn.execute(text("ALTER TABLE base_studies ADD COLUMN retraction_notice JSON"))
+    service.mark_retracted({uploaded.base_study_id: {"kind": "retraction"}})
+    assert service.mark_retracted({}, [uploaded.base_study_id]) == 1
+    with engine.connect() as conn:
+        flag, stored = conn.execute(
+            text("SELECT is_retracted, retraction_notice FROM base_studies")
+        ).one()
+        assert not flag and stored is None
+        assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1

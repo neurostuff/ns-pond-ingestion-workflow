@@ -19,7 +19,14 @@ UPLOAD_VERSION = 1
 
 
 def _notice_marker(notices: Optional[Artifact]) -> Optional[str]:
-    """What upload does differently for this article's PubMed notices, if anything."""
+    """What upload does differently for this article's PubMed notices, if anything.
+
+    The catalog keeps the last OK notices answer through a failed refresh, so a
+    status that is not OK means PubMed has never answered for this paper. That
+    is unknown, not "no notices": upload goes ahead as if there were none (a
+    paper whose lookup keeps failing must not hold up the corpus), and the
+    answer, once it arrives, changes the fingerprint and uploads it again.
+    """
     if notices is None or notices.status is not Status.OK:
         return None
     summary = notices.summary or {}
@@ -95,7 +102,10 @@ class UploadStage:
             existing = artifacts.get(ref.id, {}).get("")
             # Uploaded while neurostore had no is_retracted column: tried again
             # each run until the flag is set.
-            unmarked = existing is not None and existing.summary.get("retraction_marked") is False
+            unmarked = existing is not None and (
+                existing.summary.get("retraction_marked") is False
+                or existing.summary.get("retraction_cleared") is False
+            )
             if ctx.is_fresh(existing, fp) and not unmarked:
                 plan.fresh += 1
                 continue
@@ -107,13 +117,44 @@ class UploadStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        from ingestion_workflow.services.db import SessionFactory, SSHTunnel
-        from ingestion_workflow.services.upload import UploadService, resolve_upload_source
+        from ingestion_workflow.services.upload import resolve_upload_source
 
-        # Before the tunnel and before a single row is written. Checked here
-        # rather than in `__init__` so that planning and `--dry-run`, which
-        # change nothing, still work on a config that has not named a source.
         resolve_upload_source(self.settings)
+        # A retraction that has since gone from PubMed: the study was marked on
+        # an earlier upload, and neurostore's own ingester clears the flag when
+        # the notice is gone, so this does too.
+        withdrawn = self._withdrawn(ctx, works)
+        cleared = self._mark_retracted({}, list(withdrawn.values())) if withdrawn else True
+        for outcome in self._execute(ctx, works):
+            if not cleared and outcome.article_id in withdrawn and outcome.status in (
+                Status.OK, Status.SKIPPED
+            ):
+                # Still marked in neurostore: planned again until it is cleared.
+                outcome.summary = {**outcome.summary, "retraction_marked": True,
+                                   "retraction_cleared": False}
+            yield outcome
+
+    def _withdrawn(self, ctx: Context, works: Sequence[Work]) -> Dict[str, str]:
+        """{article_id: base study id} for papers marked retracted that PubMed no longer lists so."""
+        ids = [w.article_id for w in works]
+        found = ctx.catalog.artifacts(ids, "notices")
+        before = ctx.catalog.artifacts(ids, "upload")
+        out = {}
+        for work in works:
+            notices = found.get(work.article_id, {}).get("")
+            prior = before.get(work.article_id, {}).get("")
+            if notices is None or notices.status is not Status.OK or _notice_marker(notices):
+                continue
+            if prior is None or prior.summary.get("retraction_marked") is None:
+                continue
+            bsid = prior.summary.get("base_study_id") or work.ref.identifier.neurostore
+            if bsid:
+                out[work.article_id] = bsid
+        return out
+
+    def _execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        from ingestion_workflow.services.db import SessionFactory, SSHTunnel
+        from ingestion_workflow.services.upload import UploadService
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
         found = ctx.catalog.artifacts([w.article_id for w in works], "notices")
@@ -138,23 +179,36 @@ class UploadStage:
         # not "nothing to upload": what it uploaded before is still there, and
         # still claims coordinates the paper does not report. Those are
         # retracted. One that was never uploaded has nothing to take back.
-        previous = ctx.catalog.artifacts([w.article_id for w in empty if w.article_id in excluded], "upload")
+        previous = ctx.catalog.artifacts([w.article_id for w in empty], "upload")
         retract, empty = self._retractable(ctx, empty, excluded, previous)
-        yield from self._retract(retract)
+        # A retracted paper with nothing to upload is still retracted: its
+        # earlier study is marked, or releases would keep it.
+        flagged = {}
+        for work in [w for w, _ in retract] + empty:
+            if work.article_id in retractions:
+                bsid = self._base_study_id(work, previous)
+                if bsid:
+                    flagged[work.article_id] = bsid
+        flag_marked = self._mark_retracted({b: retractions[a] for a, b in flagged.items()})
+        yield from self._retract(retract, {a: flag_marked for a in flagged})
         # An article whose every collection came back with no analyses has
         # nothing to say. Uploading it would create a study claiming the paper
         # reports no coordinates, when what the extractor said is that these
         # are not coordinate tables. Recorded as skipped rather than failed:
         # the stage did its job, and a failure would be retried forever.
         for work in empty:
+            summary = ({"reason": "excluded by hand"} if work.article_id in excluded
+                       else {"reason": "no analyses to upload"})
+            if work.article_id in flagged:
+                summary |= {"base_study_id": flagged[work.article_id],
+                            "retraction_marked": flag_marked}
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
                 status=Status.SKIPPED,
                 fingerprint=work.fingerprint,
-                summary=({"reason": "excluded by hand"} if work.article_id in excluded
-                         else {"reason": "no analyses to upload"}),
+                summary=summary,
             )
         skipped = {work.article_id for work in empty} | {work.article_id for work, _ in retract}
         works = [work for work in works if work.article_id not in skipped]
@@ -231,9 +285,12 @@ class UploadStage:
                     fingerprint=work.fingerprint,
                 )
 
-    def _mark_retracted(self, targets: Dict[str, Optional[dict]]) -> bool:
-        """Set neurostore's retraction flag on these base studies; False if it could not."""
-        if not targets:
+    def _mark_retracted(self, targets: Dict[str, Optional[dict]], clear: Sequence[str] = ()) -> bool:
+        """Set neurostore's retraction flag on these base studies and clear it on `clear`.
+
+        False if it could not.
+        """
+        if not targets and not clear:
             return True
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
         from ingestion_workflow.services.upload import UploadService
@@ -241,25 +298,31 @@ class UploadStage:
         try:
             with SSHTunnel(self.settings) as tunnel:
                 sessions = SessionFactory(self.settings, tunnel=tunnel)
-                return UploadService(self.settings, sessions).mark_retracted(targets) is not None
+                return UploadService(self.settings, sessions).mark_retracted(targets, clear) is not None
         except Exception as exc:  # noqa: BLE001 - recorded as unmarked, so tried again
-            logger.error("marking %d retraction(s) failed: %s", len(targets), exc)
+            logger.error("marking %d retraction(s) failed: %s", len(targets) + len(clear), exc)
             return False
+
+    @staticmethod
+    def _base_study_id(work, previous) -> Optional[str]:
+        """The neurostore study an earlier upload made for this work, if any."""
+        prior = previous.get(work.article_id, {}).get("")
+        found = (prior.summary or {}).get("base_study_id") if prior and prior.status in (
+            Status.OK, Status.SKIPPED) else None
+        return found or work.ref.identifier.neurostore
 
     def _retractable(self, ctx, empty, excluded, previous):
         """Split the empty works into those to retract and those to skip."""
         retract, skip = [], []
         for work in empty:
-            prior = previous.get(work.article_id, {}).get("")
-            base_study_id = (prior.summary or {}).get("base_study_id") if prior and prior.status is Status.OK else None
-            base_study_id = base_study_id or work.ref.identifier.neurostore
+            base_study_id = self._base_study_id(work, previous)
             if work.article_id in excluded and base_study_id:
                 retract.append((work, base_study_id))
             else:
                 skip.append(work)
         return retract, skip
 
-    def _retract(self, retract) -> Iterator[Outcome]:
+    def _retract(self, retract, marked=None) -> Iterator[Outcome]:
         if not retract:
             return
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
@@ -300,7 +363,7 @@ class UploadStage:
                     "kept_annotated": outcome.kept_annotated,
                     "studysets": len(outcome.studysets or []),
                     "analyses": 0,
-                },
+                } | ({"retraction_marked": marked[work.article_id]} if work.article_id in (marked or {}) else {}),
             )
 
     def _gather(self, ctx: Context, works: Sequence[Work], excluded=None):
