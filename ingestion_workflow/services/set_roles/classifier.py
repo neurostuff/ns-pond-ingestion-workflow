@@ -37,20 +37,48 @@ class SetRoleClassifier(Protocol):
         """One prediction per serialised context, in order."""
 
 
-def decide(proposed: str, prediction: Optional[Prediction], *, source: str,
-           min_confidence: float, prior_threshold: float = 0.5) -> RoleDecision:
-    """The recorded role for a set, from its proposal and the classifier's answer."""
+def decide(
+    proposed: str,
+    prediction: Optional[Prediction],
+    *,
+    source: str,
+    min_confidence: float,
+    prior_threshold: float = 0.5,
+    evidence: Sequence[str] = (),
+) -> RoleDecision:
+    """The recorded role for a set, from its proposal and the classifier's answer.
+
+    `evidence` is the context's citing sentences (`context.prior_evidence`),
+    recorded only when the set is judged to come from a prior study.
+    """
     if prediction is None:
-        return RoleDecision(label=proposed, from_prior_study=split_label(proposed)[0] == "reference",
-                            confidence=None, source="proposal", proposed=proposed)
-    if prediction.confidence >= min_confidence:
-        label, confidence, decided_by = prediction.label, prediction.confidence, source
+        label, prior, confidence, decided_by = (
+            proposed,
+            split_label(proposed)[0] == "reference",
+            None,
+            "proposal",
+        )
     else:
-        label, confidence, decided_by = proposed, prediction.probabilities.get(proposed), "proposal"
-    # A quoted peak is another study's by definition; otherwise the flag head decides.
-    prior = split_label(label)[0] == "reference" or prediction.prior_probability >= prior_threshold
-    return RoleDecision(label=label, from_prior_study=prior, confidence=confidence, source=decided_by,
-                        proposed=proposed)
+        if prediction.confidence >= min_confidence:
+            label, confidence, decided_by = prediction.label, prediction.confidence, source
+        else:
+            label, confidence, decided_by = (
+                proposed,
+                prediction.probabilities.get(proposed),
+                "proposal",
+            )
+        # A quoted peak is another study's by definition; otherwise the flag head decides.
+        prior = (
+            split_label(label)[0] == "reference" or prediction.prior_probability >= prior_threshold
+        )
+    return RoleDecision(
+        label=label,
+        from_prior_study=prior,
+        confidence=confidence,
+        source=decided_by,
+        proposed=proposed,
+        prior_study_evidence=tuple({"text": s} for s in evidence) if prior else (),
+    )
 
 
 class EncoderClassifier:
@@ -68,6 +96,14 @@ class EncoderClassifier:
     def predict(self, texts: Sequence[str]) -> List[Prediction]:
         from . import model as model_io  # noqa: PLC0415
 
-        return [Prediction(probs, prior) for probs, prior in model_io.predict_batch(
-            self._model, self._tokenizer, texts, self._labels, device=self._device,
-            batch_size=self._batch_size)]
+        return [
+            Prediction(probs, prior)
+            for probs, prior in model_io.predict_batch(
+                self._model,
+                self._tokenizer,
+                texts,
+                self._labels,
+                device=self._device,
+                batch_size=self._batch_size,
+            )
+        ]

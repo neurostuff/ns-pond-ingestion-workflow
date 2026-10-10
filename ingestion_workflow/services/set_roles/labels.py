@@ -25,6 +25,17 @@ ROLE_LABELS: Tuple[str, ...] = (
     "other",
 )
 
+#: study_schema's `CoordinateRole` and `AnchorKind`: what a labeller answers.
+COORDINATE_ROLES: Tuple[str, ...] = (
+    "result",
+    "anchor",
+    "localization",
+    "reference",
+    "display",
+    "other",
+)
+ANCHOR_KINDS: Tuple[str, ...] = ("roi", "seed", "stimulation_target", "node")
+
 #: The roles uploaded to neurostore: this study's results and the regions it
 #: defined to get them. A peak quoted from another study, a display position
 #: or an electrode location is kept in the parse for pondie and not uploaded.
@@ -40,6 +51,28 @@ _FROM_PROSE = {
     "figure": "display",
     "other": "other",
 }
+
+
+#: A label in the extractors' role vocabulary, which nu-prose's targets
+#: already use per point (and nu-v21's now carry per analysis). It has no node
+#: or localization: a node is an ROI centre, an electrode location is other.
+_TO_EXTRACTOR = {
+    "result": "result",
+    "anchor:roi": "roi",
+    "anchor:seed": "seed",
+    "anchor:stimulation_target": "target",
+    "anchor:node": "roi",
+    "localization": "other",
+    "reference": "prior_study",
+    "display": "figure",
+    "other": "other",
+}
+EXTRACTOR_ROLES: Tuple[str, ...] = tuple(_FROM_PROSE)
+
+
+def extractor_role(label: str) -> str:
+    """The extractors' role for a label (`anchor:seed` -> `seed`)."""
+    return _TO_EXTRACTOR.get(label, "other")
 
 
 def label_from_prose(role: Optional[str]) -> str:
@@ -75,6 +108,8 @@ class RoleDecision:
     #: The label proposed before the classifier ran, kept so a reviewer can see
     #: what it overrode.
     proposed: str
+    #: The sentences showing the coordinates come from another publication.
+    prior_study_evidence: Tuple[dict, ...] = ()
 
     @property
     def role(self) -> str:
@@ -89,11 +124,13 @@ class RoleDecision:
         return self.role in UPLOADED_ROLES
 
     def to_metadata(self) -> dict:
+        """The decision in CoordinateParse's field names, plus the proposal it started from."""
         return {
             "role": self.role,
             "anchor_kind": self.anchor_kind,
             "from_prior_study": self.from_prior_study,
-            "confidence": self.confidence,
-            "source": self.source,
-            "proposed": self.proposed,
+            "prior_study_evidence": list(self.prior_study_evidence),
+            "role_confidence": self.confidence,
+            "role_source": self.source,
+            "proposal": self.proposed,
         }

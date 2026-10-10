@@ -129,7 +129,7 @@ def test_every_stage_that_gates_uses_the_same_declaration():
 
     declared = {n: getattr(t, "requires_flag", None) for n, t in STAGE_TYPES.items()}
     assert {n: f for n, f in declared.items() if f} == {
-        "analyses": "passed", "space": "tables", "upload": "tables"}
+        "analyses": "passed", "roles": "tables", "space": "tables", "upload": "tables"}
     for name, flag in declared.items():
         if flag:
             assert getattr(STAGE_TYPES[name], "requires", None), \

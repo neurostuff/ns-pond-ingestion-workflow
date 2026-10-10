@@ -308,6 +308,22 @@ class Settings(BaseSettings):
         description="Server of the prose model, which runs apart from the table model. Defaults to llm_api_base",
     )
 
+    # ===== What each coordinate set is for =====
+    role_model: Optional[Path] = Field(
+        default=None,
+        description=(
+            "Directory of a trained set-role classifier; setting it runs the roles stage, which "
+            "space then reads. Unset, nothing changes"
+        ),
+    )
+    role_min_confidence: float = Field(
+        default=0.8,
+        ge=0.0,
+        le=1.0,
+        description="Below this probability the set's proposed role stands: result for a table, the prose role",
+    )
+    role_device: str = Field(default="cpu", description="Torch device the role classifier runs on")
+
     sync_overwrite: bool = Field(
         default=True,
         description="Overwrite individual files when writing ns-pond sync outputs",

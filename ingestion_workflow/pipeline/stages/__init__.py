@@ -10,6 +10,7 @@ from .prose import ProseStage
 from .references import ReferencesStage
 from .reflist import ReflistStage
 from .resolve import ResolveStage
+from .roles import RolesStage
 from .space import SpaceStage
 from .sync import SyncStage
 from .triage import TriageStage
@@ -35,14 +36,20 @@ from .upload import UploadStage
 #: `reflist` fetches each paper's Crossref list and `references` reads each
 #: extraction's list and citations, the Crossref list filling its gaps. Nothing
 #: downstream reads them yet, so they run only when asked for by name.
+#:
+#: `roles` runs only when `role_model` is set: it decides what each set of
+#: resolve's (or analyses', without prose) is for. Space does not read it yet.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices", "triage", "analyses",
-               "prose", "resolve", "space", "upload", "sync")
+               "prose", "resolve", "roles", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
 OPT_IN_STAGES = ("reflist", "references")
+
+#: Stages that exist only when a role model is configured.
+ROLE_STAGES = ("roles",)
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -56,6 +63,7 @@ STAGE_TYPES = {
     "references": ReferencesStage,
     "reflist": ReflistStage,
     "resolve": ResolveStage,
+    "roles": RolesStage,
     "space": SpaceStage,
     "upload": UploadStage,
     "sync": SyncStage,
@@ -65,15 +73,19 @@ STAGE_TYPES = {
 def build(names, settings):
     """Instantiate the requested stages in canonical order."""
     enabled = bool(getattr(settings, "prose_model", None))
+    roles = bool(getattr(settings, "role_model", None))
     wanted = {name.lower() for name in names} if names else {
         name for name in STAGE_ORDER
-        if (enabled or name not in PROSE_STAGES) and name not in OPT_IN_STAGES}
+        if (enabled or name not in PROSE_STAGES) and name not in OPT_IN_STAGES
+        and (roles or name not in ROLE_STAGES)}
     unknown = wanted - set(STAGE_ORDER)
     if unknown:
         raise ValueError(f"Unknown stages: {', '.join(sorted(unknown))}")
     if wanted & set(PROSE_STAGES) and not enabled:
         raise ValueError("the passages, prose and resolve stages need prose_model: space "
                          "reads analyses without it, so their output would go nowhere")
+    if wanted & set(ROLE_STAGES) and not roles:
+        raise ValueError("the roles stage needs role_model")
     return [STAGE_TYPES[name](settings) for name in STAGE_ORDER if name in wanted]
 
 
@@ -87,9 +99,11 @@ __all__ = [
     "PROSE_STAGES",
     "PassagesStage",
     "ProseStage",
+    "ROLE_STAGES",
     "ReferencesStage",
     "ReflistStage",
     "ResolveStage",
+    "RolesStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
     "SpaceStage",
