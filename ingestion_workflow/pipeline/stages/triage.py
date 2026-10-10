@@ -198,7 +198,7 @@ class TriageStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        jobs, meta_of, tables_of = [], {}, {}
+        jobs, meta_of, tables_of, skipped_of = [], {}, {}, {}
         for work in works:
             payload = ctx.payload(work.upstream)
             if payload is None:
@@ -210,6 +210,10 @@ class TriageStage:
             abstract, title, types = self._context(ctx, work.article_id)
             meta_of[work.article_id] = (is_a_meta_analysis(title, types), types)
             tables_of[work.article_id] = len(content.tables)
+            found = ctx.catalog.artifacts([work.article_id], "extract").get(work.article_id, {})
+            downloads = ctx.catalog.artifacts([work.article_id], "download").get(work.article_id, {})
+            skipped_of[work.article_id] = skipped_for_text(
+                current_extractions(ctx, found, downloads) or found, work.upstream)
             jobs.append((work.article_id, abstract,
                          [_as_dict(t) for t in content.tables]))
         if not jobs:
@@ -238,6 +242,8 @@ class TriageStage:
                     "passed": len(kept),
                     "read_outright": sum(1 for v in verdicts if v["points"] >= 3),
                     "is_meta_analysis": meta,
+                    **({"skipped_no_text": skipped_of[work.article_id]}
+                       if skipped_of.get(work.article_id) else {}),
                 },
             )
 
@@ -352,6 +358,25 @@ def _as_dict(table) -> Dict:
 def judged_extraction(ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]) -> Optional[Artifact]:
     """The extraction triage judges, whose text sync writes and passages reads."""
     return _most_tables(current_extractions(ctx, found, downloads) or found)
+
+
+def skipped_for_text(candidates: Dict[str, Artifact], chosen: Artifact) -> List[Dict]:
+    """The no-text extractions with tables that `_most_tables` passed over, by source.
+
+    Their tables are not judged, so triage records which source it left and how
+    many tables it held. Nothing is skipped when the chosen extraction has no text
+    either, or when the no-text ones have no tables.
+    """
+    if not chosen.summary.get("has_text", True):
+        return []
+    return [
+        {"source": a.source, "tables": a.summary.get("tables", 0)}
+        for a in candidates.values()
+        if a.status is Status.OK
+        and a is not chosen
+        and not a.summary.get("has_text", True)
+        and a.summary.get("tables", 0)
+    ]
 
 
 def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:

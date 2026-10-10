@@ -471,3 +471,21 @@ def test_table_count_still_decides_among_extractions_with_text():
     few, many = _Art("pubget", 2), _Art("pdf", 7)
     assert _most_tables({"pubget": few, "pdf": many}) is many
     assert _most_tables({"pubget": few, "pdf": many, "ace": _Art("ace", 30, False)}) is many
+
+
+def test_a_no_text_extraction_with_tables_that_loses_the_tie_break_is_recorded():
+    from ingestion_workflow.catalog import Status
+    from ingestion_workflow.pipeline.stages.triage import skipped_for_text
+
+    class _Art:
+        def __init__(self, source, tables, has_text):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    pubget, pdf, ace = _Art("pubget", 9, False), _Art("pdf", 0, True), _Art("ace", 0, False)
+    found = {"pubget": pubget, "pdf": pdf, "ace": ace}
+    chosen = _most_tables(found)
+    assert chosen is pdf
+    assert skipped_for_text(found, chosen) == [{"source": "pubget", "tables": 9}]
+    # nothing is left behind when the chosen one has no text either
+    assert skipped_for_text({"pubget": pubget, "ace": ace}, pubget) == []
