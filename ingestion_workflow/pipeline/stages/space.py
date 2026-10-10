@@ -11,7 +11,7 @@ from ingestion_workflow.models import CoordinateSpace
 from ingestion_workflow.services.coordinate_space import read_space
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class SpaceStage:
         for ref in refs:
             analyses = upstream.get(ref.id, {}).get("")
             if analyses is None or analyses.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, analyses, artifacts.get(ref.id, {}).get(""))
                 continue
             fp = self.fingerprint_for(analyses)
             existing = artifacts.get(ref.id, {}).get("")
@@ -78,6 +78,8 @@ class SpaceStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")

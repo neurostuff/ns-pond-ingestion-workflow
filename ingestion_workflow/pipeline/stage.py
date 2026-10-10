@@ -17,6 +17,33 @@ from ingestion_workflow.config import Settings
 
 from .plan import StagePlan, Work
 
+#: Why an artifact was taken back: the article's extraction holds no text, so what was
+#: made from its old text is no longer the article's. A plan whose input was taken back
+#: takes back its own artifact in turn, down to neurostore and the corpus.
+NO_TEXT = "no extraction text"
+
+
+def taken_back(artifact: Optional[Artifact]) -> bool:
+    return artifact is not None and artifact.status is Status.FAILED and artifact.error == NO_TEXT
+
+
+def take_back_or_block(plan: StagePlan, ref: ArticleRef, upstream: Optional[Artifact],
+                       existing: Optional[Artifact]) -> None:
+    """Plan an article whose input is not OK: it waits for the input, unless that input
+    was taken back while this stage still holds an OK artifact made from it."""
+    if taken_back(upstream) and existing is not None and existing.status is Status.OK \
+            and existing.fingerprint != NO_TEXT:
+        plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
+    else:
+        plan.blocked += 1
+
+
+def taking_back(stage: str, works: List[Work]):
+    """The failures that take back the works planned by `take_back_or_block`, and the rest."""
+    back = [Outcome.failure(w.article_id, stage, "", NO_TEXT, fingerprint=NO_TEXT)
+            for w in works if w.upstream is None]
+    return back, [w for w in works if w.upstream is not None]
+
 
 class Context:
     """What a stage is handed: settings, the catalog, and the freshness rule."""
@@ -76,6 +103,8 @@ class Context:
             return True
         if artifact.status is Status.OK:
             return True  # stale: fingerprint changed
+        if taken_back(artifact):
+            return True  # not a failed try: its input is back
         if artifact.status in (Status.PERMANENT, Status.SKIPPED):
             return False
         return is_retryable(

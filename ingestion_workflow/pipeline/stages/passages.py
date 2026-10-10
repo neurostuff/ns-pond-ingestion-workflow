@@ -23,7 +23,7 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import NO_TEXT, Context
 
 logger = logging.getLogger(__name__)
 
@@ -170,10 +170,6 @@ def read_text(payload: dict) -> str:
     if text is None or sha256(text) != payload.get("text_sha256"):
         raise LookupError("the text the passages index is gone or has changed")
     return text
-
-
-#: Why an article whose old passages the plan takes back has none now.
-NO_TEXT = "no extraction text"
 
 
 def text_of(ctx: Context, extraction: Optional[Artifact]) -> Tuple[Optional[str], Optional[str]]:

@@ -16,7 +16,7 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
 from .passages import passage_from, read_text
 from .resolve import KEPT_ROLES
 
@@ -65,7 +65,7 @@ class ProseStage:
         for ref in refs:
             passages = upstream.get(ref.id, {}).get("")
             if passages is None or passages.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, passages, artifacts.get(ref.id, {}).get(""))
                 continue
             metadata = fetched.get(ref.id, {}).get("")
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
@@ -84,6 +84,8 @@ class ProseStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         found = [ctx.payload(work.upstream) or {} for work in works]
         metadata = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         reading, unreadable, read = [], {}, {}

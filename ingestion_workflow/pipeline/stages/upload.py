@@ -11,7 +11,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import NO_TEXT, Context, take_back_or_block
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class UploadStage:
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
             if spaced is None or spaced.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, spaced, artifacts.get(ref.id, {}).get(""))
                 continue
             fp = self.fingerprint_for(spaced, excluded.get(ref.id))
             existing = artifacts.get(ref.id, {}).get("")
@@ -89,6 +89,27 @@ class UploadStage:
         # rather than in `__init__` so that planning and `--dry-run`, which
         # change nothing, still work on a config that has not named a source.
         resolve_upload_source(self.settings)
+
+        # An uploaded article whose text was taken back: its pipeline analyses came from a
+        # text no extraction holds now, so they are retracted the way an article whose
+        # every table was excluded is. Annotated analyses and studyset members stay.
+        back = [work for work in works if work.upstream is None]
+        works = [work for work in works if work.upstream is not None]
+        uploaded = ctx.catalog.artifacts([w.article_id for w in back], "upload")
+        retract_back, nothing = [], []
+        for work in back:
+            prior = uploaded.get(work.article_id, {}).get("")
+            recorded = (prior.summary or {}) if prior is not None else {}
+            base_study_id = recorded.get("base_study_id") or work.ref.identifier.neurostore
+            if base_study_id:
+                retract_back.append((work, base_study_id))
+            else:
+                nothing.append(work)
+        for work in nothing:
+            yield Outcome.failure(work.article_id, self.name, "", NO_TEXT, fingerprint=NO_TEXT)
+        yield from self._retract(retract_back)
+        if not works:
+            return
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
         analyses, metadata, empty = self._gather(ctx, works, excluded)
