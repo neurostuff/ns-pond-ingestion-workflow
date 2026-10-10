@@ -50,6 +50,10 @@ def _collection(analyses):
 
 @pytest.fixture()
 def written(tmp_path):
+    return _written(tmp_path)
+
+
+def _written(tmp_path):
     identifier = Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
@@ -541,6 +545,130 @@ def test_an_inlined_table_has_text_spans_for_it_and_its_rows():
     assert text[slice(*spans[0])] == "Amygdala\t22\t\u22124\t\u221220"
     assert text[slice(*spans[1])] == "Insula\t36\t20\t4"
     assert spans["table"] == (spans[0][0], spans[1][1])
+
+
+def test_tables_sharing_a_header_row_each_find_it_in_their_own_block():
+    from ingestion_workflow.services.paper_parse import _inlined_tables, _Table, _Text
+
+    def grid(*rows):
+        return _Table([], [[(c, i) for i, c in enumerate(r)] for r in rows])
+
+    header = ("", "Simple condition", "Difficult condition")
+    grids = {
+        # Its last row is not printed with it, but the next table prints one like it.
+        "tbl2": grid(
+            header, ("G. front. med. r", "38", "4", "33"), ("ant. Cing.", "6", "22", "32")
+        ),
+        "tbl3": grid(header, ("G. front. med. r", "39", "1", "37")),
+    }
+    tables = [
+        SimpleNamespace(table_id="tbl2", table_number=2, caption="Results of discrimination task"),
+        SimpleNamespace(table_id="tbl3", table_number=3, caption="Results of labeling task"),
+    ]
+    text = (
+        "Signal changes are given in Tables 2 and 3\n"
+        "Table 2\nResults of discrimination task\n"
+        "\tSimple condition\tDifficult condition\nG. front. med. r\t38\t4\t33\n\n"
+        "Table 3\nResults of labeling task\n"
+        "\tSimple condition\tDifficult condition\nG. front. med. r\t39\t1\t37\n"
+        "ant. Cing.\t6\t22\t32\n"
+    )
+    two, three = _inlined_tables(tables, grids, _Text(text))
+    block = text.index("Table 3")
+    assert two["table"][1] < block and 2 not in two
+    # tbl3's header row is the second copy of the line, not tbl2's.
+    assert three[0][0] > block and three["table"] == (three[0][0], three[1][1])
+    assert text[slice(*three[1])] == "G. front. med. r\t39\t1\t37"
+
+
+ROWS = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>
+<tr><td>Cuneus</td><td>2</td><td>-80</td><td>10</td></tr>
+<tr><td>Insula</td><td>36</td><td>20</td><td>4</td></tr>
+<tr><td>Caudate</td><td>12</td><td>14</td><td>8</td></tr>
+<tr><td>Faces &gt; Houses</td><td></td><td></td><td></td></tr>
+<tr><td>Precuneus</td><td>-10</td><td>-39</td><td>44</td></tr>
+<tr><td>Insula</td><td>36</td><td>20</td><td>4</td></tr>
+<tr><td>Putamen</td><td>-24</td><td>6</td><td>2</td></tr>
+</table>"""
+
+
+def test_a_repeated_point_goes_to_the_row_nearest_its_analysis_own(tmp_path):
+    collection = _collection(
+        [
+            Analysis(
+                name="Words > Rest",
+                coordinates=[
+                    Coordinate(x=-10, y=-39, z=44),
+                    Coordinate(x=36, y=20, z=4),
+                    Coordinate(x=-24, y=6, z=2),
+                ],
+            ),
+        ]
+    )
+    parse, _ = _parse(tmp_path, ROWS, {"tbl1": collection})
+    # No row names it; row 5 sits between its own rows 4 and 6, row 1 does not.
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(4, 0), (5, 0), (6, 0)]
+
+
+def test_a_repeated_point_avoids_a_row_another_analysis_took(tmp_path):
+    collection = _collection(
+        [
+            # Placed first, by the row naming it: row 5.
+            Analysis(name="Faces > Houses", coordinates=[Coordinate(x=36, y=20, z=4)]),
+            Analysis(
+                name="Words > Rest",
+                coordinates=[
+                    Coordinate(x=-10, y=-39, z=44),
+                    Coordinate(x=36, y=20, z=4),
+                    Coordinate(x=-24, y=6, z=2),
+                ],
+            ),
+        ]
+    )
+    parse, omitted = _parse(tmp_path, ROWS, {"tbl1": collection})
+    # Row 5 is nearer its own rows, but the first analysis holds it.
+    assert [[c.row for c in a.cells] for a in parse.analyses] == [[5], [1, 4, 6]]
+    assert omitted == []
+
+
+def test_a_repeated_point_stays_in_its_analysis_column_block(tmp_path):
+    markup = """<table>
+    <tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>x</th><th>y</th><th>z</th></tr>
+    <tr><td>Cuneus</td><td>2</td><td>-80</td><td>10</td><td>1</td><td>-70</td><td>3</td></tr>
+    <tr><td>Insula</td><td>14</td><td>-8</td><td>6</td><td>36</td><td>20</td><td>4</td></tr>
+    <tr><td>Caudate</td><td>12</td><td>14</td><td>8</td><td>9</td><td>11</td><td>7</td></tr>
+    <tr><td>Putamen</td><td>-24</td><td>6</td><td>2</td><td>-22</td><td>5</td><td>1</td></tr>
+    <tr><td>Insula</td><td>36</td><td>20</td><td>4</td><td>30</td><td>18</td><td>-2</td></tr>
+    </table>"""
+    collection = _collection(
+        [
+            Analysis(
+                name="Words > Rest",
+                coordinates=[
+                    Coordinate(x=2, y=-80, z=10),
+                    Coordinate(x=14, y=-8, z=6),
+                    Coordinate(x=36, y=20, z=4),
+                ],
+            ),
+        ]
+    )
+    parse, _ = _parse(tmp_path, markup, {"tbl1": collection})
+    # Row 1 is nearer, but in the other contrast's columns.
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0), (1, 0), (4, 0)]
+
+
+def test_write_refuses_two_files_that_disagree(tmp_path, monkeypatch):
+    real = paper_parse.coordinate_parse
+
+    def other_text(*args, **kwargs):
+        parse, omitted = real(*args, **kwargs)
+        return parse.model_copy(update={"text_sha256": "f" * 64}), omitted
+
+    monkeypatch.setattr(paper_parse, "coordinate_parse", other_text)
+    with pytest.raises(ValueError, match="different text"):
+        _written(tmp_path)
+    assert not list(tmp_path.rglob("coordinate_parse.json"))
 
 
 def test_a_table_both_rejected_and_excluded_reads_as_excluded():
