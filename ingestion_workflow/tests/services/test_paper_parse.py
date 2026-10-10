@@ -88,7 +88,7 @@ def _written(tmp_path):
     per_table = {
         "tbl1": _collection(
             [
-                # The analyses stage's sign split: the original half, then "<name> (negative)".
+                # The analyses stage's sign split: the original half, then "<name> (inverse)".
                 Analysis(
                     name="Faces > Houses",
                     table_id="tbl1",
@@ -105,7 +105,7 @@ def _written(tmp_path):
                     ],
                 ),
                 Analysis(
-                    name="Faces > Houses (negative)",
+                    name="Faces > Houses (inverse)",
                     table_id="tbl1",
                     coordinates=[
                         Coordinate(
@@ -237,7 +237,7 @@ def test_the_sign_split_is_declared_not_left_in_the_name(written):
     halves = [a for a in parse["analyses"] if a["name"] == "Faces > Houses"]
     assert [a["split"]["half"] for a in halves] == ["original", "inverse"]
     assert [a["split"].get("original_analysis") for a in halves] == [None, halves[0]["key"]]
-    assert not any(a["name"].endswith("(negative)") for a in parse["analyses"])
+    assert not any(a["name"].endswith(("(inverse)", "(negative)")) for a in parse["analyses"])
 
 
 def test_points_carry_no_sign_and_use_the_shared_statistic_kinds(written):
@@ -472,18 +472,18 @@ def test_an_analysis_on_another_analysis_cells_is_omitted_not_dropped(tmp_path):
     assert "omitted 'A > B again'" in reading.reason and "omitted 'Unprinted'" in reading.reason
 
 
-def test_negative_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
+def test_inverse_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     collection = _collection(
         [
             Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
             Analysis(name="Other", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
             # Not right after its original: no split, so the name keeps its direction.
-            Analysis(name="Fear > Neutral (negative)", coordinates=point),
+            Analysis(name="Fear > Neutral (inverse)", coordinates=point),
         ]
     )
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
-    assert parse.analyses[2].name == "Fear > Neutral (negative)"
+    assert parse.analyses[2].name == "Fear > Neutral (inverse)"
     assert all(a.split is None for a in parse.analyses)
 
 
