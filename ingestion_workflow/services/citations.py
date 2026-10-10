@@ -387,7 +387,7 @@ def _elsevier_references(root) -> List[dict]:
 
 
 def read_elsevier(xml_path: Path, text: str) -> ReadResult:
-    from elsevier_coordinate_extraction.extract.text import extract_text_from_article, format_article_text
+    from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
 
     root = etree.fromstring(xml_path.read_bytes())
     refs = _elsevier_references(root)
@@ -399,8 +399,7 @@ def read_elsevier(xml_path: Path, text: str) -> ReadResult:
             links.append({"references": resolved, "has_text": bool(_text_of(x))})
             _wrap(x, len(links) - 1)
     payload = etree.tostring(root, encoding="utf-8", xml_declaration=True)
-    # the calls save_article_text makes, as the elsevier extractor runs it
-    marked = format_article_text(extract_text_from_article(payload, True, True))
+    marked = article_text_and_captions(payload)[0]
     notes: Dict[str, int] = {}
     rebuilt, spans = _strip(marked)
     spans = _place(rebuilt, spans, text, notes)

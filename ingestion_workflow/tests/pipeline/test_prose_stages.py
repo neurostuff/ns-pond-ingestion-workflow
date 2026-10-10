@@ -402,11 +402,12 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
 
 
-def _record_extraction(catalog, ref, text_file):
+def _record_extraction(catalog, ref, text_file, figure_captions=()):
     from ingestion_workflow.pipeline.stages.extract import file_sha256
 
     catalog.record([Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
-                            payload={"full_text_path": str(text_file), "tables": []},
+                            payload={"full_text_path": str(text_file), "tables": [],
+                                     "figure_captions": list(figure_captions)},
                             summary={"tables": 0, "has_text": True, "text_sha256": file_sha256(text_file)})])
 
 
@@ -480,18 +481,42 @@ def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
     stored = found.payload["passages"]
     assert [(p["hits"][0]["x"], p["from_legend"]) for p in stored] == [(-22.0, False), (-34.0, True)]
 
-    # From the extraction: the legend found in its text, after the Discussion, its
-    # white space and minus signs written differently.
+    # From the extraction: the legend where the extractor wrote it, after the Discussion.
+    from ingestion_workflow.extractors.figure_captions import append_legends
+
+    caption = "Figure 2. Greater insula activation in patients than controls (x = -34, y = 16, z = -6; p < 0.05 corrected)."
     ref = catalog.register(Identifier(pmid="31"))
     _record_upstream(catalog, ref, xml)
     text_file = tmp_path / "legend.txt"
-    text_file.write_text(TEXT + "\n## Discussion\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n\n"
-                         "Figure 2. Greater insula activation in patients than controls\n"
-                         "(x = -34, y = 16,  z = −6; p < 0.05 corrected).\n", encoding="utf-8")
-    _record_extraction(catalog, ref, text_file)
+    text, spans = append_legends(TEXT + "\n## Discussion\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n",
+                                 [(["F2"], caption)])
+    text_file.write_text(text, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, spans)
     _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
-    text = text_file.read_text()
     stored = found.payload["passages"]
     assert [(p["hits"][0]["x"], p["from_legend"]) for p in stored] == [(-22.0, False), (-34.0, True)]
     assert passage_from(stored[1], text).from_legend
     assert text[slice(*stored[1]["span"])].startswith("Figure 2.")
+
+
+def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first_quotes_it(env, tmp_path):
+    """A caption the Results also print, and a second figure captioned alike: the caption is
+    read once, at its span under "Figure legends", never searched for."""
+    from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
+
+    settings, catalog, path = env
+    caption = "Figure 2. Greater insula activation in patients than controls (x = -34, y = 16, z = -6)."
+    body = TEXT.replace("The reverse contrast", caption + " The reverse contrast")
+    text, spans = append_legends(body, dedupe([("F2", caption), ("F3", caption)]))
+    assert [c["ids"] for c in spans] == [["F2", "F3"]]
+    ref = catalog.register(Identifier(pmid="32"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "quoted.txt"
+    text_file.write_text(text, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file, spans)
+    _, (found,) = _run(PassagesStage(settings), ctx := Context(settings, catalog), catalog, ref)
+    legend = [p for p in found.payload["passages"] if p["from_legend"]]
+    assert len(legend) == 1
+    assert legend[0]["span"][0] >= spans[0]["span"][0]
+    # the body's copy is a body passage, read in the Results
+    assert any(not p["from_legend"] and p["hits"][0]["x"] == -34.0 for p in found.payload["passages"])

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from lxml import etree
 
@@ -25,6 +26,7 @@ from pubget._utils import (
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.figure_captions import append_legends, take_xml_figures
 from ingestion_workflow.extractors.utils import (
     build_downloaded_file,
     build_failure_extraction,
@@ -399,11 +401,20 @@ KEEPS_SUBSCRIPTS = _stylesheet_declares("keep-subscripts")
 
 
 def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> str:
-    """An article's text as extraction keeps it: title, keywords, abstract and body, tables in place.
+    """An article's text as extraction keeps it: title, keywords, abstract and body, tables in
+    place, and the figure captions under "Figure legends" at the end.
 
     Public so a reader of the same XML (citations) builds the very text the
     extraction stored, and its offsets hold.
     """
+    return article_text_and_captions(article_tree, article_input_dir)[0]
+
+
+def article_text_and_captions(article_tree: etree._ElementTree, article_input_dir: Path) -> Tuple[str, List[dict]]:
+    """`article_text`, and each figure caption's `{"ids", "span"}` in it. The tree is not changed."""
+    article_tree = copy.deepcopy(article_tree)
+    # pubget's stylesheet writes a <fig> wherever it sits in <body>, and none in <floats-group>
+    captions = take_xml_figures(article_tree.getroot(), "fig")
     stylesheet = load_stylesheet("text_extraction.xsl")
     transformed = stylesheet(
         article_tree,
@@ -425,7 +436,7 @@ def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> s
                 part = _insert_tables(part, article_input_dir)
             if part:
                 text_parts.append(part)
-    return "\n\n".join(text_parts)
+    return append_legends("\n\n".join(text_parts), captions)
 
 
 def _run_pubget_extraction_task(
@@ -467,7 +478,7 @@ def _extract_pubget_article(
     article_tree = etree.parse(str(article_file.file_path))
 
     try:
-        full_text = article_text(article_tree, article_input_dir)
+        full_text, figure_captions = article_text_and_captions(article_tree, article_input_dir)
     except Exception as exc:
         logger.warning(
             "Failed to transform article text for %s: %s",
@@ -475,6 +486,7 @@ def _extract_pubget_article(
             exc,
         )
         full_text = " ".join(article_tree.xpath(".//text()"))
+        figure_captions = []
 
     output_dir.mkdir(parents=True, exist_ok=True)
     full_text_path = output_dir / "article.txt"
@@ -498,6 +510,7 @@ def _extract_pubget_article(
             tables=[],
             has_coordinates=False,
             error_message=message,
+            figure_captions=figure_captions,
         )
 
     extracted_tables: List[ExtractedTable] = []
@@ -641,6 +654,7 @@ def _extract_pubget_article(
         tables=extracted_tables,
         has_coordinates=has_coordinates,
         error_message=error_message,
+        figure_captions=figure_captions,
     )
 
 
