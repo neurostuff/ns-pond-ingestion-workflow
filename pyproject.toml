@@ -46,7 +46,7 @@ dependencies = [
   # The paper-parse contract (ParsedPaper, CoordinateParse) and its key rule.
   # Pinned to neurostuff/study_schema#28 (text keys carry the analysis name; omitted_analyses),
   # which builds on #26; repin to main once they merge.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@1dd7d97bc81bcf280c98290b3bdaf1497fe3aa03",
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@df25f92e39bd845ca021a81e1d147241264f7951",
 ]
 
 [project.optional-dependencies]
