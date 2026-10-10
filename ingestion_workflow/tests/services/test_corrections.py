@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
+import json
+
 import pytest
 import xmltodict
 from ingestion_workflow.catalog import Artifact, Status
@@ -55,6 +57,7 @@ def test_a_retracted_paper_carries_its_notices():
         "kind": "retraction",
         "pmid": "15016483",
         "doi": "10.1016/S0140-6736(04)15715-2",
+        "source": "pubmed",
     } in corrections
     # The expression of concern's citation has a doi too; one without gives None.
     assert {"kind": "comment", "pmid": "9525390", "doi": None} in corrections
@@ -68,7 +71,7 @@ def test_a_retraction_notice_is_marked_and_lists_nothing():
 def test_the_publication_type_alone_marks_a_paper_retracted():
     """PubMed types the paper before it links the notice."""
     assert corrections_from_pubmed(_article(types=["Retracted Publication"])) == (
-        [{"kind": "retraction", "pmid": None, "doi": None}],
+        [{"kind": "retraction", "pmid": None, "doi": None, "source": "pubmed"}],
         False,
     )
 
@@ -87,11 +90,11 @@ def test_an_erratum_alone_is_not_a_retraction():
     # One CommentsCorrections element is a dict, not a list, in xmltodict's form.
     refs = {
         "@RefType": "ErratumIn",
-        "RefSource": "J. 2001;1:2. doi: 10.1/err.",
+        "RefSource": "J. 2001;1:2. doi: 10.1000/err.",
         "PMID": {"#text": "7"},
     }
     assert corrections_from_pubmed(_article(refs)) == (
-        [{"kind": "erratum", "pmid": "7", "doi": "10.1/err"}],
+        [{"kind": "erratum", "pmid": "7", "doi": "10.1000/err", "source": "pubmed"}],
         False,
     )
 
@@ -189,6 +192,103 @@ def test_the_stage_records_what_pubmed_said_and_fails_what_it_did_not_return():
         out["a20137807"].summary["retraction_notice"] and not out["a20137807"].summary["retracted"]
     )
     assert out["a5"].status is not Status.OK
+
+
+OPENALEX = Path(__file__).parent.parent / "data" / "openalex" / "retractions.json"
+RETRACTED_DOI, CLEAN_DOI = "10.1016/S0140-6736(97)11096-0", "10.1038/nature14539"
+
+
+def _openalex_client(monkeypatch, sent):
+    from ingestion_workflow.clients.openalex import OpenAlexClient
+
+    client = OpenAlexClient(email="t@example.com")
+    monkeypatch.setattr(
+        client, "_request_openalex", lambda params: sent.append(params) or json.loads(OPENALEX.read_text())
+    )
+    return client
+
+
+def test_openalex_retractions_are_asked_by_doi_in_batches_of_fifty(monkeypatch):
+    sent = []
+    client = _openalex_client(monkeypatch, sent)
+    found = client.get_retractions([RETRACTED_DOI, "https://doi.org/" + CLEAN_DOI.upper()])
+    assert found == {RETRACTED_DOI.lower(): True, CLEAN_DOI: False}
+    assert sent[0]["filter"] == f"doi:{RETRACTED_DOI.lower()}|{CLEAN_DOI}"
+    sent.clear()
+    client.get_retractions([f"10.1/x{i}" for i in range(120)])
+    assert [len(p["filter"].split("|")) for p in sent] == [50, 50, 20]
+
+
+def _openalex_stage(retracted, error=None, pubmed=None):
+    stage = NoticesStage(Settings())
+
+    def get_retractions(dois):
+        if error:
+            raise error
+        return {d.lower(): r for d, r in retracted.items() if d in dois}
+
+    stage._openalex = SimpleNamespace(get_retractions=get_retractions)
+    stage._client = SimpleNamespace(get_notices=lambda pmids: pubmed or {})
+    return stage
+
+
+def _doi_work(doi, pmid=None, aid="a1"):
+    ref = SimpleNamespace(id=aid, identifier=Identifier(pmid=pmid, doi=doi))
+    return Work(ref=ref, source="", fingerprint="f", upstream=None)
+
+
+def test_a_paper_with_only_a_doi_is_planned_and_marked_retracted_by_openalex():
+    stage = _openalex_stage({RETRACTED_DOI: True})
+    ref = SimpleNamespace(id="a1", identifier=Identifier(doi=RETRACTED_DOI))
+    meta = {"a1": {"": Artifact("a1", "metadata")}}
+    assert [w.article_id for w in stage.plan(_ctx(), [ref], {}, meta).pending] == ["a1"]
+    [out] = stage.execute(_ctx(), [_doi_work(RETRACTED_DOI)])
+    assert out.status is Status.OK and out.summary["retracted"]
+    assert out.summary["retraction"]["source"] == "openalex"
+    assert out.payload["corrections"] == [out.summary["retraction"]]
+
+
+def test_the_fingerprint_follows_the_doi_as_well_as_the_pmid():
+    stage = NoticesStage(Settings())
+    assert stage.fingerprint_for(None, "10.1000/a") != stage.fingerprint_for(None, "10.1000/b")
+    assert stage.fingerprint_for(None, "https://doi.org/10.1000/A") == stage.fingerprint_for(None, "10.1000/a")
+    assert stage.fingerprint_for("1", None) != stage.fingerprint_for("2", None)
+
+
+def test_a_retraction_from_either_source_sets_retracted_and_pubmed_is_kept_first():
+    pubmed = {p: corrections_from_pubmed(a) for p, a in _articles().items()}
+    stage = _openalex_stage({CLEAN_DOI: True, RETRACTED_DOI: False}, pubmed=pubmed)
+    # PubMed says nothing is retracted for this PMID, OpenAlex says it is.
+    plain = {"5": ([], False)}
+    stage._client = SimpleNamespace(get_notices=lambda pmids: plain)
+    [out] = stage.execute(_ctx(), [_doi_work(CLEAN_DOI, pmid="5")])
+    assert out.summary["retracted"] and out.summary["retraction"]["source"] == "openalex"
+    # Both say retracted: one correction, from PubMed.
+    stage._client = SimpleNamespace(get_notices=lambda pmids: pubmed)
+    [out] = stage.execute(_ctx(), [_doi_work(CLEAN_DOI, pmid="9500320")])
+    assert {c["source"] for c in out.payload["corrections"]} == {"pubmed"}
+
+
+def test_one_source_failing_fails_only_what_the_other_cannot_answer():
+    pubmed = {"9500320": corrections_from_pubmed(_articles()["9500320"])}
+    stage = _openalex_stage({}, error=RuntimeError("down"), pubmed=pubmed)
+    out = {
+        o.article_id: o
+        for o in stage.execute(
+            _ctx(),
+            [_doi_work("10.1/x", pmid="9500320", aid="both"), _doi_work("10.1/y", aid="doi-only")],
+        )
+    }
+    assert out["both"].status is Status.OK and out["both"].summary["retracted"]
+    assert out["doi-only"].status is not Status.OK and "openalex" in out["doi-only"].error
+
+
+def test_a_doi_in_a_notice_citation_is_found_through_the_shared_helper():
+    from ingestion_workflow.utils.doi import find_doi, normalize_doi
+
+    assert find_doi("Lancet. 1997;350:1. doi: 10.1016/S0924-9338(02)00676-4.") == "10.1016/S0924-9338(02)00676-4"
+    assert find_doi("Lancet 1997") is None
+    assert normalize_doi("https://doi.org/10.1000/x") == normalize_doi("doi:10.1000/x") == "10.1000/x"
 
 
 # -- upload -------------------------------------------------------------------

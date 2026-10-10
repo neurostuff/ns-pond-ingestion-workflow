@@ -33,18 +33,17 @@ from ingestion_workflow.models import (
     Identifier,
 )
 from ingestion_workflow.services import logging
+from ingestion_workflow.utils.doi import DOI, clean_doi
 
 logger = logging.get_logger(__name__)
 
 PDF_MAGIC = b"%PDF-"
 PAGES_READ = 2
 
-_DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>]+")
 # A DOI the layout broke: after a hyphen at a line end ("10.1038/s41386-\n018-0019-7"),
 # or anywhere before its suffix reached a digit ("10.1073/pnas. 1011455107").
 _DOI_LINE_BREAK = re.compile(r"(10\.\d{4,9}/\S*-)\s*\r?\n\s*")
 _DOI_UNFINISHED = re.compile(r"(10\.\d{4,9}/[^\s\d\"'<>]*[.\-])\s+(?=\S*\d)")
-_TRAILING = ".,;:"
 # Data and preprint-archive DOIs that a methods section prints beside the
 # article's own: Dryad, figshare, Zenodo, OSF.
 _DATA_PREFIXES = ("10.5061/", "10.6084/", "10.5281/", "10.17605/")
@@ -134,25 +133,7 @@ def read_pdf(path: Path) -> LocalPdf:
 
 def dois_in(text: str) -> List[str]:
     text = _DOI_UNFINISHED.sub(r"\1", _DOI_LINE_BREAK.sub(r"\1", text))
-    return [doi for doi in (clean_doi(match) for match in _DOI.findall(text)) if doi]
-
-
-def clean_doi(doi: str) -> Optional[str]:
-    """Drop the sentence punctuation a DOI was printed against.
-
-    A closing bracket is the DOI's own only when it opened one, as in
-    `10.1016/S0924-9338(02)00676-4`.
-    """
-    while doi:
-        if doi[-1] in _TRAILING:
-            doi = doi[:-1]
-        elif doi[-1] in ")]" and doi.count(doi[-1]) > doi.count("(" if doi[-1] == ")" else "["):
-            doi = doi[:-1]
-        else:
-            break
-    # A suffix with no digit is a fragment: `10.1172/jci` of `10.1172/jci.insight.182331`.
-    suffix = doi.partition("/")[2]
-    return doi if re.search(r"\d", suffix) and not suffix.endswith("-") else None
+    return [doi for doi in (clean_doi(match) for match in DOI.findall(text)) if doi]
 
 
 def choose_doi(candidates: Sequence[str]) -> Optional[str]:

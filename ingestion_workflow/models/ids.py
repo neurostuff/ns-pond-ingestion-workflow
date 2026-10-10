@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from ingestion_workflow.utils import slugify
+from ingestion_workflow.utils.doi import normalize_doi
 
-DOI_URL = re.compile(r'(?i)https?://[^/\s]+/(10\.\d{4,9}/[^\s"\'<>()]+)')
 
 
 def _normalize_identifier(value: Optional[str]) -> Optional[str]:
@@ -31,15 +31,6 @@ def _normalize_pmcid(value: Optional[str]) -> Optional[str]:
     value = _normalize_identifier(value)
     if value and not value.upper().startswith("PMC"):
         value = "PMC" + value
-    return value or None
-
-
-def _normalize_doi(value: Optional[str]) -> Optional[str]:
-    value = _normalize_identifier(value)
-    if value and value.startswith("http"):
-        value = DOI_URL.sub(r"\1", value)
-    if value and value.lower().startswith("doi:"):
-        value = value[4:]
     return value or None
 
 
@@ -73,7 +64,7 @@ class Identifier(MutableMapping[str, Optional[str]]):
     def normalize(self) -> None:
         """Normalize identifier fields."""
         self.pmid = _normalize_pmid(self.pmid) if self.pmid else None
-        self.doi = _normalize_doi(self.doi) if self.doi else None
+        self.doi = normalize_doi(self.doi) if self.doi else None
         self.pmcid = _normalize_pmcid(self.pmcid) if self.pmcid else None
         if self.other_ids is not None:
             normalized = {k: _normalize_identifier(v) for k, v in self.other_ids.items()}
@@ -236,7 +227,7 @@ class Identifiers:
         if key == "pmcid":
             return _normalize_pmcid(value_str)
         if key == "doi":
-            return _normalize_doi(value_str)
+            return normalize_doi(value_str)
         if key == "neurostore":
             return _normalize_identifier(value_str)
         raise ValueError(f"Unsupported key: {key}")

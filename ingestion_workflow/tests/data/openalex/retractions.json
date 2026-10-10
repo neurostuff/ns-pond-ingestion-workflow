@@ -1,0 +1,8 @@
+{
+  "meta": {"count": 2, "db_response_time_ms": 21, "page": 1, "per_page": 50},
+  "results": [
+    {"doi": "https://doi.org/10.1016/s0140-6736(97)11096-0", "is_retracted": true},
+    {"doi": "https://doi.org/10.1038/nature14539", "is_retracted": false}
+  ],
+  "group_by": []
+}

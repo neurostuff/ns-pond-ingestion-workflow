@@ -12,6 +12,8 @@ import re
 import unicodedata
 from typing import Dict, List, Optional
 
+from ingestion_workflow.utils.doi import normalize_doi
+
 
 def _year(value) -> Optional[int]:
     m = re.search(r"\b(1[5-9]\d\d|20\d\d)", str(value or ""))
@@ -19,10 +21,8 @@ def _year(value) -> Optional[int]:
 
 
 def _doi(value: Optional[str]) -> Optional[str]:
-    if not value:
-        return None
-    value = re.sub(r"^(https?://(dx\.)?doi\.org/|doi:)", "", value.strip(), flags=re.I)
-    return value.lower() or None
+    value = normalize_doi(value)
+    return value.lower() if value else None
 
 
 def _fold(s: str) -> str:
