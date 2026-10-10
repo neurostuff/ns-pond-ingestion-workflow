@@ -701,6 +701,31 @@ def test_a_point_names_its_space_only_when_it_differs_from_its_analysis():
     assert (same.space, other.space) == (None, "TAL")
 
 
+def test_a_stated_other_space_is_written_as_other_and_validates():
+    collection = AnalysisCollection(
+        slug="t",
+        coordinate_space=CoordinateSpace.OTHER,
+        analyses=[
+            Analysis(
+                name="a",
+                metadata={"source": "prose", "role": "result", "passages": [0]},
+                coordinates=[Coordinate(x=40, y=-52, z=-18)],
+            )
+        ],
+    )
+    text = "Peak at 40, -52, -18."
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": text}]})
+    built = paper_parse._prose_analysis(
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+    )
+    assert built.coordinate_space == "OTHER"
+    pp.ParsedAnalysis.model_validate(built.model_dump())
+    point = paper_parse._point(
+        Coordinate(x=1, y=2, z=3, space=CoordinateSpace.OTHER), _collection([]), None
+    )
+    assert point.space == "OTHER"
+
+
 def test_the_meta_analysis_basis_names_what_said_so():
     basis = paper_parse._meta_basis
     assert basis("A meta-analysis of fear", ["Journal Article"]) == "title"

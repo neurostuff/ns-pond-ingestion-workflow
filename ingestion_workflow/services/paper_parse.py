@@ -66,7 +66,6 @@ PROSE_ROLES = {
     "figure": ("display", None),
 }
 
-_SPACES = {"MNI": "MNI", "TAL": "TAL", "OTHER": "other"}
 _SECTIONS = {
     "methods": "methods",
     "results": "results",
@@ -345,7 +344,7 @@ def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded
             for i, cells in enumerate(grid.rows)
         ],
         text_span=_span(inlined.get("table")),
-        coordinate_space_hint=_SPACES.get(str(space)) if space else None,
+        coordinate_space_hint=str(space) if space else None,
         triage=triage,
     )
 
@@ -886,7 +885,7 @@ def _analysis(
         name=name,
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
-        coordinate_space=_SPACES.get(collection.coordinate_space.value, "unknown"),
+        coordinate_space=collection.coordinate_space.value,
         role=role,
         anchor_kind=anchor_kind,
         from_prior_study=from_prior_study,
@@ -937,7 +936,7 @@ def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     )
     return pp.ParsedPoint(
         coordinates=[coordinate.x, coordinate.y, coordinate.z],
-        space=_SPACES.get(space) if space and space != collection.coordinate_space.value else None,
+        space=space if space and space != collection.coordinate_space.value else None,
         row=found[0] if found else None,
         column_group=found[1] if found else None,
         text_span=pp.TextSpan(start_char=span[0], end_char=span[1]) if span else None,
