@@ -49,20 +49,32 @@ def test_a_looping_answer_and_context_coordinates_are_dropped():
     assert [a["unwritten"] for a in got["analyses"]] == [1, 0]
 
 
-def test_a_named_contrast_with_no_written_point_is_kept_and_its_removals_counted():
+def test_a_named_contrast_the_model_gave_no_point_is_kept():
     """"No significant activation for PO > PC": the contrast was run and is kept, empty."""
+    answer = {"space": "MNI", "analyses": [{"name": "PO > PC", "measure": None, "points": []}]}
+    got = clean_answer(answer, PASSAGE.text)
+    assert [(a["name"], a["points"], a["unwritten"]) for a in got["analyses"]] == [("PO > PC", [], 0)]
+    assert got["omitted"] == []
+
+
+def test_a_named_analysis_whose_every_point_is_unwritten_is_omitted_not_kept_empty():
+    """Peaks read from the context around the passage: kept empty, they would read as n.s."""
     point = {"x": 40, "y": -50, "z": -20, "statistic": "t", "value": 5.1,
              "cluster_size": None, "role": "result"}
     nowhere = {**point, "x": 12, "y": 14, "z": 16}
     answer = {"space": "MNI", "analyses": [
-        {"name": "PO > PC", "measure": None, "points": []},
         {"name": "PC > PO", "measure": None, "points": [nowhere]},
+        {"name": "Patients > Controls", "measure": None, "points": [{"x": "n/a", "y": 1, "z": 2}]},
         {"name": None, "measure": None, "points": [nowhere, {**nowhere, "x": 2}]},
+        {"name": None, "measure": None, "points": []},
     ]}
     got = clean_answer(answer, PASSAGE.text)
-    assert [(a["name"], a["points"], a["unwritten"]) for a in got["analyses"]] == [
-        ("PO > PC", [], 0), ("PC > PO", [], 1)]
-    assert got["omitted"] == [{"name": None, "unwritten": 2}]
+    assert got["analyses"] == []
+    assert got["omitted"] == [
+        {"name": "PC > PO", "unwritten": 1, "reason": "points not in passage"},
+        {"name": "Patients > Controls", "unwritten": 1, "reason": "points not in passage"},
+        {"name": None, "unwritten": 2, "reason": "points not in passage"},
+        {"name": None, "unwritten": 0, "reason": "no name and no points"}]
 
 
 def test_a_point_made_of_numbers_that_are_not_a_coordinate_is_dropped():

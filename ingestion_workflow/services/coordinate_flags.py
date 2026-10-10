@@ -62,10 +62,13 @@ def leaves_with_its_role(metadata: Optional[dict]) -> bool:
     """Whether an analysis goes to readers that cannot see its role.
 
     A table analysis always does. A prose analysis keeps every role in the
-    resolve stage's payload; only `UPLOADED_PROSE_ROLES` leave from there.
+    resolve stage's payload; only `UPLOADED_PROSE_ROLES` leave from there,
+    and not one marked `restatement` (the text repeating a table's peaks).
     """
     metadata = metadata or {}
-    return metadata.get("source") != "prose" or metadata.get("role") in UPLOADED_PROSE_ROLES
+    if metadata.get("source") != "prose":
+        return True
+    return metadata.get("role") in UPLOADED_PROSE_ROLES and not metadata.get("restatement")
 
 #: Kinds whose value has no direction: a p value and an F are positive
 #: whichever way the contrast runs. study_schema's `StatisticKind` says the

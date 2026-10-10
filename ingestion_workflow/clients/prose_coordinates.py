@@ -77,9 +77,10 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
 
     A repeated analysis is a loop, not a second result. A point not written
     in the passage came from the surrounding context or nowhere; each analysis
-    counts its own as `unwritten`. A named analysis left with no point is kept
-    (a contrast the passage reports nothing for); an unnamed one is listed in
-    `omitted` with its count.
+    counts its own as `unwritten`. A named analysis the model gave no point
+    is kept (a contrast the passage reports nothing for). One whose every
+    point was unwritten, and an unnamed one left empty, are listed in
+    `omitted` with the count and the reason.
     """
     nums = numbers_in(passage_text)
     seen, analyses, omitted = set(), [], []
@@ -104,11 +105,12 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
                            "value": p.get("value"), "cluster_size": p.get("cluster_size"),
                            "role": role})
         name = (a.get("name") or "").strip() or None
-        if points or name:
+        if points or (name and not unwritten):
             analyses.append({"name": name, "measure": a.get("measure"), "points": points,
                              "unwritten": unwritten})
         else:
-            omitted.append({"name": None, "unwritten": unwritten})
+            reason = "points not in passage" if unwritten else "no name and no points"
+            omitted.append({"name": name, "unwritten": unwritten, "reason": reason})
     space = (answer or {}).get("space")
     return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
@@ -144,9 +146,13 @@ class ProseCoordinateClient(GenericLLMClient):
             },
         }
 
-    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+    def read(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        """The model's answer as it gave it."""
         response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
-        return clean_answer(json.loads(response.choices[0].message.content or "{}"), passage.text)
+        return json.loads(response.choices[0].message.content or "{}")
+
+    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        return clean_answer(self.read(passage, title=title, abstract=abstract), passage.text)
 
 
 __all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body", "written"]
