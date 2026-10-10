@@ -25,9 +25,8 @@ def test_a_label_reads_through_study_schemas_alias_table(label, expected):
     assert CoordinateSpace.from_label(label) is expected
 
 
-def test_an_unstated_guess_is_still_other_in_the_extractors():
-    """The extractors' models have no null space yet; OTHER stands in for it."""
-    assert coordinate_space_from_guess("UNKNOWN") is CoordinateSpace.OTHER
+def test_an_unstated_guess_is_null_in_the_extractors():
+    assert coordinate_space_from_guess("UNKNOWN") is None
     assert coordinate_space_from_guess("Talairach") is CoordinateSpace.TALAIRACH
 
 
