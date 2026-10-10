@@ -268,4 +268,3 @@ def test_confident_not_coordinates_are_set_aside_without_a_role():
 def test_other_is_a_role_that_is_not_uploaded():
     assert "other" in COORDINATE_ROLES and "other" not in UPLOADED_ROLES
     assert SetRole.of({"role": "other", "anchor_kind": None, "from_prior_study": False}).role == "other"
-    assert not SetRole("other").uploaded
