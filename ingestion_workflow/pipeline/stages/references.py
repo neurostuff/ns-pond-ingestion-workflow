@@ -46,7 +46,7 @@ def read_article(source: str, download: dict, text_path: Optional[str],
 
     if not text_path or not Path(text_path).exists():
         return "extraction kept no text", None
-    text = Path(text_path).read_text(encoding="utf-8")
+    text = Path(text_path).read_bytes().decode("utf-8")  # as stored: citation offsets index it
     result: Optional[ReadResult] = None
     if source in READABLE_SOURCES:
         try:

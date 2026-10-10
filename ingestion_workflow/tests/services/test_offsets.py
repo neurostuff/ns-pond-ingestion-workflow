@@ -52,6 +52,35 @@ def test_a_diffed_span_selects_the_same_characters(seed):
     _check(new, old, m.inverse(), rng)
 
 
+WORDS = ["peak", "cortex", "\u221212", "30,", "x\u00b2", "e\u0301t\u00e9", "\U0001d465", "\u03b1", "(", ")", "\u00a0", ";", "MNI"]
+EDITS = "ab -1\t\u00b2\u0301\U0001d465"
+
+
+def _long_texts(seed):
+    """A paragraph as text.txt holds one: a single line far longer than `CHARS`, so the
+    line diff hands one changed block to the word-by-word path."""
+    rng = random.Random(seed)
+    old = " ".join(rng.choice(WORDS) for _ in range(rng.randint(150, 900)))
+    pieces, at = [], 0
+    for cut in sorted(rng.sample(range(len(old) + 1), rng.randint(1, 12))):
+        if cut < at:
+            continue
+        pieces += [old[at:cut], "".join(rng.choice(EDITS) for _ in range(rng.randint(0, 4)))]
+        at = min(len(old), cut + rng.randint(0, 6))
+    pieces.append(old[at:])
+    return rng, old, "".join(pieces)
+
+
+@pytest.mark.parametrize("seed", range(100))
+def test_a_long_single_line_diffs_word_by_word_and_keeps_every_span(seed):
+    rng, old, new = _long_texts(seed)
+    assert "\n" not in old + new and len(old) > offsets.CHARS
+    m = offsets.diff(old, new)
+    for _ in range(5):
+        _check(old, new, m, rng)
+    _check(new, old, m.inverse(), rng)
+
+
 @pytest.mark.parametrize("seed", range(200))
 def test_a_substituted_span_selects_the_same_characters(seed):
     rng, old, _ = _texts(seed)

@@ -674,8 +674,8 @@ def refresh_text(
     """Rebuild extractions' text from their downloads, without re-running extract.
 
     The extraction keeps its tables, payload and fingerprint; its text hash and the
-    passages' spans move to the new text in the same catalog write, and the sync is
-    marked stale so the parse files are written again. For a change to the text alone
+    passages' spans move to the new text in the same catalog write, and the references
+    and the sync are marked stale so they are read and written again. For a change to the text alone
     (pubget keeping superscripts).
     """
     from collections import Counter
@@ -704,14 +704,9 @@ def refresh_text(
         if out:
             out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
-    # What the catalog stores against each rewritten text moves with it, in one write each.
-    carried: Counter = Counter()
+    # What the catalog stores against each rewritten text moves with it, a batch of texts per write.
     with _catalog(settings) as catalog:
-        for result in rewritten:
-            rows, passages = text_refresh.carried(catalog, result)
-            carried[passages] += 1
-            if not dry_run:
-                catalog.record(rows)
+        carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
                f"{carried['stale']:,} left for the passages stage to read again")
     if corpus:

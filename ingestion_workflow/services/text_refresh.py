@@ -10,8 +10,16 @@ byte-identical to the text it was copied from.
 What is stored against the text moves with it: each rewrite carries the offset map from
 the old text to the new, and `carried` turns it into one catalog write -- the extraction's
 text hash, the passages' spans remapped. Passages a map cannot carry (a span inside
-rewritten text) are left on the old hash, so the passages stage reads the text again.
-The sync is marked stale, so the parse files' spans are written again from the text.
+rewritten text, or a passage or hit whose characters an edit changed) are left on the
+old hash, so the passages stage reads the text again. The references and the sync are
+marked stale: the references stage reads the new text again (a kept superscript can be
+a citation marker, so its citations are not remapped), and the parse files' spans are
+written again from the text.
+
+The texts are all rewritten before the catalog is: a run stopped in between leaves the
+new texts against the old hashes, which every reader of a span checks and refuses, and
+the next run, seeing the texts unchanged, records their hashes and the passages are
+read again rather than remapped.
 """
 
 from __future__ import annotations
@@ -21,6 +29,7 @@ import logging
 import multiprocessing
 import os
 from concurrent.futures import ProcessPoolExecutor
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
@@ -158,39 +167,57 @@ def run(all_jobs: Iterable[Job], *, write: bool, workers: int = 1) -> Iterator[R
         yield from flush(batch)
 
 
-#: Fingerprint a stale sync is recorded under: never one a sync computes.
-STALE_SYNC = "stale: text refreshed"
+#: Fingerprint a stale sync or references artifact is recorded under: never one a stage computes.
+STALE = "stale: text refreshed"
+
+#: Rewritten texts whose catalog rows are read and recorded together.
+BATCH = 1000
 
 
 def _remap_passages(payload: dict, offset_map) -> Optional[dict]:
-    """The passages payload with every span moved onto the new text, or None if one is lost."""
-    def move(span):
+    """The passages payload with every span moved onto the new text, or None if one is lost
+    or a passage or hit holds characters an edit changed (its x, y, z may no longer be printed)."""
+    def move(span, read=False):
         if not span:
             return span
-        got = offset_map.span(*span)
+        got = None if read and offset_map.touches(*span) else offset_map.span(*span)
         if got is None:
             raise LookupError
         return list(got)
 
     try:
-        passages = [{**p, "span": move(p["span"]), "before": move(p.get("before")),
+        passages = [{**p, "span": move(p["span"], True), "before": move(p.get("before")),
                      "after": move(p.get("after")), "heading": move(p.get("heading")),
-                     "hits": [{**h, "span": move(h["span"])} for h in p.get("hits", [])]}
+                     "hits": [{**h, "span": move(h["span"], True)} for h in p.get("hits", [])]}
                     for p in payload.get("passages", [])]
     except LookupError:
         return None
     return {**payload, "passages": passages}
 
 
-def carried(catalog, result: Result) -> Tuple[list, str]:
+def _found(catalog, results: Sequence[Result]) -> Dict[Tuple[str, str], Dict[str, object]]:
+    """{(article, source): {stage: artifact}}: the rows `carried` reads, in one query per stage."""
+    ids = sorted({r.article_id for r in results})
+    by_stage = {stage: catalog.artifacts(ids, stage) for stage in ("extract", "references", "passages", "sync")}
+    out = {}
+    for r in results:
+        got = {stage: by_stage[stage].get(r.article_id, {}).get(r.source) for stage in ("extract", "references")}
+        got.update({stage: by_stage[stage].get(r.article_id, {}).get("") for stage in ("passages", "sync")})
+        out[(r.article_id, r.source)] = {k: v for k, v in got.items() if v is not None}
+    return out
+
+
+def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) -> Tuple[list, str]:
     """The catalog rows a rewritten (or unchanged) text changes, and what became of its passages:
-    `remapped`, `stale` (a span the map could not carry), or `none` (no passages of it)."""
+    `remapped`, `stale` (a span the map could not carry), or `none` (no passages of it).
+
+    `found` is the result's entry of `_found`, when the caller read a batch at once."""
     from ingestion_workflow.catalog import Outcome, Status
     from ingestion_workflow.pipeline.stages.passages import PassagesStage
     from ingestion_workflow.services.offsets import OffsetMap
 
-    found = {a.stage: a for a in catalog.artifacts_for_article(result.article_id)
-             if a.stage in ("passages", "sync") or (a.stage == "extract" and a.source == result.source)}
+    if found is None:
+        found = _found(catalog, [result])[(result.article_id, result.source)]
     extraction = found.get("extract")
     if extraction is None:
         return [], "none"
@@ -205,10 +232,11 @@ def carried(catalog, result: Result) -> Tuple[list, str]:
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
                     fingerprint=extraction.fingerprint, payload=catalog.payload(extraction),
                     summary={**extraction.summary, "text_sha256": result.new_sha256})]
-    sync = found.get("sync")
-    if sync is not None and sync.status is Status.OK:
-        rows.append(Outcome(article_id=result.article_id, stage="sync", source=sync.source, status=sync.status,
-                            fingerprint=STALE_SYNC, payload=catalog.payload(sync), summary=sync.summary))
+    for stage in ("references", "sync"):
+        stale = found.get(stage)
+        if stale is not None and stale.status is Status.OK:
+            rows.append(Outcome(article_id=result.article_id, stage=stage, source=stale.source, status=stale.status,
+                                fingerprint=STALE, payload=catalog.payload(stale), summary=stale.summary))
     passages = found.get("passages")
     payload = catalog.payload(passages) if passages is not None and passages.status is Status.OK else None
     if (not payload or not payload.get("passages") or payload.get("text_sha256") != result.old_sha256
@@ -222,6 +250,24 @@ def carried(catalog, result: Result) -> Tuple[list, str]:
                         fingerprint=PassagesStage.fingerprint_for(None, extraction, result.new_sha256),
                         payload=moved, summary=passages.summary))
     return rows, "remapped"
+
+
+def carry_all(catalog, results: Iterable[Result], *, write: bool, batch: int = BATCH) -> Counter:
+    """`carried` for every result, read and (when `write`) recorded `batch` results at a time:
+    how many passages were remapped, left stale, or had none."""
+    counts: Counter = Counter()
+    results = list(results)
+    for start in range(0, len(results), batch):
+        chunk = results[start : start + batch]
+        found = _found(catalog, chunk)
+        rows = []
+        for result in chunk:
+            got, what = carried(catalog, result, found[(result.article_id, result.source)])
+            rows += got
+            counts[what] += 1
+        if write:
+            catalog.record(rows)
+    return counts
 
 
 def refresh_corpus(ns_pond_root: Path, replaced: Dict[str, str], sources: Sequence[str], *,
