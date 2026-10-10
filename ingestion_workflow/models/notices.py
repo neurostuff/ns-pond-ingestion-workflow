@@ -20,6 +20,14 @@ CORRECTION_KINDS = {
 Correction = Dict[str, Optional[str]]
 
 
+class PartialAnswer(RuntimeError):
+    """A batched lookup failed part-way; `found` holds what earlier batches returned."""
+
+    def __init__(self, message: str, found: Dict[str, Any]) -> None:
+        super().__init__(message)
+        self.found = found
+
+
 def _as_list(value: Any) -> List[Any]:
     if value is None:
         return []

@@ -15,7 +15,7 @@ _TRAILING = ".,;:"
 def normalize_doi(value: Optional[str]) -> Optional[str]:
     """The bare DOI of `value`, which may be a resolver URL or `doi:`-prefixed."""
     value = (value or "").strip()
-    if value.startswith("http"):
+    if value.lower().startswith("http"):
         value = DOI_URL.sub(r"\1", value)
     if value.lower().startswith("doi:"):
         value = value[4:]

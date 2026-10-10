@@ -109,7 +109,7 @@ class NoticesStage:
             return self.client.get_notices(pmids), None
         except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff
             logger.warning("notices batch failed: %s", exc)
-            return {}, exc
+            return getattr(exc, "found", {}), exc
 
     def _openalex_retracted(self, works: List[Work]) -> Tuple[Dict[str, bool], Optional[Exception]]:
         dois = [work.ref.identifier.doi for work in works if work.ref.identifier.doi]
@@ -119,7 +119,7 @@ class NoticesStage:
             return self.openalex.get_retractions(dois), None
         except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff
             logger.warning("openalex retraction batch failed: %s", exc)
-            return {}, exc
+            return getattr(exc, "found", {}), exc
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         pubmed, pubmed_error = self._pubmed(works)
@@ -154,11 +154,22 @@ class NoticesStage:
             if retracted.get(doi) and retraction_of(corrections) is None:
                 corrections.append(openalex_retraction())
             retraction = retraction_of(corrections)
+            # OK only when every source asked has answered; otherwise the
+            # answers received are kept but the paper is asked again next run.
+            unanswered = [
+                f"{name}: {type(exc).__name__}: {exc}"
+                for name, exc, asked, got in (
+                    ("pubmed", pubmed_error, pmid, from_pubmed),
+                    ("openalex", openalex_error, doi, from_openalex),
+                )
+                if exc is not None and asked and not got
+            ]
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
-                status=Status.OK,
+                status=Status.FAILED if unanswered else Status.OK,
+                error="; ".join(unanswered)[:2000] or None,
                 fingerprint=work.fingerprint,
                 payload={
                     "pmid": pmid,

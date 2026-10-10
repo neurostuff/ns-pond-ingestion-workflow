@@ -15,7 +15,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
-from ingestion_workflow.models.notices import Correction, corrections_from_pubmed
+from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
@@ -443,13 +443,16 @@ class PubMedClient:
         """`(corrections, is_retraction_notice)` for each PMID PubMed returned.
 
         Always asked of PubMed, never of a cache: a retraction can arrive years
-        after the record was first fetched. A failed batch raises rather than
-        reading as "no notices".
+        after the record was first fetched. A failed batch raises `PartialAnswer`, which
+        carries the earlier batches' results, rather than reading as "no notices".
         """
         found: Dict[str, Tuple[List[Correction], bool]] = {}
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
         for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
-            response = self._request_efetch(pmids[i : i + IDCONV_BATCH_SIZE])
+            try:
+                response = self._request_efetch(pmids[i : i + IDCONV_BATCH_SIZE])
+            except Exception as exc:  # noqa: BLE001 - carries the earlier batches
+                raise PartialAnswer(str(exc), found) from exc
             articles = (response.get("PubmedArticleSet") or {}).get("PubmedArticle")
             for article in self._ensure_list(articles):
                 if isinstance(article, dict) and (pmid := self._extract_pmid(article)):

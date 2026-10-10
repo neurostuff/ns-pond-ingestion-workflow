@@ -269,7 +269,7 @@ def test_a_retraction_from_either_source_sets_retracted_and_pubmed_is_kept_first
     assert {c["source"] for c in out.payload["corrections"]} == {"pubmed"}
 
 
-def test_one_source_failing_fails_only_what_the_other_cannot_answer():
+def test_one_source_failing_leaves_every_paper_that_needed_it_unchecked():
     pubmed = {"9500320": corrections_from_pubmed(_articles()["9500320"])}
     stage = _openalex_stage({}, error=RuntimeError("down"), pubmed=pubmed)
     out = {
@@ -279,7 +279,7 @@ def test_one_source_failing_fails_only_what_the_other_cannot_answer():
             [_doi_work("10.1/x", pmid="9500320", aid="both"), _doi_work("10.1/y", aid="doi-only")],
         )
     }
-    assert out["both"].status is Status.OK and out["both"].summary["retracted"]
+    assert out["both"].status is Status.FAILED and out["both"].summary["retracted"]
     assert out["doi-only"].status is not Status.OK and "openalex" in out["doi-only"].error
 
 
@@ -289,6 +289,7 @@ def test_a_doi_in_a_notice_citation_is_found_through_the_shared_helper():
     assert find_doi("Lancet. 1997;350:1. doi: 10.1016/S0924-9338(02)00676-4.") == "10.1016/S0924-9338(02)00676-4"
     assert find_doi("Lancet 1997") is None
     assert normalize_doi("https://doi.org/10.1000/x") == normalize_doi("doi:10.1000/x") == "10.1000/x"
+    assert normalize_doi("HTTPS://DOI.ORG/10.1000/X") == "10.1000/X"
 
 
 # -- upload -------------------------------------------------------------------
@@ -535,3 +536,43 @@ def test_clearing_unsets_the_flag_and_keeps_the_study(tmp_path):
         ).one()
         assert not flag and stored is None
         assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
+
+
+def test_a_paper_one_source_failed_for_is_not_fresh_and_is_planned_again():
+    pubmed = {"9500320": ([], False)}
+    stage = _openalex_stage({}, error=RuntimeError("503"), pubmed=pubmed)
+    [out] = stage.execute(_ctx(), [_doi_work(RETRACTED_DOI, pmid="9500320")])
+    assert out.status is Status.FAILED and "openalex" in out.error
+    assert out.payload["pmid"] == "9500320"
+    ref = SimpleNamespace(id="a1", identifier=Identifier(pmid="9500320", doi=RETRACTED_DOI))
+    meta = {"a1": {"": Artifact("a1", "metadata")}}
+    stored = {"a1": {"": Artifact("a1", "notices", status=out.status, fingerprint="f",
+                                   updated_at=datetime.now(timezone.utc).isoformat())}}
+    assert [w.article_id for w in stage.plan(_ctx(), [ref], stored, meta).pending] == ["a1"]
+
+
+def test_a_failed_batch_keeps_the_batches_before_it(monkeypatch):
+    from ingestion_workflow.models.notices import PartialAnswer
+
+    sent = []
+    client = _openalex_client(monkeypatch, sent)
+    real = client._request_openalex
+
+    def third_fails(params):
+        if len(sent) == 2:
+            raise RuntimeError("503")
+        return real(params)
+
+    monkeypatch.setattr(client, "_request_openalex", third_fails)
+    with pytest.raises(PartialAnswer) as caught:
+        client.get_retractions([f"10.1/x{i}" for i in range(120)] + [RETRACTED_DOI])
+    assert len(sent) == 2 and caught.value.found.get(RETRACTED_DOI.lower()) in (True, None)
+
+    stage = NoticesStage(Settings())
+    stage._openalex = SimpleNamespace(
+        get_retractions=lambda dois: (_ for _ in ()).throw(PartialAnswer("503", {RETRACTED_DOI.lower(): True}))
+    )
+    stage._client = SimpleNamespace(get_notices=lambda pmids: {})
+    first, second = stage.execute(_ctx(), [_doi_work(RETRACTED_DOI), _doi_work("10.1/lost", aid="a2")])
+    assert first.status is Status.OK and first.summary["retracted"]
+    assert second.status is Status.FAILED
