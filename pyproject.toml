@@ -44,9 +44,9 @@ dependencies = [
   # d63f772: pydantic payloads, which study_schema.layouts needs.
   "pyarty @ git+https://github.com/jdkent/pyarty.git@d63f77274856500ccd7da125bdc5543adadeb77e#egg=pyarty",
   # The paper-parse contract (ParsedPaper, CoordinateParse) and its key rule.
-  # Pinned to neurostuff/study_schema#28 (text keys carry the analysis name; omitted_analyses),
+  # Pinned to neurostuff/study_schema#29 (text keys carry the analysis name; omitted_analyses; optional role),
   # which builds on #26; repin to main once they merge.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@df25f92e39bd845ca021a81e1d147241264f7951",
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@a5e8714c6229069d74045638665aa6e2936440d4",
 ]
 
 [project.optional-dependencies]

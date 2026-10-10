@@ -17,7 +17,7 @@ RESOLVE_VERSION = 3
 
 #: The roles uploaded: this study's results, and the regions it defined to
 #: get them -- an ROI, a seed, a stimulation target. Another study's peaks, a
-#: display location and anything else are counted and dropped. Each prose
+#: figure location and anything else are counted and dropped. Each prose
 #: analysis holds one role, recorded in its metadata.
 KEPT_ROLES = ("result", "roi", "seed", "target")
 
