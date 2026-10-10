@@ -405,6 +405,13 @@ def run(
 ) -> None:
     """Advance articles through the pipeline."""
     settings = _settings(config)
+    if "ace" in settings.download_sources:
+        from ingestion_workflow.extractors.ace_extractor import prepare_node
+
+        try:
+            prepare_node(settings)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
     stages = build(stage, settings)
 
     with _catalog(settings) as catalog:

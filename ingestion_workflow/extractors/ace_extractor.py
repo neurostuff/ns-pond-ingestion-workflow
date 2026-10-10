@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
+import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -401,6 +403,44 @@ def _translate_ace_table(
     )
 
 
+MIN_NODE = (20, 19)
+
+
+def _node_dir(node_path: Path | str) -> Path:
+    path = Path(node_path).expanduser()
+    return path.parent if path.is_file() else path
+
+
+def prepare_node(settings: Settings) -> None:
+    """Put `node_path` first on PATH, then refuse a node too old for readabilipy.
+
+    Call once at setup, before readabilipy first runs. The PATH change reaches
+    the extraction worker processes because they are started afterwards.
+    """
+    if settings.node_path:
+        node_dir = str(_node_dir(settings.node_path))
+        parts = os.environ.get("PATH", "").split(os.pathsep)
+        if parts[0] != node_dir:
+            os.environ["PATH"] = os.pathsep.join([node_dir] + parts)
+    required = ".".join(map(str, MIN_NODE))
+    fix = "set node_path in the settings file or INGEST_NODE_PATH to a directory with a newer node"
+    try:
+        out = subprocess.run(
+            ["node", "--version"], capture_output=True, text=True, timeout=30
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        raise RuntimeError(
+            f"ACE needs node >= {required} for readabilipy, but no working node "
+            f"was found on PATH; {fix}."
+        ) from None
+    match = re.match(r"v?(\d+)\.(\d+)", out)
+    if not match or (int(match[1]), int(match[2])) < MIN_NODE:
+        raise RuntimeError(
+            f"ACE needs node >= {required} for readabilipy, but found "
+            f"{out or 'unknown'} on PATH; {fix}."
+        )
+
+
 def _require_readability() -> None:
     """Refuse to extract when readabilipy cannot run.
 
@@ -421,8 +461,8 @@ def _require_readability() -> None:
     except Exception as exc:
         raise RuntimeError(
             "readabilipy cannot run, so ACE would extract text with its "
-            "fallback cleaner. Put node >= 20.19 first on PATH (on beast: "
-            "~/.nvm/versions/node/v22.19.0/bin)."
+            "fallback cleaner. Put node >= 20.19 first on PATH "
+            "(settings node_path or INGEST_NODE_PATH)."
         ) from exc
     _READABILITY_OK = True
 
@@ -542,6 +582,7 @@ class ACEExtractor(BaseExtractor):
     ) -> None:
         self.settings = settings or load_settings()
         self.settings.ensure_directories()
+        prepare_node(self.settings)
 
         # Into the environment, not a module flag: extraction runs in a process
         # pool and a spawned worker does not inherit the parent's globals.

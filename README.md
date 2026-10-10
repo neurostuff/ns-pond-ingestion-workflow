@@ -39,6 +39,12 @@ pip install -e '.[test]'
 cp .env.example .env
 ```
 
+ACE's HTML cleaning (readabilipy) runs `node` from PATH and needs node >= 20.19.
+If the node on PATH is older, or a shell profile is not sourced (nohup, ssh),
+set `node_path` in the settings file or `INGEST_NODE_PATH` to the directory
+holding a newer node. With ACE enabled, `ingest run` stops at the start and
+names the node version it found when that node is too old.
+
 ```bash
 ingest add 37961286 PMC10634720 10.1016/j.neuroimage.2023.120   # ids of any kind
 ingest add --query '(fmri OR PET) AND 2010:2025[dp]'            # or a PubMed search

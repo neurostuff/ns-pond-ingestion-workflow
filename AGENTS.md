@@ -30,3 +30,5 @@ so there is only ever one page describing the current system.
 [Design]: https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design
 [Data safety]: https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Data-Safety
 [Migration]: https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Migration
+
+Node >= 20.19 is required for ACE (readabilipy); set `node_path` / `INGEST_NODE_PATH` if the node on PATH is older.
