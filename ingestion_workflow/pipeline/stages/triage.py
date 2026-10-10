@@ -180,8 +180,7 @@ class TriageStage:
             # forever; the abstract is a help when it exists, not a condition.
             meta = upstream.get(ref.id, {}).get("")
             found = extractions.get(ref.id, {})
-            current = current_extractions(ctx, found, downloads.get(ref.id, {}))
-            extraction = _most_tables(current or found)
+            extraction = judged_extraction(ctx, found, downloads.get(ref.id, {}))
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
@@ -349,6 +348,11 @@ def _as_dict(table) -> Dict:
             "raw_content_path": getattr(table, "raw_content_path", None),
             "caption": getattr(table, "caption", "") or "",
             "footer": getattr(table, "footer", "") or ""}
+
+def judged_extraction(ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]) -> Optional[Artifact]:
+    """The extraction triage judges, whose text sync writes and passages reads."""
+    return _most_tables(current_extractions(ctx, found, downloads) or found)
+
 
 def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     """The source that produced the most tables, coordinates or not.

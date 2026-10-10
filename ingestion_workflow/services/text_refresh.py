@@ -6,6 +6,12 @@ analyses model, upload -- though none of them reads the text. This rewrites the 
 file in place instead: the extraction keeps its tables, its payload and its fingerprint.
 The ns-pond corpus's copy (`processed/<source>/text.txt`) is replaced only where it is
 byte-identical to the text it was copied from.
+
+What is stored against the text moves with it: each rewrite carries the offset map from
+the old text to the new, and `carried` turns it into one catalog write -- the extraction's
+text hash, the passages' spans remapped. Passages a map cannot carry (a span inside
+rewritten text) are left on the old hash, so the passages stage reads the text again.
+The sync is marked stale, so the parse files' spans are written again from the text.
 """
 
 from __future__ import annotations
@@ -45,6 +51,8 @@ class Result:
     text_path: Optional[str] = None
     old_sha256: Optional[str] = None
     new_sha256: Optional[str] = None
+    #: The offset map from the old text to the new, as its edits.
+    edits: Optional[List[Tuple[int, int, int, int]]] = None
 
 
 def _read(path: Path) -> str:
@@ -90,6 +98,9 @@ def rebuild(job: Job, write: bool) -> Result:
     if not new.strip():
         result.status = "failed: rebuilt text is empty"
         return result
+    from ingestion_workflow.services.offsets import diff
+
+    result.edits = [list(e) for e in diff(old, new).edits]
     if write:
         _write_atomically(path, new)
         result.status = "rewritten"
@@ -145,6 +156,64 @@ def run(all_jobs: Iterable[Job], *, write: bool, workers: int = 1) -> Iterator[R
             batch = []
     if batch:
         yield from flush(batch)
+
+
+#: Fingerprint a stale sync is recorded under: never one a sync computes.
+STALE_SYNC = "stale: text refreshed"
+
+
+def _remap_passages(payload: dict, offset_map) -> Optional[dict]:
+    """The passages payload with every span moved onto the new text, or None if one is lost."""
+    def move(span):
+        if not span:
+            return span
+        got = offset_map.span(*span)
+        if got is None:
+            raise LookupError
+        return list(got)
+
+    try:
+        passages = [{**p, "span": move(p["span"]), "before": move(p.get("before")),
+                     "after": move(p.get("after")), "heading": move(p.get("heading")),
+                     "hits": [{**h, "span": move(h["span"])} for h in p.get("hits", [])]}
+                    for p in payload.get("passages", [])]
+    except LookupError:
+        return None
+    return {**payload, "passages": passages}
+
+
+def carried(catalog, result: Result) -> Tuple[list, str]:
+    """The catalog rows a rewritten text changes, and what became of its passages:
+    `remapped`, `stale` (a span the map could not carry), or `none` (no passages of it)."""
+    from ingestion_workflow.catalog import Outcome, Status
+    from ingestion_workflow.pipeline.stages.passages import PassagesStage
+    from ingestion_workflow.services.offsets import OffsetMap
+
+    found = {a.stage: a for a in catalog.artifacts_for_article(result.article_id)
+             if a.stage in ("passages", "sync") or (a.stage == "extract" and a.source == result.source)}
+    extraction = found.get("extract")
+    if extraction is None:
+        return [], "none"
+    rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
+                    fingerprint=extraction.fingerprint, payload=catalog.payload(extraction),
+                    summary={**extraction.summary, "text_sha256": result.new_sha256})]
+    sync = found.get("sync")
+    if sync is not None and sync.status is Status.OK:
+        rows.append(Outcome(article_id=result.article_id, stage="sync", source=sync.source, status=sync.status,
+                            fingerprint=STALE_SYNC, payload=catalog.payload(sync), summary=sync.summary))
+    passages = found.get("passages")
+    payload = catalog.payload(passages) if passages is not None and passages.status is Status.OK else None
+    if (not payload or not payload.get("passages") or payload.get("text_sha256") != result.old_sha256
+            or payload.get("full_text_path") != result.text_path):
+        return rows, "none"
+    moved = _remap_passages(payload, OffsetMap(tuple(e) for e in result.edits or ()))
+    if moved is None:
+        return rows, "stale"
+    moved["text_sha256"] = result.new_sha256
+    rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
+                        fingerprint=PassagesStage.fingerprint_for(None, extraction, result.new_sha256),
+                        payload=moved, summary=passages.summary))
+    return rows, "remapped"
 
 
 def refresh_corpus(ns_pond_root: Path, replaced: Dict[str, str], sources: Sequence[str], *,

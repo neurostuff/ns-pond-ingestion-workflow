@@ -400,3 +400,61 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
                             payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])
     plan, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
+
+
+def _record_extraction(catalog, ref, text_file):
+    from ingestion_workflow.pipeline.stages.extract import file_sha256
+
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
+                            payload={"full_text_path": str(text_file), "tables": []},
+                            summary={"tables": 0, "has_text": True, "text_sha256": file_sha256(text_file)})])
+
+
+def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="20"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "article.txt"
+    # A table inlined in the text, its rows tab-separated, is left to the table path.
+    text_file.write_text(TEXT + "Table 1\nAmygdala\t-22\t-4\t-18\n", encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    ctx = Context(settings, catalog)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    payload = found.payload
+    text = text_file.read_text()
+    assert (payload["text_from"], payload["full_text_path"]) == ("extract", str(text_file))
+    (stored,) = payload["passages"]
+    assert "text" not in stored
+    passage = passage_from(stored, text)
+    a, b = stored["span"]
+    assert passage.text.startswith("Patients showed") and text[a:b].startswith("Patients showed")
+    assert [text[h["span"][0]:h["span"][1]] for h in stored["hits"]] == ["x = -22, y = -4, z = -18"]
+    assert passage.heading == "Results"
+
+    # The text rewritten in place, and its hash with it: the passages are stale.
+    text_file.write_text(text.replace("greater", "stronger"), encoding="utf-8")
+    plan = PassagesStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "passages"),
+                                        catalog.artifacts([ref.id], "download"))
+    assert plan.fresh == 1  # the summary still names the old text
+    _record_extraction(catalog, ref, text_file)
+    plan = PassagesStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "passages"),
+                                        catalog.artifacts([ref.id], "download"))
+    assert len(plan.pending) == 1
+
+
+def test_prose_reads_no_passage_of_a_text_that_changed_under_it(env, tmp_path):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="21"))
+    _record_upstream(catalog, ref, path)
+    text_file = tmp_path / "article.txt"
+    text_file.write_text(TEXT, encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    ctx = Context(settings, catalog)
+    _run(PassagesStage(settings), ctx, catalog, ref)
+    text_file.write_text("## Results\nSomething else entirely.\n", encoding="utf-8")
+    prose = ProseStage(settings)
+    prose.client = lambda: _Reader()
+    _, (read,) = _run(prose, ctx, catalog, ref)
+    assert read.status is Status.FAILED and "changed" in read.error

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from ingestion_workflow.services.prose_text import (
+    kept_spans,
     main_file,
     may_hold_coordinates,
-    methods_and_results,
     read_download,
 )
 
@@ -31,7 +31,8 @@ def test_jats_keeps_methods_results_and_legends(tmp_path):
     path = tmp_path / "a.xml"
     path.write_text(JATS)
     text, legends = read_download(path, "xml")
-    prose, how = methods_and_results(text, legends)
+    spans, how = kept_spans(text)
+    prose = "\n\n".join(text[a:b] for a, b in spans) + "\n\n" + legends
     assert how == "methods+results"
     assert "x = 4, y = 30, z = 22" in prose and "-6, 22, -8" in prose
     assert "x = 30" not in prose and "-40" not in prose
@@ -60,8 +61,8 @@ def test_the_filter_ignores_table_cells_and_keeps_prose():
 
 
 def test_without_sections_the_whole_text_is_read():
-    prose, how = methods_and_results("Peak at x = 1, y = 2, z = 3 somewhere.")
-    assert how == "full text" and "x = 1" in prose
+    text = "Peak at x = 1, y = 2, z = 3 somewhere."
+    assert kept_spans(text) == ([(0, len(text))], "full text")
 
 
 def test_the_article_file_not_its_tables(tmp_path):

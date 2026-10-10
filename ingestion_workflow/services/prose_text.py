@@ -146,16 +146,11 @@ def read_download(path: Path, file_type: str) -> tuple[str, str]:
     return "", ""
 
 
-def methods_and_results(text: str, legends: str = "") -> tuple[str, str]:
-    """The Methods and Results with the figure legends, and which sections were found.
-
-    The whole text when neither section is recognised.
-    """
-    spans = sectionize(text)
-    kept = [text[a:b] for a, b, label in spans if label in KEPT_SECTIONS]
-    if kept:
-        return "\n\n".join(kept + ([legends] if legends else [])), "methods+results"
-    return text + ("\n\n" + legends if legends else ""), "full text"
+def kept_spans(text: str) -> tuple[list, str]:
+    """`(start, end)` of the Methods and Results in `text`, and which were found;
+    the whole text when neither section is recognised."""
+    spans = [(a, b) for a, b, label in sectionize(text) if label in KEPT_SECTIONS]
+    return (spans, "methods+results") if spans else ([(0, len(text))], "full text")
 
 
 def main_file(files: Iterable[dict]) -> Optional[dict]:
@@ -168,4 +163,4 @@ def main_file(files: Iterable[dict]) -> Optional[dict]:
     return None
 
 
-__all__ = ["KEPT_SECTIONS", "main_file", "may_hold_coordinates", "methods_and_results", "read_download"]
+__all__ = ["KEPT_SECTIONS", "kept_spans", "main_file", "may_hold_coordinates", "read_download"]
