@@ -10,7 +10,7 @@ citation markers among them. Table sets have their own builder
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Sequence
+from typing import Any, List, Mapping, Optional, Sequence
 
 from .common import (
     MAX_CHARS,
@@ -26,6 +26,11 @@ from .labels import label_from_prose
 
 #: Bump when the serialisation changes (see `table_context.TABLE_CONTEXT_VERSION`).
 PROSE_CONTEXT_VERSION = 1
+
+#: `[PROPOSED]` for a training set no model proposed a role for.
+NO_PROPOSAL = "unknown"
+
+_FROM_ANALYSIS = object()
 
 
 @dataclass
@@ -63,11 +68,14 @@ def build(
     passages: Sequence[Mapping[str, Any]] = (),
     *,
     passage: Mapping[str, Any] = None,
+    proposed: Any = _FROM_ANALYSIS,
 ) -> ProseSetContext:
     """The context of a prose analysis: its passage(s), their heading and neighbours.
 
     The prose stage's sets name their passages by index (`metadata.passages`);
-    a training row that is itself one passage is given as `passage`.
+    a training row that is itself one passage is given as `passage`. The proposal
+    is the prose model's role on the analysis unless `proposed` gives it (a
+    training row passes the prose model's role, or None when it has none).
     """
     meta = analysis.get("metadata") or {}
     read = (
@@ -76,8 +84,11 @@ def build(
         else [passages[i] for i in meta.get("passages", []) if 0 <= i < len(passages)]
     )
     points = analysis.get("coordinates") or analysis.get("points") or []
-    role = meta.get("role") or next(
-        (p.get("role") for p in points if isinstance(p, dict) and p.get("role")), None
+    role: Optional[str] = (
+        meta.get("role")
+        or next((p.get("role") for p in points if isinstance(p, dict) and p.get("role")), None)
+        if proposed is _FROM_ANALYSIS
+        else proposed
     )
     return ProseSetContext(
         name=analysis.get("name") or "",
@@ -87,7 +98,7 @@ def build(
         before=(read[0].get("before") or "") if read else "",
         after=(read[-1].get("after") or "") if read else "",
         points=[as_point(p) for p in points],
-        proposed=label_from_prose(role),
+        proposed=NO_PROPOSAL if proposed is None else label_from_prose(role),
     )
 
 

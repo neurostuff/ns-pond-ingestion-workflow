@@ -16,8 +16,10 @@ in proportion to how rarely they occur.
 from __future__ import annotations
 
 import collections
+import hashlib
 import json
 import random
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -107,7 +109,84 @@ def contexts(unit: Mapping[str, Any]) -> List[Any]:
             out.append(ctx)
         return out
     passage = {k: unit.get(k) for k in ("heading", "text", "before", "after")}
-    return [prose_context.build(s, passage=passage) for s in sets]
+    return [prose_context.build(s, passage=passage, proposed=proposal(unit, s)) for s in sets]
+
+
+def proposal(unit: Mapping[str, Any], set_: Mapping[str, Any]) -> Optional[str]:
+    """What the pipeline proposed for a prose unit's set, or None when nothing did.
+
+    Only a corpus passage (`dataset` "wild") carries the prose model's own role; a
+    dataset row's roles are its labels, and proposing them would teach the encoder to
+    copy `[PROPOSED]`.
+    """
+    if unit.get("dataset") != "wild":
+        return None
+    return set_.get("proposed") or set_.get("role")
+
+
+#: The prose datasets' splits that are evaluation data: never relabelled, never trained on.
+HELD_OUT_SPLITS = ("val", "test")
+
+
+def held_out(unit: Mapping[str, Any]) -> bool:
+    """A prose unit whose row is evaluation data or a human's labels: not sent to a labeller."""
+    base = unit.get("base_row") or {}
+    return unit.get("dataset_split") in HELD_OUT_SPLITS or base.get("label_source") == "hand"
+
+
+#: Words in a `plain` table's caption, footer or citing sentences that still hint at
+#: an anchor or a borrowed set (the strata's cues already catch ROI, seed and prior).
+_PLAIN_HINTS = re.compile(
+    r"\b(atlas(?:es)?|masked|masking|seeded|rois?|seeds?|masks?|regions?\s+of\s+interest"
+    r"|prior\s+stud\w*|previous\s+stud\w*)\b",
+    re.I,
+)
+
+
+def thin_plain(
+    units: Sequence[Mapping[str, Any]], keep: int, seed: int = 0
+) -> List[Mapping[str, Any]]:
+    """`units` with the `plain` tables cut to a sample of `keep` plus every hinted one.
+
+    In the pilot every plain table set was `result`, so labelling all of them buys
+    little; a hint word in the caption, footer or citing sentences keeps a table.
+    """
+    plain = sorted(
+        (u for u in units if u["origin"] == "table" and (u.get("stratum") or "plain") == "plain"),
+        key=lambda u: u["unit_id"],
+    )
+    hinted = {
+        u["unit_id"]
+        for u in plain
+        if _PLAIN_HINTS.search(
+            " ".join([u.get("caption") or "", u.get("footer") or "", *(u.get("citing") or [])])
+        )
+    }
+    rest = [u["unit_id"] for u in plain if u["unit_id"] not in hinted]
+    wanted = hinted | set(random.Random(seed).sample(rest, min(keep, len(rest))))
+    dropped = {u["unit_id"] for u in plain} - wanted
+    return [u for u in units if u["unit_id"] not in dropped]
+
+
+def table_hash(unit: Mapping[str, Any]) -> Optional[str]:
+    """A table unit's identity by its text: the same table read twice hashes the same."""
+    text = unit.get("table_serialised")
+    return hashlib.sha1(text.encode()).hexdigest() if text else None
+
+
+def duplicates(units: Iterable[Mapping[str, Any]]) -> Dict[str, str]:
+    """Each repeated table unit's id -> the id of the first unit with the same text."""
+    first: Dict[str, str] = {}
+    out: Dict[str, str] = {}
+    for unit in units:
+        key = table_hash(unit) if unit["origin"] == "table" else None
+        if key is None:
+            continue
+        if key in first:
+            out[unit["unit_id"]] = first[key]
+        else:
+            first[key] = unit["unit_id"]
+    return out
 
 
 def serialize(unit: Mapping[str, Any], context: Any) -> str:
@@ -190,24 +269,35 @@ def stratified(units: Sequence[Mapping[str, Any]], seed: int = 0) -> List[Mappin
     return out
 
 
-def done_units(out_dir: Path) -> set:
-    done = set()
+def _batch_rows(out_dir: Path) -> Iterator[Dict[str, Any]]:
+    """The label rows in a job directory's batch files.
+
+    A job killed mid-write leaves a file's last line cut short. That line's unit
+    (or, when the cut hides its id, the unit before it) is dropped, so it is
+    labelled again rather than counted done with sets missing.
+    """
     for path in sorted(Path(out_dir).glob("batch-*.jsonl")):
         with open(path, encoding="utf-8") as handle:
-            done.update(json.loads(line)["unit_id"] for line in handle if line.strip())
-    return done
+            lines = [line for line in handle.read().split("\n") if line.strip()]
+        rows, dropped = [], None
+        for n, line in enumerate(lines):
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                if n != len(lines) - 1:
+                    raise
+                found = re.match(r'\{"unit_id": "([^"]+)"', line)
+                dropped = found.group(1) if found else rows[-1]["unit_id"] if rows else None
+        yield from (r for r in rows if r["unit_id"] != dropped)
+
+
+def done_units(out_dir: Path) -> set:
+    return {row["unit_id"] for row in _batch_rows(out_dir)}
 
 
 def read_labels(out_dir: Path) -> Dict[str, Dict[str, Any]]:
     """Every set's label in a job directory, by set id."""
-    out = {}
-    for path in sorted(Path(out_dir).glob("batch-*.jsonl")):
-        with open(path, encoding="utf-8") as handle:
-            for line in handle:
-                if line.strip():
-                    row = json.loads(line)
-                    out[row["set_id"]] = row
-    return out
+    return {row["set_id"]: row for row in _batch_rows(out_dir)}
 
 
 def label_rows(
@@ -307,9 +397,10 @@ def run(
                     0,
                 )
             in_batch += 1
-            for row in label_rows(unit, answer, sentences, model=model, effort=effort):
-                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
-                counts["sets"] += 1
+            rows = label_rows(unit, answer, sentences, model=model, effort=effort)
+            # One write per unit, so a kill leaves at most one unit's last line cut short.
+            handle.write("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+            counts["sets"] += len(rows)
             handle.flush()
             counts["units"] += 1
         if (i + 1) % 10 == 0:
@@ -321,7 +412,7 @@ def run(
     return dict(counts)
 
 
-def codex_caller(model: str, effort: str, attempts: int = 3) -> Caller:
+def codex_caller(model: str, effort: str, attempts: int = 3, binary: str = "codex") -> Caller:
     """A `Caller` through pondie's `CodexCaller` (`codex exec` on the `codex login` account).
 
     Needs a pondie that waits out a spent usage limit (`CodexUsageLimit`, pondie #10).
@@ -333,7 +424,7 @@ def codex_caller(model: str, effort: str, attempts: int = 3) -> Caller:
         raise RuntimeError(
             "this pondie predates #10 and fails on a usage limit instead of waiting"
         )
-    codex = llm.CodexCaller()
+    codex = llm.CodexCaller(binary)
 
     def call(system: str, prompt: str, schema: Dict[str, Any], unit_id: str):
         reply = codex(

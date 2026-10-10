@@ -1,7 +1,7 @@
 """Label coordinate sets through the codex CLI, resumably; compare two labellers.
 
     python label_sets.py label UNITS.jsonl OUT_DIR --model gpt-6.1-sol [--effort low]
-        [--limit N] [--batch-size 25] [--pace 20] [--skip-dataset-labelled]
+        [--limit N] [--batch-size 25] [--pace 20] [--skip-dataset-labelled] [--plain-sample 300]
     python label_sets.py compare DIR_A DIR_B
     python label_sets.py totals OUT_DIR
 
@@ -10,6 +10,9 @@ login` account, a strict `--output-schema`, API keys stripped from the
 environment), which waits out a spent usage limit until its reset time. Needs
 a pondie with #10 on PYTHONPATH. Stopping and restarting continues where the
 job left off. Bulk labels: gpt-6.1-sol; a small gold set: gpt-6-astra.
+
+Never labelled: held-out prose rows (val, test, hand-labelled; `labeling.held_out`)
+and a table whose text repeats an earlier unit's (the export copies its labels).
 """
 
 from __future__ import annotations
@@ -39,6 +42,12 @@ def main():
         action="store_true",
         help="leave out synthetic units, which carry their own labels",
     )
+    label.add_argument(
+        "--plain-sample",
+        type=int,
+        default=-1,
+        help="label this many `plain` tables plus every hinted one (-1: all)",
+    )
     compare = sub.add_parser("compare")
     compare.add_argument("a", type=Path)
     compare.add_argument("b", type=Path)
@@ -60,6 +69,10 @@ def main():
     units = labeling.read_units(args.units)
     if args.skip_dataset_labelled:
         units = [u for u in units if u.get("labels_from") != "dataset"]
+    repeated = labeling.duplicates(units)
+    units = [u for u in units if not labeling.held_out(u) and u["unit_id"] not in repeated]
+    if args.plain_sample >= 0:
+        units = labeling.thin_plain(units, args.plain_sample, seed=args.seed)
     if args.only:
         wanted = [line.strip() for line in open(args.only) if line.strip()]
         by_id = {u["unit_id"]: u for u in units}

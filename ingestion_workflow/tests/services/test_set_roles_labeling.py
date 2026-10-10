@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
+import textwrap
 
+import pytest
 from ingestion_workflow.services.set_roles import export, labeling
 from ingestion_workflow.services.set_roles.label_schema import SCHEMA, check
 
@@ -33,7 +37,8 @@ TABLE_ROW = {
                     "points": [[38.0, 12.0, 2.0, "T", 5.1, None]],
                 },
             ],
-        }
+        },
+        separators=(",", ":"),  # train_v21.jsonl's target_json is compact
     ),
 }
 TABLE_UNIT = {
@@ -270,6 +275,10 @@ def test_nu_v21_rows_keep_their_format_and_gain_a_role_per_analysis(tmp_path):
         "role",
     ]
     assert "role" in json.loads(export.NU_V21_TEMPLATE)["analyses"][0]
+    for a in target["analyses"]:
+        del a["role"]
+    assert json.dumps(target, separators=(",", ":")) == TABLE_ROW["target_json"]
+    assert row["target_json"].startswith('{"space":"MNI","analyses":[{"name":"seed","role":')
 
 
 def test_prose_rows_keep_their_format_and_take_each_set_s_role(tmp_path):
@@ -298,3 +307,188 @@ def test_the_prose_export_can_replace_the_dataset(tmp_path):
     rows = list(export.prose_rows([PROSE_UNIT, unlabelled], labels, keep_unlabelled=True))
     assert [r["id"] for r in rows] == ["silver-1", "silver-2"]
     assert rows[1] == unlabelled["base_row"]
+
+
+def _held_out_unit(split="test", label_source="neurometabench+luna"):
+    return {
+        **PROSE_UNIT,
+        "unit_id": "p:nmb-9",
+        "dataset_split": split,
+        "base_row": {**PROSE_ROW, "id": "nmb-9", "label_source": label_source},
+    }
+
+
+def test_held_out_prose_rows_pass_through_and_are_not_labelled(tmp_path):
+    test_unit = _held_out_unit()
+    hand = {**_held_out_unit("train", "hand"), "unit_id": "p:gold-1"}
+    hand["base_row"] = {**hand["base_row"], "id": "gold-1"}
+    assert labeling.held_out(test_unit) and labeling.held_out(hand)
+    assert not labeling.held_out(PROSE_UNIT)
+    # Labels for these sets (an old job's) are ignored: the rows stay as they were.
+    labels = _labels(tmp_path)
+    for unit in (test_unit, hand):
+        for i in range(2):
+            labels[f"{unit['unit_id']}#{i}"] = labels[f"p:silver-1#{i}"]
+    rows = list(export.prose_rows([test_unit, hand], labels, keep_unlabelled=True))
+    assert rows == [test_unit["base_row"], hand["base_row"]]
+    assert list(export.prose_rows([test_unit, hand], labels)) == []
+
+
+def test_a_relabelled_prose_row_keeps_its_own_label_source(tmp_path):
+    unit = {**PROSE_UNIT, "base_row": {**PROSE_ROW, "label_source": "luna"}}
+    [row] = export.prose_rows([unit], _labels(tmp_path))
+    assert row["label_source"] == "luna"
+    assert row["role_label_source"] == "gpt-6.1-sol"
+
+
+def test_hand_rows_are_the_prose_gold_set_in_test():
+    hand = _held_out_unit("train", "hand")
+    rows = list(export.encoder_rows([hand], {}))
+    assert [(r["label"], r["label_source"], r["split"]) for r in rows] == [
+        ("result", "hand", "test"),
+        ("result", "hand", "test"),
+    ]
+
+
+def test_proposed_is_the_pipeline_s_proposal_never_the_label():
+    synthetic = {
+        **PROSE_UNIT,
+        "unit_id": "p:syn",
+        "labels_from": "dataset",
+        "dataset": "synthetic",
+        "sets": [{"name": "x", "role": "seed", "points": [{"xyz": [1, 2, 3], "role": "seed"}]}],
+    }
+    wild = {**synthetic, "unit_id": "w:a:0", "dataset": "wild", "labels_from": None}
+    [syn_ctx] = labeling.contexts(synthetic)
+    [wild_ctx] = labeling.contexts(wild)
+    assert labeling.serialize(synthetic, syn_ctx).startswith("[ORIGIN] text [PROPOSED] unknown ")
+    assert wild_ctx.proposed == "anchor:seed"  # the prose stage's own role
+    [table_ctx, _] = labeling.contexts(TABLE_UNIT)
+    assert table_ctx.proposed == "result"
+
+
+def test_synthetic_sets_are_train_only():
+    units = [
+        {**PROSE_UNIT, "unit_id": f"p:syn-{i}", "article_id": f"syn-{i}", "labels_from": "dataset"}
+        for i in range(30)
+    ]
+    for u in units:
+        u["sets"] = [{"name": "x", "points": [{"xyz": [1, 2, 3], "role": "result"}]}]
+    assert {r["split"] for r in export.encoder_rows(units, {})} == {"train"}
+
+
+def test_the_split_is_by_database_id_and_repeated_tables_share_one(tmp_path):
+    slug = {**TABLE_UNIT, "unit_id": "t:123-10-1000-x:t3", "table_id": "t3"}
+    dbid = {**TABLE_UNIT, "unit_id": "t:abcdefabcdef:t9", "article_id": "AbcdefABCDEF"}
+    copy = {**TABLE_UNIT, "unit_id": "t:zzzzzzzzzzzz:t1", "article_id": "zzzzzzzzzzzz"}
+    other = {
+        **TABLE_UNIT,
+        "unit_id": "t:yyyyyyyyyyyy:t1",
+        "article_id": "yyyyyyyyyyyy",
+        "table_serialised": "#Region | #x\nA | 1",
+    }
+    dbid["table_serialised"] = other["table_serialised"] + " | 2"
+    units = [slug, dbid, copy, other]
+    split = export.splits(units, {}, {"123-10-1000-x": "abcdefabcdef"})
+    # slug -> abcdefabcdef (dbid, case folded); copy repeats slug's table text
+    assert split[slug["unit_id"]] == split[dbid["unit_id"]] == split[copy["unit_id"]]
+    assert labeling.duplicates(units) == {copy["unit_id"]: slug["unit_id"]}
+
+
+def test_an_article_with_a_gold_label_is_test(tmp_path):
+    caller = FakeCaller(ANSWERS)
+    labeling.run([TABLE_UNIT], tmp_path, caller, model="gpt-6-astra", effort="medium")
+    gold = labeling.read_labels(tmp_path)
+    sibling = {**TABLE_UNIT, "unit_id": "t:123-10-1000-x:t3", "table_serialised": "x"}
+    split = export.splits([TABLE_UNIT, sibling], gold)
+    assert split == {TABLE_UNIT["unit_id"]: "test", sibling["unit_id"]: "test"}
+
+
+def test_repeated_tables_take_their_first_copy_s_labels(tmp_path):
+    copy = {**TABLE_UNIT, "unit_id": "t:zzzzzzzzzzzz:t1", "article_id": "zzzzzzzzzzzz"}
+    rows = list(export.nu_v21_rows([TABLE_UNIT, copy], _labels(tmp_path)))
+    assert len(rows) == 2 and rows[0]["target_json"] == rows[1]["target_json"]
+    assert [r["set_id"] for r in export.encoder_rows([TABLE_UNIT, copy], _labels(tmp_path))] == [
+        "t:123-10-1000-x:t2#0",
+        "t:123-10-1000-x:t2#1",
+    ]
+
+
+@pytest.mark.parametrize("cut", [10, 60])
+def test_resume_tolerates_a_truncated_last_line(tmp_path, cut):
+    labeling.run([TABLE_UNIT, PROSE_UNIT], tmp_path, FakeCaller(ANSWERS), model="m", effort="low")
+    [batch] = tmp_path.glob("batch-*.jsonl")
+    lines = batch.read_text().splitlines(keepends=True)
+    # killed while writing the prose unit's second row
+    batch.write_text("".join(lines[:3]) + lines[3][:cut])
+    assert labeling.done_units(tmp_path) == {TABLE_UNIT["unit_id"]}
+    assert set(labeling.read_labels(tmp_path)) == {
+        "t:123-10-1000-x:t2#0",
+        "t:123-10-1000-x:t2#1",
+    }
+    caller = FakeCaller(ANSWERS)
+    labeling.run([TABLE_UNIT, PROSE_UNIT], tmp_path, caller, model="m", effort="low")
+    assert [c[3] for c in caller.calls] == ["p:silver-1"]
+    assert len(labeling.read_labels(tmp_path)) == 4
+
+
+def test_plain_tables_are_sampled_but_hinted_ones_kept():
+    plain = [
+        {
+            **TABLE_UNIT,
+            "unit_id": f"t:p{i}",
+            "stratum": "plain",
+            "caption": "Results",
+            "footer": "",
+            "citing": [],
+        }
+        for i in range(10)
+    ]
+    plain[3]["footer"] = "Labels from the AAL atlas."
+    kept = labeling.thin_plain([TABLE_UNIT, *plain], keep=2, seed=0)
+    ids = [u["unit_id"] for u in kept]
+    assert ids[0] == TABLE_UNIT["unit_id"] and "t:p3" in ids and len(ids) == 1 + 1 + 2
+    assert ids == [u["unit_id"] for u in labeling.thin_plain([TABLE_UNIT, *plain], 2, seed=0)]
+
+
+FAKE_CODEX = """\
+#!{python}
+import json, os, sys
+if sys.argv[1:3] == ["features", "list"]:
+    sys.exit(0)
+sys.stdin.read()
+state = os.path.join(os.environ["FAKE_CODEX_DIR"], "calls")
+n = int(open(state).read()) if os.path.exists(state) else 0
+open(state, "w").write(str(n + 1))
+if n == 0:
+    print(json.dumps({{"type": "turn.failed", "error": {{"message":
+        "You've hit your usage limit. Try again at 11:36 PM."}}}}))
+    sys.exit(1)
+print(json.dumps({{"type": "thread.started", "thread_id": "t1"}}))
+print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message",
+    "text": {answer}}}}}))
+print(json.dumps({{"type": "turn.completed", "usage": {{"input_tokens": 7, "output_tokens": 3}}}}))
+"""
+
+
+def test_a_spent_usage_limit_is_waited_out_then_the_unit_is_labelled(tmp_path, monkeypatch):
+    llm = pytest.importorskip("pondie.extraction.llm")
+    if not hasattr(llm, "CodexUsageLimit"):
+        pytest.skip("pondie predates #10")
+    codex = tmp_path / "codex"
+    answer = json.dumps(ANSWERS["t:123-10-1000-x:t2"])
+    codex.write_text(
+        textwrap.dedent(FAKE_CODEX).format(python=sys.executable, answer=repr(answer))
+    )
+    codex.chmod(0o755)
+    monkeypatch.setenv("FAKE_CODEX_DIR", str(tmp_path))
+    waits = []
+    monkeypatch.setattr(llm.time, "sleep", waits.append)
+    caller = labeling.codex_caller("gpt-6.1-sol", "low", binary=str(codex))
+    out = tmp_path / "labels"
+    counts = labeling.run([TABLE_UNIT], out, caller, model="gpt-6.1-sol", effort="low")
+    assert counts == {"units": 1, "sets": 2}
+    assert len(waits) == 1 and waits[0] >= 60  # slept to the reset, once
+    assert (tmp_path / "calls").read_text() == "2"
+    assert labeling.ledger_totals(out)["gpt-6.1-sol"]["input_tokens"] == 7
+    assert not os.path.exists(out / "errors.jsonl")

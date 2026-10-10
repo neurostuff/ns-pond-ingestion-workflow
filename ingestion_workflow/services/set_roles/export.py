@@ -1,7 +1,7 @@
 """One set of labels, three kinds of training row.
 
 - `encoder_rows`: the set-role encoder's (one input string per set, its label
-  and prior-study flag), split by article.
+  and prior-study flag), split by article (`splits`).
 - `nu_v21_rows`: nu-v21's own rows (`/home/james/train-data/train_v21.jsonl`
   on beast: title, abstract, caption, footer, `table_serialised`,
   `target_json`, ...), with each target analysis given its `role`.
@@ -12,16 +12,17 @@
 The extractors' rows keep their format; only the role is added or replaced, in
 the extractors' role vocabulary (`labels.extractor_role`). A unit is exported
 to an extractor only when every one of its sets is labelled, so no row teaches
-an unlabelled analysis's role by omission.
+an unlabelled analysis's role by omission. A prose row that is evaluation data
+or a human's labels (`labeling.held_out`) is passed through unchanged.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence
 
-from .labeling import context_version_field, contexts, serialize
+from .labeling import context_version_field, contexts, duplicates, held_out, serialize
 from .labels import EXTRACTOR_ROLES, extractor_role, label_from_prose
 
 #: nu-v21's template (`train_nuex3_v2.py`'s TEMPLATE) with the analysis's role.
@@ -50,14 +51,70 @@ NU_V21_TEMPLATE = json.dumps(
 )
 
 
+#: Labellers whose labels are the gold set: an article holding one is test data.
+GOLD_MODELS = ("gpt-6-astra", "hand")
+
+
 def split_of(article_id: Optional[str]) -> str:
     """train, val or test, by article: one article's sets never straddle two splits."""
     bucket = int(hashlib.sha1((article_id or "").encode()).hexdigest(), 16) % 10
     return "test" if bucket == 0 else "val" if bucket == 1 else "train"
 
 
+def _is_hand(unit: Mapping[str, Any]) -> bool:
+    return (unit.get("base_row") or {}).get("label_source") == "hand"
+
+
+def splits(
+    units: Sequence[Mapping[str, Any]],
+    labels: Mapping[str, Mapping[str, Any]],
+    id_map: Optional[Mapping[str, str]] = None,
+) -> Dict[str, str]:
+    """Each unit's split, by article under its database id (`id_map` maps slug ids).
+
+    Articles holding the same table text are one article. An article with a gold
+    label or a held-out prose row is test (or val, the prose dataset's split); a
+    synthetic unit, which has no article, is train.
+    """
+    id_map = id_map or {}
+    parent: Dict[str, str] = {}
+
+    def find(key: str) -> str:
+        while parent.setdefault(key, key) != key:
+            key = parent[key]
+        return key
+
+    def article(unit: Mapping[str, Any]) -> str:
+        aid = unit.get("article_id") or unit["unit_id"]
+        return find(id_map.get(aid, aid).lower())
+
+    by_id = {u["unit_id"]: u for u in units}
+    for dup, first in duplicates(units).items():
+        a, b = sorted((article(by_id[dup]), article(by_id[first])))
+        parent[b] = a
+    forced: Dict[str, str] = {}
+    for unit in units:
+        n = len(unit["sets"])
+        gold = _is_hand(unit) or any(
+            (labels.get(f"{unit['unit_id']}#{i}") or {}).get("model") in GOLD_MODELS
+            for i in range(n)
+        )
+        if gold or (held_out(unit) and unit.get("dataset_split") == "test"):
+            forced[article(unit)] = "test"
+        elif held_out(unit):
+            forced.setdefault(article(unit), unit["dataset_split"])
+    out = {}
+    for unit in units:
+        if unit.get("labels_from") == "dataset" and not _is_hand(unit):
+            out[unit["unit_id"]] = "train"
+            continue
+        key = article(unit)
+        out[unit["unit_id"]] = forced.get(key) or split_of(key)
+    return out
+
+
 def _dataset_label(unit: Mapping[str, Any], index: int) -> Optional[Dict[str, Any]]:
-    """A synthetic unit's own label: its generator wrote each point's role."""
+    """A synthetic or hand-labelled unit's own label: the role on each point."""
     s = unit["sets"][index]
     role = s.get("role") or next(
         (p.get("role") for p in s.get("points") or [] if isinstance(p, dict)), None
@@ -67,21 +124,31 @@ def _dataset_label(unit: Mapping[str, Any], index: int) -> Optional[Dict[str, An
     return {
         "label": label_from_prose(role),
         "from_prior_study": role == "prior_study",
-        "model": "dataset",
+        "model": "hand" if _is_hand(unit) else "dataset",
     }
 
 
 def encoder_rows(
-    units: Iterable[Mapping[str, Any]], labels: Mapping[str, Mapping[str, Any]]
+    units: Iterable[Mapping[str, Any]],
+    labels: Mapping[str, Mapping[str, Any]],
+    id_map: Optional[Mapping[str, str]] = None,
 ) -> Iterator[Dict[str, Any]]:
-    """One row per labelled set: its input string, label and prior flag."""
+    """One row per labelled set: its input string, label, prior flag and split.
+
+    A hand-labelled prose row gives its own labels (the prose gold set); a
+    repeated table is left out.
+    """
+    units = list(units)
+    split = splits(units, labels, id_map)
+    repeated = duplicates(units)
     for unit in units:
+        if unit["unit_id"] in repeated:
+            continue
         field, version = context_version_field(unit["origin"])
+        own = unit.get("labels_from") == "dataset" or _is_hand(unit)
         for i, ctx in enumerate(contexts(unit)):
             set_id = f"{unit['unit_id']}#{i}"
-            label = labels.get(set_id) or (
-                _dataset_label(unit, i) if unit.get("labels_from") == "dataset" else None
-            )
+            label = _dataset_label(unit, i) if own else labels.get(set_id)
             if label is None:
                 continue
             yield {
@@ -93,7 +160,7 @@ def encoder_rows(
                 "label": label["label"],
                 "from_prior_study": bool(label["from_prior_study"]),
                 "label_source": label.get("model"),
-                "split": split_of(unit.get("article_id")),
+                "split": split[unit["unit_id"]],
             }
 
 
@@ -104,6 +171,19 @@ def _all_labelled(
     return found if found and all(found) else None
 
 
+def _with_copies(
+    units: Sequence[Mapping[str, Any]], labels: Mapping[str, Mapping[str, Any]]
+) -> Dict[str, Mapping[str, Any]]:
+    """`labels` plus, for each repeated table, its first copy's labels (labelled once)."""
+    out = dict(labels)
+    for dup, first in duplicates(units).items():
+        i = 0
+        while f"{first}#{i}" in labels:
+            out.setdefault(f"{dup}#{i}", labels[f"{first}#{i}"])
+            i += 1
+    return out
+
+
 def nu_v21_rows(
     units: Iterable[Mapping[str, Any]], labels: Mapping[str, Mapping[str, Any]]
 ) -> Iterator[Dict[str, Any]]:
@@ -111,6 +191,8 @@ def nu_v21_rows(
 
     A table unit's sets are its base row's target analyses, in order.
     """
+    units = list(units)
+    labels = _with_copies(units, labels)
     for unit in units:
         base = unit.get("base_row")
         found = _all_labelled(unit, labels) if unit["origin"] == "table" and base else None
@@ -146,13 +228,15 @@ def prose_rows(
     A prose unit's sets are its base row's analyses in order of first
     appearance; a point listed under several analyses takes each one's role.
     `keep_unlabelled` passes the other rows through unchanged (a synthetic row
-    keeps its generator's roles), so the output can replace the dataset.
+    keeps its generator's roles), so the output can replace the dataset. A
+    held-out row (val, test, or hand-labelled) is never relabelled. The labellers
+    go in `role_label_source`; the row's own `label_source` stays.
     """
     for unit in units:
         base = unit.get("base_row")
         if unit["origin"] != "text" or not base:
             continue
-        found = _all_labelled(unit, labels)
+        found = None if held_out(unit) else _all_labelled(unit, labels)
         if found is None:
             if keep_unlabelled:
                 yield dict(base)
@@ -167,6 +251,6 @@ def prose_rows(
         yield {
             **base,
             "points": points,
-            "label_source": "+".join(sorted({label["model"] for label in found})),
+            "role_label_source": "+".join(sorted({label["model"] for label in found})),
             context_version_field("text")[0]: context_version_field("text")[1],
         }

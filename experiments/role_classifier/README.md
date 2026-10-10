@@ -90,13 +90,29 @@ Labelling runs where `codex login` is (the codex CLI is not installed on beast),
 pondie's `CodexCaller` with a pondie that includes #10 on PYTHONPATH:
 
 ```
-python label_sets.py label units/table_units.jsonl labels/sol-table --model gpt-6.1-sol --pace 30
+python label_sets.py label units/table_units.jsonl labels/sol-table --model gpt-6.1-sol --pace 30 \
+    --plain-sample 300
 python label_sets.py label units/prose_units.jsonl labels/sol-prose --model gpt-6.1-sol --pace 30 \
     --skip-dataset-labelled
 python label_sets.py compare labels/pilot-sol labels/pilot-astra
-python export_rows.py out --units units/*.jsonl --labels labels/astra labels/sol-table labels/sol-prose
+python export_rows.py out --units units/*.jsonl --labels labels/astra labels/sol-table labels/sol-prose \
+    --id-map units/slug_dbids.json --prose-dataset /data/alejandro/jk-prose-coords/datasets/v3-20261006
 CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py out/encoder.jsonl models/set-roles-1
 ```
 
 `out/nu_v21_role.jsonl` trains nu-v21 with `out/nu_v21_template.json` as the template;
-`out/prose/{train,val,test}.jsonl` replace the v3 prose dataset that `build_ft.py` reads.
+`out/prose/` replaces the v3 prose dataset directory that `build_ft.py` reads (`V3`), wide-context
+files included. Its val and test rows and the 74 hand-labelled rows are never sent to a labeller
+and pass through unchanged; the hand rows are the encoder's prose gold set.
+
+The labeller skips held-out prose rows and tables whose text repeats another unit's (203; the
+export copies the first copy's labels). `--plain-sample 300` labels 300 of the 5,946 `plain`
+tables (all `result` in the pilot) plus every one whose caption, footer or citing sentences
+name an atlas, mask, seed, ROI or prior study.
+
+Splits (`export.splits`): by article under its database id (`units/slug_dbids.json` maps the
+slug ids of 270 articles, 268 found in the corpus); articles sharing a table's text share a
+split; an article with a gold label (astra or hand) or a held-out prose row is test; synthetic
+sets are train only. `[PROPOSED]` is what the pipeline proposes: `result` for a table set, the
+prose stage's role for a corpus passage, and `unknown` for a dataset row, whose roles are its
+labels.
