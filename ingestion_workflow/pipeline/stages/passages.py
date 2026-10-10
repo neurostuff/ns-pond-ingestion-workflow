@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 #: Bump when the passages change for a reason the download does not
 #: describe: the reader, the raw filter, the detector.
-PASSAGES_VERSION = "2026-10-09.text-spans"
+PASSAGES_VERSION = "2026-10-10.legends"
 
 #: Which download is read, for an article with no extraction text, best first: XML marks its sections and its tables,
 #: publisher HTML less reliably, a PDF's text layer not at all. pmc and
@@ -58,12 +58,18 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     for an article whose extraction -- which `space` reads -- never succeeded. The
     text is returned whole; a download's has its legends after.
 
+    Figure legends are read wherever they sit: about half the coordinates in them
+    are the study's results (2026-10-10 sample). The extraction text's legends are
+    found by the download's (`files`, when given). A passage whose hits all lie in
+    a legend is marked `from_legend`.
+
     A module function so a process pool can run it: reading a download and
     the detector are processor-bound.
     """
     from ingestion_workflow.services.coordinate_space import read_space
     from ingestion_workflow.services.prose_text import (
         kept_spans,
+        legend_spans,
         main_file,
         may_hold_coordinates,
         read_download,
@@ -76,6 +82,8 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
                 return "filtered", [], None, text
             spans, how = kept_spans(text)
             body = text
+            legends = legend_spans(text, _legends(job.get("files") or []))
+            spans += [s for s in legends if not any(a < s[1] and s[0] < b for a, b in spans)]
         else:
             f = main_file(job.get("files") or [])
             if f is None:
@@ -86,13 +94,29 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
             body, legends = read_download(path, f["file_type"])
             spans, how = kept_spans(body)
             text = body + ("\n\n" + legends if legends else "")
-            if legends:
-                spans.append((len(text) - len(legends), len(text)))
+            legends = [(len(text) - len(legends), len(text))] if legends else []
+            spans += legends
         found = [p for a, b in spans for p in _shifted(text, a, b)][:MAX_PASSAGES]
+        for p in found:
+            p.from_legend = bool(p.hits) and all(
+                any(a <= h.span[0] and h.span[1] <= b for a, b in legends) for h in p.hits)
         reading = read_space(body) if found else None
         return how, found, reading.space.value if reading else None, text
     except Exception as exc:  # noqa: BLE001 - an unreadable file is that article's problem only
         return f"unreadable: {type(exc).__name__}", [], None, ""
+
+
+def _legends(files: list) -> str:
+    """The figure legends of the article's download; none from a PDF or a download that fails to read."""
+    from ingestion_workflow.services.prose_text import main_file, read_download
+
+    f = main_file(files)
+    if f is None or f["file_type"] == "pdf":
+        return ""
+    try:
+        return read_download(Path(f["file_path"]), f["file_type"])[1]
+    except Exception:  # noqa: BLE001 - the extraction text is still read
+        return ""
 
 
 def _shifted(text: str, a: int, b: int) -> list:
@@ -145,6 +169,7 @@ def passage_dict(passage) -> dict:
     """A passage as stored: spans into the text, none of its characters."""
     return {"span": list(passage.span), "before": _span(passage.before_span), "after": _span(passage.after_span),
             "heading": _span(passage.heading_span), "space": passage.space,
+            "from_legend": passage.from_legend,
             "hits": [{"pattern": h.pattern, "x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
                      for h in passage.hits]}
 
@@ -160,7 +185,7 @@ def passage_from(payload: dict, text: str):
                    heading=heading_text(text, span("heading")), space=payload.get("space"),
                    hits=[Hit(h["pattern"], h["x"], h["y"], h["z"], tuple(h["span"])) for h in payload.get("hits", [])],
                    span=span("span"), before_span=span("before"), after_span=span("after"),
-                   heading_span=span("heading"))
+                   heading_span=span("heading"), from_legend=payload.get("from_legend", False))
 
 
 def read_text(payload: dict) -> str:
@@ -239,10 +264,14 @@ class PassagesStage:
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         jobs = []
+        downloads = ctx.catalog.artifacts([w.article_id for w in works if w.upstream.stage == "extract"], "download")
         for work in works:
             payload = ctx.payload(work.upstream) or {}
             if work.upstream.stage == "extract":
-                jobs.append({"text_path": payload.get("full_text_path")})
+                # the download names the legends to find in the extraction's text
+                download = _choose(downloads.get(work.article_id, {}))
+                files = (ctx.payload(download) or {}).get("files", []) if download else []
+                jobs.append({"text_path": payload.get("full_text_path"), "files": files})
             else:
                 jobs.append({"files": payload.get("files", [])})
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)

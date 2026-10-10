@@ -118,7 +118,8 @@ class ProseStage:
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
                 kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
-                out.append({"span": p["span"], "text": passage.text, "heading": passage.heading,
+                out.append({"span": p["span"], "from_legend": passage.from_legend,
+                            "text": passage.text, "heading": passage.heading,
                             "space": answer.get("space") or p.get("space"),
                             "analyses": answer.get("analyses", []), "error": error})
             if errors:

@@ -110,6 +110,7 @@ class Passage:
     after: str = ""
     heading: Optional[str] = None
     space: Optional[str] = None
+    from_legend: bool = False  # every hit inside a figure legend
     span: Optional[Span] = None
     before_span: Optional[Span] = None
     after_span: Optional[Span] = None

@@ -458,3 +458,40 @@ def test_prose_reads_no_passage_of_a_text_that_changed_under_it(env, tmp_path):
     prose.client = lambda: _Reader()
     _, (read,) = _run(prose, ctx, catalog, ref)
     assert read.status is Status.FAILED and "changed" in read.error
+
+
+LEGEND = ("Figure 2. Greater insula activation in patients than controls "
+          "(x = &#x02212;34, y = 16, z = &#x02212;6; p &lt; 0.05 corrected).")
+
+
+def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
+    """A legend the download sets in the Discussion, and the extraction text after it."""
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    settings, catalog, _ = env
+    xml = tmp_path / "legend.xml"
+    xml.write_text(ARTICLE.replace("</p></sec>\n</body>", f"</p><fig><caption><p>{LEGEND}</p></caption></fig></sec>\n</body>"))
+    ctx = Context(settings, catalog)
+
+    # From the download: the legends after its text.
+    ref = catalog.register(Identifier(pmid="30"))
+    _record_upstream(catalog, ref, xml)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    stored = found.payload["passages"]
+    assert [(p["hits"][0]["x"], p["from_legend"]) for p in stored] == [(-22.0, False), (-34.0, True)]
+
+    # From the extraction: the legend found in its text, after the Discussion, its
+    # white space and minus signs written differently.
+    ref = catalog.register(Identifier(pmid="31"))
+    _record_upstream(catalog, ref, xml)
+    text_file = tmp_path / "legend.txt"
+    text_file.write_text(TEXT + "\n## Discussion\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n\n"
+                         "Figure 2. Greater insula activation in patients than controls\n"
+                         "(x = -34, y = 16,  z = −6; p < 0.05 corrected).\n", encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    text = text_file.read_text()
+    stored = found.payload["passages"]
+    assert [(p["hits"][0]["x"], p["from_legend"]) for p in stored] == [(-22.0, False), (-34.0, True)]
+    assert passage_from(stored[1], text).from_legend
+    assert text[slice(*stored[1]["span"])].startswith("Figure 2.")
