@@ -18,12 +18,11 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .passages import passage_from
-from .resolve import KEPT_ROLES
 
 logger = logging.getLogger(__name__)
 
 #: Bump when what is kept of the model's answer changes: `clean_answer`.
-CLEAN_VERSION = "in-order"
+CLEAN_VERSION = "named-empty-kept"
 
 
 class ProseStage:
@@ -100,16 +99,19 @@ class ProseStage:
         answered = iter(answers)
 
         for work, payload in zip(works, found):
-            out, errors, coords, kept = [], 0, 0, 0
+            out, errors, coords, named, unwritten = [], 0, 0, 0, 0
             for p in payload.get("passages", []):
                 answer, error = next(answered)
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
-                kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
+                named += len(answer.get("analyses", []))
+                unwritten += sum(a.get("unwritten", 0)
+                                 for a in answer.get("analyses", []) + answer.get("omitted", []))
                 out.append({"text": p["text"], "heading": p.get("heading"),
                             "space": answer.get("space") or p.get("space"),
-                            "analyses": answer.get("analyses", []), "error": error})
+                            "analyses": answer.get("analyses", []),
+                            "omitted": answer.get("omitted", []), "error": error})
             if errors:
                 # A partly read article would be cached as complete; retry it whole.
                 yield Outcome.failure(work.article_id, self.name, "",
@@ -121,7 +123,7 @@ class ProseStage:
                 payload={"source": payload.get("source"), "read": payload.get("read"),
                          "space": payload.get("space"), "passages": out},
                 summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
-                         "coordinates": coords, "kept": kept},
+                         "coordinates": coords, "analyses": named, "unwritten": unwritten},
             )
 
     def _read(self, passage, title, abstract):

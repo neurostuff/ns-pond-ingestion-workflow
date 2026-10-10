@@ -22,7 +22,9 @@ from typing import Iterable, List, Optional, Sequence
 __all__ = [
     "NON_DIRECTIONAL_KINDS",
     "PLACEHOLDER_NAME",
+    "UPLOADED_PROSE_ROLES",
     "is_placeholder",
+    "leaves_with_its_role",
     "point_sign",
     "subpeak_flags",
     "reports_extent",
@@ -47,6 +49,23 @@ def is_placeholder(name: Optional[str], points: Sequence) -> bool:
     neurostore, because analyses stored before the check still hold them.
     """
     return (name or "").strip().upper() == PLACEHOLDER_NAME and not points
+
+
+#: The prose roles sent to pondie's stage1 file and to neurostore: this
+#: study's results, and the regions it defined to get them -- an ROI, a seed,
+#: a stimulation target. Neither reader takes a role from these analyses, so
+#: another study's peaks or a display location would read as a result there.
+UPLOADED_PROSE_ROLES = ("result", "roi", "seed", "target")
+
+
+def leaves_with_its_role(metadata: Optional[dict]) -> bool:
+    """Whether an analysis goes to readers that cannot see its role.
+
+    A table analysis always does. A prose analysis keeps every role in the
+    resolve stage's payload; only `UPLOADED_PROSE_ROLES` leave from there.
+    """
+    metadata = metadata or {}
+    return metadata.get("source") != "prose" or metadata.get("role") in UPLOADED_PROSE_ROLES
 
 #: Kinds whose value has no direction: a p value and an F are positive
 #: whichever way the contrast runs. study_schema's `StatisticKind` says the

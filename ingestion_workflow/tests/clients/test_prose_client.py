@@ -46,6 +46,23 @@ def test_a_looping_answer_and_context_coordinates_are_dropped():
     assert [a["name"] for a in got["analyses"]] == ["faces > houses", "other"]
     assert got["analyses"][0]["points"] == [{**point, "x": 40.0, "y": -50.0, "z": -20.0, "statistic": "T"}]
     assert got["analyses"][1]["points"][0]["role"] == "other"
+    assert [a["unwritten"] for a in got["analyses"]] == [1, 0]
+
+
+def test_a_named_contrast_with_no_written_point_is_kept_and_its_removals_counted():
+    """"No significant activation for PO > PC": the contrast was run and is kept, empty."""
+    point = {"x": 40, "y": -50, "z": -20, "statistic": "t", "value": 5.1,
+             "cluster_size": None, "role": "result"}
+    nowhere = {**point, "x": 12, "y": 14, "z": 16}
+    answer = {"space": "MNI", "analyses": [
+        {"name": "PO > PC", "measure": None, "points": []},
+        {"name": "PC > PO", "measure": None, "points": [nowhere]},
+        {"name": None, "measure": None, "points": [nowhere, {**nowhere, "x": 2}]},
+    ]}
+    got = clean_answer(answer, PASSAGE.text)
+    assert [(a["name"], a["points"], a["unwritten"]) for a in got["analyses"]] == [
+        ("PO > PC", [], 0), ("PC > PO", [], 1)]
+    assert got["omitted"] == [{"name": None, "unwritten": 2}]
 
 
 def test_a_point_made_of_numbers_that_are_not_a_coordinate_is_dropped():

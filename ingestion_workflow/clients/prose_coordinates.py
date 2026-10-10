@@ -76,33 +76,41 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     """The model's answer, kept to what the passage says.
 
     A repeated analysis is a loop, not a second result. A point not written
-    in the passage came from the surrounding context or nowhere.
+    in the passage came from the surrounding context or nowhere; each analysis
+    counts its own as `unwritten`. A named analysis left with no point is kept
+    (a contrast the passage reports nothing for); an unnamed one is listed in
+    `omitted` with its count.
     """
     nums = numbers_in(passage_text)
-    seen, analyses = set(), []
+    seen, analyses, omitted = set(), [], []
     for a in (answer or {}).get("analyses") or []:
         key = (a.get("name"), json.dumps(a.get("points"), sort_keys=True))
         if key in seen:
             continue
         seen.add(key)
-        points = []
+        points, unwritten = [], 0
         for p in a.get("points") or []:
             try:
                 xyz = [float(p[k]) for k in "xyz"]
             except (KeyError, TypeError, ValueError):
+                unwritten += 1
                 continue
             if not written(xyz, nums):
+                unwritten += 1
                 continue
             role = p.get("role") if p.get("role") in ROLES else "other"
             points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                            "statistic": normalize_statistic_kind(p.get("statistic")),
                            "value": p.get("value"), "cluster_size": p.get("cluster_size"),
                            "role": role})
-        if points:
-            analyses.append({"name": (a.get("name") or "").strip() or None,
-                             "measure": a.get("measure"), "points": points})
+        name = (a.get("name") or "").strip() or None
+        if points or name:
+            analyses.append({"name": name, "measure": a.get("measure"), "points": points,
+                             "unwritten": unwritten})
+        else:
+            omitted.append({"name": None, "unwritten": unwritten})
     space = (answer or {}).get("space")
-    return {"space": normalize_space(space), "analyses": analyses}
+    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
 
 class ProseCoordinateClient(GenericLLMClient):
