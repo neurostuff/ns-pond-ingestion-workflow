@@ -140,14 +140,44 @@ def test_one_peak_reported_for_two_contrasts_stays_under_both():
 
 
 def test_a_seed_and_the_results_connected_to_it_stay_apart_across_passages():
-    """A Methods passage's seed and a Results passage's PPI peaks share a name;
-    they are different sets, and the peak at the seed's xyz is kept."""
+    """A Methods passage's seed and a Results passage's PPI peaks share a name
+    but no point: they are different sets."""
     prose = {"passages": [_passage(("amygdala PPI", [(-20, -4, -18, "seed")])),
-                          _passage(("amygdala PPI", [(-20, -4, -18, "result"), (30, 20, 4, "result")]))]}
+                          _passage(("amygdala PPI", [(30, 20, 4, "result"), (-40, 22, 6, "result")]))]}
     out, summary = resolve({}, prose, "slug")
     got = [(a["name"], a["metadata"]["passages"], len(a["coordinates"])) for a in out["prose"]["analyses"]]
     assert got == [("amygdala PPI", [0], 1), ("amygdala PPI", [1], 2)]
-    assert summary["prose_points"] == 3 and summary["repeated"] == 0
+    assert summary["prose_points"] == 3 and summary["repeated"] == 0 and summary["joins"] == {}
+
+
+def test_one_analysis_named_again_at_its_point_in_another_passage_is_one_analysis():
+    """"In previous analyses, we have shown that the striatum (peak −18, 11, −2)":
+    the Results' striatum ROI named again in the Discussion, under another heading."""
+    prose = {"passages": [
+        _headed("Results", ("striatum ROI", [(-18, 11, -2, "roi"), (20, 10, -4, "roi")])),
+        _headed("Results", ("left striatum", [(-18, 11, -2, "roi")])),
+        _headed("Discussion", ("Striatum  ROI", [(-18.5, 11, -2, "roi")])),
+    ]}
+    out, summary = resolve({}, prose, "slug")
+    joined, other = out["prose"]["analyses"]
+    assert (joined["name"], joined["metadata"]["passages"]) == ("striatum ROI", [0, 2])
+    assert joined["metadata"]["joined"] == [{"passages": [0, 2], "by": "shared point"}]
+    assert [(c["x"], c["y"], c["z"]) for c in joined["coordinates"]] == [(-18.0, 11.0, -2.0), (20.0, 10.0, -4.0)]
+    assert joined["metadata"]["dropped"] == [
+        {"x": -18.5, "y": 11.0, "z": -2.0, "reason": "repeats a point of this analysis"}]
+    # Another name at the same point is another analysis.
+    assert (other["name"], other["metadata"]["passages"]) == ("left striatum", [1])
+    assert summary["joins"] == {"shared point": 1} and summary["prose_analyses"] == 2
+
+
+def test_a_name_seen_in_three_passages_joins_through_any_shared_point():
+    prose = {"passages": [_passage(("FFA", [(40, -52, -18, "roi")])),
+                          _passage(("FFA", [(-38, -50, -20, "roi")])),
+                          _passage(("FFA", [(40, -52, -18, "roi"), (-38, -50, -20, "roi")]))]}
+    out, summary = resolve({}, prose, "slug")
+    (analysis,) = out["prose"]["analyses"]
+    assert analysis["metadata"]["passages"] == [0, 1, 2] and len(analysis["coordinates"]) == 2
+    assert summary["joins"] == {"shared point": 2}
 
 
 def test_unnamed_analyses_are_each_their_own_set_in_the_model_s_order():
@@ -261,7 +291,8 @@ def test_one_contrast_in_two_paragraphs_of_a_section_is_one_analysis():
     out, summary = resolve({}, prose, "slug")
     (analysis,) = out["prose"]["analyses"]
     assert analysis["metadata"]["passages"] == [0, 1] and len(analysis["coordinates"]) == 2
-    assert summary["prose_analyses"] == 1
+    assert analysis["metadata"]["joined"] == [{"passages": [0, 1], "by": "heading"}]
+    assert summary["prose_analyses"] == 1 and summary["joins"] == {"heading": 1}
 
 
 def test_the_same_name_under_two_section_headings_or_none_stays_apart():
@@ -269,17 +300,18 @@ def test_the_same_name_under_two_section_headings_or_none_stays_apart():
         _headed("Experiment 1", ("faces > houses", [(-38, 22, -6, "result")])),
         _headed("Experiment 2", ("faces > houses", [(42, 18, -4, "result")])),
         _headed(None, ("faces > houses", [(4, 52, 18, "result")])),
-        _headed(None, ("faces > houses", [(4, 52, 18, "result")])),
+        _headed(None, ("faces > houses", [(-6, 50, 20, "result")])),
     ]}
     out, _ = resolve({}, prose, "slug")
     assert [a["metadata"]["passages"] for a in out["prose"]["analyses"]] == [[0], [1], [2], [3]]
 
 
-def test_an_unnamed_analysis_never_joins_under_a_shared_heading():
+def test_an_unnamed_analysis_never_joins_under_a_shared_heading_or_at_a_shared_point():
     prose = {"passages": [_headed("Results", (None, [(4, 52, 18, "result")])),
-                          _headed("Results", (None, [(-38, 22, -6, "result")]))]}
+                          _headed("Results", (None, [(-38, 22, -6, "result")])),
+                          _headed("Discussion", (None, [(4, 52, 18, "result")]))]}
     out, _ = resolve({}, prose, "slug")
-    assert [a["metadata"]["passages"] for a in out["prose"]["analyses"]] == [[0], [1]]
+    assert [a["metadata"]["passages"] for a in out["prose"]["analyses"]] == [[0], [1], [2]]
 
 
 def test_an_unstated_space_is_left_for_the_space_stage():
@@ -540,6 +572,43 @@ def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(env, 
     assert [(a.origin, a.role, a.role_source) for a in parse.coordinate_parse.analyses] == [
         ("text", "result", "results@1")]
     assert synced.summary["parse_id"] == parse.coordinate_parse.parse_id
+
+
+def test_a_prose_restatement_of_a_table_is_among_the_written_parse_s_omissions(env, monkeypatch, tmp_path):
+    """Its points are the table's, so it is not uploaded; the parse says which table analysis it restates."""
+    from pyarty import read_bundle
+    from study_schema.layouts import PaperParse
+
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.nspond_schema import read_record
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="13"))
+    _record_upstream(catalog, ref, path)
+    tables = {"t1": {"slug": "s::t1", "analyses": [{"name": "Group effect", "table_id": "t1", "coordinates": [
+        {"x": -22.0, "y": -4.0, "z": -18.0, "statistic_value": 4.1, "statistic_type": "T"}]}]}}
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                            payload=tables, summary={"tables": 1})])
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _, (resolved,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert resolved.summary["restatements"] == 1 and "prose" not in resolved.payload
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS13", "study_id": "S13"})])
+    sync = SyncStage(settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    parse = read_bundle(PaperParse, settings.ns_pond_root / "BS13" / "parse").coordinate_parse
+    assert [a.origin for a in parse.analyses if a.origin == "text"] == []
+    (omission,) = parse.omitted_analyses
+    assert omission.name == "patients > controls"
+    assert omission.reason == "every point restates a table's result: table t1's 'Group effect' at (-22, -4, -18)"
+    (span,) = omission.text_spans
+    text = read_record(settings.ns_pond_root, "BS13").processed["pubget"].text
+    assert text[span.start_char:span.end_char] == "\u221222, y = \u22124, z = \u221218"
 
 
 def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):

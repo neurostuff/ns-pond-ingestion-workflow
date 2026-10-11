@@ -55,6 +55,21 @@ def _printed(point, text):
             (-26, -64, 40),
             "−26,   y   = \n−64,   z   = 40",
         ),
+        # A line wrapped after a space, between two values or after a sign
+        # (27vr7fabyemc, 2cszp4zilryw).
+        ("cursor is centered (MNI coordinates 30 43 \n21). The", (30, 43, 21), "30 43 \n21"),
+        ("left medial planum temporale (- \n40 -42 10 mm).", (-40, -42, 10), "- \n40 -42 10"),
+        # Two peaks sharing a y, each other axis printed as a slash pair (2gcdsq37ve4k).
+        (
+            "(MFG; BA 8; x = 30/−24, y = 24, z = 48/45; cluster size = 36/50 voxels",
+            (30, 24, 48),
+            "30/−24, y = 24, z = 48/45",
+        ),
+        (
+            "(MFG; BA 8; x = 30/−24, y = 24, z = 48/45; cluster size = 36/50 voxels",
+            (-24, 24, 45),
+            "30/−24, y = 24, z = 48/45",
+        ),
         # A table's decimals printed rounded in the prose.
         ("peak (-42, 18, 6)", (-41.6, 18.2, 6), "-42, 18, 6"),
         ("peak (-41.6, 18.2, 6)", (-41.63, 18.2, 6), "-41.6, 18.2, 6"),
@@ -88,6 +103,12 @@ def test_a_point_is_found_in_every_way_papers_print_it(text, point, printed):
         ("peak (-42.5, 18, 6)", (-42, 18, 6)),
         # Rows of a table in the parsed text are not one triple.
         ("insula -42 18\n6 putamen", (-42, 18, 6)),
+        # Nor is the mirror of a wrapped or a slash-paired value.
+        ("planum temporale (- \n40 -42 10 mm).", (40, -42, 10)),
+        ("planum temporale (−  \n 40 -42 10 mm).", (40, -42, 10)),
+        ("x = 30/−24, y = 24, z = 48/45;", (24, 24, 48)),
+        ("x = 30/−24, y = 24, z = 48/45;", (-30, 24, 48)),
+        ("x = 30/−24, y = 24, z = 48/45;", (30, -24, 48)),
         ("peak (-4218, 6)", (-42, 18, 6)),
     ],
 )

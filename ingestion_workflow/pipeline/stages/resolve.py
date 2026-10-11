@@ -15,7 +15,7 @@ from ingestion_workflow.models.statistics import normalize_statistic_kind
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
 
-RESOLVE_VERSION = 8
+RESOLVE_VERSION = 9
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -58,15 +58,65 @@ def _agrees(kind: Any, value: Optional[float], table_kind: Any, table_value: Any
     return value is None or table_value is None or abs(abs(value) - abs(table_value)) <= SAME_VALUE
 
 
+def _overlap(a: Dict[str, Any], b: Dict[str, Any]) -> bool:
+    return any(_near(p[0], q[0]) for p in a["points"] for q in b["points"])
+
+
+def _joined(found: List[Tuple[tuple, Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    """The passages' analyses, each name's copies in other passages joined into
+    its first when they share a point (`SAME_PEAK_MM`) or a section heading.
+
+    Each join is listed in the first's `joined`: the two passages, and
+    whether a point or the heading joined them. Different names and unnamed
+    analyses never join.
+    """
+    into: Dict[int, int] = {}  # index in `found` -> the index it joined
+
+    def root(i: int) -> int:
+        while i in into:
+            i = into[i]
+        return i
+
+    joins = []
+    for j, ((_, identity, *_), entry) in enumerate(found):
+        for i in range(j):
+            (_, other, *_), first = found[i]
+            named = first["named"] and entry["named"]
+            if not named or other != identity or root(i) == root(j):
+                continue
+            by = ("shared point" if _overlap(first, entry)
+                  else "heading" if entry["heading"] and entry["heading"] == first["heading"]
+                  else None)
+            if by is not None:
+                a, b = sorted((root(i), root(j)))
+                into[b] = a
+                joins.append((i, j, by))
+    for i, j, by in joins:
+        found[root(j)][1].setdefault("joined", []).append(
+            {"passages": [found[i][1]["passages"][0], found[j][1]["passages"][0]], "by": by})
+    groups = []
+    for j, (_, entry) in enumerate(found):
+        r = root(j)
+        if r == j:
+            groups.append(entry)
+            continue
+        first = found[r][1]
+        first["passages"] = sorted(set(first["passages"] + entry["passages"]))
+        first["unwritten"] += entry["unwritten"]
+        first["points"] += entry["points"]
+    return groups
+
+
 def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             identifier=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The table collections, plus one collection of what the prose adds.
 
     One analysis per name within a passage. The same name in another passage
-    is the same analysis only under the same section heading: a seed in the
-    Methods and the results connected to it in the Results are different
-    sets, whatever they are called. An unnamed analysis is its own set, in the
-    model's order. A named analysis the model gave no point is kept, empty.
+    is the same analysis seen again when the two share a point or a section
+    heading (`_joined`); with neither, such as the cue stage's and the pain
+    stage's peaks of one contrast, they are different sets. An unnamed
+    analysis is its own set, in the model's order. A named analysis the model
+    gave no point is kept, empty.
     What a set is for is the roles stage's to decide, not the prose model's.
 
     A point at a table peak restates that table, whatever either is named,
@@ -74,8 +124,9 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     at the peak, such as a correlation with behaviour, is a result of its own.
     The analysis lists a restated point in `metadata.restated_points`, with
     what it restates, instead of its coordinates. An analysis whose every
-    point restates a table is the table's result again: it is left out, and
-    the summary's `restated_points` records it with its points. A coordinate
+    point restates a table is the table's result again: it is left out. The
+    summary's `restated_points` records every analysis with a restated point,
+    with those points, for the parse to list among its omissions. A coordinate
     the prose reports under two contrasts stays under both. A repeated point
     is listed in `metadata.dropped`.
     """
@@ -116,18 +167,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             entry["points"] += [((float(p["x"]), float(p["y"]), float(p["z"])), p, space,
                                  a.get("measure")) for p in a.get("points", [])]
 
-    groups: List[Dict[str, Any]] = []
-    by_heading: Dict[tuple, Dict[str, Any]] = {}
-    for (_, identity, *_), entry in found.items():
-        if entry["named"] and entry["heading"]:
-            same = by_heading.get((identity, entry["heading"]))
-            if same is not None:
-                same["passages"] += entry["passages"]
-                same["unwritten"] += entry["unwritten"]
-                same["points"] += entry["points"]
-                continue
-            by_heading[(identity, entry["heading"])] = entry
-        groups.append(entry)
+    groups = _joined(list(found.items()))
+    joins = collections.Counter(j["by"] for g in groups for j in g.get("joined", ()))
 
     analyses: List[Analysis] = []
     restated: List[Dict[str, Any]] = []
@@ -137,6 +178,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         analysis = Analysis(name=entry["name"], table_id="prose", metadata={
             "source": "prose", "passages": entry["passages"],
             "ordinal": entry["ordinal"], "unwritten": entry["unwritten"]})
+        if entry.get("joined"):
+            analysis.metadata["joined"] = entry["joined"]
         seen, new, restating, dropped = set(), [], [], []
         for xyz, p, space, measure in entry["points"]:
             key = tuple(round(v) for v in xyz)
@@ -199,6 +242,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         "restated": sum(len(d["points"]) for d in restated),
         "restated_points": restated,
         "repeated": repeated,
+        "joins": dict(sorted(joins.items())),
     }
     return out, summary
 

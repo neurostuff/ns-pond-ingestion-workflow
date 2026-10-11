@@ -279,6 +279,8 @@ def _parse_inputs(
         passages_kept=len(passages.get("passages") or []) if passages else None,
         passages_omitted=len(passages["omitted"]) if passages and "omitted" in passages else None,
         restated=(resolved.summary or {}).get("restated") if resolved is not None else None,
+        restatements=((resolved.summary or {}).get("restated_points") or ())
+        if resolved is not None else (),
         fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
     )
 

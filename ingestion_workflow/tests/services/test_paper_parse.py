@@ -872,6 +872,31 @@ def test_a_prose_duplicate_is_omitted_and_recorded_with_its_reason():
     assert [str(o) for o in omitted] == [f"text: 'Poor  Reader': {reason}"]
 
 
+def test_the_restated_points_of_a_kept_text_analysis_are_among_the_parse_s_omissions():
+    passage = "Craving correlated with the amygdala (-22, -4, -18) and the insula (36, 20, 2)."
+    text = f"Results\n\n{passage}\n"
+    collection = _collection([Analysis(
+        name="negative correlation with craving", table_id="prose",
+        metadata={"source": "prose", "passages": [0]}, coordinates=[Coordinate(x=36, y=20, z=2)])])
+    restated = [{"passages": [0], "analysis": "negative correlation with craving", "restatement": False,
+                 "points": [{"x": -22.0, "y": -4.0, "z": -18.0, "restates": [
+                     {"table": "t1", "analysis": "patients > controls"},
+                     {"table": "t2", "analysis": "craving"}]}]}]
+    paper = SimpleNamespace(header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+                            text_sha256="0" * 64, tables=[])
+    parse, _ = paper_parse.coordinate_parse(
+        paper, text, {}, {"prose": collection},
+        ParseInputs(article_id="a", prose=_prose(text, passage), restatements=restated))
+    assert [a.name for a in parse.analyses] == ["negative correlation with craving"]
+    (omission,) = parse.omitted_analyses
+    assert omission.name == "negative correlation with craving"
+    assert omission.reason == (
+        "its other points are kept; these restate a table's result: "
+        "table t1's 'patients > controls' at (-22, -4, -18); table t2's 'craving' at (-22, -4, -18)")
+    (span,) = omission.text_spans
+    assert text[span.start_char:span.end_char] == "-22, -4, -18"
+
+
 def test_a_prose_analysis_whose_passage_is_missing_is_recorded_as_omitted():
     parse, _ = _prose_parse(
         "A sentence with a peak (1, 2, 3).",
