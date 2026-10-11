@@ -117,6 +117,15 @@ def test_roles_is_required_between_resolve_and_space(tmp_path):
     assert SpaceStage.upstream_for(off) == SpaceStage.upstream_for(on) == ("roles", "tables")
 
 
+def test_the_summary_counts_prose_sets_whose_points_are_not_in_their_passage():
+    prose = FakeClassifier({"amygdala seed": ("anchor", 0.99, 0.02, "seed")}, "fake-prose@2")
+    elsewhere = [{**PASSAGES[0], "text": "The amygdala seed was a 6 mm sphere."}]
+    for passages, missing in ((PASSAGES, 0), (elsewhere, 1)):
+        _, summary = assign_roles({"prose": _prose()}, passages, TEXT, {"text": prose})
+        assert summary["text_sets_without_local"] == missing
+    assert "[LOCAL]" not in prose.seen[-1]
+
+
 def test_every_set_gets_its_role_from_its_origin_s_model():
     table = FakeClassifier(TABLE_ANSWERS)
     prose = FakeClassifier({"amygdala seed": ("anchor", 0.99, 0.02, "seed")}, "fake-prose@2")
@@ -162,6 +171,7 @@ def test_every_set_gets_its_role_from_its_origin_s_model():
         "tables": 2,
         "sets": 3,
         "sets_by_origin": {"table": 2, "text": 1},
+        "text_sets_without_local": 0,
         "roles": {"result": 1, "reference": 1, "seed": 1},
         "held": 1,
         "sources": {"table": "fake-table@1", "text": "fake-prose@2"},

@@ -471,6 +471,30 @@ def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once()
     assert text[span.start_char : span.end_char] == "\u221234, y = 18, z = 2"
 
 
+def test_a_prose_point_is_placed_in_its_sentence_not_at_a_table_row_printing_it():
+    # From a sampled paper: the sentence glues the minus to the value before it,
+    # which the parse once missed, placing the point at a table row instead.
+    sentence = "The peak lay in the cuneus (\u2212 9 23\u201315) after training."
+    text = f"Table 1\n\nCuneus\t\u22129\t23\t\u221215\n\nResults\n\n{sentence}\n"
+    collection = _collection(
+        [
+            Analysis(
+                name="cuneus",
+                table_id="prose",
+                metadata={"source": "prose", "passages": [0]},
+                coordinates=[Coordinate(x=-9, y=23, z=-15)],
+            )
+        ]
+    )
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": sentence}]})
+    built = paper_parse._prose_analysis(
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
+    )
+    (point,) = built.points
+    span = point.text_span
+    assert text[span.start_char : span.end_char] == "\u2212 9 23\u201315"
+
+
 def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
     collection = _collection(
         [

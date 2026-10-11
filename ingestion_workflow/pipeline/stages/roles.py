@@ -172,6 +172,8 @@ def assign_roles(
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
         "sets": len(found),
         "sets_by_origin": {o: len(items) for o, items in sorted(by_origin.items())},
+        # Prose sets whose points the classifier could not find in their passage.
+        "text_sets_without_local": sum(not ctx.local for *_, ctx in by_origin.get("text", [])),
         "roles": dict(roles),
         "held": held,
         "sources": {o: c.source for o, c in chosen.items()},

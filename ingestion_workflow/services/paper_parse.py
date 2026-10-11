@@ -29,6 +29,7 @@ from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
+from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME
 from ingestion_workflow.services.coordinate_space import sectionize
 from ingestion_workflow.services.create_analyses import SPLIT_SUFFIXES, table_reading
@@ -904,7 +905,10 @@ def _prose_analysis(
             windows += _locate(passage, text)
     point_spans = []
     for c in analysis.coordinates:
-        point_spans.append(_find_point(c, text.text, windows, taken))
+        xyz = coordinate_text.triple(c)
+        point_spans.append(
+            coordinate_text.find_point(xyz, text.text, windows, taken) if xyz else None
+        )
         if point_spans[-1]:
             taken.add(point_spans[-1])
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
@@ -932,47 +936,6 @@ def _prose_analysis(
         key=key,
         text_spans=[pp.TextSpan(start_char=a, end_char=b) for a, b in spans],
     )[0]
-
-
-_MINUS = "-−–‐"
-
-
-def _number(value: float) -> str:
-    digits = re.escape(f"{abs(value):g}") + (r"(?:\.0+)?" if float(value).is_integer() else r"\d*")
-    if value < 0:
-        return rf"[{_MINUS}]\s?{digits}"
-    return rf"(?<![{_MINUS}\d.])\+?{digits}"
-
-
-#: Furthest a point found outside its passages may sit from one of them.
-_NEAR = 3000
-
-
-def _find_point(coordinate, text: str, windows, taken=()) -> Optional[Tuple[int, int]]:
-    """The characters printing a point's x, y and z.
-
-    Within one of its passages first, at the first copy not in `taken`, or the
-    first copy when every one is. A passage cut differently from the text may
-    not hold it, so then anywhere in the text: where it is printed once, or the
-    copy nearest one of its passages.
-    """
-    sep = r"[^\d\n]{1,12}?"
-    pattern = re.compile(
-        sep.join(_number(v) for v in (coordinate.x, coordinate.y, coordinate.z)) + r"(?![\d.])"
-    )
-    inside = [m.span() for start, end in windows for m in pattern.finditer(text, start, end)]
-    if inside:
-        return next((s for s in inside if s not in taken), inside[0])
-    found = [m.span() for m in pattern.finditer(text)]
-    if len(found) == 1:
-        return found[0]
-    if found and windows:
-        near = min(
-            ((min(abs(s - a), abs(s - b)), (s, e)) for s, e in found for a, b in windows),
-        )
-        if near[0] <= _NEAR:
-            return near[1]
-    return None
 
 
 #: Fewest letters and digits a piece of a passage needs to be placed on its own.

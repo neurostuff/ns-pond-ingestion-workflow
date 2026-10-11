@@ -284,6 +284,67 @@ def test_local_keeps_both_sentences_when_a_triple_is_cut_by_a_sentence_break():
 def test_local_is_empty_when_the_coordinates_are_not_in_the_text_and_never_a_longer_number():
     assert _local(_TEXT, (7, 7, 7)) == ""
     assert _local("Peak (-142, 18, 6).", (-42, 18, 6)) == ""
+    assert _local("Peak (142, 18, 6).", (42, 18, 6)) == ""
+
+
+def test_local_of_a_right_hemisphere_point_is_not_the_left_one_s_sentence():
+    text = "Left peak (-42, 18, 6) in the insula. Right peak (42, 18, 6) in the putamen."
+    assert _local(text, (42, 18, 6)) == "Right peak (42, 18, 6) in the putamen."
+    assert _local(text, (-42, 18, 6)) == "Left peak (-42, 18, 6) in the insula."
+    assert _local("Left peak (-42, 18, 6) in the insula.", (42, 18, 6)) == ""
+
+
+def test_local_holds_a_sentence_once_however_many_of_the_set_s_points_it_prints():
+    text = "Intro. Peaks (1, 2, 3) and (4, 5, 6) here. End."
+    assert _local(text, (1, 2, 3), (4, 5, 6)) == "Peaks (1, 2, 3) and (4, 5, 6) here."
+
+
+def test_local_skips_a_sentence_between_two_holding_the_set_s_points():
+    text = "Seed (1, 2, 3) here. Nothing in this one. Peak (4, 5, 6) there."
+    assert _local(text, (1, 2, 3), (4, 5, 6)) == "Seed (1, 2, 3) here. Peak (4, 5, 6) there."
+
+
+def test_local_of_a_long_sentence_is_a_window_on_the_set_s_own_coordinates():
+    # p:silver-1007: one sentence listing every network's ROI, each ROI a set.
+    networks = ", ".join(f"network {i}: ({i}, {-50 - i}, {10 + i})" for i in range(40))
+    text = f"Results. ROIs were {networks}. Next sentence here."
+    locals_ = {}
+    for i in (3, 20, 37):
+        local = _local(text, (i, -50 - i, 10 + i))
+        assert len(local) <= prose_context.LOCAL_CHARS
+        assert f"({i}, {-50 - i}, {10 + i})" in local
+        # Centred on the triple, but kept inside its sentence.
+        at = local.index(f"({i}, {-50 - i}, {10 + i})")
+        assert 150 < at < 250 if i == 20 else True
+        assert local.startswith("ROIs were") == (i == 3)
+        assert local.endswith("(39, -89, 49).") == (i == 37)
+        assert local.split(" ")[0] in text.split(" ") and local.split(" ")[-1] in text.split(" ")
+        locals_[i] = local
+    assert len(set(locals_.values())) == 3
+    # A set whose sentence fits keeps all of it.
+    assert _local(text, (99, 99, 99)) == ""
+    assert _local("Short one (1, 2, 3). " + text, (1, 2, 3)) == "Short one (1, 2, 3)."
+
+
+def test_local_holds_the_set_s_coordinates_when_they_come_after_char_400():
+    text = "The region " + "word " * 100 + "peaked at (-42, 18, 6) in the left insula."
+    local = _local(text, (-42, 18, 6))
+    assert local.endswith("peaked at (-42, 18, 6) in the left insula.")
+    assert len(local) <= 400 and not local.startswith("The region")
+    context = prose_context.build(
+        {"name": "s", "coordinates": [_point(-42, 18, 6)]}, passage={"text": text}
+    )
+    assert "(-42, 18, 6)" in prose_context.serialize(context)
+
+
+def test_local_shares_its_length_between_the_passages_holding_the_set_s_points():
+    long = "Intro " + "word " * 120 + "at (1, 2, 3) end."
+    points = [_point(1, 2, 3), _point(4, 5, 6)]
+    analysis = {"name": "s", "coordinates": points, "metadata": {"passages": [0, 1]}}
+    passages = [{"text": long}, {"text": long.replace("1, 2, 3", "4, 5, 6")}]
+    local = prose_context.build(analysis, passages).local
+    assert len(local) <= prose_context.LOCAL_CHARS
+    assert "(1, 2, 3)" in local and "(4, 5, 6)" in local
 
 
 def test_local_is_in_the_serialised_input_before_the_passage():

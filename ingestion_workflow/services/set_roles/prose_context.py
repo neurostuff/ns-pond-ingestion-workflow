@@ -9,12 +9,14 @@ citation markers among them. Table sets have their own builder
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import Any, List, Mapping, Sequence
 
+from ingestion_workflow.services import coordinate_text
+
 from .common import (
     MAX_CHARS,
+    SENTENCE,
     as_point,
     citations,
     citing,
@@ -23,7 +25,6 @@ from .common import (
     point_summary,
     sentences,
 )
-from .common import _SENTENCE
 
 #: Bump when the serialisation changes (see `table_context.TABLE_CONTEXT_VERSION`).
 PROSE_CONTEXT_VERSION = 4
@@ -60,43 +61,70 @@ class ProseSetContext:
         return out
 
 
-def _number(value: Any) -> str:
-    """A coordinate as it is written in text: any minus sign, an optional ".0"."""
-    v = float(value)
-    body = f"{abs(v):g}".replace(".", r"\.")
-    sign = r"[-\u2212\u2013]\s?" if v < 0 else r"(?:\+\s?)?"
-    return sign + body + (r"(?:\.0+)?" if v == int(v) else "")
+#: Longest LOCAL: the set's coordinates and the words around them.
+LOCAL_CHARS = 400
 
 
-def _coordinate_spans(text: str, points: Sequence[Mapping[str, Any]]) -> List[tuple]:
-    """Where each point's "x, y, z" is written in `text`, as (start, end) offsets."""
-    spans = []
-    for point in points:
-        try:
-            parts = [_number(point[axis]) for axis in "xyz"]
-        except (KeyError, TypeError, ValueError):
-            continue
-        # A number must not be the tail of a longer one ("-142" is not "-42").
-        rx = r"(?<![\d.])" + r"(?:[,;/]\s*|\.\s+|\s+)(?:[xyzXYZ]\s*[=:]\s*)?".join(parts) + r"(?![\d])"
-        spans += [m.span() for m in re.finditer(rx, text)]
-    return spans
+def local_text(text: str, points: Sequence[Mapping[str, Any]], limit: int = LOCAL_CHARS) -> str:
+    """The sentences of `text` printing the set's coordinates, in order, in `limit` chars."""
+    return _join([(text, piece) for piece in _pieces(text, points)], limit)
 
 
-def local_text(text: str, points: Sequence[Mapping[str, Any]]) -> str:
-    """The sentences of `text` that a point's coordinates overlap, in text order.
+def _pieces(text: str, points: Sequence[Mapping[str, Any]]) -> List[tuple]:
+    """(start, end, first, last) for each run of sentences printing some of the points.
 
-    A coordinate triple cut by a sentence break touches both sentences, so
-    both are kept. Points not found in the text add nothing.
+    `first` and `last` bound the coordinates in the run. A triple cut by a
+    sentence break joins both sentences. Points not found add nothing.
     """
-    spans = _coordinate_spans(text, points)
-    if not spans:
+    spans = sorted(s for s in coordinate_text.find_points(points, text) if s)
+    edges = [0] + [m.end() for m in SENTENCE.finditer(text)] + [len(text)]
+    runs: List[list] = []
+    for a, b in spans:
+        lo = max(e for e in edges if e <= a)
+        hi = min(e for e in edges if e >= b)
+        if runs and lo <= runs[-1][1]:
+            runs[-1][1:] = [max(hi, runs[-1][1]), runs[-1][2], max(b, runs[-1][3])]
+        else:
+            runs.append([lo, hi, a, b])
+    return [tuple(r) for r in runs]
+
+
+def _join(pieces: Sequence[tuple], limit: int) -> str:
+    """The pieces' text, each given an equal share of `limit`.
+
+    A piece longer than its share is cut around its coordinates (`_window`), so
+    a long sentence, or a list of other sets' coordinates, does not push the
+    set's own out.
+    """
+    if not pieces:
         return ""
-    edges = [0] + [m.end() for m in _SENTENCE.finditer(text)] + [len(text)]
+    share = (limit + 1) // len(pieces) - 1
     out = []
-    for a, b in zip(edges, edges[1:]):
-        if any(start < b and end > a for start, end in spans):
-            out.append(" ".join(text[a:b].split()))
-    return " ".join(out)
+    for text, (lo, hi, first, last) in pieces:
+        if hi - lo > share:
+            lo, hi = _window(text, lo, hi, first, last, share)
+        out.append(" ".join(text[lo:hi].split()))
+    return " ".join(t for t in out if t)
+
+
+def _window(text: str, lo: int, hi: int, first: int, last: int, limit: int) -> tuple:
+    """`limit` chars of `text[lo:hi]` centred on `text[first:last]`, cut at word breaks.
+
+    Coordinates longer than `limit` keep their start.
+    """
+    pad = max(0, limit - (last - first)) // 2
+    start, end = first - pad, max(last + pad, first + limit - pad)
+    if start < lo:
+        start, end = lo, end + lo - start
+    if end > hi:
+        start, end = max(lo, start - (end - hi)), hi
+    end = min(end, start + limit)
+    # A cut word is dropped, never a coordinate.
+    while start > lo and start < first and not text[start - 1].isspace():
+        start += 1
+    while end < hi and end > last and not text[end].isspace():
+        end -= 1
+    return start, end
 
 
 def build(
@@ -123,13 +151,16 @@ def build(
         description=analysis.get("description") or "",
         heading=next((p.get("heading") or "" for p in read if p.get("heading")), ""),
         passage=" ".join(p.get("text") or "" for p in read),
-        local=" ".join(
-            t for t in (local_text(p.get("text") or "", plain_points) for p in read) if t
-        ),
+        local=_local(read, plain_points),
         before=(read[0].get("before") or "") if read else "",
         after=(read[-1].get("after") or "") if read else "",
         points=plain_points,
     )
+
+
+def _local(read: Sequence[Mapping[str, Any]], points: Sequence[Mapping[str, Any]]) -> str:
+    texts = [p.get("text") or "" for p in read]
+    return _join([(t, piece) for t in texts for piece in _pieces(t, points)], LOCAL_CHARS)
 
 
 def serialize(context: ProseSetContext, max_chars: int = MAX_CHARS) -> str:
@@ -142,7 +173,7 @@ def serialize(context: ProseSetContext, max_chars: int = MAX_CHARS) -> str:
         f"[DESCRIPTION] {clip(context.description, 200)}",
         f"[HEADING] {clip(context.heading, 120)}",
         f"[CITATIONS] {clip('; '.join(context.citations()[:6]), 200)}",
-        f"[LOCAL] {clip(context.local, 400)}",
+        f"[LOCAL] {clip(context.local, LOCAL_CHARS)}",
         f"[PASSAGE] {clip(context.passage, 900)}",
         f"[BEFORE] {clip(context.before, 400)}",
         f"[AFTER] {clip(context.after, 400)}",
