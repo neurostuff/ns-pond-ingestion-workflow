@@ -11,7 +11,7 @@ from ingestion_workflow.clients.prose_coordinates import (
 )
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
-from ingestion_workflow.prompts.prose_coordinates import MAX_ANALYSES, MAX_POINTS, ROLES, TEMPLATE, schema
+from ingestion_workflow.prompts.prose_coordinates import MAX_ANALYSES, MAX_POINTS, TEMPLATE, schema
 from ingestion_workflow.services.prose_passages import Passage
 
 PASSAGE = Passage(text="Faces > houses in the FFA (40, -50, -20; t = 5.1).", before="We showed faces.",
@@ -26,7 +26,7 @@ def test_the_schema_is_the_template_with_every_key_required_and_capped():
     assert point["required"] == list(template_point)
     assert point["additionalProperties"] is False
     assert point["properties"]["statistic"]["enum"] == [*STATISTIC_KINDS, None]
-    assert point["properties"]["role"]["enum"] == [*ROLES, None]
+    assert "role" not in point["properties"]
     assert analyses["maxItems"] == MAX_ANALYSES
     assert analyses["items"]["properties"]["points"]["maxItems"] == MAX_POINTS
     assert analyses["items"]["properties"]["name"]["maxLength"]

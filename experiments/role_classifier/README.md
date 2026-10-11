@@ -52,9 +52,9 @@ the uploads.
 anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
 for it, and one for the anchor kind.
 
-The current nu-prose model still answers with its own role words
-(`prompts.prose_coordinates.ROLES`); nothing reads them. Resolve keeps every prose point, in
-one analysis per name, and the prose role classifier decides each set's role.
+nu-prose is asked for no role; a role word an answer carries anyway is ignored and counted
+(`stray_roles`). Resolve keeps every prose point, in one analysis per name, and the prose role
+classifier decides each set's role.
 
 Labels carry `label_version`: 1 for the rows answered under the earlier role vocabulary and
 converted to study_schema's fields afterwards, 2 for answers that could say `other`, 3 once the

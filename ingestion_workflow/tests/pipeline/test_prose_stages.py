@@ -1473,8 +1473,11 @@ def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatc
 
     settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    # The passage now starts a character later: its text changed, so prose reads it again.
+    moved = catalog.payload(found)
+    moved["passages"][0]["span"][0] += 1
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer-passages",
-                            payload=catalog.payload(found), summary=found.summary)])
+                            payload=moved, summary=found.summary)])
 
     class NoPoint:
         def read(self, passage, *, title="", abstract=""):
@@ -1750,7 +1753,7 @@ def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
-    assert read.summary["reused"] == {"passages": [0, 1], "reason": "same passage text"}
+    assert read.summary["reused"] == {"exact.1": [0, 1]}
     assert read.summary["read_again"] == {}
     assert read.summary["prompt_versions"] == {"unrecorded": 2}
     # re-anchored: the new spans, the old names and points, the role word only counted
@@ -1772,7 +1775,7 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 1
-    assert read.summary["reused"] == {"passages": [0], "reason": "same passage text"}
+    assert read.summary["reused"] == {"exact.1": [0]}
     assert read.summary["read_again"] == {"passage text changed": 1}
     assert read.summary["prompt_versions"] == {"unrecorded": 1, "2026-10-11.n5-norole": 1}
     # the changed passage holds the model's new answer, not the old one's 3.8
@@ -1794,7 +1797,7 @@ def test_each_passage_read_is_counted_with_its_reason(env):
                             payload=found, summary={"passages": 2})])
     reader = _Counting()
     _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
-    assert reader.calls == 0 and again.summary["reused"]["passages"] == [0, 1]
+    assert reader.calls == 0 and again.summary["reused"] == {"exact.1": [0, 1]}
     assert again.payload["passages"] == read.payload["passages"]
     # a new title and abstract: read again
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
@@ -1834,3 +1837,42 @@ def test_the_role_free_prompt_keeps_the_read_fingerprint_of_the_prompt_before_it
     assert ProseStage(settings).read_fingerprint(passages, metadata) == fingerprint(
         "prose", "2026-10-06.n5", settings.prose_model, metadata.fingerprint,
         upstream=passages.fingerprint)
+
+
+def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_not():
+    from ingestion_workflow.services.prose_text import normalized
+
+    assert normalized("(x\u00a0=\u2009\u221222,\n y = \u20134; \ufb01ndings\u207b)") == (
+        "(x = -22, y = -4; findings-)")
+    assert normalized("( x = -22)") != normalized("(x = -22)")
+
+
+def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
+    """The old text has a unicode minus and a no-break space where the new one has neither."""
+    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    first, second = _texts(catalog, ref, found)
+    old = first.replace("-22", "\u221222").replace(" ", "\u00a0", 1)
+    assert old != first
+    _legacy_prose(catalog, ref, [(old, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.status is Status.OK
+    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0], "exact.1": [1]}
+    assert read.payload["passages"][0]["text"] == first   # re-anchored to the new text
+
+
+@pytest.mark.parametrize("change", [
+    pytest.param(lambda t: t.replace("(x", "( x"), id="parenthesis spacing"),
+    pytest.param(lambda t: t[t.index(" ") + 1:], id="boundaries moved"),
+])
+def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, change):
+    settings, catalog, ref, ctx, found = _two_passages(env, "87")
+    first, second = _texts(catalog, ref, found)
+    assert change(first) != first
+    _legacy_prose(catalog, ref, [(change(first), ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 1
+    assert read.summary["reused"] == {"exact.1": [1]}
+    assert read.summary["read_again"] == {"passage text changed": 1}
