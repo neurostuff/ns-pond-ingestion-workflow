@@ -89,7 +89,7 @@ class DownloadStage:
             ):
                 plan.fresh += 1
                 continue
-            candidate = self._next_source(ctx, ref, existing, attempts)
+            candidate = self.next_source(ctx, ref, existing, attempts)
             if candidate is None:
                 if any(a.status is Status.PERMANENT for a in existing.values()):
                     plan.permanent += 1
@@ -101,7 +101,7 @@ class DownloadStage:
             )
         return plan
 
-    def _next_source(
+    def next_source(
         self,
         ctx: Context,
         ref: ArticleRef,

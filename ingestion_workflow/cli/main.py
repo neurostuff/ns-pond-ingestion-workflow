@@ -734,6 +734,54 @@ def refresh_text(
         out.close()
 
 
+# -- revalidate-downloads ----------------------------------------------------
+
+
+@app.command("revalidate-downloads")
+def revalidate_downloads(
+    apply: bool = typer.Option(False, "--apply", help="Record the failures (default: dry run)."),
+    backup: Optional[Path] = typer.Option(
+        None, "--backup", help="Where --apply copies the catalog database first; must not exist."
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Fail stored downloads that are not the article: paywall, error, empty-shell and
+    citation-stub pages, checked again without fetching.
+
+    Each is recorded as a failed download with its reason, and the extraction made from
+    it fails with "download failed validation: <reason>". A run then moves triage to
+    another source's text, and `run --stage download` plans the next source. Running it
+    again finds nothing new.
+    """
+    from ingestion_workflow.pipeline.stages import DownloadStage
+    from ingestion_workflow.services import download_revalidate as revalidate
+
+    if apply and backup is None:
+        raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        ids = list(catalog.all_article_ids())
+        found = revalidate.scan(catalog, ids, workers=settings.max_workers)
+        ctx = _context(settings, catalog, [])
+        effects = revalidate.effects(ctx, DownloadStage(settings), found)
+        typer.echo(f"checked {found.checked:,} stored downloads holding a page; "
+                   f"{len(found.missing):,} with files gone were left alone")
+        typer.echo(f"bad pages: {len(found.bad):,}")
+        for (reason, source), n in sorted(found.counts().items()):
+            typer.echo(f"  {reason:<14} {source:<10} {n:>8,}")
+        typer.echo(f"OK extractions made from a bad page: {len(found.extractions):,}")
+        typer.echo("their articles, by what happens next: "
+                   + ", ".join(f"{k} {v:,}" for k, v in sorted(effects["next"].items())))
+        typer.echo("artifacts made from a judged extraction that fails, by stage: "
+                   + ", ".join(f"{k} {v:,}" for k, v in effects["stale"].items()))
+        if not apply:
+            typer.echo("dry run: nothing written; --apply --backup <path> records these")
+            return
+        copied = revalidate.backup(settings.catalog_root, backup)
+        typer.echo(f"catalog copied to {copied}")
+        typer.echo(f"recorded {revalidate.apply(catalog, found):,} failures")
+
+
 # -- migrate -----------------------------------------------------------------
 
 
