@@ -245,3 +245,59 @@ def test_not_coordinates_are_set_aside_without_a_role():
 def test_other_is_a_role_that_is_not_uploaded():
     assert "other" in COORDINATE_ROLES and "other" not in UPLOADED_ROLES
     assert SetRole.of({"role": "other", "anchor_kind": None, "from_prior_study": False}).role == "other"
+
+
+_TEXT = (
+    "We placed a 6 mm sphere at the seed (x = -3, y = 49, z = 16). "
+    "Activation peaked in the insula [-42 18 −6]. "
+    "Peaks are listed in Table 2."
+)
+
+
+def _local(text, *points, **kw):
+    analysis = {"name": "s", "coordinates": [_point(*p) for p in points]}
+    return prose_context.build(analysis, passage={"text": text, **kw}).local
+
+
+def test_local_is_exactly_the_sentence_holding_the_set_s_coordinates():
+    assert _local(_TEXT, (-3, 49, 16)) == (
+        "We placed a 6 mm sphere at the seed (x = -3, y = 49, z = 16)."
+    )
+    # Another set in the same passage reads its own sentence, not the seed's.
+    assert _local(_TEXT, (-42, 18, -6)) == "Activation peaked in the insula [-42 18 −6]."
+
+
+def test_local_holds_every_sentence_of_a_set_with_points_in_several():
+    assert _local(_TEXT, (-3, 49, 16), (-42, 18, -6)) == " ".join(_TEXT.split(". ")[:2]) + "."
+
+
+def test_local_keeps_both_sentences_when_a_triple_is_cut_by_a_sentence_break():
+    text = "Intro here. The peak was at x = -42, y = 18. Z = 6 in the insula. End of it."
+    assert _local(text, (-42, 18, 6)) == "The peak was at x = -42, y = 18. Z = 6 in the insula."
+    # A neighbouring set's sentence is not pulled in.
+    assert _local(text + " Next (1, 2, 3).", (1, 2, 3)) == "Next (1, 2, 3)."
+
+
+def test_local_is_empty_when_the_coordinates_are_not_in_the_text_and_never_a_longer_number():
+    assert _local(_TEXT, (7, 7, 7)) == ""
+    assert _local("Peak (-142, 18, 6).", (-42, 18, 6)) == ""
+
+
+def test_local_is_in_the_serialised_input_and_its_cues():
+    context = prose_context.build(
+        {"name": "s", "coordinates": [_point(-42, 18, -6)]}, passage={"text": _TEXT}
+    )
+    text = prose_context.serialize(context)
+    assert "[LOCAL] Activation peaked in the insula" in text
+    assert text.index("[LOCAL]") < text.index("[PASSAGE]")
+    assert "[LOCAL]" not in prose_context.serialize(prose_context.ProseSetContext())
+
+
+def test_a_model_trained_on_the_previous_prose_context_is_refused_with_the_reason():
+    from ingestion_workflow.services.set_roles import model
+
+    meta = {"origin": "text", "context_version": prose_context.PROSE_CONTEXT_VERSION - 1}
+    with pytest.raises(ValueError, match=r"text context version 3; this code builds 4; retrain"):
+        model.check_meta(meta, "text", "role_model_prose")
+    # The table context is unchanged: its version is not bumped by this.
+    assert model.CONTEXT_VERSIONS["table"] == 2 and model.CONTEXT_VERSIONS["text"] == 4

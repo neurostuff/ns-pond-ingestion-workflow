@@ -9,6 +9,7 @@ citation markers among them. Table sets have their own builder
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, List, Mapping, Sequence
 
@@ -22,9 +23,10 @@ from .common import (
     point_summary,
     sentences,
 )
+from .common import _SENTENCE
 
 #: Bump when the serialisation changes (see `table_context.TABLE_CONTEXT_VERSION`).
-PROSE_CONTEXT_VERSION = 3
+PROSE_CONTEXT_VERSION = 4
 
 
 @dataclass
@@ -36,13 +38,15 @@ class ProseSetContext:
     heading: str = ""
     #: The passage holding the coordinates.
     passage: str = ""
+    #: The sentence(s) of the passage holding this set's coordinates.
+    local: str = ""
     before: str = ""
     after: str = ""
     points: List[Mapping[str, Any]] = field(default_factory=list)
 
     def cue_text(self) -> str:
         return " ".join(
-            [self.name, self.description, self.heading, self.passage, self.before, self.after]
+            [self.name, self.description, self.heading, self.local, self.passage, self.before, self.after]
         )
 
     def citations(self) -> List[str]:
@@ -54,6 +58,45 @@ class ProseSetContext:
         for text in (self.before, self.passage, self.after):
             out += [s for s in sentences(text) if s not in out]
         return out
+
+
+def _number(value: Any) -> str:
+    """A coordinate as it is written in text: any minus sign, an optional ".0"."""
+    v = float(value)
+    body = f"{abs(v):g}".replace(".", r"\.")
+    sign = r"[-\u2212\u2013]\s?" if v < 0 else r"(?:\+\s?)?"
+    return sign + body + (r"(?:\.0+)?" if v == int(v) else "")
+
+
+def _coordinate_spans(text: str, points: Sequence[Mapping[str, Any]]) -> List[tuple]:
+    """Where each point's "x, y, z" is written in `text`, as (start, end) offsets."""
+    spans = []
+    for point in points:
+        try:
+            parts = [_number(point[axis]) for axis in "xyz"]
+        except (KeyError, TypeError, ValueError):
+            continue
+        # A number must not be the tail of a longer one ("-142" is not "-42").
+        rx = r"(?<![\d.])" + r"(?:[,;/]\s*|\.\s+|\s+)(?:[xyzXYZ]\s*[=:]\s*)?".join(parts) + r"(?![\d])"
+        spans += [m.span() for m in re.finditer(rx, text)]
+    return spans
+
+
+def local_text(text: str, points: Sequence[Mapping[str, Any]]) -> str:
+    """The sentences of `text` that a point's coordinates overlap, in text order.
+
+    A coordinate triple cut by a sentence break touches both sentences, so
+    both are kept. Points not found in the text add nothing.
+    """
+    spans = _coordinate_spans(text, points)
+    if not spans:
+        return ""
+    edges = [0] + [m.end() for m in _SENTENCE.finditer(text)] + [len(text)]
+    out = []
+    for a, b in zip(edges, edges[1:]):
+        if any(start < b and end > a for start, end in spans):
+            out.append(" ".join(text[a:b].split()))
+    return " ".join(out)
 
 
 def build(
@@ -74,14 +117,18 @@ def build(
         else [passages[i] for i in meta.get("passages", []) if 0 <= i < len(passages)]
     )
     points = analysis.get("coordinates") or analysis.get("points") or []
+    plain_points = [as_point(p) for p in points]
     return ProseSetContext(
         name=analysis.get("name") or "",
         description=analysis.get("description") or "",
         heading=next((p.get("heading") or "" for p in read if p.get("heading")), ""),
         passage=" ".join(p.get("text") or "" for p in read),
+        local=" ".join(
+            t for t in (local_text(p.get("text") or "", plain_points) for p in read) if t
+        ),
         before=(read[0].get("before") or "") if read else "",
         after=(read[-1].get("after") or "") if read else "",
-        points=[as_point(p) for p in points],
+        points=plain_points,
     )
 
 
@@ -95,6 +142,7 @@ def serialize(context: ProseSetContext, max_chars: int = MAX_CHARS) -> str:
         f"[DESCRIPTION] {clip(context.description, 200)}",
         f"[HEADING] {clip(context.heading, 120)}",
         f"[CITATIONS] {clip('; '.join(context.citations()[:6]), 200)}",
+        f"[LOCAL] {clip(context.local, 400)}",
         f"[PASSAGE] {clip(context.passage, 900)}",
         f"[BEFORE] {clip(context.before, 400)}",
         f"[AFTER] {clip(context.after, 400)}",
