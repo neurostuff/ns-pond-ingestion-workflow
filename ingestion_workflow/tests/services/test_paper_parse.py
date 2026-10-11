@@ -640,16 +640,19 @@ def test_the_legacy_negative_spelling_is_declared_and_stripped_too(tmp_path):
 
 
 def _prose_parse(passage, names_and_points):
+    """Entries are (name, points, passages[, set_role]); a point is (x, y, z) or a Coordinate."""
     text = f"Results\n\n{passage}\n"
     collection = _collection(
         [
             Analysis(
                 name=name,
                 table_id="prose",
-                metadata={"source": "prose", "passages": passages},
-                coordinates=[Coordinate(x=x, y=y, z=z) for x, y, z in points],
+                metadata={"source": "prose", "passages": passages,
+                          **({"set_role": extra[0]} if extra else {})},
+                coordinates=[p if isinstance(p, Coordinate) else Coordinate(x=p[0], y=p[1], z=p[2])
+                             for p in points],
             )
-            for name, points, passages in names_and_points
+            for name, points, passages, *extra in names_and_points
         ]
     )
     paper = SimpleNamespace(
@@ -995,6 +998,83 @@ def test_one_point_printed_twice_for_two_same_named_analyses_keeps_both():
         passage.index("-24"), passage.rindex("-24")
     ]
     assert first.key != second.key and omitted == []
+
+
+def test_the_same_point_with_other_statistic_values_is_one_point_and_the_note_says_so():
+    passage = "Group differences in the left hippocampus survived correction (Table S2)."
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("patients > controls", [Coordinate(x=-24, y=-20, z=-14)], [0]),
+            ("patients > controls",
+             [Coordinate(x=-24, y=-20, z=-14, statistic_value=4.1, statistic_type="T")], [0]),
+        ],
+    )
+    [merged] = parse.analyses
+    assert [p.coordinates for p in merged.points] == [[-24, -20, -14]]
+    [note] = omitted  # no new point: a repeat, with the conflicting values recorded
+    assert not note.kept and "a repeat of" in note.reason
+    assert "[-24.0, -20.0, -14.0] kept [], dropped [('t', 4.1)]" in note.reason
+
+
+def test_a_merge_adding_a_point_of_another_statistic_kind_recomputes_the_analysis_statistic():
+    passage = "Group differences in the left hippocampus survived correction (Table S2)."
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("patients > controls",
+             [Coordinate(x=-24, y=-20, z=-14, statistic_value=4.1, statistic_type="T")], [0]),
+            ("patients > controls",
+             [Coordinate(x=26, y=-18, z=-16, statistic_value=3.3, statistic_type="Z")], [0]),
+        ],
+    )
+    [merged] = parse.analyses
+    assert len(merged.points) == 2 and merged.statistic is None  # T and Z: no single kind
+    assert omitted[0].kept
+
+
+def test_entries_of_one_key_with_different_roles_merge_into_a_held_analysis_with_both_roles():
+    passage = "Group differences in the left and right hippocampus survived correction (Table S2)."
+    result = _decided("result", origin="text", source="model-a@1")
+    reference = _decided("reference", origin="text", prior=True, source="model-b@2")
+    for order in ((result, reference), (reference, result)):
+        parse, omitted = _prose_parse(
+            passage,
+            [
+                ("p > c", [(-24, -20, -14)], [0], order[0]),
+                ("p > c", [(26, -18, -16)], [0], order[1]),
+            ],
+        )
+        [merged] = parse.analyses
+        assert len(merged.points) == 2
+        [note] = omitted
+        conflict = note.role_conflict
+        assert conflict["key"] == merged.key
+        assert [(r["role"], r["role_source"]) for r in conflict["roles"]] == [
+            (order[0]["role"], order[0]["role_source"]),
+            (order[1]["role"], order[1]["role_source"]),
+        ]
+        assert "role conflict, held for review" in note.reason
+    # The same roles are no conflict.
+    _, omitted = _prose_parse(
+        passage,
+        [("p > c", [(-24, -20, -14)], [0], result), ("p > c", [(26, -18, -16)], [0], result)],
+    )
+    assert omitted[0].role_conflict is None
+
+
+def test_a_point_repeated_for_differently_named_analyses_listed_out_of_print_order():
+    passage = (
+        "Patients > controls peaked at (-24, -20, -14). Activity there, (-24, -20, -14), "
+        "also correlated with age."
+    )
+    at = len("Results\n\n")
+    for names in (("patients > controls", "correlation with age"),
+                  ("correlation with age", "patients > controls")):
+        parse, _ = _prose_parse(passage, [(n, [(-24, -20, -14)], [0]) for n in names])
+        got = {a.name: a.points[0].text_span.start_char - at for a in parse.analyses}
+        assert got == {"patients > controls": passage.index("-24"),
+                       "correlation with age": passage.index("-24")}
 
 
 def test_a_kept_analysis_s_note_is_not_among_the_parse_s_omissions():

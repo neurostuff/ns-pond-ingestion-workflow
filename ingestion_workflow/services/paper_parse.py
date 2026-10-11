@@ -523,9 +523,14 @@ def coordinate_parse(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
         if prose:
-            taken: Set[Tuple[int, int]] = set()
+            # Per name: two names never share a key, so one's copy of a repeated
+            # point must not move the other's.
+            taken: Dict[str, Set[Tuple[int, int]]] = {}
             built = (
-                _prose_analysis(a, collection, text, inputs, roles, taken)
+                _prose_analysis(
+                    a, collection, text, inputs, roles,
+                    taken.setdefault(keys.normalize_name(a.name), set()),
+                )
                 for a in table_analyses
             )
         else:
@@ -573,29 +578,71 @@ def coordinate_parse(
     return parse, omitted
 
 
+def _role_of(analysis: pp.ParsedAnalysis) -> Dict[str, Any]:
+    return {
+        "role": analysis.role,
+        "anchor_kind": analysis.anchor_kind,
+        "from_prior_study": analysis.from_prior_study,
+        "role_source": analysis.role_source,
+    }
+
+
+def _xyz(point: pp.ParsedPoint) -> Tuple[Any, ...]:
+    return (*point.coordinates, point.space)
+
+
+def _values(point: pp.ParsedPoint) -> List[Tuple[str, float]]:
+    return sorted((str(v.kind), v.value) for v in point.values or [])
+
+
 def _merge(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
     """Add `other`'s points to `first`, which holds its key, and the record saying so.
 
-    A point equal to one `first` already has is not added twice; when none is new,
+    A point at the same coordinates and space as one `first` has is the same point
+    and is not added twice, even when only its statistic values differ: `first`'s
+    stay, and the other values are written in the note. When no point is new,
     `other` is a repeat and is omitted as one.
+
+    Entries of one key with different roles are still one analysis, but it must
+    not silently take one of the roles: the note carries `role_conflict` (both
+    roles and their sources) and the analysis is held for review.
     """
     what = "cells" if other.origin == "table" else "spans"
-    have = [p.model_dump(mode="json") for p in first.points]
-    new = [p for p in other.points if p.model_dump(mode="json") not in have]
-    roles = [(a.role, a.anchor_kind, a.from_prior_study) for a in (first, other)]
-    role = f"; its role {other.role!r} gives way to {first.role!r}" if roles[0] != roles[1] else ""
+    have = {_xyz(p): p for p in first.points}
+    new = [p for p in other.points if _xyz(p) not in have]
+    differing = [
+        f"{p.coordinates} kept {_values(have[_xyz(p)])}, dropped {_values(p)}"
+        for p in other.points
+        if _xyz(p) in have and _values(p) != _values(have[_xyz(p)])
+    ]
+    values = f"; statistic values differ at the same point: {'; '.join(differing)}" if differing else ""
+    mine, theirs = _role_of(first), _role_of(other)
+    conflict = None
+    role = ""
+    if (mine["role"], mine["anchor_kind"], mine["from_prior_study"]) != (
+        theirs["role"], theirs["anchor_kind"], theirs["from_prior_study"],
+    ):
+        conflict = {"key": first.key, "roles": [mine, theirs]}
+        role = (
+            f"; role conflict, held for review: {mine['role']!r} ({mine['role_source']}) "
+            f"and {theirs['role']!r} ({theirs['role_source']})"
+        )
     if not new:
         reason = f"a repeat of {first.key} ({first.name!r}): the same {what}, name and points"
-        return Omitted(other.name, other.table_id, reason + role, _span_pairs(other))
+        return Omitted(
+            other.name, other.table_id, reason + values + role, _span_pairs(other),
+            role_conflict=conflict,
+        )
     first.points = [*first.points, *new]
     first.statistic = _statistic(first.points)
     return Omitted(
         other.name,
         other.table_id,
         f"merged into {first.key} ({first.name!r}): the same {what} and name; "
-        f"its {len(new)} other point(s) added{role}",
+        f"its {len(new)} other point(s) added{values}{role}",
         _span_pairs(other),
         kept=True,
+        role_conflict=conflict,
     )
 
 
@@ -683,6 +730,8 @@ class Omitted:
     spans: Sequence[Tuple[int, int]] = ()
     #: A note on a kept analysis: in the sync summary, not among the parse's omissions.
     kept: bool = False
+    #: Both roles of entries that share a key: the merged analysis is held for review.
+    role_conflict: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
@@ -1153,6 +1202,11 @@ def write(
         "analyses": len(parse.analyses),
         **({"parse_omitted": left} if (left := [str(o) for o in omitted if not o.kept]) else {}),
         **({"parse_notes": notes} if (notes := [str(o) for o in omitted if o.kept]) else {}),
+        **(
+            {"held_for_review": held}
+            if (held := [o.role_conflict for o in omitted if o.role_conflict])
+            else {}
+        ),
     }
 
 
