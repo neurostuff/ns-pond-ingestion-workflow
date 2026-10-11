@@ -91,18 +91,6 @@ def _text_of(markup: str) -> str:
     return "\n".join(line for line in lines if line.strip())
 
 
-#: Appended to the name of the inverse half (the points with negative
-#: values) when one analysis reports both directions: the contrast reversed,
-#: with the paper's own wording kept. A label only: the split itself is
-#: declared in `metadata["split"]`; only `declare_legacy_splits`, for payloads
-#: stored before the declaration existed, reads it back out of the name.
-INVERSE_SUFFIX = " (inverse)"
-#: The spelling stored payloads used before the stage said "inverse".
-NEGATIVE_SUFFIX = " (negative)"
-#: Every spelling of the inverse-half marker a stored payload may carry.
-SPLIT_SUFFIXES = (INVERSE_SUFFIX, NEGATIVE_SUFFIX)
-
-
 def split_by_sign(name, coordinates):
     """Split an analysis that reports both directions under one name.
 
@@ -114,7 +102,8 @@ def split_by_sign(name, coordinates):
     side reads the statistic rather than the name. Where one contrast reports
     both, the sign is the only thing that separates them. The original half is
     the analysis as named; the inverse half is the reversed contrast, its own
-    analysis. The rule is study_schema's
+    analysis under the same name, the contrast as printed, marked only by
+    `split`. The rule is study_schema's
     (`SplitRule.sign_of_directional_statistic`): points with a negative value,
     of any kind, form the inverse half, every other point, unsigned ones
     included, the original half.
@@ -124,8 +113,7 @@ def split_by_sign(name, coordinates):
     `{"half": "inverse"}` on the inverse; `_build_collection` adds the original's
     index among the analyses, so the halves pair by it and not by name.
     `split` is None for an analysis whose statistics are all
-    one side or which has none, which is returned unchanged so nothing is
-    renamed without cause.
+    one side or which has none, which is returned unchanged.
     """
     original = [c for c in coordinates if c.sign != "negative"]
     inverse = [c for c in coordinates if c.sign == "negative"]
@@ -133,51 +121,8 @@ def split_by_sign(name, coordinates):
         return [(name, coordinates, None)]
     return [
         (name, original, {"half": "original"}),
-        (name + INVERSE_SUFFIX, inverse, {"half": "inverse"}),
+        (name, inverse, {"half": "inverse"}),
     ]
-
-
-def declare_legacy_splits(collection: AnalysisCollection) -> AnalysisCollection:
-    """Legacy only: declare the splits of a payload stored before `split{}` existed.
-
-    Such a payload marks a split only by name: `X` then `X (negative)` in the
-    same table. Both suffixes are read, `(inverse)` as well, because payloads
-    stored before the rename may carry either. The pair is declared as it was
-    stored, with no re-split, so a reader sees the halves the stage produced. A
-    suffixed analysis left with no partner is declared an inverse half with no
-    original rather than read as an ordinary analysis. Undeclared analyses
-    only; the stored payload is not rewritten. Delete once no stored payload
-    lacks `split{}`.
-    """
-    analyses = collection.analyses
-
-    def undeclared(analysis):
-        return not analysis.metadata.get("split")
-
-    # Pairs are found before any leftover is declared, and from the end: a
-    # paper's own "Load (negative)" that was split is stored as "Load (negative)"
-    # then "Load (negative) (negative)", and its first half must pair with the
-    # second, not be taken as the inverse of an earlier "Load".
-    for i in range(len(analyses) - 1, 0, -1):
-        prev, analysis = analyses[i - 1], analyses[i]
-        if (
-            undeclared(prev)
-            and undeclared(analysis)
-            and prev.table_id == analysis.table_id
-            and analysis.name in (prev.name + suffix for suffix in SPLIT_SUFFIXES)
-        ):
-            prev.metadata = {**prev.metadata, "split": {"half": "original", "index": i - 1}}
-            analysis.metadata = {
-                **analysis.metadata, "split": {"half": "inverse", "original_index": i - 1}
-            }
-    for analysis in analyses:
-        if undeclared(analysis) and analysis.name.endswith(SPLIT_SUFFIXES):
-            logger.warning("unpaired legacy inverse half %r in table %s",
-                           analysis.name, analysis.table_id)
-            analysis.metadata = {
-                **analysis.metadata, "split": {"half": "inverse", "original_index": None}
-            }
-    return collection
 
 
 def table_reading(collection: AnalysisCollection) -> str:

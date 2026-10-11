@@ -560,21 +560,22 @@ def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(env, tmp_pat
     assert names == [("Load", None), ("Load (negative)", None)]
 
 
-def test_a_legacy_payload_pair_is_still_paired(env, tmp_path, monkeypatch):
-    names = _synced_names(env, tmp_path, monkeypatch, declared=False)
-    assert [n for n, _ in names] == ["Load", "Load (negative)"]
-    assert [s["half"] for _, s in names] == ["original", "inverse"]
+def test_a_legacy_payload_is_refused_with_the_migration_named(env, tmp_path, monkeypatch):
+    """A split marked only by name is not guessed: the article is not synced."""
+    with pytest.raises(AssertionError, match="migrate_legacy_splits"):
+        _synced_names(env, tmp_path, monkeypatch, declared=False)
+    assert not (tmp_path / "pond" / "BS12").exists()
 
 
-def test_a_stale_legacy_payload_is_paired_though_analyses_ran_again(env, tmp_path, monkeypatch):
-    """Analyses re-ran with the marker; roles and space did not, so sync writes the old payload."""
+def test_a_stale_legacy_payload_is_refused_though_analyses_ran_again(env, tmp_path, monkeypatch):
+    """Analyses re-ran with the marker; roles and space did not, so sync would write the old payload."""
     def rerun(ref, tables):
         fresh = {t: {**blob, "split_declared": True} for t, blob in tables.items()}
         return Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-2",
                        payload=fresh, summary={"tables": 1, "split_declared": True})
 
-    names = _synced_names(env, tmp_path, monkeypatch, declared=False, rerun=rerun)
-    assert [s["half"] for _, s in names] == ["original", "inverse"]
+    with pytest.raises(AssertionError, match="before sign splits were declared"):
+        _synced_names(env, tmp_path, monkeypatch, declared=False, rerun=rerun)
 
 
 def test_a_declared_payload_stays_declared_after_analyses_fails(env, tmp_path, monkeypatch):

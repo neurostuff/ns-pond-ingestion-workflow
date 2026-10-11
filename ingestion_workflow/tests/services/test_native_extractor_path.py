@@ -458,8 +458,8 @@ def test_one_contrast_reporting_both_directions_is_split_by_sign():
 
     both = [point(4.2), point(-3.1), point(2.0)]
     out = split_by_sign("Patients > controls", both)
-    assert [n for n, _, _ in out] == ["Patients > controls",
-                                      "Patients > controls (inverse)"]
+    # Both halves keep the contrast as printed; only `split` tells them apart.
+    assert [n for n, _, _ in out] == ["Patients > controls", "Patients > controls"]
     assert [c for _, c, _ in out] == [[both[0], both[2]], [both[1]]]
     assert [s for _, _, s in out] == [{"half": "original"},
                                       {"half": "inverse"}]
@@ -487,8 +487,7 @@ def test_one_contrast_reporting_both_directions_is_split_by_sign():
 
 
 def test_the_stage_declares_the_split_in_each_halfs_metadata():
-    """The declaration is the only record of the split: nothing reads the
-    name's suffix back."""
+    """The declaration is the only record of the split: the name carries none."""
     from ingestion_workflow.models import (
         CoordinatePoint,
         ParseAnalysesOutput,
@@ -512,7 +511,7 @@ def test_the_stage_declares_the_split_in_each_halfs_metadata():
     assert [(a.name, a.metadata.get("split")) for a in coll.analyses] == [
         ("One way", None),
         ("Both", {"half": "original", "index": 1}),
-        ("Both (inverse)", {"half": "inverse", "original_index": 1}),
+        ("Both", {"half": "inverse", "original_index": 1}),
     ]
 
 

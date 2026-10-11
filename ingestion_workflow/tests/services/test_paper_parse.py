@@ -131,7 +131,7 @@ def _written(tmp_path):
                     ],
                 ),
                 Analysis(
-                    name="Faces > Houses (inverse)",
+                    name="Faces > Houses",
                     table_id="tbl1",
                     metadata={"split": {"half": "inverse", "original_index": 0}},
                     coordinates=[
@@ -680,9 +680,8 @@ def test_the_split_is_read_from_the_declaration_never_the_name(tmp_path):
             Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)],
                      metadata={"split": {"half": "original", "index": 0}}),
             Analysis(name="Other", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
-            # Declared, so paired by its original's index though not adjacent; named as
-            # the original.
-            Analysis(name="Fear > Neutral (inverse)", coordinates=point, metadata=inverse),
+            # Declared, so paired by its original's index though not adjacent.
+            Analysis(name="Fear > Neutral", coordinates=point, metadata=inverse),
             # Named like a half but declared as none: not a split, name kept.
             Analysis(name="Other (inverse)", coordinates=[Coordinate(x=36, y=20, z=4)]),
         ]
@@ -699,7 +698,7 @@ def test_the_split_is_read_from_the_declaration_never_the_name(tmp_path):
 def test_a_half_whose_original_is_not_in_the_table_is_declared_on_its_own(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     collection = _collection(
-        [Analysis(name="Fear > Neutral (inverse)", coordinates=point,
+        [Analysis(name="Fear > Neutral", coordinates=point,
                   metadata={"split": {"half": "inverse", "original_index": 7}})]
     )
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
@@ -711,7 +710,7 @@ def test_a_half_whose_original_is_not_in_the_table_is_declared_on_its_own(tmp_pa
 def test_an_inverse_half_with_no_original_is_declared_on_its_own(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     collection = _collection(
-        [Analysis(name="AD vs. NC (inverse)", coordinates=point,
+        [Analysis(name="AD vs. NC", coordinates=point,
                   metadata={"split": {"half": "inverse", "original_index": None}})]
     )
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
@@ -742,7 +741,7 @@ def test_halves_pair_by_the_stages_index_after_an_analysis_is_dropped(tmp_path):
             Analysis(name="Left", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
             Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)],
                      metadata={"split": {"half": "original", "index": 1}}),
-            Analysis(name="Fear > Neutral (inverse)", coordinates=point,
+            Analysis(name="Fear > Neutral", coordinates=point,
                      metadata={"split": {"half": "inverse", "original_index": 1}}),
         ]
     )
@@ -768,7 +767,7 @@ def test_two_originals_of_one_name_each_pair_with_their_own_inverse(tmp_path):
         )
 
     def inverse(i, **c):
-        return half(c, {"half": "inverse", "original_index": i}, "P > C (inverse)")
+        return half(c, {"half": "inverse", "original_index": i})
 
     collection = _collection(
         [

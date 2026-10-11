@@ -346,9 +346,9 @@ class AnalysisCollection:
     identifier: Optional[Identifier] = None
     #: Whether a sign split in it is declared in `metadata["split"]`. True for
     #: anything this code builds; a stored payload without the key predates the
-    #: declaration, so its splits are marked only by name. It travels with the
-    #: payload, through roles and space, so sync reads it from the payload it
-    #: writes rather than from an artifact that may have been re-run since.
+    #: declaration, and sync refuses it until scripts/migrate_legacy_splits.py
+    #: has rewritten it. It travels with the payload, through roles and space,
+    #: so sync reads it from the payload it writes.
     split_declared: bool = True
 
     def add_analysis(self, analysis: Analysis) -> None:

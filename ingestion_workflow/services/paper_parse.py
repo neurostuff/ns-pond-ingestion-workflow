@@ -34,7 +34,7 @@ from ingestion_workflow.models.statistics import point_values
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME
 from ingestion_workflow.services.coordinate_space import sectionize
-from ingestion_workflow.services.create_analyses import SPLIT_SUFFIXES, table_reading
+from ingestion_workflow.services.create_analyses import table_reading
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.set_roles.labels import is_decided
@@ -1028,11 +1028,10 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
     on the analysis as named, and `{"half": "inverse", "original_index": i}` on the
     reversed contrast, `i` being the original's place among the stage's analyses
     when it split. The halves pair by that number, so an analysis dropped in
-    between, or two originals with one name, cannot mispair them. The inverse takes
-    the original's name, the contrast as printed. An inverse half whose original is
-    not in the parse (`original_index` is None, or names one that was not placed)
-    is declared on its own and loses its suffix too; so is an original whose
-    inverse is not in the parse.
+    between, or two originals with one name, cannot mispair them. Both halves carry
+    the contrast as printed. An inverse half whose original is not in the parse
+    (`original_index` is None, or names one that was not placed) is declared on
+    its own; so is an original whose inverse is not in the parse.
     """
     rule = "sign_of_directional_statistic"
     originals = {
@@ -1048,22 +1047,8 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
         original = originals.get(split.get("original_index"))
         if original is None:
             built.split = pp.SignSplit(half="inverse", rule=rule)
-            _rename(built, _without_suffix(built.name))
             continue
         built.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
-        _rename(built, original.name)
-
-
-def _rename(built: pp.ParsedAnalysis, name: str) -> None:
-    """Rename a table analysis and re-key it, the key hashing the name."""
-    built.name = name
-    built.key = keys.table_key(
-        built.table_id, [(c.row, c.column_group) for c in built.cells], name
-    )
-
-
-def _without_suffix(name: str) -> str:
-    return next((name[: -len(x)] for x in SPLIT_SUFFIXES if name.endswith(x)), name)
 
 
 def _space_value(space) -> Optional[str]:
