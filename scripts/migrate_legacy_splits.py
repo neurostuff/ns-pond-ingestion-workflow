@@ -1,7 +1,7 @@
 """Declare the sign splits of payloads stored before `split{}` existed.
 
-Run once, after the change that made sync refuse such payloads, and before
-the next sync:
+Run once, after the change that reads the declaration, and before the next
+sync:
 
     python scripts/migrate_legacy_splits.py <catalog root>                  # dry run
     python scripts/migrate_legacy_splits.py <catalog root> --apply --backup <dir>
@@ -10,9 +10,8 @@ A payload stored before the declaration marks a split only by name: the
 inverse half was named `X (negative)` (later `X (inverse)`) and followed its
 original `X` in the same table. Each such payload is rewritten into the form
 the analyses stage writes now: the halves are paired by `metadata["split"]`,
-the inverse half is named and its signed values negated as the stage does
-(`inverse_name`, `statistics.inverted`), and the collection gains
-`split_declared`. A suffixed
+and the inverse half is named and its signed values negated as the stage does
+(`inverse_name`, `statistics.inverted`). A suffixed
 name the stage cannot have written -- one with a point that is not negative --
 is the paper's own, and is kept as printed.
 
@@ -21,6 +20,11 @@ sync writes `space`'s, which carries what `analyses` stored through `resolve`
 and `roles`. Each payload goes to a new blob and `artifacts.blob` is repointed;
 the old blob is left where it was, and no fingerprint, status or timestamp
 moves, so nothing is re-run by it. A second run finds nothing to do.
+
+After --apply the stored payloads are read back and every analysis still named
+with a legacy suffix that looks like an undeclared half is counted. The run
+prints "0 legacy halves left", or lists them and exits non-zero; sync is not
+to run until it prints that. A dry run reports how many would remain.
 """
 
 from __future__ import annotations
@@ -78,9 +82,7 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
             coordinates.append(c)
         analysis["coordinates"] = coordinates
 
-    def all_negative(analysis):
-        values = [c.get("statistic_value") for c in analysis.get("coordinates") or []]
-        return bool(values) and all(isinstance(v, (int, float)) and v < 0 for v in values)
+    all_negative = _is_all_negative
 
     pairs = leftovers = kept = 0
     for i in range(len(analyses) - 1, 0, -1):
@@ -107,13 +109,37 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
         analysis["metadata"]["split"] = {"half": "inverse", "original_index": None}
         invert(analysis, name[: -len(suffix)])
         leftovers += 1
-    return {**collection, "analyses": analyses, "split_declared": True}, Counter(
+    return {**collection, "analyses": analyses}, Counter(
         pairs=pairs, leftovers=leftovers, kept=kept
     )
 
 
+def _is_all_negative(analysis: Dict[str, Any]) -> bool:
+    values = [c.get("statistic_value") for c in analysis.get("coordinates") or []]
+    return bool(values) and all(isinstance(v, (int, float)) and v < 0 for v in values)
+
+
+def legacy_halves(payload: Any) -> List[str]:
+    """Names, as `table: name`, of analyses that still read as an undeclared half."""
+    found = []
+    if not isinstance(payload, dict):
+        return found
+    for table_id, collection in payload.items():
+        if table_id == PROSE or not isinstance(collection, dict):
+            continue
+        for analysis in collection.get("analyses") or []:
+            name = analysis.get("name") or ""
+            if (
+                name.endswith(LEGACY_SUFFIXES)
+                and not (analysis.get("metadata") or {}).get("split")
+                and _is_all_negative(analysis)
+            ):
+                found.append(f"{table_id}: {name}")
+    return found
+
+
 def migrate_payload(payload: Any) -> Tuple[Optional[Dict[str, Any]], Counter, Optional[str]]:
-    """`(new payload or None when already declared, counts, refusal reason)`."""
+    """`(new payload or None when nothing needed declaring, counts, refusal reason)`."""
     counts: Counter = Counter()
     if not isinstance(payload, dict):
         return None, counts, "payload is not a mapping of tables"
@@ -121,14 +147,12 @@ def migrate_payload(payload: Any) -> Tuple[Optional[Dict[str, Any]], Counter, Op
     for table_id, collection in payload.items():
         if not isinstance(collection, dict) or not isinstance(collection.get("analyses"), list):
             return None, Counter(), f"table {table_id} has no analyses list"
-        if collection.get("split_declared"):
+        if table_id == PROSE:
             out[table_id] = collection
             continue
-        changed = True
-        if table_id == PROSE:
-            out[table_id] = {**collection, "split_declared": True}
-            continue
         out[table_id], found = declare(collection)
+        if found["pairs"] or found["leftovers"]:
+            changed = True
         counts.update(found)
     return (out if changed else None), counts, None
 
@@ -165,6 +189,7 @@ def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
     blobs = BlobStore(catalog / "blobs")
     counts: Counter = Counter()
     refusals: Counter = Counter()
+    remaining: List[str] = []
     try:
         if apply:
             print(f"catalog backed up to {_backup(conn, Path(backup))}", file=out)
@@ -187,6 +212,12 @@ def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
                 refusals[reason] += 1
                 print(f"refused {row['stage']} {row['article_id']}: {reason}", file=out)
                 continue
+            counts["suffixed names kept as printed (a point not negative)"] += found["kept"]
+            if not apply:
+                remaining += [
+                    f"{row['stage']} {row['article_id']} {h}"
+                    for h in legacy_halves(payload if new is None else new)
+                ]
             if new is None:
                 counts["payloads unchanged (declared or empty)"] += 1
                 continue
@@ -194,7 +225,6 @@ def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
             counts[f"payloads rewritten ({row['stage']})"] += 1
             counts["splits paired"] += found["pairs"]
             counts["leftovers declared"] += found["leftovers"]
-            counts["suffixed names kept as printed (a point not negative)"] += found["kept"]
             if apply:
                 digest = blobs.put(new)
                 repoint.append(
@@ -213,6 +243,18 @@ def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
                 conn.execute("ROLLBACK")
                 raise
             conn.execute("COMMIT")
+        if apply:
+            # Read back from the catalog, not from what was just built.
+            for row in conn.execute(
+                "SELECT article_id, stage, blob FROM artifacts "
+                f"WHERE stage IN ({','.join('?' * len(stages))}) AND status='ok' "
+                "AND blob IS NOT NULL ORDER BY stage, article_id, source",
+                tuple(stages),
+            ).fetchall():
+                remaining += [
+                    f"{row['stage']} {row['article_id']} {h}"
+                    for h in legacy_halves(blobs.get(row["blob"]))
+                ]
     finally:
         conn.close()
     counts["payloads refused"] = sum(refusals.values())
@@ -221,6 +263,16 @@ def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
         print(f"  {key}: {counts[key]}", file=out)
     for reason, n in refusals.most_common():
         print(f"  refused, {reason}: {n}", file=out)
+    counts["legacy halves left"] = len(remaining)
+    if apply and not remaining:
+        print("0 legacy halves left", file=out)
+    elif remaining:
+        label = "legacy halves left" if apply else "legacy halves would remain"
+        print(f"{len(remaining)} {label}:", file=out)
+        for item in remaining:
+            print(f"  {item}", file=out)
+    else:
+        print("0 legacy halves would remain", file=out)
     return counts
 
 
@@ -236,8 +288,8 @@ def main(argv=None) -> int:
         "--backup", type=Path, help="directory the catalog is copied to before --apply"
     )
     args = parser.parse_args(argv)
-    run(args.catalog, apply=args.apply, backup=args.backup)
-    return 0
+    counts = run(args.catalog, apply=args.apply, backup=args.backup)
+    return 1 if args.apply and counts["legacy halves left"] else 0
 
 
 if __name__ == "__main__":

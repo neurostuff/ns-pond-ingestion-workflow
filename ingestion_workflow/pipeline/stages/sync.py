@@ -10,12 +10,12 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import (
+    AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
     DownloadSource,
     ExtractedContent,
 )
-from ingestion_workflow.models.analysis import declared_collection
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import nspond, paper_parse
 
@@ -227,7 +227,7 @@ class SyncStage:
             ctx.payload(analyses.get(work.article_id, {}).get("")), excluded or {}
         )
         per_table = {
-            table_id: declared_collection(table_id, blob)
+            table_id: AnalysisCollection.from_dict(blob)
             for table_id, blob in analysis_payload.items()
         }
 

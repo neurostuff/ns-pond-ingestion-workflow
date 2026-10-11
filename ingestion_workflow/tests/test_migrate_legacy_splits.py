@@ -69,7 +69,7 @@ def test_a_papers_own_negative_contrast_pairs_with_its_own_half(catalog, tmp_pat
     counts, _ = _run(catalog, tmp_path)
     for stage in ("analyses", "roles", "space"):
         payload = _payload(catalog, ref, stage)
-        assert payload["t1"]["split_declared"] is True
+        assert "split_declared" not in payload["t1"]
         assert _halves(payload) == [
             ("Load", None),
             ("Load (negative)", {"half": "original", "index": 1}),
@@ -200,21 +200,48 @@ def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(cat
     with Catalog.open(tmp_path / "backup") as backup:
         assert backup.artifact(ref.id, "space", "").blob == old.blob
     collection = AnalysisCollection.from_dict(_payload(catalog, ref)["t1"])
-    assert collection.split_declared
+    assert [a.metadata["split"]["half"] for a in collection.analyses] == ["original", "inverse"]
 
 
-def test_declared_payloads_and_prose_sets_are_not_read_by_name(catalog, tmp_path):
+def test_declared_halves_and_prose_sets_are_not_read_by_name(catalog, tmp_path):
+    declared = _legacy(
+        _a("Load"),
+        _a("Load (negative)", value=-4.0, split={"half": "inverse", "original_index": 0}),
+    )
     ref = _store(catalog, {
-        "t1": {**_legacy(_a("Load"), _a("Load (negative)", value=-4.0)), "split_declared": True},
+        "t1": declared,
         "prose": _legacy(_a("Faces"), _a("Faces (negative)", table_id="prose", value=-4.0),
                          slug="s::prose"),
     }, stages=("resolve",))
-    counts, _ = _run(catalog, tmp_path)
+    counts, out = _run(catalog, tmp_path)
     payload = _payload(catalog, ref, "resolve")
-    assert _halves(payload) == [("Load", None), ("Load (negative)", None)]
-    assert payload["prose"]["split_declared"] is True
+    assert [n for n, _ in _halves(payload)] == ["Load", "Load (negative)"]
     assert [n for n, _ in _halves(payload, "prose")] == ["Faces", "Faces (negative)"]
     assert counts["splits paired"] == counts["leftovers declared"] == 0
+    assert "0 legacy halves left" in out
+
+
+def test_apply_reports_zero_left_and_a_dry_run_says_how_many_would_remain(catalog, tmp_path):
+    _store(catalog, {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))})
+    counts, out = _run(catalog, tmp_path, apply=False)
+    assert "0 legacy halves would remain" in out
+    counts, out = _run(catalog, tmp_path)
+    assert "0 legacy halves left" in out
+    assert migrate.main([str(catalog.root), "--apply", "--backup", str(tmp_path / "b2")]) == 0
+
+
+def test_apply_fails_and_lists_a_legacy_half_the_rewrite_left_behind(catalog, tmp_path):
+    """One malformed table refuses its payload whole, so the other table's half stays."""
+    ref = _store(catalog, {
+        "t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0)),
+        "t2": {"slug": "s::t2"},
+    }, stages=("space",))
+    counts, out = _run(catalog, tmp_path)
+    assert counts["legacy halves left"] == 1
+    assert f"space {ref.id} t1: Load (negative)" in out
+    assert "0 legacy halves left" not in out
+    code = migrate.main([str(catalog.root), "--apply", "--backup", str(tmp_path / "b2")])
+    assert code == 1
 
 
 def test_an_unreadable_payload_is_refused_with_its_reason(catalog, tmp_path):

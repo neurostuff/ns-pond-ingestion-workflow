@@ -349,9 +349,9 @@ def _execute(monkeypatch, notices, base_study_id="BASE1", empty=False, prior=Non
         stage,
         "_gather",
         lambda ctx, ws, ex: (
-            ({}, {}, list(ws), [])
+            ({}, {}, list(ws))
             if empty
-            else ({w.ref.identifier.slug: {"t": object()} for w in ws}, {}, [], [])
+            else ({w.ref.identifier.slug: {"t": object()} for w in ws}, {}, [])
         ),
     )
 

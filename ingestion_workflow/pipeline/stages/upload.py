@@ -7,7 +7,6 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import AnalysisCollection
-from ingestion_workflow.models.analysis import UndeclaredSplits, declared_collection
 from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
@@ -190,9 +189,7 @@ class UploadStage:
             w.article_id: found[w.article_id][""].summary.get("retraction")
             for w in works if (markers[w.article_id] or "").startswith("retracted")
         }
-        analyses, metadata, empty, undeclared = self._gather(ctx, works, excluded)
-        yield from undeclared
-        works = [w for w in works if w.article_id not in {o.article_id for o in undeclared}]
+        analyses, metadata, empty = self._gather(ctx, works, excluded)
         # An article left with nothing because a person marked its tables is
         # not "nothing to upload": what it uploaded before is still there, and
         # still claims coordinates the paper does not report. Those are
@@ -396,7 +393,6 @@ class UploadStage:
         analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
         metadata: Dict[str, ArticleMetadata] = {}
         empty: List[Work] = []
-        undeclared: List[Outcome] = []
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         excluded = excluded or {}
         for work in works:
@@ -412,17 +408,11 @@ class UploadStage:
                 empty.append(work)
                 continue
             slug = work.ref.identifier.slug
-            try:
-                analyses[slug] = {
-                    table_id: declared_collection(table_id, blob)
-                    for table_id, blob in payload.items()
-                }
-            except UndeclaredSplits as exc:
-                undeclared.append(Outcome.failure(
-                    work.article_id, self.name, "", str(exc), fingerprint=work.fingerprint
-                ))
-                continue
+            analyses[slug] = {
+                table_id: AnalysisCollection.from_dict(blob)
+                for table_id, blob in payload.items()
+            }
             meta_payload = ctx.payload(meta_artifacts.get(work.article_id, {}).get(""))
             if meta_payload:
                 metadata[slug] = ArticleMetadata.from_dict(meta_payload)
-        return analyses, metadata, empty, undeclared
+        return analyses, metadata, empty
