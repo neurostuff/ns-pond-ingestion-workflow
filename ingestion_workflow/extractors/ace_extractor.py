@@ -39,6 +39,7 @@ from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
 )
+from ingestion_workflow.services.download_check import check_page
 
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.patches import apply_ace_patch
@@ -180,6 +181,10 @@ def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
 
     if len(normalized) < _MIN_HTML_LENGTH:
         return False, (f"HTML payload is unexpectedly small ({len(normalized)} characters).")
+
+    bad = check_page(html_text)
+    if bad is not None:
+        return False, bad.message
 
     return True, None
 
