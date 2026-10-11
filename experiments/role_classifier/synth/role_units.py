@@ -2,7 +2,7 @@
 
     python experiments/role_classifier/synth/role_units.py OUT_DIR --plan plan.json \
         --units table_units.jsonl prose_units.jsonl --labels LABEL_DIR [LABEL_DIR ...] \
-        [--id-map slug_dbids.json] [--seed 41]
+        --id-map slug_dbids.json [--seed 41]
 
 Extends `synth_prose.py` (the nu-prose generator, which overweights hard cases) to
 study_schema's v4 roles and to tables. Each case starts from a REAL unit whose sets
@@ -24,10 +24,15 @@ and hard negatives that carry a sparse class's cue but are another role: results
 cite prior work, results inside an a-priori ROI, results in a figure legend with its
 slice position, prior-study ROIs (anchor + from_prior_study), electrode-level results.
 
-Set names are not chosen by the target. Each class's names take the shapes (citation,
-"<region> seed", "P1", contrast, ...) of the real labelled names of that class at the
-real rates, and the words of a name come from every class's real names of that shape
-(`Names`), so a name tells a classifier no more than a real one does (`namecheck.py`).
+Set names, captions and footers are not written for the target (`Names`). Each class's names
+take the shapes (citation, "<region> seed", "P1", contrast, ...) of the real labelled names
+of that class at the real rates; a name is one of the class's own real names at the share
+they hold, else a real name of that shape from any class that carries no other class's cue
+word ("prior study" stays with reference). A caption or footer
+is the caption or footer of a real labelled set of the class, else a real one of
+any class that names no cue (`family`). So a name, caption or footer tells a classifier
+what a real one does (`namecheck.py`). A table
+has as many rows as its seed, and every region's hemisphere agrees with the sign of its x.
 
 Output (no field of a unit carries its label):
   OUT_DIR/units.jsonl   labelling units in build_sets.py's shape; sets hold only
@@ -144,9 +149,6 @@ def seeds(units, labels, id_map=None):
     return out
 
 
-ROWS = [8, 18]  # rows per synthetic set; real tables run ~16 rows, the pilot made 6
-
-
 def pick_seed(pool, rng, want=None):
     if want is not None:
         fit = [u for u in pool if want.search((u.get("title") or "") + " " + (u.get("abstract") or ""))]
@@ -211,9 +213,11 @@ SHAPES = (
     ("numbered", re.compile(r"^[A-Za-z]{1,12}[\s_-]?\d{1,3}$")),
     ("contrast", re.compile(r">|<|\bvs\.?(?!\w)|\bversus\b|\bminus\b|\bmain effect\b|\binteraction\b|\bcorrelat", re.I)),
 )
-#: Pseudo-counts of the origin's shape mix behind each class's own: real table localizations are 17
-#: sets, and a class with none (table `other`) is named like the origin as a whole.
-ALPHA = 5
+#: Pseudo-counts of the origin's class-balanced mix (`Names.base`) behind each class's own: real
+#: text localizations are 5 sets, and a class with none (table `other`) is named like the average class.
+ALPHA = 2
+#: A cue word is in at least CUE_MIN of one class's real names, with CUE_SHARE of its class-balanced rate.
+CUE_MIN, CUE_SHARE = 2, 0.6
 _CUE_TAIL = re.compile(r"\b(?:seeds?|ROIs?|targets?|sites?|voxels?|spheres?|masks?)\b.*$", re.I)
 
 
@@ -233,47 +237,89 @@ def _with_region(name, region):
 
 
 class Names:
-    """Set names drawn the way the real labelled sets of each origin and class are named.
+    """Set names, captions and footers drawn the way the real labelled sets of each origin and
+    class have them.
 
-    `units` are train units only (`train_units`): no name comes from an evaluation article.
+    `units` are train units only (`train_units`): nothing comes from an evaluation article.
     """
 
     def __init__(self, units, labels):
-        self.pool = collections.defaultdict(lambda: collections.defaultdict(list))
-        self.shapes = collections.defaultdict(collections.Counter)
+        self.pool = collections.defaultdict(lambda: collections.defaultdict(list))  # origin -> shape -> [(name, class)]
+        self.shapes = collections.defaultdict(collections.Counter)  # (origin, class) -> shape counts
+        self.texts = collections.defaultdict(list)  # (field, class) -> real captions or footers; class None: cue-free
+        tables = {}  # unit id -> whether its caption starts "Table 2."
         self.left_out = collections.Counter()  # real names not drawn from, by reason
+        words = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
         for sid, lab in labels.items():
             u, i = units.get(lab["unit_id"]), set_index(sid)
             if not u or i >= len(u["sets"]) or not lab.get("role"):
                 continue
+            cls = role_class(lab["role"], lab.get("anchor_kind"))
+            if u["origin"] == "table":
+                # Once per labelled set: the encoder reads a caption once per set, so a caption's
+                # share of a class's draws is its share of the class's real sets.
+                for field in ("caption", "footer"):
+                    raw = " ".join((u.get(field) or "").split())
+                    text = _TABLE_LABEL.sub("", raw)
+                    if leakcheck.label_syntax(text):
+                        self.left_out[f"{field} reads as a label"] += 1
+                        continue
+                    self.texts[(field, cls)].append(text)
+                    if family(text) in ("generic", "empty"):
+                        self.texts[(field, None)].append(text)
+                    if field == "caption" and text:
+                        tables[u["unit_id"]] = bool(_TABLE_LABEL.match(raw))
             name = " ".join((u["sets"][i].get("name") or "").split())
-            if leakcheck.LABEL_NAME.search(name) or leakcheck.LABEL_SYNTAX.search(name):
+            if leakcheck.label_name(name) or leakcheck.label_syntax(name):
                 self.left_out["reads as a label"] += 1  # a real set named "Reference", say
                 continue
             k = shape(name)
-            self.pool[u["origin"]][k].append(name)
-            self.shapes[(u["origin"], role_class(lab["role"], lab.get("anchor_kind")))][k] += 1
-            self.shapes[(u["origin"], None)][k] += 1
+            self.pool[u["origin"]][k].append((name, cls))
+            self.shapes[(u["origin"], cls)][k] += 1
+            for t in _words(name):
+                words[u["origin"]][t][cls] += 1
+        self.prefixed = sum(tables.values()) / len(tables) if tables else 0.5  # the share of real captions that start "Table 2."
+        self.cues = {origin: _cues(w, {c: sum(n.values()) for (o, c), n in self.shapes.items() if o == origin})
+                     for origin, w in words.items()}
+
+    def base(self, origin):
+        """The shape mix of an origin's classes, each class weighing the same: the majority `result`
+        class would otherwise lend its shapes to every sparse class."""
+        return _balanced([n for (o, _), n in self.shapes.items() if o == origin])
 
     def mix(self, origin, cls):
-        """{shape: weight} for one class: its real names' shapes plus ALPHA of the origin's."""
-        own, every = self.shapes[(origin, cls)], self.shapes[(origin, None)]
-        total = sum(every.values())
-        if not total:
+        """{shape: weight} for one class: its real names' shapes plus ALPHA of the origin's (`base`)."""
+        base = self.base(origin)
+        if not base:
             raise SystemExit(f"no labelled {origin} set names to draw from")
-        return {k: own[k] + ALPHA * every[k] / total for k in sorted(every)}
+        own = self.shapes[(origin, cls)]
+        return {k: own[k] + ALPHA * base[k] for k in sorted(base)}
+
+    def cue_classes(self, origin, name):
+        """The classes whose cue words `name` carries."""
+        cues = self.cues.get(origin, {})
+        return {cues[t] for t in _words(name) if t in cues}
 
     def draw(self, origin, cls, rng, n=1, region=None, citations=()):
         """n names for the sets of one unit, in one shape (the sets of a table are named alike).
 
-        A citation-shaped name is the unit's own citation when it has one, and a seed, target
-        or ROI name takes the unit's region, so the name agrees with the text it sits in.
+        A name is any class's real name of that shape that carries no other class's cue word, so
+        "prior study" stays a reference name as it is in real sets, and no name is copied from
+        the class's own few real names often enough to be learned as a string. A citation-shaped name is the
+        unit's own citation when it has one, and a seed, target or ROI name takes the unit's
+        region, so the name agrees with the text it sits in.
         """
         mix = self.mix(origin, cls)
         k = rng.choices(list(mix), weights=list(mix.values()))[0]
-        pool = self.pool[origin][k]
-        if k == "citation" and citations:
-            return [citations[i % len(citations)] for i in range(n)]
+        if k == "citation":
+            # Every class's citation names are written the same way, so their form tells nothing.
+            return [citations[i % len(citations)] for i in range(n)] if citations else [study_label(rng) for _ in range(n)]
+        every = self.pool[origin][k]
+        own = [x for x, c in every if c == cls]
+        if own and rng.random() < self.shapes[(origin, cls)][k] / mix[k]:
+            pool = own
+        else:
+            pool = [x for x, c in every if not self.cue_classes(origin, x) - {cls}] or [x for x, _ in every]
         if k == "numbered":
             stem = re.match(r"^(.*?)\d+$", rng.choice(pool)).group(1)
             return [f"{stem}{i + 1}" for i in range(n)]
@@ -281,6 +327,95 @@ class Names:
         if region and k in ("seed", "target", "roi"):
             names = [_with_region(x, region) for x in names]
         return [x or None for x in names]
+
+    def text(self, field, cls, rng, label):
+        """A real caption or footer for a table of one class, under the table's own `label`: the
+        caption of one of the class's real labelled sets, so each caption is drawn for each class at
+        the rate real sets of that class carry it (one real table's caption serves every class it
+        holds), else (a class with no real tables, table `other`) any class's real one that names
+        no cue family (`family`). Unlike names, captions are not smoothed: lending a sparse class
+        result-like captions made a model of them miss real result captions."""
+        own = self.texts[(field, cls)]
+        text = rng.choice(own or self.texts[(field, None)] or [""])
+        return f"{label}. {text}" if field == "caption" and text and rng.random() < self.prefixed else text
+
+
+def _words(name):
+    return set(re.findall(r"[a-z]{3,}", (name or "").lower()))
+
+
+def _balanced(counters):
+    """The mean of the counters' shares, each counter weighing the same."""
+    out = collections.Counter()
+    counters = [c for c in counters if sum(c.values())]
+    for c in counters:
+        total = sum(c.values())
+        for k, v in c.items():
+            out[k] += v / total / len(counters)
+    return dict(out)
+
+
+def _cues(words, sizes):
+    """{word: class} for the words real names tie to one class: in CUE_MIN or more of the class's
+    names, and CUE_SHARE or more of the word's class-balanced rate (its rate within each class, so
+    the many `result` names do not outvote a sparse class)."""
+    out = {}
+    for w, by in words.items():
+        rate = {c: v / sizes[c] for c, v in by.items()}
+        top = max(sorted(rate), key=rate.get)
+        if by[top] >= CUE_MIN and rate[top] >= CUE_SHARE * sum(rate.values()):
+            out[w] = top
+    return out
+
+
+#: Cue families of a table caption or footer, first match wins; "generic" when none matches and
+#: "empty" for no text. Only generic and empty ones are lent to another class (`Names.text`).
+FAMILIES = (
+    ("statistics", re.compile(r"\bp\s*[<=≤]|\bfwe\b|\bfdr\b|uncorrected|corrected|threshold|\bclusters?\b|\bk\s*[=>]|signific|\b[tz][ -]?(?:values?|scores?)\b", re.I)),
+    ("reference", re.compile(r"previous|prior|earlier|reported|literature|studies|meta-?analy|original publication|cited", re.I)),
+    ("localization", re.compile(r"electrode|contact|channel|optode|sensor|dipole|implant|ieeg|seeg|ecog|fnirs|nirs", re.I)),
+    ("stimulation", re.compile(r"stimulat|tms|tdcs|tacs|neuronavigation|\bcoil\b|\btargets?\b", re.I)),
+    ("anchor", re.compile(r"\bseeds?\b|\brois?\b|regions? of interest|\bnodes?\b|parcel|network|sphere|voxel|\bmrs\b|spectroscopy", re.I)),
+    ("other", re.compile(r"slice|lesion|simulat|atlas|display|crosshair|figure", re.I)),
+)
+
+
+def family(text):
+    text = (text or "").strip()
+    return next((k for k, rx in FAMILIES if rx.search(text)), "generic") if text else "empty"
+
+
+_TABLE_LABEL = re.compile(r"^(?:Table|Tab\.)\s*[A-Z]?\d+[A-Za-z]?\s*[.:|-]?\s*", re.I)
+
+#: The class a table target is labelled with.
+TARGET_CLASS = {"reference": "reference", "localization": "localization", "anchor_roi_mrs": "anchor:roi", "seed": "anchor:seed",
+                "node": "anchor:node", "other": "other", "stimulation_target": "anchor:stimulation_target", "hard": "result"}
+
+#: A hemisphere word: left/right/lh/rh, or a capital L or R standing alone ("L IFG", "Precentral_L").
+_HEMI_WORD = re.compile(r"\b(left|right|lh|rh)\b", re.I)
+_HEMI_LETTER = re.compile(r"(?<![A-Za-z])([LR])(?![A-Za-z])")
+MIDLINE = 4  # |x| in mm a lateral region keeps, so a 2-mm redraw cannot move it across the midline
+
+
+def hemisphere(text):
+    """'left', 'right', or None when `text` names neither or both."""
+    found = {("left" if w.lower() in ("left", "lh") else "right") for w in _HEMI_WORD.findall(text or "")}
+    found |= {("left" if w == "L" else "right") for w in _HEMI_LETTER.findall(text or "")}
+    return found.pop() if len(found) == 1 else None
+
+
+def side(region, xyz):
+    """xyz with x on the hemisphere `region` names; real papers put a left region at x < 0."""
+    h = hemisphere(region)
+    if h is None:
+        return list(xyz)
+    x = max(abs(xyz[0]), MIDLINE)
+    return [-x if h == "left" else x, *xyz[1:]]
+
+
+def sizes(total, n):
+    """`total` rows split over n sets, at least 2 each."""
+    return [max(2, total // n + (i < total % n)) for i in range(n)]
 
 
 class Positions:
@@ -307,21 +442,30 @@ def _table(header, rows):
 
 
 def table_case(seed, target, rng, names):
-    """(unit fields, truth) for one table rewritten into `target`."""
+    """(unit fields, truth) for one table rewritten into `target`.
+
+    The table has as many coordinate rows as its seed (a real table), split over its sets, and
+    every row's x lies on the hemisphere its region names.
+    """
     space, space_hdr = rng.choice(SPACE_HDR)
     paired = real_rows(seed) or [(r, sp.realistic_xyz(rng)) for r in FALLBACK_REGIONS]
     regions = [r for r, _ in paired]
     pos = Positions()
     tl = seed.get("table_label") or f"Table {rng.randint(1, 5)}"
-    tag = tl.split()[-1]
     sw = SPACE_WORD[space]
+    total = len(paired)
+
+    def draw_rows(n, mm=6):
+        src = [rng.choice(paired) for _ in range(n)]
+        return src, [pos.fresh(side(reg, jitter(p, rng, mm)), rng) for reg, p in src]
+
     if target == "reference":
         studies = [study_label(rng) for _ in range(rng.randint(2, 4))]
         layout = rng.choice(["study_col", "ref_col", "grouped"])
         rows, sets = [], []
-        for st, name in zip(studies, names.draw("table", "reference", rng, len(studies), citations=studies)):
-            src = [rng.choice(paired) for _ in range(rng.randint(ROWS[0], ROWS[1]))]
-            spts = [pos.fresh(jitter(p, rng), rng) for _, p in src]
+        for st, name, k in zip(studies, names.draw("table", "reference", rng, len(studies), citations=studies),
+                               sizes(total, len(studies))):
+            src, spts = draw_rows(k, 8)
             sets.append({"name": name, "points": [[*p, None, None, None] for p in spts]})
             for (reg, _), p in zip(src, spts):
                 if layout == "study_col":
@@ -332,15 +476,6 @@ def table_case(seed, target, rng, names):
                     rows.append([f"^{len(spts)}:{st}" if p is spts[0] else "~", reg, *p])
         header = {"study_col": ["#Study", "#Region", f"#<3:{space_hdr}"], "ref_col": ["#Region", f"#<3:{space_hdr}", "#Reference"],
                   "grouped": ["#Study", "#Region", f"#<3:{space_hdr}"]}[layout]
-        caption = rng.choice([
-            f"Peak coordinates reported in previous studies of {rng.choice(['the same task', 'this contrast', 'the disorder', 'healthy samples'])}.",
-            f"{sw} coordinates of the regions reported in earlier studies, listed for comparison with the present findings.",
-            f"Studies included in the comparison and the peak coordinates they reported.",
-            f"Literature coordinates for {rng.choice(regions).lower()} and neighbouring regions.",
-        ])
-        footer = rng.choice([
-            f"Coordinates are given as reported in the original publications{'; Talairach coordinates were converted to MNI with icbm2tal' if sw == 'MNI' else ''}.",
-            f"Coordinates taken from the cited studies ({sw} space).", "", "Only peaks within 10 mm of a present-study cluster are listed."])
         citing = [rng.choice([
             f"{tl} lists the coordinates reported by previous studies ({studies[0].replace(" (", ", ").rstrip(")")}) for comparison.",
             f"Our peaks were within 8 mm of those reported previously ({tl}).",
@@ -348,107 +483,85 @@ def table_case(seed, target, rng, names):
         truth = [("reference", None, True)] * len(sets)
     elif target == "localization":
         kind = rng.choice(["contacts", "contacts", "optodes"])
+        labels = names.draw("table", "localization", rng, rng.randint(1, 3))
         rows, sets = [], []
-        for label in names.draw("table", "localization", rng, rng.randint(1, 3)):
-            src = [rng.choice(paired) for _ in range(rng.randint(ROWS[0], ROWS[1] + 1))]
-            spts = [pos.fresh(jitter(p, rng, 6), rng) for _, p in src]
+        for label, k in zip(labels, sizes(total, len(labels))):
+            src, spts = draw_rows(k)
             sets.append({"name": label, "points": [[*p, None, None, None] for p in spts]})
             for ci, p in enumerate(spts):
                 el = f"{rng.choice('LR')}{rng.choice('ABCHT')}{rng.randint(1, 12)}" if kind == "contacts" else f"S{rng.randint(1, 16)}-D{rng.randint(1, 16)}"
                 rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", el, *p, src[ci][0]])
         header = [f"#{rng.choice(['Patient', 'Subject', 'Case'])}", "#" + {"contacts": "Contact", "optodes": "Channel"}[kind],
                   f"#<3:{space_hdr}", f"#{rng.choice(['Anatomical label', 'AAL label', 'Region (Harvard-Oxford)', 'Location'])}"]
-        caption = {"contacts": f"{sw} coordinates of the depth-electrode contacts {rng.choice(['in each patient', 'used for the analysis', 'with task-related responses'])}.",
-                   "optodes": f"fNIRS channel positions projected onto {sw} space."}[kind]
-        footer = {"contacts": rng.choice(["Contacts were localized on the post-implantation CT co-registered to the pre-operative MRI.",
-                                          "Anatomical labels from the AAL atlas.", ""]),
-                  "optodes": rng.choice(["Optode positions were digitized with a Polhemus system and projected with NIRS-SPM.", ""])}[kind]
         citing = [f"The location of each {'contact' if kind == 'contacts' else 'channel'} is given in {tl}."]
         truth = [("localization", None, False)] * len(sets)
     elif target == "anchor_roi_mrs":
+        labels = names.draw("table", "anchor:roi", rng, rng.randint(1, 3))
         rows, sets = [], []
-        for label in names.draw("table", "anchor:roi", rng, rng.randint(1, 3)):
-            src = [rng.choice(paired) for _ in range(rng.randint(2, 6))]
-            spts = [pos.fresh(jitter(p, rng, 6), rng) for _, p in src]
+        for label, k in zip(labels, sizes(total, len(labels))):
+            src, spts = draw_rows(k)
             sets.append({"name": label, "points": [[*p, None, None, None] for p in spts]})
             for ci, p in enumerate(spts):
-                rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", f"Subject {ci + 1}", *p, rng.choice(["20 x 20 x 20", "30 x 30 x 30", "25 x 25 x 25"])])
-        header = [f"#{rng.choice(['Voxel', 'Region'])}", "#Subject", f"#<3:{space_hdr}", "#Voxel size (mm)"]
-        caption = rng.choice([f"Centre of the {rng.choice(['MRS', '1H-MRS', 'spectroscopy'])} voxel in each participant ({sw}).",
-                              f"Placement of the MRS voxels used to measure {rng.choice(['GABA', 'glutamate', 'NAA and creatine'])} ({sw} coordinates)."])
-        footer = rng.choice(["Voxel size 20 x 20 x 20 mm.", "Mean voxel overlap across participants was 78%.", "Voxels were positioned on the anatomical scan.", ""])
-        citing = [f"The location of each voxel is given in {tl}."]
+                rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", src[ci][0], *p, rng.choice(["20 x 20 x 20", "30 x 30 x 30", "25 x 25 x 25"])])
+        header = [f"#{rng.choice(['Voxel', 'Placement'])}", "#Region", f"#<3:{space_hdr}", "#Voxel size (mm)"]
+        citing = [f"The location of each MRS voxel is given in {tl}."]
         truth = [("anchor", "roi", False)] * len(sets)
     elif target in ("seed", "node"):
+        labels = names.draw("table", f"anchor:{target}", rng, rng.randint(1, 3))
         rows, sets = [], []
-        for label in names.draw("table", f"anchor:{target}", rng, rng.randint(1, 3)):
-            src = [rng.choice(paired) for _ in range(rng.randint(ROWS[0] // 2, ROWS[1] // 2))]
-            spts = [pos.fresh(jitter(p, rng, 6), rng) for _, p in src]
+        for label, k in zip(labels, sizes(total, len(labels))):
+            src, spts = draw_rows(k)
             sets.append({"name": label, "points": [[*p, None, None, None] for p in spts]})
             for ci, p in enumerate(spts):
                 rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", src[ci][0], *p, rng.choice(["8", "6", "10"]) if target == "seed" else rng.choice(["DMN", "FPN", "Salience", "Dorsal attention"])])
         header = ["#Seed" if target == "seed" else "#Network", "#Region", f"#<3:{space_hdr}", "#Radius (mm)" if target == "seed" else "#Module"]
-        caption = rng.choice([f"{sw} coordinates of the seed regions used in the connectivity analysis.", "Seed regions for the functional connectivity analysis."]) if target == "seed" else \
-            rng.choice([f"Nodes of the {rng.choice(['default mode', 'frontoparietal', 'salience'])} network and their {sw} coordinates.", f"{sw} coordinates of the network nodes (parcel centres)."])
-        footer = rng.choice(["Seeds were spheres centred on these coordinates.", "", "Coordinates are the centres of the seed regions."]) if target == "seed" else \
-            rng.choice(["Nodes were defined from the parcellation.", "", "Coordinates are parcel centres of mass."])
         citing = [f"{tl} lists the {'seeds' if target == 'seed' else 'nodes'} of the {'connectivity' if target == 'seed' else 'network'} analysis."]
         truth = [("anchor", target, False)] * len(sets)
     elif target == "other":
         kind = rng.choice(["slices", "simulated", "lesion", "example"])
+        labels = names.draw("table", "other", rng, rng.randint(1, 3))
         rows, sets = [], []
-        for label in names.draw("table", "other", rng, rng.randint(1, 3)):
-            src = [rng.choice(paired) for _ in range(rng.randint(ROWS[0], ROWS[1]))]
-            spts = [pos.fresh(jitter(p, rng, 6), rng) for _, p in src]
+        for label, k in zip(labels, sizes(total, len(labels))):
+            src, spts = draw_rows(k)
             sets.append({"name": label, "points": [[*p, None, None, None] for p in spts]})
             for ci, p in enumerate(spts):
                 rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", src[ci][0], *p])
         header = ["#" + {"slices": "Panel", "simulated": "Simulated source", "lesion": "Patient", "example": "Voxel"}[kind], "#Region", f"#<3:{space_hdr}"]
-        caption = {"slices": f"Positions of the slices displayed in Figure {rng.randint(1, 6)}.",
-                   "simulated": f"Locations of the simulated sources used to test {rng.choice(['localization accuracy', 'the beamformer', 'the inverse solution'])}.",
-                   "lesion": "Lesion centre of mass for each patient.",
-                   "example": f"Worked examples: voxels and their probabilistic assignment in the {rng.choice(['Jülich', 'Harvard-Oxford', 'Talairach Daemon'])} atlas."}[kind]
-        footer = rng.choice(["", f"Coordinates in {sw} space.", "Positions only; no statistics apply."])
         citing = [{"slices": f"{tl} gives the slice positions used for display.", "simulated": f"The simulated source positions are listed in {tl}.",
                    "lesion": f"See {tl} for each patient's lesion centre.", "example": f"{tl} gives worked examples of the atlas lookup."}[kind]]
         truth = [("other", None, False)] * len(sets)
     elif target == "stimulation_target":
+        labels = names.draw("table", "anchor:stimulation_target", rng, rng.randint(1, 2))
         rows, sets = [], []
-        for label in names.draw("table", "anchor:stimulation_target", rng, rng.randint(1, 2)):
-            src = [rng.choice(paired) for _ in range(rng.randint(ROWS[0], ROWS[1]))]
-            spts = [pos.fresh(jitter(p, rng, 6), rng) for _, p in src]
+        for label, k in zip(labels, sizes(total, len(labels))):
+            src, spts = draw_rows(k)
             sets.append({"name": label, "points": [[*p, None, None, None] for p in spts]})
             for ci, p in enumerate(spts):
-                rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", *p, rng.choice(["Neuronavigation", "fMRI-guided", "Beam F3", "Individual peak"])])
-        header = ["#Site", f"#<3:{space_hdr}", "#Targeting method"]
-        caption = rng.choice([f"{rng.choice(['TMS', 'rTMS', 'iTBS', 'tDCS'])} stimulation targets ({sw} coordinates).",
-                              "Coordinates of the stimulation sites, by condition."])
-        footer = rng.choice(["Targets were located individually with frameless neuronavigation.", "", "The coil was positioned tangentially at 45°."])
+                rows.append([f"^{len(spts)}:{label or ''}" if ci == 0 else "~", src[ci][0], *p, rng.choice(["Neuronavigation", "fMRI-guided", "Beam F3", "Individual peak"])])
+        header = ["#Site", "#Region", f"#<3:{space_hdr}", "#Targeting method"]
         citing = [f"The stimulation targets are listed in {tl}."]
         truth = [("anchor", "stimulation_target", False)] * len(sets)
-    else:  # hard negative: a result table with a sparse class's cue
-        cue = rng.choice(["cites", "roi", "electrode_result", "slice_note"])
+    else:  # hard negative: a result table whose citing sentence carries a prior-study cue
         rows, sets = [], []
         for s in seed["sets"][:3]:
-            # The seed's own names: real result names, so they follow the result class's.
-            spts = [pos.fresh(xyz_of(p), rng) for p in s["points"][:5]]
+            # The seed's own names and points: real result names, so they follow the result class's.
+            pts = [xyz_of(p) for p in s["points"][:5]]
+            reg = [rng.choice([r for r in regions if hemisphere(r) in (None, "left" if p[0] < 0 else "right")] or regions) for p in pts]
+            spts = [pos.fresh(side(r, p), rng) for r, p in zip(reg, pts)]
             stat = [p[4] if not isinstance(p, dict) and len(p) > 4 else round(rng.uniform(3.2, 7.5), 2) for p in s["points"][:5]]
             sets.append({"name": s.get("name"), "points": [[*p, "T", st, None] for p, st in zip(spts, stat)]})
-            for ci, (p, st) in enumerate(zip(spts, stat)):
-                rows.append([f"^{len(spts)}:{s.get('name') or ''}" if ci == 0 else "~", rng.choice(regions), *p, st])
+            for ci, (r, p, st) in enumerate(zip(reg, spts, stat)):
+                rows.append([f"^{len(spts)}:{s.get('name') or ''}" if ci == 0 else "~", r, *p, st])
         header = ["#Contrast", "#Region", f"#<3:{space_hdr}", "#t"]
-        caption = {"cites": f"Regions showing {rng.choice(['greater', 'reduced'])} activation, in line with {cite(rng)}.",
-                   "roi": "Peaks within the a priori regions of interest (small-volume corrected).",
-                   "electrode_result": "Clusters of significant source-level power change (beamformer, cluster-corrected).",
-                   "slice_note": f"Significant clusters (p < 0.05 FWE), shown in Figure {rng.randint(1, 5)} on axial slices."}[cue]
-        footer = rng.choice([f"Peaks overlap those reported previously {cite(rng)}.", "ROIs were 8-mm spheres from a prior meta-analysis.", ""])
         citing = [f"{tl} lists the peaks of this effect, consistent with {cite(rng)}."]
         truth = [("result", None, False)] * len(sets)
+    cls = TARGET_CLASS[target if target in TARGET_CLASS else "hard"]
+    caption, footer = names.text("caption", cls, rng, tl), names.text("footer", cls, rng, tl)
     sub = ["~"] * (header.index(next(h for h in header if h.startswith("#<3:")))) + ["#x", "#y", "#z"]
     serial = _table(header, [sub + ["~"] * (len(rows[0]) - len(sub))] + rows) if rows else ""
     unit = {"origin": "table", "article_id": f"synth:{seed['article_id']}", "source": seed.get("source"),
             "table_id": f"synth-{rng.randint(0, 10**9)}", "table_label": tl, "title": seed.get("title"),
-            "abstract": seed.get("abstract"), "caption": f"{caption}" if rng.random() < 0.5 else f"{tl}. {caption}",
+            "abstract": seed.get("abstract"), "caption": caption,
             "footer": footer, "table_serialised": serial, "citing": citing, "sets": sets}
     return unit, truth
 
@@ -458,9 +571,9 @@ def table_case(seed, target, rng, names):
 def prose_sentence(target, rng, region, pos):
     """(sentence, xyz, truth, the sentence's author-year citation or None) of one prose set.
 
-    `pos` holds the triples the passage already has.
+    `pos` holds the triples the passage already has. x lies on the hemisphere `region` names.
     """
-    xyz = pos.fresh(sp.realistic_xyz(rng), rng)
+    xyz = pos.fresh(side(region, sp.realistic_xyz(rng)), rng)
     c = sp.coord_text(xyz, rng)
     w = sp.wrap(c)
     ct = cite(rng)
@@ -639,13 +752,15 @@ def main():
                     help='JSON {"table": {"reference": n, "localization": n, ..., "hard_result": n}, "text": {...}}')
     ap.add_argument("--units", type=Path, nargs="+", required=True, help="real labelling units (build_sets.py output)")
     ap.add_argument("--labels", type=Path, nargs="+", required=True, help="labelling job directories (label_sets.py output)")
-    ap.add_argument("--id-map", type=Path, help="slug id -> database id (units/slug_dbids.json), as the export splits by")
+    ap.add_argument("--id-map", type=Path, required=True,
+                    help="slug id -> database id (units/slug_dbids.json): export.splits splits by database id, so "
+                         "without it a seed can come from an article the export puts in val or test")
     ap.add_argument("--seed", type=int, default=41)
     ap.add_argument("--max-per-article", type=int, default=3)
     ap.add_argument("--id-prefix", default="s4")
     a = ap.parse_args()
     units, labels = load_units(a.units), labeling.latest_labels(a.labels)
-    id_map = json.loads(a.id_map.read_text()) if a.id_map else None
+    id_map = json.loads(a.id_map.read_text())
     pool, names = seeds(units, labels, id_map), Names(train_units(units, labels, id_map), labels)
     print(generate(pool, json.loads(a.plan.read_text()), random.Random(a.seed), a.out_dir, names, a.max_per_article,
                    a.id_prefix, a.seed))

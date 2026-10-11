@@ -159,30 +159,44 @@ kinds) when real examples are scarce. Each unit is seeded from a real unit whose
 rewritten into one target role with that role's cues, plus hard negatives that carry a sparse class's cue
 but are another role. Units are read by `services/set_roles` (`table_context`, `prose_context`), and the
 roles are study_schema's (`labels.COORDINATE_ROLES`, `ANCHOR_KINDS`); an MRS voxel is an `anchor` with
-`anchor_kind` `roi`. Synthetic data is for training only: seeds and set names come only from units
-`export.splits` puts in train (pass the same `--id-map` the export uses), and a synthetic unit's
-`article_id` is `synth:<seed article>`.
+`anchor_kind` `roi`. Synthetic data is for training only: seeds, set names, captions and footers come only from units
+`export.splits` puts in train, and a synthetic unit's `article_id` is `synth:<seed article>`. That is
+the split the encoder is evaluated on (`train_encoder` reads the `split` field `export_rows` writes), so
+`--id-map` is required, and must be the map the export uses: without it a slug-id article is split
+under its slug and can seed a unit from the encoder's val or test articles. Pass generation at least
+the label dirs the export passes, gold ones (`pilot-astra`) included: an article with a gold label is
+forced to test only when the gold dir is read, so a generation run without it can seed from an
+article the export puts in test.
 
-Set names do not follow the target. A class's names take the shapes of the real labelled names of that
-class (a citation, "<region> seed", "P1", a contrast, ...) at the real rates, and the rest of each name
-comes from every class's real names of that shape. No two sets of a unit share a coordinate triple; a
-case the context builders would misread (a real seed whose sets already share one) is redrawn from
-another seed and recorded in `rejected.jsonl`.
+Set names, captions and footers do not follow the target. A class's names take the shapes of the real
+labelled names of that class (a citation, "<region> seed", "P1", a contrast, ...) at the real rates; a
+name is one of the class's own real names at the share they hold, else a real name of that shape from
+any class that carries no other class's cue word (so "prior study" stays a reference name, as it is in
+every real text set that has it). A table's caption and footer are those of a real labelled set of the
+class, so a caption shared by several classes in real tables is shared by them here at the same rates;
+a class with no real tables (table `other`) takes a real one that names no cue. A table has as many
+coordinate rows as its seed, and a region's hemisphere word agrees with the sign of its x, in tables
+and in new prose sentences. No two sets of a unit share a coordinate triple; a case the context
+builders would misread (a real seed whose sets already share one) is redrawn from another seed and
+recorded in `rejected.jsonl`.
 
 ```
 # generate: units.jsonl (sets hold only name and points), truth.jsonl (the label by construction),
 # rejected.jsonl (cases redrawn, with the reason)
 python experiments/role_classifier/synth/role_units.py OUT_DIR --plan plan.json \
     --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] \
-    [--id-map units/slug_dbids.json] [--seed 41]
+    --id-map units/slug_dbids.json [--seed 41]
 
 # leak check: no label syntax in any text field or in what the labeller or the encoder renders,
-# no key a real unit does not have
+# no key a real unit does not have. Text is NFKC-normalised, stripped of zero-width characters
+# and casefolded first, so "role\uff1a other", "Reference - prior study" and "role is localization"
+# are caught as "role: other" is
 python experiments/role_classifier/synth/leakcheck.py OUT_DIR
 
-# name check: a name-only classifier must not do much better on generated sets than on real ones
-python experiments/role_classifier/synth/namecheck.py OUT_DIR --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl \
-    --labels LABEL_DIR [LABEL_DIR ...] [--id-map units/slug_dbids.json]
+# name check: set names, captions and footers tell each class what real ones do, over 8+ runs
+python experiments/role_classifier/synth/namecheck.py OUT_DIR_41 OUT_DIR_42 ... OUT_DIR_48 \
+    --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] \
+    --id-map units/slug_dbids.json
 
 # rewrite pass: one codex call per unit, model gpt-6.1-sol (codex CLI; no OpenAI API endpoint).
 # A rewrite that fails the leak check is refused; the whole output is leak-checked again.
@@ -194,11 +208,24 @@ python experiments/role_classifier/synth/rewrite.py OUT_DIR REWRITTEN_DIR [--wor
 "hard_anchor_prior": 5}}`. Each rng seed uses a seed unit once, so a larger set is several runs with
 different `--seed` and `--id-prefix`.
 
-The name check fits a bag-of-tokens logistic regression on the set name alone, class-weighted, and
-scores it by balanced accuracy in article-grouped 5-fold cross-validation over the classes the generated
-units hold: once on the generated sets, once on the real labelled train sets of those classes. It exits 1
-when the generated score is more than 0.10 (`namecheck.MAX_GAIN`) above the real one, and prints each
-class's share of name shapes, real and generated.
+The name check fits a bag-of-tokens logistic regression, class-weighted, on one field alone (a set's
+name; a table's caption; its footer), in article-grouped 5-fold cross-validation, over the classes both
+the generated runs and the real labelled train sets hold. A generated string copied from a real set is
+grouped with that real article, so no model scores a string from an article it was fit on. Beside each
+run it builds a null run: the same number of sets per class, each a copy of a random real labelled set
+(sets that share a caption in the run share one in the null). Per class it compares recall, and over
+classes balanced accuracy, each the mean over the runs:
+
+- generated sets tell their class no better than the null run's (no extra cue);
+- a model fit on generated sets scores real sets no worse than one fit on the null run (no lost cue);
+- a model fit on real sets scores generated sets near its real cross-validated score.
+
+It exits 1 when a balanced accuracy is more than 0.10 (`namecheck.MAX_GAIN`) off, or a class's recall
+more than 0.20 (`MAX_CLASS_SHIFT`) off. A class with fewer than 15 real sets or 5 real articles is in the
+balanced accuracy but not held to a per-class rate; with fewer than 5 sets or 3 articles it is left out.
+Both are printed (`unchecked`, `class_unchecked`), with each class's share of name shapes, the class each
+real cue word leans to in generated names, and how far each number strays between runs. It needs 8 runs
+(`MIN_RUNS`): the per-class numbers of 4 runs stray past the tolerances.
 
 The rewrite keeps every number and citation verbatim and falls back to the original unit when a check
 fails. `synth_prose.py` is the earlier prose-only generator (its surface forms are reused; it finds

@@ -7,16 +7,20 @@ truth.jsonl only. A unit may hold only the keys real labelling units hold (`UNIT
 its sets only a name and points, its points only xyz, stat and cluster, and it must say
 its labels are the dataset's (`labels_from: dataset`) so the bulk labelling job skips it.
 Every text field and everything the labeller's prompt and the encoder's inputs render
-must be free of label syntax: a label field name, `role =`, a `[PROPOSED]` hint, or a
-set name that is a role value with a qualifier ("reference (prior study)", "anchor: roi").
-Cue words a real passage carries ("reference", "localization accuracy", "ground truth")
-are not a leak, so the patterns match label syntax rather than words.
+must be free of label syntax: a label field name, `role =`, `role is <role>`, a
+`[PROPOSED]` hint, or a set name that is a role value with a qualifier ("reference (prior
+study)", "anchor: roi", "Reference - prior study", "Anchor, ROI"). Text is NFKC-normalised,
+stripped of zero-width characters and casefolded before matching, so a fullwidth colon or
+an invisible space does not hide a label. Cue words a real passage carries ("reference",
+"localization accuracy", "ground truth", "Other-race faces", "Other > Self") are not a leak, so the
+patterns match label syntax rather than words.
 """
 
 import collections
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 from ingestion_workflow.services.set_roles import labeling
@@ -47,16 +51,32 @@ UNIT_KEYS = frozenset(
     }
 )
 _ROLES = "|".join(sorted({*COORDINATE_ROLES, "display"}, key=len, reverse=True))
-#: Label syntax in any rendered or raw text.
+_ZERO_WIDTH = dict.fromkeys(map(ord, "\u00ad\u180e\u200b\u200c\u200d\u200e\u200f\u2060\ufeff"))
+#: Label syntax in any rendered or raw text, after `normalize`.
 LABEL_SYNTAX = re.compile(
-    r"\[\s*PROPOSED\s*\]"
+    r"\[\s*proposed\s*\]"
     r"|\b(?:role|anchor[ _]kind|from[ _]prior[ _]study|hard[ _]negative|synthetic[ _]set)\s*[:=]"
-    r"|[\"'](?:role|anchor_kind|from_prior_study)[\"']",
-    re.I,
+    rf"|\brole\s*(?:->|=>|\u2192|\bis\b|\bwas\b)\s*[\"'(\[]?\s*(?:{_ROLES})\b"
+    r"|[\"'](?:role|anchor_kind|from_prior_study)[\"']"
 )
-#: A set name that is a role on its own or with a qualifier after it. Anchor kinds alone are
+#: A set name, after `normalize`, that is a role on its own or with a qualifier after it. A hyphen
+#: qualifies only with a space or `>` after it and `>` alone not at all: "other-race faces" and
+#: "other > self" are real names. Anchor kinds alone are
 #: real names ("ROI", "Seed regions"), at the rate `role_units.Names` reproduces.
-LABEL_NAME = re.compile(rf"^\s*(?:{_ROLES})\s*(?:$|[:=(\[/|])", re.I)
+LABEL_NAME = re.compile(rf"^\s*(?:{_ROLES})\s*(?:$|[:=(\[/|,\u2013\u2014\u2192]|-(?:\s|$|>))")
+
+
+def normalize(text):
+    """NFKC, no zero-width characters, casefolded: the form both patterns match."""
+    return unicodedata.normalize("NFKC", text).translate(_ZERO_WIDTH).casefold()
+
+
+def label_name(name):
+    return bool(name) and bool(LABEL_NAME.search(normalize(name)))
+
+
+def label_syntax(text):
+    return bool(text) and bool(LABEL_SYNTAX.search(normalize(text)))
 
 
 def _strings(value):
@@ -83,17 +103,17 @@ def leaks(unit):
     for s in unit.get("sets") or []:
         if set(s) != {"name", "points"}:
             out.append(f"set keys {sorted(s)}")
-        if s.get("name") and LABEL_NAME.search(s["name"]):
+        if label_name(s.get("name")):
             out.append("set name")
         for p in s.get("points") or []:
             if isinstance(p, dict) and not set(p) <= {"xyz", "stat", "cluster"}:
                 out.append(f"point keys {sorted(p)}")
     raw = [unit[k] for k in unit if k != "sets"] + [s.get("name") for s in unit.get("sets") or []]
-    if any(LABEL_SYNTAX.search(t) for t in _strings(raw)):
+    if any(label_syntax(t) for t in _strings(raw)):
         out.append("text field")
     _, prompt, _ = labeling.render(unit)
     rendered = [prompt] + [labeling.serialize(unit, ctx) for ctx in labeling.contexts(unit)]
-    if any(LABEL_SYNTAX.search(t) for t in rendered):
+    if any(label_syntax(t) for t in rendered):
         out.append("rendered input")
     return sorted(set(out))
 

@@ -5,6 +5,7 @@ articles only, names sets the way real sets are named, and leaks no label into w
 import itertools
 import json
 import random
+import re
 import sys
 import zlib
 from pathlib import Path
@@ -334,6 +335,18 @@ LEAKS = {
 }
 
 
+LEAKS.update(
+    {
+        "set name with a dash": ("table", lambda u: u["sets"][0].update(name="Reference - prior study")),
+        "set name with a comma": ("table", lambda u: u["sets"][0].update(name="Anchor, ROI")),
+        "role arrow in a caption": ("table", lambda u: u.update(caption=u["caption"] + " Role -> reference.")),
+        "role is in the text": ("text", lambda u: u.update(text=u["text"] + " (role is localization)")),
+        "fullwidth colon": ("text", lambda u: u.update(text=u["text"] + " role\uff1aother")),
+        "zero-width space": ("text", lambda u: u.update(text=u["text"] + " role\u200b: other")),
+    }
+)
+
+
 @pytest.mark.parametrize("leak", sorted(LEAKS))
 def test_leakcheck_catches(generated, leak):
     units, _, _ = generated
@@ -364,6 +377,11 @@ def test_cue_words_are_not_leaks(generated):
         "Ground-truth positions of the reference electrodes; localization accuracy was 4 mm."
     )
     u["sets"][0]["name"] = "Reference electrodes"
+    assert leakcheck.leaks(u) == []
+    for name in ("Other > Self", "Other-race faces", "other-race > same-race"):
+        u["sets"][0]["name"] = name
+        assert leakcheck.leaks(u) == [], name
+    u["caption"] = "The role of other regions is discussed; the role was unclear."
     assert leakcheck.leaks(u) == []
 
 
@@ -420,17 +438,16 @@ def test_new_prose_set_never_reuses_a_seed_triple(monkeypatch):
 def test_names_follow_the_real_shapes_and_tell_no_more_than_real_names(real, generated):
     units, labels = real
     gen_units, truth, _ = generated
-    result = namecheck.compare(gen_units, truth, role_units.train_units(units, labels), labels)
-    assert set(result) == {"table", "text"}
-    assert namecheck.too_telling(result) == [], {
-        o: (r["real"], r["generated"]) for o, r in result.items()
-    }
-    # A class with no real names (table `other`) is named like the origin as a whole.
-    names = role_units.Names(role_units.train_units(units, labels), labels)
-    mix, every = names.mix("table", "no such class"), names.shapes[("table", None)]
-    assert mix == pytest.approx(
-        {k: role_units.ALPHA * v / sum(every.values()) for k, v in every.items()}
-    )
+    train = role_units.train_units(units, labels)
+    result = namecheck.compare([(gen_units, truth)], train, labels, fields=("name",))
+    assert set(result["name"]) == {"table", "text"}
+    overall = [f for f in namecheck.failures(result) if " all:" in f]
+    assert overall == [], {o: r["balanced"] for o, r in result["name"].items()}
+    # A class with no real names (table `other`) is named like the average class, not like `result`.
+    names = role_units.Names(train, labels)
+    base = names.base("table")
+    assert names.mix("table", "no such class") == pytest.approx({k: role_units.ALPHA * v for k, v in base.items()})
+    assert sum(base.values()) == pytest.approx(1.0)
 
 
 def test_a_real_name_that_reads_as_a_label_is_left_out_and_counted():
@@ -441,7 +458,7 @@ def test_a_real_name_that_reads_as_a_label_is_left_out_and_counted():
     for i in range(3):
         _label(labels, u, i, "other")
     names = role_units.Names({"u": u}, labels)
-    assert [n for k in names.pool["table"].values() for n in k] == ["Controls"]
+    assert [n for k in names.pool["table"].values() for n, _ in k] == ["Controls"]
     assert names.left_out == {"reads as a label": 2}
 
 
@@ -454,10 +471,182 @@ def test_namecheck_flags_names_that_give_the_class_away(real, generated):
         by_id[t["unit_id"]]["sets"][role_units.set_index(t["set_id"])]["name"] = (
             f"{role_units.role_class(t['role'], t['anchor_kind'])} set"
         )
-    result = namecheck.compare(telling, truth, role_units.train_units(units, labels), labels)
-    assert namecheck.too_telling(result) == ["table", "text"], {
-        o: (r["real"], r["generated"]) for o, r in result.items()
-    }
+    result = namecheck.compare([(telling, truth)], role_units.train_units(units, labels), labels, fields=("name",))
+    bad = namecheck.failures(result)
+    assert any(f.startswith("name table all") and "extra cue" in f for f in bad), bad
+    assert any(f.startswith("name text all") and "extra cue" in f for f in bad), bad
+
+
+def test_namecheck_flags_names_that_lost_the_real_cue(real, generated):
+    units, labels = real
+    gen_units, truth, _ = generated
+    # Every generated set named alike: the names teach nothing the real ones do.
+    blank = json.loads(json.dumps(gen_units))
+    for u in blank:
+        for s in u["sets"]:
+            s["name"] = "Controls"
+    train = role_units.train_units(units, labels)
+    result = namecheck.compare([(blank, truth)], train, labels, fields=("name",))
+    assert any("a real cue is lost" in f for f in namecheck.failures(result))
+
+
+def test_namecheck_groups_a_copied_name_with_its_real_article():
+    real = [("art1", "PCC seed", "anchor:seed"), ("art2", "Table 2. Peaks", "result")]
+    gen = [("synth:x", "PCC  seed", "anchor:seed"), ("synth:y", "Table 9. peaks", "result"), ("synth:z", "new", "other")]
+    assert [r[0] for r in namecheck.by_source(gen, real)] == ["art1", "art2", "synth:z"]
+
+
+def test_namecheck_spreads_a_text_many_real_articles_hold_over_them():
+    real = [(f"art{i}", "", "result") for i in range(10)]
+    gen = [(f"synth:{i}", "", "result") for i in range(200)]
+    assert {g for g, _, _ in namecheck.by_source(gen, real)} == {f"art{i}" for i in range(10)}
+
+
+def test_null_rows_copy_real_sets_at_their_rates():
+    real = [("a", "Peaks", "result"), ("a2", "Foci", "result"), ("a3", "Clusters", "result"), ("b", "Seeds", "anchor:seed")]
+    gen = [("synth:a", "Peaks", "result")] * 3 + [("synth:b", "Seeds", "anchor:seed"), ("synth:c", "PCC", "anchor:seed")]
+    shape = namecheck.clusters(gen)
+    assert sorted(k for _, k in shape) == [1, 1, 3]
+    rows = namecheck.null_rows(real, shape * 100, seed=1)
+    assert len(rows) == 500 and set(rows) <= set(real)
+    assert sum(r[2] == "anchor:seed" for r in rows) == 200
+    # The three sets of one generated table share one real caption, so their null copies do too.
+    assert all(len(set(rows[i : i + 3])) == 1 for i in range(0, 500, 5))
+    assert len({rows[i] for i in range(0, 500, 5)}) == 3
+
+
+def test_namecheck_flags_captions_that_give_the_class_away(real, generated):
+    units, labels = real
+    gen_units, truth, _ = generated
+    telling = json.loads(json.dumps(gen_units))
+    by_id = {u["unit_id"]: u for u in telling}
+    for t in truth:
+        u = by_id[t["unit_id"]]
+        if u["origin"] == "table":
+            u["caption"] = f"{role_units.role_class(t['role'], t['anchor_kind'])} table"
+    result = namecheck.compare([(telling, truth)], role_units.train_units(units, labels), labels, fields=("caption",))
+    assert any(f.startswith("caption table all") and "extra cue" in f for f in namecheck.failures(result))
+    honest = namecheck.compare([(gen_units, truth)], role_units.train_units(units, labels), labels, fields=("caption", "footer"))
+    assert [f for f in namecheck.failures(honest) if " all:" in f] == [], {k: v["table"]["balanced"] for k, v in honest.items()}
+
+
+def test_a_caption_is_drawn_at_the_rate_real_sets_carry_it():
+    arts = iter(_articles("train", 4, "rate"))
+    units, labels = {}, {}
+    for j, (caption, n) in enumerate([("Coordinates from previous studies.", 3), ("Studies compared.", 1)]):
+        u = {**_table(f"rate{j}", next(arts), [f"S{i}" for i in range(n)]), "caption": caption, "footer": ""}
+        units[u["unit_id"]] = u
+        for i in range(n):
+            _label(labels, u, i, "reference")
+    names = role_units.Names(units, labels)
+    draws = [names.text("caption", "reference", random.Random(i), "Table 1").removeprefix("Table 1. ") for i in range(400)]
+    assert 0.65 < draws.count("Coordinates from previous studies.") / 400 < 0.85
+
+
+def test_namecheck_needs_the_id_map_and_several_runs(monkeypatch, tmp_path, capsys):
+    # The runs come first: --labels takes every path after it.
+    opts = ["--units", "u.jsonl", "--labels", "l"]
+    for argv, why in (
+        (["namecheck.py", *[str(tmp_path)] * namecheck.MIN_RUNS, *opts], "required: --id-map"),
+        (["namecheck.py", str(tmp_path), *opts, "--id-map", "m.json"], f"at least {namecheck.MIN_RUNS} runs"),
+    ):
+        monkeypatch.setattr(sys, "argv", argv)
+        with pytest.raises(SystemExit) as e:
+            namecheck.main()
+        assert e.value.code == 2 and why in capsys.readouterr().err
+
+
+def test_role_units_needs_the_id_map(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(sys, "argv", ["role_units.py", str(tmp_path), "--plan", "p.json", "--units", "u", "--labels", "l"])
+    with pytest.raises(SystemExit) as e:
+        role_units.main()
+    assert e.value.code == 2 and "required: --id-map" in capsys.readouterr().err
+
+
+def test_a_cue_word_stays_with_its_class():
+    arts = iter(_articles("train", 40, "cue"))
+    units, labels = {}, {}
+    for j in range(6):
+        for cls, name in [("reference", f"Prior study peak {j}"), ("result", f"Faces peak {j}"), ("other", f"Houses peak {j}")]:
+            u = _prose(f"c-{cls}-{j}", next(arts), [name])
+            units[u["unit_id"]] = u
+            _label(labels, u, 0, cls)
+    names = role_units.Names(units, labels)
+    assert names.cues["text"]["prior"] == "reference"
+    drawn = {c: [names.draw("text", c, random.Random(i))[0] for i in range(60)] for c in ("reference", "other")}
+    assert any("Prior" in n for n in drawn["reference"])
+    assert not any("Prior" in n for n in drawn["other"])
+
+
+def test_captions_and_footers_are_real_ones_of_the_class():
+    arts = iter(_articles("train", 20, "cap"))
+    units, labels = {}, {}
+    for j, (cls, caption, footer) in enumerate(
+        [("reference", "Table 3. Coordinates from previous studies.", "Taken from the cited studies."),
+         ("result", "Table 1. Coordinates of the regions.", ""),
+         ("result", "Table 2: Peaks of the significant clusters (p < 0.05 FWE).", "BA, Brodmann area.")]
+    ):
+        u = {**_table(f"cap{j}", next(arts), ["A > B"]), "caption": caption, "footer": footer}
+        units[u["unit_id"]] = u
+        _label(labels, u, 0, cls)
+    names = role_units.Names(units, labels)
+    draws = lambda cls, field: {names.text(field, cls, random.Random(i), "Table 7") for i in range(40)}  # noqa: E731
+    assert {c.removeprefix("Table 7. ") for c in draws("reference", "caption")} == {"Coordinates from previous studies."}
+    assert draws("reference", "footer") == {"Taken from the cited studies."}
+    # A class with no real tables gets only the cue-free ones, of any class.
+    assert {c.removeprefix("Table 7. ") for c in draws("other", "caption")} == {"Coordinates of the regions."}
+    assert draws("other", "footer") == {"", "BA, Brodmann area."}
+    assert names.prefixed == 1.0
+
+
+def _region_rows(unit):
+    """(region cell, x) of each body row of a generated table."""
+    lines = unit["table_serialised"].splitlines()
+    head = [c.strip() for c in lines[0].split(" | ")]
+    col = next((i for i, c in enumerate(head) if re.search("Region|label|Location", c)), None)
+    first = next(i for i, c in enumerate(head) if c.startswith("#<3:"))
+    for line in lines[2:]:
+        cells = line.split(" | ")
+        if col is not None:
+            yield cells[col + 2 if col > first else col], int(cells[first])
+
+
+def test_hemisphere_words_agree_with_the_sign_of_x(generated):
+    units, truth, _ = generated
+    by_id = {u["unit_id"]: u for u in units}
+    seen = 0
+    for t in truth:
+        if t.get("new_sentence") and role_units.hemisphere(t["new_sentence"]):
+            x = role_units.xyz_of(by_id[t["unit_id"]]["sets"][role_units.set_index(t["set_id"])]["points"][0])[0]
+            assert (x < 0) == (role_units.hemisphere(t["new_sentence"]) == "left"), t["new_sentence"]
+            seen += 1
+    for u in units:
+        if u["origin"] == "table":
+            for region, x in _region_rows(u):
+                if role_units.hemisphere(region):
+                    assert (x < 0) == (role_units.hemisphere(region) == "left"), (u["unit_id"], region, x)
+                    seen += 1
+    assert seen > 50
+
+
+def test_hemisphere_reads_words_and_letters():
+    h = role_units.hemisphere
+    assert [h("left insula"), h("Right IFG"), h("Precentral_L"), h("L IFG"), h("R."), h("bilateral insula"), h("left and right"), h("LA3")] == [
+        "left", "right", "left", "left", "right", None, None, None]
+    assert role_units.side("left insula", [30, 1, 2]) == [-30, 1, 2]
+    assert role_units.side("right insula", [0, 1, 2]) == [role_units.MIDLINE, 1, 2]
+    assert role_units.side("insula", [30, 1, 2]) == [30, 1, 2]
+
+
+def test_a_table_has_as_many_rows_as_its_seed(real):
+    units, labels = real
+    names = role_units.Names(role_units.train_units(units, labels), labels)
+    seed = units["t0"]
+    n = len(role_units.real_rows(seed))
+    for target, s in itertools.product(["reference", "localization", "anchor_roi_mrs", "seed", "other", "stimulation_target"], range(4)):
+        unit, _ = role_units.table_case(seed, target, random.Random(s), names)
+        assert sum(len(x["points"]) for x in unit["sets"]) == sum(role_units.sizes(n, len(unit["sets"]))), target
+        assert len(role_units.real_rows(unit)) == sum(len(x["points"]) for x in unit["sets"])
 
 
 def test_rewrite_refuses_a_rewrite_that_leaks(generated):
