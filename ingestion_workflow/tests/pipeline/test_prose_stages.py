@@ -1211,6 +1211,93 @@ def test_roles_waits_for_prose_to_read_the_passages_it_would_index(env, monkeypa
     assert again.status is Status.OK and again.fingerprint != first.fingerprint
 
 
+def _roles_after_a_chain(env, monkeypatch, pmid):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid=pmid))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    roles = _roles(settings, monkeypatch)
+    _, (first,) = _run(roles, ctx, catalog, ref)
+    assert first.status is Status.OK
+    return settings, catalog, ref, ctx, roles, first
+
+
+def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatch):
+    """Prose re-read new passages and now holds no point, so resolve skips it and keeps its old
+    row: that row's indices point into the old list, and roles must not write on them."""
+    from ingestion_workflow.pipeline.stages.roles import RESOLVE_READ_OTHER_PROSE
+
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
+    found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer-passages",
+                            payload=catalog.payload(found), summary=found.summary)])
+
+    class NoPoint:
+        def extract(self, passage, *, title="", abstract=""):
+            return {"space": None, "analyses": []}
+
+    prose = ProseStage(settings)
+    prose.client = lambda: NoPoint()
+    _run(prose, ctx, catalog, ref)
+    skipped, _ = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert skipped.skipped == 1
+    plan, outcomes = _run(roles, ctx, catalog, ref)
+    assert (outcomes, plan.reasons) == ([], {RESOLVE_READ_OTHER_PROSE: 1})
+
+
+def test_resolve_records_the_prose_it_was_made_from(env, monkeypatch):
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "62")
+    resolved = catalog.artifacts([ref.id], "resolve")[ref.id][""]
+    assert resolved.summary["prose_read"] == catalog.artifacts([ref.id], "prose")[ref.id][""].fingerprint
+
+
+def test_roles_plans_again_when_the_spans_change_under_the_same_passages(env, monkeypatch):
+    """A passages code change that kept its fingerprint moved the spans prose's indices point
+    into; resolve and prose are as they were, and only roles' own fingerprint can notice."""
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "63")
+    found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    plan, _ = _run(roles, ctx, catalog, ref)
+    assert plan.fresh == 1
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint=found.fingerprint,
+                            payload=catalog.payload(found),
+                            summary={**found.summary, "spans": "moved-spans"})])
+    plan = roles.plan(ctx, [ref], catalog.artifacts([ref.id], "roles"), catalog.artifacts([ref.id], "resolve"))
+    assert (plan.fresh, len(plan.pending)) == (0, 1)
+    assert plan.pending[0].fingerprint != first.fingerprint
+
+
+def test_the_spans_digest_follows_the_spans_and_the_text():
+    from ingestion_workflow.pipeline.stages.passages import spans_digest
+
+    one = [{"span": [0, 5], "before": None, "after": None, "heading": None}]
+    other = [{"span": [0, 6], "before": None, "after": None, "heading": None}]
+    assert len({spans_digest("t", one), spans_digest("t", other), spans_digest("u", one)}) == 3
+
+
+def test_a_passage_with_a_hit_outside_the_legends_is_not_from_a_legend(env, tmp_path, monkeypatch):
+    """The marker needs every hit in a legend. Passages are read span by span, so no real text
+    gives one passage hits on both sides; this one is made to."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.extractors.figure_captions import append_legends
+    from ingestion_workflow.pipeline.stages import passages
+
+    text, spans = append_legends(TEXT, [(["F2"], "Figure 2. Insula (x = -34, y = 16, z = -6).")])
+    path = tmp_path / "mixed.txt"
+    path.write_text(text, encoding="utf-8")
+    legend_at = spans[0]["span"][0]
+
+    def mixed(_text, a, b):
+        return [SimpleNamespace(hits=[SimpleNamespace(span=(legend_at, legend_at + 1)),
+                                      SimpleNamespace(span=(0, 1))], from_legend=None)]
+
+    monkeypatch.setattr(passages, "_shifted", mixed)
+    _, found, _, _ = passages.find_passages({"text_path": str(path), "figure_captions": spans})
+    assert found and not any(p.from_legend for p in found)
+
+
 def test_passages_over_the_cap_are_recorded_with_their_reason(env, tmp_path, monkeypatch):
     from ingestion_workflow.pipeline.stages import passages
 

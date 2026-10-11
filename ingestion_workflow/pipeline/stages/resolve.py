@@ -13,7 +13,7 @@ from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
 
-RESOLVE_VERSION = 6
+RESOLVE_VERSION = 7
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -210,6 +210,7 @@ class ResolveStage:
             # What upload's freshness should follow. When the prose adds
             # nothing, the upload is the tables' upload, so it keeps the
             # fingerprint it already had.
+            summary["prose_read"] = work.upstream.fingerprint
             summary["basis"] = (tables_artifact.fingerprint
                                 if not summary["prose_analyses"] and tables_artifact is not None else "")
             yield Outcome(article_id=work.article_id, stage=self.name, source="", status=Status.OK,

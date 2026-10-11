@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 ROLES_VERSION = 3
 
 #: Why roles waits on an article whose prose indexes a passages list other than the current one.
+RESOLVE_READ_OTHER_PROSE = "its resolve was made from other prose: roles waits for resolve to read this prose"
 PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for prose to read these"
 
 #: The setting naming each origin's model, and the origin's name in a reason.
@@ -345,14 +346,20 @@ class RolesStage:
         return fingerprint(*parts, upstream=basis or upstream.fingerprint)
 
     @staticmethod
-    def prose_read(prose: Optional[Artifact], passages: Optional[Artifact]):
+    def prose_read(prose: Optional[Artifact], passages: Optional[Artifact], resolved: Artifact):
         """The prose and the passages its sets' indices point into, or why they cannot be read.
+
+        The sets are resolve's, copied from the prose it read (`prose_read`); a resolve made
+        from other prose, or one that skipped the newer prose and so kept its old row, holds
+        indices into a list that prose no longer indexes.
 
         Roles reads the passages artifact as it is now; the prose sets index the list prose
         was given. Passages run again before prose does (prose waits for its go-ahead), so
         until prose reads the new list the two disagree, and roles waits."""
         if prose is None or prose.status is not Status.OK:
             return None, "its prose is not OK: roles waits for prose"
+        if (resolved.summary or {}).get("prose_read") != prose.fingerprint:
+            return None, RESOLVE_READ_OTHER_PROSE
         if (passages is None or passages.status is not Status.OK
                 or (prose.summary or {}).get("passages_read") != passages.fingerprint):
             return None, PROSE_READ_OTHER_PASSAGES
@@ -403,7 +410,7 @@ class RolesStage:
             read = None
             if "text" in self.needs(parent):
                 read, stale = self.prose_read(prose.get(ref.id, {}).get(""),
-                                              passages.get(ref.id, {}).get(""))
+                                              passages.get(ref.id, {}).get(""), parent)
                 if stale:
                     plan.block(stale)
                     continue
