@@ -97,6 +97,9 @@ def _text_of(markup: str) -> str:
 #: be inverted at all, so the marker says what is true of the numbers and
 #: leaves the contrast as the paper wrote it.
 NEGATIVE_SUFFIX = " (negative)"
+INVERSE_SUFFIX = " (inverse)"
+#: Every spelling of the inverse-half marker a stored payload may carry.
+SPLIT_SUFFIXES = (INVERSE_SUFFIX, NEGATIVE_SUFFIX)
 
 
 def _by_direction(name, coordinates):

@@ -23,7 +23,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, 
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.services.set_roles import decide, prose_context, table_context
-from ingestion_workflow.services.set_roles.labels import role_error
+from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
 
 from ..plan import StagePlan, Work
@@ -38,18 +38,6 @@ ROLES_VERSION = 3
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
 _ORIGIN_NAMES = {"table": "table", "text": "prose"}
-
-#: The fields every set carries under `metadata.set_role`, once the stage has decided it.
-SET_ROLE_FIELDS = (
-    "role",
-    "anchor_kind",
-    "from_prior_study",
-    "prior_study_evidence",
-    "role_confidence",
-    "role_source",
-    "role_origin",
-)
-
 
 class MissingRoleModel(RuntimeError):
     """A set's origin has no usable classifier: the article gets no roles at all."""
@@ -155,7 +143,7 @@ def assign_roles(
             )
     out: Dict[str, Any] = {}
     roles, held = collections.Counter(), 0
-    values = []
+    values, records = [], []
     for table_id, collection in (payload or {}).items():
         kept = []
         for index, analysis in enumerate((collection or {}).get("analyses", [])):
@@ -178,6 +166,7 @@ def assign_roles(
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
                            decision.from_prior_study, not decision.uploaded])
+            records.append([table_id, index, metadata, not decision.uploaded])
         out[table_id] = {**collection, "analyses": kept}
     summary = {
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
@@ -190,6 +179,9 @@ def assign_roles(
         # decided them: what upload's freshness follows, so a retrained model
         # re-uploads only the articles where a set's role changed.
         "role_values": fingerprint("role-values", values),
+        # Every set's whole role record, with its confidence, evidence and model:
+        # what sync's freshness follows, since the parse writes all of them.
+        "role_records": fingerprint("role-records", records),
     }
     return out, summary
 
@@ -218,15 +210,7 @@ def unassigned(payload: Mapping[str, Any]) -> List[str]:
     out = []
     for table_id, collection in (payload or {}).items():
         for index, analysis in enumerate((collection or {}).get("analyses") or []):
-            metadata = (analysis or {}).get("metadata") or {}
-            role = metadata.get("set_role")
-            if (
-                not isinstance(metadata.get("held"), bool)
-                or not isinstance(role, Mapping)
-                or any(k not in role for k in SET_ROLE_FIELDS)
-                or not role.get("role_source")
-                or role_error(role)
-            ):
+            if not is_decided((analysis or {}).get("metadata") or {}):
                 out.append(f"{table_id}#{index}")
     return out
 

@@ -6,7 +6,7 @@ import logging
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterator, List, Sequence, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import (
@@ -17,7 +17,7 @@ from ingestion_workflow.models import (
     ExtractedContent,
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
-from ingestion_workflow.services import nspond
+from ingestion_workflow.services import nspond, paper_parse
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
@@ -28,7 +28,8 @@ from .roles import refuse_unassigned, with_roles
 logger = logging.getLogger(__name__)
 
 #: 2: stage1 points carry `sign` and `is_subpeak`.
-SYNC_VERSION = 2
+#: 3: parse/parsed_paper.json and parse/coordinate_parse.json beside stage1.
+SYNC_VERSION = 3
 
 
 class SyncStage:
@@ -40,8 +41,18 @@ class SyncStage:
         self._synced: List[Tuple[str, ArticleExtractionBundle]] = []
         self._retracted: List[str] = []
 
-    def fingerprint_for(self, upstream: Artifact) -> str:
-        return fingerprint("sync", SYNC_VERSION, upstream=upstream.fingerprint)
+    def fingerprint_for(self, upstream: Artifact, spaced: Optional[Artifact] = None) -> str:
+        # Upload follows the decided role values alone, but the parse also writes each
+        # set's role_source, role_confidence and evidence, so a retrained model that
+        # decides the same roles still re-syncs. A space artifact from before roles
+        # summarised its records stands in by its own fingerprint.
+        records = (
+            ((spaced.summary or {}).get("role_records") or spaced.fingerprint) if spaced else None
+        )
+        return fingerprint(
+            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION, records,
+            upstream=upstream.fingerprint,
+        )
 
     def plan(
         self,
@@ -52,6 +63,7 @@ class SyncStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         roled = with_roles(ctx, [ref.id for ref in refs])
+        spaced = ctx.catalog.artifacts([ref.id for ref in refs], "space")
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
             if upload is None or upload.status is not Status.OK or ref.id not in roled:
@@ -60,7 +72,7 @@ class SyncStage:
             if not upload.summary.get("base_study_id"):
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(upload)
+            fp = self.fingerprint_for(upload, spaced.get(ref.id, {}).get(""))
             if ctx.is_fresh(artifacts.get(ref.id, {}).get(""), fp):
                 plan.fresh += 1
                 continue
@@ -77,6 +89,10 @@ class SyncStage:
         triaged = ctx.catalog.artifacts(ids, "triage")
         # What the prose read, for an article extract could not read.
         passages = ctx.catalog.artifacts(ids, "passages")
+        # For the coordinate parse: table readings, prose passages, restatements.
+        read = ctx.catalog.artifacts(ids, "analyses")
+        prose = ctx.catalog.artifacts(ids, "prose")
+        resolved = ctx.catalog.artifacts(ids, "resolve")
 
         excluded = ctx.catalog.exclusions(ids)
         for work in works:
@@ -117,14 +133,32 @@ class SyncStage:
                     fingerprint=work.fingerprint,
                 )
                 continue
+            inputs = _parse_inputs(
+                ctx, work, base_study_id, excluded.get(work.article_id, {}),
+                {stage: found.get(work.article_id, {}) for stage, found in (
+                    ("extract", extractions), ("metadata", metadata), ("space", analyses),
+                    ("triage", triaged), ("analyses", read), ("prose", prose),
+                    ("resolve", resolved), ("passages", passages))},
+                bundle.article_data.source.value,
+            )
             self._synced.append((base_study_id, bundle))
+            try:
+                parse = paper_parse.write(target, bundle, per_table, inputs,
+                                          overwrite=self.settings.sync_overwrite)
+            except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is retried
+                logger.warning("parse files failed for %s: %s", work.article_id, exc)
+                yield Outcome.failure(
+                    work.article_id, self.name, "", f"parse: {type(exc).__name__}: {exc}",
+                    fingerprint=work.fingerprint,
+                )
+                continue
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                summary={"base_study_id": base_study_id, "path": str(target)},
+                summary={"base_study_id": base_study_id, "path": str(target), **parse},
             )
 
     def _retract(self, work: Work, base_study_id: str) -> Outcome:
@@ -206,6 +240,38 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+def _parse_inputs(
+    ctx: Context, work: Work, base_study_id, excluded, found, source
+) -> paper_parse.ParseInputs:
+    """What the parse files need from the catalog beyond the bundle."""
+    def ok(stage, key=""):
+        artifact = found[stage].get(key)
+        return artifact if artifact is not None and artifact.status is Status.OK else None
+
+    def payload(stage, key=""):
+        artifact = ok(stage, key)
+        return ctx.payload(artifact) if artifact is not None else None
+
+    analyses = ok("analyses")
+    summary = analyses.summary if analyses is not None else {}
+    passages = payload("passages")
+    resolved = ok("resolve")
+    picked = {"extract": ok("extract", source), "metadata": ok("metadata"), "space": ok("space"),
+              "triage": ok("triage")}
+    return paper_parse.ParseInputs(
+        article_id=work.article_id,
+        base_study_id=base_study_id,
+        triage=payload("triage"),
+        excluded=excluded or {},
+        readings=summary.get("readings"),
+        unread=summary.get("unread"),
+        prose=payload("prose"),
+        passages_kept=len(passages.get("passages") or []) if passages else None,
+        restated=(resolved.summary or {}).get("restated") if resolved is not None else None,
+        fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
+    )
 
 
 def _from_passages(ctx: Context, work: Work, passages: Artifact | None) -> Tuple[ExtractedContent, str]:

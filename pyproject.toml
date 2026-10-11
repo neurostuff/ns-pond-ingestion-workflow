@@ -3,7 +3,7 @@ name = "ingestion-workflow"
 version = "0.1.0"
 description = "Modular ingestion workflow for Neurostore data pipeline"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
   { name = "Ingestion Workflow Team" }
