@@ -586,7 +586,8 @@ def exclude(
         None, help="Articles to mark: PMID, PMC id, DOI, Neurostore base_study_id or article id."
     ),
     table: Optional[List[str]] = typer.Option(
-        None, "--table", "-t", help="Mark only this table (repeatable). Without it, the whole article."
+        None, "--table", "-t",
+        help="Mark only this table (repeatable). Without it, the whole article."
     ),
     file: Optional[Path] = typer.Option(
         None, "--file", "-f", exists=True, dir_okay=False,
@@ -595,8 +596,10 @@ def exclude(
     ),
     reason: str = typer.Option("not coordinates", "--reason", help="Why: recorded with the mark."),
     note: str = typer.Option("", "--note", help="Free text recorded with the mark."),
-    remove: bool = typer.Option(False, "--remove", help="Withdraw the marks instead of adding them."),
-    list_: bool = typer.Option(False, "--list", help="Print the marks on the given articles, or all."),
+    remove: bool = typer.Option(
+        False, "--remove", help="Withdraw the marks instead of adding them."),
+    list_: bool = typer.Option(
+        False, "--list", help="Print the marks on the given articles, or all."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Mark tables as holding no coordinates, so upload and sync leave them out.
@@ -625,9 +628,11 @@ def exclude(
                 if verdict is not None and verdict != "not coordinates":
                     continue
                 if not any(vars(catalog.identifier(entry["article_id"])).values()):
-                    typer.echo(f"  skipped, not an article id in this catalog: {entry['article_id']}")
+                    typer.echo("  skipped, not an article id in this catalog: "
+                               f"{entry['article_id']}")
                     continue
-                rows.append((entry["article_id"], str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
+                rows.append((entry["article_id"],
+                             str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
                              entry.get("reason") or entry.get("kind") or reason,
                              entry.get("note") or note))
 
@@ -669,21 +674,25 @@ def repair(config: Optional[Path] = ConfigOption) -> None:
 @app.command("refresh-text")
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
-        None, "--source", help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
+        None, "--source",
+        help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Report what would change; write nothing."),
-    report: Optional[Path] = typer.Option(None, "--report", help="Write one JSON line per extraction here."),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Report what would change; write nothing."),
+    report: Optional[Path] = typer.Option(
+        None, "--report", help="Write one JSON line per extraction here."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Rebuild extractions' text from their downloads, without re-running extract.
 
     The extraction keeps its tables, payload and fingerprint; its text hash and the
     passages' spans move to the new text in the same catalog write, and the references
-    and the sync are marked stale so they are read and written again. For a change to the text alone
-    (pubget keeping superscripts, the figure captions written under "Figure legends").
+    and the sync are marked stale so they are read and written again. For a change
+    to the text alone (pubget keeping superscripts, the figure captions written under
+    "Figure legends").
     """
     from collections import Counter
 
@@ -709,9 +718,11 @@ def refresh_text(
         elif result.old_sha256 and not dry_run:
             rewritten.append(result)  # its text stays: to record its hash
         if out:
-            out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
+            row = {k: v for k, v in result.__dict__.items() if k != "edits"}
+            out.write(json.dumps(row) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
-    # What the catalog stores against each rewritten text moves with it, a batch of texts per write.
+    # What the catalog stores against each rewritten text moves with it, a batch of texts
+    # per write.
     with _catalog(settings) as catalog:
         carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
@@ -723,15 +734,74 @@ def refresh_text(
                     if len({sha for sha, _ in news}) == 1}
         ambiguous = len(new_of) - len(replaced)
         n = 0
-        for target, _ in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources, write=not dry_run):
+        for target, _ in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources,
+                                                     write=not dry_run):
             n += 1
             if out:
-                out.write(json.dumps({"corpus_text": str(target), "status": "would_replace" if dry_run else "replaced"}) + "\n")
+                status = "would_replace" if dry_run else "replaced"
+                out.write(json.dumps({"corpus_text": str(target), "status": status}) + "\n")
         verb = "would replace" if dry_run else "replaced"
         typer.echo(f"corpus: {verb} {n:,} text.txt files under {settings.ns_pond_root}"
                    + (f"; {ambiguous:,} old texts skipped as ambiguous" if ambiguous else ""))
     if out:
         out.close()
+
+
+# -- revalidate-downloads ----------------------------------------------------
+
+
+@app.command("revalidate-downloads")
+def revalidate_downloads(
+    apply: bool = typer.Option(False, "--apply", help="Record the failures (default: dry run)."),
+    backup: Optional[Path] = typer.Option(
+        None, "--backup", help="Where --apply copies the catalog database first; must not exist."
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Fail stored downloads that are not the article: paywall, error, empty-shell and
+    citation-stub pages, checked again without fetching.
+
+    Each is recorded as a failed download with its reason, and the extraction made from
+    it fails with "download failed validation: <reason>". A run then moves triage to
+    another source's text, and `run --stage download` plans the next source. Running it
+    again finds nothing new. Stop other runs first: a row they rewrite during the scan is
+    left as they wrote it.
+    """
+    from ingestion_workflow.pipeline.stages import DownloadStage
+    from ingestion_workflow.services import download_revalidate as revalidate
+
+    if apply and backup is None:
+        raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
+    if apply and backup.exists():
+        raise typer.BadParameter(f"{backup} exists; give a new path", param_hint="--backup")
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        ctx = _context(settings, catalog, [])
+        found = revalidate.scan(catalog, list(catalog.all_article_ids()),
+                                workers=settings.max_workers, recorded_path=ctx.recorded_path)
+        effects = revalidate.effects(ctx, DownloadStage(settings), found)
+        typer.echo(f"checked {found.checked:,} stored downloads holding a page; "
+                   f"{len(found.missing):,} with files gone were left alone")
+        typer.echo(f"bad pages: {len(found.bad):,}")
+        for (reason, source), n in sorted(found.counts().items()):
+            typer.echo(f"  {reason:<14} {source:<10} {n:>8,}")
+        typer.echo(f"OK extractions made from a bad page: {len(found.extractions):,}")
+        typer.echo("their articles, by what happens next: "
+                   + ", ".join(f"{k} {v:,}" for k, v in sorted(effects["next"].items())))
+        typer.echo("artifacts made from a judged extraction that fails, by stage: "
+                   + ", ".join(f"{k} {v:,}" for k, v in effects["stale"].items()))
+        if not apply:
+            typer.echo("dry run: nothing written; --apply --backup <path> records these")
+            return
+        if not found.outcomes():
+            typer.echo("nothing to record; no backup made")
+            return
+        copied = revalidate.backup(settings.catalog_root, backup)
+        typer.echo(f"catalog copied to {copied}")
+        recorded = revalidate.apply(catalog, found)
+        changed = found.changed
+        left = f"; left {changed:,} rows another run rewrote since the scan" if changed else ""
+        typer.echo(f"recorded {recorded:,} failures{left}")
 
 
 # -- migrate -----------------------------------------------------------------

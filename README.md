@@ -116,6 +116,26 @@ found no text only blocks the article until it is fixed. A relative text path
 recorded in the catalog is read from the directory holding the catalog, never
 from the directory a run was started in.
 
+## When a downloaded page is not the article
+
+A downloaded HTML page that is an empty shell, a paywall notice, an error page or
+a citation stub (a PubMed record, a page with almost no prose) is a failed
+download: its reason is in the artifact's `summary.bad_page`
+(`empty_shell`, `paywall`, `error_page`, `citation_stub`), and the next source
+is tried. ACE moves such a page out of its cache to `<ace cache>-quarantine/`,
+under the same relative path, and records both paths in `summary.moved_aside`;
+nothing is deleted. The extraction made from that source's earlier download
+fails with `download failed validation: <reason>`, triage and passages stop
+reading its text, and prose stops reading passages made from it. An article no
+source can serve stays failed and blocked; its text is not taken back.
+
+`ingest revalidate-downloads` runs the same check on downloads already stored,
+without fetching. It is a dry run by default and prints the bad pages by reason
+and source and what will happen next to each article. `--apply --backup <path>`
+copies the catalog database to a new `<path>` first, then records the failures;
+stop other runs first. Running it again records nothing new. Then
+`ingest run --stage download` plans each article's next source.
+
 A study any studyset holds is not retracted: upload records it failed with
 `held for review: in N studysets`, keeps its `base_study_id`, leaves it in the
 corpus, and counts it as `held for review`; the run's log lists their base

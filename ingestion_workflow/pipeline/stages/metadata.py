@@ -21,6 +21,7 @@ from ingestion_workflow.models.metadata import is_sufficient
 
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +62,14 @@ class MetadataStage:
         # With prose on, an article without an extraction is reached through
         # its prose, when that holds a passage for `prose` to read.
         with_passages = {}
+        downloads: Dict[str, Dict[str, Artifact]] = {}
         if getattr(self.settings, "prose_model", None):
-            for article_id, by in ctx.catalog.artifacts([ref.id for ref in refs], "passages").items():
+            downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+            passages = ctx.catalog.artifacts([ref.id for ref in refs], "passages")
+            for article_id, by in passages.items():
                 found = by.get("")
-                if found is not None and found.status is Status.OK and found.summary.get("passages"):
+                if (found is not None and found.status is Status.OK
+                        and found.summary.get("passages")):
                     with_passages[article_id] = found
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
@@ -73,6 +78,10 @@ class MetadataStage:
                 continue
             extractions = [a for a in upstream.get(ref.id, {}).values() if a.status is Status.OK]
             if not extractions and ref.id in with_passages:
+                if read_from_bad_page(with_passages[ref.id], downloads.get(ref.id, {}),
+                                      upstream.get(ref.id, {})):
+                    plan.block(f"passages {READ_FROM_BAD_PAGE}")  # left as they are
+                    continue
                 extractions = [with_passages[ref.id]]
             if not extractions:
                 plan.blocked += 1
@@ -92,7 +101,8 @@ class MetadataStage:
         for work in works:
             if work.upstream.stage == "passages":
                 # Only the identifier is asked for; passages have no extraction to lend.
-                content = ExtractedContent(slug=work.ref.identifier.slug, identifier=work.ref.identifier,
+                content = ExtractedContent(slug=work.ref.identifier.slug,
+                                           identifier=work.ref.identifier,
                                            source=DownloadSource(ctx.payload(work.upstream)["source"]))
                 contents.append(content)
                 by_slug[content.slug] = work

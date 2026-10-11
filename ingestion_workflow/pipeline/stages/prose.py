@@ -17,6 +17,7 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 
 logger = logging.getLogger(__name__)
@@ -70,10 +71,16 @@ class ProseStage:
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         fetched = ctx.catalog.artifacts(ids, "metadata")
+        downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
         for ref in refs:
             passages = upstream.get(ref.id, {}).get("")
             if passages is None or passages.status is not Status.OK:
                 take_back_or_block(plan, ref, passages, artifacts.get(ref.id, {}).get(""))
+                continue
+            if read_from_bad_page(passages, downloads.get(ref.id, {}), extracted.get(ref.id, {})):
+                # the passages stage blocks rather than takes back, so these stay OK
+                plan.block(f"passages {READ_FROM_BAD_PAGE}")
                 continue
             metadata = fetched.get(ref.id, {}).get("")
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
@@ -125,11 +132,13 @@ class ProseStage:
                     kept_answers[work.article_id] = answers
                     continue
             meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None else {}
-            reading += [(p, meta.get("title") or "", meta.get("abstract") or "") for p in read[work.article_id]]
+            reading += [(p, meta.get("title") or "", meta.get("abstract") or "")
+                        for p in read[work.article_id]]
         answers: List = []
         if reading:
             with ThreadPoolExecutor(max_workers=max(1, self.settings.n_llm_workers)) as pool:
-                futures = [pool.submit(self._read, p, title, abstract) for p, title, abstract in reading]
+                futures = [pool.submit(self._read, p, title, abstract)
+                           for p, title, abstract in reading]
                 answers = [f.result() for f in futures]
         answered = iter(answers)
 
@@ -161,7 +170,8 @@ class ProseStage:
             if errors:
                 # A partly read article would be cached as complete; retry it whole.
                 yield Outcome.failure(work.article_id, self.name, "",
-                                      f"{errors} of {len(out)} passages failed", fingerprint=work.fingerprint)
+                                      f"{errors} of {len(out)} passages failed",
+                                      fingerprint=work.fingerprint)
                 continue
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
@@ -170,7 +180,8 @@ class ProseStage:
                          "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
                          "passages": out},
                 # the passages these `span`s and indices are into, for roles to check
-                summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
+                summary={"source": payload.get("source"), "read": payload.get("read"),
+                         "passages": len(out),
                          "coordinates": coords, "analyses": named, "unwritten": unwritten,
                          "read_fingerprint": read_fps[work.article_id],
                          "passages_read": work.upstream.fingerprint},

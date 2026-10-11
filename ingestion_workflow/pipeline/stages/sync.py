@@ -21,6 +21,7 @@ from ingestion_workflow.services import nspond, paper_parse
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import NO_TEXT, Context
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,10 @@ class SyncStage:
         plan = StagePlan(stage=self.name)
         roled = with_roles(ctx, [ref.id for ref in refs])
         spaced = ctx.catalog.artifacts([ref.id for ref in refs], "space")
+        # the parse files write the prose's passages
+        prose = ctx.catalog.artifacts([ref.id for ref in refs], "prose")
+        downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+        extracted = ctx.catalog.artifacts([ref.id for ref in refs], "extract")
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
             if upload is None or upload.status is not Status.OK:
@@ -77,6 +82,11 @@ class SyncStage:
                 continue
             if not upload.summary.get("base_study_id"):
                 plan.blocked += 1
+                continue
+            if not upload.summary.get("retracted") and read_from_bad_page(
+                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
+                    extracted.get(ref.id, {})):
+                plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
             fp = self.fingerprint_for(upload, spaced.get(ref.id, {}).get(""))
             if ctx.is_fresh(artifacts.get(ref.id, {}).get(""), fp):
@@ -199,7 +209,8 @@ class SyncStage:
                      "moved_to": str(moved) if moved else None},
         )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None):
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged,
+                  excluded=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),

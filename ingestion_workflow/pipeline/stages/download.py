@@ -8,6 +8,7 @@ from typing import Dict, Iterator, List, Optional, Sequence
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
+from ingestion_workflow.services import download_check
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -88,7 +89,7 @@ class DownloadStage:
             ):
                 plan.fresh += 1
                 continue
-            candidate = self._next_source(ctx, ref, existing, attempts)
+            candidate = self.next_source(ctx, ref, existing, attempts)
             if candidate is None:
                 if any(a.status is Status.PERMANENT for a in existing.values()):
                     plan.permanent += 1
@@ -100,7 +101,7 @@ class DownloadStage:
             )
         return plan
 
-    def _next_source(
+    def next_source(
         self,
         ctx: Context,
         ref: ArticleRef,
@@ -165,12 +166,17 @@ class DownloadStage:
             return
 
         seen = set()
+        bad_pages: Dict[str, str] = {}
         for result in results:
             ref = by_id.get(result.identifier.slug)
             if ref is None:
                 continue
             seen.add(ref.id)
-            yield self._outcome(ref, source, result, fp)
+            outcome = self._outcome(ref, source, result, fp)
+            yield outcome
+            if outcome.summary.get("bad_page"):
+                bad_pages[ref.id] = outcome.summary["bad_page"]
+        yield from _fail_extractions(ctx, source.value, bad_pages)
 
         for ref in refs:
             if ref.id not in seen:
@@ -181,14 +187,21 @@ class DownloadStage:
     def _outcome(
         self, ref: ArticleRef, source: DownloadSource, result: DownloadResult, fp: str
     ) -> Outcome:
-        if not result.success:
+        bad = download_check.check_download(result) if result.success else None
+        if not result.success or bad is not None:
+            message = bad.message if bad else (result.error_message or "download failed")
+            reason = download_check.reason_of(message)
             return Outcome.failure(
                 ref.id,
                 self.name,
                 source.value,
-                result.error_message or "download failed",
-                permanent=_is_permanent(result.error_message),
+                message,
+                # A page that is not the article may be a passing outage or a
+                # challenge, and its message can quote "404" from the page itself.
+                permanent=reason is None and _is_permanent(message),
                 fingerprint=fp,
+                summary={**({"bad_page": reason} if reason else {}),
+                         **({"moved_aside": result.moved_aside} if result.moved_aside else {})},
             )
         return Outcome(
             article_id=ref.id,
@@ -202,6 +215,22 @@ class DownloadStage:
                 "types": sorted({f.file_type.value for f in result.files}),
             },
         )
+
+
+def _fail_extractions(ctx: Context, source: str, bad_pages: Dict[str, str]) -> Iterator[Outcome]:
+    """Fail the OK extraction each bad page was once extracted into, as revalidation does.
+
+    Its fingerprint still matches (a download's names only its source), so left OK it
+    would read as the article's text to anything not checking the download."""
+    if not bad_pages:
+        return
+    from .extract import failed_validation
+
+    found = ctx.catalog.artifacts(list(bad_pages), "extract")
+    for article_id, reason in bad_pages.items():
+        extraction = found.get(article_id, {}).get(source)
+        if extraction is not None and extraction.status is Status.OK:
+            yield failed_validation(extraction, reason)
 
 
 #: Errors that will not resolve on a retry, so the article is marked permanent.
