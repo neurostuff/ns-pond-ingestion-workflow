@@ -241,8 +241,9 @@ def test_a_legacy_row_is_matched_only_on_its_name_and_identical_points(upload):
     assert rows[faces][:2] == (
         "faces  >  houses", keys.table_key("t1", [(1, 0), (2, 0)], "Faces > Houses")
     )
+    # annotated, so kept; the unannotated legacy "Main effect" is replaced and deleted
     assert rows[houses][:2] == ("Houses > Faces", None)
-    assert rows[main] == ("Main effect", None, [(10, 11, 12)])
+    assert main not in rows
     added = {name: key for id_, (name, key, _) in rows.items() if id_ not in first.analysis_ids}
     assert added == {
         "Faces > Objects": keys.table_key("t1", [(3, 0)], "Faces > Objects"),
@@ -251,9 +252,10 @@ def test_a_legacy_row_is_matched_only_on_its_name_and_identical_points(upload):
     decided = _by_decision(second)
     assert [e["analysis_id"] for e in decided["matched_exact"]] == [faces]
     assert sorted(e["name"] for e in decided["new"]) == ["Faces > Objects", "Main effect"]
-    unmatched = sorted(e["analysis_id"] for e in decided["unmatched_existing"])
-    assert unmatched == sorted([houses, main])
-    assert all(e["key"] is None for e in decided["unmatched_existing"])
+    [kept] = decided["unmatched_existing"]
+    assert kept["analysis_id"] == houses and kept["annotated"] is True
+    [gone] = decided["deleted"]
+    assert gone["analysis_id"] == main and gone["key"] is None and gone["points"] == 1
 
 
 def test_a_legacy_row_whose_repeat_suffix_moved_is_still_matched(upload):
@@ -278,7 +280,7 @@ def test_a_name_that_differs_by_more_than_a_repeat_suffix_is_another_analysis(up
     second = upload(_table("Run-2", [(1, 0)], (1, 2, 3)))
 
     assert second.analysis_ids != first.analysis_ids
-    assert sorted(e["decision"] for e in second.reconcile) == ["new", "unmatched_existing"]
+    assert sorted(e["decision"] for e in second.reconcile) == ["deleted", "new"]
 
 
 def test_a_re_upload_of_the_same_parse_writes_nothing(upload):
@@ -310,28 +312,42 @@ def test_a_re_upload_of_the_same_parse_writes_nothing(upload):
         assert sorted(session.execute(select(DbPoint.id)).scalars()) == points_before
 
 
-def test_an_unmatched_analysis_is_left_in_place_annotated_or_not(upload):
-    """Nothing is removed on a re-upload: what replaced an analysis is a curator's call."""
-    first = upload(_table("PO > Sil", [(1, 0)], (1, 2, 3)), _legacy("Main effect", (7, 8, 9)))
-    po_id, main_id = first.analysis_ids
+def test_an_unmatched_analysis_is_deleted_unless_annotated_and_each_deletion_is_recorded(upload):
+    """A new reading replaced it, so keeping an unannotated one would count it twice."""
+    first = upload(
+        _table("PO > Sil", [(1, 0)], (1, 2, 3)),
+        _legacy("Main effect", (7, 8, 9), (1, 1, 1)),
+        _table("Faces > Houses", [(3, 0)], (2, 2, 2)),
+    )
+    po_id, main_id, faces_id = first.analysis_ids
+    _annotate(upload.engine, faces_id, {"included": False, "note": "checked"})
 
     second = upload(_table("PC > Sil", [(2, 0)], (4, 5, 6)))
 
     rows = _rows(upload.engine)
-    assert rows["PO > Sil"] == (po_id, keys.table_key("t1", [(1, 0)], "PO > Sil"), [(1, 2, 3)])
-    assert rows["Main effect"] == (main_id, None, [(7, 8, 9)])
-    left = {e["analysis_id"]: e for e in second.reconcile if e["decision"] == "unmatched_existing"}
-    assert set(left) == {po_id, main_id}
-    assert not any(e["annotated"] for e in left.values())
-    assert all(e["reason"].endswith("left in place") for e in left.values())
+    assert set(rows) == {"PC > Sil", "Faces > Houses"}
+    assert rows["Faces > Houses"][0] == faces_id
+    with Session(upload.engine, future=True) as session:
+        stored = set(session.execute(select(DbPoint.analysis_id)).scalars())
+    assert po_id not in stored and main_id not in stored
+    decided = _by_decision(second)
+    gone = {e["analysis_id"]: e for e in decided["deleted"]}
+    assert set(gone) == {po_id, main_id}
+    assert gone[po_id]["key"] == keys.table_key("t1", [(1, 0)], "PO > Sil")
+    assert gone[main_id]["key"] is None
+    assert (gone[po_id]["points"], gone[main_id]["points"]) == (1, 2)
+    assert all(not e["annotated"] and e["reason"].endswith("so deleted") for e in gone.values())
+    [kept] = decided["unmatched_existing"]
+    assert kept["analysis_id"] == faces_id and kept["annotated"] is True
+    assert kept["reason"].endswith("so left in place")
 
 
 def test_every_incoming_and_existing_analysis_has_a_decision_with_a_reason(upload):
     upload(_table("A", [(1, 0)], (1, 1, 1)), _legacy("B", (2, 2, 2)))
     second = upload(_table("A", [(1, 0)], (1, 1, 1)), _table("C", [(3, 0)], (3, 3, 3)))
     assert sorted((e["decision"], e["name"]) for e in second.reconcile) == [
+        ("deleted", "B"),
         ("matched_key", "A"),
         ("new", "C"),
-        ("unmatched_existing", "B"),
     ]
     assert all(e["reason"] and e["analysis_id"] for e in second.reconcile)

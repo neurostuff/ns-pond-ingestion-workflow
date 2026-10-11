@@ -479,8 +479,10 @@ def _analysis(name, coordinates, sanitized_table_id="t1"):
     )
 
 
-def test_reupload_updates_a_matching_analysis_in_place(tmp_path):
-    """Matching on coordinates keeps the analysis id, so annotations survive."""
+def test_reupload_keeps_an_annotated_analysis_a_renamed_reading_does_not_match(tmp_path):
+    """Analyses are matched by key, or with no key by name and identical points, never
+    by shared coordinates: another name with an extra peak is another analysis, and
+    the annotated original keeps its row, points and annotation."""
     identifier = Identifier(doi="10.1/abc", pmid="123")
     settings = _settings(tmp_path)
     engine = _engine()
@@ -501,16 +503,17 @@ def test_reupload_updates_a_matching_analysis_in_place(tmp_path):
     _upload_once(service, settings, identifier, second, _article_metadata())
 
     with Session(engine, future=True) as session:
-        rows = list(session.execute(select(DbAnalysis)).scalars())
-        assert len(rows) == 1
-        assert rows[0].id == original_id, "analysis was replaced, annotation would be lost"
-        assert rows[0].name == "Table 1 renamed"
-        points = list(
-            session.execute(
-                select(DbPoint).where(DbPoint.analysis_id == original_id)
-            ).scalars()
-        )
-        assert len(points) == 3
+        rows = {row.name: row for row in session.execute(select(DbAnalysis)).scalars()}
+        assert set(rows) == {"Table 1", "Table 1 renamed"}
+        assert rows["Table 1"].id == original_id, "annotated analysis was replaced"
+
+        def n_points(analysis_id):
+            return len(list(session.execute(
+                select(DbPoint).where(DbPoint.analysis_id == analysis_id)
+            ).scalars()))
+
+        assert n_points(original_id) == 2
+        assert n_points(rows["Table 1 renamed"].id) == 3
         link = session.execute(select(DbAnnotationAnalysis)).scalar_one()
         assert link.analysis_id == original_id
 

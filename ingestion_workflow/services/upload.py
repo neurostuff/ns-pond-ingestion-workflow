@@ -47,13 +47,14 @@ logger = get_logger(__name__)
 class ReconcilePlan:
     """What upload intends to do with one study's existing analyses.
 
-    Nothing is deleted: an existing analysis no incoming one is matched to stays in
-    the study, and `decisions` says why it was not matched.
+    An existing analysis no incoming one is matched to is deleted, unless someone
+    annotated it: then it stays in the study. `decisions` records which, and why.
     """
 
     updated: List[Tuple[object, int]]     # (existing row, index into incoming)
     inserted: List[int]                   # indices into incoming
-    left: List[object]                    # existing rows no incoming analysis matched
+    deleted: List[object]                 # unmatched and unannotated: removed
+    left: List[object]                    # unmatched but annotated: kept in place
     #: One per incoming analysis and per existing row: `decision`, `reason`, and the
     #: keys and names it was decided on. Incoming entries carry `index`, existing ones
     #: `analysis_id`; `upload` fills in the id of each inserted row.
@@ -185,10 +186,12 @@ def plan_reconciliation(
        parse holds no key for: matched only on the same name and identical points.
        A stored name may carry the suffix upload gives a repeated name
        (`incoming_bases` are the names before it).
-    4. Anything else is new, and an existing analysis left unmatched stays where it
-       is. One read from exactly the place of a gone one under another name is
-       recorded as a rename candidate, as neurostore records one; whether it is the
-       same analysis is a curator's call, so nothing of the old one moves to it.
+    4. Anything else is new. An existing analysis left unmatched is deleted when no
+       one annotated it, since a new reading of the paper replaced it and keeping it
+       would count the contrast twice; an annotated one stays where it is. One read
+       from exactly the place of a gone one under another name is recorded as a
+       rename candidate, as neurostore records one; whether it is the same analysis
+       is a curator's call, so nothing of the old one moves to it.
 
     A matched row is updated in place, so it keeps its id and what is annotated
     against it.
@@ -343,28 +346,34 @@ def plan_reconciliation(
                 "reason": reason,
             }
         )
-    left = [existing[e] for e in free_existing()]
+    deleted, left = [], []
     for e_index in free_existing():
         row = existing[e_index]
+        annotated = getattr(row, "id", None) in annotated_ids
         if existing_keys[e_index] is None:
             reason = "uploaded with no key; no incoming analysis has its name and identical points"
         else:
             reason = "its key is not among this upload's"
         if e_index in renamed:
             reason += f"; {incoming_keys[renamed[e_index]]} is a rename candidate for it"
+        (left if annotated else deleted).append(row)
         decisions.append(
             {
-                "decision": "unmatched_existing",
+                "decision": "unmatched_existing" if annotated else "deleted",
                 "analysis_id": getattr(row, "id", None),
                 "name": getattr(row, "name", None),
                 "key": existing_keys[e_index],
+                "points": len(existing_points[e_index]),
                 **({"rename_candidate": incoming_keys[renamed[e_index]]}
                    if e_index in renamed else {}),
-                "annotated": getattr(row, "id", None) in annotated_ids,
-                "reason": reason + "; left in place",
+                "annotated": annotated,
+                "reason": reason + ("; annotated, so left in place" if annotated
+                                    else "; not annotated, so deleted"),
             }
         )
-    return ReconcilePlan(updated=updated, inserted=inserted, left=left, decisions=decisions)
+    return ReconcilePlan(
+        updated=updated, inserted=inserted, deleted=deleted, left=left, decisions=decisions
+    )
 
 
 def _default_note_for(note_keys) -> dict:
@@ -1023,6 +1032,13 @@ class UploadService:
                 item.slug,
                 ", ".join(f"{n} {d}" for d, n in sorted(counts.items())),
             )
+
+        for row in plan.deleted:
+            self._delete_points(session, row.id)
+            # Core delete rather than session.delete: the ORM would try to
+            # cascade to points this has already removed and warn about it.
+            session.expunge(row)
+            session.execute(delete(DbAnalysis).where(DbAnalysis.id == row.id))
 
         assignments = [(row, desired[index], False) for row, index in plan.updated]
         inserted_rows: Dict[int, DbAnalysis] = {}
