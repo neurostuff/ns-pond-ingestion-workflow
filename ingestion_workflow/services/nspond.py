@@ -20,7 +20,7 @@ from ingestion_workflow.models import (
     DownloadResult,
     Identifier,
 )
-from ingestion_workflow.services.coordinate_flags import is_placeholder
+from ingestion_workflow.services.coordinate_flags import declared_split, is_placeholder
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.nspond_schema import (
@@ -62,6 +62,7 @@ def _sync_article(
     per_table_analyses: Mapping[str, AnalysisCollection],
     downloads: Sequence[DownloadResult],
     settings: Settings,
+    stage1: bool = True,
 ) -> None:
     root = Path(settings.ns_pond_root) / base_study_id
     root.mkdir(parents=True, exist_ok=True)
@@ -88,11 +89,8 @@ def _sync_article(
         downloads,
         overwrite=settings.sync_overwrite,
     )
-    _write_stage1(
-        root / "stage1" / "analyses.json",
-        per_table_analyses,
-        overwrite=settings.sync_overwrite,
-    )
+    if stage1:
+        write_stage1(root, per_table_analyses, overwrite=settings.sync_overwrite)
 
 
 def _write_processed(
@@ -268,17 +266,22 @@ def _kept(collection: AnalysisCollection) -> List[Analysis]:
     return [a for a in collection.analyses if not is_placeholder(a.name, a.coordinates)]
 
 
-def _write_stage1(
-    path: Path,
+def write_stage1(
+    root: Path,
     per_table_analyses: Mapping[str, AnalysisCollection],
     overwrite: bool,
+    splits: Optional[Mapping[int, dict]] = None,
 ) -> None:
-    """Write the coordinate-table parse in the shape pondie reads it.
+    """Write the coordinate-table parse in the shape pondie reads it, at `root/stage1/`.
 
     pondie treats `stage1/analyses.json` as an input it never writes, and reads each
     point's xyz from a nested `coordinates` key; this repo stores x/y/z on the point
     itself, so the nesting is added here rather than teaching pondie a third shape.
+
+    A split analysis carries its SignSplit as `split`: the parse's, keys included,
+    from `splits` (`paper_parse.write`), and otherwise the stage's without a key.
     """
+    path = Path(root) / "stage1" / "analyses.json"
     if path.exists() and not overwrite:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -289,9 +292,11 @@ def _write_stage1(
             # Every analysis says what its points are for: a seed or ROI is not
             # a result, and pondie cannot tell them apart otherwise.
             prose = (analysis.metadata or {}).get("source") == "prose"
+            split = (splits or {}).get(id(analysis)) or declared_split(analysis.metadata)
             analyses.append(
                 {
                     **({"source": "prose"} if prose else {}),
+                    **({"split": split} if split else {}),
                     **_stage1_role(analysis),
                     # Kept in its place, so pondie's `table_id#ordinal` keys never
                     # move, and marked: it is not this study's to analyse.
@@ -321,7 +326,7 @@ def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, objec
     space = coordinate.space or collection.coordinate_space
     # `sign` and `is_subpeak` are study_schema's ParsedPoint fields. pondie
     # reads neither yet; `sign: unsigned` is what lets it see that a point in
-    # the positive half of a split had no statistic to place it by.
+    # the original half of a split had no statistic to place it by.
     point: dict[str, object] = {
         "coordinates": [coordinate.x, coordinate.y, coordinate.z],
         "space": space.value if space else None,
@@ -438,14 +443,20 @@ def write_article(
     downloads: Sequence[DownloadResult],
     *,
     overwrite: bool = True,
+    stage1: bool = True,
 ) -> Path:
-    """Materialise one article under `root/<base_study_id>/`."""
+    """Materialise one article under `root/<base_study_id>/`.
+
+    `stage1=False` leaves `stage1/` to the caller (`write_stage1`), which writes it
+    once the parse has keyed the splits.
+    """
     _sync_article(
         base_study_id,
         bundle,
         analyses,
         downloads,
         _Target(Path(root), overwrite),
+        stage1=stage1,
     )
     return Path(root) / base_study_id
 

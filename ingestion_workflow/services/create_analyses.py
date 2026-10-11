@@ -6,12 +6,14 @@ import hashlib
 import json
 import logging
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES
+from ingestion_workflow.models.statistics import inverted
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -26,6 +28,7 @@ from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.services.coordinate_flags import (
     PLACEHOLDER_NAME,
+    inverse_name,
     is_placeholder,
     subpeak_flags,
 )
@@ -91,39 +94,44 @@ def _text_of(markup: str) -> str:
     return "\n".join(line for line in lines if line.strip())
 
 
-#: Appended to the name of the negative half when one analysis reports both
-#: directions. Not a translation of the contrast: `A > B` with a negative t
-#: means B > A, but a name like `Interaction` or `Main effect of group` cannot
-#: be inverted at all, so the marker says what is true of the numbers and
-#: leaves the contrast as the paper wrote it.
-NEGATIVE_SUFFIX = " (negative)"
-INVERSE_SUFFIX = " (inverse)"
-#: Every spelling of the inverse-half marker a stored payload may carry.
-SPLIT_SUFFIXES = (INVERSE_SUFFIX, NEGATIVE_SUFFIX)
-
-
-def _by_direction(name, coordinates):
+def split_by_sign(name, coordinates):
     """Split an analysis that reports both directions under one name.
 
     A positive and a negative statistic are different directions, and pooling
-    them pools an increase with a decrease -- 4.66% of analyses with a
-    statistic hold both, 2,095 of 44,965, carrying 8,367 negative points.
+    them pools an increase with a decrease -- 2,120 table analyses in the
+    53,273 ns-pond papers with a stage1 hold both.
 
     The direction normally lives in the contrast name, which is why a point's
-    `sign` reads the statistic rather than the name. Where one contrast
-    reports both, the sign is the only thing that separates them, and the
-    negative half is its own analysis: the inverse contrast.
+    side reads the statistic rather than the name. Where one contrast reports
+    both, the sign is the only thing that separates them. The rule is study_schema's
+    (`SplitRule.sign_of_directional_statistic`): points with a negative value,
+    of any kind, form the inverse half, every other point, unsigned ones
+    included, the original half.
 
-    Yields `(name, coordinates)` in table order, the positive half first.
-    Points with no directional statistic (`sign` unsigned) join the positive
-    half and keep their tag. An analysis whose statistics are all one sign, or
-    which has none, is returned unchanged so nothing is renamed without cause.
+    The original half is the analysis as named. The inverse half is the reversed
+    contrast: it is named by `inverse_name`, and its signed values are negated
+    (`statistics.inverted`), so a t of -4.1 for "A > B" is a t of 4.1 for "B > A".
+    `split` is what says so.
+
+    Yields `(name, coordinates, split)` in table order, the original half
+    first. `split` is `{"half": "original"}` on the original and
+    `{"half": "inverse"}` on the inverse; `_build_collection` adds the original's
+    index among the analyses, so the halves pair by it and not by name.
+    `split` is None for an analysis whose statistics are all
+    one side or which has none, which is returned unchanged.
     """
-    positive = [c for c in coordinates if c.sign != "negative"]
-    negative = [c for c in coordinates if c.sign == "negative"]
-    if not (positive and negative):
-        return [(name, coordinates)]
-    return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
+    original = [c for c in coordinates if c.sign != "negative"]
+    inverse = [c for c in coordinates if c.sign == "negative"]
+    if not (original and inverse):
+        return [(name, coordinates, None)]
+    flipped = [
+        replace(c, statistic_value=inverted(c.statistic_value, c.statistic_type))
+        for c in inverse
+    ]
+    return [
+        (name, original, {"half": "original"}),
+        (inverse_name(name), flipped, {"half": "inverse"}),
+    ]
 
 
 def table_reading(collection: AnalysisCollection) -> str:
@@ -310,7 +318,14 @@ class CreateAnalysesService:
                 table_space,
             )
             analysis_name = parsed.name or f"{table_key} analysis {idx}"
-            for name, subset in _by_direction(analysis_name, coordinates):
+            for name, subset, split in split_by_sign(analysis_name, coordinates):
+                # Where the original sits among the analyses now; later filtering
+                # moves positions, so the halves are paired by this number.
+                if split and split["half"] == "original":
+                    original_index = len(collection.analyses)
+                    split = {**split, "index": original_index}
+                elif split:
+                    split = {**split, "original_index": original_index}
                 collection.add_analysis(Analysis(
                     name=name,
                     description=parsed.description,
@@ -322,6 +337,7 @@ class CreateAnalysesService:
                     metadata={
                         "table_metadata": dict(table.metadata),
                         "sanitized_table_id": sanitized_table_id,
+                        **({"split": split} if split else {}),
                     },
                 ))
         return collection

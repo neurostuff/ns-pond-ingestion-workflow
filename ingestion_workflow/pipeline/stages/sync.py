@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 
 #: 2: stage1 points carry `sign` and `is_subpeak`.
 #: 3: parse/parsed_paper.json and parse/coordinate_parse.json beside stage1.
-SYNC_VERSION = 3
+#: 4: the sign split follows study_schema.statistics and is declared, not named.
+SYNC_VERSION = 4
 
 
 class SyncStage:
@@ -125,6 +126,7 @@ class SyncStage:
                     per_table,
                     files,
                     overwrite=self.settings.sync_overwrite,
+                    stage1=False,
                 )
             except Exception as exc:
                 logger.warning("sync failed for %s: %s", work.article_id, exc)
@@ -142,16 +144,22 @@ class SyncStage:
                 bundle.article_data.source.value,
             )
             self._synced.append((base_study_id, bundle))
+            # stage1 follows the parse so its splits name their originals by the
+            # parse's keys; it is written whether or not the parse is.
+            splits: dict = {}
             try:
                 parse = paper_parse.write(target, bundle, per_table, inputs,
-                                          overwrite=self.settings.sync_overwrite)
+                                          overwrite=self.settings.sync_overwrite,
+                                          splits=splits)
             except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is retried
+                nspond.write_stage1(target, per_table, self.settings.sync_overwrite)
                 logger.warning("parse files failed for %s: %s", work.article_id, exc)
                 yield Outcome.failure(
                     work.article_id, self.name, "", f"parse: {type(exc).__name__}: {exc}",
                     fingerprint=work.fingerprint,
                 )
                 continue
+            nspond.write_stage1(target, per_table, self.settings.sync_overwrite, splits)
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
@@ -219,7 +227,7 @@ class SyncStage:
             ctx.payload(analyses.get(work.article_id, {}).get("")), excluded or {}
         )
         per_table = {
-            table_id: AnalysisCollection.from_dict(blob)
+            table_id: _collection(table_id, blob)
             for table_id, blob in analysis_payload.items()
         }
 
@@ -240,6 +248,22 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+class UndeclaredSplits(LookupError):
+    """A stored collection from before sign splits were declared in `split{}`."""
+
+
+def _collection(table_id, blob) -> AnalysisCollection:
+    collection = AnalysisCollection.from_dict(blob)
+    if not collection.split_declared:
+        # Such a payload marks a split only by an analysis's name, and a paper's own
+        # name can read the same, so the split is not guessed here.
+        raise UndeclaredSplits(
+            f"table {table_id}: analyses stored before sign splits were declared; "
+            "run scripts/migrate_legacy_splits.py"
+        )
+    return collection
 
 
 def _parse_inputs(

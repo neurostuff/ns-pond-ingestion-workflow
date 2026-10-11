@@ -1,4 +1,4 @@
-"""Derive a coordinate's sign and subpeak flag from what the table printed.
+"""Derive a coordinate's subpeak flag from what the table printed.
 
 `is_subpeak` and the direction were read off by the model, which had to be
 told what to look for in thirty lines of prompt and could disagree with itself
@@ -10,22 +10,27 @@ The fine-tuned extractor settles it either way -- its points are bare
 ``[x, y, z, statistic_type, statistic, extent]`` tuples with no flag fields at
 all, so for that path these are the only place the flags can come from.
 
-There is no deactivation flag and no seed flag. A negative point belongs to
-the inverse contrast, which the sign split makes its own analysis; a seed is
-what a whole set of points is for, its role, not a property of one row.
+A point's direction is study_schema's rule, read through
+`models.statistics.side`. There is no deactivation flag and no seed flag. A
+negative point belongs to the inverse contrast, which the sign split makes its
+own analysis; a seed is what a whole set of points is for, its role, not a
+property of one row.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Iterable, List, Optional, Sequence
 
 __all__ = [
-    "NON_DIRECTIONAL_KINDS",
     "PLACEHOLDER_NAME",
     "is_placeholder",
-    "point_sign",
     "subpeak_flags",
     "reports_extent",
+    "SPLIT_RULE",
+    "reversed_contrast",
+    "inverse_name",
+    "declared_split",
 ]
 
 #: What the prompted rules told the model to answer for a table with no
@@ -48,36 +53,6 @@ def is_placeholder(name: Optional[str], points: Sequence) -> bool:
     """
     return (name or "").strip().upper() == PLACEHOLDER_NAME and not points
 
-#: Kinds whose value has no direction: a p value and an F are positive
-#: whichever way the contrast runs. study_schema's `StatisticKind` says the
-#: same of chi-square, which this workflow does not report.
-NON_DIRECTIONAL_KINDS = frozenset({"P", "F"})
-
-
-def point_sign(statistic_value, statistic_type: Optional[str] = None) -> str:
-    """`positive`, `negative` or `unsigned`: study_schema's `PointSign`.
-
-    Read from the statistic, whatever a model said. `negative` only when it is
-    explicitly below zero: plenty of tables print magnitudes and put the
-    direction in the contrast name, and inferring a direction from an unsigned
-    number would invent a result. `unsigned` when there is no directional
-    statistic to read -- none printed, a p value or an F only, or a value that
-    is not a number. In a split analysis those points join the positive half
-    and keep the tag, so the placement stays visible.
-    """
-    if statistic_value is None:
-        return "unsigned"
-    if statistic_type is not None and str(statistic_type).upper() in NON_DIRECTIONAL_KINDS:
-        return "unsigned"
-    try:
-        value = float(statistic_value)
-    except (TypeError, ValueError):
-        return "unsigned"
-    if value != value:                      # NaN
-        return "unsigned"
-    return "negative" if value < 0 else "positive"
-
-
 def reports_extent(cluster_sizes: Iterable[Optional[int]]) -> bool:
     """Does this analysis print a cluster extent at all?"""
     return any(size is not None for size in cluster_sizes)
@@ -99,3 +74,77 @@ def subpeak_flags(cluster_sizes: Sequence[Optional[int]]) -> List[bool]:
     if not reports_extent(cluster_sizes):
         return [False] * len(cluster_sizes)
     return [size is None for size in cluster_sizes]
+
+
+#: study_schema's SplitRule for the analyses stage's split.
+SPLIT_RULE = "sign_of_directional_statistic"
+
+#: The contrast forms whose reverse is the same words with the sides swapped, as
+#: they are printed in the inverse halves of the ns-pond corpus: "vs"/"vs."/"versus",
+#: ">", "<", "minus", and a dash with a space on both sides. An unspaced hyphen is
+#: not one: it joins words ("EQ-I", "OBJ-SCD") at least as often as it subtracts.
+_CONTRAST_OPERATOR = re.compile(
+    r"\s+(?:vs\.?|versus|minus)\s+|\s*[<>]\s*|\s+[-–−]\s+", re.IGNORECASE
+)
+#: A label before the contrast, "(1) " or "B) " or "Encoding: ", which stays in front.
+_LEADING_LABEL = re.compile(r"^(?:\(?[0-9A-Za-z]{1,2}[).]\s+|[^:<>]+:\s+)")
+#: A qualifier after it, "(cluster size > 36)", which stays behind.
+_TRAILING_QUALIFIER = re.compile(r"\s*[(\[][^()\[\]]*(?:\([^()]*\)[^()\[\]]*)*[)\]]$")
+_QUOTES = "\"'‘’“”"
+
+
+def _balanced(text: str) -> bool:
+    return all(text.count(o) == text.count(c) for o, c in ("()", "[]", "{}"))
+
+
+def reversed_contrast(name: str) -> Optional[str]:
+    """`name` with its two sides swapped, or None when it is not one two-sided contrast.
+
+    "A > B" is "B > A", "A vs. B" is "B vs. A", "A minus B" is "B minus A" and
+    "A - B" is "B - A". A name with no such operator, or with more than one
+    ("Go vs. Nogo - OC vs. YC"), has no reverse that can be read off it.
+    """
+    core = name.strip()
+    opening = closing = ""
+    if len(core) > 1 and core[0] in _QUOTES and core[-1] in _QUOTES:
+        opening, closing, core = core[0], core[-1], core[1:-1].strip()
+    label = _LEADING_LABEL.match(core)
+    head = label.group(0) if label and _CONTRAST_OPERATOR.search(core[label.end():]) else ""
+    core = core[len(head):]
+    qualifier = _TRAILING_QUALIFIER.search(core)
+    tail = qualifier.group(0) if qualifier and qualifier.start() > 0 else ""
+    core = core[: len(core) - len(tail)]
+    operators = list(_CONTRAST_OPERATOR.finditer(core))
+    if len(operators) != 1:
+        return None
+    left, right = core[: operators[0].start()].strip(), core[operators[0].end():].strip()
+    if not (left and right and _balanced(left) and _balanced(right)):
+        return None
+    swapped = f"{head}{right}{operators[0].group(0)}{left}{tail}"
+    return f"{opening}{swapped}{closing}"
+
+
+def inverse_name(name: str) -> str:
+    """The name of the inverse half of the split analysis `name`.
+
+    The reversed contrast when it can be read off the name; otherwise the name
+    with " (inverse)". The half is declared by `split`, never by this name, and
+    nothing reads the name back.
+    """
+    return reversed_contrast(name) or f"{name} (inverse)"
+
+
+def declared_split(metadata: Optional[dict], original_analysis: Optional[str] = None) -> Optional[dict]:
+    """The analyses stage's `metadata["split"]` as study_schema's SignSplit, or None.
+
+    The stage's `index`/`original_index` are positions in its own collection and
+    mean nothing outside it, so they are not carried; `original_analysis` is the
+    original's key where the output has one.
+    """
+    split = (metadata or {}).get("split")
+    if not split or split.get("half") not in ("original", "inverse"):
+        return None
+    out = {"half": split["half"], "rule": SPLIT_RULE}
+    if split["half"] == "inverse" and original_analysis:
+        out["original_analysis"] = original_analysis
+    return out

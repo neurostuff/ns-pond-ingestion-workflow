@@ -9,9 +9,8 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from study_schema.spaces import normalize_space
 
-from ..services.coordinate_flags import point_sign
 from .ids import Identifier
-from .statistics import ALLOWED_STATISTIC_KINDS
+from .statistics import ALLOWED_STATISTIC_KINDS, side
 
 
 class CoordinateSpace(str, Enum):
@@ -182,12 +181,12 @@ class Coordinate:
 
     @property
     def sign(self) -> str:
-        """`positive`, `negative` or `unsigned`, from the statistic.
+        """`positive`, `negative` or `unsigned`, from the statistic (`statistics.side`).
 
         Derived, never stored, so it cannot disagree with the value it reads,
         and a payload written before it existed reads the same.
         """
-        return point_sign(self.statistic_value, self.statistic_type)
+        return side(self.statistic_value, self.statistic_type) or "unsigned"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -345,6 +344,12 @@ class AnalysisCollection:
     analyses: List[Analysis] = field(default_factory=list)
     coordinate_space: Optional[CoordinateSpace] = None
     identifier: Optional[Identifier] = None
+    #: Whether a sign split in it is declared in `metadata["split"]`. True for
+    #: anything this code builds; a stored payload without the key predates the
+    #: declaration, and sync refuses it until scripts/migrate_legacy_splits.py
+    #: has rewritten it. It travels with the payload, through roles and space,
+    #: so sync reads it from the payload it writes.
+    split_declared: bool = True
 
     def add_analysis(self, analysis: Analysis) -> None:
         self.analyses.append(analysis)
@@ -355,6 +360,7 @@ class AnalysisCollection:
             "coordinate_space": self.coordinate_space.value if self.coordinate_space else None,
             "analyses": [analysis.to_dict() for analysis in self.analyses],
             "identifier": (self.identifier.__dict__.copy() if self.identifier else None),
+            "split_declared": self.split_declared,
         }
 
     @classmethod
@@ -368,6 +374,7 @@ class AnalysisCollection:
             analyses=[Analysis.from_dict(item) for item in payload.get("analyses", [])],
             coordinate_space=CoordinateSpace(space) if space else None,
             identifier=identifier,
+            split_declared=bool(payload.get("split_declared", False)),
         )
 
 

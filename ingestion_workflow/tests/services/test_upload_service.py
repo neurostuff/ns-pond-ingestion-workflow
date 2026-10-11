@@ -255,6 +255,31 @@ def test_run_upload_records_point_values(tmp_path):
     assert all(kind == "t" for kind in kinds)
 
 
+def test_the_split_is_uploaded_as_a_sign_split_without_stage_positions(tmp_path):
+    identifier = Identifier(doi="10.1/abc", pmid="123")
+    collection = _sample_collection(identifier)
+    collection.analyses[0].metadata["split"] = {"half": "inverse", "original_index": 0}
+    settings = _settings(tmp_path)
+    engine = _engine()
+    service = UploadService(settings, SessionFactory(settings, engine=engine))
+    items = service.prepare_work_items(
+        {"slug": {"t1": collection}},
+        {"slug": _article_metadata()},
+        metadata_mode=settings.upload_metadata_mode,
+    )
+    service.run(
+        items,
+        behavior=UploadBehavior.UPDATE,
+        metadata_only=False,
+        metadata_mode=settings.upload_metadata_mode,
+    )
+
+    with Session(engine, future=True) as session:
+        uploaded = session.scalar(select(DbAnalysis.metadata_))
+    assert uploaded["split"] == {"half": "inverse", "rule": "sign_of_directional_statistic"}
+    assert uploaded["sanitized_table_id"] == "t1"
+
+
 def test_unknown_analysis_name_uses_table_label(tmp_path):
     identifier = Identifier(doi="10.1/abc", pmid="123")
     custom_label = "custom-label"

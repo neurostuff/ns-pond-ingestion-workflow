@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
@@ -508,3 +510,120 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
                             payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])
     plan, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
+
+
+def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
+                  parse_write=None):
+    """Sync one article whose stored tables carry the split marker when `declared`.
+
+    `rerun(ref)`, when given, is an analyses outcome recorded after space ran,
+    so the analyses artifact no longer matches the payload sync writes.
+    """
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="12"))
+    pts = [{"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": v, "statistic_type": "T"}
+           for v in (4.0,)]
+    neg = [{**pts[0], "statistic_value": -4.0}]
+    tables = tables or {"t1": {"slug": "s::t1", "analyses": [
+        {"name": "Load", "table_id": "t1", "coordinates": pts},
+        {"name": "Load (negative)", "table_id": "t1", "coordinates": neg},
+    ], **({"split_declared": True} if declared else {})}}
+    _record_upstream(catalog, ref, path)
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                            payload=tables, summary={"tables": 1})])
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    if rerun is not None:
+        catalog.record([rerun(ref, tables)])
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS12", "study_id": "S12"})])
+    sync = SyncStage(settings)
+    seen = {}
+    assemble = sync._assemble
+
+    def spy(*args, **kwargs):
+        bundle, per_table, files = assemble(*args, **kwargs)
+        seen.update(per_table)
+        return bundle, per_table, files
+
+    sync._assemble = spy
+    if parse_write is not None:
+        from ingestion_workflow.pipeline.stages import sync as sync_stage
+
+        monkeypatch.setattr(sync_stage.paper_parse, "write", parse_write(seen))
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    return [(x.name, x.metadata.get("split")) for x in seen["t1"].analyses]
+
+
+def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkeypatch):
+    """stage1 is written after the parse, so its inverse half names the original by key."""
+    from ingestion_workflow.pipeline.stages import sync as sync_stage
+
+    point = {"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": 4.0, "statistic_type": "T"}
+    tables = {"t1": {"slug": "s::t1", "split_declared": True, "analyses": [
+        {"name": "Load > Rest", "table_id": "t1", "coordinates": [point],
+         "metadata": {"split": {"half": "original", "index": 0}}},
+        {"name": "Rest > Load", "table_id": "t1", "coordinates": [{**point, "x": 9.0}],
+         "metadata": {"split": {"half": "inverse", "original_index": 0}}},
+    ]}}
+    real = sync_stage.paper_parse.write
+
+    def parse_write(seen):
+        def write(*args, splits=None, **kwargs):
+            out = real(*args, splits=splits, **kwargs)
+            # Whatever the parse declares is what stage1 carries.
+            original, inverse = seen["t1"].analyses
+            splits[id(inverse)] = {"half": "inverse", "original_analysis": "k-orig",
+                                   "rule": "sign_of_directional_statistic"}
+            return out
+        return write
+
+    _synced_names(env, tmp_path, monkeypatch, declared=True, tables=tables,
+                  parse_write=parse_write)
+    stage1 = json.loads((tmp_path / "pond" / "BS12" / "stage1" / "analyses.json").read_text())
+    by_name = {a["name"]: a for a in stage1["analyses"]}
+    assert by_name["Load > Rest"]["split"] == {
+        "half": "original", "rule": "sign_of_directional_statistic"}
+    assert by_name["Rest > Load"]["split"] == {
+        "half": "inverse", "original_analysis": "k-orig",
+        "rule": "sign_of_directional_statistic"}
+    assert by_name["Rest > Load"]["points"][0]["values"] == [{"value": 4.0, "kind": "T"}]
+
+
+def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(env, tmp_path, monkeypatch):
+    names = _synced_names(env, tmp_path, monkeypatch, declared=True)
+    assert names == [("Load", None), ("Load (negative)", None)]
+
+
+def test_a_legacy_payload_is_refused_with_the_migration_named(env, tmp_path, monkeypatch):
+    """A split marked only by name is not guessed: the article is not synced."""
+    with pytest.raises(AssertionError, match="migrate_legacy_splits"):
+        _synced_names(env, tmp_path, monkeypatch, declared=False)
+    assert not (tmp_path / "pond" / "BS12").exists()
+
+
+def test_a_stale_legacy_payload_is_refused_though_analyses_ran_again(env, tmp_path, monkeypatch):
+    """Analyses re-ran with the marker; roles and space did not, so sync would write the old payload."""
+    def rerun(ref, tables):
+        fresh = {t: {**blob, "split_declared": True} for t, blob in tables.items()}
+        return Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-2",
+                       payload=fresh, summary={"tables": 1, "split_declared": True})
+
+    with pytest.raises(AssertionError, match="before sign splits were declared"):
+        _synced_names(env, tmp_path, monkeypatch, declared=False, rerun=rerun)
+
+
+def test_a_declared_payload_stays_declared_after_analyses_fails(env, tmp_path, monkeypatch):
+    """A failed re-run replaces the analyses artifact; the payload sync writes is still declared."""
+    def rerun(ref, tables):
+        return Outcome.failure(ref.id, "analyses", "", "model unavailable", fingerprint="an-2")
+
+    names = _synced_names(env, tmp_path, monkeypatch, declared=True, rerun=rerun)
+    assert names == [("Load", None), ("Load (negative)", None)]
