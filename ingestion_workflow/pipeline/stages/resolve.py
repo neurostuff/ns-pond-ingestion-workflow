@@ -11,9 +11,9 @@ from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
 
-RESOLVE_VERSION = 6
+RESOLVE_VERSION = 7
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -177,7 +177,7 @@ class ResolveStage:
         for ref in refs:
             prose = upstream.get(ref.id, {}).get("")
             if prose is None or prose.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, prose, artifacts.get(ref.id, {}).get(""))
                 continue
             # The tables' analyses when there are any. Nothing waits for them:
             # when they arrive the fingerprint below changes, and this re-runs.
@@ -199,6 +199,8 @@ class ResolveStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         analysed = ctx.catalog.artifacts([w.article_id for w in works], "analyses")
         for work in works:
             tables_artifact = analysed.get(work.article_id, {}).get("")
@@ -208,6 +210,7 @@ class ResolveStage:
             # What upload's freshness should follow. When the prose adds
             # nothing, the upload is the tables' upload, so it keeps the
             # fingerprint it already had.
+            summary["prose_read"] = work.upstream.fingerprint
             summary["basis"] = (tables_artifact.fingerprint
                                 if not summary["prose_analyses"] and tables_artifact is not None else "")
             yield Outcome(article_id=work.article_id, stage=self.name, source="", status=Status.OK,

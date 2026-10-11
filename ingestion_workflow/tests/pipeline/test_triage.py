@@ -138,6 +138,20 @@ def test_analyses_hangs_off_triage_so_a_refitted_gate_makes_it_stale():
     assert before != after
 
 
+
+def test_a_tie_on_tables_goes_by_source_not_by_catalog_order():
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables=0):
+            self.status, self.source, self.summary = Status.OK, source, {"tables": tables}
+
+    for pair, winner in ((("ace", "pubget"), "pubget"), (("ace", "pdf"), "ace"), (("elsevier", "pdf"), "elsevier"),
+                         (("pmc", "elsevier"), "pmc"), (("pdf", "zeta"), "pdf")):
+        arts = [_Art(s, 2 if "ace" not in pair else 0) for s in pair]
+        for order in (arts, arts[::-1]):
+            assert _most_tables({a.source: a for a in order}).source == winner
+
 def test_triage_names_the_extraction_it_judged():
     """Table ids are unique only within one extraction, so analyses has to read
     the same one or the ids name different tables."""
@@ -426,3 +440,52 @@ def test_sync_writes_the_extraction_triage_judged(tmp_path):
                                 summary={"source": "ace"})])
         triage = catalog.artifact(ref.id, "triage", "")
         assert _synced_extraction(ctx, extractions, downloads, triage).source == "ace"
+
+
+def test_an_extraction_with_text_beats_one_without_whatever_the_tables():
+    """Article phthz7nb6sut: ACE kept no text and no tables, the PDF kept the
+    text. Both tied on tables, and the fixed source order chose the empty one."""
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables, has_text):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    ace, pdf = _Art("ace", 0, False), _Art("pdf", 0, True)
+    assert _most_tables({"ace": ace, "pdf": pdf}) is pdf
+    # text outranks tables: the one with tables but no text loses
+    assert _most_tables({"pubget": _Art("pubget", 9, False), "pdf": pdf}) is pdf
+    # none has text: the usual choice stands
+    assert _most_tables({"ace": ace, "pdf": _Art("pdf", 0, False)}) is ace
+
+
+def test_table_count_still_decides_among_extractions_with_text():
+    from ingestion_workflow.catalog import Status
+
+    class _Art:
+        def __init__(self, source, tables, has_text=True):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    few, many = _Art("pubget", 2), _Art("pdf", 7)
+    assert _most_tables({"pubget": few, "pdf": many}) is many
+    assert _most_tables({"pubget": few, "pdf": many, "ace": _Art("ace", 30, False)}) is many
+
+
+def test_a_no_text_extraction_with_tables_that_loses_the_tie_break_is_recorded():
+    from ingestion_workflow.catalog import Status
+    from ingestion_workflow.pipeline.stages.triage import skipped_for_text
+
+    class _Art:
+        def __init__(self, source, tables, has_text):
+            self.status, self.source = Status.OK, source
+            self.summary = {"tables": tables, "has_text": has_text}
+
+    pubget, pdf, ace = _Art("pubget", 9, False), _Art("pdf", 0, True), _Art("ace", 0, False)
+    found = {"pubget": pubget, "pdf": pdf, "ace": ace}
+    chosen = _most_tables(found)
+    assert chosen is pdf
+    assert skipped_for_text(found, chosen) == [{"source": "pubget", "tables": 9}]
+    # nothing is left behind when the chosen one has no text either
+    assert skipped_for_text({"pubget": pubget, "ace": ace}, pubget) == []

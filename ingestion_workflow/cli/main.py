@@ -669,7 +669,7 @@ def repair(config: Optional[Path] = ConfigOption) -> None:
 @app.command("refresh-text")
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
-        None, "--source", help="Extraction sources to rebuild (default: every JATS source)."
+        None, "--source", help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
@@ -678,19 +678,20 @@ def refresh_text(
     report: Optional[Path] = typer.Option(None, "--report", help="Write one JSON line per extraction here."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Rebuild extractions' text from their downloads, without re-running any stage.
+    """Rebuild extractions' text from their downloads, without re-running extract.
 
-    The extraction keeps its tables, payload and fingerprint, so nothing downstream
-    goes stale; only the text file changes. For a change to the text alone (pubget
-    keeping superscripts): the stages that read the text, space and sync, are not re-run.
+    The extraction keeps its tables, payload and fingerprint; its text hash and the
+    passages' spans move to the new text in the same catalog write, and the references
+    and the sync are marked stale so they are read and written again. For a change to the text alone
+    (pubget keeping superscripts, the figure captions written under "Figure legends").
     """
     from collections import Counter
 
     from ingestion_workflow.services import text_refresh
 
     settings = _settings(config)
-    sources = tuple(source or text_refresh.REFRESHABLE_SOURCES)
-    unknown = set(sources) - set(text_refresh.REFRESHABLE_SOURCES)
+    sources = tuple(source or text_refresh.SOURCES)
+    unknown = set(sources) - set(text_refresh.SOURCES)
     if unknown:
         raise typer.BadParameter(f"cannot rebuild the text of {', '.join(sorted(unknown))}")
     counts: Counter = Counter()
@@ -699,13 +700,23 @@ def refresh_text(
     with _catalog(settings) as catalog:
         jobs = list(text_refresh.jobs(catalog, sources))
     typer.echo(f"{len(jobs):,} extractions to check ({', '.join(sources)})")
+    rewritten = []
     for result in text_refresh.run(jobs, write=not dry_run, workers=settings.max_workers):
         counts[result.status.split(":")[0]] += 1
         if result.status in ("rewritten", "would_rewrite"):
             new_of.setdefault(result.old_sha256, set()).add((result.new_sha256, result.text_path))
+            rewritten.append(result)
+        elif result.old_sha256 and not dry_run:
+            rewritten.append(result)  # its text stays: to record its hash
         if out:
-            out.write(json.dumps(result.__dict__) + "\n")
+            out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
+    # What the catalog stores against each rewritten text moves with it, a batch of texts per write.
+    with _catalog(settings) as catalog:
+        carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
+    typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
+               f"{carried['stale']:,} left for the passages stage to read again, "
+               f"{carried['captions']:,} remapped and read again for their captions' coordinates")
     if corpus:
         # an old text two extractions shared, rebuilt two ways, names no single replacement
         replaced = {old: next(iter(news))[1] for old, news in new_of.items()

@@ -11,7 +11,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import HELD_FOR_REVIEW, NO_TEXT, Context, is_take_back, take_back_or_block
 from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
@@ -100,8 +100,12 @@ class UploadStage:
         roled = with_roles(ctx, [ref.id for ref in refs])
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
-            # Without OK roles nothing is uploaded, whatever an older space artifact holds.
-            if spaced is None or spaced.status is not Status.OK or ref.id not in roled:
+            if spaced is None or spaced.status is not Status.OK:
+                take_back_or_block(plan, ref, spaced, artifacts.get(ref.id, {}).get(""))
+                continue
+            # Without OK roles nothing is uploaded, whatever an older space artifact
+            # holds; missing roles only wait, they never take back what was uploaded.
+            if ref.id not in roled:
                 plan.blocked += 1
                 continue
             notice = notices.get(ref.id, {}).get("")
@@ -170,6 +174,30 @@ class UploadStage:
                 refused[work.article_id] = outcome
         yield from refused.values()
         works = [work for work in works if work.article_id not in refused]
+
+        # An uploaded article whose text was taken back: its pipeline analyses came from a
+        # text no extraction holds now, so they are retracted the way an article whose
+        # every table was excluded is, except that a study any studyset holds is left
+        # as it is and recorded as held for review. Annotated analyses stay.
+        back = [work for work in works if is_take_back(work)]
+        works = [work for work in works if not is_take_back(work)]
+        uploaded = ctx.catalog.artifacts([w.article_id for w in back], "upload")
+        retract_back, nothing = [], []
+        for work in back:
+            prior = uploaded.get(work.article_id, {}).get("")
+            # No upload of its own: whatever neurostore holds for the article, this
+            # pipeline did not put there, so the take-back is only recorded.
+            base_study_id = prior is not None and (
+                (prior.summary or {}).get("base_study_id") or work.ref.identifier.neurostore)
+            if base_study_id:
+                retract_back.append((work, base_study_id))
+            else:
+                nothing.append(work)
+        for work in nothing:
+            yield Outcome.failure(work.article_id, self.name, "", NO_TEXT, fingerprint=NO_TEXT)
+        yield from self._retract(retract_back, hold_studyset_members=True)
+        if not works:
+            return
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
         found = ctx.catalog.artifacts([w.article_id for w in works], "notices")
@@ -337,7 +365,7 @@ class UploadStage:
                 skip.append(work)
         return retract, skip
 
-    def _retract(self, retract, marked=None) -> Iterator[Outcome]:
+    def _retract(self, retract, marked=None, *, hold_studyset_members: bool = False) -> Iterator[Outcome]:
         if not retract:
             return
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
@@ -347,20 +375,36 @@ class UploadStage:
         try:
             with SSHTunnel(self.settings) as tunnel:
                 service = UploadService(self.settings, SessionFactory(self.settings, tunnel=tunnel))
-                outcomes = service.retract([(work.ref.identifier.slug, bsid) for work, bsid in retract])
+                targets = [(work.ref.identifier.slug, bsid) for work, bsid in retract]
+                outcomes = service.retract(targets, hold_studyset_members=hold_studyset_members)
         except Exception as exc:
             logger.error("retraction batch failed: %s", exc)
-            for work, _ in retract:
+            # The failure keeps base_study_id, so the next run can still retract.
+            for work, bsid in retract:
                 yield Outcome.failure(work.article_id, self.name, "", f"{type(exc).__name__}: {exc}",
-                                      fingerprint=work.fingerprint)
+                                      fingerprint=work.fingerprint,
+                                      summary={"base_study_id": bsid})
             return
+        held = []
         for outcome in outcomes:
             work = by_slug.get(outcome.slug)
             if work is None:
                 continue
             if not outcome.success:
                 yield Outcome.failure(work.article_id, self.name, "", outcome.error or "retraction failed",
-                                      fingerprint=work.fingerprint)
+                                      fingerprint=work.fingerprint,
+                                      summary={"base_study_id": outcome.base_study_id})
+                continue
+            if outcome.action == "held":
+                # Not OK, so sync leaves the article in the corpus; planned again each
+                # run, so it is retracted once no studyset holds it.
+                held.append(outcome.base_study_id)
+                yield Outcome.failure(
+                    work.article_id, self.name, "",
+                    f"{HELD_FOR_REVIEW}: in {len(outcome.studysets)} studysets",
+                    fingerprint=work.fingerprint,
+                    summary={"base_study_id": outcome.base_study_id, "study_id": outcome.study_id,
+                             "studysets": outcome.studysets})
                 continue
             # OK, not SKIPPED: sync reads the summary and takes the article out
             # of the corpus as well.
@@ -380,6 +424,9 @@ class UploadStage:
                     "analyses": 0,
                 } | ({"retraction_marked": marked[work.article_id]} if work.article_id in (marked or {}) else {}),
             )
+        if held:
+            logger.warning("upload: %d studies held for review instead of retracted, because a "
+                           "studyset holds them: %s", len(held), ", ".join(held))
 
     def _gather(self, ctx: Context, works: Sequence[Work], excluded=None):
         """Load only this batch's analyses and metadata, never the whole cache.

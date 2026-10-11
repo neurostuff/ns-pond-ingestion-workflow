@@ -63,6 +63,13 @@ def _roles(text=""):
     return paper_parse._Roles(paper_parse._Text(text), [])
 
 
+def _prose(text, *passages):
+    """A prose payload whose passages are spans of `text`, as the prose stage writes it."""
+    spans = [(text.index(p), text.index(p) + len(p)) for p in passages]
+    return {"text_sha256": paper_parse._Text(text).sha256,
+            "passages": [{"span": list(s), "text": p} for s, p in zip(spans, passages)]}
+
+
 def _collection(analyses):
     """A collection as the roles stage passed it: each set without a decision here gets one."""
     for a in analyses:
@@ -185,7 +192,7 @@ def _written(tmp_path):
         },
         excluded={"tbl3": {"reason": "not_coordinates", "note": "a design matrix"}},
         readings={"tbl1": "coordinates"},
-        prose={"passages": [{"text": PASSAGE}]},
+        prose=_prose(TEXT, PASSAGE),
         passages_kept=1,
         restated=2,
         fingerprints={"extract": "fp-extract", "space": "fp-space"},
@@ -343,7 +350,7 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
             for name, (x, y, z) in (("faces", (40, -52, -18)), ("houses", (28, -46, -8)))
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, passage))
     built = [
         paper_parse._prose_analysis(
             a, collection, paper_parse._Text(text), inputs, _roles(text)
@@ -372,7 +379,7 @@ def _one_prose(metadata, passage="The peak is marked in Figure 2 (40, -52, -18).
         ],
     )
     roles = paper_parse._Roles(text, [])
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
     return paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles), roles
 
 
@@ -411,7 +418,7 @@ def test_a_mirror_printed_outside_the_set_s_passages_is_not_noted():
                  coordinates=[Coordinate(x=40, y=-52, z=-18)])
     ])
     roles = paper_parse._Roles(text, [])
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
     built = paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles)
     assert built.points[0].text_span is None
     assert not [o for o in roles.omitted if o.kept]
@@ -472,38 +479,7 @@ def test_the_parse_id_is_the_analyses_fingerprint(written, tmp_path):
     }
 
 
-def test_a_passage_is_placed_in_the_text_despite_its_whitespace():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    text = "ab  The seed\nwas  here. cd"
-    ((start, end),) = _locate("The seed was here.", _Text(text))
-    assert text[start:end] == "The seed\nwas  here"
-
-
-def test_a_passage_is_placed_despite_its_minus_signs_and_punctuation():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    text = "x Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2) y"
-    ((start, end),) = _locate(
-        "Talaraich coordinates, x : \u221249.5, y : \u221214.3 (302.47 mm \u00b2)", _Text(text)
-    )
-    assert text[start:end] == "Talaraich coordinates, x: -49.5, y: -14.3 (302.47mm2"
-
-
-def test_a_passage_split_by_an_inlined_table_is_placed_sentence_by_sentence():
-    from ingestion_workflow.services.paper_parse import _locate, _Text
-
-    head = "A seed was placed in the left amygdala at the peak."
-    legend = "Figure 2. Colour bar displays t values for the comparison."
-    tail = "It was placed as in the earlier study of the same group of patients."
-    text = f"x {head} | 1 | 2 | {tail} y"
-    pieces = _locate(f"{legend} {head} {tail}", _Text(text))
-    assert [text[a:b] for a, b in pieces] == [head[:-1], tail[:-1]]
-    assert _locate("Nothing like this is in the text at all, anywhere in it.", _Text(text)) == []
-
-
-def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once():
-    text = "Results\n\nThe peak lay in the left insula (x = \u221234, y = 18, z = 2).\n"
+def _insula(text, prose):
     collection = _collection(
         [
             Analysis(
@@ -514,11 +490,24 @@ def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once()
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Not in the text."}]})
+    roles = _roles(text)
     built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
+        collection.analyses[0], collection, paper_parse._Text(text),
+        ParseInputs(article_id="a", prose=prose), roles,
     )
+    return built, [o.reason for o in roles.omitted]
+
+
+def test_a_repeated_passage_is_placed_at_its_own_copy_not_the_first():
+    # htv7t5aoho5n: the abstract repeats the result sentence; the passage is the second.
+    passage = "The peak lay in the left insula (x = \u221234, y = 18, z = 2)."
+    text = f"Abstract\n\n{passage}\n\nResults\n\n{passage}\n"
+    second = text.rindex(passage)
+    prose = {"text_sha256": paper_parse._Text(text).sha256,
+             "passages": [{"span": [second, second + len(passage)], "text": passage}]}
+    built, _ = _insula(text, prose)
     (span,) = built.text_spans
+    assert span.start_char > second
     assert text[span.start_char : span.end_char] == "\u221234, y = 18, z = 2"
 
 
@@ -537,7 +526,7 @@ def test_a_prose_point_is_placed_in_its_sentence_not_at_a_table_row_printing_it(
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": sentence}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, sentence))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
@@ -557,15 +546,33 @@ def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Elsewhere."}]})
     roles = _roles("Results only.")
+    inputs = ParseInputs(article_id="a", prose={"text_sha256": roles.text.sha256, "passages": []})
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, roles.text, inputs, roles
     )
     assert built is None
     assert [(o.name, o.table_id, o.reason) for o in roles.omitted] == [
-        ("lost", None, "neither its passages nor its points are in the parsed paper's text")
+        ("lost", None, "it names no passage of the parsed paper's text")
     ]
+
+
+def test_a_point_printed_outside_its_passage_is_not_placed_there():
+    # d47umdi7b5aj: a prose point printed once, in an inlined table far from its passage.
+    passage = "The insula was active in both groups."
+    text = f"Results\n\n{passage}\n\nTable 2\nInsula\t\u221234\t18\t2\n"
+    built, _ = _insula(text, _prose(text, passage))
+    (span,) = built.text_spans
+    assert text[span.start_char : span.end_char] == passage
+    assert built.points[0].text_span is None
+
+
+def test_passages_indexing_another_text_place_nothing():
+    text = "Results\n\nThe peak lay in the left insula (x = \u221234, y = 18, z = 2).\n"
+    stale = _prose(text, "The peak")
+    stale["text_sha256"] = "0" * 64
+    assert _insula(text, stale) == (None, ["its passages index another text than the parsed paper's"])
+    assert _insula(text, {"passages": [{"text": "The peak"}]})[0] is None  # a prose result from before spans
 
 
 def _parse(tmp_path, markup, per_table, text="Results\n", **inputs):
@@ -823,7 +830,7 @@ def _prose_parse(passage, names_and_points):
         text,
         {},
         {"prose": collection},
-        ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
+        ParseInputs(article_id="a", prose=_prose(text, passage)),
     )
 
 
@@ -1040,6 +1047,17 @@ def test_a_full_passage_list_is_truncated():
     assert paper_parse._text_sweep(short).truncated is False
 
 
+def test_a_recorded_cut_says_whether_the_passages_were_truncated():
+    from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
+
+    passages = {"passages": [{"text": "p"}] * MAX_PASSAGES}
+    whole = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=0)
+    assert paper_parse._text_sweep(whole).truncated is False
+    cut = paper_parse._text_sweep(
+        ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=3))
+    assert (cut.truncated, cut.passages_found) == (True, MAX_PASSAGES + 3)
+
+
 def test_a_point_names_its_space_only_when_it_differs_from_its_analysis():
     collection = _collection([])
     same = paper_parse._point(
@@ -1065,7 +1083,7 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
         ],
     )
     text = "Peak at 40, -52, -18."
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": text}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text, text))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
@@ -1254,7 +1272,7 @@ def test_a_kept_analysis_s_note_is_not_among_the_parse_s_omissions():
                             text_sha256="0" * 64, tables=[])
     parse, omitted = paper_parse.coordinate_parse(
         paper, f"Results\n\n{passage}\n", {}, {"prose": collection},
-        ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
+        ParseInputs(article_id="a", prose=_prose(f"Results\n\n{passage}\n", passage)),
     )
     assert [a.name for a in parse.analyses] == ["marked peak"]
     assert [o.kept for o in omitted] == [True] and parse.omitted_analyses is None
@@ -1277,7 +1295,7 @@ def test_a_citing_sentence_printed_with_other_spaces_and_minus_signs_is_placed()
 def test_only_a_placeholder_name_is_marked_not_printed():
     passage = "The peak is marked in Figure 2 (40, -52, -18)."
     text = paper_parse._Text(f"Results\n\n{passage}\n")
-    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
     printed = []
     for name in ("marked peak", "UNKNOWN"):
         collection = _collection([

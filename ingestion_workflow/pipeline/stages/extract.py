@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
+from pathlib import Path
 from typing import Dict, Iterator, List, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -45,6 +47,11 @@ DEFAULT_EXTRACTOR_VERSION = 1
 def extraction_fingerprint(source: str, download: Artifact) -> str:
     version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
     return fingerprint("extract", source, version, upstream=download.fingerprint)
+
+
+def file_sha256(path) -> str:
+    """sha256 of a text file's bytes as stored."""
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def current_extractions(
@@ -252,6 +259,9 @@ class ExtractStage:
             "tables_with_coordinates": with_coords,
             "has_text": bool(content.full_text_path),
         }
+        if content.full_text_path and Path(content.full_text_path).is_file():
+            # What passages chains on: a text rewritten in place (refresh-text) updates it.
+            summary["text_sha256"] = file_sha256(content.full_text_path)
         if content.error_message:
             # Kept, because "four of five tables parsed" is worth knowing; it
             # is just not a failure.

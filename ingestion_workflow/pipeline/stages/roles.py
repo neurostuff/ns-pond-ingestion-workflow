@@ -27,13 +27,18 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
+from .passages import passage_from, read_text
 from .space import _article_text
 
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
 ROLES_VERSION = 3
+
+#: Why roles waits on an article whose prose indexes a passages list other than the current one.
+RESOLVE_READ_OTHER_PROSE = "its resolve was made from other prose: roles waits for resolve to read this prose"
+PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for prose to read these"
 
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
@@ -234,6 +239,22 @@ def refuse_unassigned(
     )
 
 
+def _read_passages(ctx: Context, payload: Optional[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+    """The passages a payload indexes, as the text they are spans of prints them.
+
+    A text that changed under its passages raises, so the article fails rather
+    than have its prose sets classified from nothing.
+    """
+    stored = (payload or {}).get("passages") or []
+    if not stored:
+        return []
+    text = read_text(ctx, payload)
+    return [
+        {"text": p.text, "heading": p.heading, "before": p.before, "after": p.after}
+        for p in (passage_from(s, text) for s in stored)
+    ]
+
+
 def with_roles(ctx: Context, ids: Sequence[str]) -> Set[str]:
     """The articles whose roles artifact is OK: the only ones downstream stages may write."""
     found = ctx.catalog.artifacts(list(ids), "roles")
@@ -313,16 +334,37 @@ class RolesStage:
         """Each origin's part of the fingerprint, by origin."""
         return {o: self.model_fingerprint(o, self.model_state(o)) for o in self.origins()}
 
-    def fingerprint_for(self, upstream: Artifact, models: Mapping[str, str]) -> str:
+    def fingerprint_for(self, upstream: Artifact, models: Mapping[str, str],
+                        read: Optional[Tuple] = None) -> str:
         # Where resolve added nothing from the prose, it names the analyses
         # artifact it passed through, and the article has table sets only: it
         # stays fresh when prose is switched on, and the prose model is not its input.
         basis = (upstream.summary or {}).get("basis") if upstream.stage == "resolve" else None
         if basis:
             models = {o: fp for o, fp in models.items() if o == "table"}
-        return fingerprint(
-            "roles", ROLES_VERSION, sorted(models.items()), upstream=basis or upstream.fingerprint
-        )
+        parts = ("roles", ROLES_VERSION, sorted(models.items())) + ((read,) if read else ())
+        return fingerprint(*parts, upstream=basis or upstream.fingerprint)
+
+    @staticmethod
+    def prose_read(prose: Optional[Artifact], passages: Optional[Artifact], resolved: Artifact):
+        """The prose and the passages its sets' indices point into, or why they cannot be read.
+
+        The sets are resolve's, copied from the prose it read (`prose_read`); a resolve made
+        from other prose, or one that skipped the newer prose and so kept its old row, holds
+        indices into a list that prose no longer indexes.
+
+        Roles reads the passages artifact as it is now; the prose sets index the list prose
+        was given. Passages run again before prose does (prose waits for its go-ahead), so
+        until prose reads the new list the two disagree, and roles waits."""
+        if prose is None or prose.status is not Status.OK:
+            return None, "its prose is not OK: roles waits for prose"
+        if (resolved.summary or {}).get("prose_read") != prose.fingerprint:
+            return None, RESOLVE_READ_OTHER_PROSE
+        if (passages is None or passages.status is not Status.OK
+                or (prose.summary or {}).get("passages_read") != passages.fingerprint):
+            return None, PROSE_READ_OTHER_PASSAGES
+        spans = (passages.summary or {}).get("spans")
+        return (prose.fingerprint, passages.fingerprint, spans), None
 
     @staticmethod
     def needs(parent: Artifact) -> Tuple[str, ...]:
@@ -350,11 +392,14 @@ class RolesStage:
             if reason not in self._said:
                 self._said.add(reason)
                 logger.warning("roles: articles with such sets are blocked: %s", reason)
-        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        ids = [ref.id for ref in refs]
+        attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        prose = ctx.catalog.artifacts(ids, "prose")
+        passages = ctx.catalog.artifacts(ids, "passages")
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, parent, artifacts.get(ref.id, {}).get(""))
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and
             # the article is planned on the first run with the model configured.
@@ -362,7 +407,14 @@ class RolesStage:
             if lacking:
                 plan.block(lacking[0])
                 continue
-            fp = self.fingerprint_for(parent, models)
+            read = None
+            if "text" in self.needs(parent):
+                read, stale = self.prose_read(prose.get(ref.id, {}).get(""),
+                                              passages.get(ref.id, {}).get(""), parent)
+                if stale:
+                    plan.block(stale)
+                    continue
+            fp = self.fingerprint_for(parent, models, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -375,6 +427,8 @@ class RolesStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
@@ -399,11 +453,10 @@ class RolesStage:
                     triaged.get(work.article_id, {}).get(""),
                     extractions.get(work.article_id, {}),
                     ctx,
-                    read,
                 )
                 assigned, summary = assign_roles(
                     payload,
-                    (read_payload or {}).get("passages", []),
+                    _read_passages(ctx, read_payload),
                     text,
                     _Classifiers(self),
                 )
