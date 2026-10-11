@@ -42,7 +42,7 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 4
+PAPER_PARSE_VERSION = 5
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -73,7 +73,7 @@ class ParseInputs:
     #: The analyses stage's summary `readings` / `unread`; None when not recorded.
     readings: Optional[Mapping[str, str]] = None
     unread: Optional[Mapping[str, str]] = None
-    #: The prose stage payload (its `passages[].text` locate a prose analysis).
+    #: The prose stage payload (its `passages[].span` locate a prose analysis).
     prose: Optional[Mapping[str, Any]] = None
     #: How many passages the passages stage kept, and resolve's restatement count.
     passages_kept: Optional[int] = None
@@ -104,7 +104,7 @@ class _Table:
         return self._index
 
 
-#: Characters a passage and the text print differently: superscript digits.
+#: Characters a table cell and the text print differently: superscript digits.
 _FOLD = str.maketrans("\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079", "0123456789")
 _ALNUM = re.compile(r"[^\W_]+")
 
@@ -124,12 +124,13 @@ def _squash(text: str) -> Tuple[str, array]:
 class _Text:
     """The parsed paper's text, and its letters and digits alone, built on first use.
 
-    The passages stage and the extractor print one sentence with different spaces,
-    minus signs, punctuation and superscripts; their letters and digits agree.
+    A table's cells and the text inlining them differ in spaces, minus signs,
+    punctuation and superscripts; their letters and digits agree.
     """
 
     def __init__(self, text: str) -> None:
         self.text = text
+        self.sha256 = hashlib.sha256(text.encode("utf-8", errors="surrogatepass")).hexdigest()
         self._squashed: Optional[Tuple[str, array]] = None
 
     def __len__(self) -> int:
@@ -910,18 +911,27 @@ def _prose_analysis(
     no other analysis took.
     """
     taken = set() if taken is None else taken
-    passages = (inputs.prose or {}).get("passages") or []
+    prose = inputs.prose or {}
+    passages = prose.get("passages") or []
+    if prose.get("text_sha256") != text.sha256:
+        # Spans into another text (or a prose result older than spans) place nothing.
+        roles.omitted.append(
+            Omitted(analysis.name, None, "its passages index another text than the parsed paper's")
+        )
+        return None
     windows: List[Tuple[int, int]] = []
     for index in (analysis.metadata or {}).get("passages") or []:
-        passage = passages[index].get("text") if 0 <= index < len(passages) else None
-        if passage:
-            windows += _locate(passage, text)
+        span = passages[index].get("span") if 0 <= index < len(passages) else None
+        if span:
+            windows.append((span[0], span[1]))
     point_spans = []
     for c in analysis.coordinates:
         xyz = coordinate_text.triple(c)
-        point_spans.append(
-            coordinate_text.find_point(xyz, text.text, windows, taken) if xyz else None
-        )
+        span = coordinate_text.find_point(xyz, text.text, windows, taken) if xyz else None
+        # The windows are the passages' own characters, so a copy outside them is
+        # another sentence's or a table row's, not where this set printed its point.
+        inside = span and any(a <= span[0] and span[1] <= b for a, b in windows)
+        point_spans.append(span if inside else None)
         if point_spans[-1]:
             taken.add(point_spans[-1])
         elif xyz and (mirror := _mirror(xyz, text.text, windows)):
@@ -938,11 +948,7 @@ def _prose_analysis(
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
     if not spans:
         roles.omitted.append(
-            Omitted(
-                analysis.name,
-                None,
-                "neither its passages nor its points are in the parsed paper's text",
-            )
+            Omitted(analysis.name, None, "it names no passage of the parsed paper's text")
         )
         return None
     key = keys.span_key("text", spans, analysis.name)
@@ -962,35 +968,6 @@ def _prose_analysis(
     )[0]
 
 
-#: Fewest letters and digits a piece of a passage needs to be placed on its own.
-_PIECE = 24
-
-
-def _locate(passage: str, text: _Text) -> List[Tuple[int, int]]:
-    """Where a prose passage sits in the parsed paper's text, as (start, end) pieces.
-
-    The passages stage cuts passages from its own reading of the download, joined
-    sentence by sentence, so a passage is rarely a verbatim slice of text.txt: its
-    spaces, minus signs and punctuation differ, a figure legend may be joined to the
-    sentence after it, and a table inlined in text.txt may split a sentence. Exact
-    first, then by its letters and digits, then sentence by sentence; a sentence the
-    text does not hold is left out.
-    """
-    start = text.text.find(passage)
-    if start >= 0:
-        return [(start, start + len(passage))]
-    whole = text.find(passage)
-    if whole is not None:
-        return [whole]
-    pieces, at = [], 0
-    for sentence in re.split(r"(?<=[.;!?])\s+|\n+", passage):
-        if len(_squash(sentence)[0]) < _PIECE:
-            continue
-        found = text.find(sentence, at) or text.find(sentence)
-        if found is not None:
-            pieces.append(found)
-            at = found[1]
-    return pieces
 
 
 def _analysis(

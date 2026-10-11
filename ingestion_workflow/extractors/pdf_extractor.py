@@ -383,7 +383,7 @@ def _extract_pdf_article(
     except Exception as exc:
         return _build_failure_content(download_result, f"Docling conversion failed: {exc}")
 
-    full_text = normalize_text_tokens(document.export_to_text())
+    full_text, figure_captions = pdf_text_and_captions(document, normalize_text_tokens)
     full_text_path = output_dir / "article.txt"
     full_text_path.write_text(full_text, encoding="utf-8")
 
@@ -452,10 +452,39 @@ def _extract_pdf_article(
         full_text_path=full_text_path,
         tables=extracted_tables,
         has_coordinates=any(table.coordinates for table in extracted_tables),
+        figure_captions=figure_captions,
     )
 
 
 _TABLE_LABEL = re.compile(r"\b(table\s*[0-9ivx]+)", re.IGNORECASE)
+
+
+def pdf_text_and_captions(document: Any, normalize: Callable[[str], str]):
+    """The document's text without its pictures, the pictures' captions under "Figure
+    legends" at the end, and each caption's `{"ids", "span"}` in the text.
+
+    No export label leaves a picture's caption out and a table's in, so the text is
+    exported from a copy without the pictures and their captions. A document that
+    cannot be copied that way is exported whole, its captions where docling put them.
+    """
+    from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
+
+    pictures = list(getattr(document, "pictures", []) or [])
+    if not pictures:
+        return normalize(document.export_to_text()), []
+    captions = dedupe((getattr(p, "self_ref", None), normalize(" ".join(_caption_texts(p, document))))
+                      for p in pictures)
+    try:
+        bare = document.model_copy(deep=True)
+        refs = [ref.resolve(doc=bare) for p in bare.pictures for ref in (getattr(p, "captions", None) or [])]
+        if refs:
+            bare.delete_items(node_items=refs)
+        bare.delete_items(node_items=list(bare.pictures))
+        body = normalize(bare.export_to_text())
+    except Exception as exc:  # noqa: BLE001 - an older docling-core
+        logger.warning("Could not export the text without its pictures: %s", exc)
+        return normalize(document.export_to_text()), []
+    return append_legends(body, captions)
 
 
 def _table_label(caption: str) -> Optional[str]:

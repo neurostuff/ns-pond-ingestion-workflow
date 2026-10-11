@@ -151,11 +151,52 @@ def test_a_marker_after_a_full_stop_belongs_to_the_sentence_before():
     assert C.Sentences(text).of(at) == (0, text.index(" [12]"))
 
 
-def test_the_offset_map_skips_inserted_lines():
-    a = "one\ntwo\nthree\n"
-    b = "zero\none\ntwo\nthree\n"
-    m = C.OffsetMap(a, b)
-    assert b[m(a.index("two")) :].startswith("two")
+def test_markers_are_carried_past_inserted_lines_and_dropped_inside_changed_text():
+    rebuilt = "one\ntwo [1]\nthree [22]\n"
+    stored = "zero\none\ntwo [1]\nthree [9]\n"
+    # the second marker ends inside "22", which the stored text replaced with "9"
+    at = {0: (rebuilt.index("[1]"), rebuilt.index("[1]") + 3), 1: (rebuilt.index("[22]"), rebuilt.index("[22]") + 2)}
+    notes = {}
+    placed = C._place(rebuilt, at, stored, notes)
+    assert stored[slice(*placed[0])] == "[1]"
+    assert 1 not in placed and notes == {"text_rebuilt_differs": 1}
+
+
+def test_a_space_the_stored_text_adds_after_a_marker_is_not_the_marker_s():
+    rebuilt, stored = "picture. 3At first", "picture. 3 At first"
+    at = rebuilt.index("3")
+    assert C._place(rebuilt, {0: (at, at + 1)}, stored, {}) == {0: (at, at + 1)}
+
+
+
+def test_space_the_rebuild_puts_inside_a_marker_is_trimmed_before_the_map():
+    """The rebuild's space is mapped onto the stored text's comma, which no trim after the map removes."""
+    rebuilt, stored = "found 19 Disruptions", "found,19 Disruptions"
+    at = rebuilt.index(" 19")
+    assert C._place(rebuilt, {0: (at, at + 3)}, stored, {}) == {0: (6, 8)}
+
+
+def test_space_the_map_carries_onto_a_marker_s_edge_is_trimmed_after_it():
+    rebuilt, stored = "found [19] Disruptions", "found  19  Disruptions"
+    at = rebuilt.index("[")
+    assert C._place(rebuilt, {0: (at, at + 4)}, stored, {}) == {0: (7, 9)}
+
+
+def test_an_elsevier_marker_between_spaces_the_stored_text_has_fewer_of_is_kept():
+    """The rebuild puts two spaces around each marker where the stored text has one. Diffed
+    character by character, runs like this lost 26 markers in 13 of 80 Elsevier articles;
+    matched word by word, any run of space matching any other, each space is its own edit
+    and every marker keeps its place."""
+    from ingestion_workflow.services.offsets import diff
+
+    sentences = [f"Finding {k} was replicated in the cortex of patients with the disease." for k in range(8)]
+    rebuilt = "".join(f"{t}  {k + 1}  " for k, t in enumerate(sentences))
+    stored = "".join(f"{t} {k + 1} " for k, t in enumerate(sentences))
+    spans = {k: (rebuilt.index(f"  {k + 1}  "), rebuilt.index(f"  {k + 1}  ") + 4) for k in range(8)}
+    placed = C._place(rebuilt, spans, stored, {}, words=True)
+    assert [stored[a:b] for a, b in placed.values()] == [str(k + 1) for k in range(8)]
+    edits = diff(rebuilt, stored, words=True).edits
+    assert len(edits) == 16 and all(not (rebuilt[a:b] + stored[c:d]).strip() for a, b, c, d in edits)
 
 
 def test_subscripts_stay_in_the_text_when_pubget_keeps_them(tmp_path):

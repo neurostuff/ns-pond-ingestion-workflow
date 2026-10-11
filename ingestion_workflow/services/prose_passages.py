@@ -3,6 +3,9 @@
 A passage is the run of sentences holding coordinates plus one sentence on
 either side, with the nearest section heading and a little surrounding text
 for naming. Table rows the extractors wrote into the text are dropped first.
+
+A passage is kept as `(start, end)` spans into the text it was found in, never as
+its own copy: `view` is what the prose model reads of a span, rebuilt from the text.
 """
 
 from __future__ import annotations
@@ -10,6 +13,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
+
+from ingestion_workflow.services import offsets
 
 MINUS = "−–—‐‑‒﹣－"
 #: The space after a sign only: a space before one is left to the patterns,
@@ -83,23 +88,33 @@ ABBREV = re.compile(
 CANDIDATE_END = re.compile(r"[.!?](?:[\"')\]]*)\s+(?=[A-Z(\[\"'])")
 
 
+Span = Tuple[int, int]
+
+
 @dataclass
 class Hit:
     pattern: str
     x: float
     y: float
     z: float
-    span: Tuple[int, int]
+    span: Span  # in the article text for a passage's hits; in its sentence for `find`'s
 
 
 @dataclass
 class Passage:
+    """`text`, `before`, `after` and `heading` are what the model reads of their spans."""
+
     text: str
     hits: List[Hit] = field(default_factory=list)
     before: str = ""
     after: str = ""
     heading: Optional[str] = None
     space: Optional[str] = None
+    from_legend: bool = False  # every hit inside a figure legend
+    span: Optional[Span] = None
+    before_span: Optional[Span] = None
+    after_span: Optional[Span] = None
+    heading_span: Optional[Span] = None
 
 
 def table_free(text: str) -> str:
@@ -109,24 +124,77 @@ def table_free(text: str) -> str:
     )
 
 
-def sentences(text: str) -> List[str]:
-    text = re.sub(r"[ \t]*\n[ \t]*", " \n", text)
-    out, start = [], 0
+LINE = re.compile(r"^[^\n]*\n?", re.M)
+NEWLINE = re.compile(r"[ \t]*\n[ \t]*")
+PARAGRAPH = re.compile(r"\s*\n\s*\n\s*|\s\n(?=[A-Z#])")
+
+
+def _table_row(m: re.Match) -> str:
+    line = m.group()
+    return "" if line.count("\t") >= 2 or line.count("|") >= 3 else line
+
+
+#: What the detector reads, in order: table rows dropped, spaces closed up, a list
+#: broken across a PDF's columns rejoined, headings set apart, line ends marked.
+#: A PDF's column or page break can fall inside a triplet ("[-21, -6,\n\n-27]"),
+#: and a paragraph break ends a sentence, so it is closed up first.
+CLEANING = ((LINE, _table_row), (SPACES, " "), (BROKEN_LIST, r"\1 "),
+            (HEADING, lambda m: f"\n\n#{m.group(1)}\n\n"), (NEWLINE, " \n"))
+
+
+def cleaned(text: str) -> Tuple[str, offsets.Chain]:
+    """The text the detector reads, and the maps from `text` to it."""
+    maps = []
+    for rx, repl in CLEANING:
+        text, step = offsets.sub(rx, repl, text)
+        maps.append(step)
+    return text, offsets.Chain(maps)
+
+
+def _strip(text: str, a: int, b: int) -> Optional[Span]:
+    while a < b and text[a].isspace():
+        a += 1
+    while b > a and text[b - 1].isspace():
+        b -= 1
+    return (a, b) if a < b else None
+
+
+def sentence_spans(text: str) -> List[Span]:
+    """Where each sentence of an already line-marked text (see NEWLINE) sits in it."""
+    pieces, start = [], 0
     for m in CANDIDATE_END.finditer(text):
         end = m.start() + 1
         if ABBREV.search(text[start:end]):
             continue
-        piece = text[start:end].strip()
-        if piece:
-            out.append(piece)
+        pieces.append((start, end))
         start = m.end()
-    tail = text[start:].strip()
-    if tail:
-        out.append(tail)
-    split = []
-    for s in out:
-        split.extend(p.strip() for p in re.split(r"\s*\n\s*\n\s*|\s\n(?=[A-Z#])", s) if p.strip())
-    return split
+    pieces.append((start, len(text)))
+    out = []
+    for a, b in pieces:
+        at = a
+        for m in PARAGRAPH.finditer(text, a, b):
+            out.append(_strip(text, at, m.start()))
+            at = m.end()
+        out.append(_strip(text, at, b))
+    return [s for s in out if s]
+
+
+def sentences(text: str) -> List[str]:
+    text = NEWLINE.sub(" \n", text)
+    return [text[a:b] for a, b in sentence_spans(text)]
+
+
+def view(text: str, span: Optional[Span]) -> str:
+    """What the prose model reads of text[start:end]: its sentences cleaned as the
+    detector reads them, one space apart, headings left out."""
+    if not span:
+        return ""
+    clean, _ = cleaned(text[span[0]:span[1]])
+    return " ".join(p for a, b in sentence_spans(clean) for p in [clean[a:b]] if not p.startswith("#"))
+
+
+def heading_text(text: str, span: Optional[Span]) -> Optional[str]:
+    return SPACES.sub(" ", text[span[0]:span[1]]).strip() if span else None
 
 
 def _num(s: str) -> float:
@@ -239,16 +307,25 @@ def find(sentence: str) -> List[Hit]:
 
 
 def passages(text: str, *, max_chars: int = 4000, before: int = 3) -> List[Passage]:
-    """Every run of coordinate sentences, with a sentence either side.
+    """Every run of coordinate sentences, with a sentence either side, as spans of `text`.
 
     `before` sentences preceding the passage, the one after it and the last
     heading above it are kept alongside: they often name the contrast the
     passage only refers to ("This comparison revealed ...").
     """
-    # A PDF's column or page break can fall inside a triplet ("[-21, -6,\n\n-27]"),
-    # and a paragraph break ends a sentence, so it is closed up first.
-    clean = BROKEN_LIST.sub(r"\1 ", SPACES.sub(" ", table_free(text or "")))
-    sents = sentences(HEADING.sub(lambda m: f"\n\n#{m.group(1)}\n\n", clean))
+    text = text or ""
+    clean, maps = cleaned(text)
+    back = maps.inverse()
+
+    def home(a: int, b: int) -> Span:
+        # Every sentence starts and ends on a character the cleaning kept.
+        got = back.span(a, b)
+        if got is None:
+            raise ValueError(f"no place in the text for cleaned span {a}-{b}")
+        return got
+
+    spans = sentence_spans(clean)
+    sents = [clean[a:b] for a, b in spans]
     found = [[] if s.startswith("#") else find(s) for s in sents]
     out, i = [], 0
     while i < len(sents):
@@ -263,24 +340,31 @@ def passages(text: str, *, max_chars: int = 4000, before: int = 3) -> List[Passa
             first = i
         if sents[last].startswith("#"):
             last = j
-        body = " ".join(sents[first:last + 1])
-        while len(body) > max_chars and last > j:
+        while len(" ".join(sents[first:last + 1])) > max_chars and last > j:
             last -= 1
-            body = " ".join(sents[first:last + 1])
-        heading = next((s.lstrip("#").strip() for s in reversed(sents[:first]) if s.startswith("#")), None)
-        prev = [s for s in sents[max(0, first - before):first] if not s.startswith("#")]
-        nxt = next((s for s in sents[last + 1:last + 2] if not s.startswith("#")), "")
+        span = home(spans[first][0], spans[last][1])
+        head = next((k for k in range(first - 1, -1, -1) if sents[k].startswith("#")), None)
+        # the heading's name, without the "#" the cleaning gave it
+        heading_span = home(spans[head][0] + 1, spans[head][1]) if head is not None else None
+        prev = [k for k in range(max(0, first - before), first) if not sents[k].startswith("#")]
+        before_span = home(spans[prev[0]][0], spans[prev[-1]][1]) if prev else None
+        nxt = last + 1 if last + 1 < len(sents) and not sents[last + 1].startswith("#") else None
+        after_span = home(*spans[nxt]) if nxt is not None else None
+        body = view(text, span)
         sp = SPACE.search(body)
         out.append(Passage(
             text=body,
-            hits=[h for k in range(i, j + 1) for h in found[k]],
-            before=" ".join(prev),
-            after=nxt,
-            heading=heading,
+            hits=[Hit(h.pattern, h.x, h.y, h.z, home(spans[k][0] + h.span[0], spans[k][0] + h.span[1]))
+                  for k in range(i, j + 1) for h in found[k]],
+            before=view(text, before_span),
+            after=view(text, after_span),
+            heading=heading_text(text, heading_span),
             space=("MNI" if sp.group(1).lower().startswith(("mni", "montreal")) else "TAL") if sp else None,
+            span=span, before_span=before_span, after_span=after_span, heading_span=heading_span,
         ))
         i = j + 1
     return out
 
 
-__all__ = ["Hit", "Passage", "find", "passages", "plausible", "sentences", "table_free"]
+__all__ = ["Hit", "Passage", "cleaned", "find", "heading_text", "passages", "plausible", "sentence_spans",
+           "sentences", "table_free", "view"]

@@ -10,7 +10,7 @@ from ingestion_workflow.catalog import ArticleRef, Outcome, Status
 from ingestion_workflow.utils.console import progress_bar
 
 from .plan import StagePlan
-from .stage import Context, Stage
+from .stage import HELD_FOR_REVIEW, NO_TEXT, Context, Stage
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,10 @@ class StageReport:
     permanent: int = 0
     ok: int = 0
     failed: int = 0
+    #: Of the failed: taken back because the article has no text, and the
+    #: retractions left for a person because a studyset holds the study.
+    taken_back: int = 0
+    held: int = 0
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -44,6 +48,10 @@ class StageReport:
             parts.append(f"{self.ok:>7,} done")
             if self.failed:
                 parts.append(f"{self.failed:>6,} failed")
+            if self.taken_back:
+                parts.append(f"{self.taken_back:>6,} taken back")
+            if self.held:
+                parts.append(f"{self.held:>6,} held for review")
         parts.append(f"{self.fresh:>7,} fresh")
         for label, value in (
             ("blocked", self.blocked),
@@ -103,6 +111,10 @@ def run_stages(
             ctx.catalog.record(outcomes)
             stage_report.ok += sum(1 for o in outcomes if o.status is Status.OK)
             stage_report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
+            stage_report.taken_back += sum(1 for o in outcomes if o.error == NO_TEXT
+                                           or (o.status is Status.OK and o.fingerprint == NO_TEXT))
+            stage_report.held += sum(1 for o in outcomes
+                                     if (o.error or "").startswith(HELD_FOR_REVIEW))
         if bar is not None:
             bar.close()
         if not dry_run and hasattr(stage, "finish"):

@@ -13,7 +13,6 @@ from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
-    DownloadSource,
     ExtractedContent,
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
@@ -22,7 +21,6 @@ from ingestion_workflow.services import nspond, paper_parse
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
-from .extract import current_extractions
 from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
@@ -67,7 +65,12 @@ class SyncStage:
         spaced = ctx.catalog.artifacts([ref.id for ref in refs], "space")
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
-            if upload is None or upload.status is not Status.OK or ref.id not in roled:
+            if upload is None or upload.status is not Status.OK:
+                plan.blocked += 1
+                continue
+            # A retracted study leaves the corpus even when its roles were taken back
+            # with its text; anything else is written only with OK roles.
+            if not upload.summary.get("retracted") and ref.id not in roled:
                 plan.blocked += 1
                 continue
             if not upload.summary.get("base_study_id"):
@@ -88,7 +91,6 @@ class SyncStage:
         analyses = ctx.catalog.artifacts(ids, "space")
         downloads = ctx.catalog.artifacts(ids, "download")
         triaged = ctx.catalog.artifacts(ids, "triage")
-        # What the prose read, for an article extract could not read.
         passages = ctx.catalog.artifacts(ids, "passages")
         # For the coordinate parse: table readings, prose passages, restatements.
         read = ctx.catalog.artifacts(ids, "analyses")
@@ -111,7 +113,7 @@ class SyncStage:
             try:
                 bundle, per_table, files = self._assemble(
                     ctx, work, extractions, metadata, analyses, downloads, triaged,
-                    excluded.get(work.article_id, {}), passages.get(work.article_id, {}).get(""),
+                    excluded.get(work.article_id, {}),
                 )
             except LookupError as exc:
                 yield Outcome.failure(
@@ -195,24 +197,20 @@ class SyncStage:
                      "moved_to": str(moved) if moved else None},
         )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None,
-                  passages=None):
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),
             downloads.get(work.article_id, {}),
             triaged.get(work.article_id, {}).get(""),
         )
-        if extraction is not None:
-            payload = ctx.payload(extraction)
-            if payload is None:
-                raise LookupError("extraction payload missing from blob store")
-            content = ExtractedContent.from_dict(payload)
-            source = extraction.source
-        else:
-            # No extraction, but the prose read the article: its download and
-            # its text stand in, with no tables to write.
-            content, source = _from_passages(ctx, work, passages)
+        if extraction is None:
+            raise LookupError("no successful extraction to sync")
+        payload = ctx.payload(extraction)
+        if payload is None:
+            raise LookupError("extraction payload missing from blob store")
+        content = ExtractedContent.from_dict(payload)
+        source = extraction.source
         content.identifier = work.ref.identifier
         content.slug = work.ref.identifier.slug
 
@@ -282,20 +280,6 @@ def _parse_inputs(
     )
 
 
-def _from_passages(ctx: Context, work: Work, passages: Artifact | None) -> Tuple[ExtractedContent, str]:
-    payload = ctx.payload(passages) if passages is not None and passages.status is Status.OK else None
-    if not payload or not payload.get("passages"):
-        raise LookupError("no successful extraction, and no prose read, to sync")
-    path = payload.get("full_text_path")
-    content = ExtractedContent(
-        slug=work.ref.identifier.slug,
-        source=DownloadSource(payload["source"]),
-        identifier=work.ref.identifier,
-        full_text_path=Path(path) if path and Path(path).is_file() else None,
-    )
-    return content, payload["source"]
-
-
 def _synced_extraction(
     ctx: Context,
     extractions: Dict[str, Artifact],
@@ -306,16 +290,12 @@ def _synced_extraction(
 
     Table ids are unique only within an extraction, so writing another one
     beside these analyses would pair them with different tables. An article
-    triage has not reached takes its best current extraction.
+    triage has not reached takes the one triage would judge, whose text its
+    passages index.
     """
+    from .triage import judged_extraction
+
     judged = extractions.get((triage.summary or {}).get("source", "")) if triage else None
     if judged is not None and judged.status is Status.OK:
         return judged
-    return _best(current_extractions(ctx, extractions, downloads) or extractions)
-
-
-def _best(candidates: Dict[str, Artifact]) -> Artifact | None:
-    usable = [a for a in candidates.values() if a.status is Status.OK]
-    if not usable:
-        return None
-    return max(usable, key=lambda a: a.summary.get("tables_with_coordinates", 0))
+    return judged_extraction(ctx, extractions, downloads)

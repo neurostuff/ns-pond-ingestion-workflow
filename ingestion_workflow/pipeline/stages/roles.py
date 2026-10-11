@@ -27,7 +27,8 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, take_back_or_block, taking_back
+from .passages import passage_from, read_text
 from .space import _article_text
 
 logger = logging.getLogger(__name__)
@@ -234,6 +235,22 @@ def refuse_unassigned(
     )
 
 
+def _read_passages(ctx: Context, payload: Optional[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+    """The passages a payload indexes, as the text they are spans of prints them.
+
+    A text that changed under its passages raises, so the article fails rather
+    than have its prose sets classified from nothing.
+    """
+    stored = (payload or {}).get("passages") or []
+    if not stored:
+        return []
+    text = read_text(ctx, payload)
+    return [
+        {"text": p.text, "heading": p.heading, "before": p.before, "after": p.after}
+        for p in (passage_from(s, text) for s in stored)
+    ]
+
+
 def with_roles(ctx: Context, ids: Sequence[str]) -> Set[str]:
     """The articles whose roles artifact is OK: the only ones downstream stages may write."""
     found = ctx.catalog.artifacts(list(ids), "roles")
@@ -354,7 +371,7 @@ class RolesStage:
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
-                plan.blocked += 1
+                take_back_or_block(plan, ref, parent, artifacts.get(ref.id, {}).get(""))
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and
             # the article is planned on the first run with the model configured.
@@ -375,6 +392,8 @@ class RolesStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        back, works = taking_back(self.name, works)
+        yield from back
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
@@ -399,11 +418,10 @@ class RolesStage:
                     triaged.get(work.article_id, {}).get(""),
                     extractions.get(work.article_id, {}),
                     ctx,
-                    read,
                 )
                 assigned, summary = assign_roles(
                     payload,
-                    (read_payload or {}).get("passages", []),
+                    _read_passages(ctx, read_payload),
                     text,
                     _Classifiers(self),
                 )

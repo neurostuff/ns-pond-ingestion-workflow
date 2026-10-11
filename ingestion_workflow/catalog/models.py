@@ -84,6 +84,7 @@ class Outcome:
         *,
         permanent: bool = False,
         fingerprint: str = "",
+        summary: Optional[Dict[str, Any]] = None,
     ) -> "Outcome":
         return cls(
             article_id=article_id,
@@ -91,5 +92,6 @@ class Outcome:
             source=source,
             status=Status.PERMANENT if permanent else Status.FAILED,
             fingerprint=fingerprint,
+            summary=dict(summary or {}),
             error=error[:2000],
         )
