@@ -176,7 +176,7 @@ class Coordinate:
     #: Keys a payload may carry that are not constructor fields: the two
     #: retired flags, which nothing reads any more (a negative point is the
     #: inverse contrast, its own analysis by the sign split, and a seed is a
-    #: set's role, `Analysis.metadata["role"]`), and `sign`, which `to_dict`
+    #: set's role, which the roles stage decides), and `sign`, which `to_dict`
     #: writes but is always derived again on read.
     NON_FIELD_KEYS = ("is_deactivation", "is_seed", "sign")
 
