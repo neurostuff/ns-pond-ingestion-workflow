@@ -150,7 +150,7 @@ def test_a_stored_placeholder_is_not_synced(tmp_path):
 
 def test_stage1_points_carry_sign_and_subpeak_but_no_retired_flag(written):
     """A point's sign is read from its statistic; `unsigned` marks one placed
-    in the positive half with no statistic to place it by."""
+    in the original half with no statistic to place it by."""
     for analysis in read_record(written, BASE).stage1["analyses"]:
         for point in analysis["points"]:
             assert point["sign"] in {"positive", "negative", "unsigned"}

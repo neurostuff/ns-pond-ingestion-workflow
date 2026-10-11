@@ -16,7 +16,9 @@ from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
 
-UPLOAD_VERSION = 1
+#: 2: the inverse half of a sign split is named by its reversed contrast, its
+#: negative values are negated, and `split` declares it.
+UPLOAD_VERSION = 2
 
 
 def _notice_marker(notices: Optional[Artifact]) -> Optional[str]:
@@ -382,7 +384,8 @@ class UploadStage:
     def _gather(self, ctx: Context, works: Sequence[Work], excluded=None):
         """Load only this batch's analyses and metadata, never the whole cache.
 
-        Also returns the works holding nothing to upload. The gate in `narrow`
+        Also returns the works holding nothing to upload, and a failure for each
+        whose stored analyses predate declared sign splits. The gate in `narrow`
         gets as far as `summary.tables`, which counts collections rather than
         analyses, so a table the extractor returned an empty answer for still
         reaches here -- 22 of 49,778 articles in the v19 corpus run.

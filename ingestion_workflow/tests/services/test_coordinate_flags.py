@@ -2,53 +2,71 @@
 
 from __future__ import annotations
 
+from ingestion_workflow.models.statistics import side
 from ingestion_workflow.services.coordinate_flags import (
-    point_sign,
     reports_extent,
     subpeak_flags,
 )
 
 
-# -- point_sign -----------------------------------------------------------
+# -- side: study_schema.statistics decides ----------------------------
 
-def test_a_negative_statistic_is_negative():
-    assert point_sign(-4.31) == "negative"
-    assert point_sign(4.31) == "positive"
+def test_a_negative_directional_statistic_is_negative():
+    assert side(-4.31, "T") == "negative"
+    assert side(4.31, "T") == "positive"
+    for letter in ("Z", "D", "G", "R", "B", "t"):
+        assert side(-1.0, letter) == "negative", letter
 
 
 def test_no_statistic_is_unsigned():
     """Absence of evidence. A row with no statistic says nothing about
-    direction; in a split it joins the positive half, and the tag says so."""
-    assert point_sign(None) == "unsigned"
+    direction; in a split it joins the original half."""
+    assert side(None, "T") is None
+
+
+def test_a_value_with_no_kind_takes_its_sign():
+    """An unlabelled column (3YzBcF24AgZG tbl2 "MH 11" prints -4.00): a p, F
+    or chi-square is never negative, so a negative value is a signed one."""
+    assert side(-4.0) == "negative"
+    assert side(-4.0, None) == "negative"
+    assert side(-3.0, "OTHER") == "negative"
+    assert side(3.1) == "positive"
+    assert side(3.1, "OTHER") == "positive"
 
 
 def test_zero_is_positive():
-    """`< 0`, not `<= 0`: study_schema's PointSign puts zero with the positive
-    half. A zero statistic is not a decrease."""
-    assert point_sign(0.0) == "positive"
+    """`< 0`, not `<= 0`: a zero statistic is not a decrease."""
+    assert side(0.0, "T") == "positive"
 
 
 def test_an_unparseable_statistic_is_unsigned():
     """The field reaches here from a model, so it can hold anything. It must
     not raise in the middle of converting an article."""
-    assert point_sign("n.s.") == "unsigned"
-    assert point_sign(float("nan")) == "unsigned"
+    assert side("n.s.", "T") is None
+    assert side(float("nan"), "T") is None
+    assert side(True, "T") is None
 
 
 def test_a_p_value_or_an_f_has_no_direction():
     """Positive whichever way the contrast runs, so reading a sign off one
-    would place every row of a p-only table in the positive half as if it
-    were known to be there."""
-    assert point_sign(0.001, "P") == "unsigned"
-    assert point_sign(12.0, "F") == "unsigned"
-    assert point_sign(-3.0, "t") == "negative"
+    would place every row of a p-only table in a half as if it were known."""
+    assert side(0.001, "P") is None
+    assert side(12.0, "F") is None
+    assert side(-0.0, "P") is None
+
+
+def test_a_negative_p_or_f_is_negative():
+    """Neither can be negative, so a negative one is a mislabelled signed
+    column, not a p or an F."""
+    assert side(-2.3, "P") == "negative"
+    assert side(-1.0, "F") == "negative"
 
 
 def test_a_magnitude_only_table_yields_no_negatives():
     """Many papers print unsigned magnitudes and put the direction in the
     contrast name. Inferring a direction from an unsigned number would
     invent a result."""
-    assert [point_sign(v, "T") for v in (3.1, 4.8, 2.2)] == ["positive"] * 3
+    assert [side(v, "T") for v in (3.1, 4.8, 2.2)] == ["positive"] * 3
 
 
 # -- is_subpeak -----------------------------------------------------------
