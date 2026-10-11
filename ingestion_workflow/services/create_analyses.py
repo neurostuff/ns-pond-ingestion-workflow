@@ -140,35 +140,43 @@ def split_by_sign(name, coordinates):
 def declare_legacy_splits(collection: AnalysisCollection) -> AnalysisCollection:
     """Legacy only: declare the splits of a payload stored before `split{}` existed.
 
-    Such a payload marks a split only by name, `X` then `X (negative)` (or `X (inverse)`) in the
-    same table. The pair is declared as it was stored, with no re-split, so a
-    reader sees the halves the stage produced. A `(negative)` or `(inverse)` analysis with no
-    such partner is declared an inverse half with no original
-    rather than read as an ordinary analysis. Undeclared analyses only; the
-    stored payload is not rewritten. Delete once no stored payload lacks
-    `split{}`.
+    Such a payload marks a split only by name: `X` then `X (negative)` in the
+    same table. Both suffixes are read, `(inverse)` as well, because payloads
+    stored before the rename may carry either. The pair is declared as it was
+    stored, with no re-split, so a reader sees the halves the stage produced. A
+    suffixed analysis left with no partner is declared an inverse half with no
+    original rather than read as an ordinary analysis. Undeclared analyses
+    only; the stored payload is not rewritten. Delete once no stored payload
+    lacks `split{}`.
     """
     analyses = collection.analyses
-    for i, analysis in enumerate(analyses):
-        meta = analysis.metadata
-        if meta.get("split") or not analysis.name.endswith(SPLIT_SUFFIXES):
-            continue
-        prev = analyses[i - 1] if i else None
+
+    def undeclared(analysis):
+        return not analysis.metadata.get("split")
+
+    # Pairs are found before any leftover is declared, and from the end: a
+    # paper's own "Load (negative)" that was split is stored as "Load (negative)"
+    # then "Load (negative) (negative)", and its first half must pair with the
+    # second, not be taken as the inverse of an earlier "Load".
+    for i in range(len(analyses) - 1, 0, -1):
+        prev, analysis = analyses[i - 1], analyses[i]
         if (
-            prev is not None
-            and not prev.metadata.get("split")
-            and analysis.name in (prev.name + suffix for suffix in SPLIT_SUFFIXES)
+            undeclared(prev)
+            and undeclared(analysis)
             and prev.table_id == analysis.table_id
+            and analysis.name in (prev.name + suffix for suffix in SPLIT_SUFFIXES)
         ):
-            original = i - 1
-            prev.metadata = {**prev.metadata, "split": {"half": "original", "index": original}}
-        else:
-            original = None
+            prev.metadata = {**prev.metadata, "split": {"half": "original", "index": i - 1}}
+            analysis.metadata = {
+                **analysis.metadata, "split": {"half": "inverse", "original_index": i - 1}
+            }
+    for analysis in analyses:
+        if undeclared(analysis) and analysis.name.endswith(SPLIT_SUFFIXES):
             logger.warning("unpaired legacy inverse half %r in table %s",
                            analysis.name, analysis.table_id)
-        analysis.metadata = {
-            **meta, "split": {"half": "inverse", "original_index": original}
-        }
+            analysis.metadata = {
+                **analysis.metadata, "split": {"half": "inverse", "original_index": None}
+            }
     return collection
 
 

@@ -1031,7 +1031,8 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
     between, or two originals with one name, cannot mispair them. The inverse takes
     the original's name, the contrast as printed. An inverse half whose original is
     not in the parse (`original_index` is None, or names one that was not placed)
-    is declared on its own and loses its suffix too.
+    is declared on its own and loses its suffix too; so is an original whose
+    inverse is not in the parse.
     """
     rule = "sign_of_directional_statistic"
     originals = {
@@ -1039,6 +1040,8 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
         for built, split in analyses
         if built is not None and split and split["half"] == "original"
     }
+    for original in originals.values():
+        original.split = pp.SignSplit(half="original", rule=rule)
     for built, split in analyses:
         if built is None or not split or split["half"] != "inverse":
             continue
@@ -1047,7 +1050,6 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
             built.split = pp.SignSplit(half="inverse", rule=rule)
             _rename(built, _without_suffix(built.name))
             continue
-        original.split = pp.SignSplit(half="original", rule=rule)
         built.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
         _rename(built, original.name)
 

@@ -5,6 +5,8 @@ Sync declares it in memory.
 
 from __future__ import annotations
 
+import pytest
+
 from ingestion_workflow.models import Analysis, AnalysisCollection, Coordinate
 from ingestion_workflow.services.create_analyses import declare_legacy_splits
 
@@ -75,3 +77,28 @@ def test_a_declared_payload_is_left_alone():
     ]
     assert [s for _, _, s in _declared(*halves)] == [
         {"half": "original", "index": 0}, {"half": "inverse", "original_index": 0}]
+
+
+@pytest.mark.parametrize("suffix", [" (negative)", " (inverse)"])
+def test_a_split_of_a_name_that_already_ends_in_the_suffix_pairs_with_its_own_half(suffix):
+    """The paper's own "Load (negative)" with mixed signs, stored split by name."""
+    name = "Load" + suffix
+    assert _declared(
+        Analysis(name=name, table_id="t1", coordinates=[_pt(4.0)]),
+        Analysis(name=name + suffix, table_id="t1", coordinates=[_pt(-4.0, x=2)]),
+    ) == [
+        (name, 1, {"half": "original", "index": 0}),
+        (name + suffix, 1, {"half": "inverse", "original_index": 0}),
+    ]
+
+
+def test_a_split_after_an_unsplit_namesake_pairs_with_its_own_half():
+    assert _declared(
+        Analysis(name="Load", table_id="t1", coordinates=[_pt(4.0)]),
+        Analysis(name="Load (negative)", table_id="t1", coordinates=[_pt(4.0, x=2)]),
+        Analysis(name="Load (negative) (negative)", table_id="t1", coordinates=[_pt(-4.0, x=3)]),
+    ) == [
+        ("Load", 1, None),
+        ("Load (negative)", 1, {"half": "original", "index": 1}),
+        ("Load (negative) (negative)", 1, {"half": "inverse", "original_index": 1}),
+    ]

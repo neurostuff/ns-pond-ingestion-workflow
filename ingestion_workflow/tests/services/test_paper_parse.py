@@ -19,7 +19,7 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.services import nspond, paper_parse
-from ingestion_workflow.models.statistics import schema_kind
+from ingestion_workflow.models.statistics import point_values, schema_kind
 from ingestion_workflow.services.paper_parse import ParseInputs
 from study_schema import keys
 from study_schema.jsonschema import load
@@ -718,6 +718,21 @@ def test_an_inverse_half_with_no_original_is_declared_on_its_own(tmp_path):
     (half,) = parse.analyses
     assert half.split.half == "inverse" and half.split.original_analysis is None
     assert half.name == "AD vs. NC"
+
+
+def test_an_original_whose_inverse_is_not_in_the_parse_is_still_declared(tmp_path):
+    collection = _collection(
+        [Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)],
+                  metadata={"split": {"half": "original", "index": 0}})]
+    )
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    (original,) = parse.analyses
+    assert original.split.half == "original" and original.split.original_analysis is None
+    assert original.name == "Fear > Neutral"
+
+
+def test_a_nan_statistic_gives_a_point_no_value():
+    assert point_values(float("nan"), "T") == []
 
 
 def test_halves_pair_by_the_stages_index_after_an_analysis_is_dropped(tmp_path):

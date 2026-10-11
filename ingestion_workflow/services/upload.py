@@ -654,7 +654,12 @@ class UploadService:
                     analysis,
                     name=analysis_name,
                     description=analysis_description,
-                    metadata=_sanitize_mapping(analysis.metadata or {}),
+                    # `split` pairs halves by their place in the analyses
+                    # stage's collection, which no neurostore analysis has;
+                    # neurostore gets the split from the parse, keyed.
+                    metadata=_sanitize_mapping(
+                        {k: v for k, v in (analysis.metadata or {}).items() if k != "split"}
+                    ),
                 )
                 prepared_analyses.append(
                     PreparedAnalysis(

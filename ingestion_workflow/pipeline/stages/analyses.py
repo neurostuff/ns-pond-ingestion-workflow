@@ -230,8 +230,6 @@ class AnalysesStage:
             # `no_coordinates`, and never as an analysis with no points.
             summary={
                 "tables": len(collections),
-                # Read by sync: payloads without it predate `metadata.split`.
-                "split_declared": True,
                 "coordinates": coordinates,
                 "readings": readings,
                 **({"unread": unread} if unread else {}),

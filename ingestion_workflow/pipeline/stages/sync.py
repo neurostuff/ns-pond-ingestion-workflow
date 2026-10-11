@@ -113,7 +113,6 @@ class SyncStage:
                 bundle, per_table, files = self._assemble(
                     ctx, work, extractions, metadata, analyses, downloads, triaged,
                     excluded.get(work.article_id, {}), passages.get(work.article_id, {}).get(""),
-                    legacy=_stored_before_split(read.get(work.article_id, {}).get("")),
                 )
             except LookupError as exc:
                 yield Outcome.failure(
@@ -191,7 +190,7 @@ class SyncStage:
         )
 
     def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None,
-                  passages=None, legacy=False):
+                  passages=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),
@@ -222,7 +221,7 @@ class SyncStage:
             ctx.payload(analyses.get(work.article_id, {}).get("")), excluded or {}
         )
         per_table = {
-            table_id: _collection(blob, legacy)
+            table_id: _collection(blob)
             for table_id, blob in analysis_payload.items()
         }
 
@@ -245,19 +244,9 @@ class SyncStage:
         self._retracted.clear()
 
 
-def _stored_before_split(artifact) -> bool:
-    """Whether the analyses artifact was written before `metadata.split` existed.
-
-    The stage marks every artifact it writes with `split_declared`, so the
-    answer comes from the artifact, never from the names in its payload: a
-    paper's own `X (negative)` is not a split.
-    """
-    return artifact is not None and not (artifact.summary or {}).get("split_declared")
-
-
-def _collection(blob, legacy: bool) -> AnalysisCollection:
+def _collection(blob) -> AnalysisCollection:
     collection = AnalysisCollection.from_dict(blob)
-    return declare_legacy_splits(collection) if legacy else collection
+    return collection if collection.split_declared else declare_legacy_splits(collection)
 
 
 def _parse_inputs(

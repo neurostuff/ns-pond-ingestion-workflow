@@ -344,6 +344,12 @@ class AnalysisCollection:
     analyses: List[Analysis] = field(default_factory=list)
     coordinate_space: Optional[CoordinateSpace] = None
     identifier: Optional[Identifier] = None
+    #: Whether a sign split in it is declared in `metadata["split"]`. True for
+    #: anything this code builds; a stored payload without the key predates the
+    #: declaration, so its splits are marked only by name. It travels with the
+    #: payload, through roles and space, so sync reads it from the payload it
+    #: writes rather than from an artifact that may have been re-run since.
+    split_declared: bool = True
 
     def add_analysis(self, analysis: Analysis) -> None:
         self.analyses.append(analysis)
@@ -354,6 +360,7 @@ class AnalysisCollection:
             "coordinate_space": self.coordinate_space.value if self.coordinate_space else None,
             "analyses": [analysis.to_dict() for analysis in self.analyses],
             "identifier": (self.identifier.__dict__.copy() if self.identifier else None),
+            "split_declared": self.split_declared,
         }
 
     @classmethod
@@ -367,6 +374,7 @@ class AnalysisCollection:
             analyses=[Analysis.from_dict(item) for item in payload.get("analyses", [])],
             coordinate_space=CoordinateSpace(space) if space else None,
             identifier=identifier,
+            split_declared=bool(payload.get("split_declared", False)),
         )
 
 
