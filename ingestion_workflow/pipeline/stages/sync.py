@@ -207,7 +207,8 @@ class SyncStage:
                      "moved_to": str(moved) if moved else None},
         )
 
-    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged, excluded=None):
+    def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged,
+                  excluded=None):
         extraction = _synced_extraction(
             ctx,
             extractions.get(work.article_id, {}),

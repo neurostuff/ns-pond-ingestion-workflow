@@ -11,11 +11,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
 
+from ace import extract as ace_extract
 from ace.config import update_config
 from ace.scrape import Scraper
 from ace.sources import SourceManager, table_text
 from bs4 import BeautifulSoup
-from ace import extract as ace_extract
 
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
@@ -27,25 +27,23 @@ from ingestion_workflow.extractors.utils import (
     normalize_minus,
 )
 from ingestion_workflow.models import (
-    Identifier,
-    Identifiers,
-    DownloadResult,
-    DownloadSource,
-    DownloadedFile,
-    ExtractionResult,
-    FileType,
-    ExtractedContent,
-    ExtractedTable,
     Coordinate,
     CoordinateSpace,
+    DownloadedFile,
+    DownloadResult,
+    DownloadSource,
+    ExtractedContent,
+    ExtractedTable,
+    ExtractionResult,
+    FileType,
+    Identifier,
+    Identifiers,
 )
-from ingestion_workflow.services.download_check import check_page
-
-from ingestion_workflow.utils import slugify
 from ingestion_workflow.patches import apply_ace_patch
 from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
+from ingestion_workflow.services.download_check import check_page
+from ingestion_workflow.utils import slugify
 from ingestion_workflow.utils.progress import emit_progress
-
 
 apply_ace_patch()
 

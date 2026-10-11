@@ -29,7 +29,6 @@ inspected afterwards: the record says which gate made it and on what score.
 from __future__ import annotations
 
 import hashlib
-
 import logging
 import multiprocessing
 import re
@@ -211,7 +210,8 @@ class TriageStage:
             meta_of[work.article_id] = (is_a_meta_analysis(title, types), types)
             tables_of[work.article_id] = len(content.tables)
             found = ctx.catalog.artifacts([work.article_id], "extract").get(work.article_id, {})
-            downloads = ctx.catalog.artifacts([work.article_id], "download").get(work.article_id, {})
+            downloads = ctx.catalog.artifacts(
+                [work.article_id], "download").get(work.article_id, {})
             found = without_bad_pages(found, downloads)
             skipped_of[work.article_id] = skipped_for_text(
                 current_extractions(ctx, found, downloads) or found, work.upstream)
@@ -356,7 +356,9 @@ def _as_dict(table) -> Dict:
             "caption": getattr(table, "caption", "") or "",
             "footer": getattr(table, "footer", "") or ""}
 
-def judged_extraction(ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]) -> Optional[Artifact]:
+def judged_extraction(
+    ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]
+) -> Optional[Artifact]:
     """The extraction triage judges, whose text sync writes and passages reads.
 
     Never one made from a page that is not the article, current or not."""
@@ -403,7 +405,8 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
     # On 2026-10-06 no article had ACE beside another source with tables, so
     # this changed no verdict already made.
     preferred = [a for a in usable if a.source != "ace" and a.summary.get("tables", 0)]
-    return min(preferred or usable, key=lambda a: (-a.summary.get("tables", 0), _rank(a.source), a.source))
+    return min(preferred or usable,
+               key=lambda a: (-a.summary.get("tables", 0), _rank(a.source), a.source))
 
 
 #: A tie on tables goes to the first of these (a source not listed comes after them, by

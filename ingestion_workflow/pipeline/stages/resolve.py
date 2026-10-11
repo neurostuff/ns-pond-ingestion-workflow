@@ -332,7 +332,8 @@ class ResolveStage:
         analysed = ctx.catalog.artifacts([w.article_id for w in works], "analyses")
         for work in works:
             tables_artifact = analysed.get(work.article_id, {}).get("")
-            tables = ctx.payload(tables_artifact) if tables_artifact is not None and tables_artifact.ok else {}
+            tables_ok = tables_artifact is not None and tables_artifact.ok
+            tables = ctx.payload(tables_artifact) if tables_ok else {}
             payload, summary = resolve(tables or {}, ctx.payload(work.upstream) or {},
                                        work.ref.identifier.slug, work.ref.identifier)
             # What upload's freshness should follow. When the prose adds
@@ -340,6 +341,7 @@ class ResolveStage:
             # fingerprint it already had.
             summary["prose_read"] = work.upstream.fingerprint
             summary["basis"] = (tables_artifact.fingerprint
-                                if not summary["prose_analyses"] and tables_artifact is not None else "")
+                                if not summary["prose_analyses"] and tables_artifact is not None
+                                else "")
             yield Outcome(article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                           fingerprint=work.fingerprint, payload=payload, summary=summary)

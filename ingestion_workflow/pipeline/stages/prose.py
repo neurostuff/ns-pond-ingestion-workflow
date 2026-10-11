@@ -131,11 +131,13 @@ class ProseStage:
                     kept_answers[work.article_id] = answers
                     continue
             meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None else {}
-            reading += [(p, meta.get("title") or "", meta.get("abstract") or "") for p in read[work.article_id]]
+            reading += [(p, meta.get("title") or "", meta.get("abstract") or "")
+                        for p in read[work.article_id]]
         answers: List = []
         if reading:
             with ThreadPoolExecutor(max_workers=max(1, self.settings.n_llm_workers)) as pool:
-                futures = [pool.submit(self._read, p, title, abstract) for p, title, abstract in reading]
+                futures = [pool.submit(self._read, p, title, abstract)
+                           for p, title, abstract in reading]
                 answers = [f.result() for f in futures]
         answered = iter(answers)
 
@@ -167,7 +169,8 @@ class ProseStage:
             if errors:
                 # A partly read article would be cached as complete; retry it whole.
                 yield Outcome.failure(work.article_id, self.name, "",
-                                      f"{errors} of {len(out)} passages failed", fingerprint=work.fingerprint)
+                                      f"{errors} of {len(out)} passages failed",
+                                      fingerprint=work.fingerprint)
                 continue
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
@@ -176,7 +179,8 @@ class ProseStage:
                          "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
                          "passages": out},
                 # the passages these `span`s and indices are into, for roles to check
-                summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
+                summary={"source": payload.get("source"), "read": payload.get("read"),
+                         "passages": len(out),
                          "coordinates": coords, "analyses": named, "unwritten": unwritten,
                          "read_fingerprint": read_fps[work.article_id],
                          "passages_read": work.upstream.fingerprint},

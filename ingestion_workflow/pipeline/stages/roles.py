@@ -38,7 +38,8 @@ logger = logging.getLogger(__name__)
 ROLES_VERSION = 3
 
 #: Why roles waits on an article whose prose indexes a passages list other than the current one.
-RESOLVE_READ_OTHER_PROSE = "its resolve was made from other prose: roles waits for resolve to read this prose"
+RESOLVE_READ_OTHER_PROSE = ("its resolve was made from other prose: "
+                            "roles waits for resolve to read this prose")
 PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for prose to read these"
 
 #: The setting naming each origin's model, and the origin's name in a reason.

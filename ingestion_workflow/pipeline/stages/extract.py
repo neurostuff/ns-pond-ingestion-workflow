@@ -73,7 +73,8 @@ READ_FROM_BAD_PAGE = "read from a downloaded page that is not the article"
 
 def read_from_bad_page(artifact: Optional[Artifact], downloads: Dict[str, Artifact]) -> bool:
     """Whether passages or prose (each records its extraction's `source`) are from a bad page."""
-    return artifact is not None and from_bad_page((artifact.summary or {}).get("source"), downloads)
+    source = (artifact.summary or {}).get("source") if artifact is not None else None
+    return artifact is not None and from_bad_page(source, downloads)
 
 
 #: The error an extraction made from a page that is not the article fails with.

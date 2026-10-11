@@ -586,7 +586,8 @@ def exclude(
         None, help="Articles to mark: PMID, PMC id, DOI, Neurostore base_study_id or article id."
     ),
     table: Optional[List[str]] = typer.Option(
-        None, "--table", "-t", help="Mark only this table (repeatable). Without it, the whole article."
+        None, "--table", "-t",
+        help="Mark only this table (repeatable). Without it, the whole article."
     ),
     file: Optional[Path] = typer.Option(
         None, "--file", "-f", exists=True, dir_okay=False,
@@ -595,8 +596,10 @@ def exclude(
     ),
     reason: str = typer.Option("not coordinates", "--reason", help="Why: recorded with the mark."),
     note: str = typer.Option("", "--note", help="Free text recorded with the mark."),
-    remove: bool = typer.Option(False, "--remove", help="Withdraw the marks instead of adding them."),
-    list_: bool = typer.Option(False, "--list", help="Print the marks on the given articles, or all."),
+    remove: bool = typer.Option(
+        False, "--remove", help="Withdraw the marks instead of adding them."),
+    list_: bool = typer.Option(
+        False, "--list", help="Print the marks on the given articles, or all."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Mark tables as holding no coordinates, so upload and sync leave them out.
@@ -625,9 +628,11 @@ def exclude(
                 if verdict is not None and verdict != "not coordinates":
                     continue
                 if not any(vars(catalog.identifier(entry["article_id"])).values()):
-                    typer.echo(f"  skipped, not an article id in this catalog: {entry['article_id']}")
+                    typer.echo("  skipped, not an article id in this catalog: "
+                               f"{entry['article_id']}")
                     continue
-                rows.append((entry["article_id"], str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
+                rows.append((entry["article_id"],
+                             str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
                              entry.get("reason") or entry.get("kind") or reason,
                              entry.get("note") or note))
 
@@ -669,20 +674,24 @@ def repair(config: Optional[Path] = ConfigOption) -> None:
 @app.command("refresh-text")
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
-        None, "--source", help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
+        None, "--source",
+        help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Report what would change; write nothing."),
-    report: Optional[Path] = typer.Option(None, "--report", help="Write one JSON line per extraction here."),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Report what would change; write nothing."),
+    report: Optional[Path] = typer.Option(
+        None, "--report", help="Write one JSON line per extraction here."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Rebuild extractions' text from their downloads, without re-running extract.
 
     The extraction keeps its tables, payload and fingerprint; its text hash and the
     passages' spans move to the new text in the same catalog write, and the references
-    and the sync are marked stale so they are read and written again. For a change to the text alone
+    and the sync are marked stale so they are read and written again. For a change to the text
+    alone
     (pubget keeping superscripts, the figure captions written under "Figure legends").
     """
     from collections import Counter
@@ -709,9 +718,11 @@ def refresh_text(
         elif result.old_sha256 and not dry_run:
             rewritten.append(result)  # its text stays: to record its hash
         if out:
-            out.write(json.dumps({k: v for k, v in result.__dict__.items() if k != "edits"}) + "\n")
+            row = {k: v for k, v in result.__dict__.items() if k != "edits"}
+            out.write(json.dumps(row) + "\n")
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
-    # What the catalog stores against each rewritten text moves with it, a batch of texts per write.
+    # What the catalog stores against each rewritten text moves with it, a batch of texts
+    # per write.
     with _catalog(settings) as catalog:
         carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
@@ -723,10 +734,12 @@ def refresh_text(
                     if len({sha for sha, _ in news}) == 1}
         ambiguous = len(new_of) - len(replaced)
         n = 0
-        for target, _ in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources, write=not dry_run):
+        for target, _ in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources,
+                                                     write=not dry_run):
             n += 1
             if out:
-                out.write(json.dumps({"corpus_text": str(target), "status": "would_replace" if dry_run else "replaced"}) + "\n")
+                status = "would_replace" if dry_run else "replaced"
+                out.write(json.dumps({"corpus_text": str(target), "status": status}) + "\n")
         verb = "would replace" if dry_run else "replaced"
         typer.echo(f"corpus: {verb} {n:,} text.txt files under {settings.ns_pond_root}"
                    + (f"; {ambiguous:,} old texts skipped as ambiguous" if ambiguous else ""))
