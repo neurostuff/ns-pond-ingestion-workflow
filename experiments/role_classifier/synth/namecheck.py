@@ -25,7 +25,8 @@ generated set is grouped with the real article its text came from (`by_source`):
 scores a string from an article it was fit on, in or across domains. A null set keeps its
 real article.
 
-Per class the score is recall; over classes, balanced accuracy. Generated fields carry the
+Per class the score is recall, each article weighing as one however many sets it holds, in
+fitting and in scoring (`article_weights`); over classes, balanced accuracy. Generated fields carry the
 real cues at the real strength when they score as the null run does: gen_cv not above null_cv
 (no extra cue), gen_on_real not below null_on_real (no lost cue), real_on_gen near real_cv
 (a model of real data reads them as it reads real sets). Exit 1 when, for any field and origin,
@@ -62,8 +63,14 @@ MAX_CLASS_SHIFT = 0.20
 MIN_REAL = 5
 MIN_ARTICLES = 3
 #: A class is held to MAX_CLASS_SHIFT only with this many real sets and articles: below them its
-#: recall moved by 0.3 and more between two sets of 4 runs on the real labels.
-MIN_CLASS_REAL, MIN_CLASS_ARTICLES = 15, 5
+#: recall moved by 0.3 and more between two sets of 4 runs on the real labels. Each article weighs
+#: as one, so it is the articles that count: table anchor:node (21 sets, 10 articles) and text
+#: anchor:seed (21, 12) moved by more than 0.2 between sets of 8 runs of one generator.
+MIN_CLASS_REAL, MIN_CLASS_ARTICLES = 15, 15
+#: Nor with fewer distinct generated texts a run than this: a caption or footer is one per table, and
+#: footer table anchor:roi (5 tables a run) read 0.20 and 0.38 by a real model under two generators
+#: that drew the same footers (26 and 27 of 40 empty), each run straying by 0.3.
+MIN_CLASS_GEN = 8
 NULLS = 3  # null runs beside each generated run
 #: Two sets of 4 runs disagreed (one failed a footer class at 0.53 against 0.22, the other passed it);
 #: 8 runs did not.
@@ -81,21 +88,33 @@ def tokens(name):
     return set(re.findall(r"[a-z]+|\d+|[^\sa-z\d]", (name or "").lower())) or {"<unnamed>"}
 
 
+def article_weights(rows):
+    """Each row's weight: one over the rows its article holds of its class, so an article counts
+    once per class however many sets it has. One real paper's 8 reference tables share a footer
+    (8 of the 18 real reference sets); counted per set, that one footer was most of what a model
+    of real reference footers learned and scored."""
+    n = collections.Counter((str(a), c) for a, _, c in rows)
+    return [1 / n[(str(a), c)] for a, _, c in rows]
+
+
 def fit(rows, epochs=20, rate=0.3, seed=0):
-    """A softmax regression over name tokens by SGD; each class weighs as much as the others."""
+    """A softmax regression over name tokens by SGD; each class weighs as much as the others, and
+    within a class each article as much as the others (`article_weights`)."""
     classes = sorted({c for _, _, c in rows})
-    n = collections.Counter(c for _, _, c in rows)
-    weight = {c: len(rows) / (len(classes) * n[c]) for c in classes}
+    per = article_weights(rows)
+    n = collections.Counter()
+    for (_, _, c), x in zip(rows, per):
+        n[c] += x
     w = {c: collections.defaultdict(float) for c in classes}
-    data = [(tokens(name), c) for _, name, c in rows]
+    data = [(tokens(name), c, x * len(rows) / (len(classes) * n[c])) for (_, name, c), x in zip(rows, per)]
     order = random.Random(seed)
     for epoch in range(epochs):
         order.shuffle(data)
         step = rate / (1 + epoch)
-        for x, y in data:
+        for x, y, weight in data:
             p = _probs(w, x)
             for c in classes:
-                g = step * weight[y] * (p[c] - (c == y))
+                g = step * weight * (p[c] - (c == y))
                 for t in x | {"<bias>"}:
                     w[c][t] -= g
     return w
@@ -115,11 +134,11 @@ def predict(w, name):
 
 
 def recalls(w, rows):
-    """{class: recall} of a fitted model on rows."""
+    """{class: recall} of a fitted model on rows, each article weighing as one (`article_weights`)."""
     hit, seen = collections.Counter(), collections.Counter()
-    for _, text, c in rows:
-        seen[c] += 1
-        hit[c] += predict(w, text) == c
+    for (_, text, c), x in zip(rows, article_weights(rows)):
+        seen[c] += x
+        hit[c] += x * (predict(w, text) == c)
     return {c: hit[c] / seen[c] for c in seen}
 
 
@@ -150,47 +169,55 @@ def by_source(gen_rows, real_rows):
 
 def cv_recalls(rows, folds=FOLDS):
     """{class: recall} in folds grouped by article (`by_source` for generated rows)."""
-    hit, seen = collections.Counter(), collections.Counter()
-    for k in range(folds):
-        train = [r for r in rows if fold(r[0]) != k]
-        test = [r for r in rows if fold(r[0]) == k]
-        if not test or len({c for _, _, c in train}) < 2:
-            continue
-        w = fit(train)
-        for _, text, c in test:
-            seen[c] += 1
-            hit[c] += predict(w, text) == c
-    return {c: hit[c] / seen[c] for c in seen}
+    return cross_recalls(rows, rows, folds)
 
 
 def cross_recalls(train_rows, test_rows, folds=FOLDS):
-    """{class: recall} on test_rows of models fit on train_rows, each scoring only its held-out fold."""
+    """{class: recall} on test_rows of models fit on train_rows, each scoring only its held-out fold;
+    each test article weighs as one per class (`article_weights`; a fold holds whole articles)."""
     hit, seen = collections.Counter(), collections.Counter()
+    weighted = list(zip(test_rows, article_weights(test_rows)))
     for k in range(folds):
         train = [r for r in train_rows if fold(r[0]) != k]
-        test = [r for r in test_rows if fold(r[0]) == k]
+        test = [(r, x) for r, x in weighted if fold(r[0]) == k]
         if not test or len({c for _, _, c in train}) < 2:
             continue
         w = fit(train)
-        for _, text, c in test:
-            seen[c] += 1
-            hit[c] += predict(w, text) == c
+        for (_, text, c), x in test:
+            seen[c] += x
+            hit[c] += x * (predict(w, text) == c)
     return {c: hit[c] / seen[c] for c in seen}
 
 
 def null_rows(real_rows, clusters, seed=0):
-    """Copies of random real rows, one per (class, k) of `clusters`, each copied k times: a generated
-    table's sets share its one caption, so its null holds one real caption k times, not k captions."""
+    """Copies of real rows, one real article per (class, [k, ...]) of `clusters` and one of its sets
+    per k, each copied k times: a generated table's sets share its one caption, so its null holds
+    one real caption k times, not k captions; and the names a generated table took from one real
+    table come, in the null, from one real article too, not from as many articles as it has sets.
+    The article is drawn at the rate the class's real sets hold it, as the generator draws names
+    (one real set at a time); its sets without repeats while it has enough. Scored, each article
+    weighs as one (`article_weights`)."""
     rng = random.Random(seed)
-    by = collections.defaultdict(list)
+    by = collections.defaultdict(lambda: collections.defaultdict(list))
     for r in real_rows:
-        by[r[2]].append(r)
-    return [x for c, k in clusters if by[c] for x in [rng.choice(by[c])] * k]
+        by[r[2]][str(r[0])].append(r)
+    arts = {c: [a[k] for k in sorted(a)] for c, a in by.items()}
+    out = []
+    for c, ks in clusters:
+        if c in arts:
+            sets = rng.choices(arts[c], weights=[len(a) for a in arts[c]])[0]
+            picked = rng.sample(sets, len(ks)) if len(ks) <= len(sets) else [rng.choice(sets) for _ in ks]
+            out += [x for x, k in zip(picked, ks) for _ in range(k)]
+    return out
 
 
 def clusters(gen_rows):
-    """(class, k) for each run of k generated rows that share an article, a text and a class."""
-    return [(c, k) for (_, _, c), k in sorted(collections.Counter((str(g), _key(t), c) for g, t, c in gen_rows).items())]
+    """(class, [k, ...]) for each real article and class the generated rows took their texts from
+    (`by_source`), with one k per text: how many of the rows share it."""
+    by = collections.defaultdict(collections.Counter)
+    for g, t, c in gen_rows:
+        by[(str(g), c)][_key(t)] += 1
+    return [(c, [k for _, k in sorted(n.items())]) for (_, c), n in sorted(by.items())]
 
 
 def equal(rows, n_real, seed=0):
@@ -287,6 +314,8 @@ def compare(runs, real_units, labels, fields=tuple(FIELDS), cues=None):
             if len(classes) < 2:
                 continue
             real_cv = cv_recalls(mine)
+            texts = {c: statistics.fmean(sum(len(ks) for x, ks in clusters(by_source(g[origin], mine)) if x == c) for g in gens)
+                     for c in classes}
             per_run = collections.defaultdict(list)
             for run, g in enumerate(gens):
                 raw = [r for r in g[origin] if r[2] in classes]
@@ -294,13 +323,15 @@ def compare(runs, real_units, labels, fields=tuple(FIELDS), cues=None):
                 per_run["gen_cv"].append(cv_recalls(rows))
                 per_run["real_on_gen"].append(cross_recalls(mine, rows))
                 per_run["gen_on_real"].append(cross_recalls(rows, mine))
-                nulls = [equal(null_rows(mine, clusters(raw), run * NULLS + j), n_real, run) for j in range(NULLS)]
+                shape = clusters(by_source(raw, mine))
+                nulls = [equal(null_rows(mine, shape, run * NULLS + j), n_real, run) for j in range(NULLS)]
                 per_run["null_cv"].append(_mean([cv_recalls(x) for x in nulls])[0])
                 per_run["null_on_real"].append(_mean([cross_recalls(x, mine) for x in nulls])[0])
             r = {"classes": classes,
                  "unchecked": {c: f"{n_real[c]} real sets from {len(articles[c])} articles" for c in sorted(gen_classes - set(classes))},
-                 "class_unchecked": {c: f"{n_real[c]} real sets from {len(articles[c])} articles" for c in classes
-                                     if n_real[c] < MIN_CLASS_REAL or len(articles[c]) < MIN_CLASS_ARTICLES},
+                 "class_unchecked": {c: f"{n_real[c]} real sets from {len(articles[c])} articles, {texts[c]:.1f} generated texts a run"
+                                     for c in classes if n_real[c] < MIN_CLASS_REAL or len(articles[c]) < MIN_CLASS_ARTICLES
+                                     or texts[c] < MIN_CLASS_GEN},
                  "sets": {"real": len(mine), "generated": statistics.fmean(len(g[origin]) for g in gens)},
                  "real_cv": real_cv, "spread": {}}
             for k, values in per_run.items():

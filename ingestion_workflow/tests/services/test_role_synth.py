@@ -441,7 +441,9 @@ def test_names_follow_the_real_shapes_and_tell_no_more_than_real_names(real, gen
     train = role_units.train_units(units, labels)
     result = namecheck.compare([(gen_units, truth)], train, labels, fields=("name",))
     assert set(result["name"]) == {"table", "text"}
-    overall = [f for f in namecheck.failures(result) if " all:" in f]
+    # One run of this small fixture is not held to MAX_GAIN: over ten sets of six seeds its balanced
+    # gaps reach 0.25. The tests below hold leaked and lost cues to the gate.
+    overall = [f for f in namecheck.failures(result, max_gain=0.3) if " all:" in f]
     assert overall == [], {o: r["balanced"] for o, r in result["name"].items()}
     # A class with no real names (table `other`) is named like the average class, not like `result`.
     names = role_units.Names(train, labels)
@@ -506,13 +508,35 @@ def test_null_rows_copy_real_sets_at_their_rates():
     real = [("a", "Peaks", "result"), ("a2", "Foci", "result"), ("a3", "Clusters", "result"), ("b", "Seeds", "anchor:seed")]
     gen = [("synth:a", "Peaks", "result")] * 3 + [("synth:b", "Seeds", "anchor:seed"), ("synth:c", "PCC", "anchor:seed")]
     shape = namecheck.clusters(gen)
-    assert sorted(k for _, k in shape) == [1, 1, 3]
+    assert sorted(k for _, ks in shape for k in ks) == [1, 1, 3]
     rows = namecheck.null_rows(real, shape * 100, seed=1)
     assert len(rows) == 500 and set(rows) <= set(real)
     assert sum(r[2] == "anchor:seed" for r in rows) == 200
     # The three sets of one generated table share one real caption, so their null copies do too.
     assert all(len(set(rows[i : i + 3])) == 1 for i in range(0, 500, 5))
     assert len({rows[i] for i in range(0, 500, 5)}) == 3
+
+
+def test_null_rows_take_a_generated_tables_names_from_one_real_article():
+    # A table whose three names were copied from one real table: its null names come from one article.
+    real = [(f"a{j}", f"A{j} > B{i}", "result") for j in range(30) for i in range(3)]
+    gen = namecheck.by_source([("synth:t", f"A7 > B{i}", "result") for i in range(3)], real)
+    shape = namecheck.clusters(gen)
+    assert shape == [("result", [1, 1, 1])]
+    for seed in range(20):
+        rows = namecheck.null_rows(real, shape, seed)
+        assert len(rows) == 3 and len({r[0] for r in rows}) == 1 and len(set(rows)) == 3
+
+
+def test_namecheck_weighs_each_article_once_per_class():
+    w = namecheck.fit([(f"t{i}", "alpha", "X") for i in range(5)] + [(f"u{i}", "beta", "Y") for i in range(5)])
+    # One article's 10 sets read right, four articles' one set each wrong: 1 of 5 articles, not 10 of 14 sets.
+    rows = [("A", "alpha", "X")] * 10 + [(f"B{i}", "beta", "X") for i in range(4)]
+    assert namecheck.recalls(w, rows)["X"] == pytest.approx(0.2)
+    # "gamma" is 4 of X's 5 articles but 4 of its 24 sets, and half of Y's: weighed per article it reads as X.
+    train = [("A", "alpha", "X")] * 20 + [(f"B{i}", "gamma", "X") for i in range(4)]
+    train += [(f"C{i}", "gamma", "Y") for i in range(5)] + [(f"D{i}", "beta", "Y") for i in range(5)]
+    assert namecheck.predict(namecheck.fit(train), "gamma") == "X"
 
 
 def test_namecheck_flags_captions_that_give_the_class_away(real, generated):
@@ -531,16 +555,17 @@ def test_namecheck_flags_captions_that_give_the_class_away(real, generated):
 
 
 def test_a_caption_is_drawn_at_the_rate_real_sets_carry_it():
-    arts = iter(_articles("train", 4, "rate"))
+    arts = iter(_articles("train", 60, "rate"))
     units, labels = {}, {}
-    for j, (caption, n) in enumerate([("Coordinates from previous studies.", 3), ("Studies compared.", 1)]):
+    # 40 tables of 3 sets and 20 of one: no table is near the cap, so sets set the rate (120 of 140).
+    for j, (caption, n) in enumerate([("Coordinates from previous studies.", 3)] * 40 + [("Studies compared.", 1)] * 20):
         u = {**_table(f"rate{j}", next(arts), [f"S{i}" for i in range(n)]), "caption": caption, "footer": ""}
         units[u["unit_id"]] = u
         for i in range(n):
             _label(labels, u, i, "reference")
     names = role_units.Names(units, labels)
     draws = [names.text("caption", "reference", random.Random(i), "Table 1").removeprefix("Table 1. ") for i in range(400)]
-    assert 0.65 < draws.count("Coordinates from previous studies.") / 400 < 0.85
+    assert 0.78 < draws.count("Coordinates from previous studies.") / 400 < 0.93
 
 
 def test_namecheck_needs_the_id_map_and_several_runs(monkeypatch, tmp_path, capsys):
@@ -591,12 +616,34 @@ def test_captions_and_footers_are_real_ones_of_the_class():
         _label(labels, u, 0, cls)
     names = role_units.Names(units, labels)
     draws = lambda cls, field: {names.text(field, cls, random.Random(i), "Table 7") for i in range(40)}  # noqa: E731
+    # A class of one real table repeats it past the cap rather than borrow another class's captions.
     assert {c.removeprefix("Table 7. ") for c in draws("reference", "caption")} == {"Coordinates from previous studies."}
     assert draws("reference", "footer") == {"Taken from the cited studies."}
     # A class with no real tables gets only the cue-free ones, of any class.
     assert {c.removeprefix("Table 7. ") for c in draws("other", "caption")} == {"Coordinates of the regions."}
     assert draws("other", "footer") == {"", "BA, Brodmann area."}
     assert names.prefixed == 1.0
+
+
+def test_no_real_table_supplies_more_than_the_cap_of_a_class(monkeypatch):
+    arts = iter(_articles("train", 40, "cap5"))
+    units, labels = {}, {}
+    # One table with 30 sets next to 19 with one: at real per-set rates it would supply 61%.
+    for j, n in enumerate([30] + [1] * 19):
+        u = {**_table(f"big{j}", next(arts), [f"S{i}" for i in range(n)]), "caption": f"Caption {j}.", "footer": f"Footer {j}."}
+        units[u["unit_id"]] = u
+        for i in range(n):
+            _label(labels, u, i, "localization")
+    names = role_units.Names(units, labels)
+    for field in ("caption", "footer"):
+        draws = [names.text(field, "localization", random.Random(i), "Table 1").removeprefix("Table 1. ") for i in range(400)]
+        assert draws.count(f"{field.capitalize()} 0.") <= role_units.SOURCE_CAP * 400 + 1
+    assert max(names.max_share().values()) <= role_units.SOURCE_CAP + 0.01
+    monkeypatch.setattr(role_units, "SOURCE_CAP", 1.0)
+    uncapped = role_units.Names(units, labels)
+    for i in range(400):
+        uncapped.text("caption", "localization", random.Random(i), "Table 1")
+    assert max(uncapped.max_share().values()) > 0.5
 
 
 def _region_rows(unit):

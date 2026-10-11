@@ -236,6 +236,14 @@ def _with_region(name, region):
     return f"{region} {m.group(0)}" if m else name
 
 
+#: The most one real table's caption or footer may supply of a class's synthetic tables, so
+#: no string is repeated often enough to be learned as one. Past it a draw takes the class's
+#: least-used real table, so a class of a few tables draws them evenly: falling back to the
+#: cue-free pool instead lent sparse classes result-like captions, and a model of them then
+#: missed real result captions (as smoothing captions did).
+SOURCE_CAP = 0.05
+
+
 class Names:
     """Set names, captions and footers drawn the way the real labelled sets of each origin and
     class have them.
@@ -246,7 +254,8 @@ class Names:
     def __init__(self, units, labels):
         self.pool = collections.defaultdict(lambda: collections.defaultdict(list))  # origin -> shape -> [(name, class)]
         self.shapes = collections.defaultdict(collections.Counter)  # (origin, class) -> shape counts
-        self.texts = collections.defaultdict(list)  # (field, class) -> real captions or footers; class None: cue-free
+        self.texts = collections.defaultdict(list)  # (field, class) -> (text, source unit) per real set; class None: cue-free
+        self.drawn = collections.defaultdict(collections.Counter)  # (field, class) -> source unit -> times drawn
         tables = {}  # unit id -> whether its caption starts "Table 2."
         self.left_out = collections.Counter()  # real names not drawn from, by reason
         words = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
@@ -264,9 +273,9 @@ class Names:
                     if leakcheck.label_syntax(text):
                         self.left_out[f"{field} reads as a label"] += 1
                         continue
-                    self.texts[(field, cls)].append(text)
+                    self.texts[(field, cls)].append((text, u["unit_id"]))
                     if family(text) in ("generic", "empty"):
-                        self.texts[(field, None)].append(text)
+                        self.texts[(field, None)].append((text, u["unit_id"]))
                     if field == "caption" and text:
                         tables[u["unit_id"]] = bool(_TABLE_LABEL.match(raw))
             name = " ".join((u["sets"][i].get("name") or "").split())
@@ -335,9 +344,21 @@ class Names:
         holds), else (a class with no real tables, table `other`) any class's real one that names
         no cue family (`family`). Unlike names, captions are not smoothed: lending a sparse class
         result-like captions made a model of them miss real result captions."""
-        own = self.texts[(field, cls)]
-        text = rng.choice(own or self.texts[(field, None)] or [""])
+        rng = random.Random(rng.random())  # one draw of the caller's, so the cap leaves its later draws (names) as they were
+        used = self.drawn[(field, cls)]
+        room = max(1, SOURCE_CAP * (sum(used.values()) + 1))
+        pool = self.texts[(field, cls)] or self.texts[(field, None)]
+        open_ = [x for x in pool if used[x[1]] < room]
+        if pool and not open_:
+            least = min(used[x[1]] for x in pool)
+            open_ = [x for x in pool if used[x[1]] == least]
+        text, source = rng.choice(open_) if open_ else ("", None)
+        used[source] += 1
         return f"{label}. {text}" if field == "caption" and text and rng.random() < self.prefixed else text
+
+    def max_share(self):
+        """{(field, class): the largest share of the class's draws one real source supplied}."""
+        return {k: max(c.values()) / sum(c.values()) for k, c in self.drawn.items() if c}
 
 
 def _words(name):
@@ -764,6 +785,8 @@ def main():
     pool, names = seeds(units, labels, id_map), Names(train_units(units, labels, id_map), labels)
     print(generate(pool, json.loads(a.plan.read_text()), random.Random(a.seed), a.out_dir, names, a.max_per_article,
                    a.id_prefix, a.seed))
+    for (field, cls), share in sorted(names.max_share().items(), key=str):
+        print(f"max source share {field} {cls}: {share:.3f}")
 
 
 if __name__ == "__main__":

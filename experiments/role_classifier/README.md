@@ -173,8 +173,11 @@ labelled names of that class (a citation, "<region> seed", "P1", a contrast, ...
 name is one of the class's own real names at the share they hold, else a real name of that shape from
 any class that carries no other class's cue word (so "prior study" stays a reference name, as it is in
 every real text set that has it). A table's caption and footer are those of a real labelled set of the
-class, so a caption shared by several classes in real tables is shared by them here at the same rates;
-a class with no real tables (table `other`) takes a real one that names no cue. A table has as many
+class, so a caption shared by several classes in real tables is shared by them here at the same rates,
+except that no one real table supplies more than 5% (`role_units.SOURCE_CAP`) of a class's tables in a run:
+past it a table takes the class's least-used real table, so a class of a few real tables draws them evenly;
+a class with no real tables (table `other`) takes a real one that names no cue. `role_units.py` prints
+the largest share one real table supplied, per field and class. A table has as many
 coordinate rows as its seed, and a region's hemisphere word agrees with the sign of its x, in tables
 and in new prose sentences. No two sets of a unit share a coordinate triple; a case the context
 builders would misread (a real seed whose sets already share one) is redrawn from another seed and
@@ -210,10 +213,12 @@ different `--seed` and `--id-prefix`.
 
 The name check fits a bag-of-tokens logistic regression, class-weighted, on one field alone (a set's
 name; a table's caption; its footer), in article-grouped 5-fold cross-validation, over the classes both
-the generated runs and the real labelled train sets hold. A generated string copied from a real set is
+the generated runs and the real labelled train sets hold. Each article weighs as one per class, in
+fitting and in scoring, however many sets it holds, so one paper's many tables do not make its caption
+or footer the class's cue. A generated string copied from a real set is
 grouped with that real article, so no model scores a string from an article it was fit on. Beside each
-run it builds a null run: the same number of sets per class, each a copy of a random real labelled set
-(sets that share a caption in the run share one in the null). Per class it compares recall, and over
+run it builds a null run: the same number of sets per class, each a copy of a random set of a random
+real labelled article of the class (sets that share a caption in the run share one in the null). Per class it compares recall, and over
 classes balanced accuracy, each the mean over the runs:
 
 - generated sets tell their class no better than the null run's (no extra cue);
@@ -221,8 +226,8 @@ classes balanced accuracy, each the mean over the runs:
 - a model fit on real sets scores generated sets near its real cross-validated score.
 
 It exits 1 when a balanced accuracy is more than 0.10 (`namecheck.MAX_GAIN`) off, or a class's recall
-more than 0.20 (`MAX_CLASS_SHIFT`) off. A class with fewer than 15 real sets or 5 real articles is in the
-balanced accuracy but not held to a per-class rate; with fewer than 5 sets or 3 articles it is left out.
+more than 0.20 (`MAX_CLASS_SHIFT`) off. A class with fewer than 15 real sets or 15 real articles, or fewer than 8 distinct generated texts a run
+(`MIN_CLASS_GEN`; a caption is one per table), is in the balanced accuracy but not held to a per-class rate; with fewer than 5 sets or 3 articles it is left out.
 Both are printed (`unchecked`, `class_unchecked`), with each class's share of name shapes, the class each
 real cue word leans to in generated names, and how far each number strays between runs. It needs 8 runs
 (`MIN_RUNS`): the per-class numbers of 4 runs stray past the tolerances.
