@@ -275,3 +275,27 @@ def test_sync_still_retracts_an_article_whose_prose_came_from_a_bad_page(env, tm
     stage = SyncStage(settings)
     plan = stage.plan(Context(settings, catalog), [ref], {}, catalog.artifacts([ref.id], "upload"))
     assert (len(plan.pending), plan.blocked) == (1, 0)
+
+
+def test_metadata_does_not_reach_an_article_through_passages_from_a_bad_page(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.metadata import MetadataStage
+
+    settings, catalog, ref = env[:3]
+    settings.prose_model = "nu-prose"  # an article with no extraction is reached through passages
+    catalog.record([Outcome(ref.id, "passages", "", Status.OK, "p-1", {"source": "ace"},
+                            summary={"source": "ace", "passages": 1})])
+
+    def plan():
+        stage = MetadataStage(settings)
+        return stage.plan(Context(settings, catalog), [ref],
+                          catalog.artifacts([ref.id], "metadata"),
+                          catalog.artifacts([ref.id], "extract"))
+
+    assert len(plan().pending) == 1
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    # a later plain ACE failure clears the download's bad page; the extraction keeps it
+    catalog.record([Outcome.failure(ref.id, "download", "ace", "ACE scrape failed: HTTP 403")])
+    blocked = plan()
+    assert (blocked.pending, blocked.reasons) == (
+        [], {"passages read from a downloaded page that is not the article": 1})
+    assert catalog.artifact(ref.id, "passages", "").status is Status.OK
