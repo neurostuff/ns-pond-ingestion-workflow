@@ -46,8 +46,10 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    a set's position -- pondie's `table_id#ordinal` key -- never moves. `upload` leaves held sets
    out (`roles.uploaded_sets`); `space` and stage1 keep them.
 
-The summary is `{tables, sets, sets_by_origin, roles, held, sources, role_values, input}`:
-`tables` counts collections that have an analysis (the selection gate reads it), `roles` counts
+The summary is `{tables, sets, sets_by_origin, text_sets_without_local, roles, held, sources, role_values, input}`:
+`tables` counts collections that have an analysis (the selection gate reads it),
+`text_sets_without_local` counts prose sets whose points the classifier could not find in their
+passage, `roles` counts
 sets by role (an anchor by its kind, a null role as `not_coordinates`), `sources` names each
 origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
 `from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the

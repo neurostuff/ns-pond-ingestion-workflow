@@ -41,7 +41,7 @@ _SLICE_CUES = re.compile(
     r"\b(slice[s]?|crosshair[s]?|displayed|shown\s+at|overlaid|axial|coronal|sagittal)\b", re.I
 )
 #: A sentence break, but not after "et al.", "e.g.", "i.e.", "Fig." or "vs.".
-_SENTENCE = re.compile(
+SENTENCE = re.compile(
     r"(?<!\bal\.)(?<!\be\.g\.)(?<!\bi\.e\.)(?<!\bFig\.)(?<!\bfig\.)(?<!\bvs\.)"
     r"(?<=[.!?])\s+(?=[A-Z(\[])"
 )
@@ -120,7 +120,7 @@ def sentences(text: Optional[str]) -> List[str]:
     """A text's sentences, whitespace collapsed."""
     text = re.sub(r"\s+", " ", text or "").strip()
     out: List[str] = []
-    for piece in _SENTENCE.split(text) if text else []:
+    for piece in SENTENCE.split(text) if text else []:
         if out and _LABEL_ONLY.match(out[-1]):
             out[-1] = f"{out[-1]} {piece}"  # "Table 2." is a caption's label, not a sentence
         elif piece:
@@ -190,7 +190,7 @@ def citing_sentences(text: Optional[str], label: Optional[str], limit: int = 3) 
         return []
     pattern = re.compile(rf"\btables?\s*{re.escape(match.group(1))}\b", re.I)
     out = []
-    for sentence in _SENTENCE.split(re.sub(r"\s+", " ", text)):
+    for sentence in SENTENCE.split(re.sub(r"\s+", " ", text)):
         if pattern.search(sentence):
             out.append(sentence.strip())
             if len(out) >= limit:

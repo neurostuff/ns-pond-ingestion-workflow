@@ -15,7 +15,7 @@ services/set_roles/
   labels.py         study_schema's role fields, shared by table and prose sets
   common.py         point shape, cue counts, sentence and citation helpers
   table_context.py  a TABLE set's input: caption, footer, header, its rows, neighbours, citing sentences
-  prose_context.py  a PROSE set's input: passage, heading, before/after, citation markers
+  prose_context.py  a PROSE set's input: its own sentence(s), cut to 400 chars around its coordinates (LOCAL), passage, heading, before/after, citation markers
   label_schema.py   the labeller's strict JSON answer
   labeling.py       per-origin prompts, the resumable codex job, agreement, ledger
   export.py         encoder rows
