@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-from difflib import SequenceMatcher
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, NamedTuple, Optional, Sequence, Tuple
 
 from sqlalchemy import JSON, Boolean, Text, column, delete, inspect, null, select, table, update
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import selectinload
+from study_schema import keys
 
 from ingestion_workflow.config import Settings, UploadBehavior, UploadMetadataMode
 from ingestion_workflow.models import (
@@ -43,23 +43,21 @@ from ingestion_workflow.utils.console import progress_bar as create_progress_bar
 logger = get_logger(__name__)
 
 
-# An analysis is matched to an existing one mostly on the coordinates it
-# reports: names drift between extractions ("Table 2" vs "Table 2-1") while the
-# peaks do not. Names only break ties, and carry a match on their own when
-# neither side has coordinates to compare.
-_COORD_MATCH_THRESHOLD = 0.5
-_NAME_MATCH_THRESHOLD = 0.9
-_COORD_ROUNDING = 0
-
-
 @dataclass
 class ReconcilePlan:
-    """What upload intends to do with one study's existing analyses."""
+    """What upload intends to do with one study's existing analyses.
+
+    Nothing is deleted: an existing analysis no incoming one is matched to stays in
+    the study, and `decisions` says why it was not matched.
+    """
 
     updated: List[Tuple[object, int]]     # (existing row, index into incoming)
     inserted: List[int]                   # indices into incoming
-    deleted: List[object]                 # existing rows to remove
-    kept_annotated: List[object]          # unmatched, but annotated: left alone
+    left: List[object]                    # existing rows no incoming analysis matched
+    #: One per incoming analysis and per existing row: `decision`, `reason`, and the
+    #: keys and names it was decided on. Incoming entries carry `index`, existing ones
+    #: `analysis_id`; `upload` fills in the id of each inserted row.
+    decisions: List[Dict[str, object]]
 
 
 def _normalize_analysis_name(name: Optional[str]) -> str:
@@ -77,64 +75,67 @@ def _normalize_analysis_name(name: Optional[str]) -> str:
     return " ".join(text.split())
 
 
-def _coordinate_key(x, y, z) -> Optional[Tuple[float, float, float]]:
+def _point_key(x, y, z) -> Optional[Tuple[float, float, float]]:
     try:
-        return (
-            round(float(x), _COORD_ROUNDING),
-            round(float(y), _COORD_ROUNDING),
-            round(float(z), _COORD_ROUNDING),
-        )
+        return (float(x), float(y), float(z))
     except (TypeError, ValueError):
         return None
 
 
-def _coordinate_set(points: Iterable) -> set:
-    keys = set()
+def _point_set(points: Iterable) -> frozenset:
+    """The (x, y, z) an analysis reports, unrounded: legacy matching asks for identical points."""
+    found = set()
     for point in points or []:
-        key = _coordinate_key(
+        key = _point_key(
             getattr(point, "x", None), getattr(point, "y", None), getattr(point, "z", None)
         )
         if key is not None:
-            keys.add(key)
-    return keys
+            found.add(key)
+    return frozenset(found)
 
 
-def _jaccard(left: set, right: set) -> float:
-    if not left or not right:
-        return 0.0
-    union = left | right
-    return len(left & right) / len(union) if union else 0.0
+def _base_name(name: Optional[str]) -> str:
+    """study_schema's normalized name, without the suffix upload gives a repeated name."""
+    return keys.normalize_name(_normalize_analysis_name(name))
 
 
-def _name_similarity(left: Optional[str], right: Optional[str]) -> float:
-    a, b = _normalize_analysis_name(left), _normalize_analysis_name(right)
-    if not a or not b:
-        return 0.0
-    if a == b:
-        return 1.0
-    return SequenceMatcher(None, a, b).ratio()
+class _Place(NamedTuple):
+    """Where a parse read an analysis, in the terms neurostore compares superseded analyses by."""
+
+    place: Tuple[str, str]       # (origin, table_id)
+    slot: Tuple[str, str, str]   # (origin, table_id, cell or span locator)
+    parts: frozenset             # cells, or character offsets covered by a span
+    name: str                    # study_schema's normalized name
 
 
-def _match_score(existing_coords: set, existing_name, incoming_coords: set, incoming_name):
-    """Score a candidate pairing, or None when the pair is not a match.
-
-    Coordinates decide it when either side has them. Two analyses with no
-    coordinates at all can still pair on a near-identical name, which is the
-    only evidence available for them.
-
-    Every pair in a study is scored, so the cheap test comes first: set
-    intersection rules out almost all pairs, and the name comparison -- a
-    SequenceMatcher, quadratic in name length -- runs only for the few that
-    survive it.
-    """
-    if not existing_coords and not incoming_coords:
-        name = _name_similarity(existing_name, incoming_name)
-        return name if name >= _NAME_MATCH_THRESHOLD else None
-    overlap = _jaccard(existing_coords, incoming_coords)
-    if overlap < _COORD_MATCH_THRESHOLD:
+def _place_of(metadata, name) -> Optional[_Place]:
+    """Where the parse read an analysis, from its `origin`, `table_id`, `cells`, `text_spans`."""
+    metadata = metadata or {}
+    origin = metadata.get("origin")
+    if not origin:
         return None
-    # name only breaks ties between equally good coordinate matches
-    return overlap + _name_similarity(existing_name, incoming_name) / 100.0
+    table_id = metadata.get("table_id") or ""
+    if origin == "table":
+        cells = [(c["row"], c["column_group"]) for c in metadata.get("cells") or []]
+        locator, parts = keys.cell_locator(cells), frozenset(cells)
+    else:
+        spans = [(s["start_char"], s["end_char"]) for s in metadata.get("text_spans") or []]
+        locator = keys.span_locator(spans)
+        parts = frozenset(o for a, b in spans for o in range(a, b))
+    return _Place(
+        (origin, table_id), (origin, table_id, locator), parts, keys.normalize_name(name or "")
+    )
+
+
+def _unique_pairs(olds: Sequence[int], news: Sequence[int], match) -> List[Tuple[int, int]]:
+    """Pairs where each is the other's only match: neurostore's rule for a re-read analysis."""
+    forward = {o: [n for n in news if match(o, n)] for o in olds}
+    backward = {n: [o for o in olds if n in forward[o]] for n in news}
+    return [
+        (o, found[0])
+        for o, found in forward.items()
+        if len(found) == 1 and len(backward[found[0]]) == 1
+    ]
 
 
 class UploadSourceNotSet(ValueError):
@@ -166,52 +167,204 @@ def plan_reconciliation(
     incoming_names: Sequence[Optional[str]],
     incoming_coords: Sequence[set],
     annotated_ids: set,
+    incoming_places: Optional[Sequence[Optional[Mapping]]] = None,
+    incoming_bases: Optional[Sequence[Optional[str]]] = None,
 ) -> ReconcilePlan:
-    """Decide, for one study, what to update, insert, delete and leave alone.
+    """Decide, for one study, which existing analysis each incoming one is.
 
-    Matched pairs are updated in place so the analysis keeps its id and any
-    annotation attached to it survives. An unmatched existing analysis is
-    removed only when nothing is annotated against it; when something is, it
-    stays and the new analysis is appended alongside.
+    An analysis is identified by its parse key (`Analysis.source_id`), which covers
+    where it was read and its normalized name, so two contrasts read from the same
+    rows are never one analysis. In order:
+
+    1. The same key: the same analysis.
+    2. An existing analysis whose key is gone and an incoming one read under the same
+       normalized name from other, overlapping cells or spans of the same table or
+       text, each the other's only such match: the same analysis re-read. Its key
+       moves. neurostore aliases the entity of such a pair the same way.
+    3. A row with no key (uploaded before keys were), or an incoming analysis the
+       parse holds no key for: matched only on the same name and identical points.
+       A stored name may carry the suffix upload gives a repeated name
+       (`incoming_bases` are the names before it).
+    4. Anything else is new, and an existing analysis left unmatched stays where it
+       is. One read from exactly the place of a gone one under another name is
+       recorded as a rename candidate, as neurostore records one; whether it is the
+       same analysis is a curator's call, so nothing of the old one moves to it.
+
+    A matched row is updated in place, so it keeps its id and what is annotated
+    against it.
     """
-    existing_coords = [_coordinate_set(getattr(row, "points", [])) for row in existing]
+    n_incoming = len(incoming_names)
+    incoming_bases = list(incoming_bases or incoming_names)
+    places_in = list(incoming_places or [None] * n_incoming)
+    incoming_keys = [(place or {}).get("key") for place in places_in]
+    incoming_where = [
+        _place_of(place, incoming_names[i]) if place else None for i, place in enumerate(places_in)
+    ]
+    existing_keys = [getattr(row, "source_id", None) for row in existing]
+    existing_where = [
+        _place_of(getattr(row, "metadata_", None), getattr(row, "name", None)) for row in existing
+    ]
+    incoming_points = [frozenset(c) for c in incoming_coords]
+    existing_points = [_point_set(getattr(row, "points", [])) for row in existing]
 
-    candidates = []
-    for e_index, row in enumerate(existing):
-        for i_index, name in enumerate(incoming_names):
-            score = _match_score(
-                existing_coords[e_index],
-                getattr(row, "name", None),
-                incoming_coords[i_index],
-                name,
+    pairs: Dict[int, Tuple[int, str, str]] = {}   # existing -> (incoming, decision, reason)
+    taken: set = set()
+
+    def pair(e_index, i_index, decision, reason):
+        pairs[e_index] = (i_index, decision, reason)
+        taken.add(i_index)
+
+    def free_existing():
+        return [e for e in range(len(existing)) if e not in pairs]
+
+    def free_incoming():
+        return [i for i in range(n_incoming) if i not in taken]
+
+    # 1. key. One key held twice is two reads the parse merges; they pair in order.
+    by_key: Dict[str, List[int]] = {}
+    for i_index in range(n_incoming):
+        if incoming_keys[i_index]:
+            by_key.setdefault(incoming_keys[i_index], []).append(i_index)
+    for e_index in sorted(
+        range(len(existing)),
+        key=lambda e: (
+            getattr(existing[e], "order", None) or 0, getattr(existing[e], "id", "") or ""
+        ),
+    ):
+        queue = by_key.get(existing_keys[e_index] or "")
+        if queue:
+            pair(e_index, queue.pop(0), "matched_key", "the same parse key")
+
+    # 2. the same analysis re-read from other cells or spans
+    gone = [e for e in free_existing() if existing_keys[e] and existing_where[e]]
+    added = [i for i in free_incoming() if incoming_keys[i] and incoming_where[i]]
+
+    def same_analysis(e, i):
+        a, b = existing_where[e], incoming_where[i]
+        return a.place == b.place and a.name == b.name and bool(a.parts & b.parts)
+
+    for e_index, i_index in _unique_pairs(gone, added, same_analysis):
+        pair(
+            e_index,
+            i_index,
+            "matched_cells_changed",
+            f"read again under its name from other, overlapping "
+            f"{'cells' if existing_where[e_index].place[0] == 'table' else 'spans'}; "
+            f"its key was {existing_keys[e_index]}",
+        )
+
+    # 3. no key on one side: the same name and identical points
+    def full_name(name):
+        return keys.normalize_name(name or "")
+
+    def same_name(e_index, i_index):
+        stored = getattr(existing[e_index], "name", None)
+        if full_name(stored) == full_name(incoming_names[i_index]):
+            return True
+        # The suffix upload gives a repeated name is positional: "X-2" is "X" once
+        # the first "X" is gone.
+        return _base_name(stored) == full_name(incoming_bases[i_index])
+
+    legacy_first = sorted(free_existing(), key=lambda e: existing_keys[e] is not None)
+    for e_index in legacy_first:
+        fits = [
+            i for i in free_incoming()
+            # A keyed row is the same as a keyed incoming analysis only by key or re-read.
+            if not (existing_keys[e_index] and incoming_keys[i])
+            and existing_points[e_index] == incoming_points[i]
+            and same_name(e_index, i)
+        ]
+        stored = full_name(getattr(existing[e_index], "name", None))
+        fits.sort(key=lambda i: full_name(incoming_names[i]) != stored)
+        if fits:
+            pair(
+                e_index,
+                fits[0],
+                "matched_exact",
+                "no key on the "
+                + ("existing row" if existing_keys[e_index] is None else "incoming analysis")
+                + "; the same name and identical points",
             )
-            if score is not None:
-                candidates.append((score, e_index, i_index))
-    candidates.sort(key=lambda c: (-c[0], c[1], c[2]))
 
-    taken_existing: set = set()
-    taken_incoming: set = set()
-    updated = []
-    for _score, e_index, i_index in candidates:
-        if e_index in taken_existing or i_index in taken_incoming:
-            continue
-        taken_existing.add(e_index)
-        taken_incoming.add(i_index)
-        updated.append((existing[e_index], i_index))
-
-    deleted, kept = [], []
-    for e_index, row in enumerate(existing):
-        if e_index in taken_existing:
-            continue
-        if getattr(row, "id", None) in annotated_ids:
-            kept.append(row)
-        else:
-            deleted.append(row)
-
-    inserted = [i for i in range(len(incoming_names)) if i not in taken_incoming]
-    return ReconcilePlan(
-        updated=updated, inserted=inserted, deleted=deleted, kept_annotated=kept
+    # 4. rename candidates, recorded only
+    gone = [e for e in free_existing() if existing_keys[e] and existing_where[e]]
+    added = [i for i in free_incoming() if incoming_keys[i] and incoming_where[i]]
+    renamed = dict(
+        _unique_pairs(
+            gone,
+            added,
+            lambda e, i: existing_where[e].slot == incoming_where[i].slot
+            and existing_where[e].name != incoming_where[i].name,
+        )
     )
+    renamed_from = {i: e for e, i in renamed.items()}
+
+    decisions: List[Dict[str, object]] = []
+    updated = []
+    for e_index in sorted(pairs, key=lambda e: pairs[e][0]):
+        i_index, decision, reason = pairs[e_index]
+        updated.append((existing[e_index], i_index))
+        decisions.append(
+            {
+                "decision": decision,
+                "index": i_index,
+                "analysis_id": getattr(existing[e_index], "id", None),
+                "name": incoming_names[i_index],
+                "key": incoming_keys[i_index],
+                **({"previous_key": existing_keys[e_index]}
+                   if existing_keys[e_index] != incoming_keys[i_index] else {}),
+                **({"previous_name": getattr(existing[e_index], "name", None)}
+                   if getattr(existing[e_index], "name", None) != incoming_names[i_index] else {}),
+                "reason": reason,
+            }
+        )
+    inserted = free_incoming()
+    for i_index in inserted:
+        if i_index in renamed_from:
+            old = renamed_from[i_index]
+            reason = (
+                f"read from exactly the place of {existing_keys[old]} "
+                f"({getattr(existing[old], 'name', None)!r}) under another name: a rename "
+                "candidate, kept apart until a curator confirms it"
+            )
+        elif incoming_keys[i_index]:
+            reason = "no existing analysis has its key"
+        else:
+            why = (places_in[i_index] or {}).get("unplaced") or "upload was given no parse key"
+            reason = f"no key ({why}); no existing analysis has its name and identical points"
+        decisions.append(
+            {
+                "decision": "new",
+                "index": i_index,
+                "name": incoming_names[i_index],
+                "key": incoming_keys[i_index],
+                **({"rename_candidate_of": existing_keys[renamed_from[i_index]]}
+                   if i_index in renamed_from else {}),
+                "reason": reason,
+            }
+        )
+    left = [existing[e] for e in free_existing()]
+    for e_index in free_existing():
+        row = existing[e_index]
+        if existing_keys[e_index] is None:
+            reason = "uploaded with no key; no incoming analysis has its name and identical points"
+        else:
+            reason = "its key is not among this upload's"
+        if e_index in renamed:
+            reason += f"; {incoming_keys[renamed[e_index]]} is a rename candidate for it"
+        decisions.append(
+            {
+                "decision": "unmatched_existing",
+                "analysis_id": getattr(row, "id", None),
+                "name": getattr(row, "name", None),
+                "key": existing_keys[e_index],
+                **({"rename_candidate": incoming_keys[renamed[e_index]]}
+                   if e_index in renamed else {}),
+                "annotated": getattr(row, "id", None) in annotated_ids,
+                "reason": reason + "; left in place",
+            }
+        )
+    return ReconcilePlan(updated=updated, inserted=inserted, left=left, decisions=decisions)
 
 
 def _default_note_for(note_keys) -> dict:
@@ -253,6 +406,48 @@ def _note_is_substantive(note, note_keys) -> bool:
         return True
     return False
 
+
+
+#: The parse's fields that say where an analysis was read, kept in its metadata as
+#: neurostore keeps them; the key itself is `source_id`.
+_PLACE_METADATA = ("origin", "table_id", "cells", "text_spans")
+
+
+def _point_row(coord, prepared: PreparedAnalysis, order: int):
+    """A point's columns and its (kind, value) pairs, comparable with `_stored_points`."""
+    fields = (
+        ("x", coord.x),
+        ("y", coord.y),
+        ("z", coord.z),
+        ("space", coord.space.value if coord.space else prepared.coordinate_space),
+        ("cluster_size", coord.cluster_size),
+        ("subpeak", coord.is_subpeak),
+        # `deactivation` is left at its default. A negative set is
+        # its own analysis, the inverse contrast, so direction is
+        # the analysis's and no point is marked; NiMARE never read
+        # the flag anyway.
+        ("order", order),
+    )
+    values = ()
+    if coord.statistic_type or coord.statistic_value is not None:
+        try:
+            value = float(coord.statistic_value) if coord.statistic_value is not None else None
+        except (TypeError, ValueError):
+            value = None
+        values = ((coord.statistic_type, value),)
+    return fields, values
+
+
+def _stored_points(row) -> list:
+    """`row`'s points as `_point_row`s, so a re-upload of the same points rewrites none."""
+    return [
+        (
+            tuple((name, getattr(point, name)) for name in
+                  ("x", "y", "z", "space", "cluster_size", "subpeak", "order")),
+            tuple((v.kind, v.value) for v in point.values),
+        )
+        for point in sorted(row.points, key=lambda p: (p.order is None, p.order))
+    ]
 
 
 def _sanitize_text(value: str | None) -> str | None:
@@ -773,17 +968,24 @@ class UploadService:
             counter_key = base_name or prepared.table.table_id
             count = name_counters.get(counter_key, 0) + 1
             name_counters[counter_key] = count
+            metadata = dict(prepared.analysis.metadata or {})
+            # The parse's place goes where neurostore keeps it: the key in source_id,
+            # what it is made from in the metadata.
+            parse = metadata.pop("parse", None) or {}
             desired.append(
                 {
                     "name": base_name if count == 1 else f"{base_name}-{count}",
                     "table_id": table_ref.id if table_ref else None,
                     "description": prepared.analysis.description or prepared.table.caption or "",
                     "metadata_": {
-                        **(prepared.analysis.metadata or {}),
+                        **metadata,
+                        **{k: parse[k] for k in _PLACE_METADATA if k in parse},
                         "table": prepared.table.metadata,
                     },
                     "order": order_counter,
                     "prepared": prepared,
+                    "parse": parse,
+                    "base_name": base_name,
                 }
             )
             order_counter += 1
@@ -795,7 +997,7 @@ class UploadService:
                 session.execute(
                     select(DbAnalysis)
                     .where(DbAnalysis.study_id == study.id)
-                    .options(selectinload(DbAnalysis.points))
+                    .options(selectinload(DbAnalysis.points).selectinload(DbPoint.values))
                 ).scalars()
             )
             if study.id and behavior == UploadBehavior.UPDATE
@@ -807,38 +1009,34 @@ class UploadService:
         plan = plan_reconciliation(
             existing_rows,
             [entry["name"] for entry in desired],
-            [
-                _coordinate_set(entry["prepared"].analysis.coordinates)
-                for entry in desired
-            ],
+            [_point_set(entry["prepared"].analysis.coordinates) for entry in desired],
             annotated_ids,
+            [entry["parse"] for entry in desired],
+            [entry["base_name"] for entry in desired],
         )
         if existing_rows:
+            counts: Dict[str, int] = {}
+            for decision in plan.decisions:
+                counts[decision["decision"]] = counts.get(decision["decision"], 0) + 1
             logger.info(
-                "[upload id=%s] analyses: %d updated, %d added, %d removed, "
-                "%d kept for their annotations",
+                "[upload id=%s] analyses: %s",
                 item.slug,
-                len(plan.updated),
-                len(plan.inserted),
-                len(plan.deleted),
-                len(plan.kept_annotated),
+                ", ".join(f"{n} {d}" for d, n in sorted(counts.items())),
             )
 
-        for row in plan.deleted:
-            self._delete_points(session, row.id)
-            # Core delete rather than session.delete: the ORM would try to
-            # cascade to points this has already removed and warn about it.
-            session.expunge(row)
-            session.execute(delete(DbAnalysis).where(DbAnalysis.id == row.id))
-
-        assignments = [(row, desired[index]) for row, index in plan.updated]
+        assignments = [(row, desired[index], False) for row, index in plan.updated]
+        inserted_rows: Dict[int, DbAnalysis] = {}
         for index in plan.inserted:
             new_row = DbAnalysis(study_id=study.id)
             session.add(new_row)
-            assignments.append((new_row, desired[index]))
+            inserted_rows[index] = new_row
+            assignments.append((new_row, desired[index], True))
 
-        for analysis_row, entry in assignments:
+        for analysis_row, entry, is_new in assignments:
             prepared = entry["prepared"]
+            key = entry["parse"].get("key")
+            if key:
+                analysis_row.source_id = key
             analysis_row.table_id = entry["table_id"]
             analysis_row.name = entry["name"]
             analysis_row.description = entry["description"]
@@ -850,47 +1048,23 @@ class UploadService:
             session.flush()  # ensure id for points
             analysis_ids.append(analysis_row.id)
 
-            # Replace coordinates: insert fresh set.
-            self._delete_points(session, analysis_row.id)
-            for p_index, coord in enumerate(prepared.analysis.coordinates, start=1):
-                point = DbPoint(
-                    analysis_id=analysis_row.id,
-                    x=coord.x,
-                    y=coord.y,
-                    z=coord.z,
-                    space=coord.space.value if coord.space else prepared.coordinate_space,
-                    cluster_size=coord.cluster_size,
-                    subpeak=coord.is_subpeak,
-                    # `deactivation` is left at its default. A negative set is
-                    # its own analysis, the inverse contrast, so direction is
-                    # the analysis's and no point is marked; NiMARE never read
-                    # the flag anyway.
-                    order=p_index,
-                )
-                session.add(point)
-                if coord.statistic_type or coord.statistic_value is not None:
-                    try:
-                        value = (
-                            float(coord.statistic_value)
-                            if coord.statistic_value is not None
-                            else None
-                        )
-                    except (TypeError, ValueError):
-                        value = None
-                    session.add(
-                        DbPointValue(
-                            point=point,
-                            kind=coord.statistic_type,
-                            value=value,
-                        )
-                    )
+            wanted = [_point_row(coord, prepared, p_index)
+                      for p_index, coord in enumerate(prepared.analysis.coordinates, start=1)]
+            if is_new or _stored_points(analysis_row) != wanted:
+                self._write_points(session, analysis_row.id, wanted)
+
+        for decision in plan.decisions:
+            index = decision.pop("index", None)
+            if decision["decision"] == "new":
+                decision["analysis_id"] = inserted_rows[index].id
 
         # The flag lives on both rows and the API reads each; setting only the
-        # base study left the study itself claiming no coordinates.
+        # base study left the study itself claiming no coordinates. An analysis left
+        # in place is still the study's.
         any_points = any(
             (prepared.analysis.coordinates or ())
-            for prepared in (entry["prepared"] for _, entry in assignments)
-        )
+            for prepared in (entry["prepared"] for _, entry, _ in assignments)
+        ) or any(row.points for row in plan.left)
         study.has_coordinates = any_points
         session.flush()
         self._refresh_base_flag(session, base_study.id)
@@ -903,8 +1077,18 @@ class UploadService:
             base_study_id=base_study.id,
             study_id=study.id,
             analysis_ids=analysis_ids,
+            reconcile=plan.decisions,
             success=True,
         )
+
+    def _write_points(self, session, analysis_id: str, wanted) -> None:
+        """Replace an analysis's points with `wanted` (`_point_row`s)."""
+        self._delete_points(session, analysis_id)
+        for fields, values in wanted:
+            point = DbPoint(analysis_id=analysis_id, **dict(fields))
+            session.add(point)
+            for kind, value in values:
+                session.add(DbPointValue(point=point, kind=kind, value=value))
 
     def _resolve_analysis_base_name(self, prepared: PreparedAnalysis) -> str:
         candidate = _sanitize_text(prepared.analysis.name)

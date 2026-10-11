@@ -1628,3 +1628,63 @@ def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch):
     monkeypatch.setattr(prose_stage, "PROSE_PROMPT_VERSION", "another prompt")
     _, (again,) = _read_prose(ctx, catalog, ref, _Reader(fail=True))
     assert again.status is not Status.OK
+
+
+def test_upload_keys_each_set_as_the_parse_sync_then_writes(env, monkeypatch, tmp_path):
+    """Upload runs before sync, so it mints the parse's keys itself, from the same extraction."""
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    from pyarty import read_bundle
+    from study_schema.layouts import PaperParse
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="12"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    spaced = catalog.artifact(ref.id, "space", "")
+    work = Work(ref=ref, source="", fingerprint="up-1", upstream=spaced)
+    gathered, _, _ = UploadStage(settings)._gather(ctx, [work])
+    collections = gathered[ref.identifier.slug].values()
+    places = [a.metadata["parse"] for c in collections for a in c.analyses]
+
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS12", "study_id": "S12"})])
+    sync = SyncStage(settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert synced.status is Status.OK, synced.error
+    parse = read_bundle(PaperParse, settings.ns_pond_root / "BS12" / "parse").coordinate_parse
+    assert [p["key"] for p in places] == [a.key for a in parse.analyses]
+    assert [p["text_spans"] for p in places] == [
+        [s.model_dump(exclude_none=True) for s in a.text_spans] for a in parse.analyses
+    ]
+
+
+def test_upload_says_why_a_set_has_no_key_when_the_extraction_s_text_is_gone(env, monkeypatch):
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="13"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    spaced = catalog.artifact(ref.id, "space", "")
+    (path.parent / f"{ref.id}.txt").unlink()
+    gathered, _, _ = UploadStage(settings)._gather(
+        ctx, [Work(ref=ref, source="", fingerprint="up-1", upstream=spaced)]
+    )
+    [analysis] = [a for c in gathered[ref.identifier.slug].values() for a in c.analyses]
+    assert "key" not in analysis.metadata["parse"]
+    assert analysis.metadata["parse"]["unplaced"] == (
+        "its parse could not be read: LookupError: the extraction has no text file"
+    )

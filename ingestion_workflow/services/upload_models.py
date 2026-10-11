@@ -188,6 +188,8 @@ class Analysis(Base):
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     metadata_: Mapped[dict | None] = mapped_column("metadata_", JSON, nullable=True)
     order: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    #: The parse key (study_schema `ParsedAnalysis.key`).
+    source_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     #: Kept in step with `points` so readers need no join to count them.
     point_count: Mapped[int] = mapped_column(Integer, default=0)
     has_coordinates: Mapped[bool] = mapped_column(Boolean, default=False)

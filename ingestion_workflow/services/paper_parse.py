@@ -501,43 +501,13 @@ def coordinate_parse(
     roles = _Roles(text, omitted)
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, pp.ParsedAnalysis] = {}
-    for table_id, collection in per_table.items():
-        table_analyses = []
-        for a in collection.analyses:
-            if a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
-                omitted.append(
-                    Omitted(
-                        a.name,
-                        None if table_id == "prose" else table_id,
-                        "a placeholder analysis with no points",
-                    )
-                )
-            else:
-                table_analyses.append(a)
-        prose = table_id == "prose" or any(
-            (a.metadata or {}).get("source") == "prose" for a in table_analyses
-        )
-        if prose:
-            # Per name: two names never share a key, so one's copy of a repeated
-            # point must not move the other's.
-            taken: Dict[str, Set[Tuple[int, int]]] = {}
-            built = (
-                _prose_analysis(
-                    a, collection, text, inputs, roles,
-                    taken.setdefault(keys.normalize_name(a.name), set()),
-                )
-                for a in table_analyses
+    for table_analyses, built, prose in _built(text, grids, per_table, inputs, roles):
+        if splits is not None and not prose:
+            splits.update(
+                (id(a), b.split.model_dump(mode="json", exclude_none=True))
+                for a, b in zip(table_analyses, built)
+                if b is not None and b.split is not None
             )
-        else:
-            built = _table_analyses(
-                table_id, table_analyses, collection, grids.get(table_id), roles
-            )
-            if splits is not None:
-                splits.update(
-                    (id(a), b.split.model_dump(mode="json", exclude_none=True))
-                    for a, b in zip(table_analyses, built)
-                    if b is not None and b.split is not None
-                )
         for analysis in built:
             if analysis is None:
                 continue
@@ -578,6 +548,78 @@ def coordinate_parse(
         text_sweep=_text_sweep(inputs),
     )
     return parse, omitted
+
+
+def _built(text: _Text, grids, per_table, inputs: ParseInputs, roles: "_Roles"):
+    """Each table's stage analyses, placeholders left out, and what the parse makes of each.
+
+    Yields `(stage analyses, parsed, prose)` per table, the first two aligned; a parsed
+    entry is None for an analysis the parse cannot hold, its reason on `roles.omitted`.
+    A prose table's are parsed as they are read, so each one's omissions are recorded
+    before the next one's.
+    """
+    for table_id, collection in per_table.items():
+        table_analyses = []
+        for a in collection.analyses:
+            if a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
+                roles.omitted.append(
+                    Omitted(
+                        a.name,
+                        None if table_id == "prose" else table_id,
+                        "a placeholder analysis with no points",
+                    )
+                )
+            else:
+                table_analyses.append(a)
+        prose = table_id == "prose" or any(
+            (a.metadata or {}).get("source") == "prose" for a in table_analyses
+        )
+        if prose:
+            # Per name: two names never share a key, so one's copy of a repeated
+            # point must not move the other's.
+            taken: Dict[str, Set[Tuple[int, int]]] = {}
+            built = (
+                _prose_analysis(
+                    a, collection, text, inputs, roles,
+                    taken.setdefault(keys.normalize_name(a.name), set()),
+                )
+                for a in table_analyses
+            )
+        else:
+            built = _table_analyses(
+                table_id, table_analyses, collection, grids.get(table_id), roles
+            )
+        yield table_analyses, built, prose
+
+
+#: The fields of a ParsedAnalysis that say where it was read: its key, and what the key
+#: is made from. neurostore keeps them in the analysis's metadata beside `source_id`.
+PLACE_FIELDS = ("key", "origin", "table_id", "cells", "text_spans")
+
+
+def analysis_places(
+    content, per_table: Mapping[str, AnalysisCollection], inputs: ParseInputs
+) -> Dict[int, Dict[str, Any]]:
+    """Where the parse sync writes will put each stage analysis, by `id()` of the analysis.
+
+    The same reading of the same text and tables as `coordinate_parse`, for a stage that
+    runs before sync has written them under the study: the text is the extraction's own
+    file, which sync copies. An analysis the parse cannot hold has no entry. Raises
+    LookupError when the extraction has no text.
+    """
+    path = getattr(content, "full_text_path", None)
+    if not path or not Path(path).exists():
+        raise LookupError("the extraction has no text file")
+    text = _Text(Path(path).read_bytes().decode("utf-8", errors="replace"))
+    grids = {t.table_id: _grid(t.raw_content_path) for t in content.tables}
+    places: Dict[int, Dict[str, Any]] = {}
+    for table_analyses, built, _ in _built(text, grids, per_table, inputs, _Roles(text, [])):
+        for analysis, parsed in zip(table_analyses, built):
+            if parsed is not None:
+                places[id(analysis)] = parsed.model_dump(
+                    mode="json", include=set(PLACE_FIELDS), exclude_none=True
+                )
+    return places
 
 
 def _role_of(analysis: pp.ParsedAnalysis) -> Dict[str, Any]:
@@ -1225,6 +1267,8 @@ __all__ = [
     "MissingRole",
     "Omitted",
     "ParseInputs",
+    "PLACE_FIELDS",
+    "analysis_places",
     "coordinate_parse",
     "parsed_paper",
     "write",

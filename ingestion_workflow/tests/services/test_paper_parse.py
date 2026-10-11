@@ -1359,3 +1359,65 @@ def test_a_table_in_a_stated_other_space_parses_and_validates(tmp_path):
     (analysis,) = parse.analyses
     assert analysis.coordinate_space == "OTHER"
     pp.CoordinateParse.model_validate(parse.model_dump())
+
+
+def test_upload_places_each_set_where_the_written_parse_keys_it(tmp_path):
+    """Upload runs before sync writes the parse; it must mint the parse's own keys."""
+    (tmp_path / "tbl1.html").write_text(TABLE_1, encoding="utf-8")
+    (tmp_path / "text.txt").write_text(TEXT, encoding="utf-8")
+    identifier = Identifier(pmid="22848644")
+    content = ExtractedContent(
+        slug=identifier.slug,
+        source=DownloadSource.PUBGET,
+        identifier=identifier,
+        tables=[ExtractedTable(table_id="tbl1", raw_content_path=tmp_path / "tbl1.html")],
+        full_text_path=tmp_path / "text.txt",
+    )
+    per_table = {
+        "tbl1": _collection(
+            [
+                Analysis(name="Faces > Houses", table_id="tbl1",
+                         coordinates=[Coordinate(x=-42, y=-55, z=-18)]),
+                # Two contrasts on one row: two keys, as the parse gives them.
+                Analysis(name="Houses > Faces", table_id="tbl1",
+                         coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+                Analysis(name="Faces vs Houses", table_id="tbl1",
+                         coordinates=[Coordinate(x=22, y=-4, z=-20)]),
+                # No row prints it, so the parse holds no analysis for it.
+                Analysis(name="Elsewhere", table_id="tbl1",
+                         coordinates=[Coordinate(x=1, y=1, z=1)]),
+            ]
+        ),
+        "prose": _collection(
+            [
+                Analysis(name="amygdala seed", table_id="prose",
+                         metadata={"source": "prose", "passages": [0]},
+                         coordinates=[Coordinate(x=-22, y=-4, z=-20)]),
+            ]
+        ),
+    }
+    inputs = ParseInputs(article_id="a", base_study_id=BASE, prose=_prose(TEXT, PASSAGE))
+    bundle = ArticleExtractionBundle(content, ArticleMetadata(title="t"))
+    target = nspond.write_article(tmp_path / "pond", BASE, bundle, per_table, [], stage1=False)
+    paper_parse.write(target, bundle, per_table, inputs)
+    parse = json.loads((target / "parse" / "coordinate_parse.json").read_text())
+
+    places = paper_parse.analysis_places(content, per_table, inputs)
+
+    stage = [a for c in per_table.values() for a in c.analyses]
+    placed = [places.get(id(a)) for a in stage]
+    assert placed[3] is None
+    written = {a["key"]: a for a in parse["analyses"]}
+    assert sorted(p["key"] for p in placed if p) == sorted(written)
+    for place in filter(None, placed):
+        stored = written[place["key"]]
+        assert place == _compact({k: stored.get(k) for k in paper_parse.PLACE_FIELDS})
+    assert placed[1]["key"] != placed[2]["key"]
+    assert placed[4]["origin"] == "text" and placed[4]["text_spans"]
+
+
+def test_upload_places_nothing_without_the_extraction_s_text(tmp_path):
+    content = ExtractedContent(slug="s", source=DownloadSource.PUBGET, tables=[],
+                               full_text_path=tmp_path / "missing.txt")
+    with pytest.raises(LookupError):
+        paper_parse.analysis_places(content, {}, ParseInputs(article_id="a"))

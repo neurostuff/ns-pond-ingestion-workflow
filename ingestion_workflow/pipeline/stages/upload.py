@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.models import AnalysisCollection
+from ingestion_workflow.models import AnalysisCollection, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
@@ -317,6 +317,7 @@ class UploadStage:
                     "base_study_id": outcome.base_study_id,
                     "study_id": outcome.study_id,
                     "analyses": len(outcome.analysis_ids),
+                    **({"reconcile": outcome.reconcile} if outcome.reconcile else {}),
                 } | ({"retraction_marked": marked} if work.article_id in retractions else {}),
             )
         ctx.catalog.add_aliases(learned)
@@ -442,12 +443,15 @@ class UploadStage:
         empty: List[Work] = []
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         excluded = excluded or {}
+        placing = _Placing(ctx, [w.article_id for w in works])
         for work in works:
+            kept = excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {})) or {}
+            # Placed with the held sets in, as sync places them: a held set's
+            # points take rows the others then cannot.
+            kept = placing.placed(work, kept)
             # Held sets stay in the payload, in place, for the exclusions' and
             # pondie's positions; neurostore gets only the uploaded ones.
-            payload = uploaded_sets(
-                excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {})) or {}
-            )
+            payload = uploaded_sets(kept)
             if not payload:
                 empty.append(work)
                 continue
@@ -463,3 +467,62 @@ class UploadStage:
             if meta_payload:
                 metadata[slug] = ArticleMetadata.from_dict(meta_payload)
         return analyses, metadata, empty
+
+
+class _Placing:
+    """Each set's place in the coordinate parse sync will write, for matching on re-upload.
+
+    neurostore keys an analysis by its parse key (`Analysis.source_id`), so upload mints
+    the same key from the same extraction before sync has written the parse. A set the
+    parse cannot hold, or an article whose parse cannot be read here, goes up without
+    one, and `parse.unplaced` says why.
+    """
+
+    def __init__(self, ctx: Context, ids: Sequence[str]) -> None:
+        self.ctx = ctx
+        self.extractions = ctx.catalog.artifacts(list(ids), "extract")
+        self.downloads = ctx.catalog.artifacts(list(ids), "download")
+        self.triaged = ctx.catalog.artifacts(list(ids), "triage")
+        self.prose = ctx.catalog.artifacts(list(ids), "prose")
+
+    def placed(self, work: Work, kept: Dict[str, Any]) -> Dict[str, Any]:
+        """`kept` with `metadata.parse` on every set: its place, or why it has none."""
+        from ingestion_workflow.services import paper_parse
+
+        from .sync import _synced_extraction
+
+        per_table = {t: AnalysisCollection.from_dict(blob) for t, blob in kept.items()}
+        try:
+            extraction = _synced_extraction(
+                self.ctx,
+                self.extractions.get(work.article_id, {}),
+                self.downloads.get(work.article_id, {}),
+                self.triaged.get(work.article_id, {}).get(""),
+            )
+            payload = self.ctx.payload(extraction) if extraction is not None else None
+            if payload is None:
+                raise LookupError("no successful extraction")
+            prose = self.prose.get(work.article_id, {}).get("")
+            places = paper_parse.analysis_places(
+                ExtractedContent.from_dict(payload),
+                per_table,
+                paper_parse.ParseInputs(
+                    article_id=work.article_id,
+                    prose=self.ctx.payload(prose)
+                    if prose is not None and prose.status is Status.OK
+                    else None,
+                ),
+            )
+            unplaced = "the coordinate parse holds no analysis for it"
+        except Exception as exc:  # noqa: BLE001 - uploaded unkeyed, and the summary says why
+            places, unplaced = {}, f"its parse could not be read: {type(exc).__name__}: {exc}"
+        out = {}
+        for table_id, blob in kept.items():
+            sets = []
+            raws = (blob or {}).get("analyses") or []
+            for analysis, raw in zip(per_table[table_id].analyses, raws):
+                parse = places.get(id(analysis)) or {"unplaced": unplaced}
+                metadata = {**((raw or {}).get("metadata") or {}), "parse": parse}
+                sets.append({**raw, "metadata": metadata})
+            out[table_id] = {**(blob or {}), "analyses": sets}
+        return out

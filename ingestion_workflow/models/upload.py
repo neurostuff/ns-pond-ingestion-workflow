@@ -83,5 +83,7 @@ class UploadOutcome:
     base_study_id: Optional[str] = None
     study_id: Optional[str] = None
     analysis_ids: List[str] = field(default_factory=list)
+    #: What became of each incoming and each existing analysis, and why.
+    reconcile: List[Dict[str, Any]] = field(default_factory=list)
     success: bool = False
     error: Optional[str] = None
