@@ -46,7 +46,7 @@ class ProseSetContext:
 
     def cue_text(self) -> str:
         return " ".join(
-            [self.name, self.description, self.heading, self.local, self.passage, self.before, self.after]
+            [self.name, self.description, self.heading, self.passage, self.before, self.after]
         )
 
     def citations(self) -> List[str]:

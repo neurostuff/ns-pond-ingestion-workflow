@@ -286,7 +286,7 @@ def test_local_is_empty_when_the_coordinates_are_not_in_the_text_and_never_a_lon
     assert _local("Peak (-142, 18, 6).", (-42, 18, 6)) == ""
 
 
-def test_local_is_in_the_serialised_input_and_its_cues():
+def test_local_is_in_the_serialised_input_before_the_passage():
     context = prose_context.build(
         {"name": "s", "coordinates": [_point(-42, 18, -6)]}, passage={"text": _TEXT}
     )
