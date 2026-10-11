@@ -151,3 +151,32 @@ Splits (`export.splits`): by article under its database id (`units/slug_dbids.js
 slug ids of 270 articles, 268 found in the corpus); articles sharing a table's text share a
 split; an article with a gold label (astra or hand) or a held-out prose row is test; synthetic
 sets are train only.
+
+## Synthetic sparse-role units
+
+`synth/` builds labelling units for the sparse roles (`reference`, `localization`, `other`, the `anchor`
+kinds) when real examples are scarce. Each unit is seeded from a real unit whose sets are all `result`,
+rewritten into one target role with that role's cues, plus hard negatives that carry a sparse class's cue
+but are another role. Units are read by `services/set_roles` (`table_context`, `prose_context`), and the
+roles are study_schema's (`labels.COORDINATE_ROLES`, `ANCHOR_KINDS`); an MRS voxel is an `anchor` with
+`anchor_kind` `roi`. Synthetic data is for training only: its `article_id` is `synth:<seed article>`, so
+the export must drop a synthetic unit whose seed article is in val or test.
+
+```
+# generate: units.jsonl (sets hold only name and points) + truth.jsonl (the label by construction)
+python experiments/role_classifier/synth/role_units.py OUT_DIR --plan plan.json \
+    --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] [--seed 41]
+
+# leak check: no label field in anything the labeller or the encoder renders
+python experiments/role_classifier/synth/leakcheck.py OUT_DIR
+
+# rewrite pass: one codex call per unit, model gpt-6.1-sol (codex CLI; no OpenAI API endpoint)
+python experiments/role_classifier/synth/rewrite.py OUT_DIR REWRITTEN_DIR [--workers 3] [--model gpt-6.1-sol]
+```
+
+`plan.json` is `{"table": {"reference": 20, "localization": 20, "anchor_roi_mrs": 5, "other": 20,
+"stimulation_target": 10, "hard_result": 10}, "text": {"reference": 20, ..., "hard_anchor_prior": 5}}`.
+The rewrite keeps every number and citation verbatim and falls back to the original unit when a check
+fails. `synth_prose.py` is the earlier prose-only generator (its surface forms are reused);
+`ingestion_workflow/tests/services/test_role_synth.py` runs a tiny generation and the leak check.
+
