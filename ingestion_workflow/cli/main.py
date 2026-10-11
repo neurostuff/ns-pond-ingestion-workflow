@@ -864,23 +864,47 @@ def report_funnel(
 @report_app.command("funnel-ids")
 def report_funnel_ids(
     stage: str = typer.Option(..., "--stage", help="Stage to list."),
-    state: Optional[str] = typer.Option(
-        None, "--state", help="Only this state (passed, failed, ...)."),
-    reason: Optional[str] = typer.Option(None, "--reason", help="Reason contains this text."),
-    source: Optional[str] = typer.Option(
-        None, "--source", help="Has a download from this source."),
-    judged: Optional[str] = typer.Option(
-        None, "--judged", help="Triage judged this source's text."),
+    state: Optional[List[str]] = typer.Option(
+        None, "--state", help="Only this state (passed, failed, ...); repeat for any of several. "
+        "With --by-source, the row's status (ok, failed, permanent, skipped, taken_back)."),
+    reason: Optional[str] = typer.Option(
+        None, "--reason", help="Reason contains this text, as the page's reason box."),
+    exact_reason: Optional[str] = typer.Option(
+        None, "--exact-reason", help="Reason is exactly this, as a clicked reason on the page."),
+    source: Optional[List[str]] = typer.Option(
+        None, "--source", help="Has an ok download from this source; repeat for any of several."),
+    tried: Optional[List[str]] = typer.Option(
+        None, "--tried", help="Has a download recorded from this source, failed or not; "
+        "repeat for any of several."),
+    judged: Optional[List[str]] = typer.Option(
+        None, "--judged", help="Triage judged this source's text; repeat for any of several."),
+    day_from: Optional[str] = typer.Option(
+        None, "--from", help="Registered on or after this day (YYYY-MM-DD)."),
+    day_to: Optional[str] = typer.Option(
+        None, "--to", help="Registered on or before this day (YYYY-MM-DD)."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    by_source: Optional[str] = typer.Option(
+        None, "--by-source", help="List this source's own download or extraction rows at "
+        "--stage (download or extract), as the page's source table does."),
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Print every article in one funnel bucket, tab-separated: id, stage, state, reason."""
-    from ingestion_workflow.services.funnel_report import STATES, matching_ids
+    from ingestion_workflow.services.funnel_report import STATES, TAKEN_BACK, matching_ids
 
-    if state is not None and state not in STATES:
-        raise typer.BadParameter(f"state must be one of {', '.join(STATES)}")
-    for row in matching_ids(_catalog_root(catalog, config), stage=stage, state=state,
-                            reason=reason, source=source, judged=judged):
+    allowed = ("ok", "failed", "permanent", "skipped", TAKEN_BACK) if by_source else STATES
+    for one in state or ():
+        if one not in allowed:
+            raise typer.BadParameter(f"state must be one of {', '.join(allowed)}")
+    if by_source and stage not in ("download", "extract"):
+        raise typer.BadParameter("--by-source lists download or extract rows only")
+    for row in matching_ids(_catalog_root(catalog, config), stage=stage, states=state or (),
+                            reason=reason, exact_reason=exact_reason,
+                            sources=source or (), tried=tried or (), judged=judged or (),
+                            day_from=day_from, day_to=day_to, prose=prose,
+                            by_source=by_source):
         typer.echo("\t".join(row))
 
 

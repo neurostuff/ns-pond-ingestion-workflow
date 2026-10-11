@@ -10,12 +10,17 @@ failed        a failure the scheduler retries
 permanent     a failure it does not retry
 taken_back    every extraction found no text, so what was made from it was withdrawn
 held          upload kept it because a studyset holds the study
+refused       its input passed, but this stage will not read it: the text was
+              made from a downloaded page that is not the article
 blocked       never ran here because its input did not pass; the reason names
-              the stage where the article dropped out and why
-pending       its input passed and nothing is recorded here yet
+              the stage where the article dropped out and why. A failed or empty
+              record left here from an earlier run counts as blocked too, and its
+              reason adds that record's own status and reason ("leftover ...")
+pending       its input passed and nothing is recorded here yet; the reason says
+              when the input holds nothing for this stage to read
 not_attempted its input passed and this stage has never run on the catalog
-stale         an artifact exists although its input did not pass, so it was made
-              from an input that has since gone or under an older stage graph
+stale         an ok artifact exists although its input did not pass, so it was
+              made from an input that has since gone or under an older stage graph
 unaccounted   an attempt is recorded but no outcome, or a status the catalog does
               not define
 
@@ -38,6 +43,7 @@ from types import SimpleNamespace
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
+from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 
 PASSED = "passed"
 FILTERED = "filtered"
@@ -45,17 +51,15 @@ FAILED = "failed"
 PERMANENT = "permanent"
 TAKEN_BACK = "taken_back"
 HELD = "held"
+REFUSED = "refused"
 BLOCKED = "blocked"
 PENDING = "pending"
 NOT_ATTEMPTED = "not_attempted"
 STALE = "stale"
 UNACCOUNTED = "unaccounted"
 
-STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, BLOCKED, PENDING,
+STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, BLOCKED, PENDING,
           NOT_ATTEMPTED, STALE, UNACCOUNTED)
-
-#: States in which the stage did not see the article: its input never passed.
-NOT_ENTERED = (BLOCKED, STALE)
 
 #: A stage that runs per source keeps one artifact per source; the article's
 #: state is the best any source reached, as `Catalog.status_counts` counts it.
@@ -64,6 +68,17 @@ _RANK = {"ok": 0, "failed": 1, "permanent": 2, "skipped": 3}
 #: Triage waits for metadata to have been attempted, not to have succeeded
 #: (`TriageStage.plan`): plenty of articles have no metadata to find.
 _INPUT_ON_ATTEMPT = {"triage"}
+
+#: Stages that refuse text made from a downloaded page that is not the article,
+#: and the stage whose artifact names that text's source (`read_from_bad_page`
+#: in the prose, resolve and sync plans).
+_READS_TEXT = {"prose": "passages", "resolve": "prose", "sync": "prose"}
+
+#: A stage whose input can pass while holding nothing for it to read, and the
+#: count on the input's summary that says so. Prose answers an article with no
+#: passage without a model call (`ProseStage.plan`), so such an article is
+#: pending for free, unlike one waiting on the model.
+_EMPTY_INPUT = {"prose": "passages"}
 
 #: Free-text errors folded into a few categories; the raw text stays for the
 #: drill-down. First match wins, so the specific patterns come first.
@@ -135,6 +150,9 @@ def stage_graph(prose: bool) -> List[StageNode]:
         upstream[name] = up
         if up and flag:
             flags.setdefault(up, flag)
+    if "resolve" in upstream and "analyses" in upstream:
+        # Resolve reads the tables' analyses alongside its declared parent.
+        flags.setdefault("analyses", "tables")
     return [StageNode(n, upstream[n], flags.get(n)) for n in names]
 
 
@@ -160,6 +178,8 @@ class _Row:
     coordinates: object
     analyses: object
     retracted: object
+    bad_page: Optional[str]
+    passages: object
 
 
 @dataclass
@@ -169,10 +189,20 @@ class Placed:
     state: str
     reason: str = ""
     raw: str = ""
+    #: Whether the article has an artifact at this stage.
+    recorded: bool = False
+    #: The reason a stage downstream inherits, when it differs from `reason`.
+    carry: str = ""
 
 
 def _truthy(value: object) -> bool:
     return value not in (None, 0, "0", "", False, "false")
+
+
+def _failure_reason(row: _Row) -> str:
+    if row.bad_page:
+        return f"bad page: {row.bad_page}"
+    return categorize(row.error)
 
 
 def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
@@ -185,6 +215,8 @@ def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
             if best.reason:
                 return Placed(FILTERED, best.reason)
             if node.name == "triage":
+                if best.tables in (0, "0"):
+                    return Placed(FILTERED, "the extraction has no table")
                 return Placed(FILTERED, "triage passed no table")
             return Placed(FILTERED, f"its summary has {node.flag} = 0")
         return Placed(PASSED, "retracted" if _truthy(best.retracted) else "")
@@ -196,7 +228,7 @@ def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
         return Placed(TAKEN_BACK, NO_TEXT)
     if best.error and best.error.startswith(HELD_FOR_REVIEW):
         return Placed(HELD, HELD_FOR_REVIEW, best.error)
-    reason = " + ".join(sorted({categorize(r.error) for r in failures})) or "no reason recorded"
+    reason = " + ".join(sorted({_failure_reason(r) for r in failures})) or "no reason recorded"
     raw = "; ".join((f"{r.source}: " if r.source else "") + (r.error or "")[:200]
                     for r in failures)
     return Placed(FAILED if best.status == "failed" else PERMANENT, reason, raw[:600])
@@ -205,7 +237,7 @@ def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
 def _origin(stage: str, placed: Placed) -> Placed:
     """What a stage downstream of `placed` reports as the reason it was blocked."""
     if placed.state == BLOCKED:
-        return Placed(BLOCKED, placed.reason, placed.raw)
+        return Placed(BLOCKED, placed.carry or placed.reason, placed.raw)
     why = f"{stage} {placed.state}" + (f": {placed.reason}" if placed.reason else "")
     return Placed(BLOCKED, why, placed.raw)
 
@@ -217,6 +249,7 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
     by_stage: Dict[str, List[_Row]] = defaultdict(list)
     for row in rows:
         by_stage[row.stage].append(row)
+    bad = _bad_page_sources(rows)
     out: Dict[str, Placed] = {}
     for node in graph:
         own = by_stage.get(node.name)
@@ -227,16 +260,15 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
             entered = before.state == PASSED or (
                 node.name in _INPUT_ON_ATTEMPT and before.state not in
                 (BLOCKED, PENDING, NOT_ATTEMPTED, STALE, UNACCOUNTED))
+            reads = _READS_TEXT.get(node.name)
+            if (entered and reads and _from_bad_page(by_stage.get(reads), bad)
+                    and not (node.name == "sync" and _retracted(by_stage.get("upload")))):
+                # The stage blocks it and leaves any record it made before as it is.
+                out[node.name] = Placed(REFUSED, f"{reads} {READ_FROM_BAD_PAGE}",
+                                        recorded=bool(own))
+                continue
         if own:
-            if entered:
-                out[node.name] = _own_state(node, own)
-            elif all(r.status != "ok" and r.error == NO_TEXT for r in own):
-                # The record a stage leaves when its input was taken back: the
-                # article dropped out upstream, so it counts as blocked from there.
-                out[node.name] = _origin(node.upstream, before)
-            else:
-                out[node.name] = Placed(STALE, f"input {node.upstream} is {before.state}",
-                                        before.reason)
+            out[node.name] = _recorded(node, own, before if not entered else None)
         elif not entered:
             out[node.name] = _origin(node.upstream, before)
         elif node.name == "resolve" and not _resolve_has_input(by_stage):
@@ -247,8 +279,63 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
         elif node.name not in ran:
             out[node.name] = Placed(NOT_ATTEMPTED, "this stage has never run on the catalog")
         else:
-            out[node.name] = Placed(PENDING, "input ready, not run yet")
+            out[node.name] = Placed(PENDING, _pending_reason(node, by_stage))
     return out
+
+
+def _recorded(node: StageNode, own: List[_Row], before: Optional[Placed]) -> Placed:
+    """The state of an article with an artifact here; `before` is set when its input
+    did not pass."""
+    if before is None:
+        placed = _own_state(node, own)
+    elif all(r.status != "ok" and r.error == NO_TEXT for r in own):
+        # The record a stage leaves when its input was taken back: the
+        # article dropped out upstream, so it counts as blocked from there.
+        placed = _origin(node.upstream, before)
+    else:
+        mine = _own_state(node, own)
+        why = f"input {node.upstream} is {before.state}"
+        if mine.state in (PASSED, HELD):
+            placed = Placed(STALE, why + (f"; {mine.reason}" if mine.reason else ""),
+                            mine.raw or before.reason)
+        elif mine.state == UNACCOUNTED:
+            placed = mine
+        else:
+            # Nothing downstream reads a failed or empty record, so the article
+            # dropped out upstream; the record's own reason stays beside it.
+            origin = _origin(node.upstream, before)
+            status = min(own, key=lambda r: _RANK.get(r.status, 9)).status
+            placed = Placed(BLOCKED, f"{origin.reason}; leftover {status}: {mine.reason}",
+                            mine.raw or origin.raw, carry=origin.reason)
+    placed.recorded = True
+    return placed
+
+
+def _bad_page_sources(rows: Sequence[_Row]) -> Dict[str, str]:
+    """Each source whose download or extraction failed as a page that is not the article."""
+    return {r.source: r.bad_page for r in rows
+            if r.stage in ("download", "extract") and r.status != "ok" and r.bad_page}
+
+
+def _from_bad_page(rows: Optional[List[_Row]], bad: Dict[str, str]) -> bool:
+    """Whether the artifact a stage reads was made from a source's bad page."""
+    return bool(rows) and (rows[0].text_source or "") in bad
+
+
+def _retracted(rows: Optional[List[_Row]]) -> bool:
+    return bool(rows) and _truthy(rows[0].retracted)
+
+
+def _pending_reason(node: StageNode, by_stage: Dict[str, List[_Row]]) -> str:
+    key = _EMPTY_INPUT.get(node.name)
+    given = [r for r in by_stage.get(node.upstream or "", []) if r.status == "ok"]
+    if key and given and getattr(given[0], key) in (0, "0"):
+        tables = [r for r in by_stage.get("analyses", []) if r.status == "ok"]
+        if tables and _truthy(tables[0].tables):
+            # Resolve passes the tables on only once this stage has recorded.
+            return f"input ready, nothing to read ({key} = 0); tables wait behind it"
+        return f"input ready, nothing to read ({key} = 0)"
+    return "input ready, not run yet"
 
 
 def _resolve_has_input(by_stage: Dict[str, List[_Row]]) -> bool:
@@ -258,12 +345,24 @@ def _resolve_has_input(by_stage: Dict[str, List[_Row]]) -> bool:
     return bool(read or (tables and _truthy(tables[0].tables)))
 
 
-def _dimensions(rows: Sequence[_Row]) -> Tuple[str, str]:
-    """(sources with a download, source of the text triage or passages judged)."""
+def _dimensions(rows: Sequence[_Row]) -> Tuple[str, str, str]:
+    """(sources with an ok download, source of the text triage or passages judged,
+    sources with any download recorded, failed ones included)."""
     downloaded = sorted({r.source for r in rows if r.stage == "download" and r.status == "ok"})
+    tried = sorted({r.source for r in rows if r.stage == "download"})
     judged = ([r.text_source for r in rows if r.stage == "triage" and r.text_source]
               or [r.text_source for r in rows if r.stage == "passages" and r.text_source])
-    return "+".join(downloaded) or "none", (judged[0] if judged else "none")
+    return ("+".join(downloaded) or "none", (judged[0] if judged else "none"),
+            "+".join(tried) or "none")
+
+
+def _row_reason(row: _Row) -> str:
+    """The reason on one per-source download or extraction row."""
+    if row.status == "ok":
+        return ""
+    if row.status == "skipped" and not row.bad_page:
+        return row.reason or categorize(row.error)
+    return _failure_reason(row)
 
 
 _ROWS_SQL = """
@@ -271,7 +370,8 @@ SELECT a.article_id, a.stage, a.source, a.status, substr(a.error, 1, 400),
        json_extract(a.summary, '$.passed'), json_extract(a.summary, '$.tables'),
        json_extract(a.summary, '$.reason'), json_extract(a.summary, '$.source'),
        json_extract(a.summary, '$.coordinates'), json_extract(a.summary, '$.analyses'),
-       json_extract(a.summary, '$.retracted')
+       json_extract(a.summary, '$.retracted'), json_extract(a.summary, '$.bad_page'),
+       json_extract(a.summary, '$.passages')
 FROM artifacts a ORDER BY a.article_id
 """
 
@@ -279,6 +379,14 @@ _ATTEMPTED_SQL = """
 SELECT DISTINCT t.article_id, t.stage FROM attempts t
 WHERE NOT EXISTS (SELECT 1 FROM artifacts a
                   WHERE a.article_id = t.article_id AND a.stage = t.stage)
+"""
+
+
+#: Articles with an artifact per stage, counted apart from the placement, for
+#: `Funnel.reconcile` to check every record was placed.
+_RECORDED_SQL = """
+SELECT a.stage, COUNT(DISTINCT a.article_id) FROM artifacts a
+JOIN articles r ON r.id = a.article_id WHERE r.merged_into IS NULL GROUP BY a.stage
 """
 
 
@@ -313,12 +421,16 @@ class Funnel:
 
     graph: List[StageNode]
     total: int = 0
-    #: (stage, state, reason, downloaded, judged, day) -> [count, [(article_id, raw)]]
+    #: (stage, state, reason, downloaded, judged, day, tried) -> [count, [(article_id, raw)]]
     cells: Dict[tuple, list] = field(default_factory=dict)
-    #: (stage, source, status, reason, downloaded, judged, day) -> [count, [(article_id, raw)]]
+    #: (stage, source, status, reason, downloaded, judged, day, tried)
+    #: -> [count, [(article_id, raw)]]
     sources: Dict[tuple, list] = field(default_factory=dict)
     #: Artifacts whose article is not live (merged away or never registered).
     stranded: int = 0
+    #: stage -> articles placed from their own artifact, and the catalog's own count.
+    recorded: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    expected: Dict[str, int] = field(default_factory=dict)
     collected: List[Tuple[str, str, str, str]] = field(default_factory=list)
     seconds: float = 0.0
     samples: int = 0
@@ -331,7 +443,7 @@ class Funnel:
 
     def reconcile(self) -> List[str]:
         """What does not add up: empty when every stage accounts for every article,
-        and every trunk stage enters exactly what the stage before it passed."""
+        and placed every article that has a record there from that record."""
         problems = []
         totals = self.stage_totals()
         for stage, counts in totals.items():
@@ -340,12 +452,10 @@ class Funnel:
                                 f"not {self.total:,}")
             if counts[UNACCOUNTED]:
                 problems.append(f"{stage}: {counts[UNACCOUNTED]:,} unaccounted")
-        chain = trunk(self.graph)
-        for before, after in zip(chain, chain[1:]):
-            entered = self.total - sum(totals[after][s] for s in NOT_ENTERED)
-            if after not in _INPUT_ON_ATTEMPT and entered != totals[before][PASSED]:
-                problems.append(f"{after} entered {entered:,} but {before} passed "
-                                f"{totals[before][PASSED]:,}")
+            placed, held = self.recorded.get(stage, 0), self.expected.get(stage, 0)
+            if placed != held:
+                problems.append(f"{stage}: {placed:,} articles placed from a record, "
+                                f"but {held:,} have one")
         if self.stranded:
             problems.append(f"{self.stranded:,} artifacts belong to no live article")
         return problems
@@ -361,13 +471,14 @@ def _add(table: Dict[tuple, list], key: tuple, article_id: str, raw: str, sample
 
 
 def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samples: int = 5,
-                 collect: Optional[Callable[[str, str, str, str, str, str], bool]] = None,
+                 collect: Optional[Callable[[str, tuple], bool]] = None,
                  ) -> Funnel:
     """Count every article's state at every stage.
 
     `prose` defaults to whether the catalog holds any prose-stage artifact.
-    `collect(stage, state, reason, downloaded, judged, day)` picks articles to
-    list in full, beyond the `samples` kept per cell.
+    `collect(kind, key)` picks articles to list in full, beyond the `samples`
+    kept per cell: kind "stage" with a `Funnel.cells` key, or "source" with a
+    `Funnel.sources` key.
     """
     started = time.monotonic()
     ran = {r[0] for r in conn.execute("SELECT DISTINCT stage FROM artifacts")}
@@ -375,6 +486,8 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
         prose = bool(ran & {"passages", "prose", "resolve"})
     graph = stage_graph(prose)
     funnel = Funnel(graph=graph, samples=samples)
+    names = {node.name for node in graph}
+    funnel.expected = {stage: n for stage, n in conn.execute(_RECORDED_SQL) if stage in names}
     attempted: Dict[str, set] = defaultdict(set)
     for article_id, stage in conn.execute(_ATTEMPTED_SQL):
         attempted[article_id].add(stage)
@@ -390,21 +503,24 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
             rows = pending_group[1]
             pending_group = next(groups, None)
         funnel.total += 1
-        downloaded, judged = _dimensions(rows)
+        downloaded, judged, tried = _dimensions(rows)
         placed = place_article(graph, rows, ran=ran, attempted=attempted.get(article_id, set()))
         for stage, where in placed.items():
-            _add(funnel.cells, (stage, where.state, where.reason, downloaded, judged, day),
-                 article_id, where.raw, samples)
-            if collect and collect(stage, where.state, where.reason, downloaded, judged, day):
+            key = (stage, where.state, where.reason, downloaded, judged, day, tried)
+            _add(funnel.cells, key, article_id, where.raw, samples)
+            if where.recorded:
+                funnel.recorded[stage] += 1
+            if collect and collect("stage", key):
                 funnel.collected.append((article_id, stage, where.state, where.reason))
         for row in rows:
             if row.stage in ("download", "extract"):
                 status = TAKEN_BACK if row.error == NO_TEXT else row.status
-                reason = "" if row.status == "ok" else (
-                    row.reason or categorize(row.error) if row.status == "skipped"
-                    else categorize(row.error))
-                key = (row.stage, row.source, status, reason, downloaded, judged, day)
+                reason = _row_reason(row)
+                key = (row.stage, row.source, status, reason, downloaded, judged, day, tried)
                 _add(funnel.sources, key, article_id, (row.error or "")[:300], samples)
+                if collect and collect("source", key):
+                    funnel.collected.append(
+                        (article_id, f"{row.stage}:{row.source}", status, reason))
     while pending_group is not None:
         funnel.stranded += len(pending_group[1])
         pending_group = next(groups, None)
@@ -426,10 +542,13 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         return table[value]
 
     def cell_rows(source: Dict[tuple, list], kinds: Sequence[str]) -> list:
+        """[dimension indexes..., count, samples, tried index]: `tried`, the last
+        key, goes after the samples."""
         out = []
         for key, (count, sample) in source.items():
-            out.append([ix(k, v) for k, v in zip(kinds, key)] + [
-                count, [[ix("id", a), ix("raw", raw)] for a, raw in sample]])
+            dims = [ix(k, v) for k, v in zip(kinds, key)]
+            out.append(dims + [count, [[ix("id", a), ix("raw", raw)] for a, raw in sample],
+                               ix("tried", key[len(kinds)])])
         return out
 
     for state in STATES:
@@ -446,6 +565,7 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "total": funnel.total,
         "samples": funnel.samples,
         "stages": [{"name": n.name, "upstream": n.upstream, "flag": n.flag} for n in funnel.graph],
+        "prose": any(n.name == "prose" for n in funnel.graph),
         "trunk": trunk(funnel.graph),
         "problems": funnel.reconcile(),
         "stranded": funnel.stranded,
@@ -473,24 +593,46 @@ def write_report(catalog_root: Path | str, out: Path | str, *, samples: int = 20
     return funnel
 
 
-def matching_ids(catalog_root: Path | str, *, stage: str, state: Optional[str] = None,
-                 reason: Optional[str] = None, source: Optional[str] = None,
-                 judged: Optional[str] = None) -> List[Tuple[str, str, str, str]]:
-    """Every article in one bucket: (article_id, stage, state, reason).
+def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] = (),
+                 reason: Optional[str] = None, exact_reason: Optional[str] = None,
+                 sources: Sequence[str] = (), tried: Sequence[str] = (),
+                 judged: Sequence[str] = (), day_from: Optional[str] = None,
+                 day_to: Optional[str] = None, prose: Optional[bool] = None,
+                 by_source: Optional[str] = None) -> List[Tuple[str, str, str, str]]:
+    """Every article in one bucket, chosen as the page chooses it:
+    (article_id, stage, state, reason).
 
-    `reason` matches as a case-insensitive substring; `source` matches when the
-    article has a download from that source."""
+    `reason` matches as a case-insensitive substring, as the reason box does,
+    and `exact_reason` exactly, as a clicked reason does. `sources` (an ok
+    download from), `tried` (any download recorded from) and `judged` each match
+    any of their values; `day_from`/`day_to` bound the registration day. With
+    `by_source`, the rows are that source's own download or extraction rows at
+    `stage`, and `states` matches their status (ok, failed, permanent, skipped,
+    taken_back), as the page's source table does."""
     needle = (reason or "").lower()
 
-    def wanted(st, sta, rea, dl, txt, _day) -> bool:
-        return (st == stage and (state is None or sta == state)
-                and needle in rea.lower()
-                and (source is None or source in dl.split("+"))
-                and (judged is None or txt == judged))
+    def article_ok(dl: str, txt: str, day: str, tr: str) -> bool:
+        return ((not sources or any(s in dl.split("+") for s in sources))
+                and (not tried or any(s in tr.split("+") for s in tried))
+                and (not judged or txt in judged)
+                and (not day_from or day >= day_from) and (not day_to or day <= day_to))
+
+    def wanted(kind: str, key: tuple) -> bool:
+        if (kind == "source") != (by_source is not None) or key[0] != stage:
+            return False
+        if by_source is not None:
+            _, src, status, rea, dl, txt, day, tr = key
+            if src != by_source:
+                return False
+        else:
+            _, status, rea, dl, txt, day, tr = key
+        return ((not states or status in states)
+                and (exact_reason is None or rea == exact_reason) and needle in rea.lower()
+                and article_ok(dl, txt, day, tr))
 
     conn = open_readonly(catalog_root)
     try:
-        return build_funnel(conn, samples=0, collect=wanted).collected
+        return build_funnel(conn, prose=prose, samples=0, collect=wanted).collected
     finally:
         conn.close()
 
@@ -524,6 +666,7 @@ button{font:inherit;padding:3px 10px}
 <div id="meta" class="muted"></div>
 <div id="problems"></div>
 <div id="filters"></div>
+<div id="filter-help" class="muted" style="margin:6px 0"></div>
 <h2>Funnel along the upload path</h2>
 <div class="muted">Each column is a stage on the path to upload. The band to the right is what passed on; the drops below are what stayed behind, split by state and reason. Click a drop to list its articles.</div>
 <div style="overflow-x:auto"><svg id="sankey"></svg></div>
@@ -534,7 +677,7 @@ button{font:inherit;padding:3px 10px}
 <h2 id="reasons-title">Reasons</h2>
 <table id="reasons"></table>
 <h2>Sources</h2>
-<div class="muted">Download and extraction per source (one row per article and source), the source whose text triage judged, and how many articles with that source reached upload.</div>
+<div class="muted">Download and extraction per source (one row per article and source, so an article counts once under every source it was tried at), the source whose text triage judged, and how many articles with that source reached upload. A bad page is a download that served something other than the article (a paywall, an error page, an empty shell, a citation stub).</div>
 <table id="sources"></table>
 <h2 id="drill-title">Drill-down</h2>
 <div id="drill"><div class="muted">Click a number above.</div></div>
@@ -543,25 +686,27 @@ button{font:inherit;padding:3px 10px}
 "use strict";
 const D=JSON.parse(document.getElementById("data").textContent);
 const S=D.strings, STATES=S.state, STAGES=D.stages.map(s=>s.name);
-const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",held:"#e08a1e",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
-const DROPS=["filtered","failed","permanent","taken_back","held","pending","not_attempted","unaccounted"];
+const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",held:"#e08a1e",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
+const DROPS=["filtered","failed","permanent","taken_back","held","refused","pending","not_attempted","unaccounted"];
 const fmt=n=>n.toLocaleString("en-US");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const F={dl:new Set(),text:new Set(),from:"",to:"",state:new Set(),reason:""};
+const F={dl:new Set(),tried:new Set(),text:new Set(),from:"",to:"",state:new Set(),reason:""};
 const dlSources=[...new Set(S.dl.flatMap(d=>d.split("+")))].sort();
-function articleOk(dl,text,day){
+const triedSources=[...new Set(S.tried.flatMap(d=>d.split("+")))].sort();
+function articleOk(dl,text,day,tried){
   if(F.dl.size&&!S.dl[dl].split("+").some(s=>F.dl.has(s)))return false;
+  if(F.tried.size&&!S.tried[tried].split("+").some(s=>F.tried.has(s)))return false;
   if(F.text.size&&!F.text.has(S.text[text]))return false;
   const d=S.day[day];if(F.from&&d<F.from)return false;if(F.to&&d>F.to)return false;return true}
 function bucketOk(state,reason){
   if(F.state.size&&!F.state.has(STATES[state]))return false;
   return !F.reason||S.reason[reason].toLowerCase().includes(F.reason.toLowerCase())}
-function cells(){return D.cells.filter(c=>articleOk(c[3],c[4],c[5]))}
+function cells(){return D.cells.filter(c=>articleOk(c[3],c[4],c[5],c[8]))}
 function chips(name,values,set){return `<div class="grp"><b>${name}</b><div>`+values.map(v=>`<label class="chip"><input type="checkbox" data-set="${set}" value="${esc(v)}">${esc(v)}</label>`).join("")+`</div></div>`}
 function filters(){
   const days=[...S.day].sort();
   document.getElementById("filters").innerHTML=
-    chips("Downloaded from (any of)",[...dlSources],"dl")+chips("Judged text source",[...S.text].sort(),"text")+
+    chips("Downloaded from (any of)",[...dlSources],"dl")+chips("Download tried at (any of)",[...triedSources],"tried")+chips("Judged text source",[...S.text].sort(),"text")+
     `<div class="grp"><b>Registered in catalog</b><div><select id="from"><option value="">from</option>${days.map(d=>`<option>${d}</option>`).join("")}</select> <select id="to"><option value="">to</option>${days.map(d=>`<option>${d}</option>`).join("")}</select></div></div>`+
     chips("State (tables, drill-down)",STATES,"state")+
     `<div class="grp"><b>Reason contains</b><input id="reason" size="22" placeholder="e.g. open access"></div><div class="grp"><b>&nbsp;</b><button id="reset">Reset</button></div>`;
@@ -569,7 +714,7 @@ function filters(){
   document.getElementById("from").onchange=e=>{F.from=e.target.value;render()};
   document.getElementById("to").onchange=e=>{F.to=e.target.value;render()};
   document.getElementById("reason").oninput=e=>{F.reason=e.target.value;render()};
-  document.getElementById("reset").onclick=()=>{F.dl.clear();F.text.clear();F.state.clear();F.from=F.to=F.reason="";filters();render()};
+  document.getElementById("reset").onclick=()=>{F.dl.clear();F.tried.clear();F.text.clear();F.state.clear();F.from=F.to=F.reason="";filters();render()};
 }
 function totals(cs){const t={};STAGES.forEach(s=>{t[s]={};STATES.forEach(x=>t[s][x]=0)});let all=0;
   cs.forEach(c=>{t[S.stage[c[0]]][STATES[c[1]]]+=c[6]});
@@ -622,19 +767,27 @@ function reasons(cs){
   document.querySelectorAll("#reasons td[data-r]").forEach(td=>td.onclick=()=>drill({stage:st,state:STATES[+td.dataset.s],reason:S.reason[+td.dataset.r]}));
 }
 function sourceTable(cs){
-  const src=D.sources.filter(c=>articleOk(c[4],c[5],c[6]));const T={};
+  const src=D.sources.filter(c=>articleOk(c[4],c[5],c[6],c[9]));const T={};
   const add=(s,k,n)=>{T[s]=T[s]||{};T[s][k]=(T[s][k]||0)+n};
   src.forEach(c=>add(S.source[c[1]],S.stage[c[0]]+":"+S.status[c[2]],c[7]));
   const [t]=totals(cs);const up=D.trunk[D.trunk.length-1]==="sync"?"upload":D.trunk[D.trunk.length-1];
   cs.forEach(c=>{const st=S.stage[c[0]];if(st==="triage"&&STATES[c[1]]!=="blocked")add(S.text[c[4]],"judged",c[6]);
     if(st===up&&STATES[c[1]]==="passed"){S.dl[c[3]].split("+").forEach(s=>add(s,"reached",c[6]));add(S.text[c[4]],"reached_judged",c[6])}});
-  const cols=[["download:ok","downloaded"],["download:failed","dl failed"],["download:permanent","dl permanent"],["download:skipped","dl skipped"],["extract:ok","extracted"],["extract:failed","extract failed"],["extract:taken_back","extract no text"],["judged","text triage judged"],["reached","has a download, reached "+up],["reached_judged","judged text, reached "+up]];
+  const cols=[["download:ok","downloaded"],["download:failed","dl failed"],["download:permanent","dl permanent"],["download:skipped","dl skipped"],["extract:ok","extracted"],["extract:failed","extract failed"],["extract:permanent","extract permanent"],["extract:skipped","extract skipped"],["extract:taken_back","extract no text"],["judged","text triage judged"],["reached","has a download, reached "+up],["reached_judged","judged text, reached "+up]];
   const names=Object.keys(T).filter(s=>s!=="none").sort().concat(T.none?["none"]:[]);
   document.getElementById("sources").innerHTML=`<tr><th>source</th>${cols.map(c=>`<th>${c[1]}</th>`).join("")}</tr>`+
     names.map(s=>`<tr><td>${esc(s)}</td>${cols.map(([k])=>{const n=(T[s]||{})[k]||0;const [stg,sta]=k.split(":");return `<td class="${sta?"click":""}" data-src="${esc(s)}" data-k="${k}">${n?fmt(n):""}</td>`}).join("")}</tr>`).join("");
   document.querySelectorAll("#sources td.click").forEach(td=>td.onclick=()=>{const [stg,sta]=td.dataset.k.split(":");drillSource(stg,td.dataset.src,sta)});
 }
-function cliCmd(o){let c=`ingest report funnel-ids --catalog ${JSON.stringify(D.catalog)} --stage ${o.stage}`;if(o.state)c+=` --state ${o.state}`;if(o.reason)c+=` --reason ${JSON.stringify(o.reason)}`;if(F.dl.size===1)c+=` --source ${[...F.dl][0]}`;if(F.text.size===1)c+=` --judged ${[...F.text][0]}`;return c}
+const q=s=>"'"+String(s).replace(/'/g,"'\\''")+"'";
+function articleArgs(){let c=` --catalog ${q(D.catalog)} ${D.prose?"--prose":"--no-prose"}`;
+  [["dl","--source"],["tried","--tried"],["text","--judged"]].forEach(([k,flag])=>[...F[k]].sort().forEach(v=>c+=` ${flag} ${q(v)}`));
+  if(F.from)c+=` --from ${F.from}`;if(F.to)c+=` --to ${F.to}`;return c}
+function cliCmd(o){
+  const states=o.state?(!F.state.size||F.state.has(o.state)?[o.state]:null):[...F.state];
+  if(!states)return "(none: the state filter leaves this bucket out)";
+  let c=`ingest report funnel-ids --stage ${o.stage}`+articleArgs();states.forEach(s=>c+=` --state ${s}`);
+  if(o.reason!=null)c+=` --exact-reason ${q(o.reason)}`;if(F.reason)c+=` --reason ${q(F.reason)}`;return c}
 function showDrill(title,rows,total,cmd){
   const ids=rows.map(r=>r[0]);
   document.getElementById("drill-title").textContent="Drill-down: "+title;
@@ -653,13 +806,14 @@ function drill(o){
 }
 function drillSource(stage,source,state){
   let total=0;const rows=[];
-  D.sources.forEach(c=>{if(!articleOk(c[4],c[5],c[6]))return;if(S.stage[c[0]]!==stage||S.source[c[1]]!==source||S.status[c[2]]!==state)return;
+  D.sources.forEach(c=>{if(!articleOk(c[4],c[5],c[6],c[9]))return;if(S.stage[c[0]]!==stage||S.source[c[1]]!==source||S.status[c[2]]!==state)return;
     total+=c[7];c[8].forEach(([a,r])=>rows.push([S.id[a],stage+":"+source,state,S.reason[c[3]]||"",S.raw[r],S.dl[c[4]],S.text[c[5]],S.day[c[6]]]))});
-  showDrill(`${stage} from ${source} / ${state}`,rows,total,`ingest report funnel-ids --catalog ${JSON.stringify(D.catalog)} --stage ${stage} --source ${source}`);
+  showDrill(`${stage} from ${source} / ${state}`,rows,total,`ingest report funnel-ids --stage ${stage} --by-source ${q(source)} --state ${state}`+articleArgs());
 }
 function render(){const cs=cells();sankey(cs);stageTable(cs);reasons(cs);sourceTable(cs)}
-document.getElementById("meta").innerHTML=`${fmt(D.total)} live articles in <code>${esc(D.catalog)}</code>; built ${D.generated} in ${D.seconds}s. Source, judged-text and registration-date filters select articles, so every stage still adds up; state and reason filters narrow the tables and drill-down.`;
-document.getElementById("problems").innerHTML=D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and each stage on the upload path entered what the one before it passed.</div>`;
+document.getElementById("meta").innerHTML=`${fmt(D.total)} live articles in <code>${esc(D.catalog)}</code>; built ${D.generated} in ${D.seconds}s; stage graph ${D.prose?"with":"without"} the prose stages.`;
+document.getElementById("filter-help").innerHTML=`<b>Filters.</b> These select articles, so every stage still adds up: <b>Downloaded from</b> keeps articles with an ok download from any ticked source (an article whose every download failed has source <i>none</i>, so ticking a source hides its download failures); <b>Download tried at</b> keeps articles with any download recorded from a ticked source, failed or not (use it for losses at download by source); <b>Judged text source</b> is the source whose text triage, or else passages, read; <b>Registered</b> is the day the article entered the catalog. These narrow the tables and the drill-down only: <b>State</b>, and <b>Reason contains</b> (a case-insensitive substring; a clicked reason matches exactly). The source table always lists every source tried; its numbers follow the article filters.`;
+document.getElementById("problems").innerHTML=D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and every article with a record at a stage was placed from that record.</div>`;
 filters();render();
 </script></body></html>
-"""
+"""  # noqa: E501 -- the page is minified HTML and JS, not Python

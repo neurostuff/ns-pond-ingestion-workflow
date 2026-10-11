@@ -10,6 +10,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
+from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 from ingestion_workflow.services.funnel_report import (
     BLOCKED,
     FAILED,
@@ -19,6 +20,7 @@ from ingestion_workflow.services.funnel_report import (
     PASSED,
     PENDING,
     PERMANENT,
+    REFUSED,
     STALE,
     TAKEN_BACK,
     UNACCOUNTED,
@@ -209,3 +211,237 @@ def test_cli_writes_the_page_and_lists_a_bucket(catalog, tmp_path):
                                      "--reason", "open access"])
     assert result.exit_code == 0, result.output
     assert result.output.split()[0] == ids["B"] and len(result.output.splitlines()) == 1
+
+
+def _bad(article, stage, source, reason):
+    """A download or extraction failed as a page that is not the article."""
+    return Outcome.failure(article, stage, source, f"bad page ({reason}): detail",
+                           summary={"bad_page": reason})
+
+
+def _read_from_ace(article, *, retracted=False):
+    """Read through to sync from ace's text, then ace's page found not to be the article
+    while pubget's download and extraction stay ok."""
+    return [
+        _ok(article, "download", "pubget"), _ok(article, "extract", "pubget"),
+        _bad(article, "download", "ace", "paywall"), _bad(article, "extract", "ace", "paywall"),
+        _ok(article, "metadata"), _ok(article, "triage", source="ace", passed=1, tables=1),
+        _ok(article, "analyses", tables=1),
+        _ok(article, "passages", source="ace", passages=2),
+        _ok(article, "prose", source="ace", coordinates=3),
+        _ok(article, "resolve", tables=1), _ok(article, "roles", tables=1),
+        _ok(article, "space", tables=1),
+        _ok(article, "upload", base_study_id="b", **({"retracted": True} if retracted else {})),
+        _ok(article, "sync", base_study_id="b"),
+    ]
+
+
+@pytest.fixture()
+def wider(tmp_path):
+    """Articles for the branches the first fixture leaves out."""
+    cat = Catalog.open(tmp_path / "wider")
+    names = "KLMNOPQRSTVWYZXUHJ"
+    ids = {name: cat.register(Identifier(pmid=str(2000 + i))).id for i, name in enumerate(names)}
+    k, l_, m, n, o, p, q, r, s, t, v, w, y, z, x, u, h, j = (ids[c] for c in names)
+    upto_prose = [_ok(a, "download", "pubget") for a in (l_, m, n, o)] + [
+        _ok(a, "extract", "pubget") for a in (l_, m, n, o)] + [
+        _ok(a, "passages", source="pubget", passages=2) for a in (l_, m)]
+    cat.record([
+        # Metadata found nothing, and triage still read the article.
+        _ok(k, "download", "pubget"), _ok(k, "extract", "pubget"),
+        Outcome.failure(k, "metadata", "", "No provider returned metadata"),
+        _ok(k, "triage", source="pubget", passed=1, tables=1),
+        *upto_prose,
+        # Resolve has the prose's coordinates and no table to read.
+        _ok(l_, "prose", source="pubget", coordinates=4),
+        # Resolve has the tables and nothing from the prose.
+        _ok(m, "prose", source="pubget", coordinates=0),
+        _ok(m, "analyses", tables=2),
+        # No passage: prose is free, and n's tables wait behind it.
+        _ok(n, "passages", source="pubget", passages=0), _ok(n, "analyses", tables=3),
+        _ok(o, "passages", source="pubget", passages=0),
+        _ok(o, "metadata"), _ok(o, "triage", source="pubget", passed=0, tables=0),
+        # Triage passed nothing; analyses records from before it gated on that.
+        *_through(p, "metadata"), _ok(p, "triage", source="pubget", passed=0, tables=4),
+        Outcome(article_id=p, stage="analyses", status=Status.SKIPPED,
+                summary={"reason": "triage passed no table"}),
+        *_through(q, "metadata"), _ok(q, "triage", source="pubget", passed=0, tables=2),
+        _ok(q, "analyses", tables=3),
+        *_through(r, "space"), _ok(r, "upload", base_study_id="b", retracted=True),
+        *_read_from_ace(s),
+        _bad(t, "download", "ace", "error_page"),
+        *_read_from_ace(v, retracted=True),
+        _ok(w, "download", "pubget"), _ok(w, "extract", "pubget"),
+        _ok(y, "download", "ace"), Outcome.failure(y, "extract", "ace", NO_TEXT),
+        _ok(y, "triage", source="ace", passed=0, tables=0),
+        Outcome.failure(z, "download", "elsevier", "publisher does not allow full-text download"),
+        Outcome.failure(x, "download", "elsevier", "publisher does not allow full-text download"),
+        Outcome.failure(x, "download", "pdf", "PDF fetch failed: 403 Client Error: Forbidden"),
+        *_through(u, "roles"), Outcome.failure(u, "upload", "", "boom"),
+        *_through(h, "roles"), _ok(h, "upload", base_study_id="b", retracted=True),
+        *_through(j, "metadata"), _ok(j, "triage", source="pubget", passed=1, tables=1),
+        _ok(j, "analyses", tables=0),
+    ])
+    # w was merged into k, though its artifacts stayed behind.
+    cat._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (k, w))
+    cat._conn.execute("UPDATE articles SET created_at='2026-01-02T00:00:00' WHERE id IN (?, ?)",
+                      (z, x))
+    cat.close()
+    return tmp_path / "wider", ids
+
+
+@pytest.fixture()
+def wide(wider):
+    root, ids = wider
+    conn = open_readonly(root)
+    try:
+        yield build_funnel(conn, samples=50), ids
+    finally:
+        conn.close()
+
+
+def _ids(root, *args):
+    result = CliRunner().invoke(cli.app, ["report", "funnel-ids", "--catalog", str(root), *args])
+    assert result.exit_code == 0, result.output
+    return {line.split("\t")[0] for line in result.output.splitlines()}
+
+
+def test_triage_enters_on_a_failed_metadata(wide):
+    funnel, ids = wide
+    assert _where(funnel, ids["K"], "metadata")[0] == FAILED
+    assert _where(funnel, ids["K"], "triage")[:2] == (PASSED, "")
+
+
+def test_resolve_reads_both_the_prose_and_the_tables(wide):
+    funnel, ids = wide
+    assert _where(funnel, ids["L"], "resolve")[:2] == (PENDING, "input ready, not run yet")
+    assert _where(funnel, ids["M"], "resolve")[:2] == (PENDING, "input ready, not run yet")
+
+
+def test_pending_says_when_the_input_is_empty(wide):
+    funnel, ids = wide
+    waiting = "input ready, nothing to read (passages = 0); tables wait behind it"
+    assert _where(funnel, ids["N"], "prose")[:2] == (PENDING, waiting)
+    assert _where(funnel, ids["N"], "resolve")[:2] == (BLOCKED, f"prose pending: {waiting}")
+    assert _where(funnel, ids["O"], "prose")[:2] == (
+        PENDING, "input ready, nothing to read (passages = 0)")
+
+
+def test_a_leftover_record_keeps_its_own_status_and_reason(wide):
+    funnel, ids = wide
+    assert _where(funnel, ids["P"], "analyses")[:2] == (
+        BLOCKED,
+        "triage filtered: triage passed no table; leftover skipped: triage passed no table")
+    # Downstream of a leftover, the reason is where the article dropped out.
+    assert _where(funnel, ids["U"], "upload")[:2] == (
+        BLOCKED, "space pending: input ready, not run yet; leftover failed: other: boom")
+    assert _where(funnel, ids["U"], "sync")[:2] == (
+        BLOCKED, "space pending: input ready, not run yet")
+    # An ok record that holds tables is stale: something downstream could read it.
+    assert _where(funnel, ids["Q"], "analyses")[:2] == (STALE, "input triage is filtered")
+    assert _where(funnel, ids["H"], "upload")[:2] == (STALE, "input space is pending; retracted")
+    # Resolve reads the tables, so analyses without any holds nothing for it.
+    assert _where(funnel, ids["J"], "analyses")[:2] == (FILTERED, "its summary has tables = 0")
+    assert _where(funnel, ids["O"], "triage")[:2] == (FILTERED, "the extraction has no table")
+    # The record behind a leftover is still counted as a record.
+    assert funnel.reconcile() == ["2 artifacts belong to no live article"]
+
+
+def test_reconcile_checks_every_record_was_placed(wide):
+    funnel, _ = wide
+    funnel.recorded["analyses"] -= 1
+    assert "analyses: 6 articles placed from a record, but 7 have one" in funnel.reconcile()
+
+
+def test_a_merged_article_with_artifacts_is_stranded(wide):
+    funnel, ids = wide
+    assert funnel.stranded == 2
+    assert funnel.total == len(ids) - 1
+    assert not any(aid == ids["W"] for _, (_, sample) in funnel.cells.items()
+                   for aid, _ in sample)
+
+
+def test_retracted_and_taken_back_keep_their_reason(wide):
+    funnel, ids = wide
+    assert _where(funnel, ids["R"], "upload")[:2] == (PASSED, "retracted")
+    keys = {key[:3] for key in funnel.sources}
+    assert ("extract", "ace", TAKEN_BACK) in keys
+
+
+def test_bad_pages_are_their_own_reason(wide):
+    funnel, ids = wide
+    assert _where(funnel, ids["T"], "download")[:2] == (FAILED, "bad page: error_page")
+    assert _where(funnel, ids["T"], "extract")[:2] == (
+        BLOCKED, "download failed: bad page: error_page")
+    keys = {key[:4] for key in funnel.sources}
+    assert ("download", "ace", "failed", "bad page: paywall") in keys
+    assert ("extract", "ace", "failed", "bad page: paywall") in keys
+    # pubget's text stands in at extract, but prose read ace's passages.
+    assert _where(funnel, ids["S"], "extract")[0] == PASSED
+    assert _where(funnel, ids["S"], "prose")[:2] == (REFUSED, f"passages {READ_FROM_BAD_PAGE}")
+    # The resolve made before stays, and is stale behind it.
+    assert _where(funnel, ids["S"], "resolve")[:2] == (STALE, "input prose is refused")
+
+
+def test_sync_refuses_prose_from_a_bad_page_unless_retracted(wider):
+    root, ids = wider
+    conn = open_readonly(root)
+    try:
+        funnel = build_funnel(conn, prose=False, samples=50)
+    finally:
+        conn.close()
+    assert _where(funnel, ids["S"], "upload")[0] == PASSED
+    assert _where(funnel, ids["S"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
+    assert _where(funnel, ids["V"], "sync")[0] == PASSED
+
+
+def test_dimensions_include_tried_sources_and_registration_day(wide):
+    funnel, ids = wide
+    cells = {(key[0], aid): key for key, (_, sample) in funnel.cells.items()
+             for aid, _ in sample}
+    assert cells[("download", ids["T"])][3] == "none"
+    assert cells[("download", ids["T"])][6] == "ace"
+    assert cells[("download", ids["S"])][6] == "ace+pubget"
+    assert cells[("download", ids["Z"])][5] == "2026-01-02"
+    assert cells[("download", ids["K"])][5] != "2026-01-02"
+
+
+def test_funnel_ids_match_the_page(wider, wide):
+    root, ids = wider
+    funnel, _ = wide
+    # The source table's "dl failed" cell for ace, and the command the page prints for it.
+    page = {aid for key, (_, sample) in funnel.sources.items()
+            if key[:3] == ("download", "ace", "failed") for aid, _ in sample}
+    assert page == {ids["S"], ids["T"], ids["V"]}
+    assert _ids(root, "--stage", "download", "--by-source", "ace", "--state", "failed") == page
+    # Downloaded from means an ok download; tried means any download recorded.
+    assert _ids(root, "--stage", "download", "--source", "ace") == {ids["Y"]}
+    assert _ids(root, "--stage", "download", "--tried", "ace") == {
+        ids["S"], ids["T"], ids["V"], ids["Y"]}
+    assert _ids(root, "--stage", "download", "--tried", "ace", "--tried", "elsevier",
+                "--state", "failed") == {ids["T"], ids["Z"], ids["X"]}
+    # A clicked reason matches exactly; the reason box matches a substring.
+    assert _ids(root, "--stage", "download", "--exact-reason", "not open access") == {ids["Z"]}
+    assert _ids(root, "--stage", "download", "--reason", "open access") == {
+        ids["Z"], ids["X"]}
+    assert _ids(root, "--stage", "download", "--state", "failed", "--from", "2026-01-01",
+                "--to", "2026-01-03") == {ids["Z"], ids["X"]}
+    assert _ids(root, "--stage", "download", "--judged", "ace") == {
+        ids["S"], ids["V"], ids["Y"]}
+    # The stage graph decides what sync waits on.
+    assert _ids(root, "--stage", "sync", "--state", "refused", "--no-prose") == {ids["S"]}
+    assert _ids(root, "--stage", "sync", "--state", "stale", "--prose") == {ids["S"], ids["V"]}
+    assert _ids(root, "--stage", "download", "--state", "failed", "--from", "2026-01-03") == {
+        ids["T"]}
+
+
+def test_page_carries_the_tried_dimension_and_the_graph(wide):
+    funnel, ids = wide
+    page = render_html(funnel, "/cat")
+    data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>',
+                                page, re.S).group(1))
+    assert data["prose"] is True
+    tried = data["strings"]["tried"]
+    assert {tried[c[8]] for c in data["cells"]} >= {"ace", "ace+pubget", "pubget"}
+    assert {tried[c[9]] for c in data["sources"]} >= {"ace", "elsevier+pdf"}
+    assert "--by-source" in page and "--exact-reason" in page
