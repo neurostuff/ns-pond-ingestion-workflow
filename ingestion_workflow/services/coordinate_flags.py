@@ -84,32 +84,70 @@ SPLIT_RULE = "sign_of_directional_statistic"
 #: ">", "<", "minus", and a dash with a space on both sides. An unspaced hyphen is
 #: not one: it joins words ("EQ-I", "OBJ-SCD") at least as often as it subtracts.
 _CONTRAST_OPERATOR = re.compile(
-    r"\s+(?:vs\.?|versus|minus)\s+|\s*[<>]\s*|\s+[-–−]\s+", re.IGNORECASE
+    r"\s+(?:vs\.?|versus|minus)\s+|\s*[<>]\s*|\s+[-\u2013\u2212]\s+", re.IGNORECASE
 )
-#: A label before the contrast, "(1) " or "B) " or "Encoding: ", which stays in front.
-_LEADING_LABEL = re.compile(r"^(?:\(?[0-9A-Za-z]{1,2}[).]\s+|[^:<>]+:\s+)")
+#: Labels before the contrast, "(1) ", "B) ", "Encoding: " or "(a) fMRI contrast: ",
+#: which stay in front.
+_LEADING_LABEL = re.compile(r"^(?:\(?[0-9A-Za-z]{1,2}[).]\s+|[^:<>]+:\s+)+")
 #: A qualifier after it, "(cluster size > 36)", which stays behind.
 _TRAILING_QUALIFIER = re.compile(r"\s*[(\[][^()\[\]]*(?:\([^()]*\)[^()\[\]]*)*[)\]]$")
-_QUOTES = "\"'‘’“”"
+_QUOTES = "\"'\u2018\u2019\u201c\u201d"
+#: A condition is a short label. A longer side is a description ("Significantly
+#: active brain regions for associative"), and its words do not all belong to it.
+#: The two sides also have as many words each: where they do not, the extra words
+#: are usually shared by both conditions ("ENCODING CON>SZ", "Left>Right Amygdala
+#: Correlation") and swapping moves them to the wrong one.
+_MAX_SIDE_WORDS = 4
+#: Words that make a side a phrase about the contrast rather than one of its
+#: conditions ("angry face vs. shape contrast", "Difference placebo versus oxytocin group").
+_PHRASE_WORDS = frozenset(
+    "of for in the with during from to as by at when while after before "
+    "contrast contrasts effect effects difference differences analysis interaction "
+    "correlation correlations group groups condition conditions".split()
+)
+#: A side that is a threshold or reads one: "p<0.005", "Overall p-value<10-7".
+_THRESHOLD = re.compile(
+    r"(?i)\b(?:p-?values?|q-?values?|alpha|threshold\w*|uncorrected|fwe|fdr)\b"
+)
+_NUMBER = re.compile(r"^[<>=\u2264\u2265\u00b1+\-\u2013\u2212]?[\d.,]+(?:[-\u2013\u2212^eE][\d.]+)?%?$")
+_UNITS = frozenset("ms msec s sec secs min mm cm hz khz % year years yrs y days weeks".split())
 
 
 def _balanced(text: str) -> bool:
     return all(text.count(o) == text.count(c) for o, c in ("()", "[]", "{}"))
 
 
+def _condition(side: str) -> bool:
+    """Whether one side of a contrast reads as a condition, so it can be moved."""
+    words = side.split()
+    if not words or len(words) > _MAX_SIDE_WORDS:
+        return False
+    if any(mark in side for mark in ",;:") or not _balanced(side):
+        return False
+    if _THRESHOLD.search(side) or any(w.lower() in _PHRASE_WORDS for w in words):
+        return False
+    return not all(_NUMBER.match(w) or w.lower() in _UNITS for w in words)
+
+
 def reversed_contrast(name: str) -> Optional[str]:
-    """`name` with its two sides swapped, or None when it is not one two-sided contrast.
+    """`name` with its two sides swapped, or None when it is not one clean two-sided contrast.
 
     "A > B" is "B > A", "A vs. B" is "B vs. A", "A minus B" is "B minus A" and
-    "A - B" is "B - A". A name with no such operator, or with more than one
-    ("Go vs. Nogo - OC vs. YC"), has no reverse that can be read off it.
+    "A - B" is "B - A". Leading labels and a bracketed trailing qualifier stay
+    where they are. Only one operator between two short condition labels is
+    swapped: a name with none or more than one ("Go vs. Nogo - OC vs. YC"), or a
+    side that is a description, a clause, a threshold or a number, has no reverse
+    that can be read off it.
     """
     core = name.strip()
     opening = closing = ""
     if len(core) > 1 and core[0] in _QUOTES and core[-1] in _QUOTES:
         opening, closing, core = core[0], core[-1], core[1:-1].strip()
     label = _LEADING_LABEL.match(core)
-    head = label.group(0) if label and _CONTRAST_OPERATOR.search(core[label.end():]) else ""
+    head = ""
+    if label and not _CONTRAST_OPERATOR.search(label.group(0)):
+        if _CONTRAST_OPERATOR.search(core[label.end():]):
+            head = label.group(0)
     core = core[len(head):]
     qualifier = _TRAILING_QUALIFIER.search(core)
     tail = qualifier.group(0) if qualifier and qualifier.start() > 0 else ""
@@ -117,34 +155,41 @@ def reversed_contrast(name: str) -> Optional[str]:
     operators = list(_CONTRAST_OPERATOR.finditer(core))
     if len(operators) != 1:
         return None
+    operator = operators[0].group(0)
     left, right = core[: operators[0].start()].strip(), core[operators[0].end():].strip()
-    if not (left and right and _balanced(left) and _balanced(right)):
+    if not (_condition(left) and _condition(right)):
         return None
-    swapped = f"{head}{right}{operators[0].group(0)}{left}{tail}"
-    return f"{opening}{swapped}{closing}"
+    if len(left.split()) != len(right.split()):
+        return None
+    return f"{opening}{head}{right}{operator}{left}{tail}{closing}"
 
 
-def inverse_name(name: str) -> str:
+def _name_key(name: str) -> str:
+    return re.sub(r"\s+", "", name).casefold()
+
+
+def inverse_name(name: str, taken: Iterable[str] = ()) -> str:
     """The name of the inverse half of the split analysis `name`.
 
-    The reversed contrast when it can be read off the name; otherwise the name
+    The reversed contrast when it can be read off the name and is not already
+    the name of another analysis in `taken`, the table's printed names (a paper
+    that reports both "Females > Males" and "Males > Females"); otherwise the name
     with " (inverse)". The half is declared by `split`, never by this name, and
     nothing reads the name back.
     """
-    return reversed_contrast(name) or f"{name} (inverse)"
+    reverse = reversed_contrast(name)
+    if reverse and _name_key(reverse) not in {_name_key(t) for t in taken if t}:
+        return reverse
+    return f"{name} (inverse)"
 
 
-def declared_split(metadata: Optional[dict], original_analysis: Optional[str] = None) -> Optional[dict]:
+def declared_split(metadata: Optional[dict]) -> Optional[dict]:
     """The analyses stage's `metadata["split"]` as study_schema's SignSplit, or None.
 
     The stage's `index`/`original_index` are positions in its own collection and
-    mean nothing outside it, so they are not carried; `original_analysis` is the
-    original's key where the output has one.
+    mean nothing outside it, so they are not carried.
     """
     split = (metadata or {}).get("split")
     if not split or split.get("half") not in ("original", "inverse"):
         return None
-    out = {"half": split["half"], "rule": SPLIT_RULE}
-    if split["half"] == "inverse" and original_analysis:
-        out["original_analysis"] = original_analysis
-    return out
+    return {"half": split["half"], "rule": SPLIT_RULE}

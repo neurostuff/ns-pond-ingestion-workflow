@@ -67,14 +67,15 @@ def inverted(statistic_value: Any, statistic_type: Optional[str]) -> Any:
 
     The inverse half is the reversed contrast, so its statistic reads positive the
     way the paper would have printed it had it run that contrast; `split` records
-    that it was negated. A p, F or chi-square has no direction and is left as it
-    is, and so is anything that is not a number. A kind that is not stated or not
-    known is negated: the split read its sign as a direction, which is why the
-    point is in this half.
+    that it was negated. A value below zero is signed whatever its kind, as `side`
+    reads it, so a p, F or chi-square printed with a minus is negated too; a
+    positive one has no direction and is left as it is, and so is anything that is
+    not a number. A kind that is not stated or not known is negated: the split
+    read its sign as a direction, which is why the point is in this half.
     """
     if isinstance(statistic_value, bool) or not isinstance(statistic_value, (int, float)):
         return statistic_value
-    if schema_kind(statistic_type) in NON_DIRECTIONAL_KINDS:
+    if statistic_value >= 0 and schema_kind(statistic_type) in NON_DIRECTIONAL_KINDS:
         return statistic_value
     return -statistic_value
 

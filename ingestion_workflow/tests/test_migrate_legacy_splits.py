@@ -145,7 +145,7 @@ def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path):
     )
     assert [(a.name, a.coordinates) for a in migrated] == [(n, c) for n, c, _ in stage]
     assert [a.metadata["split"]["half"] for a in migrated] == [s["half"] for _, _, s in stage]
-    assert [c.statistic_value for c in migrated[1].coordinates] == [3.0, 2.5, -0.01, 1.5]
+    assert [c.statistic_value for c in migrated[1].coordinates] == [3.0, 2.5, 0.01, 1.5]
 
 
 def test_a_suffixed_name_with_a_point_not_negative_is_the_papers_own(catalog, tmp_path):
@@ -224,3 +224,24 @@ def test_an_unreadable_payload_is_refused_with_its_reason(catalog, tmp_path):
     assert counts["payloads refused"] == 1
     assert "refused, table t1 has no analyses list: 1" in out
     assert catalog.artifact(ref.id, "space", "").blob == old
+
+
+def test_a_migrated_reverse_the_table_already_prints_falls_back(catalog, tmp_path):
+    """mc6iwfhcggyo reports "Females > Males" and "Males > Females", and both were split."""
+    ref = _store(catalog, {"t1": _legacy(
+        _a("Females > Males"), _a("Females > Males (negative)", value=-4.0),
+        _a("Males > Females"), _a("Males > Females (negative)", value=-3.0),
+    )})
+    _run(catalog, tmp_path)
+    names = [name for name, _ in _halves(_payload(catalog, ref))]
+    assert names == ["Females > Males", "Females > Males (inverse)",
+                     "Males > Females", "Males > Females (inverse)"]
+
+
+def test_a_migrated_negative_p_is_negated(catalog, tmp_path):
+    point = {"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": -0.0099, "statistic_type": "P"}
+    inverse = {**_a("A > B (negative)"), "coordinates": [point]}
+    ref = _store(catalog, {"t1": _legacy(_a("A > B"), inverse)})
+    _run(catalog, tmp_path)
+    half = _payload(catalog, ref)["t1"]["analyses"][1]
+    assert (half["name"], half["coordinates"][0]["statistic_value"]) == ("B > A", 0.0099)

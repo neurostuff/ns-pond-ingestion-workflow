@@ -609,6 +609,39 @@ def test_a_legacy_payload_is_refused_with_the_migration_named(env, tmp_path, mon
     assert not (tmp_path / "pond" / "BS12").exists()
 
 
+def test_upload_refuses_a_legacy_payload_with_the_migration_named(env, monkeypatch):
+    """An undeclared payload whose upload re-runs is not uploaded as if unsplit."""
+    from ingestion_workflow.pipeline.stages import upload as upload_stage
+    from ingestion_workflow.services import db
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"upload_source": "nuextract-test"})
+    ref = catalog.register(Identifier(pmid="12"))
+    pts = [{"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": 4.0, "statistic_type": "T"}]
+    tables = {"t1": {"slug": "s::t1", "analyses": [
+        {"name": "Load", "table_id": "t1", "coordinates": pts},
+        {"name": "Load (negative)", "table_id": "t1",
+         "coordinates": [{**pts[0], "statistic_value": -4.0}]},
+    ]}}
+    _record_upstream(catalog, ref, path, tables=tables)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+
+    def no_database(*args, **kwargs):
+        raise AssertionError("a refused article must not reach the database")
+
+    monkeypatch.setattr(db, "SSHTunnel", no_database)
+    _, outcomes = _run(upload_stage.UploadStage(settings), ctx, catalog, ref)
+    assert [(o.status, o.error) for o in outcomes] == [(
+        Status.FAILED,
+        "table t1: analyses stored before sign splits were declared; "
+        "run scripts/migrate_legacy_splits.py",
+    )]
+
+
 def test_a_stale_legacy_payload_is_refused_though_analyses_ran_again(env, tmp_path, monkeypatch):
     """Analyses re-ran with the marker; roles and space did not, so sync would write the old payload."""
     def rerun(ref, tables):

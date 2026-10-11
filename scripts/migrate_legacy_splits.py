@@ -63,12 +63,13 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
     neither paired nor declared, and counted as kept.
     """
     analyses = [dict(a, metadata=dict(a.get("metadata") or {})) for a in collection["analyses"]]
+    printed = [a.get("name") or "" for a in analyses]
 
     def undeclared(analysis):
         return not analysis["metadata"].get("split")
 
     def invert(analysis, original_name):
-        analysis["name"] = inverse_name(original_name)
+        analysis["name"] = inverse_name(original_name, printed)
         coordinates = []
         for c in analysis.get("coordinates") or []:
             c = dict(c, statistic_value=inverted(c.get("statistic_value"), c.get("statistic_type")))

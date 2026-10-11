@@ -7,6 +7,7 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import AnalysisCollection
+from ingestion_workflow.models.analysis import UndeclaredSplits, declared_collection
 from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
@@ -16,7 +17,9 @@ from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
 
-UPLOAD_VERSION = 1
+#: 2: the inverse half of a sign split is named by its reversed contrast, its
+#: negative values are negated, and `split` declares it.
+UPLOAD_VERSION = 2
 
 
 def _notice_marker(notices: Optional[Artifact]) -> Optional[str]:
@@ -187,7 +190,9 @@ class UploadStage:
             w.article_id: found[w.article_id][""].summary.get("retraction")
             for w in works if (markers[w.article_id] or "").startswith("retracted")
         }
-        analyses, metadata, empty = self._gather(ctx, works, excluded)
+        analyses, metadata, empty, undeclared = self._gather(ctx, works, excluded)
+        yield from undeclared
+        works = [w for w in works if w.article_id not in {o.article_id for o in undeclared}]
         # An article left with nothing because a person marked its tables is
         # not "nothing to upload": what it uploaded before is still there, and
         # still claims coordinates the paper does not report. Those are
@@ -382,7 +387,8 @@ class UploadStage:
     def _gather(self, ctx: Context, works: Sequence[Work], excluded=None):
         """Load only this batch's analyses and metadata, never the whole cache.
 
-        Also returns the works holding nothing to upload. The gate in `narrow`
+        Also returns the works holding nothing to upload, and a failure for each
+        whose stored analyses predate declared sign splits. The gate in `narrow`
         gets as far as `summary.tables`, which counts collections rather than
         analyses, so a table the extractor returned an empty answer for still
         reaches here -- 22 of 49,778 articles in the v19 corpus run.
@@ -390,6 +396,7 @@ class UploadStage:
         analyses: Dict[str, Dict[str, AnalysisCollection]] = {}
         metadata: Dict[str, ArticleMetadata] = {}
         empty: List[Work] = []
+        undeclared: List[Outcome] = []
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         excluded = excluded or {}
         for work in works:
@@ -405,11 +412,17 @@ class UploadStage:
                 empty.append(work)
                 continue
             slug = work.ref.identifier.slug
-            analyses[slug] = {
-                table_id: AnalysisCollection.from_dict(blob)
-                for table_id, blob in payload.items()
-            }
+            try:
+                analyses[slug] = {
+                    table_id: declared_collection(table_id, blob)
+                    for table_id, blob in payload.items()
+                }
+            except UndeclaredSplits as exc:
+                undeclared.append(Outcome.failure(
+                    work.article_id, self.name, "", str(exc), fingerprint=work.fingerprint
+                ))
+                continue
             meta_payload = ctx.payload(meta_artifacts.get(work.article_id, {}).get(""))
             if meta_payload:
                 metadata[slug] = ArticleMetadata.from_dict(meta_payload)
-        return analyses, metadata, empty
+        return analyses, metadata, empty, undeclared

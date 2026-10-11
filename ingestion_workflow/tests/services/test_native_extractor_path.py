@@ -483,13 +483,15 @@ def test_one_contrast_reporting_both_directions_is_split_by_sign():
     # p values and F's carry no direction: nothing to split ...
     flat = [point(4.2), point(0.01, "P"), point(5.0, "F")]
     assert split_by_sign("A > B", flat) == [("A > B", flat, None)]
-    # ... unless one is negative, which no p or F can be.
+    # ... unless one is negative, which no p or F can be: it is the negative side,
+    # and is negated in the inverse half like any other.
     mislabelled = [point(4.2), point(-0.01, "P")]
-    assert [h for _, h, _ in split_by_sign("A > B", mislabelled)] == [
-        mislabelled[:1], mislabelled[1:]]  # a p has no direction to negate
+    halves = [h for _, h, _ in split_by_sign("A > B", mislabelled)]
+    assert halves[0] == mislabelled[:1]
+    assert [(c.statistic_type, c.statistic_value) for c in halves[1]] == [("P", 0.01)]
 
 
-def test_only_a_signed_statistic_is_negated_in_the_inverse_half():
+def test_every_negative_value_is_negated_in_the_inverse_half_whatever_its_kind():
     from ingestion_workflow.models import Coordinate
     from ingestion_workflow.services.create_analyses import split_by_sign
 
@@ -501,8 +503,16 @@ def test_only_a_signed_statistic_is_negated_in_the_inverse_half():
     assert inverse[0] == "B vs A"
     assert [(c.statistic_type, c.statistic_value) for c in inverse[1]] == [
         ("T", 2.5), ("Z", 2.5), ("D", 2.5), ("G", 2.5), ("R", 2.5), ("B", 2.5),
-        (None, 2.5), ("OTHER", 2.5), ("P", -2.5), ("F", -2.5),
+        (None, 2.5), ("OTHER", 2.5), ("P", 2.5), ("F", 2.5),
     ]
+
+
+def test_a_positive_unsigned_value_is_not_negated():
+    from ingestion_workflow.models.statistics import inverted
+
+    assert [inverted(v, k) for v, k in [(0.01, "P"), (5.0, "F"), (-6.021, "F"), (-0.0099, "P"),
+                                        (4.0, "T"), (-4.0, "T"), ("n/a", "T"), (None, "F")]] == [
+        0.01, 5.0, 6.021, 0.0099, -4.0, 4.0, "n/a", None]
 
 
 @pytest.mark.parametrize(
@@ -513,7 +523,6 @@ def test_only_a_signed_statistic_is_negated_in_the_inverse_half():
         ("NC < aMCI", "aMCI < NC"),
         ("Deck A vs. Deck C", "Deck C vs. Deck A"),
         ("ASP vs ESP", "ESP vs ASP"),
-        ("Right hand versus auditory", "auditory versus Right hand"),
         ("Load minus rest", "rest minus Load"),
         ("Pain - Visual", "Visual - Pain"),
         ("Pain \u2013 Visual", "Visual \u2013 Pain"),
@@ -522,7 +531,18 @@ def test_only_a_signed_statistic_is_negated_in_the_inverse_half():
         ("(1) CN vs. FronL", "(1) FronL vs. CN"),
         ("Encoding: A > B", "Encoding: B > A"),
         ("A > B (FWE corrected)", "B > A (FWE corrected)"),
-        ("\u2018Decrease > Look Negative\u2019", "\u2018Look Negative > Decrease\u2019"),
+        ("\u2018Look Neutral > Look Negative\u2019", "\u2018Look Negative > Look Neutral\u2019"),
+        # Names from the ns-pond corpus whose reverse is right.
+        ("controls > patients", "patients > controls"),
+        ("PD on>PD off", "PD off>PD on"),
+        ("3-back vs. 1-back", "1-back vs. 3-back"),
+        ("aMDD - HCs", "HCs - aMDD"),
+        ("A. TD AV - TD V", "A. TD V - TD AV"),
+        ("OCD vs. HC (No. of ACC rsFC datasets:13)", "HC vs. OCD (No. of ACC rsFC datasets:13)"),
+        # Stacked labels stay in front whole.
+        ("a) Main effect of Condition: Related versus Same",
+         "a) Main effect of Condition: Same versus Related"),
+        ("(a) fMRI contrast: AP vs. non-AP", "(a) fMRI contrast: non-AP vs. AP"),
     ],
 )
 def test_the_inverse_half_is_named_by_the_reversed_contrast(name, reverse):
@@ -537,10 +557,41 @@ def test_the_inverse_half_is_named_by_the_reversed_contrast(name, reverse):
         "Load",
         "EQ-I",  # a hyphen inside a word subtracts nothing
         "HeW-HeM",
+        "2 back-0 back",
+        "DP-NC",
         "aDMN (cluster size > 36)",  # the operator is in the qualifier
-        "HE_(postLT - preLT)",  # swapping would split the bracket
+        "HE_(postLT - preLT)",
+        "Faces (A vs B) Houses",  # swapping would split the bracket
         "Go vs. Nogo - OC vs. YC",  # two contrasts, no single reverse
         "A>B>C",
+        "BOLD response to longer (> 1 year) versus shorter delays (\u22641 year) contrast",
+        # Names from the ns-pond corpus that a swap garbles. Descriptions:
+        "Significantly active brain regions for associative versus item-only trials",
+        "'Decrease>Look Negative with Decrease success as covariate'",
+        "Identification of positive changes in the maintenance minus fixation condition",
+        "Local maxima for learning vs. no-learning analysis: main effects.",
+        "Whole Brain: Right Amygdala seed for Self>Other",
+        "angry face vs. shape contrast",
+        "Difference placebo versus oxytocin group",
+        "Significant positive BOLD signal increases versus "
+        "significant negative BOLD signal decreases",
+        # words shared by both conditions on one side,
+        "ENCODING CON>SZ",
+        "Left>Right Amygdala Correlation",
+        "Right hand versus auditory",
+        # a clause after a side,
+        "Alcohol>placebo: SDs",
+        "Alcohol drink vs placebo: SDs",
+        "P, short versus long delay",
+        # thresholds and numbers.
+        "Visibility effect, p<0.005",
+        "Overall p-value<10-7",
+        "Unrelated, 200 ms > 1000 ms",
+        "P, 0 versus 369 ms",
+        "Talairach coordinates of regions at threshold P < 0.005, at an alpha level of 0.05.",
+        "p < 0.001",
+        "Peak p-value < cluster threshold",
+        "200 ms vs 1000 ms",
     ],
 )
 def test_a_name_with_no_reverse_falls_back_to_the_inverse_suffix(name):
@@ -548,6 +599,44 @@ def test_a_name_with_no_reverse_falls_back_to_the_inverse_suffix(name):
 
     assert reversed_contrast(name) is None
     assert inverse_name(name) == f"{name} (inverse)"
+
+
+def test_a_reverse_the_table_already_prints_falls_back_so_names_stay_distinct():
+    """A paper that reports both directions: "Males > Females" and "Females > Males"."""
+    from ingestion_workflow.services.coordinate_flags import inverse_name
+
+    printed = ["Males > Females", "Females>males"]
+    assert inverse_name("Males > Females", printed) == "Males > Females (inverse)"
+    assert inverse_name("Females>males", printed) == "Females>males (inverse)"
+    assert inverse_name("Males > Females", ["Males > Females"]) == "Females > Males"
+
+
+def test_the_stage_names_an_inverse_half_apart_from_the_tables_other_analyses():
+    from ingestion_workflow.models import (
+        CoordinatePoint,
+        ParseAnalysesOutput,
+        ParsedAnalysis,
+        PointsValue,
+    )
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    def both(name):
+        return ParsedAnalysis(name=name, points=[
+            CoordinatePoint(coordinates=[1, 2, 3], values=[PointsValue(value=v, kind="T")])
+            for v in (4.0, -4.0)])
+
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    svc.settings = SimpleNamespace(llm_native_schema=True)
+    table = SimpleNamespace(space=None, table_id="t1", table_number=1,
+                            caption="", footer="", metadata={})
+    parsed = ParseAnalysesOutput(analyses=[both("Males > Females"), both("Females > Males"),
+                                           both("A > B")])
+    coll = svc._build_collection(parsed, table, None, "t1", "t1", "slug", model_space="MNI")
+    assert [a.name for a in coll.analyses] == [
+        "Males > Females", "Males > Females (inverse)",
+        "Females > Males", "Females > Males (inverse)",
+        "A > B", "B > A",
+    ]
 
 
 def test_the_stage_declares_the_split_in_each_halfs_metadata():

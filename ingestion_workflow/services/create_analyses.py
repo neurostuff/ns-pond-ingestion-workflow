@@ -94,7 +94,7 @@ def _text_of(markup: str) -> str:
     return "\n".join(line for line in lines if line.strip())
 
 
-def split_by_sign(name, coordinates):
+def split_by_sign(name, coordinates, taken=()):
     """Split an analysis that reports both directions under one name.
 
     A positive and a negative statistic are different directions, and pooling
@@ -109,7 +109,8 @@ def split_by_sign(name, coordinates):
     included, the original half.
 
     The original half is the analysis as named. The inverse half is the reversed
-    contrast: it is named by `inverse_name`, and its signed values are negated
+    contrast: it is named by `inverse_name`, given `taken`, the table's printed
+    names, so it is not named like another of them; and its signed values are negated
     (`statistics.inverted`), so a t of -4.1 for "A > B" is a t of 4.1 for "B > A".
     `split` is what says so.
 
@@ -130,7 +131,7 @@ def split_by_sign(name, coordinates):
     ]
     return [
         (name, original, {"half": "original"}),
-        (inverse_name(name), flipped, {"half": "inverse"}),
+        (inverse_name(name, taken), flipped, {"half": "inverse"}),
     ]
 
 
@@ -310,6 +311,7 @@ class CreateAnalysesService:
             coordinate_space=table_space,
             identifier=identifier,
         )
+        printed = [parsed.name for parsed in parsed_output.analyses if parsed.name]
         for idx, parsed in enumerate(parsed_output.analyses, start=1):
             if is_placeholder(parsed.name, parsed.points):
                 continue
@@ -318,7 +320,7 @@ class CreateAnalysesService:
                 table_space,
             )
             analysis_name = parsed.name or f"{table_key} analysis {idx}"
-            for name, subset, split in split_by_sign(analysis_name, coordinates):
+            for name, subset, split in split_by_sign(analysis_name, coordinates, printed):
                 # Where the original sits among the analyses now; later filtering
                 # moves positions, so the halves are paired by this number.
                 if split and split["half"] == "original":

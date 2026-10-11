@@ -10,12 +10,12 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import (
-    AnalysisCollection,
     ArticleExtractionBundle,
     DownloadResult,
     DownloadSource,
     ExtractedContent,
 )
+from ingestion_workflow.models.analysis import declared_collection
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import nspond, paper_parse
 
@@ -227,7 +227,7 @@ class SyncStage:
             ctx.payload(analyses.get(work.article_id, {}).get("")), excluded or {}
         )
         per_table = {
-            table_id: _collection(table_id, blob)
+            table_id: declared_collection(table_id, blob)
             for table_id, blob in analysis_payload.items()
         }
 
@@ -248,22 +248,6 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
-
-
-class UndeclaredSplits(LookupError):
-    """A stored collection from before sign splits were declared in `split{}`."""
-
-
-def _collection(table_id, blob) -> AnalysisCollection:
-    collection = AnalysisCollection.from_dict(blob)
-    if not collection.split_declared:
-        # Such a payload marks a split only by an analysis's name, and a paper's own
-        # name can read the same, so the split is not guessed here.
-        raise UndeclaredSplits(
-            f"table {table_id}: analyses stored before sign splits were declared; "
-            "run scripts/migrate_legacy_splits.py"
-        )
-    return collection
 
 
 def _parse_inputs(

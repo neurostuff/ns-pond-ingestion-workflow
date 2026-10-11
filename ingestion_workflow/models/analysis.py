@@ -346,9 +346,9 @@ class AnalysisCollection:
     identifier: Optional[Identifier] = None
     #: Whether a sign split in it is declared in `metadata["split"]`. True for
     #: anything this code builds; a stored payload without the key predates the
-    #: declaration, and sync refuses it until scripts/migrate_legacy_splits.py
-    #: has rewritten it. It travels with the payload, through roles and space,
-    #: so sync reads it from the payload it writes.
+    #: declaration, and sync and upload refuse it (`declared_collection`) until
+    #: scripts/migrate_legacy_splits.py has rewritten it. It travels with the
+    #: payload, through roles and space, so both read it from the payload they write.
     split_declared: bool = True
 
     def add_analysis(self, analysis: Analysis) -> None:
@@ -376,6 +376,25 @@ class AnalysisCollection:
             identifier=identifier,
             split_declared=bool(payload.get("split_declared", False)),
         )
+
+
+class UndeclaredSplits(LookupError):
+    """A stored collection from before sign splits were declared in `split{}`."""
+
+
+def declared_collection(table_id: str, payload: Mapping[str, Any]) -> AnalysisCollection:
+    """A stored collection for a stage that writes it out; refused if its splits are undeclared.
+
+    Such a payload marks a split only by an analysis's name, and a paper's own
+    name can read the same, so the split is not guessed here.
+    """
+    collection = AnalysisCollection.from_dict(payload)
+    if not collection.split_declared:
+        raise UndeclaredSplits(
+            f"table {table_id}: analyses stored before sign splits were declared; "
+            "run scripts/migrate_legacy_splits.py"
+        )
+    return collection
 
 
 @dataclass
