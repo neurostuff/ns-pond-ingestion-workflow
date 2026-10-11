@@ -9,14 +9,37 @@ it has not passed. This page is the shape it writes, for anything that reads a s
 Every set's role is the answer of a fine-tuned classifier of the set's origin, and of nothing
 else. There is no proposal from an extractor and no default role.
 
-| Origin | Which sets | Setting | Input |
+| Origin | Which sets | Setting (one of the two) | Input |
 |---|---|---|---|
-| `table` | sets nu-v21 read from a table (`analyses`) | `role_model_table` | `services/set_roles/table_context.py` |
-| `text` | sets nu-prose read from the text (`resolve`'s `prose` collection, `metadata.source == "prose"`) | `role_model_prose` | `services/set_roles/prose_context.py` |
+| `table` | sets nu-v21 read from a table (`analyses`) | `role_model_table` or `role_served_table` | `services/set_roles/table_context.py` |
+| `text` | sets nu-prose read from the text (`resolve`'s `prose` collection, `metadata.source == "prose"`) | `role_model_prose` or `role_served_prose` | `services/set_roles/prose_context.py` |
 
+An origin's model is either a fine-tuned encoder directory (`role_model_*`) or a NuExtract3
+role model served by vLLM (`role_served_*`); setting both for one origin blocks its articles.
 Each model directory records the origin it reads and that origin's context version
 (`set_roles.json`: `origin`, `context_version`). The stage refuses a model for another origin
 or another context version.
+
+A served model is configured as
+
+```yaml
+role_served_table:
+  endpoint: http://localhost:8351/v1   # OpenAI-compatible server, up to /v1
+  model: nx-roles-table                # its served model name
+  prompt_version: v5                   # the prompt it was trained with
+  result_threshold: 0.3                # optional: p(result) >= 0.3 makes the set a result
+```
+
+(`timeout`, `attempts` and `workers` are optional too). `prompt_version` names an entry of
+`services/set_roles/served_prompt.py`: the instruction, template and JSON schema the model was
+trained and evaluated with, and the context versions its training rows were built with. The stage
+refuses a prompt version whose context versions this code no longer builds, and a server that
+does not list the model. Each set is one request; the role is the model's JSON answer, and its
+probability is read from the logprobs of the answer's first role token, renormalised over the
+tokens that begin exactly one role. `result_threshold` only adds results: a set whose probability
+of `result` reaches it is a result, whatever the answer; below it the answer stands. A served
+model gives no "not coordinates" answer and no prior-study flag: its sets always have a role, and
+`from_prior_study` is true for a `reference` only.
 
 ## Artifact
 
@@ -34,8 +57,8 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node` |
    | `from_prior_study` | bool | the coordinates come from another publication (always true for `reference`) |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
-   | `role_confidence` | float | the classifier's probability for what it decided: the role's, or for a null role that the numbers are not coordinates |
-   | `role_source` | string | the model that decided, `name@version` |
+   | `role_confidence` | float | the classifier's probability for what it decided: the role's, or for a null role that the numbers are not coordinates. For a served model, the decided role's first-token probability: p(result) for a result |
+   | `role_source` | string | the model that decided, `name@version`; for a served model `<served model name>@<prompt version>` |
    | `role_origin` | `table` or `text` | which of the two models read the set |
 
    The values of `role` and `anchor_kind` are study_schema's enums
@@ -62,7 +85,15 @@ not attempted: the plan counts them as blocked, with the reason (for example
 recorded for them, so no retry is used up, and they are planned on the first run with the model
 configured, with no `--refresh`. Everything downstream of them stays blocked. A missing role
 only ever blocks: it never takes anything back from neurostore or ns-pond. The fingerprint
-includes each origin's model, so configuring or retraining one makes the articles it reads stale.
+includes each origin's model (and a served model's `result_threshold`), so configuring or
+retraining one makes the articles it reads stale.
+
+**Failed.** A served model that still times out or answers 5xx after `attempts` tries fails the
+article with the reason, and the rest of that run's articles of its origin fail at once with the
+same reason, retried on a later run under the usual backoff. A set whose answer cannot be read
+(not JSON, a role outside the vocabulary, an anchor without its kind, no role-token logprobs, an
+input the server refused) is never given a role: the article fails, and its summary's
+`unanswered` names each such set (`table_id#index`) with its reason.
 
 ## Downstream
 

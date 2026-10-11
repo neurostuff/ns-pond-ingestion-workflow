@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -71,6 +71,28 @@ class UploadBehavior(str, Enum):
 class UploadMetadataMode(str, Enum):
     FILL = "fill"
     OVERWRITE = "overwrite"
+
+
+class ServedRoleModel(BaseModel):
+    """A set-role model served behind an OpenAI-compatible (vLLM) endpoint."""
+
+    endpoint: str = Field(description="Base URL of the server, up to /v1")
+    model: str = Field(description="The served model name it answers to")
+    prompt_version: str = Field(
+        description="The role prompt the model was trained with (services.set_roles.served_prompt)"
+    )
+    result_threshold: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "A set whose probability of being a result reaches this is a result, whatever the "
+            "model's top answer: lower it to favour recall of results. Unset, the answer stands"
+        ),
+    )
+    timeout: float = Field(default=120.0, gt=0, description="Seconds to wait for one answer")
+    attempts: int = Field(default=3, ge=1, description="Tries for a set on a timeout or 5xx")
+    workers: int = Field(default=16, ge=1, description="Sets asked at once")
 
 
 class Settings(BaseSettings):
@@ -324,6 +346,20 @@ class Settings(BaseSettings):
         ),
     )
     role_device: str = Field(default="cpu", description="Torch device the role classifier runs on")
+    role_served_table: Optional[ServedRoleModel] = Field(
+        default=None,
+        description=(
+            "Served set-role model for table sets, instead of role_model_table: "
+            "{endpoint, model, prompt_version, result_threshold}"
+        ),
+    )
+    role_served_prose: Optional[ServedRoleModel] = Field(
+        default=None,
+        description=(
+            "Served set-role model for prose sets, instead of role_model_prose: "
+            "{endpoint, model, prompt_version, result_threshold}"
+        ),
+    )
 
     sync_overwrite: bool = Field(
         default=True,
