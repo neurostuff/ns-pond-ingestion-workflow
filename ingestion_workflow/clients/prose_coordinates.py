@@ -26,6 +26,9 @@ from ingestion_workflow.services.prose_passages import Passage
 CONTEXTS = ("P", "H", "W", "HW")
 CONTEXT = "HW"
 
+#: Why a point repeated within one analysis is listed in its `duplicates`.
+DUPLICATE_POINT = "repeats a point of this analysis"
+
 
 def passage_body(passage: Passage, context: str = "HW") -> str:
     """The text in the document's table slot: the passage and the context asked for."""
@@ -60,37 +63,48 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
 
     A repeated analysis is a loop, not a second result. A point the passage
     does not print (`printed`) came from the surrounding context or
-    nowhere; each analysis counts its own as `unwritten`. A named analysis the
-    model gave no point is kept: a contrast the passage reports nothing for.
-    One whose every point was unwritten, and an unnamed one left empty, are
-    listed in `omitted` with the count and the reason.
+    nowhere; each analysis counts its own as `unwritten`. A point repeated
+    exactly within one analysis is a loop too: it is kept once and the
+    repeats are listed in the analysis's `duplicates`. The same point under
+    two analyses stays under both, since two contrasts may report one peak.
+    A named analysis the model gave no point is kept: a contrast the passage
+    reports nothing for. One whose every point was unwritten, and an unnamed
+    one left empty, are listed in `omitted` with the count and the reason.
+
+    The model is asked for no role, and a role word in the answer is not
+    read: the roles stage decides what a set is for. `stray_roles` counts
+    the points that carried one anyway.
     """
-    seen, analyses, omitted = set(), [], []
+    seen, analyses, omitted, stray_roles = set(), [], [], 0
     for a in (answer or {}).get("analyses") or []:
         key = (a.get("name"), json.dumps(a.get("points"), sort_keys=True))
         if key in seen:
             continue
         seen.add(key)
-        points, unwritten = [], 0
+        points, duplicates, unwritten = [], [], 0
         for p in a.get("points") or []:
+            stray_roles += isinstance(p, dict) and "role" in p
             xyz = coordinate_text.triple(p)
             if xyz is None or not printed(xyz, passage_text):
                 unwritten += 1
                 continue
-            # The model still answers a role word per point; it is not kept:
-            # what a set is for is the roles stage's to decide.
-            points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
-                           "statistic": normalize_statistic_kind(p.get("statistic")),
-                           "value": p.get("value"), "cluster_size": p.get("cluster_size")})
+            point = {"x": xyz[0], "y": xyz[1], "z": xyz[2],
+                     "statistic": normalize_statistic_kind(p.get("statistic")),
+                     "value": p.get("value"), "cluster_size": p.get("cluster_size")}
+            if point in points:
+                duplicates.append({**point, "reason": DUPLICATE_POINT})
+                continue
+            points.append(point)
         name = (a.get("name") or "").strip() or None
         if points or (name and not unwritten):
             analyses.append({"name": name, "measure": a.get("measure"), "points": points,
-                             "unwritten": unwritten})
+                             "unwritten": unwritten, "duplicates": duplicates})
         else:
             reason = "points not in passage" if unwritten else "no name and no points"
             omitted.append({"name": name, "unwritten": unwritten, "reason": reason})
     space = (answer or {}).get("space")
-    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
+    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted,
+            "stray_roles": stray_roles}
 
 
 class ProseCoordinateClient(GenericLLMClient):
@@ -134,5 +148,6 @@ class ProseCoordinateClient(GenericLLMClient):
 
 
 __all__ = [
-    "CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "passage_body", "printed",
+    "CONTEXT", "CONTEXTS", "DUPLICATE_POINT", "ProseCoordinateClient", "clean_answer",
+    "passage_body", "printed",
 ]

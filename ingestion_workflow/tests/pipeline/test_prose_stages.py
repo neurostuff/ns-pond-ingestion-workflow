@@ -1628,3 +1628,209 @@ def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch):
     monkeypatch.setattr(prose_stage, "PROSE_PROMPT_VERSION", "another prompt")
     _, (again,) = _read_prose(ctx, catalog, ref, _Reader(fail=True))
     assert again.status is not Status.OK
+
+
+class _RoleFreeReader:
+    """Answers as the role-free model does: each hit under two contrasts, twice in the first."""
+
+    def __init__(self, stray_role=False):
+        self.stray_role = stray_role
+
+    def read(self, passage, *, title="", abstract=""):
+        role = {"role": "seed"} if self.stray_role else {}
+        points = [{"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1,
+                   "cluster_size": None, **role} for h in passage.hits]
+        return {"space": None, "analyses": [
+            {"name": "patients > controls", "measure": None, "points": points * 2},
+            {"name": "patients > controls, covarying for IQ", "measure": None, "points": points}]}
+
+
+def test_prose_reports_each_repeat_within_a_set_and_each_stray_role(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="31"))
+    _record_upstream(catalog, ref, path)
+    reader = _RoleFreeReader(stray_role=True)
+    _, (read,) = _read_prose(Context(settings, catalog), catalog, ref, reader)
+    assert read.status is Status.OK
+    counts = [read.summary[k] for k in ("coordinates", "duplicate_points", "stray_roles")]
+    assert counts == [2, 1, 3]
+    first, second = read.payload["passages"][0]["analyses"]
+    assert [(d["x"], d["y"], d["z"], d["reason"]) for d in first["duplicates"]] == [
+        (-22.0, -4.0, -18.0, "repeats a point of this analysis")]
+    # The repeat across contrasts is not a duplicate: each keeps the point.
+    kept = [(q["x"], q["y"], q["z"]) for a in (first, second) for q in a["points"]]
+    assert kept == [(-22.0, -4.0, -18.0)] * 2
+    assert second["duplicates"] == []
+    assert not any("role" in q for a in (first, second) for q in a["points"])
+
+
+def test_a_role_free_reading_reaches_space_with_roles_only_from_the_roles_stage(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="32"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _, (read,) = _read_prose(ctx, catalog, ref, _RoleFreeReader())
+    assert read.summary["stray_roles"] == 0
+    _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert merged.status is Status.OK and merged.summary["prose_points"] == 2
+    assert [a["name"] for a in merged.payload["prose"]["analyses"]] == [
+        "patients > controls", "patients > controls, covarying for IQ"]
+    _, (roled,) = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert roled.status is Status.OK and roled.summary["sets_by_origin"] == {"text": 2}
+    _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
+    roles = [a["metadata"]["set_role"] for a in spaced.payload["prose"]["analyses"]]
+    assert [(r["role"], r["role_origin"]) for r in roles] == [("result", "text")] * 2
+
+
+TWO_PASSAGES = (
+    "# T\n\n## Methods\n\nCoordinates are reported in MNI space.\n\n"
+    "## Results\n\nPatients showed greater activation than controls in the left amygdala\n"
+    "(x = -22, y = -4, z = -18; t = 4.1).\n\n"
+    + "Behaviour did not differ between the groups on any measure we collected. " * 12 + "\n\n"
+    "Controls showed greater activation than patients in the precuneus (x = 6, y = -60, z = 40; "
+    "t = 3.9).\n"
+)
+
+
+def _two_passages(env, pmid):
+    """An article whose passages were found, and the prose stage that reads them."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid=pmid))
+    _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
+    ctx = Context(settings, catalog)
+    _run(PassagesStage(settings), ctx, catalog, ref)
+    found = catalog.payload(catalog.artifacts([ref.id], "passages")[ref.id][""])
+    assert len(found["passages"]) == 2
+    return settings, catalog, ref, ctx, found
+
+
+def _legacy_prose(catalog, ref, texts, fingerprint="legacy-prose"):
+    """A prose result as the stage stored it before passages were spans: text and its cleaned
+    analyses, a role word on every point, no answer, no producer."""
+    passages = [{"text": text, "heading": "Results", "space": "MNI", "error": None, "analyses": [
+        {"name": name, "measure": None, "points": [
+            {"x": x, "y": y, "z": z, "statistic": "T", "value": v, "cluster_size": None,
+             "role": "result"}] * 2}]}
+        for text, (name, (x, y, z, v)) in texts]
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint=fingerprint,
+                            payload={"source": "pubget", "read": "methods+results",
+                                     "space": "MNI", "passages": passages},
+                            summary={"passages": len(passages)})])
+
+
+def _texts(catalog, ref, found):
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    text = (catalog.artifacts([ref.id], "extract")[ref.id]["pubget"])
+    text = open(catalog.payload(text)["full_text_path"], encoding="utf-8").read()
+    return [passage_from(p, text).text for p in found["passages"]]
+
+
+def _prose(settings, reader):
+    stage = ProseStage(settings)
+    stage.client = lambda: reader
+    return stage
+
+
+class _Counting(_Reader):
+    def __init__(self):
+        super().__init__()
+        self.calls = 0
+
+    def read(self, passage, *, title="", abstract=""):
+        self.calls += 1
+        return super().read(passage, title=title, abstract=abstract)
+
+
+def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(env):
+    """The corpus's prose was read before passages were spans: the same text is not read again."""
+    settings, catalog, ref, ctx, found = _two_passages(env, "81")
+    first, second = _texts(catalog, ref, found)
+    _legacy_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.status is Status.OK
+    assert read.summary["reused"] == {"passages": [0, 1], "reason": "same passage text"}
+    assert read.summary["read_again"] == {}
+    assert read.summary["prompt_versions"] == {"unrecorded": 2}
+    # re-anchored: the new spans, the old names and points, the role word only counted
+    assert [p["span"] for p in read.payload["passages"]] == [p["span"] for p in found["passages"]]
+    assert [[(a["name"], [(q["x"], q["y"], q["z"]) for q in a["points"]])
+             for a in p["analyses"]] for p in read.payload["passages"]] == [
+        [("patients > controls", [(-22.0, -4.0, -18.0)])],
+        [("controls > patients", [(6.0, -60.0, 40.0)])]]
+    assert (read.summary["stray_roles"], read.summary["duplicate_points"]) == (4, 2)
+    assert {p["producer"]["prompt_version"] for p in read.payload["passages"]} == {None}
+
+
+def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "82")
+    first, second = _texts(catalog, ref, found)
+    _legacy_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second.replace("3.9", "3.8"), ("controls > patients",
+                                                                 (6, -60, 40, 3.8)))])
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 1
+    assert read.summary["reused"] == {"passages": [0], "reason": "same passage text"}
+    assert read.summary["read_again"] == {"passage text changed": 1}
+    assert read.summary["prompt_versions"] == {"unrecorded": 1, "2026-10-11.n5-norole": 1}
+    # the changed passage holds the model's new answer, not the old one's 3.8
+    values = [q["value"] for a in read.payload["passages"][1]["analyses"] for q in a["points"]]
+    assert values == [4.1]
+
+
+def test_each_passage_read_is_counted_with_its_reason(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "83")
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2 and read.summary["read_again"] == {"no earlier result": 2}
+    assert read.summary["reused"] == {}
+    producer = read.payload["passages"][0]["producer"]
+    assert (producer["prompt_version"], producer["model"], producer["stage"]) == (
+        "2026-10-11.n5-norole", "nu-prose", "prose")
+    # read again under new passages of the same text: reused, the payload unchanged
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer",
+                            payload=found, summary={"passages": 2})])
+    reader = _Counting()
+    _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 0 and again.summary["reused"]["passages"] == [0, 1]
+    assert again.payload["passages"] == read.payload["passages"]
+    # a new title and abstract: read again
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
+                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+    reader = _Counting()
+    _, (third,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
+
+
+def test_an_answer_of_the_role_bearing_prompt_is_reused_and_one_outside_the_family_is_not(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "84")
+    _, (read,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
+    blob = json.loads(json.dumps(read.payload))
+    for p in blob["passages"]:
+        p["producer"] = {**p["producer"], "prompt_version": "2026-10-06.n5"}
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="n5",
+                            payload=blob, summary=read.summary)])
+    _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert again.status is Status.OK and again.summary["prompt_versions"] == {"2026-10-06.n5": 2}
+    for p in blob["passages"]:
+        p["producer"] = {**p["producer"], "prompt_version": "2026-09-30.n4"}
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="n4",
+                            payload=blob, summary=read.summary)])
+    reader = _Counting()
+    _, (third,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2
+    assert third.summary["read_again"] == {"earlier prompt not interchangeable": 2}
+
+
+def test_the_role_free_prompt_keeps_the_read_fingerprint_of_the_prompt_before_it(env):
+    """Moving to the role-free prompt makes no stored answer stale."""
+    from ingestion_workflow.catalog import fingerprint
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "85")
+    passages = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    metadata = catalog.artifacts([ref.id], "metadata")[ref.id][""]
+    assert ProseStage(settings).read_fingerprint(passages, metadata) == fingerprint(
+        "prose", "2026-10-06.n5", settings.prose_model, metadata.fingerprint,
+        upstream=passages.fingerprint)
