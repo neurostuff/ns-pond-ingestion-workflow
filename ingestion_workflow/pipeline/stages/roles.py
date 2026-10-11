@@ -399,13 +399,15 @@ class RolesStage:
         prose = ctx.catalog.artifacts(ids, "prose")
         passages = ctx.catalog.artifacts(ids, "passages")
         downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
                 take_back_or_block(plan, ref, parent, artifacts.get(ref.id, {}).get(""))
                 continue
             if "text" in self.needs(parent) and read_from_bad_page(
-                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {})):
+                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
+                    extracted.get(ref.id, {})):
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and

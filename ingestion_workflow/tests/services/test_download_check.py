@@ -135,7 +135,7 @@ def test_an_offer_to_sell_the_article_is_a_paywall_when_no_access_was_provided()
     assert bad.reason == PAYWALL and "Buy this article" in bad.detail
     banner = b"<p>Access provided by a library</p></body>"
     served = real("hijvw5niyh6f").replace(b"</body>", banner)
-    assert check_page(served) is None
+    assert check_page(served).reason == PAYWALL  # a banner over an abstract is not access
 
 
 def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, monkeypatch):
@@ -166,3 +166,23 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
         quarantine = tmp_path / "ace" / "html-quarantine" / "html" / "Brain"
         assert Path(moved) == quarantine / ("123.html" if n == 0 else "123.html.1")
         assert Path(moved).read_bytes() == real("a6mheoqpeocv")
+
+
+@pytest.mark.parametrize(
+    "article_id, says",
+    [
+        # AHA Stroke under its site-wide "Access Provided by University of Texas--Austin"
+        # banner: the body holds only the access box
+        ("26vmoziyyfvl", "Get full access to this article"),
+        ("dxlmu53h3tvn", "Get full access to this article"),
+        # Brain Connectivity "No access": abstract and references, over 800 words of
+        # prose, and the access box where the body would be
+        ("22q7d4w5vmbg", "Get full access to this article"),
+        # JAMA Surgery under the same kind of banner: a 145-word first-page excerpt
+        # beside "Purchase access" and "Rent this article"
+        ("rioq37zk7spc", "Purchase access"),
+    ],
+)
+def test_a_paywall_under_an_access_banner_is_still_a_paywall(article_id, says):
+    bad = check_page(real(article_id))
+    assert bad.reason == PAYWALL and says in bad.detail

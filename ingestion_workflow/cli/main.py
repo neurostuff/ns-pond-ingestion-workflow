@@ -690,9 +690,9 @@ def refresh_text(
 
     The extraction keeps its tables, payload and fingerprint; its text hash and the
     passages' spans move to the new text in the same catalog write, and the references
-    and the sync are marked stale so they are read and written again. For a change to the text
-    alone
-    (pubget keeping superscripts, the figure captions written under "Figure legends").
+    and the sync are marked stale so they are read and written again. For a change
+    to the text alone (pubget keeping superscripts, the figure captions written under
+    "Figure legends").
     """
     from collections import Counter
 

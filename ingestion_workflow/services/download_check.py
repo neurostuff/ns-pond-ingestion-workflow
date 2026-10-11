@@ -67,15 +67,29 @@ _PAYWALL = re.compile(
     r"|log ?in to (?:view|access|read) (?:the )?full",
     re.I,
 )
-# These only offer the article for sale, which JAMA and AHA pages also do beside a
-# short article they serve in full under a reader's institutional access.
+# The access box Atypon sites (AHA, Mary Ann Liebert, SAGE) print where the article's
+# body would be, never beside one. Read before the prose gate, which such a page can
+# pass on its references, abstract and boilerplate alone.
+_ACCESS_BOX = re.compile(
+    r"get full access to this article"
+    r"|view all access and purchase options"
+    r"|you currently have no access to this content",
+    re.I,
+)
+# These only offer the article for sale, which JAMA pages also do beside a short
+# article they serve in full under a reader's institutional access.
 _STOREFRONT = re.compile(
     r"(?:purchase|buy|rent) (?:this|the) article"
     r"|pay per article"
     r"|purchase (?:short-term )?access",
     re.I,
 )
+# The banner alone proves nothing: AHA prints it site-wide, over its access box too.
 _ACCESS_PROVIDED = re.compile(r"\baccess provided by\b", re.I)
+#: Paragraphs of body text that, beside that banner, show the article is served.
+SERVED_PARAGRAPHS = 3
+# Containers whose paragraphs are not the article's body.
+_NOT_BODY = re.compile(r"abstract|\bref|biblio|citation|footnote|letter|comment|related", re.I)
 # Read in the title and top headings, where an article's own title could say
 # "error" or "not found": a bare word counts only as the whole heading's start.
 _ERROR_HEADING = re.compile(
@@ -148,6 +162,10 @@ def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
     if len(visible) < MIN_VISIBLE_CHARS:
         return BadPage(EMPTY_SHELL, f"{len(visible)} characters of visible text")
 
+    found = _ACCESS_BOX.search(visible)
+    if found:
+        return BadPage(PAYWALL, f"page says {found.group(0)!r} in place of the article")
+
     prose = _prose_words(body)
     if prose >= ARTICLE_WORDS:
         return None
@@ -160,8 +178,9 @@ def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
     found = _ERROR_BODY.search(visible)
     if found:
         return BadPage(ERROR_PAGE, f"page says {found.group(0)!r}")
-    found = _PAYWALL.search(visible) or (
-        None if _ACCESS_PROVIDED.search(visible) else _STOREFRONT.search(visible))
+    served = (_ACCESS_PROVIDED.search(visible) is not None
+              and _body_paragraphs(body) >= SERVED_PARAGRAPHS)
+    found = _PAYWALL.search(visible) or (None if served else _STOREFRONT.search(visible))
     if found:
         return BadPage(PAYWALL, f"page says {found.group(0)!r}; {prose} words of prose")
     if prose < STUB_WORDS:
@@ -217,6 +236,23 @@ def _prose_words(body) -> int:
             continue
         total += words
     return total
+
+
+def _body_paragraphs(body) -> int:
+    """Paragraphs long enough to be prose, outside page chrome and outside the abstract,
+    the references and other containers that are not the article's body."""
+    count = 0
+    for p in body.iter("p"):
+        if len(_own_text(p).split()) < _PROSE_BLOCK_WORDS:
+            continue
+        lineage = [p, *p.iterancestors()]
+        if any(el.tag in _CHROME for el in lineage):
+            continue
+        names = (f"{el.get('class') or ''} {el.get('id') or ''}" for el in lineage)
+        if any(_NOT_BODY.search(name) for name in names):
+            continue
+        count += 1
+    return count
 
 
 def _own_text(el) -> str:

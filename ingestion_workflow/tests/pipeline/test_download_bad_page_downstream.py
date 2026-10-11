@@ -6,7 +6,13 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
+from ingestion_workflow.models import (
+    DownloadedFile,
+    DownloadResult,
+    DownloadSource,
+    ExtractedContent,
+    FileType,
+)
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.plan import Work
@@ -179,3 +185,93 @@ def test_nothing_after_prose_reads_prose_made_from_a_bad_page(env, tmp_path):
     # held, not taken back
     assert {s: catalog.artifact(ref.id, s, "").status for s in ("prose", "resolve", "roles")} == {
         "prose": Status.OK, "resolve": Status.OK, "roles": Status.OK}
+
+
+def test_a_later_plain_ace_failure_leaves_prose_and_resolve_blocked(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.resolve import ResolveStage
+
+    settings, catalog, ref = env[:3]
+    catalog.record([
+        Outcome(ref.id, "passages", "", Status.OK, "p-1", {"passages": []},
+                summary={"source": "ace", "passages": 1}),
+        Outcome(ref.id, "prose", "", Status.OK, "pr-1", {"analyses": []},
+                summary={"source": "ace", "passages": 1, "coordinates": 2, "analyses": 1}),
+    ])
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    # A later waterfall reaches ACE again; the page was moved aside, so ACE scrapes live
+    # and is refused, which records the download with no bad page.
+    catalog.record([Outcome.failure(ref.id, "download", "ace",
+                                    "ACE scrape failed: HTTP 403 Forbidden")])
+    assert catalog.artifact(ref.id, "download", "ace").summary == {}
+
+    def pending(stage, upstream):
+        plan = stage.plan(Context(settings, catalog), [ref],
+                          catalog.artifacts([ref.id], stage.name),
+                          catalog.artifacts([ref.id], upstream))
+        return len(plan.pending), plan.blocked
+
+    assert pending(ProseStage(settings), "passages") == (0, 1)
+    assert pending(ResolveStage(settings), "prose") == (0, 1)
+
+
+def test_an_extraction_failing_again_keeps_its_bad_page(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.extract import ExtractStage
+
+    settings, catalog, ref = env[:3]
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    stage = ExtractStage(settings)
+    # a later download of the source, extracted again, fails some other way
+    gone = catalog.artifact(ref.id, "download", "pdf")
+    work = Work(ref=ref, source="ace", fingerprint="ex-2",
+                upstream=type(gone)(ref.id, "download", "ace", Status.OK, "d", blob="missing"))
+    (outcome,) = list(stage.execute(Context(settings, catalog), [work]))
+    assert outcome.error == "download payload missing from blob store"
+    assert outcome.summary == {"bad_page": "paywall"}
+    # an extraction that never failed as a bad page gains nothing
+    work = Work(ref=ref, source="pdf", fingerprint="ex-3",
+                upstream=type(gone)(ref.id, "download", "pdf", Status.OK, "d", blob="missing"))
+    (outcome,) = list(stage.execute(Context(settings, catalog), [work]))
+    assert outcome.summary == {}
+
+
+def test_triage_does_not_list_a_bad_page_extraction_as_skipped_for_want_of_text(
+        env, tmp_path, monkeypatch):
+    settings, catalog, ref, stage = env
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    # An older run left the ACE extraction OK: no text, two tables. pdf has the text.
+    ace = catalog.artifact(ref.id, "extract", "ace")
+    pdf = catalog.artifact(ref.id, "download", "pdf")
+    catalog.record([
+        Outcome(ref.id, "extract", "ace", Status.OK, ace.fingerprint, {"tables": []},
+                summary={"tables": 2, "has_text": False}),
+        Outcome(ref.id, "extract", "pdf", Status.OK, extraction_fingerprint("pdf", pdf),
+                ExtractedContent(slug=ref.identifier.slug, source=DownloadSource.PDF).to_dict(),
+                summary={"tables": 1, "has_text": True}),
+    ])
+    triage = TriageStage(settings)
+    monkeypatch.setattr(triage, "_judge_all", lambda jobs: [
+        (job[0], [{"table_id": "t1", "passes": True, "points": 3}]) for job in jobs])
+    plan = triage.plan(Context(settings, catalog), [ref], {},
+                       catalog.artifacts([ref.id], "metadata"))
+    (work,) = plan.pending
+    assert work.upstream.source == "pdf"
+    (outcome,) = list(triage.execute(Context(settings, catalog), [work]))
+    assert "skipped_no_text" not in outcome.summary
+
+
+def test_sync_still_retracts_an_article_whose_prose_came_from_a_bad_page(env, tmp_path):
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+
+    settings, catalog, ref = env[:3]
+    settings.ns_pond_root = tmp_path / "pond"
+    catalog.record([
+        Outcome(ref.id, "prose", "", Status.OK, "pr-1", {"analyses": []},
+                summary={"source": "ace", "passages": 1}),
+        Outcome(ref.id, "upload", "", Status.OK, NO_TEXT, {},
+                summary={"base_study_id": "b1", "retracted": True}),
+    ])
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    stage = SyncStage(settings)
+    plan = stage.plan(Context(settings, catalog), [ref], {}, catalog.artifacts([ref.id], "upload"))
+    assert (len(plan.pending), plan.blocked) == (1, 0)

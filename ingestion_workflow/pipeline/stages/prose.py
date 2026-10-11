@@ -72,12 +72,13 @@ class ProseStage:
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         fetched = ctx.catalog.artifacts(ids, "metadata")
         downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
         for ref in refs:
             passages = upstream.get(ref.id, {}).get("")
             if passages is None or passages.status is not Status.OK:
                 take_back_or_block(plan, ref, passages, artifacts.get(ref.id, {}).get(""))
                 continue
-            if read_from_bad_page(passages, downloads.get(ref.id, {})):
+            if read_from_bad_page(passages, downloads.get(ref.id, {}), extracted.get(ref.id, {})):
                 # the passages stage blocks rather than takes back, so these stay OK
                 plan.block(f"passages {READ_FROM_BAD_PAGE}")
                 continue

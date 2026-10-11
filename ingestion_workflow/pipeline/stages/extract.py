@@ -71,10 +71,25 @@ def from_bad_page(source: Optional[str], downloads: Dict[str, Artifact]) -> bool
 READ_FROM_BAD_PAGE = "read from a downloaded page that is not the article"
 
 
-def read_from_bad_page(artifact: Optional[Artifact], downloads: Dict[str, Artifact]) -> bool:
-    """Whether passages or prose (each records its extraction's `source`) are from a bad page."""
-    source = (artifact.summary or {}).get("source") if artifact is not None else None
-    return artifact is not None and from_bad_page(source, downloads)
+def read_from_bad_page(
+    artifact: Optional[Artifact],
+    downloads: Dict[str, Artifact],
+    extractions: Dict[str, Artifact],
+) -> bool:
+    """Whether passages or prose (each records its extraction's `source`) are from a bad page.
+
+    The failed extraction's own `bad_page` decides, since a later attempt at the
+    download that fails some other way (a 403) rewrites the download's summary; only
+    a new extraction of the source lifts it. The download decides too, for an
+    extraction an older run left OK over a failed page."""
+    if artifact is None:
+        return False
+    source = (artifact.summary or {}).get("source") or ""
+    extraction = extractions.get(source)
+    if (extraction is not None and extraction.status is not Status.OK
+            and extraction.summary.get("bad_page")):
+        return True
+    return from_bad_page(source, downloads)
 
 
 #: The error an extraction made from a page that is not the article fails with.
@@ -200,6 +215,17 @@ class ExtractStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        """Extract each work; a failure over an extraction failed as a bad page keeps
+        saying so, since the passages made from that page are still there."""
+        earlier = ctx.catalog.artifacts(list({w.article_id for w in works}), self.name)
+        for outcome in self._extract(ctx, works):
+            before = earlier.get(outcome.article_id, {}).get(outcome.source)
+            if (outcome.status is not Status.OK and before is not None
+                    and before.status is not Status.OK and before.summary.get("bad_page")):
+                outcome.summary.setdefault("bad_page", before.summary["bad_page"])
+            yield outcome
+
+    def _extract(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         by_source: Dict[str, List[Work]] = {}
         for work in works:
             by_source.setdefault(work.source, []).append(work)

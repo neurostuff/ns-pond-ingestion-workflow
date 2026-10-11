@@ -298,12 +298,13 @@ class ResolveStage:
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         analysed = ctx.catalog.artifacts(ids, "analyses")
         downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
         for ref in refs:
             prose = upstream.get(ref.id, {}).get("")
             if prose is None or prose.status is not Status.OK:
                 take_back_or_block(plan, ref, prose, artifacts.get(ref.id, {}).get(""))
                 continue
-            if read_from_bad_page(prose, downloads.get(ref.id, {})):
+            if read_from_bad_page(prose, downloads.get(ref.id, {}), extracted.get(ref.id, {})):
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")  # an earlier resolve stays as it is
                 continue
             # The tables' analyses when there are any. Nothing waits for them:

@@ -67,6 +67,7 @@ class SyncStage:
         # the parse files write the prose's passages
         prose = ctx.catalog.artifacts([ref.id for ref in refs], "prose")
         downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+        extracted = ctx.catalog.artifacts([ref.id for ref in refs], "extract")
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
             if upload is None or upload.status is not Status.OK:
@@ -83,7 +84,8 @@ class SyncStage:
                 plan.blocked += 1
                 continue
             if not upload.summary.get("retracted") and read_from_bad_page(
-                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {})):
+                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
+                    extracted.get(ref.id, {})):
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
             fp = self.fingerprint_for(upload, spaced.get(ref.id, {}).get(""))
