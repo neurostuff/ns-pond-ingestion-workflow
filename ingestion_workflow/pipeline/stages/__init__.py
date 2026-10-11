@@ -10,6 +10,7 @@ from .prose import ProseStage
 from .references import ReferencesStage
 from .reflist import ReflistStage
 from .resolve import ResolveStage
+from .roles import RolesStage
 from .space import SpaceStage
 from .sync import SyncStage
 from .triage import TriageStage
@@ -35,8 +36,11 @@ from .upload import UploadStage
 #: `reflist` fetches each paper's Crossref list and `references` reads each
 #: extraction's list and citations, the Crossref list filling its gaps. Nothing
 #: downstream reads them yet, so they run only when asked for by name.
+#:
+#: `roles` always runs: it decides what each set of resolve's (or analyses',
+#: without prose) is for, and space, upload and sync read only what it passed.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices", "triage", "analyses",
-               "prose", "resolve", "space", "upload", "sync")
+               "prose", "resolve", "roles", "space", "upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
@@ -56,6 +60,7 @@ STAGE_TYPES = {
     "references": ReferencesStage,
     "reflist": ReflistStage,
     "resolve": ResolveStage,
+    "roles": RolesStage,
     "space": SpaceStage,
     "upload": UploadStage,
     "sync": SyncStage,
@@ -90,6 +95,7 @@ __all__ = [
     "ReferencesStage",
     "ReflistStage",
     "ResolveStage",
+    "RolesStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
     "SpaceStage",

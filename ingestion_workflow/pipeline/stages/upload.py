@@ -12,6 +12,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,9 @@ class UploadStage:
             self.settings.upload_metadata_only,
             *([marked] if marked else []),
             *([notice] if notice else []),
-            upstream=upstream.fingerprint,
+            # The sets and their decided roles, not the role models: a retrained
+            # model that decides every set as before uploads nothing again.
+            upstream=(upstream.summary or {}).get("upload_basis") or upstream.fingerprint,
         )
 
     def plan(
@@ -92,9 +95,11 @@ class UploadStage:
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         excluded = ctx.catalog.exclusions([ref.id for ref in refs])
         notices = ctx.catalog.artifacts([ref.id for ref in refs], "notices")
+        roled = with_roles(ctx, [ref.id for ref in refs])
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
-            if spaced is None or spaced.status is not Status.OK:
+            # Without OK roles nothing is uploaded, whatever an older space artifact holds.
+            if spaced is None or spaced.status is not Status.OK or ref.id not in roled:
                 plan.blocked += 1
                 continue
             notice = notices.get(ref.id, {}).get("")
@@ -155,6 +160,14 @@ class UploadStage:
     def _execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         from ingestion_workflow.services.db import SessionFactory, SSHTunnel
         from ingestion_workflow.services.upload import UploadService
+
+        refused = {}
+        for work in works:
+            outcome = refuse_unassigned(self.name, work, ctx.payload(work.upstream))
+            if outcome is not None:
+                refused[work.article_id] = outcome
+        yield from refused.values()
+        works = [work for work in works if work.article_id not in refused]
 
         excluded = ctx.catalog.exclusions([work.article_id for work in works])
         found = ctx.catalog.artifacts([w.article_id for w in works], "notices")
@@ -380,7 +393,11 @@ class UploadStage:
         meta_artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         excluded = excluded or {}
         for work in works:
-            payload = excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {}))
+            # Held sets stay in the payload, in place, for the exclusions' and
+            # pondie's positions; neurostore gets only the uploaded ones.
+            payload = uploaded_sets(
+                excl.kept(ctx.payload(work.upstream), excluded.get(work.article_id, {})) or {}
+            )
             if not payload:
                 empty.append(work)
                 continue

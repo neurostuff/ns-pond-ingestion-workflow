@@ -74,6 +74,7 @@ def test_marking_nothing_leaves_every_fingerprint_as_it_was():
 
     class Upstream:
         fingerprint = "abc"
+        summary = {}
 
     stage = UploadStage(Settings(upload_source="nuextract-v21"))
     plain = stage.fingerprint_for(Upstream())

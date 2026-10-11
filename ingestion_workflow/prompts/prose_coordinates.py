@@ -13,6 +13,8 @@ from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
 PROSE_PROMPT_VERSION = "2026-10-06.n5"
 
+#: The current nu-prose model's own role vocabulary, which its template and
+#: dataset use. Nothing reads the role it answers: the roles stage decides.
 ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
 
 INSTRUCTION = (

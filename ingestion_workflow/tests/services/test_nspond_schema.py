@@ -33,6 +33,14 @@ from ingestion_workflow.services.nspond_schema import (
 BASE = "22tHjbNRU8t2"
 
 
+
+def _decided(role="result", kind=None, origin="table", **meta):
+    """An analysis's metadata once the roles stage has decided its role."""
+    return {**meta, "set_role": {"role": role, "anchor_kind": kind, "from_prior_study": False,
+                                 "prior_study_evidence": [], "role_confidence": 0.9,
+                                 "role_source": f"set-roles-{origin}@1", "role_origin": origin}}
+
+
 @pytest.fixture()
 def written(tmp_path):
     identifier = Identifier(
@@ -66,6 +74,7 @@ def written(tmp_path):
             Analysis(
                 name="contrast 1",
                 table_id="tbl1",
+                metadata=_decided(),
                 coordinates=[
                     Coordinate(x=-42.0, y=18.0, z=6.0),
                     Coordinate(x=22.0, y=-54.0, z=-24.0),
@@ -126,9 +135,9 @@ def test_a_stored_placeholder_is_not_synced(tmp_path):
     content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET,
                                identifier=identifier)
     tables = AnalysisCollection(slug="s", identifier=identifier, analyses=[
-        Analysis(name="UNKNOWN", table_id="t1"),
-        Analysis(name="A > B", table_id="t1"),
-        Analysis(name="UNKNOWN", table_id="t2",
+        Analysis(name="UNKNOWN", table_id="t1", metadata=_decided()),
+        Analysis(name="A > B", table_id="t1", metadata=_decided()),
+        Analysis(name="UNKNOWN", table_id="t2", metadata=_decided(),
                  coordinates=[Coordinate(x=1.0, y=2.0, z=3.0)])])
     root = tmp_path / "pond"
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")),
@@ -149,23 +158,54 @@ def test_stage1_points_carry_sign_and_subpeak_but_no_retired_flag(written):
             assert not {"is_deactivation", "deactivation", "is_seed"} & set(point)
 
 
-def test_a_prose_analysis_keeps_its_role_in_stage1(tmp_path):
-    """A table analysis keeps the shape pondie reads; a prose one says what it is."""
+def test_every_analysis_carries_its_decided_role_in_stage1(tmp_path):
+    """A table analysis keeps the shape pondie reads; every one says what it is for."""
     identifier = Identifier(pmid="1")
     content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
     prose = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
-        Analysis(name="amygdala seed", table_id="prose", metadata={"source": "prose", "role": "seed"},
+        Analysis(name="amygdala seed", table_id="prose",
+                 metadata=_decided("anchor", "seed", "text", source="prose", passages=[0]),
                  coordinates=[Coordinate(x=-22.0, y=-4.0, z=-18.0)]),
-        Analysis(name="faces > houses", table_id="prose", metadata={"source": "prose", "role": "result"},
+        Analysis(name="faces > houses", table_id="prose", metadata=_decided(origin="text", source="prose"),
                  coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
     root = tmp_path / "pond"
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"prose": prose}, [])
-    got = [(a["source"], a["role"], a["table_id"]) for a in read_record(root, BASE).stage1["analyses"]]
-    assert got == [("prose", "seed", "prose"), ("prose", "result", "prose")]
+    got = [(a["source"], a["role"], a["anchor_kind"], a["role_origin"], a["table_id"])
+           for a in read_record(root, BASE).stage1["analyses"]]
+    assert got == [("prose", "anchor", "seed", "text", "prose"), ("prose", "result", None, "text", "prose")]
 
 
-def test_a_table_analysis_has_no_prose_keys_in_stage1(written):
-    assert "role" not in read_record(written, BASE).stage1["analyses"][0]
+def test_a_held_set_keeps_its_place_so_pondie_s_keys_do_not_shift(tmp_path):
+    """pondie keys stage1 entries `table_id#ordinal`: a held middle set stays,
+    marked, so `t1#3` still names the third set of t1."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    t1 = AnalysisCollection(slug="s", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
+        Analysis(name=name, table_id="t1", metadata={**_decided(role), "held": held},
+                 coordinates=[Coordinate(x=float(i), y=0.0, z=0.0)])
+        for i, (name, role, held) in enumerate([("a > b", "result", False),
+                                                ("Lee et al.", "reference", True),
+                                                ("b > a", "result", False)])])
+    root = tmp_path / "pond"
+    nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"t1": t1}, [])
+    got = [(a["name"], a["role"], a["held"]) for a in read_record(root, BASE).stage1["analyses"]]
+    assert got == [("a > b", "result", False), ("Lee et al.", "reference", True), ("b > a", "result", False)]
+
+
+def test_a_table_analysis_carries_its_role_and_no_prose_keys(written):
+    [analysis] = read_record(written, BASE).stage1["analyses"]
+    assert "source" not in analysis
+    assert {k: analysis[k] for k in nspond.STAGE1_ROLE_FIELDS} == _decided()["set_role"]
+
+
+def test_an_analysis_without_a_decided_role_is_not_written(tmp_path):
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    tables = AnalysisCollection(slug="t", identifier=identifier, coordinate_space=CoordinateSpace.MNI, analyses=[
+        Analysis(name="A > B", table_id="t1", coordinates=[Coordinate(x=1.0, y=2.0, z=3.0)])])
+    with pytest.raises(ValueError, match="no role from the roles stage"):
+        nspond.write_article(tmp_path / "pond", BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")),
+                             {"t1": tables}, [])
 
 
 def test_a_missing_text_file_is_not_an_error(written):
@@ -209,7 +249,7 @@ def test_an_unstated_space_is_null_in_stage1(tmp_path):
         slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
     prose = AnalysisCollection(slug="s", identifier=identifier, analyses=[
         Analysis(name="faces > houses", table_id="prose",
-                 metadata={"source": "prose", "role": "result"},
+                 metadata=_decided(origin="text", source="prose"),
                  coordinates=[Coordinate(x=40.0, y=-50.0, z=-20.0)])])
     root = tmp_path / "pond"
     bundle = ArticleExtractionBundle(content, ArticleMetadata(title="T"))

@@ -23,6 +23,7 @@ from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .extract import current_extractions
+from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +51,10 @@ class SyncStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
+        roled = with_roles(ctx, [ref.id for ref in refs])
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
-            if upload is None or upload.status is not Status.OK:
+            if upload is None or upload.status is not Status.OK or ref.id not in roled:
                 plan.blocked += 1
                 continue
             if not upload.summary.get("base_study_id"):
@@ -81,6 +83,13 @@ class SyncStage:
             base_study_id = work.upstream.summary.get("base_study_id")
             if work.upstream.summary.get("retracted"):
                 yield self._retract(work, base_study_id)
+                continue
+            spaced = analyses.get(work.article_id, {}).get("")
+            refused = refuse_unassigned(
+                self.name, work, ctx.payload(spaced) if spaced is not None else None
+            )
+            if refused is not None:
+                yield refused
                 continue
             try:
                 bundle, per_table, files = self._assemble(

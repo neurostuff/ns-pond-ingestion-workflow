@@ -44,8 +44,10 @@ def test_a_looping_answer_and_context_coordinates_are_dropped():
     ]}
     got = clean_answer(answer, PASSAGE.text)
     assert [a["name"] for a in got["analyses"]] == ["faces > houses", "other"]
-    assert got["analyses"][0]["points"] == [{**point, "x": 40.0, "y": -50.0, "z": -20.0, "statistic": "T"}]
-    assert got["analyses"][1]["points"][0]["role"] == "other"
+    kept = {k: v for k, v in point.items() if k != "role"}
+    assert got["analyses"][0]["points"] == [{**kept, "x": 40.0, "y": -50.0, "z": -20.0, "statistic": "T"}]
+    # The model's role word is not kept, and none is defaulted.
+    assert all("role" not in p for a in got["analyses"] for p in a["points"])
 
 
 def test_a_point_made_of_numbers_that_are_not_a_coordinate_is_dropped():

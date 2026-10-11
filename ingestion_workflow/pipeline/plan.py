@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from ingestion_workflow.catalog import ArticleRef, Artifact
 
@@ -32,6 +32,13 @@ class StagePlan:
     blocked: int = 0
     skipped: int = 0
     permanent: int = 0
+    #: Why articles were blocked, when the stage can say: {reason: count}.
+    reasons: Dict[str, int] = field(default_factory=dict)
+
+    def block(self, reason: str) -> None:
+        """Count one article blocked for `reason`."""
+        self.blocked += 1
+        self.reasons[reason] = self.reasons.get(reason, 0) + 1
 
     @property
     def total(self) -> int:
@@ -45,4 +52,5 @@ class StagePlan:
             bits.append(f"{self.skipped:>6,} skipped")
         if self.permanent:
             bits.append(f"{self.permanent:>6,} permanent")
+        bits.extend(f"({count:,} blocked: {reason})" for reason, count in self.reasons.items())
         return "   ".join(bits)

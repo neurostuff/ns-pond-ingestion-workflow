@@ -18,7 +18,6 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .passages import passage_from
-from .resolve import KEPT_ROLES
 
 logger = logging.getLogger(__name__)
 
@@ -100,13 +99,12 @@ class ProseStage:
         answered = iter(answers)
 
         for work, payload in zip(works, found):
-            out, errors, coords, kept = [], 0, 0, 0
+            out, errors, coords = [], 0, 0
             for p in payload.get("passages", []):
                 answer, error = next(answered)
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
                 coords += len(points)
-                kept += sum(1 for q in points if q["role"] in KEPT_ROLES)
                 out.append({"text": p["text"], "heading": p.get("heading"),
                             "space": answer.get("space") or p.get("space"),
                             "analyses": answer.get("analyses", []), "error": error})
@@ -121,7 +119,7 @@ class ProseStage:
                 payload={"source": payload.get("source"), "read": payload.get("read"),
                          "space": payload.get("space"), "passages": out},
                 summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
-                         "coordinates": coords, "kept": kept},
+                         "coordinates": coords},
             )
 
     def _read(self, passage, title, abstract):
