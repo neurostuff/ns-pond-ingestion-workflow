@@ -423,7 +423,8 @@ def test_an_article_extract_could_not_read_is_synced_from_its_prose(env, monkeyp
 
     parse = read_bundle(PaperParse, settings.ns_pond_root / "BS11" / "parse")
     assert check_paper(parse, settings.ns_pond_root / "BS11") == []
-    assert [a.origin for a in parse.coordinate_parse.analyses] == ["text"]
+    assert [(a.origin, a.role, a.role_source) for a in parse.coordinate_parse.analyses] == [
+        ("text", "result", "results@1")]
     assert synced.summary["parse_id"] == parse.coordinate_parse.parse_id
 
 
@@ -439,6 +440,7 @@ def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
     _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
     _run(SpaceStage(settings), ctx, catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
                             summary={"base_study_id": "BS12", "study_id": "S12"})])
@@ -459,6 +461,40 @@ def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
     before = sync.fingerprint_for(upload)
     monkeypatch.setattr(paper_parse, "PAPER_PARSE_VERSION", paper_parse.PAPER_PARSE_VERSION + 1)
     assert sync.fingerprint_for(upload) != before
+
+
+def test_an_article_whose_sets_have_no_role_is_neither_synced_nor_parsed(env, monkeypatch, tmp_path):
+    """Without the roles stage's decision the article is blocked, and no parse is written."""
+    from ingestion_workflow.pipeline.stages import sync as sync_stage
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="13"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    space = catalog.artifacts([ref.id], "resolve")[ref.id][""]
+    # A space artifact carrying the resolve payload as it was before roles ran.
+    catalog.record([
+        Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp-1",
+                payload=ctx.payload(space)),
+        Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                summary={"base_study_id": "BS13", "study_id": "S13"}),
+    ])
+    sync = sync_stage.SyncStage(settings)
+    upload = catalog.artifacts([ref.id], "upload")
+    plan = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"), upload)
+    assert (plan.blocked, plan.pending) == (1, [])
+
+    # Even with a roles artifact recorded, a set without its decision is refused before writing.
+    catalog.record([Outcome(article_id=ref.id, stage="roles", source="", fingerprint="ro-1")])
+    plan = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"), upload)
+    (synced,) = list(sync.execute(ctx, plan.pending))
+    sync.finish()
+    assert synced.status is Status.FAILED
+    assert "sets without a role from the roles stage" in synced.error
+    assert not (settings.ns_pond_root / "BS13" / "parse").exists()
 
 
 def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):

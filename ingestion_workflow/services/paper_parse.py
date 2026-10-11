@@ -9,9 +9,9 @@ Two files per paper, beside `stage1/analyses.json` until pondie reads them:
 
 Both are built as study_schema's generated models, so a field the contract does not
 name cannot be written. Nothing here decides anything new: the text is extract's,
-the meta-analysis verdict triage's, the readings the analyses stage's, the split the
-analyses stage's. What this adds is where each analysis sits in its table -- the
-model's points carry no row -- because the key is made from the cells.
+the meta-analysis verdict triage's, the readings and the split the analyses stage's,
+each set's role the roles stage's. What this adds is where each analysis sits in its
+table -- the model's points carry no row -- because the key is made from the cells.
 """
 
 from __future__ import annotations
@@ -54,17 +54,6 @@ STATISTIC_KINDS = {
     "R": "r",
     "B": "beta",
     "P": "p",
-}
-
-#: The prose model's roles, as CoordinateParse.role describes the mapping. A
-#: figure analysis proposes no role: what its coordinates are is decided later.
-PROSE_ROLES = {
-    "result": ("result", None),
-    "roi": ("anchor", "roi"),
-    "seed": ("anchor", "seed"),
-    "target": ("anchor", "stimulation_target"),
-    "prior_study": ("reference", None),
-    "figure": (None, None),
 }
 
 _SECTIONS = {
@@ -512,6 +501,7 @@ def coordinate_parse(
     """
     text = text if isinstance(text, _Text) else _Text(text)
     omitted: List[Omitted] = []
+    roles = _Roles(text, omitted)
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, str] = {}
     for table_id, collection in per_table.items():
@@ -531,10 +521,10 @@ def coordinate_parse(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
         if prose:
-            built = (_prose_analysis(a, collection, text, inputs, omitted) for a in table_analyses)
+            built = (_prose_analysis(a, collection, text, inputs, roles) for a in table_analyses)
         else:
             built = _table_analyses(
-                table_id, table_analyses, collection, grids.get(table_id), omitted
+                table_id, table_analyses, collection, grids.get(table_id), roles
             )
         for analysis in built:
             if analysis is None:
@@ -576,12 +566,82 @@ def coordinate_parse(
                 reason=o.reason,
             )
             for o in omitted
-            if o.table_id is None
+            if o.table_id is None and not o.kept
         ]
         or None,
         text_sweep=_text_sweep(inputs),
     )
     return parse, omitted
+
+
+class MissingRole(ValueError):
+    """A stage1 analysis without the role the roles stage decides: the article is not parsed."""
+
+
+class _Roles:
+    """Each analysis's role, as the roles stage wrote it under `metadata.set_role`.
+
+    There is no default: an analysis without one raises `MissingRole`. Numbers the
+    roles stage found are not brain coordinates are no coordinate set, so they are
+    left out with that reason. A citing sentence the parsed paper's text does not
+    hold cannot be a TextSpan; it is left out of the evidence and noted on the
+    omission list instead.
+    """
+
+    def __init__(self, text: _Text, omitted: List[Omitted]) -> None:
+        self.text = text
+        self.omitted = omitted
+
+    def of(self, analysis: Analysis, table_id: Optional[str]) -> Optional[Dict[str, Any]]:
+        decided = (analysis.metadata or {}).get("set_role")
+        if not isinstance(decided, Mapping) or not decided.get("role_source"):
+            raise MissingRole(
+                f"analysis {analysis.name!r} of {table_id or 'the text'} has no role "
+                "from the roles stage"
+            )
+        if decided.get("role") is None:
+            self.omitted.append(
+                Omitted(
+                    analysis.name,
+                    table_id,
+                    f"not brain coordinates, as {decided['role_source']} decided",
+                )
+            )
+            return None
+        evidence = []
+        for span in decided.get("prior_study_evidence") or []:
+            found = self._place(span)
+            if found is None:
+                self.omitted.append(
+                    Omitted(
+                        analysis.name,
+                        table_id,
+                        f"kept; a citing sentence is not in the parsed paper's text: "
+                        f"{(span.get('text') or '')[:80]!r}",
+                        kept=True,
+                    )
+                )
+            else:
+                evidence.append(pp.TextSpan(start_char=found[0], end_char=found[1]))
+        return {
+            "role": decided["role"],
+            "anchor_kind": decided.get("anchor_kind"),
+            "from_prior_study": decided.get("from_prior_study"),
+            "prior_study_evidence": evidence or None,
+            "role_confidence": decided.get("role_confidence"),
+            "role_source": decided["role_source"],
+        }
+
+    def _place(self, span: Mapping[str, Any]) -> Optional[Tuple[int, int]]:
+        """The sentence's characters in the parsed paper's text, which may not be the text the roles stage read."""
+        sentence = span.get("text") or ""
+        start, end = span.get("start_char"), span.get("end_char")
+        if sentence and isinstance(start, int) and self.text.text[start:end] == sentence:
+            return start, end
+        if not sentence.strip():
+            return None
+        at = self.text.text.find(sentence)
+        return (at, at + len(sentence)) if at >= 0 else self.text.find(sentence)
 
 
 @dataclass
@@ -596,6 +656,8 @@ class Omitted:
     table_id: Optional[str]
     reason: str
     spans: Sequence[Tuple[int, int]] = ()
+    #: A note on a kept analysis: in the sync summary, not among the parse's omissions.
+    kept: bool = False
 
     def __str__(self) -> str:
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
@@ -610,7 +672,7 @@ def _table_analyses(
     analyses: Sequence[Analysis],
     collection,
     grid: Optional[_Table],
-    omitted: List[Omitted],
+    roles: _Roles,
 ) -> List[Optional[pp.ParsedAnalysis]]:
     grid = grid or _Table([], [])
     placed = _place_all(analyses, grid)
@@ -627,7 +689,7 @@ def _table_analyses(
             if row is not None:
                 cells.add((row, 0))
         if not cells:
-            omitted.append(
+            roles.omitted.append(
                 Omitted(
                     analysis.name,
                     table_id,
@@ -647,6 +709,7 @@ def _table_analyses(
                 analysis,
                 collection,
                 points,
+                roles,
                 origin="table",
                 table_id=table_id,
                 key=keys.table_key(table_id, cells, analysis.name),
@@ -746,7 +809,7 @@ def _prose_analysis(
     collection,
     text: _Text,
     inputs: ParseInputs,
-    omitted: List[Omitted],
+    roles: _Roles,
 ) -> Optional[pp.ParsedAnalysis]:
     """A text analysis, keyed by where its points are printed and by its name.
 
@@ -763,7 +826,7 @@ def _prose_analysis(
     point_spans = [_find_point(c, text.text, windows) for c in analysis.coordinates]
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
     if not spans:
-        omitted.append(
+        roles.omitted.append(
             Omitted(
                 analysis.name,
                 None,
@@ -772,9 +835,6 @@ def _prose_analysis(
         )
         return None
     key = keys.span_key("text", spans, analysis.name)
-    role, anchor = PROSE_ROLES.get(
-        (analysis.metadata or {}).get("role") or "result", ("result", None)
-    )
     points = [
         _point(c, collection, found=None, span=s)
         for c, s in zip(analysis.coordinates, point_spans)
@@ -783,13 +843,11 @@ def _prose_analysis(
         analysis,
         collection,
         points,
+        roles,
         origin="text",
         table_id=None,
         key=key,
         text_spans=[pp.TextSpan(start_char=a, end_char=b) for a, b in spans],
-        role=role,
-        anchor_kind=anchor,
-        from_prior_study=True if role == "reference" else None,
     )[0]
 
 
@@ -869,16 +927,17 @@ def _analysis(
     analysis: Analysis,
     collection,
     points,
+    roles: _Roles,
     *,
     origin,
     table_id,
     key,
     cells=None,
     text_spans=None,
-    role="result",
-    anchor_kind=None,
-    from_prior_study=None,
 ):
+    role = roles.of(analysis, table_id)
+    if role is None:
+        return None, False
     name = analysis.name
     kinds = {v.kind for p in points for v in p.values or [] if v.kind != "p"}
     built = pp.ParsedAnalysis(
@@ -891,10 +950,7 @@ def _analysis(
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
         coordinate_space=_space_value(collection.coordinate_space),
-        role=role,
-        anchor_kind=anchor_kind,
-        from_prior_study=from_prior_study,
-        role_source="proposal" if role else None,
+        **role,
         statistic=kinds.pop() if len(kinds) == 1 else None,
         points=points,
     )
@@ -977,7 +1033,7 @@ def _readings(
     """
     left_out: Dict[str, List[str]] = {}
     for o in omitted:
-        if o.table_id:
+        if o.table_id and not o.kept:
             left_out.setdefault(o.table_id, []).append(f"omitted {o.name!r}: {o.reason}")
     out = []
     for table in paper.tables or []:
@@ -1056,12 +1112,14 @@ def write(
     return {
         "parse_id": parse.parse_id,
         "analyses": len(parse.analyses),
-        **({"parse_omitted": [str(o) for o in omitted]} if omitted else {}),
+        **({"parse_omitted": left} if (left := [str(o) for o in omitted if not o.kept]) else {}),
+        **({"parse_notes": notes} if (notes := [str(o) for o in omitted if o.kept]) else {}),
     }
 
 
 __all__ = [
     "PAPER_PARSE_VERSION",
+    "MissingRole",
     "Omitted",
     "ParseInputs",
     "coordinate_parse",

@@ -44,7 +44,30 @@ PASSAGE = "A seed was placed in the left amygdala (-22, -4, -20), as in our earl
 TEXT = f"Title\n\nMethods\n\n{PASSAGE}\n\nResults\n\nTable 1 ...\n"
 
 
+def _decided(role="result", *, origin="table", anchor_kind=None, prior=False, evidence=(),
+             source=None):
+    """`metadata.set_role` as the roles stage writes it (docs/set-roles-artifact.md)."""
+    return {
+        "role": role,
+        "anchor_kind": anchor_kind,
+        "from_prior_study": prior,
+        "prior_study_evidence": list(evidence),
+        "role_confidence": 0.9,
+        "role_source": source or f"set-role-{origin}@1",
+        "role_origin": origin,
+    }
+
+
+def _roles(text=""):
+    return paper_parse._Roles(paper_parse._Text(text), [])
+
+
 def _collection(analyses):
+    """A collection as the roles stage passed it: each set without a decision here gets one."""
+    for a in analyses:
+        if "set_role" not in (a.metadata or {}):
+            origin = "text" if (a.metadata or {}).get("source") == "prose" else "table"
+            a.metadata = {**(a.metadata or {}), "set_role": _decided(origin=origin)}
     return AnalysisCollection(slug="t", coordinate_space=CoordinateSpace.MNI, analyses=analyses)
 
 
@@ -127,7 +150,13 @@ def _written(tmp_path):
                 Analysis(
                     name="amygdala seed",
                     table_id="prose",
-                    metadata={"source": "prose", "role": "seed", "passages": [0]},
+                    # The prose model's own word says "result": the roles stage's decision stands.
+                    metadata={
+                        "source": "prose",
+                        "role": "result",
+                        "passages": [0],
+                        "set_role": _decided("anchor", origin="text", anchor_kind="seed"),
+                    },
                     coordinates=[Coordinate(x=-22, y=-4, z=-20)],
                 ),
             ]
@@ -268,6 +297,18 @@ def test_a_prose_analysis_is_keyed_by_where_its_points_are_printed(written):
     assert (seed["role"], seed["anchor_kind"]) == ("anchor", "seed")
 
 
+def test_every_role_is_the_roles_stage_s_decision(written):
+    _, parse, _ = written
+    roles = [(a["name"], a["role"], a["role_source"]) for a in parse["analyses"]]
+    assert roles == [
+        ("Faces > Houses", "result", "set-role-table@1"),
+        ("Faces > Houses", "result", "set-role-table@1"),
+        ("Houses > Faces", "result", "set-role-table@1"),
+        ("amygdala seed", "anchor", "set-role-text@1"),
+    ]
+    assert {a["role_confidence"] for a in parse["analyses"]} == {0.9}
+
+
 def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
     passage = (
         "Faces activated the FFA (40, -52, -18; t = 5.1) "
@@ -279,7 +320,7 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
             Analysis(
                 name=name,
                 table_id="prose",
-                metadata={"source": "prose", "role": "result", "passages": [0]},
+                metadata={"source": "prose", "passages": [0]},
                 coordinates=[Coordinate(x=x, y=y, z=z)],
             )
             for name, (x, y, z) in (("faces", (40, -52, -18)), ("houses", (28, -46, -8)))
@@ -287,7 +328,9 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
     )
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
     built = [
-        paper_parse._prose_analysis(a, collection, paper_parse._Text(text), inputs, [])
+        paper_parse._prose_analysis(
+            a, collection, paper_parse._Text(text), inputs, _roles(text)
+        )
         for a in collection.analyses
     ]
     assert [text[a.text_spans[0].start_char : a.text_spans[0].end_char] for a in built] == [
@@ -297,25 +340,59 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
     assert built[0].key != built[1].key
 
 
-def test_a_figure_analysis_proposes_no_role():
-    passage = "The peak is marked in Figure 2 (40, -52, -18)."
-    text = f"Results\n\n{passage}\n"
-    collection = _collection(
-        [
+def _one_prose(metadata, passage="The peak is marked in Figure 2 (40, -52, -18)."):
+    text = paper_parse._Text(f"Results\n\n{passage}\n")
+    collection = AnalysisCollection(
+        slug="t",
+        coordinate_space=CoordinateSpace.MNI,
+        analyses=[
             Analysis(
                 name="marked peak",
                 table_id="prose",
-                metadata={"source": "prose", "role": "figure", "passages": [0]},
+                metadata={"source": "prose", "passages": [0], **metadata},
                 coordinates=[Coordinate(x=40, y=-52, z=-18)],
             )
-        ]
+        ],
     )
+    roles = paper_parse._Roles(text, [])
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
-    built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+    return paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles), roles
+
+
+def test_a_set_without_a_role_from_the_roles_stage_is_not_parsed():
+    """No default: neither the prose model's role word nor `result` stands in."""
+    for metadata in ({"role": "result"}, {"set_role": {**_decided(), "role_source": None}}):
+        with pytest.raises(paper_parse.MissingRole, match="no role from the roles stage"):
+            _one_prose(metadata)
+
+
+def test_the_prose_model_s_role_word_is_not_read():
+    built, _ = _one_prose({"role": "figure", "set_role": _decided("result", origin="text")})
+    assert (built.role, built.anchor_kind, built.role_source) == ("result", None, "set-role-text@1")
+
+
+def test_numbers_that_are_not_coordinates_are_omitted_with_the_deciding_model():
+    built, roles = _one_prose({"set_role": _decided(None, origin="text")})
+    assert built is None
+    assert [(o.name, o.table_id, o.reason) for o in roles.omitted] == [
+        ("marked peak", None, "not brain coordinates, as set-role-text@1 decided")
+    ]
+
+
+def test_prior_study_evidence_is_placed_in_the_parsed_paper_s_text():
+    passage = "Peaks matched Smith et al. (40, -52, -18)."
+    cited = "Peaks matched Smith et al."
+    elsewhere = {"text": cited, "start_char": 0, "end_char": len(cited)}  # offsets of another text
+    missing = {"text": "A sentence this text does not hold at all, anywhere."}
+    built, roles = _one_prose(
+        {"set_role": _decided("reference", origin="text", prior=True, evidence=[elsewhere, missing])},
+        passage,
     )
-    assert (built.role, built.anchor_kind, built.from_prior_study) == (None, None, None)
-    assert built.role_source is None
+    at = len("Results\n\n")
+    assert (built.role, built.from_prior_study) == ("reference", True)
+    assert [(s.start_char, s.end_char) for s in built.prior_study_evidence] == [(at, at + len(cited))]
+    assert [o.kept for o in roles.omitted] == [True]
+    assert "a citing sentence is not in the parsed paper's text" in roles.omitted[0].reason
 
 
 def test_every_table_gets_its_reading(written):
@@ -387,7 +464,7 @@ def test_a_point_outside_its_located_passage_is_found_where_it_is_printed_once()
     )
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Not in the text."}]})
     built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
     (span,) = built.text_spans
     assert text[span.start_char : span.end_char] == "\u221234, y = 18, z = 2"
@@ -405,12 +482,12 @@ def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
         ]
     )
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": "Elsewhere."}]})
-    omitted = []
+    roles = _roles("Results only.")
     built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text("Results only."), inputs, omitted
+        collection.analyses[0], collection, roles.text, inputs, roles
     )
     assert built is None
-    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+    assert [(o.name, o.table_id, o.reason) for o in roles.omitted] == [
         ("lost", None, "neither its passages nor its points are in the parsed paper's text")
     ]
 
@@ -492,6 +569,32 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
     (reading,) = parse.tables
     assert reading.reading == "coordinates"
     assert "omitted 'a > b'" in reading.reason and "omitted 'Unprinted'" in reading.reason
+
+
+def test_a_table_set_that_is_not_coordinates_is_omitted_and_holds_its_rows(tmp_path):
+    """Its rows stay its own, so the next set's cells, and so its key, do not move."""
+    collection = _collection(
+        [
+            Analysis(
+                name="Fear > Neutral",
+                metadata={"set_role": _decided(None)},
+                coordinates=[Coordinate(x=22, y=-4, z=-20), Coordinate(x=36, y=20, z=4)],
+            ),
+            Analysis(
+                name="Surprise > Neutral",
+                coordinates=[Coordinate(x=-10, y=-39, z=44), Coordinate(x=36, y=20, z=4)],
+            ),
+        ]
+    )
+    parse, omitted = _parse(
+        tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
+    )
+    (kept,) = parse.analyses
+    assert kept.key == keys.table_key("tbl1", [(4, 0), (5, 0)], "Surprise > Neutral")
+    assert [str(o) for o in omitted] == [
+        "tbl1: 'Fear > Neutral': not brain coordinates, as set-role-table@1 decided"
+    ]
+    assert "omitted 'Fear > Neutral': not brain coordinates" in parse.tables[0].reason
 
 
 def test_a_placeholder_analysis_with_no_points_is_recorded_as_omitted(tmp_path):
@@ -793,7 +896,7 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
         analyses=[
             Analysis(
                 name="a",
-                metadata={"source": "prose", "role": "result", "passages": [0]},
+                metadata={"source": "prose", "passages": [0], "set_role": _decided(origin="text")},
                 coordinates=[Coordinate(x=40, y=-52, z=-18)],
             )
         ],
@@ -801,7 +904,7 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
     text = "Peak at 40, -52, -18."
     inputs = ParseInputs(article_id="a", prose={"passages": [{"text": text}]})
     built = paper_parse._prose_analysis(
-        collection.analyses[0], collection, paper_parse._Text(text), inputs, []
+        collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
     assert built.coordinate_space == "OTHER"
     pp.ParsedAnalysis.model_validate(built.model_dump())
@@ -833,7 +936,7 @@ def test_side_by_side_contrasts_differ_by_column_group(tmp_path):
         ]
     )
     built = _table_analyses(
-        "tbl1", collection.analyses, collection, _grid(tmp_path / "t.html"), []
+        "tbl1", collection.analyses, collection, _grid(tmp_path / "t.html"), _roles()
     )
     assert [[(c.row, c.column_group) for c in a.cells] for a in built] == [[(0, 0)], [(0, 1)]]
     assert built[0].key == keys.table_key("tbl1", [(0, 0)], "A > B") != built[1].key
@@ -846,9 +949,9 @@ def test_a_null_coordinate_space_leaves_the_parse_space_unset():
     )
     object.__setattr__(collection, "coordinate_space", None)
     assert paper_parse._space_value(collection.coordinate_space) is None
-    # With no table space, a point states its own (Coordinate defaults to MNI).
+    # With no table space, a point states only its own.
     bare = paper_parse._point(Coordinate(x=1, y=2, z=3), collection, None)
     named = paper_parse._point(
         Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TALAIRACH), collection, None
     )
-    assert (bare.space, named.space) == ("MNI", "TAL")
+    assert (bare.space, named.space) == (None, "TAL")
