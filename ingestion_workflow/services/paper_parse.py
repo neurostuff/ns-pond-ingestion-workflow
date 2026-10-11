@@ -42,7 +42,7 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 5
+PAPER_PARSE_VERSION = 6
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -90,6 +90,9 @@ class ParseInputs:
 class _Table:
     headings: List[str]
     rows: List[List[Tuple[str, int]]]  # body rows: (cell text, resolved column)
+    #: The first and last column of each block of coordinate columns, left to right;
+    #: None when the table's structure names none.
+    blocks: Optional[List[Tuple[int, int]]] = None
     _index: Optional[list] = field(default=None, repr=False)
 
     def index(self) -> list:
@@ -296,7 +299,61 @@ def _grid(raw_path) -> _Table:
                 headings = [p.cell.text for p in row]
             continue
         rows.append([(p.cell.text, p.col) for p in row])
-    return _Table(headings, rows)
+    return _Table(headings, rows, _blocks(grid))
+
+
+def _blocks(grid) -> Optional[List[Tuple[int, int]]]:
+    """The table's blocks of coordinate columns, from its header, left to right.
+
+    A block is three columns the header names x, y and z, or heads once with a
+    word for coordinates, whose body holds coordinates; or one column of whole
+    triples. Every block is counted whether or not any analysis was read from it,
+    so a block's number does not move when a re-extraction misses one to its left.
+
+    Beside such triples, a column of triples is a block only when its header says
+    coordinates: `19(1,30)` under F(df) and `1,93E-05` under p(unc.) read as triples.
+    """
+    from nspond_tables import read
+
+    named: Dict[str, Set[int]] = {axis: set() for axis in read.AXES}
+    starts: Set[int] = set()
+    for placed in read._header_cells(grid):
+        text = read._unmarked(placed.cell.text)
+        for axis in read.AXES:
+            if read._AXIS[axis].match(text) or read._AXIS_SUFFIX[axis].search(text):
+                named[axis].add(placed.col)
+        if placed.cell.colspan == 3 and read._SPANS_COORDS.search(placed.cell.text):
+            starts.add(placed.col)
+    starts.update(x for x in named["x"] if x + 1 in named["y"] and x + 2 in named["z"])
+    triples = {(x, x + 2) for x in starts if _holds_coordinates(grid, range(x, x + 3))}
+    axes = read.axis_columns(grid)
+    if axes and _holds_coordinates(grid, list(axes.values())):
+        triples.add((axes["x"], axes["z"]))
+    blocks = triples | {
+        (col, col)
+        for col in read.packed_columns(grid)
+        if not triples or read._SPANS_COORDS.search(read._column_header_text(grid, col))
+    }
+    return sorted(blocks) or None
+
+
+def _holds_coordinates(grid, cols) -> bool:
+    """Whether most body rows printing numbers in these columns print a coordinate there.
+
+    Stricter than the extractor's check: a `Peak` or `Voxel level` header spans Z
+    and p columns, and `4.80 | <0.001 | 0.03` fits in a head but is no millimetre count.
+    """
+    from nspond_tables import read
+
+    good = total = 0
+    for row in grid.body_rows():
+        by_col = {c: placed.cell for placed in row for c in placed.cols}
+        values = [read.as_number(by_col[c].text) if c in by_col else None for c in cols]
+        if all(v is None for v in values):
+            continue
+        total += 1
+        good += all(read._looks_like_a_coordinate(v) for v in values) and read.in_head(values)
+    return good > 0 and good >= 0.5 * total
 
 
 def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded, inlined):
@@ -734,8 +791,12 @@ class Omitted:
     kept: bool = False
     #: Both roles of entries that share a key: the merged analysis is held for review.
     role_conflict: Optional[Dict[str, Any]] = None
+    #: A note on the whole table, written into its TableReading's `reason`.
+    whole_table: bool = False
 
     def __str__(self) -> str:
+        if self.whole_table:
+            return f"{self.table_id or 'text'}: {self.reason}"
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
 
 
@@ -752,10 +813,9 @@ def _table_analyses(
 ) -> List[Optional[pp.ParsedAnalysis]]:
     grid = grid or _Table([], [])
     placed = _place_all(analyses, grid)
-    # A column group is a block of coordinate columns: rank the x columns the
-    # table's points were found in, so a table of one block is all 0.
-    columns = sorted({col for points in placed for found in points if found for col in [found[1]]})
-    group = {col: i for i, col in enumerate(columns)}
+    group, unknown = _column_groups(grid, placed)
+    if unknown:
+        roles.omitted.append(Omitted("", table_id, unknown, kept=True, whole_table=True))
 
     out: List[Tuple[Optional[pp.ParsedAnalysis], Optional[dict]]] = []
     for analysis, found in zip(analyses, placed):
@@ -794,6 +854,34 @@ def _table_analyses(
         )
     _declare_splits(out)
     return [analysis for analysis, _ in out]
+
+
+def _column_groups(
+    grid: _Table, placed: Sequence[Sequence[Optional[Tuple[int, int]]]]
+) -> Tuple[Dict[int, int], Optional[str]]:
+    """The column group of each x column points were found in, and why it is not the table's own.
+
+    A column group is the block's number in the table's structure. Where the
+    structure is unknown, or does not hold a column a point was found in, the
+    found columns are ranked instead; that number moves when a re-extraction
+    misses a block, so the second value says the table's keys rest on it.
+    """
+    columns = sorted({found[1] for points in placed for found in points if found})
+    blocks = grid.blocks or []
+    group = {}
+    for col in columns:
+        hit = next((i for i, (first, last) in enumerate(blocks) if first <= col <= last), None)
+        if hit is None:
+            break
+        group[col] = hit
+    else:
+        return group, None
+    unknown = "column groups ranked among the columns its points were found in: " + (
+        f"column {col} is outside the coordinate columns the header names"
+        if blocks
+        else "the header names no coordinate columns"
+    )
+    return {col: i for i, col in enumerate(columns)}, unknown
 
 
 def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:
@@ -1129,7 +1217,9 @@ def _readings(
     """
     left_out: Dict[str, List[str]] = {}
     for o in omitted:
-        if o.table_id and not o.kept:
+        if o.table_id and o.whole_table:
+            left_out.setdefault(o.table_id, []).append(o.reason)
+        elif o.table_id and not o.kept:
             left_out.setdefault(o.table_id, []).append(f"omitted {o.name!r}: {o.reason}")
     out = []
     for table in paper.tables or []:

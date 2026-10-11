@@ -1359,3 +1359,160 @@ def test_a_table_in_a_stated_other_space_parses_and_validates(tmp_path):
     (analysis,) = parse.analyses
     assert analysis.coordinate_space == "OTHER"
     pp.CoordinateParse.model_validate(parse.model_dump())
+
+
+TWO_BLOCKS = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th><th>x</th><th>y</th><th>z</th><th>t</th></tr>
+<tr><td>Insula</td><td>30</td><td>20</td><td>4</td><td>5.1</td><td>-32</td><td>18</td><td>2</td><td>4.4</td></tr>
+<tr><td>ACC</td><td>4</td><td>30</td><td>22</td><td>4.8</td><td>-6</td><td>28</td><td>24</td><td>4.0</td></tr>
+</table>"""
+
+
+def _task(*points):
+    # Both tasks print the same contrast name, one per block of columns.
+    return Analysis(
+        name="Patients > Controls",
+        table_id="tbl1",
+        coordinates=[Coordinate(x=x, y=y, z=z) for x, y, z in points],
+    )
+
+
+def _task_a():
+    return _task((30, 20, 4), (4, 30, 22))
+
+
+def _task_b():
+    return _task((-32, 18, 2), (-6, 28, 24))
+
+
+#: The same two blocks, each a column of whole triples.
+PACKED_BLOCKS = """<table>
+<tr><th>Region</th><th>Task A</th><th>t</th><th>Task B</th><th>t</th></tr>
+<tr><td>Insula</td><td>30, 20, 4</td><td>5.1</td><td>-32, 18, 2</td><td>4.4</td></tr>
+<tr><td>ACC</td><td>4, 30, 22</td><td>4.8</td><td>-6, 28, 24</td><td>4.0</td></tr>
+</table>"""
+
+
+#: The same two blocks, each headed once over its three columns.
+SPANNED_BLOCKS = """<table>
+<tr><th>Region</th><th colspan="3">Task A MNI coordinates</th>
+<th colspan="3">Task B MNI coordinates</th></tr>
+<tr><td>Insula</td><td>30</td><td>20</td><td>4</td><td>-32</td><td>18</td><td>2</td></tr>
+<tr><td>ACC</td><td>4</td><td>30</td><td>22</td><td>-6</td><td>28</td><td>24</td></tr>
+</table>"""
+
+
+@pytest.mark.parametrize(
+    "markup", [TWO_BLOCKS, PACKED_BLOCKS, SPANNED_BLOCKS], ids=["axis-names", "packed", "spanned"]
+)
+def test_a_block_keeps_its_number_and_key_when_the_block_left_of_it_is_not_read(tmp_path, markup):
+    both, _ = _parse(tmp_path, markup, {"tbl1": _collection([_task_a(), _task_b()])})
+    alone, _ = _parse(tmp_path, markup, {"tbl1": _collection([_task_b()])})
+    a, b = both.analyses
+    (b_alone,) = alone.analyses
+    assert [(c.row, c.column_group) for c in b.cells] == [(0, 1), (1, 1)]
+    assert b_alone.cells == b.cells and b_alone.key == b.key != a.key
+    assert [p.column_group for p in b_alone.points] == [1, 1]
+    assert alone.tables[0].reason is None
+
+
+@pytest.mark.parametrize(
+    "markup, why",
+    [
+        (
+            TWO_BLOCKS.replace("<th>x</th><th>y</th><th>z</th>", "<th></th><th></th><th></th>"),
+            "the header names no coordinate columns",
+        ),
+        (
+            TWO_BLOCKS.replace(
+                "<th>x</th><th>y</th><th>z</th><th>t</th></tr>",
+                "<th>a</th><th>b</th><th>c</th><th>t</th></tr>",
+            ),
+            "column 5 is outside the coordinate columns the header names",
+        ),
+    ],
+    ids=["no-axis-names", "unnamed-block"],
+)
+def test_column_groups_the_structure_cannot_give_are_ranked_and_recorded(tmp_path, markup, why):
+    parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([_task_b()])})
+    (b,) = parse.analyses
+    assert [(c.row, c.column_group) for c in b.cells] == [(0, 0), (1, 0)]
+    note = "column groups ranked among the columns its points were found in: " + why
+    assert parse.tables[0].reason == note
+    assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
+    assert str(omitted[0]) == f"tbl1: {note}"
+
+
+def test_sync_and_upload_number_a_block_alike_when_the_block_left_of_it_is_not_read(tmp_path):
+    """Sync's parse file and a parse minted again from the extraction's own table agree."""
+    from ingestion_workflow.services.paper_parse import _grid
+
+    (tmp_path / "tbl1.html").write_text(TWO_BLOCKS, encoding="utf-8")
+    text = tmp_path / "text.txt"
+    text.write_text("Results\n", encoding="utf-8")
+    content = ExtractedContent(
+        slug="s",
+        source=DownloadSource.PUBGET,
+        identifier=Identifier(pmid="1"),
+        tables=[ExtractedTable(table_id="tbl1", raw_content_path=tmp_path / "tbl1.html")],
+        full_text_path=text,
+    )
+    bundle = ArticleExtractionBundle(content, ArticleMetadata(title="t"))
+    per_table = {"tbl1": _collection([_task_b()])}
+    target = nspond.write_article(tmp_path / "pond", BASE, bundle, per_table, [], stage1=False)
+    summary = paper_parse.write(target, bundle, per_table, ParseInputs(article_id="a"))
+    synced = json.loads((target / "parse" / "coordinate_parse.json").read_text())["analyses"]
+
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[SimpleNamespace(table_id="tbl1", triage=None)],
+    )
+    grids = {t.table_id: _grid(t.raw_content_path) for t in content.tables}
+    minted, _ = paper_parse.coordinate_parse(
+        paper, "Results\n", grids, per_table, ParseInputs(article_id="a")
+    )
+    assert [a["key"] for a in synced] == [a.key for a in minted.analyses]
+    assert synced[0]["key"] == keys.table_key("tbl1", [(0, 1), (1, 1)], "Patients > Controls")
+    assert "parse_notes" not in summary
+
+
+def test_a_statistic_that_reads_as_a_triple_is_not_a_block_of_coordinates(tmp_path):
+    # The F(df) cells parse as triples; only the named x, y, z are coordinates.
+    markup = """<table>
+    <tr><th>Region</th><th>F(df)</th><th>x</th><th>y</th><th>z</th></tr>
+    <tr><td>IPL</td><td>19(1,30)</td><td>50</td><td>-41</td><td>60</td></tr>
+    <tr><td>ACC</td><td>12(1,30)</td><td>4</td><td>30</td><td>22</td></tr>
+    </table>"""
+    collection = _collection([Analysis(name="A > B", coordinates=[Coordinate(x=50, y=-41, z=60)])])
+    parse, omitted = _parse(tmp_path, markup, {"tbl1": collection})
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0)]
+    assert omitted == []
+
+
+def test_a_spanning_header_over_statistics_is_not_a_block_of_coordinates(tmp_path):
+    # "Voxel level" names a coordinate word and spans three columns of Z and p values.
+    markup = """<table>
+    <tr><th>Region</th><th colspan="3">Voxel level</th><th>x</th><th>y</th><th>z</th></tr>
+    <tr><th></th><th>Z</th><th>p unc</th><th>p FWE</th><th></th><th></th><th></th></tr>
+    <tr><td>PDI</td><td>4.80</td><td>&lt;0.001</td><td>0.03</td><td>27</td><td>14</td><td>-32</td></tr>
+    <tr><td>VAS</td><td>4.60</td><td>&lt;0.001</td><td>0.04</td><td>18</td><td>2</td><td>-32</td></tr>
+    </table>"""
+    collection = _collection([Analysis(name="PDI", coordinates=[Coordinate(x=27, y=14, z=-32)])])
+    parse, omitted = _parse(tmp_path, markup, {"tbl1": collection})
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0)]
+    assert omitted == []
+
+
+def test_points_printed_one_column_apart_under_one_header_are_one_block(tmp_path):
+    # The header's x spans two columns; the rows put their x in either one.
+    markup = """<table>
+    <tr><th>Region</th><th colspan="2">x</th><th>y</th><th>z</th></tr>
+    <tr><td>Insula</td><td colspan="2">-37</td><td>5</td><td>-14</td></tr>
+    <tr><td>Insula</td><td></td><td>36</td><td>8</td><td>-14</td></tr>
+    </table>"""
+    points = [Coordinate(x=-37, y=5, z=-14), Coordinate(x=36, y=8, z=-14)]
+    analysis = Analysis(name="Effects", coordinates=points)
+    parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([analysis])})
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0), (1, 0)]
+    assert omitted == []
