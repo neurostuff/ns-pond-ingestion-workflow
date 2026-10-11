@@ -1,0 +1,145 @@
+"""A download failed as a page that is not the article takes its extraction's text out of use."""
+
+import gzip
+from pathlib import Path
+
+import pytest
+from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.config import Settings
+from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
+from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.plan import Work
+from ingestion_workflow.pipeline.stages import DownloadStage
+from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
+from ingestion_workflow.pipeline.stages.prose import ProseStage
+from ingestion_workflow.pipeline.stages.triage import TriageStage
+
+PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
+
+
+class Source:
+    def __init__(self, source, result):
+        self.source, self.result = source, result
+
+    def download(self, identifiers):
+        return [self.result(identifier) for identifier in identifiers]
+
+
+def page(tmp_path, name):
+    path = tmp_path / f"{name}.html"
+    path.write_bytes(gzip.decompress((PAGES / f"{name}.html.gz").read_bytes()))
+    return path
+
+
+def served(source, path):
+    return lambda identifier: DownloadResult(identifier, source, True, files=[
+        DownloadedFile(path, FileType.HTML, "text/html", source)])
+
+
+@pytest.fixture()
+def env(tmp_path):
+    gate = tmp_path / "gate.joblib"
+    gate.write_bytes(b"a fitted gate")
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k", download_sources=["ace", "pdf"],
+                        coordinate_gate_path=gate)
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(Identifier(pmid="123", doi="10.1/x"))
+        stage = DownloadStage(settings)
+        # the ACE download and extraction a run stored before the check existed
+        ace = served(DownloadSource.ACE, page(tmp_path, "onv6piwppvwo"))(ref.identifier)
+        catalog.record([Outcome(ref.id, "download", "ace", Status.OK,
+                                stage.fingerprint_for(DownloadSource.ACE), ace.to_dict())])
+        extracted(catalog, ref, "ace")
+        catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"})])
+        yield settings, catalog, ref, stage
+
+
+def extracted(catalog, ref, source):
+    download = catalog.artifact(ref.id, "download", source)
+    catalog.record([Outcome(ref.id, "extract", source, Status.OK,
+                            extraction_fingerprint(source, download), {"tables": []},
+                            summary={"tables": 0, "has_text": True})])
+
+
+def refresh(settings, catalog, ref, stage, ace_result, tmp_path):
+    """`--refresh download:ace`: ACE answers with `ace_result`, and pdf has the article."""
+    stage._extractors = {
+        DownloadSource.ACE: Source(DownloadSource.ACE, ace_result),
+        DownloadSource.PDF: Source(DownloadSource.PDF,
+                                   served(DownloadSource.PDF, page(tmp_path, "ytpicngb4emb"))),
+    }
+    ctx = Context(settings, catalog, refresh=["download:ace"])
+    work = Work(ref=ref, source="ace", fingerprint=stage.fingerprint_for(DownloadSource.ACE))
+    outcomes = list(stage.execute(ctx, [work]))
+    catalog.record(outcomes)
+    return outcomes
+
+
+def judged(settings, catalog, ref):
+    plan = TriageStage(settings).plan(Context(settings, catalog), [ref],
+                                      catalog.artifacts([ref.id], "triage"),
+                                      catalog.artifacts([ref.id], "metadata"))
+    return [w.upstream.source for w in plan.pending]
+
+
+def test_a_refresh_that_hits_a_bad_page_fails_the_extraction_made_from_it(env, tmp_path):
+    settings, catalog, ref, stage = env
+    assert judged(settings, catalog, ref) == ["ace"]
+    outcomes = refresh(settings, catalog, ref, stage,
+                       served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    assert [(o.stage, o.source, o.status) for o in outcomes] == [
+        ("download", "ace", Status.FAILED), ("extract", "ace", Status.FAILED),
+        ("download", "pdf", Status.OK)]
+    extraction = catalog.artifact(ref.id, "extract", "ace")
+    assert extraction.error == "download failed validation: paywall"
+    assert judged(settings, catalog, ref) == []  # pdf is not extracted yet: nothing to judge
+
+
+def test_the_bad_page_text_never_beats_a_new_source(env, tmp_path):
+    settings, catalog, ref, stage = env
+    refresh(settings, catalog, ref, stage,
+            served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    extracted(catalog, ref, "pdf")
+    # An earlier stage left the ACE extraction OK: no newer text should lose to it on the tie.
+    ace = catalog.artifact(ref.id, "extract", "ace")
+    catalog.record([Outcome(ref.id, "extract", "ace", Status.OK, ace.fingerprint, {"tables": []},
+                            summary={"tables": 0, "has_text": True})])
+    assert judged(settings, catalog, ref) == ["pdf"]
+    catalog.record([Outcome.failure(ref.id, "extract", "pdf", "timed out")])
+    assert judged(settings, catalog, ref) == []  # not the ACE text as a fallback either
+
+
+def test_ace_rejecting_the_page_itself_records_the_reason_and_where_the_page_went(env, tmp_path):
+    settings, catalog, ref, stage = env
+    moved = {"/cache/html/x/123.html": "/cache/html-quarantine/x/123.html"}
+
+    def rejected(identifier):
+        return DownloadResult(identifier, DownloadSource.ACE, False, moved_aside=moved,
+                              error_message="ACE scrape produced invalid HTML: bad page "
+                                            "(paywall): page says 'Buy this article'")
+
+    first, second, third = refresh(settings, catalog, ref, stage, rejected, tmp_path)
+    assert (first.status, first.summary) == (Status.FAILED, {"bad_page": "paywall",
+                                                             "moved_aside": moved})
+    assert (second.stage, second.error) == ("extract", "download failed validation: paywall")
+    assert (third.source, third.status) == ("pdf", Status.OK)
+
+
+def test_prose_does_not_read_passages_made_from_a_bad_page(env, tmp_path):
+    settings, catalog, ref, stage = env
+    catalog.record([Outcome(ref.id, "passages", "", Status.OK, "p-1", {"passages": []},
+                            summary={"source": "ace", "passages": 1})])
+
+    def plan():
+        return ProseStage(settings).plan(Context(settings, catalog), [ref],
+                                         catalog.artifacts([ref.id], "prose"),
+                                         catalog.artifacts([ref.id], "passages"))
+
+    assert len(plan().pending) == 1
+    refresh(settings, catalog, ref, stage,
+            served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    blocked = plan()
+    assert (blocked.pending, blocked.blocked) == ([], 1)
+    assert catalog.artifact(ref.id, "passages", "").status is Status.OK  # held, not taken back

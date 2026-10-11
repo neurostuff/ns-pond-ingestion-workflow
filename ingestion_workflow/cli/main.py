@@ -751,18 +751,21 @@ def revalidate_downloads(
     Each is recorded as a failed download with its reason, and the extraction made from
     it fails with "download failed validation: <reason>". A run then moves triage to
     another source's text, and `run --stage download` plans the next source. Running it
-    again finds nothing new.
+    again finds nothing new. Stop other runs first: a row they rewrite during the scan is
+    left as they wrote it.
     """
     from ingestion_workflow.pipeline.stages import DownloadStage
     from ingestion_workflow.services import download_revalidate as revalidate
 
     if apply and backup is None:
         raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
+    if apply and backup.exists():
+        raise typer.BadParameter(f"{backup} exists; give a new path", param_hint="--backup")
     settings = _settings(config)
     with _catalog(settings) as catalog:
-        ids = list(catalog.all_article_ids())
-        found = revalidate.scan(catalog, ids, workers=settings.max_workers)
         ctx = _context(settings, catalog, [])
+        found = revalidate.scan(catalog, list(catalog.all_article_ids()),
+                                workers=settings.max_workers, recorded_path=ctx.recorded_path)
         effects = revalidate.effects(ctx, DownloadStage(settings), found)
         typer.echo(f"checked {found.checked:,} stored downloads holding a page; "
                    f"{len(found.missing):,} with files gone were left alone")
@@ -777,9 +780,15 @@ def revalidate_downloads(
         if not apply:
             typer.echo("dry run: nothing written; --apply --backup <path> records these")
             return
+        if not found.outcomes():
+            typer.echo("nothing to record; no backup made")
+            return
         copied = revalidate.backup(settings.catalog_root, backup)
         typer.echo(f"catalog copied to {copied}")
-        typer.echo(f"recorded {revalidate.apply(catalog, found):,} failures")
+        recorded = revalidate.apply(catalog, found)
+        changed = found.changed
+        left = f"; left {changed:,} rows another run rewrote since the scan" if changed else ""
+        typer.echo(f"recorded {recorded:,} failures{left}")
 
 
 # -- migrate -----------------------------------------------------------------

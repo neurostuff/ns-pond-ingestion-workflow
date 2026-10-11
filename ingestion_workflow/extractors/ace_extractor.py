@@ -742,18 +742,16 @@ class ACEExtractor(BaseExtractor):
 
         html_valid, invalid_reason = _validate_downloaded_html(resolved_path)
         if not html_valid:
-            try:
-                resolved_path.unlink()
-            except OSError as exc:  # pragma: no cover - best-effort cleanup
-                logger.debug(
-                    "Failed to delete invalid ACE HTML payload %s: %s",
-                    resolved_path,
-                    exc,
-                )
+            # Out of the cache, or a retry would reuse it (`overwrite=False`). Moved, not
+            # deleted: the cache is the shared scrape corpus, and the check can be wrong.
+            moved = self._set_aside(resolved_path)
             reason = invalid_reason or "HTML payload failed validation."
             message = f"ACE scrape produced invalid HTML: {reason}"
             logger.warning("%s PMID=%s", message, pmid)
-            return self._failure(identifier, message)
+            failure = self._failure(identifier, message)
+            if moved is not None:
+                failure.moved_aside = {str(resolved_path): str(moved)}
+            return failure
 
         downloaded_file = self._build_downloaded_file(resolved_path)
         return DownloadResult(
@@ -795,6 +793,26 @@ class ACEExtractor(BaseExtractor):
             source=DownloadSource.ACE,
             content_type=self._HTML_CONTENT_TYPE,
         )
+
+    def _set_aside(self, path: Path) -> Optional[Path]:
+        """Move a rejected page to `<cache root>-quarantine`, under its path in the cache."""
+        root = self._cache_root
+        try:
+            relative = path.resolve().relative_to(root.resolve())
+        except ValueError:
+            relative = Path(path.name)
+        target = root.parent / f"{root.name}-quarantine" / relative
+        n = 0
+        while target.exists():  # an earlier rejected copy of the same page stays too
+            n += 1
+            target = target.with_name(f"{relative.name}.{n}")
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            path.replace(target)
+        except OSError as exc:  # pragma: no cover - left in place, and said so
+            logger.warning("Could not move rejected ACE page %s aside: %s", path, exc)
+            return None
+        return target
 
     def _failure(self, identifier: Identifier, message: str) -> DownloadResult:
         return DownloadResult(

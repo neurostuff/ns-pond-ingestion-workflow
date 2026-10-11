@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import logging
 from pathlib import Path
-from typing import Dict, Iterator, List, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
@@ -52,6 +52,35 @@ def extraction_fingerprint(source: str, download: Artifact) -> str:
 def file_sha256(path) -> str:
     """sha256 of a text file's bytes as stored."""
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def from_bad_page(source: Optional[str], downloads: Dict[str, Artifact]) -> bool:
+    """Whether this source's download is now failed as a page that is not the article.
+
+    An extraction keeps its fingerprint when its download fails (a download's
+    fingerprint names only its source), so this is what tells its text is not the
+    article's. A later good download of the source records a new summary, which
+    lifts it."""
+    download = downloads.get(source or "")
+    return (download is not None and download.status is not Status.OK
+            and bool(download.summary.get("bad_page")))
+
+
+#: The error an extraction made from a page that is not the article fails with.
+FAILED_VALIDATION = "download failed validation"
+
+
+def failed_validation(extraction: Artifact, reason: str) -> Outcome:
+    """The failure of an extraction whose download turned out not to be the article."""
+    return Outcome.failure(extraction.article_id, "extract", extraction.source,
+                           f"{FAILED_VALIDATION}: {reason}", fingerprint=extraction.fingerprint,
+                           summary={"bad_page": reason})
+
+
+def without_bad_pages(
+    extractions: Dict[str, Artifact], downloads: Dict[str, Artifact]
+) -> Dict[str, Artifact]:
+    return {s: e for s, e in extractions.items() if not from_bad_page(s, downloads)}
 
 
 def current_extractions(

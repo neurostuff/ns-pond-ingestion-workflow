@@ -76,15 +76,20 @@ class DownloadResult:
     success: bool
     files: List[DownloadedFile] = field(default_factory=list)
     error_message: Optional[str] = None
+    #: Rejected files moved out of a shared cache: original path -> where it went.
+    moved_aside: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, object]:
-        return {
+        out = {
             "identifier": self.identifier.__dict__.copy(),
             "source": self.source.value,
             "success": self.success,
             "files": [file.to_dict() for file in self.files],
             "error_message": self.error_message,
         }
+        if self.moved_aside:
+            out["moved_aside"] = dict(self.moved_aside)
+        return out
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> "DownloadResult":
@@ -98,6 +103,7 @@ class DownloadResult:
             success=bool(payload["success"]),
             files=files,
             error_message=payload.get("error_message") or None,
+            moved_aside=dict(payload.get("moved_aside") or {}),  # type: ignore[arg-type]
         )
 
 

@@ -19,19 +19,11 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
 from ingestion_workflow.models import FileType
 from ingestion_workflow.services import download_check
-
-#: The error an extraction made from a download that failed the check is recorded with.
-FAILED_VALIDATION = "download failed validation"
-
-#: Stages after extract whose artifacts were made, through triage or passages, from the
-#: article's judged extraction.
-DOWNSTREAM = ("metadata", "notices", "references", "triage", "analyses", "passages", "prose",
-              "resolve", "roles", "space", "upload", "sync")
 
 _BATCH = 900
 
@@ -43,6 +35,9 @@ class BadDownload:
     reason: str
     message: str
     fingerprint: str
+    page: str
+    #: When the scan read the download: `apply` writes only over that same row.
+    updated_at: str = ""
 
 
 @dataclass
@@ -56,18 +51,24 @@ class Revalidation:
     extractions: List[Tuple[Artifact, str]] = field(default_factory=list)
     #: Downloads whose files are gone from disk: left as they are, and counted.
     missing: List[Tuple[str, str]] = field(default_factory=list)
+    #: Set by `apply`: failures not written, because another run rewrote the row since.
+    changed: int = 0
 
     def outcomes(self) -> List[Outcome]:
+        return [outcome for outcome, _ in self._seen()]
+
+    def _seen(self) -> List[Tuple[Outcome, str]]:
+        """Each outcome, with the `updated_at` of the row it replaces."""
+        from ingestion_workflow.pipeline.stages.extract import failed_validation
+
+        # The failure keeps no payload, so its message names the page it was.
         out = [
-            Outcome.failure(b.article_id, "download", b.source, b.message,
-                            fingerprint=b.fingerprint, summary={"bad_page": b.reason})
+            (Outcome.failure(b.article_id, "download", b.source, f"{b.message} [page {b.page}]",
+                             fingerprint=b.fingerprint, summary={"bad_page": b.reason}),
+             b.updated_at)
             for b in self.bad
         ]
-        out += [
-            Outcome.failure(e.article_id, "extract", e.source, f"{FAILED_VALIDATION}: {reason}",
-                            fingerprint=e.fingerprint, summary={"bad_page": reason})
-            for e, reason in self.extractions
-        ]
+        out += [(failed_validation(e, reason), e.updated_at) for e, reason in self.extractions]
         return out
 
     def counts(self) -> Counter:
@@ -75,11 +76,11 @@ class Revalidation:
         return Counter((b.reason, b.source) for b in self.bad)
 
 
-def _html_files(catalog: Catalog, download: Artifact) -> Optional[List[str]]:
+def _html_files(catalog: Catalog, download: Artifact, recorded_path) -> Optional[List[str]]:
     payload = catalog.payload(download)
     if payload is None:
         return None
-    return [str(f["file_path"]) for f in payload.get("files", [])
+    return [str(recorded_path(f["file_path"])) for f in payload.get("files", [])
             if f.get("file_type") == FileType.HTML.value]
 
 
@@ -87,11 +88,11 @@ def _check(item: Tuple[str, str, List[str]]):
     article_id, source, paths = item
     for path in paths:
         if not Path(path).is_file():
-            return article_id, source, None, "missing"
+            return article_id, source, None, "missing", path
         bad = download_check.check_file(Path(path))
         if bad is not None:
-            return article_id, source, bad.reason, bad.message
-    return article_id, source, None, None
+            return article_id, source, bad.reason, bad.message, path
+    return article_id, source, None, None, None
 
 
 def _map(items: List[Tuple[str, str, List[str]]], workers: int) -> Iterator[tuple]:
@@ -109,13 +110,20 @@ def scan(
     article_ids: Sequence[str],
     *,
     workers: int = 1,
+    recorded_path: Optional[Callable[[str], Path]] = None,
 ) -> Revalidation:
     """Check every OK download of these articles that holds an HTML page.
 
-    XML and PDF downloads hold no page and are not read. Idempotent: a download already
-    failed is not checked again, and its OK extraction, if a run stopped before failing
-    it, is failed now.
+    XML and PDF downloads hold no page and are not read. A relative path is read where
+    `recorded_path` (by default the stages' own `Context.recorded_path`) puts it, wherever
+    the run starts. Idempotent: a download
+    already failed is not checked again, and its OK extraction (left by a run that
+    stopped, or by a download stage older than the one that fails it) is failed now.
     """
+    if recorded_path is None:
+        from ingestion_workflow.pipeline import Context
+
+        recorded_path = Context(None, catalog).recorded_path  # it reads only the catalog root
     result = Revalidation()
     for start in range(0, len(article_ids), _BATCH * 20):
         chunk = list(article_ids[start:start + _BATCH * 20])
@@ -126,7 +134,7 @@ def scan(
             for source, download in by_source.items():
                 if download.status is not Status.OK:
                     continue
-                paths = _html_files(catalog, download)
+                paths = _html_files(catalog, download, recorded_path)
                 if paths is None:
                     result.missing.append((article_id, source))
                 elif paths:
@@ -137,14 +145,14 @@ def scan(
             for source, download in by_source.items()
             if download.status is not Status.OK and download.summary.get("bad_page")
         }
-        for article_id, source, reason, message in _map(items, workers):
+        for article_id, source, reason, message, path in _map(items, workers):
             result.checked += 1
             if message == "missing":
                 result.missing.append((article_id, source))
             elif reason is not None:
                 download = downloads[article_id][source]
-                result.bad.append(
-                    BadDownload(article_id, source, reason, message, download.fingerprint))
+                result.bad.append(BadDownload(article_id, source, reason, message,
+                                              download.fingerprint, path, download.updated_at))
                 failed[(article_id, source)] = reason
         for (article_id, source), reason in sorted(failed.items()):
             extraction = extractions.get(article_id, {}).get(source)
@@ -154,9 +162,19 @@ def scan(
 
 
 def apply(catalog: Catalog, revalidation: Revalidation) -> int:
-    """Record the failures, downloads and their extractions in one transaction."""
-    outcomes = revalidation.outcomes()
+    """Record the failures, downloads and their extractions in one transaction.
+
+    A row another run rewrote since the scan (a new download, a new extraction) is
+    left as that run wrote it, and counted in `revalidation.changed`."""
+    outcomes, changed = [], 0
+    for outcome, seen in revalidation._seen():
+        now = catalog.artifact(outcome.article_id, outcome.stage, outcome.source)
+        if now is None or now.status is not Status.OK or now.updated_at != seen:
+            changed += 1
+            continue
+        outcomes.append(outcome)
     catalog.record(outcomes)
+    revalidation.changed = changed
     return len(outcomes)
 
 
@@ -194,7 +212,10 @@ def effects(ctx, download_stage, revalidation: Revalidation) -> Dict[str, Counte
     A source counts with its tries left whether or not its backoff has passed. `stale`
     counts, by stage, their OK artifacts made from the extraction that fails.
     """
+    from ingestion_workflow.pipeline.stages import STAGE_ORDER
     from ingestion_workflow.pipeline.stages.triage import judged_extraction
+
+    downstream_stages = STAGE_ORDER[STAGE_ORDER.index("extract") + 1:]
 
     failing_downloads = {(b.article_id, b.source) for b in revalidation.bad}
     failing_extractions = {(e.article_id, e.source) for e, _ in revalidation.extractions}
@@ -212,7 +233,7 @@ def effects(ctx, download_stage, revalidation: Revalidation) -> Dict[str, Counte
             source: ctx.catalog.attempt_counts(chunk, "download", source)
             for source in ctx.settings.download_sources
         }
-        downstream = {stage: ctx.catalog.artifacts(chunk, stage) for stage in DOWNSTREAM}
+        downstream = {stage: ctx.catalog.artifacts(chunk, stage) for stage in downstream_stages}
         for article_id in chunk:
             before_d = downloads.get(article_id, {})
             before_e = extractions.get(article_id, {})

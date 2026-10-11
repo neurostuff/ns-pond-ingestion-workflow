@@ -223,3 +223,65 @@ def test_dry_run_writes_nothing_and_apply_backs_up_first(tmp_path, monkeypatch):
     again = runner.invoke(app, ["revalidate-downloads", "--apply", "--backup", str(backup),
                                 "-c", str(config)])
     assert again.exit_code != 0  # an existing backup is never overwritten
+
+
+def test_a_relative_page_path_is_read_beside_the_catalog_wherever_the_run_starts(
+        env, tmp_path, monkeypatch):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="9"))
+    relative = Path("pages") / f"{PAYWALL}.html"
+    page(tmp_path, PAYWALL)  # tmp_path is where the catalog root sits
+    fp = DownloadStage(settings).fingerprint_for(DownloadSource.ACE)
+    result = DownloadResult(ref.identifier, DownloadSource.ACE, True, files=[
+        DownloadedFile(relative, FileType.HTML, "text/html", DownloadSource.ACE)])
+    catalog.record([Outcome(ref.id, "download", "ace", Status.OK, fp, result.to_dict())])
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    found = revalidate.scan(catalog, [ref.id])
+    assert (found.missing, [b.reason for b in found.bad]) == ([], ["paywall"])
+    assert found.bad[0].page == str(tmp_path / relative)
+
+
+def test_apply_leaves_a_row_another_run_rewrote_since_the_scan(env, tmp_path):
+    settings, catalog = env
+    ref = article(catalog, settings, tmp_path, "1", PAYWALL)
+    found = revalidate.scan(catalog, [ref.id])
+    # an `ingest run` extracts again meanwhile
+    with sqlite3.connect(settings.catalog_root / "catalog.sqlite") as conn:
+        conn.execute("UPDATE artifacts SET updated_at='later' WHERE stage='extract'")
+    assert revalidate.apply(catalog, found) == 1
+    assert found.changed == 1
+    assert catalog.artifact(ref.id, "download", "ace").status is Status.FAILED
+    assert catalog.artifact(ref.id, "extract", "ace").status is Status.OK
+
+
+def test_apply_checks_the_backup_path_before_scanning_and_skips_an_empty_run(
+        tmp_path, monkeypatch):
+    from ingestion_workflow.services import download_revalidate as module
+
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k")
+    Catalog.open(settings.catalog_root).close()
+    config = tmp_path / "settings.yaml"
+    config.write_text(json.dumps({
+        "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
+        "catalog_root": str(settings.catalog_root), "log_to_file": False,
+        "show_progress": False, "max_workers": 1,
+    }))
+    scans = []
+    monkeypatch.setattr(module, "scan", lambda *a, **k: scans.append(1) or module.Revalidation())
+    taken = tmp_path / "taken.sqlite"
+    taken.write_bytes(b"")
+    runner = CliRunner()
+
+    exists = runner.invoke(app, ["revalidate-downloads", "--apply", "--backup", str(taken),
+                                 "-c", str(config)])
+    assert exists.exit_code == 2 and "exists" in exists.output and scans == []
+    assert not isinstance(exists.exception, FileExistsError)
+
+    fresh = tmp_path / "new.sqlite"
+    empty = runner.invoke(app, ["revalidate-downloads", "--apply", "--backup", str(fresh),
+                                "-c", str(config)])
+    assert empty.exit_code == 0, empty.output
+    assert "nothing to record" in empty.output and not fresh.exists()

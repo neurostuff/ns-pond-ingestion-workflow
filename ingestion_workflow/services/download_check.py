@@ -38,6 +38,9 @@ ARTICLE_WORDS = 800
 #: Fewer words of prose than this and the page has no abstract either: a citation,
 #: a metrics tab, a record display.
 STUB_WORDS = 50
+#: A heading that is only a status code ("ScienceDirect - 404") names an error page
+#: only over fewer words of prose than this; the code alone could be part of a title.
+ERROR_PAGE_WORDS = 200
 #: A block of fewer words is a link, a label or a menu item, not prose.
 _PROSE_BLOCK_WORDS = 25
 
@@ -54,28 +57,39 @@ _CONSENT = re.compile(r"cookie|consent|onetrust|gdpr", re.I)
 
 # Each notice is a publisher's own wording, read from stored pages; none fires
 # on a page that has an article's prose, since those are passed before this.
+# These say the reader cannot see the article.
 _PAYWALL = re.compile(
     r"abstract/extract view of this article is free"
     r"|full text of this article requires a subscription"
-    r"|(?:purchase|buy|rent) (?:this|the) article"
-    r"|pay per article"
-    r"|purchase (?:short-term )?access"
-    r"|access through your institution"
     r"|you (?:do not|don't) (?:currently )?have (?:full )?access"
     r"|to view (?:this item|the full text)"
     r"|preview of subscription content"
     r"|log ?in to (?:view|access|read) (?:the )?full",
     re.I,
 )
+# These only offer the article for sale, which JAMA and AHA pages also do beside a
+# short article they serve in full under a reader's institutional access.
+_STOREFRONT = re.compile(
+    r"(?:purchase|buy|rent) (?:this|the) article"
+    r"|pay per article"
+    r"|purchase (?:short-term )?access",
+    re.I,
+)
+_ACCESS_PROVIDED = re.compile(r"\baccess provided by\b", re.I)
 # Read in the title and top headings, where an article's own title could say
 # "error" or "not found": a bare word counts only as the whole heading's start.
 _ERROR_HEADING = re.compile(
-    r"^\s*(?:error|[45]\d\d)\s*(?:[-:|]|$)|^\s*not found\b"
-    r"|page not found|\b404\b|currently unavailable|temporarily unavailable"
+    r"^\s*error\s*(?:[-:|]|$)|^\s*not found\b"
+    r"|page not found|404 not found|error 404|currently unavailable|temporarily unavailable"
     r"|service unavailable|internal server error|bad gateway|gateway time-?out"
     r"|attention required|client challenge|dns error|(?:article locator|sciencedirect) error",
     re.I,
 )
+# A status code alone, opening the heading or closing it after a dash or bar. A
+# citation title ends in its page number after a colon ("66 (3): 404"), or holds it
+# mid-title, and neither counts.
+_STATUS_HEADING = re.compile(r"^\s*[45]\d\d\s*(?:[-:|]|$)|[-|\u2013]\s*[45]\d\d\s*$")
+
 # A bibliographic database's record of the article: the citation and at most
 # its abstract, however much else the page lists.
 _RECORD_TITLE = re.compile(r"\bPubMed(?: - NCBI)?\s*$|^\s*PsycNET Record Display\s*$")
@@ -140,12 +154,14 @@ def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
 
     headings = [title] + [_text(h) for h in doc.xpath("//h1")[:3]]
     for heading in headings:
-        if heading and _ERROR_HEADING.search(heading):
+        if heading and (_ERROR_HEADING.search(heading)
+                        or (prose < ERROR_PAGE_WORDS and _STATUS_HEADING.search(heading))):
             return BadPage(ERROR_PAGE, f"heading {heading[:80]!r}")
     found = _ERROR_BODY.search(visible)
     if found:
         return BadPage(ERROR_PAGE, f"page says {found.group(0)!r}")
-    found = _PAYWALL.search(visible)
+    found = _PAYWALL.search(visible) or (
+        None if _ACCESS_PROVIDED.search(visible) else _STOREFRONT.search(visible))
     if found:
         return BadPage(PAYWALL, f"page says {found.group(0)!r}; {prose} words of prose")
     if prose < STUB_WORDS:

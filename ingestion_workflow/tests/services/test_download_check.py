@@ -100,3 +100,69 @@ def test_ace_rejects_the_page_with_the_reason(tmp_path):
     assert not ok and reason_of(message) == ERROR_PAGE
     path.write_bytes(real("onv6piwppvwo"))
     assert _validate_downloaded_html(path) == (True, None)
+
+
+@pytest.mark.parametrize(
+    "article_id",
+    [
+        # Full short articles whose citation title ends or runs on with page 404:
+        # "... 66 (3): 404 -- Journal of Neurology, ..."
+        "6hhu36c7z2wa",
+        "p4frymsevkls",
+        # A JAMA letter served under "Access Provided by University of Texas", beside
+        # "Access through your institution", "Purchase access" and "Rent this article"
+        "ipxutfjxf2p7",
+    ],
+)
+def test_a_short_article_passes_whatever_its_page_number_or_storefront(article_id):
+    assert check_page(real(article_id)) is None
+
+
+def test_a_status_code_heading_over_a_short_page_is_an_error_page():
+    bad = check_page(real("bgqw56xoums3"))
+    assert (bad.reason, bad.detail) == (ERROR_PAGE, "heading 'ScienceDirect - 404'")
+
+
+def test_a_status_code_at_a_heading_end_counts_only_over_a_short_page():
+    # the short article above, titled as if a site had appended its status code
+    titled = real("6hhu36c7z2wa").replace(b"</title>", b" - 404</title>", 1)
+    assert check_page(titled) is None
+
+
+def test_an_offer_to_sell_the_article_is_a_paywall_when_no_access_was_provided():
+    # BMJ: the abstract under "Buy this article", 364 words of prose
+    bad = check_page(real("hijvw5niyh6f"))
+    assert bad.reason == PAYWALL and "Buy this article" in bad.detail
+    banner = b"<p>Access provided by a library</p></body>"
+    served = real("hijvw5niyh6f").replace(b"</body>", banner)
+    assert check_page(served) is None
+
+
+def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, monkeypatch):
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.extractors import ace_extractor
+    from ingestion_workflow.extractors.ace_extractor import ACEExtractor
+    from ingestion_workflow.models.ids import Identifier
+
+    monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)  # nothing is parsed
+
+    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
+                        ace_cache_root=tmp_path / "ace" / "html", ace_max_workers=1)
+    extractor = ACEExtractor(settings=settings, download_mode="browser")
+    cached = tmp_path / "ace" / "html" / "html" / "Brain" / "123.html"
+
+    class Scraper:
+        def process_article(self, pmid, journal, **kwargs):
+            cached.parent.mkdir(parents=True, exist_ok=True)
+            cached.write_bytes(real("a6mheoqpeocv"))
+            return str(cached), True
+
+    for n in range(2):  # a second rejection of the same page keeps the first copy too
+        result = extractor._download_single(Identifier(pmid="123"), scraper=Scraper())
+        assert not result.success and reason_of(result.error_message) == ERROR_PAGE
+        assert not cached.exists()
+        [(original, moved)] = result.moved_aside.items()
+        assert original == str(cached)
+        quarantine = tmp_path / "ace" / "html-quarantine" / "html" / "Brain"
+        assert Path(moved) == quarantine / ("123.html" if n == 0 else "123.html.1")
+        assert Path(moved).read_bytes() == real("a6mheoqpeocv")

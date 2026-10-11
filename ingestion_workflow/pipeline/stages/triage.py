@@ -41,7 +41,7 @@ from ingestion_workflow.models import ExtractedContent
 
 from ..plan import StagePlan, Work
 from ..stage import Context
-from .extract import current_extractions
+from .extract import current_extractions, without_bad_pages
 
 logger = logging.getLogger(__name__)
 
@@ -212,6 +212,7 @@ class TriageStage:
             tables_of[work.article_id] = len(content.tables)
             found = ctx.catalog.artifacts([work.article_id], "extract").get(work.article_id, {})
             downloads = ctx.catalog.artifacts([work.article_id], "download").get(work.article_id, {})
+            found = without_bad_pages(found, downloads)
             skipped_of[work.article_id] = skipped_for_text(
                 current_extractions(ctx, found, downloads) or found, work.upstream)
             jobs.append((work.article_id, abstract,
@@ -356,7 +357,10 @@ def _as_dict(table) -> Dict:
             "footer": getattr(table, "footer", "") or ""}
 
 def judged_extraction(ctx, found: Dict[str, Artifact], downloads: Dict[str, Artifact]) -> Optional[Artifact]:
-    """The extraction triage judges, whose text sync writes and passages reads."""
+    """The extraction triage judges, whose text sync writes and passages reads.
+
+    Never one made from a page that is not the article, current or not."""
+    found = without_bad_pages(found, downloads)
     return _most_tables(current_extractions(ctx, found, downloads) or found)
 
 
