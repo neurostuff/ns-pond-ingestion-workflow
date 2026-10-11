@@ -12,15 +12,16 @@ Usage: synth_prose.py silver.jsonl gold-candidates.jsonl out_dir n_train n_test
 Extended for role label version 4 (study_schema roles, no `display`): see `role_units.py`,
 which builds whole labelling units (table and prose) seeded from real units, with the
 sparse roles' cues and hard negatives, and reuses this module's surface forms
-(`coord_text`, `stat_text`, `cluster_text`, `wrap`). `V4_ROLE` maps this module's
-own point roles to study_schema's role fields.
+(`coord_text`, `stat_text`, `cluster_text`, `wrap`). `main` writes each point's role in
+study_schema's fields through `V4_ROLE`.
 """
 import json
 import random
-import prose_coords as pc
 import re
 import sys
 from pathlib import Path
+
+from ingestion_workflow.services import prose_passages as pc
 
 MINUS_FORMS = ["-", "−", "−", "–", "− ", "− "]
 SPACES = ["MNI", "TAL"]
@@ -278,6 +279,8 @@ def main():
             for i in range(n):
                 row = passage(r, vocab[split])
                 row["id"] = f"synth-{split}-{i}"
+                for p in row["points"]:
+                    p.update(zip(("role", "anchor_kind", "from_prior_study"), V4_ROLE[p["role"]]))
                 fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     (out_dir / "synthetic_vocab_sizes.json").write_text(json.dumps(
         {s: {k: len(v) for k, v in d.items()} for s, d in vocab.items()}, indent=1))

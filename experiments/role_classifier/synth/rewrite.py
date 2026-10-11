@@ -4,12 +4,19 @@
 
 IN_DIR: units.jsonl + truth.jsonl (role_units.py). OUT_DIR gets units.jsonl (rewritten where the
 checks pass, else the original), truth.jsonl (copied) and rewrite.log.jsonl. The prompt never names
-the target role. Checks: every coordinate triple and every citation of the original stays verbatim.
+the target role. Checks: every coordinate triple and every citation of the original stays verbatim,
+and the rewritten unit passes the leak check (`leakcheck.leaks`) and is read right by the context
+builders (`role_units.faults`). The output as a whole is leak-checked again; the script exits 1 on a leak.
 """
 import argparse, json, re, sys, shutil, threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from ingestion_workflow.services.set_roles import labeling
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # leakcheck, role_units: sibling scripts
+
+import leakcheck  # noqa: E402
+import role_units  # noqa: E402
+from ingestion_workflow.services.set_roles import labeling  # noqa: E402
 
 SYS = ("You edit text for a corpus of neuroimaging-article excerpts. Rewrite as the authors of a real paper would have written it: "
        "varied, specific, concrete. Keep every number, coordinate, citation, table/figure label and the meaning exactly; do not add "
@@ -33,6 +40,15 @@ def table_prompt(u):
 
 
 def rewrite(u, truth_sent, call):
+    """(the rewritten unit or None, the reason it was refused or None)."""
+    new, ok = _rewrite(u, truth_sent, call)
+    if not ok:
+        return None, "numbers, citations or label changed"
+    bad = leakcheck.leaks(new) + role_units.faults(new)
+    return (None, "; ".join(bad)) if bad else (new, None)
+
+
+def _rewrite(u, truth_sent, call):
     if u["origin"] == "table":
         a, _ = call(SYS, table_prompt(u), T_SCHEMA, u["unit_id"])
         ok = (nums(a["caption"]) == nums(u["caption"]) and nums(" ".join(a["citing"])) == nums(" ".join(u["citing"])) and len(a["citing"]) == len(u["citing"])
@@ -63,13 +79,13 @@ def main():
 
     def work(u):
         try:
-            new, ok = rewrite(u, sent.get(u["unit_id"]), call)
+            new, why = rewrite(u, sent.get(u["unit_id"]), call)
         except Exception as e:  # noqa
-            new, ok = None, False
+            new, why = None, None
             with lock: stats["error"] += 1; log.write(json.dumps({"unit_id": u["unit_id"], "error": str(e)[:200]}) + "\n")
         with lock:
             stats["ok" if new else "kept"] += 1
-            log.write(json.dumps({"unit_id": u["unit_id"], "rewritten": bool(new)}) + "\n"); log.flush()
+            log.write(json.dumps({"unit_id": u["unit_id"], "rewritten": bool(new), **({"refused": why} if why else {})}) + "\n"); log.flush()
         return new or u
     with ThreadPoolExecutor(a.workers) as ex:
         out = list(ex.map(work, U))
@@ -77,7 +93,9 @@ def main():
         for u in out:
             f.write(json.dumps(u, ensure_ascii=False) + "\n")
     shutil.copy(a.in_dir / "truth.jsonl", a.out_dir / "truth.jsonl")
-    print(stats, "calls:", len(U))
+    n, found = leakcheck.check(out)
+    print(stats, "calls:", len(U), "label leaks by reason:", found)
+    sys.exit(1 if found else 0)
 
 
 if __name__ == "__main__":

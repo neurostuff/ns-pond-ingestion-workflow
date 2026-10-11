@@ -159,24 +159,48 @@ kinds) when real examples are scarce. Each unit is seeded from a real unit whose
 rewritten into one target role with that role's cues, plus hard negatives that carry a sparse class's cue
 but are another role. Units are read by `services/set_roles` (`table_context`, `prose_context`), and the
 roles are study_schema's (`labels.COORDINATE_ROLES`, `ANCHOR_KINDS`); an MRS voxel is an `anchor` with
-`anchor_kind` `roi`. Synthetic data is for training only: its `article_id` is `synth:<seed article>`, so
-the export must drop a synthetic unit whose seed article is in val or test.
+`anchor_kind` `roi`. Synthetic data is for training only: seeds and set names come only from units
+`export.splits` puts in train (pass the same `--id-map` the export uses), and a synthetic unit's
+`article_id` is `synth:<seed article>`.
+
+Set names do not follow the target. A class's names take the shapes of the real labelled names of that
+class (a citation, "<region> seed", "P1", a contrast, ...) at the real rates, and the rest of each name
+comes from every class's real names of that shape. No two sets of a unit share a coordinate triple; a
+case the context builders would misread (a real seed whose sets already share one) is redrawn from
+another seed and recorded in `rejected.jsonl`.
 
 ```
-# generate: units.jsonl (sets hold only name and points) + truth.jsonl (the label by construction)
+# generate: units.jsonl (sets hold only name and points), truth.jsonl (the label by construction),
+# rejected.jsonl (cases redrawn, with the reason)
 python experiments/role_classifier/synth/role_units.py OUT_DIR --plan plan.json \
-    --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] [--seed 41]
+    --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] \
+    [--id-map units/slug_dbids.json] [--seed 41]
 
-# leak check: no label field in anything the labeller or the encoder renders
+# leak check: no label syntax in any text field or in what the labeller or the encoder renders,
+# no key a real unit does not have
 python experiments/role_classifier/synth/leakcheck.py OUT_DIR
 
-# rewrite pass: one codex call per unit, model gpt-6.1-sol (codex CLI; no OpenAI API endpoint)
+# name check: a name-only classifier must not do much better on generated sets than on real ones
+python experiments/role_classifier/synth/namecheck.py OUT_DIR --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl \
+    --labels LABEL_DIR [LABEL_DIR ...] [--id-map units/slug_dbids.json]
+
+# rewrite pass: one codex call per unit, model gpt-6.1-sol (codex CLI; no OpenAI API endpoint).
+# A rewrite that fails the leak check is refused; the whole output is leak-checked again.
 python experiments/role_classifier/synth/rewrite.py OUT_DIR REWRITTEN_DIR [--workers 3] [--model gpt-6.1-sol]
 ```
 
 `plan.json` is `{"table": {"reference": 20, "localization": 20, "anchor_roi_mrs": 5, "other": 20,
-"stimulation_target": 10, "hard_result": 10}, "text": {"reference": 20, ..., "hard_anchor_prior": 5}}`.
-The rewrite keeps every number and citation verbatim and falls back to the original unit when a check
-fails. `synth_prose.py` is the earlier prose-only generator (its surface forms are reused);
-`ingestion_workflow/tests/services/test_role_synth.py` runs a tiny generation and the leak check.
+"stimulation_target": 10, "seed": 5, "node": 5, "hard_result": 10}, "text": {"reference": 20, ...,
+"hard_anchor_prior": 5}}`. Each rng seed uses a seed unit once, so a larger set is several runs with
+different `--seed` and `--id-prefix`.
 
+The name check fits a bag-of-tokens logistic regression on the set name alone, class-weighted, and
+scores it by balanced accuracy in article-grouped 5-fold cross-validation over the classes the generated
+units hold: once on the generated sets, once on the real labelled train sets of those classes. It exits 1
+when the generated score is more than 0.10 (`namecheck.MAX_GAIN`) above the real one, and prints each
+class's share of name shapes, real and generated.
+
+The rewrite keeps every number and citation verbatim and falls back to the original unit when a check
+fails. `synth_prose.py` is the earlier prose-only generator (its surface forms are reused; it finds
+coordinates with `services/prose_passages`). `ingestion_workflow/tests/services/test_role_synth.py`
+runs small generations over several rng seeds, the leak check and the name check.
