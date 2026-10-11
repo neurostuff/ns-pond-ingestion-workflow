@@ -11,25 +11,14 @@ from typing import Any, Dict
 
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
-PROSE_PROMPT_VERSION = "2026-10-06.n5"
-
-#: The current nu-prose model's own role vocabulary, which its template and
-#: dataset use. Nothing reads the role it answers: the roles stage decides.
-ROLES = ("result", "roi", "seed", "target", "prior_study", "figure", "other")
+PROSE_PROMPT_VERSION = "2026-10-11.n5-norole"
 
 INSTRUCTION = (
     "List every brain coordinate in the passage, including region-of-interest centres, seeds, "
-    "stimulation targets and coordinates quoted from other studies, and label each with its role. "
+    "stimulation targets and coordinates quoted from other studies. "
     "Put each coordinate under the analysis or contrast it was reported for, and if one coordinate "
     "is reported for several contrasts, list it under each of them. With each coordinate give the "
     "statistic reported for it (t, Z, F, r, ...) and its value, and the cluster size. "
-    "Roles: result = a location this study found (a peak, cluster, local maximum or centre of "
-    "gravity of an effect), including effects found inside a region of interest or connected to a "
-    "seed; roi = a region defined before the analysis and used to extract or restrict data; seed = "
-    "the region whose signal seeds a connectivity or PPI analysis; target = where the brain was "
-    "stimulated (TMS, tDCS, ultrasound, DBS) or a lesion or electrode was placed; prior_study = "
-    "coordinates quoted from other studies only for comparison; figure = a location used only to "
-    "display or illustrate (slice position, crosshairs, an example voxel); other = anything else. "
     "Ignore numbers that are not brain coordinates, such as voxel sizes or molecular docking grids. "
     "Name each analysis after the contrast, comparison, correlation or model its coordinates are a "
     "result of, in the paper's own words: 'faces > houses' when a direction is stated and 'faces vs "
@@ -60,7 +49,6 @@ TEMPLATE = json.dumps({
         "points": [{
             "x": "number", "y": "number", "z": "number",
             "statistic": list(STATISTIC_KINDS), "value": "number", "cluster_size": "integer",
-            "role": list(ROLES),
         }],
     }],
 }, ensure_ascii=False)
@@ -115,4 +103,4 @@ def schema() -> Dict[str, Any]:
 
 
 __all__ = ["INSTRUCTION", "MAX_ANALYSES", "MAX_NAME", "MAX_POINTS", "PROSE_PROMPT_VERSION",
-           "ROLES", "TEMPLATE", "WITH_CONTEXT", "schema"]
+           "TEMPLATE", "WITH_CONTEXT", "schema"]
