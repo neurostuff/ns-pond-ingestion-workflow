@@ -127,7 +127,7 @@ def test_prose_sets_read_their_passage_heading_and_citation_markers():
     text = prose_context.serialize(context)
     assert text.startswith("[ORIGIN] text [POINTS] n=1 ")
     assert (
-        "[CITATIONS] (41) [PASSAGE] We extracted" in text
+        "[CITATIONS] (41) [LOCAL] We extracted" in text and "[PASSAGE] We extracted" in text
         and "[BEFORE] Preprocessing. [AFTER] Then." in text
     )
     assert "citations=1" in cue_summary(context.cue_text())
@@ -268,7 +268,10 @@ def test_local_is_exactly_the_sentence_holding_the_set_s_coordinates():
 
 
 def test_local_holds_every_sentence_of_a_set_with_points_in_several():
-    assert _local(_TEXT, (-3, 49, 16), (-42, 18, -6)) == " ".join(_TEXT.split(". ")[:2]) + "."
+    assert _local(_TEXT, (-3, 49, 16), (-42, 18, -6)) == (
+        "We placed a 6 mm sphere at the seed (x = -3, y = 49, z = 16). "
+        "Activation peaked in the insula [-42 18 \u22126]."
+    )
 
 
 def test_local_keeps_both_sentences_when_a_triple_is_cut_by_a_sentence_break():
