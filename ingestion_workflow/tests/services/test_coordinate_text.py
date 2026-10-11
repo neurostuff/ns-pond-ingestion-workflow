@@ -75,6 +75,11 @@ def test_a_point_is_found_in_every_way_papers_print_it(text, point, printed):
         ("peak (42, -18, 6)", (42, 18, 6)),
         ("peak (42, 18, -6)", (42, 18, 6)),
         ("peak (-42, 18, 6)", (-42, -18, 6)),
+        # Every sign extractors.utils reads as a minus is one here too.
+        ("peak (\u201442, 18, 6)", (42, 18, 6)),
+        ("peak (\u201142, 18, 6)", (42, 18, 6)),
+        ("peak (\uff0d42, 18, 6)", (42, 18, 6)),
+        ("peak (\ufe6342, 18, 6)", (42, 18, 6)),
         # A longer number.
         ("peak (142, 18, 6)", (42, 18, 6)),
         ("peak (-142, 18, 6)", (-42, 18, 6)),

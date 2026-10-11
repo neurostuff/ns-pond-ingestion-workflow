@@ -13,11 +13,13 @@ import re
 from functools import lru_cache
 from typing import Iterable, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.extractors.utils import _MINUS_CHARS
+
 Span = Tuple[int, int]
 Triple = Tuple[float, float, float]
 
-#: Hyphen-minus, minus sign, en dash, hyphen, figure dash: every minus papers print.
-MINUS = "-−–‐‒"
+#: Hyphen-minus plus every character the extractors read as a minus (one set, not two).
+MINUS = "-" + "".join(_MINUS_CHARS)
 
 # A sign may be spaced from its value ("x −  24.2", "y + 16.3").
 _GAP = r"[^\S\n]{0,2}"
