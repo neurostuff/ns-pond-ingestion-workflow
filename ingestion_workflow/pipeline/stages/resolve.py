@@ -14,6 +14,7 @@ from ingestion_workflow.models.statistics import normalize_statistic_kind
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
 RESOLVE_VERSION = 9
 
@@ -296,10 +297,14 @@ class ResolveStage:
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         analysed = ctx.catalog.artifacts(ids, "analyses")
+        downloads = ctx.catalog.artifacts(ids, "download")
         for ref in refs:
             prose = upstream.get(ref.id, {}).get("")
             if prose is None or prose.status is not Status.OK:
                 take_back_or_block(plan, ref, prose, artifacts.get(ref.id, {}).get(""))
+                continue
+            if read_from_bad_page(prose, downloads.get(ref.id, {})):
+                plan.block(f"prose {READ_FROM_BAD_PAGE}")  # an earlier resolve stays as it is
                 continue
             # The tables' analyses when there are any. Nothing waits for them:
             # when they arrive the fingerprint below changes, and this re-runs.

@@ -66,6 +66,16 @@ def from_bad_page(source: Optional[str], downloads: Dict[str, Artifact]) -> bool
             and bool(download.summary.get("bad_page")))
 
 
+#: Why a stage after passages waits on an article: what it would read was made from
+#: a page that is not the article. Blocked, not taken back.
+READ_FROM_BAD_PAGE = "read from a downloaded page that is not the article"
+
+
+def read_from_bad_page(artifact: Optional[Artifact], downloads: Dict[str, Artifact]) -> bool:
+    """Whether passages or prose (each records its extraction's `source`) are from a bad page."""
+    return artifact is not None and from_bad_page((artifact.summary or {}).get("source"), downloads)
+
+
 #: The error an extraction made from a page that is not the article fails with.
 FAILED_VALIDATION = "download failed validation"
 

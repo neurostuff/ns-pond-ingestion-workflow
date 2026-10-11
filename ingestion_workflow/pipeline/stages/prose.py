@@ -17,7 +17,7 @@ from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
-from .extract import from_bad_page
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 
 logger = logging.getLogger(__name__)
@@ -77,9 +77,9 @@ class ProseStage:
             if passages is None or passages.status is not Status.OK:
                 take_back_or_block(plan, ref, passages, artifacts.get(ref.id, {}).get(""))
                 continue
-            if from_bad_page(passages.summary.get("source"), downloads.get(ref.id, {})):
+            if read_from_bad_page(passages, downloads.get(ref.id, {})):
                 # the passages stage blocks rather than takes back, so these stay OK
-                plan.block("passages read from a downloaded page that is not the article")
+                plan.block(f"passages {READ_FROM_BAD_PAGE}")
                 continue
             metadata = fetched.get(ref.id, {}).get("")
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None

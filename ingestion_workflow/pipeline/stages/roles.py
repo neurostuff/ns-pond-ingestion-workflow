@@ -28,6 +28,7 @@ from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
+from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 from .space import _article_text
 
@@ -396,10 +397,15 @@ class RolesStage:
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         prose = ctx.catalog.artifacts(ids, "prose")
         passages = ctx.catalog.artifacts(ids, "passages")
+        downloads = ctx.catalog.artifacts(ids, "download")
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
                 take_back_or_block(plan, ref, parent, artifacts.get(ref.id, {}).get(""))
+                continue
+            if "text" in self.needs(parent) and read_from_bad_page(
+                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {})):
+                plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and
             # the article is planned on the first run with the model configured.

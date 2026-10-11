@@ -143,3 +143,39 @@ def test_prose_does_not_read_passages_made_from_a_bad_page(env, tmp_path):
     blocked = plan()
     assert (blocked.pending, blocked.blocked) == ([], 1)
     assert catalog.artifact(ref.id, "passages", "").status is Status.OK  # held, not taken back
+
+
+def test_nothing_after_prose_reads_prose_made_from_a_bad_page(env, tmp_path):
+    from ingestion_workflow.pipeline.stages.resolve import ResolveStage
+    from ingestion_workflow.pipeline.stages.roles import RolesStage
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+
+    settings, catalog, ref = env[:3]
+    settings.ns_pond_root = tmp_path / "pond"
+    settings.prose_model = "nu-prose"  # roles reads resolve's sets, prose's among them
+    catalog.record([
+        Outcome(ref.id, "prose", "", Status.OK, "pr-1", {"analyses": []},
+                summary={"source": "ace", "passages": 1, "coordinates": 2, "analyses": 1}),
+        Outcome(ref.id, "resolve", "", Status.OK, "r-1", {"prose": {}},
+                summary={"tables": 0, "prose_analyses": 1}),
+        Outcome(ref.id, "roles", "", Status.OK, "ro-1", {}),
+        Outcome(ref.id, "upload", "", Status.OK, "up-1", {}, summary={"base_study_id": "b1"}),
+    ])
+
+    def plans():
+        ctx = Context(settings, catalog)
+        out = {}
+        for stage in (ResolveStage(settings), RolesStage(settings), SyncStage(settings)):
+            plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], stage.name),
+                              catalog.artifacts([ref.id], stage.requires))
+            out[stage.name] = (len(plan.pending), plan.reasons)
+        return out
+
+    before = plans()
+    assert before["resolve"][0] == before["sync"][0] == 1
+    refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
+    reason = {"prose read from a downloaded page that is not the article": 1}
+    assert plans() == {"resolve": (0, reason), "roles": (0, reason), "sync": (0, reason)}
+    # held, not taken back
+    assert {s: catalog.artifact(ref.id, s, "").status for s in ("prose", "resolve", "roles")} == {
+        "prose": Status.OK, "resolve": Status.OK, "roles": Status.OK}
