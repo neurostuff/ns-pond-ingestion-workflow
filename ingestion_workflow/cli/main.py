@@ -857,8 +857,72 @@ def report_funnel(
     funnel = write_report(_catalog_root(catalog, config), out, samples=samples, prose=prose)
     typer.echo(f"{funnel.total:,} articles in {funnel.seconds:.1f}s -> {out} "
                f"({out.stat().st_size / 1e6:.1f} MB)")
+    _echo_flow(funnel)
+
+
+def _echo_flow(funnel) -> None:
+    from ingestion_workflow.services.funnel_report import flow
+
+    for step in flow(funnel):
+        left = sum(item[2] for item in step["excluded"])
+        waiting = sum(item[2] for item in step["waiting"])
+        top = max(step["excluded"] + step["waiting"], key=lambda item: item[2], default=None)
+        check = "ok" if step["adds_up"] and step["follows"] else "DOES NOT ADD UP"
+        typer.echo(f"  {step['stage']:>9}  in {step['in']:>9,}  passed {step['passed']:>9,}  "
+                   f"left out {left:>9,}  waiting {waiting:>9,}  {check}"
+                   + (f"  top: {top[2]:,} {top[0]}: {top[1]}" if top else ""))
     for problem in funnel.reconcile():
         typer.echo(f"  does not reconcile: {problem}")
+
+
+def _pipeline_settings(config: Optional[Path]):
+    """The pipeline's settings when a config is named; the trace needs them to plan."""
+    return load_settings(config) if config is not None else None
+
+
+@report_app.command("trace")
+def report_trace(
+    article_id: str = typer.Argument(..., help="Article id, as the page lists it."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Print how one article got where it is, as JSON: per stage its state, and each
+    record's path, status, reason, when it was written, its fingerprint and inputs.
+    With --config, each stage's own plan says whether the record is fresh."""
+    from ingestion_workflow.services.funnel_report import trace_article
+
+    found = trace_article(_catalog_root(catalog, config), article_id,
+                          settings=_pipeline_settings(config), prose=prose)
+    typer.echo(json.dumps(found, indent=1))
+
+
+@report_app.command("serve")
+def report_serve(
+    port: int = typer.Option(8765, "--port", help="Port on 127.0.0.1."),
+    samples: int = typer.Option(
+        20, "--samples", help="Article ids kept per bucket for the drill-down."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Serve the funnel page with a full trace for each article clicked (read-only)."""
+    from ingestion_workflow.services.funnel_report import serve
+
+    server = serve(_catalog_root(catalog, config), port=port, samples=samples, prose=prose,
+                   settings=_pipeline_settings(config))
+    _echo_flow(server.funnel)
+    typer.echo(f"serving on http://127.0.0.1:{server.server_address[1]}/ (Ctrl-C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 @report_app.command("funnel-ids")

@@ -34,14 +34,19 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
+from urllib.parse import parse_qs, urlparse
 
+from ingestion_workflow.catalog import Catalog
+from ingestion_workflow.catalog.blobs import BlobStore
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 
@@ -60,6 +65,51 @@ UNACCOUNTED = "unaccounted"
 
 STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, BLOCKED, PENDING,
           NOT_ATTEMPTED, STALE, UNACCOUNTED)
+
+#: What each state means, in plain words, for the page.
+MEANINGS = {
+    PASSED: "done, and handed on to the next stage",
+    FILTERED: "done, but it holds nothing the next stage reads",
+    FAILED: "failed; the pipeline will try again",
+    PERMANENT: "failed in a way the pipeline does not retry",
+    TAKEN_BACK: "no extraction found any text, so what was made from it was withdrawn",
+    HELD: "upload kept the study already there, because a studyset holds it",
+    REFUSED: "its input passed, but that text came from a downloaded page that is not the article",
+    BLOCKED: "never reached this stage: it dropped out at an earlier one",
+    PENDING: "ready for this stage, which has not run on it yet",
+    NOT_ATTEMPTED: "ready, but this stage has never run on the catalog",
+    STALE: "a record made from an input that has since gone or changed",
+    UNACCOUNTED: "an attempt with no outcome, or a status the catalog does not know: a bug",
+}
+
+#: Of the articles a stage on the upload path takes in, those it leaves out and
+#: those still waiting; the rest passed. The flow diagram sums these.
+EXCLUDED = (FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, UNACCOUNTED)
+WAITING = (PENDING, NOT_ATTEMPTED)
+
+#: Plain words for common reasons, matched as a substring, first match wins.
+GLOSSARY: Tuple[Tuple[str, str], ...] = (
+    ("leftover", "a failed or empty record left from an earlier run; nothing downstream "
+                 "reads it"),
+    ("tables wait behind it", "the article has coordinate tables, which reach resolve only "
+                              "after this free step runs"),
+    ("nothing to read (passages = 0)", "no passage to send to the model; running it costs "
+                                       "nothing and records an empty answer"),
+    (READ_FROM_BAD_PAGE, "the text it would read came from a page that is not the article"),
+    ("bad page: paywall", "the download was a paywall or login page, not the article"),
+    ("bad page: error_page", "the download was an error page (not found, server error)"),
+    ("bad page: empty_shell", "the download held almost no visible text (a viewer shell)"),
+    ("bad page: citation_stub", "the download was a citation or record page with no article "
+                                "text"),
+    ("not open access", "the source will not serve the full text"),
+    ("triage passed no table", "triage read the tables and judged none to hold coordinates"),
+    ("the extraction has no table", "the extracted text has no table to triage"),
+    ("no coordinate tables", "no table holds coordinates"),
+    ("neither the tables nor the prose", "nothing for resolve to combine"),
+    ("never run on the catalog", "this stage has not run on any article yet"),
+    (HELD_FOR_REVIEW, "the study is in a studyset, so the copy already uploaded stays"),
+    (NO_TEXT, "no extractor found text in the download"),
+)
 
 #: A stage that runs per source keeps one artifact per source; the article's
 #: state is the best any source reached, as `Catalog.status_counts` counts it.
@@ -365,21 +415,20 @@ def _row_reason(row: _Row) -> str:
     return _failure_reason(row)
 
 
-_ROWS_SQL = """
+_ROW_COLUMNS = """
 SELECT a.article_id, a.stage, a.source, a.status, substr(a.error, 1, 400),
        json_extract(a.summary, '$.passed'), json_extract(a.summary, '$.tables'),
        json_extract(a.summary, '$.reason'), json_extract(a.summary, '$.source'),
        json_extract(a.summary, '$.coordinates'), json_extract(a.summary, '$.analyses'),
        json_extract(a.summary, '$.retracted'), json_extract(a.summary, '$.bad_page'),
        json_extract(a.summary, '$.passages')
-FROM artifacts a ORDER BY a.article_id
-"""
+FROM artifacts a"""
+_ROWS_SQL = _ROW_COLUMNS + " ORDER BY a.article_id"
 
 _ATTEMPTED_SQL = """
 SELECT DISTINCT t.article_id, t.stage FROM attempts t
 WHERE NOT EXISTS (SELECT 1 FROM artifacts a
-                  WHERE a.article_id = t.article_id AND a.stage = t.stage)
-"""
+                  WHERE a.article_id = t.article_id AND a.stage = t.stage)"""
 
 
 #: Articles with an artifact per stage, counted apart from the placement, for
@@ -459,6 +508,38 @@ class Funnel:
         if self.stranded:
             problems.append(f"{self.stranded:,} artifacts belong to no live article")
         return problems
+
+
+def flow(funnel: Funnel) -> List[Dict[str, Any]]:
+    """The upload path as a flow diagram, one step per stage: what came in (its input
+    passed), what passed on, what was left out and what waits, each by state and
+    reason, and the two checks the page shows. The CLI prints this; the page draws it,
+    and recounts it in the browser only to apply its filters."""
+    by: Dict[str, Dict[Tuple[str, str], int]] = defaultdict(lambda: defaultdict(int))
+    for (stage, state, reason, *_), (count, _) in funnel.cells.items():
+        by[stage][(state, reason)] += count
+    steps: List[Dict[str, Any]] = []
+    before: Optional[int] = None
+    for stage in trunk(funnel.graph):
+        cells = by[stage]
+
+        def picked(states: Sequence[str]) -> List[list]:
+            return sorted(([state, reason, n] for (state, reason), n in cells.items()
+                           if state in states), key=lambda item: (-item[2], item[0], item[1]))
+
+        came = funnel.total - sum(n for (state, _), n in cells.items()
+                                  if state in (BLOCKED, STALE))
+        passed = sum(n for (state, _), n in cells.items() if state == PASSED)
+        excluded, waiting = picked(EXCLUDED), picked(WAITING)
+        steps.append({
+            "stage": stage, "in": came, "passed": passed,
+            "excluded": excluded, "waiting": waiting,
+            "stale": sum(n for (state, _), n in cells.items() if state == STALE),
+            "adds_up": came == passed + sum(i[2] for i in excluded) + sum(i[2] for i in waiting),
+            "follows": before is None or came == before,
+        })
+        before = passed
+    return steps
 
 
 def _add(table: Dict[tuple, list], key: tuple, article_id: str, raw: str, samples: int) -> None:
@@ -566,6 +647,11 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "samples": funnel.samples,
         "stages": [{"name": n.name, "upstream": n.upstream, "flag": n.flag} for n in funnel.graph],
         "prose": any(n.name == "prose" for n in funnel.graph),
+        "flow": flow(funnel),
+        "meanings": MEANINGS,
+        "glossary": GLOSSARY,
+        "excluded": EXCLUDED,
+        "waiting": WAITING,
         "trunk": trunk(funnel.graph),
         "problems": funnel.reconcile(),
         "stranded": funnel.stranded,
@@ -637,8 +723,219 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
         conn.close()
 
 
+class _NoPayloads(BlobStore):
+    def get(self, digest: Optional[str]) -> Optional[Any]:
+        raise PermissionError("the trace reads catalog metadata only, never a payload")
+
+
+class _MetadataCatalog(Catalog):
+    """The catalog over a read-only connection, refusing to open a payload."""
+
+    def __init__(self, connection: sqlite3.Connection, root: Path) -> None:
+        super().__init__(connection, root)
+        self.blobs = _NoPayloads(self.root / "blobs")
+
+    def payload(self, artifact):
+        return self.blobs.get(artifact.blob if artifact else None)
+
+
+def _versions(stage: str) -> Dict[str, Any]:
+    """The version constants of the stage's code as it is now."""
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES
+
+    module = sys.modules[STAGE_TYPES[stage].__module__]
+    return {k: v for k, v in sorted(vars(module).items())
+            if k.isupper() and k.endswith("VERSION") and isinstance(v, (str, int))}
+
+
+def _brief(artifact) -> Optional[Dict[str, str]]:
+    if artifact is None:
+        return None
+    return {"stage": artifact.stage, "source": artifact.source,
+            "fingerprint": artifact.fingerprint, "written": artifact.updated_at}
+
+
+def _read_plan(plan, existing: Dict[str, Any]) -> Dict[str, Any]:
+    """What one article's plan says about freshness, per source where it can tell."""
+    sources: Dict[str, Dict[str, Any]] = {}
+    for work in plan.pending:
+        old = existing.get(work.source)
+        if old is None:
+            why = "due: no record yet, so the stage would run now"
+        elif old.status.value != "ok":
+            why = "due: the stage would try again"
+        elif old.fingerprint != work.fingerprint:
+            why = (f"stale: built from fingerprint {old.fingerprint[:12] or '(none)'}; "
+                   f"its inputs or version now give {work.fingerprint[:12]}, so it would rebuild")
+        else:
+            why = "stale: a refresh was asked for, or its stored payload is gone"
+        sources[work.source] = {"freshness": why, "would_read": _brief(work.upstream)}
+    said = []
+    if plan.fresh:
+        said.append("fresh: its fingerprint matches what the stage would build from its "
+                    "inputs and code now")
+    if plan.blocked:
+        said.append("blocked: " + ("; ".join(plan.reasons) or "its input is not ready"))
+    if plan.skipped:
+        said.append("skipped: the plan has nothing for it to do")
+    if plan.permanent:
+        said.append("not retried: a permanent failure, or out of attempts")
+    if plan.pending:
+        said.append(f"would run for {len(plan.pending)} source(s)")
+    return {"plan": "; ".join(said), "sources": sources}
+
+
+def _plan_one(catalog_root: Path | str, article_id: str, names: Sequence[str],
+              settings) -> Dict[str, Dict[str, Any]]:
+    """Each stage's own `plan()` for one article, run against the catalog read-only.
+
+    This is the scheduler's freshness test itself, so it cannot drift from it."""
+    from ingestion_workflow.pipeline.scheduler import _plan_batch
+    from ingestion_workflow.pipeline.stage import Context
+    from ingestion_workflow.pipeline.stages import build
+
+    conn = open_readonly(catalog_root)
+    conn.row_factory = sqlite3.Row
+    out: Dict[str, Dict[str, Any]] = {}
+    try:
+        catalog = _MetadataCatalog(conn, Path(catalog_root).resolve())
+        ctx = Context(settings, catalog)
+        ref = catalog.ref(article_id)
+        runs = {stage.name: stage for stage in build(None, settings)}
+        for name in names:
+            stage = runs.get(name)
+            if stage is None:
+                out[name] = {"plan": "not planned: these settings do not run this stage"}
+                continue
+            try:
+                plan = _plan_batch(ctx, stage, [ref])
+                existing = catalog.artifacts([article_id], name).get(article_id, {})
+                out[name] = _read_plan(plan, existing)
+            except Exception as exc:  # report it, so one stage cannot hide the rest
+                out[name] = {"plan": f"not known: {type(exc).__name__}: {exc}"[:300]}
+    finally:
+        conn.close()
+    return out
+
+
+def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
+                  prose: Optional[bool] = None) -> Dict[str, Any]:
+    """How one article got where it is: per stage its state (the same placement the
+    funnel counts), and every artifact's path, status, reason, summary, when it was
+    written, its fingerprint and attempts, and what it was built from. With the
+    pipeline's `settings`, each stage's plan says whether it is fresh. Reads catalog
+    rows only, never a payload."""
+    conn = open_readonly(catalog_root)
+    try:
+        found = conn.execute("SELECT created_at, merged_into FROM articles WHERE id = ?",
+                             (article_id,)).fetchone()
+        if found is None:
+            return {"article_id": article_id, "error": "no such article in the catalog"}
+        if found[1]:
+            return {"article_id": article_id, "merged_into": found[1],
+                    "error": f"merged into {found[1]}"}
+        ran = {r[0] for r in conn.execute("SELECT DISTINCT stage FROM artifacts")}
+        if prose is None:
+            prose = bool(ran & {"passages", "prose", "resolve"})
+        graph = stage_graph(prose)
+        rows = [_Row(*r[1:]) for r in conn.execute(
+            _ROW_COLUMNS + " WHERE a.article_id = ?", (article_id,))]
+        attempted = {r[1] for r in conn.execute(_ATTEMPTED_SQL + " AND t.article_id = ?",
+                                                (article_id,))}
+        placed = place_article(graph, rows, ran=ran, attempted=attempted)
+        by_key = {(r.stage, r.source): r for r in rows}
+        records: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        for stage, source, status, fp, blob, summary, error, written in conn.execute(
+                "SELECT stage, source, status, fingerprint, blob, summary, error, updated_at "
+                "FROM artifacts WHERE article_id = ? ORDER BY stage, source", (article_id,)):
+            path = Path(catalog_root).resolve() / "blobs" / blob[:2] / f"{blob}.json.gz" \
+                if blob else None
+            records[stage].append({
+                "source": source, "status": status, "error": (error or "")[:600],
+                "reason": _row_reason(by_key[(stage, source)]),
+                "summary": json.loads(summary), "fingerprint": fp, "written": written,
+                "path": str(path) if path else None,
+                "on_disk": path.exists() if path else None,
+            })
+        tries: Dict[Tuple[str, str], Dict[str, Any]] = {}
+        for stage, source, n, failed, last in conn.execute(
+                "SELECT stage, source, COUNT(*), SUM(1 - ok), MAX(attempted_at) FROM attempts "
+                "WHERE article_id = ? GROUP BY stage, source", (article_id,)):
+            tries[(stage, source)] = {"attempts": n, "failed": failed, "last": last}
+    finally:
+        conn.close()
+    names = [node.name for node in graph]
+    plans = _plan_one(catalog_root, article_id, names, settings) if settings is not None else {}
+    stages = []
+    for node in graph:
+        where = placed[node.name]
+        mine = records.get(node.name, [])
+        plan = plans.get(node.name, {})
+        for rec in mine:
+            rec.update(tries.get((node.name, rec["source"]), {"attempts": 0}))
+            if plan:
+                rec["freshness"] = plan.get("sources", {}).get(rec["source"], {}).get(
+                    "freshness") or plan.get("plan", "")
+        upstream = records.get(node.upstream or "", [])
+        stages.append({
+            "stage": node.name, "input": node.upstream, "state": where.state,
+            "reason": where.reason, "meaning": MEANINGS[where.state], "records": mine,
+            "built_from": [{"stage": node.upstream, "source": u["source"],
+                            "status": u["status"], "fingerprint": u["fingerprint"],
+                            "written": u["written"],
+                            "newer": bool(mine) and u["written"] > max(r["written"] for r in mine)}
+                           for u in upstream],
+            "version": _versions(node.name),
+            "plan": plan.get("plan", "") if plan else (
+                "" if settings is not None else "pass the pipeline's --config to check freshness"),
+        })
+    return {"article_id": article_id, "registered": found[0], "stages": stages,
+            "attempts_without_outcome": sorted(attempted)}
+
+
+def serve(catalog_root: Path | str, *, host: str = "127.0.0.1", port: int = 8765,
+          samples: int = 20, prose: Optional[bool] = None, settings=None) -> ThreadingHTTPServer:
+    """The page, plus each article's trace on click, served from this machine. The
+    caller runs `serve_forever()`."""
+    conn = open_readonly(catalog_root)
+    try:
+        funnel = build_funnel(conn, prose=prose, samples=samples)
+    finally:
+        conn.close()
+    page = render_html(funnel, str(catalog_root)).encode("utf-8")
+    graph_prose = any(n.name == "prose" for n in funnel.graph)
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            url = urlparse(self.path)
+            if url.path in ("/", "/index.html"):
+                self._send(200, "text/html; charset=utf-8", page)
+            elif url.path == "/trace":
+                article = (parse_qs(url.query).get("id") or [""])[0]
+                body = trace_article(catalog_root, article, settings=settings,
+                                     prose=graph_prose)
+                self._send(200, "application/json", json.dumps(body).encode("utf-8"))
+            else:
+                self._send(404, "text/plain", b"not found")
+
+        def _send(self, code: int, kind: str, body: bytes) -> None:
+            self.send_response(code)
+            self.send_header("Content-Type", kind)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args) -> None:
+            pass
+
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.funnel = funnel  # type: ignore[attr-defined]
+    return server
+
+
 _PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ingestion funnel</title>
 <style>
 :root{--fg:#1d2330;--muted:#5b6475;--line:#d9dde5;--bg:#fff;--panel:#f6f7f9;--accent:#2f5bd3}
@@ -661,26 +958,50 @@ td.ok{color:#1b7f3b}td.bad{color:#a1261b;font-weight:600}
 code{background:var(--panel);padding:2px 4px;border-radius:3px}
 svg text{font-size:11px;fill:var(--fg)}
 button{font:inherit;padding:3px 10px}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.flow{max-width:1100px}
+.step{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.box{border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:var(--bg)}
+.box.main{flex:0 1 260px;min-width:220px;border-left:5px solid #3b4a66;cursor:pointer}
+.box.main:hover,.box li:hover{background:#e8eefc}
+.box.excl{flex:1 1 320px;background:var(--panel)}
+.box .big{font-size:20px;font-weight:600}
+.box ul{list-style:none;margin:4px 0;padding:0}
+.box li{display:flex;flex-wrap:wrap;gap:0 8px;padding:2px 0;cursor:pointer;border-bottom:1px dotted var(--line)}
+.box li .n{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.box li .mean{flex-basis:100%;color:var(--muted);font-size:12px}
+.arrow{margin:4px 0 4px 40px;color:#2e9d57;font-weight:600}
+.ok{color:#1b7f3b}.bad{color:#a1261b;font-weight:600}
+#trace table td{text-align:left;white-space:normal;vertical-align:top;max-width:none}
+#trace .path{font-family:monospace;font-size:11px;word-break:break-all}
+#filters .grp>div{display:flex;flex-wrap:wrap;gap:2px 0}
+.box li>span{min-width:0;overflow-wrap:anywhere}
+.scroll{overflow-x:auto;max-width:100%}
+@media (max-width:700px){body{padding:8px}.box.main{flex-basis:100%;min-width:0}#filters{position:static}th,td{padding:2px 4px}}
 </style></head><body>
 <h1>Ingestion funnel: downloaded to uploaded</h1>
 <div id="meta" class="muted"></div>
 <div id="problems"></div>
 <div id="filters"></div>
 <div id="filter-help" class="muted" style="margin:6px 0"></div>
-<h2>Funnel along the upload path</h2>
-<div class="muted">Each column is a stage on the path to upload. The band to the right is what passed on; the drops below are what stayed behind, split by state and reason. Click a drop to list its articles.</div>
+<h2>Flow along the upload path</h2>
+<div class="tabs"><button id="tab-flow" class="on">Flow</button> <button id="tab-sankey">Sankey</button></div>
+<div id="view-flow"><div class="muted" style="margin:6px 0">Top to bottom, one box per stage. <b>In</b> is every article whose input passed; each one then passed on, was left out (beside the box, by state and reason, in plain words), or is waiting. Click a box or a reason to list its articles; click an article for its trace.</div><div id="flow" class="flow"></div></div>
+<div id="view-sankey" style="display:none"><div class="muted">Each column is a stage on the path to upload. The band to the right is what passed on; the drops below are what stayed behind, split by state and reason. Click a drop to list its articles.</div>
 <div style="overflow-x:auto"><svg id="sankey"></svg></div>
-<div class="legend" id="legend"></div>
+<div class="legend" id="legend"></div></div>
 <h2>Every stage</h2>
 <div class="muted">Every article has one state at every stage, so each row adds up to the total. <b>entered</b> = total &minus; blocked &minus; stale. Click a number to list its articles; click a stage for its reasons.</div>
-<table id="stages"></table>
+<div class="scroll"><table id="stages"></table></div>
 <h2 id="reasons-title">Reasons</h2>
-<table id="reasons"></table>
+<div class="scroll"><table id="reasons"></table></div>
 <h2>Sources</h2>
 <div class="muted">Download and extraction per source (one row per article and source, so an article counts once under every source it was tried at), the source whose text triage judged, and how many articles with that source reached upload. A bad page is a download that served something other than the article (a paywall, an error page, an empty shell, a citation stub).</div>
-<table id="sources"></table>
+<div class="scroll"><table id="sources"></table></div>
 <h2 id="drill-title">Drill-down</h2>
 <div id="drill"><div class="muted">Click a number above.</div></div>
+<h2 id="trace-title">Article trace</h2>
+<div id="trace" class="scroll"><div class="muted">Click an article in the drill-down.</div></div>
 <script id="data" type="application/json">__DATA__</script>
 <script>
 "use strict";
@@ -745,6 +1066,34 @@ function sankey(cs){
   document.querySelectorAll("#sankey g[data-stage]").forEach(el=>el.onclick=()=>{const r=el.dataset.reason;drill({stage:el.dataset.stage,state:el.dataset.state,reason:r.startsWith("(more reasons")?null:r})});
   document.getElementById("legend").innerHTML=STATES.map(s=>`<span><i style="background:${COLOR[s]}"></i>${s}</span>`).join("");
 }
+function flowOf(cs){
+  const by={};cs.forEach(c=>{const st=S.stage[c[0]],k=c[1]+"|"+c[2];(by[st]=by[st]||{})[k]=((by[st]||{})[k]||0)+c[6]});
+  const [,all]=totals(cs);let before=null;
+  return D.trunk.map(st=>{const m=by[st]||{},E=Object.entries(m).map(([k,v])=>{const [x,r]=k.split("|").map(Number);return [STATES[x],S.reason[r],v]});
+    const sum=xs=>xs.reduce((a,i)=>a+i[2],0),pick=ss=>E.filter(i=>ss.includes(i[0])).sort((a,b)=>b[2]-a[2]||(a[0]+a[1]<b[0]+b[1]?-1:1));
+    const came=all-sum(pick(["blocked","stale"])),passed=sum(pick(["passed"])),excluded=pick(D.excluded),waiting=pick(D.waiting);
+    const step={stage:st,in:came,passed,excluded,waiting,stale:sum(pick(["stale"])),adds_up:came===passed+sum(excluded)+sum(waiting),follows:before===null||came===before};
+    before=passed;return step})}
+function meaning(state,reason){const g=D.glossary.find(([k])=>reason.includes(k));return g?g[1]:D.meanings[state]}
+function filtered(){return F.dl.size||F.tried.size||F.text.size||F.from||F.to}
+function flowView(cs){
+  const steps=flowOf(cs),sum=xs=>xs.reduce((a,i)=>a+i[2],0);
+  const same=!filtered()&&JSON.stringify(steps.map(x=>[x.in,x.passed,sum(x.excluded),sum(x.waiting)]))===JSON.stringify(D.flow.map(x=>[x.in,x.passed,sum(x.excluded),sum(x.waiting)]));
+  const li=(st,[state,reason,n])=>`<li data-stage="${esc(st)}" data-state="${esc(state)}" data-reason="${esc(reason)}"><span style="color:${COLOR[state]}">${esc(state)}</span><span>${esc(reason||"(no reason)")}</span><span class="n">${fmt(n)}</span><span class="mean">${esc(meaning(state,reason))}</span></li>`;
+  const list=(st,items)=>items.slice(0,8).map(i=>li(st,i)).join("")+(items.length>8?`<details><summary class="muted">${items.length-8} more reasons</summary><ul>${items.slice(8).map(i=>li(st,i)).join("")}</ul></details>`:"");
+  let h=filtered()?`<div class="muted">Filtered: the counts are recounted in the browser for the selected articles.</div>`:`<div class="${same?"ok":"bad"}">${same?"✓ the same numbers as <code>ingest report funnel</code> prints":"✗ differs from what <code>ingest report funnel</code> counted"}</div>`;
+  steps.forEach((x,i)=>{const ex=sum(x.excluded),wt=sum(x.waiting);
+    h+=`<div class="step"><div class="box main" data-stage="${esc(x.stage)}"><div><b>${esc(x.stage)}</b> <span class="muted">${i?"input: "+esc(D.trunk[i-1])+" passed":"every live article"}</span></div><div class="big">${fmt(x.in)} in</div>`+
+      `<div>${fmt(x.passed)} passed &middot; ${fmt(ex)} left out &middot; ${fmt(wt)} waiting</div>`+
+      `<div class="${x.adds_up?"ok":"bad"}">in = passed + left out + waiting: ${fmt(x.in)} = ${fmt(x.passed)} + ${fmt(ex)} + ${fmt(wt)} ${x.adds_up?"✓":"✗"}</div>`+
+      (i?`<div class="${x.follows?"ok":"bad"}">in = ${esc(D.trunk[i-1])} passed ${x.follows?"✓":"✗"}</div>`:"")+
+      (x.stale?`<div class="muted" title="${esc(D.meanings.stale)}">+${fmt(x.stale)} stale records (not counted in)</div>`:"")+`</div>`+
+      `<div class="box excl"><b>Left out: ${fmt(ex)}</b><ul>${list(x.stage,x.excluded)}</ul>${wt?`<b>Waiting: ${fmt(wt)}</b><ul>${list(x.stage,x.waiting)}</ul>`:""}</div></div>`;
+    if(i<steps.length-1)h+=`<div class="arrow">&darr; ${fmt(x.passed)} passed on to ${esc(D.trunk[i+1])}</div>`});
+  const el=document.getElementById("flow");el.innerHTML=h;
+  el.querySelectorAll(".box.main").forEach(b=>b.onclick=()=>drill({stage:b.dataset.stage,states:STATES.filter(s=>!["blocked","stale"].includes(s))}));
+  el.querySelectorAll("li[data-state]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();drill({stage:e.dataset.stage,state:e.dataset.state,reason:e.dataset.reason})});
+}
 function stageTable(cs){
   const [t,all]=totals(cs);const show=STATES.filter(s=>STAGES.some(st=>t[st][s]));
   let h=`<tr><th>stage</th><th>input</th><th>entered</th>${show.map(s=>`<th style="color:${COLOR[s]}">${s}</th>`).join("")}<th>sum</th><th>share of entered</th></tr>`;
@@ -783,26 +1132,30 @@ const q=s=>"'"+String(s).replace(/'/g,"'\\''")+"'";
 function articleArgs(){let c=` --catalog ${q(D.catalog)} ${D.prose?"--prose":"--no-prose"}`;
   [["dl","--source"],["tried","--tried"],["text","--judged"]].forEach(([k,flag])=>[...F[k]].sort().forEach(v=>c+=` ${flag} ${q(v)}`));
   if(F.from)c+=` --from ${F.from}`;if(F.to)c+=` --to ${F.to}`;return c}
+function wanted(o){const w=o.states||(o.state?[o.state]:null);return w?(F.state.size?w.filter(s=>F.state.has(s)):w):[...F.state]}
 function cliCmd(o){
-  const states=o.state?(!F.state.size||F.state.has(o.state)?[o.state]:null):[...F.state];
-  if(!states)return "(none: the state filter leaves this bucket out)";
+  const states=wanted(o);
+  if((o.states||o.state)&&!states.length)return "(none: the state filter leaves this bucket out)";
   let c=`ingest report funnel-ids --stage ${o.stage}`+articleArgs();states.forEach(s=>c+=` --state ${s}`);
   if(o.reason!=null)c+=` --exact-reason ${q(o.reason)}`;if(F.reason)c+=` --reason ${q(F.reason)}`;return c}
 function showDrill(title,rows,total,cmd){
   const ids=rows.map(r=>r[0]);
   document.getElementById("drill-title").textContent="Drill-down: "+title;
-  document.getElementById("drill").innerHTML=`<div>${fmt(total)} articles; ${fmt(rows.length)} sampled here (up to ${D.samples} per bucket). <button id="copy">Copy ${fmt(ids.length)} ids</button></div>`+
-   `<div class="muted" style="margin:6px 0">Every id: <code>${esc(cmd)}</code></div>`+
-   `<table><tr><th>article</th><th>stage</th><th>state</th><th>reason</th><th>raw</th><th>downloaded from</th><th>judged text</th><th>registered</th></tr>`+
-   rows.slice(0,1000).map(r=>`<tr>${r.map((v,i)=>`<td title="${esc(v)}">${esc(i===4&&v.length>140?v.slice(0,139)+"…":v)}</td>`).join("")}</tr>`).join("")+`</table>`;
+  document.getElementById("drill").innerHTML=`<div>${fmt(total)} articles; ${fmt(rows.length)} sampled here (up to ${D.samples} per bucket). <button id="copy">Copy ${fmt(ids.length)} ids</button> <input id="drill-search" size="24" placeholder="search id, reason, raw text"></div>`+
+   `<div class="muted" style="margin:6px 0">Every id in this bucket: <code>${esc(cmd)}</code></div><div style="overflow-x:auto"><table id="drill-rows"></table></div>`;
+  const draw=needle=>{const n=needle.toLowerCase(),shown=rows.filter(r=>!n||r.some(v=>String(v).toLowerCase().includes(n)));
+    document.getElementById("drill-rows").innerHTML=`<tr><th>article</th><th>stage</th><th>state</th><th>reason</th><th>raw</th><th>downloaded from</th><th>judged text</th><th>registered</th></tr>`+
+    shown.slice(0,1000).map(r=>`<tr>${r.map((v,i)=>`<td title="${esc(v)}"${i?"":` class="click" data-id="${esc(v)}"`}>${esc(i===4&&v.length>140?v.slice(0,139)+"…":v)}</td>`).join("")}</tr>`).join("");
+    document.querySelectorAll("#drill-rows td[data-id]").forEach(td=>td.onclick=()=>trace(td.dataset.id))};
+  draw("");document.getElementById("drill-search").oninput=e=>draw(e.target.value);
   document.getElementById("copy").onclick=()=>{const txt=ids.join("\n");(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).catch(()=>{const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()})};
   document.getElementById("drill-title").scrollIntoView({behavior:"smooth"});
 }
 function drill(o){
-  let total=0;const rows=[];
-  cells().forEach(c=>{if(S.stage[c[0]]!==o.stage||STATES[c[1]]!==o.state&&o.state)return;if(o.reason!=null&&S.reason[c[2]]!==o.reason)return;if(!bucketOk(c[1],c[2]))return;
+  let total=0;const rows=[],want=o.states||(o.state?[o.state]:null);
+  cells().forEach(c=>{if(S.stage[c[0]]!==o.stage||want&&!want.includes(STATES[c[1]]))return;if(o.reason!=null&&S.reason[c[2]]!==o.reason)return;if(!bucketOk(c[1],c[2]))return;
     total+=c[6];c[7].forEach(([a,r])=>rows.push([S.id[a],o.stage,STATES[c[1]],S.reason[c[2]],S.raw[r],S.dl[c[3]],S.text[c[4]],S.day[c[5]]]))});
-  showDrill(`${o.stage} / ${o.state||"any"}${o.reason?" / "+o.reason:""}`,rows,total,cliCmd(o));
+  showDrill(`${o.stage} / ${o.states?"in":o.state||"any"}${o.reason?" / "+o.reason:""}`,rows,total,cliCmd(o));
 }
 function drillSource(stage,source,state){
   let total=0;const rows=[];
@@ -810,7 +1163,27 @@ function drillSource(stage,source,state){
     total+=c[7];c[8].forEach(([a,r])=>rows.push([S.id[a],stage+":"+source,state,S.reason[c[3]]||"",S.raw[r],S.dl[c[4]],S.text[c[5]],S.day[c[6]]]))});
   showDrill(`${stage} from ${source} / ${state}`,rows,total,`ingest report funnel-ids --stage ${stage} --by-source ${q(source)} --state ${state}`+articleArgs());
 }
-function render(){const cs=cells();sankey(cs);stageTable(cs);reasons(cs);sourceTable(cs)}
+function trace(id){
+  const el=document.getElementById("trace"),ix=S.id.indexOf(id);
+  document.getElementById("trace-title").textContent="Article trace: "+id;
+  const cmd=`ingest report trace ${q(id)} --catalog ${q(D.catalog)} -c <pipeline config>`;
+  const known=STAGES.map(st=>{const c=D.cells.find(c=>S.stage[c[0]]===st&&c[7].some(([a])=>a===ix));if(!c)return [st,"","",""];const r=c[7].find(([a])=>a===ix);return [st,STATES[c[1]],S.reason[c[2]],S.raw[r[1]]]});
+  el.innerHTML=`<div class="muted">The state at every stage, as this page counted it. Full trace (every record's path, status, fingerprint, freshness and inputs): <code>${esc(cmd)}</code>, or open this page with <code>ingest report serve</code> and click again.</div>`+
+    `<table><tr><th>stage</th><th>state</th><th>reason</th><th>raw</th></tr>${known.map(([st,s,r,raw])=>`<tr><td>${esc(st)}</td><td style="color:${COLOR[s]||"inherit"}">${esc(s||"(not sampled)")}</td><td>${esc(r)}</td><td>${esc(raw)}</td></tr>`).join("")}</table>`;
+  document.getElementById("trace-title").scrollIntoView({behavior:"smooth"});
+  if(!location.protocol.startsWith("http"))return;
+  fetch("trace?id="+encodeURIComponent(id)).then(r=>r.json()).then(t=>{
+    if(t.error){el.innerHTML=`<div class="bad">${esc(t.error)}</div>`;return}
+    const kv=o=>Object.entries(o||{}).map(([k,v])=>`${esc(k)}=${esc(typeof v==="object"?JSON.stringify(v):v)}`).join(", ");
+    el.innerHTML=`<div class="muted">Registered ${esc(t.registered)}. From the catalog rows only; no payload is opened.</div><table><tr><th>stage</th><th>state</th><th>records</th><th>built from</th><th>freshness</th></tr>`+
+      t.stages.map(x=>`<tr><td><b>${esc(x.stage)}</b><div class="muted">code: ${kv(x.version)||"&mdash;"}</div></td><td><span style="color:${COLOR[x.state]}">${esc(x.state)}</span> ${esc(x.reason)}<div class="muted">${esc(x.meaning)}</div></td>`+
+        `<td>${x.records.map(r=>`<div><b>${esc(r.source||"(one)")}</b> ${esc(r.status)}${r.reason?": "+esc(r.reason):""}; written ${esc(r.written)}; ${r.attempts} attempt(s)${r.last?", last "+esc(r.last):""}<div class="muted">fingerprint ${esc(r.fingerprint||"(none)")}; ${kv(r.summary)}</div>${r.path?`<div class="path">${esc(r.path)} ${r.on_disk?"":"(missing)"}</div>`:""}${r.error?`<div class="muted">${esc(r.error)}</div>`:""}</div>`).join("")||"&mdash;"}</td>`+
+        `<td>${x.built_from.map(u=>`<div>${esc(u.stage)}${u.source?":"+esc(u.source):""} ${esc(u.status)}, ${esc(u.fingerprint.slice(0,12)||"(none)")}, written ${esc(u.written)}${u.newer?' <span class="bad">rewritten after this record</span>':""}</div>`).join("")||"&mdash;"}</td>`+
+        `<td>${esc(x.plan||"")}${x.records.filter(r=>r.freshness&&r.freshness!==x.plan).map(r=>`<div>${esc(r.source)}: ${esc(r.freshness)}</div>`).join("")}</td></tr>`).join("")+`</table>`});
+}
+function render(){const cs=cells();flowView(cs);sankey(cs);stageTable(cs);reasons(cs);sourceTable(cs)}
+document.getElementById("tab-flow").onclick=()=>{document.getElementById("view-flow").style.display="";document.getElementById("view-sankey").style.display="none";document.getElementById("tab-flow").className="on";document.getElementById("tab-sankey").className=""};
+document.getElementById("tab-sankey").onclick=()=>{document.getElementById("view-flow").style.display="none";document.getElementById("view-sankey").style.display="";document.getElementById("tab-sankey").className="on";document.getElementById("tab-flow").className=""};
 document.getElementById("meta").innerHTML=`${fmt(D.total)} live articles in <code>${esc(D.catalog)}</code>; built ${D.generated} in ${D.seconds}s; stage graph ${D.prose?"with":"without"} the prose stages.`;
 document.getElementById("filter-help").innerHTML=`<b>Filters.</b> These select articles, so every stage still adds up: <b>Downloaded from</b> keeps articles with an ok download from any ticked source (an article whose every download failed has source <i>none</i>, so ticking a source hides its download failures); <b>Download tried at</b> keeps articles with any download recorded from a ticked source, failed or not (use it for losses at download by source); <b>Judged text source</b> is the source whose text triage, or else passages, read; <b>Registered</b> is the day the article entered the catalog. These narrow the tables and the drill-down only: <b>State</b>, and <b>Reason contains</b> (a case-insensitive substring; a clicked reason matches exactly). The source table always lists every source tried; its numbers follow the article filters.`;
 document.getElementById("problems").innerHTML=D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and every article with a record at a stage was placed from that record.</div>`;

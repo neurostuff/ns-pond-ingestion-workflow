@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+import urllib.request
 
 import ingestion_workflow.cli.main as cli
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog.blobs import BlobStore
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
@@ -26,8 +30,11 @@ from ingestion_workflow.services.funnel_report import (
     UNACCOUNTED,
     build_funnel,
     categorize,
+    flow,
     open_readonly,
     render_html,
+    serve,
+    trace_article,
 )
 from typer.testing import CliRunner
 
@@ -445,3 +452,99 @@ def test_page_carries_the_tried_dimension_and_the_graph(wide):
     assert {tried[c[8]] for c in data["cells"]} >= {"ace", "ace+pubget", "pubget"}
     assert {tried[c[9]] for c in data["sources"]} >= {"ace", "elsevier+pdf"}
     assert "--by-source" in page and "--exact-reason" in page
+
+
+def test_flow_adds_up_at_every_step(wide):
+    funnel, ids = wide
+    steps = flow(funnel)
+    assert [step["stage"] for step in steps] == [
+        "download", "extract", "passages", "prose", "resolve", "roles", "space", "upload", "sync"]
+    assert steps[0]["in"] == funnel.total
+    for before, step in zip([None] + steps, steps):
+        total = step["passed"] + sum(i[2] for i in step["excluded"] + step["waiting"])
+        assert step["adds_up"] and step["in"] == total, step
+        assert step["follows"] and (before is None or step["in"] == before["passed"]), step
+    prose = steps[3]
+    assert [REFUSED, f"passages {READ_FROM_BAD_PAGE}", 2] in prose["excluded"]
+    assert [PENDING, "input ready, nothing to read (passages = 0); tables wait behind it", 1] \
+        in prose["waiting"]
+    assert [FAILED, "not open access", 1] in steps[0]["excluded"]
+
+
+def test_flow_check_fails_when_a_count_is_off(wide):
+    funnel, _ = wide
+    key = next(k for k in funnel.cells if k[0] == "extract" and k[1] == PASSED)
+    funnel.cells[key][0] += 1
+    steps = {step["stage"]: step for step in flow(funnel)}
+    assert not steps["extract"]["adds_up"] and not steps["passages"]["follows"]
+
+
+@pytest.fixture()
+def stored(tmp_path):
+    """One article whose extraction has a payload in the blob store."""
+    cat = Catalog.open(tmp_path / "stored")
+    a = cat.register(Identifier(pmid="3001")).id
+    cat.record([
+        Outcome(article_id=a, stage="download", source="pubget", status=OK,
+                payload={"files": []}, summary={"files": 0}),
+        Outcome(article_id=a, stage="extract", source="pubget", status=OK, fingerprint="old",
+                payload={"text": "t"}, summary={"has_text": True}),
+        Outcome.failure(a, "metadata", "", "No provider returned metadata"),
+    ])
+    digest = cat.artifact(a, "extract", "pubget").blob
+    cat.close()
+    return tmp_path / "stored", a, digest
+
+
+def test_trace_shows_every_record_without_opening_a_payload(stored, monkeypatch):
+    root, a, digest = stored
+
+    def no_payload(self, digest):
+        raise AssertionError("a payload was read")
+
+    monkeypatch.setattr(BlobStore, "get", no_payload)
+    found = trace_article(root, a)
+    stages = {s["stage"]: s for s in found["stages"]}
+    assert stages["extract"]["state"] == PASSED and stages["metadata"]["state"] == FAILED
+    (extract,) = stages["extract"]["records"]
+    assert extract["path"].endswith(f"blobs/{digest[:2]}/{digest}.json.gz") and extract["on_disk"]
+    assert extract["fingerprint"] == "old" and extract["attempts"] == 1 and extract["written"]
+    assert stages["metadata"]["records"][0]["reason"] == "no metadata found"
+    assert stages["extract"]["built_from"][0]["stage"] == "download"
+    assert "--config" in stages["extract"]["plan"]
+    assert trace_article(root, "nope")["error"]
+
+
+def test_trace_plans_each_stage_to_say_whether_it_is_fresh(stored, tmp_path, monkeypatch):
+    root, a, _ = stored
+    monkeypatch.setattr(BlobStore, "get", lambda self, d: (_ for _ in ()).throw(
+        AssertionError("a payload was read")))
+    settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
+                        data_root=str(tmp_path / "data"))
+    found = trace_article(root, a, settings=settings)
+    stages = {s["stage"]: s for s in found["stages"]}
+    (extract,) = stages["extract"]["records"]
+    assert extract["freshness"].startswith("stale: built from fingerprint old")
+    assert stages["metadata"]["plan"]
+    # A stage that cannot plan under these settings says why, and the rest still plan.
+    unknown = {s["stage"]: s["plan"] for s in found["stages"] if s["plan"].startswith("not known")}
+    assert set(unknown) == {"triage"} and "coordinate_gate_path" in unknown["triage"]
+
+
+def test_cli_trace_and_serve(stored, tmp_path):
+    root, a, _ = stored
+    result = CliRunner().invoke(cli.app, ["report", "trace", a, "--catalog", str(root)])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["article_id"] == a
+    server = serve(root, port=0)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        with urllib.request.urlopen(base + "/") as page:
+            assert '<script id="data"' in page.read().decode()
+        with urllib.request.urlopen(f"{base}/trace?id={a}") as found:
+            assert json.loads(found.read())["stages"][0]["stage"] == "download"
+    finally:
+        server.shutdown()
+        server.server_close()
