@@ -32,7 +32,7 @@ from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
 from ingestion_workflow.models.statistics import point_values
 from ingestion_workflow.services import coordinate_text
-from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME
+from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME, SPLIT_RULE
 from ingestion_workflow.services.coordinate_space import sectionize
 from ingestion_workflow.services.create_analyses import table_reading
 from ingestion_workflow.services.logging import get_logger
@@ -476,8 +476,13 @@ def coordinate_parse(
     grids: Mapping[str, _Table],
     per_table: Mapping[str, AnalysisCollection],
     inputs: ParseInputs,
+    splits: Optional[Dict[int, dict]] = None,
 ):
     """The CoordinateParse, and the analyses that could not be written into it.
+
+    `splits`, when given, is filled with the SignSplit each split stage analysis
+    was declared with in the parse, by `id()` of the stage analysis, so stage1
+    carries the same declaration, keys included.
 
     An analysis whose cells or characters cannot be found has no key, so it is left
     out with its reason rather than given a made-up key. Two analyses with one key
@@ -522,6 +527,12 @@ def coordinate_parse(
             built = _table_analyses(
                 table_id, table_analyses, collection, grids.get(table_id), roles
             )
+            if splits is not None:
+                splits.update(
+                    (id(a), b.split.model_dump(mode="json", exclude_none=True))
+                    for a, b in zip(table_analyses, built)
+                    if b is not None and b.split is not None
+                )
         for analysis in built:
             if analysis is None:
                 continue
@@ -1028,12 +1039,12 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
     on the analysis as named, and `{"half": "inverse", "original_index": i}` on the
     reversed contrast, `i` being the original's place among the stage's analyses
     when it split. The halves pair by that number, so an analysis dropped in
-    between, or two originals with one name, cannot mispair them. Both halves carry
-    the contrast as printed. An inverse half whose original is not in the parse
+    between, or two originals with one name, cannot mispair them. The inverse half
+    carries the name the stage gave the reversed contrast. An inverse half whose original is not in the parse
     (`original_index` is None, or names one that was not placed) is declared on
     its own; so is an original whose inverse is not in the parse.
     """
-    rule = "sign_of_directional_statistic"
+    rule = SPLIT_RULE
     originals = {
         split.get("index"): built
         for built, split in analyses
@@ -1045,6 +1056,8 @@ def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[d
         if built is None or not split or split["half"] != "inverse":
             continue
         original = originals.get(split.get("original_index"))
+        # The analyses stage composed its name from the original's (`inverse_name`).
+        built.name_is_printed = False
         if original is None:
             built.split = pp.SignSplit(half="inverse", rule=rule)
             continue
@@ -1153,6 +1166,7 @@ def write(
     inputs: ParseInputs,
     *,
     overwrite: bool = True,
+    splits: Optional[Dict[int, dict]] = None,
 ) -> Dict[str, Any]:
     """Write both files under `root/parse/`; what was written, for the stage summary.
 
@@ -1167,7 +1181,7 @@ def write(
     paper, text, grids = parsed_paper(root, bundle, inputs)
     if paper is None:
         raise LookupError(f"no text under processed/{bundle.article_data.source.value}")
-    parse, omitted = coordinate_parse(paper, text, grids, per_table, inputs)
+    parse, omitted = coordinate_parse(paper, text, grids, per_table, inputs, splits)
     files = layouts.PaperParse(parsed_paper=paper, coordinate_parse=parse)
     problems = layouts.check_paper(files, root)
     if problems:

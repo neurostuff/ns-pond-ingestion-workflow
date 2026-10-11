@@ -19,6 +19,7 @@ property of one row.
 
 from __future__ import annotations
 
+import re
 from typing import Iterable, List, Optional, Sequence
 
 __all__ = [
@@ -26,6 +27,10 @@ __all__ = [
     "is_placeholder",
     "subpeak_flags",
     "reports_extent",
+    "SPLIT_RULE",
+    "reversed_contrast",
+    "inverse_name",
+    "declared_split",
 ]
 
 #: What the prompted rules told the model to answer for a table with no
@@ -69,3 +74,77 @@ def subpeak_flags(cluster_sizes: Sequence[Optional[int]]) -> List[bool]:
     if not reports_extent(cluster_sizes):
         return [False] * len(cluster_sizes)
     return [size is None for size in cluster_sizes]
+
+
+#: study_schema's SplitRule for the analyses stage's split.
+SPLIT_RULE = "sign_of_directional_statistic"
+
+#: The contrast forms whose reverse is the same words with the sides swapped, as
+#: they are printed in the inverse halves of the ns-pond corpus: "vs"/"vs."/"versus",
+#: ">", "<", "minus", and a dash with a space on both sides. An unspaced hyphen is
+#: not one: it joins words ("EQ-I", "OBJ-SCD") at least as often as it subtracts.
+_CONTRAST_OPERATOR = re.compile(
+    r"\s+(?:vs\.?|versus|minus)\s+|\s*[<>]\s*|\s+[-–−]\s+", re.IGNORECASE
+)
+#: A label before the contrast, "(1) " or "B) " or "Encoding: ", which stays in front.
+_LEADING_LABEL = re.compile(r"^(?:\(?[0-9A-Za-z]{1,2}[).]\s+|[^:<>]+:\s+)")
+#: A qualifier after it, "(cluster size > 36)", which stays behind.
+_TRAILING_QUALIFIER = re.compile(r"\s*[(\[][^()\[\]]*(?:\([^()]*\)[^()\[\]]*)*[)\]]$")
+_QUOTES = "\"'‘’“”"
+
+
+def _balanced(text: str) -> bool:
+    return all(text.count(o) == text.count(c) for o, c in ("()", "[]", "{}"))
+
+
+def reversed_contrast(name: str) -> Optional[str]:
+    """`name` with its two sides swapped, or None when it is not one two-sided contrast.
+
+    "A > B" is "B > A", "A vs. B" is "B vs. A", "A minus B" is "B minus A" and
+    "A - B" is "B - A". A name with no such operator, or with more than one
+    ("Go vs. Nogo - OC vs. YC"), has no reverse that can be read off it.
+    """
+    core = name.strip()
+    opening = closing = ""
+    if len(core) > 1 and core[0] in _QUOTES and core[-1] in _QUOTES:
+        opening, closing, core = core[0], core[-1], core[1:-1].strip()
+    label = _LEADING_LABEL.match(core)
+    head = label.group(0) if label and _CONTRAST_OPERATOR.search(core[label.end():]) else ""
+    core = core[len(head):]
+    qualifier = _TRAILING_QUALIFIER.search(core)
+    tail = qualifier.group(0) if qualifier and qualifier.start() > 0 else ""
+    core = core[: len(core) - len(tail)]
+    operators = list(_CONTRAST_OPERATOR.finditer(core))
+    if len(operators) != 1:
+        return None
+    left, right = core[: operators[0].start()].strip(), core[operators[0].end():].strip()
+    if not (left and right and _balanced(left) and _balanced(right)):
+        return None
+    swapped = f"{head}{right}{operators[0].group(0)}{left}{tail}"
+    return f"{opening}{swapped}{closing}"
+
+
+def inverse_name(name: str) -> str:
+    """The name of the inverse half of the split analysis `name`.
+
+    The reversed contrast when it can be read off the name; otherwise the name
+    with " (inverse)". The half is declared by `split`, never by this name, and
+    nothing reads the name back.
+    """
+    return reversed_contrast(name) or f"{name} (inverse)"
+
+
+def declared_split(metadata: Optional[dict], original_analysis: Optional[str] = None) -> Optional[dict]:
+    """The analyses stage's `metadata["split"]` as study_schema's SignSplit, or None.
+
+    The stage's `index`/`original_index` are positions in its own collection and
+    mean nothing outside it, so they are not carried; `original_analysis` is the
+    original's key where the output has one.
+    """
+    split = (metadata or {}).get("split")
+    if not split or split.get("half") not in ("original", "inverse"):
+        return None
+    out = {"half": split["half"], "rule": SPLIT_RULE}
+    if split["half"] == "inverse" and original_analysis:
+        out["original_analysis"] = original_analysis
+    return out

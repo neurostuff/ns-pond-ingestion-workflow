@@ -73,7 +73,7 @@ def test_a_papers_own_negative_contrast_pairs_with_its_own_half(catalog, tmp_pat
         assert _halves(payload) == [
             ("Load", None),
             ("Load (negative)", {"half": "original", "index": 1}),
-            ("Load (negative)", {"half": "inverse", "original_index": 1}),
+            ("Load (negative) (inverse)", {"half": "inverse", "original_index": 1}),
         ]
     assert (counts["payloads rewritten"], counts["splits paired"],
             counts["leftovers declared"]) == (3, 3, 0)
@@ -89,7 +89,7 @@ def test_pairs_are_found_from_the_end(catalog, tmp_path):
     assert _halves(_payload(catalog, ref)) == [
         ("A", None),
         ("A (negative)", {"half": "original", "index": 1}),
-        ("A (negative)", {"half": "inverse", "original_index": 1}),
+        ("A (negative) (inverse)", {"half": "inverse", "original_index": 1}),
     ]
 
 
@@ -101,7 +101,8 @@ def test_both_suffix_spellings_pair(catalog, tmp_path):
     _run(catalog, tmp_path)
     assert [s["half"] if s else None for _, s in _halves(_payload(catalog, ref))] == [
         "original", "inverse", "original", "inverse"]
-    assert [n for n, _ in _halves(_payload(catalog, ref))] == ["A > B", "A > B", "C", "C"]
+    assert [n for n, _ in _halves(_payload(catalog, ref))] == [
+        "A > B", "B > A", "C", "C (inverse)"]
 
 
 def test_unpaired_leftovers_are_declared_inverse_halves_with_no_original(catalog, tmp_path):
@@ -115,10 +116,36 @@ def test_unpaired_leftovers_are_declared_inverse_halves_with_no_original(catalog
     counts, _ = _run(catalog, tmp_path)
     payload = _payload(catalog, ref)
     assert _halves(payload, "t1") == [
-        ("Encoding", {"half": "inverse", "original_index": None}), ("Retrieval", None)]
+        ("Encoding (inverse)", {"half": "inverse", "original_index": None}), ("Retrieval", None)]
     assert _halves(payload, "t2") == [
-        ("X", None), ("X", {"half": "inverse", "original_index": None})]
+        ("X", None), ("X (inverse)", {"half": "inverse", "original_index": None})]
     assert (counts["splits paired"], counts["leftovers declared"]) == (0, 2)
+
+
+def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path):
+    """Name, values and declaration of each half match `split_by_sign` on the pooled analysis."""
+    from ingestion_workflow.models import Coordinate
+    from ingestion_workflow.services.create_analyses import split_by_sign
+
+    def point(x, value, kind):
+        return {"x": x, "y": 2.0, "z": 3.0, "statistic_value": value, "statistic_type": kind}
+
+    original = [point(1.0, 5.0, "T")]
+    inverse = [point(2.0, -3.0, "T"), point(3.0, -2.5, "Z"), point(4.0, -0.01, "P"),
+               point(5.0, -1.5, None)]
+    ref = _store(catalog, {"t1": _legacy(
+        {**_a("Faces vs. Houses"), "coordinates": original},
+        {**_a("Faces vs. Houses (negative)"), "coordinates": inverse},
+    )}, stages=("space",))
+    _run(catalog, tmp_path)
+    migrated = AnalysisCollection.from_dict(_payload(catalog, ref)["t1"]).analyses
+
+    stage = split_by_sign(
+        "Faces vs. Houses", [Coordinate.from_dict(c) for c in original + inverse]
+    )
+    assert [(a.name, a.coordinates) for a in migrated] == [(n, c) for n, c, _ in stage]
+    assert [a.metadata["split"]["half"] for a in migrated] == [s["half"] for _, _, s in stage]
+    assert [c.statistic_value for c in migrated[1].coordinates] == [3.0, 2.5, -0.01, 1.5]
 
 
 def test_a_suffixed_name_with_a_point_not_negative_is_the_papers_own(catalog, tmp_path):

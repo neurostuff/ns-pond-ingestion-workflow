@@ -6,12 +6,14 @@ import hashlib
 import json
 import logging
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.analysis import UNKNOWN_SPACES
+from ingestion_workflow.models.statistics import inverted
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -26,6 +28,7 @@ from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.services.coordinate_flags import (
     PLACEHOLDER_NAME,
+    inverse_name,
     is_placeholder,
     subpeak_flags,
 )
@@ -100,13 +103,15 @@ def split_by_sign(name, coordinates):
 
     The direction normally lives in the contrast name, which is why a point's
     side reads the statistic rather than the name. Where one contrast reports
-    both, the sign is the only thing that separates them. The original half is
-    the analysis as named; the inverse half is the reversed contrast, its own
-    analysis under the same name, the contrast as printed, marked only by
-    `split`. The rule is study_schema's
+    both, the sign is the only thing that separates them. The rule is study_schema's
     (`SplitRule.sign_of_directional_statistic`): points with a negative value,
     of any kind, form the inverse half, every other point, unsigned ones
     included, the original half.
+
+    The original half is the analysis as named. The inverse half is the reversed
+    contrast: it is named by `inverse_name`, and its signed values are negated
+    (`statistics.inverted`), so a t of -4.1 for "A > B" is a t of 4.1 for "B > A".
+    `split` is what says so.
 
     Yields `(name, coordinates, split)` in table order, the original half
     first. `split` is `{"half": "original"}` on the original and
@@ -119,9 +124,13 @@ def split_by_sign(name, coordinates):
     inverse = [c for c in coordinates if c.sign == "negative"]
     if not (original and inverse):
         return [(name, coordinates, None)]
+    flipped = [
+        replace(c, statistic_value=inverted(c.statistic_value, c.statistic_type))
+        for c in inverse
+    ]
     return [
         (name, original, {"half": "original"}),
-        (name, inverse, {"half": "inverse"}),
+        (inverse_name(name), flipped, {"half": "inverse"}),
     ]
 
 

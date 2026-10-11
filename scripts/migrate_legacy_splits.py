@@ -9,8 +9,10 @@ the next sync:
 A payload stored before the declaration marks a split only by name: the
 inverse half was named `X (negative)` (later `X (inverse)`) and followed its
 original `X` in the same table. Each such payload is rewritten into the form
-the analyses stage writes now: the halves keep the printed name, `X`, and are
-paired by `metadata["split"]`; the collection gains `split_declared`. A suffixed
+the analyses stage writes now: the halves are paired by `metadata["split"]`,
+the inverse half is named and its signed values negated as the stage does
+(`inverse_name`, `statistics.inverted`), and the collection gains
+`split_declared`. A suffixed
 name the stage cannot have written -- one with a point that is not negative --
 is the paper's own, and is kept as printed.
 
@@ -35,6 +37,8 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from ingestion_workflow.catalog.blobs import BlobStore  # noqa: E402
+from ingestion_workflow.models.statistics import inverted, side  # noqa: E402
+from ingestion_workflow.services.coordinate_flags import inverse_name  # noqa: E402
 
 #: The stages whose payload is `{table_id: collection}`.
 STAGES = ("analyses", "resolve", "roles", "space")
@@ -63,6 +67,16 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
     def undeclared(analysis):
         return not analysis["metadata"].get("split")
 
+    def invert(analysis, original_name):
+        analysis["name"] = inverse_name(original_name)
+        coordinates = []
+        for c in analysis.get("coordinates") or []:
+            c = dict(c, statistic_value=inverted(c.get("statistic_value"), c.get("statistic_type")))
+            if "sign" in c:
+                c["sign"] = side(c["statistic_value"], c.get("statistic_type")) or "unsigned"
+            coordinates.append(c)
+        analysis["coordinates"] = coordinates
+
     def all_negative(analysis):
         values = [c.get("statistic_value") for c in analysis.get("coordinates") or []]
         return bool(values) and all(isinstance(v, (int, float)) and v < 0 for v in values)
@@ -79,7 +93,7 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
         ):
             prev["metadata"]["split"] = {"half": "original", "index": i - 1}
             analysis["metadata"]["split"] = {"half": "inverse", "original_index": i - 1}
-            analysis["name"] = prev["name"]
+            invert(analysis, prev["name"])
             pairs += 1
     for analysis in analyses:
         name = analysis.get("name") or ""
@@ -90,7 +104,7 @@ def declare(collection: Dict[str, Any]) -> Tuple[Dict[str, Any], Counter]:
             kept += 1
             continue
         analysis["metadata"]["split"] = {"half": "inverse", "original_index": None}
-        analysis["name"] = name[: -len(suffix)]
+        invert(analysis, name[: -len(suffix)])
         leftovers += 1
     return {**collection, "analyses": analyses, "split_declared": True}, Counter(
         pairs=pairs, leftovers=leftovers, kept=kept

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from study_schema.statistics import point_side
+from study_schema.statistics import NON_DIRECTIONAL_KINDS, point_side
 
 #: The kinds the extractor may report, in the order a table is read when it
 #: offers more than one -- `nspond_tables.fields.STATISTIC_PRIORITY`, which is
@@ -60,6 +60,23 @@ def side(statistic_value: Any, statistic_type: Optional[str] = None) -> Optional
     none, is positive. Zero is positive; no value is unsigned.
     """
     return point_side(point_values(statistic_value, statistic_type))
+
+
+def inverted(statistic_value: Any, statistic_type: Optional[str]) -> Any:
+    """The value as the inverse half of a sign split reports it: negated when it is signed.
+
+    The inverse half is the reversed contrast, so its statistic reads positive the
+    way the paper would have printed it had it run that contrast; `split` records
+    that it was negated. A p, F or chi-square has no direction and is left as it
+    is, and so is anything that is not a number. A kind that is not stated or not
+    known is negated: the split read its sign as a direction, which is why the
+    point is in this half.
+    """
+    if isinstance(statistic_value, bool) or not isinstance(statistic_value, (int, float)):
+        return statistic_value
+    if schema_kind(statistic_type) in NON_DIRECTIONAL_KINDS:
+        return statistic_value
+    return -statistic_value
 
 
 def normalize_statistic_kind(kind: Any) -> Optional[str]:

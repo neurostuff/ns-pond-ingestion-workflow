@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
@@ -510,7 +512,8 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
 
 
-def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None):
+def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
+                  parse_write=None):
     """Sync one article whose stored tables carry the split marker when `declared`.
 
     `rerun(ref)`, when given, is an analyses outcome recorded after space ran,
@@ -524,7 +527,7 @@ def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None):
     pts = [{"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": v, "statistic_type": "T"}
            for v in (4.0,)]
     neg = [{**pts[0], "statistic_value": -4.0}]
-    tables = {"t1": {"slug": "s::t1", "analyses": [
+    tables = tables or {"t1": {"slug": "s::t1", "analyses": [
         {"name": "Load", "table_id": "t1", "coordinates": pts},
         {"name": "Load (negative)", "table_id": "t1", "coordinates": neg},
     ], **({"split_declared": True} if declared else {})}}
@@ -550,9 +553,48 @@ def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None):
         return bundle, per_table, files
 
     sync._assemble = spy
+    if parse_write is not None:
+        from ingestion_workflow.pipeline.stages import sync as sync_stage
+
+        monkeypatch.setattr(sync_stage.paper_parse, "write", parse_write(seen))
     _, (synced,) = _run(sync, ctx, catalog, ref)
     assert synced.status is Status.OK, synced.error
     return [(x.name, x.metadata.get("split")) for x in seen["t1"].analyses]
+
+
+def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkeypatch):
+    """stage1 is written after the parse, so its inverse half names the original by key."""
+    from ingestion_workflow.pipeline.stages import sync as sync_stage
+
+    point = {"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": 4.0, "statistic_type": "T"}
+    tables = {"t1": {"slug": "s::t1", "split_declared": True, "analyses": [
+        {"name": "Load > Rest", "table_id": "t1", "coordinates": [point],
+         "metadata": {"split": {"half": "original", "index": 0}}},
+        {"name": "Rest > Load", "table_id": "t1", "coordinates": [{**point, "x": 9.0}],
+         "metadata": {"split": {"half": "inverse", "original_index": 0}}},
+    ]}}
+    real = sync_stage.paper_parse.write
+
+    def parse_write(seen):
+        def write(*args, splits=None, **kwargs):
+            out = real(*args, splits=splits, **kwargs)
+            # Whatever the parse declares is what stage1 carries.
+            original, inverse = seen["t1"].analyses
+            splits[id(inverse)] = {"half": "inverse", "original_analysis": "k-orig",
+                                   "rule": "sign_of_directional_statistic"}
+            return out
+        return write
+
+    _synced_names(env, tmp_path, monkeypatch, declared=True, tables=tables,
+                  parse_write=parse_write)
+    stage1 = json.loads((tmp_path / "pond" / "BS12" / "stage1" / "analyses.json").read_text())
+    by_name = {a["name"]: a for a in stage1["analyses"]}
+    assert by_name["Load > Rest"]["split"] == {
+        "half": "original", "rule": "sign_of_directional_statistic"}
+    assert by_name["Rest > Load"]["split"] == {
+        "half": "inverse", "original_analysis": "k-orig",
+        "rule": "sign_of_directional_statistic"}
+    assert by_name["Rest > Load"]["points"][0]["values"] == [{"value": 4.0, "kind": "T"}]
 
 
 def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(env, tmp_path, monkeypatch):

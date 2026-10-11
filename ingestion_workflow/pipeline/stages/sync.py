@@ -126,6 +126,7 @@ class SyncStage:
                     per_table,
                     files,
                     overwrite=self.settings.sync_overwrite,
+                    stage1=False,
                 )
             except Exception as exc:
                 logger.warning("sync failed for %s: %s", work.article_id, exc)
@@ -143,16 +144,22 @@ class SyncStage:
                 bundle.article_data.source.value,
             )
             self._synced.append((base_study_id, bundle))
+            # stage1 follows the parse so its splits name their originals by the
+            # parse's keys; it is written whether or not the parse is.
+            splits: dict = {}
             try:
                 parse = paper_parse.write(target, bundle, per_table, inputs,
-                                          overwrite=self.settings.sync_overwrite)
+                                          overwrite=self.settings.sync_overwrite,
+                                          splits=splits)
             except Exception as exc:  # noqa: BLE001 - stage1 is written; the parse is retried
+                nspond.write_stage1(target, per_table, self.settings.sync_overwrite)
                 logger.warning("parse files failed for %s: %s", work.article_id, exc)
                 yield Outcome.failure(
                     work.article_id, self.name, "", f"parse: {type(exc).__name__}: {exc}",
                     fingerprint=work.fingerprint,
                 )
                 continue
+            nspond.write_stage1(target, per_table, self.settings.sync_overwrite, splits)
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,

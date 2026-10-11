@@ -167,8 +167,9 @@ def _written(tmp_path):
         ),
     }
     root = tmp_path / "pond"
+    # As sync does: stage1 after the parse, with the parse's splits.
     target = nspond.write_article(
-        root, BASE, ArticleExtractionBundle(content, metadata), per_table, []
+        root, BASE, ArticleExtractionBundle(content, metadata), per_table, [], stage1=False
     )
     inputs = ParseInputs(
         article_id="art-1",
@@ -189,9 +190,11 @@ def _written(tmp_path):
         restated=2,
         fingerprints={"extract": "fp-extract", "space": "fp-space"},
     )
+    splits = {}
     summary = paper_parse.write(
-        target, ArticleExtractionBundle(content, metadata), per_table, inputs
+        target, ArticleExtractionBundle(content, metadata), per_table, inputs, splits=splits
     )
+    nspond.write_stage1(target, per_table, True, splits)
     # study_schema's layout writes unset fields as null; the assertions ignore them.
     paper = _compact(json.loads((target / "parse" / "parsed_paper.json").read_text()))
     parse = _compact(json.loads((target / "parse" / "coordinate_parse.json").read_text()))
@@ -271,6 +274,16 @@ def test_the_sign_split_is_declared_not_left_in_the_name(written):
     assert [a["split"]["half"] for a in halves] == ["original", "inverse"]
     assert [a["split"].get("original_analysis") for a in halves] == [None, halves[0]["key"]]
     assert not any(a["name"].endswith("(inverse)") for a in parse["analyses"])
+    # The stage composed the inverse half's name; the original's is printed.
+    assert [a.get("name_is_printed") for a in halves] == [None, False]
+
+
+def test_stage1_carries_each_halfs_sign_split_with_the_parses_key(written):
+    _, parse, summary = written
+    stage1 = json.loads((summary["dir"].parent / "stage1" / "analyses.json").read_text())
+    declared = [a["split"] for a in parse["analyses"] if a.get("split")]
+    assert [a["split"] for a in stage1["analyses"] if a.get("split")] == declared
+    assert declared[1]["original_analysis"] == parse["analyses"][0]["key"]
 
 
 def test_points_carry_no_sign_and_use_the_shared_statistic_kinds(written):

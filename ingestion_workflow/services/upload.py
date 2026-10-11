@@ -23,7 +23,7 @@ from ingestion_workflow.models import (
     UploadWorkItem,
 )
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.services.coordinate_flags import is_placeholder
+from ingestion_workflow.services.coordinate_flags import declared_split, is_placeholder
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.logging import console_kwargs, get_logger
 from ingestion_workflow.services.study_level import level_for
@@ -654,11 +654,18 @@ class UploadService:
                     analysis,
                     name=analysis_name,
                     description=analysis_description,
-                    # `split` pairs halves by their place in the analyses
-                    # stage's collection, which no neurostore analysis has;
-                    # neurostore gets the split from the parse, keyed.
+                    # The stage's `split` pairs halves by their place in its
+                    # collection, which no neurostore analysis has, so the half
+                    # goes up as a SignSplit without a key.
                     metadata=_sanitize_mapping(
-                        {k: v for k, v in (analysis.metadata or {}).items() if k != "split"}
+                        {
+                            **{k: v for k, v in (analysis.metadata or {}).items() if k != "split"},
+                            **(
+                                {"split": split}
+                                if (split := declared_split(analysis.metadata))
+                                else {}
+                            ),
+                        }
                     ),
                 )
                 prepared_analyses.append(
