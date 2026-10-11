@@ -27,6 +27,34 @@ ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 UPLOADED_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
 
+#: The fields every set carries under `metadata.set_role`, once the roles stage has decided it.
+SET_ROLE_FIELDS = (
+    "role",
+    "anchor_kind",
+    "from_prior_study",
+    "prior_study_evidence",
+    "role_confidence",
+    "role_source",
+    "role_origin",
+)
+
+
+def is_decided(metadata: Mapping[str, Any]) -> bool:
+    """Whether an analysis's metadata holds a complete role of study_schema's, and `held`.
+
+    The one check every writer of a set's role makes; nothing guesses a role
+    for a set that fails it.
+    """
+    role = metadata.get("set_role")
+    return (
+        isinstance(metadata.get("held"), bool)
+        and isinstance(role, Mapping)
+        and all(k in role for k in SET_ROLE_FIELDS)
+        and bool(role.get("role_source"))
+        and role_error(role) is None
+    )
+
+
 def role_error(fields: Mapping[str, Any]) -> Optional[str]:
     """Why `role`, `anchor_kind` and `from_prior_study` are not study_schema's, or None."""
     role, kind = fields.get("role"), fields.get("anchor_kind")

@@ -6,7 +6,7 @@ import logging
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterator, List, Sequence, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import (
@@ -41,9 +41,17 @@ class SyncStage:
         self._synced: List[Tuple[str, ArticleExtractionBundle]] = []
         self._retracted: List[str] = []
 
-    def fingerprint_for(self, upstream: Artifact) -> str:
+    def fingerprint_for(self, upstream: Artifact, spaced: Optional[Artifact] = None) -> str:
+        # Upload follows the decided role values alone, but the parse also writes each
+        # set's role_source, role_confidence and evidence, so a retrained model that
+        # decides the same roles still re-syncs. A space artifact from before roles
+        # summarised its records stands in by its own fingerprint.
+        records = (
+            ((spaced.summary or {}).get("role_records") or spaced.fingerprint) if spaced else None
+        )
         return fingerprint(
-            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION, upstream=upstream.fingerprint
+            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION, records,
+            upstream=upstream.fingerprint,
         )
 
     def plan(
@@ -55,6 +63,7 @@ class SyncStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         roled = with_roles(ctx, [ref.id for ref in refs])
+        spaced = ctx.catalog.artifacts([ref.id for ref in refs], "space")
         for ref in refs:
             upload = upstream.get(ref.id, {}).get("")
             if upload is None or upload.status is not Status.OK or ref.id not in roled:
@@ -63,7 +72,7 @@ class SyncStage:
             if not upload.summary.get("base_study_id"):
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(upload)
+            fp = self.fingerprint_for(upload, spaced.get(ref.id, {}).get(""))
             if ctx.is_fresh(artifacts.get(ref.id, {}).get(""), fp):
                 plan.fresh += 1
                 continue

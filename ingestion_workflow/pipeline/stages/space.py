@@ -99,6 +99,8 @@ class SpaceStage:
                 )
                 filled, summary = fill_spaces(payload, text)
                 summary.update(upload_basis(work.upstream))
+                if (work.upstream.summary or {}).get("role_records"):
+                    summary["role_records"] = work.upstream.summary["role_records"]
             except Exception as exc:
                 logger.warning("space failed for %s: %s", work.article_id, exc)
                 yield Outcome.failure(

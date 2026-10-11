@@ -8,7 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import AnalysisCollection
 from ingestion_workflow.models.ids import Identifier
@@ -157,6 +157,7 @@ def test_every_set_gets_its_role_from_its_origin_s_model():
     )
     assert seed_role["role_source"] == "fake-prose@2"
     assert isinstance(summary.pop("role_values"), str)
+    assert isinstance(summary.pop("role_records"), str)
     assert summary == {
         "tables": 2,
         "sets": 3,
@@ -343,8 +344,10 @@ def test_a_missing_prose_model_blocks_only_articles_with_prose_sets(env, tmp_pat
 def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
     env, monkeypatch, tmp_path
 ):
+    """But it re-syncs: the parse writes each set's role_source, confidence and evidence."""
     settings, catalog, ref = env
     ctx = Context(settings, catalog)
+    uploaded = Artifact(article_id=ref.id, stage="upload", fingerprint="up-1")
 
     def upload_fingerprint(version, answers):
         settings.role_model_table = _meta(tmp_path / f"table{version}", "table", version=version)
@@ -354,8 +357,11 @@ def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
         _, (roled,) = _run(stage, ctx, catalog, ref)
         _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
         spaced = catalog.artifacts([ref.id], "space")[ref.id][""]
+        assert spaced.summary["role_records"] == roled.summary["role_records"]
+        fingerprints.append(SyncStage(settings).fingerprint_for(uploaded, spaced))
         return roled.fingerprint, UploadStage(settings).fingerprint_for(spaced)
 
+    fingerprints = []
     roles_1, upload_1 = upload_fingerprint("1", TABLE_ANSWERS)
     roles_2, upload_2 = upload_fingerprint("2", {**TABLE_ANSWERS,
                                                  "patients > controls": ("result", 0.8, 0.01)})
@@ -363,6 +369,24 @@ def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
     _, upload_3 = upload_fingerprint("3", {**TABLE_ANSWERS,
                                            "Lee et al. (2008)": ("result", 0.9, 0.01)})
     assert upload_3 != upload_2  # a set's role changed
+    _, upload_4 = upload_fingerprint("4", TABLE_ANSWERS)
+    assert upload_4 == upload_1  # the first model's roles again, from a model named otherwise
+    sync_1, sync_2, _, sync_4 = fingerprints
+    assert len({sync_1, sync_2, sync_4}) == 3
+
+
+def test_a_space_artifact_without_role_records_re_syncs_by_its_own_fingerprint(env):
+    settings, _, ref = env
+    uploaded = Artifact(article_id=ref.id, stage="upload", fingerprint="up-1")
+    sync = SyncStage(settings)
+    older, newer = (Artifact(article_id=ref.id, stage="space", fingerprint=f) for f in "ab")
+    assert sync.fingerprint_for(uploaded, older) != sync.fingerprint_for(uploaded, newer)
+    same = {"role_records": "r"}
+    assert sync.fingerprint_for(
+        uploaded, Artifact(article_id=ref.id, stage="space", fingerprint="a", summary=same)
+    ) == sync.fingerprint_for(
+        uploaded, Artifact(article_id=ref.id, stage="space", fingerprint="b", summary=same)
+    )
 
 
 def test_with_its_model_the_stage_writes_every_role(env, monkeypatch, tmp_path):

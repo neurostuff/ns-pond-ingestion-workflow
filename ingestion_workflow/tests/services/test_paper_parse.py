@@ -68,6 +68,7 @@ def _collection(analyses):
         if "set_role" not in (a.metadata or {}):
             origin = "text" if (a.metadata or {}).get("source") == "prose" else "table"
             a.metadata = {**(a.metadata or {}), "set_role": _decided(origin=origin)}
+        a.metadata.setdefault("held", False)
     return AnalysisCollection(slug="t", coordinate_space=CoordinateSpace.MNI, analyses=analyses)
 
 
@@ -349,7 +350,7 @@ def _one_prose(metadata, passage="The peak is marked in Figure 2 (40, -52, -18).
             Analysis(
                 name="marked peak",
                 table_id="prose",
-                metadata={"source": "prose", "passages": [0], **metadata},
+                metadata={"source": "prose", "passages": [0], "held": False, **metadata},
                 coordinates=[Coordinate(x=40, y=-52, z=-18)],
             )
         ],
@@ -564,7 +565,7 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
     key = keys.table_key("tbl1", [(1, 0)], "A > B")
     assert [str(o) for o in omitted] == [
         "tbl1: 'Unprinted': no row of the table prints its points",
-        f"tbl1: 'a > b': the same cells and name as {key} ('A > B')",
+        f"tbl1: 'a > b': a repeat of {key} ('A > B'): the same cells, name and points",
     ]
     (reading,) = parse.tables
     assert reading.reading == "coordinates"
@@ -698,7 +699,7 @@ def test_a_prose_duplicate_is_omitted_and_recorded_with_its_reason():
     assert (first.name, second.name) == ("poor reader", "ASD group")
     assert [o.name for o in parse.omitted_analyses] == ["Poor  Reader"]
     reason = parse.omitted_analyses[0].reason
-    assert reason == f"the same spans and name as {first.key} ('poor reader')"
+    assert reason == f"a repeat of {first.key} ('poor reader'): the same spans, name and points"
     assert parse.omitted_analyses[0].text_spans == first.text_spans
     assert [str(o) for o in omitted] == [f"text: 'Poor  Reader': {reason}"]
 
@@ -896,7 +897,8 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
         analyses=[
             Analysis(
                 name="a",
-                metadata={"source": "prose", "passages": [0], "set_role": _decided(origin="text")},
+                metadata={"source": "prose", "passages": [0], "set_role": _decided(origin="text"),
+                          "held": False},
                 coordinates=[Coordinate(x=40, y=-52, z=-18)],
             )
         ],
@@ -955,3 +957,110 @@ def test_a_null_coordinate_space_leaves_the_parse_space_unset():
         Coordinate(x=1, y=2, z=3, space=CoordinateSpace.TALAIRACH), collection, None
     )
     assert (bare.space, named.space) == (None, "TAL")
+
+
+def test_two_entries_with_one_key_and_other_points_are_one_analysis_holding_both():
+    """Neither point is printed, so both fall back to the passage: one reported analysis."""
+    passage = "Group differences in the left and right hippocampus survived correction (Table S2)."
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("patients > controls", [(-24, -20, -14)], [0]),
+            ("Patients > controls", [(26, -18, -16), (-24, -20, -14)], [0]),
+        ],
+    )
+    [merged] = parse.analyses
+    assert [p.coordinates for p in merged.points] == [[-24, -20, -14], [26, -18, -16]]
+    assert parse.omitted_analyses is None
+    [note] = omitted
+    assert note.kept and note.name == "Patients > controls"
+    assert note.reason == (
+        f"merged into {merged.key} ('patients > controls'): the same spans and name; "
+        "its 1 other point(s) added"
+    )
+
+
+def test_one_point_printed_twice_for_two_same_named_analyses_keeps_both():
+    passage = (
+        "In Experiment 1, patients > controls peaked at (-24, -20, -14); in Experiment 2, "
+        "patients > controls also peaked at (-24, -20, -14)."
+    )
+    parse, omitted = _prose_parse(
+        passage,
+        [("patients > controls", [(-24, -20, -14)], [0])] * 2,
+    )
+    first, second = parse.analyses
+    at = len("Results\n\n")
+    assert [a.points[0].text_span.start_char - at for a in (first, second)] == [
+        passage.index("-24"), passage.rindex("-24")
+    ]
+    assert first.key != second.key and omitted == []
+
+
+def test_a_kept_analysis_s_note_is_not_among_the_parse_s_omissions():
+    passage = "The peak is marked in Figure 2 (40, -52, -18)."
+    collection = _collection([
+        Analysis(
+            name="marked peak",
+            table_id="prose",
+            metadata={
+                "source": "prose",
+                "passages": [0],
+                "set_role": _decided("reference", origin="text", prior=True,
+                                     evidence=[{"text": "A sentence printed nowhere at all here."}]),
+            },
+            coordinates=[Coordinate(x=40, y=-52, z=-18)],
+        )
+    ])
+    paper = SimpleNamespace(header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+                            text_sha256="0" * 64, tables=[])
+    parse, omitted = paper_parse.coordinate_parse(
+        paper, f"Results\n\n{passage}\n", {}, {"prose": collection},
+        ParseInputs(article_id="a", prose={"passages": [{"text": passage}]}),
+    )
+    assert [a.name for a in parse.analyses] == ["marked peak"]
+    assert [o.kept for o in omitted] == [True] and parse.omitted_analyses is None
+
+
+def test_a_citing_sentence_printed_with_other_spaces_and_minus_signs_is_placed():
+    printed = "As in Lee et al.,  the seed sat at (40, \u221252, \u221218)."
+    cited = "As in Lee et al., the seed sat at (40, -52, -18)."
+    built, roles = _one_prose(
+        {"set_role": _decided("reference", origin="text", prior=True, evidence=[{"text": cited}])},
+        printed,
+    )
+    at = len("Results\n\n")
+    assert [(s.start_char, s.end_char) for s in built.prior_study_evidence] == [
+        (at, at + printed.rindex("18") + 2)
+    ]
+    assert roles.omitted == []
+
+
+def test_only_a_placeholder_name_is_marked_not_printed():
+    passage = "The peak is marked in Figure 2 (40, -52, -18)."
+    text = paper_parse._Text(f"Results\n\n{passage}\n")
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    printed = []
+    for name in ("marked peak", "UNKNOWN"):
+        collection = _collection([
+            Analysis(name=name, table_id="prose", metadata={"source": "prose", "passages": [0]},
+                     coordinates=[Coordinate(x=40, y=-52, z=-18)]),
+        ])
+        built = paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, _roles())
+        printed.append(built.name_is_printed)
+    assert printed == [None, False]
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {"set_role": _decided()},  # no `held`
+        {"set_role": {k: v for k, v in _decided().items() if k != "role_origin"}, "held": False},
+        {"set_role": _decided("figure"), "held": False},
+        {"set_role": {**_decided(), "from_prior_study": None}, "held": False},
+    ],
+)
+def test_the_parse_checks_a_role_as_upload_and_sync_do(metadata):
+    analysis = Analysis(name="x", table_id="t1", metadata=metadata, coordinates=[])
+    with pytest.raises(paper_parse.MissingRole):
+        _roles().of(analysis, "t1")

@@ -22,7 +22,7 @@ import re
 from array import array
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple
 
 from study_schema import keys, layouts
 from study_schema.models import paper_parse as pp
@@ -34,6 +34,7 @@ from ingestion_workflow.services.coordinate_space import sectionize
 from ingestion_workflow.services.create_analyses import SPLIT_SUFFIXES, table_reading
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
+from ingestion_workflow.services.set_roles.labels import is_decided
 
 logger = get_logger(__name__)
 
@@ -493,17 +494,18 @@ def coordinate_parse(
 ):
     """The CoordinateParse, and the analyses that could not be written into it.
 
-    An analysis whose cells or characters cannot be found has no key, and one whose
-    key another analysis already holds is a duplicate (a text key covers the spans and
-    the normalized name), so each is left out with its reason rather than given a
-    made-up key. The reasons of a table's analyses are also the `reason` of its
+    An analysis whose cells or characters cannot be found has no key, so it is left
+    out with its reason rather than given a made-up key. Two analyses with one key
+    (the same cells or spans and normalized name) are one reported analysis: the
+    first holds the points of both, and the second is noted as merged into it, or
+    omitted as a repeat when it adds no point. The reasons of a table's analyses are also the `reason` of its
     TableReading; those of the text are the parse's `omitted_analyses`.
     """
     text = text if isinstance(text, _Text) else _Text(text)
     omitted: List[Omitted] = []
     roles = _Roles(text, omitted)
     analyses: List[pp.ParsedAnalysis] = []
-    seen: Dict[str, str] = {}
+    seen: Dict[str, pp.ParsedAnalysis] = {}
     for table_id, collection in per_table.items():
         table_analyses = []
         for a in collection.analyses:
@@ -521,7 +523,11 @@ def coordinate_parse(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
         if prose:
-            built = (_prose_analysis(a, collection, text, inputs, roles) for a in table_analyses)
+            taken: Set[Tuple[int, int]] = set()
+            built = (
+                _prose_analysis(a, collection, text, inputs, roles, taken)
+                for a in table_analyses
+            )
         else:
             built = _table_analyses(
                 table_id, table_analyses, collection, grids.get(table_id), roles
@@ -529,18 +535,11 @@ def coordinate_parse(
         for analysis in built:
             if analysis is None:
                 continue
-            if analysis.key in seen:
-                what = "cells" if analysis.origin == "table" else "spans"
-                omitted.append(
-                    Omitted(
-                        analysis.name,
-                        analysis.table_id,
-                        f"the same {what} and name as {analysis.key} ({seen[analysis.key]!r})",
-                        _span_pairs(analysis),
-                    )
-                )
+            first = seen.get(analysis.key)
+            if first is not None:
+                omitted.append(_merge(first, analysis))
                 continue
-            seen[analysis.key] = analysis.name
+            seen[analysis.key] = analysis
             analyses.append(analysis)
 
     payload = [a.model_dump(mode="json", exclude_none=True) for a in analyses]
@@ -574,6 +573,32 @@ def coordinate_parse(
     return parse, omitted
 
 
+def _merge(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
+    """Add `other`'s points to `first`, which holds its key, and the record saying so.
+
+    A point equal to one `first` already has is not added twice; when none is new,
+    `other` is a repeat and is omitted as one.
+    """
+    what = "cells" if other.origin == "table" else "spans"
+    have = [p.model_dump(mode="json") for p in first.points]
+    new = [p for p in other.points if p.model_dump(mode="json") not in have]
+    roles = [(a.role, a.anchor_kind, a.from_prior_study) for a in (first, other)]
+    role = f"; its role {other.role!r} gives way to {first.role!r}" if roles[0] != roles[1] else ""
+    if not new:
+        reason = f"a repeat of {first.key} ({first.name!r}): the same {what}, name and points"
+        return Omitted(other.name, other.table_id, reason + role, _span_pairs(other))
+    first.points = [*first.points, *new]
+    first.statistic = _statistic(first.points)
+    return Omitted(
+        other.name,
+        other.table_id,
+        f"merged into {first.key} ({first.name!r}): the same {what} and name; "
+        f"its {len(new)} other point(s) added{role}",
+        _span_pairs(other),
+        kept=True,
+    )
+
+
 class MissingRole(ValueError):
     """A stage1 analysis without the role the roles stage decides: the article is not parsed."""
 
@@ -594,7 +619,7 @@ class _Roles:
 
     def of(self, analysis: Analysis, table_id: Optional[str]) -> Optional[Dict[str, Any]]:
         decided = (analysis.metadata or {}).get("set_role")
-        if not isinstance(decided, Mapping) or not decided.get("role_source"):
+        if not is_decided(analysis.metadata or {}):
             raise MissingRole(
                 f"analysis {analysis.name!r} of {table_id or 'the text'} has no role "
                 "from the roles stage"
@@ -810,20 +835,29 @@ def _prose_analysis(
     text: _Text,
     inputs: ParseInputs,
     roles: _Roles,
+    taken: Optional[Set[Tuple[int, int]]] = None,
 ) -> Optional[pp.ParsedAnalysis]:
     """A text analysis, keyed by where its points are printed and by its name.
 
     One sentence can state several analyses, and two of them can share their
     points, so the name is part of the key. The passage is the fallback for an
-    analysis none of whose points can be found.
+    analysis none of whose points can be found. `taken` holds the characters the
+    passage's earlier analyses' points were found at: a point printed again in
+    the passage goes to its next copy, as a repeated table point goes to the row
+    no other analysis took.
     """
+    taken = set() if taken is None else taken
     passages = (inputs.prose or {}).get("passages") or []
     windows: List[Tuple[int, int]] = []
     for index in (analysis.metadata or {}).get("passages") or []:
         passage = passages[index].get("text") if 0 <= index < len(passages) else None
         if passage:
             windows += _locate(passage, text)
-    point_spans = [_find_point(c, text.text, windows) for c in analysis.coordinates]
+    point_spans = []
+    for c in analysis.coordinates:
+        point_spans.append(_find_point(c, text.text, windows, taken))
+        if point_spans[-1]:
+            taken.add(point_spans[-1])
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
     if not spans:
         roles.omitted.append(
@@ -865,10 +899,11 @@ def _number(value: float) -> str:
 _NEAR = 3000
 
 
-def _find_point(coordinate, text: str, windows) -> Optional[Tuple[int, int]]:
+def _find_point(coordinate, text: str, windows, taken=()) -> Optional[Tuple[int, int]]:
     """The characters printing a point's x, y and z.
 
-    Within one of its passages first. A passage cut differently from the text may
+    Within one of its passages first, at the first copy not in `taken`, or the
+    first copy when every one is. A passage cut differently from the text may
     not hold it, so then anywhere in the text: where it is printed once, or the
     copy nearest one of its passages.
     """
@@ -876,10 +911,9 @@ def _find_point(coordinate, text: str, windows) -> Optional[Tuple[int, int]]:
     pattern = re.compile(
         sep.join(_number(v) for v in (coordinate.x, coordinate.y, coordinate.z)) + r"(?![\d.])"
     )
-    for start, end in windows:
-        match = pattern.search(text, start, end)
-        if match:
-            return match.start(), match.end()
+    inside = [m.span() for start, end in windows for m in pattern.finditer(text, start, end)]
+    if inside:
+        return next((s for s in inside if s not in taken), inside[0])
     found = [m.span() for m in pattern.finditer(text)]
     if len(found) == 1:
         return found[0]
@@ -939,7 +973,6 @@ def _analysis(
     if role is None:
         return None, False
     name = analysis.name
-    kinds = {v.kind for p in points for v in p.values or [] if v.kind != "p"}
     built = pp.ParsedAnalysis(
         key=key,
         cells=cells,
@@ -951,21 +984,27 @@ def _analysis(
         description=analysis.description or None,
         coordinate_space=_space_value(collection.coordinate_space),
         **role,
-        statistic=kinds.pop() if len(kinds) == 1 else None,
+        statistic=_statistic(points),
         points=points,
     )
     return built, name.endswith(SPLIT_SUFFIXES)
 
 
+def _statistic(points) -> Optional[str]:
+    """The statistic every point's values share, or None."""
+    kinds = {v.kind for p in points for v in p.values or [] if v.kind != "p"}
+    return kinds.pop() if len(kinds) == 1 else None
+
+
 def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) -> None:
     """Declare the analyses stage's sign split as `split{}` on both halves.
 
-    The stage names the inverse half (the negative values) `<name> (inverse)`
-    (older payloads: `(negative)`) and emits it right after the original;
+    The stage names the half holding the negative values `<name> (negative)` and
+    emits it right after the original;
     that adjacency and the name are the only record of the split, so this is
     where it becomes a field, and only then is the suffix dropped from the
-    name. The inverse half's `original_analysis` is the original's key. An
-    `(inverse)` or `(negative)` name with no such original keeps it.
+    name. The inverse half's `original_analysis` is the original's key. A
+    `(negative)` name with no such original keeps it.
     """
     for i, (half, negative) in enumerate(analyses):
         if half is None or not negative or i == 0:
