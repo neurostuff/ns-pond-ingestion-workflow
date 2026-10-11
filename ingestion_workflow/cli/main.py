@@ -825,6 +825,65 @@ def migrate(
     typer.echo(report.render())
 
 
+# -- report ------------------------------------------------------------------
+
+report_app = typer.Typer(help="Reports read from the catalog. They never write to it.",
+                         no_args_is_help=True)
+app.add_typer(report_app, name="report")
+
+CatalogOption = typer.Option(
+    None, "--catalog",
+    help="Catalog directory (holding catalog.sqlite); defaults to the config's.")
+
+
+def _catalog_root(catalog: Optional[Path], config: Optional[Path]) -> Path:
+    return catalog if catalog is not None else _settings(config).catalog_root
+
+
+@report_app.command("funnel")
+def report_funnel(
+    out: Path = typer.Option(Path("funnel.html"), "--out", "-o", help="HTML file to write."),
+    samples: int = typer.Option(
+        20, "--samples", help="Article ids kept per bucket for the drill-down."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write one self-contained HTML page: every article's state at every stage."""
+    from ingestion_workflow.services.funnel_report import write_report
+
+    funnel = write_report(_catalog_root(catalog, config), out, samples=samples, prose=prose)
+    typer.echo(f"{funnel.total:,} articles in {funnel.seconds:.1f}s -> {out} "
+               f"({out.stat().st_size / 1e6:.1f} MB)")
+    for problem in funnel.reconcile():
+        typer.echo(f"  does not reconcile: {problem}")
+
+
+@report_app.command("funnel-ids")
+def report_funnel_ids(
+    stage: str = typer.Option(..., "--stage", help="Stage to list."),
+    state: Optional[str] = typer.Option(
+        None, "--state", help="Only this state (passed, failed, ...)."),
+    reason: Optional[str] = typer.Option(None, "--reason", help="Reason contains this text."),
+    source: Optional[str] = typer.Option(
+        None, "--source", help="Has a download from this source."),
+    judged: Optional[str] = typer.Option(
+        None, "--judged", help="Triage judged this source's text."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Print every article in one funnel bucket, tab-separated: id, stage, state, reason."""
+    from ingestion_workflow.services.funnel_report import STATES, matching_ids
+
+    if state is not None and state not in STATES:
+        raise typer.BadParameter(f"state must be one of {', '.join(STATES)}")
+    for row in matching_ids(_catalog_root(catalog, config), stage=stage, state=state,
+                            reason=reason, source=source, judged=judged):
+        typer.echo("\t".join(row))
+
+
 def main() -> None:
     app()
 
