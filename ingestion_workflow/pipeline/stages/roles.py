@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 #: Bump when what the stage writes changes, apart from the models and the contexts.
 ROLES_VERSION = 3
 
+#: Why roles waits on an article whose prose indexes a passages list other than the current one.
+PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for prose to read these"
+
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
 _ORIGIN_NAMES = {"table": "table", "text": "prose"}
@@ -330,16 +333,31 @@ class RolesStage:
         """Each origin's part of the fingerprint, by origin."""
         return {o: self.model_fingerprint(o, self.model_state(o)) for o in self.origins()}
 
-    def fingerprint_for(self, upstream: Artifact, models: Mapping[str, str]) -> str:
+    def fingerprint_for(self, upstream: Artifact, models: Mapping[str, str],
+                        read: Optional[Tuple] = None) -> str:
         # Where resolve added nothing from the prose, it names the analyses
         # artifact it passed through, and the article has table sets only: it
         # stays fresh when prose is switched on, and the prose model is not its input.
         basis = (upstream.summary or {}).get("basis") if upstream.stage == "resolve" else None
         if basis:
             models = {o: fp for o, fp in models.items() if o == "table"}
-        return fingerprint(
-            "roles", ROLES_VERSION, sorted(models.items()), upstream=basis or upstream.fingerprint
-        )
+        parts = ("roles", ROLES_VERSION, sorted(models.items())) + ((read,) if read else ())
+        return fingerprint(*parts, upstream=basis or upstream.fingerprint)
+
+    @staticmethod
+    def prose_read(prose: Optional[Artifact], passages: Optional[Artifact]):
+        """The prose and the passages its sets' indices point into, or why they cannot be read.
+
+        Roles reads the passages artifact as it is now; the prose sets index the list prose
+        was given. Passages run again before prose does (prose waits for its go-ahead), so
+        until prose reads the new list the two disagree, and roles waits."""
+        if prose is None or prose.status is not Status.OK:
+            return None, "its prose is not OK: roles waits for prose"
+        if (passages is None or passages.status is not Status.OK
+                or (prose.summary or {}).get("passages_read") != passages.fingerprint):
+            return None, PROSE_READ_OTHER_PASSAGES
+        spans = (passages.summary or {}).get("spans")
+        return (prose.fingerprint, passages.fingerprint, spans), None
 
     @staticmethod
     def needs(parent: Artifact) -> Tuple[str, ...]:
@@ -367,7 +385,10 @@ class RolesStage:
             if reason not in self._said:
                 self._said.add(reason)
                 logger.warning("roles: articles with such sets are blocked: %s", reason)
-        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        ids = [ref.id for ref in refs]
+        attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        prose = ctx.catalog.artifacts(ids, "prose")
+        passages = ctx.catalog.artifacts(ids, "passages")
         for ref in refs:
             parent = upstream.get(ref.id, {}).get("")
             if parent is None or parent.status is not Status.OK:
@@ -379,7 +400,14 @@ class RolesStage:
             if lacking:
                 plan.block(lacking[0])
                 continue
-            fp = self.fingerprint_for(parent, models)
+            read = None
+            if "text" in self.needs(parent):
+                read, stale = self.prose_read(prose.get(ref.id, {}).get(""),
+                                              passages.get(ref.id, {}).get(""))
+                if stale:
+                    plan.block(stale)
+                    continue
+            fp = self.fingerprint_for(parent, models, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1

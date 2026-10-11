@@ -133,8 +133,9 @@ class ProseStage:
                 payload={"source": payload.get("source"), "read": payload.get("read"),
                          "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
                          "passages": out},
+                # the passages these `span`s and indices are into, for roles to check
                 summary={"source": payload.get("source"), "read": payload.get("read"), "passages": len(out),
-                         "coordinates": coords},
+                         "coordinates": coords, "passages_read": work.upstream.fingerprint},
             )
 
     def _read(self, passage, title, abstract):

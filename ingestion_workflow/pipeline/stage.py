@@ -49,8 +49,12 @@ def needs_taking_back(existing: Optional[Artifact]) -> bool:
 def take_back_or_block(plan: StagePlan, ref: ArticleRef, upstream: Optional[Artifact],
                        existing: Optional[Artifact]) -> None:
     """Plan an article whose input is not OK: it waits for the input, unless that input
-    was taken back while this stage still holds something made from it."""
-    if taken_back(upstream) and needs_taking_back(existing):
+    was taken back while this stage still holds something made from it.
+
+    A stage with nothing of its own (roles that never ran for want of a model) still
+    records the take-back: the stages after it hold what was made from the same old text,
+    and they learn of the take-back only from this stage's artifact."""
+    if taken_back(upstream) and (existing is None or needs_taking_back(existing)):
         plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
     else:
         plan.blocked += 1

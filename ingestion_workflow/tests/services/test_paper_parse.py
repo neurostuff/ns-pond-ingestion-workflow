@@ -1047,6 +1047,17 @@ def test_a_full_passage_list_is_truncated():
     assert paper_parse._text_sweep(short).truncated is False
 
 
+def test_a_recorded_cut_says_whether_the_passages_were_truncated():
+    from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
+
+    passages = {"passages": [{"text": "p"}] * MAX_PASSAGES}
+    whole = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=0)
+    assert paper_parse._text_sweep(whole).truncated is False
+    cut = paper_parse._text_sweep(
+        ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=3))
+    assert (cut.truncated, cut.passages_found) == (True, MAX_PASSAGES + 3)
+
+
 def test_a_point_names_its_space_only_when_it_differs_from_its_analysis():
     collection = _collection([])
     same = paper_parse._point(

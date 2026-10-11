@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 #: the filter, the detector.
 PASSAGES_VERSION = "2026-10-10.extraction-text-only"
 
-#: Most passages kept from one article. Set above what any real paper needed.
+#: Most passages kept from one article; the rest are recorded as omitted. Legends come
+#: after the body, so theirs are the first left out.
 MAX_PASSAGES = 40
 
 #: Longest a worker may spend on one file. Overlapping regex quantifiers once
@@ -65,7 +66,7 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
         body = text[: _legends_start(text, legends)]
         spans, how = kept_spans(body)
         spans += legends
-        found = [p for a, b in spans for p in _shifted(text, a, b)][:MAX_PASSAGES]
+        found = [p for a, b in spans for p in _shifted(text, a, b)]
         for p in found:
             p.from_legend = bool(p.hits) and all(
                 any(a <= h.span[0] and h.span[1] <= b for a, b in legends) for h in p.hits)
@@ -145,6 +146,12 @@ def passage_dict(passage) -> dict:
             "from_legend": passage.from_legend,
             "hits": [{"pattern": h.pattern, "x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
                      for h in passage.hits]}
+
+
+def spans_digest(text_sha256: Optional[str], stored: list) -> str:
+    """The text and spans a passages payload indexes, as one value a reader can chain on."""
+    spans = [(p["span"], p.get("before"), p.get("after"), p.get("heading")) for p in stored]
+    return fingerprint("spans", text_sha256, spans)
 
 
 def passage_from(payload: dict, text: str):
@@ -233,16 +240,21 @@ class PassagesStage:
             path, sha = text_of(ctx, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if path is None:
-                if holds_no_text(upstream.get(ref.id, {})) and needs_taking_back(existing):
+                if not holds_no_text(upstream.get(ref.id, {})):
+                    # passages made from an earlier text stay: a failed or missing extraction
+                    # says nothing about the article
+                    plan.block("no extraction text: an extraction failed, has not run, "
+                               "or its text is gone")
+                elif needs_taking_back(existing):
                     # passages of a text that is no longer the article's: taken back, so status
                     # shows the article blocked and prose stops reading them
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
                 else:
-                    plan.blocked += 1
+                    plan.block("no extraction text: every extractor found none")
                 continue
             if sha is None:
                 unhashed += 1
-                plan.blocked += 1
+                plan.block("no extraction text hash: run `ingest refresh-text`")
                 continue
             fp = self.fingerprint_for(extraction, sha)
             if ctx.is_fresh(existing, fp):
@@ -284,13 +296,20 @@ class PassagesStage:
             if how in ("timeout",) or how.startswith("unreadable"):
                 yield Outcome.failure(work.article_id, self.name, "", how, fingerprint=work.fingerprint)
                 continue
+            ps, over = ps[:MAX_PASSAGES], ps[MAX_PASSAGES:]
+            text_sha256 = sha256(text) if ps else None
+            stored = [passage_dict(p) for p in ps]
+            omitted = [{"span": list(p.span), "hits": len(p.hits),
+                        "reason": f"over the {MAX_PASSAGES}-passage cap"} for p in over]
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                 fingerprint=work.fingerprint,
                 payload={"source": work.upstream.source, "read": how, "space": article_space,
                          "full_text_path": job["text_path"] if ps else None,
-                         "text_sha256": sha256(text) if ps else None,
-                         "passages": [passage_dict(p) for p in ps]},
+                         "text_sha256": text_sha256,
+                         "passages": stored,
+                         "omitted": omitted},
                 summary={"source": work.upstream.source, "read": how, "passages": len(ps),
-                         "hits": sum(len(p.hits) for p in ps)},
+                         "omitted": len(over), "hits": sum(len(p.hits) for p in ps),
+                         "spans": spans_digest(text_sha256, stored)},
             )

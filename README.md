@@ -96,12 +96,18 @@ will never succeed and is no longer retried.
 What `prose` and the stages after it made came from an article's text. If every
 source's extractor has since run on the article and found no text (an OK
 extraction recording `has_text: false`), that work is no longer the article's,
-so it is taken back: `passages`, `prose`, `resolve` and `space` record their
-artifacts failed with `no extraction text`, whatever state they were in,
-`upload` retracts the article's study version from neurostore (annotated
-analyses stay), and `sync` moves its corpus directory to
-`<ns_pond_root>-retracted/<base_study_id>-<time>/`. The run's summary counts
-these per stage as `taken back`.
+so it is taken back: `passages`, `prose`, `resolve`, `roles` and `space` record
+their artifacts failed with `no extraction text`, whatever state they were in
+(a stage that never made one, such as `roles` before its model was configured,
+records the failure too, so the stages after it see the take-back), `upload`
+retracts the article's study version from neurostore (annotated analyses stay;
+an article this pipeline never uploaded is left alone), and `sync` moves its
+corpus directory to `<ns_pond_root>-retracted/<base_study_id>-<time>/`. The
+run's summary counts these per stage as `taken back`.
+
+`roles` reads the prose sets' passages from the current `passages` artifact, so
+it waits on any article whose prose was read from an earlier one: after
+`passages` re-runs, run `prose` before `roles`.
 
 Nothing else takes work back. A failed extraction (an exception, a timeout,
 downloaded files missing on disk, the extractor returning nothing), a text file

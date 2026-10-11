@@ -185,8 +185,10 @@ class UploadStage:
         retract_back, nothing = [], []
         for work in back:
             prior = uploaded.get(work.article_id, {}).get("")
-            recorded = (prior.summary or {}) if prior is not None else {}
-            base_study_id = recorded.get("base_study_id") or work.ref.identifier.neurostore
+            # No upload of its own: whatever neurostore holds for the article, this
+            # pipeline did not put there, so the take-back is only recorded.
+            base_study_id = prior is not None and (
+                (prior.summary or {}).get("base_study_id") or work.ref.identifier.neurostore)
             if base_study_id:
                 retract_back.append((work, base_study_id))
             else:

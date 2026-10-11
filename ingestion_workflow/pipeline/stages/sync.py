@@ -20,7 +20,7 @@ from ingestion_workflow.services import nspond, paper_parse
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import NO_TEXT, Context
 from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
@@ -68,9 +68,11 @@ class SyncStage:
             if upload is None or upload.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            # A retracted study leaves the corpus even when its roles were taken back
-            # with its text; anything else is written only with OK roles.
-            if not upload.summary.get("retracted") and ref.id not in roled:
+            # A study retracted because its text was taken back leaves the corpus even
+            # though its roles went with the text; anything else, other retractions
+            # included, is written only with OK roles.
+            text_gone = upload.summary.get("retracted") and upload.fingerprint == NO_TEXT
+            if not text_gone and ref.id not in roled:
                 plan.blocked += 1
                 continue
             if not upload.summary.get("base_study_id"):
@@ -275,6 +277,7 @@ def _parse_inputs(
         unread=summary.get("unread"),
         prose=payload("prose"),
         passages_kept=len(passages.get("passages") or []) if passages else None,
+        passages_omitted=len(passages["omitted"]) if passages and "omitted" in passages else None,
         restated=(resolved.summary or {}).get("restated") if resolved is not None else None,
         fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
     )

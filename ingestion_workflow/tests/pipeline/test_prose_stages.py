@@ -295,7 +295,9 @@ def test_a_text_with_no_coordinate_is_filtered_before_the_detector_reads_it(env,
     monkeypatch.setattr(prose_passages, "passages", lambda *a, **k: (_ for _ in ()).throw(AssertionError("read")))
     ctx = Context(settings, catalog)
     _, (found,) = _run(PassagesStage(settings), ctx, catalog, ref)
-    assert found.summary == {"source": "pubget", "read": "filtered", "passages": 0, "hits": 0}
+    summary = dict(found.summary)
+    summary.pop("spans")
+    assert summary == {"source": "pubget", "read": "filtered", "passages": 0, "omitted": 0, "hits": 0}
     # and prose records the empty result without a call
     prose = ProseStage(settings)
     prose.client = lambda: (_ for _ in ()).throw(AssertionError("called"))
@@ -849,11 +851,12 @@ def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashe
     assert (plan.blocked, outcomes) == (1, [])
 
 
-def _uploaded_chain(catalog, ref, *, upload=None):
-    """passages taken back, with the prose, resolve, roles, space and upload made from the old text."""
+def _uploaded_chain(catalog, ref, *, upload=None, without=()):
+    """passages taken back, with the prose, resolve, roles, space and upload made from the old
+    text, less the stages named in `without`."""
     from ingestion_workflow.pipeline.stage import NO_TEXT
 
-    catalog.record([
+    rows = [
         Outcome.failure(ref.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
         Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={}, summary={}),
         Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve", payload={}, summary={}),
@@ -861,7 +864,8 @@ def _uploaded_chain(catalog, ref, *, upload=None):
         Outcome(article_id=ref.id, stage="space", source="", fingerprint="old-space", payload={}, summary={}),
         upload or Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
                           summary={"base_study_id": "bs-1", "analyses": 2}),
-    ])
+    ]
+    catalog.record([row for row in rows if row.stage not in without])
 
 
 @pytest.mark.parametrize("extractions", [
@@ -1072,3 +1076,176 @@ def test_roles_read_each_passage_from_the_text_its_spans_index(env, tmp_path):
     text_file.write_text(TEXT.replace("greater", "stronger"), encoding="utf-8")
     with pytest.raises(LookupError):
         _read_passages(ctx, found.payload)
+
+
+def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkeypatch):
+    """Roles never ran (no model was configured), but the space and upload made before roles
+    existed hold the old text's analyses: roles records the take-back, so space and upload
+    take back theirs, the study is retracted, and the article leaves the corpus."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="53"))
+    _uploaded_chain(catalog, ref, without=("roles",))
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
+    again, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert (again.blocked, outcomes) == (1, [])  # recorded once
+    asked = []
+    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: asked.append(bsid) or
+                             RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted",
+                                            success=True))
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert asked == ["bs-1"] and (done.status, done.fingerprint) == (Status.OK, NO_TEXT)
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert [w.upstream.summary["retracted"] for w in sync.pending] == ["deleted"]
+
+
+def test_a_take_back_with_no_upload_of_its_own_asks_nothing_of_neurostore(env, monkeypatch):
+    """The article was never uploaded by this pipeline, though neurostore knows it: the
+    take-back is recorded and no study is touched."""
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="54", neurostore="bs-9"))
+    _uploaded_chain(catalog, ref, without=("upload",))
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    upload = _upload_through(monkeypatch, settings, retracted=lambda *a: pytest.fail("neurostore was asked"))
+    _, (taken,) = _run(upload, ctx, catalog, ref)
+    assert (taken.status, taken.error, taken.fingerprint) == (Status.FAILED, NO_TEXT, NO_TEXT)
+
+
+def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_neurostore_id(env, monkeypatch):
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="55", neurostore="bs-9"))
+    _uploaded_chain(catalog, ref, upload=Outcome(article_id=ref.id, stage="upload", source="",
+                                                 fingerprint="old-upload", summary={"analyses": 2}))
+    ctx = Context(settings, catalog)
+    for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+    asked = []
+    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: asked.append(bsid) or
+                             RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted",
+                                            success=True))
+    _run(upload, ctx, catalog, ref)
+    assert asked == ["bs-9"]
+
+
+@pytest.mark.parametrize("failed, error", [
+    ("passages", "timeout"),
+    ("passages", "unreadable: UnicodeDecodeError"),
+    ("prose", "TimeoutError: the model timed out"),
+    ("prose", "1 of 3 passages failed"),
+    ("resolve", "KeyError: 'tables'"),
+    ("roles", "no role for its sets: the text role model is missing"),
+    ("space", "ConnectionError: the tunnel dropped"),
+])
+def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(env, monkeypatch, failed, error):
+    """A timed-out or broken run in the middle of the chain says nothing about the article's
+    text: the stage after it waits, and nothing made from the old text is taken back."""
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="56"))
+    _uploaded_chain(catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-passages",
+                            payload={"passages": []}, summary={"passages": 1}),
+                    Outcome.failure(ref.id, failed, "", error, fingerprint=f"newer-{failed}")])
+    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
+    after = {"passages": ProseStage(settings), "prose": ResolveStage(settings),
+             "resolve": _roles(settings, monkeypatch), "roles": SpaceStage(settings),
+             "space": UploadStage(settings)}[failed]
+    plan, outcomes = _run(after, Context(settings, catalog), catalog, ref)
+    assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
+
+
+@pytest.mark.parametrize("fingerprint, synced", [("no extraction text", True), ("up-1", False)])
+def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(env, fingerprint, synced):
+    """A study an exclusion retracted, with no roles row (the 329 such on the corpus), waits
+    for its roles like any other; one taken back with its text has none to wait for."""
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="57"))
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint=fingerprint,
+                            summary={"base_study_id": "bs-1", "retracted": "emptied"})])
+    ctx = Context(settings, catalog)
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert (len(sync.pending), sync.blocked) == ((1, 0) if synced else (0, 1))
+
+
+def test_roles_waits_for_prose_to_read_the_passages_it_would_index(env, monkeypatch):
+    """Passages ran again and prose has not: the prose sets' indices point into the old list,
+    so roles waits, and plans again with the pair once prose reads the new one."""
+    from ingestion_workflow.pipeline.stages.roles import PROSE_READ_OTHER_PASSAGES
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="58"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    roles = _roles(settings, monkeypatch)
+    _, (first,) = _run(roles, ctx, catalog, ref)
+    assert first.status is Status.OK
+    found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer-passages",
+                            payload=catalog.payload(found), summary=found.summary)])
+    plan, outcomes = _run(roles, ctx, catalog, ref)
+    assert (outcomes, plan.reasons) == ([], {PROSE_READ_OTHER_PASSAGES: 1})
+    prose = ProseStage(settings)
+    prose.client = lambda: _Reader()
+    _run(prose, ctx, catalog, ref)
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _, (again,) = _run(roles, ctx, catalog, ref)
+    assert again.status is Status.OK and again.fingerprint != first.fingerprint
+
+
+def test_passages_over_the_cap_are_recorded_with_their_reason(env, tmp_path, monkeypatch):
+    from ingestion_workflow.pipeline.stages import passages
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="59"))
+    filler = " ".join(["The blocks of trials were presented in random order."] * 30)
+    second = "The right insula responded more (x = 40, y = 12, z = 2; t = 3.9).\n"
+    text_file = tmp_path / "article.txt"
+    text_file.write_text(f"{TEXT}\n{filler}\n\n{second}", encoding="utf-8")
+    _record_extraction(catalog, ref, text_file)
+    ctx = Context(settings, catalog)
+    _, (whole,) = _run(PassagesStage(settings), ctx, catalog, ref)
+    assert whole.summary["omitted"] == 0 and whole.payload["omitted"] == []
+    kept = whole.summary["passages"]
+    assert kept == 2
+    monkeypatch.setattr(passages, "MAX_PASSAGES", kept - 1)
+    _, (cut,) = _run(PassagesStage(settings), Context(settings, catalog, refresh=["passages"]), catalog, ref)
+    assert (cut.summary["passages"], cut.summary["omitted"]) == (kept - 1, 1)
+    (left_out,) = cut.payload["omitted"]
+    assert left_out["span"] == whole.payload["passages"][-1]["span"]
+    assert left_out["reason"] == f"over the {kept - 1}-passage cap"
+
+
+def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env):
+    from collections import defaultdict
+
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stages.sync import _parse_inputs
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="60"))
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="p-1", summary={},
+                            payload={"passages": [{"span": [0, 1]}],
+                                     "omitted": [{"span": [2, 3], "reason": "over the 40-passage cap"}]})])
+    found = defaultdict(dict, passages=catalog.artifacts([ref.id], "passages")[ref.id])
+    work = Work(ref=ref, source="", fingerprint="s-1", upstream=None)
+    inputs = _parse_inputs(Context(settings, catalog), work, "bs-1", {}, found, "pubget")
+    assert (inputs.passages_kept, inputs.passages_omitted) == (1, 1)

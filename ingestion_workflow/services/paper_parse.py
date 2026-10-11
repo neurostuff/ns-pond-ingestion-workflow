@@ -75,8 +75,10 @@ class ParseInputs:
     unread: Optional[Mapping[str, str]] = None
     #: The prose stage payload (its `passages[].span` locate a prose analysis).
     prose: Optional[Mapping[str, Any]] = None
-    #: How many passages the passages stage kept, and resolve's restatement count.
+    #: How many passages the passages stage kept and left out over its cap (None
+    #: when it did not record that), and resolve's restatement count.
     passages_kept: Optional[int] = None
+    passages_omitted: Optional[int] = None
     restated: Optional[int] = None
     #: artifact kind -> fingerprint of every catalog artifact read.
     fingerprints: Mapping[str, str] = field(default_factory=dict)
@@ -1123,12 +1125,13 @@ def _text_sweep(inputs: ParseInputs):
     from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
 
     read = len((inputs.prose or {}).get("passages") or [])
+    omitted = inputs.passages_omitted
+    # Passages from before the cut was recorded: a full list is the only sign of it.
+    cut = omitted > 0 if omitted is not None else inputs.passages_kept >= MAX_PASSAGES
     return pp.TextSweep(
-        passages_found=inputs.passages_kept,
+        passages_found=inputs.passages_kept + (omitted or 0),
         passages_read=read,
-        # The passages stage keeps the first MAX_PASSAGES and does not record how
-        # many it found, so a full list is the only sign the cap cut it.
-        truncated=inputs.passages_kept >= MAX_PASSAGES or read < inputs.passages_kept,
+        truncated=cut or read < inputs.passages_kept,
         points_dropped_as_table_restatements=inputs.restated,
     )
 
