@@ -58,13 +58,36 @@ def _agrees(kind: Any, value: Optional[float], table_kind: Any, table_value: Any
     return value is None or table_value is None or abs(abs(value) - abs(table_value)) <= SAME_VALUE
 
 
+def _same_statistic(p: Dict[str, Any], q: Dict[str, Any]) -> bool:
+    """Whether two prose points carry one statistic: both none, or the same
+    kind and the same value to rounding. A coordinate without a statistic (a
+    seed) is not a result peak that has one."""
+    kinds = [normalize_statistic_kind(r.get("statistic")) for r in (p, q)]
+    values = [_number(r.get("value")) for r in (p, q)]
+    stated = [bool(k) or v is not None for k, v in zip(kinds, values)]
+    if stated[0] != stated[1]:
+        return False
+    if kinds[0] and kinds[1] and kinds[0] != kinds[1]:
+        return False
+    return None in values or abs(abs(values[0]) - abs(values[1])) <= SAME_VALUE
+
+
 def _overlap(a: Dict[str, Any], b: Dict[str, Any]) -> bool:
-    return any(_near(p[0], q[0]) for p in a["points"] for q in b["points"])
+    """Whether the sets share a point, at one statistic."""
+    return any(_near(p[0], q[0]) and _same_statistic(p[1], q[1])
+               for p in a["points"] for q in b["points"])
+
+
+def _contradict(a: Dict[str, Any], b: Dict[str, Any]) -> bool:
+    """Whether the sets have a point in common whose statistics differ."""
+    return any(_near(p[0], q[0]) and not _same_statistic(p[1], q[1])
+               for p in a["points"] for q in b["points"])
 
 
 def _joined(found: List[Tuple[tuple, Dict[str, Any]]]) -> List[Dict[str, Any]]:
     """The passages' analyses, each name's copies in other passages joined into
-    its first when they share a point (`SAME_PEAK_MM`) or a section heading.
+    its first when they share a point (`SAME_PEAK_MM`) at one statistic, or a
+    section heading with no point shared at a different one.
 
     Each join is listed in the first's `joined`: the two passages, and
     whether a point or the heading joined them. Different names and unnamed
@@ -85,7 +108,8 @@ def _joined(found: List[Tuple[tuple, Dict[str, Any]]]) -> List[Dict[str, Any]]:
             if not named or other != identity or root(i) == root(j):
                 continue
             by = ("shared point" if _overlap(first, entry)
-                  else "heading" if entry["heading"] and entry["heading"] == first["heading"]
+                  else "heading" if (entry["heading"] and entry["heading"] == first["heading"]
+                                     and not _contradict(first, entry))
                   else None)
             if by is not None:
                 a, b = sorted((root(i), root(j)))
@@ -112,8 +136,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     """The table collections, plus one collection of what the prose adds.
 
     One analysis per name within a passage. The same name in another passage
-    is the same analysis seen again when the two share a point or a section
-    heading (`_joined`); with neither, such as the cue stage's and the pain
+    is the same analysis seen again when the two share a point at one statistic
+    or a section heading (`_joined`); with neither, such as the cue stage's and the pain
     stage's peaks of one contrast, they are different sets. An unnamed
     analysis is its own set, in the model's order. A named analysis the model
     gave no point is kept, empty.

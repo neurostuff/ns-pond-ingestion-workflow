@@ -32,7 +32,10 @@ def _table(points):
 def _passage(*analyses, space="MNI"):
     return {"text": "...", "heading": None, "space": space, "error": None, "analyses": [
         {"name": name, "measure": None, "points": [
-            {"x": x, "y": y, "z": z, "statistic": "T", "value": 4.1, "cluster_size": None, "role": role}
+            {"x": x, "y": y, "z": z, "cluster_size": None, "role": role,
+             # A seed is where an analysis is computed from; it has no statistic.
+             **({"statistic": None, "value": None} if role == "seed"
+                else {"statistic": "T", "value": 4.1})}
             for x, y, z, role in points]}
         for name, points in analyses]}
 
@@ -140,14 +143,14 @@ def test_one_peak_reported_for_two_contrasts_stays_under_both():
 
 
 def test_a_seed_and_the_results_connected_to_it_stay_apart_across_passages():
-    """A Methods passage's seed and a Results passage's PPI peaks share a name
-    but no point: they are different sets."""
+    """A Methods passage's seed and a Results passage's PPI peaks share a name;
+    they are different sets, and the peak at the seed's xyz is kept."""
     prose = {"passages": [_passage(("amygdala PPI", [(-20, -4, -18, "seed")])),
-                          _passage(("amygdala PPI", [(30, 20, 4, "result"), (-40, 22, 6, "result")]))]}
+                          _passage(("amygdala PPI", [(-20, -4, -18, "result"), (30, 20, 4, "result")]))]}
     out, summary = resolve({}, prose, "slug")
     got = [(a["name"], a["metadata"]["passages"], len(a["coordinates"])) for a in out["prose"]["analyses"]]
     assert got == [("amygdala PPI", [0], 1), ("amygdala PPI", [1], 2)]
-    assert summary["prose_points"] == 3 and summary["repeated"] == 0 and summary["joins"] == {}
+    assert summary["prose_points"] == 3 and summary["repeated"] == 0
 
 
 def test_one_analysis_named_again_at_its_point_in_another_passage_is_one_analysis():
@@ -168,6 +171,47 @@ def test_one_analysis_named_again_at_its_point_in_another_passage_is_one_analysi
     # Another name at the same point is another analysis.
     assert (other["name"], other["metadata"]["passages"]) == ("left striatum", [1])
     assert summary["joins"] == {"shared point": 1} and summary["prose_analyses"] == 2
+
+
+def _stated(name, x, y, z, statistic, value, heading=None):
+    point = {"x": x, "y": y, "z": z, "statistic": statistic, "value": value,
+             "cluster_size": None, "role": "result"}
+    return {**_passage((name, [])), "heading": heading,
+            "analyses": [{"name": name, "measure": None, "points": [point]}]}
+
+
+def test_the_same_point_at_the_same_statistic_joins():
+    prose = {"passages": [_stated("insula", 38, 20, -4, "T", 4.1),
+                          _stated("insula", 38, 20, -4, "t", 4.11)]}
+    out, summary = resolve({}, prose, "slug")
+    assert len(out["prose"]["analyses"]) == 1 and summary["joins"] == {"shared point": 1}
+
+
+def test_a_point_with_a_statistic_and_one_without_stay_apart():
+    prose = {"passages": [_stated("insula", 38, 20, -4, None, None),
+                          _stated("insula", 38, 20, -4, "T", 4.1)]}
+    out, summary = resolve({}, prose, "slug")
+    assert [a["metadata"]["passages"] for a in out["prose"]["analyses"]] == [[0], [1]]
+    assert summary["joins"] == {} and summary["prose_points"] == 2
+
+
+def test_a_point_at_two_statistic_values_or_kinds_stays_apart():
+    for other in (("T", 6.3), ("Z", 4.1)):
+        prose = {"passages": [_stated("insula", 38, 20, -4, "T", 4.1),
+                              _stated("insula", 38, 20, -4, *other)]}
+        out, summary = resolve({}, prose, "slug")
+        assert len(out["prose"]["analyses"]) == 2 and summary["joins"] == {}
+
+
+def test_a_shared_heading_does_not_merge_a_seed_into_a_result_at_its_point():
+    seed = _stated("insula PPI", 38, 20, -4, None, None, heading="Imaging")
+    result = _stated("insula PPI", 38, 20, -4, "T", 4.1, heading="Imaging")
+    elsewhere = _stated("insula PPI", 10, 10, 10, "T", 4.1, heading="Imaging")
+    out, summary = resolve({}, {"passages": [seed, result]}, "slug")
+    assert len(out["prose"]["analyses"]) == 2 and summary["joins"] == {}
+    # The heading still joins sets that share no point.
+    out, summary = resolve({}, {"passages": [result, elsewhere]}, "slug")
+    assert len(out["prose"]["analyses"]) == 1 and summary["joins"] == {"heading": 1}
 
 
 def test_a_name_seen_in_three_passages_joins_through_any_shared_point():
