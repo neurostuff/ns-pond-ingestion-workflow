@@ -9,9 +9,8 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from study_schema.spaces import normalize_space
 
-from ..services.coordinate_flags import point_sign
 from .ids import Identifier
-from .statistics import ALLOWED_STATISTIC_KINDS
+from .statistics import ALLOWED_STATISTIC_KINDS, side
 
 
 class CoordinateSpace(str, Enum):
@@ -182,12 +181,12 @@ class Coordinate:
 
     @property
     def sign(self) -> str:
-        """`positive`, `negative` or `unsigned`, from the statistic.
+        """`positive`, `negative` or `unsigned`, from the statistic (`statistics.side`).
 
         Derived, never stored, so it cannot disagree with the value it reads,
         and a payload written before it existed reads the same.
         """
-        return point_sign(self.statistic_value, self.statistic_type)
+        return side(self.statistic_value, self.statistic_type) or "unsigned"
 
     def to_dict(self) -> Dict[str, Any]:
         return {

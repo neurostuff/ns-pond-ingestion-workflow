@@ -321,7 +321,7 @@ def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, objec
     space = coordinate.space or collection.coordinate_space
     # `sign` and `is_subpeak` are study_schema's ParsedPoint fields. pondie
     # reads neither yet; `sign: unsigned` is what lets it see that a point in
-    # the positive half of a split had no statistic to place it by.
+    # the original half of a split had no statistic to place it by.
     point: dict[str, object] = {
         "coordinates": [coordinate.x, coordinate.y, coordinate.z],
         "space": space.value if space else None,

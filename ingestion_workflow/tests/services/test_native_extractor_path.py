@@ -447,46 +447,73 @@ def test_the_prompt_stops_matching_a_letter_inside_a_word():
 
 def test_one_contrast_reporting_both_directions_is_split_by_sign():
     """A positive and a negative statistic are different directions, and
-    pooling them pools an increase with a decrease. 4.66% of corpus analyses
-    carrying a statistic hold both -- 2,095 of 44,965, with 8,367 negative
-    points among them."""
+    pooling them pools an increase with a decrease. 2,120 table analyses in the
+    53,273 ns-pond papers with a stage1 hold both."""
     from ingestion_workflow.models import Coordinate
-    from ingestion_workflow.services.create_analyses import _by_direction
+    from ingestion_workflow.services.create_analyses import split_by_sign
 
-    def point(value):
+    def point(value, kind="T"):
         return Coordinate(x=1.0, y=2.0, z=3.0, statistic_value=value,
-                          statistic_type="T")
+                          statistic_type=kind)
 
     both = [point(4.2), point(-3.1), point(2.0)]
-    out = _by_direction("Patients > controls", both)
-    assert [n for n, _ in out] == ["Patients > controls",
-                                   "Patients > controls (negative)"]
-    assert [len(c) for _, c in out] == [2, 1]
+    out = split_by_sign("Patients > controls", both)
+    assert [n for n, _, _ in out] == ["Patients > controls",
+                                      "Patients > controls (inverse)"]
+    assert [c for _, c, _ in out] == [[both[0], both[2]], [both[1]]]
+    assert [s for _, _, s in out] == [{"half": "original"},
+                                      {"half": "inverse"}]
 
-    # one direction is left exactly as it was, name included
+    # one direction is left exactly as it was, name included, and declares nothing
     for only in ([point(4.2), point(2.0)], [point(-4.2)], [point(None)], []):
-        assert _by_direction("Main effect", only) == [("Main effect", only)]
+        assert split_by_sign("Main effect", only) == [("Main effect", only, None)]
 
-    # A row with no statistic joins the positive half, tagged unsigned.
-    out = _by_direction("A > B", [point(4.2), point(None), point(-3.1)])
-    assert [[c.sign for c in half] for _, half in out] == [
-        ["positive", "unsigned"], ["negative"]]
+    # A row with no statistic, a p or an F join the original half unsigned;
+    # so does zero. A bare number with no kind takes its own sign.
+    rows = [point(4.2), point(None), point(0.01, "P"), point(0.0),
+            point(-3.1), point(-2.0, None)]
+    out = split_by_sign("A > B", rows)
+    assert [half for _, half, _ in out] == [rows[:4], rows[4:]]
+    assert [[c.sign for c in half] for _, half, _ in out] == [
+        ["positive", "unsigned", "unsigned", "positive"], ["negative", "negative"]]
+
+    # p values and F's carry no direction: nothing to split ...
+    flat = [point(4.2), point(0.01, "P"), point(5.0, "F")]
+    assert split_by_sign("A > B", flat) == [("A > B", flat, None)]
+    # ... unless one is negative, which no p or F can be.
+    mislabelled = [point(4.2), point(-0.01, "P")]
+    assert [h for _, h, _ in split_by_sign("A > B", mislabelled)] == [
+        mislabelled[:1], mislabelled[1:]]
 
 
-def test_the_sign_reads_the_statistic_and_not_the_name():
-    """The contrast names the direction; the sign marks a sign-flipped
-    statistic inside it. Reading the name would double-count the direction and
-    mark every point of a `Deactivation` table, including ones whose statistic
-    the paper printed as a positive magnitude."""
-    import inspect
+def test_the_stage_declares_the_split_in_each_halfs_metadata():
+    """The declaration is the only record of the split: nothing reads the
+    name's suffix back."""
+    from ingestion_workflow.models import (
+        CoordinatePoint,
+        ParseAnalysesOutput,
+        ParsedAnalysis,
+        PointsValue,
+    )
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
 
-    from ingestion_workflow.services.coordinate_flags import point_sign
+    def pt(value):
+        return CoordinatePoint(coordinates=[1, 2, 3], values=[PointsValue(value=value, kind="T")])
 
-    params = list(inspect.signature(point_sign).parameters)
-    assert params == ["statistic_value", "statistic_type"], params
-    assert point_sign(-3.1) == "negative"
-    assert point_sign(3.1) == "positive"
-    assert point_sign(None) == "unsigned"
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    svc.settings = SimpleNamespace(llm_native_schema=True)
+    table = SimpleNamespace(space=None, table_id="t1", table_number=1,
+                            caption="", footer="", metadata={})
+    parsed = ParseAnalysesOutput(analyses=[
+        ParsedAnalysis(name="One way", points=[pt(3.0)]),
+        ParsedAnalysis(name="Both", points=[pt(3.0), pt(-3.0)]),
+    ])
+    coll = svc._build_collection(parsed, table, None, "t1", "t1", "slug", model_space="MNI")
+    assert [(a.name, a.metadata.get("split")) for a in coll.analyses] == [
+        ("One way", None),
+        ("Both", {"half": "original", "index": 1}),
+        ("Both (inverse)", {"half": "inverse", "original_index": 1}),
+    ]
 
 
 def test_the_output_budget_is_not_capped_below_what_the_window_affords():

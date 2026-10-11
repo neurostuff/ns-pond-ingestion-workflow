@@ -508,3 +508,53 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
                             payload={"t1": _table([(-22, -4, -18)])}, summary={"tables": 1})])
     plan, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert len(plan.pending) == 1 and merged.summary["restated"] == 1
+
+
+def _synced_names(env, tmp_path, monkeypatch, summary):
+    """Sync one article whose analyses artifact carries `summary`; the analysis names it wrote."""
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+
+    settings, catalog, path = env
+    settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
+    ref = catalog.register(Identifier(pmid="12"))
+    pts = [{"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": v, "statistic_type": "T"}
+           for v in (4.0,)]
+    neg = [{**pts[0], "statistic_value": -4.0}]
+    tables = {"t1": {"slug": "s::t1", "analyses": [
+        {"name": "Load", "table_id": "t1", "coordinates": pts},
+        {"name": "Load (negative)", "table_id": "t1", "coordinates": neg},
+    ]}}
+    _record_upstream(catalog, ref, path)
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                            payload=tables, summary=summary)])
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _Reader())
+    _run(ResolveStage(settings), ctx, catalog, ref)
+    _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    _run(SpaceStage(settings), ctx, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS12", "study_id": "S12"})])
+    sync = SyncStage(settings)
+    seen = {}
+    assemble = sync._assemble
+
+    def spy(*args, **kwargs):
+        bundle, per_table, files = assemble(*args, **kwargs)
+        seen.update(per_table)
+        return bundle, per_table, files
+
+    sync._assemble = spy
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    return [(x.name, x.metadata.get("split")) for x in seen["t1"].analyses]
+
+
+def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(env, tmp_path, monkeypatch):
+    names = _synced_names(env, tmp_path, monkeypatch, {"tables": 1, "split_declared": True})
+    assert names == [("Load", None), ("Load (negative)", None)]
+
+
+def test_a_legacy_payload_pair_is_still_paired(env, tmp_path, monkeypatch):
+    names = _synced_names(env, tmp_path, monkeypatch, {"tables": 1})
+    assert [n for n, _ in names] == ["Load", "Load (negative)"]
+    assert [s["half"] for _, s in names] == ["original", "inverse"]

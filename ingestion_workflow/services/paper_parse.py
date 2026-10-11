@@ -17,6 +17,7 @@ table -- the model's points carry no row -- because the key is made from the cel
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import re
 from array import array
@@ -29,6 +30,7 @@ from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
+from ingestion_workflow.models.statistics import point_values
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME
 from ingestion_workflow.services.coordinate_space import sectionize
@@ -44,19 +46,6 @@ PAPER_PARSE_VERSION = 4
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
-#: The analyses stage's statistic letters, one to one onto study_schema's
-#: StatisticKind (its description lists them; study_schema has no such map to
-#: import). Anything else is `other`.
-STATISTIC_KINDS = {
-    "T": "t",
-    "Z": "z",
-    "F": "f",
-    "D": "d",
-    "G": "g",
-    "R": "r",
-    "B": "beta",
-    "P": "p",
-}
 
 _SECTIONS = {
     "methods": "methods",
@@ -165,11 +154,6 @@ def _bisect(where: array, offset: int) -> int:
     from bisect import bisect_left
 
     return bisect_left(where, offset)
-
-
-def statistic_kind(letter: Optional[str]) -> str:
-    """study_schema's StatisticKind for one of the analyses stage's letters."""
-    return STATISTIC_KINDS.get(str(letter or "").strip().upper(), "other")
 
 
 # -- the parsed paper --------------------------------------------------------------------
@@ -756,7 +740,7 @@ def _table_analyses(
     columns = sorted({col for points in placed for found in points if found for col in [found[1]]})
     group = {col: i for i, col in enumerate(columns)}
 
-    out: List[Tuple[Optional[pp.ParsedAnalysis], bool]] = []
+    out: List[Tuple[Optional[pp.ParsedAnalysis], Optional[dict]]] = []
     for analysis, found in zip(analyses, placed):
         cells = {(row, group[col]) for row, col in filter(None, found)}
         if not analysis.coordinates:
@@ -773,7 +757,7 @@ def _table_analyses(
                     else "no row of the table names it",
                 )
             )
-            out.append((None, False))
+            out.append((None, None))
             continue
         points = [
             _point(c, collection, found=f and (f[0], group[f[1]]))
@@ -879,6 +863,24 @@ def _norm(text: str) -> str:
     return re.sub(r"\W+", " ", (text or "").lower()).strip()
 
 
+def _mirror(xyz, text: str, windows) -> Optional[Tuple[int, int]]:
+    """A copy in `windows` printing the point with one or more signs reversed.
+
+    The matcher never takes "-42" for 42 (the other hemisphere), so a point whose
+    only printed copy is its mirror has no span; this finds that copy, so the
+    parse can say so.
+    """
+    for signs in itertools.product((1, -1), repeat=3):
+        flipped = tuple(sign * v for sign, v in zip(signs, xyz))
+        if flipped == tuple(xyz):
+            continue
+        for a, b in windows:
+            found = coordinate_text.find_all(flipped, text, a, b)
+            if found:
+                return found[0]
+    return None
+
+
 def _prose_analysis(
     analysis: Analysis,
     collection,
@@ -911,6 +913,17 @@ def _prose_analysis(
         )
         if point_spans[-1]:
             taken.add(point_spans[-1])
+        elif xyz and (mirror := _mirror(xyz, text.text, windows)):
+            roles.omitted.append(
+                Omitted(
+                    analysis.name,
+                    None,
+                    f"kept; point ({', '.join(f'{v:g}' for v in xyz)}) has no text_span: "
+                    f"its passage prints it only with a sign reversed, "
+                    f"{text.text[mirror[0]:mirror[1]]!r} at {mirror[0]}-{mirror[1]}",
+                    kept=True,
+                )
+            )
     spans = sorted({s for s in point_spans if s}) or sorted(set(windows))
     if not spans:
         roles.omitted.append(
@@ -999,7 +1012,7 @@ def _analysis(
         statistic=_statistic(points),
         points=points,
     )
-    return built, name.endswith(SPLIT_SUFFIXES)
+    return built, (analysis.metadata or {}).get("split")
 
 
 def _statistic(points) -> Optional[str]:
@@ -1008,30 +1021,47 @@ def _statistic(points) -> Optional[str]:
     return kinds.pop() if len(kinds) == 1 else None
 
 
-def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], bool]]) -> None:
-    """Declare the analyses stage's sign split as `split{}` on both halves.
+def _declare_splits(analyses: List[Tuple[Optional[pp.ParsedAnalysis], Optional[dict]]]) -> None:
+    """Copy the analyses stage's sign split into `split{}` on both halves.
 
-    The stage names the half holding the negative values `<name> (negative)` and
-    emits it right after the original;
-    that adjacency and the name are the only record of the split, so this is
-    where it becomes a field, and only then is the suffix dropped from the
-    name. The inverse half's `original_analysis` is the original's key. A
-    `(negative)` name with no such original keeps it.
+    The stage declares it as `metadata["split"]`: `{"half": "original", "index": i}`
+    on the analysis as named, and `{"half": "inverse", "original_index": i}` on the
+    reversed contrast, `i` being the original's place among the stage's analyses
+    when it split. The halves pair by that number, so an analysis dropped in
+    between, or two originals with one name, cannot mispair them. The inverse takes
+    the original's name, the contrast as printed. An inverse half whose original is
+    not in the parse (`original_index` is None, or names one that was not placed)
+    is declared on its own and loses its suffix too.
     """
-    for i, (half, negative) in enumerate(analyses):
-        if half is None or not negative or i == 0:
+    rule = "sign_of_directional_statistic"
+    originals = {
+        split.get("index"): built
+        for built, split in analyses
+        if built is not None and split and split["half"] == "original"
+    }
+    for built, split in analyses:
+        if built is None or not split or split["half"] != "inverse":
             continue
-        original, original_negative = analyses[i - 1]
-        name = half.name[: -len(next(x for x in SPLIT_SUFFIXES if half.name.endswith(x)))]
-        if original is None or original_negative or original.name != name:
+        original = originals.get(split.get("original_index"))
+        if original is None:
+            built.split = pp.SignSplit(half="inverse", rule=rule)
+            _rename(built, _without_suffix(built.name))
             continue
-        rule = "sign_of_directional_statistic"
         original.split = pp.SignSplit(half="original", rule=rule)
-        half.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
-        half.name = name
-        half.key = keys.table_key(
-            half.table_id, [(c.row, c.column_group) for c in half.cells], name
-        )
+        built.split = pp.SignSplit(half="inverse", original_analysis=original.key, rule=rule)
+        _rename(built, original.name)
+
+
+def _rename(built: pp.ParsedAnalysis, name: str) -> None:
+    """Rename a table analysis and re-key it, the key hashing the name."""
+    built.name = name
+    built.key = keys.table_key(
+        built.table_id, [(c.row, c.column_group) for c in built.cells], name
+    )
+
+
+def _without_suffix(name: str) -> str:
+    return next((name[: -len(x)] for x in SPLIT_SUFFIXES if name.endswith(x)), name)
 
 
 def _space_value(space) -> Optional[str]:
@@ -1041,14 +1071,10 @@ def _space_value(space) -> Optional[str]:
 
 def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     space = coordinate.space.value if coordinate.space else None
-    values = None
-    if isinstance(coordinate.statistic_value, (int, float)):
-        values = [
-            pp.PointValue(
-                kind=statistic_kind(coordinate.statistic_type),
-                value=float(coordinate.statistic_value),
-            )
-        ]
+    values = [
+        pp.PointValue(**v)
+        for v in point_values(coordinate.statistic_value, coordinate.statistic_type)
+    ] or None
     measure = (
         str(coordinate.cluster_measure or "").strip().lower().replace("³", "3").replace("^", "")
     )
@@ -1180,6 +1206,5 @@ __all__ = [
     "ParseInputs",
     "coordinate_parse",
     "parsed_paper",
-    "statistic_kind",
     "write",
 ]

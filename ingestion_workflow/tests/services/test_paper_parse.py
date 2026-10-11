@@ -19,7 +19,8 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.services import nspond, paper_parse
-from ingestion_workflow.services.paper_parse import ParseInputs, statistic_kind
+from ingestion_workflow.models.statistics import schema_kind
+from ingestion_workflow.services.paper_parse import ParseInputs
 from study_schema import keys
 from study_schema.jsonschema import load
 from study_schema.models import paper_parse as pp
@@ -112,10 +113,11 @@ def _written(tmp_path):
     per_table = {
         "tbl1": _collection(
             [
-                # The analyses stage's sign split: the original half, then "<name> (inverse)".
+                # The analyses stage's sign split, declared on both halves.
                 Analysis(
                     name="Faces > Houses",
                     table_id="tbl1",
+                    metadata={"split": {"half": "original", "index": 0}},
                     coordinates=[
                         Coordinate(
                             x=-42,
@@ -131,6 +133,7 @@ def _written(tmp_path):
                 Analysis(
                     name="Faces > Houses (inverse)",
                     table_id="tbl1",
+                    metadata={"split": {"half": "inverse", "original_index": 0}},
                     coordinates=[
                         Coordinate(
                             x=22,
@@ -252,11 +255,11 @@ def test_keys_are_minted_from_the_cells_the_points_sit_in(written):
     by_name = {}
     for a in parse["analyses"]:
         by_name.setdefault(a["name"], []).append(a)
-    positive, negative = by_name["Faces > Houses"]
-    assert positive["cells"] == [{"row": 1, "column_group": 0}]
-    assert positive["key"] == keys.table_key("tbl1", [(1, 0)], "Faces > Houses")
-    assert positive["points"][0]["row"] == 1
-    assert negative["key"] == keys.table_key("tbl1", [(2, 0)], "Faces > Houses")
+    original, inverse = by_name["Faces > Houses"]
+    assert original["cells"] == [{"row": 1, "column_group": 0}]
+    assert original["key"] == keys.table_key("tbl1", [(1, 0)], "Faces > Houses")
+    assert original["points"][0]["row"] == 1
+    assert inverse["key"] == keys.table_key("tbl1", [(2, 0)], "Faces > Houses")
     # A contrast with no coordinates is keyed by the row that names it.
     null = by_name["Houses > Faces"][0]
     assert null["points"] == [] and null["cells"] == [{"row": 3, "column_group": 0}]
@@ -267,7 +270,7 @@ def test_the_sign_split_is_declared_not_left_in_the_name(written):
     halves = [a for a in parse["analyses"] if a["name"] == "Faces > Houses"]
     assert [a["split"]["half"] for a in halves] == ["original", "inverse"]
     assert [a["split"].get("original_analysis") for a in halves] == [None, halves[0]["key"]]
-    assert not any(a["name"].endswith(("(inverse)", "(negative)")) for a in parse["analyses"])
+    assert not any(a["name"].endswith("(inverse)") for a in parse["analyses"])
 
 
 def test_points_carry_no_sign_and_use_the_shared_statistic_kinds(written):
@@ -276,7 +279,7 @@ def test_points_carry_no_sign_and_use_the_shared_statistic_kinds(written):
     assert "sign" not in point
     assert point["values"] == [{"kind": "t", "value": 6.1}]
     assert point["cluster_measure"] == "voxels"
-    assert [statistic_kind(k) for k in ("T", "Z", "F", "B", "P", None, "?")] == [
+    assert [schema_kind(k) for k in ("T", "Z", "F", "B", "P", None, "?")] == [
         "t",
         "z",
         "f",
@@ -370,6 +373,41 @@ def test_a_set_without_a_role_from_the_roles_stage_is_not_parsed():
 def test_the_prose_model_s_role_word_is_not_read():
     built, _ = _one_prose({"role": "figure", "set_role": _decided("result", origin="text")})
     assert (built.role, built.anchor_kind, built.role_source) == ("result", None, "set-role-text@1")
+
+
+def test_a_point_printed_only_with_a_sign_reversed_keeps_no_span_and_says_so():
+    """The extraction dropped the minus that a space parts from x; the text still prints it."""
+    passage = "Activity in the left internal capsule (\u2212 40, -52, -18) increased."
+    built, roles = _one_prose({"set_role": _decided(origin="text")}, passage)
+    assert built.points[0].text_span is None
+    (note,) = [o for o in roles.omitted if o.kept]
+    printed = "\u2212 40, -52, -18"
+    at = roles.text.text.index(printed)
+    assert note.reason == (
+        "kept; point (40, -52, -18) has no text_span: its passage prints it only with a "
+        f"sign reversed, {printed!r} at {at}-{at + len(printed)}"
+    )
+
+
+def test_a_mirror_printed_outside_the_set_s_passages_is_not_noted():
+    """The other hemisphere's peak elsewhere in the paper belongs to another set."""
+    passage = "The right peak is listed in Table 2."
+    text = paper_parse._Text(f"Results\n\nThe left peak (-40, -52, -18).\n\n{passage}\n")
+    collection = _collection([
+        Analysis(name="right", metadata={"source": "prose", "passages": [0]},
+                 coordinates=[Coordinate(x=40, y=-52, z=-18)])
+    ])
+    roles = paper_parse._Roles(text, [])
+    inputs = ParseInputs(article_id="a", prose={"passages": [{"text": passage}]})
+    built = paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles)
+    assert built.points[0].text_span is None
+    assert not [o for o in roles.omitted if o.kept]
+
+
+def test_a_point_printed_as_stored_gets_no_sign_note():
+    built, roles = _one_prose({"set_role": _decided(origin="text")})
+    assert built.points[0].text_span is not None
+    assert not [o for o in roles.omitted if o.kept]
 
 
 def test_numbers_that_are_not_coordinates_are_omitted_with_the_deciding_model():
@@ -634,33 +672,102 @@ def test_a_placeholder_analysis_with_no_points_is_recorded_as_omitted(tmp_path):
     assert [str(o) for o in omitted] == ["tbl1: 'UNKNOWN': a placeholder analysis with no points"]
 
 
-def test_inverse_is_kept_in_the_name_unless_a_split_is_declared(tmp_path):
+def test_the_split_is_read_from_the_declaration_never_the_name(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
+    inverse = {"split": {"half": "inverse", "original_index": 0}}
     collection = _collection(
         [
-            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
+            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)],
+                     metadata={"split": {"half": "original", "index": 0}}),
             Analysis(name="Other", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
-            # Not right after its original: no split, so the name keeps its direction.
-            Analysis(name="Fear > Neutral (inverse)", coordinates=point),
+            # Declared, so paired by its original's index though not adjacent; named as
+            # the original.
+            Analysis(name="Fear > Neutral (inverse)", coordinates=point, metadata=inverse),
+            # Named like a half but declared as none: not a split, name kept.
+            Analysis(name="Other (inverse)", coordinates=[Coordinate(x=36, y=20, z=4)]),
         ]
     )
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
-    assert parse.analyses[2].name == "Fear > Neutral (inverse)"
-    assert all(a.split is None for a in parse.analyses)
+    fear, other, half, lookalike = parse.analyses
+    assert half.name == "Fear > Neutral"
+    assert (fear.split.half, half.split.half) == ("original", "inverse")
+    assert fear.split.original_analysis is None and half.split.original_analysis == fear.key
+    assert other.split is None and lookalike.split is None
+    assert lookalike.name == "Other (inverse)"
 
 
-def test_the_legacy_negative_spelling_is_declared_and_stripped_too(tmp_path):
+def test_a_half_whose_original_is_not_in_the_table_is_declared_on_its_own(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     collection = _collection(
-        [
-            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)]),
-            Analysis(name="Fear > Neutral (negative)", coordinates=point),
-        ]
+        [Analysis(name="Fear > Neutral (inverse)", coordinates=point,
+                  metadata={"split": {"half": "inverse", "original_index": 7}})]
     )
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
-    assert [a.name for a in parse.analyses] == ["Fear > Neutral", "Fear > Neutral"]
-    assert [a.split.half for a in parse.analyses] == ["original", "inverse"]
-    assert parse.analyses[1].split.original_analysis == parse.analyses[0].key
+    (half,) = parse.analyses
+    assert half.split.half == "inverse" and half.split.original_analysis is None
+    assert half.name == "Fear > Neutral"
+
+
+def test_an_inverse_half_with_no_original_is_declared_on_its_own(tmp_path):
+    point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
+    collection = _collection(
+        [Analysis(name="AD vs. NC (inverse)", coordinates=point,
+                  metadata={"split": {"half": "inverse", "original_index": None}})]
+    )
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    (half,) = parse.analyses
+    assert half.split.half == "inverse" and half.split.original_analysis is None
+    assert half.name == "AD vs. NC"
+
+
+def test_halves_pair_by_the_stages_index_after_an_analysis_is_dropped(tmp_path):
+    point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
+    stage = _collection(
+        [
+            Analysis(name="Left", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
+            Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=36, y=20, z=4)],
+                     metadata={"split": {"half": "original", "index": 1}}),
+            Analysis(name="Fear > Neutral (inverse)", coordinates=point,
+                     metadata={"split": {"half": "inverse", "original_index": 1}}),
+        ]
+    )
+    stage.analyses.pop(0)
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": stage})
+    original, inverse = parse.analyses
+    assert inverse.split.original_analysis == original.key
+    assert (original.split.half, inverse.split.half) == ("original", "inverse")
+
+
+def test_two_originals_of_one_name_each_pair_with_their_own_inverse(tmp_path):
+    table = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>
+<tr><td>A</td><td>1</td><td>2</td><td>3</td></tr>
+<tr><td>B</td><td>4</td><td>5</td><td>6</td></tr>
+<tr><td>C</td><td>7</td><td>8</td><td>9</td></tr>
+<tr><td>D</td><td>10</td><td>11</td><td>12</td></tr>
+</table>"""
+
+    def half(coordinate, split, name="P > C"):
+        return Analysis(
+            name=name, coordinates=[Coordinate(**coordinate)], metadata={"split": split}
+        )
+
+    def inverse(i, **c):
+        return half(c, {"half": "inverse", "original_index": i}, "P > C (inverse)")
+
+    collection = _collection(
+        [
+            half(dict(x=1, y=2, z=3), {"half": "original", "index": 0}),
+            half(dict(x=4, y=5, z=6), {"half": "original", "index": 1}),
+            inverse(0, x=7, y=8, z=9, statistic_value=-3.0, statistic_type="T"),
+            inverse(1, x=10, y=11, z=12, statistic_value=-3.0, statistic_type="T"),
+        ]
+    )
+    parse, omitted = _parse(tmp_path, table, {"tbl1": collection})
+    o1, o2, i1, i2 = parse.analyses
+    assert omitted == []
+    assert i1.split.original_analysis == o1.key
+    assert i2.split.original_analysis == o2.key
 
 
 def _prose_parse(passage, names_and_points):
@@ -1168,3 +1275,17 @@ def test_the_parse_checks_a_role_as_upload_and_sync_do(metadata):
     analysis = Analysis(name="x", table_id="t1", metadata=metadata, coordinates=[])
     with pytest.raises(paper_parse.MissingRole):
         _roles().of(analysis, "t1")
+
+
+def test_a_table_in_a_stated_other_space_parses_and_validates(tmp_path):
+    collection = AnalysisCollection(
+        slug="t",
+        coordinate_space=CoordinateSpace.OTHER,
+        analyses=[Analysis(name="A > B", table_id="tbl1",
+                           metadata={"set_role": _decided(), "held": False},
+                           coordinates=[Coordinate(x=22, y=-4, z=-20)])],
+    )
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    (analysis,) = parse.analyses
+    assert analysis.coordinate_space == "OTHER"
+    pp.CoordinateParse.model_validate(parse.model_dump())

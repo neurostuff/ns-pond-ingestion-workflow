@@ -91,39 +91,85 @@ def _text_of(markup: str) -> str:
     return "\n".join(line for line in lines if line.strip())
 
 
-#: Appended to the name of the negative half when one analysis reports both
-#: directions. Not a translation of the contrast: `A > B` with a negative t
-#: means B > A, but a name like `Interaction` or `Main effect of group` cannot
-#: be inverted at all, so the marker says what is true of the numbers and
-#: leaves the contrast as the paper wrote it.
-NEGATIVE_SUFFIX = " (negative)"
+#: Appended to the name of the inverse half (the points with negative
+#: values) when one analysis reports both directions: the contrast reversed,
+#: with the paper's own wording kept. A label only: the split itself is
+#: declared in `metadata["split"]`; only `declare_legacy_splits`, for payloads
+#: stored before the declaration existed, reads it back out of the name.
 INVERSE_SUFFIX = " (inverse)"
+#: The spelling stored payloads used before the stage said "inverse".
+NEGATIVE_SUFFIX = " (negative)"
 #: Every spelling of the inverse-half marker a stored payload may carry.
 SPLIT_SUFFIXES = (INVERSE_SUFFIX, NEGATIVE_SUFFIX)
 
 
-def _by_direction(name, coordinates):
+def split_by_sign(name, coordinates):
     """Split an analysis that reports both directions under one name.
 
     A positive and a negative statistic are different directions, and pooling
-    them pools an increase with a decrease -- 4.66% of analyses with a
-    statistic hold both, 2,095 of 44,965, carrying 8,367 negative points.
+    them pools an increase with a decrease -- 2,120 table analyses in the
+    53,273 ns-pond papers with a stage1 hold both.
 
     The direction normally lives in the contrast name, which is why a point's
-    `sign` reads the statistic rather than the name. Where one contrast
-    reports both, the sign is the only thing that separates them, and the
-    negative half is its own analysis: the inverse contrast.
+    side reads the statistic rather than the name. Where one contrast reports
+    both, the sign is the only thing that separates them. The original half is
+    the analysis as named; the inverse half is the reversed contrast, its own
+    analysis. The rule is study_schema's
+    (`SplitRule.sign_of_directional_statistic`): points with a negative value,
+    of any kind, form the inverse half, every other point, unsigned ones
+    included, the original half.
 
-    Yields `(name, coordinates)` in table order, the positive half first.
-    Points with no directional statistic (`sign` unsigned) join the positive
-    half and keep their tag. An analysis whose statistics are all one sign, or
-    which has none, is returned unchanged so nothing is renamed without cause.
+    Yields `(name, coordinates, split)` in table order, the original half
+    first. `split` is `{"half": "original"}` on the original and
+    `{"half": "inverse"}` on the inverse; `_build_collection` adds the original's
+    index among the analyses, so the halves pair by it and not by name.
+    `split` is None for an analysis whose statistics are all
+    one side or which has none, which is returned unchanged so nothing is
+    renamed without cause.
     """
-    positive = [c for c in coordinates if c.sign != "negative"]
-    negative = [c for c in coordinates if c.sign == "negative"]
-    if not (positive and negative):
-        return [(name, coordinates)]
-    return [(name, positive), (name + NEGATIVE_SUFFIX, negative)]
+    original = [c for c in coordinates if c.sign != "negative"]
+    inverse = [c for c in coordinates if c.sign == "negative"]
+    if not (original and inverse):
+        return [(name, coordinates, None)]
+    return [
+        (name, original, {"half": "original"}),
+        (name + INVERSE_SUFFIX, inverse, {"half": "inverse"}),
+    ]
+
+
+def declare_legacy_splits(collection: AnalysisCollection) -> AnalysisCollection:
+    """Legacy only: declare the splits of a payload stored before `split{}` existed.
+
+    Such a payload marks a split only by name, `X` then `X (negative)` (or `X (inverse)`) in the
+    same table. The pair is declared as it was stored, with no re-split, so a
+    reader sees the halves the stage produced. A `(negative)` or `(inverse)` analysis with no
+    such partner is declared an inverse half with no original
+    rather than read as an ordinary analysis. Undeclared analyses only; the
+    stored payload is not rewritten. Delete once no stored payload lacks
+    `split{}`.
+    """
+    analyses = collection.analyses
+    for i, analysis in enumerate(analyses):
+        meta = analysis.metadata
+        if meta.get("split") or not analysis.name.endswith(SPLIT_SUFFIXES):
+            continue
+        prev = analyses[i - 1] if i else None
+        if (
+            prev is not None
+            and not prev.metadata.get("split")
+            and analysis.name in (prev.name + suffix for suffix in SPLIT_SUFFIXES)
+            and prev.table_id == analysis.table_id
+        ):
+            original = i - 1
+            prev.metadata = {**prev.metadata, "split": {"half": "original", "index": original}}
+        else:
+            original = None
+            logger.warning("unpaired legacy inverse half %r in table %s",
+                           analysis.name, analysis.table_id)
+        analysis.metadata = {
+            **meta, "split": {"half": "inverse", "original_index": original}
+        }
+    return collection
 
 
 def table_reading(collection: AnalysisCollection) -> str:
@@ -310,7 +356,14 @@ class CreateAnalysesService:
                 table_space,
             )
             analysis_name = parsed.name or f"{table_key} analysis {idx}"
-            for name, subset in _by_direction(analysis_name, coordinates):
+            for name, subset, split in split_by_sign(analysis_name, coordinates):
+                # Where the original sits among the analyses now; later filtering
+                # moves positions, so the halves are paired by this number.
+                if split and split["half"] == "original":
+                    original_index = len(collection.analyses)
+                    split = {**split, "index": original_index}
+                elif split:
+                    split = {**split, "original_index": original_index}
                 collection.add_analysis(Analysis(
                     name=name,
                     description=parsed.description,
@@ -322,6 +375,7 @@ class CreateAnalysesService:
                     metadata={
                         "table_metadata": dict(table.metadata),
                         "sanitized_table_id": sanitized_table_id,
+                        **({"split": split} if split else {}),
                     },
                 ))
         return collection
