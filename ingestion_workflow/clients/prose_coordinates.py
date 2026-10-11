@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import itertools
 import json
-import re
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 from study_schema.spaces import normalize_space
 
@@ -17,8 +17,9 @@ from ingestion_workflow.prompts.prose_coordinates import (
     WITH_CONTEXT,
     schema,
 )
+from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.create_analyses import build_document
-from ingestion_workflow.services.prose_passages import MINUS, Passage
+from ingestion_workflow.services.prose_passages import Passage
 
 #: P: the passage alone. H: with its section heading. W: with the sentences
 #: around it. HW: both -- what the fine-tune was trained on and the stage sends.
@@ -42,66 +43,54 @@ def passage_body(passage: Passage, context: str = "HW") -> str:
     return "\n\n".join(parts)
 
 
-def numbers_in(text: str) -> List[float]:
-    """The passage's numbers in the order written, without their signs."""
-    flat = re.sub(rf"[{MINUS}]", "-", text)
-    flat = re.sub(r"-\s+(?=\d)", "-", flat)
-    return [abs(float(v)) for v in re.findall(r"-?\d+(?:\.\d+)?", flat)]
+def printed(xyz: Sequence[float], text: str) -> bool:
+    """Whether `text` prints x, y and z in that order, with these signs or others.
 
-
-#: Most numbers between x and y, or y and z: "x = 4, y = 30" has none,
-#: "(−30, −81, 30 and 36, −75, 33)" none, a cluster size or a statistic one.
-GAP = 3
-
-
-def written(xyz: Sequence[float], numbers: List[float]) -> bool:
-    """Whether x, y and z are written in that order, close together.
-
-    The model, given numbers that are not a coordinate, makes one of them:
-    "(BA 9, 47)" read as (47, 47, 47), "t(14) = 2.96" as (2.96, 2.96, 2.96).
-    Of 14,265 labelled points, 3 fail this, each a glyph or label error.
+    The digits are `coordinate_text`'s to match. A sign is not: "±50, +8, −26"
+    holds the left hemisphere's peak too, and a point printed only with
+    another sign is still the passage's, its sign for the parse to record.
     """
-    x, y, z = (abs(v) for v in xyz)
-    for i, v in enumerate(numbers):
-        if v != x:
-            continue
-        for j in range(i + 1, min(i + 1 + GAP, len(numbers))):
-            if numbers[j] == y and z in numbers[j + 1:j + 1 + GAP]:
-                return True
-    return False
+    return any(coordinate_text.find_all(tuple(s * v for s, v in zip(signs, xyz)), text)
+               for signs in itertools.product((1, -1), repeat=3)
+               if all(s > 0 or v for s, v in zip(signs, xyz)))
 
 
 def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     """The model's answer, kept to what the passage says.
 
-    A repeated analysis is a loop, not a second result. A point not written
-    in the passage came from the surrounding context or nowhere.
+    A repeated analysis is a loop, not a second result. A point the passage
+    does not print (`printed`) came from the surrounding context or
+    nowhere; each analysis counts its own as `unwritten`. A named analysis the
+    model gave no point is kept: a contrast the passage reports nothing for.
+    One whose every point was unwritten, and an unnamed one left empty, are
+    listed in `omitted` with the count and the reason.
     """
-    nums = numbers_in(passage_text)
-    seen, analyses = set(), []
+    seen, analyses, omitted = set(), [], []
     for a in (answer or {}).get("analyses") or []:
         key = (a.get("name"), json.dumps(a.get("points"), sort_keys=True))
         if key in seen:
             continue
         seen.add(key)
-        points = []
+        points, unwritten = [], 0
         for p in a.get("points") or []:
-            try:
-                xyz = [float(p[k]) for k in "xyz"]
-            except (KeyError, TypeError, ValueError):
-                continue
-            if not written(xyz, nums):
+            xyz = coordinate_text.triple(p)
+            if xyz is None or not printed(xyz, passage_text):
+                unwritten += 1
                 continue
             # The model still answers a role word per point; it is not kept:
             # what a set is for is the roles stage's to decide.
             points.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                            "statistic": normalize_statistic_kind(p.get("statistic")),
                            "value": p.get("value"), "cluster_size": p.get("cluster_size")})
-        if points:
-            analyses.append({"name": (a.get("name") or "").strip() or None,
-                             "measure": a.get("measure"), "points": points})
+        name = (a.get("name") or "").strip() or None
+        if points or (name and not unwritten):
+            analyses.append({"name": name, "measure": a.get("measure"), "points": points,
+                             "unwritten": unwritten})
+        else:
+            reason = "points not in passage" if unwritten else "no name and no points"
+            omitted.append({"name": name, "unwritten": unwritten, "reason": reason})
     space = (answer or {}).get("space")
-    return {"space": normalize_space(space), "analyses": analyses}
+    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
 
 class ProseCoordinateClient(GenericLLMClient):
@@ -135,9 +124,15 @@ class ProseCoordinateClient(GenericLLMClient):
             },
         }
 
-    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+    def read(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        """The model's answer as it gave it."""
         response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
-        return clean_answer(json.loads(response.choices[0].message.content or "{}"), passage.text)
+        return json.loads(response.choices[0].message.content or "{}")
+
+    def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
+        return clean_answer(self.read(passage, title=title, abstract=abstract), passage.text)
 
 
-__all__ = ["CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "numbers_in", "passage_body", "written"]
+__all__ = [
+    "CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "passage_body", "printed",
+]

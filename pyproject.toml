@@ -44,8 +44,9 @@ dependencies = [
   "pyarty @ git+https://github.com/jdkent/pyarty.git@main#egg=pyarty",
   # study_schema.spaces, the coordinate-space alias table shared with pondie and
   # neurostore, and CoordinateRole and AnchorKind, the role vocabulary of every
-  # set (services.set_roles; needs CoordinateRole.other). Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@38f014c9914363782dec82917459296c7668ef1e",
+  # set (services.set_roles; needs CoordinateRole.other), and keys.normalize_name,
+  # which resolve compares prose analysis names by. Pinned to study_schema main.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@e23392d6e7f198a8d2cc4e05c8b119bd2e81eab2",
 ]
 
 [project.optional-dependencies]

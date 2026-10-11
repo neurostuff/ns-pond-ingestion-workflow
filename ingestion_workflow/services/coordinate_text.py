@@ -21,21 +21,35 @@ Triple = Tuple[float, float, float]
 #: Hyphen-minus plus every character the extractors read as a minus (one set, not two).
 MINUS = "-" + "".join(_MINUS_CHARS)
 
-# A sign may be spaced from its value ("x −  24.2", "y + 16.3").
-_GAP = r"[^\S\n]{0,2}"
+# A line wrapped after a space: a table row in the parsed text ends at a bare
+# line break ("insula -42 18\n6 putamen" is two rows), a wrapped line of prose
+# keeps the space it broke at ("30 43 \n21", "(- \n40 -42 10").
+_WRAP = r"[^\S\n]+\n[^\S\n]*"
+# A sign may be spaced from its value ("x −  24.2", "y + 16.3"), or end a line.
+_GAP = r"(?:[^\S\n]{1,2}\n[^\S\n]?|[^\S\n]{0,2})"
 # A positive value is not the tail of a longer number, nor of a negative one
-# ("-42" or "− 42" is not 42: the mirror hemisphere).
-_POSITIVE = rf"(?<![{MINUS}\d.])(?<![{MINUS}]\s)(?<![{MINUS}]\s\s)(?:\+{_GAP})?"
+# ("-42", "− 42" or "- \n42" is not 42: the mirror hemisphere), as far back as
+# `_GAP` reaches.
+_POSITIVE = (
+    rf"(?<![{MINUS}\d.])(?<![{MINUS}]\s)(?<![{MINUS}]\s\s)(?<![{MINUS}]\s\s\s)"
+    rf"(?<![{MINUS}]\s\s\s\s)(?:\+{_GAP})?"
+)
 # A standard deviation printed after a value ("−54 ± 5").
 _SPREAD = r"(?:\s*(?:±|\+/?[" + MINUS + r"])\s*\d+(?:\.\d+)?)?"
+# One axis's values for two peaks, a slash between them ("x = 30/−24, y = 24,
+# z = 48/45"): the other peak's value is passed over. A slash between three
+# values is the separator of one peak's x, y and z ("−42/18/6"), not this.
+_OTHER = rf"[{MINUS}+]?\d+(?:\.\d+)?"
+_BEFORE = rf"(?:(?<![\d./]){_OTHER}/)?"
+_AFTER = rf"(?:/{_OTHER}(?!\.?\d|/))?"
 # Commas, spaces, axis labels and "and" between the values ("12, and z = 16",
-# "[–55,  13 , – 4 ]"), a run of spaces counting as one character, but not a
-# line break, which in the parsed text ends a table row; a comma may end a
-# line, and so may "=" ("y = \n−64"). A minus may be glued to the value before
-# it ("[0 46–4]").
+# "[–55,  13 , – 4 ]"), a run of spaces counting as one character, or a
+# wrapped line (`_WRAP`); a comma may end a line, and so may "=" ("y = \n−64").
+# A minus may be glued to the value before it ("[0 46–4]").
 _SEPARATOR = (
     r"(?:(?:[^\S\n]++|[^\d\s]){1,12}?"
     r"|(?:[^\S\n]++|[^\d\s]){0,12}?[,;=][^\S\n]*\n\s*"
+    rf"|{_WRAP}"
     rf"|(?=[{MINUS}]))"
 )
 # The last value is not the head of a longer number ("6" is not "6.5" or "60").
@@ -59,7 +73,7 @@ def _forms(value: float, rounded: bool) -> List[str]:
 def _number(value: float, rounded: bool) -> str:
     forms = "|".join(dict.fromkeys(_forms(value, rounded)))
     sign = rf"[{MINUS}]{_GAP}" if float(value) < 0 else _POSITIVE
-    return rf"{sign}(?:{forms}){_END}{_SPREAD}"
+    return rf"{_BEFORE}{sign}(?:{forms}){_END}{_AFTER}{_SPREAD}"
 
 
 @lru_cache(maxsize=4096)

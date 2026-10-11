@@ -80,6 +80,8 @@ class ParseInputs:
     passages_kept: Optional[int] = None
     passages_omitted: Optional[int] = None
     restated: Optional[int] = None
+    #: resolve's `restated_points`: each text analysis with points that restate a table's.
+    restatements: Sequence[Mapping[str, Any]] = ()
     #: artifact kind -> fingerprint of every catalog artifact read.
     fingerprints: Mapping[str, str] = field(default_factory=dict)
 
@@ -546,6 +548,7 @@ def coordinate_parse(
             seen[analysis.key] = analysis
             analyses.append(analysis)
 
+    omitted += _restatements(text, inputs)
     payload = [a.model_dump(mode="json", exclude_none=True) for a in analyses]
     parse_id = hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
@@ -893,6 +896,43 @@ def _mirror(xyz, text: str, windows) -> Optional[Tuple[int, int]]:
             if found:
                 return found[0]
     return None
+
+
+def _restatements(text: _Text, inputs: ParseInputs) -> List[Omitted]:
+    """The text analyses, or their points, left out as a table's results read again.
+
+    The reason names the table analysis each point restates. An analysis with
+    other points is kept with those; its restated points are listed here.
+    """
+    prose = inputs.prose or {}
+    # Spans into another text place nothing: the omission is listed without them.
+    passages = (prose.get("passages") or []) if prose.get("text_sha256") == text.sha256 else []
+    out = []
+    for record in inputs.restatements or ():
+        points = record.get("points") or []
+        windows = [tuple(passages[i]["span"]) for i in record.get("passages") or []
+                   if 0 <= i < len(passages) and passages[i].get("span")]
+        spans = sorted({
+            s for p in points
+            if (xyz := coordinate_text.triple(p))
+            and (s := coordinate_text.find_point(xyz, text.text, windows))
+            and any(a <= s[0] and s[1] <= b for a, b in windows)
+        }) or sorted(set(windows))
+        restates: Dict[Tuple[str, str], List[str]] = {}
+        for p in points:
+            for r in p.get("restates") or []:
+                restates.setdefault((r.get("table"), r.get("analysis") or ""), []).append(
+                    f"({p['x']:g}, {p['y']:g}, {p['z']:g})")
+        said = "; ".join(
+            f"table {t}'s {n!r} at {', '.join(at)}" for (t, n), at in restates.items()
+        )
+        reason = (
+            f"every point restates a table's result: {said}"
+            if record.get("restatement")
+            else f"its other points are kept; these restate a table's result: {said}"
+        )
+        out.append(Omitted(record.get("analysis") or "", None, reason, spans))
+    return out
 
 
 def _prose_analysis(
