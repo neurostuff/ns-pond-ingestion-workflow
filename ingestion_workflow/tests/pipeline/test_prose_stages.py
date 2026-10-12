@@ -1972,3 +1972,23 @@ def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
     _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert again.status is Status.OK and again.summary["reused"] == {"exact.1": [0, 1]}
     assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
+
+
+@pytest.mark.parametrize("content,finish_reason", [
+    pytest.param(None, "stop", id="no content"),
+    pytest.param("  ", "stop", id="whitespace"),
+    pytest.param('{"space": "MNI", "analyses": []}', "length", id="cut off at the token limit"),
+])
+def test_an_answer_of_nothing_fails_the_article_rather_than_reading_as_no_coordinates(
+        env, content, finish_reason):
+    from types import SimpleNamespace
+
+    from ingestion_workflow.clients.prose_coordinates import ProseCoordinateClient
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "100")
+    reader = ProseCoordinateClient(settings)
+    choice = SimpleNamespace(message=SimpleNamespace(content=content), finish_reason=finish_reason)
+    reader.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda **kw: SimpleNamespace(choices=[choice]))))
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert (read.status, read.error) == (Status.FAILED, "2 of 2 passages failed")
