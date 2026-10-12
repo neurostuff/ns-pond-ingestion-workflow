@@ -260,19 +260,36 @@ def test_tables_carry_body_rows_and_triage(written):
     assert tbl3["triage"]["excluded_by_hand"] is True
 
 
-def test_keys_are_minted_from_the_cells_the_points_sit_in(written):
+def test_cells_name_the_rows_the_points_sit_in(written):
     _, parse, _ = written
     by_name = {}
     for a in parse["analyses"]:
         by_name.setdefault(a["name"], []).append(a)
     original, inverse = by_name["Faces > Houses"]
     assert original["cells"] == [{"row": 1, "column_group": 0}]
-    assert original["key"] == keys.table_key("tbl1", [(1, 0)], "Faces > Houses")
     assert original["points"][0]["row"] == 1
-    assert inverse["key"] == keys.table_key("tbl1", [(2, 0)], "Faces > Houses")
-    # A contrast with no coordinates is keyed by the row that names it.
+    assert inverse["cells"] == [{"row": 2, "column_group": 0}]
+    # A contrast with no coordinates cites the row that names it.
     null = by_name["Houses > Faces"][0]
     assert null["points"] == [] and null["cells"] == [{"row": 3, "column_group": 0}]
+
+
+def test_every_key_is_the_one_its_name_space_and_points_give(written):
+    _, parse, _ = written
+    analyses = [pp.ParsedAnalysis(**a) for a in parse["analyses"]]
+    by_origin = {}
+    for a in analyses:
+        by_origin.setdefault((a.origin, bool(a.points)), []).append(a)
+    # A table analysis, one with no points, and a text analysis.
+    assert set(by_origin) == {("table", True), ("table", False), ("text", True)}
+    for a in analyses:
+        assert a.key == keys.key_for(a)
+        assert a.key == keys.analysis_key(a.name, "MNI", a.points)
+    (null,) = by_origin[("table", False)]
+    assert null.key == keys.analysis_key("Houses > Faces", "MNI", [])
+    # The halves of the split share a name and differ by their points.
+    original, inverse = by_origin[("table", True)]
+    assert original.name == inverse.name and original.key != inverse.key
 
 
 def test_the_sign_split_is_declared_not_left_in_the_name(written):
@@ -310,14 +327,13 @@ def test_points_carry_no_sign_and_use_the_shared_statistic_kinds(written):
     ]
 
 
-def test_a_prose_analysis_is_keyed_by_where_its_points_are_printed(written):
+def test_a_prose_analysis_s_spans_are_where_its_points_are_printed(written):
     _, parse, _ = written
     seed = next(a for a in parse["analyses"] if a["origin"] == "text")
     start = TEXT.index("-22, -4, -20")
     span = {"start_char": start, "end_char": start + len("-22, -4, -20")}
     assert seed["text_spans"] == [span]
     assert seed["points"][0]["text_span"] == span
-    assert seed["key"] == keys.span_key("text", [(span["start_char"], span["end_char"])], seed["name"])
     assert (seed["role"], seed["anchor_kind"]) == ("anchor", "seed")
 
 
@@ -643,11 +659,14 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
     parse, omitted = _parse(
         tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
     )
+    kept, other = parse.analyses
     assert [a.name for a in parse.analyses] == ["A > B", "C > D"]
-    key = keys.table_key("tbl1", [(1, 0)], "A > B")
+    # One point, two names: the name keeps them two analyses.
+    assert kept.key != other.key
     assert [str(o) for o in omitted] == [
         "tbl1: 'Unprinted': no row of the table prints its points",
-        f"tbl1: 'a > b': a repeat of {key} ('A > B'): the same cells, name and points",
+        f"tbl1: 'a > b': it repeats a kept analysis (the same key): {kept.key}, 'A > B' "
+        "read from table tbl1",
     ]
     (reading,) = parse.tables
     assert reading.reading == "coordinates"
@@ -655,7 +674,7 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
 
 
 def test_a_table_set_that_is_not_coordinates_is_omitted_and_holds_its_rows(tmp_path):
-    """Its rows stay its own, so the next set's cells, and so its key, do not move."""
+    """Its rows stay its own, so the next set's cells do not move."""
     collection = _collection(
         [
             Analysis(
@@ -673,7 +692,7 @@ def test_a_table_set_that_is_not_coordinates_is_omitted_and_holds_its_rows(tmp_p
         tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
     )
     (kept,) = parse.analyses
-    assert kept.key == keys.table_key("tbl1", [(4, 0), (5, 0)], "Surprise > Neutral")
+    assert [(c.row, c.column_group) for c in kept.cells] == [(4, 0), (5, 0)]
     assert [str(o) for o in omitted] == [
         "tbl1: 'Fear > Neutral': not brain coordinates, as set-role-table@1 decided"
     ]
@@ -867,7 +886,9 @@ def test_a_prose_duplicate_is_omitted_and_recorded_with_its_reason():
     assert (first.name, second.name) == ("poor reader", "ASD group")
     assert [o.name for o in parse.omitted_analyses] == ["Poor  Reader"]
     reason = parse.omitted_analyses[0].reason
-    assert reason == f"a repeat of {first.key} ('poor reader'): the same spans, name and points"
+    assert reason == (
+        f"it repeats a kept analysis (the same key): {first.key}, 'poor reader' read from the text"
+    )
     assert parse.omitted_analyses[0].text_spans == first.text_spans
     assert [str(o) for o in omitted] == [f"text: 'Poor  Reader': {reason}"]
 
@@ -1145,7 +1166,7 @@ def test_side_by_side_contrasts_differ_by_column_group(tmp_path):
         "tbl1", collection.analyses, collection, _grid(tmp_path / "t.html"), _roles()
     )
     assert [[(c.row, c.column_group) for c in a.cells] for a in built] == [[(0, 0)], [(0, 1)]]
-    assert built[0].key == keys.table_key("tbl1", [(0, 0)], "A > B") != built[1].key
+    assert built[0].key == keys.key_for(built[0]) != built[1].key
 
 
 def test_a_null_coordinate_space_leaves_the_parse_space_unset():
@@ -1163,8 +1184,8 @@ def test_a_null_coordinate_space_leaves_the_parse_space_unset():
     assert (bare.space, named.space) == (None, "TAL")
 
 
-def test_two_entries_with_one_key_and_other_points_are_one_analysis_holding_both():
-    """Neither point is printed, so both fall back to the passage: one reported analysis."""
+def test_two_entries_of_one_name_on_one_passage_with_other_points_are_two_analyses():
+    """Neither point is printed, so both fall back to the passage; their points differ."""
     passage = "Group differences in the left and right hippocampus survived correction (Table S2)."
     parse, omitted = _prose_parse(
         passage,
@@ -1173,18 +1194,13 @@ def test_two_entries_with_one_key_and_other_points_are_one_analysis_holding_both
             ("Patients > controls", [(26, -18, -16), (-24, -20, -14)], [0]),
         ],
     )
-    [merged] = parse.analyses
-    assert [p.coordinates for p in merged.points] == [[-24, -20, -14], [26, -18, -16]]
-    assert parse.omitted_analyses is None
-    [note] = omitted
-    assert note.kept and note.name == "Patients > controls"
-    assert note.reason == (
-        f"merged into {merged.key} ('patients > controls'): the same spans and name; "
-        "its 1 other point(s) added"
-    )
+    first, second = parse.analyses
+    assert first.text_spans == second.text_spans and first.key != second.key
+    assert [len(a.points) for a in (first, second)] == [1, 2]
+    assert omitted == [] and parse.omitted_analyses is None
 
 
-def test_one_point_printed_twice_for_two_same_named_analyses_keeps_both():
+def test_one_point_printed_twice_for_two_same_named_analyses_is_kept_once_and_recorded():
     passage = (
         "In Experiment 1, patients > controls peaked at (-24, -20, -14); in Experiment 2, "
         "patients > controls also peaked at (-24, -20, -14)."
@@ -1193,15 +1209,17 @@ def test_one_point_printed_twice_for_two_same_named_analyses_keeps_both():
         passage,
         [("patients > controls", [(-24, -20, -14)], [0])] * 2,
     )
-    first, second = parse.analyses
+    # One name, space and points: one key, so the second copy is the first's repeat.
+    (kept,) = parse.analyses
     at = len("Results\n\n")
-    assert [a.points[0].text_span.start_char - at for a in (first, second)] == [
-        passage.index("-24"), passage.rindex("-24")
-    ]
-    assert first.key != second.key and omitted == []
+    assert kept.points[0].text_span.start_char - at == passage.index("-24")
+    (repeat,) = parse.omitted_analyses
+    assert repeat.reason.startswith(f"it repeats a kept analysis (the same key): {kept.key}")
+    assert repeat.text_spans[0].start_char - at == passage.rindex("-24")
+    assert [o.kept for o in omitted] == [False]
 
 
-def test_the_same_point_with_other_statistic_values_is_one_point_and_the_note_says_so():
+def test_the_same_point_with_other_statistic_values_is_two_analyses():
     passage = "Group differences in the left hippocampus survived correction (Table S2)."
     parse, omitted = _prose_parse(
         passage,
@@ -1211,30 +1229,13 @@ def test_the_same_point_with_other_statistic_values_is_one_point_and_the_note_sa
              [Coordinate(x=-24, y=-20, z=-14, statistic_value=4.1, statistic_type="T")], [0]),
         ],
     )
-    [merged] = parse.analyses
-    assert [p.coordinates for p in merged.points] == [[-24, -20, -14]]
-    [note] = omitted  # no new point: a repeat, with the conflicting values recorded
-    assert not note.kept and "a repeat of" in note.reason
-    assert "[-24.0, -20.0, -14.0] kept [], dropped [('t', 4.1)]" in note.reason
+    bare, valued = parse.analyses
+    assert bare.key != valued.key
+    assert (bare.points[0].values, valued.statistic) == (None, "t")
+    assert omitted == []
 
 
-def test_a_merge_adding_a_point_of_another_statistic_kind_recomputes_the_analysis_statistic():
-    passage = "Group differences in the left hippocampus survived correction (Table S2)."
-    parse, omitted = _prose_parse(
-        passage,
-        [
-            ("patients > controls",
-             [Coordinate(x=-24, y=-20, z=-14, statistic_value=4.1, statistic_type="T")], [0]),
-            ("patients > controls",
-             [Coordinate(x=26, y=-18, z=-16, statistic_value=3.3, statistic_type="Z")], [0]),
-        ],
-    )
-    [merged] = parse.analyses
-    assert len(merged.points) == 2 and merged.statistic is None  # T and Z: no single kind
-    assert omitted[0].kept
-
-
-def test_entries_of_one_key_with_different_roles_merge_into_a_held_analysis_with_both_roles():
+def test_copies_of_one_key_with_different_roles_keep_one_held_with_both_roles():
     passage = "Group differences in the left and right hippocampus survived correction (Table S2)."
     result = _decided("result", origin="text", source="model-a@1")
     reference = _decided("reference", origin="text", prior=True, source="model-b@2")
@@ -1243,14 +1244,15 @@ def test_entries_of_one_key_with_different_roles_merge_into_a_held_analysis_with
             passage,
             [
                 ("p > c", [(-24, -20, -14)], [0], order[0]),
-                ("p > c", [(26, -18, -16)], [0], order[1]),
+                ("p > c", [(-24, -20, -14)], [0], order[1]),
             ],
         )
-        [merged] = parse.analyses
-        assert len(merged.points) == 2
+        [kept] = parse.analyses
+        assert kept.role == order[0]["role"]
         [note] = omitted
+        assert not note.kept
         conflict = note.role_conflict
-        assert conflict["key"] == merged.key
+        assert conflict["key"] == kept.key
         assert [(r["role"], r["role_source"]) for r in conflict["roles"]] == [
             (order[0]["role"], order[0]["role_source"]),
             (order[1]["role"], order[1]["role_source"]),
@@ -1259,9 +1261,74 @@ def test_entries_of_one_key_with_different_roles_merge_into_a_held_analysis_with
     # The same roles are no conflict.
     _, omitted = _prose_parse(
         passage,
-        [("p > c", [(-24, -20, -14)], [0], result), ("p > c", [(26, -18, -16)], [0], result)],
+        [("p > c", [(-24, -20, -14)], [0], result), ("p > c", [(-24, -20, -14)], [0], result)],
     )
     assert omitted[0].role_conflict is None
+
+
+def _two_tables(tmp_path, markup, per_table):
+    """coordinate_parse over the tables of `per_table`, each read from `markup`."""
+    from ingestion_workflow.services.paper_parse import _grid
+
+    (tmp_path / "t.html").write_text(markup, encoding="utf-8")
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[SimpleNamespace(table_id=t, triage=None) for t in per_table],
+    )
+    return paper_parse.coordinate_parse(
+        paper,
+        "Results\n",
+        {t: _grid(tmp_path / "t.html") for t in per_table},
+        per_table,
+        ParseInputs(article_id="a", readings={t: "coordinates" for t in per_table}),
+    )
+
+
+def test_one_analysis_read_from_a_table_and_its_html_copy_is_kept_once(tmp_path):
+    def read():
+        return _collection(
+            [
+                Analysis(
+                    name="Fear > Neutral",
+                    coordinates=[Coordinate(x=22, y=-4, z=-20, statistic_value=5.8,
+                                            statistic_type="T"),
+                                 Coordinate(x=36, y=20, z=4)],
+                ),
+                Analysis(name="Surprise > Neutral", coordinates=[Coordinate(x=-10, y=-39, z=44)]),
+            ]
+        )
+
+    parse, omitted = _two_tables(tmp_path, SHARED, {"1": read(), "html-table-1": read()})
+    assert [(a.table_id, a.name) for a in parse.analyses] == [
+        ("1", "Fear > Neutral"), ("1", "Surprise > Neutral"),
+    ]
+    fear, surprise = parse.analyses
+    assert [str(o) for o in omitted] == [
+        f"html-table-1: 'Fear > Neutral': it repeats a kept analysis (the same key): "
+        f"{fear.key}, 'Fear > Neutral' read from table 1",
+        f"html-table-1: 'Surprise > Neutral': it repeats a kept analysis (the same key): "
+        f"{surprise.key}, 'Surprise > Neutral' read from table 1",
+    ]
+    readings = {r.table_id: r for r in parse.tables}
+    assert readings["1"].reason is None
+    assert readings["html-table-1"].reason.count("it repeats a kept analysis") == 2
+
+
+def test_differently_named_analyses_with_identical_points_in_two_tables_get_two_keys(tmp_path):
+    def read(name):
+        return _collection(
+            [Analysis(name=name, coordinates=[Coordinate(x=22, y=-4, z=-20),
+                                              Coordinate(x=36, y=20, z=4)])]
+        )
+
+    parse, omitted = _two_tables(
+        tmp_path, SHARED, {"1": read("PM > HC"), "2": read("PM > baseline")}
+    )
+    hc, baseline = parse.analyses
+    assert [p.coordinates for p in hc.points] == [p.coordinates for p in baseline.points]
+    assert hc.key != baseline.key
+    assert omitted == []
 
 
 def test_a_point_repeated_for_differently_named_analyses_listed_out_of_print_order():
