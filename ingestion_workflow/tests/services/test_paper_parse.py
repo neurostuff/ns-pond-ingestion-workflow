@@ -1436,26 +1436,30 @@ def test_a_column_outside_the_table_blocks_is_numbered_after_them_and_noted(tmp_
     b_alone, _ = _parse(tmp_path, UNNAMED_BLOCKS, {"tbl1": _collection([_task_b()])})
     a, b = both.analyses
     assert [c.column_group for c in b.cells] == [0, 0]
-    # Column 1, after the table's one block.
-    assert [c.column_group for c in a.cells] == [2, 2]
+    # After the table's one block, and first among its other columns of numbers.
+    assert [c.column_group for c in a.cells] == [1, 1]
     # B's block is the table's own: read with A or without, B keeps its key and no note.
     assert b_alone.analyses[0].key == b.key != a.key == a_alone.analyses[0].key
     assert _reason(b_alone) is None
     note = (
-        "column groups of columns 1 numbered by column after the table's 1 block(s) of "
-        "coordinate columns: no block holds them"
+        "column groups of columns 1 numbered after the table's 1 block(s) of coordinate columns, "
+        "by place among its other columns of numbers: no block holds them"
     )
     assert _reason(both) == _reason(a_alone) == note
     assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
     assert str(omitted[0]) == f"tbl1: {note}"
 
 
-def test_column_groups_of_a_table_with_no_blocks_are_numbered_by_column_and_noted(tmp_path):
+def test_column_groups_of_a_table_with_no_blocks_are_numbered_by_place_and_noted(tmp_path):
     # No axis names and no negative x or y: nothing in the table says where its blocks are.
     markup = UNNAMED_BLOCKS.replace("-32", "32").replace("-6", "6")
     parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([_task((32, 18, 2))])})
-    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 5)]
-    note = "column groups numbered by column: the table shows no block of coordinate columns"
+    # Column 5 is the table's fifth column of numbers.
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 4)]
+    note = (
+        "column groups numbered by place among the table's columns of numbers: "
+        "the table shows no block of coordinate columns"
+    )
     assert _reason(parse) == note
     assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
 
@@ -1510,10 +1514,35 @@ def test_columns_outside_the_blocks_keep_their_numbers_whatever_else_is_read(tmp
     both, _ = _parse(tmp_path, SPARSE_BETWEEN, {"tbl1": _collection([visual, retrieval()])})
     alone, _ = _parse(tmp_path, SPARSE_BETWEEN, {"tbl1": _collection([retrieval()])})
     v, r = both.analyses
-    # Two blocks, then columns 2 and 3 by position.
-    assert [c.column_group for c in v.cells] == [4]
-    assert [c.column_group for c in r.cells] == [5, 5]
+    # Two blocks, then columns 2 and 3, the first two of the table's other columns of numbers.
+    assert [c.column_group for c in v.cells] == [2]
+    assert [c.column_group for c in r.cells] == [3, 3]
     assert alone.analyses[0].key == r.key
+
+
+#: A block of triples headed MNI, then a column whose only numbers are two triples
+#: among words, then one of cluster sizes with a triple in it.
+TRIPLES_AMONG_WORDS = """<table>
+<tr><th>Region</th><th>Task (MNI)</th><th>Trend</th><th>k</th></tr>
+<tr><td>mPFC</td><td>[-48 12 -38]</td><td>[-24 -60 10]</td><td>12</td></tr>
+<tr><td>MTG</td><td>[-52 -42 4]</td><td>trend</td><td>[30 20 4]</td></tr>
+<tr><td>PCC</td><td>[-4 -42 28]</td><td>trend</td><td>15</td></tr>
+<tr><td>Insula</td><td>[8 -64 22]</td><td>[-20 -50 8]</td><td></td></tr>
+</table>"""
+
+
+def test_a_column_of_triples_among_words_holds_its_place_when_not_read(tmp_path):
+    trend = Analysis(name="Trend", table_id="tbl1",
+                     coordinates=[Coordinate(x=-24, y=-60, z=10), Coordinate(x=-20, y=-50, z=8)])
+
+    def sizes():
+        return Analysis(name="Sizes", table_id="tbl1", coordinates=[Coordinate(x=30, y=20, z=4)])
+
+    both, _ = _parse(tmp_path, TRIPLES_AMONG_WORDS, {"tbl1": _collection([trend, sizes()])})
+    alone, _ = _parse(tmp_path, TRIPLES_AMONG_WORDS, {"tbl1": _collection([sizes()])})
+    assert [c.column_group for c in both.analyses[0].cells] == [1, 1]
+    assert [c.column_group for c in both.analyses[1].cells] == [2]
+    assert alone.analyses[0].key == both.analyses[1].key
 
 
 def test_the_parse_sync_writes_numbers_blocks_from_the_table_and_reports_its_notes(tmp_path):
@@ -1543,8 +1572,8 @@ def test_the_parse_sync_writes_numbers_blocks_from_the_table_and_reports_its_not
         "tbl1", [(0, 1), (1, 1)], "Patients > Controls"
     )
     note = (
-        "tbl2: column groups of columns 1 numbered by column after the table's 1 block(s) of "
-        "coordinate columns: no block holds them"
+        "tbl2: column groups of columns 1 numbered after the table's 1 block(s) of coordinate "
+        "columns, by place among its other columns of numbers: no block holds them"
     )
     assert summary["parse_notes"] == [note]
     assert [t["reason"] for t in synced["tables"] if t["table_id"] == "tbl2"] == [note[6:]]

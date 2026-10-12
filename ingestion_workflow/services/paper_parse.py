@@ -821,30 +821,40 @@ def _column_groups(
 
     A column group is the block's number among the table's blocks of coordinate
     columns, which come from the table alone, so no reading moves it. A column
-    outside every block is numbered after them by its own position, `len(blocks)
-    + column`, so that no reading moves it either; the note says the table's keys
-    rest on a column, not a block.
+    outside every block is numbered after them by its place among the table's
+    other columns that print numbers, which is the table's too, so no reading
+    moves it either; the note says the table's keys rest on a column, not a block.
+    A table with no block and one column of x values numbers it 0, as before.
     """
     columns = sorted({found[1] for points in placed for found in points if found})
     blocks = grid.blocks or []
+
+    def block(col):
+        return next((i for i, (first, last) in enumerate(blocks) if first <= col <= last), None)
+
+    numeric = {c for numbers, triples in grid.index() for n, c in numbers if n is not None}
+    numeric |= {c for numbers, triples in grid.index() for _, c in triples}
+    others = sorted(c for c in numeric | set(columns) if block(c) is None)
     group: Dict[int, int] = {}
     outside: List[int] = []
     for col in columns:
-        hit = next((i for i, (first, last) in enumerate(blocks) if first <= col <= last), None)
+        hit = block(col)
         if hit is None:
             outside.append(col)
-            group[col] = len(blocks) + col
+            group[col] = len(blocks) + others.index(col)
         else:
             group[col] = hit
     if not outside:
         return group, None
     if not blocks:
         return group, (
-            "column groups numbered by column: the table shows no block of coordinate columns"
+            "column groups numbered by place among the table's columns of numbers: "
+            "the table shows no block of coordinate columns"
         )
     return group, (
-        f"column groups of columns {', '.join(map(str, outside))} numbered by column after the "
-        f"table's {len(blocks)} block(s) of coordinate columns: no block holds them"
+        f"column groups of columns {', '.join(map(str, outside))} numbered after the table's "
+        f"{len(blocks)} block(s) of coordinate columns, by place among its other columns of "
+        "numbers: no block holds them"
     )
 
 
