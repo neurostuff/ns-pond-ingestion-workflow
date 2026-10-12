@@ -384,7 +384,15 @@ def run(
         None, "--stage", "-s", help=f"Stages to run: {', '.join(STAGE_ORDER)} (repeatable)."
     ),
     select: Select = typer.Option(
-        Select.PENDING, "--select", help="Which articles, relative to what is already done."
+        Select.PENDING,
+        "--select",
+        help=(
+            "Which articles to run. `pending` (default): anything a stage would "
+            "act on -- never run, stale (its inputs or the code changed since it "
+            "was built), or failed transiently and due a retry; not permanent "
+            "failures, not fresh results. `new`: never attempted. `failed`: has a "
+            "retryable failure. `all`: every article."
+        ),
     ),
     manifest: Optional[Path] = typer.Option(
         None, "--manifest", "-m", exists=True, help="Restrict to a JSONL manifest."

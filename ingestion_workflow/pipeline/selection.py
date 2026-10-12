@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Sequence
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 class Select(str, Enum):
     """Which articles, relative to what has already been attempted."""
 
-    PENDING = "pending"      # new + stale + retryable failures (the default)
+    PENDING = "pending"      # what a stage would do: new, stale, or due a retry (the default)
     NEW = "new"              # never attempted at any stage
     FAILED = "failed"        # has at least one retryable failure
     ALL = "all"
@@ -69,6 +70,8 @@ def narrow(
     selection = _gated(catalog, selection, stage, settings)
     if mode is Select.ALL or not selection.refs:
         return selection
+    if mode is Select.PENDING and settings is not None:
+        return _planned(catalog, selection, stage, refresh, settings)
 
     ids = [ref.id for ref in selection.refs]
     stages = [stage] if stage else _stages_present(catalog)
@@ -93,11 +96,56 @@ def narrow(
             return not states
         if mode is Select.FAILED:
             return Status.FAILED in states
-        # PENDING: anything not already finished everywhere it could be.
+        # PENDING without settings: no stage can be built to judge freshness,
+        # so this is the status-only approximation (stale-but-OK is missed).
         return not states or any(state is not Status.OK for state in states)
 
     refs = [ref for ref in selection.refs if keep(ref)]
     return Selection(refs, f"{len(refs):,} {mode.value} of {selection.description}")
+
+
+def _planned(
+    catalog: Catalog,
+    selection: Selection,
+    stage: Optional[str],
+    refresh: Sequence[str],
+    settings,
+) -> Selection:
+    """Keep the articles some stage would do something about.
+
+    The stage's own plan is the only judge of freshness: it compares the
+    fingerprint of what it would build now against the stored one, and knows
+    which failures are permanent and which are due a retry. Asking it here
+    means a code or upstream change reaches finished-but-stale work, and this
+    module has no second staleness rule to drift from the stages'.
+
+    A stage that cannot plan from this configuration keeps its whole batch
+    rather than dropping work on a guess; the run itself reports it.
+    """
+    from ingestion_workflow.pipeline.scheduler import _plan_batch, batched  # noqa: PLC0415
+    from ingestion_workflow.pipeline.stage import Context  # noqa: PLC0415
+    from ingestion_workflow.pipeline.stages import build  # noqa: PLC0415
+
+    ctx = Context(
+        settings,
+        catalog,
+        refresh=refresh,
+        max_attempts=settings.max_attempts,
+        retry_after=timedelta(hours=settings.retry_after_hours),
+    )
+    wanted = set()
+    for stage_obj in build([stage] if stage else None, settings):
+        for batch in batched(selection.refs):
+            try:
+                plan = _plan_batch(ctx, stage_obj, batch)
+            except Exception as exc:    # noqa: BLE001
+                logger.warning("%s: cannot tell what is pending (%s); keeping the batch",
+                               stage_obj.name, exc)
+                wanted.update(ref.id for ref in batch)
+                continue
+            wanted.update(work.article_id for work in plan.pending)
+    refs = [ref for ref in selection.refs if ref.id in wanted]
+    return Selection(refs, f"{len(refs):,} pending of {selection.description}")
 
 
 def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], settings=None) -> Selection:
