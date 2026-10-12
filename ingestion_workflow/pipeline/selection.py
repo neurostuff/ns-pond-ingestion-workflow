@@ -133,8 +133,13 @@ def _planned(
         max_attempts=settings.max_attempts,
         retry_after=timedelta(hours=settings.retry_after_hours),
     )
+    try:
+        built = build([stage] if stage else None, settings)
+    except ValueError as exc:
+        logger.warning("cannot tell what is pending (%s); keeping the selection", exc)
+        return selection
     wanted = set()
-    for stage_obj in build([stage] if stage else None, settings):
+    for stage_obj in built:
         for batch in batched(selection.refs):
             try:
                 plan = _plan_batch(ctx, stage_obj, batch)

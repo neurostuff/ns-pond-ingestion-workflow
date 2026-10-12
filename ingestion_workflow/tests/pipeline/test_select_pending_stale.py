@@ -16,12 +16,13 @@ from ingestion_workflow.pipeline.stages import ExtractStage
 
 
 @pytest.fixture()
-def world(tmp_path):
+def world(tmp_path, request):
     settings = Settings(
         data_root=tmp_path / "d",
         cache_root=tmp_path / "c",
         catalog_root=tmp_path / "k",
         download_sources=["pdf"],
+        retry_after_hours=getattr(request, "param", 0),
     )
     stage = ExtractStage(settings)
     ids = {}
@@ -67,6 +68,11 @@ def test_permanent_failure_is_not(world):
 
 def test_transient_failure_is_selected(world):
     assert "transient" in selected(world)
+
+
+@pytest.mark.parametrize("world", [24], indirect=True)
+def test_transient_failure_still_backing_off_is_not(world):
+    assert "transient" not in selected(world)
 
 
 def test_the_rest_of_the_set(world):
