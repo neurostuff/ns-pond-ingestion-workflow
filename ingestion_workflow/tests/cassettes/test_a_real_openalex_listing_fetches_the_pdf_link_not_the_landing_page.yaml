@@ -1,0 +1,148 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1371%2Fjournal.pone.0068910&mailto=pipeline%40example.org&per_page=100&select=ids%2Cbest_oa_location%2Clocations
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 12, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1371/journal.pone.0068910",
+        "oqo": {"get_rows": "works", "filter_rows": [{"column_id": "doi", "value":
+        "10.1371/journal.pone.0068910"}]}, "url": "/works?filter=doi:10.1371%2Fjournal.pone.0068910&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2005821483",
+        "doi": "https://doi.org/10.1371/journal.pone.0068910", "mag": "2005821483",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/23861951"}, "best_oa_location": {"id":
+        "doi:10.1371/journal.pone.0068910", "doi": "https://doi.org/10.1371/journal.pone.0068910",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1371/journal.pone.0068910",
+        "pdf_url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0068910&type=printable",
+        "source": {"id": "https://openalex.org/S202381698", "display_name": "PLoS
+        ONE", "issn_l": "1932-6203", "issn": ["1932-6203"], "is_oa": true, "is_in_doaj":
+        true, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "doaj", "dongbi-c", "doyens", "erih-plus", "jufo-1", "ki-jl-1",
+        "medline", "norway-1", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310315706", "host_organization_name": "Public Library
+        of Science", "host_organization_lineage": ["https://openalex.org/P4310315706"],
+        "host_organization_lineage_names": ["Public Library of Science"], "type":
+        "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "PLoS ONE", "raw_type": "journal-article"}, "locations":
+        [{"id": "doi:10.1371/journal.pone.0068910", "doi": "https://doi.org/10.1371/journal.pone.0068910",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1371/journal.pone.0068910",
+        "pdf_url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0068910&type=printable",
+        "source": {"id": "https://openalex.org/S202381698", "display_name": "PLoS
+        ONE", "issn_l": "1932-6203", "issn": ["1932-6203"], "is_oa": true, "is_in_doaj":
+        true, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "doaj", "dongbi-c", "doyens", "erih-plus", "jufo-1", "ki-jl-1",
+        "medline", "norway-1", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310315706", "host_organization_name": "Public Library
+        of Science", "host_organization_lineage": ["https://openalex.org/P4310315706"],
+        "host_organization_lineage_names": ["Public Library of Science"], "type":
+        "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "PLoS ONE", "raw_type": "journal-article"}, {"id": "pmid:23861951",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/23861951",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "PloS one",
+        "raw_type": "Journal Article"}, {"id": "pmh:oai:europepmc.org:2707562", "doi":
+        null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3701683",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400806", "display_name":
+        "Europe PMC (PubMed Central)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1303153112", "host_organization_name": "European Bioinformatics
+        Institute", "host_organization_lineage": ["https://openalex.org/I1303153112"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by",
+        "license_id": "https://openalex.org/licenses/cc-by", "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": null, "raw_type":
+        "Text"}, {"id": "pmh:oai:pubmedcentral.nih.gov:3701683", "doi": null, "is_oa":
+        true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3701683",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "PLoS One", "raw_type": "Text"}, {"id": "pmh:oai:doaj.org/article:c063d1a7b57540bc9ab75ff3067f6cd8",
+        "doi": null, "is_oa": false, "landing_page_url": "https://doaj.org/article/c063d1a7b57540bc9ab75ff3067f6cd8",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401280", "display_name":
+        "DOAJ (DOAJ: Directory of Open Access Journals)", "issn_l": null, "issn":
+        null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": null, "host_organization_name": null, "host_organization_lineage":
+        [], "host_organization_lineage_names": [], "type": "repository"}, "license":
+        null, "license_id": null, "version": "submittedVersion", "is_accepted": false,
+        "is_published": false, "raw_source_name": "PLoS ONE, Vol 8, Iss 7, p e68910
+        (2013)", "raw_type": "article"}]}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a49967beeca6c675-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 12 Oct 2026 22:05:18 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '969'
+      X-RateLimit-Remaining-USD:
+      - '0.0969'
+      X-RateLimit-Reset:
+      - '6882'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=jl9OOldqpHPfPS6UC1BuRYUxfBi2GatE0DtgEmpmsZ0%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1791842718"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=jl9OOldqpHPfPS6UC1BuRYUxfBi2GatE0DtgEmpmsZ0%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1791842718"
+    status:
+      code: 200
+      message: OK
+version: 1

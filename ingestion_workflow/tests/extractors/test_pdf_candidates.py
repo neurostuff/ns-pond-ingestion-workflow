@@ -1,27 +1,24 @@
-"""Every candidate PDF URL is tried in order, against stub OpenAlex, Semantic Scholar
+"""Every candidate PDF URL is tried in order, against local OpenAlex, Semantic Scholar
 and file hosts."""
 
 from __future__ import annotations
 
-import json
-import threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlsplit
+import re
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
+from urllib.parse import urlsplit
 
 import pytest
 import requests
-from ingestion_workflow.catalog import ArticleRef, Artifact, Status
+from ingestion_workflow.catalog import ArticleRef, Catalog, Status
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
-from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import pdf_extractor
 from ingestion_workflow.extractors.pdf_extractor import (
     SKIPPED_PMC,
     PdfCandidate,
-    PdfExtractor,
     _HostGate,
     _is_pmc_copy,
-    _permanently_failed,
     _retry_after,
     _try_order,
     _type_of,
@@ -35,129 +32,19 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.download import DownloadStage
+from ingestion_workflow.tests.oa_hosts import EMAIL, HTML, PDF, OaHosts, location, pdf_source
 from tenacity import wait_none
-
-PDF = b"%PDF-1.4\n%%EOF\n"
-HTML = b"<html><body>Read this article on our site</body></html>"
-EMAIL = "pipeline@example.org"
-
-
-class _Stub:
-    """One local server playing OpenAlex, Semantic Scholar and every file host."""
-
-    def __init__(self) -> None:
-        self.works: list[dict] = []
-        self.s2: dict[str, str] = {}  # "DOI:..." -> openAccessPdf url
-        self.files: dict[str, list[tuple[int, bytes, dict]]] = {}
-        self.openalex_status = 200
-        self.openalex_failing_types: set[str] = set()
-        self.fetched: list[str] = []
-        self.openalex_queries: list[dict] = []
-        stub = self
-
-        class Handler(BaseHTTPRequestHandler):
-            def log_message(self, *args):
-                pass
-
-            def _send(self, status, body, headers=None):
-                self.send_response(status)
-                for key, value in (headers or {}).items():
-                    self.send_header(key, value)
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def do_GET(self):
-                parts = urlsplit(self.path)
-                if parts.path == "/works":
-                    query = parse_qs(parts.query)
-                    stub.openalex_queries.append(query)
-                    id_type = query["filter"][0].split(":", 1)[0]
-                    if stub.openalex_status != 200 or id_type in stub.openalex_failing_types:
-                        return self._send(500 if stub.openalex_status == 200 else
-                                          stub.openalex_status, b"{}")
-                    wanted = query["filter"][0].split(":", 1)[1].split("|")
-                    results = [
-                        w for w in stub.works if w["ids"]["doi"].split("doi.org/")[1] in wanted
-                    ]
-                    return self._send(200, json.dumps({"results": results}).encode())
-                stub.fetched.append(parts.path)
-                queue = stub.files.get(parts.path)
-                if not queue:
-                    return self._send(404, b"not found")
-                status, body, headers = queue.pop(0) if len(queue) > 1 else queue[0]
-                return self._send(status, body, headers)
-
-            def do_POST(self):
-                length = int(self.headers.get("Content-Length") or 0)
-                ids = json.loads(self.rfile.read(length))["ids"]
-                records = [
-                    {"title": "t", "openAccessPdf": {"url": stub.s2[i]}} if i in stub.s2 else None
-                    for i in ids
-                ]
-                return self._send(200, json.dumps(records).encode())
-
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
-
-    def serve(self, path: str, *responses) -> str:
-        self.files[path] = [r if len(r) == 3 else (*r, {}) for r in responses]
-        return self.url + path
-
-    def work(self, doi: str, *locations: dict, best: dict | None = None) -> None:
-        self.works.append(
-            {
-                "ids": {"doi": f"https://doi.org/{doi}"},
-                "best_oa_location": best,
-                "locations": list(locations),
-            }
-        )
-
-
-def _location(pdf_url=None, kind="journal", landing=None, version="publishedVersion", name=None):
-    return {
-        "is_oa": True,
-        "pdf_url": pdf_url,
-        "landing_page_url": landing,
-        "version": version,
-        "source": {"type": kind, "display_name": name or kind},
-    }
 
 
 @pytest.fixture
 def stub(monkeypatch):
-    server = _Stub()
+    server = OaHosts()
     monkeypatch.setattr(OpenAlexClient, "BASE_URL", server.url)
     monkeypatch.setattr(SemanticScholarClient, "BASE_URL", server.url + "/graph/v1/paper/batch")
     yield server
-    server.server.shutdown()
-    server.server.server_close()
-
-
-def _extractor(tmp_path, session=None, **overrides) -> PdfExtractor:
-    settings = Settings(
-        cache_root=tmp_path / "cache",
-        data_root=tmp_path / "data",
-        pdf_cache_root=tmp_path / "pdfs",
-        max_workers=1,
-        openalex_email=EMAIL,
-        openalex_api_key=None,
-        semantic_scholar_api_key="s2-key",
-        **overrides,
-    )
-    extractor = PdfExtractor(settings=settings, session=session or requests.Session())
-    extractor.slept = []
-    now = [1000.0]
-
-    def sleep(delay):
-        extractor.slept.append(delay)
-        now[0] += delay
-
-    extractor._sleep = sleep
-    extractor._clock = lambda: now[0]
-    return extractor
+    server.close()
 
 
 def _download(extractor, *dois) -> list[DownloadResult]:
@@ -171,11 +58,11 @@ def _outcomes(result):
 def test_a_repository_copy_is_tried_before_the_publisher_copy(stub, tmp_path):
     publisher = stub.serve("/journal/a.pdf", (200, PDF))
     repository = stub.serve("/escholarship/a.pdf", (200, PDF))
-    best = _location(publisher, "journal")
-    copy = _location(repository, "repository", name="eScholarship")
+    best = location(publisher, "journal")
+    copy = location(repository, "repository", name="eScholarship")
     stub.work("10.1234/a", best, copy, best=best)
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert result.success
     assert stub.fetched == ["/escholarship/a.pdf"]
@@ -192,7 +79,7 @@ def test_a_repository_copy_is_tried_before_the_publisher_copy(stub, tmp_path):
             "reason": "PDF downloaded",
         }
     ]
-    stage = DownloadStage(_extractor(tmp_path).settings)
+    stage = DownloadStage(pdf_source(tmp_path).settings)
     ref = ArticleRef(id="art1", identifier=result.identifier)
     ok = stage._outcome(ref, DownloadSource.PDF, result, "fp")
     assert ok.status is Status.OK
@@ -203,10 +90,10 @@ def test_a_403_then_a_page_that_is_not_a_pdf_fall_through_to_the_next_url(stub, 
     pmc = stub.serve("/europepmc/a.pdf", (403, b"Forbidden"))
     journal = stub.serve("/journal/a.pdf", (200, HTML))
     s2 = stub.serve("/s2/a.pdf", (200, PDF))
-    stub.work("10.1234/a", _location(journal, "journal"), _location(pmc, "repository"))
+    stub.work("10.1234/a", location(journal, "journal"), location(pmc, "repository"))
     stub.s2["DOI:10.1234/a"] = s2
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert result.success
     assert stub.fetched == ["/europepmc/a.pdf", "/journal/a.pdf", "/s2/a.pdf"]
@@ -225,12 +112,12 @@ def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_
     landing = stub.url + "/landing/a"
     stub.work(
         "10.1234/a",
-        _location(first, "repository"),
-        _location(second, "journal"),
-        _location(None, "repository", landing=landing),
+        location(first, "repository"),
+        location(second, "journal"),
+        location(None, "repository", landing=landing),
     )
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert not result.success
     assert _outcomes(result) == ["http_error", "not_pdf", "landing_page_only"]
@@ -238,10 +125,10 @@ def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_
     assert "/landing/a" not in stub.fetched
 
     ref = ArticleRef(id="art1", identifier=result.identifier)
-    stage = DownloadStage(_extractor(tmp_path).settings)
+    stage = DownloadStage(pdf_source(tmp_path).settings)
     outcome = stage._outcome(ref, DownloadSource.PDF, result, "fp")
-    # every copy failed for good: a 403, an HTML page and a landing page
-    assert outcome.status is Status.PERMANENT
+    # every copy is dead (a 403, an HTML page) or a landing page; a new copy may be listed
+    assert outcome.status is Status.FAILED
     assert outcome.error == result.error_message
     assert outcome.summary["url_attempts"] == result.url_attempts
     assert DownloadResult.from_dict(result.to_dict()).url_attempts == result.url_attempts
@@ -250,9 +137,9 @@ def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_
 def test_an_open_access_landing_page_alone_is_recorded_not_fetched(stub, tmp_path):
     landing = stub.url + "/landing/a"
     stub.serve("/landing/a", (200, HTML))
-    stub.work("10.1234/a", _location(None, "repository", landing=landing))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert not result.success
     assert result.error_message == f"OA landing page only: {landing}"
@@ -266,8 +153,8 @@ def test_a_429_is_waited_out_as_the_host_asks(stub, tmp_path):
         (429, b"slow down", {"Retry-After": "7"}),
         (200, PDF),
     )
-    stub.work("10.1234/a", _location(url, "repository"))
-    extractor = _extractor(tmp_path)
+    stub.work("10.1234/a", location(url, "repository"))
+    extractor = pdf_source(tmp_path)
 
     result = _download(extractor, "10.1234/a")[0]
 
@@ -277,17 +164,16 @@ def test_a_429_is_waited_out_as_the_host_asks(stub, tmp_path):
 
 
 def test_a_host_asking_to_wait_past_the_cap_is_left_for_the_run(stub, tmp_path):
-    other_host = _Stub()
+    other_host = OaHosts()
     try:
         busy = stub.serve("/repo/a.pdf", (429, b"slow down", {"Retry-After": "3600"}))
         other = other_host.serve("/journal/a.pdf", (200, PDF))
-        stub.work("10.1234/a", _location(busy, "repository"), _location(other, "journal"))
-        extractor = _extractor(tmp_path)
+        stub.work("10.1234/a", location(busy, "repository"), location(other, "journal"))
+        extractor = pdf_source(tmp_path)
 
         result = _download(extractor, "10.1234/a")[0]
     finally:
-        other_host.server.shutdown()
-        other_host.server.server_close()
+        other_host.close()
 
     assert result.success
     # no early retry: the URL is given up at once and the host is not waited for
@@ -301,8 +187,8 @@ def test_a_host_asking_to_wait_past_the_cap_is_left_for_the_run(stub, tmp_path):
 
 def test_a_429_without_retry_after_backs_off_by_doubling(stub, tmp_path):
     url = stub.serve("/repo/a.pdf", (429, b""), (429, b""), (200, PDF))
-    stub.work("10.1234/a", _location(url, "repository"))
-    extractor = _extractor(tmp_path)
+    stub.work("10.1234/a", location(url, "repository"))
+    extractor = pdf_source(tmp_path)
 
     assert _download(extractor, "10.1234/a")[0].success
     assert extractor.slept == [2.0, 4.0]
@@ -310,10 +196,10 @@ def test_a_429_without_retry_after_backs_off_by_doubling(stub, tmp_path):
 
 def test_a_url_both_providers_list_is_fetched_once(stub, tmp_path):
     url = stub.serve("/europepmc/a.pdf", (403, b"Forbidden"))
-    stub.work("10.1234/a", _location(url, "repository"))
+    stub.work("10.1234/a", location(url, "repository"))
     stub.s2["DOI:10.1234/a"] = url.replace("http://", "HTTP://") + "/"
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert stub.fetched == ["/europepmc/a.pdf"]
     assert _outcomes(result) == ["http_error"]
@@ -324,11 +210,11 @@ def test_a_preprint_is_tried_after_the_published_copy(stub, tmp_path):
     published = stub.serve("/journal/a.pdf", (200, PDF))
     stub.work(
         "10.1234/a",
-        _location(preprint, "repository", version="submittedVersion"),
-        _location(published, "journal"),
+        location(preprint, "repository", version="submittedVersion"),
+        location(published, "journal"),
     )
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert stub.fetched == ["/journal/a.pdf"]
     assert result.url_attempts[0]["location_type"] == "publisher"
@@ -338,9 +224,9 @@ def test_openalex_is_asked_about_articles_semantic_scholar_answered(stub, tmp_pa
     s2 = stub.serve("/s2/a.pdf", (403, b"Forbidden"))
     repo = stub.serve("/repo/a.pdf", (200, PDF))
     stub.s2["DOI:10.1234/a"] = s2
-    stub.work("10.1234/a", _location(repo, "repository"))
+    stub.work("10.1234/a", location(repo, "repository"))
 
-    result = _download(_extractor(tmp_path), "10.1234/a", "10.1234/b")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a", "10.1234/b")[0]
 
     assert result.success
     assert stub.fetched == ["/repo/a.pdf"]
@@ -358,7 +244,7 @@ def test_a_failed_openalex_lookup_is_recorded_and_the_other_provider_still_tried
     s2 = stub.serve("/s2/a.pdf", (200, HTML))
     stub.s2["DOI:10.1234/a"] = s2
 
-    a, b = _download(_extractor(tmp_path), "10.1234/a", "10.1234/b")
+    a, b = _download(pdf_source(tmp_path), "10.1234/a", "10.1234/b")
 
     assert [x["outcome"] for x in a.url_attempts] == ["lookup_failed", "not_pdf"]
     assert a.url_attempts[0]["provider"] == "openalex"
@@ -368,7 +254,7 @@ def test_a_failed_openalex_lookup_is_recorded_and_the_other_provider_still_tried
 
 
 def test_an_article_no_provider_knows_still_says_no_pdf_url(stub, tmp_path):
-    result = _download(_extractor(tmp_path), "10.1234/unknown")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/unknown")[0]
 
     assert not result.success
     assert result.error_message == "No open-access PDF URL found."
@@ -377,10 +263,9 @@ def test_an_article_no_provider_knows_still_says_no_pdf_url(stub, tmp_path):
 
 def test_a_location_openalex_does_not_call_open_access_is_not_fetched(stub, tmp_path):
     closed = stub.serve("/journal/closed.pdf", (200, PDF))
-    location = {**_location(closed, "journal"), "is_oa": False}
-    stub.work("10.1234/a", location)
+    stub.work("10.1234/a", {**location(closed, "journal"), "is_oa": False})
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert stub.fetched == []
     assert result.error_message == "No open-access PDF URL found."
@@ -402,14 +287,13 @@ class _LocalOnlySession(requests.Session):
 
 @pytest.fixture
 def other_host():
-    server = _Stub()
+    server = OaHosts()
     yield server
-    server.server.shutdown()
-    server.server.server_close()
+    server.close()
 
 
 def _stage_outcome(tmp_path, result):
-    stage = DownloadStage(_extractor(tmp_path).settings)
+    stage = DownloadStage(pdf_source(tmp_path).settings)
     ref = ArticleRef(id="art1", identifier=result.identifier)
     return stage._outcome(ref, DownloadSource.PDF, result, "fp")
 
@@ -420,9 +304,9 @@ def _stage_outcome(tmp_path, result):
 def test_a_rate_limited_copy_keeps_an_article_retryable_after_a_404(stub, other_host, tmp_path):
     busy = stub.serve("/repo/a.pdf", (429, b"", {"Retry-After": "3600"}))
     gone = other_host.serve("/journal/a.pdf", (404, b"gone"))
-    stub.work("10.1234/a", _location(busy, "repository"), _location(gone, "journal"))
+    stub.work("10.1234/a", location(busy, "repository"), location(gone, "journal"))
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert _outcomes(result) == ["rate_limited", "http_error"]
     assert "404" in result.error_message
@@ -430,23 +314,24 @@ def test_a_rate_limited_copy_keeps_an_article_retryable_after_a_404(stub, other_
     assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
-def test_an_article_whose_every_copy_failed_for_good_is_permanent(stub, tmp_path):
+def test_an_article_whose_every_copy_is_dead_stays_retryable(stub, tmp_path):
     forbidden = stub.serve("/journal/a.pdf", (403, b"no"))
     html = stub.serve("/repo/a.pdf", (200, HTML))
     landing = stub.url + "/landing/a"
     stub.work(
         "10.1234/a",
-        _location(forbidden, "journal"),
-        _location(html, "repository"),
-        _location(None, "repository", landing=landing),
+        location(forbidden, "journal"),
+        location(html, "repository"),
+        location(None, "repository", landing=landing),
     )
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert _outcomes(result) == ["not_pdf", "http_error", "landing_page_only"]
-    assert result.permanent is True
+    assert [a.get("dead") for a in result.url_attempts] == [True, True, None]
+    assert result.permanent is False
     outcome = _stage_outcome(tmp_path, result)
-    assert outcome.status is Status.PERMANENT
+    assert outcome.status is Status.FAILED
     assert outcome.summary["url_outcomes"] == {
         "not_pdf": 1, "http_error": 1, "landing_page_only": 1
     }
@@ -457,7 +342,7 @@ def test_a_failed_lookup_keeps_an_article_retryable(stub, tmp_path, monkeypatch)
     stub.openalex_status = 500
     stub.s2["DOI:10.1234/a"] = stub.serve("/s2/a.pdf", (404, b"gone"))
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert _outcomes(result) == ["lookup_failed", "http_error"]
     assert result.permanent is False
@@ -465,18 +350,18 @@ def test_a_failed_lookup_keeps_an_article_retryable(stub, tmp_path, monkeypatch)
 
 
 def test_a_server_error_or_timeout_is_not_final(stub, tmp_path):
-    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (503, b"down")), "repository"))
-    stub.work("10.1234/b", _location(stub.url.replace("127.0.0.1", "localhost") + "/x.pdf",
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (503, b"down")), "repository"))
+    stub.work("10.1234/b", location(stub.url.replace("127.0.0.1", "localhost") + "/x.pdf",
                                      "repository"))
 
-    a, b = _download(_extractor(tmp_path, session=_LocalOnlySession()), "10.1234/a", "10.1234/b")
+    a, b = _download(pdf_source(tmp_path, session=_LocalOnlySession()), "10.1234/a", "10.1234/b")
 
     assert _outcomes(a) == ["http_error"] and a.permanent is False
     assert _outcomes(b) == ["fetch_error"] and b.permanent is False
 
 
 def test_an_article_with_no_candidate_is_not_permanent(stub, tmp_path):
-    result = _download(_extractor(tmp_path), "10.1234/unknown")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/unknown")[0]
 
     assert result.permanent is False
     assert _stage_outcome(tmp_path, result).status is Status.FAILED
@@ -493,19 +378,19 @@ def test_pmc_and_europe_pmc_copies_are_left_to_their_own_sources(stub, tmp_path)
     ]
     pubmed = "https://www.ncbi.nlm.nih.gov/pubmed/1.pdf"
     local = stub.serve("/journal/a.pdf", (200, PDF))
-    stub.work("10.1234/a", *[_location(url, "repository") for url in pmc[:2]],
-              _location(pubmed, "journal"), _location(local, None))
+    stub.work("10.1234/a", *[location(url, "repository") for url in pmc[:2]],
+              location(pubmed, "journal"), location(local, None))
     stub.s2["DOI:10.1234/a"] = pmc[2]  # untyped, as Semantic Scholar gives it
     session = _LocalOnlySession()
 
-    result = _download(_extractor(tmp_path, session=session), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path, session=session), "10.1234/a")[0]
 
     assert result.success
     assert session.refused == [pubmed]  # a PubMed URL is not a PMC copy
     skipped = [a for a in result.url_attempts if a["outcome"] == "skipped_pmc"]
     assert sorted(a["url"] for a in skipped) == sorted(pmc)
     assert {a["reason"] for a in skipped} == {SKIPPED_PMC}
-    assert all(a["permanent"] for a in skipped)
+    assert remembered_dead_urls(result.url_attempts) == {}
     assert "status" not in skipped[0]
 
 
@@ -517,6 +402,9 @@ def test_pmc_and_europe_pmc_copies_are_left_to_their_own_sources(stub, tmp_path)
         ("https://ncbi.nlm.nih.gov/pmc/articles/PMC1/pdf/a.pdf", True),
         ("https://europepmc.org/articles/pmc1?pdf=render", True),
         ("https://www.europepmc.org/articles/pmc1?pdf=render", True),
+        ("https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC1&blobtype=pdf", True),
+        ("https://europepmc.org/api/fulltextRepo?pprId=PPR1&type=FILE&fileName=a.pdf", False),
+        ("https://europepmc.org/article/PPR/PPR1", False),
         ("https://PMC.NCBI.NLM.NIH.GOV/articles/PMC1/pdf/a.pdf", True),
         ("https://www.ncbi.nlm.nih.gov/pubmed/1.pdf", False),
         ("https://www.ncbi.nlm.nih.gov/pmcfoo/a.pdf", False),
@@ -618,26 +506,14 @@ def test_equally_ranked_copies_keep_the_providers_order():
 # -- what a later run remembers -----------------------------------------------------
 
 
-def test_only_a_url_that_failed_for_good_is_remembered_as_dead():
+def test_only_a_dead_url_is_remembered():
     attempts = [
-        {"url": "https://a.org/1.pdf", "outcome": "http_error", "permanent": True, "reason": "403"},
-        {"url": "https://a.org/2.pdf", "outcome": "http_error", "permanent": False, "reason": "503"},
-        {"url": "https://a.org/3.pdf", "outcome": "http_error", "reason": "unmarked"},
-        {"url": "https://a.org/4.pdf", "outcome": "landing_page_only", "permanent": True},
+        {"url": "https://a.org/1.pdf", "outcome": "http_error", "dead": True, "reason": "403"},
+        {"url": "https://a.org/2.pdf", "outcome": "http_error", "reason": "503"},
+        {"url": "https://a.org/4.pdf", "outcome": "landing_page_only"},
     ]
 
     assert remembered_dead_urls(attempts) == {"a.org/1.pdf?": "403"}
-
-
-def test_a_closed_location_does_not_decide_whether_an_article_is_permanent():
-    gone = {"outcome": "http_error", "permanent": True}
-    closed = {"outcome": "not_open_access", "permanent": True}
-    pending = {"outcome": "http_error", "permanent": False}
-
-    assert _permanently_failed([gone, closed]) is True
-    assert _permanently_failed([closed]) is False
-    assert _permanently_failed([gone, pending]) is False
-    assert _permanently_failed([]) is False
 
 
 class _Answer:
@@ -646,8 +522,7 @@ class _Answer:
 
 
 @pytest.mark.parametrize(
-    "header, seconds", [("7", 7.0), ("0", 0.0), ("-5", 0.0), ("Wed, 21 Oct 2026 07:28:00 GMT", None),
-                        (None, None)]
+    "header, seconds", [("7", 7.0), ("0", 0.0), ("-5", 0.0), ("soon", None), (None, None)]
 )
 def test_retry_after_is_read_as_seconds_and_never_negative(header, seconds):
     headers = {} if header is None else {"Retry-After": header}
@@ -655,28 +530,53 @@ def test_retry_after_is_read_as_seconds_and_never_negative(header, seconds):
     assert _retry_after(_Answer(429, headers)) == seconds
 
 
+def test_retry_after_is_read_as_an_http_date():
+    def asked(offset):
+        when = format_datetime(datetime.now(timezone.utc) + offset, usegmt=True)
+        return _retry_after(_Answer(429, {"Retry-After": when}))
+
+    assert 3590 < asked(timedelta(hours=1)) <= 3600
+    assert asked(timedelta(hours=-1)) == 0.0
+
+
+def test_a_host_giving_a_date_an_hour_away_is_left_for_the_run(stub, tmp_path):
+    when = format_datetime(datetime.now(timezone.utc) + timedelta(hours=1), usegmt=True)
+    url = stub.serve("/repo/a.pdf", (429, b"", {"Retry-After": when}))
+    stub.work("10.1234/a", location(url, "repository"))
+    extractor = pdf_source(tmp_path)
+
+    result = _download(extractor, "10.1234/a")[0]
+
+    assert stub.fetched == ["/repo/a.pdf"] and extractor.slept == []
+    assert _outcomes(result) == ["rate_limited"]
+    assert re.search(r"asked to wait 3(599|600)s", result.error_message)
+
+
 @pytest.mark.parametrize(
-    "status, permanent",
-    [(400, True), (403, True), (404, True), (408, False), (425, False), (500, False), (503, False)],
+    "status, dead",
+    [(400, True), (403, True), (404, True), (408, False), (425, False), (500, False),
+     (503, False)],
 )
-def test_which_http_statuses_are_final(stub, tmp_path, status, permanent):
-    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (status, b"")), "repository"))
+def test_which_http_statuses_mean_the_url_is_dead(stub, tmp_path, status, dead):
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (status, b"")), "repository"))
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
-    assert result.url_attempts[0]["permanent"] is permanent
+    assert result.url_attempts[0].get("dead", False) is dead
+    assert result.permanent is False
 
 
 def test_a_payload_that_only_starts_like_a_pdf_is_not_one(stub, tmp_path):
-    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (200, b"%PDF\n<html>")), "repository"))
+    payload = stub.serve("/repo/a.pdf", (200, b"%PDF\n<html>"))
+    stub.work("10.1234/a", location(payload, "repository"))
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert _outcomes(result) == ["not_pdf"]
 
 
 def test_the_error_names_the_last_url_passed_over_when_none_was_fetched(tmp_path):
-    extractor = _extractor(tmp_path)
+    extractor = pdf_source(tmp_path)
     identifier = Identifier(doi="10.1234/a")
     first, second = (
         PdfCandidate(f"https://example.org/{n}", "openalex", "repository", landing_page=True)
@@ -689,7 +589,7 @@ def test_the_error_names_the_last_url_passed_over_when_none_was_fetched(tmp_path
 
 
 def test_the_error_names_the_last_failed_lookup_when_there_is_no_url(tmp_path):
-    extractor = _extractor(tmp_path)
+    extractor = pdf_source(tmp_path)
     failures = [
         {"provider": p, "outcome": "lookup_failed", "reason": f"{p} lookup failed: down"}
         for p in ("semantic_scholar", "openalex")
@@ -735,9 +635,9 @@ def test_an_answer_from_the_host_ends_a_run_of_429s():
 def test_pages_that_are_not_pdfs_count_as_a_host_refusing(stub, tmp_path):
     dois = [f"10.1234/h{n}" for n in range(22)]
     for doi in dois:
-        stub.work(doi, _location(stub.serve(f"/{doi}.pdf", (200, HTML)), "journal"))
+        stub.work(doi, location(stub.serve(f"/{doi}.pdf", (200, HTML)), "journal"))
 
-    results = _download(_extractor(tmp_path), *dois)
+    results = _download(pdf_source(tmp_path), *dois)
 
     assert len(stub.fetched) == 20
     assert results[21].url_attempts[0]["outcome"] == "deferred"
@@ -752,10 +652,10 @@ def test_a_host_left_for_the_run_is_not_asked_again_for_other_articles(
     stub.serve("/repo/a.pdf", (429, b"", {"Retry-After": "900"}))
     stub.serve("/repo/b.pdf", (200, PDF))
     other = other_host.serve("/journal/b.pdf", (403, b"no"))
-    stub.work("10.1234/a", _location(stub.url + "/repo/a.pdf", "repository"))
-    stub.work("10.1234/b", _location(stub.url + "/repo/b.pdf", "repository"),
-              _location(other, "journal"))
-    extractor = _extractor(tmp_path)
+    stub.work("10.1234/a", location(stub.url + "/repo/a.pdf", "repository"))
+    stub.work("10.1234/b", location(stub.url + "/repo/b.pdf", "repository"),
+              location(other, "journal"))
+    extractor = pdf_source(tmp_path)
 
     a, b = _download(extractor, "10.1234/a", "10.1234/b")
 
@@ -767,8 +667,8 @@ def test_a_host_left_for_the_run_is_not_asked_again_for_other_articles(
 
 
 def test_a_host_that_keeps_answering_429_is_left_after_three_waits(stub, tmp_path):
-    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (429, b"")), "repository"))
-    extractor = _extractor(tmp_path)
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (429, b"")), "repository"))
+    extractor = pdf_source(tmp_path)
 
     result = _download(extractor, "10.1234/a")[0]
 
@@ -794,23 +694,24 @@ def test_no_worker_asks_a_host_before_the_time_it_gave():
 def test_a_host_refusing_every_url_is_left_for_a_later_run(stub, tmp_path):
     dois = [f"10.1234/r{n}" for n in range(22)]
     for doi in dois:
-        stub.work(doi, _location(stub.serve(f"/{doi}.pdf", (403, b"no")), "journal"))
+        stub.work(doi, location(stub.serve(f"/{doi}.pdf", (403, b"no")), "journal"))
 
-    results = _download(_extractor(tmp_path), *dois)
+    results = _download(pdf_source(tmp_path), *dois)
 
     assert len(stub.fetched) == 20
     assert [r.url_attempts[0]["outcome"] for r in results[20:]] == ["deferred", "deferred"]
     assert "refused 20 URLs this run and served no PDF" in results[21].error_message
-    assert results[21].permanent is False and results[0].permanent is True
+    assert results[0].url_attempts[0]["dead"] is True
+    assert "dead" not in results[21].url_attempts[0]
 
 
 def test_a_host_that_has_served_a_pdf_is_not_cut_off(stub, tmp_path):
     dois = [f"10.1234/r{n}" for n in range(22)]
-    stub.work(dois[0], _location(stub.serve("/first.pdf", (200, PDF)), "journal"))
+    stub.work(dois[0], location(stub.serve("/first.pdf", (200, PDF)), "journal"))
     for doi in dois[1:]:
-        stub.work(doi, _location(stub.serve(f"/{doi}.pdf", (403, b"no")), "journal"))
+        stub.work(doi, location(stub.serve(f"/{doi}.pdf", (403, b"no")), "journal"))
 
-    _download(_extractor(tmp_path), *dois)
+    _download(pdf_source(tmp_path), *dois)
 
     assert len(stub.fetched) == 22
 
@@ -823,12 +724,12 @@ def test_a_url_both_providers_list_keeps_the_openalex_version(stub, other_host, 
     published = other_host.serve("/journal/a.pdf", (403, b"no"))
     stub.work(
         "10.1234/a",
-        _location(preprint, "repository", version="submittedVersion", name="bioRxiv"),
-        _location(published, "journal"),
+        location(preprint, "repository", version="submittedVersion", name="bioRxiv"),
+        location(published, "journal"),
     )
     stub.s2["DOI:10.1234/a"] = preprint
 
-    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert other_host.fetched == ["/journal/a.pdf"]  # the published copy is tried first
     copy = result.url_attempts[1]
@@ -898,7 +799,7 @@ def test_a_failed_openalex_batch_is_blamed_only_on_its_articles(stub, tmp_path, 
     monkeypatch.setattr(OpenAlexClient._request_openalex.retry, "wait", wait_none())
     stub.openalex_failing_types = {"pmid"}
 
-    unknown, pmid_only = _extractor(tmp_path).download(
+    unknown, pmid_only = pdf_source(tmp_path).download(
         Identifiers([Identifier(doi="10.1234/unknown"), Identifier(pmid="12345")])
     )
 
@@ -908,27 +809,177 @@ def test_a_failed_openalex_batch_is_blamed_only_on_its_articles(stub, tmp_path, 
     assert "pmid batch of 1" in pmid_only.error_message
 
 
-# -- URLs that failed for good on an earlier run ----------------------------------------
+def test_a_failed_openalex_batch_keeps_what_the_other_batches_found(stub, tmp_path, monkeypatch):
+    monkeypatch.setattr(OpenAlexClient._request_openalex.retry, "wait", wait_none())
+    stub.openalex_failing_types = {"pmid"}
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (200, PDF)), "repository"))
 
-
-def test_a_later_run_does_not_fetch_a_url_that_failed_for_good(stub, other_host, tmp_path):
-    dead = stub.serve("/repo/a.pdf", (403, b"no"))
-    busy = other_host.serve("/journal/a.pdf", (429, b"", {"Retry-After": "3600"}))
-    stub.work("10.1234/a", _location(dead, "repository"), _location(busy, "journal"))
-    first = _download(_extractor(tmp_path), "10.1234/a")[0]
-    assert first.permanent is False
-    previous = Artifact(
-        article_id="art1", stage="download", source="pdf", status=Status.FAILED,
-        summary=_stage_outcome(tmp_path, first).summary,
+    found, pmid_only = pdf_source(tmp_path, semantic_scholar_api_key=None).download(
+        Identifiers([Identifier(doi="10.1234/a"), Identifier(pmid="12345")])
     )
 
-    other_host.serve("/journal/a.pdf", (200, PDF))
-    stage = DownloadStage(_extractor(tmp_path).settings)
-    stage._extractors[DownloadSource.PDF] = _extractor(tmp_path)  # a new run
-    ctx = _Context({"art1": {"pdf": previous}})
-    ref = ArticleRef(id="art1", identifier=Identifier(doi="10.1234/a"))
+    assert found.success and _outcomes(found) == ["pdf"]
+    assert stub.fetched == ["/repo/a.pdf"]
+    assert _outcomes(pmid_only) == ["lookup_failed"]
+    assert "pmid batch of 1" in pmid_only.error_message
 
-    (outcome,) = list(stage._download(ctx, DownloadSource.PDF, [ref]))
+
+def test_an_article_its_pmid_batch_answered_did_not_fail(stub, tmp_path, monkeypatch):
+    monkeypatch.setattr(OpenAlexClient._request_openalex.retry, "wait", wait_none())
+    stub.openalex_failing_types = {"doi"}
+    stub.work(None, location(stub.serve("/repo/a.pdf", (200, PDF)), "repository"), pmid="12345")
+
+    (result,) = pdf_source(tmp_path, semantic_scholar_api_key=None).download(
+        Identifiers([Identifier(doi="10.1234/a", pmid="12345")])
+    )
+
+    assert result.success and _outcomes(result) == ["pdf"]
+
+
+def test_a_work_with_no_location_still_answers_for_its_article(stub):
+    stub.work("10.1234/a")
+    identifiers = Identifiers([Identifier(doi="10.1234/a")])
+
+    assert OpenAlexClient(email=EMAIL).get_locations(identifiers) == {identifiers[0].slug: []}
+
+
+# -- the shape OpenAlex gives a location ----------------------------------------------
+
+
+def test_a_location_with_a_pdf_link_and_a_landing_page_fetches_the_pdf(stub, tmp_path):
+    pdf = stub.serve("/repo/a.pdf", (200, PDF))
+    landing = stub.serve("/repo/a", (200, HTML))
+    stub.work("10.1234/a", location(pdf, "repository", landing=landing))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert result.success
+    assert stub.fetched == ["/repo/a.pdf"]
+    assert result.url_attempts[0]["url"] == pdf
+
+
+PLOS_PDF = (
+    "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0068910"
+    "&type=printable"
+)
+
+
+@pytest.mark.vcr
+def test_a_real_openalex_listing_fetches_the_pdf_link_not_the_landing_page(tmp_path):
+    session = _LocalOnlySession()  # the cassette answers OpenAlex; no file host is reached
+    extractor = pdf_source(tmp_path, session=session, semantic_scholar_api_key=None)
+
+    result = _download(extractor, "10.1371/journal.pone.0068910")[0]
+
+    assert session.refused == [PLOS_PDF]
+    assert result.url_attempts[0]["url"] == PLOS_PDF
+    assert result.url_attempts[0]["location_type"] == "publisher"
+    assert "landing_page_only" in _outcomes(result)
+
+
+# -- what counts, and how often -------------------------------------------------------
+
+
+def test_each_outcome_is_counted_as_often_as_it_happens(stub, other_host, tmp_path):
+    first = stub.serve("/repo/a.pdf", (403, b"no"))
+    second = other_host.serve("/journal/a.pdf", (403, b"no"))
+    stub.work("10.1234/a", location(first, "repository"), location(second, "journal"))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert _stage_outcome(tmp_path, result).summary["url_outcomes"] == {"http_error": 2}
+
+
+def test_a_host_answering_server_errors_is_not_refusing(stub, tmp_path):
+    dois = [f"10.1234/s{n}" for n in range(22)]
+    for doi in dois:
+        stub.work(doi, location(stub.serve(f"/{doi}.pdf", (503, b"down")), "journal"))
+
+    results = _download(pdf_source(tmp_path), *dois)
+
+    assert len(stub.fetched) == 22
+    assert {r.url_attempts[0]["outcome"] for r in results} == {"http_error"}
+
+
+def test_semantic_scholar_is_not_asked_without_a_key(stub, tmp_path):
+    stub.s2["DOI:10.1234/a"] = stub.serve("/s2/a.pdf", (200, PDF))
+
+    result = _download(pdf_source(tmp_path, semantic_scholar_api_key=None), "10.1234/a")[0]
+
+    assert stub.s2_queries == [] and stub.fetched == []
+    assert result.error_message == "No open-access PDF URL found."
+
+
+def test_a_europe_pmc_preprint_pdf_is_fetched(stub, tmp_path):
+    preprint = "https://europepmc.org/api/fulltextRepo?pprId=PPR1&type=FILE&fileName=a.pdf"
+    stub.work("10.1234/a", location(preprint, "repository", version="submittedVersion"))
+    session = _LocalOnlySession()
+
+    result = _download(pdf_source(tmp_path, session=session), "10.1234/a")[0]
+
+    assert session.refused == [preprint]
+    assert _outcomes(result) == ["fetch_error"]
+
+
+# -- a host left for the run ----------------------------------------------------------
+
+
+def test_a_host_left_for_the_run_meanwhile_is_not_asked(stub, tmp_path):
+    url = stub.serve("/repo/a.pdf", (200, PDF))
+    extractor = pdf_source(tmp_path)
+    extractor._hosts.rate_limited(_host(url), 3600.0)  # another worker's 429
+    attempt: dict = {}
+
+    assert extractor._fetch(url, attempt) is None
+    assert stub.fetched == []
+    assert attempt == {
+        "outcome": "deferred", "reason": f"deferred: {_host(url)} asked to wait 3600s"
+    }
+
+
+def test_a_url_on_a_host_left_for_the_run_does_not_become_the_error(stub, other_host, tmp_path):
+    other_host.serve("/journal/a.pdf", (429, b"", {"Retry-After": "900"}))
+    stub.work("10.1234/a", location(other_host.url + "/journal/a.pdf", "journal"))
+    forbidden = stub.serve("/repo/b.pdf", (403, b"no"))
+    stub.work("10.1234/b", location(forbidden, "repository"),
+              location(other_host.url + "/journal/b.pdf", "journal"))
+
+    _, b = _download(pdf_source(tmp_path), "10.1234/a", "10.1234/b")
+
+    assert other_host.fetched == ["/journal/a.pdf"]
+    assert _outcomes(b) == ["http_error", "deferred"]
+    assert "403" in b.error_message
+
+
+# -- URLs found dead on an earlier run ------------------------------------------------
+
+
+@pytest.fixture
+def catalog(tmp_path):
+    with Catalog.open(tmp_path / "catalog") as opened:
+        yield opened
+
+
+def _run(tmp_path, catalog, ref, refresh=()):
+    """One run of the download stage's PDF source, recorded in the catalog."""
+    stage = DownloadStage(pdf_source(tmp_path).settings)
+    stage._extractors[DownloadSource.PDF] = pdf_source(tmp_path)  # a new run: a new host gate
+    ctx = Context(stage.settings, catalog, refresh=refresh)
+    outcomes = list(stage._download(ctx, DownloadSource.PDF, [ref]))
+    catalog.record(outcomes)
+    return outcomes
+
+
+def test_a_later_run_does_not_fetch_a_dead_url(stub, other_host, tmp_path, catalog):
+    dead = stub.serve("/repo/a.pdf", (403, b"no"))
+    busy = other_host.serve("/journal/a.pdf", (429, b"", {"Retry-After": "3600"}))
+    stub.work("10.1234/a", location(dead, "repository"), location(busy, "journal"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
+    (first,) = _run(tmp_path, catalog, ref)
+    assert first.status is Status.FAILED
+
+    other_host.serve("/journal/a.pdf", (200, PDF))
+    (outcome,) = _run(tmp_path, catalog, ref)
 
     assert outcome.status is Status.OK
     assert stub.fetched == ["/repo/a.pdf"]  # only on the first run
@@ -937,47 +988,34 @@ def test_a_later_run_does_not_fetch_a_url_that_failed_for_good(stub, other_host,
     assert "403" in outcome.summary["url_attempts"][0]["reason"]
 
 
-def test_a_url_remembered_as_dead_stays_remembered(tmp_path):
-    attempts = [
-        {"url": "https://a.org/x.pdf", "outcome": "known_dead", "permanent": True, "reason": "r"},
-        {"url": "https://a.org/y.pdf", "outcome": "rate_limited", "permanent": False},
-        {"url": "https://a.org/z", "outcome": "landing_page_only", "permanent": True},
-        {"url": "https://a.org/w.pdf", "outcome": "not_pdf", "permanent": True, "reason": "html"},
+def test_a_dead_url_is_fetched_once_and_a_new_copy_is_still_tried(stub, tmp_path, catalog):
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
+
+    runs = [_run(tmp_path, catalog, ref)[0] for _ in range(3)]
+
+    assert stub.fetched == ["/repo/a.pdf"]
+    assert [o.status for o in runs] == [Status.FAILED] * 3
+    assert [o.summary["url_outcomes"] for o in runs] == [
+        {"http_error": 1}, {"known_dead": 1}, {"known_dead": 1}
     ]
+    assert "403" in runs[2].error
 
-    assert remembered_dead_urls(attempts) == {"a.org/x.pdf?": "r", "a.org/w.pdf?": "html"}
+    stub.works[0]["locations"].append(location(stub.serve("/repo/b.pdf", (200, PDF)), "journal"))
+    (found,) = _run(tmp_path, catalog, ref)
 
-
-def test_a_refresh_forgets_the_dead_urls():
-    previous = Artifact(
-        article_id="art1", stage="download", source="pdf", status=Status.FAILED,
-        summary={"url_attempts": [
-            {"url": "https://a.org/x.pdf", "outcome": "http_error", "permanent": True}
-        ]},
-    )
-    stage = DownloadStage(Settings(max_workers=1))
-    ref = ArticleRef(id="art1", identifier=Identifier(doi="10.1234/a"))
-
-    assert stage._dead_urls(_Context({"art1": {"pdf": previous}}), [ref]) == {
-        "10-1234-a": {"a.org/x.pdf?": ""}
-    }
-    assert stage._dead_urls(_Context({"art1": {"pdf": previous}}, refresh=True), [ref]) == {}
+    assert found.status is Status.OK
+    assert stub.fetched == ["/repo/a.pdf", "/repo/b.pdf"]
 
 
-class _Context:
-    """The part of the stage context the download reads: the catalog and --refresh."""
+def test_a_refresh_fetches_a_dead_url_again(stub, tmp_path, catalog):
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
 
-    def __init__(self, artifacts, refresh=False):
-        self.refresh = refresh
-        self.catalog = self
+    _run(tmp_path, catalog, ref)
+    _run(tmp_path, catalog, ref, refresh=["download:pdf"])
 
-        def artifacts_of(ids, stage):
-            return {i: artifacts[i] for i in ids if i in artifacts}
-
-        self.artifacts = artifacts_of
-
-    def refreshing(self, stage, source=""):
-        return self.refresh
+    assert stub.fetched == ["/repo/a.pdf"] * 2
 
 
 def _host(url):

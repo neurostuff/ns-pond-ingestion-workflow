@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (
     DownloadedFile,
@@ -20,6 +21,7 @@ from ingestion_workflow.pipeline.stages import DownloadStage
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.triage import TriageStage
+from ingestion_workflow.tests.oa_hosts import PDF, OaHosts, location, pdf_source
 
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
 
@@ -28,7 +30,7 @@ class Source:
     def __init__(self, source, result):
         self.source, self.result = source, result
 
-    def download(self, identifiers, dead_urls=None):
+    def download(self, identifiers):
         return [self.result(identifier) for identifier in identifiers]
 
 
@@ -44,7 +46,10 @@ def served(source, path):
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, monkeypatch):
+    hosts = OaHosts()
+    monkeypatch.setattr(OpenAlexClient, "BASE_URL", hosts.url)
+    hosts.work(None, location(hosts.serve("/repo/x.pdf", (200, PDF)), "repository"), pmid="123")
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
@@ -59,7 +64,10 @@ def env(tmp_path):
                                 stage.fingerprint_for(DownloadSource.ACE), ace.to_dict())])
         extracted(catalog, ref, "ace")
         catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"})])
+        # the real PDF source, which OpenAlex points at a repository PDF of the article
+        stage._extractors[DownloadSource.PDF] = pdf_source(tmp_path, semantic_scholar_api_key=None)
         yield settings, catalog, ref, stage
+    hosts.close()
 
 
 def extracted(catalog, ref, source):
@@ -71,11 +79,7 @@ def extracted(catalog, ref, source):
 
 def refresh(settings, catalog, ref, stage, ace_result, tmp_path):
     """`--refresh download:ace`: ACE answers with `ace_result`, and pdf has the article."""
-    stage._extractors = {
-        DownloadSource.ACE: Source(DownloadSource.ACE, ace_result),
-        DownloadSource.PDF: Source(DownloadSource.PDF,
-                                   served(DownloadSource.PDF, page(tmp_path, "ytpicngb4emb"))),
-    }
+    stage._extractors[DownloadSource.ACE] = Source(DownloadSource.ACE, ace_result)
     ctx = Context(settings, catalog, refresh=["download:ace"])
     work = Work(ref=ref, source="ace", fingerprint=stage.fingerprint_for(DownloadSource.ACE))
     outcomes = list(stage.execute(ctx, [work]))

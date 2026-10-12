@@ -65,7 +65,6 @@ class OaLocation:
     #: "publishedVersion", "acceptedVersion" or "submittedVersion".
     version: Optional[str]
     is_oa: bool = True
-    is_best: bool = False
 
 
 class LocationLookupFailed(PartialAnswer):
@@ -97,8 +96,7 @@ def _locations_from(work: Dict) -> List[OaLocation]:
                 source_type=source.get("type"),
                 source_name=source.get("display_name"),
                 version=loc.get("version"),
-                is_oa=loc is best or bool(loc.get("is_oa")),
-                is_best=loc is best,
+                is_oa=bool(loc.get("is_oa")),
             )
         )
     return locations
