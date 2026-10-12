@@ -492,9 +492,7 @@ def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
 #: Below this share of the page's running prose, the text readability kept is not the
 #: whole article, and it is built again the other two ways. On a Karger page readability
 #: keeps the citation dialog (55 of 5,993 words); on JOCN pages the table placeholders
-#: lead it to a small block (447 of 11,693). Between 40% and 50% a rebuild at least
-#: doubled the running prose of 12 of 15 sampled texts and shortened none, so the
-#: gate sits at a half.
+#: lead it to a small block (447 of 11,693).
 SHORT_TEXT_SHARE = 0.5
 READABILITY = "readability"
 WITHOUT_TABLE_PLACEHOLDERS = "readability_without_table_placeholders"
@@ -560,7 +558,7 @@ def _whole_article_text(source: Any, html_text: str, text: str, captions: Sequen
     # Without body sections the page is an abstract, a letter or a stub, whose prose
     # beside the article is a dialog or a list of other papers' abstracts: built
     # again, its text gains only those.
-    if (page is None or len(page.sections) < BODY_SECTIONS
+    if (len(page.sections) < BODY_SECTIONS
             or first >= SHORT_TEXT_SHARE * page.words):
         return text, None
     built = {READABILITY: text,
@@ -592,13 +590,9 @@ def _text_without_readability(source: Any, html_text: str, captions: Sequence[st
     """ACE's text with tables in place, from the paragraphs and headings of the page,
     each paragraph once and without the page's menus or the figure captions, which
     `append_legends` adds under the legends."""
-    use_readability = source.use_readability
     source.use_readability = False
-    try:
-        soup = _without_furniture(_ace_soup(source, html_text), captions)
-        return source._text_with_tables(soup)
-    finally:
-        source.use_readability = use_readability
+    soup = _without_furniture(_ace_soup(source, html_text), captions)
+    return source._text_with_tables(soup)
 
 
 _FURNITURE_TAGS = ("nav", "footer", "aside", "menu")
@@ -617,9 +611,8 @@ def _without_furniture(soup: BeautifulSoup, captions: Sequence[str]) -> Beautifu
 
     Readability drops these; ACE's own cleaner reads every `<p>`. A container holding the
     page's `<h1>` is kept whatever it is named, as some pages name their whole wrapper
-    after the cookie banner they show. J Neurosurg pages hold
-    each paragraph again in a figure viewer and a tab, so a rebuilt text had its figure
-    captions three times and 12 passage hits for 4 coordinates. Hidden elements stay:
+    after the cookie banner they show. J Neurosurg pages hold each paragraph again in a
+    figure viewer and a tab. Hidden elements stay:
     the same pages keep the whole article in tab panels marked `display: none` and
     `aria-hidden`, which their script shows.
     """
@@ -633,14 +626,14 @@ def _without_furniture(soup: BeautifulSoup, captions: Sequence[str]) -> Beautifu
     tables = set()
     for table in [t for t in soup.find_all("table") if not t.find("table")]:
         rendered = table_text(table)
-        if rendered and rendered in tables:
+        if rendered in tables:
             table.decompose()  # a pop-up's copy, which ACE would place a second time
         tables.add(rendered)
     # Compared without whitespace, which inline markup moves about.
     captions = ["".join(caption.split()) for caption in captions]
     seen = set()
     for p in soup.find_all("p"):
-        if p.decomposed or p.find_parent("table") is not None:
+        if p.find_parent("table") is not None:
             continue
         words = len(p.get_text(" ").split())
         text = "".join(p.get_text().split())

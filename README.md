@@ -45,7 +45,7 @@ set `node_path` in the settings file or `INGEST_NODE_PATH` to the directory
 holding a newer node. With ACE enabled, `ingest run` stops at the start and
 names the node version it found when that node is too old.
 
-When the text readability keeps holds under 40% of the running prose of a page
+When the text readability keeps holds under half of the running prose of a page
 with two or more body section headings, ACE extraction builds it again two ways,
 without readability (each paragraph once, without the page's menus) and without
 its table placeholders, and keeps the way with the most prose. Such an extraction

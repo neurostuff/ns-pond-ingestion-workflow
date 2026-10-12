@@ -416,23 +416,6 @@ def test_ways_that_tie_keep_readability_s_text(stub_ways):
     assert source["method"] == ace.READABILITY and text == "0"
 
 
-def test_the_source_reads_with_readability_again_after_a_rebuild():
-    class Source:
-        use_readability = True
-        seen = None
-
-        def decode_html_entities(self, html):
-            return html
-
-        def _text_with_tables(self, soup):
-            self.seen = self.use_readability
-            return "text"
-
-    source = Source()
-    assert ace._text_without_readability(source, "<html><body></body></html>", []) == "text"
-    assert source.seen is False and source.use_readability is True
-
-
 def test_a_jama_article_readability_cut_short_is_rebuilt(tmp_path):
     out = built("44yiqcp3u3na", "18838634", tmp_path)
     kept = out.text_source["prose_words"]

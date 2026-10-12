@@ -79,8 +79,6 @@ class Result:
     edits: Optional[List[Tuple[int, int, int, int]]] = None
     #: The rebuilt text's caption spans (`ExtractedContent.figure_captions`).
     figure_captions: Optional[List[dict]] = None
-    #: Whether a caption of the rebuilt text holds a coordinate, which a remap cannot add.
-    captions_hold_coordinates: bool = False
     #: Whether the text the rebuild inserted holds a coordinate, which a remap cannot add.
     inserted_coordinates: bool = False
     #: ACE's `ExtractedContent.text_source` for the rebuilt text: None when its first text
@@ -132,9 +130,7 @@ def rebuild(job: Job, write: bool) -> Result:
         result.status = "failed: rebuilt text is empty"
         return result
     from ingestion_workflow.services.offsets import diff
-    from ingestion_workflow.services.prose_passages import find
 
-    result.captions_hold_coordinates = any(find(new[c["span"][0]:c["span"][1]]) for c in result.figure_captions or ())
     result.edits = [list(e) for e in diff(old, new).edits]
     result.inserted_coordinates = _inserts_coordinates(new, result.edits)
     if write:
@@ -336,13 +332,12 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     if result.figure_captions is not None:
         extract_payload["figure_captions"] = result.figure_captions
     summary = {**extraction.summary, "text_sha256": result.new_sha256}
-    if result.source == "ace":
-        # The payload says how the text now on disk was made, not the one it replaced.
-        extract_payload.pop("text_source", None)
-        summary.pop("text_from", None)
-        if result.text_source:
-            extract_payload["text_source"] = result.text_source
-            summary["text_from"] = text_from(result.text_source)
+    # The payload says how the text now on disk was made, not the one it replaced.
+    extract_payload.pop("text_source", None)
+    summary.pop("text_from", None)
+    if result.text_source:
+        extract_payload["text_source"] = result.text_source
+        summary["text_from"] = text_from(result.text_source)
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
                     fingerprint=extraction.fingerprint, payload=extract_payload, summary=summary)]
     for stage in ("references", "sync"):
@@ -363,12 +358,12 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
         return rows, "stale"
     moved["text_sha256"] = result.new_sha256
     # spans moved either way; coordinates the new text gained are found only by reading it again
-    read_again = result.captions_hold_coordinates or result.inserted_coordinates
+    read_again = result.inserted_coordinates
     rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
                         fingerprint=STALE if read_again else PassagesStage.fingerprint_for(
                             extraction, result.new_sha256),
                         payload=moved, summary=passages.summary))
-    return rows, "captions" if read_again else "remapped"
+    return rows, "read_again" if read_again else "remapped"
 
 
 def carry_all(catalog, results: Iterable[Result], *, write: bool, batch: int = BATCH) -> Counter:

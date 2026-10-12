@@ -95,7 +95,7 @@ Error text is grouped into a few categories (not open access, HTTP 403,
 source returned no article, code error, ...); the raw text is kept for the
 drill-down. Unrecognised text shows as `other: ...` with numbers and URLs
 masked. A download that served something other than the article is
-`bad page: paywall`, `error_page`, `empty_shell` or `citation_stub`, at download
+`bad page: paywall`, `error_page`, `empty_shell`, `citation_stub` or `abstract_only`, at download
 and at the extraction made from it.
 
 The page reconciles when every stage accounts for every article, and when the

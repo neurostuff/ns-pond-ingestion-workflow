@@ -736,7 +736,7 @@ def refresh_text(
         carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
                f"{carried['stale']:,} left for the passages stage to read again, "
-               f"{carried['captions']:,} remapped and read again for the coordinates their "
+               f"{carried['read_again']:,} remapped and read again for the coordinates their "
                f"new text holds")
     if corpus:
         # an old text two extractions shared, rebuilt two ways, names no single replacement

@@ -311,8 +311,6 @@ def _abstract_only(doc, prose: int) -> Optional[BadPage]:
 
 def _page_prose(doc) -> PageProse:
     body = doc.find("body")
-    if body is None:
-        return PageProse(0, 0, 0, 0, (), 0, 0)
     in_abstract = set()
     for el in body.iter():
         if not isinstance(el.tag, str):

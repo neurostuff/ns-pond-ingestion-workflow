@@ -261,9 +261,9 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
                                             "references": ["r1"]}]}),
         ])
         result = R.rebuild(R.Job(ref_id, "pubget", str(text), str(xml)), write=True)
-        assert result.status == "rewritten" and result.captions_hold_coordinates
+        assert result.status == "rewritten" and result.inserted_coordinates
         assert result.figure_captions == captions
-        assert R.carry_all(catalog, [result], write=True) == {"captions": 1}
+        assert R.carry_all(catalog, [result], write=True) == {"read_again": 1}
 
         rebuilt = text.read_text(encoding="utf-8")
         assert rebuilt == new

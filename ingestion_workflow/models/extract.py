@@ -109,7 +109,7 @@ class ExtractedContent:
     text_source: Optional[Dict[str, object]] = None
 
     def to_dict(self) -> Dict[str, object]:
-        return {
+        out = {
             "slug": self.slug,
             "source": self.source.value,
             "identifier": (self.identifier.to_dict() if self.identifier else None),
@@ -119,8 +119,10 @@ class ExtractedContent:
             "extracted_at": self.extracted_at.isoformat(),
             "error_message": self.error_message,
             "figure_captions": self.figure_captions,
-            **({"text_source": self.text_source} if self.text_source else {}),
         }
+        if self.text_source:
+            out["text_source"] = self.text_source
+        return out
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> "ExtractedContent":
