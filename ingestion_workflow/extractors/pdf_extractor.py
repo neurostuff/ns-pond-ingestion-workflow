@@ -505,14 +505,11 @@ class PdfExtractor(BaseExtractor):
         attempts: List[Dict[str, object]] = [dict(failure) for failure in lookup_failures]
         tried: List[Dict[str, object]] = []
         dead_urls = dead_urls or {}
-        cap = self.settings.pdf_max_attempts
 
         for candidate in candidates:
             attempt = candidate.describe()
             attempts.append(attempt)
             passed_over = self._passed_over(candidate, dead_urls)
-            if passed_over is None and len(tried) >= cap:
-                passed_over = ("not_tried", False, f"not tried: attempt cap of {cap} reached")
             if passed_over is not None:
                 outcome, permanent, reason = passed_over
                 attempt.update(outcome=outcome, permanent=permanent, reason=reason)

@@ -254,18 +254,6 @@ def test_an_open_access_landing_page_alone_is_recorded_not_fetched(stub, tmp_pat
     assert stub.fetched == []
 
 
-def test_the_attempt_cap_stops_fetching_and_records_the_rest(stub, tmp_path):
-    urls = [stub.serve(f"/repo/{n}.pdf", (403, b"no")) for n in range(5)]
-    stub.work("10.1234/a", *[_location(url, "repository") for url in urls])
-
-    result = _download(_extractor(tmp_path, pdf_max_attempts=3), "10.1234/a")[0]
-
-    assert stub.fetched == ["/repo/0.pdf", "/repo/1.pdf", "/repo/2.pdf"]
-    assert _outcomes(result) == ["http_error"] * 3 + ["not_tried"] * 2
-    assert result.url_attempts[3]["reason"] == "not tried: attempt cap of 3 reached"
-    assert "403" in result.error_message
-
-
 def test_a_429_is_waited_out_as_the_host_asks(stub, tmp_path):
     url = stub.serve(
         "/repo/a.pdf",

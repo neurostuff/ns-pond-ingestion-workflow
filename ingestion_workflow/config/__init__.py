@@ -625,14 +625,6 @@ class Settings(BaseSettings):
             "article, and this order breaks ties between equally ranked copies"
         ),
     )
-    pdf_max_attempts: int = Field(
-        default=5,
-        ge=1,
-        description=(
-            "Most candidate PDF URLs fetched per article in one run; the rest are "
-            "recorded as not tried and wait for a later run"
-        ),
-    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(

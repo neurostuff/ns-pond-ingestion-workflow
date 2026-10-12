@@ -29,7 +29,6 @@ europepmc_cache_root: null  # Optional override for the cache of XML fetched fro
 pdf_url_providers:  # Providers asked for open-access PDF URLs; every one is asked about every article, and this order breaks ties between equally ranked copies
   - semantic_scholar
   - openalex
-pdf_max_attempts: 5  # Most candidate PDF URLs fetched per article in one run; the rest are recorded as not tried and wait for a later run
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
 ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
 # node_path: "/path/to/node/bin"  # Directory holding node (or the binary), put first on PATH. ACE/readabilipy needs node >= 20.19. Also INGEST_NODE_PATH
