@@ -4,14 +4,16 @@ Two files per paper, beside `stage1/analyses.json` until pondie reads them:
 
     <study>/parse/parsed_paper.json      ParsedPaper: the text every offset points into,
                                          its tables row by row, the bibliography
-    <study>/parse/coordinate_parse.json  CoordinateParse: every analysis, keyed by the
-                                         cells it was read from
+    <study>/parse/coordinate_parse.json  CoordinateParse: every analysis, keyed by its
+                                         name, space and points
 
 Both are built as study_schema's generated models, so a field the contract does not
 name cannot be written. Nothing here decides anything new: the text is extract's,
 the meta-analysis verdict triage's, the readings and the split the analyses stage's,
-each set's role the roles stage's. What this adds is where each analysis sits in its
-table -- the model's points carry no row -- because the key is made from the cells.
+each set's role the roles stage's, except which role an analysis read twice keeps
+when its copies disagree (`_repeat`). What this adds is where each analysis was read
+-- its cells and text spans, since the model's points carry no row -- as citations;
+the key is made from what was read, never from where.
 """
 
 from __future__ import annotations
@@ -41,7 +43,7 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 5
+PAPER_PARSE_VERSION = 6
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -488,12 +490,13 @@ def coordinate_parse(
     was declared with in the parse, by `id()` of the stage analysis, so stage1
     carries the same declaration, keys included.
 
-    An analysis whose cells or characters cannot be found has no key, so it is left
-    out with its reason rather than given a made-up key. Two analyses with one key
-    (the same cells or spans and normalized name) are one reported analysis: the
-    first holds the points of both, and the second is noted as merged into it, or
-    omitted as a repeat when it adds no point. The reasons of a table's analyses are also the `reason` of its
-    TableReading; those of the text are the parse's `omitted_analyses`.
+    An analysis whose cells or characters cannot be found cannot cite where it was
+    read, so it is left out with its reason. Two analyses with one key (the same
+    normalized name, space and points) are one extracted analysis, read twice: the
+    first in parse order (the tables in `per_table`'s order, each table's analyses in
+    the analyses stage's order) is kept and the other is omitted as its repeat. The
+    reasons of a table's analyses are also the `reason` of its TableReading; those of
+    the text are the parse's `omitted_analyses`.
     """
     text = text if isinstance(text, _Text) else _Text(text)
     omitted: List[Omitted] = []
@@ -517,8 +520,8 @@ def coordinate_parse(
             (a.metadata or {}).get("source") == "prose" for a in table_analyses
         )
         if prose:
-            # Per name: two names never share a key, so one's copy of a repeated
-            # point must not move the other's.
+            # Per name: a point printed again goes to the same-named analysis's
+            # next copy, but a differently named analysis may cite the same one.
             taken: Dict[str, Set[Tuple[int, int]]] = {}
             built = (
                 _prose_analysis(
@@ -542,7 +545,7 @@ def coordinate_parse(
                 continue
             first = seen.get(analysis.key)
             if first is not None:
-                omitted.append(_merge(first, analysis))
+                omitted.append(_repeat(first, analysis))
                 continue
             seen[analysis.key] = analysis
             analyses.append(analysis)
@@ -579,71 +582,40 @@ def coordinate_parse(
     return parse, omitted
 
 
-def _role_of(analysis: pp.ParsedAnalysis) -> Dict[str, Any]:
-    return {
-        "role": analysis.role,
-        "anchor_kind": analysis.anchor_kind,
-        "from_prior_study": analysis.from_prior_study,
-        "role_source": analysis.role_source,
-    }
+#: What the roles stage decides for an analysis, all taken from one copy.
+_ROLE_FIELDS = (
+    "role", "anchor_kind", "from_prior_study", "prior_study_evidence", "role_confidence",
+    "role_source",
+)
 
 
-def _xyz(point: pp.ParsedPoint) -> Tuple[Any, ...]:
-    return (*point.coordinates, point.space)
+def _repeat(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
+    """The record omitting `other`, which repeats `first`, the kept analysis of its key.
 
-
-def _values(point: pp.ParsedPoint) -> List[Tuple[str, float]]:
-    return sorted((str(v.kind), v.value) for v in point.values or [])
-
-
-def _merge(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
-    """Add `other`'s points to `first`, which holds its key, and the record saying so.
-
-    A point at the same coordinates and space as one `first` has is the same point
-    and is not added twice, even when only its statistic values differ: `first`'s
-    stay, and the other values are written in the note. When no point is new,
-    `other` is a repeat and is omitted as one.
-
-    Entries of one key with different roles are still one analysis, but it must
-    not silently take one of the roles: the note carries `role_conflict` (both
-    roles and their sources) and the analysis is held for review.
+    Copies of one key whose roles differ are still one analysis. It is a result if
+    either copy is one, because a result missed costs more than an anchor or a
+    reference taken for a result; otherwise it keeps the first copy's role. The
+    reason names both roles and the one kept.
     """
-    what = "cells" if other.origin == "table" else "spans"
-    have = {_xyz(p): p for p in first.points}
-    new = [p for p in other.points if _xyz(p) not in have]
-    differing = [
-        f"{p.coordinates} kept {_values(have[_xyz(p)])}, dropped {_values(p)}"
-        for p in other.points
-        if _xyz(p) in have and _values(p) != _values(have[_xyz(p)])
-    ]
-    values = f"; statistic values differ at the same point: {'; '.join(differing)}" if differing else ""
-    mine, theirs = _role_of(first), _role_of(other)
-    conflict = None
     role = ""
-    if (mine["role"], mine["anchor_kind"], mine["from_prior_study"]) != (
-        theirs["role"], theirs["anchor_kind"], theirs["from_prior_study"],
+    if (first.role, first.anchor_kind, first.from_prior_study) != (
+        other.role, other.anchor_kind, other.from_prior_study,
     ):
-        conflict = {"key": first.key, "roles": [mine, theirs]}
+        mine = f"{first.role!r} ({first.role_source})"
+        if other.role == "result" and first.role != "result":
+            for name in _ROLE_FIELDS:
+                setattr(first, name, getattr(other, name))
         role = (
-            f"; role conflict, held for review: {mine['role']!r} ({mine['role_source']}) "
-            f"and {theirs['role']!r} ({theirs['role_source']})"
+            f"; the copies' roles differ: {mine} and {other.role!r} ({other.role_source}), "
+            f"kept {first.role!r}"
         )
-    if not new:
-        reason = f"a repeat of {first.key} ({first.name!r}): the same {what}, name and points"
-        return Omitted(
-            other.name, other.table_id, reason + values + role, _span_pairs(other),
-            role_conflict=conflict,
-        )
-    first.points = [*first.points, *new]
-    first.statistic = _statistic(first.points)
+    where = f"table {first.table_id}" if first.table_id else "the text"
     return Omitted(
         other.name,
         other.table_id,
-        f"merged into {first.key} ({first.name!r}): the same {what} and name; "
-        f"its {len(new)} other point(s) added{values}{role}",
+        f"it repeats a kept analysis (the same key): {first.key}, {first.name!r} "
+        f"read from {where}{role}",
         _span_pairs(other),
-        kept=True,
-        role_conflict=conflict,
     )
 
 
@@ -731,8 +703,6 @@ class Omitted:
     spans: Sequence[Tuple[int, int]] = ()
     #: A note on a kept analysis: in the sync summary, not among the parse's omissions.
     kept: bool = False
-    #: Both roles of entries that share a key: the merged analysis is held for review.
-    role_conflict: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
@@ -787,7 +757,6 @@ def _table_analyses(
                 roles,
                 origin="table",
                 table_id=table_id,
-                key=keys.table_key(table_id, cells, analysis.name),
                 cells=[pp.CellRef(row=r, column_group=g) for r, g in sorted(cells)],
             )
         )
@@ -942,14 +911,12 @@ def _prose_analysis(
     roles: _Roles,
     taken: Optional[Set[Tuple[int, int]]] = None,
 ) -> Optional[pp.ParsedAnalysis]:
-    """A text analysis, keyed by where its points are printed and by its name.
+    """A text analysis, its points placed at the characters that print them.
 
-    One sentence can state several analyses, and two of them can share their
-    points, so the name is part of the key. The passage is the fallback for an
-    analysis none of whose points can be found. `taken` holds the characters the
-    passage's earlier analyses' points were found at: a point printed again in
-    the passage goes to its next copy, as a repeated table point goes to the row
-    no other analysis took.
+    The passage is the fallback for an analysis none of whose points can be found.
+    `taken` holds the characters the passage's earlier analyses' points were found
+    at: a point printed again in the passage goes to its next copy, as a repeated
+    table point goes to the row no other analysis took.
     """
     taken = set() if taken is None else taken
     prose = inputs.prose or {}
@@ -992,7 +959,6 @@ def _prose_analysis(
             Omitted(analysis.name, None, "it names no passage of the parsed paper's text")
         )
         return None
-    key = keys.span_key("text", spans, analysis.name)
     points = [
         _point(c, collection, found=None, span=s)
         for c, s in zip(analysis.coordinates, point_spans)
@@ -1004,7 +970,6 @@ def _prose_analysis(
         roles,
         origin="text",
         table_id=None,
-        key=key,
         text_spans=[pp.TextSpan(start_char=a, end_char=b) for a, b in spans],
     )[0]
 
@@ -1019,7 +984,6 @@ def _analysis(
     *,
     origin,
     table_id,
-    key,
     cells=None,
     text_spans=None,
 ):
@@ -1027,8 +991,11 @@ def _analysis(
     if role is None:
         return None, False
     name = analysis.name
+    space = _space_value(collection.coordinate_space)
     built = pp.ParsedAnalysis(
-        key=key,
+        # The key is what was extracted, never where it was read, so both origins
+        # mint it here from the analysis's own name, space and points.
+        key=keys.analysis_key(name, space, points),
         cells=cells,
         text_spans=text_spans,
         origin=origin,
@@ -1036,7 +1003,7 @@ def _analysis(
         name=name,
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
-        coordinate_space=_space_value(collection.coordinate_space),
+        coordinate_space=space,
         **role,
         statistic=_statistic(points),
         points=points,
@@ -1208,11 +1175,6 @@ def write(
         "analyses": len(parse.analyses),
         **({"parse_omitted": left} if (left := [str(o) for o in omitted if not o.kept]) else {}),
         **({"parse_notes": notes} if (notes := [str(o) for o in omitted if o.kept]) else {}),
-        **(
-            {"held_for_review": held}
-            if (held := [o.role_conflict for o in omitted if o.role_conflict])
-            else {}
-        ),
     }
 
 
