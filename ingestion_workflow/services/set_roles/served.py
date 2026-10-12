@@ -9,8 +9,10 @@ text can begin, renormalised over the tokens that begin exactly one role.
 A set's answer that cannot be read (not JSON, a role outside the vocabulary,
 an anchor without its kind, no role-token alternatives) is `Unanswered`, with
 the reason: never a default role. A server that times out or answers 5xx is
-asked again; when it still does not answer, `RoleModelUnavailable` is raised,
-and the classifier stays `down` without asking again.
+asked again. When it still does not answer, the server's model listing is
+asked: if it lists the model, the server is up and fails on this input alone,
+which is that set's `Unanswered` reason; otherwise `RoleModelUnavailable` is
+raised, and the classifier stays `down` without asking again.
 """
 
 from __future__ import annotations
@@ -160,7 +162,8 @@ class ServedClassifier:
         client: Optional[httpx.Client] = None,
         sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
-        self.url = f"{endpoint.rstrip('/')}/chat/completions"
+        self.endpoint = endpoint.rstrip("/")
+        self.url = f"{self.endpoint}/chat/completions"
         self.model = model
         self.prompt = prompt
         #: The stage passes the source with the checkpoint's identity (`model_identity`).
@@ -189,6 +192,13 @@ class ServedClassifier:
             "logprobs": True,
             "top_logprobs": TOP_LOGPROBS,
         }
+
+    def _healthy(self) -> bool:
+        """Whether the server answers its model listing and lists this model."""
+        try:
+            return any(c.get("id") == self.model for c in served_models(self.endpoint))
+        except Exception:  # noqa: BLE001 - any failure to answer is an outage
+            return False
 
     @property
     def down(self) -> Optional[str]:
@@ -229,6 +239,12 @@ class ServedClassifier:
             if not isinstance(choice, Mapping):
                 return Unanswered(f"the response has no choice: {response.text[:200]!r}")
             return read_answer(choice, self.prompt)
+        if self._healthy():
+            # Up, and failing on this input every time: this set's failure, not an outage,
+            # so the articles after it are still read.
+            return Unanswered(
+                f"server error on this input after {self._attempts} tries: {last}"
+            )
         with self._lock:
             self._down = self._down or (
                 f"{self.model} at {self.url} did not answer in {self._attempts} tries: {last}"

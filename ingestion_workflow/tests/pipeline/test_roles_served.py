@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import socket
 import threading
 import time
@@ -206,6 +207,8 @@ class Stub:
         self.models = list(models)
         #: The cards `/v1/models` lists; by default one per name, as vLLM writes them.
         self.cards = None
+        #: False: the model listing answers 503 too, as a server that is down does.
+        self.healthy = True
         self.requests = []
         self.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
         stub = self
@@ -224,6 +227,9 @@ class Stub:
                 self.wfile.write(data)
 
             def do_GET(self):
+                if not stub.healthy:
+                    self._send(503, "down")
+                    return
                 cards = stub.cards or [{"id": m, "root": f"/models/{m}"} for m in stub.models]
                 self._send(200, {"data": cards})
 
@@ -339,6 +345,7 @@ def test_a_5xx_or_a_timeout_is_asked_again(stub):
 
 def test_a_server_that_never_answers_stops_the_run_and_is_not_asked_again(stub):
     stub.reply = lambda body: (503, "down")
+    stub.healthy = False
     classifier = _served(stub, attempts=3)
     with pytest.raises(RoleModelUnavailable, match="did not answer in 3 tries: HTTP 503"):
         classifier.predict(["x"])
@@ -450,11 +457,17 @@ def test_a_server_down_mid_run_leaves_every_article_pending_and_spends_no_retry(
     catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
                             payload=_tables("patients"), summary={"tables": 1})])
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-    stub.reply = lambda body: (503, "down")
+
+    def crashed(body):  # the server goes down after the plan listed the model
+        stub.healthy = False
+        return 503, "down"
+
+    stub.reply = crashed
     ctx = Context(settings, catalog)
     refs, ids = [ref, other], [ref.id, other.id]
 
     def plan(stage):
+        stub.healthy = True
         return stage.plan(ctx, refs, catalog.artifacts(ids, "roles"),
                           catalog.artifacts(ids, "analyses"))
 
@@ -662,3 +675,66 @@ def test_a_table_file_that_is_not_utf8_is_read_as_nu_v21_read_it(tmp_path):
                                             {"t2": tmp_path / "t2.html"})
     text = module.serialize(context)
     assert "[ROWS] Amygdala | 1 | 2 | 3" in text and "�" not in text
+
+
+def test_a_server_up_but_failing_on_one_input_fails_that_set_only(stub):
+    stub.reply = lambda body: ((500, "engine error") if "POISON" in str(body["messages"])
+                               else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    classifier = _served(stub, attempts=2)
+    poisoned, fine = classifier.predict(["POISON", "FINE"])
+    assert isinstance(poisoned, Unanswered)
+    assert poisoned.reason.startswith("server error on this input after 2 tries: HTTP 500")
+    assert isinstance(fine, Prediction) and classifier.down is None
+    (after,) = classifier.predict(["FINE"])
+    assert isinstance(after, Prediction)
+
+
+def test_an_article_the_server_always_fails_on_does_not_starve_the_rest(env, stub, monkeypatch):
+    settings, catalog, ref = env
+    other = catalog.register(Identifier(pmid="8"))
+    catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
+                            payload=_tables("fine"), summary={"tables": 1})])
+    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
+    stub.reply = lambda body: ((500, "engine error") if "[NAME] Lee" in str(body["messages"])
+                               else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    ctx = Context(settings, catalog)
+    stage = RolesStage(settings)
+    ids = [ref.id, other.id]
+    planned = stage.plan(ctx, [ref, other], catalog.artifacts(ids, "roles"),
+                         catalog.artifacts(ids, "analyses"))
+    poisoned, fine = stage.execute(ctx, planned.pending)
+    assert (poisoned.article_id, poisoned.status) == (ref.id, Status.FAILED)
+    assert "server error on this input" in poisoned.summary["unanswered"]["t2#1"]
+    assert (fine.article_id, fine.status) == (other.id, Status.OK)
+
+
+def test_a_weights_only_re_merge_into_the_same_path_is_a_new_source(env, stub, tmp_path):
+    settings, _, _ = env
+    merged = tmp_path / "merged"
+    merged.mkdir()
+    (merged / "config.json").write_text('{"a": 1}', encoding="utf-8")
+    weights = merged / "model-00001-of-00002.safetensors"
+    weights.write_bytes(b"w1")
+    stub.cards = [_card(merged)]
+    stage = RolesStage(settings)
+    before = stage.model_state("table")[0]
+    # Same architecture: same config, same size; only the shard's write time changes.
+    weights.write_bytes(b"w2")
+    stat = weights.stat()
+    os.utime(weights, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+    assert stage.model_state("table")[0] != before
+
+
+def test_a_table_file_that_cannot_be_serialised_is_recorded_with_why(tmp_path, monkeypatch):
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    (tmp_path / "t2.html").write_text(TABLE, encoding="utf-8")
+
+    def broken(markup, key):
+        raise RuntimeError("bad markup")
+
+    monkeypatch.setattr(CreateAnalysesService, "_serialise", staticmethod(broken))
+    unread = {}
+    list(set_contexts(_tables("patients"), [], None, {"t2": tmp_path / "t2.html"}, unread))
+    assert unread["t2"].startswith(
+        f"its raw table file cannot be read ({tmp_path / 't2.html'}): RuntimeError: bad markup")

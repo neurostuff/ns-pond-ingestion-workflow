@@ -97,7 +97,9 @@ includes each origin's model (and a served model's `result_threshold`), so confi
 retraining one makes the articles it reads stale.
 
 **Stopped, not failed.** A served model that still times out or answers 5xx after `attempts`
-tries stops the stage: nothing is recorded for the article it was reading or for the rest of the
+tries is asked for its model listing. If it lists the model, the server is up and fails on that
+input alone: the set is unanswered (`server error on this input after N tries: ...`), its article
+fails with that reason, and the stage goes on. If it does not, the server is down, and that stops the stage: nothing is recorded for the article it was reading or for the rest of the
 batch, and the plan blocks the run's remaining articles of that origin with the reason
 (`the table role model stopped answering in this run: ...`). No retry is used up; the next run
 plans them again, and blocks them at plan time while the server does not list the model.
