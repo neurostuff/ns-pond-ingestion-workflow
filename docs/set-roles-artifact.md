@@ -37,9 +37,16 @@ refuses a prompt version whose context versions this code no longer builds, and 
 does not list the model. Each set is one request; the role is the model's JSON answer, and its
 probability is read from the logprobs of the answer's first role token, renormalised over the
 tokens that begin exactly one role. `result_threshold` only adds results: a set whose probability
-of `result` reaches it is a result, whatever the answer; below it the answer stands. A served
-model gives no "not coordinates" answer and no prior-study flag: its sets always have a role, and
-`from_prior_study` is true for a `reference` only.
+of `result` reaches it is a result, whatever the answer; below it the answer stands. (So the
+deployed rule is "answered `result`, or p(result) >= t"; an evaluation that scores `p >= t` alone
+differs only on sets answered `result` below t.) A served model gives no "not coordinates" answer
+and no prior-study flag: its sets always have a role, and `from_prior_study` is true for a
+`reference` only.
+
+The served models' scores were measured on the experiments' training-row contexts. The contexts
+the stage builds from pipeline outputs differ from those rows in places (nu-v21's point
+statistics, cluster sizes and sub-peaks; prose statistics; re-cut passages), so the models are
+not validated on pipeline contexts until they are scored on them.
 
 ## Artifact
 
@@ -58,7 +65,7 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    | `from_prior_study` | bool | the coordinates come from another publication (always true for `reference`) |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
    | `role_confidence` | float | the classifier's probability for what it decided: the role's, or for a null role that the numbers are not coordinates. For a served model, the decided role's first-token probability: p(result) for a result |
-   | `role_source` | string | the model that decided, `name@version`; for a served model `<served model name>@<prompt version>` |
+   | `role_source` | string | the model that decided, `name@version`; for a served model `<served model name>@<prompt version>+<checkpoint digest>`, the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
    | `role_origin` | `table` or `text` | which of the two models read the set |
 
    The values of `role` and `anchor_kind` are study_schema's enums
@@ -69,10 +76,11 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    a set's position -- pondie's `table_id#ordinal` key -- never moves. `upload` leaves held sets
    out (`roles.uploaded_sets`); `space` and stage1 keep them.
 
-The summary is `{tables, sets, sets_by_origin, text_sets_without_local, roles, held, sources, role_values, input}`:
+The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, sources, role_values, input}`:
 `tables` counts collections that have an analysis (the selection gate reads it),
 `text_sets_without_local` counts prose sets whose points the classifier could not find in their
-passage, `roles` counts
+passage, `tables_without_text` names each table whose sets were read without its header and rows
+(no raw table file recorded, the file missing or unreadable), with the reason, `roles` counts
 sets by role (an anchor by its kind, a null role as `not_coordinates`), `sources` names each
 origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
 `from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the
@@ -88,9 +96,13 @@ only ever blocks: it never takes anything back from neurostore or ns-pond. The f
 includes each origin's model (and a served model's `result_threshold`), so configuring or
 retraining one makes the articles it reads stale.
 
-**Failed.** A served model that still times out or answers 5xx after `attempts` tries fails the
-article with the reason, and the rest of that run's articles of its origin fail at once with the
-same reason, retried on a later run under the usual backoff. A set whose answer cannot be read
+**Stopped, not failed.** A served model that still times out or answers 5xx after `attempts`
+tries stops the stage: nothing is recorded for the article it was reading or for the rest of the
+batch, and the plan blocks the run's remaining articles of that origin with the reason
+(`the table role model stopped answering in this run: ...`). No retry is used up; the next run
+plans them again, and blocks them at plan time while the server does not list the model.
+
+**Failed.** A set whose answer cannot be read
 (not JSON, a role outside the vocabulary, an anchor without its kind, no role-token logprobs, an
 input the server refused) is never given a role: the article fails, and its summary's
 `unanswered` names each such set (`table_id#index`) with its reason.

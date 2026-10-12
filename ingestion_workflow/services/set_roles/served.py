@@ -9,17 +9,19 @@ text can begin, renormalised over the tokens that begin exactly one role.
 A set's answer that cannot be read (not JSON, a role outside the vocabulary,
 an anchor without its kind, no role-token alternatives) is `Unanswered`, with
 the reason: never a default role. A server that times out or answers 5xx is
-asked again; when it still does not answer, `RoleModelUnavailable` stops the
-article, and the rest of the run fails fast instead of waiting on it again.
+asked again; when it still does not answer, `RoleModelUnavailable` is raised,
+and the classifier stays `down` without asking again.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import httpx
@@ -108,11 +110,37 @@ def read_answer(choice: Mapping[str, Any], prompt: RolePrompt) -> Union[Predicti
     )
 
 
-def served_models(endpoint: str, timeout: float = 5.0) -> List[str]:
-    """The model names an OpenAI-compatible server lists at `<endpoint>/models`."""
+def served_models(endpoint: str, timeout: float = 5.0) -> List[Dict[str, Any]]:
+    """The model cards an OpenAI-compatible server lists at `<endpoint>/models`."""
     response = httpx.get(f"{endpoint.rstrip('/')}/models", timeout=timeout)
     response.raise_for_status()
-    return [m.get("id") for m in (response.json() or {}).get("data") or []]
+    return [m for m in (response.json() or {}).get("data") or [] if isinstance(m, Mapping)]
+
+
+#: Files of a model directory whose bytes identify the checkpoint; weights are
+#: identified by name, size and modification time, which a re-merge changes.
+_IDENTITY_FILES = ("config.json", "model.safetensors.index.json")
+
+
+def model_identity(card: Mapping[str, Any]) -> str:
+    """A digest of the checkpoint a served model card names.
+
+    vLLM serves every checkpoint under whatever name it is given, so the name
+    alone does not change when the model is retrained; the card's `root` is the
+    path it loaded. When that path is readable here, its config, weights index
+    and weight files are part of the digest, so a re-merge into the same path counts.
+    """
+    root = str(card.get("root") or card.get("id") or "")
+    digest = hashlib.sha256(root.encode())
+    path = Path(root)
+    if root and path.is_dir():
+        for name in _IDENTITY_FILES:
+            if (path / name).is_file():
+                digest.update(name.encode() + hashlib.sha256((path / name).read_bytes()).digest())
+        for weights in sorted(path.glob("*.safetensors")):
+            stat = weights.stat()
+            digest.update(f"{weights.name}:{stat.st_size}:{stat.st_mtime_ns}".encode())
+    return digest.hexdigest()
 
 
 class ServedClassifier:
@@ -128,13 +156,15 @@ class ServedClassifier:
         timeout: float = 120.0,
         attempts: int = 3,
         workers: int = 16,
+        source: Optional[str] = None,
         client: Optional[httpx.Client] = None,
         sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
         self.url = f"{endpoint.rstrip('/')}/chat/completions"
         self.model = model
         self.prompt = prompt
-        self.source = f"{model}@{prompt.version}"
+        #: The stage passes the source with the checkpoint's identity (`model_identity`).
+        self.source = source or f"{model}@{prompt.version}"
         # Recall of results over precision: a likely result is a result.
         self.role_thresholds = (
             {} if result_threshold is None else {CoordinateRole.result.value: result_threshold}
@@ -159,6 +189,11 @@ class ServedClassifier:
             "logprobs": True,
             "top_logprobs": TOP_LOGPROBS,
         }
+
+    @property
+    def down(self) -> Optional[str]:
+        """Why the server is taken to be down for the rest of this run, or None."""
+        return self._down
 
     def predict(self, texts: Sequence[str]) -> List[Union[Prediction, Unanswered]]:
         with ThreadPoolExecutor(max_workers=min(self._workers, max(1, len(texts)))) as pool:

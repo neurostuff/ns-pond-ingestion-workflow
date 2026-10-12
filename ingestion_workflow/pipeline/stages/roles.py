@@ -27,7 +27,11 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
 from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
-from ingestion_workflow.services.set_roles.served import RoleModelUnavailable, served_models
+from ingestion_workflow.services.set_roles.served import (
+    RoleModelUnavailable,
+    model_identity,
+    served_models,
+)
 from ingestion_workflow.services.set_roles.served_prompt import prompt as role_prompt
 
 from ..plan import StagePlan, Work
@@ -79,26 +83,32 @@ def _span(sentence: str, text: Optional[str]) -> dict:
     return {"text": sentence}
 
 
-def _table_text(analysis: Mapping[str, Any], raw: Optional[Path] = None) -> Optional[str]:
-    """The table's serialisation, as nu-v21 read it; None when the raw table is gone.
+def _table_text(
+    analysis: Mapping[str, Any], raw: Optional[Path] = None
+) -> Tuple[str, Optional[str]]:
+    """(The table's serialisation, as nu-v21 read it; None) or ("", why it cannot be read).
 
     `raw` is the table's raw content in the extraction the analyses were read
-    from: the file nu-v21 was given. An extractor that records no path in the
-    table's metadata (pubget records its CSV and info files only) still has it there.
+    from: the file nu-v21 was given. Most extractors (pubget, ACE, PDF, PMC)
+    record no path in the table's metadata, so it is there that the file is found.
     """
     from ingestion_workflow.services.create_analyses import CreateAnalysesService  # noqa: PLC0415
 
     meta = (analysis.get("metadata") or {}).get("table_metadata") or {}
-    path = meta.get("raw_content_path") or meta.get("raw_xml_path") or raw
-    if not path or not Path(path).is_file():
-        return None
+    named = [p for p in (meta.get("raw_content_path"), meta.get("raw_xml_path"), raw) if p]
+    path = next((Path(p) for p in named if Path(p).is_file()), None)
+    if path is None:
+        return "", (f"its raw table file is missing ({named[-1]})" if named
+                    else "no raw table file is recorded for it")
     try:
-        return CreateAnalysesService._serialise(
-            Path(path).read_text(encoding="utf-8", errors="replace"), meta.get("table_id") or ""
-        )
-    except Exception as exc:  # noqa: BLE001 - the set is read without its rows
-        logger.debug("cannot serialise %s: %s", path, exc)
-        return None
+        # As nu-v21's `_read_table_content` read it.
+        try:
+            markup = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            markup = path.read_text(encoding="utf-8", errors="ignore")
+        return CreateAnalysesService._serialise(markup, meta.get("table_id") or ""), None
+    except Exception as exc:  # noqa: BLE001 - the set is read without its rows, and says so
+        return "", f"its raw table file cannot be read ({path}): {type(exc).__name__}: {exc}"
 
 
 def set_contexts(
@@ -106,10 +116,13 @@ def set_contexts(
     passages: Sequence[Mapping[str, Any]],
     text: Optional[str],
     raw_tables: Optional[Mapping[str, Path]] = None,
+    unread: Optional[Dict[str, str]] = None,
 ):
     """(table id, analysis index, origin, builder module, context) for every analysis.
 
     `raw_tables` is each table's raw content file by table id (`raw_tables`).
+    A table whose sets are read without its header and rows is put in
+    `unread`, by table id, with the reason.
     """
     for table_id, collection in (payload or {}).items():
         analyses = (collection or {}).get("analyses", [])
@@ -120,7 +133,11 @@ def set_contexts(
                 yield table_id, index, "text", prose_context, context
                 continue
             if table_text is None:
-                table_text = _table_text(analysis, (raw_tables or {}).get(table_id)) or ""
+                table_text, why = _table_text(analysis, (raw_tables or {}).get(table_id))
+                if why is not None and unread is not None:
+                    if raw_tables and table_id not in raw_tables:
+                        why += f"; the extraction has no table {table_id!r}"
+                    unread[table_id] = why
             yield (
                 table_id,
                 index,
@@ -142,6 +159,7 @@ def assign_roles(
     text: Optional[str],
     classifiers: Mapping[str, Any],
     raw_tables: Optional[Mapping[str, Path]] = None,
+    unread: Optional[Dict[str, str]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The payload with every analysis's role decided by its origin's classifier, and a summary.
 
@@ -149,13 +167,14 @@ def assign_roles(
     `RoleClassifier`). A set whose origin has none raises `MissingRoleModel`,
     and sets the classifier could not answer raise `UnansweredSets` with each
     one's reason: no set is given a role any other way. Each analysis gains
-    `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Sets of a
+    `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
+    without their header and rows go in `unread` (`set_contexts`). Sets of a
     role that is not uploaded -- a reference, a bare slice position (other),
     a localization, numbers that are not coordinates -- are held: they stay in
     the collection's `analyses`, in their place, so a set's position (pondie's
     `table_id#ordinal`) never moves, and upload leaves them out (`uploaded_sets`).
     """
-    found = list(set_contexts(payload, passages, text, raw_tables))
+    found = list(set_contexts(payload, passages, text, raw_tables, unread))
     by_origin: Dict[str, list] = collections.defaultdict(list)
     for item in found:
         by_origin[item[2]].append(item)
@@ -366,6 +385,9 @@ class RolesStage:
             if path:
                 return None, (f"both {setting} and {SERVED_SETTINGS[origin]} are set: "
                               f"the {name} role model is one or the other")
+            down = getattr(self._classifiers.get(origin), "down", None)
+            if down:
+                return None, f"the {name} role model stopped answering in this run: {down}"
             return self.served_state(origin, served)
         if not path:
             return None, f"no {name} role model is configured ({setting})"
@@ -388,9 +410,12 @@ class RolesStage:
             listed = served_models(served.endpoint)
         except Exception as exc:  # noqa: BLE001 - recorded as the articles' block
             return None, f"{where} cannot be reached: {type(exc).__name__}: {exc}"
-        if served.model not in listed:
-            return None, f"{where} is not served there (it serves {listed})"
-        return f"{served.model}@{prompt.version}", None
+        card = next((c for c in listed if c.get("id") == served.model), None)
+        if card is None:
+            names = [c.get("id") for c in listed]
+            return None, f"{where} is not served there (it serves {names})"
+        # The checkpoint, not only its served name: a retrained model is a new source.
+        return f"{served.model}@{prompt.version}+{model_identity(card)[:12]}", None
 
     def model_fingerprint(self, origin: str, state: Tuple[Optional[str], Optional[str]]) -> str:
         """One origin's part of the fingerprint: its context version and model, or its absence."""
@@ -409,10 +434,10 @@ class RolesStage:
                     source, reason = self.model_state(origin)
                     if source is None:
                         raise MissingRoleModel(reason)
-                    self._classifiers[origin] = self._load(origin)
+                    self._classifiers[origin] = self._load(origin, source)
         return self._classifiers[origin]
 
-    def _load(self, origin: str):
+    def _load(self, origin: str, source: str):
         served = self.served(origin)
         if served is not None:
             from ingestion_workflow.services.set_roles.served import (  # noqa: PLC0415
@@ -427,6 +452,7 @@ class RolesStage:
                 timeout=served.timeout,
                 attempts=served.attempts,
                 workers=served.workers,
+                source=source,
             )
         from ingestion_workflow.services.set_roles import (
             EncoderClassifier,  # noqa: PLC0415 - torch
@@ -566,14 +592,26 @@ class RolesStage:
                 )
                 triage = triaged.get(work.article_id, {}).get("")
                 text = _article_text(triage, extractions.get(work.article_id, {}), ctx)
+                unread: Dict[str, str] = {}
                 assigned, summary = assign_roles(
                     payload,
                     _read_passages(ctx, read_payload),
                     text,
                     _Classifiers(self),
                     raw_tables(triage, extractions.get(work.article_id, {}), ctx),
+                    unread,
                 )
-            except (MissingRoleModel, RoleModelUnavailable) as exc:
+                if unread:
+                    # Its sets were read without the table's header and rows: say which, and why.
+                    summary["tables_without_text"] = unread
+            except RoleModelUnavailable as exc:
+                # An outage is not the article's failure: recording one would spend
+                # every remaining article's retries. This article and the rest stay
+                # pending, and the plan blocks them until the server answers again.
+                logger.error("roles stopped: %s; %d article(s) left pending", exc,
+                             len(works) - works.index(work))
+                return
+            except MissingRoleModel as exc:
                 yield Outcome.failure(
                     work.article_id,
                     self.name,

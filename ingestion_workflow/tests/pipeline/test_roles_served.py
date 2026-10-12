@@ -204,6 +204,8 @@ class Stub:
 
     def __init__(self, models=(MODEL,)):
         self.models = list(models)
+        #: The cards `/v1/models` lists; by default one per name, as vLLM writes them.
+        self.cards = None
         self.requests = []
         self.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
         stub = self
@@ -222,7 +224,8 @@ class Stub:
                 self.wfile.write(data)
 
             def do_GET(self):
-                self._send(200, {"data": [{"id": m} for m in stub.models]})
+                cards = stub.cards or [{"id": m, "root": f"/models/{m}"} for m in stub.models]
+                self._send(200, {"data": cards})
 
             def do_POST(self):
                 body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
@@ -378,11 +381,12 @@ def _run(stage, settings, catalog, ref):
 def test_a_served_model_listed_by_its_server_decides_every_set(env, stub):
     settings, catalog, ref = env
     stage = RolesStage(settings)
-    assert stage.model_state("table") == (f"{MODEL}@v5", None)
+    source, reason = stage.model_state("table")
+    assert reason is None and source.startswith(f"{MODEL}@v5+")
     plan, (done,) = _run(stage, settings, catalog, ref)
     assert (plan.blocked, done.status) == (0, Status.OK)
     roles = [a["metadata"]["set_role"] for a in done.payload["t2"]["analyses"]]
-    assert {r["role_source"] for r in roles} == {f"{MODEL}@v5"}
+    assert {r["role_source"] for r in roles} == {source}
     assert [r["role_confidence"] for r in roles] == [pytest.approx(0.75)] * 2
 
 
@@ -438,15 +442,79 @@ def test_an_unreadable_answer_fails_the_article_with_each_set_s_reason(env, stub
     assert "t2#1: the answer is not JSON" in failed.error
 
 
-def test_a_server_down_after_planning_fails_the_article_with_the_reason(env, stub, monkeypatch):
+def test_a_server_down_mid_run_leaves_every_article_pending_and_spends_no_retry(
+    env, stub, monkeypatch
+):
     settings, catalog, ref = env
+    other = catalog.register(Identifier(pmid="8"))
+    catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
+                            payload=_tables("patients"), summary={"tables": 1})])
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-    stub.reply = lambda body: (500, "boom")
-    settings.role_served_table.workers = 1  # one set at a time: the count below is exact
-    _, (failed,) = _run(RolesStage(settings), settings, catalog, ref)
-    assert failed.status is Status.FAILED
-    assert "did not answer in 2 tries: HTTP 500" in failed.error
-    assert len(stub.requests) == 2
+    stub.reply = lambda body: (503, "down")
+    ctx = Context(settings, catalog)
+    refs, ids = [ref, other], [ref.id, other.id]
+
+    def plan(stage):
+        return stage.plan(ctx, refs, catalog.artifacts(ids, "roles"),
+                          catalog.artifacts(ids, "analyses"))
+
+    for _ in range(ctx.max_attempts + 1):
+        stage = RolesStage(settings)
+        planned = plan(stage)
+        assert len(planned.pending) == 2
+        outcomes = list(stage.execute(ctx, planned.pending))
+        assert outcomes == []
+        catalog.record(outcomes)
+        # The rest of the run is blocked with the reason, not attempted.
+        again = plan(stage)
+        assert (again.blocked, again.pending) == (2, [])
+        (said,) = again.reasons
+        assert "stopped answering in this run" in said and "HTTP 503" in said
+    assert catalog.attempt_counts(ids, "roles", "") in ({}, {i: (0, None) for i in ids})
+    stub.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
+    stage = RolesStage(settings)
+    planned = plan(stage)
+    assert (len(planned.pending), planned.permanent) == (2, 0)
+    assert {o.status for o in stage.execute(ctx, planned.pending)} == {Status.OK}
+
+
+def _card(root):
+    return {"id": MODEL, "object": "model", "root": str(root)}
+
+
+def test_a_retrained_model_under_the_same_name_is_a_new_source(env, stub, tmp_path):
+    settings, _, _ = env
+    merged = tmp_path / "merged"
+    merged.mkdir()
+    (merged / "config.json").write_text('{"a": 1}', encoding="utf-8")
+    (merged / "model.safetensors").write_bytes(b"w1")
+    stub.cards = [_card(merged)]
+    stage = RolesStage(settings)
+    first = stage.model_state("table")
+    source = first[0]
+    assert source.startswith(f"{MODEL}@v5+") and first[1] is None
+    fingerprint = stage.model_fingerprint("table", first)
+    # Merged again into the same path: its config and weights change.
+    (merged / "config.json").write_text('{"a": 2}', encoding="utf-8")
+    second = stage.model_state("table")
+    assert second[0] != source
+    assert stage.model_fingerprint("table", second) != fingerprint
+    # Another checkpoint served under the same name.
+    stub.cards = [_card(tmp_path / "elsewhere")]
+    third = stage.model_state("table")
+    assert third[0] not in (source, second[0])
+    stub.cards = [_card(tmp_path / "elsewhere")]
+    assert stage.model_state("table") == third
+
+
+def test_the_role_source_recorded_is_the_checkpoint_s(env, stub, tmp_path):
+    settings, catalog, ref = env
+    stub.cards = [_card(tmp_path / "ckpt-a")]
+    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
+    source = done.payload["t2"]["analyses"][0]["metadata"]["set_role"]["role_source"]
+    assert source == RolesStage(settings).model_state("table")[0]
+    stub.cards = [_card(tmp_path / "ckpt-b")]
+    assert RolesStage(settings).model_state("table")[0] != source
 
 
 # --------------------------------------------------------------------------- the set's table
@@ -518,3 +586,79 @@ def test_the_stage_reads_each_table_from_the_extraction_triage_judged(env, stub,
     assert done.status is Status.OK
     asked = [b["messages"][0]["content"] for b in stub.requests]
     assert len(asked) == 2 and all("[ROWS] Amygdala | 1 | 2 | 3" in a for a in asked)
+
+
+def test_a_probability_equal_to_the_threshold_is_a_result():
+    anchor = Prediction(None, _probs(result=0.25, anchor=0.75), {"roi": 1.0}, None,
+                        answer="anchor", answer_kind="roi")
+    assert decide(anchor, source="m", origin="table", role_thresholds={"result": 0.25}).role == (
+        "result")
+
+
+def test_a_served_prose_model_trained_on_other_prose_contexts_is_refused(env, monkeypatch):
+    settings, _, _ = env
+    settings.prose_model = "nu-prose"
+    settings.role_served_prose = settings.role_served_table.model_copy()
+    for versions in ({"table": 2, "text": 3}, {"table": 2}):
+        stale = served_prompt.RolePrompt("v5", "x", context_versions=versions)
+        monkeypatch.setitem(served_prompt.PROMPTS, "v5", stale)
+        stage = RolesStage(settings)
+        assert stage.model_state("table")[1] is None
+        source, reason = stage.model_state("text")
+        assert source is None
+        assert f"trained on text context version {versions.get('text')}; this code builds 4" in (
+            reason)
+
+
+@pytest.mark.parametrize("content, alternatives", [
+    ("{}", RESULT_LIKELY),
+    ('{"role": null}', RESULT_LIKELY),
+    # Every alternative at the role token begins two roles, or none.
+    ('{"role": "result"}', {"re": math.log(0.7), '"': math.log(0.3)}),
+])
+def test_a_missing_role_or_role_probability_is_never_filled_in(stub, content, alternatives):
+    stub.reply = lambda body: (200, _choice(content, alternatives))
+    (answer,) = _served(stub).predict(["x"])
+    assert isinstance(answer, Unanswered)
+
+
+def test_every_table_read_without_its_header_and_rows_is_recorded_with_why(tmp_path):
+    (tmp_path / "t2.html").write_text(TABLE, encoding="utf-8")
+    payload = {
+        "t2": _tables("stale path")["t2"],
+        "t3": _tables("gone")["t2"],
+        "t4": _tables("never recorded")["t2"],
+    }
+    payload["t2"]["analyses"][0]["metadata"]["table_metadata"]["raw_content_path"] = str(
+        tmp_path / "moved.html")
+    raw = {"t2": tmp_path / "t2.html", "t3": tmp_path / "gone.html"}
+    backend = FakeBackend({"stale path": ("result", _probs(result=1.0)),
+                           "gone": ("result", _probs(result=1.0)),
+                           "never recorded": ("result", _probs(result=1.0))})
+    unread = {}
+    _, summary = assign_roles(payload, [], None, {"table": backend}, raw, unread)
+    # A stale path in the metadata does not hide the extraction's file.
+    assert "[ROWS] Amygdala | 1 | 2 | 3" in backend.seen[0]
+    assert unread == {
+        "t3": f"its raw table file is missing ({tmp_path / 'gone.html'})",
+        "t4": "no raw table file is recorded for it; the extraction has no table 't4'",
+    }
+    unread = {}
+    assign_roles(_tables("never recorded"), [], None, {"table": backend}, None, unread)
+    assert unread == {"t2": "no raw table file is recorded for it"}
+
+
+def test_the_stage_records_each_table_it_read_without_text(env):
+    settings, catalog, ref = env
+    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
+    assert done.status is Status.OK
+    assert done.summary["tables_without_text"] == {"t2": "no raw table file is recorded for it"}
+
+
+def test_a_table_file_that_is_not_utf8_is_read_as_nu_v21_read_it(tmp_path):
+    # nu-v21's reader drops undecodable bytes rather than replacing them.
+    (tmp_path / "t2.html").write_bytes(TABLE.replace("Amygdala", "Amygdala\xe9").encode("latin-1"))
+    ((*_, module, context),) = set_contexts(_tables("patients"), [], None,
+                                            {"t2": tmp_path / "t2.html"})
+    text = module.serialize(context)
+    assert "[ROWS] Amygdala | 1 | 2 | 3" in text and "�" not in text
