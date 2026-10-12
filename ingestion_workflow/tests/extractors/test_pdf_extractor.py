@@ -11,6 +11,7 @@ from ingestion_workflow.extractors.docling_convert import (
     normalize_text_tokens,
 )
 from ingestion_workflow.extractors.pdf_extractor import (
+    PdfCandidate,
     PdfExtractor,
     _has_suspect_numerics,
     _merge_split_coordinate_columns,
@@ -57,6 +58,11 @@ class _FakeSession:
         return self.responses[url]
 
 
+def _candidates(slug: str, url: str, location_type: str = "repository"):
+    """What `_resolve_pdf_candidates` returns for one article with one URL."""
+    return {slug: [PdfCandidate(url=url, provider="openalex", location_type=location_type)]}, {}
+
+
 def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/has-pdf")])
     session = _FakeSession({"https://example.org/a.pdf": _FakeResponse(MINIMAL_PDF)})
@@ -64,8 +70,8 @@ def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
 
     monkeypatch.setattr(
         PdfExtractor,
-        "_resolve_pdf_urls",
-        lambda self, ids: {"10-1234-has-pdf": "https://example.org/a.pdf"},
+        "_resolve_pdf_candidates",
+        lambda self, ids: _candidates("10-1234-has-pdf", "https://example.org/a.pdf"),
     )
 
     results = extractor.download(identifiers)
@@ -77,17 +83,20 @@ def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
     assert len(result.files) == 1
     assert result.files[0].file_type is FileType.PDF
     assert result.files[0].file_path.read_bytes() == MINIMAL_PDF
+    assert [a["outcome"] for a in result.attempts] == ["pdf"]
 
 
 def test_download_fails_without_a_pdf_url(monkeypatch, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/no-pdf")])
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=_FakeSession({}))
-    monkeypatch.setattr(PdfExtractor, "_resolve_pdf_urls", lambda self, ids: {})
+    session = _FakeSession({})
+    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
+    monkeypatch.setattr(PdfExtractor, "_resolve_pdf_candidates", lambda self, ids: ({}, {}))
 
     result = extractor.download(identifiers)[0]
 
     assert not result.success
     assert "No open-access PDF URL" in result.error_message
+    assert session.requested == []
 
 
 def test_download_rejects_non_pdf_payloads(monkeypatch, tmp_path):
@@ -99,62 +108,82 @@ def test_download_rejects_non_pdf_payloads(monkeypatch, tmp_path):
     extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
     monkeypatch.setattr(
         PdfExtractor,
-        "_resolve_pdf_urls",
-        lambda self, ids: {"10-1234-landing-page": "https://example.org/landing"},
+        "_resolve_pdf_candidates",
+        lambda self, ids: _candidates(
+            "10-1234-landing-page", "https://example.org/landing", "publisher"
+        ),
     )
 
     result = extractor.download(identifiers)[0]
 
     assert not result.success
     assert "not a PDF" in result.error_message
+    assert [a["outcome"] for a in result.attempts] == ["not_pdf"]
 
 
-def test_resolve_pdf_urls_falls_back_to_next_provider(monkeypatch, tmp_path):
+def test_resolve_pdf_candidates_asks_every_provider_about_every_article(monkeypatch, tmp_path):
     identifiers = Identifiers(
         [Identifier(doi="10.1234/from-s2"), Identifier(doi="10.1234/from-openalex")]
     )
     extractor = PdfExtractor(settings=_settings(tmp_path))
+    seen: dict[str, list[str]] = {}
 
+    def provider(name, answers):
+        def ask(self, ids):
+            seen[name] = [identifier.slug for identifier in ids]
+            return answers
+        return ask
+
+    s2 = PdfCandidate("https://example.org/s2.pdf", "semantic_scholar", "unknown")
+    repo = PdfCandidate("https://repo.example.org/a.pdf", "openalex", "repository")
+    other = PdfCandidate("https://example.org/oa.pdf", "openalex", "publisher")
     monkeypatch.setattr(
         PdfExtractor,
-        "_semantic_scholar_pdf_urls",
-        lambda self, ids: {"10-1234-from-s2": "https://example.org/s2.pdf"},
+        "_semantic_scholar_pdf_candidates",
+        provider("s2", {"10-1234-from-s2": [s2]}),
+    )
+    monkeypatch.setattr(
+        PdfExtractor,
+        "_openalex_pdf_candidates",
+        provider("openalex", {"10-1234-from-s2": [repo], "10-1234-from-openalex": [other]}),
     )
 
-    seen_by_openalex: list[list[str]] = []
+    candidates, failures = extractor._resolve_pdf_candidates(identifiers)
 
-    def fake_openalex(self, ids):
-        seen_by_openalex.append([identifier.slug for identifier in ids])
-        return {"10-1234-from-openalex": "https://example.org/oa.pdf"}
-
-    monkeypatch.setattr(PdfExtractor, "_openalex_pdf_urls", fake_openalex)
-
-    urls = extractor._resolve_pdf_urls(identifiers)
-
-    assert urls == {
-        "10-1234-from-s2": "https://example.org/s2.pdf",
-        "10-1234-from-openalex": "https://example.org/oa.pdf",
+    # OpenAlex is asked about the article Semantic Scholar answered too, and its
+    # repository copy goes ahead of Semantic Scholar's URL.
+    assert seen == {
+        "s2": ["10-1234-from-s2", "10-1234-from-openalex"],
+        "openalex": ["10-1234-from-s2", "10-1234-from-openalex"],
     }
-    # OpenAlex is only asked about what Semantic Scholar could not answer.
-    assert seen_by_openalex == [["10-1234-from-openalex"]]
+    assert candidates == {"10-1234-from-s2": [repo, s2], "10-1234-from-openalex": [other]}
+    assert failures == {}
 
 
-def test_resolve_pdf_urls_survives_a_failing_provider(monkeypatch, tmp_path):
+def test_resolve_pdf_candidates_survives_a_failing_provider(monkeypatch, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/x")])
     extractor = PdfExtractor(settings=_settings(tmp_path))
 
     def boom(self, ids):
         raise RuntimeError("provider is down")
 
-    monkeypatch.setattr(PdfExtractor, "_semantic_scholar_pdf_urls", boom)
+    oa = PdfCandidate("https://example.org/oa.pdf", "openalex", "publisher")
+    monkeypatch.setattr(PdfExtractor, "_semantic_scholar_pdf_candidates", boom)
     monkeypatch.setattr(
-        PdfExtractor,
-        "_openalex_pdf_urls",
-        lambda self, ids: {"10-1234-x": "https://example.org/oa.pdf"},
+        PdfExtractor, "_openalex_pdf_candidates", lambda self, ids: {"10-1234-x": [oa]}
     )
 
-    assert extractor._resolve_pdf_urls(identifiers) == {
-        "10-1234-x": "https://example.org/oa.pdf"
+    candidates, failures = extractor._resolve_pdf_candidates(identifiers)
+
+    assert candidates == {"10-1234-x": [oa]}
+    assert failures == {
+        "10-1234-x": [
+            {
+                "provider": "semantic_scholar",
+                "outcome": "lookup_failed",
+                "reason": "semantic_scholar lookup failed: provider is down",
+            }
+        ]
     }
 
 
