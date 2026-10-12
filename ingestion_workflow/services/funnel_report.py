@@ -109,6 +109,16 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("never run on the catalog", "this stage has not run on any article yet"),
     (HELD_FOR_REVIEW, "the study is in a studyset, so the copy already uploaded stays"),
     (NO_TEXT, "no extractor found text in the download"),
+    ("ingest refresh-text", "older extractions record no text hash; `ingest refresh-text` "
+                            "records it"),
+    ("is not_attempted", "made before its input stage was required, and that stage has "
+                         "never run"),
+    ("is stale", "its input is itself a record left from before"),
+    ("is pending", "its input waits to run again, so this record predates it"),
+    ("is filtered", "its input now holds nothing for it"),
+    ("is refused", "its input came from a page that is not the article"),
+    ("is failed", "its input has failed since"),
+    ("is blocked", "its input dropped out at an earlier stage"),
 )
 
 #: A stage that runs per source keeps one artifact per source; the article's
@@ -118,11 +128,45 @@ _RANK = {"ok": 0, "failed": 1, "permanent": 2, "skipped": 3}
 #: Triage waits for metadata to have been attempted, not to have succeeded
 #: (`TriageStage.plan`): plenty of articles have no metadata to find.
 _INPUT_ON_ATTEMPT = {"triage"}
+#: States of an input that has not been attempted, which such a stage waits on.
+_NOT_TRIED = (BLOCKED, PENDING, NOT_ATTEMPTED, STALE, UNACCOUNTED)
 
 #: Stages that refuse text made from a downloaded page that is not the article,
 #: and the stage whose artifact names that text's source (`read_from_bad_page`
-#: in the prose, resolve and sync plans).
-_READS_TEXT = {"prose": "passages", "resolve": "prose", "sync": "prose"}
+#: in the prose and sync plans). Resolve checks it too, but on the prose's
+#: source, which is the passages' source prose already refused on.
+_READS_TEXT = {"prose": "passages", "sync": "prose"}
+
+#: Inputs a stage's fingerprint reads besides its declared parent
+#: (`fingerprint_for` in each stage), for the trace's "built from".
+_SIDE_INPUTS = {"triage": ("extract",), "prose": ("metadata",), "resolve": ("analyses",)}
+
+#: Which part of a reason joined from several sources ("x + y") names the
+#: article's loss, first match wins: our own errors, which a fix here clears;
+#: then ones a retry may clear; then the source refusing; then the source not
+#: having the article. The flow groups reasons by it and lists the joins under it.
+_PRIMARY = ("bad page", "code error", "node too old for readabilipy", "database error",
+            "ACE scrape invalid", "ACE could not identify the source", "PDF conversion failed",
+            "XML parse error", "model answer unreadable", "file or payload missing",
+            "some passages failed", "rate limited", "timeout", "connection error", "HTTP 5xx",
+            "HTTP 403 forbidden", "HTTP 4xx other", "HTTP 404 not found", "not a PDF",
+            "not open access", "source returned no article", "no metadata found")
+_ORIGIN_PREFIX = re.compile(r"^((?:[a-z_]+ (?:%s): )*)" % "|".join(STATES))
+
+
+def reason_group(reason: str) -> str:
+    """The reason a joined reason is grouped under: its origin prefix ("download
+    failed: ") and its primary part, without a leftover record's note."""
+    main = reason.partition("; leftover ")[0]
+    prefix = _ORIGIN_PREFIX.match(main).group(1)
+    parts = main[len(prefix):].split(" + ")
+    if len(parts) == 1:
+        return main
+
+    def rank(part: str) -> int:
+        return next((i for i, p in enumerate(_PRIMARY) if part.startswith(p)), len(_PRIMARY))
+
+    return prefix + min(parts, key=rank)
 
 #: A stage whose input can pass while holding nothing for it to read, and the
 #: count on the input's summary that says so. Prose answers an article with no
@@ -230,6 +274,7 @@ class _Row:
     retracted: object
     bad_page: Optional[str]
     passages: object
+    hashed: object
 
 
 @dataclass
@@ -308,8 +353,7 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
         else:
             before = out[node.upstream]
             entered = before.state == PASSED or (
-                node.name in _INPUT_ON_ATTEMPT and before.state not in
-                (BLOCKED, PENDING, NOT_ATTEMPTED, STALE, UNACCOUNTED))
+                node.name in _INPUT_ON_ATTEMPT and before.state not in _NOT_TRIED)
             reads = _READS_TEXT.get(node.name)
             if (entered and reads and _from_bad_page(by_stage.get(reads), bad)
                     and not (node.name == "sync" and _retracted(by_stage.get("upload")))):
@@ -377,6 +421,10 @@ def _retracted(rows: Optional[List[_Row]]) -> bool:
 
 
 def _pending_reason(node: StageNode, by_stage: Dict[str, List[_Row]]) -> str:
+    if node.name == "passages" and not any(
+            r.status == "ok" and _truthy(r.hashed) for r in by_stage.get("extract", [])):
+        # PassagesStage.plan reads the text hash extract records, and blocks without it.
+        return "waits for `ingest refresh-text`: its extraction records no text hash"
     key = _EMPTY_INPUT.get(node.name)
     given = [r for r in by_stage.get(node.upstream or "", []) if r.status == "ok"]
     if key and given and getattr(given[0], key) in (0, "0"):
@@ -421,7 +469,7 @@ SELECT a.article_id, a.stage, a.source, a.status, substr(a.error, 1, 400),
        json_extract(a.summary, '$.reason'), json_extract(a.summary, '$.source'),
        json_extract(a.summary, '$.coordinates'), json_extract(a.summary, '$.analyses'),
        json_extract(a.summary, '$.retracted'), json_extract(a.summary, '$.bad_page'),
-       json_extract(a.summary, '$.passages')
+       json_extract(a.summary, '$.passages'), json_extract(a.summary, '$.text_sha256') IS NOT NULL
 FROM artifacts a"""
 _ROWS_SQL = _ROW_COLUMNS + " ORDER BY a.article_id"
 
@@ -510,36 +558,97 @@ class Funnel:
         return problems
 
 
-def flow(funnel: Funnel) -> List[Dict[str, Any]]:
-    """The upload path as a flow diagram, one step per stage: what came in (its input
-    passed), what passed on, what was left out and what waits, each by state and
-    reason, and the two checks the page shows. The CLI prints this; the page draws it,
-    and recounts it in the browser only to apply its filters."""
+def flow_stages(graph: Sequence[StageNode]) -> List[str]:
+    """Every stage that gates articles, in run order: the registry's default stages."""
+    from ingestion_workflow.pipeline.stages import OPT_IN_STAGES
+
+    return [node.name for node in graph if node.name not in OPT_IN_STAGES]
+
+
+def _grouped(pairs: Dict[Tuple[str, str], int], states: Sequence[str]) -> List[list]:
+    """[state, group, count, [[reason, count], ...]] for the given states, largest first."""
+    groups: Dict[Tuple[str, str], Dict[str, int]] = defaultdict(dict)
+    for (state, reason), n in pairs.items():
+        if state in states:
+            groups[(state, reason_group(reason))][reason] = n
+    out = [[state, group, sum(members.values()),
+            sorted(([r, n] for r, n in members.items()), key=lambda m: (-m[1], m[0]))]
+           for (state, group), members in groups.items()]
+    return sorted(out, key=lambda g: (-g[2], g[0], g[1]))
+
+
+def page_model(funnel: Funnel) -> Dict[str, Any]:
+    """Every number the page shows, counted once: per stage its state totals and its
+    reasons grouped, and the flow. The CLI prints the flow and the page draws all of
+    it; the page recounts in the browser only for a filter."""
     by: Dict[str, Dict[Tuple[str, str], int]] = defaultdict(lambda: defaultdict(int))
     for (stage, state, reason, *_), (count, _) in funnel.cells.items():
         by[stage][(state, reason)] += count
-    steps: List[Dict[str, Any]] = []
-    before: Optional[int] = None
-    for stage in trunk(funnel.graph):
-        cells = by[stage]
-
-        def picked(states: Sequence[str]) -> List[list]:
-            return sorted(([state, reason, n] for (state, reason), n in cells.items()
-                           if state in states), key=lambda item: (-item[2], item[0], item[1]))
-
-        came = funnel.total - sum(n for (state, _), n in cells.items()
-                                  if state in (BLOCKED, STALE))
-        passed = sum(n for (state, _), n in cells.items() if state == PASSED)
-        excluded, waiting = picked(EXCLUDED), picked(WAITING)
+    totals = {node.name: {state: sum(n for (s, _), n in by[node.name].items() if s == state)
+                          for state in STATES} for node in funnel.graph}
+    upstream = {node.name: node.upstream for node in funnel.graph}
+    steps = []
+    for stage in flow_stages(funnel.graph):
+        count = totals[stage]
+        came = funnel.total - count[BLOCKED] - count[STALE]
+        excluded, waiting = _grouped(by[stage], EXCLUDED), _grouped(by[stage], WAITING)
+        up = upstream[stage]
+        if up is None:
+            given = funnel.total
+        elif stage in _INPUT_ON_ATTEMPT:
+            given = funnel.total - sum(totals[up][s] for s in _NOT_TRIED)
+        else:
+            given = totals[up][PASSED]
         steps.append({
-            "stage": stage, "in": came, "passed": passed,
-            "excluded": excluded, "waiting": waiting,
-            "stale": sum(n for (state, _), n in cells.items() if state == STALE),
-            "adds_up": came == passed + sum(i[2] for i in excluded) + sum(i[2] for i in waiting),
-            "follows": before is None or came == before,
+            "stage": stage, "input": up, "in": came, "passed": count[PASSED],
+            "excluded": excluded, "waiting": waiting, "stale": _grouped(by[stage], (STALE,)),
+            "adds_up": came == count[PASSED] + sum(g[2] for g in excluded + waiting),
+            "follows": came == given,
         })
-        before = passed
-    return steps
+    return {"total": funnel.total, "totals": totals, "flow": steps,
+            "reasons": {node.name: _grouped(by[node.name], STATES) for node in funnel.graph}}
+
+
+def flow(funnel: Funnel) -> List[Dict[str, Any]]:
+    """The flow along the upload path, each reason listed on its own: `page_model`'s
+    steps for the trunk stages."""
+    chain = trunk(funnel.graph)
+    out = []
+    for step in page_model(funnel)["flow"]:
+        if step["stage"] not in chain:
+            continue
+
+        def flat(groups: List[list]) -> List[list]:
+            return sorted(([g[0], r, n] for g in groups for r, n in g[3]),
+                          key=lambda item: (-item[2], item[0], item[1]))
+
+        out.append({**step, "excluded": flat(step["excluded"]), "waiting": flat(step["waiting"]),
+                    "stale": sum(g[2] for g in step["stale"])})
+    return out
+
+
+def article_filter(*, sources: Sequence[str] = (), tried: Sequence[str] = (),
+                   judged: Sequence[str] = (), day_from: Optional[str] = None,
+                   day_to: Optional[str] = None) -> Callable[[str, str, str, str], bool]:
+    """The page's article filters, as one test on (downloaded, judged, day, tried):
+    each list matches any of its values, and the days bound the registration day."""
+    def ok(dl: str, txt: str, day: str, tr: str) -> bool:
+        return ((not sources or any(s in dl.split("+") for s in sources))
+                and (not tried or any(s in tr.split("+") for s in tried))
+                and (not judged or txt in judged)
+                and (not day_from or day >= day_from) and (not day_to or day <= day_to))
+    return ok
+
+
+def filter_funnel(funnel: Funnel, **filters) -> Funnel:
+    """The funnel of only the articles `article_filter(**filters)` keeps."""
+    ok = article_filter(**filters)
+    out = Funnel(graph=funnel.graph, samples=funnel.samples)
+    out.cells = {k: v for k, v in funnel.cells.items() if ok(k[3], k[4], k[5], k[6])}
+    out.sources = {k: v for k, v in funnel.sources.items() if ok(k[4], k[5], k[6], k[7])}
+    first = funnel.graph[0].name
+    out.total = sum(n for k, (n, _) in out.cells.items() if k[0] == first)
+    return out
 
 
 def _add(table: Dict[tuple, list], key: tuple, article_id: str, raw: str, samples: int) -> None:
@@ -639,7 +748,7 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
     cells = cell_rows(funnel.cells, ("stage", "state", "reason", "dl", "text", "day"))
     sources = cell_rows(funnel.sources,
                         ("stage", "source", "status", "reason", "dl", "text", "day"))
-    return {
+    out = {
         "catalog": catalog,
         "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "seconds": round(funnel.seconds, 1),
@@ -647,7 +756,11 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "samples": funnel.samples,
         "stages": [{"name": n.name, "upstream": n.upstream, "flag": n.flag} for n in funnel.graph],
         "prose": any(n.name == "prose" for n in funnel.graph),
-        "flow": flow(funnel),
+        "model": page_model(funnel),
+        "flow_stages": flow_stages(funnel.graph),
+        "on_attempt": sorted(_INPUT_ON_ATTEMPT),
+        "not_tried": _NOT_TRIED,
+        "side_inputs": _SIDE_INPUTS,
         "meanings": MEANINGS,
         "glossary": GLOSSARY,
         "excluded": EXCLUDED,
@@ -659,6 +772,8 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "cells": cells,
         "sources": sources,
     }
+    out["groups"] = [reason_group(r) for r in out["strings"].get("reason", [])]
+    return out
 
 
 def render_html(funnel: Funnel, catalog: str) -> str:
@@ -684,7 +799,8 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
                  sources: Sequence[str] = (), tried: Sequence[str] = (),
                  judged: Sequence[str] = (), day_from: Optional[str] = None,
                  day_to: Optional[str] = None, prose: Optional[bool] = None,
-                 by_source: Optional[str] = None) -> List[Tuple[str, str, str, str]]:
+                 by_source: Optional[str] = None,
+                 group: Optional[str] = None) -> List[Tuple[str, str, str, str]]:
     """Every article in one bucket, chosen as the page chooses it:
     (article_id, stage, state, reason).
 
@@ -694,14 +810,11 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
     any of their values; `day_from`/`day_to` bound the registration day. With
     `by_source`, the rows are that source's own download or extraction rows at
     `stage`, and `states` matches their status (ok, failed, permanent, skipped,
-    taken_back), as the page's source table does."""
+    taken_back), as the page's source table does. `group` matches a reason's
+    `reason_group`, as a clicked group in the flow does."""
     needle = (reason or "").lower()
-
-    def article_ok(dl: str, txt: str, day: str, tr: str) -> bool:
-        return ((not sources or any(s in dl.split("+") for s in sources))
-                and (not tried or any(s in tr.split("+") for s in tried))
-                and (not judged or txt in judged)
-                and (not day_from or day >= day_from) and (not day_to or day <= day_to))
+    article_ok = article_filter(sources=sources, tried=tried, judged=judged,
+                                day_from=day_from, day_to=day_to)
 
     def wanted(kind: str, key: tuple) -> bool:
         if (kind == "source") != (by_source is not None) or key[0] != stage:
@@ -714,6 +827,7 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
             _, status, rea, dl, txt, day, tr = key
         return ((not states or status in states)
                 and (exact_reason is None or rea == exact_reason) and needle in rea.lower()
+                and (group is None or reason_group(rea) == group)
                 and article_ok(dl, txt, day, tr))
 
     conn = open_readonly(catalog_root)
@@ -785,6 +899,46 @@ def _read_plan(plan, existing: Dict[str, Any]) -> Dict[str, Any]:
     return {"plan": "; ".join(said), "sources": sources}
 
 
+#: What the trace says when a stage's plan needs a payload to judge freshness.
+NEEDS_PAYLOAD = "not known without reading the payload: the trace never reads payloads"
+
+
+def _cannot_plan(exc: Exception) -> str:
+    """Why a stage's plan could not run, in words: the setting it asked for, if it named one."""
+    named = re.search(r"\bneeds ([a-z_]+)", str(exc))
+    if named:
+        return f"not known: this stage needs {named.group(1)} in the config to plan"
+    return "not known: this stage cannot plan with these settings"
+
+
+def _passages_from_rows(catalog: Catalog, article_id: str) -> Optional[Dict[str, Any]]:
+    """Passages' freshness from the catalog rows alone: its fingerprint is the
+    extraction it read and that extraction's recorded text hash
+    (`PassagesStage.fingerprint_for`); only finding the text file needs the payload."""
+    from ingestion_workflow.pipeline.stages.passages import PassagesStage
+
+    existing = catalog.artifacts([article_id], "passages").get(article_id, {}).get("")
+    if existing is None or not existing.ok:
+        return None
+    read = catalog.artifacts([article_id], "extract").get(article_id, {}).get(
+        existing.summary.get("source") or "")
+    if read is None or not read.ok:
+        return None
+    sha = read.summary.get("text_sha256")
+    if not sha:
+        return {"plan": "waits for `ingest refresh-text`: its extraction records no text hash"}
+    now = PassagesStage.fingerprint_for(read, sha)
+    if existing.fingerprint == now:
+        return {"plan": "fresh: its fingerprint matches the extraction it read and that "
+                        "text's recorded hash (the text file is not opened)"}
+    return {"plan": f"stale: built from fingerprint {existing.fingerprint[:12] or '(none)'}; "
+                    f"its extraction and text hash now give {now[:12]}, so it would rebuild"}
+
+
+#: Stages whose plan opens a payload, but whose freshness the rows alone tell.
+_METADATA_FRESHNESS = {"passages": _passages_from_rows}
+
+
 def _plan_one(catalog_root: Path | str, article_id: str, names: Sequence[str],
               settings) -> Dict[str, Dict[str, Any]]:
     """Each stage's own `plan()` for one article, run against the catalog read-only.
@@ -811,8 +965,12 @@ def _plan_one(catalog_root: Path | str, article_id: str, names: Sequence[str],
                 plan = _plan_batch(ctx, stage, [ref])
                 existing = catalog.artifacts([article_id], name).get(article_id, {})
                 out[name] = _read_plan(plan, existing)
-            except Exception as exc:  # report it, so one stage cannot hide the rest
-                out[name] = {"plan": f"not known: {type(exc).__name__}: {exc}"[:300]}
+            except PermissionError:
+                from_rows = _METADATA_FRESHNESS.get(name)
+                found = from_rows(catalog, article_id) if from_rows else None
+                out[name] = found or {"plan": NEEDS_PAYLOAD}
+            except Exception as exc:  # one stage that cannot plan must not hide the rest
+                out[name] = {"plan": _cannot_plan(exc)}
     finally:
         conn.close()
     return out
@@ -876,15 +1034,17 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
             if plan:
                 rec["freshness"] = plan.get("sources", {}).get(rec["source"], {}).get(
                     "freshness") or plan.get("plan", "")
-        upstream = records.get(node.upstream or "", [])
+        inputs = [node.upstream] if node.upstream else []
+        inputs += [i for i in _SIDE_INPUTS.get(node.name, ()) if i not in inputs]
+        upstream = [(i, u) for i in inputs for u in records.get(i, [])]
         stages.append({
             "stage": node.name, "input": node.upstream, "state": where.state,
             "reason": where.reason, "meaning": MEANINGS[where.state], "records": mine,
-            "built_from": [{"stage": node.upstream, "source": u["source"],
+            "built_from": [{"stage": i, "source": u["source"],
                             "status": u["status"], "fingerprint": u["fingerprint"],
                             "written": u["written"],
                             "newer": bool(mine) and u["written"] > max(r["written"] for r in mine)}
-                           for u in upstream],
+                           for i, u in upstream],
             "version": _versions(node.name),
             "plan": plan.get("plan", "") if plan else (
                 "" if settings is not None else "pass the pipeline's --config to check freshness"),
@@ -970,6 +1130,8 @@ button{font:inherit;padding:3px 10px}
 .box li{display:flex;flex-wrap:wrap;gap:0 8px;padding:2px 0;cursor:pointer;border-bottom:1px dotted var(--line)}
 .box li .n{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
 .box li .mean{flex-basis:100%;color:var(--muted);font-size:12px}
+.box li.sub{display:block;cursor:default}.box li.sub ul{margin-left:12px}
+span.click{cursor:pointer;text-decoration:underline dotted}
 .arrow{margin:4px 0 4px 40px;color:#2e9d57;font-weight:600}
 .ok{color:#1b7f3b}.bad{color:#a1261b;font-weight:600}
 #trace table td{text-align:left;white-space:normal;vertical-align:top;max-width:none}
@@ -984,9 +1146,9 @@ button{font:inherit;padding:3px 10px}
 <div id="problems"></div>
 <div id="filters"></div>
 <div id="filter-help" class="muted" style="margin:6px 0"></div>
-<h2>Flow along the upload path</h2>
+<h2>Flow through every stage, in run order</h2>
 <div class="tabs"><button id="tab-flow" class="on">Flow</button> <button id="tab-sankey">Sankey</button></div>
-<div id="view-flow"><div class="muted" style="margin:6px 0">Top to bottom, one box per stage. <b>In</b> is every article whose input passed; each one then passed on, was left out (beside the box, by state and reason, in plain words), or is waiting. Click a box or a reason to list its articles; click an article for its trace.</div><div id="flow" class="flow"></div></div>
+<div id="view-flow"><div class="muted" style="margin:6px 0">Top to bottom, one box per stage that gates articles, in the order the pipeline runs them. <b>In</b> is every article whose input passed (for triage: whose metadata was attempted). Each one then passed, was left out, or is waiting: beside the box, by state and reason, with what each means in plain words. A reason joined from several sources is listed under its primary part, with the combinations underneath. Records made before the current stage graph sit outside the flow, as stale. Click a box, a count or a reason to list its articles; click an article for its trace.</div><div id="flow" class="flow"></div></div>
 <div id="view-sankey" style="display:none"><div class="muted">Each column is a stage on the path to upload. The band to the right is what passed on; the drops below are what stayed behind, split by state and reason. Click a drop to list its articles.</div>
 <div style="overflow-x:auto"><svg id="sankey"></svg></div>
 <div class="legend" id="legend"></div></div>
@@ -1001,13 +1163,16 @@ button{font:inherit;padding:3px 10px}
 <h2 id="drill-title">Drill-down</h2>
 <div id="drill"><div class="muted">Click a number above.</div></div>
 <h2 id="trace-title">Article trace</h2>
+<div><label for="trace-id">Trace an article id:</label> <input id="trace-id" size="16" placeholder="e.g. 222lv3326a2c"> <button id="trace-go">Trace</button></div>
 <div id="trace" class="scroll"><div class="muted">Click an article in the drill-down.</div></div>
 <script id="data" type="application/json">__DATA__</script>
 <script>
 "use strict";
-const D=JSON.parse(document.getElementById("data").textContent);
-const S=D.strings, STATES=S.state, STAGES=D.stages.map(s=>s.name);
+const D=typeof FUNNEL_DATA!=="undefined"?FUNNEL_DATA:JSON.parse(document.getElementById("data").textContent);
+const S=D.strings, STATES=S.state, STAGES=D.stages.map(s=>s.name), GROUP=D.groups;
 const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",held:"#e08a1e",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
+// Text in each state's colour, dark enough for 4.5:1 on the page's light panels.
+const INK={passed:"#1b6e34",filtered:"#4f5b6e",failed:"#a1261b",permanent:"#7a1914",taken_back:"#6a3fa3",held:"#8a4b08",refused:"#9a3412",blocked:"#4f5b6e",pending:"#6b5300",not_attempted:"#5e4f00",stale:"#7a4a1c",unaccounted:"#a3155f",ok:"#1b6e34",skipped:"#4f5b6e"};
 const DROPS=["filtered","failed","permanent","taken_back","held","refused","pending","not_attempted","unaccounted"];
 const fmt=n=>n.toLocaleString("en-US");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1037,89 +1202,101 @@ function filters(){
   document.getElementById("reason").oninput=e=>{F.reason=e.target.value;render()};
   document.getElementById("reset").onclick=()=>{F.dl.clear();F.tried.clear();F.text.clear();F.state.clear();F.from=F.to=F.reason="";filters();render()};
 }
-function totals(cs){const t={};STAGES.forEach(s=>{t[s]={};STATES.forEach(x=>t[s][x]=0)});let all=0;
-  cs.forEach(c=>{t[S.stage[c[0]]][STATES[c[1]]]+=c[6]});
-  const first=STAGES[0];STATES.forEach(x=>all+=t[first][x]);return [t,all]}
-function sankey(cs){
-  const [t,all]=totals(cs),chain=D.trunk,svg=document.getElementById("sankey");
+function filtered(){return !!(F.dl.size||F.tried.size||F.text.size||F.from||F.to)}
+const cmp=(a,b)=>a<b?-1:a>b?1:0, sumOf=gs=>gs.reduce((a,g)=>a+g[2],0);
+// The browser's recount, used only under an article filter; without one the page
+// draws D.model, which page_model() counted in Python. Both group as _grouped does.
+function grouped(pairs,states){const g={};
+  Object.entries(pairs).forEach(([k,n])=>{const [x,r]=k.split("|").map(Number),st=STATES[x];if(!states.includes(st))return;
+    const key=st+"|"+GROUP[r];(g[key]=g[key]||{st,group:GROUP[r],m:[]}).m.push([S.reason[r],n])});
+  return Object.values(g).map(o=>{const m=o.m.sort((a,b)=>b[1]-a[1]||cmp(a[0],b[0]));return [o.st,o.group,m.reduce((a,x)=>a+x[1],0),m]})
+    .sort((a,b)=>b[2]-a[2]||cmp(a[0],b[0])||cmp(a[1],b[1]))}
+function model(cs){
+  const by={},totals={},up={};STAGES.forEach(s=>{by[s]={};totals[s]={};STATES.forEach(x=>totals[s][x]=0)});D.stages.forEach(s=>up[s.name]=s.upstream);
+  cs.forEach(c=>{const st=S.stage[c[0]],k=c[1]+"|"+c[2];by[st][k]=(by[st][k]||0)+c[6];totals[st][STATES[c[1]]]+=c[6]});
+  const total=STATES.reduce((a,x)=>a+totals[STAGES[0]][x],0);
+  const flow=D.flow_stages.map(st=>{const t=totals[st],u=up[st],came=total-t.blocked-t.stale,excluded=grouped(by[st],D.excluded),waiting=grouped(by[st],D.waiting);
+    const given=u==null?total:D.on_attempt.includes(st)?total-D.not_tried.reduce((a,x)=>a+totals[u][x],0):totals[u].passed;
+    return {stage:st,input:u,in:came,passed:t.passed,excluded,waiting,stale:grouped(by[st],["stale"]),adds_up:came===t.passed+sumOf(excluded)+sumOf(waiting),follows:came===given}});
+  const reasons={};STAGES.forEach(s=>reasons[s]=grouped(by[s],STATES));
+  return {total,totals,flow,reasons}}
+function M(){return filtered()?model(cells()):D.model}
+function sankey(m){
+  const t=m.totals,all=m.total,chain=D.trunk,svg=document.getElementById("sankey");
   const colW=150,barW=14,top=24,trunkH=220,scale=all?trunkH/all:0,W=chain.length*colW+260;
-  const drops=chain.map(st=>{const m={};cs.forEach(c=>{if(S.stage[c[0]]!==st)return;const s=STATES[c[1]];if(!DROPS.includes(s))return;const k=s+"\u0001"+S.reason[c[2]];m[k]=(m[k]||0)+c[6]});
-    let e=Object.entries(m).sort((a,b)=>b[1]-a[1]);if(e.length>6){const rest=e.slice(5).reduce((a,b)=>a+b[1],0);e=e.slice(0,5).concat([["other\u0001(more reasons, see table)",rest]])}return e});
+  const drops=chain.map(st=>{let e=m.reasons[st].filter(g=>DROPS.includes(g[0]));
+    if(e.length>6){const rest=sumOf(e.slice(5));e=e.slice(0,5).concat([["other","(more reasons, see table)",rest,[]]])}return e});
   const maxDrops=Math.max(1,...drops.map(d=>d.length));const H=top+trunkH+40+maxDrops*30+20;
   let g=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">`;
   const entered=st=>all-t[st].blocked-t[st].stale;
   chain.forEach((st,i)=>{const x=20+i*colW,inn=entered(st),h=Math.max(1,inn*scale),y=top;
     g+=`<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="#3b4a66"><title>${st}: ${fmt(inn)} entered</title></rect>`;
     g+=`<text x="${x}" y="${top-8}" font-weight="600">${st}</text><text x="${x+barW+4}" y="${top+12}">${fmt(inn)}</text>`;
-    if(t[st].stale)g+=`<text x="${x+barW+4}" y="${top+26}" fill="#a0703c">+${fmt(t[st].stale)} stale</text>`;
+    if(t[st].stale)g+=`<text x="${x+barW+4}" y="${top+26}" fill="${INK.stale}">+${fmt(t[st].stale)} stale</text>`;
     const pass=t[st].passed,ph=pass*scale;
     if(i<chain.length-1){const nx=20+(i+1)*colW,nh=Math.max(1,entered(chain[i+1])*scale);
       g+=`<path d="M${x+barW},${y} C${x+barW+60},${y} ${nx-60},${y} ${nx},${y} L${nx},${y+nh} C${nx-60},${y+nh} ${x+barW+60},${y+ph} ${x+barW},${y+ph} Z" fill="#2e9d57" opacity=".35"><title>${fmt(pass)} passed ${st}</title></path>`}
-    else g+=`<text x="${x+barW+4}" y="${top+40}" fill="#2e9d57" font-weight="600">${fmt(pass)} passed</text>`;
+    else g+=`<text x="${x+barW+4}" y="${top+40}" fill="${INK.passed}" font-weight="600">${fmt(pass)} passed</text>`;
     let yy=y+ph,dy=top+trunkH+40;
-    drops[i].forEach(([k,n])=>{const [state,reason]=k.split("\u0001"),dh=Math.max(1.5,n*scale);
+    drops[i].forEach(([state,group,n])=>{const dh=Math.max(1.5,n*scale);
       g+=`<path d="M${x+barW},${yy} C${x+barW+40},${yy} ${x+20},${dy} ${x+40},${dy} L${x+40},${dy+dh} C${x+20},${dy+dh} ${x+barW+40},${yy+n*scale} ${x+barW},${yy+n*scale} Z" fill="${COLOR[state]||"#999"}" opacity=".5"/>`;
-      g+=`<g style="cursor:pointer" data-stage="${esc(st)}" data-state="${esc(state)}" data-reason="${esc(reason)}"><rect x="${x+40}" y="${dy}" width="6" height="${dh}" fill="${COLOR[state]||"#999"}"/><text x="${x+50}" y="${dy+9}">${fmt(n)} ${esc(state)}</text><text x="${x+50}" y="${dy+21}" class="muted">${esc(reason.length>24?reason.slice(0,23)+"…":reason)}</text><title>${esc(st)} ${esc(state)}: ${esc(reason)} (${fmt(n)})</title></g>`;
+      g+=`<g style="cursor:pointer" data-stage="${esc(st)}" data-state="${esc(state)}" data-group="${esc(group)}"><rect x="${x+40}" y="${dy}" width="6" height="${dh}" fill="${COLOR[state]||"#999"}"/><text x="${x+50}" y="${dy+9}">${fmt(n)} ${esc(state)}</text><text x="${x+50}" y="${dy+21}" class="muted">${esc(group.length>24?group.slice(0,23)+"…":group)}</text><title>${esc(st)} ${esc(state)}: ${esc(group)} (${fmt(n)})</title></g>`;
       yy+=n*scale;dy+=Math.max(30,dh+18)});
   });
   svg.outerHTML=g.replace("<svg ",`<svg id="sankey" `)+"</svg>";
-  document.querySelectorAll("#sankey g[data-stage]").forEach(el=>el.onclick=()=>{const r=el.dataset.reason;drill({stage:el.dataset.stage,state:el.dataset.state,reason:r.startsWith("(more reasons")?null:r})});
+  document.querySelectorAll("#sankey g[data-stage]").forEach(el=>el.onclick=()=>drill(el.dataset.state==="other"?{stage:el.dataset.stage,states:DROPS}:{stage:el.dataset.stage,state:el.dataset.state,group:el.dataset.group}));
   document.getElementById("legend").innerHTML=STATES.map(s=>`<span><i style="background:${COLOR[s]}"></i>${s}</span>`).join("");
 }
-function flowOf(cs){
-  const by={};cs.forEach(c=>{const st=S.stage[c[0]],k=c[1]+"|"+c[2];(by[st]=by[st]||{})[k]=((by[st]||{})[k]||0)+c[6]});
-  const [,all]=totals(cs);let before=null;
-  return D.trunk.map(st=>{const m=by[st]||{},E=Object.entries(m).map(([k,v])=>{const [x,r]=k.split("|").map(Number);return [STATES[x],S.reason[r],v]});
-    const sum=xs=>xs.reduce((a,i)=>a+i[2],0),pick=ss=>E.filter(i=>ss.includes(i[0])).sort((a,b)=>b[2]-a[2]||(a[0]+a[1]<b[0]+b[1]?-1:1));
-    const came=all-sum(pick(["blocked","stale"])),passed=sum(pick(["passed"])),excluded=pick(D.excluded),waiting=pick(D.waiting);
-    const step={stage:st,in:came,passed,excluded,waiting,stale:sum(pick(["stale"])),adds_up:came===passed+sum(excluded)+sum(waiting),follows:before===null||came===before};
-    before=passed;return step})}
-function meaning(state,reason){const g=D.glossary.find(([k])=>reason.includes(k));return g?g[1]:D.meanings[state]}
-function filtered(){return F.dl.size||F.tried.size||F.text.size||F.from||F.to}
-function flowView(cs){
-  const steps=flowOf(cs),sum=xs=>xs.reduce((a,i)=>a+i[2],0);
-  const same=!filtered()&&JSON.stringify(steps.map(x=>[x.in,x.passed,sum(x.excluded),sum(x.waiting)]))===JSON.stringify(D.flow.map(x=>[x.in,x.passed,sum(x.excluded),sum(x.waiting)]));
-  const li=(st,[state,reason,n])=>`<li data-stage="${esc(st)}" data-state="${esc(state)}" data-reason="${esc(reason)}"><span style="color:${COLOR[state]}">${esc(state)}</span><span>${esc(reason||"(no reason)")}</span><span class="n">${fmt(n)}</span><span class="mean">${esc(meaning(state,reason))}</span></li>`;
-  const list=(st,items)=>items.slice(0,8).map(i=>li(st,i)).join("")+(items.length>8?`<details><summary class="muted">${items.length-8} more reasons</summary><ul>${items.slice(8).map(i=>li(st,i)).join("")}</ul></details>`:"");
-  let h=filtered()?`<div class="muted">Filtered: the counts are recounted in the browser for the selected articles.</div>`:`<div class="${same?"ok":"bad"}">${same?"✓ the same numbers as <code>ingest report funnel</code> prints":"✗ differs from what <code>ingest report funnel</code> counted"}</div>`;
-  steps.forEach((x,i)=>{const ex=sum(x.excluded),wt=sum(x.waiting);
-    h+=`<div class="step"><div class="box main" data-stage="${esc(x.stage)}"><div><b>${esc(x.stage)}</b> <span class="muted">${i?"input: "+esc(D.trunk[i-1])+" passed":"every live article"}</span></div><div class="big">${fmt(x.in)} in</div>`+
-      `<div>${fmt(x.passed)} passed &middot; ${fmt(ex)} left out &middot; ${fmt(wt)} waiting</div>`+
+function meaning(state,text){const g=D.glossary.find(([k])=>text.includes(k));return g?`${g[1]} (${D.meanings[state]})`:D.meanings[state]}
+const ENTERED=STATES.filter(s=>!["blocked","stale"].includes(s));
+function groupList(st,groups){return groups.map(([state,group,n,members])=>
+  `<li data-stage="${esc(st)}" data-state="${esc(state)}" data-group="${esc(group)}"><span style="color:${INK[state]}">${esc(state)}</span><span>${esc(group||"(no reason)")}</span><span class="n">${fmt(n)}</span><span class="mean">${esc(meaning(state,group))}</span></li>`+
+  (members.length>1?`<li class="sub"><details><summary class="muted">${members.length} combinations of the sources' reasons</summary><ul>${members.map(([r,k])=>`<li data-stage="${esc(st)}" data-state="${esc(state)}" data-reason="${esc(r)}"><span>${esc(r)}</span><span class="n">${fmt(k)}</span></li>`).join("")}</ul></details></li>`:"")).join("")}
+function folded(st,groups){return groups.length>8?groupList(st,groups.slice(0,8))+`<li class="sub"><details><summary class="muted">${groups.length-8} more reasons</summary><ul>${groupList(st,groups.slice(8))}</ul></details></li>`:groupList(st,groups)}
+function flowView(m){
+  const feeds={};D.stages.forEach(s=>{if(s.upstream)(feeds[s.upstream]=feeds[s.upstream]||[]).push(s.name)});
+  Object.entries(D.side_inputs).forEach(([st,ins])=>ins.forEach(i=>(feeds[i]=feeds[i]||[]).includes(st)||feeds[i].push(st)));
+  let h=filtered()?`<div class="muted">Filtered: recounted in this browser for the selected articles. Without a filter the page shows the numbers <code>ingest report funnel</code> counted.</div>`:`<div class="ok">✓ These are the numbers <code>ingest report funnel</code> counted and prints.</div>`;
+  m.flow.forEach((x,i)=>{const ex=sumOf(x.excluded),wt=sumOf(x.waiting),st=sumOf(x.stale),gate=D.on_attempt.includes(x.stage)?"attempted":"passed";
+    h+=`<div class="step"><div class="box main" data-stage="${esc(x.stage)}" role="button" tabindex="0"><div><b>${esc(x.stage)}</b> <span class="muted">${x.input?"input: "+esc(x.input)+" "+gate:"every live article"}</span></div><div class="big">${fmt(x.in)} in</div>`+
+      `<div><span class="click" data-passed="${esc(x.stage)}">${fmt(x.passed)} passed</span> &middot; ${fmt(ex)} left out &middot; ${fmt(wt)} waiting</div>`+
       `<div class="${x.adds_up?"ok":"bad"}">in = passed + left out + waiting: ${fmt(x.in)} = ${fmt(x.passed)} + ${fmt(ex)} + ${fmt(wt)} ${x.adds_up?"✓":"✗"}</div>`+
-      (i?`<div class="${x.follows?"ok":"bad"}">in = ${esc(D.trunk[i-1])} passed ${x.follows?"✓":"✗"}</div>`:"")+
-      (x.stale?`<div class="muted" title="${esc(D.meanings.stale)}">+${fmt(x.stale)} stale records (not counted in)</div>`:"")+`</div>`+
-      `<div class="box excl"><b>Left out: ${fmt(ex)}</b><ul>${list(x.stage,x.excluded)}</ul>${wt?`<b>Waiting: ${fmt(wt)}</b><ul>${list(x.stage,x.waiting)}</ul>`:""}</div></div>`;
-    if(i<steps.length-1)h+=`<div class="arrow">&darr; ${fmt(x.passed)} passed on to ${esc(D.trunk[i+1])}</div>`});
+      (x.input?`<div class="${x.follows?"ok":"bad"}">in = ${esc(x.input)} ${gate} ${x.follows?"✓":"✗"}</div>`:"")+
+      (feeds[x.stage]?`<div class="muted">feeds ${feeds[x.stage].map(esc).join(", ")}</div>`:"")+`</div>`+
+      `<div class="box excl"><b>Left out: ${fmt(ex)}</b><ul>${folded(x.stage,x.excluded)}</ul>${wt?`<b>Waiting: ${fmt(wt)}</b><ul>${folded(x.stage,x.waiting)}</ul>`:""}`+
+      (st?`<b>Records outside the flow: ${fmt(st)} stale</b><ul>${folded(x.stage,x.stale)}</ul>`:"")+`</div></div>`;
+    if(i<m.flow.length-1)h+=`<div class="arrow" aria-hidden="true">&darr;</div>`});
   const el=document.getElementById("flow");el.innerHTML=h;
-  el.querySelectorAll(".box.main").forEach(b=>b.onclick=()=>drill({stage:b.dataset.stage,states:STATES.filter(s=>!["blocked","stale"].includes(s))}));
-  el.querySelectorAll("li[data-state]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();drill({stage:e.dataset.stage,state:e.dataset.state,reason:e.dataset.reason})});
+  el.querySelectorAll(".box.main").forEach(b=>{b.onclick=()=>drill({stage:b.dataset.stage,states:ENTERED});b.onkeydown=e=>{if(e.key==="Enter")b.onclick()}});
+  el.querySelectorAll("[data-passed]").forEach(e=>e.onclick=ev=>{ev.stopPropagation();drill({stage:e.dataset.passed,state:"passed"})});
+  el.querySelectorAll("li[data-group]").forEach(e=>e.onclick=()=>drill({stage:e.dataset.stage,state:e.dataset.state,group:e.dataset.group}));
+  el.querySelectorAll("li[data-reason]").forEach(e=>e.onclick=()=>drill({stage:e.dataset.stage,state:e.dataset.state,reason:e.dataset.reason}));
 }
-function stageTable(cs){
-  const [t,all]=totals(cs);const show=STATES.filter(s=>STAGES.some(st=>t[st][s]));
-  let h=`<tr><th>stage</th><th>input</th><th>entered</th>${show.map(s=>`<th style="color:${COLOR[s]}">${s}</th>`).join("")}<th>sum</th><th>share of entered</th></tr>`;
+function stageTable(m){
+  const t=m.totals,all=m.total;const show=STATES.filter(s=>STAGES.some(st=>t[st][s]));
+  let h=`<tr><th>stage</th><th>input</th><th>entered</th>${show.map(s=>`<th style="color:${INK[s]}">${s}</th>`).join("")}<th>sum</th><th>share of entered</th></tr>`;
   D.stages.forEach(st=>{const r=t[st.name],sum=STATES.reduce((a,s)=>a+r[s],0),inn=all-r.blocked-r.stale;
     const bar=inn?`<div class="bar">${STATES.filter(s=>!["blocked","stale"].includes(s)).map(s=>`<span title="${s} ${fmt(r[s])}" style="width:${100*r[s]/inn}%;background:${COLOR[s]}"></span>`).join("")}</div>`:"";
-    h+=`<tr><td class="click" data-reasons="${st.name}"><b>${st.name}</b>${D.trunk.includes(st.name)?"":' <span class="muted">(side)</span>'}</td><td class="muted">${st.upstream||"&mdash;"}${st.name==="triage"?" (attempted)":""}</td><td>${fmt(inn)}</td>`+
+    h+=`<tr><td class="click" data-reasons="${st.name}"><b>${st.name}</b>${D.trunk.includes(st.name)?"":' <span class="muted">(side)</span>'}</td><td class="muted">${st.upstream||"&mdash;"}${D.on_attempt.includes(st.name)?" (attempted)":""}</td><td>${fmt(inn)}</td>`+
       show.map(s=>`<td class="click${s==="unaccounted"&&r[s]?" bad":""}" data-stage="${st.name}" data-state="${s}" style="${!F.state.size||F.state.has(s)?"":"opacity:.3"}">${r[s]?fmt(r[s]):""}</td>`).join("")+
       `<td class="${sum===all?"ok":"bad"}" title="${sum===all?"reconciles":"does not add up"}">${fmt(sum)} ${sum===all?"✓":"✗"}</td><td>${bar}</td></tr>`});
   const el=document.getElementById("stages");el.innerHTML=h;
   el.querySelectorAll("td[data-state]").forEach(td=>td.onclick=()=>drill({stage:td.dataset.stage,state:td.dataset.state}));
-  el.querySelectorAll("td[data-reasons]").forEach(td=>td.onclick=()=>{CUR=td.dataset.reasons;reasons(cells())});
+  el.querySelectorAll("td[data-reasons]").forEach(td=>td.onclick=()=>{CUR=td.dataset.reasons;reasons(M())});
 }
 let CUR=null;
-function reasons(cs){
-  const st=CUR||D.trunk[0];document.getElementById("reasons-title").textContent=`Reasons at ${st}`;
-  const m={};cs.forEach(c=>{if(S.stage[c[0]]!==st||!bucketOk(c[1],c[2]))return;const k=c[1]+"|"+c[2];m[k]=(m[k]||0)+c[6]});
-  const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]);
-  document.getElementById("reasons").innerHTML=`<tr><th>state</th><th>reason</th><th>articles</th></tr>`+rows.map(([k,n])=>{const [s,r]=k.split("|").map(Number);
-    return `<tr><td style="color:${COLOR[STATES[s]]}">${STATES[s]}</td><td class="click" style="text-align:left" data-s="${s}" data-r="${r}">${esc(S.reason[r]||"—")}</td><td>${fmt(n)}</td></tr>`}).join("");
-  document.querySelectorAll("#reasons td[data-r]").forEach(td=>td.onclick=()=>drill({stage:st,state:STATES[+td.dataset.s],reason:S.reason[+td.dataset.r]}));
+function reasons(m){
+  const st=CUR||D.trunk[0],needle=F.reason.toLowerCase();document.getElementById("reasons-title").textContent=`Reasons at ${st}`;
+  const rows=m.reasons[st].filter(g=>!F.state.size||F.state.has(g[0])).map(([s,g,n,mem])=>{const k=mem.filter(([r])=>r.toLowerCase().includes(needle));return [s,g,needle?k.reduce((a,x)=>a+x[1],0):n,k]}).filter(r=>r[2]);
+  document.getElementById("reasons").innerHTML=`<tr><th>state</th><th>reason</th><th>articles</th></tr>`+rows.map(([s,g,n,mem])=>
+    `<tr><td style="color:${INK[s]}">${esc(s)}</td><td class="click" style="text-align:left" data-s="${esc(s)}" data-g="${esc(g)}">${esc(g||"—")}${mem.length>1?` <span class="muted">(${mem.length} combinations)</span>`:""}</td><td>${fmt(n)}</td></tr>`).join("");
+  document.querySelectorAll("#reasons td[data-g]").forEach(td=>td.onclick=()=>drill({stage:st,state:td.dataset.s,group:td.dataset.g}));
 }
 function sourceTable(cs){
   const src=D.sources.filter(c=>articleOk(c[4],c[5],c[6],c[9]));const T={};
   const add=(s,k,n)=>{T[s]=T[s]||{};T[s][k]=(T[s][k]||0)+n};
   src.forEach(c=>add(S.source[c[1]],S.stage[c[0]]+":"+S.status[c[2]],c[7]));
-  const [t]=totals(cs);const up=D.trunk[D.trunk.length-1]==="sync"?"upload":D.trunk[D.trunk.length-1];
+  const up=D.trunk[D.trunk.length-1]==="sync"?"upload":D.trunk[D.trunk.length-1];
   cs.forEach(c=>{const st=S.stage[c[0]];if(st==="triage"&&STATES[c[1]]!=="blocked")add(S.text[c[4]],"judged",c[6]);
     if(st===up&&STATES[c[1]]==="passed"){S.dl[c[3]].split("+").forEach(s=>add(s,"reached",c[6]));add(S.text[c[4]],"reached_judged",c[6])}});
   const cols=[["download:ok","downloaded"],["download:failed","dl failed"],["download:permanent","dl permanent"],["download:skipped","dl skipped"],["extract:ok","extracted"],["extract:failed","extract failed"],["extract:permanent","extract permanent"],["extract:skipped","extract skipped"],["extract:taken_back","extract no text"],["judged","text triage judged"],["reached","has a download, reached "+up],["reached_judged","judged text, reached "+up]];
@@ -1137,7 +1314,7 @@ function cliCmd(o){
   const states=wanted(o);
   if((o.states||o.state)&&!states.length)return "(none: the state filter leaves this bucket out)";
   let c=`ingest report funnel-ids --stage ${o.stage}`+articleArgs();states.forEach(s=>c+=` --state ${s}`);
-  if(o.reason!=null)c+=` --exact-reason ${q(o.reason)}`;if(F.reason)c+=` --reason ${q(F.reason)}`;return c}
+  if(o.reason!=null)c+=` --exact-reason ${q(o.reason)}`;if(o.group!=null)c+=` --reason-group ${q(o.group)}`;if(F.reason)c+=` --reason ${q(F.reason)}`;return c}
 function showDrill(title,rows,total,cmd){
   const ids=rows.map(r=>r[0]);
   document.getElementById("drill-title").textContent="Drill-down: "+title;
@@ -1151,11 +1328,14 @@ function showDrill(title,rows,total,cmd){
   document.getElementById("copy").onclick=()=>{const txt=ids.join("\n");(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).catch(()=>{const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()})};
   document.getElementById("drill-title").scrollIntoView({behavior:"smooth"});
 }
-function drill(o){
+function bucket(o){
   let total=0;const rows=[],want=o.states||(o.state?[o.state]:null);
-  cells().forEach(c=>{if(S.stage[c[0]]!==o.stage||want&&!want.includes(STATES[c[1]]))return;if(o.reason!=null&&S.reason[c[2]]!==o.reason)return;if(!bucketOk(c[1],c[2]))return;
+  cells().forEach(c=>{if(S.stage[c[0]]!==o.stage||want&&!want.includes(STATES[c[1]]))return;if(o.reason!=null&&S.reason[c[2]]!==o.reason)return;if(o.group!=null&&GROUP[c[2]]!==o.group)return;if(!bucketOk(c[1],c[2]))return;
     total+=c[6];c[7].forEach(([a,r])=>rows.push([S.id[a],o.stage,STATES[c[1]],S.reason[c[2]],S.raw[r],S.dl[c[3]],S.text[c[4]],S.day[c[5]]]))});
-  showDrill(`${o.stage} / ${o.states?"in":o.state||"any"}${o.reason?" / "+o.reason:""}`,rows,total,cliCmd(o));
+  return {total,rows}}
+function drill(o){
+  const {total,rows}=bucket(o);
+  showDrill(`${o.stage} / ${o.states?"in":o.state||"any"}${o.reason?" / "+o.reason:o.group?" / "+o.group:""}`,rows,total,cliCmd(o));
 }
 function drillSource(stage,source,state){
   let total=0;const rows=[];
@@ -1169,24 +1349,30 @@ function trace(id){
   const cmd=`ingest report trace ${q(id)} --catalog ${q(D.catalog)} -c <pipeline config>`;
   const known=STAGES.map(st=>{const c=D.cells.find(c=>S.stage[c[0]]===st&&c[7].some(([a])=>a===ix));if(!c)return [st,"","",""];const r=c[7].find(([a])=>a===ix);return [st,STATES[c[1]],S.reason[c[2]],S.raw[r[1]]]});
   el.innerHTML=`<div class="muted">The state at every stage, as this page counted it. Full trace (every record's path, status, fingerprint, freshness and inputs): <code>${esc(cmd)}</code>, or open this page with <code>ingest report serve</code> and click again.</div>`+
-    `<table><tr><th>stage</th><th>state</th><th>reason</th><th>raw</th></tr>${known.map(([st,s,r,raw])=>`<tr><td>${esc(st)}</td><td style="color:${COLOR[s]||"inherit"}">${esc(s||"(not sampled)")}</td><td>${esc(r)}</td><td>${esc(raw)}</td></tr>`).join("")}</table>`;
-  document.getElementById("trace-title").scrollIntoView({behavior:"smooth"});
+    `<table><tr><th>stage</th><th>state</th><th>reason</th><th>raw</th></tr>${known.map(([st,s,r,raw])=>`<tr><td>${esc(st)}</td><td style="color:${INK[s]||"inherit"}">${esc(s||"(not sampled)")}</td><td>${esc(r)}</td><td>${esc(raw)}</td></tr>`).join("")}</table>`;
+  document.getElementById("trace-title").scrollIntoView();
   if(!location.protocol.startsWith("http"))return;
   fetch("trace?id="+encodeURIComponent(id)).then(r=>r.json()).then(t=>{
     if(t.error){el.innerHTML=`<div class="bad">${esc(t.error)}</div>`;return}
     const kv=o=>Object.entries(o||{}).map(([k,v])=>`${esc(k)}=${esc(typeof v==="object"?JSON.stringify(v):v)}`).join(", ");
     el.innerHTML=`<div class="muted">Registered ${esc(t.registered)}. From the catalog rows only; no payload is opened.</div><table><tr><th>stage</th><th>state</th><th>records</th><th>built from</th><th>freshness</th></tr>`+
-      t.stages.map(x=>`<tr><td><b>${esc(x.stage)}</b><div class="muted">code: ${kv(x.version)||"&mdash;"}</div></td><td><span style="color:${COLOR[x.state]}">${esc(x.state)}</span> ${esc(x.reason)}<div class="muted">${esc(x.meaning)}</div></td>`+
+      t.stages.map(x=>`<tr><td><b>${esc(x.stage)}</b><div class="muted">current code: ${kv(x.version)||"&mdash;"} (a record's own version is folded into its fingerprint; see freshness)</div></td><td><span style="color:${INK[x.state]}">${esc(x.state)}</span> ${esc(x.reason)}<div class="muted">${esc(x.meaning)}</div></td>`+
         `<td>${x.records.map(r=>`<div><b>${esc(r.source||"(one)")}</b> ${esc(r.status)}${r.reason?": "+esc(r.reason):""}; written ${esc(r.written)}; ${r.attempts} attempt(s)${r.last?", last "+esc(r.last):""}<div class="muted">fingerprint ${esc(r.fingerprint||"(none)")}; ${kv(r.summary)}</div>${r.path?`<div class="path">${esc(r.path)} ${r.on_disk?"":"(missing)"}</div>`:""}${r.error?`<div class="muted">${esc(r.error)}</div>`:""}</div>`).join("")||"&mdash;"}</td>`+
         `<td>${x.built_from.map(u=>`<div>${esc(u.stage)}${u.source?":"+esc(u.source):""} ${esc(u.status)}, ${esc(u.fingerprint.slice(0,12)||"(none)")}, written ${esc(u.written)}${u.newer?' <span class="bad">rewritten after this record</span>':""}</div>`).join("")||"&mdash;"}</td>`+
-        `<td>${esc(x.plan||"")}${x.records.filter(r=>r.freshness&&r.freshness!==x.plan).map(r=>`<div>${esc(r.source)}: ${esc(r.freshness)}</div>`).join("")}</td></tr>`).join("")+`</table>`});
+        `<td>${esc(x.plan||"")}${x.records.filter(r=>r.freshness&&r.freshness!==x.plan).map(r=>`<div>${esc(r.source)}: ${esc(r.freshness)}</div>`).join("")}</td></tr>`).join("")+`</table>`;document.getElementById("trace-title").scrollIntoView()});
 }
-function render(){const cs=cells();flowView(cs);sankey(cs);stageTable(cs);reasons(cs);sourceTable(cs)}
+function render(){const m=M();flowView(m);sankey(m);stageTable(m);reasons(m);sourceTable(cells())}
+if(typeof document!=="undefined"&&document.getElementById("flow")){
+document.getElementById("trace-go").onclick=()=>{const v=document.getElementById("trace-id").value.trim();if(v)trace(v)};
+document.getElementById("trace-id").onkeydown=e=>{if(e.key==="Enter")document.getElementById("trace-go").onclick()};
 document.getElementById("tab-flow").onclick=()=>{document.getElementById("view-flow").style.display="";document.getElementById("view-sankey").style.display="none";document.getElementById("tab-flow").className="on";document.getElementById("tab-sankey").className=""};
 document.getElementById("tab-sankey").onclick=()=>{document.getElementById("view-flow").style.display="none";document.getElementById("view-sankey").style.display="";document.getElementById("tab-sankey").className="on";document.getElementById("tab-flow").className=""};
 document.getElementById("meta").innerHTML=`${fmt(D.total)} live articles in <code>${esc(D.catalog)}</code>; built ${D.generated} in ${D.seconds}s; stage graph ${D.prose?"with":"without"} the prose stages.`;
 document.getElementById("filter-help").innerHTML=`<b>Filters.</b> These select articles, so every stage still adds up: <b>Downloaded from</b> keeps articles with an ok download from any ticked source (an article whose every download failed has source <i>none</i>, so ticking a source hides its download failures); <b>Download tried at</b> keeps articles with any download recorded from a ticked source, failed or not (use it for losses at download by source); <b>Judged text source</b> is the source whose text triage, or else passages, read; <b>Registered</b> is the day the article entered the catalog. These narrow the tables and the drill-down only: <b>State</b>, and <b>Reason contains</b> (a case-insensitive substring; a clicked reason matches exactly). The source table always lists every source tried; its numbers follow the article filters.`;
 document.getElementById("problems").innerHTML=D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and every article with a record at a stage was placed from that record.</div>`;
 filters();render();
+// A link can open one article's trace: <page>#trace=<article id>.
+if(location.hash.startsWith("#trace="))trace(decodeURIComponent(location.hash.slice(7)));
+}
 </script></body></html>
 """  # noqa: E501 -- the page is minified HTML and JS, not Python

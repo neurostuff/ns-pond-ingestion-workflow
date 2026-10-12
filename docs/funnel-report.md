@@ -25,24 +25,48 @@ ingest report trace 222lv3326a2c -c configs/beast.yaml   # one article, as JSON
 
 ## The flow
 
-The main view runs top to bottom, one box per stage on the path to upload.
-**In** is every article whose input passed. Each of them then passed on, was
-left out, or is waiting; the box beside lists what was left out and what waits,
-by state and reason, with what each means in plain words. Every box shows the
-check `in = passed + left out + waiting`, and that its *in* equals what the
-stage above passed. The numbers come from one count, which the CLI prints and
-the page embeds; the page recounts only to apply its filters, and with no filter
-it says whether its numbers match. A Sankey view of the same counts is one
-click away.
+The main view runs top to bottom, one box per stage that gates articles, in the
+order the pipeline runs them (the stage registry's default stages: download,
+extract, passages, metadata, notices, triage, analyses, prose, resolve, roles,
+space, upload, sync). **In** is every article whose input passed; for triage,
+whose metadata was attempted. Each of them then passed, was left out, or is
+waiting. The box beside lists what was left out and what waits, by state and
+reason, with what each means in plain words. Records made under an older stage
+graph sit apart, as "records outside the flow", and are clickable like the rest.
+Every box shows the check `in = passed + left out + waiting`, and that its *in*
+equals what its input passed (or attempted).
 
-Click a box or a reason to list its articles, with a search box, and the
-`funnel-ids` command that lists the same set in full. Click an article for its
-trace: on a file page, its state at every stage; when served, also every
-record's path on disk, status, reason, summary, when it was written, its
-fingerprint, its attempts, the records it was built from (and whether they were
-rewritten after it), the stage's code version constants, and, with the
-pipeline's config, whether each record is fresh, as that stage's own plan judges
-it. The trace reads catalog rows only, never a payload.
+A reason joined from several sources (`HTTP 403 forbidden + not open access +
+source returned no article`) is listed under its primary part, with the
+combinations underneath; the counts add up. The primary part is the first, in
+this order, of: a bad page; our own errors (code, database, parse, converter,
+missing files); errors a retry may clear (rate limits, timeouts, connections,
+5xx); the source refusing (403, other 4xx, 404, not a PDF); not open access;
+the source having no article. `funnel-ids --reason-group` lists a group.
+
+Every number comes from one count in Python (`page_model`): `ingest report
+funnel` prints its flow and the page draws it as embedded. Only when an article
+filter is set does the page recount in the browser, and a test holds that
+recount equal to the Python count and to `funnel-ids` for the same filter. A
+Sankey view of the same counts is one click away.
+
+An extraction that records no text hash waits at passages for `ingest
+refresh-text` (`waits for ingest refresh-text`); that command is not a stage, so
+it shows as this reason rather than as a box.
+
+Click a box, a count or a reason to list its articles, with a search box, and
+the `funnel-ids` command that lists the same set in full. Click an article, or
+type its id, for its trace: on a file page, its state at every stage; when
+served, also every record's path on disk, status, reason, summary, when it was
+written, its fingerprint, its attempts, the records it was built from (its
+parent and the other inputs its fingerprint reads), whether those were
+rewritten after it, the stage's current code version constants (a record's own
+version is folded into its fingerprint), and, with the pipeline's config,
+whether each record is fresh, as that stage's own plan judges it. The trace
+reads catalog rows only, never a payload: where a plan needs one, passages'
+freshness is worked out from the rows (the extraction it read and that text's
+recorded hash), and any other says it is not known without the payload. A
+stage that cannot plan says which setting it needs.
 
 ## What a state means
 

@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
+import shutil
+import sqlite3
+import subprocess
 import threading
 import urllib.request
 
@@ -16,6 +20,7 @@ from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 from ingestion_workflow.services.funnel_report import (
+    _PAGE,
     BLOCKED,
     FAILED,
     FILTERED,
@@ -26,12 +31,16 @@ from ingestion_workflow.services.funnel_report import (
     PERMANENT,
     REFUSED,
     STALE,
+    STATES,
     TAKEN_BACK,
     UNACCOUNTED,
     build_funnel,
     categorize,
+    filter_funnel,
     flow,
     open_readonly,
+    page_model,
+    reason_group,
     render_html,
     serve,
     trace_article,
@@ -548,3 +557,184 @@ def test_cli_trace_and_serve(stored, tmp_path):
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_reasons_group_under_their_primary_part():
+    assert reason_group("not open access + source returned no article") == "not open access"
+    assert reason_group("download failed: HTTP 403 forbidden + not open access + source "
+                        "returned no article") == "download failed: HTTP 403 forbidden"
+    assert reason_group("bad page: paywall + not open access") == "bad page: paywall"
+    assert reason_group("code error + rate limited") == "code error"
+    assert reason_group("not open access + rate limited") == "rate limited"
+    assert reason_group("triage filtered: triage passed no table; leftover skipped: x") == \
+        "triage filtered: triage passed no table"
+    waiting = "input ready, nothing to read (passages = 0); tables wait behind it"
+    assert reason_group(waiting) == waiting
+
+
+def test_page_model_flows_through_every_gating_stage(wide):
+    funnel, ids = wide
+    model = page_model(funnel)
+    steps = {step["stage"]: step for step in model["flow"]}
+    assert list(steps) == ["download", "extract", "passages", "metadata", "notices", "triage",
+                           "analyses", "prose", "resolve", "roles", "space", "upload", "sync"]
+    for step in model["flow"]:
+        assert step["adds_up"] and step["follows"], step
+        for group in step["excluded"] + step["waiting"] + step["stale"]:
+            assert group[2] == sum(n for _, n in group[3])
+    # Triage takes in what metadata attempted, failed included.
+    tried = sum(model["totals"]["metadata"][s] for s in (PASSED, FILTERED, FAILED, PERMANENT))
+    assert steps["triage"]["in"] == tried
+    # Download's joined reasons sit under their primary part.
+    groups = {g[1]: g for g in steps["download"]["excluded"]}
+    assert groups["HTTP 403 forbidden"][3] == [
+        ["HTTP 403 forbidden + not open access", 1]]
+    assert groups["not open access"][3] == [["not open access", 1]]
+    # Stale records are listed apart, with the state's reasons.
+    assert ["stale", "input space is pending; retracted", 1,
+            [["input space is pending; retracted", 1]]] in steps["upload"]["stale"]
+    # An extraction with no text hash waits for refresh-text before passages.
+    assert any(g[1].startswith("waits for `ingest refresh-text`")
+               for g in steps["passages"]["waiting"])
+
+
+def test_funnel_ids_lists_a_reason_group(wider):
+    root, ids = wider
+    assert _ids(root, "--stage", "download", "--reason-group", "HTTP 403 forbidden") == {ids["X"]}
+    assert _ids(root, "--stage", "extract", "--reason-group",
+                "download failed: HTTP 403 forbidden") == {ids["X"]}
+
+
+def _page_js(page: str, harness: str) -> dict:
+    script = re.findall(r"<script>(.*?)</script>", page, re.S)[-1]
+    data = re.search(r'<script id="data" type="application/json">(.*?)</script>', page,
+                     re.S).group(1)
+    run = subprocess.run(["node", "-e", f"const FUNNEL_DATA={data};\n{script}\n{harness}"],
+                         capture_output=True, text=True, timeout=60)
+    assert run.returncode == 0, run.stderr
+    return json.loads(run.stdout)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs node")
+def test_page_recount_equals_python_and_the_cli(wider, wide):
+    root, ids = wider
+    funnel, _ = wide
+    page = render_html(funnel, str(root))
+    out = _page_js(page, """
+        const out={unfiltered:model(D.cells),embedded:D.model};
+        F.tried.add("ace");F.tried.add("elsevier");F.from="2026-01-03";
+        out.filtered=model(cells());
+        out.box=cliCmd({stage:"download",states:ENTERED});
+        out.group=cliCmd({stage:"download",state:"failed",group:"bad page: error_page"});
+        out.reason=cliCmd({stage:"download",state:"failed",reason:"bad page: error_page"});
+        F.from="";const o={stage:"download",state:"failed",group:"HTTP 403 forbidden"};
+        out.group2=cliCmd(o);out.drill=bucket(o);
+        console.log(JSON.stringify(out));""")
+    as_json = lambda value: json.loads(json.dumps(value))  # noqa: E731
+    assert out["embedded"] == as_json(page_model(funnel))
+    assert out["unfiltered"] == out["embedded"]
+    chosen = filter_funnel(funnel, tried=["ace", "elsevier"], day_from="2026-01-03")
+    assert out["filtered"] == as_json(page_model(chosen))
+
+    def listed(cmd):
+        args = shlex.split(cmd)
+        assert args[:3] == ["ingest", "report", "funnel-ids"], cmd
+        return _ids(root, *args[3:])
+
+    entered = {aid for key, (_, sample) in chosen.cells.items()
+               if key[0] == "download" and key[1] not in (BLOCKED, STALE) for aid, _ in sample}
+    assert entered == {ids["S"], ids["T"], ids["V"], ids["Y"]}
+    assert listed(out["box"]) == entered
+    assert listed(out["group"]) == listed(out["reason"]) == {ids["T"]}
+    # The drill-down and its command pick one group out of several failures.
+    assert listed(out["group2"]) == {ids["X"]}
+    assert out["drill"]["total"] == 1 and {r[0] for r in out["drill"]["rows"]} == {ids["X"]}
+
+
+def test_state_labels_are_readable():
+    found = re.search(r"const INK=\{(.*?)\};", _PAGE).group(1)
+    ink = dict(re.findall(r'(\w+):"(#[0-9a-f]{6})"', found))
+
+    def luminance(hex_colour):
+        rgb = [int(hex_colour[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+    panel = luminance("#f6f7f9")
+    assert set(STATES) <= set(ink)
+    for state, colour in ink.items():
+        assert (panel + 0.05) / (luminance(colour) + 0.05) >= 4.5, (state, colour)
+
+
+@pytest.fixture()
+def read_text(tmp_path):
+    """Two articles with passages, whose plans open the extraction's payload."""
+    from ingestion_workflow.pipeline.stages.passages import PassagesStage
+
+    cat = Catalog.open(tmp_path / "text")
+    a, b = (cat.register(Identifier(pmid=p)).id for p in ("4001", "4002"))
+    cat.record([
+        Outcome(article_id=a, stage="download", source="pubget", status=OK, summary={}),
+        Outcome(article_id=a, stage="extract", source="pubget", status=OK, fingerprint="e",
+                payload={"full_text_path": "/nowhere/text.txt"},
+                summary={"has_text": True, "text_sha256": "abc"}),
+        Outcome(article_id=b, stage="download", source="pubget", status=OK, summary={}),
+        Outcome(article_id=b, stage="extract", source="pubget", status=OK, fingerprint="e",
+                payload={"full_text_path": "/nowhere/text.txt"}, summary={"has_text": True}),
+    ])
+    extraction = cat.artifact(a, "extract", "pubget")
+    cat.record([
+        Outcome(article_id=a, stage="passages", source="", status=OK,
+                fingerprint=PassagesStage.fingerprint_for(extraction, "abc"),
+                summary={"source": "pubget", "passages": 1}),
+        Outcome(article_id=b, stage="passages", source="", status=OK, fingerprint="p",
+                summary={"source": "pubget", "passages": 1}),
+    ])
+    cat.close()
+    return tmp_path / "text", a, b
+
+
+def test_trace_never_reads_a_payload_and_says_so_plainly(read_text, tmp_path):
+    root, a, b = read_text
+    settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
+                        data_root=str(tmp_path / "data"), prose_model="m")
+    plans = {}
+    for article in (a, b):
+        found = trace_article(root, article, settings=settings)
+        plans[article] = {s["stage"]: s["plan"] for s in found["stages"]}
+        for stage, plan in plans[article].items():
+            assert not re.search(r"[A-Z][a-z]+Error|Traceback", plan), (stage, plan)
+    # The plan wants the text file's path from the payload; the rows tell freshness.
+    assert plans[a]["passages"].startswith("fresh: its fingerprint matches the extraction")
+    assert plans[b]["passages"].startswith("waits for `ingest refresh-text`")
+
+
+def test_trace_marks_a_missing_blob_and_side_inputs(stored):
+    root, a, digest = stored
+    (root / "blobs" / digest[:2] / f"{digest}.json.gz").unlink()
+    found = trace_article(root, a)
+    stages = {s["stage"]: s for s in found["stages"]}
+    assert stages["extract"]["records"][0]["on_disk"] is False
+    # Triage's fingerprint reads the extraction as well as its parent, metadata.
+    assert [u["stage"] for u in stages["triage"]["built_from"]] == ["metadata", "extract"]
+
+
+def test_trace_flags_an_input_rewritten_after_the_record(stored):
+    root, a, _ = stored
+    conn = sqlite3.connect(root / "catalog.sqlite")
+    with conn:
+        conn.execute("UPDATE artifacts SET updated_at='2099-01-01T00:00:00+00:00' "
+                     "WHERE article_id=? AND stage='download'", (a,))
+    conn.close()
+    stages = {s["stage"]: s for s in trace_article(root, a)["stages"]}
+    assert stages["extract"]["built_from"][0]["newer"] is True
+    assert stages["metadata"]["built_from"][0]["newer"] is False
+
+
+def test_a_stage_that_cannot_plan_names_the_setting(stored, tmp_path):
+    root, a, _ = stored
+    settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
+                        data_root=str(tmp_path / "data"))
+    stages = {s["stage"]: s for s in trace_article(root, a, settings=settings)["stages"]}
+    assert stages["triage"]["plan"] == \
+        "not known: this stage needs coordinate_gate_path in the config to plan"

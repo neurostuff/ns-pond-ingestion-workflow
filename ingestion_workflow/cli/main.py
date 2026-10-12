@@ -861,12 +861,12 @@ def report_funnel(
 
 
 def _echo_flow(funnel) -> None:
-    from ingestion_workflow.services.funnel_report import flow
+    from ingestion_workflow.services.funnel_report import page_model
 
-    for step in flow(funnel):
-        left = sum(item[2] for item in step["excluded"])
-        waiting = sum(item[2] for item in step["waiting"])
-        top = max(step["excluded"] + step["waiting"], key=lambda item: item[2], default=None)
+    for step in page_model(funnel)["flow"]:
+        left = sum(group[2] for group in step["excluded"])
+        waiting = sum(group[2] for group in step["waiting"])
+        top = max(step["excluded"] + step["waiting"], key=lambda group: group[2], default=None)
         check = "ok" if step["adds_up"] and step["follows"] else "DOES NOT ADD UP"
         typer.echo(f"  {step['stage']:>9}  in {step['in']:>9,}  passed {step['passed']:>9,}  "
                    f"left out {left:>9,}  waiting {waiting:>9,}  {check}"
@@ -952,6 +952,9 @@ def report_funnel_ids(
     by_source: Optional[str] = typer.Option(
         None, "--by-source", help="List this source's own download or extraction rows at "
         "--stage (download or extract), as the page's source table does."),
+    reason_group: Optional[str] = typer.Option(
+        None, "--reason-group", help="Reason falls in this group, as a clicked group in the "
+        "flow: its origin and primary part, e.g. 'not open access'."),
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
@@ -968,7 +971,7 @@ def report_funnel_ids(
                             reason=reason, exact_reason=exact_reason,
                             sources=source or (), tried=tried or (), judged=judged or (),
                             day_from=day_from, day_to=day_to, prose=prose,
-                            by_source=by_source):
+                            by_source=by_source, group=reason_group):
         typer.echo("\t".join(row))
 
 
