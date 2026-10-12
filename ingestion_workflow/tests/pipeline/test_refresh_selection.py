@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Select, everything, narrow
 
@@ -28,8 +29,14 @@ def catalog(tmp_path):
 
 
 def pending(cat, refresh=()):
+    settings = Settings(
+        data_root=cat.root.parent / "d", cache_root=cat.root.parent / "c", download_sources=["ace"]
+    )
     return {
-        ref.id for ref in narrow(cat, everything(cat), Select.PENDING, "extract", refresh).refs
+        ref.id
+        for ref in narrow(
+            cat, everything(cat), Select.PENDING, "extract", refresh, settings=settings
+        ).refs
     }
 
 

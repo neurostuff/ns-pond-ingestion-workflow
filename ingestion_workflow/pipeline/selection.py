@@ -71,12 +71,11 @@ def narrow(
     selection = _gated(catalog, selection, stage, settings)
     if mode is Select.ALL or not selection.refs:
         return selection
-    if mode is Select.PENDING and settings is not None:
+    if mode is Select.PENDING:
+        if settings is None:
+            raise ValueError("--select pending plans each stage, so it needs settings")
         return _planned(catalog, selection, list(stages) or ([stage] if stage else []), refresh,
                         settings)
-    if mode is Select.PENDING:
-        logger.warning("pending without settings uses the status-only rule: "
-                       "stale-but-OK work is not selected")
 
     ids = [ref.id for ref in selection.refs]
     stages = [stage] if stage else _stages_present(catalog)
@@ -99,11 +98,7 @@ def narrow(
         states = [artifact.status for artifact in artifacts]
         if mode is Select.NEW:
             return not states
-        if mode is Select.FAILED:
-            return Status.FAILED in states
-        # PENDING without settings: no stage can be built to judge freshness,
-        # so this is the status-only approximation (stale-but-OK is missed).
-        return not states or any(state is not Status.OK for state in states)
+        return Status.FAILED in states
 
     refs = [ref for ref in selection.refs if keep(ref)]
     return Selection(refs, f"{len(refs):,} {mode.value} of {selection.description}")

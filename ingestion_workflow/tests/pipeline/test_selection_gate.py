@@ -11,6 +11,13 @@ from ingestion_workflow.pipeline.selection import Select, everything, narrow
 
 
 @pytest.fixture()
+def settings(tmp_path):
+    from ingestion_workflow.config import Settings
+
+    return Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", prose_model="nu-prose")
+
+
+@pytest.fixture()
 def catalog(tmp_path):
     cat = Catalog.open(tmp_path / "cat")
     refs = {}
@@ -24,13 +31,14 @@ def catalog(tmp_path):
     return cat, refs
 
 
-def test_only_articles_triage_passed_a_table_for_are_selected(catalog):
+def test_only_articles_triage_passed_a_table_for_are_selected(catalog, settings):
     """`analyses` declares `requires_flag = "passed"`. Triage already recorded
     the answer, so asking the catalog once beats planning every article to
     reach it -- 477,625 of them in the first corpus run wrote an artifact
     saying there was nothing to say."""
     cat, refs = catalog
-    got = {r.id for r in narrow(cat, everything(cat), Select.PENDING, "analyses").refs}
+    sel = narrow(cat, everything(cat), Select.PENDING, "analyses", settings=settings)
+    got = {r.id for r in sel.refs}
     assert got == {refs["a"], refs["c"]}
 
 
@@ -61,7 +69,7 @@ def test_the_gate_is_not_a_freshness_filter(catalog):
     assert got == {refs["a"], refs["c"]}
 
 
-def test_the_gate_holds_for_a_manifest_too(catalog, tmp_path):
+def test_the_gate_holds_for_a_manifest_too(catalog, settings, tmp_path):
     """It is applied in `narrow`, not in the stage's `plan`, so it does not
     matter how the selection was built."""
     from ingestion_workflow.pipeline.selection import from_manifest
@@ -70,7 +78,7 @@ def test_the_gate_holds_for_a_manifest_too(catalog, tmp_path):
     path.write_text("\n".join(
         json.dumps({"pmid": f"100{n}"}) for n in ("a", "b", "c", "d")) + "\n")
     cat, refs = catalog
-    sel = narrow(cat, from_manifest(cat, path), Select.PENDING, "analyses")
+    sel = narrow(cat, from_manifest(cat, path), Select.PENDING, "analyses", settings=settings)
     assert {r.id for r in sel.refs} == {refs["a"], refs["c"]}
 
 

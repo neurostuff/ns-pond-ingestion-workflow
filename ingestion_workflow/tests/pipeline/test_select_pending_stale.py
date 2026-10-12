@@ -110,3 +110,9 @@ def test_only_the_named_stages_are_planned(world):
     assert {r.id for r in only_extract.refs} <= {r.id for r in got.refs}
     assert ids["never"] in {r.id for r in got.refs}      # download is still to do
     assert ids["never"] not in {r.id for r in only_extract.refs}
+
+
+def test_pending_needs_settings(world):
+    catalog, _, _ = world
+    with pytest.raises(ValueError, match="needs settings"):
+        narrow(catalog, everything(catalog), Select.PENDING, "extract")
