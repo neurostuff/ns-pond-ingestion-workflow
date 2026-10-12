@@ -23,6 +23,13 @@ from .plan import StagePlan, Work
 #: taken back takes back its own artifact in turn, down to neurostore and the corpus.
 #: A failed or missing extraction is not that evidence: it only blocks.
 NO_TEXT = "no extraction text"
+#: The other evidence: the prose was read again and holds nothing, and the tables hold
+#: nothing either, so the analyses made from the earlier reading are no longer the
+#: article's. Taken back like NO_TEXT, from resolve down.
+NO_ANALYSES = "no analyses after re-read"
+#: Why an artifact may be taken back. A take-back keeps NO_TEXT as its fingerprint, and
+#: records its reason as its error.
+TAKE_BACK_REASONS = (NO_TEXT, NO_ANALYSES)
 
 #: What an upload records instead of retracting when a studyset holds the study: the
 #: coordinates under someone's meta-analysis change only after a person has looked.
@@ -30,7 +37,8 @@ HELD_FOR_REVIEW = "held for review"
 
 
 def taken_back(artifact: Optional[Artifact]) -> bool:
-    return artifact is not None and artifact.status is Status.FAILED and artifact.error == NO_TEXT
+    return (artifact is not None and artifact.status is Status.FAILED
+            and artifact.error in TAKE_BACK_REASONS)
 
 
 def needs_taking_back(existing: Optional[Artifact]) -> bool:
@@ -43,7 +51,7 @@ def needs_taking_back(existing: Optional[Artifact]) -> bool:
         return False
     if existing.fingerprint != NO_TEXT:
         return True
-    return existing.status is not Status.OK and existing.error != NO_TEXT
+    return existing.status is not Status.OK and existing.error not in TAKE_BACK_REASONS
 
 
 def take_back_or_block(plan: StagePlan, ref: ArticleRef, upstream: Optional[Artifact],
@@ -55,7 +63,8 @@ def take_back_or_block(plan: StagePlan, ref: ArticleRef, upstream: Optional[Arti
     records the take-back: the stages after it hold what was made from the same old text,
     and they learn of the take-back only from this stage's artifact."""
     if taken_back(upstream) and (existing is None or needs_taking_back(existing)):
-        plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
+        plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None,
+                                 reason=upstream.error))
     else:
         plan.blocked += 1
 
@@ -69,7 +78,7 @@ def is_take_back(work: Work) -> bool:
 
 def taking_back(stage: str, works: List[Work]):
     """The failures that take back the works planned by `take_back_or_block`, and the rest."""
-    back = [Outcome.failure(w.article_id, stage, "", NO_TEXT, fingerprint=NO_TEXT)
+    back = [Outcome.failure(w.article_id, stage, "", w.reason or NO_TEXT, fingerprint=NO_TEXT)
             for w in works if is_take_back(w)]
     return back, [w for w in works if not is_take_back(w)]
 

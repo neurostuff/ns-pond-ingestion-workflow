@@ -13,7 +13,14 @@ from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 from ingestion_workflow.models.statistics import normalize_statistic_kind
 
 from ..plan import StagePlan, Work
-from ..stage import Context, take_back_or_block, taking_back
+from ..stage import (
+    NO_ANALYSES,
+    NO_TEXT,
+    Context,
+    needs_taking_back,
+    take_back_or_block,
+    taking_back,
+)
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
 RESOLVE_VERSION = 10
@@ -324,7 +331,14 @@ class ResolveStage:
             tables = analyses if analyses is not None and analyses.status is Status.OK else None
             read = prose.summary.get("coordinates") or prose.summary.get("analyses")
             if not read and not (tables and tables.summary.get("tables")):
-                plan.skipped += 1  # neither the tables nor the prose hold an analysis
+                # Neither the tables nor the prose hold an analysis. A resolve made from an
+                # earlier reading that did is taken back, and everything made from it after it.
+                existing = artifacts.get(ref.id, {}).get("")
+                if existing is not None and needs_taking_back(existing):
+                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
+                                             upstream=None, reason=NO_ANALYSES))
+                else:
+                    plan.skipped += 1
                 continue
             fp = self.fingerprint_for(prose, tables)
             existing = artifacts.get(ref.id, {}).get("")

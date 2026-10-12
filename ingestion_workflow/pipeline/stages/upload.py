@@ -194,7 +194,8 @@ class UploadStage:
             else:
                 nothing.append(work)
         for work in nothing:
-            yield Outcome.failure(work.article_id, self.name, "", NO_TEXT, fingerprint=NO_TEXT)
+            yield Outcome.failure(work.article_id, self.name, "", work.reason or NO_TEXT,
+                                  fingerprint=NO_TEXT)
         yield from self._retract(retract_back, hold_studyset_members=True)
         if not works:
             return

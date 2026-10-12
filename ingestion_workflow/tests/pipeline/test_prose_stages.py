@@ -1952,3 +1952,66 @@ def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
     _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert again.status is Status.OK and again.summary["reused"] == {"exact.1": [0, 1]}
     assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
+
+
+def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(env, monkeypatch):
+    """w2ni664ashw2: the role-free model read the passage again and found no coordinate, and
+    the article has no table. The resolve, roles, space and upload made from the earlier
+    reading's one analysis are taken back, the study is retracted, and roles is not left
+    waiting on a resolve made from other prose."""
+    from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
+    from ingestion_workflow.services.upload import RetractOutcome
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="90"))
+    _uploaded_chain(catalog, ref, without=("passages",))
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="re-read",
+                            payload={"passages": [{"analyses": [], "omitted": []}]},
+                            summary={"passages": 1, "coordinates": 0, "analyses": 0})])
+    ctx = Context(settings, catalog)
+    for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error, taken.fingerprint) == (
+            stage.name, Status.FAILED, NO_ANALYSES, NO_TEXT)
+    # recorded once: resolve now skips the article, roles waits on nothing
+    again, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (again.skipped, outcomes) == (1, [])
+    again, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert (again.blocked, again.reasons, outcomes) == (1, {}, [])
+    asked = []
+
+    def retracted(slug, bsid, kw):
+        asked.append(bsid)
+        return RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted",
+                              success=True)
+
+    upload = _upload_through(monkeypatch, settings, retracted=retracted)
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert asked == ["bs-1"] and (done.status, done.fingerprint) == (Status.OK, NO_TEXT)
+    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                                    catalog.artifacts([ref.id], "upload"))
+    assert [w.upstream.summary["retracted"] for w in sync.pending] == ["deleted"]
+
+
+def test_an_article_never_resolved_with_nothing_to_resolve_is_skipped_not_taken_back(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="91"))
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="empty",
+                            payload={"passages": []}, summary={"passages": 0, "coordinates": 0})])
+    plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.skipped, plan.pending, outcomes) == (1, [], [])
+
+
+def test_a_re_read_that_finds_points_again_rebuilds_a_taken_back_resolve(env):
+    from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="92"))
+    catalog.record([Outcome.failure(ref.id, "resolve", "", NO_ANALYSES, fingerprint=NO_TEXT),
+                    Outcome(article_id=ref.id, stage="prose", source="", fingerprint="found",
+                            payload={"space": "MNI",
+                                     "passages": [_stated("insula", 38, 20, -4, "T", 4.1)]},
+                            summary={"passages": 1, "coordinates": 1, "analyses": 1})])
+    _, (resolved,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert resolved.status is Status.OK and resolved.summary["prose_points"] == 1
