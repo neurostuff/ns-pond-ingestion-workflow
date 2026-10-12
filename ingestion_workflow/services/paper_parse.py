@@ -43,7 +43,7 @@ logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files, including when the
 #: nspond-tables pin moves: its coordinate_blocks numbers the column groups keys hold.
-PAPER_PARSE_VERSION = 7
+PAPER_PARSE_VERSION = 8
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -821,8 +821,9 @@ def _column_groups(
 
     A column group is the block's number among the table's blocks of coordinate
     columns, which come from the table alone, so no reading moves it. A column
-    outside every block is numbered after them, in the order found; that number
-    can move between readings, so the note says the table's keys rest on it.
+    outside every block is numbered after them by its own position, `len(blocks)
+    + column`, so that no reading moves it either; the note says the table's keys
+    rest on a column, not a block.
     """
     columns = sorted({found[1] for points in placed for found in points if found})
     blocks = grid.blocks or []
@@ -832,19 +833,18 @@ def _column_groups(
         hit = next((i for i, (first, last) in enumerate(blocks) if first <= col <= last), None)
         if hit is None:
             outside.append(col)
+            group[col] = len(blocks) + col
         else:
             group[col] = hit
     if not outside:
         return group, None
-    group.update((col, len(blocks) + i) for i, col in enumerate(outside))
     if not blocks:
         return group, (
-            "column groups ranked among the columns its points were found in: "
-            "the table shows no block of coordinate columns"
+            "column groups numbered by column: the table shows no block of coordinate columns"
         )
     return group, (
-        f"column groups of columns {', '.join(map(str, outside))} ranked after the table's "
-        f"{len(blocks)} block(s) of coordinate columns: no block holds them"
+        f"column groups of columns {', '.join(map(str, outside))} numbered by column after the "
+        f"table's {len(blocks)} block(s) of coordinate columns: no block holds them"
     )
 
 

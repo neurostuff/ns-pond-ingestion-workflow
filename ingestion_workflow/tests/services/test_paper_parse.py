@@ -1436,28 +1436,26 @@ def test_a_column_outside_the_table_blocks_is_numbered_after_them_and_noted(tmp_
     b_alone, _ = _parse(tmp_path, UNNAMED_BLOCKS, {"tbl1": _collection([_task_b()])})
     a, b = both.analyses
     assert [c.column_group for c in b.cells] == [0, 0]
-    assert [c.column_group for c in a.cells] == [1, 1]
+    # Column 1, after the table's one block.
+    assert [c.column_group for c in a.cells] == [2, 2]
     # B's block is the table's own: read with A or without, B keeps its key and no note.
     assert b_alone.analyses[0].key == b.key != a.key == a_alone.analyses[0].key
     assert _reason(b_alone) is None
     note = (
-        "column groups of columns 1 ranked after the table's 1 block(s) of coordinate columns: "
-        "no block holds them"
+        "column groups of columns 1 numbered by column after the table's 1 block(s) of "
+        "coordinate columns: no block holds them"
     )
     assert _reason(both) == _reason(a_alone) == note
     assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
     assert str(omitted[0]) == f"tbl1: {note}"
 
 
-def test_column_groups_of_a_table_with_no_blocks_are_ranked_and_noted(tmp_path):
+def test_column_groups_of_a_table_with_no_blocks_are_numbered_by_column_and_noted(tmp_path):
     # No axis names and no negative x or y: nothing in the table says where its blocks are.
     markup = UNNAMED_BLOCKS.replace("-32", "32").replace("-6", "6")
     parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([_task((32, 18, 2))])})
-    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0)]
-    note = (
-        "column groups ranked among the columns its points were found in: "
-        "the table shows no block of coordinate columns"
-    )
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 5)]
+    note = "column groups numbered by column: the table shows no block of coordinate columns"
     assert _reason(parse) == note
     assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
 
@@ -1488,6 +1486,36 @@ def test_a_block_the_header_names_never_moves_whatever_else_is_read(tmp_path, x,
     assert len({a.key, read_middle.key, b.key}) == 3
 
 
+#: Two blocks of whole triples, headed MNI, and two sparser columns between them
+#: whose triples are not enough to make them blocks (eqet7475kw2p tbl2's shape).
+SPARSE_BETWEEN = """<table>
+<tr><th>Region</th><th>Encoding (MNI)</th><th>k</th><th>Retrieval</th><th>k</th>
+<th>Both (MNI)</th><th>k</th></tr>
+<tr><td>mPFC</td><td>[-48 12 -38]</td><td>216</td>
+<td></td><td></td><td>[-4 54 2]</td><td>203</td></tr>
+<tr><td>MTG</td><td>[-52 -42 4]</td><td>156</td>
+<td>[-52 -42 -4]</td><td>70</td><td></td><td></td></tr>
+<tr><td>PCC</td><td>[-4 -42 28]</td><td>265</td>
+<td>70</td><td></td><td>[8 -64 22]</td><td>259</td></tr>
+<tr><td>Visual</td><td></td><td>[-24 -100 0]</td><td>151</td><td></td><td></td><td></td></tr>
+<tr><td>Insula</td><td></td><td></td><td>[30 20 4]</td><td>88</td><td></td><td></td></tr>
+</table>"""
+
+
+def test_columns_outside_the_blocks_keep_their_numbers_whatever_else_is_read(tmp_path):
+    def retrieval():
+        return _task((-52, -42, -4), (30, 20, 4))
+
+    visual = Analysis(name="Visual", table_id="tbl1", coordinates=[Coordinate(x=-24, y=-100, z=0)])
+    both, _ = _parse(tmp_path, SPARSE_BETWEEN, {"tbl1": _collection([visual, retrieval()])})
+    alone, _ = _parse(tmp_path, SPARSE_BETWEEN, {"tbl1": _collection([retrieval()])})
+    v, r = both.analyses
+    # Two blocks, then columns 2 and 3 by position.
+    assert [c.column_group for c in v.cells] == [4]
+    assert [c.column_group for c in r.cells] == [5, 5]
+    assert alone.analyses[0].key == r.key
+
+
 def test_the_parse_sync_writes_numbers_blocks_from_the_table_and_reports_its_notes(tmp_path):
     """What sync writes; upload sends that file to neurostore unchanged."""
     (tmp_path / "tbl1.html").write_text(TWO_BLOCKS, encoding="utf-8")
@@ -1515,8 +1543,8 @@ def test_the_parse_sync_writes_numbers_blocks_from_the_table_and_reports_its_not
         "tbl1", [(0, 1), (1, 1)], "Patients > Controls"
     )
     note = (
-        "tbl2: column groups of columns 1 ranked after the table's 1 block(s) of coordinate "
-        "columns: no block holds them"
+        "tbl2: column groups of columns 1 numbered by column after the table's 1 block(s) of "
+        "coordinate columns: no block holds them"
     )
     assert summary["parse_notes"] == [note]
     assert [t["reason"] for t in synced["tables"] if t["table_id"] == "tbl2"] == [note[6:]]

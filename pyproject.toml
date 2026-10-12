@@ -32,7 +32,7 @@ dependencies = [
   # generator iterated on without touching the pipeline. Pinned: its
   # coordinate_blocks numbers table keys' column groups, so moving the pin is a
   # PAPER_PARSE_VERSION bump.
-  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@485dc30460b751808af5b2efb6bc2abbf6cf3839",
+  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@7c93e42b49a470d2c67b08ef72a79e5383677bb6",
   "paramiko>=3,<4",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
