@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from ingestion_workflow.clients.prose_coordinates import (
-    DUPLICATE_POINT,
     ProseCoordinateClient,
     clean_answer,
 )
@@ -67,7 +66,7 @@ def test_a_role_free_answer_is_parsed_point_by_point():
          "cluster_size": 120},
         {"x": -30.0, "y": -40.0, "z": -10.0, "statistic": None, "value": None,
          "cluster_size": None}]
-    assert (analysis["duplicates"], got["stray_roles"]) == ([], 0)
+    assert got["stray_roles"] == 0
 
 
 def test_a_stray_role_is_ignored_and_counted():
@@ -79,35 +78,22 @@ def test_a_stray_role_is_ignored_and_counted():
         {"name": "figure display", "measure": None, "points": points}]}
     got = clean_answer(answer, text)
     (analysis,) = got["analyses"]
+    # Nothing of the role reaches the set: not a key, not its name.
+    assert (sorted(analysis), analysis["name"]) == (
+        ["measure", "name", "points", "unwritten"], "figure display")
     assert [list(p) for p in analysis["points"]] == [FIELDS, FIELDS]
     assert [(p["x"], p["y"], p["z"]) for p in analysis["points"]] == [
         (0.0, -52.0, 26.0), (4.0, 30.0, 22.0)]
     assert got["stray_roles"] == 2
 
 
-def test_a_point_repeated_within_a_set_is_kept_once_and_each_repeat_recorded():
-    """A three-point list answered three times over, as in one long figure caption."""
-    text = "Peaks at (-12, -2, -16), (-60, -42, 4) and (64, -30, -10)."
-    peaks = [_point(-12, -2, -16), _point(-60, -42, 4), _point(64, -30, -10)]
-    answer = {"space": "MNI", "analyses": [{"name": "emotion > neutral", "measure": None,
-                                            "points": peaks * 3}]}
-    (analysis,) = clean_answer(answer, text)["analyses"]
-    xyz = [(-12, -2, -16), (-60, -42, 4), (64, -30, -10)]
-    assert [(p["x"], p["y"], p["z"]) for p in analysis["points"]] == xyz
-    assert [(d["x"], d["y"], d["z"], d["reason"]) for d in analysis["duplicates"]] == [
-        (*p, DUPLICATE_POINT) for p in xyz] * 2
-
-
-def test_only_an_exact_repeat_is_a_duplicate():
-    """The same place at another statistic is another report of it."""
-    text = "Peak at (50, -50, 15), t = 4.2 and Z = 3.9."
-    points = [_point(50, -50, 15, "T", 4.2), _point(50, -50, 15, "Z", 3.9),
-              _point(50, -50, 15, "T", 4.2)]
-    answer = {"space": "MNI", "analyses": [{"name": "a > b", "measure": None, "points": points}]}
-    (analysis,) = clean_answer(answer, text)["analyses"]
-    assert [(p["statistic"], p["value"]) for p in analysis["points"]] == [
-        ("T", 4.2), ("Z", 3.9)]
-    assert len(analysis["duplicates"]) == 1
+def test_the_clean_step_keeps_every_point_of_a_set_for_resolve_to_merge():
+    """nmb-112: the role-free model gives each peak three times, as its t, Z and p."""
+    case = json.loads((FIXTURE.parent / "nmb_112.json").read_text(encoding="utf-8"))
+    (analysis,) = clean_answer(case["answer"], case["text"])["analyses"]
+    assert [(p["x"], p["y"], p["z"], p["statistic"]) for p in analysis["points"]] == [
+        (x, y, z, s) for x, y, z in [(-12, -2, -16), (-60, -42, 4), (64, -30, -10)]
+        for s in ("T", "Z", "P")]
 
 
 def test_a_point_repeated_across_sets_stays_in_each():
@@ -120,4 +106,3 @@ def test_a_point_repeated_across_sets_stays_in_each():
     assert [a["name"] for a in got["analyses"]] == names
     assert [[(p["x"], p["y"], p["z"]) for p in a["points"]] for a in got["analyses"]] == [
         [(50, -50, 15)]] * 3
-    assert all(a["duplicates"] == [] for a in got["analyses"])

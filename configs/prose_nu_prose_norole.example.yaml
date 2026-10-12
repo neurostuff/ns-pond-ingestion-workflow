@@ -1,0 +1,4 @@
+# The role-free nu-prose as beast's vLLM serves it (--served-model-name nu-prose-norole
+# --port 8340). Merge these lines into a run config: ingest run -c <config>.yaml
+prose_model: "nu-prose-norole"
+prose_api_base: "http://localhost:8340/v1"

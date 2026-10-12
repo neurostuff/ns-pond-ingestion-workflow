@@ -34,12 +34,20 @@ CLEAN_VERSION = "within-set-duplicates-dropped"
 #: moving to a later one makes no answer stale. A prompt outside the family
 #: reads every passage again.
 INTERCHANGEABLE_PROMPTS = ("2026-10-06.n5", "2026-10-11.n5-norole")
+#: The served models of that family: nu-prose and the role-free nu-prose.
+#: An answer is reused only from one of them, for one of them.
+INTERCHANGEABLE_MODELS = ("nu-prose", "nu-prose-norole")
+#: Who read an answer stored before producers were recorded: every such
+#: result was written 2026-10-07 to 10-08, by nu-prose under the prompt as it
+#: stood from 2026-10-06 until 2026-10-11.
+LEGACY_MODEL, LEGACY_PROMPT = "nu-prose", "2026-10-06.n5"
 
 #: Why a passage was read by the model rather than given an earlier answer.
 NO_EARLIER = "no earlier result"
 TEXT_CHANGED = "passage text changed"
 EARLIER_FAILED = "earlier reading failed"
 OTHER_PROMPT = "earlier prompt not interchangeable"
+OTHER_MODEL = "earlier model not interchangeable"
 METADATA_CHANGED = "title and abstract changed"
 #: Why an earlier answer was given to a passage instead, each with its rule's version:
 #: the same text, or the same once `prose_text.normalized`.
@@ -75,9 +83,15 @@ def earlier_answers(payload: Optional[dict]) -> Dict[str, Dict[str, dict]]:
             answer = {"space": p.get("space"), "analyses": p.get("analyses") or []}
         entry = {"answer": answer, "error": p.get("error"), "producer": p.get("producer"),
                  "inputs": p.get("inputs")}
-        out[EXACT].setdefault(sha256(p["text"]), entry)
-        out[NORMALIZED].setdefault(sha256(normalized(p["text"])), entry)
+        # The first answered copy of a text wins; a failed copy gives way to an answered one.
+        for rule, key in ((EXACT, sha256(p["text"])), (NORMALIZED, sha256(normalized(p["text"])))):
+            if key not in out[rule] or _failed(out[rule][key]) and not _failed(entry):
+                out[rule][key] = entry
     return out
+
+
+def _failed(entry: dict) -> bool:
+    return entry["error"] is not None or entry["answer"] is None
 
 
 def earlier_reading(earlier: Dict[str, Dict[str, dict]], text: str) -> Tuple[Optional[dict], str]:
@@ -97,22 +111,20 @@ def _metadata_input(inputs: Optional[list]) -> Optional[str]:
                  if i.get("artifact_kind") == "metadata"), None)
 
 
-def reuse(earlier: Optional[dict], rule: str, prompt_version: str,
+def reuse(earlier: Optional[dict], rule: str, prompt_version: str, model: Optional[str],
           inputs: list) -> Tuple[bool, str]:
     """Whether a passage read with `inputs` takes `earlier`, the reading `rule` found, and why."""
     if earlier is None:
         return False, TEXT_CHANGED
-    if earlier["error"] is not None or earlier["answer"] is None:
+    if _failed(earlier):
         return False, EARLIER_FAILED
-    in_family = prompt_version in INTERCHANGEABLE_PROMPTS
-    if earlier["producer"] is None:
-        # Stored before producers were recorded: the family's, as nu-prose read them.
-        interchangeable = in_family
-    else:
-        made_with = earlier["producer"].get("prompt_version")
-        interchangeable = made_with == prompt_version or (
-            in_family and made_with in INTERCHANGEABLE_PROMPTS)
-    if not interchangeable:
+    made = earlier["producer"] or {"model": LEGACY_MODEL, "prompt_version": LEGACY_PROMPT}
+    if made.get("model") != model and not (
+            made.get("model") in INTERCHANGEABLE_MODELS and model in INTERCHANGEABLE_MODELS):
+        return False, OTHER_MODEL
+    made_with = made.get("prompt_version")
+    if made_with != prompt_version and not (
+            made_with in INTERCHANGEABLE_PROMPTS and prompt_version in INTERCHANGEABLE_PROMPTS):
         return False, OTHER_PROMPT
     if (earlier["inputs"] is not None
             and _metadata_input(earlier["inputs"]) != _metadata_input(inputs)):
@@ -225,7 +237,8 @@ class ProseStage:
                 inputs = self._inputs(passage.text, meta_artifact)
                 found_before, rule = (earlier_reading(earlier, passage.text)
                                       if earlier else (None, ""))
-                reused, reason = reuse(found_before, rule, PROSE_PROMPT_VERSION, inputs)
+                reused, reason = reuse(found_before, rule, PROSE_PROMPT_VERSION,
+                                       self.settings.prose_model, inputs)
                 if not earlier or not earlier[EXACT]:
                     reason = NO_EARLIER
                 plans[work.article_id].append((found_before if reused else None, reason, inputs))
@@ -245,8 +258,9 @@ class ProseStage:
                 yield Outcome.failure(work.article_id, self.name, "", unreadable[work.article_id],
                                       fingerprint=work.fingerprint)
                 continue
-            out, errors, coords, named, unwritten, duplicates, stray_roles = [], 0, 0, 0, 0, 0, 0
+            out, errors, coords, named, unwritten, stray_roles = [], 0, 0, 0, 0, 0
             reused, read_again, made_by = {}, collections.Counter(), collections.Counter()
+            unrecorded = 0
             passages = zip(payload.get("passages", []), read[work.article_id],
                            plans[work.article_id])
             for i, (p, passage, (earlier, reason, inputs)) in enumerate(passages):
@@ -258,6 +272,7 @@ class ProseStage:
                     (raw, error), by = next(answered), producer
                     read_again[reason] += 1
                 made_by[by.get("prompt_version") or UNRECORDED] += 1
+                unrecorded += by.get("version") == f"prose.{UNRECORDED}"
                 answer = clean_answer(raw, passage.text) if error is None else {}
                 errors += error is not None
                 points = [q for a in answer.get("analyses", []) for q in a["points"]]
@@ -265,7 +280,6 @@ class ProseStage:
                 named += len(answer.get("analyses", []))
                 unwritten += sum(a.get("unwritten", 0)
                                  for a in answer.get("analyses", []) + answer.get("omitted", []))
-                duplicates += sum(len(a["duplicates"]) for a in answer.get("analyses", []))
                 stray_roles += answer.get("stray_roles", 0)
                 out.append({"span": p["span"], "from_legend": passage.from_legend,
                             "text": passage.text, "heading": passage.heading,
@@ -289,11 +303,13 @@ class ProseStage:
                 summary={"source": payload.get("source"), "read": payload.get("read"),
                          "passages": len(out),
                          "coordinates": coords, "analyses": named, "unwritten": unwritten,
-                         "duplicate_points": duplicates, "stray_roles": stray_roles,
+                         # role words of reused answers of the role-bearing prompt
+                         "stray_roles": stray_roles,
                          # which passages took an earlier answer of their text, by the rule
                          # that matched it, and why each other one was read
                          "reused": reused,
                          "read_again": dict(read_again), "prompt_versions": dict(made_by),
+                         "unrecorded_producers": unrecorded,
                          "read_fingerprint": read_fps[work.article_id],
                          "passages_read": work.upstream.fingerprint},
             )
@@ -310,13 +326,15 @@ class ProseStage:
         return [r.model_dump(mode="json") for r in refs]
 
     def _producer(self, prompt_version: Optional[str]) -> dict:
-        """Who read a passage, as a study_schema Producer; no prompt for an unrecorded one."""
+        """Who read a passage, as a study_schema Producer. An answer stored without one (no
+        `prompt_version` given) was nu-prose's: `LEGACY_MODEL` under `LEGACY_PROMPT`."""
         from study_schema.models.paper_parse import Producer
 
         from ingestion_workflow.services.paper_parse import PRODUCER
 
         if prompt_version is None:
-            producer = Producer(name=PRODUCER, version=f"prose.{UNRECORDED}", stage=self.name)
+            producer = Producer(name=PRODUCER, version=f"prose.{UNRECORDED}", stage=self.name,
+                                model=LEGACY_MODEL, prompt_version=LEGACY_PROMPT)
         else:
             producer = Producer(name=PRODUCER, version=f"prose.{prompt_version}", stage=self.name,
                                 model=self.settings.prose_model, prompt_version=prompt_version)
