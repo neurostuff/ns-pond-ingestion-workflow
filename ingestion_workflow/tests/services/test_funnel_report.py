@@ -738,3 +738,96 @@ def test_a_stage_that_cannot_plan_names_the_setting(stored, tmp_path):
     stages = {s["stage"]: s for s in trace_article(root, a, settings=settings)["stages"]}
     assert stages["triage"]["plan"] == \
         "not known: this stage needs coordinate_gate_path in the config to plan"
+
+
+@pytest.fixture()
+def failing(tmp_path):
+    """Articles whose records failed with raw exception text, one of them unmatched."""
+    cat = Catalog.open(tmp_path / "failing")
+    a, b, c, d = (cat.register(Identifier(pmid=p)).id for p in ("5001", "5002", "5003", "5004"))
+    secret = "sk_live_" + "A1b2C3d4" * 5
+    cat.record([
+        _ok(a, "download", "ace"),
+        Outcome.failure(a, "extract", "ace", "RuntimeError: readabilipy cannot run: node 16"),
+        _ok(b, "download", "pubget"),
+        Outcome.failure(b, "extract", "pubget",
+                        f"Weird failure at step 7 token={secret} then " + "x " * 450),
+        # One reason group in two states: the page's command must keep the state.
+        Outcome.failure(c, "download", "pdf", "PDF fetch failed: 403 Client Error: Forbidden"),
+        Outcome.failure(d, "download", "pdf", "PDF fetch failed: 403 Client Error: Forbidden",
+                        permanent=True),
+    ])
+    cat.close()
+    return tmp_path / "failing", (a, b, c, d), secret
+
+
+def test_trace_gives_a_plain_reason_and_keeps_the_raw_error_as_detail(failing):
+    root, (a, b, _, _), secret = failing
+    known = {s["stage"]: s for s in trace_article(root, a)["stages"]}
+    (record,) = known["extract"]["records"]
+    assert record["reason"] == "node too old for readabilipy"
+    assert record["error_detail"] == "RuntimeError: readabilipy cannot run: node 16"
+    assert "error" not in record
+    unmatched = {s["stage"]: s for s in trace_article(root, b)["stages"]}
+    (record,) = unmatched["extract"]["records"]
+    assert record["reason"] == "the stage raised an error"
+    assert unmatched["extract"]["reason"] == "the stage raised an error"
+    assert unmatched["metadata"]["reason"] == "extract failed: the stage raised an error"
+    assert record["error_detail"].startswith("Weird failure at step 7 token=<redacted>")
+    assert secret not in record["error_detail"] and len(record["error_detail"]) == 500
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs node")
+def test_page_trace_shows_raw_errors_only_as_technical_detail(failing):
+    root, (a, b, _, _), _ = failing
+    conn = open_readonly(root)
+    try:
+        page = render_html(build_funnel(conn, samples=50), str(root))
+    finally:
+        conn.close()
+    for article, plain in ((a, "node too old for readabilipy"),
+                           (b, "the stage raised an error")):
+        found = json.dumps(trace_article(root, article))
+        stubs = """
+            const ELS={};globalThis.document={getElementById:id=>id==="flow"?null:
+              (ELS[id]=ELS[id]||{innerHTML:"",textContent:"",value:"",scrollIntoView(){}})};
+            globalThis.location={protocol:"http:",hash:""};
+            globalThis.fetch=()=>Promise.resolve({json:()=>Promise.resolve(%s)});""" % found
+        out = _page_js_with(stubs, page, """
+            trace(%s);setTimeout(()=>console.log(JSON.stringify({html:ELS.trace.innerHTML})),20);
+            """ % json.dumps(article))
+        outside = re.sub(r"<details>.*?</details>", "", out["html"], flags=re.S)
+        assert "technical detail" in out["html"]
+        assert "RuntimeError" not in outside and "Weird failure" not in outside
+        assert plain in outside
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs node")
+def test_page_command_keeps_the_state_of_a_group_in_two_states(failing):
+    root, (_, _, c, d), _ = failing
+    conn = open_readonly(root)
+    try:
+        funnel = build_funnel(conn, samples=50)
+    finally:
+        conn.close()
+    states = {key[1] for key in funnel.cells
+              if key[0] == "download" and reason_group(key[2]) == "HTTP 403 forbidden"}
+    assert states == {FAILED, PERMANENT}
+    out = _page_js(render_html(funnel, str(root)), """
+        const o={stage:"download",state:"failed",group:"HTTP 403 forbidden"};
+        console.log(JSON.stringify({cmd:cliCmd(o),drill:bucket(o)}));""")
+    args = shlex.split(out["cmd"])
+    assert {r[0] for r in out["drill"]["rows"]} == {c}
+    assert _ids(root, *args[3:]) == {c}
+
+
+def _page_js_with(prelude: str, page: str, harness: str) -> dict:
+    """The page's script under node, after `prelude` (stubs for what a browser provides)."""
+    script = re.findall(r"<script>(.*?)</script>", page, re.S)[-1]
+    data = re.search(r'<script id="data" type="application/json">(.*?)</script>', page,
+                     re.S).group(1)
+    run = subprocess.run(["node", "-e", f"const FUNNEL_DATA={data};\n{prelude}\n{script}\n"
+                                        f"{harness}"],
+                         capture_output=True, text=True, timeout=60)
+    assert run.returncode == 0, run.stderr
+    return json.loads(run.stdout)

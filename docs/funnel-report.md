@@ -66,7 +66,11 @@ whether each record is fresh, as that stage's own plan judges it. The trace
 reads catalog rows only, never a payload: where a plan needs one, passages'
 freshness is worked out from the rows (the extraction it read and that text's
 recorded hash), and any other says it is not known without the payload. A
-stage that cannot plan says which setting it needs.
+stage that cannot plan says which setting it needs. A failed record shows its reason in
+words (an error no category matches reads "the stage raised an error"); its raw
+error, cut to 500 characters with anything token-like removed, sits under a
+collapsed "technical detail". In `ingest report trace`'s JSON these are each
+record's `reason` and `error_detail`.
 
 ## What a state means
 

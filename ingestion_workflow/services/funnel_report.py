@@ -207,6 +207,31 @@ _CATEGORIES: Tuple[Tuple[str, str], ...] = (
 _COMPILED = tuple((re.compile(p, re.I), c) for p, c in _CATEGORIES)
 
 
+#: Anything in an error that looks like a credential: a key=value secret, a
+#: signed URL's parameters, or a long opaque token.
+_SECRETS = (
+    (re.compile(r"(?i)\b(api[_-]?key|access[_-]?token|token|secret|password|bearer|"
+                r"authorization|sig|signature)(\s*[=:]\s*|\s+)[^\s&,;'\"]+"), r"\1\2<redacted>"),
+    (re.compile(r"\b[A-Za-z0-9_\-]{32,}\b"), "<redacted>"),
+)
+
+
+def scrub(text: str, limit: int = 500) -> str:
+    """Raw error text fit to show: anything token-like removed, cut to `limit`."""
+    for pattern, replacement in _SECRETS:
+        text = pattern.sub(replacement, text)
+    return text[:limit]
+
+
+_UNMATCHED = re.compile(r"other: [^+;]*?(?= ?(?:[+;]|$))")
+
+
+def plain_reason(reason: str) -> str:
+    """A reason in words: an error no category matched says only that the stage
+    raised one, and its text stays in the technical detail."""
+    return _UNMATCHED.sub("the stage raised an error", reason).rstrip()
+
+
 def categorize(error: Optional[str]) -> str:
     """The category of a recorded error; unmatched text keeps its own shape."""
     if not error:
@@ -214,7 +239,7 @@ def categorize(error: Optional[str]) -> str:
     for pattern, category in _COMPILED:
         if pattern.search(error):
             return category
-    text = re.sub(r"https?://\S+", "<url>", error.strip())
+    text = re.sub(r"https?://\S+", "<url>", scrub(error.strip()))
     text = re.sub(r"\d+", "N", text)
     return "other: " + text[:70]
 
@@ -324,7 +349,7 @@ def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
     if best.error and best.error.startswith(HELD_FOR_REVIEW):
         return Placed(HELD, HELD_FOR_REVIEW, best.error)
     reason = " + ".join(sorted({_failure_reason(r) for r in failures})) or "no reason recorded"
-    raw = "; ".join((f"{r.source}: " if r.source else "") + (r.error or "")[:200]
+    raw = "; ".join((f"{r.source}: " if r.source else "") + scrub(r.error or "", 200)
                     for r in failures)
     return Placed(FAILED if best.status == "failed" else PERMANENT, reason, raw[:600])
 
@@ -707,7 +732,7 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
                 status = TAKEN_BACK if row.error == NO_TEXT else row.status
                 reason = _row_reason(row)
                 key = (row.stage, row.source, status, reason, downloaded, judged, day, tried)
-                _add(funnel.sources, key, article_id, (row.error or "")[:300], samples)
+                _add(funnel.sources, key, article_id, scrub(row.error or "", 300), samples)
                 if collect and collect("source", key):
                     funnel.collected.append(
                         (article_id, f"{row.stage}:{row.source}", status, reason))
@@ -1009,8 +1034,9 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
             path = Path(catalog_root).resolve() / "blobs" / blob[:2] / f"{blob}.json.gz" \
                 if blob else None
             records[stage].append({
-                "source": source, "status": status, "error": (error or "")[:600],
-                "reason": _row_reason(by_key[(stage, source)]),
+                "source": source, "status": status,
+                "reason": plain_reason(_row_reason(by_key[(stage, source)])),
+                "error_detail": scrub(error or ""),
                 "summary": json.loads(summary), "fingerprint": fp, "written": written,
                 "path": str(path) if path else None,
                 "on_disk": path.exists() if path else None,
@@ -1039,7 +1065,8 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
         upstream = [(i, u) for i in inputs for u in records.get(i, [])]
         stages.append({
             "stage": node.name, "input": node.upstream, "state": where.state,
-            "reason": where.reason, "meaning": MEANINGS[where.state], "records": mine,
+            "reason": plain_reason(where.reason), "meaning": MEANINGS[where.state],
+            "records": mine,
             "built_from": [{"stage": i, "source": u["source"],
                             "status": u["status"], "fingerprint": u["fingerprint"],
                             "written": u["written"],
@@ -1135,6 +1162,7 @@ span.click{cursor:pointer;text-decoration:underline dotted}
 .arrow{margin:4px 0 4px 40px;color:#2e9d57;font-weight:600}
 .ok{color:#1b7f3b}.bad{color:#a1261b;font-weight:600}
 #trace table td{text-align:left;white-space:normal;vertical-align:top;max-width:none}
+#trace pre.detail{white-space:pre-wrap;font-size:11px;margin:2px 0;max-width:60ch}
 #trace .path{font-family:monospace;font-size:11px;word-break:break-all}
 #filters .grp>div{display:flex;flex-wrap:wrap;gap:2px 0}
 .box li>span{min-width:0;overflow-wrap:anywhere}
@@ -1349,7 +1377,7 @@ function trace(id){
   const cmd=`ingest report trace ${q(id)} --catalog ${q(D.catalog)} -c <pipeline config>`;
   const known=STAGES.map(st=>{const c=D.cells.find(c=>S.stage[c[0]]===st&&c[7].some(([a])=>a===ix));if(!c)return [st,"","",""];const r=c[7].find(([a])=>a===ix);return [st,STATES[c[1]],S.reason[c[2]],S.raw[r[1]]]});
   el.innerHTML=`<div class="muted">The state at every stage, as this page counted it. Full trace (every record's path, status, fingerprint, freshness and inputs): <code>${esc(cmd)}</code>, or open this page with <code>ingest report serve</code> and click again.</div>`+
-    `<table><tr><th>stage</th><th>state</th><th>reason</th><th>raw</th></tr>${known.map(([st,s,r,raw])=>`<tr><td>${esc(st)}</td><td style="color:${INK[s]||"inherit"}">${esc(s||"(not sampled)")}</td><td>${esc(r)}</td><td>${esc(raw)}</td></tr>`).join("")}</table>`;
+    `<table><tr><th>stage</th><th>state</th><th>reason</th></tr>${known.map(([st,s,r,raw])=>`<tr><td>${esc(st)}</td><td style="color:${INK[s]||"inherit"}">${esc(s||"(not sampled)")}</td><td>${esc(r.replace(/other: [^+;]*?(?= ?(?:[+;]|$))/g,"the stage raised an error").trimEnd())}${raw?`<details><summary class="muted">technical detail</summary><pre class="detail">${esc(raw)}</pre></details>`:""}</td></tr>`).join("")}</table>`;
   document.getElementById("trace-title").scrollIntoView();
   if(!location.protocol.startsWith("http"))return;
   fetch("trace?id="+encodeURIComponent(id)).then(r=>r.json()).then(t=>{
@@ -1357,7 +1385,7 @@ function trace(id){
     const kv=o=>Object.entries(o||{}).map(([k,v])=>`${esc(k)}=${esc(typeof v==="object"?JSON.stringify(v):v)}`).join(", ");
     el.innerHTML=`<div class="muted">Registered ${esc(t.registered)}. From the catalog rows only; no payload is opened.</div><table><tr><th>stage</th><th>state</th><th>records</th><th>built from</th><th>freshness</th></tr>`+
       t.stages.map(x=>`<tr><td><b>${esc(x.stage)}</b><div class="muted">current code: ${kv(x.version)||"&mdash;"} (a record's own version is folded into its fingerprint; see freshness)</div></td><td><span style="color:${INK[x.state]}">${esc(x.state)}</span> ${esc(x.reason)}<div class="muted">${esc(x.meaning)}</div></td>`+
-        `<td>${x.records.map(r=>`<div><b>${esc(r.source||"(one)")}</b> ${esc(r.status)}${r.reason?": "+esc(r.reason):""}; written ${esc(r.written)}; ${r.attempts} attempt(s)${r.last?", last "+esc(r.last):""}<div class="muted">fingerprint ${esc(r.fingerprint||"(none)")}; ${kv(r.summary)}</div>${r.path?`<div class="path">${esc(r.path)} ${r.on_disk?"":"(missing)"}</div>`:""}${r.error?`<div class="muted">${esc(r.error)}</div>`:""}</div>`).join("")||"&mdash;"}</td>`+
+        `<td>${x.records.map(r=>`<div><b>${esc(r.source||"(one)")}</b> ${esc(r.status)}${r.reason?": "+esc(r.reason):""}; written ${esc(r.written)}; ${r.attempts} attempt(s)${r.last?", last "+esc(r.last):""}<div class="muted">fingerprint ${esc(r.fingerprint||"(none)")}; ${kv(r.summary)}</div>${r.path?`<div class="path">${esc(r.path)} ${r.on_disk?"":"(missing)"}</div>`:""}${r.error_detail?`<details><summary class="muted">technical detail</summary><pre class="detail">${esc(r.error_detail)}</pre></details>`:""}</div>`).join("")||"&mdash;"}</td>`+
         `<td>${x.built_from.map(u=>`<div>${esc(u.stage)}${u.source?":"+esc(u.source):""} ${esc(u.status)}, ${esc(u.fingerprint.slice(0,12)||"(none)")}, written ${esc(u.written)}${u.newer?' <span class="bad">rewritten after this record</span>':""}</div>`).join("")||"&mdash;"}</td>`+
         `<td>${esc(x.plan||"")}${x.records.filter(r=>r.freshness&&r.freshness!==x.plan).map(r=>`<div>${esc(r.source)}: ${esc(r.freshness)}</div>`).join("")}</td></tr>`).join("")+`</table>`;document.getElementById("trace-title").scrollIntoView()});
 }
