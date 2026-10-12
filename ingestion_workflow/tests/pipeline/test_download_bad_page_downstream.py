@@ -28,7 +28,7 @@ class Source:
     def __init__(self, source, result):
         self.source, self.result = source, result
 
-    def download(self, identifiers):
+    def download(self, identifiers, dead_urls=None):
         return [self.result(identifier) for identifier in identifiers]
 
 

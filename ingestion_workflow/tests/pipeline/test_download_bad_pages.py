@@ -19,7 +19,7 @@ class FakeSource:
     def __init__(self, source, page=None):
         self.source, self.page, self.calls = source, page, 0
 
-    def download(self, identifiers):
+    def download(self, identifiers, dead_urls=None):
         self.calls += 1
         results = []
         for identifier in identifiers:

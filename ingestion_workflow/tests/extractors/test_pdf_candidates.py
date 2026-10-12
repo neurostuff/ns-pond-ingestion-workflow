@@ -20,7 +20,12 @@ from ingestion_workflow.extractors.pdf_extractor import (
     PdfCandidate,
     PdfExtractor,
     _HostGate,
+    _is_pmc_copy,
+    _permanently_failed,
+    _retry_after,
     _try_order,
+    _type_of,
+    _version_of,
     remembered_dead_urls,
 )
 from ingestion_workflow.models import (
@@ -502,6 +507,240 @@ def test_pmc_and_europe_pmc_copies_are_left_to_their_own_sources(stub, tmp_path)
     assert {a["reason"] for a in skipped} == {SKIPPED_PMC}
     assert all(a["permanent"] for a in skipped)
     assert "status" not in skipped[0]
+
+
+@pytest.mark.parametrize(
+    "url, is_pmc",
+    [
+        ("https://pmc.ncbi.nlm.nih.gov/articles/PMC1/pdf/a.pdf", True),
+        ("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1/pdf/a.pdf", True),
+        ("https://ncbi.nlm.nih.gov/pmc/articles/PMC1/pdf/a.pdf", True),
+        ("https://europepmc.org/articles/pmc1?pdf=render", True),
+        ("https://www.europepmc.org/articles/pmc1?pdf=render", True),
+        ("https://PMC.NCBI.NLM.NIH.GOV/articles/PMC1/pdf/a.pdf", True),
+        ("https://www.ncbi.nlm.nih.gov/pubmed/1.pdf", False),
+        ("https://www.ncbi.nlm.nih.gov/pmcfoo/a.pdf", False),
+        ("https://noteuropepmc.org/a.pdf", False),
+        ("https://example.org/pmc/a.pdf", False),
+    ],
+)
+def test_which_hosts_are_pmc_or_europe_pmc_copies(url, is_pmc):
+    assert _is_pmc_copy(url) is is_pmc
+
+
+@pytest.mark.parametrize(
+    "source_type, location_type",
+    [
+        ("repository", "repository"),
+        ("journal", "publisher"),
+        ("conference", "publisher"),
+        ("book series", "publisher"),
+        ("ebook platform", "publisher"),
+        ("metadata", "unknown"),
+        (None, "unknown"),
+    ],
+)
+def test_an_openalex_source_type_ranks_the_copy(source_type, location_type):
+    assert _type_of(source_type) == location_type
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://arxiv.org/pdf/1.pdf",
+        "https://www.biorxiv.org/content/1v1.full.pdf",
+        "https://www.medrxiv.org/content/1v1.full.pdf",
+        "https://osf.io/a/download",
+        "https://www.preprints.org/manuscript/1/v1/download",
+        "https://psyarxiv.com/a/download",
+        "https://www.researchsquare.com/article/rs-1/v1.pdf",
+        "https://papers.ssrn.com/sol3/Delivery.cfm/1.pdf",
+    ],
+)
+def test_every_preprint_server_marks_an_unlabelled_copy_as_a_preprint(url):
+    assert _version_of(url, None) == "submittedVersion"
+
+
+def test_a_host_that_only_ends_like_a_preprint_server_is_not_one():
+    assert _version_of("https://notarxiv.org/a.pdf", None) is None
+
+
+# -- how listings are merged and ordered ------------------------------------------
+
+
+def test_urls_that_differ_only_in_their_query_are_two_copies():
+    first = PdfCandidate("https://example.org/get.pdf?id=1", "openalex", "publisher")
+    second = PdfCandidate("https://example.org/get.pdf?id=2", "openalex", "publisher")
+
+    assert [c.url for c in _try_order([first, second])] == [first.url, second.url]
+
+
+def test_a_url_listed_twice_keeps_every_label_either_listing_carries():
+    typed = PdfCandidate("https://example.org/a.pdf", "openalex", "repository",
+                         source="Some Repository", version="acceptedVersion", open_access=False,
+                         landing_page=True)
+    bare = PdfCandidate("https://EXAMPLE.org/a.pdf/", "semantic_scholar", "unknown")
+
+    for listings in ([typed, bare], [bare, typed]):
+        (merged,) = _try_order(listings)
+        assert (merged.provider, merged.location_type) == ("openalex", "repository")
+        assert merged.source == "Some Repository"
+        assert merged.version == "acceptedVersion"
+        assert merged.also_listed_by == ("semantic_scholar",)
+        assert merged.open_access is True and merged.landing_page is False
+
+
+def test_a_second_listing_supplies_a_label_the_first_lacks():
+    first = PdfCandidate("https://example.org/a.pdf", "openalex", "repository")
+    second = PdfCandidate("https://example.org/a.pdf", "semantic_scholar", "unknown",
+                          source="Repo", version="acceptedVersion")
+
+    (merged,) = _try_order([first, second])
+
+    assert (merged.source, merged.version) == ("Repo", "acceptedVersion")
+
+
+def test_a_closed_copy_is_tried_after_an_open_one():
+    closed = PdfCandidate("https://example.org/closed.pdf", "openalex", "repository",
+                          open_access=False)
+    opened = PdfCandidate("https://example.org/open.pdf", "openalex", "publisher")
+
+    assert [c.url for c in _try_order([closed, opened])] == [opened.url, closed.url]
+
+
+def test_equally_ranked_copies_keep_the_providers_order():
+    urls = [f"https://example.org/{n}.pdf" for n in range(4)]
+    listed = [PdfCandidate(url, "openalex", "publisher") for url in urls]
+
+    assert [c.url for c in _try_order(listed)] == urls
+
+
+# -- what a later run remembers -----------------------------------------------------
+
+
+def test_only_a_url_that_failed_for_good_is_remembered_as_dead():
+    attempts = [
+        {"url": "https://a.org/1.pdf", "outcome": "http_error", "permanent": True, "reason": "403"},
+        {"url": "https://a.org/2.pdf", "outcome": "http_error", "permanent": False, "reason": "503"},
+        {"url": "https://a.org/3.pdf", "outcome": "http_error", "reason": "unmarked"},
+        {"url": "https://a.org/4.pdf", "outcome": "landing_page_only", "permanent": True},
+    ]
+
+    assert remembered_dead_urls(attempts) == {"a.org/1.pdf?": "403"}
+
+
+def test_a_closed_location_does_not_decide_whether_an_article_is_permanent():
+    gone = {"outcome": "http_error", "permanent": True}
+    closed = {"outcome": "not_open_access", "permanent": True}
+    pending = {"outcome": "http_error", "permanent": False}
+
+    assert _permanently_failed([gone, closed]) is True
+    assert _permanently_failed([closed]) is False
+    assert _permanently_failed([gone, pending]) is False
+    assert _permanently_failed([]) is False
+
+
+class _Answer:
+    def __init__(self, status, headers=None):
+        self.status_code, self.headers = status, headers or {}
+
+
+@pytest.mark.parametrize(
+    "header, seconds", [("7", 7.0), ("0", 0.0), ("-5", 0.0), ("Wed, 21 Oct 2026 07:28:00 GMT", None),
+                        (None, None)]
+)
+def test_retry_after_is_read_as_seconds_and_never_negative(header, seconds):
+    headers = {} if header is None else {"Retry-After": header}
+
+    assert _retry_after(_Answer(429, headers)) == seconds
+
+
+@pytest.mark.parametrize(
+    "status, permanent",
+    [(400, True), (403, True), (404, True), (408, False), (425, False), (500, False), (503, False)],
+)
+def test_which_http_statuses_are_final(stub, tmp_path, status, permanent):
+    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (status, b"")), "repository"))
+
+    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+
+    assert result.url_attempts[0]["permanent"] is permanent
+
+
+def test_a_payload_that_only_starts_like_a_pdf_is_not_one(stub, tmp_path):
+    stub.work("10.1234/a", _location(stub.serve("/repo/a.pdf", (200, b"%PDF\n<html>")), "repository"))
+
+    result = _download(_extractor(tmp_path), "10.1234/a")[0]
+
+    assert _outcomes(result) == ["not_pdf"]
+
+
+def test_the_error_names_the_last_url_passed_over_when_none_was_fetched(tmp_path):
+    extractor = _extractor(tmp_path)
+    identifier = Identifier(doi="10.1234/a")
+    first, second = (
+        PdfCandidate(f"https://example.org/{n}", "openalex", "repository", landing_page=True)
+        for n in (1, 2)
+    )
+
+    result = extractor._download_single(identifier, [first, second], tmp_path)
+
+    assert result.error_message == f"OA landing page only: {second.url}"
+
+
+def test_the_error_names_the_last_failed_lookup_when_there_is_no_url(tmp_path):
+    extractor = _extractor(tmp_path)
+    failures = [
+        {"provider": p, "outcome": "lookup_failed", "reason": f"{p} lookup failed: down"}
+        for p in ("semantic_scholar", "openalex")
+    ]
+
+    result = extractor._download_single(Identifier(doi="10.1234/a"), [], tmp_path, failures)
+
+    assert result.error_message == "openalex lookup failed: down"
+
+
+# -- host gate edges ----------------------------------------------------------------
+
+
+def test_a_host_asking_for_exactly_the_longest_wait_is_waited_for():
+    gate = _HostGate(lambda: 0.0, lambda delay: None)
+
+    assert gate.rate_limited("h", 60.0) is None
+    assert "asked to wait 61s" in gate.rate_limited("other", 61.0)
+
+
+def test_a_longer_wait_already_given_is_not_shortened_by_a_later_429():
+    now = [0.0]
+    slept: list[float] = []
+    gate = _HostGate(lambda: now[0], slept.append)
+
+    gate.rate_limited("h", 30.0)
+    gate.rate_limited("h", 5.0)
+    gate.wait("h")
+
+    assert slept == [30.0]
+
+
+def test_an_answer_from_the_host_ends_a_run_of_429s():
+    gate = _HostGate(lambda: 0.0, lambda delay: None)
+
+    for _ in range(3):
+        assert gate.rate_limited("h", None) is None
+    gate.answered("h", served=True)
+
+    assert gate.rate_limited("h", None) is None
+
+
+def test_pages_that_are_not_pdfs_count_as_a_host_refusing(stub, tmp_path):
+    dois = [f"10.1234/h{n}" for n in range(22)]
+    for doi in dois:
+        stub.work(doi, _location(stub.serve(f"/{doi}.pdf", (200, HTML)), "journal"))
+
+    results = _download(_extractor(tmp_path), *dois)
+
+    assert len(stub.fetched) == 20
+    assert results[21].url_attempts[0]["outcome"] == "deferred"
 
 
 # -- per-host backoff --------------------------------------------------------------
