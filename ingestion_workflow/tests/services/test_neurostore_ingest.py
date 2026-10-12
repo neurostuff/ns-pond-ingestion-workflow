@@ -364,11 +364,14 @@ def test_a_dry_run_writes_the_exact_payload_and_sends_nothing(neurostore, study,
                                                               tmp_path):
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
-    artifact = ni.NeurostoreIngester(neurostore.url, dry_run=True).upload(study, run_id="run-7")
+    root = tmp_path / "dry"
+    artifact = ni.NeurostoreIngester(neurostore.url, dry_run=True, dry_run_root=root).upload(
+        study, run_id="run-7"
+    )
 
     assert neurostore.requests == []
     assert artifact["status"] == "dry_run"
-    payload = (study / ni.UPLOAD_DIR / ni.PAYLOAD_NAME).read_bytes()
+    payload = (root / study.name / ni.PAYLOAD_NAME).read_bytes()
     assert artifact["payload_sha256"] == hashlib.sha256(payload).hexdigest()
     assert json.loads(payload) == {
         "coordinate_parse": json.loads((study / "parse" / "coordinate_parse.json").read_text()),
@@ -377,11 +380,13 @@ def test_a_dry_run_writes_the_exact_payload_and_sends_nothing(neurostore, study,
     }
 
 
-def test_the_dry_run_payload_is_the_body_a_real_upload_sends(neurostore, study, token):
-    ni.NeurostoreIngester(neurostore.url, dry_run=True).upload(study)
+def test_the_dry_run_payload_is_the_body_a_real_upload_sends(neurostore, study, token,
+                                                            tmp_path):
+    root = tmp_path / "dry"
+    ni.NeurostoreIngester(neurostore.url, dry_run=True, dry_run_root=root).upload(study)
     with _ingester(neurostore) as ingester:
         ingester.upload(study)
-    assert neurostore.requests[0][1] == (study / ni.UPLOAD_DIR / ni.PAYLOAD_NAME).read_bytes()
+    assert neurostore.requests[0][1] == (root / study.name / ni.PAYLOAD_NAME).read_bytes()
 
 
 def test_a_parse_whose_key_is_not_its_cells_is_not_sent(neurostore, study, token):
@@ -595,18 +600,21 @@ def test_an_upload_between_blocks_resets_the_count(neurostore, study, token):
     assert statuses == ["blocked", "uploaded", "blocked"]
 
 
-def test_a_later_failure_or_dry_run_keeps_the_upload_on_record(neurostore, study, token):
+def test_a_later_failure_or_dry_run_keeps_the_upload_on_record(neurostore, study, token,
+                                                               tmp_path):
     with _ingester(neurostore, retries=0) as ingester:
         uploaded = ingester.upload(study)
         neurostore.script = [(503, b"down", {})]
         ingester.upload(study)
     before = (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()
-    dry = ni.NeurostoreIngester(neurostore.url, dry_run=True).upload(study)
+    root = tmp_path / "dry"
+    dry = ni.NeurostoreIngester(neurostore.url, dry_run=True, dry_run_root=root).upload(study)
 
     assert (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text() == before
     assert dry["status"] == "dry_run"
     assert ni.Result(dry["status"]).catalog_status is None
-    assert json.loads((study / ni.UPLOAD_DIR / ni.DRY_RUN_NAME).read_text()) == dry
+    assert json.loads((root / study.name / ni.DRY_RUN_NAME).read_text()) == dry
+    assert not (study / ni.UPLOAD_DIR / ni.DRY_RUN_NAME).exists()
     artifact = _artifact(study)
     assert artifact["status"] == "blocked"
     kept = artifact["last_uploaded"][uploaded["endpoint"]]
@@ -758,3 +766,11 @@ def test_every_neurostore_setting_is_in_the_settings_reference():
     for name, field in fields.items():
         default = getattr(field.default, "value", field.default)
         assert documented[name] == default, name
+
+
+def test_a_dry_run_without_a_root_is_refused(neurostore, study, monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
+    with pytest.raises(ValueError, match="dry_run_root"):
+        ni.NeurostoreIngester(neurostore.url, dry_run=True)
+    assert not (study / ni.UPLOAD_DIR).exists()

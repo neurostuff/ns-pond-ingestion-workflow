@@ -12,7 +12,7 @@ Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`: the lates
 upload's outcome at the top, the last successful summary per endpoint under
 `last_uploaded`, and every upload's outcome, in order, under `history`. A dry run
 validates and writes the exact request body to `neurostore_payload.json` and its own
-record to `neurostore_dry_run.json`, under `dry_run_root/<study>/` (from_settings:
+record to `neurostore_dry_run.json`, under the required `dry_run_root/<study>/` (from_settings:
 `<data_root>/neurostore_dry_run/<study>/`, outside the ns-pond tree); it never touches
 the upload artifact.
 
@@ -307,6 +307,11 @@ class NeurostoreIngester:
         self.max_blocked = max_blocked
         self.send_parsed_paper = send_parsed_paper
         self.dry_run = dry_run
+        if dry_run and dry_run_root is None:
+            raise ValueError(
+                "a dry run needs dry_run_root, a directory outside the ns-pond tree for its "
+                "payloads (from_settings uses <data_root>/neurostore_dry_run)"
+            )
         self.dry_run_root = Path(dry_run_root) if dry_run_root is not None else None
         self._sleep = sleep
         self._blocked_in_a_row = 0
@@ -365,7 +370,7 @@ class NeurostoreIngester:
         study_dir = Path(study_dir)
         if out_dir is not None:
             out = Path(out_dir)
-        elif self.dry_run and self.dry_run_root is not None:
+        elif self.dry_run:
             out = self.dry_run_root / study_dir.name
         else:
             out = study_dir / UPLOAD_DIR
