@@ -1,18 +1,17 @@
-"""A served NuExtract3 role model: one request per set to an OpenAI-compatible vLLM endpoint.
+"""The role models: NuExtract3 fine-tunes served by vLLM, one request per set.
 
-The request is the one the model was trained and evaluated with
-(`served_prompt`), greedy, with the answer held to the prompt's JSON schema.
-The probability of each role is read from the first token of the role value:
-the top 20 alternatives at that position, each counted for the one role its
-text can begin, renormalised over the tokens that begin exactly one role.
+The request is the one the models were trained and evaluated with
+(`served_prompt.PROMPT`), greedy, with the answer decoded under the prompt's
+JSON schema. The probability of each role is read from the first token of the
+role value: the top 20 alternatives at that position, each counted for the one
+role its text can begin, renormalised over the tokens that begin exactly one role.
 
-A set's answer that cannot be read (not JSON, a role outside the vocabulary,
-an anchor without its kind, no role-token alternatives) is `Unanswered`, with
-the reason: never a default role. A server that times out or answers 5xx is
-asked again. When it still does not answer, the server's model listing is
-asked: if it lists the model, the server is up and fails on this input alone,
-which is that set's `Unanswered` reason; otherwise `RoleModelUnavailable` is
-raised, and the classifier stays `down` without asking again.
+`RoleModelUnavailable` stops the stage, and the classifier stays `stopped`
+without asking again: the server is down, or it answers in a way only its
+configuration explains (it refuses a request, or an answer is not the
+schema's). A server that times out or answers 5xx is asked again; when it
+still does not answer but lists the model, it is up and fails on this input
+alone, which is that set's `Unanswered` reason. A set is never given a default role.
 """
 
 from __future__ import annotations
@@ -27,19 +26,23 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import httpx
-from study_schema.models.paper_parse import CoordinateRole
 
 from .classifier import Prediction, Unanswered
-from .served_prompt import RolePrompt
+from .served_prompt import PROMPT
 
 #: Where the role value starts in the answer, whitespace removed.
 _ROLE_KEY = '"role":"'
 #: Alternatives read at the role token, as the models were scored.
 TOP_LOGPROBS = 20
+#: Room for the answer, which is about 15 tokens (`{"role": "anchor", "anchor_kind": "seed"}`).
+MAX_COMPLETION_TOKENS = 64
+#: Seconds to wait for one answer, tries per set, and sets asked at once.
+TIMEOUT, ATTEMPTS, WORKERS = 120.0, 3, 16
+CONFIGURATION = "configuration error:"
 
 
 class RoleModelUnavailable(RuntimeError):
-    """The served model did not answer after every try: no set of the article gets a role."""
+    """The served model cannot be used in this run: no set of the article gets a role."""
 
 
 def _squeeze(text: str) -> str:
@@ -83,33 +86,38 @@ def role_distribution(
     return None
 
 
-def read_answer(choice: Mapping[str, Any], prompt: RolePrompt) -> Union[Prediction, Unanswered]:
-    """The prediction in one completion choice, or why it has none."""
-    raw = (choice.get("message") or {}).get("content")
+def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
+    """The prediction in one completion choice.
+
+    The answer is decoded under `PROMPT`'s JSON schema, so its role is always
+    one of the vocabulary's. One that is not -- cut short, or not JSON -- means
+    the server did not decode it as the stage asks: `RoleModelUnavailable`. The
+    schema lets an anchor's kind be null, which leaves that set `Unanswered`.
+    """
+    raw = (choice.get("message") or {}).get("content") or ""
     try:
-        answer = json.loads(raw or "")
-    except (TypeError, ValueError):
-        return Unanswered(f"the answer is not JSON: {str(raw)[:200]!r}")
-    if not isinstance(answer, dict):
-        return Unanswered(f"the answer is not an object: {str(raw)[:200]!r}")
-    role, kind = answer.get("role"), answer.get("anchor_kind")
-    if role not in prompt.roles:
-        return Unanswered(f"role {role!r} is not one of {list(prompt.roles)}")
-    if role == "anchor" and kind not in prompt.anchor_kinds:
+        answer = json.loads(raw)
+    except ValueError:
+        answer = None
+    role = answer.get("role") if isinstance(answer, dict) else None
+    if role not in PROMPT.roles:
+        raise RoleModelUnavailable(
+            f"{CONFIGURATION} the answer {raw[:200]!r} (finish_reason "
+            f"{choice.get('finish_reason')!r}) is not the role schema's: the server must "
+            "apply structured_outputs and leave max_completion_tokens for the answer"
+        )
+    kind = answer.get("anchor_kind") if role == "anchor" else None
+    if role == "anchor" and kind not in PROMPT.anchor_kinds:
         return Unanswered(f"an anchor with anchor_kind {kind!r}")
     probabilities = role_distribution(
-        (choice.get("logprobs") or {}).get("content"), prompt.roles
+        (choice.get("logprobs") or {}).get("content"), PROMPT.roles
     )
     if probabilities is None:
-        return Unanswered("no role-token logprobs to read the role's probability from")
-    return Prediction(
-        coordinates_probability=None,
-        role_probabilities=probabilities,
-        kind_probabilities={kind: 1.0} if role == "anchor" else {},
-        prior_probability=None,
-        answer=role,
-        answer_kind=kind if role == "anchor" else None,
-    )
+        raise RoleModelUnavailable(
+            f"{CONFIGURATION} no role-token logprobs to read the role's probability from: "
+            "the served model does not write its roles as the role models do"
+        )
+    return Prediction(role=role, anchor_kind=kind, role_probabilities=probabilities)
 
 
 def served_models(endpoint: str, timeout: float = 5.0) -> List[Dict[str, Any]]:
@@ -152,32 +160,19 @@ class ServedClassifier:
         self,
         endpoint: str,
         model: str,
-        prompt: RolePrompt,
         *,
-        result_threshold: Optional[float] = None,
-        timeout: float = 120.0,
-        attempts: int = 3,
-        workers: int = 16,
-        source: Optional[str] = None,
+        source: str,
         client: Optional[httpx.Client] = None,
         sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
         self.endpoint = endpoint.rstrip("/")
         self.url = f"{self.endpoint}/chat/completions"
         self.model = model
-        self.prompt = prompt
-        #: The stage passes the source with the checkpoint's identity (`model_identity`).
-        self.source = source or f"{model}@{prompt.version}"
-        # Recall of results over precision: a likely result is a result.
-        self.role_thresholds = (
-            {} if result_threshold is None else {CoordinateRole.result.value: result_threshold}
-        )
-        self._timeout = timeout
-        self._attempts = max(1, attempts)
-        self._workers = max(1, workers)
-        self._client = client or httpx.Client(timeout=timeout)
+        #: `name@prompt version+checkpoint digest`, from the stage (`model_identity`).
+        self.source = source
+        self._client = client or httpx.Client()
         self._sleep = sleep or time.sleep
-        self._down: Optional[str] = None
+        self._stopped: Optional[str] = None
         self._lock = threading.Lock()
 
     def body(self, text: str) -> Dict[str, Any]:
@@ -185,10 +180,10 @@ class ServedClassifier:
         return {
             "model": self.model,
             "temperature": 0.0,
-            "max_completion_tokens": 64,
-            "messages": [{"role": "user", "content": self.prompt.content(text)}],
-            "chat_template_kwargs": {"template": self.prompt.template(), "enable_thinking": False},
-            "structured_outputs": {"json": self.prompt.schema()},
+            "max_completion_tokens": MAX_COMPLETION_TOKENS,
+            "messages": [{"role": "user", "content": PROMPT.content(text)}],
+            "chat_template_kwargs": {"template": PROMPT.template(), "enable_thinking": False},
+            "structured_outputs": {"json": PROMPT.schema()},
             "logprobs": True,
             "top_logprobs": TOP_LOGPROBS,
         }
@@ -201,52 +196,48 @@ class ServedClassifier:
             return False
 
     @property
-    def down(self) -> Optional[str]:
-        """Why the server is taken to be down for the rest of this run, or None."""
-        return self._down
+    def stopped(self) -> Optional[str]:
+        """Why the model cannot be used for the rest of this run, or None."""
+        return self._stopped
+
+    def _stop(self, reason: str) -> RoleModelUnavailable:
+        """The error that stops the stage, kept so no set is asked again in this run."""
+        with self._lock:
+            self._stopped = self._stopped or reason
+        return RoleModelUnavailable(self._stopped)
 
     def predict(self, texts: Sequence[str]) -> List[Union[Prediction, Unanswered]]:
-        with ThreadPoolExecutor(max_workers=min(self._workers, max(1, len(texts)))) as pool:
+        with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(texts)))) as pool:
             return list(pool.map(self._ask, texts))
 
     def _ask(self, text: str) -> Union[Prediction, Unanswered]:
         last = ""
-        for attempt in range(self._attempts):
-            if self._down:
-                raise RoleModelUnavailable(self._down)
+        for attempt in range(ATTEMPTS):
+            if self._stopped:
+                raise RoleModelUnavailable(self._stopped)
             if attempt:
                 self._sleep(2 ** (attempt - 1))
             try:
-                response = self._client.post(self.url, json=self.body(text), timeout=self._timeout)
+                response = self._client.post(self.url, json=self.body(text), timeout=TIMEOUT)
             except httpx.TransportError as exc:  # timeouts, refused and dropped connections
                 last = f"{type(exc).__name__}: {exc}"
                 continue
             if response.status_code >= 500 or response.status_code == 429:
                 last = f"HTTP {response.status_code}: {response.text[:200]}"
                 continue
-            if response.status_code == 400:
-                # The server refused this input (one too long for the model, say): this set only.
-                return Unanswered(f"the server refused the request: {response.text[:200]}")
             if response.status_code >= 400:
-                raise RoleModelUnavailable(
-                    f"{self.url} answered HTTP {response.status_code} for {self.model}: "
-                    f"{response.text[:200]}"
+                # Every request has the one shape `body` builds, so a refusal -- a context
+                # longer than the server's max_model_len, say -- is how the model is served.
+                raise self._stop(
+                    f"{CONFIGURATION} {self.url} answered HTTP {response.status_code} for "
+                    f"{self.model}: {response.text[:300]}"
                 )
             try:
-                choice = (response.json().get("choices") or [None])[0]
-            except ValueError:
-                choice = None
-            if not isinstance(choice, Mapping):
-                return Unanswered(f"the response has no choice: {response.text[:200]!r}")
-            return read_answer(choice, self.prompt)
+                return read_answer(response.json()["choices"][0])
+            except RoleModelUnavailable as exc:
+                raise self._stop(str(exc)) from None
         if self._healthy():
             # Up, and failing on this input every time: this set's failure, not an outage,
             # so the articles after it are still read.
-            return Unanswered(
-                f"server error on this input after {self._attempts} tries: {last}"
-            )
-        with self._lock:
-            self._down = self._down or (
-                f"{self.model} at {self.url} did not answer in {self._attempts} tries: {last}"
-            )
-        raise RoleModelUnavailable(self._down)
+            return Unanswered(f"server error on this input after {ATTEMPTS} tries: {last}")
+        raise self._stop(f"{self.model} at {self.url} did not answer in {ATTEMPTS} tries: {last}")

@@ -4,16 +4,16 @@ Its own step, between the parse and the space stage, rather than a side answer
 of the prose model: it reads table sets and prose sets, each with the context
 of its origin, and decides the role and whether the coordinates come from
 another publication. `table_context` and `prose_context` build the two inputs
-(they share only `common`'s helpers and `labels`' study_schema role fields), `model` is the
-fine-tuned encoder (one model per origin), `served` a served NuExtract3 role
-model with its prompt in `served_prompt`; `classifier` is the interface both
-answer and turns an answer into the recorded role, with no default.
+(they share only `common`'s helpers and `labels`' study_schema role fields);
+`served` asks an origin's role model, a NuExtract3 fine-tune served by vLLM,
+with the prompt in `served_prompt`; `classifier` turns its answer into the
+recorded role, with no default.
 `labeling` and `export` make its training data, and the role-bearing rows for
 the two extractors. The roles stage (`pipeline.stages.roles`) runs it;
 experiments/role_classifier holds the job scripts.
 """
 
-from .classifier import EncoderClassifier, Prediction, RoleClassifier, Unanswered, decide
+from .classifier import Prediction, Unanswered, decide
 from .labels import ANCHOR_KINDS, COORDINATE_ROLES, UPLOADED_ROLES, RoleDecision, SetRole
 from .prose_context import PROSE_CONTEXT_VERSION, ProseSetContext
 from .table_context import TABLE_CONTEXT_VERSION, TableSetContext
@@ -21,11 +21,9 @@ from .table_context import TABLE_CONTEXT_VERSION, TableSetContext
 __all__ = [
     "ANCHOR_KINDS",
     "COORDINATE_ROLES",
-    "EncoderClassifier",
     "PROSE_CONTEXT_VERSION",
     "Prediction",
     "ProseSetContext",
-    "RoleClassifier",
     "RoleDecision",
     "SetRole",
     "TABLE_CONTEXT_VERSION",

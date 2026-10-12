@@ -8,7 +8,7 @@ Each set takes its label of the highest `label_version` in any `--labels`
 directory; between equal versions the first directory given wins (list a gold
 set first). A label no version made study_schema's (an old `display`) is left
 out, and listed with its reason in the summary printed at the end: relabel those
-before training. Writes one file per origin, one row per set, for train_encoder.py:
+before training. Writes one file per origin, one row per set:
 OUT_DIR/encoder-table.jsonl for the table model and OUT_DIR/encoder-text.jsonl
 for the prose model. `--id-map` maps slug article ids to database ids for the split.
 """
@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 
 from ingestion_workflow.services.set_roles import export, labeling
-from ingestion_workflow.services.set_roles.model import ORIGINS
+from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
     counts = collections.Counter()
     handles = {
         origin: open(args.out / f"encoder-{origin}.jsonl", "w", encoding="utf-8")
-        for origin in ORIGINS
+        for origin in CONTEXT_VERSIONS
     }
     try:
         for row in export.encoder_rows(units, labels, id_map):

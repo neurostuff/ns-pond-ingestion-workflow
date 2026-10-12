@@ -2,15 +2,14 @@
 
 Required: it runs between `resolve` (or `analyses`, without prose) and
 `space`, and space, upload and sync read nothing it has not passed. Every set's
-role comes from a fine-tuned classifier of its origin (`services.set_roles`):
-table sets from the table model, prose sets from the prose model, each reading
-its own context builder's input. Each origin's model is either an encoder
-directory (`role_model_table`, `role_model_prose`) or a served NuExtract3 role
-model (`role_served_table`, `role_served_prose`); the stage calls both the same way.
-There is no proposal and no default role: an article with a set whose origin's
-model is not configured, or cannot be used, is not attempted -- the plan counts
-it as blocked, with the reason -- so it uses up no retries, and it runs as soon
-as the model is configured. Everything downstream of it stays blocked meanwhile.
+role comes from its origin's role model (`services.set_roles`), a NuExtract3
+fine-tune served by vLLM (`role_model_table`, `role_model_prose`): table sets
+from the table model, prose sets from the prose model, each reading its own
+context builder's input. There is no proposal and no default role: an article
+with a set whose origin's model is not configured, or cannot be used, is not
+attempted -- the plan counts it as blocked, with the reason -- so it uses up no
+retries, and it runs as soon as the model is configured. Everything downstream
+of it stays blocked meanwhile.
 The payload it writes is described in docs/set-roles-artifact.md.
 """
 
@@ -26,13 +25,13 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
 from ingestion_workflow.services.set_roles.labels import is_decided
-from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
 from ingestion_workflow.services.set_roles.served import (
     RoleModelUnavailable,
+    ServedClassifier,
     model_identity,
     served_models,
 )
-from ingestion_workflow.services.set_roles.served_prompt import prompt as role_prompt
+from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS, PROMPT
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
@@ -52,8 +51,6 @@ PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for pros
 
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
-#: The setting naming each origin's served model, set instead of its model directory.
-SERVED_SETTINGS = {"table": "role_served_table", "text": "role_served_prose"}
 _ORIGIN_NAMES = {"table": "table", "text": "prose"}
 
 
@@ -164,7 +161,7 @@ def assign_roles(
     """The payload with every analysis's role decided by its origin's classifier, and a summary.
 
     `classifiers` maps an origin (`table`, `text`) to its classifier (a
-    `RoleClassifier`). A set whose origin has none raises `MissingRoleModel`,
+    `ServedClassifier`). A set whose origin has none raises `MissingRoleModel`,
     and sets the classifier could not answer raise `UnansweredSets` with each
     one's reason: no set is given a role any other way. Each analysis gains
     `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
@@ -201,7 +198,6 @@ def assign_roles(
                 prediction,
                 source=classifier.source,
                 origin=origin,
-                role_thresholds=getattr(classifier, "role_thresholds", None),
                 evidence=module.prior_evidence(context),
             )
     if unanswered:
@@ -225,8 +221,8 @@ def assign_roles(
                     "held": not decision.uploaded,
                 },
             }
-            # An anchor by its kind; numbers set aside as not coordinates as such.
-            roles[decision.anchor_kind or decision.role or "not_coordinates"] += 1
+            # An anchor by its kind.
+            roles[decision.anchor_kind or decision.role] += 1
             held += not decision.uploaded
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
@@ -366,44 +362,23 @@ class RolesStage:
         """The origins this run's sets can have: prose sets only when prose is on."""
         return ("table", "text") if getattr(self.settings, "prose_model", None) else ("table",)
 
-    def served(self, origin: str):
-        """The origin's served-model settings, or None when it has none."""
-        return getattr(self.settings, SERVED_SETTINGS[origin], None)
-
     def model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
-        """(`name@version`, None) of the origin's model, read without loading it; or (None, why).
+        """(The source its sets are recorded with, None) of the origin's model; or (None, why).
 
-        A model for another origin, or trained on other context versions, is
-        refused: it would read inputs shaped differently from the ones it learned on.
-        A served model must be listed by its server now.
+        The model must be listed by its server now, and the prompt it was trained
+        with must be for the contexts this code builds.
         """
         setting = MODEL_SETTINGS[origin]
-        path = getattr(self.settings, setting, None)
+        served = getattr(self.settings, setting, None)
         name = _ORIGIN_NAMES[origin]
-        served = self.served(origin)
-        if served is not None:
-            if path:
-                return None, (f"both {setting} and {SERVED_SETTINGS[origin]} are set: "
-                              f"the {name} role model is one or the other")
-            down = getattr(self._classifiers.get(origin), "down", None)
-            if down:
-                return None, f"the {name} role model stopped answering in this run: {down}"
-            return self.served_state(origin, served)
-        if not path:
+        if served is None:
             return None, f"no {name} role model is configured ({setting})"
+        loaded = self._classifiers.get(origin)
+        if loaded is not None and loaded.stopped:
+            return None, f"the {name} role model stopped this run: {loaded.stopped}"
+        where = f"the {name} role model {served.model} at {served.endpoint}"
         try:
-            meta = read_meta(Path(path))
-            check_meta(meta, origin, path)
-        except Exception as exc:  # noqa: BLE001 - recorded as the articles' failure
-            return None, f"the {name} role model at {path} cannot be used: {exc}"
-        return f"{meta['name']}@{meta['version']}", None
-
-    def served_state(self, origin: str, served) -> Tuple[Optional[str], Optional[str]]:
-        """`model_state` for a served model: its prompt checked, and its server asked."""
-        where = f"the {_ORIGIN_NAMES[origin]} role model {served.model} at {served.endpoint}"
-        try:
-            prompt = role_prompt(served.prompt_version)
-            prompt.check(origin)
+            PROMPT.check(origin)
         except ValueError as exc:
             return None, f"{where} cannot be used: {exc}"
         try:
@@ -415,54 +390,26 @@ class RolesStage:
             names = [c.get("id") for c in listed]
             return None, f"{where} is not served there (it serves {names})"
         # The checkpoint, not only its served name: a retrained model is a new source.
-        return f"{served.model}@{prompt.version}+{model_identity(card)[:12]}", None
+        return f"{served.model}@{PROMPT.version}+{model_identity(card)[:12]}", None
 
     def model_fingerprint(self, origin: str, state: Tuple[Optional[str], Optional[str]]) -> str:
         """One origin's part of the fingerprint: its context version and model, or its absence."""
         source, reason = state
-        served = self.served(origin)
-        # A threshold changes the roles a served model's answers decide.
-        threshold = (served.result_threshold,) if served is not None and source else ()
-        return fingerprint("roles-model", origin, CONTEXT_VERSIONS[origin], source or reason,
-                           *threshold)
+        return fingerprint("roles-model", origin, CONTEXT_VERSIONS[origin], source or reason)
 
-    def classifier(self, origin: str):
-        """The origin's loaded classifier; `MissingRoleModel` with the reason when it has none."""
+    def classifier(self, origin: str) -> ServedClassifier:
+        """The origin's classifier; `MissingRoleModel` with the reason when it has none."""
         if origin not in self._classifiers:
             with self._lock:
                 if origin not in self._classifiers:
                     source, reason = self.model_state(origin)
                     if source is None:
                         raise MissingRoleModel(reason)
-                    self._classifiers[origin] = self._load(origin, source)
+                    served = getattr(self.settings, MODEL_SETTINGS[origin])
+                    self._classifiers[origin] = ServedClassifier(
+                        served.endpoint, served.model, source=source
+                    )
         return self._classifiers[origin]
-
-    def _load(self, origin: str, source: str):
-        served = self.served(origin)
-        if served is not None:
-            from ingestion_workflow.services.set_roles.served import (  # noqa: PLC0415
-                ServedClassifier,
-            )
-
-            return ServedClassifier(
-                served.endpoint,
-                served.model,
-                role_prompt(served.prompt_version),
-                result_threshold=served.result_threshold,
-                timeout=served.timeout,
-                attempts=served.attempts,
-                workers=served.workers,
-                source=source,
-            )
-        from ingestion_workflow.services.set_roles import (
-            EncoderClassifier,  # noqa: PLC0415 - torch
-        )
-
-        return EncoderClassifier(
-            Path(getattr(self.settings, MODEL_SETTINGS[origin])),
-            origin,
-            device=self.settings.role_device,
-        )
 
     def models(self) -> Dict[str, str]:
         """Each origin's part of the fingerprint, by origin."""
@@ -605,9 +552,9 @@ class RolesStage:
                     # Its sets were read without the table's header and rows: say which, and why.
                     summary["tables_without_text"] = unread
             except RoleModelUnavailable as exc:
-                # An outage is not the article's failure: recording one would spend
-                # every remaining article's retries. This article and the rest stay
-                # pending, and the plan blocks them until the server answers again.
+                # An outage or a misconfigured server is not the article's failure:
+                # recording one would spend every remaining article's retries. This
+                # article and the rest stay pending, and the plan blocks them this run.
                 logger.error("roles stopped: %s; %d article(s) left pending", exc,
                              len(works) - works.index(work))
                 return

@@ -437,7 +437,7 @@ class _Results:
     def predict(self, texts):
         from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
 
-        return [Prediction(0.99, {r: float(r == "result") for r in COORDINATE_ROLES}, {}, 0.0)
+        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES})
                 for _ in texts]
 
 

@@ -20,12 +20,12 @@ services/set_roles/
   labeling.py       per-origin prompts, the resumable codex job, agreement, ledger
   export.py         encoder rows
   classifier.py     a prediction as the recorded role, with its confidence and model
-  model.py          the encoder and its heads, one model per origin (torch/transformers, lazily)
+  served.py         the role models, NuExtract3 fine-tunes served by vLLM, one request per set
+  served_prompt.py  the prompt they were trained and evaluated with
 experiments/role_classifier/
   build_sets.py     labelling units from nu-v21's and the prose model's real training rows (beast)
   label_sets.py     label / compare / totals
   export_rows.py    the encoder rows
-  train_encoder.py  fine-tune the encoder
 ```
 
 ## Labels
@@ -45,8 +45,7 @@ retyped (`labels.py`); every row the labeller and the encoder carry uses them.
 
 Numbers that are not brain coordinates at all (channel numbers, lattice points, a phantom's
 positions, rodent stereotaxic coordinates) get no role, not `other`: the labeller answers `coordinates:
-false` and `role: null`, the encoder's coordinates head learns them, and they are dropped from
-the uploads.
+false` and `role: null`. The served role models have no such answer: they give every set a role.
 
 `from_prior_study` is independent of the role: a seed taken from a meta-analysis is `role:
 anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
@@ -121,23 +120,8 @@ python export_rows.py out --units units/table_units.jsonl units/prose_units.json
     --id-map units/slug_dbids.json
 ```
 
-The table model, from `labels/sol-table`'s sets (`out/encoder-table.jsonl`):
-
-```
-CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py table out/encoder-table.jsonl \
-    models/set-roles-table-1
-```
-
-The prose model, from `labels/sol-prose` and its version-4 relabels (`out/encoder-text.jsonl`):
-
-```
-CUDA_VISIBLE_DEVICES=0 ~/venv-train/bin/python train_encoder.py text out/encoder-text.jsonl \
-    models/set-roles-prose-1
-```
-
-Point `role_model_table` and `role_model_prose` at the two directories. A smoke run on CPU
-(`--limit 12 --epochs 1 --max-length 64 --base sentence-transformers/all-MiniLM-L6-v2`) checks
-either path in about a minute.
+The role models are NuExtract3 fine-tunes, trained and served on beast; `role_model_table` and
+`role_model_prose` name each one's server and served model name (`docs/set-roles-artifact.md`).
 
 A prose dataset row that is evaluation data (val, test) or hand-labelled is never sent to a
 labeller; the hand rows are the encoder's prose gold set.
@@ -161,7 +145,7 @@ but are another role. Units are read by `services/set_roles` (`table_context`, `
 roles are study_schema's (`labels.COORDINATE_ROLES`, `ANCHOR_KINDS`); an MRS voxel is an `anchor` with
 `anchor_kind` `roi`. Synthetic data is for training only: seeds, set names, captions and footers come only from units
 `export.splits` puts in train, and a synthetic unit's `article_id` is `synth:<seed article>`. That is
-the split the encoder is evaluated on (`train_encoder` reads the `split` field `export_rows` writes), so
+the split the role models are evaluated on (the `split` field `export_rows` writes), so
 `--id-map` is required, and must be the map the export uses: without it a slug-id article is split
 under its slug and can seed a unit from the encoder's val or test articles. Pass generation at least
 the label dirs the export passes, gold ones (`pilot-astra`) included: an article with a gold label is

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
-from pydantic import AliasChoices, BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -73,26 +73,14 @@ class UploadMetadataMode(str, Enum):
     OVERWRITE = "overwrite"
 
 
-class ServedRoleModel(BaseModel):
-    """A set-role model served behind an OpenAI-compatible (vLLM) endpoint."""
+class RoleModel(BaseModel):
+    """A set-role model: a NuExtract3 role fine-tune served behind a vLLM endpoint."""
+
+    # A key it does not have (a retired threshold or prompt version, say) is refused, not ignored.
+    model_config = ConfigDict(extra="forbid")
 
     endpoint: str = Field(description="Base URL of the server, up to /v1")
     model: str = Field(description="The served model name it answers to")
-    prompt_version: str = Field(
-        description="The role prompt the model was trained with (services.set_roles.served_prompt)"
-    )
-    result_threshold: Optional[float] = Field(
-        default=None,
-        ge=0.0,
-        le=1.0,
-        description=(
-            "A set whose probability of being a result reaches this is a result, whatever the "
-            "model's top answer: lower it to favour recall of results. Unset, the answer stands"
-        ),
-    )
-    timeout: float = Field(default=120.0, gt=0, description="Seconds to wait for one answer")
-    attempts: int = Field(default=3, ge=1, description="Tries for a set on a timeout or 5xx")
-    workers: int = Field(default=16, ge=1, description="Sets asked at once")
 
 
 class Settings(BaseSettings):
@@ -331,33 +319,19 @@ class Settings(BaseSettings):
     )
 
     # ===== What each coordinate set is for =====
-    role_model_table: Optional[Path] = Field(
+    role_model_table: Optional[RoleModel] = Field(
         default=None,
         description=(
-            "Directory of the trained set-role classifier for table sets. The roles stage always "
-            "runs; without it every article with a table set fails there, and nothing is uploaded"
+            "The served set-role model for table sets, {endpoint, model}. The roles stage always "
+            "runs; without it every article with a table set is blocked there, and nothing is "
+            "uploaded"
         ),
     )
-    role_model_prose: Optional[Path] = Field(
+    role_model_prose: Optional[RoleModel] = Field(
         default=None,
         description=(
-            "Directory of the trained set-role classifier for prose sets. Without it every "
-            "article with a prose set fails the roles stage"
-        ),
-    )
-    role_device: str = Field(default="cpu", description="Torch device the role classifier runs on")
-    role_served_table: Optional[ServedRoleModel] = Field(
-        default=None,
-        description=(
-            "Served set-role model for table sets, instead of role_model_table: "
-            "{endpoint, model, prompt_version, result_threshold}"
-        ),
-    )
-    role_served_prose: Optional[ServedRoleModel] = Field(
-        default=None,
-        description=(
-            "Served set-role model for prose sets, instead of role_model_prose: "
-            "{endpoint, model, prompt_version, result_threshold}"
+            "The served set-role model for prose sets, {endpoint, model}. Without it every "
+            "article with a prose set is blocked at the roles stage"
         ),
     )
 

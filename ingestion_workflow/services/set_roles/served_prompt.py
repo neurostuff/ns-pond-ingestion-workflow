@@ -1,14 +1,14 @@
-"""The request a served NuExtract3 role model answers, by the version it was trained with.
+"""The request the served NuExtract3 role models answer.
 
-A fine-tuned model reads one request shape: the instruction, then a blank
-line, then the set's serialised context (`table_context.serialize` or
+Both role models read one request shape: the instruction, then a blank line,
+then the set's serialised context (`table_context.serialize` or
 `prose_context.serialize`) as the user message; the role template in the chat
-template's `template` block; a strict JSON schema on the answer. It was
-trained and evaluated on exactly these strings, so they are kept here
-verbatim, one entry per version, and never edited: a new instruction is a new
-version. Each version also records the role vocabulary and the context
-versions its models were trained on; `check` refuses a version whose
-vocabulary is not study_schema's or whose contexts this code no longer builds.
+template's `template` block; a strict JSON schema on the answer. They were
+trained and evaluated on exactly these strings, so they are kept here verbatim
+and never edited: retrained models with another instruction come with a new
+`PROMPT` and version. The prompt also records the role vocabulary and the
+context versions the models were trained on; `check` refuses it when its
+vocabulary is not study_schema's or its contexts are not the ones this code builds.
 """
 
 from __future__ import annotations
@@ -18,22 +18,11 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Mapping, Tuple
 
 from .labels import ANCHOR_KINDS, COORDINATE_ROLES
-from .model import CONTEXT_VERSIONS
+from .prose_context import PROSE_CONTEXT_VERSION
+from .table_context import TABLE_CONTEXT_VERSION
 
-_V4_INSTRUCTION = (
-    "Decide what this coordinate set is to the study that reports it.\n"
-    "result: the study's own finding (a contrast, correlation or effect it tested), "
-    "including peaks shown in a figure.\n"
-    "anchor: a location placed or chosen to define the analysis, not found by it: an ROI, "
-    "a seed (connectivity/PPI), a stimulation target (TMS, tDCS, DBS, ultrasound), or a "
-    "network node. An MRS voxel is an anchor ROI.\n"
-    "localization: where a recording or measurement site sits (electrode, contact, "
-    "dipole, recording site).\n"
-    "reference: coordinates quoted from another study for comparison.\n"
-    "other: a brain coordinate that is none of these (slice positions with no finding, "
-    "simulated sources).\n"
-    "Give anchor_kind only for an anchor."
-)
+#: The context version of each origin this code builds: `table` sets and `text` (prose) sets.
+CONTEXT_VERSIONS = {"table": TABLE_CONTEXT_VERSION, "text": PROSE_CONTEXT_VERSION}
 
 _V5_INSTRUCTION = (
     "Decide what this coordinate set is to the study that reports it.\n"
@@ -106,14 +95,5 @@ class RolePrompt:
             )
 
 
-#: Every version a served model can have been trained with.
-PROMPTS: Dict[str, RolePrompt] = {
-    "v4": RolePrompt("v4", _V4_INSTRUCTION),
-    "v5": RolePrompt("v5", _V5_INSTRUCTION),
-}
-
-
-def prompt(version: str) -> RolePrompt:
-    if version not in PROMPTS:
-        raise ValueError(f"no role prompt version {version!r}; known: {sorted(PROMPTS)}")
-    return PROMPTS[version]
+#: The prompt both served role models were trained and evaluated with.
+PROMPT = RolePrompt("v5", _V5_INSTRUCTION)
