@@ -11,7 +11,7 @@ from typing import Any, Dict
 
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
-PROSE_PROMPT_VERSION = "2026-10-11.n5-norole"
+PROSE_PROMPT_VERSION = "2026-10-11.nu-prose-v2"
 
 INSTRUCTION = (
     "List every brain coordinate in the passage, including region-of-interest centres, seeds, "

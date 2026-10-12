@@ -1,5 +1,5 @@
 {
- "source": "nmb-112: the role-free nu-prose eval answer (eval/pred-norole-N5-HW.jsonl) and its passage (test_gold_norole.jsonl)",
+ "source": "nmb-112: the nu-prose-v2 eval answer (eval/pred-norole-N5-HW.jsonl) and its passage (test_gold_norole.jsonl)",
  "text": "Activity within a discrete set of brain regions also responded to the magnitude of dynamic changes in participant's own pupil size and the corresponding changes observed in the pupil stimuli across positive and negative feedback conditions (see Table 2 ). These regions included dorsolateral pons bilaterally, left amygdala [(−12, −2, −16) t =6.24, Z =4.17, p <.001] and left superior temporal sulcus (see Figure 3 b, 3 c), a region implicated in processing changeable facial features such as eye gaze, expression and lip movements [(−60, −42, 4) t =4.09, Z =3.22, p <.001]. Right STS activity was also observed [(64 −30 −10) t =3.71, Z =3.01, p <.001, k =5], though this did not survive our contiguity threshold.",
  "answer": {
   "space": "MNI",

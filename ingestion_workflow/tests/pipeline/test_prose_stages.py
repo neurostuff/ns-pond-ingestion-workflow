@@ -1634,31 +1634,24 @@ def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch):
     assert again.status is not Status.OK
 
 
-class _RoleFreeReader:
-    """Answers as the role-free model does: each hit under two contrasts, twice in the first."""
-
-    def __init__(self, stray_role=False):
-        self.stray_role = stray_role
+class _V2Reader:
+    """Answers as nu-prose-v2 does: each hit under two contrasts, twice in the first."""
 
     def read(self, passage, *, title="", abstract=""):
-        role = {"role": "seed"} if self.stray_role else {}
         points = [{"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1,
-                   "cluster_size": None, **role} for h in passage.hits]
+                   "cluster_size": None} for h in passage.hits]
         return {"space": None, "analyses": [
             {"name": "patients > controls", "measure": None, "points": points * 2},
             {"name": "patients > controls, covarying for IQ", "measure": None, "points": points}]}
 
 
-def test_prose_counts_stray_roles_and_resolve_makes_a_repeat_within_a_set_one_point(env):
+def test_resolve_makes_a_repeat_within_a_set_one_point(env):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="31"))
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
-    _, (read,) = _read_prose(ctx, catalog, ref, _RoleFreeReader(stray_role=True))
-    assert read.status is Status.OK
-    assert (read.summary["coordinates"], read.summary["stray_roles"]) == (3, 3)
-    first, second = read.payload["passages"][0]["analyses"]
-    assert not any("role" in q for a in (first, second) for q in a["points"])
+    _, (read,) = _read_prose(ctx, catalog, ref, _V2Reader())
+    assert read.status is Status.OK and read.summary["coordinates"] == 3
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     one, other = merged.payload["prose"]["analyses"]
     assert [(c["x"], c["y"], c["z"]) for c in one["coordinates"]] == [(-22.0, -4.0, -18.0)]
@@ -1671,7 +1664,7 @@ def test_prose_counts_stray_roles_and_resolve_makes_a_repeat_within_a_set_one_po
 
 
 def test_a_place_given_with_three_statistics_is_one_point_carrying_all_three():
-    """nmb-112, as the role-free model answered it: each peak once each as t, Z and p."""
+    """nmb-112, as nu-prose-v2 answered it: each peak once each as t, Z and p."""
     from ingestion_workflow.clients.prose_coordinates import clean_answer
 
     case = json.loads((Path(__file__).parents[1] / "data" / "prose" / "nmb_112.json")
@@ -1704,13 +1697,12 @@ def test_a_place_repeated_across_sets_stays_in_each_after_resolve():
     assert (summary["repeated"], summary["merged_statistics"]) == (0, 0)
 
 
-def test_a_role_free_reading_reaches_space_with_roles_only_from_the_roles_stage(env, monkeypatch):
+def test_a_nu_prose_v2_reading_reaches_space_with_roles_from_the_roles_stage(env, monkeypatch):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="32"))
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
-    _, (read,) = _read_prose(ctx, catalog, ref, _RoleFreeReader())
-    assert read.summary["stray_roles"] == 0
+    _read_prose(ctx, catalog, ref, _V2Reader())
     _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
     assert merged.status is Status.OK and merged.summary["prose_points"] == 2
     assert [a["name"] for a in merged.payload["prose"]["analyses"]] == [
@@ -1744,9 +1736,10 @@ def _two_passages(env, pmid):
     return settings, catalog, ref, ctx, found
 
 
-def _legacy_prose(catalog, ref, texts, fingerprint="legacy-prose"):
-    """A prose result as the stage stored it before passages were spans: text and its cleaned
-    analyses, a role word on every point, no answer, no producer."""
+def _earlier_prose(catalog, ref, texts, fingerprint="earlier-prose"):
+    """A prose result as nu-prose's first corpus run stored it, before passages were spans:
+    the text and the analyses cleaned from its answer, as that answer gave them; no answer
+    stored, no producer."""
     passages = [{"text": text, "heading": "Results", "space": "MNI", "error": None, "analyses": [
         {"name": name, "measure": None, "points": [
             {"x": x, "y": y, "z": z, "statistic": "T", "value": v, "cluster_size": None,
@@ -1786,31 +1779,28 @@ def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(
     """The corpus's prose was read before passages were spans: the same text is not read again."""
     settings, catalog, ref, ctx, found = _two_passages(env, "81")
     first, second = _texts(catalog, ref, found)
-    _legacy_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
     assert read.summary["reused"] == {"exact.1": [0, 1]}
     assert read.summary["read_again"] == {}
     assert read.summary["prompt_versions"] == {"2026-10-06.n5": 2}
-    assert read.summary["unrecorded_producers"] == 2
-    # re-anchored: the new spans, the old names and points, the role word only counted
+    # re-anchored: the new spans, the earlier names and points
     assert [p["span"] for p in read.payload["passages"]] == [p["span"] for p in found["passages"]]
     assert [[(a["name"], [(q["x"], q["y"], q["z"]) for q in a["points"]])
              for a in p["analyses"]] for p in read.payload["passages"]] == [
         [("patients > controls", [(-22.0, -4.0, -18.0)] * 2)],
         [("controls > patients", [(6.0, -60.0, 40.0)] * 2)]]   # resolve makes each repeat one
-    assert read.summary["stray_roles"] == 4
     # credited to nu-prose under the prompt it read with then
-    assert {(p["producer"]["model"], p["producer"]["prompt_version"], p["producer"]["version"])
-            for p in read.payload["passages"]} == {
-        ("nu-prose", "2026-10-06.n5", "prose.unrecorded")}
+    assert {(p["producer"]["model"], p["producer"]["prompt_version"])
+            for p in read.payload["passages"]} == {("nu-prose", "2026-10-06.n5")}
 
 
 def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     settings, catalog, ref, ctx, found = _two_passages(env, "82")
     first, second = _texts(catalog, ref, found)
-    _legacy_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second.replace("3.9", "3.8"), ("controls > patients",
                                                                  (6, -60, 40, 3.8)))])
     reader = _Counting()
@@ -1818,7 +1808,7 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     assert reader.calls == 1
     assert read.summary["reused"] == {"exact.1": [0]}
     assert read.summary["read_again"] == {"passage text changed": 1}
-    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.n5-norole": 1}
+    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.nu-prose-v2": 1}
     # the changed passage holds the model's new answer, not the old one's 3.8
     values = [q["value"] for a in read.payload["passages"][1]["analyses"] for q in a["points"]]
     assert values == [4.1]
@@ -1832,7 +1822,7 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     assert read.summary["reused"] == {}
     producer = read.payload["passages"][0]["producer"]
     assert (producer["prompt_version"], producer["model"], producer["stage"]) == (
-        "2026-10-11.n5-norole", "nu-prose", "prose")
+        "2026-10-11.nu-prose-v2", "nu-prose", "prose")
     # read again under new passages of the same text: reused, the payload unchanged
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer",
                             payload=found, summary={"passages": 2})])
@@ -1848,7 +1838,7 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
 
 
-def test_an_answer_of_the_role_bearing_prompt_is_reused_and_one_outside_the_family_is_not(env):
+def test_an_answer_of_nu_prose_s_prompt_is_reused_and_one_outside_the_family_is_not(env):
     settings, catalog, ref, ctx, found = _two_passages(env, "84")
     _, (read,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
     blob = json.loads(json.dumps(read.payload))
@@ -1868,19 +1858,7 @@ def test_an_answer_of_the_role_bearing_prompt_is_reused_and_one_outside_the_fami
     assert third.summary["read_again"] == {"earlier prompt not interchangeable": 2}
 
 
-def test_the_role_free_prompt_keeps_the_read_fingerprint_of_the_prompt_before_it(env):
-    """Moving to the role-free prompt makes no stored answer stale."""
-    from ingestion_workflow.catalog import fingerprint
-
-    settings, catalog, ref, ctx, found = _two_passages(env, "85")
-    passages = catalog.artifacts([ref.id], "passages")[ref.id][""]
-    metadata = catalog.artifacts([ref.id], "metadata")[ref.id][""]
-    assert ProseStage(settings).read_fingerprint(passages, metadata) == fingerprint(
-        "prose", "2026-10-06.n5", settings.prose_model, metadata.fingerprint,
-        upstream=passages.fingerprint)
-
-
-def test_results_cleaned_and_resolved_before_the_role_free_prompt_are_made_again(env):
+def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env):
     """Stored answers are cleaned again without the model, and resolves made before
     statistics were merged are made again: both versions moved on from main's."""
     from ingestion_workflow.catalog import fingerprint
@@ -1914,7 +1892,7 @@ def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
     first, second = _texts(catalog, ref, found)
     old = first.replace("-22", "\u221222").replace(" ", "\u00a0", 1)
     assert old != first
-    _legacy_prose(catalog, ref, [(old, ("patients > controls", (-22, -4, -18, 4.1))),
+    _earlier_prose(catalog, ref, [(old, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
@@ -1930,7 +1908,7 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
     settings, catalog, ref, ctx, found = _two_passages(env, "87")
     first, second = _texts(catalog, ref, found)
     assert change(first) != first
-    _legacy_prose(catalog, ref, [(change(first), ("patients > controls", (-22, -4, -18, 4.1))),
+    _earlier_prose(catalog, ref, [(change(first), ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
@@ -1942,9 +1920,9 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
 def test_reuse_stays_within_the_nu_prose_models(env):
     settings, catalog, ref, ctx, found = _two_passages(env, "88")
     _run(_prose(settings, _Reader()), ctx, catalog, ref)
-    role_free = settings.model_copy(update={"prose_model": "nu-prose-norole"})
+    v2 = settings.model_copy(update={"prose_model": "nu-prose-v2"})
     reader = _Counting()
-    _, (again,) = _run(_prose(role_free, reader), ctx, catalog, ref)
+    _, (again,) = _run(_prose(v2, reader), ctx, catalog, ref)
     assert reader.calls == 0 and again.summary["reused"] == {"exact.1": [0, 1]}
     assert {p["producer"]["model"] for p in again.payload["passages"]} == {"nu-prose"}
     other = settings.model_copy(update={"prose_model": "another-prose-model"})
@@ -1958,7 +1936,7 @@ def test_reuse_stays_within_the_nu_prose_models(env):
 def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
     settings, catalog, ref, ctx, found = _two_passages(env, "89")
     first, second = _texts(catalog, ref, found)
-    _legacy_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
+    _earlier_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
                                  (first, ("second copy", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)

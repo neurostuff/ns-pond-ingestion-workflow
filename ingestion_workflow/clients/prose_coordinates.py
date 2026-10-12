@@ -66,13 +66,8 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     A named analysis the model gave no point is kept: a contrast the passage
     reports nothing for. One whose every point was unwritten, and an unnamed
     one left empty, are listed in `omitted` with the count and the reason.
-
-    The model is asked for no role, and a role word in the answer is not
-    read: the roles stage decides what a set is for. `stray_roles` counts
-    the points that carried one anyway. The schema leaves a new answer no
-    place for one, so only a stored answer of the role-bearing prompt has any.
     """
-    seen, analyses, omitted, stray_roles = set(), [], [], 0
+    seen, analyses, omitted = set(), [], []
     for a in (answer or {}).get("analyses") or []:
         key = (a.get("name"), json.dumps(a.get("points"), sort_keys=True))
         if key in seen:
@@ -80,7 +75,6 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
         seen.add(key)
         points, unwritten = [], 0
         for p in a.get("points") or []:
-            stray_roles += isinstance(p, dict) and "role" in p
             xyz = coordinate_text.triple(p)
             if xyz is None or not printed(xyz, passage_text):
                 unwritten += 1
@@ -96,8 +90,7 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
             reason = "points not in passage" if unwritten else "no name and no points"
             omitted.append({"name": name, "unwritten": unwritten, "reason": reason})
     space = (answer or {}).get("space")
-    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted,
-            "stray_roles": stray_roles}
+    return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
 
 class ProseCoordinateClient(GenericLLMClient):
