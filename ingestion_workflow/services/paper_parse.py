@@ -305,55 +305,12 @@ def _grid(raw_path) -> _Table:
 def _blocks(grid) -> Optional[List[Tuple[int, int]]]:
     """The table's blocks of coordinate columns, from its header, left to right.
 
-    A block is three columns the header names x, y and z, or heads once with a
-    word for coordinates, whose body holds coordinates; or one column of whole
-    triples. Every block is counted whether or not any analysis was read from it,
-    so a block's number does not move when a re-extraction misses one to its left.
-
-    Beside such triples, a column of triples is a block only when its header says
-    coordinates: `19(1,30)` under F(df) and `1,93E-05` under p(unc.) read as triples.
+    Every block is counted whether or not any analysis was read from it, so a
+    block's number does not move when a re-extraction misses one to its left.
     """
-    from nspond_tables import read
+    from nspond_tables.read import coordinate_blocks
 
-    named: Dict[str, Set[int]] = {axis: set() for axis in read.AXES}
-    starts: Set[int] = set()
-    for placed in read._header_cells(grid):
-        text = read._unmarked(placed.cell.text)
-        for axis in read.AXES:
-            if read._AXIS[axis].match(text) or read._AXIS_SUFFIX[axis].search(text):
-                named[axis].add(placed.col)
-        if placed.cell.colspan == 3 and read._SPANS_COORDS.search(placed.cell.text):
-            starts.add(placed.col)
-    starts.update(x for x in named["x"] if x + 1 in named["y"] and x + 2 in named["z"])
-    triples = {(x, x + 2) for x in starts if _holds_coordinates(grid, range(x, x + 3))}
-    axes = read.axis_columns(grid)
-    if axes and _holds_coordinates(grid, list(axes.values())):
-        triples.add((axes["x"], axes["z"]))
-    blocks = triples | {
-        (col, col)
-        for col in read.packed_columns(grid)
-        if not triples or read._SPANS_COORDS.search(read._column_header_text(grid, col))
-    }
-    return sorted(blocks) or None
-
-
-def _holds_coordinates(grid, cols) -> bool:
-    """Whether most body rows printing numbers in these columns print a coordinate there.
-
-    Stricter than the extractor's check: a `Peak` or `Voxel level` header spans Z
-    and p columns, and `4.80 | <0.001 | 0.03` fits in a head but is no millimetre count.
-    """
-    from nspond_tables import read
-
-    good = total = 0
-    for row in grid.body_rows():
-        by_col = {c: placed.cell for placed in row for c in placed.cols}
-        values = [read.as_number(by_col[c].text) if c in by_col else None for c in cols]
-        if all(v is None for v in values):
-            continue
-        total += 1
-        good += all(read._looks_like_a_coordinate(v) for v in values) and read.in_head(values)
-    return good > 0 and good >= 0.5 * total
+    return coordinate_blocks(grid) or None
 
 
 def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded, inlined):
