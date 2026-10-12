@@ -4,14 +4,16 @@ Two files per paper, beside `stage1/analyses.json` until pondie reads them:
 
     <study>/parse/parsed_paper.json      ParsedPaper: the text every offset points into,
                                          its tables row by row, the bibliography
-    <study>/parse/coordinate_parse.json  CoordinateParse: every analysis, keyed by the
-                                         cells it was read from
+    <study>/parse/coordinate_parse.json  CoordinateParse: every analysis, keyed by its
+                                         name, space and points
 
 Both are built as study_schema's generated models, so a field the contract does not
 name cannot be written. Nothing here decides anything new: the text is extract's,
 the meta-analysis verdict triage's, the readings and the split the analyses stage's,
-each set's role the roles stage's. What this adds is where each analysis sits in its
-table -- the model's points carry no row -- because the key is made from the cells.
+each set's role the roles stage's, except which role an analysis read twice keeps
+when its copies disagree (`_repeat`). What this adds is where each analysis was read
+-- its cells and text spans, since the model's points carry no row -- as citations;
+the key is made from what was read, never from where.
 """
 
 from __future__ import annotations
@@ -580,32 +582,32 @@ def coordinate_parse(
     return parse, omitted
 
 
-def _role_of(analysis: pp.ParsedAnalysis) -> Dict[str, Any]:
-    return {
-        "role": analysis.role,
-        "anchor_kind": analysis.anchor_kind,
-        "from_prior_study": analysis.from_prior_study,
-        "role_source": analysis.role_source,
-    }
+#: What the roles stage decides for an analysis, all taken from one copy.
+_ROLE_FIELDS = (
+    "role", "anchor_kind", "from_prior_study", "prior_study_evidence", "role_confidence",
+    "role_source",
+)
 
 
 def _repeat(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
     """The record omitting `other`, which repeats `first`, the kept analysis of its key.
 
-    Copies of one key with different roles are still one analysis, but it must not
-    silently take one of the roles: the record carries `role_conflict` (both roles
-    and their sources) and the kept analysis is held for review.
+    Copies of one key whose roles differ are still one analysis. It is a result if
+    either copy is one, because a result missed costs more than an anchor or a
+    reference taken for a result; otherwise it keeps the first copy's role. The
+    reason names both roles and the one kept.
     """
-    mine, theirs = _role_of(first), _role_of(other)
-    conflict = None
     role = ""
-    if (mine["role"], mine["anchor_kind"], mine["from_prior_study"]) != (
-        theirs["role"], theirs["anchor_kind"], theirs["from_prior_study"],
+    if (first.role, first.anchor_kind, first.from_prior_study) != (
+        other.role, other.anchor_kind, other.from_prior_study,
     ):
-        conflict = {"key": first.key, "roles": [mine, theirs]}
+        mine = f"{first.role!r} ({first.role_source})"
+        if other.role == "result" and first.role != "result":
+            for name in _ROLE_FIELDS:
+                setattr(first, name, getattr(other, name))
         role = (
-            f"; role conflict, held for review: {mine['role']!r} ({mine['role_source']}) "
-            f"and {theirs['role']!r} ({theirs['role_source']})"
+            f"; the copies' roles differ: {mine} and {other.role!r} ({other.role_source}), "
+            f"kept {first.role!r}"
         )
     where = f"table {first.table_id}" if first.table_id else "the text"
     return Omitted(
@@ -614,7 +616,6 @@ def _repeat(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
         f"it repeats a kept analysis (the same key): {first.key}, {first.name!r} "
         f"read from {where}{role}",
         _span_pairs(other),
-        role_conflict=conflict,
     )
 
 
@@ -702,8 +703,6 @@ class Omitted:
     spans: Sequence[Tuple[int, int]] = ()
     #: A note on a kept analysis: in the sync summary, not among the parse's omissions.
     kept: bool = False
-    #: Both roles of copies that share a key: the kept analysis is held for review.
-    role_conflict: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
         return f"{self.table_id or 'text'}: {self.name!r}: {self.reason}"
@@ -1176,11 +1175,6 @@ def write(
         "analyses": len(parse.analyses),
         **({"parse_omitted": left} if (left := [str(o) for o in omitted if not o.kept]) else {}),
         **({"parse_notes": notes} if (notes := [str(o) for o in omitted if o.kept]) else {}),
-        **(
-            {"held_for_review": held}
-            if (held := [o.role_conflict for o in omitted if o.role_conflict])
-            else {}
-        ),
     }
 
 

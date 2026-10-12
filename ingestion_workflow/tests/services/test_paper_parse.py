@@ -1235,35 +1235,59 @@ def test_the_same_point_with_other_statistic_values_is_two_analyses():
     assert omitted == []
 
 
-def test_copies_of_one_key_with_different_roles_keep_one_held_with_both_roles():
+def _copies_with_roles(first, second):
+    """Two prose copies of one key, `first` and then `second` deciding their roles."""
     passage = "Group differences in the left and right hippocampus survived correction (Table S2)."
-    result = _decided("result", origin="text", source="model-a@1")
-    reference = _decided("reference", origin="text", prior=True, source="model-b@2")
-    for order in ((result, reference), (reference, result)):
-        parse, omitted = _prose_parse(
-            passage,
-            [
-                ("p > c", [(-24, -20, -14)], [0], order[0]),
-                ("p > c", [(-24, -20, -14)], [0], order[1]),
-            ],
-        )
-        [kept] = parse.analyses
-        assert kept.role == order[0]["role"]
-        [note] = omitted
-        assert not note.kept
-        conflict = note.role_conflict
-        assert conflict["key"] == kept.key
-        assert [(r["role"], r["role_source"]) for r in conflict["roles"]] == [
-            (order[0]["role"], order[0]["role_source"]),
-            (order[1]["role"], order[1]["role_source"]),
-        ]
-        assert "role conflict, held for review" in note.reason
-    # The same roles are no conflict.
-    _, omitted = _prose_parse(
+    return _prose_parse(
         passage,
-        [("p > c", [(-24, -20, -14)], [0], result), ("p > c", [(-24, -20, -14)], [0], result)],
+        [("p > c", [(-24, -20, -14)], [0], first), ("p > c", [(-24, -20, -14)], [0], second)],
     )
-    assert omitted[0].role_conflict is None
+
+
+RESULT = _decided("result", origin="text", source="model-a@1")
+ANCHOR = _decided("anchor", origin="text", anchor_kind="seed", source="model-b@2")
+REFERENCE = _decided("reference", origin="text", prior=True, source="model-c@3")
+
+
+@pytest.mark.parametrize("order", [(RESULT, ANCHOR), (ANCHOR, RESULT)], ids=["first", "second"])
+def test_copies_of_one_key_where_either_is_a_result_keep_one_result(order):
+    parse, omitted = _copies_with_roles(*order)
+    [kept] = parse.analyses
+    assert (kept.role, kept.anchor_kind, kept.role_source) == ("result", None, "model-a@1")
+    [note] = omitted
+    assert not note.kept
+    assert note.reason == (
+        f"it repeats a kept analysis (the same key): {kept.key}, 'p > c' read from the text; "
+        f"the copies' roles differ: {order[0]['role']!r} ({order[0]['role_source']}) and "
+        f"{order[1]['role']!r} ({order[1]['role_source']}), kept 'result'"
+    )
+
+
+def test_copies_of_one_key_with_no_result_keep_the_first_copy_s_role():
+    parse, omitted = _copies_with_roles(ANCHOR, REFERENCE)
+    [kept] = parse.analyses
+    assert (kept.role, kept.anchor_kind, kept.from_prior_study, kept.role_source) == (
+        "anchor", "seed", False, "model-b@2",
+    )
+    assert omitted[0].reason.endswith(
+        "the copies' roles differ: 'anchor' (model-b@2) and 'reference' (model-c@3), "
+        "kept 'anchor'"
+    )
+
+
+def test_copies_of_one_role_with_another_anchor_kind_differ_and_keep_the_first():
+    parse, omitted = _copies_with_roles(
+        ANCHOR, _decided("anchor", origin="text", anchor_kind="roi", source="model-d@4")
+    )
+    assert parse.analyses[0].anchor_kind == "seed"
+    assert omitted[0].reason.endswith(
+        "the copies' roles differ: 'anchor' (model-b@2) and 'anchor' (model-d@4), kept 'anchor'"
+    )
+
+
+def test_copies_of_one_role_are_no_conflict():
+    _, omitted = _copies_with_roles(RESULT, _decided("result", origin="text", source="x@9"))
+    assert omitted[0].reason.endswith("'p > c' read from the text")
 
 
 def _two_tables(tmp_path, markup, per_table):
@@ -1426,3 +1450,149 @@ def test_a_table_in_a_stated_other_space_parses_and_validates(tmp_path):
     (analysis,) = parse.analyses
     assert analysis.coordinate_space == "OTHER"
     pp.CoordinateParse.model_validate(parse.model_dump())
+
+
+NO_POINTS = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>
+<tr><td>Children &gt; Adults</td><td colspan="3">n.s.</td></tr>
+</table>"""
+
+
+def test_same_named_analyses_with_no_points_in_two_tables_are_one_analysis(tmp_path):
+    """Two tables each reporting a contrast with no peaks: the second is the first's repeat."""
+    def read():
+        return _collection([Analysis(name="Children > Adults", coordinates=[])])
+
+    parse, omitted = _two_tables(tmp_path, NO_POINTS, {"tbl0015": read(), "tbl0020": read()})
+    [kept] = parse.analyses
+    assert (kept.table_id, kept.name, kept.points) == ("tbl0015", "Children > Adults", [])
+    assert [str(o) for o in omitted] == [
+        f"tbl0020: 'Children > Adults': it repeats a kept analysis (the same key): "
+        f"{kept.key}, 'Children > Adults' read from table tbl0015"
+    ]
+    readings = {r.table_id: r for r in parse.tables}
+    assert readings["tbl0015"].reason is None
+    assert readings["tbl0020"].reason == f"omitted 'Children > Adults': {omitted[0].reason}"
+
+
+def _table_and_text(tmp_path, order):
+    """`Fear > Neutral` read from table 1 and from the sentence restating it, in `order`."""
+    from ingestion_workflow.services.paper_parse import _grid
+
+    passage = "Fear > Neutral activated the amygdala (22, -4, -20) and the insula (36, 20, 4)."
+    text = f"Results\n\n{passage}\n"
+    (tmp_path / "t.html").write_text(SHARED, encoding="utf-8")
+
+    def points():
+        return [Coordinate(x=22, y=-4, z=-20), Coordinate(x=36, y=20, z=4)]
+
+    read = {
+        "1": _collection([Analysis(name="Fear > Neutral", coordinates=points())]),
+        "prose": _collection([Analysis(
+            name="Fear > Neutral", table_id="prose",
+            metadata={"source": "prose", "passages": [0]}, coordinates=points(),
+        )]),
+    }
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[SimpleNamespace(table_id="1", triage=None)],
+    )
+    return paper_parse.coordinate_parse(
+        paper,
+        text,
+        {"1": _grid(tmp_path / "t.html")},
+        {t: read[t] for t in order},
+        ParseInputs(article_id="a", readings={"1": "coordinates"}, prose=_prose(text, passage)),
+    )
+
+
+def test_a_table_analysis_and_the_sentence_restating_it_are_one_analysis(tmp_path):
+    parse, omitted = _table_and_text(tmp_path, ["1", "prose"])
+    [kept] = parse.analyses
+    assert (kept.origin, kept.table_id) == ("table", "1")
+    [repeat] = parse.omitted_analyses
+    assert repeat.reason == (
+        f"it repeats a kept analysis (the same key): {kept.key}, 'Fear > Neutral' "
+        "read from table 1"
+    )
+    assert repeat.text_spans and [o.table_id for o in omitted] == [None]
+
+
+def test_a_text_analysis_and_the_table_restating_it_are_one_analysis(tmp_path):
+    parse, omitted = _table_and_text(tmp_path, ["prose", "1"])
+    [kept] = parse.analyses
+    assert (kept.origin, kept.table_id) == ("text", None)
+    assert parse.omitted_analyses is None
+    [repeat] = omitted
+    assert str(repeat) == (
+        f"1: 'Fear > Neutral': it repeats a kept analysis (the same key): {kept.key}, "
+        "'Fear > Neutral' read from the text"
+    )
+    assert parse.tables[0].reason == f"omitted 'Fear > Neutral': {repeat.reason}"
+
+
+def _point(x=22.0, space=None, kind="T", value=4.1, other=()):
+    return Coordinate(x=x, y=-4, z=-20, space=space, statistic_value=value, statistic_type=kind,
+                      other_statistics=list(other))
+
+
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        pytest.param([_point(), _point(x=36)], [_point(), _point(x=38)], id="second-point"),
+        pytest.param([_point()], [_point(space=CoordinateSpace.TALAIRACH)], id="own-space"),
+        pytest.param([_point(kind="T")], [_point(kind="Z")], id="statistic-kind"),
+        pytest.param(
+            [_point()], [_point(other=[{"statistic_type": "p", "statistic_value": 0.01}])],
+            id="p-value",
+        ),
+        pytest.param([_point(x=22.0)], [_point(x=22.5)], id="half-a-millimetre"),
+        pytest.param([_point(x=22.01)], [_point(x=22.02)], id="hundredth-of-a-millimetre"),
+    ],
+)
+def test_same_named_analyses_differing_in_one_point_detail_are_two_analyses(first, second):
+    passage = "Group differences in the left hippocampus survived correction (Table S2)."
+    parse, omitted = _prose_parse(passage, [("p > c", first, [0]), ("p > c", second, [0])])
+    one, two = parse.analyses
+    assert one.key != two.key
+    assert (one.key, two.key) == (keys.key_for(one), keys.key_for(two))
+    assert omitted == []
+
+
+def test_points_in_another_order_and_another_spelling_of_the_name_are_one_analysis():
+    passage = "Relative to silence, PO activated the insula and the putamen (Table S2)."
+    parse, omitted = _prose_parse(
+        passage,
+        [
+            ("PO - Sil", [_point(x=12), _point(x=14, kind="Z")], [0]),
+            ("po\u2212\u00a0SIL", [_point(x=14, kind="Z"), _point(x=12)], [0]),
+        ],
+    )
+    [kept] = parse.analyses
+    [repeat] = omitted
+    assert repeat.name == "po\u2212\u00a0SIL"
+    assert repeat.reason.startswith(f"it repeats a kept analysis (the same key): {kept.key}")
+
+
+def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
+    passage = "Group differences in the left hippocampus survived correction (Table S2)."
+    parse, _ = _prose_parse(
+        passage,
+        [
+            ("mixed", [_point(x=12, kind="T"), _point(x=14, kind="Z")], [0]),
+            ("t only", [_point(x=12, kind="T"), _point(x=14, kind="T", value=0.01),
+                        _point(x=16, kind="p", value=0.01)], [0]),
+        ],
+    )
+    mixed, t_only = parse.analyses
+    assert (mixed.statistic, t_only.statistic) == (None, "t")
+
+
+def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
+    """Stored parses from before content keys carry location keys, so they must re-parse."""
+    paper, parse, _ = written
+    assert paper_parse.PAPER_PARSE_VERSION == 6
+    assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
+        "paper_parse.6"
+    }
