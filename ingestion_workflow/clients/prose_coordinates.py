@@ -19,6 +19,7 @@ from ingestion_workflow.prompts.prose_coordinates import (
 )
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.create_analyses import build_document
+from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
 from ingestion_workflow.services.prose_passages import Passage
 
 #: P: the passage alone. H: with its section heading. W: with the sentences
@@ -131,9 +132,23 @@ class ProseCoordinateClient(GenericLLMClient):
         }
 
     def read(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
-        """The model's answer as it gave it."""
+        """The model's answer as it gave it.
+
+        Raises `UnreadableAnswer` unless the answer is a whole object with its list of
+        analyses: only `{"analyses": []}` says the passage holds no coordinate. Nothing
+        at all, an answer cut off at the token limit, or anything else is a failed read.
+        """
         response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
-        return json.loads(response.choices[0].message.content or "{}")
+        choice = next(iter(getattr(response, "choices", None) or []), None)
+        content = getattr(getattr(choice, "message", None), "content", None)
+        if getattr(choice, "finish_reason", None) == "length":
+            raise UnreadableAnswer("the prose answer was cut off at the token limit")
+        if not isinstance(content, str) or not content.strip():
+            raise UnreadableAnswer("the prose model returned nothing at all")
+        answer = json.loads(content)
+        if not isinstance(answer, dict) or not isinstance(answer.get("analyses"), list):
+            raise UnreadableAnswer("the prose answer is not an object with its analyses")
+        return answer
 
     def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
         return clean_answer(self.read(passage, title=title, abstract=abstract), passage.text)

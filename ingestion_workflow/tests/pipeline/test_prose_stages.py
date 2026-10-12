@@ -10,6 +10,7 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
@@ -1956,6 +1957,25 @@ def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
     assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
 
 
+def _empty_re_read(catalog, ref, *, analyses="no coordinate tables", prose_analyses=1, without=()):
+    """w2ni664ashw2's shape: everything made from an earlier prose reading, then a re-read that
+    found nothing. `analyses` is the tables' state: SKIPPED for no coordinate table, an
+    Outcome, or None for no analyses run."""
+    _uploaded_chain(catalog, ref, without=("passages", *without))
+    rows = [Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve",
+                    payload={}, summary={"prose_analyses": prose_analyses}),
+            Outcome(article_id=ref.id, stage="prose", source="", fingerprint="re-read",
+                    payload={"passages": [{"analyses": [], "omitted": []}]},
+                    summary={"passages": 1, "coordinates": 0, "analyses": 0})]
+    if analyses == "no coordinate tables":
+        rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-0",
+                            status=Status.SKIPPED,
+                            summary={"tables": 0, "reason": "no coordinate tables"}))
+    elif analyses is not None:
+        rows.append(analyses)
+    catalog.record(rows)
+
+
 def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(env, monkeypatch):
     """w2ni664ashw2: the role-free model read the passage again and found no coordinate, and
     the article has no table. The resolve, roles, space and upload made from the earlier
@@ -1967,10 +1987,7 @@ def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(en
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="90"))
-    _uploaded_chain(catalog, ref, without=("passages",))
-    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="re-read",
-                            payload={"passages": [{"analyses": [], "omitted": []}]},
-                            summary={"passages": 1, "coordinates": 0, "analyses": 0})])
+    _empty_re_read(catalog, ref)
     ctx = Context(settings, catalog)
     for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
         plan, (taken,) = _run(stage, ctx, catalog, ref)
@@ -2017,3 +2034,114 @@ def test_a_re_read_that_finds_points_again_rebuilds_a_taken_back_resolve(env):
                             summary={"passages": 1, "coordinates": 1, "analyses": 1})])
     _, (resolved,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
     assert resolved.status is Status.OK and resolved.summary["prose_points"] == 1
+
+
+def _analyses(ref, status=Status.OK, error=None, **summary):
+    if status is Status.FAILED:
+        return Outcome.failure(ref.id, "analyses", "", error, fingerprint="an-1")
+    return Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                   status=status, payload={}, summary=summary)
+
+
+@pytest.mark.parametrize("prose_analyses", [1, 0], ids=["made from prose", "tables only"])
+@pytest.mark.parametrize("tables", [
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "APIConnectionError: Connection error."),
+                 id="failed tables run"),
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "TimeoutError: the request timed out"),
+                 id="timeout"),
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "the extraction triage judged is gone"),
+                 id="extraction gone"),
+    pytest.param(lambda ref: _analyses(ref, tables=0, unread={"T1": "raw content missing"}),
+                 id="raw content missing"),
+    pytest.param(lambda ref: None, id="no analyses or triage run"),
+])
+def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose_analyses):
+    """A failed, partial or missing tables run says nothing about the article: with empty
+    prose, nothing is taken back and nothing is retracted; resolve blocks, with its reason."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="93"))
+    _empty_re_read(catalog, ref, analyses=tables(ref), prose_analyses=prose_analyses)
+    ctx = Context(settings, catalog)
+    plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    assert [r.split(":")[0] for r in plan.reasons] == ["tables not read"]
+    assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
+    plan, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert not any(o.error for o in outcomes)
+
+
+def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="94"))
+    _empty_re_read(catalog, ref, analyses=_analyses(
+        ref, tables=0, unread={"T2": "repeats another table's numbers"}))
+    _, (taken,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (taken.status, taken.error) == (Status.FAILED, NO_ANALYSES)
+
+
+def test_a_resolve_made_from_the_tables_alone_is_not_taken_back(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="95"))
+    _empty_re_read(catalog, ref, prose_analyses=0)
+    plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.skipped, outcomes) == (1, [])
+
+
+@pytest.mark.parametrize("content,finish_reason", [
+    pytest.param(None, "stop", id="no content"),
+    pytest.param("", "stop", id="empty"),
+    pytest.param('{"space": "MNI", "analyses": [{"name": "a", "points": [', "length",
+                 id="cut off at the token limit"),
+    pytest.param("not json", "stop", id="unparseable"),
+])
+def test_a_prose_re_read_that_failed_takes_nothing_back(env, monkeypatch, tmp_path, content,
+                                                        finish_reason):
+    """The model answering nothing, cut off or unreadable fails prose; resolve and roles keep
+    what the earlier reading made, and nothing is read as "no coordinates"."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.clients.prose_coordinates import ProseCoordinateClient
+
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "96")
+    found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    moved = catalog.payload(found)
+    moved["passages"][0]["span"][0] += 1
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="moved",
+                            payload=moved, summary=found.summary)])
+    reader = ProseCoordinateClient(settings)
+    choice = SimpleNamespace(message=SimpleNamespace(content=content), finish_reason=finish_reason)
+    reader.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda **kw: SimpleNamespace(choices=[choice]))))
+    prose = ProseStage(settings)
+    prose.client = lambda: reader
+    _, (read,) = _run(prose, ctx, catalog, ref)
+    assert read.status is Status.FAILED and read.error == "1 of 1 passages failed"
+    plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
+    assert catalog.artifacts([ref.id], "roles")[ref.id][""].fingerprint == first.fingerprint
+
+
+def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="97"))
+    _empty_re_read(catalog, ref, without=("upload",))
+    ctx = Context(settings, catalog)
+    for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+
+    def never(*a):
+        raise AssertionError("nothing to retract")
+
+    _, (done,) = _run(_upload_through(monkeypatch, settings, retracted=never), ctx, catalog, ref)
+    assert (done.status, done.error, done.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
+
+
+def test_the_run_report_counts_an_empty_re_read_as_taken_back(env, monkeypatch):
+    from ingestion_workflow.pipeline.scheduler import run_stages
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="98"))
+    _empty_re_read(catalog, ref)
+    report = run_stages(Context(settings, catalog), [ResolveStage(settings)], [ref])
+    assert (report.stages["resolve"].failed, report.stages["resolve"].taken_back) == (1, 1)

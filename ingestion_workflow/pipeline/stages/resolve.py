@@ -290,6 +290,41 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     return out, summary
 
 
+#: A table left unread for one of these is the same numbers as a table that was read.
+_UNREAD_AS_NOTHING = ("repeats another table's numbers",)
+
+
+def tables_unread(ctx: Context, article_id: str, analyses: Optional[Artifact]) -> Optional[str]:
+    """Why the article's tables are not known to hold nothing, or None when they are.
+
+    Known: the analyses stage found no coordinate table (SKIPPED), or read every table
+    and none held an analysis; with no analyses run, the triage passed no table or the
+    extraction holds none. Anything else -- a failed run, a table whose raw content is
+    missing, an analyses stage or triage not yet run -- is not known.
+    """
+    if analyses is not None:
+        if analyses.status is Status.SKIPPED and not analyses.summary.get("tables"):
+            return None
+        unread = {k: v for k, v in (analyses.summary.get("unread") or {}).items()
+                  if v not in _UNREAD_AS_NOTHING}
+        if analyses.status is Status.OK and not analyses.summary.get("tables") and not unread:
+            return None
+        why = analyses.error if analyses.status is Status.FAILED else (
+            next(iter(unread.values()), None) or analyses.status.value)
+        return f"tables not read: {why}"
+    triaged = ctx.catalog.artifacts([article_id], "triage").get(article_id, {}).get("")
+    if triaged is not None and triaged.status is Status.OK:
+        verdicts = ctx.payload(triaged) or {}
+        if not any(v.get("passes") for v in verdicts.get("tables", [])):
+            return None
+        return "tables not read: the analyses stage has not run"
+    extracted = ctx.catalog.artifacts([article_id], "extract").get(article_id, {})
+    if extracted and all(e.status is Status.OK and not e.summary.get("tables")
+                         for e in extracted.values()):
+        return None
+    return "tables not read: triage has not run"
+
+
 class ResolveStage:
     name = "resolve"
     #: prose, and `analyses` read alongside when it exists: `requires` names
@@ -332,9 +367,17 @@ class ResolveStage:
             read = prose.summary.get("coordinates") or prose.summary.get("analyses")
             if not read and not (tables and tables.summary.get("tables")):
                 # Neither the tables nor the prose hold an analysis. A resolve made from an
-                # earlier reading that did is taken back, and everything made from it after it.
+                # earlier prose reading that did is taken back, with everything made from it,
+                # but only when the tables are known to hold none too: a failed or partial
+                # table run says nothing about the article, so it only blocks.
                 existing = artifacts.get(ref.id, {}).get("")
-                if existing is not None and needs_taking_back(existing):
+                if existing is None or not needs_taking_back(existing):
+                    plan.skipped += 1
+                    continue
+                unknown = tables_unread(ctx, ref.id, analyses)
+                if unknown:
+                    plan.block(unknown)
+                elif existing.summary.get("prose_analyses"):
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
                                              upstream=None, reason=NO_ANALYSES))
                 else:

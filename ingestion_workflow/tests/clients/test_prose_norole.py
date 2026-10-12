@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from ingestion_workflow.clients.prose_coordinates import (
     ProseCoordinateClient,
     clean_answer,
@@ -106,3 +108,43 @@ def test_a_point_repeated_across_sets_stays_in_each():
     assert [a["name"] for a in got["analyses"]] == names
     assert [[(p["x"], p["y"], p["z"]) for p in a["points"]] for a in got["analyses"]] == [
         [(50, -50, 15)]] * 3
+
+
+def _answering(tmp_path, *, content, finish_reason="stop", choices=True):
+    """A prose client whose server answers `content` once."""
+    from types import SimpleNamespace
+
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        prose_model="nu-prose-norole", prose_api_base="http://localhost:8340/v1")
+    client = ProseCoordinateClient(settings)
+    choice = SimpleNamespace(message=SimpleNamespace(content=content), finish_reason=finish_reason)
+    response = SimpleNamespace(choices=[choice] if choices else [])
+    client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda **kw: response)))
+    return client
+
+
+@pytest.mark.parametrize("content,finish_reason,choices", [
+    pytest.param(None, "stop", True, id="no content"),
+    pytest.param("", "stop", True, id="empty"),
+    pytest.param("  \n", "stop", True, id="whitespace"),
+    pytest.param(None, "stop", False, id="no choice"),
+    pytest.param('{"space": "MNI", "analyses": [{"name": "a > b", "points": [', "length", True,
+                 id="cut off at the token limit"),
+    pytest.param('{"space": "MNI", "analyses": []}', "length", True, id="length, even if whole"),
+    pytest.param("not json", "stop", True, id="unparseable"),
+    pytest.param("null", "stop", True, id="null"),
+    pytest.param('{"space": null}', "stop", True, id="no analyses list"),
+])
+def test_only_a_whole_answer_with_its_analyses_is_a_reading(tmp_path, content, finish_reason, choices):
+    """Nothing, a cut-off answer or anything not an object with its list of analyses fails the
+    read; it never stands for "the passage holds no coordinate"."""
+    client = _answering(tmp_path, content=content, finish_reason=finish_reason, choices=choices)
+    with pytest.raises(ValueError):
+        client.read(Passage(text="Faces > houses (40, -50, -20)."))
+
+
+def test_an_empty_list_of_analyses_is_the_reading_that_finds_nothing(tmp_path):
+    client = _answering(tmp_path, content='{"space": null, "analyses": []}')
+    assert client.read(Passage(text="Faces > houses (40, -50, -20).")) == {
+        "space": None, "analyses": []}
