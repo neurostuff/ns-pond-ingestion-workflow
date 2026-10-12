@@ -8,8 +8,9 @@ import re
 import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from ace import extract as ace_extract
 from ace.config import update_config
@@ -41,7 +42,12 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.patches import apply_ace_patch
 from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
-from ingestion_workflow.services.download_check import check_page
+from ingestion_workflow.services.download_check import (
+    BODY_SECTIONS,
+    check_page,
+    page_prose,
+    prose_words,
+)
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -482,8 +488,31 @@ def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
     return text
 
 
-def article_text_and_captions(html_text: str, pmid: Optional[str], table_dir: Path):
-    """ACE's article, its text as extraction keeps it (tables in place, fetched tables
+#: Below this share of the page's running prose, the text readability kept is not the
+#: whole article, and it is built again the other two ways. On a Karger page readability
+#: keeps the citation dialog (55 of 5,993 words); on JOCN pages the table placeholders
+#: lead it to a small block (447 of 11,693).
+SHORT_TEXT_SHARE = 0.4
+READABILITY = "readability"
+WITHOUT_TABLE_PLACEHOLDERS = "readability_without_table_placeholders"
+WITHOUT_READABILITY = "without_readability"
+
+
+@dataclass
+class ArticleText:
+    """ACE's article, its text as extraction keeps it, and how the text was made."""
+
+    article: Any
+    text: str
+    #: Each figure caption's `{"ids", "span"}` in `text`.
+    figure_captions: List[dict]
+    #: Set when the first text was short of the page's prose and was built again:
+    #: the way kept (`method`), why the text was rebuilt, and the prose words of each way.
+    text_source: Optional[Dict[str, Any]] = None
+
+
+def article_text(html_text: str, pmid: Optional[str], table_dir: Path) -> ArticleText:
+    """ACE's article and its text as extraction keeps it (tables in place, fetched tables
     after), the figure captions under "Figure legends" at the end, and each caption's
     `{"ids", "span"}` in the text. Tables fetched before are read from `table_dir`.
     """
@@ -507,8 +536,80 @@ def article_text_and_captions(html_text: str, pmid: Optional[str], table_dir: Pa
     if not article:
         raise ValueError("ACE failed to parse the article content.")
 
-    text = _with_fetched_tables(getattr(article, "text", "") or "", getattr(article, "tables", []))
-    return (article, *append_legends(text, captions))
+    text, text_source = _whole_article_text(
+        source, html_text, getattr(article, "text", "") or "")
+    text = _with_fetched_tables(text, getattr(article, "tables", []))
+    text, spans = append_legends(text, captions)
+    return ArticleText(article, text, spans, text_source)
+
+
+def article_text_and_captions(html_text: str, pmid: Optional[str], table_dir: Path):
+    """`article_text` as (article, text, figure captions)."""
+    built = article_text(html_text, pmid, table_dir)
+    return built.article, built.text, built.figure_captions
+
+
+def _whole_article_text(source: Any, html_text: str, text: str):
+    """The text, or one built again without readability or without table placeholders
+    when it holds less than `SHORT_TEXT_SHARE` of the prose of a page with body
+    sections; and how it was made.
+
+    Of the three, the one with the most running prose is kept; readability's on a tie.
+    The tables ACE parsed are the first parse's either way.
+    """
+    page = page_prose(html_text)
+    first = prose_words(text)
+    # Without body sections the page is an abstract, a letter or a stub, whose prose
+    # beside the article is a dialog or a list of other papers' abstracts: built
+    # again, its text gains only those.
+    if (page is None or len(page.sections) < BODY_SECTIONS
+            or first >= SHORT_TEXT_SHARE * page.words):
+        return text, None
+    built = {READABILITY: (text, first)}
+    for method, build in ((WITHOUT_TABLE_PLACEHOLDERS, _text_without_table_placeholders),
+                          (WITHOUT_READABILITY, _text_without_readability)):
+        rebuilt = build(source, html_text)
+        built[method] = (rebuilt, prose_words(rebuilt))
+    method = max(built, key=lambda m: built[m][1])
+    return built[method][0], {
+        "method": method,
+        "reason": f"readability kept {first:,} of the page's {page.words:,} words of "
+                  f"running prose",
+        "page_prose_words": page.words,
+        "prose_words": {m: n for m, (_, n) in built.items()},
+    }
+
+
+def _ace_soup(source: Any, html_text: str) -> BeautifulSoup:
+    """The page as ACE's `parse_article` reads it for the text."""
+    soup = BeautifulSoup(source.decode_html_entities(html_text), "lxml")
+    for tag in soup(["script", "style"]):
+        tag.extract()
+    return soup
+
+
+def _text_without_readability(source: Any, html_text: str) -> str:
+    """ACE's text with tables in place, from every paragraph and heading of the page."""
+    use_readability = source.use_readability
+    source.use_readability = False
+    try:
+        return source._text_with_tables(_ace_soup(source, html_text))
+    finally:
+        source.use_readability = use_readability
+
+
+def _text_without_table_placeholders(source: Any, html_text: str) -> str:
+    """Readability's text of the page as it is, its tables appended after, each once."""
+    soup = _ace_soup(source, html_text)
+    text = source._clean_html_with_readability(str(soup))
+    # Joined as `_text_with_tables` joins the tables readability dropped, so each
+    # table's rows end as ACE renders them.
+    leftover = []
+    for table in [t for t in soup.find_all("table") if not t.find("table")]:
+        rendered = table_text(table)
+        if rendered and rendered not in text and rendered not in leftover:
+            leftover.append(rendered)
+    return "\n\n".join([text.rstrip()] + leftover) if leftover else text
 
 
 def _extract_ace_article(
@@ -528,11 +629,10 @@ def _extract_ace_article(
     source_tables_dir.mkdir(parents=True, exist_ok=True)
 
     html_text = html_file.file_path.read_text(encoding="utf-8")
-    article, article_text, figure_captions = article_text_and_captions(
-        html_text, download_result.identifier.pmid, source_tables_dir
-    )
+    built = article_text(html_text, download_result.identifier.pmid, source_tables_dir)
+    article = built.article
     full_text_path = article_dir / "article.txt"
-    full_text_path.write_text(article_text, encoding="utf-8")
+    full_text_path.write_text(built.text, encoding="utf-8")
 
     extracted_tables = [
         _translate_ace_table(table, article, tables_dir, index)
@@ -560,7 +660,8 @@ def _extract_ace_article(
         tables=extracted_tables,
         has_coordinates=has_coordinates,
         error_message=None,
-        figure_captions=figure_captions,
+        figure_captions=built.figure_captions,
+        text_source=built.text_source,
     )
 
 

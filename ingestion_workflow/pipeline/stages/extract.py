@@ -328,6 +328,10 @@ class ExtractStage:
         if content.full_text_path and Path(content.full_text_path).is_file():
             # What passages chains on: a text rewritten in place (refresh-text) updates it.
             summary["text_sha256"] = file_sha256(content.full_text_path)
+        if content.text_source:
+            # Which way the text was built, and why it was built more than one way.
+            summary["text_from"] = (f"{content.text_source['method']} "
+                                    f"({content.text_source['reason']})")
         if content.error_message:
             # Kept, because "four of five tables parsed" is worth knowing; it
             # is just not a failure.

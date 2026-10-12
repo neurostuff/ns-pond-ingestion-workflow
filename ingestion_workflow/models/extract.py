@@ -104,6 +104,9 @@ class ExtractedContent:
     error_message: Optional[str] = None
     #: Each figure caption's `{"ids", "span"}` in the text (`extractors.figure_captions`).
     figure_captions: List[Dict[str, object]] = field(default_factory=list)
+    #: How the text was made, when the extractor built it more than one way
+    #: (`ace_extractor.article_text`).
+    text_source: Optional[Dict[str, object]] = None
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -116,6 +119,7 @@ class ExtractedContent:
             "extracted_at": self.extracted_at.isoformat(),
             "error_message": self.error_message,
             "figure_captions": self.figure_captions,
+            **({"text_source": self.text_source} if self.text_source else {}),
         }
 
     @classmethod
@@ -136,6 +140,7 @@ class ExtractedContent:
             extracted_at=datetime.fromisoformat(str(payload["extracted_at"])),
             error_message=payload.get("error_message") or None,
             figure_captions=list(payload.get("figure_captions") or []),
+            text_source=payload.get("text_source") or None,
         )
 
 

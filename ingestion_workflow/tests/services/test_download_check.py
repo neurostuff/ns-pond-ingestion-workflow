@@ -12,6 +12,7 @@ import pytest
 from ingestion_workflow.extractors.ace_extractor import _validate_downloaded_html
 from ingestion_workflow.services import download_check
 from ingestion_workflow.services.download_check import (
+    ABSTRACT_ONLY,
     CITATION_STUB,
     EMPTY_SHELL,
     ERROR_PAGE,
@@ -186,3 +187,70 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
 def test_a_paywall_under_an_access_banner_is_still_a_paywall(article_id, says):
     bad = check_page(real(article_id))
     assert bad.reason == PAYWALL and says in bad.detail
+
+
+def test_an_abstract_with_nothing_but_page_furniture_is_abstract_only():
+    """JOCN: the abstract, printed twice, beside the press's blurb, a login dialog and
+    lorem ipsum; 947 words in prose blocks, so it clears the prose gate."""
+    bad = check_page(real("kmtfrgqccuhz"))
+    assert bad is not None and bad.reason == ABSTRACT_ONLY
+    assert "body sections: none" in bad.detail
+    assert bad.detail.endswith("947 words in prose blocks")
+    assert reason_of(bad.message) == ABSTRACT_ONLY
+
+
+def test_other_papers_abstracts_listed_beside_an_abstract_are_not_its_body():
+    """Brain Research: the abstract over "Recommended articles", 2,303 words in prose
+    blocks, most of them other papers' abstracts."""
+    bad = check_page(real("ox5vn5dnq74h"))
+    assert bad is not None and bad.reason == ABSTRACT_ONLY
+
+
+@pytest.mark.parametrize(
+    "article_id",
+    [
+        # Karger and Pediatrics full articles whose ACE text came out short
+        "af3skhwhkgkm",
+        "ytpicngb4emb",
+        "gdsqtwkjfl24",
+        # JAMA: a full article with no heading named for a section
+        "44yiqcp3u3na",
+        # A JAMA letter and two short JNNP items: no abstract, no sections
+        "ipxutfjxf2p7",
+        "6hhu36c7z2wa",
+        "p4frymsevkls",
+    ],
+)
+def test_articles_and_letters_are_not_abstract_only(article_id):
+    assert check_page(real(article_id)) is None
+
+
+def test_a_letter_shows_no_abstract_and_an_article_shows_its_sections():
+    letter = download_check.page_prose(real("ipxutfjxf2p7"))
+    assert letter.abstract_sentences < download_check.ABSTRACT_SENTENCES
+    assert letter.sections == ()
+    article = download_check.page_prose(real("af3skhwhkgkm"))
+    assert {"introduction", "results", "discussion"} <= set(article.sections)
+
+
+def test_a_structured_abstract_s_headings_are_not_the_body_s():
+    page = real("kmtfrgqccuhz")
+    labels = b"<h3>Methods</h3><p>x</p><h3>Results</h3>"
+    in_abstract = page.replace(b'<div class="abstractSection abstractInFull">',
+                               b'<div class="abstractSection abstractInFull">' + labels, 1)
+    assert check_page(in_abstract).reason == ABSTRACT_ONLY
+    in_body = page.replace(b"</body>", labels + b"</body>", 1)
+    assert check_page(in_body) is None
+
+
+def test_a_sentence_repeated_on_the_page_counts_once():
+    sentence = "The participants performed the task in the scanner for twenty minutes. "
+    assert download_check.prose_sentences(sentence * 3) == [sentence.strip()]
+
+
+def test_reference_entries_and_table_rows_are_not_prose():
+    assert download_check.prose_sentences(
+        "Smith J, Jones K (2003) Attention modulates the response of visual cortex in "
+        "humans. J Neurosci 23:100-110. PubMed Google Scholar\n"
+        "Left\tamygdala\t-22\t-4\t-18\t4.21\n"
+    ) == []

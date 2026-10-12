@@ -9,7 +9,9 @@ that reason and the next source is tried.
 A page is judged by its prose first. Running text of article length is the article,
 whatever else the page says: publishers put "subscribe", "purchase access" and
 "Not Found" widgets around full texts they serve, and print the abstract first.
-Only a page without that much prose is read for the notices.
+Only a page without that much prose is read for the notices. Either way, a page that
+shows an abstract and no body (no section headings and almost no running prose beside
+the abstract, however long its reference list) is only the abstract.
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 import lxml.html
 from lxml import etree
@@ -28,7 +30,8 @@ EMPTY_SHELL = "empty_shell"
 PAYWALL = "paywall"
 ERROR_PAGE = "error_page"
 CITATION_STUB = "citation_stub"
-REASONS = (EMPTY_SHELL, PAYWALL, ERROR_PAGE, CITATION_STUB)
+ABSTRACT_ONLY = "abstract_only"
+REASONS = (EMPTY_SHELL, PAYWALL, ERROR_PAGE, CITATION_STUB, ABSTRACT_ONLY)
 
 #: Visible characters below which a page holds nothing to read (a PDF viewer's
 #: `<embed>`, a bare `<body></body>`, a script-only shell).
@@ -43,6 +46,15 @@ STUB_WORDS = 50
 ERROR_PAGE_WORDS = 200
 #: A block of fewer words is a link, a label or a menu item, not prose.
 _PROSE_BLOCK_WORDS = 25
+#: Sentences of running prose, abstract included, below which a page that shows an
+#: abstract and no body sections holds only the abstract. An abstract runs to 5-15;
+#: the body of the shortest article with an abstract, to dozens more.
+ABSTRACT_ONLY_SENTENCES = 20
+#: Sentences an abstract must have for the page to count as showing one. A letter has
+#: none, so it is never taken for an abstract page, however short.
+ABSTRACT_SENTENCES = 3
+#: Distinct body section headings that make a page an article's body.
+BODY_SECTIONS = 2
 
 _BLOCKS = frozenset(
     "p div section article main li td dd blockquote figcaption h1 h2 h3 h4 h5 h6 ul ol dl table tr"
@@ -115,6 +127,34 @@ _ERROR_BODY = re.compile(
     r"|internal server error|does not exist at this address",
     re.I,
 )
+# A body section's heading, whole: "2. Materials and Methods", "RESULTS:".
+_SECTION = re.compile(
+    r"^\s*(?:[\dIVX]+\.?\s*)?(introduction|background|methods?|materials?(?: and methods?)?"
+    r"|patients and methods|subjects and methods|participants|experimental procedures?"
+    r"|procedures?|results?|discussion|conclusions?|results and discussion|case reports?"
+    r"|case presentations?|case descriptions?|study design|statistical analysis)\s*:?\s*$",
+    re.I,
+)
+# Publishers label sections with styled <div>s and <span>s as often as with headings.
+_LABELS = ("h1", "h2", "h3", "h4", "h5", "h6", "div", "span", "p", "strong", "b", "dt",
+           "label", "header")
+_LABEL_CHARS = 60
+_LABEL_CHILDREN = 3
+_HEADINGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+_ABSTRACT_HEADING = re.compile(r"^\s*(?:abstract|summary)\s*:?\s*$", re.I)
+_ABSTRACT_NAME = re.compile(r"abstract", re.I)
+# Other papers' abstracts, listed beside this one ("Recommended articles", "Cited by").
+_ELSEWHERE = re.compile(r"recommend|related|cited-?by|citing", re.I)
+#: A container named for the abstract holding more words than this is the article's
+#: wrapper, not its abstract.
+_ABSTRACT_MAX_WORDS = 2000
+# A sentence of running prose: a capital, 40 characters or more without a stop, and a
+# stop after a word. Menus, labels and table rows have no such run.
+_SENTENCE = re.compile(r"[A-Z][^.!?]{40,}?[a-z)\]%][.!?](?=\s|$)")
+_SENTENCE_WORDS = 8
+_YEAR = re.compile(r"\b(?:19|20)\d\d[a-z]?\b")
+# A reference list entry reads as a sentence too; these mark it as one.
+_CITING = re.compile(r"et al\b|doi\b|PubMed|Google Scholar|Crossref|\bVol\b|pp\.", re.I)
 _WS = re.compile(r"\s+")
 # lxml refuses a str that declares its own encoding.
 _XML_DECLARATION = re.compile(r"^\s*<\?xml[^>]*\?>")
@@ -134,28 +174,14 @@ class BadPage:
 
 def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
     """The reason this page is not an article, or None if it is one."""
-    if isinstance(html, bytes):
-        # Parsed as bytes, a page whose <meta> charset disagrees with its bytes
-        # loses all but its head: 3,655 of 24,765 words on one stored article.
-        html = html.decode("utf-8", errors="replace")
-    # Some stored pages open with a run of NUL bytes, where lxml stops reading.
-    html = html.replace("\x00", "")
-    if not html.strip():
-        return BadPage(EMPTY_SHELL, "page is blank")
-    try:
-        doc = lxml.html.document_fromstring(_XML_DECLARATION.sub("", html, count=1))
-    except (etree.ParserError, ValueError):
-        return BadPage(EMPTY_SHELL, "page does not parse as HTML")
+    doc = _parse(html)
+    if doc is None:
+        return BadPage(EMPTY_SHELL, "page does not parse as HTML" if _has_text(html)
+                       else "page is blank")
     title = _text(doc.find(".//title"))
     if _RECORD_TITLE.search(title) or doc.xpath("//meta[@name='ncbi_db'][@content='pubmed']"):
         return BadPage(CITATION_STUB, f"database record page {title[-60:]!r}")
-    for el in doc.xpath("|".join(f"//{tag}" for tag in _NOT_CONTENT)):
-        el.drop_tree()
-    for el in doc.xpath("//body//*[@class or @id][not(.//h1)]"):
-        if el.getparent() is not None and _CONSENT.search(
-            f"{el.get('class') or ''} {el.get('id') or ''}"
-        ):
-            el.drop_tree()
+    _drop_non_content(doc)
 
     body = doc.find("body")
     visible = _text(body)
@@ -168,7 +194,7 @@ def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
 
     prose = _prose_words(body)
     if prose >= ARTICLE_WORDS:
-        return None
+        return _abstract_only(doc, prose)
 
     headings = [title] + [_text(h) for h in doc.xpath("//h1")[:3]]
     for heading in headings:
@@ -185,7 +211,152 @@ def check_page(html: Union[str, bytes]) -> Optional[BadPage]:
         return BadPage(PAYWALL, f"page says {found.group(0)!r}; {prose} words of prose")
     if prose < STUB_WORDS:
         return BadPage(CITATION_STUB, f"{prose} words of prose")
-    return None
+    return _abstract_only(doc, prose)
+
+
+@dataclass(frozen=True)
+class PageProse:
+    """The running prose a page shows, in distinct sentences (`prose_sentences`)."""
+
+    sentences: int
+    words: int
+    #: Of those, the sentences and words of the abstract.
+    abstract_sentences: int
+    abstract_words: int
+    #: The body section headings the page has outside its abstract ("introduction",
+    #: "methods", ...).
+    sections: tuple
+
+
+def page_prose(html: Union[str, bytes]) -> Optional[PageProse]:
+    """The page's running prose outside page chrome, consent dialogs and lists of other
+    papers, or None if it does not parse. A sentence the page repeats (in a hidden
+    pop-up, say) counts once."""
+    doc = _parse(html)
+    if doc is None:
+        return None
+    _drop_non_content(doc)
+    return _page_prose(doc)
+
+
+def prose_sentences(text: str) -> List[str]:
+    """The distinct sentences of running prose in `text`, in order.
+
+    Table rows, menus, labels and reference list entries are not prose, so a text and the
+    page it came from can be compared on what both say of the article.
+    """
+    seen: Dict[str, None] = {}
+    for found in _SENTENCE.finditer(_WS.sub(" ", text)):
+        sentence = found.group(0)
+        words = sentence.split()
+        if len(words) < _SENTENCE_WORDS:
+            continue
+        if sum(w.isalpha() and w.islower() for w in words) < 0.6 * len(words):
+            continue
+        if len(_YEAR.findall(sentence)) >= 2 or _CITING.search(sentence):
+            continue
+        seen.setdefault(sentence, None)
+    return list(seen)
+
+
+def prose_words(text: str) -> int:
+    return sum(len(sentence.split()) for sentence in prose_sentences(text))
+
+
+def _abstract_only(doc, prose: int) -> Optional[BadPage]:
+    found = _page_prose(doc)
+    if (len(found.sections) >= BODY_SECTIONS or found.abstract_sentences < ABSTRACT_SENTENCES
+            or found.sentences >= ABSTRACT_ONLY_SENTENCES):
+        return None
+    other = found.sentences - found.abstract_sentences
+    sections = ", ".join(found.sections) or "none"
+    return BadPage(
+        ABSTRACT_ONLY,
+        f"an abstract of {found.abstract_words} words ({found.abstract_sentences} sentences) "
+        f"and {found.words - found.abstract_words} words ({other} sentences) of other prose; "
+        f"body sections: {sections}; {prose} words in prose blocks",
+    )
+
+
+def _page_prose(doc) -> PageProse:
+    body = doc.find("body")
+    if body is None:
+        return PageProse(0, 0, 0, 0, ())
+    in_abstract = set()
+    for el in body.iter():
+        if not isinstance(el.tag, str):
+            continue
+        if (_ABSTRACT_NAME.search(f"{el.get('class') or ''} {el.get('id') or ''}")
+                and len(_text(el).split()) < _ABSTRACT_MAX_WORDS):
+            in_abstract.update(el.iter())
+        elif el.tag in _HEADINGS and _ABSTRACT_HEADING.match(_text(el)):
+            for sibling in el.itersiblings():
+                if sibling.tag in _HEADINGS:
+                    break
+                in_abstract.update(sibling.iter())
+    sentences: Dict[str, bool] = {}
+    for el in body.iter(*_BLOCKS):
+        own = _own_text(el)
+        if len(own.split()) < _PROSE_BLOCK_WORDS:
+            continue
+        lineage = [el, *el.iterancestors()]
+        if any(a.tag in _CHROME for a in lineage):
+            continue
+        if any(_ELSEWHERE.search(f"{a.get('class') or ''} {a.get('id') or ''}")
+               for a in lineage):
+            continue
+        for sentence in prose_sentences(own):
+            sentences.setdefault(sentence, el in in_abstract)
+    abstract = [s for s, a in sentences.items() if a]
+    # A structured abstract's "Methods" and "Results" head no body.
+    sections = sorted({m.group(1).lower() for el in body.iter(*_LABELS)
+                       if el not in in_abstract for m in [_label(el)] if m})
+    return PageProse(
+        sentences=len(sentences),
+        words=sum(len(s.split()) for s in sentences),
+        abstract_sentences=len(abstract),
+        abstract_words=sum(len(s.split()) for s in abstract),
+        sections=tuple(sections),
+    )
+
+
+def _label(el):
+    if el.tag not in _HEADINGS and len(el) > _LABEL_CHILDREN:
+        return None  # a container, not a label; its text would be read again for each child
+    text = _text(el)
+    return _SECTION.match(text) if len(text) < _LABEL_CHARS else None
+
+
+def _has_text(html: Union[str, bytes]) -> bool:
+    if isinstance(html, bytes):
+        html = html.decode("utf-8", errors="replace")
+    return bool(html.replace("\x00", "").strip())
+
+
+def _parse(html: Union[str, bytes]):
+    """The page's document, or None if it is blank or does not parse."""
+    if isinstance(html, bytes):
+        # Parsed as bytes, a page whose <meta> charset disagrees with its bytes
+        # loses all but its head: 3,655 of 24,765 words on one stored article.
+        html = html.decode("utf-8", errors="replace")
+    # Some stored pages open with a run of NUL bytes, where lxml stops reading.
+    html = html.replace("\x00", "")
+    if not html.strip():
+        return None
+    try:
+        return lxml.html.document_fromstring(_XML_DECLARATION.sub("", html, count=1))
+    except (etree.ParserError, ValueError):
+        return None
+
+
+def _drop_non_content(doc) -> None:
+    for el in doc.xpath("|".join(f"//{tag}" for tag in _NOT_CONTENT)):
+        el.drop_tree()
+    for el in doc.xpath("//body//*[@class or @id][not(.//h1)]"):
+        if el.getparent() is not None and _CONSENT.search(
+            f"{el.get('class') or ''} {el.get('id') or ''}"
+        ):
+            el.drop_tree()
 
 
 _MESSAGE = re.compile(r"bad page \((%s)\)" % "|".join(REASONS))
