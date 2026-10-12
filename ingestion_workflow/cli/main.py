@@ -825,6 +825,156 @@ def migrate(
     typer.echo(report.render())
 
 
+# -- report ------------------------------------------------------------------
+
+report_app = typer.Typer(help="Reports read from the catalog. They never write to it.",
+                         no_args_is_help=True)
+app.add_typer(report_app, name="report")
+
+CatalogOption = typer.Option(
+    None, "--catalog",
+    help="Catalog directory (holding catalog.sqlite); defaults to the config's.")
+
+
+def _catalog_root(catalog: Optional[Path], config: Optional[Path]) -> Path:
+    return catalog if catalog is not None else _settings(config).catalog_root
+
+
+@report_app.command("funnel")
+def report_funnel(
+    out: Path = typer.Option(Path("funnel.html"), "--out", "-o", help="HTML file to write."),
+    samples: int = typer.Option(
+        20, "--samples", help="Article ids kept per bucket for the drill-down."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write one self-contained HTML page: every article's state at every stage."""
+    from ingestion_workflow.services.funnel_report import write_report
+
+    funnel = write_report(_catalog_root(catalog, config), out, samples=samples, prose=prose)
+    typer.echo(f"{funnel.total:,} articles in {funnel.seconds:.1f}s -> {out} "
+               f"({out.stat().st_size / 1e6:.1f} MB)")
+    _echo_flow(funnel)
+
+
+def _echo_flow(funnel) -> None:
+    from ingestion_workflow.services.funnel_report import page_model
+
+    for step in page_model(funnel)["flow"]:
+        left = sum(group[2] for group in step["excluded"])
+        waiting = sum(group[2] for group in step["waiting"])
+        top = max(step["excluded"] + step["waiting"], key=lambda group: group[2], default=None)
+        check = "ok" if step["adds_up"] and step["follows"] else "DOES NOT ADD UP"
+        typer.echo(f"  {step['stage']:>9}  in {step['in']:>9,}  passed {step['passed']:>9,}  "
+                   f"left out {left:>9,}  waiting {waiting:>9,}  {check}"
+                   + (f"  top: {top[2]:,} {top[0]}: {top[1]}" if top else ""))
+    for problem in funnel.reconcile():
+        typer.echo(f"  does not reconcile: {problem}")
+
+
+def _pipeline_settings(config: Optional[Path]):
+    """The pipeline's settings when a config is named; the trace needs them to plan."""
+    return load_settings(config) if config is not None else None
+
+
+@report_app.command("trace")
+def report_trace(
+    article_id: str = typer.Argument(..., help="Article id, as the page lists it."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Print how one article got where it is, as JSON: per stage its state, and each
+    record's path, status, reason, when it was written, its fingerprint and inputs.
+    With --config, each stage's own plan says whether the record is fresh."""
+    from ingestion_workflow.services.funnel_report import trace_article
+
+    found = trace_article(_catalog_root(catalog, config), article_id,
+                          settings=_pipeline_settings(config), prose=prose)
+    typer.echo(json.dumps(found, indent=1))
+
+
+@report_app.command("serve")
+def report_serve(
+    port: int = typer.Option(8765, "--port", help="Port on 127.0.0.1."),
+    samples: int = typer.Option(
+        20, "--samples", help="Article ids kept per bucket for the drill-down."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Serve the funnel page with a full trace for each article clicked (read-only)."""
+    from ingestion_workflow.services.funnel_report import serve
+
+    server = serve(_catalog_root(catalog, config), port=port, samples=samples, prose=prose,
+                   settings=_pipeline_settings(config))
+    _echo_flow(server.funnel)
+    typer.echo(f"serving on http://127.0.0.1:{server.server_address[1]}/ (Ctrl-C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
+@report_app.command("funnel-ids")
+def report_funnel_ids(
+    stage: str = typer.Option(..., "--stage", help="Stage to list."),
+    state: Optional[List[str]] = typer.Option(
+        None, "--state", help="Only this state (passed, failed, ...); repeat for any of several. "
+        "With --by-source, the row's status (ok, failed, permanent, skipped, taken_back)."),
+    reason: Optional[str] = typer.Option(
+        None, "--reason", help="Reason contains this text, as the page's reason box."),
+    exact_reason: Optional[str] = typer.Option(
+        None, "--exact-reason", help="Reason is exactly this, as a clicked reason on the page."),
+    source: Optional[List[str]] = typer.Option(
+        None, "--source", help="Has an ok download from this source; repeat for any of several."),
+    tried: Optional[List[str]] = typer.Option(
+        None, "--tried", help="Has a download recorded from this source, failed or not; "
+        "repeat for any of several."),
+    judged: Optional[List[str]] = typer.Option(
+        None, "--judged", help="Triage judged this source's text; repeat for any of several."),
+    day_from: Optional[str] = typer.Option(
+        None, "--from", help="Registered on or after this day (YYYY-MM-DD)."),
+    day_to: Optional[str] = typer.Option(
+        None, "--to", help="Registered on or before this day (YYYY-MM-DD)."),
+    prose: Optional[bool] = typer.Option(
+        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
+        "defaults to whether the catalog holds any."),
+    by_source: Optional[str] = typer.Option(
+        None, "--by-source", help="List this source's own download or extraction rows at "
+        "--stage (download or extract), as the page's source table does."),
+    reason_group: Optional[str] = typer.Option(
+        None, "--reason-group", help="Reason falls in this group, as a clicked group in the "
+        "flow: its origin and primary part, e.g. 'not open access'."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Print every article in one funnel bucket, tab-separated: id, stage, state, reason."""
+    from ingestion_workflow.services.funnel_report import STATES, TAKEN_BACK, matching_ids
+
+    allowed = ("ok", "failed", "permanent", "skipped", TAKEN_BACK) if by_source else STATES
+    for one in state or ():
+        if one not in allowed:
+            raise typer.BadParameter(f"state must be one of {', '.join(allowed)}")
+    if by_source and stage not in ("download", "extract"):
+        raise typer.BadParameter("--by-source lists download or extract rows only")
+    for row in matching_ids(_catalog_root(catalog, config), stage=stage, states=state or (),
+                            reason=reason, exact_reason=exact_reason,
+                            sources=source or (), tried=tried or (), judged=judged or (),
+                            day_from=day_from, day_to=day_to, prose=prose,
+                            by_source=by_source, group=reason_group):
+        typer.echo("\t".join(row))
+
+
 def main() -> None:
     app()
 
