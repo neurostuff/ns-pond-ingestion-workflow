@@ -108,7 +108,8 @@ def test_ace_writes_its_figcaptions_after_the_text(tmp_path, monkeypatch):
     assert "<figcaption" not in page and len(captions) >= 2
     assert captions[0][1] == "Figure 1. " + CAPTION
 
-    _, text, spans = article_text_and_captions(html, None, tmp_path)
+    built = article_text_and_captions(html, None, tmp_path)
+    text, spans = built.text, built.figure_captions
     assert len(spans) == len(captions)
     _check(text, spans[:1])
     assert text[slice(*spans[0]["span"])] == "Figure 1. " + CAPTION

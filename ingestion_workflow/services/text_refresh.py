@@ -184,9 +184,7 @@ def build(source: str, article_file: Path, text_path: Path, pmid: Optional[str] 
         set_skip_remote_tables(True)  # the tables fetched at extraction are in its cache
         built = ace_extractor.article_text_and_captions(
             article_file.read_text(encoding="utf-8"), pmid, text_path.parent / "downloaded_tables")
-        _, text, captions = built
-        # A stand-in for the extractor may give the bare (article, text, captions).
-        return text, captions, getattr(built, "text_source", None)
+        return built.text, built.figure_captions, built.text_source
     raise ValueError(f"cannot rebuild the text of {source}")
 
 

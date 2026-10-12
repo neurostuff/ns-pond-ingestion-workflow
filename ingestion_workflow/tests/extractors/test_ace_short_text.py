@@ -218,18 +218,23 @@ def test_a_page_wrapped_in_a_cookie_banner_s_name_is_still_read(tmp_path):
         assert len(out.text.split()) > 5000
 
 
-def test_a_text_with_two_fifths_of_the_page_s_prose_is_left_as_it_was(tmp_path, monkeypatch):
-    """JoVE: readability kept 41% of the page's running prose. Built again without
-    readability it would have more than twice that; the gate leaves it."""
+@pytest.mark.parametrize("article_id, pmid", [
+    ("c3jumvpmalif", "41115132"),  # JoVE: readability kept 41% of the page's prose
+    ("7g33qvhphokl", "24523549"),  # J Neurosci
+    ("xjibolva7npz", "25762673"),  # J Neurosci
+])
+def test_a_text_with_under_half_the_page_s_prose_is_rebuilt(
+        tmp_path, monkeypatch, article_id, pmid):
+    """Readability kept 41-45% of these pages' running prose, and a rebuild gives more."""
     from ingestion_workflow.extractors.figure_captions import take_html_figures
     from ingestion_workflow.services.download_check import page_prose, prose_words
 
-    out = built("c3jumvpmalif", "41115132", tmp_path)
-    assert out.text_source is None
-    page = page_prose(take_html_figures(real("c3jumvpmalif"))[0])
-    kept = prose_words(readability_only("c3jumvpmalif", "41115132", tmp_path, monkeypatch))
-    assert 0.4 * page.words <= kept < 0.45 * page.words
-    assert out.text == readability_only("c3jumvpmalif", "41115132", tmp_path, monkeypatch)
+    out = built(article_id, pmid, tmp_path)
+    page = page_prose(take_html_figures(real(article_id))[0])
+    kept = prose_words(readability_only(article_id, pmid, tmp_path, monkeypatch))
+    assert 0.4 * page.words <= kept < 0.5 * page.words
+    assert out.text_source["method"] != ace.READABILITY
+    assert out.text_source["prose_words"][out.text_source["method"]] > kept
 
 
 def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path):
@@ -391,13 +396,13 @@ def stub_ways(monkeypatch):
 
 
 @pytest.mark.parametrize("first, page, rebuilt", [
-    ("80", _Page(200, ("introduction", "methods")), False),  # exactly two fifths
-    ("79", _Page(200, ("introduction", "methods")), True),
-    ("80", _Page(201, ("introduction", "methods")), True),
+    ("100", _Page(200, ("introduction", "methods")), False),  # exactly a half
+    ("99", _Page(200, ("introduction", "methods")), True),
+    ("100", _Page(201, ("introduction", "methods")), True),
     ("0", _Page(200, ("methods",)), False),  # one body section
-    ("79", _Page(200, ("introduction", "methods"), sentences=10), True),
+    ("99", _Page(200, ("introduction", "methods"), sentences=10), True),
 ])
-def test_the_gate_is_two_fifths_of_the_prose_of_a_page_with_two_sections(
+def test_the_gate_is_a_half_of_the_prose_of_a_page_with_two_sections(
         stub_ways, first, page, rebuilt):
     stub_ways(page)
     text, source = ace._whole_article_text(None, "", first, [])

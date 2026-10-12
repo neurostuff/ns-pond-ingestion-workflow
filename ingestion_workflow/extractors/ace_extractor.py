@@ -492,8 +492,10 @@ def _with_fetched_tables(text: str, tables: Sequence[Any]) -> str:
 #: Below this share of the page's running prose, the text readability kept is not the
 #: whole article, and it is built again the other two ways. On a Karger page readability
 #: keeps the citation dialog (55 of 5,993 words); on JOCN pages the table placeholders
-#: lead it to a small block (447 of 11,693).
-SHORT_TEXT_SHARE = 0.4
+#: lead it to a small block (447 of 11,693). Between 40% and 50% a rebuild at least
+#: doubled the running prose of 12 of 15 sampled texts and shortened none, so the
+#: gate sits at a half.
+SHORT_TEXT_SHARE = 0.5
 READABILITY = "readability"
 WITHOUT_TABLE_PLACEHOLDERS = "readability_without_table_placeholders"
 WITHOUT_READABILITY = "without_readability"
@@ -510,10 +512,6 @@ class ArticleText:
     #: Set when the first text was short of the page's prose and was built again:
     #: the way kept (`method`), why the text was rebuilt, and the prose words of each way.
     text_source: Optional[Dict[str, Any]] = None
-
-    def __iter__(self):
-        # Unpacks as (article, text, figure captions), as it did before `text_source`.
-        return iter((self.article, self.text, self.figure_captions))
 
 
 def article_text_and_captions(html_text: str, pmid: Optional[str],

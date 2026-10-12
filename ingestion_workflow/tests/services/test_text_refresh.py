@@ -350,12 +350,22 @@ def test_a_body_figure_taken_out_moves_the_citations_after_it(tmp_path):
 def test_an_ace_rebuild_gives_ace_the_extraction_s_pmid(tmp_path, monkeypatch):
     """Without it ACE returns no article for a page that does not print its PMID
     (14 of 61 ScienceDirect, OUP and MDPI pages on beast)."""
+    import gzip
+
     from ingestion_workflow.extractors import ace_extractor
 
+    ace_extractor._require_readability()
     seen = []
-    monkeypatch.setattr(ace_extractor, "article_text_and_captions",
-                        lambda html, pmid, table_dir: seen.append(pmid) or (None, "text", []))
+    real = ace_extractor.article_text_and_captions
+
+    def watching(html, pmid, table_dir):
+        seen.append(pmid)
+        return real(html, pmid, table_dir)
+
+    monkeypatch.setattr(ace_extractor, "article_text_and_captions", watching)
+    fixtures = Path(__file__).resolve().parents[1] / "data" / "download_pages"
     page = tmp_path / "1.html"
-    page.write_text("<html></html>")
-    R.build("ace", page, tmp_path / "article.txt", "14597300")
+    page.write_bytes(gzip.decompress((fixtures / "gdsqtwkjfl24.html.gz").read_bytes()))
+    text, captions, _ = R.build("ace", page, tmp_path / "article.txt", "14597300")
+    assert text and isinstance(captions, list)
     assert seen == ["14597300"]
