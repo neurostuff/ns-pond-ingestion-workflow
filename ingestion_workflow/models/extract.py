@@ -144,6 +144,12 @@ class ExtractedContent:
         )
 
 
+def text_from(text_source: Mapping[str, object]) -> str:
+    """The extract summary's `text_from`: which way the text was built, and why it was
+    built more than one way."""
+    return f"{text_source['method']} ({text_source['reason']})"
+
+
 @dataclass
 class ArticleExtractionBundle:
     """Combined extraction output and associated metadata for an article."""

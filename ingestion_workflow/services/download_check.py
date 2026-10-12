@@ -46,7 +46,8 @@ STUB_WORDS = 50
 ERROR_PAGE_WORDS = 200
 #: A block of fewer words is a link, a label or a menu item, not prose.
 _PROSE_BLOCK_WORDS = 25
-#: Sentences of running prose, abstract included, below which a page that shows an
+#: Sentences of running prose, abstract included and the reference list's titles not,
+#: below which a page that shows an
 #: abstract and no body sections holds only the abstract. An abstract runs to 5-15;
 #: the body of the shortest article with an abstract, to dozens more.
 ABSTRACT_ONLY_SENTENCES = 20
@@ -55,6 +56,11 @@ ABSTRACT_ONLY_SENTENCES = 20
 ABSTRACT_SENTENCES = 3
 #: Distinct body section headings that make a page an article's body.
 BODY_SECTIONS = 2
+#: Words of body prose beside the abstract that make a page an article, sections or
+#: not: a commentary or an editorial runs to 500 and more. Of the stored pages that
+#: are only an abstract, 6 in 5,000 have 300 or more beside it (a Karger page's cookie
+#: box, copyright and disclaimer).
+BODY_PROSE_WORDS = 400
 
 _BLOCKS = frozenset(
     "p div section article main li td dd blockquote figcaption h1 h2 h3 h4 h5 h6 ul ol dl table tr"
@@ -65,7 +71,7 @@ _CHROME = frozenset(("nav", "footer", "aside", "header"))
 # Consent dialogs run to hundreds of words of prose of their own. A page may
 # also name its whole wrapper after a cookie banner it shows, so a container
 # holding the article's title is kept.
-_CONSENT = re.compile(r"cookie|consent|onetrust|gdpr", re.I)
+CONSENT_NAMES = re.compile(r"cookie|consent|onetrust|gdpr", re.I)
 
 # Each notice is a publisher's own wording, read from stored pages; none fires
 # on a page that has an article's prose, since those are passed before this.
@@ -79,13 +85,14 @@ _PAYWALL = re.compile(
     r"|log ?in to (?:view|access|read) (?:the )?full",
     re.I,
 )
-# The access box Atypon sites (AHA, Mary Ann Liebert, SAGE) print where the article's
-# body would be, never beside one. Read before the prose gate, which such a page can
+# The access box Atypon sites (AHA, Mary Ann Liebert, SAGE) and APA PsycNet print where
+# the article's body would be, never beside one. Read before the prose gate, which such a page can
 # pass on its references, abstract and boilerplate alone.
 _ACCESS_BOX = re.compile(
     r"get full access to this article"
     r"|view all access and purchase options"
-    r"|you currently have no access to this content",
+    r"|you currently have no access to this content"
+    r"|your account doesn.t have access to this content",
     re.I,
 )
 # These only offer the article for sale, which JAMA pages also do beside a short
@@ -155,6 +162,23 @@ _SENTENCE_WORDS = 8
 _YEAR = re.compile(r"\b(?:19|20)\d\d[a-z]?\b")
 # A reference list entry reads as a sentence too; these mark it as one.
 _CITING = re.compile(r"et al\b|doi\b|PubMed|Google Scholar|Crossref|\bVol\b|pp\.", re.I)
+# Scripts written without spaces between words: a character counts as half a word.
+_CJK = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]")
+_STOP = re.compile(r"[.!?](?=\s|$)|[\u3002\uff01\uff1f]")
+_PUNCTUATION = "\"'()[]{},.;:!?\u2018\u2019\u201c\u201d"
+#: A block of running prose has a stop at least every this many words.
+_WORDS_PER_STOP = 60
+# A container of the reference list, as a whole class or id token or the end of one
+# ("c-article-references", "ref-list"). A toggle's name does not count: Atypon's whole
+# article body is `article__body show-references`.
+_REFERENCE_TOKEN = re.compile(
+    r"^(?!(?:show|hide|has|with|no)-)(?:.*[-_])?(?:refs?|references?|ref-?list"
+    r"|reference-list|bibliography|biblio|citations?|footnotes?)$"
+    # or an entry of it ("citation-content", Atypon's reference entry)
+    r"|^(?:citation|reference|bib)[-_]", re.I)
+# Containers of prose that is not the article's body however it reads: dialogs, an
+# article preview's snippets, author lists and biographies.
+_BESIDE_BODY = re.compile(r"modal|dialog|popup|snippet|preview|author|contrib|\bbio", re.I)
 _WS = re.compile(r"\s+")
 # lxml refuses a str that declares its own encoding.
 _XML_DECLARATION = re.compile(r"^\s*<\?xml[^>]*\?>")
@@ -226,6 +250,11 @@ class PageProse:
     #: The body section headings the page has outside its abstract ("introduction",
     #: "methods", ...).
     sections: tuple
+    #: Words of running prose outside the abstract, the reference list and the
+    #: containers of `_BESIDE_BODY`, in any script (`_body_words`).
+    body_words: int
+    #: Of `sentences`, those read in the reference list: titles of cited papers.
+    reference_sentences: int
 
 
 def page_prose(html: Union[str, bytes]) -> Optional[PageProse]:
@@ -266,22 +295,24 @@ def prose_words(text: str) -> int:
 def _abstract_only(doc, prose: int) -> Optional[BadPage]:
     found = _page_prose(doc)
     if (len(found.sections) >= BODY_SECTIONS or found.abstract_sentences < ABSTRACT_SENTENCES
-            or found.sentences >= ABSTRACT_ONLY_SENTENCES):
+            or found.sentences - found.reference_sentences >= ABSTRACT_ONLY_SENTENCES
+            or found.body_words >= BODY_PROSE_WORDS):
         return None
-    other = found.sentences - found.abstract_sentences
+    other = found.sentences - found.abstract_sentences - found.reference_sentences
     sections = ", ".join(found.sections) or "none"
     return BadPage(
         ABSTRACT_ONLY,
         f"an abstract of {found.abstract_words} words ({found.abstract_sentences} sentences) "
-        f"and {found.words - found.abstract_words} words ({other} sentences) of other prose; "
-        f"body sections: {sections}; {prose} words in prose blocks",
+        f"and {other} other sentences of prose, besides {found.reference_sentences} in the "
+        f"reference list; {found.body_words} words of body prose; body sections: {sections}; "
+        f"{prose} words in prose blocks",
     )
 
 
 def _page_prose(doc) -> PageProse:
     body = doc.find("body")
     if body is None:
-        return PageProse(0, 0, 0, 0, ())
+        return PageProse(0, 0, 0, 0, (), 0, 0)
     in_abstract = set()
     for el in body.iter():
         if not isinstance(el.tag, str):
@@ -295,18 +326,29 @@ def _page_prose(doc) -> PageProse:
                     break
                 in_abstract.update(sibling.iter())
     sentences: Dict[str, bool] = {}
+    cited = set()
+    blocks = []
     for el in body.iter(*_BLOCKS):
         own = _own_text(el)
-        if len(own.split()) < _PROSE_BLOCK_WORDS:
+        if len(own.split()) < _PROSE_BLOCK_WORDS and _words(own) < _PROSE_BLOCK_WORDS:
             continue
         lineage = [el, *el.iterancestors()]
         if any(a.tag in _CHROME for a in lineage):
             continue
-        if any(_ELSEWHERE.search(f"{a.get('class') or ''} {a.get('id') or ''}")
-               for a in lineage):
+        names = [f"{a.get('class') or ''} {a.get('id') or ''}" for a in lineage]
+        if any(_ELSEWHERE.search(name) for name in names):
             continue
-        for sentence in prose_sentences(own):
-            sentences.setdefault(sentence, el in in_abstract)
+        in_references = any(
+            _REFERENCE_TOKEN.match(token) for name in names for token in name.split())
+        if len(own.split()) >= _PROSE_BLOCK_WORDS:
+            for sentence in prose_sentences(own):
+                if sentence not in sentences and in_references:
+                    cited.add(sentence)
+                # A reference list right after the Abstract heading is read as under it.
+                sentences.setdefault(sentence, el in in_abstract and not in_references)
+        if (el not in in_abstract and not in_references
+                and not any(_BESIDE_BODY.search(name) for name in names)):
+            blocks.append(_WS.sub(" ", own).strip())
     abstract = [s for s, a in sentences.items() if a]
     # A structured abstract's "Methods" and "Results" head no body.
     sections = sorted({m.group(1).lower() for el in body.iter(*_LABELS)
@@ -317,7 +359,41 @@ def _page_prose(doc) -> PageProse:
         abstract_sentences=len(abstract),
         abstract_words=sum(len(s.split()) for s in abstract),
         sections=tuple(sections),
+        body_words=_body_words(blocks, set(abstract)),
+        reference_sentences=len(cited),
     )
+
+
+def _body_words(blocks: List[str], abstract: set) -> int:
+    """Words of the blocks that read as running prose, each block once.
+
+    Judged by its shape, not its words, so a body in any language counts: a stop at
+    least every `_WORDS_PER_STOP` words and, in a script with letter case, mostly
+    lowercase words. A reference entry (a year among mostly capitalised words) and a
+    block repeating the abstract do not count.
+    """
+    seen, total = set(), 0
+    for text in blocks:
+        words = _words(text)
+        if text in seen or len(_STOP.findall(text)) < max(2, words / _WORDS_PER_STOP):
+            continue
+        cased = [w.strip(_PUNCTUATION) for w in _CJK.sub(" ", text).split()]
+        if len(_CJK.findall(text)) < len(cased):
+            if sum(w.isalpha() and w.islower() for w in cased) < 0.5 * len(cased):
+                continue
+            capitalised = sum(w[:1].isupper() or w[:1].isdigit() for w in cased)
+            if _YEAR.search(text) and capitalised >= 0.4 * len(cased):
+                continue
+        own = prose_sentences(text)
+        if own and sum(sentence in abstract for sentence in own) * 2 >= len(own):
+            continue
+        seen.add(text)
+        total += words
+    return total
+
+
+def _words(text: str) -> int:
+    return len(_CJK.sub(" ", text).split()) + len(_CJK.findall(text)) // 2
 
 
 def _label(el):
@@ -353,7 +429,7 @@ def _drop_non_content(doc) -> None:
     for el in doc.xpath("|".join(f"//{tag}" for tag in _NOT_CONTENT)):
         el.drop_tree()
     for el in doc.xpath("//body//*[@class or @id][not(.//h1)]"):
-        if el.getparent() is not None and _CONSENT.search(
+        if el.getparent() is not None and CONSENT_NAMES.search(
             f"{el.get('class') or ''} {el.get('id') or ''}"
         ):
             el.drop_tree()

@@ -9,6 +9,7 @@ from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
+from ingestion_workflow.models.extract import text_from
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -329,9 +330,7 @@ class ExtractStage:
             # What passages chains on: a text rewritten in place (refresh-text) updates it.
             summary["text_sha256"] = file_sha256(content.full_text_path)
         if content.text_source:
-            # Which way the text was built, and why it was built more than one way.
-            summary["text_from"] = (f"{content.text_source['method']} "
-                                    f"({content.text_source['reason']})")
+            summary["text_from"] = text_from(content.text_source)
         if content.error_message:
             # Kept, because "four of five tables parsed" is worth knowing; it
             # is just not a failure.

@@ -44,6 +44,7 @@ from ingestion_workflow.patches import apply_ace_patch
 from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
 from ingestion_workflow.services.download_check import (
     BODY_SECTIONS,
+    CONSENT_NAMES,
     check_page,
     page_prose,
     prose_words,
@@ -510,8 +511,13 @@ class ArticleText:
     #: the way kept (`method`), why the text was rebuilt, and the prose words of each way.
     text_source: Optional[Dict[str, Any]] = None
 
+    def __iter__(self):
+        # Unpacks as (article, text, figure captions), as it did before `text_source`.
+        return iter((self.article, self.text, self.figure_captions))
 
-def article_text(html_text: str, pmid: Optional[str], table_dir: Path) -> ArticleText:
+
+def article_text_and_captions(html_text: str, pmid: Optional[str],
+                              table_dir: Path) -> ArticleText:
     """ACE's article and its text as extraction keeps it (tables in place, fetched tables
     after), the figure captions under "Figure legends" at the end, and each caption's
     `{"ids", "span"}` in the text. Tables fetched before are read from `table_dir`.
@@ -537,19 +543,13 @@ def article_text(html_text: str, pmid: Optional[str], table_dir: Path) -> Articl
         raise ValueError("ACE failed to parse the article content.")
 
     text, text_source = _whole_article_text(
-        source, html_text, getattr(article, "text", "") or "")
+        source, html_text, getattr(article, "text", "") or "", [c for _, c in captions])
     text = _with_fetched_tables(text, getattr(article, "tables", []))
     text, spans = append_legends(text, captions)
     return ArticleText(article, text, spans, text_source)
 
 
-def article_text_and_captions(html_text: str, pmid: Optional[str], table_dir: Path):
-    """`article_text` as (article, text, figure captions)."""
-    built = article_text(html_text, pmid, table_dir)
-    return built.article, built.text, built.figure_captions
-
-
-def _whole_article_text(source: Any, html_text: str, text: str):
+def _whole_article_text(source: Any, html_text: str, text: str, captions: Sequence[str]):
     """The text, or one built again without readability or without table placeholders
     when it holds less than `SHORT_TEXT_SHARE` of the prose of a page with body
     sections; and how it was made.
@@ -565,16 +565,18 @@ def _whole_article_text(source: Any, html_text: str, text: str):
     if (page is None or len(page.sections) < BODY_SECTIONS
             or first >= SHORT_TEXT_SHARE * page.words):
         return text, None
-    built = {READABILITY: (text, first)}
-    for method, build in ((WITHOUT_TABLE_PLACEHOLDERS, _text_without_table_placeholders),
-                          (WITHOUT_READABILITY, _text_without_readability)):
-        rebuilt = build(source, html_text)
-        built[method] = (rebuilt, prose_words(rebuilt))
+    built = {READABILITY: text,
+             WITHOUT_TABLE_PLACEHOLDERS: _text_without_table_placeholders(source, html_text),
+             WITHOUT_READABILITY: _text_without_readability(source, html_text, captions)}
+    built = {m: (t, first if m == READABILITY else prose_words(t)) for m, t in built.items()}
     method = max(built, key=lambda m: built[m][1])
+    reason = f"readability kept {first:,} of the page's {page.words:,} words of running prose"
+    if method == READABILITY:
+        # Seen on pages whose body is in <div>s: ACE's own cleaner reads only <p>.
+        reason += "; neither other way kept more, so readability's text stays"
     return built[method][0], {
         "method": method,
-        "reason": f"readability kept {first:,} of the page's {page.words:,} words of "
-                  f"running prose",
+        "reason": reason,
         "page_prose_words": page.words,
         "prose_words": {m: n for m, (_, n) in built.items()},
     }
@@ -588,14 +590,69 @@ def _ace_soup(source: Any, html_text: str) -> BeautifulSoup:
     return soup
 
 
-def _text_without_readability(source: Any, html_text: str) -> str:
-    """ACE's text with tables in place, from every paragraph and heading of the page."""
+def _text_without_readability(source: Any, html_text: str, captions: Sequence[str]) -> str:
+    """ACE's text with tables in place, from the paragraphs and headings of the page,
+    each paragraph once and without the page's menus or the figure captions, which
+    `append_legends` adds under the legends."""
     use_readability = source.use_readability
     source.use_readability = False
     try:
-        return source._text_with_tables(_ace_soup(source, html_text))
+        soup = _without_furniture(_ace_soup(source, html_text), captions)
+        return source._text_with_tables(soup)
     finally:
         source.use_readability = use_readability
+
+
+_FURNITURE_TAGS = ("nav", "footer", "aside", "menu")
+_FURNITURE_ROLES = frozenset(("navigation", "menu", "menubar", "banner", "contentinfo"))
+# Containers of a consent dialog, a sign-in form or an alerts widget, by class or id.
+_FURNITURE_NAMES = re.compile(rf"{CONSENT_NAMES.pattern}|login|sign-?in|alerts", re.I)
+#: A paragraph this short outside a table is a menu entry or a label, not prose.
+_LABEL_PARAGRAPH_WORDS = 4
+#: A paragraph this long is dropped where it repeats one earlier on the page.
+_REPEAT_WORDS = 8
+
+
+def _without_furniture(soup: BeautifulSoup, captions: Sequence[str]) -> BeautifulSoup:
+    """The page without its menus, and without the tables and paragraphs it repeats or
+    that repeat a figure caption (without its "Fig. 1." label).
+
+    Readability drops these; ACE's own cleaner reads every `<p>`. A container holding the
+    page's `<h1>` is kept whatever it is named, as some pages name their whole wrapper
+    after the cookie banner they show. J Neurosurg pages hold
+    each paragraph again in a figure viewer and a tab, so a rebuilt text had its figure
+    captions three times and 12 passage hits for 4 coordinates. Hidden elements stay:
+    the same pages keep the whole article in tab panels marked `display: none` and
+    `aria-hidden`, which their script shows.
+    """
+    for el in soup.body.find_all(True):  # a page may name its <body> after a cookie banner
+        if el.decomposed:
+            continue
+        named = _FURNITURE_NAMES.search(f"{' '.join(el.get('class') or ())} {el.get('id') or ''}")
+        if (el.name in _FURNITURE_TAGS or el.get("role") in _FURNITURE_ROLES
+                or ((el.name == "header" or named) and el.find("h1") is None)):
+            el.decompose()
+    tables = set()
+    for table in [t for t in soup.find_all("table") if not t.find("table")]:
+        rendered = table_text(table)
+        if rendered and rendered in tables:
+            table.decompose()  # a pop-up's copy, which ACE would place a second time
+        tables.add(rendered)
+    # Compared without whitespace, which inline markup moves about.
+    captions = ["".join(caption.split()) for caption in captions]
+    seen = set()
+    for p in soup.find_all("p"):
+        if p.decomposed or p.find_parent("table") is not None:
+            continue
+        words = len(p.get_text(" ").split())
+        text = "".join(p.get_text().split())
+        repeated = words >= _REPEAT_WORDS and (
+            text in seen or any(text in caption for caption in captions))
+        if words <= _LABEL_PARAGRAPH_WORDS or repeated:
+            p.decompose()
+        else:
+            seen.add(text)
+    return soup
 
 
 def _text_without_table_placeholders(source: Any, html_text: str) -> str:
@@ -629,7 +686,8 @@ def _extract_ace_article(
     source_tables_dir.mkdir(parents=True, exist_ok=True)
 
     html_text = html_file.file_path.read_text(encoding="utf-8")
-    built = article_text(html_text, download_result.identifier.pmid, source_tables_dir)
+    built = article_text_and_captions(html_text, download_result.identifier.pmid,
+                                      source_tables_dir)
     article = built.article
     full_text_path = article_dir / "article.txt"
     full_text_path.write_text(built.text, encoding="utf-8")
