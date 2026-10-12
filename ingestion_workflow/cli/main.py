@@ -384,7 +384,15 @@ def run(
         None, "--stage", "-s", help=f"Stages to run: {', '.join(STAGE_ORDER)} (repeatable)."
     ),
     select: Select = typer.Option(
-        Select.PENDING, "--select", help="Which articles, relative to what is already done."
+        Select.PENDING,
+        "--select",
+        help=(
+            "Which articles to run. `pending` (default): anything a stage would "
+            "act on -- never run, stale (its inputs or the code changed since it "
+            "was built), or failed transiently and due a retry; not permanent "
+            "failures, not fresh results. `new`: never attempted. `failed`: has a "
+            "retryable failure. `all`: every article."
+        ),
     ),
     manifest: Optional[Path] = typer.Option(
         None, "--manifest", "-m", exists=True, help="Restrict to a JSONL manifest."
@@ -439,7 +447,7 @@ def _select(
 ) -> Selection:
     base = from_manifest(catalog, manifest) if manifest else everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
-    return narrow(catalog, base, mode, only, refresh, settings)
+    return narrow(catalog, base, mode, only, refresh, settings, stages=stage or ())
 
 
 def _render(report, *, dry_run: bool) -> str:
