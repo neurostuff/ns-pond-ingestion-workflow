@@ -132,9 +132,9 @@ class ProseCoordinateClient(GenericLLMClient):
         at all, an answer cut off at the token limit, or anything else is a failed read.
         """
         response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
-        choice = next(iter(getattr(response, "choices", None) or []), None)
-        content = getattr(getattr(choice, "message", None), "content", None)
-        if getattr(choice, "finish_reason", None) == "length":
+        choice = response.choices[0]
+        content = choice.message.content
+        if choice.finish_reason == "length":
             raise UnreadableAnswer("the prose answer was cut off at the token limit")
         if not isinstance(content, str) or not content.strip():
             raise UnreadableAnswer("the prose model returned nothing at all")

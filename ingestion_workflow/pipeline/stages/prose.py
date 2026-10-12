@@ -44,15 +44,11 @@ EARLIER_FAILED = "earlier reading failed"
 OTHER_PROMPT = "earlier prompt not interchangeable"
 OTHER_MODEL = "earlier model not interchangeable"
 METADATA_CHANGED = "title and abstract changed"
-#: Why an earlier answer was given to a passage instead, each with its rule's version:
-#: the same text, or the same once `prose_text.normalized`.
-EXACT = "exact"
-NORMALIZED = "normalized"
 
 
-def earlier_answers(payload: Optional[dict]) -> Dict[str, Dict[str, dict]]:
-    """An earlier prose payload's readings by the sha256 of each passage's text: `exact` by
-    the text itself, `normalized` by `prose_text.normalized` of it.
+def earlier_answers(payload: Optional[dict]) -> Dict[str, dict]:
+    """An earlier prose payload's readings by the sha256 of each passage's
+    `prose_text.normalized` text.
 
     A payload that stored no answer keeps what was cleaned of it, which is given
     as the answer.
@@ -60,7 +56,7 @@ def earlier_answers(payload: Optional[dict]) -> Dict[str, Dict[str, dict]]:
     from ingestion_workflow.services.offsets import sha256
     from ingestion_workflow.services.prose_text import normalized
 
-    out: Dict[str, Dict[str, dict]] = {EXACT: {}, NORMALIZED: {}}
+    out: Dict[str, dict] = {}
     for p in (payload or {}).get("passages", []):
         if not isinstance(p.get("text"), str):
             continue
@@ -70,9 +66,9 @@ def earlier_answers(payload: Optional[dict]) -> Dict[str, Dict[str, dict]]:
         entry = {"answer": answer, "error": p.get("error"), "producer": p.get("producer"),
                  "inputs": p.get("inputs")}
         # The first answered copy of a text wins; a failed copy gives way to an answered one.
-        for rule, key in ((EXACT, sha256(p["text"])), (NORMALIZED, sha256(normalized(p["text"])))):
-            if key not in out[rule] or _failed(out[rule][key]) and not _failed(entry):
-                out[rule][key] = entry
+        key = sha256(normalized(p["text"]))
+        if key not in out or _failed(out[key]) and not _failed(entry):
+            out[key] = entry
     return out
 
 
@@ -80,42 +76,36 @@ def _failed(entry: dict) -> bool:
     return entry["error"] is not None or entry["answer"] is None
 
 
-def earlier_reading(earlier: Dict[str, Dict[str, dict]], text: str) -> Tuple[Optional[dict], str]:
-    """The earlier reading of `text`, exact before normalized, and the rule that matched it."""
-    from ingestion_workflow.services.offsets import sha256
-    from ingestion_workflow.services.prose_text import NORMALIZED_VERSION, normalized
-
-    found = earlier[EXACT].get(sha256(text))
-    if found is not None:
-        return found, f"{EXACT}.1"
-    found = earlier[NORMALIZED].get(sha256(normalized(text)))
-    return found, f"{NORMALIZED}.{NORMALIZED_VERSION}"
-
-
 def _metadata_input(inputs: Optional[list]) -> Optional[str]:
     return next((i["fingerprint"] for i in inputs or []
                  if i.get("artifact_kind") == "metadata"), None)
 
 
-def reuse(earlier: Optional[dict], rule: str, prompt_version: str, model: Optional[str],
-          inputs: list) -> Tuple[bool, str]:
-    """Whether a passage read with `inputs` takes `earlier`, the reading `rule` found, and why."""
-    if earlier is None:
-        return False, TEXT_CHANGED
-    if _failed(earlier):
-        return False, EARLIER_FAILED
-    made = earlier["producer"] or FIRST_PRODUCER
+def reuse(earlier: Dict[str, dict], text: str, prompt_version: str, model: Optional[str],
+          inputs: list) -> Tuple[Optional[dict], str]:
+    """The earlier reading a passage of `text` read with `inputs` takes, or None, and why."""
+    from ingestion_workflow.services.offsets import sha256
+    from ingestion_workflow.services.prose_text import NORMALIZED_VERSION, normalized
+
+    if not earlier:
+        return None, NO_EARLIER
+    found = earlier.get(sha256(normalized(text)))
+    if found is None:
+        return None, TEXT_CHANGED
+    if _failed(found):
+        return None, EARLIER_FAILED
+    made = found["producer"] or FIRST_PRODUCER
     if made.get("model") != model and not (
             made.get("model") in INTERCHANGEABLE_MODELS and model in INTERCHANGEABLE_MODELS):
-        return False, OTHER_MODEL
+        return None, OTHER_MODEL
     made_with = made.get("prompt_version")
     if made_with != prompt_version and not (
             made_with in INTERCHANGEABLE_PROMPTS and prompt_version in INTERCHANGEABLE_PROMPTS):
-        return False, OTHER_PROMPT
-    if (earlier["inputs"] is not None
-            and _metadata_input(earlier["inputs"]) != _metadata_input(inputs)):
-        return False, METADATA_CHANGED
-    return True, rule
+        return None, OTHER_PROMPT
+    if (found["inputs"] is not None
+            and _metadata_input(found["inputs"]) != _metadata_input(inputs)):
+        return None, METADATA_CHANGED
+    return found, f"normalized.{NORMALIZED_VERSION}"
 
 
 class ProseStage:
@@ -212,23 +202,19 @@ class ProseStage:
                 unreadable[work.article_id] = str(exc)
                 continue
             read[work.article_id] = [passage_from(p, text) for p in payload.get("passages", [])]
-            # A passage whose exact text was read before takes that answer, cleaned again,
-            # wherever its span now lies: only a passage whose text changed is read again.
+            # A passage whose text, once normalized, was read before takes that answer, cleaned
+            # again, wherever its span now lies: only a passage whose text changed is read again.
             before = stored.get(work.article_id, {}).get("")
             earlier = (earlier_answers(ctx.payload(before))
-                       if before is not None and before.ok else None)
+                       if before is not None and before.ok else {})
             meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None else {}
             plans[work.article_id] = []
             for passage in read[work.article_id]:
                 inputs = self._inputs(passage.text, meta_artifact)
-                found_before, rule = (earlier_reading(earlier, passage.text)
-                                      if earlier else (None, ""))
-                reused, reason = reuse(found_before, rule, PROSE_PROMPT_VERSION,
-                                       self.settings.prose_model, inputs)
-                if not earlier or not earlier[EXACT]:
-                    reason = NO_EARLIER
-                plans[work.article_id].append((found_before if reused else None, reason, inputs))
-                if not reused:
+                taken, reason = reuse(earlier, passage.text, PROSE_PROMPT_VERSION,
+                                      self.settings.prose_model, inputs)
+                plans[work.article_id].append((taken, reason, inputs))
+                if taken is None:
                     reading.append((passage, meta.get("title") or "", meta.get("abstract") or ""))
         answers: List = []
         if reading:
@@ -286,8 +272,9 @@ class ProseStage:
                 summary={"source": payload.get("source"), "read": payload.get("read"),
                          "passages": len(out),
                          "coordinates": coords, "analyses": named, "unwritten": unwritten,
-                         # which passages took an earlier answer of their text, by the rule
-                         # that matched it, and why each other one was read
+                         # which passages took an earlier answer of their text, under the
+                         # version of the text normalization that matched it, and why each
+                         # other one was read
                          "reused": reused,
                          "read_again": dict(read_again), "prompt_versions": dict(made_by),
                          "read_fingerprint": read_fps[work.article_id],

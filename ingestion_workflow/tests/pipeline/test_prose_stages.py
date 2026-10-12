@@ -1775,7 +1775,7 @@ class _Counting(_Reader):
         return super().read(passage, title=title, abstract=abstract)
 
 
-def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(env):
+def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(env):
     """The corpus's prose was read before passages were spans: the same text is not read again."""
     settings, catalog, ref, ctx, found = _two_passages(env, "81")
     first, second = _texts(catalog, ref, found)
@@ -1783,7 +1783,7 @@ def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
-    assert read.summary["reused"] == {"exact.1": [0, 1]}
+    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
     assert read.summary["read_again"] == {}
     assert read.summary["prompt_versions"] == {"2026-10-06.n5": 2}
     # re-anchored: the new spans, the earlier names and points
@@ -1806,7 +1806,7 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 1
-    assert read.summary["reused"] == {"exact.1": [0]}
+    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0]}
     assert read.summary["read_again"] == {"passage text changed": 1}
     assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.nu-prose-v2": 1}
     # the changed passage holds the model's new answer, not the old one's 3.8
@@ -1828,7 +1828,7 @@ def test_each_passage_read_is_counted_with_its_reason(env):
                             payload=found, summary={"passages": 2})])
     reader = _Counting()
     _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
-    assert reader.calls == 0 and again.summary["reused"] == {"exact.1": [0, 1]}
+    assert reader.calls == 0 and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
     assert again.payload["passages"] == read.payload["passages"]
     # a new title and abstract: read again
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
@@ -1896,7 +1896,7 @@ def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
-    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0], "exact.1": [1]}
+    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
     assert read.payload["passages"][0]["text"] == first   # re-anchored to the new text
 
 
@@ -1913,7 +1913,7 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 1
-    assert read.summary["reused"] == {"exact.1": [1]}
+    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [1]}
     assert read.summary["read_again"] == {"passage text changed": 1}
 
 
@@ -1923,7 +1923,7 @@ def test_reuse_stays_within_the_nu_prose_models(env):
     v2 = settings.model_copy(update={"prose_model": "nu-prose-v2"})
     reader = _Counting()
     _, (again,) = _run(_prose(v2, reader), ctx, catalog, ref)
-    assert reader.calls == 0 and again.summary["reused"] == {"exact.1": [0, 1]}
+    assert reader.calls == 0 and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
     assert {p["producer"]["model"] for p in again.payload["passages"]} == {"nu-prose"}
     other = settings.model_copy(update={"prose_model": "another-prose-model"})
     reader = _Counting()
@@ -1948,7 +1948,7 @@ def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
     catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="two",
                             payload=blob, summary={})])
     _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
-    assert again.status is Status.OK and again.summary["reused"] == {"exact.1": [0, 1]}
+    assert again.status is Status.OK and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
     assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
 
 
