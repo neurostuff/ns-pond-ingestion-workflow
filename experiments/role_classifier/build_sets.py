@@ -6,7 +6,10 @@ Run on beast, where the data lives:
         [--wild-passages 3000]
 
 Writes OUT_DIR/table_units.jsonl and OUT_DIR/prose_units.jsonl
-(`services.set_roles.labeling` reads them):
+(`services.set_roles.labeling` reads them), and OUT_DIR/build_report.json: the articles
+left out because their text or spans could not be read, each with its reason, and counts
+that add up. A run asked for wild passages that builds none exits non-zero.
+
 
 - Table units are nu-v21's real training rows (curated, real-positive,
   hand-judged; /home/james/train-data/train_v21.jsonl), one per table with
@@ -17,7 +20,8 @@ Writes OUT_DIR/table_units.jsonl and OUT_DIR/prose_units.jsonl
   passage, sets in order of first appearance, the row kept as `base_row`.
   Synthetic rows carry their generator's roles (`labels_from: dataset`) and
   are not sent to a labeller. Optionally, passages the prose stage read from
-  the corpus (`--wild-passages`), for the encoder only (no `base_row`).
+  the corpus (`--wild-passages`), for the encoder only (no `base_row`); their text is
+  read from the article's text by the spans the passages stage stored.
 
 Each unit gets a `stratum` from its cues, which the labelling job takes in
 turn so rare roles are labelled early.
@@ -30,8 +34,10 @@ import collections
 import json
 import random
 import sqlite3
+import sys
 from pathlib import Path
 
+from ingestion_workflow.pipeline.stages.passages import passage_from, read_text
 from ingestion_workflow.services.set_roles.common import (
     _ANCHOR_CUES,
     _CITATION,
@@ -119,6 +125,9 @@ class Corpus:
     def __init__(self):
         from ingestion_workflow.catalog.blobs import BlobStore  # noqa: PLC0415
 
+        #: Texts read with no hash recorded to check them against.
+        self.unverified = 0
+
         self.conn = sqlite3.connect(f"file:{CATALOG / 'catalog.sqlite'}?mode=ro", uri=True)
         self.blobs = BlobStore(CATALOG / "blobs")
 
@@ -135,18 +144,37 @@ class Corpus:
         )
         return row[0] if row else None
 
+    def _text(self, path, recorded_sha):
+        """The extraction text, checked against the hash its extraction recorded."""
+        from ingestion_workflow.services.offsets import sha256  # noqa: PLC0415
+
+        file = _Recorded(CATALOG).recorded_path(path)
+        try:
+            text = file.read_bytes().decode("utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise SpanError(
+                "text_unreadable", f"the text cannot be read: {type(exc).__name__}: {exc}"
+            ) from exc
+        if recorded_sha is None:
+            self.unverified += 1
+        elif sha256(text) != recorded_sha:
+            raise SpanError("text_changed", "the text the extraction recorded has changed")
+        return text
+
     def lookup(self, slug: str, source: str, table_id: str):
-        """(article text, table label), either None where it cannot be found."""
+        """(article text, table label), either None where it cannot be found.
+
+        Raises SpanError when the extraction records a text that is gone or has changed."""
         article = self._article(slug)
         if article is None:
             return None, None
         rows = self.conn.execute(
-            "select source, blob from artifacts where stage='extract' and status='ok' "
+            "select source, blob, summary from artifacts where stage='extract' and status='ok' "
             "and article_id=?",
             (article,),
         ).fetchall()
         rows.sort(key=lambda r: r[0] != source)
-        for _, blob in rows:
+        for _, blob, summary in rows:
             payload = self.blobs.get(blob) or {}
             table = next(
                 (t for t in payload.get("tables") or [] if t.get("table_id") == table_id), None
@@ -155,8 +183,8 @@ class Corpus:
                 continue
             path = payload.get("full_text_path")
             text = (
-                Path(path).read_text(encoding="utf-8", errors="replace")
-                if path and Path(path).is_file()
+                self._text(path, (json.loads(summary or "{}")).get("text_sha256"))
+                if path
                 else None
             )
             meta = (table or {}).get("metadata") or {}
@@ -167,7 +195,7 @@ class Corpus:
         return None, None
 
 
-def table_units():
+def table_units(failures=None, tally=None):
     corpus = Corpus()
     seen = set()
     found = collections.Counter()
@@ -181,9 +209,23 @@ def table_units():
             if not analyses:
                 continue
             seen.add(key)
-            text, label = corpus.lookup(
-                row["article_id"], row.get("source") or "", row["table_id"]
-            )
+            try:
+                text, label = corpus.lookup(
+                    row["article_id"], row.get("source") or "", row["table_id"]
+                )
+            except SpanError as exc:
+                print(f"WARNING {row['article_id']} {row['table_id']}: {exc}", file=sys.stderr)
+                if failures is not None:
+                    failures.append(
+                        {
+                            "stage": "table",
+                            "article_id": row["article_id"],
+                            "table_id": row["table_id"],
+                            "kind": exc.kind,
+                            "reason": str(exc),
+                        }
+                    )
+                continue
             caption = row.get("caption") or ""
             if not label and caption.lower().startswith(("table", "supplementary table")):
                 label = caption.split(".")[0]
@@ -221,6 +263,8 @@ def table_units():
                     cue, strong=f"{row.get('caption') or ''} {row.get('footer') or ''}"
                 ),
             }
+    if tally is not None:
+        tally["text_unverified"] = corpus.unverified
     print("table units", dict(found))
 
 
@@ -231,7 +275,7 @@ def _sets_from_points(points):
     return [with_role(name, pts) for name, pts in groups.items()]
 
 
-def prose_units(wild: int):
+def prose_units(wild: int, failures=None, tally=None):
     found = collections.Counter()
     for split in ("train", "val", "test"):
         wide = {}
@@ -265,12 +309,95 @@ def prose_units(wild: int):
             found[(split, "synthetic" if synthetic else "real")] += 1
             yield unit
     if wild:
-        yield from wild_passages(wild, found)
+        yield from wild_passages(wild, found, failures, tally)
     print("prose units", dict(found))
 
 
-def wild_passages(n: int, found):
-    """Passages the prose stage read from the corpus, sampled evenly over its model's roles."""
+class _Recorded:
+    """What `read_text` asks of a context: a recorded path made absolute against the catalog."""
+
+    def __init__(self, root: Path):
+        self.root = root
+
+    def recorded_path(self, path):
+        if not path:
+            return None
+        recorded = Path(path)
+        return recorded if recorded.is_absolute() else self.root.resolve().parent / recorded
+
+
+class SpanError(Exception):
+    """Text that cannot be read back from the spans or hash that index it.
+
+    `kind` names the reason, for the build report to count."""
+
+    def __init__(self, kind: str, reason: str):
+        super().__init__(reason)
+        self.kind = kind
+
+
+def read_passages(payload: dict, read: dict, root: Path):
+    """The article's passages as `passage_from` reads them from its text.
+
+    The text is the one the passages payload indexes, so a passage's words and its
+    offsets come from the same place. Raises SpanError, with the reason, when the text
+    is gone or has changed, or when a passage the prose stage read no longer sits
+    where the passages payload says."""
+    stored = payload.get("passages") or []
+    ours = read.get("passages") or []
+    if not stored and not ours:
+        return []
+    if not payload.get("text_sha256") or any("span" not in p for p in stored):
+        raise SpanError(
+            "passages_predate_spans",
+            "the passages payload predates spans (it holds passage text, no spans or text hash);"
+            " the passages stage must be re-run on this article",
+        )
+    if any("span" not in p for p in ours):
+        raise SpanError(
+            "prose_predates_spans",
+            "the prose payload predates spans (its passages carry no span);"
+            " the prose stage must be re-run on this article",
+        )
+    try:
+        text = read_text(_Recorded(root), payload)
+    except LookupError as exc:
+        raise SpanError("text_changed", str(exc)) from exc
+    except (OSError, UnicodeDecodeError) as exc:
+        raise SpanError(
+            "text_unreadable", f"the text cannot be read: {type(exc).__name__}: {exc}"
+        ) from exc
+    if len(ours) != len(stored):
+        raise SpanError(
+            "passage_count",
+            f"prose read {len(ours)} passages, passages indexes {len(stored)}",
+        )
+    out = []
+    for i, (mine, theirs) in enumerate(zip(ours, stored)):
+        if mine.get("span") != theirs.get("span"):
+            raise SpanError(
+                "span_mismatch",
+                f"passage {i}: prose span {mine.get('span')} != indexed {theirs.get('span')}",
+            )
+        try:
+            passage = passage_from(theirs, text)
+        except Exception as exc:  # noqa: BLE001 - a span outside the text is that article's problem
+            raise SpanError(
+                "span_outside_text", f"passage {i}: {type(exc).__name__}: {exc}"
+            ) from exc
+        if not passage.text.strip():
+            raise SpanError("span_empty", f"passage {i}: span {theirs.get('span')} holds no text")
+        out.append(passage)
+    return out
+
+
+def wild_passages(n: int, found, failures=None, tally=None):
+    """Passages the prose stage read from the corpus, sampled evenly over its model's roles.
+
+    Their text, context and heading are read from the article's text by the spans the
+    passages stage stored. An article whose spans cannot be read is left out and recorded
+    in `failures` with the reason; `tally` counts articles scanned, read and used."""
+    tally = tally if tally is not None else collections.Counter()
     from ingestion_workflow.catalog.blobs import BlobStore  # noqa: PLC0415
 
     conn = sqlite3.connect(f"file:{CATALOG / 'catalog.sqlite'}?mode=ro", uri=True)
@@ -284,12 +411,30 @@ def wild_passages(n: int, found):
     by_role = collections.defaultdict(list)
     want = max(1, n // 6)
     for article_id, blob in rows[: n * 6]:
+        tally["scanned"] += 1
         payload = blobs.get(blob) or {}
-        passages = conn.execute(
+        stored = conn.execute(
             "select blob from artifacts where stage='passages' and status='ok' and article_id=?",
             (article_id,),
         ).fetchone()
-        context = (blobs.get(passages[0]) or {}).get("passages", []) if passages else []
+        try:
+            if not stored:
+                raise SpanError("no_passages_artifact", "no passages artifact")
+            context = read_passages(blobs.get(stored[0]) or {}, payload, CATALOG)
+        except SpanError as exc:
+            print(f"WARNING {article_id}: {exc}", file=sys.stderr)
+            if failures is not None:
+                failures.append(
+                    {
+                        "stage": "wild",
+                        "article_id": article_id,
+                        "kind": exc.kind,
+                        "reason": str(exc),
+                    }
+                )
+            continue
+        tally["read"] += 1
+        built = sum(map(len, by_role.values()))
         for i, passage in enumerate(payload.get("passages") or []):
             sets = [
                 with_role(a.get("name"), study_schema_points(a["points"]))
@@ -305,23 +450,25 @@ def wild_passages(n: int, found):
             )
             if len(by_role[key]) >= want:
                 continue
-            ctx = context[i] if i < len(context) else {}
+            ctx = context[i]
             by_role[key].append(
                 {
                     "unit_id": f"w:{article_id}:{i}",
                     "origin": "text",
                     "article_id": article_id,
                     "dataset": "wild",
-                    "heading": passage.get("heading") or ctx.get("heading"),
-                    "text": passage.get("text"),
-                    "before": ctx.get("before"),
-                    "after": ctx.get("after"),
+                    "heading": ctx.heading,
+                    "text": ctx.text,
+                    "before": ctx.before,
+                    "after": ctx.after,
                     "sets": sets,
                     "base_row": None,
-                    "stratum": stratum(passage.get("text") or "", roles),
+                    "stratum": stratum(ctx.text, roles),
                 }
             )
-        if sum(map(len, by_role.values())) >= n:
+        total = sum(map(len, by_role.values()))
+        tally["used"] += total > built
+        if total >= n:
             break
     for key, units in sorted(by_role.items()):
         found[("wild", key)] = len(units)
@@ -334,13 +481,50 @@ def main():
     parser.add_argument("--wild-passages", type=int, default=0)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
+    failures, tally, counts = [], collections.Counter(), {}
     for name, units in (
-        ("table_units.jsonl", table_units()),
-        ("prose_units.jsonl", prose_units(args.wild_passages)),
+        ("table_units.jsonl", table_units(failures, tally)),
+        ("prose_units.jsonl", prose_units(args.wild_passages, failures, tally)),
     ):
+        n = 0
         with open(args.out / name, "w", encoding="utf-8") as handle:
             for unit in units:
                 handle.write(json.dumps(unit, ensure_ascii=False) + "\n")
+                n += 1
+        counts[name] = n
+    wild = [f for f in failures if f["stage"] == "wild"]
+    tables = [f for f in failures if f["stage"] == "table"]
+    report = {
+        "units": counts,
+        # scanned = left_out + read; used is the read articles that gave at least one unit
+        "wild_passages": {
+            "scanned": tally["scanned"],
+            "left_out": len(wild),
+            "read": tally["read"],
+            "used": tally["used"],
+            "left_out_by_reason": dict(collections.Counter(f["kind"] for f in wild)),
+        },
+        "table_units": {
+            "built": counts["table_units.jsonl"],
+            "left_out": len(tables),
+            "left_out_by_reason": dict(collections.Counter(f["kind"] for f in tables)),
+            "text_read_without_hash": tally["text_unverified"],
+        },
+        "left_out": failures,
+    }
+    (args.out / "build_report.json").write_text(
+        json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(
+        f"wild: {tally['scanned']} scanned, {len(wild)} left out, {tally['used']} used;"
+        f" tables: {len(tables)} left out (build_report.json)"
+    )
+    if args.wild_passages and not tally["used"]:
+        sys.exit(
+            f"--wild-passages built no unit: of {tally['scanned']} articles sampled,"
+            f" {len(wild)} were left out and {tally['read']} held no usable passage;"
+            " see build_report.json for the reasons"
+        )
 
 
 if __name__ == "__main__":
