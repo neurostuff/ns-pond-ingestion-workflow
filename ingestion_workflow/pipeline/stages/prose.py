@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 #: Bump when what is kept of the model's answer changes: `clean_answer`.
 #: An article whose stored answers were read the same way is cleaned again
 #: from them, without the model.
-CLEAN_VERSION = "within-set-duplicates-dropped"
+CLEAN_VERSION = "role-word-not-read"
 
 #: Prompts whose answers stand for one another, oldest first: the role-free
 #: prompt asks for the same points and names, only without the role word that

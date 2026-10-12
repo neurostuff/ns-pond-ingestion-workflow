@@ -1880,6 +1880,26 @@ def test_the_role_free_prompt_keeps_the_read_fingerprint_of_the_prompt_before_it
         upstream=passages.fingerprint)
 
 
+def test_results_cleaned_and_resolved_before_the_role_free_prompt_are_made_again(env):
+    """Stored answers are cleaned again without the model, and resolves made before
+    statistics were merged are made again: both versions moved on from main's."""
+    from ingestion_workflow.catalog import fingerprint
+    from ingestion_workflow.pipeline.stages.resolve import SAME_PEAK_MM, SAME_VALUE
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "99")
+    passages = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    metadata = catalog.artifacts([ref.id], "metadata")[ref.id][""]
+    stage = ProseStage(settings)
+    read = stage.read_fingerprint(passages, metadata)
+    assert stage.fingerprint_for(passages, metadata) != fingerprint(
+        "prose clean", "named-empty-kept", upstream=read)
+    prose = Outcome(article_id=ref.id, stage="prose", source="", fingerprint="p", summary={})
+    catalog.record([prose])
+    prose = catalog.artifacts([ref.id], "prose")[ref.id][""]
+    assert ResolveStage(settings).fingerprint_for(prose, None) != fingerprint(
+        "resolve", 9, SAME_PEAK_MM, SAME_VALUE, "no tables", upstream=prose.fingerprint)
+
+
 def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_not():
     from ingestion_workflow.services.prose_text import normalized
 
