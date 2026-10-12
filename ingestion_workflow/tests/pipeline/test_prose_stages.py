@@ -1720,6 +1720,27 @@ def test_a_place_given_as_t_and_z_is_one_point_carrying_both():
     assert (summary["repeated"], summary["merged_statistics"]) == (1, 1)
 
 
+def test_a_repeat_with_no_number_adds_nothing():
+    out, summary = resolve({}, _given((-12, -2, -16, "T", 6.24), (-12, -2, -16, "P", None)),
+                           "slug")
+    (coordinate,) = out["prose"]["analyses"][0]["coordinates"]
+    assert "other_statistics" not in coordinate
+    assert (summary["repeated"], summary["merged_statistics"]) == (1, 0)
+
+
+@pytest.mark.parametrize("given, sign", [
+    ([("T", 6.24), ("Z", 4.17), ("P", 0.001)], "positive"),
+    ([("T", -4.2), ("P", 0.001)], "negative"),
+    ([("P", 0.001), ("T", -4.2), ("Z", -3.1)], "negative"),
+])
+def test_the_sign_of_a_merged_place_is_read_from_every_statistic_not_the_last(given, sign):
+    from ingestion_workflow.models.analysis import Coordinate
+
+    out, _ = resolve({}, _given(*[(-12, -2, -16, k, v) for k, v in given]), "slug")
+    (stored,) = out["prose"]["analyses"][0]["coordinates"]
+    assert Coordinate.from_dict(stored).sign == sign
+
+
 def test_every_statistic_of_a_merged_place_reaches_its_parsed_point():
     """Given p first, then t and Z: the parse's point holds all three, and it is positive."""
     from types import SimpleNamespace
@@ -1908,6 +1929,20 @@ def test_only_nu_prose_s_first_answers_and_the_reader_s_own_are_reused(
         assert reader.calls == 2 and again.summary["read_again"] == {reason: 2}
 
 
+def test_nu_prose_s_first_answers_are_read_again_under_a_later_prompt(env, monkeypatch):
+    from ingestion_workflow.pipeline.stages import prose
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    first, second = _texts(catalog, ref, found)
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    monkeypatch.setattr(prose, "PROSE_PROMPT_VERSION", "2026-11-01.nu-prose-v3")
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2
+    assert read.summary["read_again"] == {"earlier model not interchangeable": 2}
+
+
 def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env):
     """Stored answers are cleaned again without the model, and resolves made before
     statistics were merged are made again: both versions moved on from main's."""
@@ -2088,3 +2123,20 @@ def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(e
     assert outcomes[good.id].status is Status.OK
     assert (outcomes[bad.id].status, outcomes[bad.id].error) == (
         Status.FAILED, "1 of 2 passages failed")
+
+
+def test_a_stopped_prose_stage_writes_no_take_back_either(env):
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, ctx, read, unread, same = _read_before(env)
+    taken = catalog.register(Identifier(pmid="115"))
+    take_back = Work(ref=taken, source="", fingerprint=NO_TEXT, upstream=None)
+    ids = [read.id, unread.id]
+    plan = ProseStage(settings).plan(ctx, [read, unread], catalog.artifacts(ids, "prose"),
+                                     catalog.artifacts(ids, "passages"))
+    stage = _prose(settings, _served(settings, _server(up=False)))
+    # the stopping batch, then a later one that holds only the take-back
+    assert list(stage.execute(ctx, [take_back, *plan.pending])) == []
+    assert list(stage.execute(ctx, [take_back])) == []

@@ -89,3 +89,15 @@ def test_identifiers_mutations_keep_indices_in_sync() -> None:
     collection.clear()
     assert len(collection) == 0
     assert collection.lookup("3", key="pmid") is None
+
+
+def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
+    from ingestion_workflow.models.analysis import Coordinate
+    from ingestion_workflow.models.extract import ExtractedTable
+
+    table = ExtractedTable(table_id="t1", raw_content_path="t1.xml",
+                           coordinates=[Coordinate(x=1, y=2, z=3, statistic_value=4.1,
+                                                   statistic_type="T")])
+    (written,) = table.to_dict()["coordinates"]
+    assert "other_statistics" not in written
+    assert ExtractedTable.from_dict(table.to_dict()).to_dict() == table.to_dict()

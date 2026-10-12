@@ -173,18 +173,18 @@ class ProseStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        back, works = taking_back(self.name, works)
-        yield from back
         from ingestion_workflow.clients.prose_coordinates import (
             ProseModelUnavailable,
             clean_answer,
         )
         from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
 
+        pending = len(works)
         if self._stopped:
             logger.error("prose stopped: %s; %d article(s) left pending",
-                         self._stopped, len(works))
+                         self._stopped, pending)
             return
+        back, works = taking_back(self.name, works)
 
         found = [ctx.payload(work.upstream) or {} for work in works]
         ids = [w.article_id for w in works]
@@ -231,8 +231,10 @@ class ProseStage:
                     # each OK reading, and the answers stored in it, with a failure. This
                     # batch and the rest stay pending until the server answers again.
                     self._stopped = str(exc)
-                    logger.error("prose stopped: %s; %d article(s) left pending", exc, len(works))
+                    logger.error("prose stopped: %s; %d article(s) left pending", exc, pending)
                     return
+        # After the outage check: a stopped batch writes nothing, take-backs included.
+        yield from back
         answered = iter(answers)
         current = producer(self.settings.prose_model, PROSE_PROMPT_VERSION)
 
