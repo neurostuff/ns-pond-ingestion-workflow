@@ -154,9 +154,8 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     with those points, for the parse to list among its omissions. A coordinate
     the prose reports under two contrasts stays under both. Within a set,
     points at the same place are one point, whatever statistic each gives: the
-    first is kept, every repeat is listed in `metadata.dropped`, and where the
-    repeats gave other statistics, `metadata.merged_statistics` lists the place
-    with all of them, the kept one first.
+    first is kept, every repeat is listed in `metadata.dropped`, and each other
+    statistic a repeat gives is kept as the point's `other_statistics`.
     """
     table_points = [
         ((c["x"], c["y"], c["z"]), key, a.get("name") or "",
@@ -200,7 +199,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
 
     analyses: List[Analysis] = []
     restated: List[Dict[str, Any]] = []
-    repeated = merged_points = 0
+    repeated = merged = 0
     spaces = collections.Counter()
     for entry in groups:
         analysis = Analysis(name=entry["name"], table_id="prose", metadata={
@@ -212,14 +211,16 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         for xyz, p, space, measure in entry["points"]:
             key = tuple(round(v) for v in xyz)
             value = _number(p.get("value"))
-            stated = {"statistic": p.get("statistic"), "value": value}
             if key in seen:
                 dropped.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                                 "reason": "repeats a point of this analysis"})
-                if any(stated.values()) and stated not in seen[key]["statistics"]:
-                    seen[key]["statistics"].append(stated)
+                kept = seen[key]
+                stated = {"statistic_type": p.get("statistic"), "statistic_value": value}
+                if value is not None and stated not in [
+                        {"statistic_type": kept.statistic_type,
+                         "statistic_value": kept.statistic_value}, *kept.other_statistics]:
+                    kept.other_statistics.append(stated)
                 continue
-            seen[key] = {"x": xyz[0], "y": xyz[1], "z": xyz[2], "statistics": [stated]}
             size = p.get("cluster_size")
             coordinate = Coordinate(
                 x=xyz[0], y=xyz[1], z=xyz[2], space=space,
@@ -227,6 +228,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
                 cluster_size=int(size) if isinstance(size, (int, float)) else None,
                 cluster_measure=measure if size is not None else None,
             )
+            seen[key] = coordinate
             restates = []
             for t, table, n, kind, table_value in table_points:
                 if (_near(xyz, t) and _agrees(p.get("statistic"), value, kind, table_value)
@@ -241,10 +243,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         if dropped:
             analysis.metadata["dropped"] = dropped
             repeated += len(dropped)
-        merged = [s for s in seen.values() if len(s["statistics"]) > 1]
-        if merged:
-            analysis.metadata["merged_statistics"] = merged
-            merged_points += len(merged)
+            merged += sum(1 for c in seen.values() if c.other_statistics)
         points = [{"x": c.x, "y": c.y, "z": c.z, "restates": r} for c, r in restating]
         if restating:
             restated.append({"passages": entry["passages"], "analysis": entry["name"],
@@ -277,7 +276,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         "restated": sum(len(d["points"]) for d in restated),
         "restated_points": restated,
         "repeated": repeated,
-        "merged_statistics": merged_points,
+        "merged_statistics": merged,
         "joins": dict(sorted(joins.items())),
     }
     return out, summary

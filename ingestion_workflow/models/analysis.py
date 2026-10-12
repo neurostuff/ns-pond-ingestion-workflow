@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 from study_schema.spaces import normalize_space
+from study_schema.statistics import point_side
 
 from .ids import Identifier
-from .statistics import ALLOWED_STATISTIC_KINDS, side
+from .statistics import ALLOWED_STATISTIC_KINDS, point_values
 
 
 class CoordinateSpace(str, Enum):
@@ -171,6 +172,9 @@ class Coordinate:
     cluster_size: Optional[int] = None
     cluster_measure: Optional[str] = None
     is_subpeak: bool = False
+    #: The point's other statistics, as `{"statistic_type", "statistic_value"}` in the
+    #: order given: a place printed once each as t, Z and p is one point carrying all three.
+    other_statistics: List[Dict[str, Any]] = field(default_factory=list)
 
     #: Keys a payload may carry that are not constructor fields: the two
     #: retired flags, which nothing reads any more (a negative point is the
@@ -181,15 +185,21 @@ class Coordinate:
 
     @property
     def sign(self) -> str:
-        """`positive`, `negative` or `unsigned`, from the statistic (`statistics.side`).
+        """`positive`, `negative` or `unsigned`, from its statistics (study_schema's `point_side`).
 
         Derived, never stored, so it cannot disagree with the value it reads,
         and a payload written before it existed reads the same.
         """
-        return side(self.statistic_value, self.statistic_type) or "unsigned"
+        return point_side(self.values()) or "unsigned"
+
+    def values(self) -> List[Dict[str, Any]]:
+        """Every statistic at the point, as study_schema PointValue dicts."""
+        return [v for value, kind in [(self.statistic_value, self.statistic_type)] + [
+            (s["statistic_value"], s["statistic_type"]) for s in self.other_statistics]
+            for v in point_values(value, kind)]
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        out = {
             "x": self.x,
             "y": self.y,
             "z": self.z,
@@ -201,6 +211,9 @@ class Coordinate:
             "is_subpeak": self.is_subpeak,
             "sign": self.sign,
         }
+        if self.other_statistics:
+            out["other_statistics"] = self.other_statistics
+        return out
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "Coordinate":
@@ -215,6 +228,7 @@ class Coordinate:
             cluster_size=payload.get("cluster_size"),
             cluster_measure=payload.get("cluster_measure"),
             is_subpeak=bool(payload.get("is_subpeak", False)),
+            other_statistics=list(payload.get("other_statistics") or []),
         )
 
 

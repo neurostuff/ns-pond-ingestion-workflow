@@ -28,19 +28,16 @@ logger = logging.getLogger(__name__)
 #: from them, without the model.
 CLEAN_VERSION = "2026-10-12"
 
-#: Prompts and models whose answers stand for one another: nu-prose and nu-prose-v2
-#: read the same points and names. An answer is reused only from one of them, for one
-#: of them; any other prompt or model reads every passage again.
-INTERCHANGEABLE_PROMPTS = ("2026-10-06.n5", "2026-10-11.nu-prose-v2")
-INTERCHANGEABLE_MODELS = ("nu-prose", "nu-prose-v2")
 #: Who read a stored answer that names no producer: every such result was written
 #: 2026-10-07 to 10-08, by nu-prose under the prompt as it stood 2026-10-06 to 10-11.
 FIRST_PRODUCER = {"model": "nu-prose", "prompt_version": "2026-10-06.n5"}
+#: The one reader those answers stand for: nu-prose-v2, nu-prose retrained without
+#: roles, reads the same points and names. Any other reader reads their passages again.
+FIRST_PRODUCER_STANDS_FOR = {"model": "nu-prose-v2", "prompt_version": "2026-10-11.nu-prose-v2"}
 
 #: Why a passage was read by the model rather than given an earlier answer.
 NO_EARLIER = "no earlier result"
 TEXT_CHANGED = "passage text changed"
-EARLIER_FAILED = "earlier reading failed"
 OTHER_PROMPT = "earlier prompt not interchangeable"
 OTHER_MODEL = "earlier model not interchangeable"
 METADATA_CHANGED = "title and abstract changed"
@@ -48,32 +45,33 @@ METADATA_CHANGED = "title and abstract changed"
 
 def earlier_answers(payload: Optional[dict]) -> Dict[str, dict]:
     """An earlier prose payload's readings by the sha256 of each passage's
-    `prose_text.normalized` text.
+    `prose_text.normalized` text; of two copies of one text, the first.
 
-    A payload that stored no answer keeps what was cleaned of it, which is given
-    as the answer.
+    A payload that stored no answer, nu-prose's, keeps what was cleaned of it,
+    which is given as the answer.
     """
     from ingestion_workflow.services.offsets import sha256
     from ingestion_workflow.services.prose_text import normalized
 
     out: Dict[str, dict] = {}
     for p in (payload or {}).get("passages", []):
-        if not isinstance(p.get("text"), str):
-            continue
-        answer = p.get("answer")
-        if answer is None and "producer" not in p and p.get("error") is None:
+        answer, by = p.get("answer"), p.get("producer")
+        if answer is None:
             answer = {"space": p.get("space"), "analyses": p.get("analyses") or []}
-        entry = {"answer": answer, "error": p.get("error"), "producer": p.get("producer"),
-                 "inputs": p.get("inputs")}
-        # The first answered copy of a text wins; a failed copy gives way to an answered one.
-        key = sha256(normalized(p["text"]))
-        if key not in out or _failed(out[key]) and not _failed(entry):
-            out[key] = entry
+            by = producer(**FIRST_PRODUCER)
+        out.setdefault(sha256(normalized(p["text"])),
+                       {"answer": answer, "producer": by, "inputs": p.get("inputs")})
     return out
 
 
-def _failed(entry: dict) -> bool:
-    return entry["error"] is not None or entry["answer"] is None
+def producer(model: Optional[str], prompt_version: str) -> dict:
+    """Who read a passage, as a study_schema Producer."""
+    from study_schema.models.paper_parse import Producer
+
+    from ingestion_workflow.services.paper_parse import PRODUCER
+
+    return Producer(name=PRODUCER, version=f"prose.{prompt_version}", stage=ProseStage.name,
+                    model=model, prompt_version=prompt_version).model_dump(mode="json")
 
 
 def _metadata_input(inputs: Optional[list]) -> Optional[str]:
@@ -82,30 +80,24 @@ def _metadata_input(inputs: Optional[list]) -> Optional[str]:
 
 
 def reuse(earlier: Dict[str, dict], text: str, prompt_version: str, model: Optional[str],
-          inputs: list) -> Tuple[Optional[dict], str]:
-    """The earlier reading a passage of `text` read with `inputs` takes, or None, and why."""
+          inputs: list) -> Tuple[Optional[dict], Optional[str]]:
+    """The earlier reading a passage of `text` read with `inputs` takes, or None and why not."""
     from ingestion_workflow.services.offsets import sha256
-    from ingestion_workflow.services.prose_text import NORMALIZED_VERSION, normalized
+    from ingestion_workflow.services.prose_text import normalized
 
     if not earlier:
         return None, NO_EARLIER
     found = earlier.get(sha256(normalized(text)))
     if found is None:
         return None, TEXT_CHANGED
-    if _failed(found):
-        return None, EARLIER_FAILED
-    made = found["producer"] or FIRST_PRODUCER
-    if made.get("model") != model and not (
-            made.get("model") in INTERCHANGEABLE_MODELS and model in INTERCHANGEABLE_MODELS):
-        return None, OTHER_MODEL
-    made_with = made.get("prompt_version")
-    if made_with != prompt_version and not (
-            made_with in INTERCHANGEABLE_PROMPTS and prompt_version in INTERCHANGEABLE_PROMPTS):
-        return None, OTHER_PROMPT
+    made = {k: found["producer"][k] for k in ("model", "prompt_version")}
+    now = {"model": model, "prompt_version": prompt_version}
+    if made != now and not (made == FIRST_PRODUCER and now == FIRST_PRODUCER_STANDS_FOR):
+        return None, OTHER_PROMPT if made["model"] == model else OTHER_MODEL
     if (found["inputs"] is not None
             and _metadata_input(found["inputs"]) != _metadata_input(inputs)):
         return None, METADATA_CHANGED
-    return found, f"normalized.{NORMALIZED_VERSION}"
+    return found, None
 
 
 class ProseStage:
@@ -182,6 +174,7 @@ class ProseStage:
         back, works = taking_back(self.name, works)
         yield from back
         from ingestion_workflow.clients.prose_coordinates import clean_answer
+        from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
 
         found = [ctx.payload(work.upstream) or {} for work in works]
         ids = [w.article_id for w in works]
@@ -223,7 +216,7 @@ class ProseStage:
                            for p, title, abstract in reading]
                 answers = [f.result() for f in futures]
         answered = iter(answers)
-        producer = self._producer(self.settings.prose_model, PROSE_PROMPT_VERSION)
+        current = producer(self.settings.prose_model, PROSE_PROMPT_VERSION)
 
         for work, payload in zip(works, found):
             if work.article_id in unreadable:
@@ -231,16 +224,15 @@ class ProseStage:
                                       fingerprint=work.fingerprint)
                 continue
             out, errors, coords, named, unwritten = [], 0, 0, 0, 0
-            reused, read_again, made_by = {}, collections.Counter(), collections.Counter()
+            reused, read_again, made_by = [], collections.Counter(), collections.Counter()
             passages = zip(payload.get("passages", []), read[work.article_id],
                            plans[work.article_id])
             for i, (p, passage, (earlier, reason, inputs)) in enumerate(passages):
                 if earlier is not None:
-                    raw, error = earlier["answer"], None
-                    by = earlier["producer"] or self._producer(**FIRST_PRODUCER)
-                    reused.setdefault(reason, []).append(i)
+                    raw, error, by = earlier["answer"], None, earlier["producer"]
+                    reused.append(i)
                 else:
-                    (raw, error), by = next(answered), producer
+                    (raw, error), by = next(answered), current
                     read_again[reason] += 1
                 made_by[by["prompt_version"]] += 1
                 answer = clean_answer(raw, passage.text) if error is None else {}
@@ -272,10 +264,9 @@ class ProseStage:
                 summary={"source": payload.get("source"), "read": payload.get("read"),
                          "passages": len(out),
                          "coordinates": coords, "analyses": named, "unwritten": unwritten,
-                         # which passages took an earlier answer of their text, under the
-                         # version of the text normalization that matched it, and why each
-                         # other one was read
-                         "reused": reused,
+                         # which passages took an earlier answer of their text, the
+                         # normalization that matched it, and why each other one was read
+                         "reused": reused, "text_normalization": NORMALIZED_VERSION,
                          "read_again": dict(read_again), "prompt_versions": dict(made_by),
                          "read_fingerprint": read_fps[work.article_id],
                          "passages_read": work.upstream.fingerprint},
@@ -291,15 +282,6 @@ class ProseStage:
         if meta_artifact is not None:
             refs.append(InputRef(artifact_kind="metadata", fingerprint=meta_artifact.fingerprint))
         return [r.model_dump(mode="json") for r in refs]
-
-    def _producer(self, model: Optional[str], prompt_version: str) -> dict:
-        """Who read a passage, as a study_schema Producer."""
-        from study_schema.models.paper_parse import Producer
-
-        from ingestion_workflow.services.paper_parse import PRODUCER
-
-        return Producer(name=PRODUCER, version=f"prose.{prompt_version}", stage=self.name,
-                        model=model, prompt_version=prompt_version).model_dump(mode="json")
 
     def _read(self, passage, title, abstract):
         """The model's answer as it gave it, and the error if the call failed."""

@@ -397,7 +397,7 @@ ARTICLE = """<article><front><article-meta><title-group><article-title>T</articl
 @pytest.fixture()
 def env(tmp_path):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
-                        catalog_root=tmp_path / "k", prose_model="nu-prose", llm_api_key="x")
+                        catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x")
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
@@ -466,7 +466,7 @@ def _read_prose(ctx, catalog, ref, reader):
 
 
 class _Reader:
-    """Stands in for the model: reports every coordinate the passage holds as a result."""
+    """Stands in for nu-prose-v2: reports every coordinate the passage holds, in one analysis."""
 
     def __init__(self, fail=False):
         self.fail = fail
@@ -475,8 +475,8 @@ class _Reader:
         if self.fail:
             raise RuntimeError("server down")
         return {"space": None, "analyses": [{"name": "patients > controls", "measure": None, "points": [
-            {"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1, "cluster_size": None,
-             "role": "result"} for h in passage.hits]}]}
+            {"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1, "cluster_size": None}
+            for h in passage.hits]}]}
 
 
 def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeypatch):
@@ -1657,7 +1657,7 @@ def test_resolve_makes_a_repeat_within_a_set_one_point(env):
     assert [(c["x"], c["y"], c["z"]) for c in one["coordinates"]] == [(-22.0, -4.0, -18.0)]
     assert one["metadata"]["dropped"] == [
         {"x": -22.0, "y": -4.0, "z": -18.0, "reason": "repeats a point of this analysis"}]
-    assert "merged_statistics" not in one["metadata"]   # the repeat gave the same statistic
+    assert "other_statistics" not in one["coordinates"][0]   # the repeat gave the same statistic
     # The repeat across contrasts is not a repeat: each keeps the point.
     assert [(c["x"], c["y"], c["z"]) for c in other["coordinates"]] == [(-22.0, -4.0, -18.0)]
     assert (merged.summary["repeated"], merged.summary["merged_statistics"]) == (1, 0)
@@ -1677,11 +1677,9 @@ def test_a_place_given_with_three_statistics_is_one_point_carrying_all_three():
     assert [(c["x"], c["y"], c["z"], c["statistic_type"], c["statistic_value"])
             for c in analysis["coordinates"]] == [
         (*places[0], "T", 6.24), (*places[1], "T", 4.09), (*places[2], "T", 3.71)]
-    assert analysis["metadata"]["merged_statistics"] == [
-        {"x": x, "y": y, "z": z, "statistics": [
-            {"statistic": k, "value": v} for k, v in zip("TZP", values)]}
-        for (x, y, z), values in zip(places, [(6.24, 4.17, 0.001), (4.09, 3.22, 0.001),
-                                              (3.71, 3.01, 0.001)])]
+    assert [c["other_statistics"] for c in analysis["coordinates"]] == [
+        [{"statistic_type": k, "statistic_value": v} for k, v in zip("ZP", values)]
+        for values in [(4.17, 0.001), (3.22, 0.001), (3.01, 0.001)]]
     assert len(analysis["metadata"]["dropped"]) == 6
     counts = [summary[k] for k in ("prose_points", "repeated", "merged_statistics")]
     assert counts == [3, 6, 3]
@@ -1695,6 +1693,47 @@ def test_a_place_repeated_across_sets_stays_in_each_after_resolve():
     assert [(a["name"], [(c["x"], c["y"], c["z"]) for c in a["coordinates"]])
             for a in out["prose"]["analyses"]] == [(n, [(50.0, -50.0, 15.0)]) for n in names]
     assert (summary["repeated"], summary["merged_statistics"]) == (0, 0)
+
+
+def _given(*points):
+    """One passage, one set, its points given as (x, y, z, statistic, value)."""
+    return {"passages": [{"text": "...", "heading": None, "space": "MNI", "error": None,
+                          "analyses": [{"name": "patients > controls", "measure": None, "points": [
+                              {"x": x, "y": y, "z": z, "statistic": k, "value": v,
+                               "cluster_size": None} for x, y, z, k, v in points]}]}]}
+
+
+def test_points_of_a_set_a_millimetre_apart_or_at_another_z_stay_two():
+    places = [(10, 20, 30), (10, 20, -30), (-22.6, 40.4, 8), (-22.4, 40.6, 8)]
+    out, summary = resolve({}, _given(*[(*xyz, "T", 4.1) for xyz in places]), "slug")
+    (analysis,) = out["prose"]["analyses"]
+    assert [(c["x"], c["y"], c["z"]) for c in analysis["coordinates"]] == [
+        tuple(float(v) for v in xyz) for xyz in places]
+    assert "dropped" not in analysis["metadata"] and summary["repeated"] == 0
+
+
+def test_a_place_given_as_t_and_z_is_one_point_carrying_both():
+    out, summary = resolve({}, _given((-12, -2, -16, "T", 6.24), (-12, -2, -16, "Z", 4.17)), "slug")
+    (coordinate,) = out["prose"]["analyses"][0]["coordinates"]
+    assert (coordinate["statistic_type"], coordinate["statistic_value"]) == ("T", 6.24)
+    assert coordinate["other_statistics"] == [{"statistic_type": "Z", "statistic_value": 4.17}]
+    assert (summary["repeated"], summary["merged_statistics"]) == (1, 1)
+
+
+def test_every_statistic_of_a_merged_place_reaches_its_parsed_point():
+    """Given p first, then t and Z: the parse's point holds all three, and it is positive."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.models.analysis import Coordinate
+    from ingestion_workflow.services.paper_parse import _point
+
+    out, _ = resolve({}, _given((-12, -2, -16, "P", 0.001), (-12, -2, -16, "T", 6.24),
+                                (-12, -2, -16, "Z", 4.17)), "slug")
+    (stored,) = out["prose"]["analyses"][0]["coordinates"]
+    coordinate = Coordinate.from_dict(stored)
+    point = _point(coordinate, SimpleNamespace(coordinate_space=None), found=None)
+    assert [(v.kind, v.value) for v in point.values] == [("p", 0.001), ("t", 6.24), ("z", 4.17)]
+    assert coordinate.sign == stored["sign"] == "positive"
 
 
 def test_a_nu_prose_v2_reading_reaches_space_with_roles_from_the_roles_stage(env, monkeypatch):
@@ -1783,7 +1822,7 @@ def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(e
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
-    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
+    assert read.summary["reused"] == [0, 1]
     assert read.summary["read_again"] == {}
     assert read.summary["prompt_versions"] == {"2026-10-06.n5": 2}
     # re-anchored: the new spans, the earlier names and points
@@ -1806,7 +1845,7 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 1
-    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0]}
+    assert read.summary["reused"] == [0]
     assert read.summary["read_again"] == {"passage text changed": 1}
     assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.nu-prose-v2": 1}
     # the changed passage holds the model's new answer, not the old one's 3.8
@@ -1819,16 +1858,23 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 2 and read.summary["read_again"] == {"no earlier result": 2}
-    assert read.summary["reused"] == {}
+    assert read.summary["reused"] == []
     producer = read.payload["passages"][0]["producer"]
     assert (producer["prompt_version"], producer["model"], producer["stage"]) == (
-        "2026-10-11.nu-prose-v2", "nu-prose", "prose")
+        "2026-10-11.nu-prose-v2", "nu-prose-v2", "prose")
+    assert read.summary["text_normalization"] == "nfkc-minus-space.1"
+    # what each answer was read from: the passage's own text first
+    from ingestion_workflow.services.offsets import sha256
+
+    assert [p["inputs"][0] for p in read.payload["passages"]] == [
+        {"artifact_kind": "passage_text", "fingerprint": sha256(p["text"]),
+         "producer_version": None} for p in read.payload["passages"]]
     # read again under new passages of the same text: reused, the payload unchanged
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer",
                             payload=found, summary={"passages": 2})])
     reader = _Counting()
     _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
-    assert reader.calls == 0 and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
+    assert reader.calls == 0 and again.summary["reused"] == [0, 1]
     assert again.payload["passages"] == read.payload["passages"]
     # a new title and abstract: read again
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
@@ -1838,24 +1884,28 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
 
 
-def test_an_answer_of_nu_prose_s_prompt_is_reused_and_one_outside_the_family_is_not(env):
+@pytest.mark.parametrize("model, prompt_version, reason", [
+    ("nu-prose", "2026-10-06.n5", None),
+    ("nu-prose", "2026-09-30.n4", "earlier model not interchangeable"),
+    ("nu-prose-v2", "2026-10-06.n5", "earlier prompt not interchangeable"),
+    ("another-prose-model", "2026-10-11.nu-prose-v2", "earlier model not interchangeable"),
+])
+def test_only_nu_prose_s_first_answers_and_the_reader_s_own_are_reused(
+        env, model, prompt_version, reason):
     settings, catalog, ref, ctx, found = _two_passages(env, "84")
     _, (read,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
     blob = json.loads(json.dumps(read.payload))
     for p in blob["passages"]:
-        p["producer"] = {**p["producer"], "prompt_version": "2026-10-06.n5"}
-    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="n5",
-                            payload=blob, summary=read.summary)])
-    _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
-    assert again.status is Status.OK and again.summary["prompt_versions"] == {"2026-10-06.n5": 2}
-    for p in blob["passages"]:
-        p["producer"] = {**p["producer"], "prompt_version": "2026-09-30.n4"}
-    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="n4",
+        p["producer"] = {**p["producer"], "model": model, "prompt_version": prompt_version}
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="earlier",
                             payload=blob, summary=read.summary)])
     reader = _Counting()
-    _, (third,) = _run(_prose(settings, reader), ctx, catalog, ref)
-    assert reader.calls == 2
-    assert third.summary["read_again"] == {"earlier prompt not interchangeable": 2}
+    _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert again.status is Status.OK
+    if reason is None:
+        assert reader.calls == 0 and again.summary["prompt_versions"] == {prompt_version: 2}
+    else:
+        assert reader.calls == 2 and again.summary["read_again"] == {reason: 2}
 
 
 def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env):
@@ -1884,6 +1934,7 @@ def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_n
     assert normalized("(x\u00a0=\u2009\u221222,\n y = \u20134; \ufb01ndings\u207b)") == (
         "(x = -22, y = -4; findings-)")
     assert normalized("( x = -22)") != normalized("(x = -22)")
+    assert normalized("T = 5") != normalized("t = 5")
 
 
 def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
@@ -1896,7 +1947,7 @@ def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.status is Status.OK
-    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
+    assert read.summary["reused"] == [0, 1]
     assert read.payload["passages"][0]["text"] == first   # re-anchored to the new text
 
 
@@ -1913,18 +1964,19 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 1
-    assert read.summary["reused"] == {"normalized.nfkc-minus-space.1": [1]}
+    assert read.summary["reused"] == [1]
     assert read.summary["read_again"] == {"passage text changed": 1}
 
 
-def test_reuse_stays_within_the_nu_prose_models(env):
+@pytest.mark.parametrize("earlier", ["nu-prose's first answers", "nu-prose-v2"])
+def test_another_reader_reads_every_passage_again(env, earlier):
     settings, catalog, ref, ctx, found = _two_passages(env, "88")
-    _run(_prose(settings, _Reader()), ctx, catalog, ref)
-    v2 = settings.model_copy(update={"prose_model": "nu-prose-v2"})
-    reader = _Counting()
-    _, (again,) = _run(_prose(v2, reader), ctx, catalog, ref)
-    assert reader.calls == 0 and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
-    assert {p["producer"]["model"] for p in again.payload["passages"]} == {"nu-prose"}
+    if earlier == "nu-prose-v2":
+        _run(_prose(settings, _Reader()), ctx, catalog, ref)
+    else:
+        first, second = _texts(catalog, ref, found)
+        _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                     (second, ("controls > patients", (6, -60, 40, 3.9)))])
     other = settings.model_copy(update={"prose_model": "another-prose-model"})
     reader = _Counting()
     _, (third,) = _run(_prose(other, reader), ctx, catalog, ref)
@@ -1933,7 +1985,7 @@ def test_reuse_stays_within_the_nu_prose_models(env):
     assert {p["producer"]["model"] for p in third.payload["passages"]} == {"another-prose-model"}
 
 
-def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
+def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env):
     settings, catalog, ref, ctx, found = _two_passages(env, "89")
     first, second = _texts(catalog, ref, found)
     _earlier_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
@@ -1941,15 +1993,6 @@ def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
     _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
     assert read.payload["passages"][0]["analyses"][0]["name"] == "first copy"
-    # a copy that failed gives way to a later one that was answered
-    blob = catalog.payload(catalog.artifacts([ref.id], "prose")[ref.id][""])
-    failed = {**blob["passages"][0], "error": "server down", "answer": None}
-    blob["passages"] = [failed] + blob["passages"]
-    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="two",
-                            payload=blob, summary={})])
-    _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
-    assert again.status is Status.OK and again.summary["reused"] == {"normalized.nfkc-minus-space.1": [0, 1]}
-    assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
 
 
 @pytest.mark.parametrize("content,finish_reason", [
