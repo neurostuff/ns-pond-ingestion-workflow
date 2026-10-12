@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 import yaml
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -71,6 +71,16 @@ class UploadBehavior(str, Enum):
 class UploadMetadataMode(str, Enum):
     FILL = "fill"
     OVERWRITE = "overwrite"
+
+
+class RoleModel(BaseModel):
+    """A set-role model: a NuExtract3 role fine-tune served behind a vLLM endpoint."""
+
+    # A key it does not have (a retired threshold or prompt version, say) is refused, not ignored.
+    model_config = ConfigDict(extra="forbid")
+
+    endpoint: str = Field(description="Base URL of the server, up to /v1")
+    model: str = Field(description="The served model name it answers to")
 
 
 class Settings(BaseSettings):
@@ -309,21 +319,21 @@ class Settings(BaseSettings):
     )
 
     # ===== What each coordinate set is for =====
-    role_model_table: Optional[Path] = Field(
+    role_model_table: Optional[RoleModel] = Field(
         default=None,
         description=(
-            "Directory of the trained set-role classifier for table sets. The roles stage always "
-            "runs; without it every article with a table set fails there, and nothing is uploaded"
+            "The served set-role model for table sets, {endpoint, model}. The roles stage always "
+            "runs; without it every article with a table set is blocked there, and nothing is "
+            "uploaded"
         ),
     )
-    role_model_prose: Optional[Path] = Field(
+    role_model_prose: Optional[RoleModel] = Field(
         default=None,
         description=(
-            "Directory of the trained set-role classifier for prose sets. Without it every "
-            "article with a prose set fails the roles stage"
+            "The served set-role model for prose sets, {endpoint, model}. Without it every "
+            "article with a prose set is blocked at the roles stage"
         ),
     )
-    role_device: str = Field(default="cpu", description="Torch device the role classifier runs on")
 
     sync_overwrite: bool = Field(
         default=True,

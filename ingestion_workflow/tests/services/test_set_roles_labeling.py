@@ -258,8 +258,8 @@ def test_agreement_is_reported_per_origin(tmp_path):
     }
 
 
-def test_encoder_rows_are_one_string_per_set_split_by_article(tmp_path):
-    rows = list(export.encoder_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path)))
+def test_role_model_rows_are_one_string_per_set_split_by_article(tmp_path):
+    rows = list(export.role_model_rows([TABLE_UNIT, PROSE_UNIT], _labels(tmp_path)))
     assert [(r["role"], r["anchor_kind"]) for r in rows] == [
         ("anchor", "seed"),
         ("result", None),
@@ -282,7 +282,7 @@ def test_synthetic_units_bring_their_own_labels():
         "labels_from": "dataset",
         "sets": [{"name": "x", "points": [{"xyz": [1, 2, 3], **REFERENCE}]}],
     }
-    [row] = export.encoder_rows([unit], {})
+    [row] = export.role_model_rows([unit], {})
     assert (row["role"], row["from_prior_study"], row["label_source"]) == (
         "reference",
         True,
@@ -301,7 +301,7 @@ def _held_out_unit(split="test", label_source="neurometabench+luna"):
 
 def test_hand_rows_are_the_prose_gold_set_in_test():
     hand = _held_out_unit("train", "hand")
-    rows = list(export.encoder_rows([hand], {}))
+    rows = list(export.role_model_rows([hand], {}))
     assert [(r["role"], r["label_source"], r["split"]) for r in rows] == [
         ("result", "hand", "test"),
         ("result", "hand", "test"),
@@ -357,7 +357,7 @@ def test_synthetic_sets_are_train_only():
     ]
     for u in units:
         u["sets"] = [{"name": "x", "points": [{"xyz": [1, 2, 3], **RESULT}]}]
-    assert {r["split"] for r in export.encoder_rows(units, {})} == {"train"}
+    assert {r["split"] for r in export.role_model_rows(units, {})} == {"train"}
 
 
 def test_the_split_is_by_database_id_and_repeated_tables_share_one(tmp_path):
@@ -389,7 +389,7 @@ def test_an_article_with_a_gold_label_is_test(tmp_path):
 
 def test_repeated_tables_take_their_first_copy_s_labels(tmp_path):
     copy = {**TABLE_UNIT, "unit_id": "t:zzzzzzzzzzzz:t1", "article_id": "zzzzzzzzzzzz"}
-    assert [r["set_id"] for r in export.encoder_rows([TABLE_UNIT, copy], _labels(tmp_path))] == [
+    assert [r["set_id"] for r in export.role_model_rows([TABLE_UNIT, copy], _labels(tmp_path))] == [
         "t:123-10-1000-x:t2#0",
         "t:123-10-1000-x:t2#1",
     ]
@@ -491,7 +491,7 @@ def _role_values(value, found):
 def test_every_exported_role_is_study_schema_s(tmp_path):
     labels = _labels(tmp_path)
     labels["t:123-10-1000-x:t2#1"].update(role=None, anchor_kind=None, from_prior_study=False)
-    rows = list(export.encoder_rows([TABLE_UNIT, PROSE_UNIT], labels))
+    rows = list(export.role_model_rows([TABLE_UNIT, PROSE_UNIT], labels))
     found = _role_values(rows, [])
     assert {k for k, _ in found} == {"role", "anchor_kind"}
     for key, value in found:
@@ -504,7 +504,7 @@ def test_every_exported_role_is_study_schema_s(tmp_path):
 def test_a_legacy_role_in_an_exported_row_is_refused(tmp_path):
     with pytest.raises(ValueError, match="not a CoordinateRole"):
         list(
-            export.encoder_rows(
+            export.role_model_rows(
                 [TABLE_UNIT],
                 {
                     "t:123-10-1000-x:t2#0": {

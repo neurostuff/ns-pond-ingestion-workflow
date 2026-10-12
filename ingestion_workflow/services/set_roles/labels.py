@@ -60,12 +60,12 @@ def role_error(fields: Mapping[str, Any]) -> Optional[str]:
     role, kind = fields.get("role"), fields.get("anchor_kind")
     if role is not None and role not in COORDINATE_ROLES:
         return f"role {role!r} is not a CoordinateRole"
-    if role == CoordinateRole.anchor.value and kind not in ANCHOR_KINDS:
+    if role == CoordinateRole.anchor.value and kind is not None and kind not in ANCHOR_KINDS:
         return f"anchor_kind {kind!r} is not an AnchorKind"
     if role != CoordinateRole.anchor.value and kind is not None:
         return f"anchor_kind {kind!r} on a {role} set"
-    if not isinstance(fields.get("from_prior_study"), bool):
-        return f"from_prior_study {fields.get('from_prior_study')!r} is not a boolean"
+    if fields.get("from_prior_study") not in (True, False, None):
+        return f"from_prior_study {fields.get('from_prior_study')!r} is not a boolean or null"
     if role is None and fields["from_prior_study"]:
         return "from_prior_study on numbers that are not coordinates"
     return None
@@ -77,7 +77,7 @@ class SetRole:
 
     role: Optional[str]
     anchor_kind: Optional[str] = None
-    from_prior_study: bool = False
+    from_prior_study: Optional[bool] = None
 
     def __post_init__(self) -> None:
         error = role_error(self.fields())
@@ -128,7 +128,7 @@ class RoleDecision:
         return self.decided.anchor_kind
 
     @property
-    def from_prior_study(self) -> bool:
+    def from_prior_study(self) -> Optional[bool]:
         return self.decided.from_prior_study
 
     @property

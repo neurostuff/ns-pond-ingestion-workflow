@@ -160,7 +160,7 @@ def test_a_role_outside_study_schema_is_refused():
     for bad in (
         {"role": "simulation"},
         {"role": "anchor:roi"},
-        {"role": "anchor", "anchor_kind": None},
+        {"role": "anchor", "anchor_kind": "bogus"},
         {"role": "result", "anchor_kind": "seed"},
     ):
         try:
@@ -170,14 +170,10 @@ def test_a_role_outside_study_schema_is_refused():
         raise AssertionError(f"{bad} accepted")
 
 
-def _prediction(role, p, prior=0.0, kind=None, coordinates=0.99):
+def _prediction(role, p, kind=None):
     rest = (1 - p) / (len(COORDINATE_ROLES) - 1)
-    return Prediction(
-        coordinates,
-        {name: (p if name == role else rest) for name in COORDINATE_ROLES},
-        {k: (0.9 if k == kind else 0.1 / 3) for k in ANCHOR_KINDS},
-        prior,
-    )
+    probabilities = {name: (p if name == role else rest) for name in COORDINATE_ROLES}
+    return Prediction(role, kind, probabilities)
 
 
 def test_the_role_is_the_model_s_answer_however_sure_it_is():
@@ -209,9 +205,14 @@ def test_the_decision_records_its_model_origin_and_confidence():
     }
 
 
-def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
+def test_a_set_role_is_from_a_prior_study_only_when_told_so():
+    assert SetRole("result").from_prior_study is None
+
+
+def test_only_a_quoted_peak_is_from_a_prior_study():
+    """The role models give no prior-study answer: a borrowed seed is a seed of this study."""
     decision = decide(
-        _prediction("anchor", 0.95, prior=0.8, kind="seed"),
+        _prediction("anchor", 0.95, kind="seed"),
         source="enc@1",
         origin="text",
         evidence=["The seed came from Smith et al. (2010)."],
@@ -219,9 +220,10 @@ def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
     assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.uploaded) == (
         "anchor",
         "seed",
-        True,
+        None,
         True,
     )
+    assert decision.prior_study_evidence == ()
 
 
 def test_no_evidence_is_recorded_for_the_study_s_own_set():
@@ -232,14 +234,6 @@ def test_no_evidence_is_recorded_for_the_study_s_own_set():
         evidence=["(Smith et al., 2010)"],
     )
     assert decision.prior_study_evidence == () and not decision.from_prior_study
-
-
-def test_not_coordinates_are_set_aside_without_a_role():
-    decision = decide(
-        _prediction("anchor", 0.9, kind="seed", coordinates=0.05), source="enc@1", origin="text"
-    )
-    assert (decision.role, decision.anchor_kind, decision.uploaded) == (None, None, False)
-    assert decision.confidence == pytest.approx(0.95)
 
 
 def test_other_is_a_role_that_is_not_uploaded():
@@ -358,10 +352,11 @@ def test_local_is_in_the_serialised_input_before_the_passage():
 
 
 def test_a_model_trained_on_the_previous_prose_context_is_refused_with_the_reason():
-    from ingestion_workflow.services.set_roles import model
+    from ingestion_workflow.services.set_roles import served_prompt
 
-    meta = {"origin": "text", "context_version": prose_context.PROSE_CONTEXT_VERSION - 1}
+    previous = {"table": 2, "text": prose_context.PROSE_CONTEXT_VERSION - 1}
+    prompt = served_prompt.RolePrompt("v5", "x", context_versions=previous)
     with pytest.raises(ValueError, match=r"text context version 3; this code builds 4; retrain"):
-        model.check_meta(meta, "text", "role_model_prose")
+        prompt.check("text")
     # The table context is unchanged: its version is not bumped by this.
-    assert model.CONTEXT_VERSIONS["table"] == 2 and model.CONTEXT_VERSIONS["text"] == 4
+    assert served_prompt.CONTEXT_VERSIONS == {"table": 2, "text": 4}

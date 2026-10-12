@@ -4,7 +4,7 @@ A unit is what one call labels: a table with all its sets, or a passage with
 all of its. Table and prose units are read from different evidence, so each
 origin has its own instructions and prompt; the answer is the same strict
 schema (`label_schema`). Units come from `experiments/role_classifier/build_sets.py`;
-labels feed the encoder and both extractors' training rows (`export`).
+labels feed the role models' and both extractors' training rows (`export`).
 
 The job writes one JSONL per batch, one row per set, and skips units already
 in any batch, so it can be stopped and started again. Each call's tokens go
@@ -188,7 +188,7 @@ def duplicates(units: Iterable[Mapping[str, Any]]) -> Dict[str, str]:
 
 
 def serialize(unit: Mapping[str, Any], context: Any) -> str:
-    """The encoder's input for one set of a unit."""
+    """The role model's input for one set of a unit."""
     module = table_context if unit["origin"] == "table" else prose_context
     return module.serialize(context)
 

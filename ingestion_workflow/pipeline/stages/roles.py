@@ -2,13 +2,14 @@
 
 Required: it runs between `resolve` (or `analyses`, without prose) and
 `space`, and space, upload and sync read nothing it has not passed. Every set's
-role comes from a fine-tuned classifier of its origin (`services.set_roles`):
-table sets from the table model (`role_model_table`), prose sets from the
-prose model (`role_model_prose`), each reading its own context builder's input.
-There is no proposal and no default role: an article with a set whose origin's
-model is not configured, or cannot be used, is not attempted -- the plan counts
-it as blocked, with the reason -- so it uses up no retries, and it runs as soon
-as the model is configured. Everything downstream of it stays blocked meanwhile.
+role comes from its origin's role model (`services.set_roles`), a NuExtract3
+fine-tune served by vLLM (`role_model_table`, `role_model_prose`): table sets
+from the table model, prose sets from the prose model, each reading its own
+context builder's input. There is no proposal and no default role: an article
+with a set whose origin's model is not configured, or cannot be used, is not
+attempted -- the plan counts it as blocked, with the reason -- so it uses up no
+retries, and it runs as soon as the model is configured. Everything downstream
+of it stays blocked meanwhile.
 The payload it writes is described in docs/set-roles-artifact.md.
 """
 
@@ -22,9 +23,15 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.services.set_roles import decide, prose_context, table_context
+from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
 from ingestion_workflow.services.set_roles.labels import is_decided
-from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, check_meta, read_meta
+from ingestion_workflow.services.set_roles.served import (
+    RoleModelUnavailable,
+    ServedClassifier,
+    model_identity,
+    served_models,
+)
+from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS, PROMPT
 
 from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
@@ -35,7 +42,7 @@ from .space import _article_text
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
-ROLES_VERSION = 3
+ROLES_VERSION = 4
 
 #: Why roles waits on an article whose prose indexes a passages list other than the current one.
 RESOLVE_READ_OTHER_PROSE = ("its resolve was made from other prose: "
@@ -46,8 +53,22 @@ PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for pros
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
 _ORIGIN_NAMES = {"table": "table", "text": "prose"}
 
+
 class MissingRoleModel(RuntimeError):
     """A set's origin has no usable classifier: the article gets no roles at all."""
+
+
+class UnansweredSets(RuntimeError):
+    """Sets the classifier gave no usable answer for: the article gets no roles at all."""
+
+    def __init__(self, reasons: Mapping[str, str]) -> None:
+        self.reasons = dict(reasons)
+        shown = "; ".join(f"{k}: {v}" for k, v in list(self.reasons.items())[:5])
+        more = len(self.reasons) - 5
+        super().__init__(
+            f"{len(self.reasons)} set(s) without a usable answer: {shown}"
+            + (f" and {more} more" if more > 0 else "")
+        )
 
 
 def _span(sentence: str, text: Optional[str]) -> dict:
@@ -59,27 +80,47 @@ def _span(sentence: str, text: Optional[str]) -> dict:
     return {"text": sentence}
 
 
-def _table_text(analysis: Mapping[str, Any]) -> Optional[str]:
-    """The table's serialisation, as nu-v21 read it; None when the raw table is gone."""
+def _table_text(
+    analysis: Mapping[str, Any], raw: Optional[Path] = None
+) -> Tuple[str, Optional[str]]:
+    """(The table's serialisation, as nu-v21 read it; None) or ("", why it cannot be read).
+
+    `raw` is the table's raw content in the extraction the analyses were read
+    from: the file nu-v21 was given. Most extractors (pubget, ACE, PDF, PMC)
+    record no path in the table's metadata, so it is there that the file is found.
+    """
     from ingestion_workflow.services.create_analyses import CreateAnalysesService  # noqa: PLC0415
 
     meta = (analysis.get("metadata") or {}).get("table_metadata") or {}
-    path = meta.get("raw_content_path") or meta.get("raw_xml_path")
-    if not path or not Path(path).is_file():
-        return None
+    named = [p for p in (meta.get("raw_content_path"), meta.get("raw_xml_path"), raw) if p]
+    path = next((Path(p) for p in named if Path(p).is_file()), None)
+    if path is None:
+        return "", (f"its raw table file is missing ({named[-1]})" if named
+                    else "no raw table file is recorded for it")
     try:
-        return CreateAnalysesService._serialise(
-            Path(path).read_text(encoding="utf-8", errors="replace"), meta.get("table_id") or ""
-        )
-    except Exception as exc:  # noqa: BLE001 - the set is read without its rows
-        logger.debug("cannot serialise %s: %s", path, exc)
-        return None
+        # As nu-v21's `_read_table_content` read it.
+        try:
+            markup = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            markup = path.read_text(encoding="utf-8", errors="ignore")
+        return CreateAnalysesService._serialise(markup, meta.get("table_id") or ""), None
+    except Exception as exc:  # noqa: BLE001 - the set is read without its rows, and says so
+        return "", f"its raw table file cannot be read ({path}): {type(exc).__name__}: {exc}"
 
 
 def set_contexts(
-    payload: Mapping[str, Any], passages: Sequence[Mapping[str, Any]], text: Optional[str]
+    payload: Mapping[str, Any],
+    passages: Sequence[Mapping[str, Any]],
+    text: Optional[str],
+    raw_tables: Optional[Mapping[str, Path]] = None,
+    unread: Optional[Dict[str, str]] = None,
 ):
-    """(table id, analysis index, origin, builder module, context) for every analysis."""
+    """(table id, analysis index, origin, builder module, context) for every analysis.
+
+    `raw_tables` is each table's raw content file by table id (`raw_tables`).
+    A table whose sets are read without its header and rows is put in
+    `unread`, by table id, with the reason.
+    """
     for table_id, collection in (payload or {}).items():
         analyses = (collection or {}).get("analyses", [])
         table_text = None
@@ -89,7 +130,11 @@ def set_contexts(
                 yield table_id, index, "text", prose_context, context
                 continue
             if table_text is None:
-                table_text = _table_text(analysis) or ""
+                table_text, why = _table_text(analysis, (raw_tables or {}).get(table_id))
+                if why is not None and unread is not None:
+                    if raw_tables and table_id not in raw_tables:
+                        why += f"; the extraction has no table {table_id!r}"
+                    unread[table_id] = why
             yield (
                 table_id,
                 index,
@@ -110,19 +155,23 @@ def assign_roles(
     passages: Sequence[Mapping[str, Any]],
     text: Optional[str],
     classifiers: Mapping[str, Any],
+    raw_tables: Optional[Mapping[str, Path]] = None,
+    unread: Optional[Dict[str, str]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """The payload with every analysis's role decided by its origin's classifier, and a summary.
 
-    `classifiers` maps an origin (`table`, `text`) to its classifier. A set
-    whose origin has none raises `MissingRoleModel`: no set is given a role
-    any other way. Each analysis gains `metadata.set_role` (`SET_ROLE_FIELDS`)
-    and `metadata.held`. Sets of a role that is not uploaded -- a reference, a
-    bare slice position (other), a localization, numbers that are not
-    coordinates -- are held: they stay in the collection's `analyses`, in their
-    place, so a set's position (pondie's `table_id#ordinal`) never moves, and
-    upload leaves them out (`uploaded_sets`).
+    `classifiers` maps an origin (`table`, `text`) to its classifier (a
+    `ServedClassifier`). A set whose origin has none raises `MissingRoleModel`,
+    and sets the classifier could not answer raise `UnansweredSets` with each
+    one's reason: no set is given a role any other way. Each analysis gains
+    `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
+    without their header and rows go in `unread` (`set_contexts`). Sets of a
+    role that is not uploaded -- a reference, a bare slice position (other),
+    a localization, numbers that are not coordinates -- are held: they stay in
+    the collection's `analyses`, in their place, so a set's position (pondie's
+    `table_id#ordinal`) never moves, and upload leaves them out (`uploaded_sets`).
     """
-    found = list(set_contexts(payload, passages, text))
+    found = list(set_contexts(payload, passages, text, raw_tables, unread))
     by_origin: Dict[str, list] = collections.defaultdict(list)
     for item in found:
         by_origin[item[2]].append(item)
@@ -132,7 +181,7 @@ def assign_roles(
         chosen[origin] = classifiers.get(origin)
         if chosen[origin] is None:
             raise MissingRoleModel(f"no {_ORIGIN_NAMES[origin]} role model")
-    decisions = {}
+    decisions, unanswered = {}, {}
     for origin, items in by_origin.items():
         classifier = chosen[origin]
         predictions = classifier.predict([module.serialize(ctx) for *_, module, ctx in items])
@@ -142,12 +191,17 @@ def assign_roles(
                 f"{len(items)} sets"
             )
         for (table_id, index, _, module, context), prediction in zip(items, predictions):
+            if isinstance(prediction, Unanswered):
+                unanswered[f"{table_id}#{index}"] = prediction.reason
+                continue
             decisions[(table_id, index)] = decide(
                 prediction,
                 source=classifier.source,
                 origin=origin,
                 evidence=module.prior_evidence(context),
             )
+    if unanswered:
+        raise UnansweredSets(unanswered)
     out: Dict[str, Any] = {}
     roles, held = collections.Counter(), 0
     values, records = [], []
@@ -167,8 +221,8 @@ def assign_roles(
                     "held": not decision.uploaded,
                 },
             }
-            # An anchor by its kind; numbers set aside as not coordinates as such.
-            roles[decision.anchor_kind or decision.role or "not_coordinates"] += 1
+            # An anchor by its kind.
+            roles[decision.anchor_kind or decision.role] += 1
             held += not decision.uploaded
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
@@ -257,6 +311,24 @@ def _read_passages(ctx: Context, payload: Optional[Mapping[str, Any]]) -> List[D
     ]
 
 
+def raw_tables(triage: Optional[Artifact], extractions: Mapping[str, Artifact],
+               ctx: Context) -> Dict[str, Path]:
+    """Each table's raw content file by table id, in the extraction triage judged.
+
+    The extraction the analyses were read from, so the file is the one nu-v21 serialised.
+    """
+    source = (triage.summary or {}).get("source") if triage else None
+    extraction = extractions.get(source) if source is not None else None
+    if extraction is None or extraction.status is not Status.OK:
+        return {}
+    out = {}
+    for table in (ctx.payload(extraction) or {}).get("tables") or []:
+        path = ctx.recorded_path(table.get("raw_content_path"))
+        if table.get("table_id") and path is not None:
+            out[table["table_id"]] = path
+    return out
+
+
 def with_roles(ctx: Context, ids: Sequence[str]) -> Set[str]:
     """The articles whose roles artifact is OK: the only ones downstream stages may write."""
     found = ctx.catalog.artifacts(list(ids), "roles")
@@ -291,44 +363,51 @@ class RolesStage:
         return ("table", "text") if getattr(self.settings, "prose_model", None) else ("table",)
 
     def model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
-        """(`name@version`, None) of the origin's model, read without loading it; or (None, why).
+        """(The source its sets are recorded with, None) of the origin's model; or (None, why).
 
-        A model for another origin, or trained on other context versions, is
-        refused: it would read inputs shaped differently from the ones it learned on.
+        The model must be listed by its server now, and the prompt it was trained
+        with must be for the contexts this code builds.
         """
         setting = MODEL_SETTINGS[origin]
-        path = getattr(self.settings, setting, None)
+        served = getattr(self.settings, setting, None)
         name = _ORIGIN_NAMES[origin]
-        if not path:
+        if served is None:
             return None, f"no {name} role model is configured ({setting})"
+        loaded = self._classifiers.get(origin)
+        if loaded is not None and loaded.stopped:
+            return None, f"the {name} role model stopped this run: {loaded.stopped}"
+        where = f"the {name} role model {served.model} at {served.endpoint}"
         try:
-            meta = read_meta(Path(path))
-            check_meta(meta, origin, path)
-        except Exception as exc:  # noqa: BLE001 - recorded as the articles' failure
-            return None, f"the {name} role model at {path} cannot be used: {exc}"
-        return f"{meta['name']}@{meta['version']}", None
+            PROMPT.check(origin)
+        except ValueError as exc:
+            return None, f"{where} cannot be used: {exc}"
+        try:
+            listed = served_models(served.endpoint)
+        except Exception as exc:  # noqa: BLE001 - recorded as the articles' block
+            return None, f"{where} cannot be reached: {type(exc).__name__}: {exc}"
+        card = next((c for c in listed if c.get("id") == served.model), None)
+        if card is None:
+            names = [c.get("id") for c in listed]
+            return None, f"{where} is not served there (it serves {names})"
+        # The checkpoint, not only its served name: a retrained model is a new source.
+        return f"{served.model}@{PROMPT.version}+{model_identity(card)[:12]}", None
 
     def model_fingerprint(self, origin: str, state: Tuple[Optional[str], Optional[str]]) -> str:
         """One origin's part of the fingerprint: its context version and model, or its absence."""
         source, reason = state
         return fingerprint("roles-model", origin, CONTEXT_VERSIONS[origin], source or reason)
 
-    def classifier(self, origin: str):
-        """The origin's loaded classifier; `MissingRoleModel` with the reason when it has none."""
+    def classifier(self, origin: str) -> ServedClassifier:
+        """The origin's classifier; `MissingRoleModel` with the reason when it has none."""
         if origin not in self._classifiers:
             with self._lock:
                 if origin not in self._classifiers:
                     source, reason = self.model_state(origin)
                     if source is None:
                         raise MissingRoleModel(reason)
-                    from ingestion_workflow.services.set_roles import (
-                        EncoderClassifier,  # noqa: PLC0415 - torch
-                    )
-
-                    self._classifiers[origin] = EncoderClassifier(
-                        Path(getattr(self.settings, MODEL_SETTINGS[origin])),
-                        origin,
-                        device=self.settings.role_device,
+                    served = getattr(self.settings, MODEL_SETTINGS[origin])
+                    self._classifiers[origin] = ServedClassifier(
+                        served.endpoint, served.model, source=source
                     )
         return self._classifiers[origin]
 
@@ -458,17 +537,27 @@ class RolesStage:
                 read_payload = (
                     ctx.payload(read) if read is not None and read.status is Status.OK else None
                 )
-                text = _article_text(
-                    triaged.get(work.article_id, {}).get(""),
-                    extractions.get(work.article_id, {}),
-                    ctx,
-                )
+                triage = triaged.get(work.article_id, {}).get("")
+                text = _article_text(triage, extractions.get(work.article_id, {}), ctx)
+                unread: Dict[str, str] = {}
                 assigned, summary = assign_roles(
                     payload,
                     _read_passages(ctx, read_payload),
                     text,
                     _Classifiers(self),
+                    raw_tables(triage, extractions.get(work.article_id, {}), ctx),
+                    unread,
                 )
+                if unread:
+                    # Its sets were read without the table's header and rows: say which, and why.
+                    summary["tables_without_text"] = unread
+            except RoleModelUnavailable as exc:
+                # An outage or a misconfigured server is not the article's failure:
+                # recording one would spend every remaining article's retries. This
+                # article and the rest stay pending, and the plan blocks them this run.
+                logger.error("roles stopped: %s; %d article(s) left pending", exc,
+                             len(works) - works.index(work))
+                return
             except MissingRoleModel as exc:
                 yield Outcome.failure(
                     work.article_id,
@@ -476,6 +565,16 @@ class RolesStage:
                     "",
                     f"no role for its sets: {exc}",
                     fingerprint=work.fingerprint,
+                )
+                continue
+            except UnansweredSets as exc:
+                yield Outcome.failure(
+                    work.article_id,
+                    self.name,
+                    "",
+                    f"no role for its sets: {exc}",
+                    fingerprint=work.fingerprint,
+                    summary={"unanswered": exc.reasons},
                 )
                 continue
             except Exception as exc:

@@ -20,7 +20,7 @@ that add up. A run asked for wild passages that builds none exits non-zero.
   passage, sets in order of first appearance, the row kept as `base_row`.
   Synthetic rows carry their generator's roles (`labels_from: dataset`) and
   are not sent to a labeller. Optionally, passages the prose stage read from
-  the corpus (`--wild-passages`), for the encoder only (no `base_row`); their text is
+  the corpus (`--wild-passages`), for the training rows only (no `base_row`); their text is
   read from the article's text by the spans the passages stage stored.
 
 Each unit gets a `stratum` from its cues, which the labelling job takes in

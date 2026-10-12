@@ -6,17 +6,33 @@ it has not passed. This page is the shape it writes, for anything that reads a s
 
 ## Where a set's role comes from
 
-Every set's role is the answer of a fine-tuned classifier of the set's origin, and of nothing
-else. There is no proposal from an extractor and no default role.
+Every set's role is the answer of its origin's role model, and of nothing else. There is no
+proposal from an extractor and no default role. The role models are NuExtract3 fine-tunes, one
+per origin, served by vLLM.
 
 | Origin | Which sets | Setting | Input |
 |---|---|---|---|
 | `table` | sets nu-v21 read from a table (`analyses`) | `role_model_table` | `services/set_roles/table_context.py` |
 | `text` | sets nu-prose read from the text (`resolve`'s `prose` collection, `metadata.source == "prose"`) | `role_model_prose` | `services/set_roles/prose_context.py` |
 
-Each model directory records the origin it reads and that origin's context version
-(`set_roles.json`: `origin`, `context_version`). The stage refuses a model for another origin
-or another context version.
+Each is configured by its server and served model name:
+
+```yaml
+role_model_table:
+  endpoint: http://localhost:8372/v1   # OpenAI-compatible server, up to /v1
+  model: role-table                    # its served model name
+```
+
+Each set is one request, built as the models were trained and evaluated
+(`services/set_roles/served_prompt.py`: the instruction, template and JSON schema, and the context
+versions the training rows were built with). The answer is decoded under that JSON schema, so its
+role is always one of study_schema's `CoordinateRole` values. The role is the model's answer, and
+its probability is read from the logprobs of the answer's first role token, renormalised over the
+tokens that begin exactly one role. The models give no "not coordinates" answer and no
+prior-study flag: every set gets a role, `from_prior_study` is true for a `reference`, and it is null (unknown) for every other role. Nothing decides that another role's set is not from a prior study, so it is never false.
+
+The stage refuses the prompt when its context versions are not the ones this code builds, and a
+server that does not list the model.
 
 ## Artifact
 
@@ -30,12 +46,12 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
 
    | Field | Type | Meaning |
    |---|---|---|
-   | `role` | `CoordinateRole` value or null | `result`, `anchor`, `localization`, `reference`, `other`; null when the numbers are not brain coordinates |
-   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node` |
-   | `from_prior_study` | bool | the coordinates come from another publication (always true for `reference`) |
+   | `role` | `CoordinateRole` value | `result`, `anchor`, `localization`, `reference`, `other` |
+   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node`; null when the model gave no kind |
+   | `from_prior_study` | bool or null | the coordinates come from another publication: true for `reference`, null (unknown) for the other roles |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
-   | `role_confidence` | float | the classifier's probability for what it decided: the role's, or for a null role that the numbers are not coordinates |
-   | `role_source` | string | the model that decided, `name@version` |
+   | `role_confidence` | float | the model's probability for the role it answered, at the role's first token: p(result) for a result |
+   | `role_source` | string | the model that decided, `<served model name>@<prompt version>+<checkpoint digest>`: the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
    | `role_origin` | `table` or `text` | which of the two models read the set |
 
    The values of `role` and `anchor_kind` are study_schema's enums
@@ -46,23 +62,52 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    a set's position -- pondie's `table_id#ordinal` key -- never moves. `upload` leaves held sets
    out (`roles.uploaded_sets`); `space` and stage1 keep them.
 
-The summary is `{tables, sets, sets_by_origin, text_sets_without_local, roles, held, sources, role_values, input}`:
+The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, sources, role_values, input}`:
 `tables` counts collections that have an analysis (the selection gate reads it),
 `text_sets_without_local` counts prose sets whose points the classifier could not find in their
-passage, `roles` counts
-sets by role (an anchor by its kind, a null role as `not_coordinates`), `sources` names each
+passage, `tables_without_text` names each table whose sets were read without its header and rows
+(no raw table file recorded, the file missing or unreadable), with the reason, `roles` counts
+sets by role (an anchor by its kind), `sources` names each
 origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
 `from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the
 stage read.
 
-**Blocked, not failed.** When a set's origin has no usable model (not configured, missing, for
-another origin, or built on another context version), the articles with sets of that origin are
-not attempted: the plan counts them as blocked, with the reason (for example
+**Blocked, not failed.** When a set's origin has no usable model (not configured, its server
+not listing it, or its prompt built on another context version), the articles with sets of that
+origin are not attempted: the plan counts them as blocked, with the reason (for example
 `no prose role model is configured (role_model_prose)`), and logs the reason once. Nothing is
 recorded for them, so no retry is used up, and they are planned on the first run with the model
 configured, with no `--refresh`. Everything downstream of them stays blocked. A missing role
 only ever blocks: it never takes anything back from neurostore or ns-pond. The fingerprint
 includes each origin's model, so configuring or retraining one makes the articles it reads stale.
+
+**Stopped, not failed.** The stage stops, logging the reason, when a model's server is down or
+is configured so it cannot answer the stage's requests:
+
+- it still times out, answers 5xx or answers 429 after 3 tries, and no longer lists this model;
+- it refuses a request (any HTTP 4xx except 429), for example a context longer than its
+  `max_model_len` (`configuration error: ... answered HTTP 400 ...`);
+- an answer is not the JSON schema's (a role, or an anchor's kind, off its lists), because the server did not apply `structured_outputs`
+  or cut the answer short (`configuration error: the answer ... is not the role schema's ...`);
+- an answer has no role-token logprobs.
+
+Nothing is recorded for the article it was reading or for the rest of the batch, and the plan
+blocks the run's remaining articles of that origin with the reason (`the table role model
+stopped this run: ...`). No retry is used up; the next run plans them again. A set's context is
+at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,007 tokens
+(9,943 for the prompt, measured with the NuExtract3 tokenizer on 2,400 four-byte characters,
+and the 64-token answer): serve the models with a `max_model_len` of at least 10,240.
+
+**Failed.** One case fails the set's article, with its summary's `unanswered` naming each such
+set (`table_id#index`) with its reason, and the stage goes on:
+
+- the server, still listing this model, times out, answers 5xx or answers 429 (rate limited) for
+  that input on every try (`server error on this input after 3 tries: ...`). A 429 is asked again
+  like a 5xx. If the server then no longer lists this model (any other model does not count), the
+  stage stops instead.
+
+An `anchor` answered with a null `anchor_kind` is not a failure: it is recorded as an anchor with
+no kind (not a result, which is the distinction that matters).
 
 ## Downstream
 

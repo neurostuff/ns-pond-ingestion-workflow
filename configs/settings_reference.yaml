@@ -60,6 +60,10 @@ n_llm_workers: 2  # Maximum number of concurrent LLM workers
 prose_model: null  # Model that reads coordinates written in the text; setting it runs passages, prose and resolve
 prose_api_base: null  # Its server, apart from the table model's; defaults to llm_api_base
 
+# ===== What each coordinate set is for =====
+# role_model_table: {endpoint: "http://host:8000/v1", model: "name"}  # The served set-role model for table sets, {endpoint, model}. The roles stage always runs; without it every article with a table set is blocked there, and nothing is uploaded
+# role_model_prose: {endpoint: "http://host:8001/v1", model: "name"}  # The served set-role model for prose sets, {endpoint, model}. Without it every article with a prose set is blocked at the roles stage
+
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
 

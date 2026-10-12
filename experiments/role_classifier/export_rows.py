@@ -1,4 +1,4 @@
-"""Write the set-role encoders' training rows from labelling units and their labels.
+"""Write the role models' training rows from labelling units and their labels.
 
     python export_rows.py OUT_DIR --units table_units.jsonl prose_units.jsonl \
         --labels labels/sol-table labels/sol-prose labels/relabel-v4-no-display \
@@ -8,8 +8,8 @@ Each set takes its label of the highest `label_version` in any `--labels`
 directory; between equal versions the first directory given wins (list a gold
 set first). A label no version made study_schema's (an old `display`) is left
 out, and listed with its reason in the summary printed at the end: relabel those
-before training. Writes one file per origin, one row per set, for train_encoder.py:
-OUT_DIR/encoder-table.jsonl for the table model and OUT_DIR/encoder-text.jsonl
+before training. Writes one file per origin, one row per set:
+OUT_DIR/role-table.jsonl for the table model and OUT_DIR/role-text.jsonl
 for the prose model. `--id-map` maps slug article ids to database ids for the split.
 """
 
@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 
 from ingestion_workflow.services.set_roles import export, labeling
-from ingestion_workflow.services.set_roles.model import ORIGINS
+from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS
 
 
 def main():
@@ -38,13 +38,13 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     counts = collections.Counter()
     handles = {
-        origin: open(args.out / f"encoder-{origin}.jsonl", "w", encoding="utf-8")
-        for origin in ORIGINS
+        origin: open(args.out / f"role-{origin}.jsonl", "w", encoding="utf-8")
+        for origin in CONTEXT_VERSIONS
     }
     try:
-        for row in export.encoder_rows(units, labels, id_map):
+        for row in export.role_model_rows(units, labels, id_map):
             handles[row["origin"]].write(json.dumps(row, ensure_ascii=False) + "\n")
-            counts[f"encoder-{row['origin']}:{row['split']}"] += 1
+            counts[f"role-{row['origin']}:{row['split']}"] += 1
     finally:
         for handle in handles.values():
             handle.close()

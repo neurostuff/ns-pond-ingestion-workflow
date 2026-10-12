@@ -1338,7 +1338,7 @@ def test_only_a_placeholder_name_is_marked_not_printed():
         {"set_role": _decided()},  # no `held`
         {"set_role": {k: v for k, v in _decided().items() if k != "role_origin"}, "held": False},
         {"set_role": _decided("figure"), "held": False},
-        {"set_role": {**_decided(), "from_prior_study": None}, "held": False},
+        {"set_role": {**_decided(), "from_prior_study": "yes"}, "held": False},
     ],
 )
 def test_the_parse_checks_a_role_as_upload_and_sync_do(metadata):
