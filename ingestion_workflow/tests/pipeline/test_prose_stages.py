@@ -1468,9 +1468,10 @@ def _roles_after_a_chain(env, monkeypatch, pmid):
 
 
 def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatch):
-    """Prose re-read new passages and now holds no point, so resolve skips it and keeps its old
-    row: that row's indices point into the old list, and roles must not write on them."""
-    from ingestion_workflow.pipeline.stages.roles import RESOLVE_READ_OTHER_PROSE
+    """Prose re-read new passages and now holds no point (w2ni664ashw2): resolve takes back the
+    row made from the earlier reading, and roles takes back its own, never writing on indices
+    into the old list."""
+    from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 
     settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
@@ -1487,10 +1488,11 @@ def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatc
     prose = ProseStage(settings)
     prose.client = lambda: NoPoint()
     _run(prose, ctx, catalog, ref)
-    skipped, _ = _run(ResolveStage(settings), ctx, catalog, ref)
-    assert skipped.skipped == 1
-    plan, outcomes = _run(roles, ctx, catalog, ref)
-    assert (outcomes, plan.reasons) == ([], {RESOLVE_READ_OTHER_PROSE: 1})
+    _, (resolved,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (resolved.status, resolved.error, resolved.fingerprint) == (
+        Status.FAILED, NO_ANALYSES, NO_TEXT)
+    _, (roled,) = _run(roles, ctx, catalog, ref)
+    assert (roled.status, roled.error, roled.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
 
 
 def test_resolve_records_the_prose_it_was_made_from(env, monkeypatch):
