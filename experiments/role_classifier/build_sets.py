@@ -54,7 +54,7 @@ NS_POND = Path("/data/alejandro/projects/ns-pond")
 CATALOG = NS_POND / "catalog"
 
 
-#: The prose datasets' own role words (the current nu-prose model's too), read as
+#: The prose datasets' own role words (the first nu-prose model's too), read as
 #: study_schema's fields. They are the labels of a dataset's synthetic rows, which
 #: no labeller sees, and what corpus passages are sampled by; nothing in the
 #: pipeline reads them. `other` was "anything else", mostly numbers that are not

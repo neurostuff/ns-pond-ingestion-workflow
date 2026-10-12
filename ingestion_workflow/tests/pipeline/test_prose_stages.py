@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
@@ -396,7 +397,7 @@ ARTICLE = """<article><front><article-meta><title-group><article-title>T</articl
 @pytest.fixture()
 def env(tmp_path):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
-                        catalog_root=tmp_path / "k", prose_model="nu-prose", llm_api_key="x")
+                        catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x")
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
@@ -465,7 +466,7 @@ def _read_prose(ctx, catalog, ref, reader):
 
 
 class _Reader:
-    """Stands in for the model: reports every coordinate the passage holds as a result."""
+    """Stands in for nu-prose-v2: reports every coordinate the passage holds, in one analysis."""
 
     def __init__(self, fail=False):
         self.fail = fail
@@ -474,8 +475,8 @@ class _Reader:
         if self.fail:
             raise RuntimeError("server down")
         return {"space": None, "analyses": [{"name": "patients > controls", "measure": None, "points": [
-            {"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1, "cluster_size": None,
-             "role": "result"} for h in passage.hits]}]}
+            {"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1, "cluster_size": None}
+            for h in passage.hits]}]}
 
 
 def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeypatch):
@@ -1473,8 +1474,11 @@ def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatc
 
     settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    # The passage now starts a character later: its text changed, so prose reads it again.
+    moved = catalog.payload(found)
+    moved["passages"][0]["span"][0] += 1
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer-passages",
-                            payload=catalog.payload(found), summary=found.summary)])
+                            payload=moved, summary=found.summary)])
 
     class NoPoint:
         def read(self, passage, *, title="", abstract=""):
@@ -1628,3 +1632,511 @@ def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch):
     monkeypatch.setattr(prose_stage, "PROSE_PROMPT_VERSION", "another prompt")
     _, (again,) = _read_prose(ctx, catalog, ref, _Reader(fail=True))
     assert again.status is not Status.OK
+
+
+class _V2Reader:
+    """Answers as nu-prose-v2 does: each hit under two contrasts, twice in the first."""
+
+    def read(self, passage, *, title="", abstract=""):
+        points = [{"x": h.x, "y": h.y, "z": h.z, "statistic": "T", "value": 4.1,
+                   "cluster_size": None} for h in passage.hits]
+        return {"space": None, "analyses": [
+            {"name": "patients > controls", "measure": None, "points": points * 2},
+            {"name": "patients > controls, covarying for IQ", "measure": None, "points": points}]}
+
+
+def test_resolve_makes_a_repeat_within_a_set_one_point(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="31"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _, (read,) = _read_prose(ctx, catalog, ref, _V2Reader())
+    assert read.status is Status.OK and read.summary["coordinates"] == 3
+    _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    one, other = merged.payload["prose"]["analyses"]
+    assert [(c["x"], c["y"], c["z"]) for c in one["coordinates"]] == [(-22.0, -4.0, -18.0)]
+    assert one["metadata"]["dropped"] == [
+        {"x": -22.0, "y": -4.0, "z": -18.0, "reason": "repeats a point of this analysis"}]
+    assert "other_statistics" not in one["coordinates"][0]   # the repeat gave the same statistic
+    # The repeat across contrasts is not a repeat: each keeps the point.
+    assert [(c["x"], c["y"], c["z"]) for c in other["coordinates"]] == [(-22.0, -4.0, -18.0)]
+    assert (merged.summary["repeated"], merged.summary["merged_statistics"]) == (1, 0)
+
+
+def test_a_place_given_with_three_statistics_is_one_point_carrying_all_three():
+    """nmb-112, as nu-prose-v2 answered it: each peak once each as t, Z and p."""
+    from ingestion_workflow.clients.prose_coordinates import clean_answer
+
+    case = json.loads((Path(__file__).parents[1] / "data" / "prose" / "nmb_112.json")
+                      .read_text(encoding="utf-8"))
+    answer = clean_answer(case["answer"], case["text"])
+    prose = {"space": "MNI", "passages": [{"heading": None, "space": "MNI", **answer}]}
+    out, summary = resolve({}, prose, "slug")
+    (analysis,) = out["prose"]["analyses"]
+    places = [(-12.0, -2.0, -16.0), (-60.0, -42.0, 4.0), (64.0, -30.0, -10.0)]
+    assert [(c["x"], c["y"], c["z"], c["statistic_type"], c["statistic_value"])
+            for c in analysis["coordinates"]] == [
+        (*places[0], "T", 6.24), (*places[1], "T", 4.09), (*places[2], "T", 3.71)]
+    assert [c["other_statistics"] for c in analysis["coordinates"]] == [
+        [{"statistic_type": k, "statistic_value": v} for k, v in zip("ZP", values)]
+        for values in [(4.17, 0.001), (3.22, 0.001), (3.01, 0.001)]]
+    assert len(analysis["metadata"]["dropped"]) == 6
+    counts = [summary[k] for k in ("prose_points", "repeated", "merged_statistics")]
+    assert counts == [3, 6, 3]
+
+
+def test_a_place_repeated_across_sets_stays_in_each_after_resolve():
+    """nmb-164: one Talairach peak reported for three contrasts."""
+    names = ["Affect x Group interaction", "libertarians > determinists", "main effect of Affect"]
+    prose = {"passages": [_passage(*[(n, [(50, -50, 15, "result")]) for n in names])]}
+    out, summary = resolve({}, prose, "slug")
+    assert [(a["name"], [(c["x"], c["y"], c["z"]) for c in a["coordinates"]])
+            for a in out["prose"]["analyses"]] == [(n, [(50.0, -50.0, 15.0)]) for n in names]
+    assert (summary["repeated"], summary["merged_statistics"]) == (0, 0)
+
+
+def _given(*points):
+    """One passage, one set, its points given as (x, y, z, statistic, value)."""
+    return {"passages": [{"text": "...", "heading": None, "space": "MNI", "error": None,
+                          "analyses": [{"name": "patients > controls", "measure": None, "points": [
+                              {"x": x, "y": y, "z": z, "statistic": k, "value": v,
+                               "cluster_size": None} for x, y, z, k, v in points]}]}]}
+
+
+def test_points_of_a_set_a_millimetre_apart_or_at_another_z_stay_two():
+    places = [(10, 20, 30), (10, 20, -30), (-22.6, 40.4, 8), (-22.4, 40.6, 8)]
+    out, summary = resolve({}, _given(*[(*xyz, "T", 4.1) for xyz in places]), "slug")
+    (analysis,) = out["prose"]["analyses"]
+    assert [(c["x"], c["y"], c["z"]) for c in analysis["coordinates"]] == [
+        tuple(float(v) for v in xyz) for xyz in places]
+    assert "dropped" not in analysis["metadata"] and summary["repeated"] == 0
+
+
+def test_a_place_given_as_t_and_z_is_one_point_carrying_both():
+    out, summary = resolve({}, _given((-12, -2, -16, "T", 6.24), (-12, -2, -16, "Z", 4.17)), "slug")
+    (coordinate,) = out["prose"]["analyses"][0]["coordinates"]
+    assert (coordinate["statistic_type"], coordinate["statistic_value"]) == ("T", 6.24)
+    assert coordinate["other_statistics"] == [{"statistic_type": "Z", "statistic_value": 4.17}]
+    assert (summary["repeated"], summary["merged_statistics"]) == (1, 1)
+
+
+def test_a_repeat_with_no_number_adds_nothing():
+    out, summary = resolve({}, _given((-12, -2, -16, "T", 6.24), (-12, -2, -16, "P", None)),
+                           "slug")
+    (coordinate,) = out["prose"]["analyses"][0]["coordinates"]
+    assert "other_statistics" not in coordinate
+    assert (summary["repeated"], summary["merged_statistics"]) == (1, 0)
+
+
+@pytest.mark.parametrize("given, sign", [
+    ([("T", 6.24), ("Z", 4.17), ("P", 0.001)], "positive"),
+    ([("T", -4.2), ("P", 0.001)], "negative"),
+    ([("P", 0.001), ("T", -4.2), ("Z", -3.1)], "negative"),
+])
+def test_the_sign_of_a_merged_place_is_read_from_every_statistic_not_the_last(given, sign):
+    from ingestion_workflow.models.analysis import Coordinate
+
+    out, _ = resolve({}, _given(*[(-12, -2, -16, k, v) for k, v in given]), "slug")
+    (stored,) = out["prose"]["analyses"][0]["coordinates"]
+    assert Coordinate.from_dict(stored).sign == sign
+
+
+def test_every_statistic_of_a_merged_place_reaches_its_parsed_point():
+    """Given p first, then t and Z: the parse's point holds all three, and it is positive."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.models.analysis import Coordinate
+    from ingestion_workflow.services.paper_parse import _point
+
+    out, _ = resolve({}, _given((-12, -2, -16, "P", 0.001), (-12, -2, -16, "T", 6.24),
+                                (-12, -2, -16, "Z", 4.17)), "slug")
+    (stored,) = out["prose"]["analyses"][0]["coordinates"]
+    coordinate = Coordinate.from_dict(stored)
+    point = _point(coordinate, SimpleNamespace(coordinate_space=None), found=None)
+    assert [(v.kind, v.value) for v in point.values] == [("p", 0.001), ("t", 6.24), ("z", 4.17)]
+    assert coordinate.sign == stored["sign"] == "positive"
+
+
+def test_a_nu_prose_v2_reading_reaches_space_with_roles_from_the_roles_stage(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="32"))
+    _record_upstream(catalog, ref, path)
+    ctx = Context(settings, catalog)
+    _read_prose(ctx, catalog, ref, _V2Reader())
+    _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert merged.status is Status.OK and merged.summary["prose_points"] == 2
+    assert [a["name"] for a in merged.payload["prose"]["analyses"]] == [
+        "patients > controls", "patients > controls, covarying for IQ"]
+    _, (roled,) = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert roled.status is Status.OK and roled.summary["sets_by_origin"] == {"text": 2}
+    _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
+    roles = [a["metadata"]["set_role"] for a in spaced.payload["prose"]["analyses"]]
+    assert [(r["role"], r["role_origin"]) for r in roles] == [("result", "text")] * 2
+
+
+TWO_PASSAGES = (
+    "# T\n\n## Methods\n\nCoordinates are reported in MNI space.\n\n"
+    "## Results\n\nPatients showed greater activation than controls in the left amygdala\n"
+    "(x = -22, y = -4, z = -18; t = 4.1).\n\n"
+    + "Behaviour did not differ between the groups on any measure we collected. " * 12 + "\n\n"
+    "Controls showed greater activation than patients in the precuneus (x = 6, y = -60, z = 40; "
+    "t = 3.9).\n"
+)
+
+
+def _two_passages(env, pmid):
+    """An article whose passages were found, and the prose stage that reads them."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid=pmid))
+    _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
+    ctx = Context(settings, catalog)
+    _run(PassagesStage(settings), ctx, catalog, ref)
+    found = catalog.payload(catalog.artifacts([ref.id], "passages")[ref.id][""])
+    assert len(found["passages"]) == 2
+    return settings, catalog, ref, ctx, found
+
+
+def _earlier_prose(catalog, ref, texts, fingerprint="earlier-prose"):
+    """A prose result as nu-prose's first corpus run stored it, before passages were spans:
+    the text and the analyses cleaned from its answer, as that answer gave them; no answer
+    stored, no producer."""
+    passages = [{"text": text, "heading": "Results", "space": "MNI", "error": None, "analyses": [
+        {"name": name, "measure": None, "points": [
+            {"x": x, "y": y, "z": z, "statistic": "T", "value": v, "cluster_size": None,
+             "role": "result"}] * 2}]}
+        for text, (name, (x, y, z, v)) in texts]
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint=fingerprint,
+                            payload={"source": "pubget", "read": "methods+results",
+                                     "space": "MNI", "passages": passages},
+                            summary={"passages": len(passages)})])
+
+
+def _texts(catalog, ref, found):
+    from ingestion_workflow.pipeline.stages.passages import passage_from
+
+    text = (catalog.artifacts([ref.id], "extract")[ref.id]["pubget"])
+    text = open(catalog.payload(text)["full_text_path"], encoding="utf-8").read()
+    return [passage_from(p, text).text for p in found["passages"]]
+
+
+def _prose(settings, reader):
+    stage = ProseStage(settings)
+    stage.client = lambda: reader
+    return stage
+
+
+class _Counting(_Reader):
+    def __init__(self):
+        super().__init__()
+        self.calls = 0
+
+    def read(self, passage, *, title="", abstract=""):
+        self.calls += 1
+        return super().read(passage, title=title, abstract=abstract)
+
+
+def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(env):
+    """The corpus's prose was read before passages were spans: the same text is not read again."""
+    settings, catalog, ref, ctx, found = _two_passages(env, "81")
+    first, second = _texts(catalog, ref, found)
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.status is Status.OK
+    assert read.summary["reused"] == [0, 1]
+    assert read.summary["read_again"] == {}
+    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 2}
+    # re-anchored: the new spans, the earlier names and points
+    assert [p["span"] for p in read.payload["passages"]] == [p["span"] for p in found["passages"]]
+    assert [[(a["name"], [(q["x"], q["y"], q["z"]) for q in a["points"]])
+             for a in p["analyses"]] for p in read.payload["passages"]] == [
+        [("patients > controls", [(-22.0, -4.0, -18.0)] * 2)],
+        [("controls > patients", [(6.0, -60.0, 40.0)] * 2)]]   # resolve makes each repeat one
+    # credited to nu-prose under the prompt it read with then
+    assert {(p["producer"]["model"], p["producer"]["prompt_version"])
+            for p in read.payload["passages"]} == {("nu-prose", "2026-10-06.n5")}
+
+
+def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "82")
+    first, second = _texts(catalog, ref, found)
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second.replace("3.9", "3.8"), ("controls > patients",
+                                                                 (6, -60, 40, 3.8)))])
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 1
+    assert read.summary["reused"] == [0]
+    assert read.summary["read_again"] == {"passage text changed": 1}
+    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.nu-prose-v2": 1}
+    # the changed passage holds the model's new answer, not the old one's 3.8
+    values = [q["value"] for a in read.payload["passages"][1]["analyses"] for q in a["points"]]
+    assert values == [4.1]
+
+
+def test_each_passage_read_is_counted_with_its_reason(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "83")
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2 and read.summary["read_again"] == {"no earlier result": 2}
+    assert read.summary["reused"] == []
+    producer = read.payload["passages"][0]["producer"]
+    assert (producer["prompt_version"], producer["model"], producer["stage"]) == (
+        "2026-10-11.nu-prose-v2", "nu-prose-v2", "prose")
+    assert read.summary["text_normalization"] == "nfkc-minus-space.1"
+    # what each answer was read from: the passage's own text first
+    from ingestion_workflow.services.offsets import sha256
+
+    assert [p["inputs"][0] for p in read.payload["passages"]] == [
+        {"artifact_kind": "passage_text", "fingerprint": sha256(p["text"]),
+         "producer_version": None} for p in read.payload["passages"]]
+    # read again under new passages of the same text: reused, the payload unchanged
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="newer",
+                            payload=found, summary={"passages": 2})])
+    reader = _Counting()
+    _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 0 and again.summary["reused"] == [0, 1]
+    assert again.payload["passages"] == read.payload["passages"]
+    # a new title and abstract: read again
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
+                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+    reader = _Counting()
+    _, (third,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
+
+
+@pytest.mark.parametrize("model, prompt_version, reason", [
+    ("nu-prose", "2026-10-06.n5", None),
+    ("nu-prose", "2026-09-30.n4", "earlier model not interchangeable"),
+    ("nu-prose-v2", "2026-10-06.n5", "earlier prompt not interchangeable"),
+    ("another-prose-model", "2026-10-11.nu-prose-v2", "earlier model not interchangeable"),
+])
+def test_only_nu_prose_s_first_answers_and_the_reader_s_own_are_reused(
+        env, model, prompt_version, reason):
+    settings, catalog, ref, ctx, found = _two_passages(env, "84")
+    _, (read,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
+    blob = json.loads(json.dumps(read.payload))
+    for p in blob["passages"]:
+        p["producer"] = {**p["producer"], "model": model, "prompt_version": prompt_version}
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="earlier",
+                            payload=blob, summary=read.summary)])
+    reader = _Counting()
+    _, (again,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert again.status is Status.OK
+    if reason is None:
+        assert reader.calls == 0 and again.summary["prompt_versions"] == {prompt_version: 2}
+    else:
+        assert reader.calls == 2 and again.summary["read_again"] == {reason: 2}
+
+
+def test_nu_prose_s_first_answers_are_read_again_under_a_later_prompt(env, monkeypatch):
+    from ingestion_workflow.pipeline.stages import prose
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    first, second = _texts(catalog, ref, found)
+    _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    monkeypatch.setattr(prose, "PROSE_PROMPT_VERSION", "2026-11-01.nu-prose-v3")
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 2
+    assert read.summary["read_again"] == {"earlier model not interchangeable": 2}
+
+
+def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env):
+    """Stored answers are cleaned again without the model, and resolves made before
+    statistics were merged are made again: both versions moved on from main's."""
+    from ingestion_workflow.catalog import fingerprint
+    from ingestion_workflow.pipeline.stages.resolve import SAME_PEAK_MM, SAME_VALUE
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "99")
+    passages = catalog.artifacts([ref.id], "passages")[ref.id][""]
+    metadata = catalog.artifacts([ref.id], "metadata")[ref.id][""]
+    stage = ProseStage(settings)
+    read = stage.read_fingerprint(passages, metadata)
+    assert stage.fingerprint_for(passages, metadata) != fingerprint(
+        "prose clean", "named-empty-kept", upstream=read)
+    prose = Outcome(article_id=ref.id, stage="prose", source="", fingerprint="p", summary={})
+    catalog.record([prose])
+    prose = catalog.artifacts([ref.id], "prose")[ref.id][""]
+    assert ResolveStage(settings).fingerprint_for(prose, None) != fingerprint(
+        "resolve", 9, SAME_PEAK_MM, SAME_VALUE, "no tables", upstream=prose.fingerprint)
+
+
+def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_not():
+    from ingestion_workflow.services.prose_text import normalized
+
+    assert normalized("(x\u00a0=\u2009\u221222,\n y = \u20134; \ufb01ndings\u207b)") == (
+        "(x = -22, y = -4; findings-)")
+    assert normalized("( x = -22)") != normalized("(x = -22)")
+    assert normalized("T = 5") != normalized("t = 5")
+
+
+def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
+    """The old text has a unicode minus and a no-break space where the new one has neither."""
+    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    first, second = _texts(catalog, ref, found)
+    old = first.replace("-22", "\u221222").replace(" ", "\u00a0", 1)
+    assert old != first
+    _earlier_prose(catalog, ref, [(old, ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.status is Status.OK
+    assert read.summary["reused"] == [0, 1]
+    assert read.payload["passages"][0]["text"] == first   # re-anchored to the new text
+
+
+@pytest.mark.parametrize("change", [
+    pytest.param(lambda t: t.replace("(x", "( x"), id="parenthesis spacing"),
+    pytest.param(lambda t: t[t.index(" ") + 1:], id="boundaries moved"),
+])
+def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, change):
+    settings, catalog, ref, ctx, found = _two_passages(env, "87")
+    first, second = _texts(catalog, ref, found)
+    assert change(first) != first
+    _earlier_prose(catalog, ref, [(change(first), ("patients > controls", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    reader = _Counting()
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert reader.calls == 1
+    assert read.summary["reused"] == [1]
+    assert read.summary["read_again"] == {"passage text changed": 1}
+
+
+@pytest.mark.parametrize("earlier", ["nu-prose's first answers", "nu-prose-v2"])
+def test_another_reader_reads_every_passage_again(env, earlier):
+    settings, catalog, ref, ctx, found = _two_passages(env, "88")
+    if earlier == "nu-prose-v2":
+        _run(_prose(settings, _Reader()), ctx, catalog, ref)
+    else:
+        first, second = _texts(catalog, ref, found)
+        _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
+                                     (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    other = settings.model_copy(update={"prose_model": "another-prose-model"})
+    reader = _Counting()
+    _, (third,) = _run(_prose(other, reader), ctx, catalog, ref)
+    assert reader.calls == 2
+    assert third.summary["read_again"] == {"earlier model not interchangeable": 2}
+    assert {p["producer"]["model"] for p in third.payload["passages"]} == {"another-prose-model"}
+
+
+def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "89")
+    first, second = _texts(catalog, ref, found)
+    _earlier_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
+                                 (first, ("second copy", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.payload["passages"][0]["analyses"][0]["name"] == "first copy"
+
+
+@pytest.mark.parametrize("content,finish_reason", [
+    pytest.param(None, "stop", id="no content"),
+    pytest.param("  ", "stop", id="whitespace"),
+    pytest.param('{"space": "MNI", "analyses": []}', "length", id="cut off at the token limit"),
+])
+def test_an_answer_of_nothing_fails_the_article_rather_than_reading_as_no_coordinates(
+        env, content, finish_reason):
+    from types import SimpleNamespace
+
+    from ingestion_workflow.clients.prose_coordinates import ProseCoordinateClient
+
+    settings, catalog, ref, ctx, found = _two_passages(env, "100")
+    reader = ProseCoordinateClient(settings)
+    choice = SimpleNamespace(message=SimpleNamespace(content=content), finish_reason=finish_reason)
+    reader.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda **kw: SimpleNamespace(choices=[choice]))))
+    _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
+    assert (read.status, read.error) == (Status.FAILED, "2 of 2 passages failed")
+
+
+def _read_before(env):
+    """Three articles: one read OK whose title has changed since, one never read, and one
+    read OK whose passages were found again unchanged, which takes its stored answers."""
+    settings, catalog, path = env
+    ctx = Context(settings, catalog)
+    read, unread, same = (catalog.register(Identifier(pmid=p)) for p in ("110", "111", "114"))
+    for ref in (read, unread, same):
+        _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
+        _run(PassagesStage(settings), ctx, catalog, ref)
+    for ref in (read, same):
+        _, (first,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
+        assert first.status is Status.OK
+    catalog.record([Outcome(article_id=read.id, stage="metadata", source="", fingerprint="me-2",
+                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+    found = catalog.payload(catalog.artifacts([same.id], "passages")[same.id][""])
+    catalog.record([Outcome(article_id=same.id, stage="passages", source="", fingerprint="newer",
+                            payload=found, summary={"passages": 2})])
+    return settings, catalog, ctx, read, unread, same
+
+
+def _execute(stage, ctx, catalog, refs):
+    ids = [ref.id for ref in refs]
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name),
+                      catalog.artifacts(ids, stage.requires))
+    assert len(plan.pending) == len(refs)
+    outcomes = list(stage.execute(ctx, plan.pending))
+    catalog.record(outcomes)
+    return outcomes
+
+
+def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(env, caplog):
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, ctx, read, unread, same = _read_before(env)
+    before = catalog.artifacts([read.id, same.id], "prose")
+    stored = {i: catalog.payload(before[i][""]) for i in (read.id, same.id)}
+    server = _server(up=False)
+    stage = _prose(settings, _served(settings, server))
+    with caplog.at_level("ERROR"):
+        assert _execute(stage, ctx, catalog, [read, unread]) == []
+        asked = len(server.calls)
+        # a batch after it, one that needs no call: nothing written
+        assert _execute(stage, ctx, catalog, [same]) == []
+    assert asked and len(server.calls) == asked
+    after = catalog.artifacts([read.id, unread.id, same.id], "prose")
+    assert unread.id not in after
+    for i in (read.id, same.id):
+        assert after[i][""].ok and after[i][""].fingerprint == before[i][""].fingerprint
+        assert catalog.payload(after[i][""]) == stored[i]
+        assert all(p["answer"] is not None for p in stored[i]["passages"])
+    stops = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
+    assert len(stops) == 2 and all("prose stopped: nu-prose-v2 at" in m and "did not answer" in m
+                                   for m in stops)
+    assert [m.rsplit("; ", 1)[1] for m in stops] == [
+        "2 article(s) left pending", "1 article(s) left pending"]
+
+
+def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(env):
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, path = env
+    ctx = Context(settings, catalog)
+    good, bad = catalog.register(Identifier(pmid="112")), catalog.register(Identifier(pmid="113"))
+    _record_upstream(catalog, good, path)
+    _record_upstream(catalog, bad, path, text=TWO_PASSAGES)
+    for ref in (good, bad):
+        _run(PassagesStage(settings), ctx, catalog, ref)
+    server = _server(fails=lambda content: "y = -60, z = 40" in content)
+    stage = _prose(settings, _served(settings, server))
+    outcomes = {o.article_id: o for o in _execute(stage, ctx, catalog, [good, bad])}
+    assert outcomes[good.id].status is Status.OK
+    assert (outcomes[bad.id].status, outcomes[bad.id].error) == (
+        Status.FAILED, "1 of 2 passages failed")
+
+
+def test_a_stopped_prose_stage_writes_no_take_back_either(env):
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stage import NO_TEXT
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, ctx, read, unread, same = _read_before(env)
+    taken = catalog.register(Identifier(pmid="115"))
+    take_back = Work(ref=taken, source="", fingerprint=NO_TEXT, upstream=None)
+    ids = [read.id, unread.id]
+    plan = ProseStage(settings).plan(ctx, [read, unread], catalog.artifacts(ids, "prose"),
+                                     catalog.artifacts(ids, "passages"))
+    stage = _prose(settings, _served(settings, _server(up=False)))
+    # the stopping batch, then a later one that holds only the take-back
+    assert list(stage.execute(ctx, [take_back, *plan.pending])) == []
+    assert list(stage.execute(ctx, [take_back])) == []

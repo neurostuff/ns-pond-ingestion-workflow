@@ -8,11 +8,24 @@ where a coordinate could be.
 
 from __future__ import annotations
 
+import unicodedata
+
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.services.coordinate_space import sectionize
 from ingestion_workflow.services.prose_passages import PATTERNS, find
 
 KEPT_SECTIONS = ("methods", "results")
+
+#: Bump when `normalized` changes: what it equates is what prose reuses an answer across.
+NORMALIZED_VERSION = "nfkc-minus-space.1"
+
+
+def normalized(text: str) -> str:
+    """`text` with what a re-extraction changes and a reader would not: NFKC (ligatures,
+    no-break and other spaces, full-width forms), every minus and dash as "-", and each run
+    of whitespace as one space. NFKC goes first: it turns a superscript minus into U+2212.
+    """
+    return " ".join(normalize_minus(unicodedata.normalize("NFKC", text)).split())
 
 
 def may_hold_coordinates(text: str) -> bool:
@@ -36,4 +49,5 @@ def kept_spans(text: str) -> tuple[list, str]:
     return (spans, "methods+results") if spans else ([(0, len(text))], "full text")
 
 
-__all__ = ["KEPT_SECTIONS", "kept_spans", "may_hold_coordinates"]
+__all__ = ["KEPT_SECTIONS", "NORMALIZED_VERSION", "kept_spans", "may_hold_coordinates",
+           "normalized"]

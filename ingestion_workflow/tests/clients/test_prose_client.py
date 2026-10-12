@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import json
 
+import httpx
+import openai
+import pytest
 from ingestion_workflow.clients.prose_coordinates import (
     ProseCoordinateClient,
+    ProseModelUnavailable,
     clean_answer,
     passage_body,
 )
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
-from ingestion_workflow.prompts.prose_coordinates import MAX_ANALYSES, MAX_POINTS, ROLES, TEMPLATE, schema
+from ingestion_workflow.prompts.prose_coordinates import MAX_ANALYSES, MAX_POINTS, TEMPLATE, schema
 from ingestion_workflow.services.prose_passages import Passage
 
 PASSAGE = Passage(text="Faces > houses in the FFA (40, -50, -20; t = 5.1).", before="We showed faces.",
@@ -26,7 +30,7 @@ def test_the_schema_is_the_template_with_every_key_required_and_capped():
     assert point["required"] == list(template_point)
     assert point["additionalProperties"] is False
     assert point["properties"]["statistic"]["enum"] == [*STATISTIC_KINDS, None]
-    assert point["properties"]["role"]["enum"] == [*ROLES, None]
+    assert "role" not in point["properties"]
     assert analyses["maxItems"] == MAX_ANALYSES
     assert analyses["items"]["properties"]["points"]["maxItems"] == MAX_POINTS
     assert analyses["items"]["properties"]["name"]["maxLength"]
@@ -118,3 +122,75 @@ def test_the_request_constrains_decoding_to_the_schema(tmp_path):
     assert request["extra_body"]["structured_outputs"] == {"json": schema()}
     assert request["extra_body"]["chat_template_kwargs"]["template"] == TEMPLATE
     assert "use the context to name" in request["messages"][0]["content"]
+
+
+def _served(settings, handle):
+    """The prose client with its server played by `handle`, asked once per call."""
+    client = ProseCoordinateClient(settings)
+    client.client = openai.OpenAI(api_key="x", base_url="http://prose.test/v1", max_retries=0,
+                                  http_client=httpx.Client(transport=httpx.MockTransport(handle)))
+    return client
+
+
+def _server(*, up=True, listed=("nu-prose-v2",), fails=lambda content: False, status=500):
+    """A vLLM server that answers no coordinate, and `status` for a passage `fails` names."""
+    calls = []
+
+    def handle(request):
+        calls.append(request.url.path)
+        if not up:
+            raise httpx.ConnectError("connection refused", request=request)
+        if request.url.path.endswith("/models"):
+            return httpx.Response(200, json={"object": "list", "data": [
+                {"id": m, "object": "model", "created": 0, "owned_by": "vllm"} for m in listed]})
+        if fails(json.loads(request.content)["messages"][0]["content"]):
+            return httpx.Response(status, json={"error": {"message": "boom"}})
+        return httpx.Response(200, json={
+            "id": "c", "object": "chat.completion", "created": 0, "model": "nu-prose-v2",
+            "choices": [{"index": 0, "finish_reason": "stop", "message": {
+                "role": "assistant", "content": '{"space": "MNI", "analyses": []}'}}]})
+
+    handle.calls = calls
+    return handle
+
+
+def _settings(tmp_path):
+    return Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                    prose_model="nu-prose-v2", llm_api_key="x")
+
+
+def test_an_unreachable_server_is_down_and_not_asked_again(tmp_path):
+    server = _server(up=False)
+    client = _served(_settings(tmp_path), server)
+    with pytest.raises(ProseModelUnavailable, match="did not answer in 1 tries: APIConnection"):
+        client.read(PASSAGE)
+    assert client.down and server.calls == ["/v1/chat/completions", "/v1/models"]
+    with pytest.raises(ProseModelUnavailable):
+        client.read(PASSAGE)
+    assert len(server.calls) == 2
+
+
+def test_a_server_up_that_fails_on_one_input_fails_that_passage_only(tmp_path):
+    client = _served(_settings(tmp_path), _server(fails=lambda content: "FFA" in content))
+    with pytest.raises(RuntimeError, match="server error on this input after 1 tries") as failed:
+        client.read(PASSAGE)
+    assert not isinstance(failed.value, ProseModelUnavailable) and client.down is None
+    assert client.read(Passage(text="Nothing at (1, 2, 3).")) == {"space": "MNI", "analyses": []}
+
+
+def test_a_server_that_fails_and_does_not_list_the_model_is_down(tmp_path):
+    client = _served(_settings(tmp_path), _server(listed=("nu-v21",), fails=lambda content: True))
+    with pytest.raises(ProseModelUnavailable, match="InternalServerError"):
+        client.read(PASSAGE)
+    assert client.down
+
+
+def test_a_refused_input_fails_its_passage_and_a_refused_model_is_down(tmp_path):
+    refused = _served(_settings(tmp_path), _server(fails=lambda content: True, status=400))
+    with pytest.raises(openai.BadRequestError):
+        refused.read(PASSAGE)
+    assert refused.down is None
+    unknown = _served(_settings(tmp_path), _server(fails=lambda content: True, status=404))
+    with pytest.raises(ProseModelUnavailable, match="HTTP 404"):
+        unknown.read(PASSAGE)
+    assert unknown.down is None   # no outage to remember: the next call is told the same

@@ -1,0 +1,87 @@
+{
+ "source": "nmb-112: the nu-prose-v2 eval answer (eval/pred-norole-N5-HW.jsonl) and its passage (test_gold_norole.jsonl)",
+ "text": "Activity within a discrete set of brain regions also responded to the magnitude of dynamic changes in participant's own pupil size and the corresponding changes observed in the pupil stimuli across positive and negative feedback conditions (see Table 2 ). These regions included dorsolateral pons bilaterally, left amygdala [(−12, −2, −16) t =6.24, Z =4.17, p <.001] and left superior temporal sulcus (see Figure 3 b, 3 c), a region implicated in processing changeable facial features such as eye gaze, expression and lip movements [(−60, −42, 4) t =4.09, Z =3.22, p <.001]. Right STS activity was also observed [(64 −30 −10) t =3.71, Z =3.01, p <.001, k =5], though this did not survive our contiguity threshold.",
+ "answer": {
+  "space": "MNI",
+  "analyses": [
+   {
+    "name": "magnitude of dynamic changes in participant's own pupil size and the corresponding changes observed in the pupil stimuli across positive and negative feedback conditions",
+    "measure": null,
+    "points": [
+     {
+      "x": -12,
+      "y": -2,
+      "z": -16,
+      "statistic": "T",
+      "value": 6.24,
+      "cluster_size": null
+     },
+     {
+      "x": -12,
+      "y": -2,
+      "z": -16,
+      "statistic": "Z",
+      "value": 4.17,
+      "cluster_size": null
+     },
+     {
+      "x": -12,
+      "y": -2,
+      "z": -16,
+      "statistic": "P",
+      "value": 0.001,
+      "cluster_size": null
+     },
+     {
+      "x": -60,
+      "y": -42,
+      "z": 4,
+      "statistic": "T",
+      "value": 4.09,
+      "cluster_size": null
+     },
+     {
+      "x": -60,
+      "y": -42,
+      "z": 4,
+      "statistic": "Z",
+      "value": 3.22,
+      "cluster_size": null
+     },
+     {
+      "x": -60,
+      "y": -42,
+      "z": 4,
+      "statistic": "P",
+      "value": 0.001,
+      "cluster_size": null
+     },
+     {
+      "x": 64,
+      "y": -30,
+      "z": -10,
+      "statistic": "T",
+      "value": 3.71,
+      "cluster_size": 5
+     },
+     {
+      "x": 64,
+      "y": -30,
+      "z": -10,
+      "statistic": "Z",
+      "value": 3.01,
+      "cluster_size": 5
+     },
+     {
+      "x": 64,
+      "y": -30,
+      "z": -10,
+      "statistic": "P",
+      "value": 0.001,
+      "cluster_size": 5
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -30,7 +30,6 @@ from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
-from ingestion_workflow.models.statistics import point_values
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME, SPLIT_RULE
 from ingestion_workflow.services.coordinate_space import sectionize
@@ -1090,10 +1089,7 @@ def _space_value(space) -> Optional[str]:
 
 def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     space = coordinate.space.value if coordinate.space else None
-    values = [
-        pp.PointValue(**v)
-        for v in point_values(coordinate.statistic_value, coordinate.statistic_type)
-    ] or None
+    values = [pp.PointValue(**v) for v in coordinate.values()] or None
     measure = (
         str(coordinate.cluster_measure or "").strip().lower().replace("³", "3").replace("^", "")
     )

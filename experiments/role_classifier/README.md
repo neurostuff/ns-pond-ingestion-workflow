@@ -52,9 +52,8 @@ the uploads.
 anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
 for it, and one for the anchor kind.
 
-The current nu-prose model still answers with its own role words
-(`prompts.prose_coordinates.ROLES`); nothing reads them. Resolve keeps every prose point, in
-one analysis per name, and the prose role classifier decides each set's role.
+Resolve keeps every prose point, in one analysis per name, and the prose role classifier
+decides each set's role.[^no-prose-role]
 
 Labels carry `label_version`: 1 for the rows answered under the earlier role vocabulary and
 converted to study_schema's fields afterwards, 2 for answers that could say `other`, 3 once the
@@ -236,3 +235,5 @@ The rewrite keeps every number and citation verbatim and falls back to the origi
 fails. `synth_prose.py` is the earlier prose-only generator (its surface forms are reused; it finds
 coordinates with `services/prose_passages`). `ingestion_workflow/tests/services/test_role_synth.py`
 runs small generations over several rng seeds, the leak check and the name check.
+
+[^no-prose-role]: nu-prose-v2 returns no role.

@@ -43,7 +43,10 @@ class ExtractedTable:
             "metadata": self.metadata,
             "coordinates": [
                 {
-                    **{key: value for key, value in asdict(coord).items() if key != "space"},
+                    # Tables never carry other statistics; the key is left out when empty so
+                    # a table's payload is what it was before the field existed.
+                    **{key: value for key, value in asdict(coord).items()
+                       if key != "space" and (key != "other_statistics" or value)},
                     "space": (
                         coord.space.value
                         if coord.space

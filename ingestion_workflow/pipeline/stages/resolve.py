@@ -16,7 +16,7 @@ from ..plan import StagePlan, Work
 from ..stage import Context, take_back_or_block, taking_back
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
-RESOLVE_VERSION = 9
+RESOLVE_VERSION = 10
 
 #: How close a prose coordinate may sit to a table's and still be the same
 #: peak: papers round the same voxel differently between text and table.
@@ -152,8 +152,10 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     point restates a table is the table's result again: it is left out. The
     summary's `restated_points` records every analysis with a restated point,
     with those points, for the parse to list among its omissions. A coordinate
-    the prose reports under two contrasts stays under both. A repeated point
-    is listed in `metadata.dropped`.
+    the prose reports under two contrasts stays under both. Within a set,
+    points at the same place are one point, whatever statistic each gives: the
+    first is kept, every repeat is listed in `metadata.dropped`, and each other
+    statistic a repeat gives is kept as the point's `other_statistics`.
     """
     table_points = [
         ((c["x"], c["y"], c["z"]), key, a.get("name") or "",
@@ -197,7 +199,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
 
     analyses: List[Analysis] = []
     restated: List[Dict[str, Any]] = []
-    repeated = 0
+    repeated = merged = 0
     spaces = collections.Counter()
     for entry in groups:
         analysis = Analysis(name=entry["name"], table_id="prose", metadata={
@@ -205,22 +207,28 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             "ordinal": entry["ordinal"], "unwritten": entry["unwritten"]})
         if entry.get("joined"):
             analysis.metadata["joined"] = entry["joined"]
-        seen, new, restating, dropped = set(), [], [], []
+        seen, new, restating, dropped = {}, [], [], []
         for xyz, p, space, measure in entry["points"]:
             key = tuple(round(v) for v in xyz)
+            value = _number(p.get("value"))
             if key in seen:
                 dropped.append({"x": xyz[0], "y": xyz[1], "z": xyz[2],
                                 "reason": "repeats a point of this analysis"})
+                kept = seen[key]
+                stated = {"statistic_type": p.get("statistic"), "statistic_value": value}
+                if value is not None and stated not in [
+                        {"statistic_type": kept.statistic_type,
+                         "statistic_value": kept.statistic_value}, *kept.other_statistics]:
+                    kept.other_statistics.append(stated)
                 continue
-            seen.add(key)
             size = p.get("cluster_size")
-            value = _number(p.get("value"))
             coordinate = Coordinate(
                 x=xyz[0], y=xyz[1], z=xyz[2], space=space,
                 statistic_value=value, statistic_type=p.get("statistic"),
                 cluster_size=int(size) if isinstance(size, (int, float)) else None,
                 cluster_measure=measure if size is not None else None,
             )
+            seen[key] = coordinate
             restates = []
             for t, table, n, kind, table_value in table_points:
                 if (_near(xyz, t) and _agrees(p.get("statistic"), value, kind, table_value)
@@ -235,6 +243,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         if dropped:
             analysis.metadata["dropped"] = dropped
             repeated += len(dropped)
+            merged += sum(1 for c in seen.values() if c.other_statistics)
         points = [{"x": c.x, "y": c.y, "z": c.z, "restates": r} for c, r in restating]
         if restating:
             restated.append({"passages": entry["passages"], "analysis": entry["name"],
@@ -267,6 +276,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
         "restated": sum(len(d["points"]) for d in restated),
         "restated_points": restated,
         "repeated": repeated,
+        "merged_statistics": merged,
         "joins": dict(sorted(joins.items())),
     }
     return out, summary
