@@ -59,6 +59,7 @@ def narrow(
     stage: Optional[str],
     refresh: Sequence[str] = (),
     settings=None,
+    stages: Sequence[str] = (),
 ) -> Selection:
     """Restrict a selection by what the catalog already knows about it.
 
@@ -71,7 +72,11 @@ def narrow(
     if mode is Select.ALL or not selection.refs:
         return selection
     if mode is Select.PENDING and settings is not None:
-        return _planned(catalog, selection, stage, refresh, settings)
+        return _planned(catalog, selection, list(stages) or ([stage] if stage else []), refresh,
+                        settings)
+    if mode is Select.PENDING:
+        logger.warning("pending without settings uses the status-only rule: "
+                       "stale-but-OK work is not selected")
 
     ids = [ref.id for ref in selection.refs]
     stages = [stage] if stage else _stages_present(catalog)
@@ -107,7 +112,7 @@ def narrow(
 def _planned(
     catalog: Catalog,
     selection: Selection,
-    stage: Optional[str],
+    names: Sequence[str],
     refresh: Sequence[str],
     settings,
 ) -> Selection:
@@ -134,7 +139,7 @@ def _planned(
         retry_after=timedelta(hours=settings.retry_after_hours),
     )
     try:
-        built = build([stage] if stage else None, settings)
+        built = build(names or None, settings)
     except ValueError as exc:
         logger.warning("cannot tell what is pending (%s); keeping the selection", exc)
         return selection

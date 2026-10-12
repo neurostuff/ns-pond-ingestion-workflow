@@ -447,7 +447,7 @@ def _select(
 ) -> Selection:
     base = from_manifest(catalog, manifest) if manifest else everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
-    return narrow(catalog, base, mode, only, refresh, settings)
+    return narrow(catalog, base, mode, only, refresh, settings, stages=stage or ())
 
 
 def _render(report, *, dry_run: bool) -> str:
