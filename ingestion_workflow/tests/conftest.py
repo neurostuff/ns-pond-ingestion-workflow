@@ -21,9 +21,7 @@ def vcr_config():
             "x-els-apikey",
             "x-els-insttoken",
         ],
-        "filter_query_parameters": [
-            ("api_key", "DUMMY"),
-        ],
+        "filter_query_parameters": ["api_key"],
         "record_mode": "once",
         "ignore_hosts": ["localhost"],
     }
