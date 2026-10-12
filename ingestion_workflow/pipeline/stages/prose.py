@@ -108,6 +108,8 @@ class ProseStage:
         self.settings = settings
         self._client = None
         self._lock = threading.Lock()
+        #: Why the stage stopped for the rest of this run: the prose server is down.
+        self._stopped: Optional[str] = None
 
     def client(self):
         if self._client is None:
@@ -173,8 +175,16 @@ class ProseStage:
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         back, works = taking_back(self.name, works)
         yield from back
-        from ingestion_workflow.clients.prose_coordinates import clean_answer
+        from ingestion_workflow.clients.prose_coordinates import (
+            ProseModelUnavailable,
+            clean_answer,
+        )
         from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
+
+        if self._stopped:
+            logger.error("prose stopped: %s; %d article(s) left pending",
+                         self._stopped, len(works))
+            return
 
         found = [ctx.payload(work.upstream) or {} for work in works]
         ids = [w.article_id for w in works]
@@ -214,7 +224,15 @@ class ProseStage:
             with ThreadPoolExecutor(max_workers=max(1, self.settings.n_llm_workers)) as pool:
                 futures = [pool.submit(self._read, p, title, abstract)
                            for p, title, abstract in reading]
-                answers = [f.result() for f in futures]
+                try:
+                    answers = [f.result() for f in futures]
+                except ProseModelUnavailable as exc:
+                    # An outage is not the articles' failure: recording one would replace
+                    # each OK reading, and the answers stored in it, with a failure. This
+                    # batch and the rest stay pending until the server answers again.
+                    self._stopped = str(exc)
+                    logger.error("prose stopped: %s; %d article(s) left pending", exc, len(works))
+                    return
         answered = iter(answers)
         current = producer(self.settings.prose_model, PROSE_PROMPT_VERSION)
 
@@ -285,8 +303,12 @@ class ProseStage:
 
     def _read(self, passage, title, abstract):
         """The model's answer as it gave it, and the error if the call failed."""
+        from ingestion_workflow.clients.prose_coordinates import ProseModelUnavailable
+
         try:
             return self.client().read(passage, title=title, abstract=abstract), None
+        except ProseModelUnavailable:
+            raise
         except Exception as exc:  # noqa: BLE001 - one failed call fails its article, not the batch
             logger.warning("prose passage failed: %s", exc)
             return None, f"{type(exc).__name__}: {exc}"

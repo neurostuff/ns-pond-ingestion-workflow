@@ -1,11 +1,20 @@
-"""LLM client for coordinates written in an article's prose."""
+"""LLM client for coordinates written in an article's prose.
+
+A server that does not answer is asked again by the SDK. When it still does
+not answer, the server's model listing is asked: if it lists the model, the
+server is up and fails on this input alone, which is that passage's failure;
+otherwise `ProseModelUnavailable` is raised, and the client stays `down`
+without asking again.
+"""
 
 from __future__ import annotations
 
 import itertools
 import json
+import threading
 from typing import Any, Dict, Optional, Sequence
 
+import openai
 from study_schema.spaces import normalize_space
 
 from ingestion_workflow.clients.llm import GenericLLMClient
@@ -93,6 +102,10 @@ def clean_answer(answer: Dict[str, Any], passage_text: str) -> Dict[str, Any]:
     return {"space": normalize_space(space), "analyses": analyses, "omitted": omitted}
 
 
+class ProseModelUnavailable(RuntimeError):
+    """The served model did not answer after every try: no passage is read."""
+
+
 class ProseCoordinateClient(GenericLLMClient):
     """Reads one passage at a time with base NuExtract3's structured mode."""
 
@@ -107,6 +120,8 @@ class ProseCoordinateClient(GenericLLMClient):
             default_model=getattr(settings, "prose_model", None),
         )
         self.context = CONTEXT
+        self._down: Optional[str] = None
+        self._lock = threading.Lock()
 
     def request(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
         wide = "W" in self.context and bool(passage.before or passage.after)
@@ -131,7 +146,7 @@ class ProseCoordinateClient(GenericLLMClient):
         analyses: only `{"analyses": []}` says the passage holds no coordinate. Nothing
         at all, an answer cut off at the token limit, or anything else is a failed read.
         """
-        response = self.client.chat.completions.create(**self.request(passage, title=title, abstract=abstract))
+        response = self._answer(self.request(passage, title=title, abstract=abstract))
         choice = response.choices[0]
         content = choice.message.content
         if choice.finish_reason == "length":
@@ -143,10 +158,51 @@ class ProseCoordinateClient(GenericLLMClient):
             raise UnreadableAnswer("the prose answer is not an object with its analyses")
         return answer
 
+    @property
+    def down(self) -> Optional[str]:
+        """Why the server is taken to be down for the rest of this run, or None."""
+        return self._down
+
+    def _healthy(self) -> bool:
+        """Whether the server answers its model listing and lists this model."""
+        try:
+            listed = self.client.with_options(max_retries=0).models.list()
+            return any(m.id == self.default_model for m in listed.data)
+        except Exception:  # noqa: BLE001 - any failure to answer is an outage
+            return False
+
+    def _answer(self, request: Dict[str, Any]):
+        if self._down:
+            raise ProseModelUnavailable(self._down)
+        try:
+            return self.client.chat.completions.create(**request)
+        except (openai.APIConnectionError, openai.InternalServerError,
+                openai.RateLimitError) as exc:
+            # timeouts, refused and dropped connections, 5xx and 429, after the SDK's tries
+            last = f"{type(exc).__name__}: {exc}"
+        except openai.BadRequestError:
+            # The server refused this input (one too long for the model, say): this passage only.
+            raise
+        except openai.APIStatusError as exc:
+            raise ProseModelUnavailable(
+                f"{self.base_url} answered HTTP {exc.status_code} for {self.default_model}: {exc}"
+            ) from exc
+        tries = self.client.max_retries + 1
+        if self._healthy():
+            # Up, and failing on this input every time: this passage's failure, not an
+            # outage, so the articles after it are still read.
+            raise RuntimeError(f"server error on this input after {tries} tries: {last}")
+        with self._lock:
+            self._down = self._down or (
+                f"{self.default_model} at {self.base_url} did not answer in {tries} tries: {last}"
+            )
+        raise ProseModelUnavailable(self._down)
+
     def extract(self, passage: Passage, *, title: str = "", abstract: str = "") -> Dict[str, Any]:
         return clean_answer(self.read(passage, title=title, abstract=abstract), passage.text)
 
 
 __all__ = [
-    "CONTEXT", "CONTEXTS", "ProseCoordinateClient", "clean_answer", "passage_body", "printed",
+    "CONTEXT", "CONTEXTS", "ProseCoordinateClient", "ProseModelUnavailable", "clean_answer",
+    "passage_body", "printed",
 ]

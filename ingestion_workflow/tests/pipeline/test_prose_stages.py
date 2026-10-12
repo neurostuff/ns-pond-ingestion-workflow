@@ -2013,3 +2013,78 @@ def test_an_answer_of_nothing_fails_the_article_rather_than_reading_as_no_coordi
         create=lambda **kw: SimpleNamespace(choices=[choice]))))
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert (read.status, read.error) == (Status.FAILED, "2 of 2 passages failed")
+
+
+def _read_before(env):
+    """Three articles: one read OK whose title has changed since, one never read, and one
+    read OK whose passages were found again unchanged, which takes its stored answers."""
+    settings, catalog, path = env
+    ctx = Context(settings, catalog)
+    read, unread, same = (catalog.register(Identifier(pmid=p)) for p in ("110", "111", "114"))
+    for ref in (read, unread, same):
+        _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
+        _run(PassagesStage(settings), ctx, catalog, ref)
+    for ref in (read, same):
+        _, (first,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
+        assert first.status is Status.OK
+    catalog.record([Outcome(article_id=read.id, stage="metadata", source="", fingerprint="me-2",
+                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+    found = catalog.payload(catalog.artifacts([same.id], "passages")[same.id][""])
+    catalog.record([Outcome(article_id=same.id, stage="passages", source="", fingerprint="newer",
+                            payload=found, summary={"passages": 2})])
+    return settings, catalog, ctx, read, unread, same
+
+
+def _execute(stage, ctx, catalog, refs):
+    ids = [ref.id for ref in refs]
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name),
+                      catalog.artifacts(ids, stage.requires))
+    assert len(plan.pending) == len(refs)
+    outcomes = list(stage.execute(ctx, plan.pending))
+    catalog.record(outcomes)
+    return outcomes
+
+
+def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(env, caplog):
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, ctx, read, unread, same = _read_before(env)
+    before = catalog.artifacts([read.id, same.id], "prose")
+    stored = {i: catalog.payload(before[i][""]) for i in (read.id, same.id)}
+    server = _server(up=False)
+    stage = _prose(settings, _served(settings, server))
+    with caplog.at_level("ERROR"):
+        assert _execute(stage, ctx, catalog, [read, unread]) == []
+        asked = len(server.calls)
+        # a batch after it, one that needs no call: nothing written
+        assert _execute(stage, ctx, catalog, [same]) == []
+    assert asked and len(server.calls) == asked
+    after = catalog.artifacts([read.id, unread.id, same.id], "prose")
+    assert unread.id not in after
+    for i in (read.id, same.id):
+        assert after[i][""].ok and after[i][""].fingerprint == before[i][""].fingerprint
+        assert catalog.payload(after[i][""]) == stored[i]
+        assert all(p["answer"] is not None for p in stored[i]["passages"])
+    stops = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
+    assert len(stops) == 2 and all("prose stopped: nu-prose-v2 at" in m and "did not answer" in m
+                                   for m in stops)
+    assert [m.rsplit("; ", 1)[1] for m in stops] == [
+        "2 article(s) left pending", "1 article(s) left pending"]
+
+
+def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(env):
+    from ingestion_workflow.tests.clients.test_prose_client import _served, _server
+
+    settings, catalog, path = env
+    ctx = Context(settings, catalog)
+    good, bad = catalog.register(Identifier(pmid="112")), catalog.register(Identifier(pmid="113"))
+    _record_upstream(catalog, good, path)
+    _record_upstream(catalog, bad, path, text=TWO_PASSAGES)
+    for ref in (good, bad):
+        _run(PassagesStage(settings), ctx, catalog, ref)
+    server = _server(fails=lambda content: "y = -60, z = 40" in content)
+    stage = _prose(settings, _served(settings, server))
+    outcomes = {o.article_id: o for o in _execute(stage, ctx, catalog, [good, bad])}
+    assert outcomes[good.id].status is Status.OK
+    assert (outcomes[bad.id].status, outcomes[bad.id].error) == (
+        Status.FAILED, "1 of 2 passages failed")
