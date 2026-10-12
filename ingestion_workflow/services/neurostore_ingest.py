@@ -8,30 +8,37 @@ transaction and is keyed by the parse's analysis keys, so sending the same parse
 again changes nothing, and a re-parse that reads an analysis from other cells is
 aliased onto the old one rather than duplicated.
 
-Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`, saying what
-happened: the server's summary, or the refusal or transient block with its status and
-an excerpt of the body. A dry run validates and writes the exact request body to
-`<study>/upload/neurostore_payload.json` instead of sending it.
+Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`: the latest
+upload's outcome at the top, the last successful summary per endpoint under
+`last_uploaded`, and every upload's outcome, in order, under `history`. A dry run
+validates and writes the exact request body to `neurostore_payload.json` and its own
+record to `neurostore_dry_run.json`; it never touches the upload artifact.
 
 How a response is treated:
 
-    2xx                       uploaded; the summary is recorded
-    401, 403                  the token is refused: NeurostoreAuthError stops the run
-    429, 5xx, timeout,        retried with backoff, then recorded as blocked
-    connection error
-    any other status          refused: recorded at once and never retried, since the
-                              same body gets the same answer
+    2xx with this parse's summary   uploaded; the summary is recorded
+    401, 403, a malformed token     NeurostoreAuthError stops the run
+    3xx, 405, 415, a 404 that is    NeurostoreConfigError stops the run: the URL or
+    not about a base study          the request is wrong for every paper alike
+    429, 5xx, timeout, lost         retried with backoff, then recorded as blocked;
+    connection, a 2xx that is not   `max_blocked` papers blocked in a row stop the
+    this parse's summary            run (NeurostoreUnavailable)
+    any other status                refused: recorded at once and never retried,
+                                    since the same body gets the same answer
 
 The admin token is read from the environment variable `neurostore_token_env` names
-and is never logged or written; anything in a response that names or echoes it is
-redacted before the artifact is written.
+and is never logged or written: request headers are never recorded, and the token and
+any Authorization or Bearer value are scrubbed from every recorded string and from the
+HTTP libraries' log lines.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
+import re
 import time
 from enum import Enum
 from pathlib import Path
@@ -53,9 +60,10 @@ logger = get_logger(__name__)
 UPLOAD_PATH = "/api/study-schema-uploads/"
 UPLOAD_DIR = "upload"
 ARTIFACT_NAME = "neurostore_ingest.json"
+DRY_RUN_NAME = "neurostore_dry_run.json"
 PAYLOAD_NAME = "neurostore_payload.json"
 #: Bump when the artifact's fields change meaning.
-ARTIFACT_VERSION = 1
+ARTIFACT_VERSION = 2
 
 #: The API each `neurostore_env` uploads to when `neurostore_api_url` is unset. dev
 #: has no entry because its public URL has not been confirmed; set the URL for it.
@@ -68,34 +76,70 @@ API_URLS = {
 BODY_EXCERPT = 2000
 #: The longest wait between two attempts, whatever Retry-After asks for.
 MAX_DELAY = 120.0
+#: What the ingester's summary of a parse upload says it was.
+SUMMARY_KINDS = ("parse", "revision")
 _SECRET_WORDS = ("token", "authorization", "password", "secret", "api_key", "apikey", "cookie")
 REDACTED = "[redacted]"
+#: A bearer token is one run of visible ASCII; anything else is not a legal header
+#: value, and httpx would refuse it on every paper, with the token in the error.
+_TOKEN = re.compile(r"[\x21-\x7e]+")
+_AUTH_VALUE = re.compile(
+    r"(?i)(bearer\s+|authorization['\"]?\s*[:=]\s*['\"]?(?:bearer\s+)?)[^\s'\",}]+"
+)
+#: The loggers that can print a request: this module's and the HTTP stack's.
+_HTTP_LOGGERS = (
+    "httpx",
+    "httpcore",
+    "httpcore.connection",
+    "httpcore.http11",
+    "httpcore.http2",
+    "httpcore.proxy",
+)
 
 
 class Result(str, Enum):
     UPLOADED = "uploaded"
+    #: Validated and written, not sent: nothing for the catalog to record.
     DRY_RUN = "dry_run"
-    #: A status the server will give again for the same body (400, 404, 422, ...).
+    #: A status the server will give again for the same body (400, 422, an unknown
+    #: base study's 404, ...).
     REFUSED = "refused"
-    #: 429, 5xx, a timeout or a lost connection on every attempt.
+    #: 429, 5xx, a timeout, a lost connection or a 2xx that is not this parse's
+    #: summary, on every attempt.
     BLOCKED = "blocked"
     UNAUTHORIZED = "unauthorized"
+    #: The URL or the request is wrong for every paper (3xx, 405, 415, a route 404).
+    MISCONFIGURED = "misconfigured"
     #: Failed validation here, so never sent.
     INVALID = "invalid"
     #: sync wrote no parse for the paper.
     MISSING = "missing"
 
     @property
-    def catalog_status(self) -> Status:
-        if self in (Result.UPLOADED, Result.DRY_RUN):
+    def catalog_status(self) -> Optional[Status]:
+        if self is Result.DRY_RUN:
+            return None
+        if self is Result.UPLOADED:
             return Status.OK
         if self in (Result.REFUSED, Result.INVALID, Result.MISSING):
             return Status.PERMANENT
         return Status.FAILED
 
 
-class NeurostoreAuthError(RuntimeError):
-    """The token is missing or refused; every later paper would fail the same way."""
+class StopRun(RuntimeError):
+    """Every later paper would fail the same way, so the run stops here."""
+
+
+class NeurostoreAuthError(StopRun):
+    """The token is missing, malformed or refused."""
+
+
+class NeurostoreConfigError(StopRun):
+    """The URL or the request is wrong for every paper alike."""
+
+
+class NeurostoreUnavailable(StopRun):
+    """Too many papers in a row were blocked by transient failures."""
 
 
 class InvalidParse(ValueError):
@@ -115,8 +159,12 @@ def api_url(settings) -> str:
 
 
 def read_token(name: str) -> Optional[str]:
-    """The token from the environment, or from `.env` as Settings reads its own fields."""
-    return os.environ.get(name) or dotenv_values(".env").get(name) or None
+    """The token from the environment, or from `.env` as Settings reads its own fields.
+
+    Stripped, because a pasted trailing newline or space is never part of a token.
+    """
+    value = os.environ.get(name) or dotenv_values(".env").get(name) or ""
+    return value.strip() or None
 
 
 def build_payload(
@@ -183,8 +231,15 @@ def _json_schema_problems(raw_parse, raw_paper, checks: List[str]) -> List[str]:
     return problems
 
 
+def scrub(text: str, token: Optional[str]) -> str:
+    """`text` without the token or any Authorization or Bearer value."""
+    if token:
+        text = text.replace(token, REDACTED)
+    return _AUTH_VALUE.sub(lambda m: m.group(1) + REDACTED, text)
+
+
 def redact(value: Any, token: Optional[str]) -> Any:
-    """`value` with secret-named keys and every copy of the token replaced."""
+    """`value` with secret-named keys replaced and every string scrubbed."""
     if isinstance(value, dict):
         return {
             k: REDACTED if any(w in str(k).lower() for w in _SECRET_WORDS) else redact(v, token)
@@ -192,9 +247,24 @@ def redact(value: Any, token: Optional[str]) -> Any:
         }
     if isinstance(value, list):
         return [redact(v, token) for v in value]
-    if isinstance(value, str) and token and token in value:
-        return value.replace(token, REDACTED)
+    if isinstance(value, str):
+        return scrub(value, token)
     return value
+
+
+class _Scrub(logging.Filter):
+    """Scrubs the token from a log record before any handler sees it."""
+
+    def __init__(self, token: Optional[str]) -> None:
+        super().__init__()
+        self.token = token
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        clean = scrub(message, self.token)
+        if clean != message:
+            record.msg, record.args = clean, ()
+        return True
 
 
 class NeurostoreIngester:
@@ -208,6 +278,7 @@ class NeurostoreIngester:
         timeout: float = 120.0,
         retries: int = 4,
         backoff: float = 2.0,
+        max_blocked: int = 20,
         send_parsed_paper: bool = True,
         dry_run: bool = False,
         sleep: Callable[[float], None] = time.sleep,
@@ -216,14 +287,25 @@ class NeurostoreIngester:
         self.token_env = token_env
         self.retries = retries
         self.backoff = backoff
+        self.max_blocked = max_blocked
         self.send_parsed_paper = send_parsed_paper
         self.dry_run = dry_run
         self._sleep = sleep
+        self._blocked_in_a_row = 0
         self._token = None if dry_run else read_token(token_env)
         if not dry_run and not self._token:
             raise NeurostoreAuthError(
                 f"no neurostore token: set {token_env} to an admin token for {base_url}"
             )
+        if self._token and not _TOKEN.fullmatch(self._token):
+            raise NeurostoreAuthError(
+                f"the token in {token_env} is not a valid header value: it holds whitespace "
+                "or a non-ASCII character"
+            )
+        self._filter = _Scrub(self._token)
+        self._loggers = [logging.getLogger(name) for name in (*_HTTP_LOGGERS, logger.name)]
+        for each in self._loggers:
+            each.addFilter(self._filter)
         self._client = None if dry_run else httpx.Client(timeout=timeout)
 
     @classmethod
@@ -235,6 +317,7 @@ class NeurostoreIngester:
             timeout=settings.neurostore_upload_timeout,
             retries=settings.neurostore_upload_retries,
             backoff=settings.neurostore_upload_backoff,
+            max_blocked=settings.neurostore_upload_max_blocked,
             send_parsed_paper=settings.neurostore_upload_parsed_paper,
             **kwargs,
         )
@@ -245,6 +328,8 @@ class NeurostoreIngester:
     def close(self) -> None:
         if self._client is not None:
             self._client.close()
+        for each in self._loggers:
+            each.removeFilter(self._filter)
 
     def __enter__(self) -> "NeurostoreIngester":
         return self
@@ -257,12 +342,13 @@ class NeurostoreIngester:
     ) -> Dict[str, Any]:
         """Upload one paper, write its artifact, and return it.
 
-        `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. Raises
-        NeurostoreAuthError, after writing the artifact, when the token is refused.
+        `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. Raises a StopRun,
+        after writing the artifact, when the token or the URL is wrong or too many
+        papers in a row were blocked.
         """
         study_dir = Path(study_dir)
         out = Path(out_dir) if out_dir is not None else study_dir / UPLOAD_DIR
-        artifact: Dict[str, Any] = {
+        record: Dict[str, Any] = {
             "artifact_version": ARTIFACT_VERSION,
             "study_id": study_dir.name,
             "endpoint": self.url,
@@ -274,72 +360,130 @@ class NeurostoreIngester:
                 study_dir, parsed_paper=self.send_parsed_paper, run_id=run_id
             )
         except FileNotFoundError as exc:
-            return self._finish(out, artifact, Result.MISSING, error={"detail": str(exc)})
+            return self._finish(out, record, Result.MISSING, error={"detail": str(exc)})
         except (InvalidParse, json.JSONDecodeError) as exc:
-            problems = getattr(exc, "problems", [str(exc)])
-            error = {"detail": "invalid parse", "problems": problems}
-            return self._finish(out, artifact, Result.INVALID, error=error)
-        header = payload["coordinate_parse"]["header"]
-        artifact.update(
-            article_id=header.get("article_id"),
-            parse_id=payload["coordinate_parse"].get("parse_id"),
+            error = {"detail": "invalid parse", "problems": getattr(exc, "problems", [str(exc)])}
+            return self._finish(out, record, Result.INVALID, error=error)
+        parse = payload["coordinate_parse"]
+        record.update(
+            article_id=parse["header"].get("article_id"),
+            parse_id=parse.get("parse_id"),
             checks=checks,
         )
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        artifact["payload_sha256"] = hashlib.sha256(body).hexdigest()
+        record["payload_sha256"] = hashlib.sha256(body).hexdigest()
         if self.dry_run:
             out.mkdir(parents=True, exist_ok=True)
             _write_atomic(out / PAYLOAD_NAME, body)
-            artifact["payload_path"] = str(out / PAYLOAD_NAME)
-            return self._finish(out, artifact, Result.DRY_RUN)
-        return self._send(out, artifact, body)
+            record["payload_path"] = str(out / PAYLOAD_NAME)
+            return self._finish(out, record, Result.DRY_RUN)
+        artifact = self._send(out, record, body, parse)
+        if artifact["status"] == Result.BLOCKED.value:
+            self._blocked_in_a_row += 1
+            if self.max_blocked and self._blocked_in_a_row >= self.max_blocked:
+                raise NeurostoreUnavailable(
+                    f"{self._blocked_in_a_row} papers in a row were blocked by {self.url} "
+                    f"(last: {artifact['error'].get('detail')}); stopping the run until it "
+                    "answers again."
+                )
+        else:
+            self._blocked_in_a_row = 0
+        return artifact
 
-    def _send(self, out: Path, artifact: Dict[str, Any], body: bytes) -> Dict[str, Any]:
+    def _send(
+        self, out: Path, record: Dict[str, Any], body: bytes, parse: Dict[str, Any]
+    ) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {self._token}", "Content-Type": "application/json"}
         attempts: List[Dict[str, Any]] = []
-        artifact["attempts"] = attempts
+        record["attempts"] = attempts
         error: Dict[str, Any] = {}
         for attempt in range(1, self.retries + 2):
             retry_after = None
+            record.pop("http_status", None)
             try:
                 response = self._client.post(self.url, content=body, headers=headers)
             except httpx.TimeoutException:
                 error = {"detail": "timeout"}
                 attempts.append({"attempt": attempt, "error": "timeout"})
+            except (httpx.LocalProtocolError, httpx.UnsupportedProtocol) as exc:
+                error = {"detail": self._describe(exc)}
+                attempts.append({"attempt": attempt, "error": type(exc).__name__})
+                self._finish(out, record, Result.MISCONFIGURED, error=error)
+                raise NeurostoreConfigError(
+                    f"the request to {self.url} cannot be sent: {error['detail']}. "
+                    "Stopping the run."
+                ) from None
             except httpx.TransportError as exc:
-                error = {"detail": type(exc).__name__}
+                error = {"detail": self._describe(exc)}
                 attempts.append({"attempt": attempt, "error": type(exc).__name__})
             else:
                 status = response.status_code
                 attempts.append({"attempt": attempt, "http_status": status})
+                record["http_status"] = status
                 if response.is_success:
-                    artifact["http_status"] = status
-                    summary = self._json(response)
-                    return self._finish(out, artifact, Result.UPLOADED, summary=summary)
-                error = self._error(response)
-                if status in (401, 403):
-                    artifact["http_status"] = status
-                    self._finish(out, artifact, Result.UNAUTHORIZED, error=error)
-                    raise NeurostoreAuthError(
-                        f"neurostore refused the token in {self.token_env} with {status} at "
-                        f"{self.url}; it must be an admin token for this deployment. "
-                        "Stopping the run."
-                    )
-                if status != 429 and status < 500:
-                    artifact["http_status"] = status
-                    return self._finish(out, artifact, Result.REFUSED, error=error)
-                retry_after = _seconds(response.headers.get("Retry-After"))
+                    summary, problem = self._summary(response, parse)
+                    if problem is None:
+                        return self._finish(out, record, Result.UPLOADED, summary=summary)
+                    error = {**self._error(response), "detail": problem}
+                else:
+                    error = self._error(response)
+                    stop = self._stop(response, status)
+                    if stop is not None:
+                        result, exc_class, message = stop
+                        self._finish(out, record, result, error=error)
+                        raise exc_class(f"{message} Stopping the run.")
+                    if status != 429 and status < 500:
+                        return self._finish(out, record, Result.REFUSED, error=error)
+                    retry_after = _seconds(response.headers.get("Retry-After"))
             if attempt <= self.retries:
                 delay = min(max(self.backoff * 2 ** (attempt - 1), retry_after or 0), MAX_DELAY)
                 self._sleep(delay)
-        artifact["http_status"] = error.get("status")
-        return self._finish(out, artifact, Result.BLOCKED, error=error)
+        return self._finish(out, record, Result.BLOCKED, error=error)
 
-    def _json(self, response: httpx.Response) -> Any:
+    def _stop(self, response: httpx.Response, status: int):
+        """(result, exception, message) when this status means every paper would fail."""
+        if status in (401, 403):
+            return Result.UNAUTHORIZED, NeurostoreAuthError, (
+                f"neurostore refused the token in {self.token_env} with {status} at "
+                f"{self.url}; it must be an admin token for this deployment."
+            )
+        if 300 <= status < 400:
+            where = scrub(response.headers.get("Location", "?"), self._token)
+            return Result.MISCONFIGURED, NeurostoreConfigError, (
+                f"{self.url} redirects ({status}) to {where}; set neurostore_api_url to the "
+                "base URL it names (https, without /api)."
+            )
+        # The ingester's own 404 is for an unknown base study ("Record <id> not found
+        # in BaseStudy"); any other 404 means the route is not at this URL.
+        if (status == 404 and "BaseStudy" not in response.text) or status in (405, 415):
+            return Result.MISCONFIGURED, NeurostoreConfigError, (
+                f"{self.url} answered {status}: the ingester is not at this URL or does not "
+                "take this request; check neurostore_api_url (the base URL, without /api)."
+            )
+        return None
+
+    def _summary(self, response: httpx.Response, parse: Dict[str, Any]):
+        """The redacted summary, and why it is not this parse's summary, if it is not."""
         try:
-            return redact(response.json(), self._token)
+            summary = response.json()
         except ValueError:
-            return {"body_excerpt": redact(response.text[:BODY_EXCERPT], self._token)}
+            return None, "the 2xx body is not JSON, so not the ingester's summary"
+        if not isinstance(summary, dict) or summary.get("kind") not in SUMMARY_KINDS:
+            return None, "the 2xx body is not the ingester's summary of a parse upload"
+        if summary.get("parse_id") != parse.get("parse_id"):
+            return None, f"the summary is of parse {summary.get('parse_id')!r}, not this one"
+        expected = (parse["header"].get("identifiers") or {}).get("neurostore_base_study_id")
+        if not summary.get("base_study_id") or (
+            expected and summary["base_study_id"] != expected
+        ):
+            return None, (
+                f"the summary is of base study {summary.get('base_study_id')!r}, "
+                f"not {expected!r}"
+            )
+        return redact(summary, self._token), None
+
+    def _describe(self, exc: Exception) -> str:
+        return f"{type(exc).__name__}: {scrub(str(exc), self._token)}"
 
     def _error(self, response: httpx.Response) -> Dict[str, Any]:
         error: Dict[str, Any] = {"status": response.status_code}
@@ -357,29 +501,55 @@ class NeurostoreIngester:
     def _finish(
         self,
         out: Path,
-        artifact: Dict[str, Any],
+        record: Dict[str, Any],
         result: Result,
         *,
         summary: Any = None,
         error: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        artifact["status"] = result.value
+        record["status"] = result.value
         if summary is not None:
-            artifact["summary"] = summary
+            record["summary"] = summary
         if error is not None:
-            artifact["error"] = error
+            record["error"] = redact(error, self._token)
         out.mkdir(parents=True, exist_ok=True)
-        _write_atomic(
-            out / ARTIFACT_NAME,
-            json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False).encode("utf-8"),
-        )
+        if result is Result.DRY_RUN:
+            artifact = record
+            _write_json(out / DRY_RUN_NAME, artifact)
+        else:
+            artifact = self._append(out / ARTIFACT_NAME, record, result)
         log = logger.info if result in (Result.UPLOADED, Result.DRY_RUN) else logger.warning
         log(
             "neurostore upload %s: %s%s",
-            artifact["study_id"],
+            record["study_id"],
             result.value,
-            f" ({artifact['http_status']})" if artifact.get("http_status") else "",
+            f" ({record['http_status']})" if record.get("http_status") else "",
         )
+        return artifact
+
+    def _append(self, path: Path, record: Dict[str, Any], result: Result) -> Dict[str, Any]:
+        """The artifact with `record` on top and added to the history; a success is
+        also kept per endpoint, so a later failure cannot erase it."""
+        previous: Dict[str, Any] = {}
+        if path.exists():
+            try:
+                previous = json.loads(path.read_text("utf-8"))
+            except ValueError:
+                aside = path.with_name(path.name + ".unreadable")
+                path.replace(aside)
+                logger.warning("unreadable upload artifact moved to %s", aside)
+        last_uploaded = dict(previous.get("last_uploaded") or {})
+        if result is Result.UPLOADED:
+            last_uploaded[record["endpoint"]] = {
+                k: record[k] for k in ("at", "parse_id", "payload_sha256", "summary")
+            }
+        entry = {k: v for k, v in record.items() if k != "summary"}
+        artifact = {
+            **record,
+            "last_uploaded": last_uploaded,
+            "history": [*(previous.get("history") or []), entry],
+        }
+        _write_json(path, artifact)
         return artifact
 
 
@@ -388,6 +558,10 @@ def _seconds(value: Optional[str]) -> Optional[float]:
         return float(value) if value is not None else None
     except ValueError:
         return None
+
+
+def _write_json(path: Path, value: Any) -> None:
+    _write_atomic(path, json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False).encode())
 
 
 def _write_atomic(path: Path, data: bytes) -> None:
@@ -399,13 +573,18 @@ def _write_atomic(path: Path, data: bytes) -> None:
 __all__ = [
     "API_URLS",
     "ARTIFACT_NAME",
+    "DRY_RUN_NAME",
     "PAYLOAD_NAME",
     "InvalidParse",
     "NeurostoreAuthError",
+    "NeurostoreConfigError",
     "NeurostoreIngester",
+    "NeurostoreUnavailable",
     "Result",
+    "StopRun",
     "api_url",
     "build_payload",
     "read_token",
     "redact",
+    "scrub",
 ]

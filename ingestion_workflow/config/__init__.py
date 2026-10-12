@@ -756,6 +756,14 @@ class Settings(BaseSettings):
         default=2.0,
         description="Seconds before the first retry; each later retry waits twice as long",
     )
+    neurostore_upload_max_blocked: int = Field(
+        default=20,
+        description=(
+            "Stop the run once this many papers in a row are blocked by transient "
+            "failures, rather than spending every paper's retries on an outage; 0 "
+            "never stops"
+        ),
+    )
     neurostore_upload_parsed_paper: bool = Field(
         default=True,
         description=(

@@ -5,6 +5,8 @@ The stub answers the way neurostore's ingester does in its own tests
 parse's analysis keys, a re-upload of the same parse creates nothing, an original
 re-parse that reads an analysis from other cells of the same table under the same name
 aliases it, and a stored parse that is no longer current is refused with NOT_CURRENT.
+Like the real view it takes only application/json, refuses a body key its OpenAPI body
+does not name, and 404s a base study it does not hold.
 """
 
 from __future__ import annotations
@@ -16,14 +18,18 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import httpx
 import pytest
 from ingestion_workflow.catalog import Status
 from ingestion_workflow.config import NeurostoreEnv, Settings
 from ingestion_workflow.services import neurostore_ingest as ni
-from ingestion_workflow.tests.services.test_paper_parse import _written
+from ingestion_workflow.tests.services.test_paper_parse import BASE, _written
 from study_schema import keys
 
 ADMIN = "admin-token-5f2c9e"
+#: The body keys neurostore's `study-schema-upload` schema names (additionalProperties: false).
+BODY_KEYS = {"coordinate_parse", "record", "parsed_paper", "parse_id", "base_study_id",
+             "run_id", "pipeline"}
 USER = "user-token-8a1d"
 
 
@@ -33,29 +39,39 @@ class _Neurostore:
     def __init__(self) -> None:
         self.requests = []
         #: Answers given, in order, before the upload is handled: (status, body, headers),
-        #: or ("sleep", seconds) to answer only after the client has given up.
+        #: ("sleep", seconds) to answer only after the client has given up, ("drop",) to
+        #: hang up without answering, or ("pass",) to handle that request normally.
         self.script = []
         self.papers = {}
+        #: The base studies neurostore holds.
+        self.known = {BASE}
 
     def handle(self, headers, body):
         self.requests.append((headers, body))
-        if self.script:
-            step = self.script.pop(0)
-            if step[0] == "sleep":
-                time.sleep(step[1])
-                return 200, {}, {}
+        step = self.script.pop(0) if self.script else ("pass",)
+        if step[0] == "sleep":
+            time.sleep(step[1])
+            return 200, {}, {}
+        if step[0] != "pass":
             return step
         auth = headers.get("Authorization")
         if auth == f"Bearer {USER}":
             return 403, _error(403, "Only an admin can upload study_schema artifacts."), {}
         if auth != f"Bearer {ADMIN}":
             return 401, _error(401, "Unauthorized"), {}
+        if headers.get("Content-Type") != "application/json":
+            return 415, _error(415, "Unsupported Media Type"), {}
         upload = json.loads(body)
+        if set(upload) - BODY_KEYS:
+            unknown = sorted(set(upload) - BODY_KEYS)
+            return 400, _error(400, f"Additional properties: {unknown}"), {}
         parse = upload.get("coordinate_parse")
         if parse is None:
             return 400, _error(400, "An upload needs a coordinate_parse, a record, or both."), {}
         ids = parse["header"]["identifiers"]
         base_study_id = upload.get("base_study_id") or ids.get("neurostore_base_study_id")
+        if base_study_id not in self.known:
+            return 404, _error(404, f"Record {base_study_id} not found in BaseStudy"), {}
         paper = self.papers.setdefault(
             base_study_id,
             {"study_id": f"study-{len(self.papers)}", "current": None, "stored": set(),
@@ -116,7 +132,11 @@ def neurostore():
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):  # noqa: N802 - http.server's name
             body = self.rfile.read(int(self.headers["Content-Length"]))
-            status, payload, headers = stub.handle(dict(self.headers), body)
+            answer = stub.handle(dict(self.headers), body)
+            if answer[0] == "drop":
+                self.close_connection = True
+                return
+            status, payload, headers = answer
             data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
             try:
                 self.send_response(status)
@@ -236,7 +256,7 @@ def test_a_reparse_reading_other_cells_records_the_alias(neurostore, study, toke
     assert artifact["summary"]["skeleton"]["created"] == 1
 
 
-@pytest.mark.parametrize("status", [400, 404, 422])
+@pytest.mark.parametrize("status", [400, 422])
 def test_a_refusal_is_recorded_loudly_and_never_retried(neurostore, study, token, status, caplog):
     neurostore.script = [(status, _error(status, "The coordinate-parse does not validate "
                                          "against study_schema.", code="SCHEMA"), {})]
@@ -442,3 +462,188 @@ def test_from_settings_reads_the_upload_fields(neurostore, study, monkeypatch, t
     assert len(neurostore.requests) == 1
     assert "parsed_paper" not in json.loads(neurostore.requests[0][1])
     assert artifact["endpoint"] == neurostore.url + "/api/study-schema-uploads/"
+
+
+def test_an_unknown_base_study_is_refused_without_stopping(neurostore, study, token):
+    neurostore.known = set()
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "refused"
+    assert artifact["http_status"] == 404
+    assert ni.Result(artifact["status"]).catalog_status is Status.PERMANENT
+    assert "not found in BaseStudy" in artifact["error"]["detail"]
+
+
+@pytest.mark.parametrize(
+    "status, body, headers",
+    [
+        (301, b"", {"Location": "https://staging.neurostore.xyz/api/study-schema-uploads/"}),
+        (307, b"", {"Location": "/api/study-schema-uploads/"}),
+        (404, {"detail": "Not Found"}, {}),
+        (405, {"detail": "Method Not Allowed"}, {}),
+        (415, {"detail": "Unsupported Media Type"}, {}),
+    ],
+)
+def test_a_wrong_url_or_request_stops_the_run(neurostore, study, token, status, body, headers):
+    neurostore.script = [(status, body, headers)]
+    sleeps = []
+    with _ingester(neurostore, sleeps) as ingester:
+        with pytest.raises(ni.NeurostoreConfigError, match="neurostore_api_url"):
+            ingester.upload(study)
+
+    assert len(neurostore.requests) == 1
+    assert sleeps == []
+    artifact = _artifact(study)
+    assert artifact["status"] == "misconfigured"
+    assert artifact["http_status"] == status
+    assert "summary" not in artifact and artifact["last_uploaded"] == {}
+
+
+def _summary_of(neurostore, study, **changes):
+    """The stub's real answer for this paper, with `changes`."""
+    headers = {"Authorization": f"Bearer {ADMIN}", "Content-Type": "application/json"}
+    body = json.dumps({"coordinate_parse": json.loads(
+        (study / "parse" / "coordinate_parse.json").read_text())}).encode()
+    _, summary, _ = _Neurostore().handle(headers, body)
+    return {**summary, **changes}
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        b"<html>maintenance</html>",
+        {"parse_id": "someone-else"},
+        {"base_study_id": "another-paper"},
+        {"kind": "record"},
+    ],
+)
+def test_a_2xx_that_is_not_this_parses_summary_is_not_an_upload(neurostore, study, token,
+                                                                 answer):
+    body = answer if isinstance(answer, bytes) else _summary_of(neurostore, study, **answer)
+    neurostore.script = [(200, body, {})] * 2
+    with _ingester(neurostore, retries=1) as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "blocked"
+    assert ni.Result(artifact["status"]).catalog_status is Status.FAILED
+    assert artifact["http_status"] == 200
+    assert "summary" not in artifact and artifact["last_uploaded"] == {}
+    assert "not" in artifact["error"]["detail"]
+
+
+def test_a_dropped_connection_is_retried(neurostore, study, token):
+    neurostore.script = [("drop",)]
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "uploaded"
+    assert artifact["attempts"][0]["error"] == "RemoteProtocolError"
+    assert len(neurostore.requests) == 2
+
+
+def test_a_token_in_an_exception_is_kept_out_of_the_artifact_and_logs(neurostore, study, token,
+                                                                      caplog):
+    with _ingester(neurostore, retries=1) as ingester, caplog.at_level(logging.DEBUG):
+        def refuse(*args, **kwargs):
+            raise httpx.ConnectError(f"no route; sent Authorization: Bearer {ADMIN}")
+
+        ingester._client.post = refuse
+        artifact = ingester.upload(study)
+        logging.getLogger("httpcore.http11").debug("Illegal header value b'Bearer %s'", ADMIN)
+
+    text = (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()
+    assert artifact["status"] == "blocked"
+    assert [a["error"] for a in artifact["attempts"]] == ["ConnectError"] * 2
+    assert artifact["error"]["detail"].startswith("ConnectError: no route")
+    assert ADMIN not in text
+    assert ADMIN not in caplog.text
+    assert "Illegal header value" in caplog.text
+
+
+def test_a_token_with_a_trailing_newline_is_stripped(neurostore, study, monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("NEUROSTORE_TOKEN", f" {ADMIN}\n")
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "uploaded"
+    assert neurostore.requests[0][0]["Authorization"] == f"Bearer {ADMIN}"
+
+
+def test_a_malformed_token_stops_before_anything_is_sent(neurostore, monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("NEUROSTORE_TOKEN", "half token")
+    with pytest.raises(ni.NeurostoreAuthError) as stopped:
+        _ingester(neurostore)
+    assert "half token" not in str(stopped.value)
+    assert neurostore.requests == []
+
+
+def test_papers_blocked_in_a_row_stop_the_run(neurostore, study, token):
+    neurostore.script = [(503, b"down", {})] * 3
+    with _ingester(neurostore, retries=0, max_blocked=2) as ingester:
+        assert ingester.upload(study)["status"] == "blocked"
+        with pytest.raises(ni.NeurostoreUnavailable, match="2 papers in a row"):
+            ingester.upload(study)
+    assert _artifact(study)["status"] == "blocked"
+
+
+def test_an_upload_between_blocks_resets_the_count(neurostore, study, token):
+    neurostore.script = [(503, b"down", {}), ("pass",), (503, b"down", {})]
+    with _ingester(neurostore, retries=0, max_blocked=2) as ingester:
+        statuses = [ingester.upload(study)["status"] for _ in range(3)]
+    assert statuses == ["blocked", "uploaded", "blocked"]
+
+
+def test_a_later_failure_or_dry_run_keeps_the_upload_on_record(neurostore, study, token):
+    with _ingester(neurostore, retries=0) as ingester:
+        uploaded = ingester.upload(study)
+        neurostore.script = [(503, b"down", {})]
+        ingester.upload(study)
+    before = (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()
+    dry = ni.NeurostoreIngester(neurostore.url, dry_run=True).upload(study)
+
+    assert (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text() == before
+    assert dry["status"] == "dry_run"
+    assert ni.Result(dry["status"]).catalog_status is None
+    assert json.loads((study / ni.UPLOAD_DIR / ni.DRY_RUN_NAME).read_text()) == dry
+    artifact = _artifact(study)
+    assert artifact["status"] == "blocked"
+    kept = artifact["last_uploaded"][uploaded["endpoint"]]
+    assert kept["summary"] == uploaded["summary"]
+    assert kept["parse_id"] == uploaded["parse_id"]
+    assert [h["status"] for h in artifact["history"]] == ["uploaded", "blocked"]
+
+
+def test_the_json_schema_check_runs_when_jsonschema_is_installed(neurostore, study, token):
+    pytest.importorskip("jsonschema")
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["checks"] == ["model", "check_paper", "json_schema"]
+
+
+def test_a_request_that_cannot_be_sent_stops_the_run(neurostore, study, token):
+    sleeps = []
+    with _ingester(neurostore, sleeps) as ingester:
+        def refuse(*args, **kwargs):
+            raise httpx.LocalProtocolError(f"Illegal header value b'Bearer {ADMIN}'")
+
+        ingester._client.post = refuse
+        with pytest.raises(ni.NeurostoreConfigError) as stopped:
+            ingester.upload(study)
+
+    assert sleeps == []
+    assert ADMIN not in str(stopped.value)
+    artifact = _artifact(study)
+    assert artifact["status"] == "misconfigured"
+    assert ADMIN not in json.dumps(artifact)
+
+
+def test_any_authorization_value_is_scrubbed_not_only_the_token():
+    # The exact token is not always what an error prints: a pasted token's repr
+    # carries escapes, and a proxy may echo some other credential.
+    assert ni.scrub("Illegal header value b'Bearer other-secret\\n'", ADMIN) == (
+        f"Illegal header value b'Bearer {ni.REDACTED}'"
+    )
+    assert "s3cr3t" not in ni.scrub('{"Authorization": "Bearer s3cr3t"}', ADMIN)
+    assert "s3cr3t" not in ni.scrub("authorization=s3cr3t", None)
