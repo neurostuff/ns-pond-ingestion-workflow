@@ -107,6 +107,9 @@ class ExtractedContent:
     #: How the text was made, when the extractor built it more than one way
     #: (`ace_extractor.article_text`).
     text_source: Optional[Dict[str, object]] = None
+    #: The version of the copy the text was read from, when the download knew it
+    #: ("submittedVersion" is a preprint).
+    article_version: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -122,6 +125,8 @@ class ExtractedContent:
         }
         if self.text_source:
             out["text_source"] = self.text_source
+        if self.article_version:
+            out["article_version"] = self.article_version
         return out
 
     @classmethod
@@ -143,6 +148,7 @@ class ExtractedContent:
             error_message=payload.get("error_message") or None,
             figure_captions=list(payload.get("figure_captions") or []),
             text_source=payload.get("text_source") or None,
+            article_version=payload.get("article_version") or None,  # type: ignore[arg-type]
         )
 
 

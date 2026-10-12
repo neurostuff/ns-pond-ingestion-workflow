@@ -156,7 +156,11 @@ class DownloadStage:
         by_id = {ref.identifier.slug: ref for ref in refs}
         fp = self.fingerprint_for(source)
         try:
-            results = extractor.download(Identifiers([ref.identifier for ref in refs]))
+            identifiers = Identifiers([ref.identifier for ref in refs])
+            if source is DownloadSource.PDF:
+                results = extractor.download(identifiers, dead_urls=self._dead_urls(ctx, refs))
+            else:
+                results = extractor.download(identifiers)
         except Exception as exc:  # a source outage must not lose the batch
             logger.warning("download[%s] batch failed: %s", source.value, exc)
             for ref in refs:
@@ -184,6 +188,28 @@ class DownloadStage:
                     ref.id, self.name, source.value, "source returned no result", fingerprint=fp
                 )
 
+    def _dead_urls(self, ctx: Context, refs: List[ArticleRef]) -> Dict[str, Dict[str, str]]:
+        """Per slug, the PDF URLs earlier runs found permanently wanting.
+
+        Each failure records them in `summary.url_attempts`, so a retry fetches
+        only URLs that are new or failed for a passing reason. `--refresh` asks
+        again from scratch.
+        """
+        from ingestion_workflow.extractors.pdf_extractor import remembered_dead_urls
+
+        if ctx.refreshing(self.name, DownloadSource.PDF.value):
+            return {}
+        found = ctx.catalog.artifacts([ref.id for ref in refs], self.name)
+        out: Dict[str, Dict[str, str]] = {}
+        for ref in refs:
+            previous = found.get(ref.id, {}).get(DownloadSource.PDF.value)
+            if previous is None:
+                continue
+            dead = remembered_dead_urls((previous.summary or {}).get("url_attempts") or [])
+            if dead:
+                out[ref.identifier.slug] = dead
+        return out
+
     def _outcome(
         self, ref: ArticleRef, source: DownloadSource, result: DownloadResult, fp: str
     ) -> Outcome:
@@ -191,18 +217,22 @@ class DownloadStage:
         if not result.success or bad is not None:
             message = bad.message if bad else (result.error_message or "download failed")
             reason = download_check.reason_of(message)
+            if result.permanent is not None and bad is None:
+                permanent = result.permanent
+            else:
+                # A page that is not the article may be a passing outage or a
+                # challenge, and its message can quote "404" from the page itself.
+                permanent = reason is None and _is_permanent(message)
             return Outcome.failure(
                 ref.id,
                 self.name,
                 source.value,
                 message,
-                # A page that is not the article may be a passing outage or a
-                # challenge, and its message can quote "404" from the page itself.
-                permanent=reason is None and _is_permanent(message),
+                permanent=permanent,
                 fingerprint=fp,
                 summary={**({"bad_page": reason} if reason else {}),
                          **({"moved_aside": result.moved_aside} if result.moved_aside else {}),
-                         **({"attempts": result.attempts} if result.attempts else {})},
+                         **_url_summary(result)},
             )
         return Outcome(
             article_id=ref.id,
@@ -214,9 +244,21 @@ class DownloadStage:
             summary={
                 "files": len(result.files),
                 "types": sorted({f.file_type.value for f in result.files}),
-                **({"attempts": result.attempts} if result.attempts else {}),
+                **_url_summary(result),
+                **({"article_version": result.article_version} if result.article_version else {}),
             },
         )
+
+
+def _url_summary(result: DownloadResult) -> Dict[str, object]:
+    """Each URL tried or passed over, and a count per outcome for the funnel."""
+    if not result.url_attempts:
+        return {}
+    outcomes: Dict[str, int] = {}
+    for attempt in result.url_attempts:
+        outcome = str(attempt.get("outcome"))
+        outcomes[outcome] = outcomes.get(outcome, 0) + 1
+    return {"url_attempts": result.url_attempts, "url_outcomes": outcomes}
 
 
 def _fail_extractions(ctx: Context, source: str, bad_pages: Dict[str, str]) -> Iterator[Outcome]:

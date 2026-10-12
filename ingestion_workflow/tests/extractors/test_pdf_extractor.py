@@ -83,7 +83,7 @@ def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
     assert len(result.files) == 1
     assert result.files[0].file_type is FileType.PDF
     assert result.files[0].file_path.read_bytes() == MINIMAL_PDF
-    assert [a["outcome"] for a in result.attempts] == ["pdf"]
+    assert [a["outcome"] for a in result.url_attempts] == ["pdf"]
 
 
 def test_download_fails_without_a_pdf_url(monkeypatch, tmp_path):
@@ -118,7 +118,7 @@ def test_download_rejects_non_pdf_payloads(monkeypatch, tmp_path):
 
     assert not result.success
     assert "not a PDF" in result.error_message
-    assert [a["outcome"] for a in result.attempts] == ["not_pdf"]
+    assert [a["outcome"] for a in result.url_attempts] == ["not_pdf"]
 
 
 def test_resolve_pdf_candidates_asks_every_provider_about_every_article(monkeypatch, tmp_path):

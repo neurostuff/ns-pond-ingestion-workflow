@@ -12,16 +12,22 @@ import logging
 import multiprocessing
 import os
 import re
+import threading
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import urlsplit
 
 import requests
 
-from ingestion_workflow.clients.openalex import OaLocation, OpenAlexClient
+from ingestion_workflow.clients.openalex import (
+    LocationLookupFailed,
+    OaLocation,
+    OpenAlexClient,
+)
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
@@ -38,7 +44,6 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
-from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -53,16 +58,37 @@ DOWNLOAD_TIMEOUT = 60
 _SUSPECT_DECIMAL = re.compile(r"^\s*\d+\s*:\s*\d+\s*$")
 
 
-#: How often a 429 is waited out before the URL counts as rate limited, and the
-#: longest single wait honoured, whatever Retry-After asks for.
-_RATE_LIMIT_RETRIES = 3
+#: The longest Retry-After waited out. A host asking for longer is left for the
+#: rest of the run, and so is one that answers 429 more often than this in a row.
 _MAX_BACKOFF_SECONDS = 60.0
+_RATE_LIMIT_STRIKES = 3
+#: A host that has refused this many URLs in a run without serving one PDF is
+#: refusing scripted downloads; its remaining URLs wait for a later run.
+_HOST_REFUSAL_LIMIT = 20
 
-#: PMC and Europe PMC serve repository copies; OpenAlex types them as such, but
-#: Semantic Scholar's URL carries no type.
-_REPOSITORY_HOSTS = ("ncbi.nlm.nih.gov", "europepmc.org")
 _TYPE_RANK = {"repository": 0, "publisher": 1, "unknown": 2}
 _PUBLISHER_SOURCE_TYPES = {"journal", "conference", "book series", "ebook platform"}
+
+#: Servers whose copies are preprints. A copy there with no version label is
+#: taken as a submitted version, so it is tried after any published copy.
+_PREPRINT_HOSTS = (
+    "arxiv.org",
+    "biorxiv.org",
+    "medrxiv.org",
+    "osf.io",
+    "preprints.org",
+    "psyarxiv.com",
+    "researchsquare.com",
+    "ssrn.com",
+)
+PREPRINT_VERSION = "submittedVersion"
+
+#: Statuses that may answer differently later; any other 4xx is the URL's answer.
+_TRANSIENT_CLIENT_STATUSES = {408, 425, 429}
+#: Fetched outcomes worth remembering, so a later run does not fetch the URL again.
+_REMEMBERED_OUTCOMES = {"http_error", "not_pdf", "known_dead"}
+
+SKIPPED_PMC = "skipped: handled by the PMC/Europe PMC sources"
 
 
 @dataclass(frozen=True)
@@ -74,10 +100,15 @@ class PdfCandidate:
     #: "repository", "publisher" or "unknown"; repository copies are tried first.
     location_type: str
     source: Optional[str] = None
+    #: OpenAlex's label: "publishedVersion", "acceptedVersion" or "submittedVersion".
     version: Optional[str] = None
     #: An open-access landing page with no PDF link. It is recorded, not fetched:
     #: reading an HTML page is the HTML sources' job.
     landing_page: bool = False
+    #: A location OpenAlex lists as closed. It is recorded, not fetched.
+    open_access: bool = True
+    #: Other providers that listed the same URL.
+    also_listed_by: Tuple[str, ...] = ()
 
     def describe(self) -> Dict[str, object]:
         out: Dict[str, object] = {
@@ -85,6 +116,8 @@ class PdfCandidate:
             "provider": self.provider,
             "location_type": self.location_type,
         }
+        if self.also_listed_by:
+            out["also_listed_by"] = list(self.also_listed_by)
         if self.source:
             out["source"] = self.source
         if self.version:
@@ -92,11 +125,39 @@ class PdfCandidate:
         return out
 
 
-def _type_of(source_type: Optional[str], url: Optional[str]) -> str:
-    host = (urlsplit(url or "").hostname or "").lower()
-    if source_type == "repository" or any(
-        host == known or host.endswith("." + known) for known in _REPOSITORY_HOSTS
-    ):
+def _host(url: str) -> str:
+    return urlsplit(url).netloc.lower()
+
+
+def _host_matches(host: str, domain: str) -> bool:
+    return host == domain or host.endswith("." + domain)
+
+
+def _is_pmc_copy(url: str) -> bool:
+    """A copy on the PMC or Europe PMC website.
+
+    The pmc and europepmc sources run before this one and own these articles,
+    through the services PMC's terms point automated retrieval to; the websites
+    themselves refused every PDF fetched from them.
+    """
+    parts = urlsplit(url)
+    host = (parts.hostname or "").lower()
+    if host == "pmc.ncbi.nlm.nih.gov" or _host_matches(host, "europepmc.org"):
+        return True
+    return host in ("www.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov") and (
+        parts.path == "/pmc" or parts.path.startswith("/pmc/")
+    )
+
+
+def _version_of(url: str, version: Optional[str]) -> Optional[str]:
+    host = (urlsplit(url).hostname or "").lower()
+    if version is None and any(_host_matches(host, d) for d in _PREPRINT_HOSTS):
+        return PREPRINT_VERSION
+    return version
+
+
+def _type_of(source_type: Optional[str]) -> str:
+    if source_type == "repository":
         return "repository"
     if source_type in _PUBLISHER_SOURCE_TYPES:
         return "publisher"
@@ -117,10 +178,11 @@ def _openalex_candidates(
                 PdfCandidate(
                     url=url,
                     provider="openalex",
-                    location_type=_type_of(loc.source_type, url),
+                    location_type=_type_of(loc.source_type),
                     source=loc.source_name,
                     version=loc.version,
                     landing_page=not loc.pdf_url,
+                    open_access=loc.is_oa,
                 )
             )
     return out
@@ -132,52 +194,152 @@ def _url_key(url: str) -> str:
     return f"{host}{parts.path.rstrip('/')}?{parts.query}"
 
 
-def _try_order(candidates: Sequence[PdfCandidate]) -> List[PdfCandidate]:
-    """Repository copies, then publisher copies, then untyped ones; preprints last.
+def _merge(first: PdfCandidate, other: PdfCandidate) -> PdfCandidate:
+    """One URL listed twice: keep every label either listing carries.
 
-    A submitted version is a preprint whose text and tables can differ from the
-    published article, so any other copy is tried before it. Within a rank the
-    providers' order holds. A URL listed twice is kept once, at its first PDF
-    listing: the same address as a landing page elsewhere is not a second try.
+    A listing that says what kind of copy it is describes it, so it leads and
+    the other provider is recorded in `also_listed_by`.
     """
-    ranked = sorted(
-        enumerate(candidates),
-        key=lambda item: (
-            item[1].landing_page,
-            item[1].version == "submittedVersion",
-            _TYPE_RANK.get(item[1].location_type, len(_TYPE_RANK)),
-            item[0],
-        ),
+    if first.location_type == "unknown" and other.location_type != "unknown":
+        first, other = other, first
+    listed_by = first.also_listed_by + tuple(
+        p for p in (other.provider, *other.also_listed_by)
+        if p != first.provider and p not in first.also_listed_by
     )
-    seen = set()
-    ordered: List[PdfCandidate] = []
-    for _, candidate in ranked:
+    return replace(
+        first,
+        source=first.source or other.source,
+        version=first.version or other.version,
+        landing_page=first.landing_page and other.landing_page,
+        open_access=first.open_access or other.open_access,
+        also_listed_by=listed_by,
+    )
+
+
+def _try_order(candidates: Sequence[PdfCandidate]) -> List[PdfCandidate]:
+    """Each URL once, with its listings' labels merged, in the order to try them.
+
+    Repository copies, then publisher copies, then untyped ones. A submitted
+    version is a preprint whose text and tables can differ from the published
+    article, so it goes after every other copy. Within a rank the providers'
+    order holds. Landing pages and closed locations, which are only recorded,
+    come last.
+    """
+    merged: Dict[str, PdfCandidate] = {}
+    for candidate in candidates:
         key = _url_key(candidate.url)
-        if key in seen:
-            continue
-        seen.add(key)
-        ordered.append(candidate)
-    return ordered
+        merged[key] = _merge(merged[key], candidate) if key in merged else candidate
+    labelled = [replace(c, version=_version_of(c.url, c.version)) for c in merged.values()]
+    return [
+        candidate
+        for _, candidate in sorted(
+            enumerate(labelled),
+            key=lambda item: (
+                not item[1].open_access,
+                item[1].landing_page,
+                item[1].version == PREPRINT_VERSION,
+                _TYPE_RANK.get(item[1].location_type, len(_TYPE_RANK)),
+                item[0],
+            ),
+        )
+    ]
+
+
+def remembered_dead_urls(url_attempts: Sequence[Dict[str, object]]) -> Dict[str, str]:
+    """URLs an earlier run fetched and found permanently wanting, with why."""
+    return {
+        _url_key(str(a["url"])): str(a.get("reason") or "")
+        for a in url_attempts
+        if a.get("url") and a.get("permanent") and a.get("outcome") in _REMEMBERED_OUTCOMES
+    }
+
+
+def _permanently_failed(url_attempts: Sequence[Dict[str, object]]) -> bool:
+    """Whether a later run cannot do better: every candidate failed for good.
+
+    A closed location is not a candidate, and an article without candidates is
+    not permanent: a provider may list an open copy later.
+    """
+    considered = [a for a in url_attempts if a.get("outcome") != "not_open_access"]
+    return bool(considered) and all(a.get("permanent") for a in considered)
 
 
 def _is_pdf(payload: bytes) -> bool:
     return payload.startswith(PDF_MAGIC)
 
 
-def _retry_after(response: Any, retry: int) -> float:
-    """The host's Retry-After in seconds when it gives one, else 2, 4, 8 ... seconds."""
+def _retry_after(response: Any) -> Optional[float]:
+    """The host's Retry-After in seconds, or None when it gives none or a date."""
     header = (getattr(response, "headers", None) or {}).get("Retry-After")
     try:
-        delay = float(header) if header is not None else 2.0 ** (retry + 1)
-    except ValueError:  # an HTTP date: fall back to the doubling delay
-        delay = 2.0 ** (retry + 1)
-    return max(0.0, min(delay, _MAX_BACKOFF_SECONDS))
+        return max(0.0, float(header)) if header is not None else None
+    except ValueError:
+        return None
 
 
 def _close(response: Any) -> None:
     close = getattr(response, "close", None)
     if callable(close):
         close()
+
+
+class _HostGate:
+    """What this run has learnt about each host, shared by the download workers.
+
+    A host that asked to be left alone is not asked again before the time it
+    gave, by any worker, and one that asked for longer than the run should wait
+    is left for the rest of the run.
+    """
+
+    def __init__(self, clock: Callable[[], float], sleep: Callable[[float], None]) -> None:
+        self._clock = clock
+        self._sleep = sleep
+        self._lock = threading.Lock()
+        self._not_before: Dict[str, float] = {}
+        self._strikes: Counter = Counter()
+        self._refusals: Counter = Counter()
+        self._served: Counter = Counter()
+        self._deferred: Dict[str, str] = {}
+
+    def deferred(self, host: str) -> Optional[str]:
+        with self._lock:
+            return self._deferred.get(host)
+
+    def wait(self, host: str) -> None:
+        with self._lock:
+            delay = self._not_before.get(host, 0.0) - self._clock()
+        if delay > 0:
+            self._sleep(delay)
+
+    def rate_limited(self, host: str, retry_after: Optional[float]) -> Optional[str]:
+        """Note a 429. Returns why the host is now left for the run, or None to retry."""
+        with self._lock:
+            self._strikes[host] += 1
+            if retry_after is not None and retry_after > _MAX_BACKOFF_SECONDS:
+                reason = f"deferred: {host} asked to wait {retry_after:.0f}s"
+            elif self._strikes[host] > _RATE_LIMIT_STRIKES:
+                reason = f"deferred: {host} kept answering 429"
+            else:
+                delay = retry_after if retry_after is not None else 2.0 ** self._strikes[host]
+                self._not_before[host] = max(
+                    self._not_before.get(host, 0.0), self._clock() + delay
+                )
+                return None
+            return self._deferred.setdefault(host, reason)
+
+    def answered(self, host: str, *, served: bool = False, refused: bool = False) -> None:
+        with self._lock:
+            self._strikes[host] = 0
+            if served:
+                self._served[host] += 1
+            elif refused:
+                self._refusals[host] += 1
+                if self._refusals[host] >= _HOST_REFUSAL_LIMIT and not self._served[host]:
+                    self._deferred.setdefault(
+                        host,
+                        f"deferred: {host} refused {self._refusals[host]} URLs this run "
+                        "and served no PDF",
+                    )
 
 
 class PdfExtractor(BaseExtractor):
@@ -198,6 +360,9 @@ class PdfExtractor(BaseExtractor):
         self.settings = settings or load_settings()
         self._session = session or requests.Session()
         self._sleep = time.sleep
+        self._clock = time.monotonic
+        # One per extractor, which the download stage keeps for the whole run.
+        self._hosts = _HostGate(lambda: self._clock(), lambda delay: self._sleep(delay))
 
     # ----------------------------------------------------------------- download
 
@@ -205,12 +370,20 @@ class PdfExtractor(BaseExtractor):
         self,
         identifiers: Identifiers,
         progress_hook: Callable[[int], None] | None = None,
+        *,
+        dead_urls: Mapping[str, Mapping[str, str]] | None = None,
     ) -> List[DownloadResult]:
+        """Download each article's PDF.
+
+        `dead_urls` holds, per slug, the URLs an earlier run found permanently
+        wanting (`remembered_dead_urls`); they are recorded, not fetched again.
+        """
         if not identifiers:
             return []
 
         identifier_list = list(identifiers)
         candidates, lookup_failures = self._resolve_pdf_candidates(identifiers)
+        dead_urls = dead_urls or {}
 
         base_dir = Path(self.settings.pdf_cache_root or self.settings.get_cache_dir("pdf"))
         base_dir.mkdir(parents=True, exist_ok=True)
@@ -226,6 +399,7 @@ class PdfExtractor(BaseExtractor):
                     candidates.get(identifier.slug, []),
                     base_dir,
                     lookup_failures.get(identifier.slug, []),
+                    dead_urls.get(identifier.slug, {}),
                 ): index
                 for index, identifier in enumerate(identifier_list)
             }
@@ -252,20 +426,19 @@ class PdfExtractor(BaseExtractor):
         Each provider is asked about every article: the first provider's URL is
         often a publisher copy that refuses the download while a repository
         holds the same article. Also returns, per article, each provider whose
-        lookup failed, so that its absence is recorded rather than read as
-        "no open-access copy".
+        lookup failed for it, so that its absence is recorded rather than read
+        as "no open-access copy".
         """
         found: Dict[str, List[PdfCandidate]] = {}
         failures: Dict[str, List[Dict[str, object]]] = {}
 
-        def fail(provider: str, slugs, exc: Exception) -> None:
-            logger.warning("PDF URL lookup failed for provider %s: %s", provider, exc)
-            for slug in slugs:
+        def fail(provider: str, reasons: Mapping[str, object]) -> None:
+            for slug, reason in reasons.items():
                 failures.setdefault(slug, []).append(
                     {
                         "provider": provider,
                         "outcome": "lookup_failed",
-                        "reason": f"{provider} lookup failed: {exc}",
+                        "reason": f"{provider} lookup failed: {reason}",
                     }
                 )
 
@@ -278,11 +451,13 @@ class PdfExtractor(BaseExtractor):
                 else:
                     logger.warning("Unknown pdf_url provider: %s", provider)
                     continue
-            except PartialAnswer as exc:
+            except LocationLookupFailed as exc:
+                logger.warning("PDF URL lookup partly failed for provider %s: %s", provider, exc)
                 by_slug = exc.found
-                fail(provider, [i.slug for i in identifiers if i.slug not in exc.found], exc)
+                fail(provider, exc.failed)
             except Exception as exc:  # noqa: BLE001 - one provider down must not stop the rest
-                fail(provider, [i.slug for i in identifiers], exc)
+                logger.warning("PDF URL lookup failed for provider %s: %s", provider, exc)
+                fail(provider, {identifier.slug: exc for identifier in identifiers})
                 continue
             for slug, listed in by_slug.items():
                 found.setdefault(slug, []).extend(listed)
@@ -300,9 +475,7 @@ class PdfExtractor(BaseExtractor):
         return {
             slug: [
                 PdfCandidate(
-                    url=meta.pdf_url,
-                    provider="semantic_scholar",
-                    location_type=_type_of(None, meta.pdf_url),
+                    url=meta.pdf_url, provider="semantic_scholar", location_type="unknown"
                 )
             ]
             for slug, meta in metadata.items()
@@ -314,9 +487,11 @@ class PdfExtractor(BaseExtractor):
         if client is None:
             return {}
         try:
-            return _openalex_candidates(client.get_oa_locations(identifiers))
-        except PartialAnswer as exc:
-            raise PartialAnswer(str(exc), _openalex_candidates(exc.found)) from exc
+            return _openalex_candidates(client.get_locations(identifiers))
+        except LocationLookupFailed as exc:
+            raise LocationLookupFailed(
+                str(exc), _openalex_candidates(exc.found), exc.failed
+            ) from exc
 
     def _download_single(
         self,
@@ -324,25 +499,23 @@ class PdfExtractor(BaseExtractor):
         candidates: Sequence[PdfCandidate],
         base_dir: Path,
         lookup_failures: Sequence[Dict[str, object]] = (),
+        dead_urls: Mapping[str, str] | None = None,
     ) -> DownloadResult:
         """Fetch the candidates in order until one is a PDF, recording every one."""
         attempts: List[Dict[str, object]] = [dict(failure) for failure in lookup_failures]
         tried: List[Dict[str, object]] = []
-        cap = max(1, self.settings.pdf_max_attempts)
+        dead_urls = dead_urls or {}
+        cap = self.settings.pdf_max_attempts
 
         for candidate in candidates:
             attempt = candidate.describe()
             attempts.append(attempt)
-            if candidate.landing_page:
-                attempt.update(
-                    outcome="landing_page_only",
-                    reason=f"OA landing page only: {candidate.url}",
-                )
-                continue
-            if len(tried) >= cap:
-                attempt.update(
-                    outcome="not_tried", reason=f"not tried: attempt cap of {cap} reached"
-                )
+            passed_over = self._passed_over(candidate, dead_urls)
+            if passed_over is None and len(tried) >= cap:
+                passed_over = ("not_tried", False, f"not tried: attempt cap of {cap} reached")
+            if passed_over is not None:
+                outcome, permanent, reason = passed_over
+                attempt.update(outcome=outcome, permanent=permanent, reason=reason)
                 continue
             tried.append(attempt)
             payload = self._fetch(candidate.url, attempt)
@@ -364,61 +537,104 @@ class PdfExtractor(BaseExtractor):
                         source=DownloadSource.PDF,
                     )
                 ],
-                attempts=attempts,
+                url_attempts=attempts,
+                article_version=candidate.version,
             )
 
+        recorded = [
+            a for a in attempts if a.get("outcome") not in ("lookup_failed", "not_open_access")
+        ]
         if tried:
             message = str(tried[-1]["reason"])
-        elif any(a.get("outcome") == "landing_page_only" for a in attempts):
-            message = next(
-                str(a["reason"]) for a in attempts if a.get("outcome") == "landing_page_only"
-            )
+        elif recorded:
+            message = str(recorded[-1]["reason"])
         elif lookup_failures:
             message = str(lookup_failures[-1]["reason"])
         else:
             message = "No open-access PDF URL found."
         result = self._failure(identifier, message)
-        result.attempts = attempts
+        result.url_attempts = attempts
+        result.permanent = _permanently_failed(attempts)
         return result
 
-    def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
-        """The PDF at `url`, or None with the reason written into `attempt`.
+    def _passed_over(
+        self, candidate: PdfCandidate, dead_urls: Mapping[str, str]
+    ) -> Optional[Tuple[str, bool, str]]:
+        """(outcome, permanent, reason) for a candidate not to fetch, else None."""
+        if not candidate.open_access:
+            return ("not_open_access", True, "not tried: OpenAlex lists this copy as closed")
+        if candidate.landing_page:
+            return ("landing_page_only", True, f"OA landing page only: {candidate.url}")
+        if _is_pmc_copy(candidate.url):
+            return ("skipped_pmc", True, SKIPPED_PMC)
+        dead = dead_urls.get(_url_key(candidate.url))
+        if dead is not None:
+            return ("known_dead", True, dead)
+        deferred = self._hosts.deferred(_host(candidate.url))
+        if deferred is not None:
+            return ("deferred", False, deferred)
+        return None
 
-        A 429 is waited out (the host's Retry-After, else a doubling delay) a
-        few times before the URL is given up as rate limited.
+    def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
+        """The PDF at `url`, or None with the outcome written into `attempt`.
+
+        A 429 is waited out for as long as the host asks, by every worker,
+        unless it asks for longer than the run should wait; see `_HostGate`.
         """
-        for retry in range(_RATE_LIMIT_RETRIES + 1):
+        host = _host(url)
+        while True:
+            deferred = self._hosts.deferred(host)
+            if deferred is not None:
+                attempt.update(outcome="deferred", permanent=False, reason=deferred)
+                return None
+            self._hosts.wait(host)
             try:
                 response = self._session.get(url, timeout=DOWNLOAD_TIMEOUT, stream=True)
             except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
+                attempt.update(
+                    outcome="fetch_error", permanent=False, reason=f"PDF fetch failed: {exc}"
+                )
                 return None
             status = getattr(response, "status_code", None)
             attempt["status"] = status
-            if status == 429 and retry < _RATE_LIMIT_RETRIES:
-                delay = _retry_after(response, retry)
+            if status == 429:
+                retry_after = _retry_after(response)
                 _close(response)
-                logger.info("429 from %s; waiting %.0fs", url, delay)
-                self._sleep(delay)
+                deferred = self._hosts.rate_limited(host, retry_after)
+                if deferred is not None:
+                    attempt.update(
+                        outcome="rate_limited",
+                        permanent=False,
+                        reason=f"PDF fetch failed: 429 from {host}; {deferred}",
+                    )
+                    return None
                 continue
             try:
                 response.raise_for_status()
                 payload = response.content
             except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                attempt.update(
-                    outcome="rate_limited" if status == 429 else "http_error",
-                    reason=f"PDF fetch failed: {exc}",
+                permanent = (
+                    status is not None
+                    and 400 <= status < 500
+                    and status not in _TRANSIENT_CLIENT_STATUSES
                 )
+                attempt.update(
+                    outcome="http_error", permanent=permanent, reason=f"PDF fetch failed: {exc}"
+                )
+                self._hosts.answered(host, refused=permanent)
                 return None
             finally:
                 _close(response)
             if not _is_pdf(payload):
                 # Landing pages and paywall interstitials return HTML with a 200.
-                attempt.update(outcome="not_pdf", reason=f"Response from {url} is not a PDF.")
+                attempt.update(
+                    outcome="not_pdf", permanent=True, reason=f"Response from {url} is not a PDF."
+                )
+                self._hosts.answered(host, refused=True)
                 return None
             attempt.update(outcome="pdf", reason="PDF downloaded")
+            self._hosts.answered(host, served=True)
             return payload
-        return None  # pragma: no cover - the loop always returns
 
     @staticmethod
     def _failure(identifier: Identifier, message: str) -> DownloadResult:
@@ -685,6 +901,7 @@ def _extract_pdf_article(
         tables=extracted_tables,
         has_coordinates=any(table.coordinates for table in extracted_tables),
         figure_captions=figure_captions,
+        article_version=download_result.article_version,
     )
 
 
@@ -808,4 +1025,4 @@ def _has_suspect_numerics(frame: Any) -> bool:
     )
 
 
-__all__ = ["PdfExtractor"]
+__all__ = ["PdfCandidate", "PdfExtractor", "remembered_dead_urls"]

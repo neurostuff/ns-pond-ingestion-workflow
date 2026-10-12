@@ -55,7 +55,7 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
 
 @dataclass(frozen=True)
 class OaLocation:
-    """One place OpenAlex says a copy of the work can be read for free."""
+    """One place OpenAlex lists a copy of the work."""
 
     pdf_url: Optional[str]
     landing_page_url: Optional[str]
@@ -64,19 +64,27 @@ class OaLocation:
     source_name: Optional[str]
     #: "publishedVersion", "acceptedVersion" or "submittedVersion".
     version: Optional[str]
+    is_oa: bool = True
     is_best: bool = False
 
 
-def _oa_locations_from(work: Dict) -> List[OaLocation]:
-    """The work's open-access locations, `best_oa_location` first, each once."""
+class LocationLookupFailed(PartialAnswer):
+    """Some location batches failed. `found` holds what the others returned, and
+    `failed` each article that was only in a failed batch, with the error."""
+
+    def __init__(self, message: str, found: Dict, failed: Dict[str, str]) -> None:
+        super().__init__(message, found)
+        self.failed = failed
+
+
+def _locations_from(work: Dict) -> List[OaLocation]:
+    """The work's locations with a URL, `best_oa_location` first, each once."""
     best = work.get("best_oa_location") or {}
     raw = [best] if isinstance(best, dict) and best else []
     raw += [loc for loc in work.get("locations") or [] if isinstance(loc, dict)]
     seen = set()
     locations: List[OaLocation] = []
     for loc in raw:
-        if loc is not best and not loc.get("is_oa"):
-            continue
         pdf_url, landing = loc.get("pdf_url") or None, loc.get("landing_page_url") or None
         if (pdf_url, landing) in seen or not (pdf_url or landing):
             continue
@@ -89,6 +97,7 @@ def _oa_locations_from(work: Dict) -> List[OaLocation]:
                 source_type=source.get("type"),
                 source_name=source.get("display_name"),
                 version=loc.get("version"),
+                is_oa=loc is best or bool(loc.get("is_oa")),
                 is_best=loc is best,
             )
         )
@@ -199,16 +208,16 @@ class OpenAlexClient:
 
         return identifiers
 
-    def get_oa_locations(self, identifiers: Identifiers) -> Dict[str, List[OaLocation]]:
-        """Every open-access location OpenAlex lists per identifier slug, best first.
+    def get_locations(self, identifiers: Identifiers) -> Dict[str, List[OaLocation]]:
+        """Every location OpenAlex lists per identifier slug, best open copy first.
 
-        A work OpenAlex returns gets an entry even when it has no open-access
-        location, so an absent slug means OpenAlex does not know the article.
-        A failed batch raises `PartialAnswer` carrying the other batches'
-        results, rather than reading as "no open-access copy".
+        A work OpenAlex returns gets an entry even when it has no location, so an
+        absent slug means OpenAlex does not know the article. A failed batch
+        raises `LocationLookupFailed`, naming the articles in it, rather than
+        reading as "no open-access copy".
         """
         found: Dict[str, List[OaLocation]] = {}
-        failures: List[str] = []
+        failed: Dict[str, str] = {}
         for id_type in ("doi", "pmid"):
             values = [
                 str(getattr(identifier, id_type)).strip()
@@ -225,17 +234,24 @@ class OpenAlexClient:
                 }
                 try:
                     payload = self._request_openalex(params)
-                except Exception as exc:  # noqa: BLE001 - reported with the rest
-                    failures.append(f"{id_type} batch of {len(batch)}: {exc}")
+                except Exception as exc:  # noqa: BLE001 - reported per article
+                    for value in batch:
+                        identifier = identifiers.lookup(value, key=id_type)
+                        if identifier is not None:
+                            failed[identifier.slug] = f"{id_type} batch of {len(batch)}: {exc}"
                     continue
 
                 for work in payload.get("results", []) or []:
                     key = (work.get("ids", {}) or {}).get(id_type)
                     identifier = identifiers.lookup(key, key=id_type) if key else None
                     if identifier is not None:
-                        found[identifier.slug] = _oa_locations_from(work)
-        if failures:
-            raise PartialAnswer("OpenAlex location lookup failed: " + "; ".join(failures), found)
+                        found[identifier.slug] = _locations_from(work)
+        # an article a later batch (by its other id) answered for did not fail
+        failed = {slug: why for slug, why in failed.items() if slug not in found}
+        if failed:
+            raise LocationLookupFailed(
+                f"OpenAlex location lookup failed for {len(failed)} article(s)", found, failed
+            )
         return found
 
     def search_title(self, title: str, limit: int = 5) -> List[Tuple[Identifier, ArticleMetadata]]:
