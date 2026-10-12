@@ -18,12 +18,14 @@ from ingestion_workflow.catalog.blobs import BlobStore
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
+from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 from ingestion_workflow.services.funnel_report import (
     _PAGE,
     BLOCKED,
     FAILED,
     FILTERED,
+    GLOSSARY,
     HELD,
     NOT_ATTEMPTED,
     PASSED,
@@ -43,21 +45,33 @@ from ingestion_workflow.services.funnel_report import (
     reason_group,
     render_html,
     serve,
+    stage_graph,
     trace_article,
+    trunk,
 )
 from typer.testing import CliRunner
 
 OK = Status.OK
-#: The stages of the upload path after download, with what each passes on.
-PATH = (("extract", "pubget", {"has_text": True}),
-        ("metadata", "", {}),
-        ("passages", "", {"source": "pubget", "passages": 2}),
-        ("prose", "", {"source": "pubget", "coordinates": 3}),
-        ("resolve", "", {"tables": 1}),
-        ("roles", "", {"tables": 1}),
-        ("space", "", {"tables": 1}),
-        ("upload", "", {"base_study_id": "b"}),
-        ("sync", "", {"base_study_id": "b"}))
+#: What each stage on the upload path passes on.
+_PASSES = {"extract": ("pubget", {"has_text": True}),
+           "metadata": ("", {}),
+           "passages": ("", {"source": "pubget", "passages": 2}),
+           "prose": ("", {"source": "pubget", "coordinates": 3}),
+           "resolve": ("", {"tables": 1}),
+           "roles": ("", {"tables": 1}),
+           "space": ("", {"tables": 1}),
+           "upload": ("", {"base_study_id": "b"}),
+           "sync": ("", {"base_study_id": "b"})}
+#: The upload path after download, in the stage registry's order, with metadata
+#: (a side stage every article here has) right after extract.
+_ORDER = trunk(stage_graph(True))[1:]
+_ORDER.insert(_ORDER.index("extract") + 1, "metadata")
+PATH = tuple((stage, *_PASSES[stage]) for stage in _ORDER)
+
+
+def _upstream(stage, prose=True):
+    """The stage `stage` takes its input from, as the registry declares it."""
+    return {node.name: node.upstream for node in stage_graph(prose)}[stage]
 
 
 def _ok(article, stage, src="", **summary):
@@ -80,7 +94,7 @@ def catalog(tmp_path):
     ids = {name: cat.register(Identifier(pmid=str(1000 + i))).id
            for i, name in enumerate("ABCDEFGHIJ")}
     a, b, c, d, e, f, g, h, i, j = (ids[k] for k in "ABCDEFGHIJ")
-    outcomes = _through(a, "sync") + [
+    outcomes = _through(a, PATH[-1][0]) + [
         Outcome.failure(a, "download", "ace",
                         "ACE scrape failed: 'Settings' object has no attribute 'x'"),
         # Every source refused: the article never gets past download.
@@ -94,7 +108,7 @@ def catalog(tmp_path):
         _ok(d, "triage", source="pubget", passed=0),
         _ok(e, "download", "ace"), Outcome.failure(e, "extract", "ace", NO_TEXT),
         Outcome.failure(e, "passages", "", NO_TEXT),
-        *_through(f, "space"),
+        *_through(f, _upstream("upload")),
         Outcome.failure(f, "upload", "", f"{HELD_FOR_REVIEW}: in 2 studysets"),
         *_through(g, "passages"),
         # Space never ran for h, but an upload from before is still there.
@@ -174,7 +188,11 @@ def test_missing_states_are_told_apart(funnel):
     funnel, ids = funnel
     assert _where(funnel, ids["I"], "download")[0] == PENDING
     assert _where(funnel, ids["H"], "space")[0] == PENDING
-    assert _where(funnel, ids["H"], "upload")[:2] == (STALE, "input space is pending")
+    # Space never ran, so upload's input did not pass: what that input is depends on the order.
+    up = _upstream("upload")
+    assert _where(funnel, ids["H"], "space")[0] == PENDING
+    assert _where(funnel, ids["H"], "upload")[:2] == (
+        STALE, f"input {up} is {_where(funnel, ids['H'], up)[0]}")
     assert _where(funnel, ids["A"], "notices")[0] == NOT_ATTEMPTED
     assert _where(funnel, ids["A"], "sync")[0] == PASSED
 
@@ -283,7 +301,7 @@ def wider(tmp_path):
                 summary={"reason": "triage passed no table"}),
         *_through(q, "metadata"), _ok(q, "triage", source="pubget", passed=0, tables=2),
         _ok(q, "analyses", tables=3),
-        *_through(r, "space"), _ok(r, "upload", base_study_id="b", retracted=True),
+        *_through(r, _upstream("upload")), _ok(r, "upload", base_study_id="b", retracted=True),
         *_read_from_ace(s),
         _bad(t, "download", "ace", "error_page"),
         *_read_from_ace(v, retracted=True),
@@ -355,7 +373,9 @@ def test_a_leftover_record_keeps_its_own_status_and_reason(wide):
         BLOCKED, "space pending: input ready, not run yet")
     # An ok record that holds tables is stale: something downstream could read it.
     assert _where(funnel, ids["Q"], "analyses")[:2] == (STALE, "input triage is filtered")
-    assert _where(funnel, ids["H"], "upload")[:2] == (STALE, "input space is pending; retracted")
+    up = _upstream("upload")
+    assert _where(funnel, ids["H"], "upload")[:2] == (
+        STALE, f"input {up} is {_where(funnel, ids['H'], up)[0]}; retracted")
     # Resolve reads the tables, so analyses without any holds nothing for it.
     assert _where(funnel, ids["J"], "analyses")[:2] == (FILTERED, "its summary has tables = 0")
     assert _where(funnel, ids["O"], "triage")[:2] == (FILTERED, "the extraction has no table")
@@ -406,7 +426,7 @@ def test_sync_refuses_prose_from_a_bad_page_unless_retracted(wider):
         funnel = build_funnel(conn, prose=False, samples=50)
     finally:
         conn.close()
-    assert _where(funnel, ids["S"], "upload")[0] == PASSED
+    assert _where(funnel, ids["S"], _upstream("sync", prose=False))[0] == PASSED
     assert _where(funnel, ids["S"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
     assert _where(funnel, ids["V"], "sync")[0] == PASSED
 
@@ -466,14 +486,13 @@ def test_page_carries_the_tried_dimension_and_the_graph(wide):
 def test_flow_adds_up_at_every_step(wide):
     funnel, ids = wide
     steps = flow(funnel)
-    assert [step["stage"] for step in steps] == [
-        "download", "extract", "passages", "prose", "resolve", "roles", "space", "upload", "sync"]
+    assert [step["stage"] for step in steps] == trunk(stage_graph(True))
     assert steps[0]["in"] == funnel.total
     for before, step in zip([None] + steps, steps):
         total = step["passed"] + sum(i[2] for i in step["excluded"] + step["waiting"])
         assert step["adds_up"] and step["in"] == total, step
         assert step["follows"] and (before is None or step["in"] == before["passed"]), step
-    prose = steps[3]
+    prose = {step["stage"]: step for step in steps}["prose"]
     assert [REFUSED, f"passages {READ_FROM_BAD_PAGE}", 2] in prose["excluded"]
     assert [PENDING, "input ready, nothing to read (passages = 0); tables wait behind it", 1] \
         in prose["waiting"]
@@ -576,8 +595,7 @@ def test_page_model_flows_through_every_gating_stage(wide):
     funnel, ids = wide
     model = page_model(funnel)
     steps = {step["stage"]: step for step in model["flow"]}
-    assert list(steps) == ["download", "extract", "passages", "metadata", "notices", "triage",
-                           "analyses", "prose", "resolve", "roles", "space", "upload", "sync"]
+    assert list(steps) == [name for name in STAGE_ORDER if name not in OPT_IN_STAGES]
     for step in model["flow"]:
         assert step["adds_up"] and step["follows"], step
         for group in step["excluded"] + step["waiting"] + step["stale"]:
@@ -591,8 +609,9 @@ def test_page_model_flows_through_every_gating_stage(wide):
         ["HTTP 403 forbidden + not open access", 1]]
     assert groups["not open access"][3] == [["not open access", 1]]
     # Stale records are listed apart, with the state's reasons.
-    assert ["stale", "input space is pending; retracted", 1,
-            [["input space is pending; retracted", 1]]] in steps["upload"]["stale"]
+    up = _upstream("upload")
+    held = f"input {up} is {_where(funnel, ids['H'], up)[0]}; retracted"
+    assert ["stale", held, 1, [[held, 1]]] in steps["upload"]["stale"]
     # An extraction with no text hash waits for refresh-text before passages.
     assert any(g[1].startswith("waits for `ingest refresh-text`")
                for g in steps["passages"]["waiting"])
@@ -831,3 +850,25 @@ def _page_js_with(prelude: str, page: str, harness: str) -> dict:
                          capture_output=True, text=True, timeout=60)
     assert run.returncode == 0, run.stderr
     return json.loads(run.stdout)
+
+
+def test_a_held_back_upload_says_which_upstream_and_how_many_are_missing(tmp_path):
+    cat = Catalog.open(tmp_path / "held")
+    a = cat.register(Identifier(pmid="6001")).id
+    held = ("held back: upstream not fresh: roles stale; the parse holds 3 analyses, "
+            "the last upload 5 (2 missing)")
+    cat.record([*_through(a, _upstream("upload")), Outcome.failure(a, "upload", "", held)])
+    cat.close()
+    conn = open_readonly(tmp_path / "held")
+    try:
+        funnel = build_funnel(conn, samples=5)
+    finally:
+        conn.close()
+    state, reason, *_, raw = _where(funnel, a, "upload")
+    assert (state, reason) == (FAILED, "held back: upstream not fresh: roles stale")
+    assert raw.endswith("the last upload 5 (2 missing)")
+    step = {s["stage"]: s for s in page_model(funnel)["flow"]}["upload"]
+    assert step["excluded"][0][1] == "held back: upstream not fresh: roles stale"
+    assert any(word in reason and "stale or failed" in meaning for word, meaning in GLOSSARY)
+    stages = {s["stage"]: s for s in trace_article(tmp_path / "held", a)["stages"]}
+    assert stages["upload"]["records"][0]["reason"] == held

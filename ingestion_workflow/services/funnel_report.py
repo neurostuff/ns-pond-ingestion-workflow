@@ -87,6 +87,12 @@ MEANINGS = {
 EXCLUDED = (FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, UNACCOUNTED)
 WAITING = (PENDING, NOT_ATTEMPTED)
 
+#: The reason upload holds an article back on (`GATED` in the upload stage):
+#: "<this>: <stage> <state>; ...; the parse holds N analyses, the last upload M
+#: (K missing)". The funnel keeps the stages in the reason and the counts in the
+#: detail, so articles group by what they wait on.
+HELD_BACK = "held back: upstream not fresh"
+
 #: Plain words for common reasons, matched as a substring, first match wins.
 GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("leftover", "a failed or empty record left from an earlier run; nothing downstream "
@@ -96,6 +102,9 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("nothing to read (passages = 0)", "no passage to send to the model; running it costs "
                                        "nothing and records an empty answer"),
     (READ_FROM_BAD_PAGE, "the text it would read came from a page that is not the article"),
+    (HELD_BACK, "upload waits: a stage this parse is built from is stale or failed, so it may "
+                "hold fewer analyses than the last upload; the detail names the stage and how "
+                "many are missing"),
     ("bad page: paywall", "the download was a paywall or login page, not the article"),
     ("bad page: error_page", "the download was an error page (not found, server error)"),
     ("bad page: empty_shell", "the download held almost no visible text (a viewer shell)"),
@@ -236,6 +245,8 @@ def categorize(error: Optional[str]) -> str:
     """The category of a recorded error; unmatched text keeps its own shape."""
     if not error:
         return "no reason recorded"
+    if error.startswith(HELD_BACK):
+        return error.split("; the parse holds", 1)[0]
     for pattern, category in _COMPILED:
         if pattern.search(error):
             return category
@@ -1035,7 +1046,9 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
                 if blob else None
             records[stage].append({
                 "source": source, "status": status,
-                "reason": plain_reason(_row_reason(by_key[(stage, source)])),
+                # Upload's held-back reason is already in words, and its counts matter.
+                "reason": error if (error or "").startswith(HELD_BACK)
+                else plain_reason(_row_reason(by_key[(stage, source)])),
                 "error_detail": scrub(error or ""),
                 "summary": json.loads(summary), "fingerprint": fp, "written": written,
                 "path": str(path) if path else None,
