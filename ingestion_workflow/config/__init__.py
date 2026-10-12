@@ -73,6 +73,13 @@ class UploadMetadataMode(str, Enum):
     OVERWRITE = "overwrite"
 
 
+class UploadBackend(str, Enum):
+    #: Post the coordinate parse sync wrote to neurostore's study_schema ingester.
+    INGESTER = "ingester"
+    #: Deprecated: write neurostore's database directly over an ssh tunnel.
+    LEGACY = "legacy"
+
+
 class Settings(BaseSettings):
     """
     Application configuration with support for:
@@ -724,6 +731,15 @@ class Settings(BaseSettings):
     )
 
     # ===== Upload through neurostore's study_schema ingester =====
+    upload_backend: UploadBackend = Field(
+        default=UploadBackend.INGESTER,
+        description=(
+            "How `upload` reaches neurostore. 'ingester' posts the coordinate parse "
+            "sync wrote to the study_schema ingester, so sync runs first. 'legacy' is "
+            "deprecated: it writes the database directly over an ssh tunnel, and sync "
+            "then copies what it uploaded"
+        ),
+    )
     neurostore_api_url: Optional[str] = Field(
         default=None,
         description=(

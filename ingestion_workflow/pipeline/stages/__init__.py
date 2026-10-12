@@ -1,5 +1,7 @@
 """The stages, in the order they run."""
 
+import logging
+
 from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
@@ -12,9 +14,11 @@ from .reflist import ReflistStage
 from .resolve import ResolveStage
 from .roles import RolesStage
 from .space import SpaceStage
-from .sync import SyncStage
+from .sync import SyncBeforeUploadStage, SyncStage, legacy_upload
 from .triage import TriageStage
-from .upload import UploadStage
+from .upload import IngesterUploadStage, UploadStage
+
+logger = logging.getLogger(__name__)
 
 #: Canonical order. A stage may only require one that appears before it.
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
@@ -38,9 +42,14 @@ from .upload import UploadStage
 #: downstream reads them yet, so they run only when asked for by name.
 #:
 #: `roles` always runs: it decides what each set of resolve's (or analyses',
-#: without prose) is for, and space, upload and sync read only what it passed.
-STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices", "triage", "analyses",
-               "prose", "resolve", "roles", "space", "upload", "sync")
+#: without prose) is for, and space, sync and upload read only what it passed.
+#:
+#: `sync` writes the corpus copy and the coordinate parse, and `upload` then posts
+#: that parse to neurostore's ingester. The deprecated direct-database upload
+#: (`upload_backend: legacy`) runs the other way round, `LEGACY_UPLOAD_ORDER`.
+STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices",
+               "triage", "analyses", "prose", "resolve", "roles", "space", "sync", "upload")
+LEGACY_UPLOAD_ORDER = STAGE_ORDER[:-2] + ("upload", "sync")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
@@ -62,9 +71,22 @@ STAGE_TYPES = {
     "resolve": ResolveStage,
     "roles": RolesStage,
     "space": SpaceStage,
-    "upload": UploadStage,
-    "sync": SyncStage,
+    "sync": SyncBeforeUploadStage,
+    "upload": IngesterUploadStage,
 }
+
+#: The two stages the deprecated direct-database upload swaps in.
+LEGACY_UPLOAD_TYPES = {**STAGE_TYPES, "upload": UploadStage, "sync": SyncStage}
+
+
+def stage_order(settings):
+    """The order the stages run in under this run's upload backend."""
+    return LEGACY_UPLOAD_ORDER if legacy_upload(settings) else STAGE_ORDER
+
+
+def stage_types(settings):
+    """{name: stage class} under this run's upload backend."""
+    return LEGACY_UPLOAD_TYPES if legacy_upload(settings) else STAGE_TYPES
 
 
 def build(names, settings):
@@ -79,13 +101,20 @@ def build(names, settings):
     if wanted & set(PROSE_STAGES) and not enabled:
         raise ValueError("the passages, prose and resolve stages need prose_model: space "
                          "reads analyses without it, so their output would go nowhere")
-    return [STAGE_TYPES[name](settings) for name in STAGE_ORDER if name in wanted]
+    if legacy_upload(settings) and wanted & {"upload", "sync"}:
+        logger.warning("upload_backend: legacy is deprecated: it writes neurostore's database "
+                       "directly; the ingester (upload_backend: ingester) replaces it")
+    types = stage_types(settings)
+    return [types[name](settings) for name in stage_order(settings) if name in wanted]
 
 
 __all__ = [
     "AnalysesStage",
     "DownloadStage",
     "ExtractStage",
+    "IngesterUploadStage",
+    "LEGACY_UPLOAD_ORDER",
+    "LEGACY_UPLOAD_TYPES",
     "MetadataStage",
     "NoticesStage",
     "OPT_IN_STAGES",
@@ -99,8 +128,11 @@ __all__ = [
     "STAGE_ORDER",
     "STAGE_TYPES",
     "SpaceStage",
+    "SyncBeforeUploadStage",
     "SyncStage",
     "TriageStage",
     "UploadStage",
     "build",
+    "stage_order",
+    "stage_types",
 ]

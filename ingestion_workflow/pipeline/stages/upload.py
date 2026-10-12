@@ -1,9 +1,17 @@
-"""Write studies, analyses and coordinates to the Neurostore database."""
+"""Send each article's studies, analyses and coordinates to neurostore.
+
+`IngesterUploadStage` is the upload the pipeline runs: it posts the coordinate parse
+sync wrote to neurostore's study_schema ingester. `UploadStage` is the deprecated
+direct-database upload (`upload_backend: legacy`), which runs before sync.
+"""
 
 from __future__ import annotations
 
+import json
 import logging
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import AnalysisCollection
@@ -11,7 +19,14 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import HELD_FOR_REVIEW, NO_TEXT, Context, is_take_back, take_back_or_block
+from ..stage import (
+    HELD_FOR_REVIEW,
+    NO_TEXT,
+    Context,
+    is_take_back,
+    take_back_or_block,
+    taken_back,
+)
 from .roles import refuse_unassigned, uploaded_sets, with_roles
 
 logger = logging.getLogger(__name__)
@@ -41,6 +56,11 @@ def _notice_marker(notices: Optional[Artifact]) -> Optional[str]:
 
 
 class UploadStage:
+    """Deprecated: write neurostore's database directly over an ssh tunnel.
+
+    Runs only with `upload_backend: legacy`, before `SyncStage`. It has no dry run.
+    """
+
     name = "upload"
     #: `space` is the analyses with their unknown spaces filled in.
     requires = "space"
@@ -130,6 +150,10 @@ class UploadStage:
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         from ingestion_workflow.services.upload import resolve_upload_source
 
+        if getattr(self.settings, "dry_run", False):
+            # It would write the database: a dry run's upload is the ingester's.
+            raise ValueError("the direct-database upload (upload_backend: legacy) has no dry "
+                             "run; use upload_backend: ingester")
         resolve_upload_source(self.settings)
         # A retraction that has since gone from PubMed: the study was marked on
         # an earlier upload, and neurostore's own ingester clears the flag when
@@ -463,3 +487,397 @@ class UploadStage:
             if meta_payload:
                 metadata[slug] = ArticleMetadata.from_dict(meta_payload)
         return analyses, metadata, empty
+
+
+#: 1: the coordinate parse sync wrote, posted to the study_schema ingester.
+INGEST_UPLOAD_VERSION = 1
+
+#: What a held-back upload's error starts with. Its parse was built from a table or
+#: prose reading that is stale or failed, so it may lack analyses neurostore holds, and
+#: the ingester would delete or supersede them.
+GATED = "held back: upstream not fresh"
+
+#: What an upload records for an article whose text was taken back after it was
+#: uploaded: the ingester cannot take a study back, so neurostore keeps the last upload.
+NOT_TAKEN_BACK = (f"{NO_TEXT}; the ingester cannot take a study back, so neurostore keeps "
+                  "the last upload")
+
+#: The stages the parse is built from, in pipeline order; the prose ones run only with prose.
+GATE_STAGES = ("analyses", "passages", "prose", "resolve", "roles", "space", "sync")
+
+#: The readings a person can leave out of an upload as a whole, with an exclusion on the
+#: table id `source:<name>` (`ingest exclude <article> -t source:tables --reason ...`),
+#: and the stages each covers. The stages after them are never excused.
+SOURCE_STAGES = {"tables": ("analyses",), "prose": ("passages", "prose")}
+SOURCE_MARK = "source:"
+
+#: Under the dry-run root: one JSON line per article for each dry run of the stage.
+DRY_RUN_RUNS = "upload_runs"
+
+
+def _short(text: Optional[str], limit: int = 200) -> str:
+    text = " ".join((text or "no reason recorded").split())
+    return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def upstream_state(name: str, plan: StagePlan, existing: Optional[Artifact],
+                   triage: Optional[Artifact] = None) -> Optional[str]:
+    """Why a stage's output for one article is not fresh, from that stage's own plan of it.
+
+    None when it is fresh, or when the stage has nothing for the article (it skipped it,
+    or, for `analyses`, triage passed no table and so there is nothing to read).
+    """
+    if plan.fresh or plan.skipped:
+        return None
+    if plan.pending:
+        if is_take_back(plan.pending[0]):
+            return "taken back"
+        if existing is None:
+            if name == "analyses" and triage is not None and triage.status is Status.OK \
+                    and (triage.summary or {}).get("passed") == 0:
+                return None
+            return "not run"
+        if existing.status is Status.OK:
+            return "stale"
+        return f"failed: {_short(existing.error)}"
+    if plan.permanent:
+        if existing is not None and existing.status is Status.SKIPPED:
+            return None
+        # FAILED here is waiting out its retry backoff, or has used up its tries.
+        if existing is not None and existing.status is Status.FAILED:
+            return f"failed: {_short(existing.error)}"
+        return f"failed, not retried: {_short(existing.error if existing else None)}"
+    reasons = ", ".join(plan.reasons)
+    return "blocked" + (f" ({reasons})" if reasons else "")
+
+
+def _excused(name: str, marks: Dict[str, Dict[str, str]]) -> Optional[str]:
+    """The recorded reason a person left this stage's reading out of the upload, if any."""
+    for key in [excl.WHOLE_ARTICLE] + [
+            SOURCE_MARK + source for source, stages in SOURCE_STAGES.items() if name in stages]:
+        reason = (marks.get(key) or {}).get("reason")
+        if reason:
+            return reason
+    return None
+
+
+def _last_upload(existing: Optional[Artifact]) -> Optional[Dict[str, Any]]:
+    """What the last successful upload of the article sent, carried through later failures."""
+    if existing is None:
+        return None
+    summary = existing.summary or {}
+    if existing.status is Status.OK and existing.fingerprint != NO_TEXT:
+        return {k: summary.get(k) for k in ("base_study_id", "parse_id", "analyses")} | {
+            "at": existing.updated_at, "backend": summary.get("backend", "legacy")}
+    return summary.get("last_upload")
+
+
+class IngesterUploadStage:
+    """Post the coordinate parse sync wrote to neurostore's study_schema ingester.
+
+    One call per article. The ingester keys analyses by the parse's keys and deletes or
+    supersedes the ones a new parse lacks, so a parse built from a table or prose
+    reading that is not fresh is held back (`GATED`) with what is behind and how many
+    analyses it holds against the last upload. Each record's summary names the backend,
+    whether it was a dry run, and the ingester's summary or error.
+
+    A dry run (`dry_run`) validates each parse and writes its request body under the
+    ingester's dry-run root, with one JSON line per article under `upload_runs/`; it
+    records nothing in the catalog and never touches an upload artifact.
+    """
+
+    name = "upload"
+    requires = "sync"
+
+    def __init__(self, settings) -> None:
+        self.settings = settings
+        self.requires = self.upstream_for(settings)[0]
+        self._ingester = None
+        self._stopped: Optional[BaseException] = None
+        self._chain: Optional[List[Tuple[str, Any]]] = None
+        self._dry_path: Optional[Path] = None
+        self._dry_counts: Dict[str, int] = {}
+
+    @classmethod
+    def upstream_for(cls, settings):
+        """`sync`; `space` under the deprecated direct-database upload, which runs first."""
+        from .sync import legacy_upload
+
+        if legacy_upload(settings):
+            return UploadStage.requires, UploadStage.requires_flag
+        return cls.requires, None
+
+    @property
+    def dry_run(self) -> bool:
+        return bool(getattr(self.settings, "dry_run", False))
+
+    def fingerprint_for(self, upstream: Artifact) -> str:
+        from ingestion_workflow.services.neurostore_ingest import api_url
+
+        # A different API is a different neurostore, so the same parse goes to it anew.
+        return fingerprint(
+            "upload", "ingester", INGEST_UPLOAD_VERSION, api_url(self.settings),
+            bool(self.settings.neurostore_upload_parsed_paper),
+            upstream=upstream.fingerprint,
+        )
+
+    def plan(
+        self,
+        ctx: Context,
+        refs: Sequence[ArticleRef],
+        artifacts: Dict[str, Dict[str, Artifact]],
+        upstream: Dict[str, Dict[str, Artifact]],
+    ) -> StagePlan:
+        plan = StagePlan(stage=self.name)
+        attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        candidates = []
+        for ref in refs:
+            synced = upstream.get(ref.id, {}).get("")
+            existing = artifacts.get(ref.id, {}).get("")
+            if synced is None or synced.status is not Status.OK:
+                if taken_back(synced) and (existing is None or existing.fingerprint != NO_TEXT):
+                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT))
+                else:
+                    plan.blocked += 1
+                continue
+            fp = self.fingerprint_for(synced)
+            if ctx.is_fresh(existing, fp):
+                plan.fresh += 1
+                continue
+            # Only a failure on these same inputs uses up a retry: a parse sync wrote
+            # again is tried again, and a held-back upload is not a failed try.
+            if existing is not None and existing.fingerprint == fp \
+                    and not (existing.error or "").startswith(GATED):
+                if existing.status is Status.SKIPPED:
+                    plan.skipped += 1
+                    continue
+                count, last = attempts.get(ref.id, (0, None))
+                if not ctx.should_attempt(existing, count, last, self.name):
+                    plan.permanent += 1
+                    continue
+            candidates.append((ref, synced, existing, fp))
+        held = self.held_back(ctx, [c[0] for c in candidates],
+                              {ref.id: synced for ref, synced, _, _ in candidates}, artifacts)
+        for ref, synced, existing, fp in candidates:
+            gate = held.get(ref.id)
+            if gate and gate.get("reason") and not self.dry_run and existing is not None \
+                    and existing.fingerprint == fp and existing.error == gate["reason"]:
+                plan.block(GATED)  # recorded already, with this reason
+                continue
+            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=synced))
+        return plan
+
+    def gate_stages(self) -> List[Tuple[str, Any]]:
+        """(name, stage) for the stages the parse is built from, as this run builds them."""
+        if self._chain is None:
+            from . import PROSE_STAGES, STAGE_TYPES
+
+            prose = bool(getattr(self.settings, "prose_model", None))
+            self._chain = [(name, STAGE_TYPES[name](self.settings)) for name in GATE_STAGES
+                           if prose or name not in PROSE_STAGES]
+        return self._chain
+
+    def held_back(
+        self,
+        ctx: Context,
+        refs: Sequence[ArticleRef],
+        synced: Dict[str, Artifact],
+        uploaded: Dict[str, Dict[str, Artifact]],
+    ) -> Dict[str, Dict[str, Any]]:
+        """{article_id: why its upload is held back} for the articles whose parse may lack
+        analyses: a stage it is built from is not fresh, by that stage's own plan, and no
+        person left that reading out with a reason. An article that passes only because a
+        person did gets `{"excused": ...}` and no reason."""
+        if not refs:
+            return {}
+        ids = [ref.id for ref in refs]
+        marks = ctx.catalog.exclusions(ids)
+        triaged = ctx.catalog.artifacts(ids, "triage")
+        roled = ctx.catalog.artifacts(ids, "roles")
+        behind: Dict[str, Dict[str, str]] = {ref.id: {} for ref in refs}
+        for name, stage in self.gate_stages():
+            found = ctx.catalog.artifacts(ids, name)
+            parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
+            for ref in refs:
+                state = upstream_state(
+                    name, stage.plan(ctx, [ref], found, parents),
+                    found.get(ref.id, {}).get(""), triaged.get(ref.id, {}).get(""))
+                if state:
+                    behind[ref.id][name] = state
+        out = {}
+        for ref in refs:
+            excused = {name: why for name in behind[ref.id]
+                       if (why := _excused(name, marks.get(ref.id, {})))}
+            left = {name: state for name, state in behind[ref.id].items() if name not in excused}
+            if not left:
+                if excused:  # passes; the summary says what a person left out
+                    out[ref.id] = {"excused": excused}
+                continue
+            holds = (synced[ref.id].summary or {}).get("analyses") or 0
+            last = _last_upload(uploaded.get(ref.id, {}).get(""))
+            before = (last or {}).get("analyses")
+            roles = roled.get(ref.id, {}).get("")
+            reason = f"{GATED}: " + "; ".join(f"{name} {state}" for name, state in left.items())
+            reason += f"; the parse holds {holds} analyses"
+            reason += (", and nothing was uploaded before" if before is None else
+                       f", the last upload {before} ({max(before - holds, 0)} missing)")
+            out[ref.id] = {
+                "reason": reason,
+                "upstream": left,
+                **({"excused": excused} if excused else {}),
+                "parse_analyses": holds,
+                "last_uploaded_analyses": before,
+                "missing": max(before - holds, 0) if before is not None else None,
+                "sets": ((roles.summary or {}).get("sets") if roles is not None else None),
+            }
+        return out
+
+    def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        if self._stopped is not None:
+            self.close()
+            raise self._stopped
+        previous = ctx.catalog.artifacts([w.article_id for w in works], self.name)
+        back = [w for w in works if is_take_back(w)]
+        works = [w for w in works if not is_take_back(w)]
+        for work in back:
+            last = _last_upload(previous.get(work.article_id, {}).get(""))
+            yield from self._record(work, Outcome.failure(
+                work.article_id, self.name, "", NOT_TAKEN_BACK if last else NO_TEXT,
+                fingerprint=NO_TEXT, summary=self._summary(None, last)))
+        held = self.held_back(ctx, [w.ref for w in works],
+                              {w.article_id: w.upstream for w in works}, previous)
+        learned: List[Tuple[str, str, str]] = []
+        try:
+            yield from self._upload(ctx, works, previous, held, learned)
+        finally:
+            if learned:
+                ctx.catalog.add_aliases(learned)
+
+    def _upload(self, ctx, works, previous, held, learned) -> Iterator[Outcome]:
+        from ingestion_workflow.services.neurostore_ingest import StopRun
+
+        for work in works:
+            last = _last_upload(previous.get(work.article_id, {}).get(""))
+            summary = self._summary(work.upstream, last)
+            gate = held.get(work.article_id)
+            if gate and gate.get("reason"):
+                yield from self._record(work, Outcome.failure(
+                    work.article_id, self.name, "", gate["reason"], fingerprint=work.fingerprint,
+                    summary={**summary, "gate": gate}))
+                continue
+            summary["gate"] = gate
+            if not summary["analyses"] and last is None:
+                # Never uploaded and nothing to say: the ingester would create a study
+                # claiming the paper reports no coordinates.
+                yield from self._record(work, Outcome(
+                    article_id=work.article_id, stage=self.name, source="",
+                    status=Status.SKIPPED, fingerprint=work.fingerprint,
+                    summary={**summary, "reason": "no analyses to upload"}))
+                continue
+            try:
+                artifact = self.ingester().upload(Path(work.upstream.summary.get("path") or ""))
+            except StopRun as exc:
+                # Recorded, then the run stops before the next batch: every later
+                # article would fail the same way.
+                self._stopped = exc
+                logger.error("upload: stopping the run: %s", exc)
+                yield from self._record(work, Outcome.failure(
+                    work.article_id, self.name, "", f"{type(exc).__name__}: {exc}",
+                    fingerprint=work.fingerprint, summary=summary))
+                return
+            except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
+                logger.warning("upload failed for %s: %s", work.article_id, exc)
+                yield from self._record(work, Outcome.failure(
+                    work.article_id, self.name, "", f"{type(exc).__name__}: {_short(str(exc))}",
+                    fingerprint=work.fingerprint, summary=summary))
+                continue
+            yield from self._record(work, self._outcome(work, artifact, summary, learned))
+
+    def _summary(self, synced: Optional[Artifact],
+                 last: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        found = (synced.summary or {}) if synced is not None else {}
+        return {
+            "backend": "ingester",
+            "dry_run": self.dry_run,
+            "base_study_id": found.get("base_study_id"),
+            "parse_id": found.get("parse_id"),
+            "analyses": found.get("analyses"),
+            "gate": None,
+            **({"last_upload": last} if last else {}),
+        }
+
+    def _outcome(self, work: Work, artifact: Dict[str, Any], summary: Dict[str, Any],
+                 learned: List[Tuple[str, str, str]]) -> Outcome:
+        from ingestion_workflow.services.neurostore_ingest import Result
+
+        result = Result(artifact["status"])
+        record = {k: v for k, v in artifact.items() if k not in ("history", "last_uploaded")}
+        summary = {**summary, "ingester": record}
+        status = result.catalog_status
+        if status is Status.OK:
+            base_study_id = (record.get("summary") or {}).get("base_study_id")
+            if base_study_id:
+                summary["base_study_id"] = base_study_id
+                learned.append((work.article_id, "neurostore", base_study_id))
+            summary.pop("last_upload", None)
+            return Outcome(article_id=work.article_id, stage=self.name, source="",
+                           status=Status.OK, fingerprint=work.fingerprint, summary=summary)
+        error = record.get("error") or {}
+        detail = error.get("detail") or error.get("title") or "no detail"
+        if status is None:  # a dry run: the outcome goes to the dry run's own record
+            return Outcome(article_id=work.article_id, stage=self.name, source="",
+                           status=Status.SKIPPED, fingerprint=work.fingerprint,
+                           summary={**summary, "reason": result.value})
+        return Outcome.failure(
+            work.article_id, self.name, "", f"{result.value}: {_short(str(detail))}",
+            permanent=status is Status.PERMANENT, fingerprint=work.fingerprint, summary=summary)
+
+    def _record(self, work: Work, outcome: Outcome) -> Iterator[Outcome]:
+        """The outcome for the catalog; in a dry run, a line in the dry run's own record."""
+        if not self.dry_run:
+            yield outcome
+            return
+        status = (outcome.summary.get("ingester") or {}).get("status") or (
+            "held back" if outcome.summary.get("gate") else
+            outcome.summary.get("reason") or outcome.status.value)
+        self._dry_counts[status] = self._dry_counts.get(status, 0) + 1
+        line = {"article_id": work.article_id, "status": status, "error": outcome.error,
+                **outcome.summary}
+        path = self.dry_run_log()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(line, ensure_ascii=False, default=str) + "\n")
+
+    def dry_run_log(self) -> Path:
+        """This run's dry-run record: one JSON line per article."""
+        if self._dry_path is None:
+            from ingestion_workflow.services.neurostore_ingest import DRY_RUN_DIR
+
+            stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+            self._dry_path = (Path(self.settings.data_root) / DRY_RUN_DIR / DRY_RUN_RUNS
+                              / f"{stamp}.jsonl")
+        return self._dry_path
+
+    def ingester(self):
+        if self._ingester is None:
+            from ingestion_workflow.services.neurostore_ingest import NeurostoreIngester
+
+            self._ingester = NeurostoreIngester.from_settings(self.settings)
+        return self._ingester
+
+    def close(self) -> None:
+        if self._ingester is not None:
+            self._ingester.close()
+            self._ingester = None
+
+    def finish(self) -> None:
+        self.close()
+        if self._dry_counts:
+            logger.info("upload dry run: %s; written to %s", ", ".join(
+                f"{n:,} {status}" for status, n in sorted(self._dry_counts.items())),
+                self._dry_path)
+            self._dry_counts = {}
+            self._dry_path = None
+        if self._stopped is not None:
+            stopped, self._stopped = self._stopped, None
+            raise stopped

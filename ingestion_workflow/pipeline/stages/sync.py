@@ -1,4 +1,9 @@
-"""Materialise uploaded articles into the ns-pond tree pondie reads."""
+"""Materialise articles into the ns-pond tree pondie reads, with the parse upload sends.
+
+`SyncBeforeUploadStage` is the sync the pipeline runs: it reads `space` and writes the
+coordinate parse that the ingester upload then sends. `SyncStage` is the deprecated
+order, after the direct-database upload, and reads where that upload wrote.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +14,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.config import UploadBackend
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
@@ -20,7 +26,7 @@ from ingestion_workflow.services import nspond, paper_parse
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context
+from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .roles import refuse_unassigned, with_roles
 
@@ -30,6 +36,39 @@ logger = logging.getLogger(__name__)
 #: 3: parse/parsed_paper.json and parse/coordinate_parse.json beside stage1.
 #: 4: the sign split follows study_schema.statistics and is declared, not named.
 SYNC_VERSION = 4
+
+#: Why an article waits for sync: neurostore holds no base study for it yet, and the
+#: corpus directory and the parse's header are named by one.
+NOT_IN_NEUROSTORE = "no neurostore base study id yet"
+
+
+def legacy_upload(settings) -> bool:
+    """Whether the run uses the deprecated direct-database upload, which runs before sync."""
+    return getattr(settings, "upload_backend", None) == UploadBackend.LEGACY
+
+
+def known_base_study_ids(ctx: Context, refs: Sequence[ArticleRef]) -> Dict[str, str]:
+    """{article_id: base study id} for the articles neurostore holds a base study for.
+
+    The one an earlier upload wrote to, else the article's neurostore alias, else the
+    one an earlier sync named its directory by.
+    """
+    ids = [ref.id for ref in refs]
+    uploaded = ctx.catalog.artifacts(ids, "upload")
+    synced = ctx.catalog.artifacts(ids, "sync")
+    out = {}
+    for ref in refs:
+        upload = uploaded.get(ref.id, {}).get("")
+        sync = synced.get(ref.id, {}).get("")
+        found = (
+            ((upload.summary or {}).get("base_study_id")
+             if upload is not None and upload.status in (Status.OK, Status.SKIPPED) else None)
+            or ref.identifier.neurostore
+            or ((sync.summary or {}).get("base_study_id") if sync is not None else None)
+        )
+        if found:
+            out[ref.id] = found
+    return out
 
 
 class SyncStage:
@@ -110,9 +149,10 @@ class SyncStage:
         resolved = ctx.catalog.artifacts(ids, "resolve")
 
         excluded = ctx.catalog.exclusions(ids)
+        bases = self.base_study_ids(ctx, works)
         for work in works:
-            base_study_id = work.upstream.summary.get("base_study_id")
-            if work.upstream.summary.get("retracted"):
+            base_study_id = bases.get(work.article_id)
+            if self.retracting(work):
                 yield self._retract(work, base_study_id)
                 continue
             spaced = analyses.get(work.article_id, {}).get("")
@@ -182,6 +222,14 @@ class SyncStage:
                 fingerprint=work.fingerprint,
                 summary={"base_study_id": base_study_id, "path": str(target), **parse},
             )
+
+    def base_study_ids(self, ctx: Context, works: Sequence[Work]) -> Dict[str, Optional[str]]:
+        """{article_id: the base study its corpus directory is named by}: where it was uploaded."""
+        return {work.article_id: work.upstream.summary.get("base_study_id") for work in works}
+
+    def retracting(self, work: Work) -> bool:
+        """Whether the work takes the article out of the corpus rather than writing it."""
+        return bool(work.upstream.summary.get("retracted"))
 
     def _retract(self, work: Work, base_study_id: str) -> Outcome:
         """Take a retracted article out of the corpus.
@@ -259,6 +307,97 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+class SyncBeforeUploadStage(SyncStage):
+    """Write the corpus copy and the coordinate parse from `space`, before upload sends it.
+
+    Nothing here waits for an upload: the directory and the parse's header name the base
+    study neurostore already holds for the article (`known_base_study_ids`), and an
+    article it holds none for waits with `NOT_IN_NEUROSTORE`.
+    """
+
+    requires = "space"
+
+    def __init__(self, settings) -> None:
+        super().__init__(settings)
+        self.requires = self.upstream_for(settings)[0]
+
+    @classmethod
+    def upstream_for(cls, settings):
+        """`space`; `upload` under the deprecated direct-database upload, which runs first."""
+        if legacy_upload(settings):
+            return SyncStage.requires, None
+        return cls.requires, None
+
+    def fingerprint_for(self, upstream: Artifact, base_study_id: Optional[str] = None,
+                        excluded=None) -> str:
+        # The base study is in the parse's header. A person's exclusions change what is
+        # written, so marking a table re-syncs and upload then sends the parse without it.
+        marked = excl.digest(excluded or {})
+        return fingerprint(
+            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION,
+            (upstream.summary or {}).get("role_records"), "before upload", base_study_id,
+            *([marked] if marked else []),
+            upstream=upstream.fingerprint,
+        )
+
+    def plan(
+        self,
+        ctx: Context,
+        refs: Sequence[ArticleRef],
+        artifacts: Dict[str, Dict[str, Artifact]],
+        upstream: Dict[str, Dict[str, Artifact]],
+    ) -> StagePlan:
+        plan = StagePlan(stage=self.name)
+        ids = [ref.id for ref in refs]
+        roled = with_roles(ctx, ids)
+        prose = ctx.catalog.artifacts(ids, "prose")
+        downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
+        excluded = ctx.catalog.exclusions(ids)
+        bases = known_base_study_ids(ctx, refs)
+        for ref in refs:
+            spaced = upstream.get(ref.id, {}).get("")
+            existing = artifacts.get(ref.id, {}).get("")
+            if spaced is None or spaced.status is not Status.OK:
+                take_back_or_block(plan, ref, spaced, existing)
+                continue
+            if ref.id not in roled:
+                plan.blocked += 1
+                continue
+            base_study_id = bases.get(ref.id)
+            if not base_study_id:
+                plan.block(NOT_IN_NEUROSTORE)
+                continue
+            if read_from_bad_page(prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
+                                  extracted.get(ref.id, {})):
+                plan.block(f"prose {READ_FROM_BAD_PAGE}")
+                continue
+            fp = self.fingerprint_for(spaced, base_study_id, excluded.get(ref.id))
+            if ctx.is_fresh(existing, fp):
+                plan.fresh += 1
+                continue
+            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=spaced))
+        return plan
+
+    def base_study_ids(self, ctx: Context, works: Sequence[Work]) -> Dict[str, Optional[str]]:
+        return known_base_study_ids(ctx, [work.ref for work in works])
+
+    def retracting(self, work: Work) -> bool:
+        return is_take_back(work)
+
+    def _retract(self, work: Work, base_study_id: Optional[str]) -> Outcome:
+        """Move the corpus copy of an article whose text was taken back out of the tree.
+
+        Recorded as the take-back the stages before it record, so upload sees it.
+        """
+        moved = super()._retract(work, base_study_id).summary if base_study_id else {}
+        return Outcome.failure(
+            work.article_id, self.name, "", NO_TEXT, fingerprint=NO_TEXT,
+            summary={"base_study_id": base_study_id, "retracted": True,
+                     "moved_to": moved.get("moved_to")},
+        )
 
 
 def _parse_inputs(
