@@ -201,7 +201,8 @@ class DownloadStage:
                 permanent=reason is None and _is_permanent(message),
                 fingerprint=fp,
                 summary={**({"bad_page": reason} if reason else {}),
-                         **({"moved_aside": result.moved_aside} if result.moved_aside else {})},
+                         **({"moved_aside": result.moved_aside} if result.moved_aside else {}),
+                         **({"attempts": result.attempts} if result.attempts else {})},
             )
         return Outcome(
             article_id=ref.id,
@@ -213,6 +214,7 @@ class DownloadStage:
             summary={
                 "files": len(result.files),
                 "types": sorted({f.file_type.value for f in result.files}),
+                **({"attempts": result.attempts} if result.attempts else {}),
             },
         )
 

@@ -78,6 +78,8 @@ class DownloadResult:
     error_message: Optional[str] = None
     #: Rejected files moved out of a shared cache: original path -> where it went.
     moved_aside: Dict[str, str] = field(default_factory=dict)
+    #: Each URL tried or passed over for this article, in order, with its outcome.
+    attempts: List[Dict[str, object]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -89,6 +91,8 @@ class DownloadResult:
         }
         if self.moved_aside:
             out["moved_aside"] = dict(self.moved_aside)
+        if self.attempts:
+            out["attempts"] = [dict(attempt) for attempt in self.attempts]
         return out
 
     @classmethod
@@ -104,6 +108,7 @@ class DownloadResult:
             files=files,
             error_message=payload.get("error_message") or None,
             moved_aside=dict(payload.get("moved_aside") or {}),  # type: ignore[arg-type]
+            attempts=[dict(a) for a in payload.get("attempts") or []],  # type: ignore[union-attr]
         )
 
 

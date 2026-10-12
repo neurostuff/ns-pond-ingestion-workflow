@@ -622,6 +622,13 @@ class Settings(BaseSettings):
         default_factory=lambda: ["semantic_scholar", "openalex"],
         description="Ordered providers queried for an open-access PDF URL",
     )
+    pdf_max_attempts: int = Field(
+        default=5,
+        description=(
+            "Most candidate PDF URLs fetched per article; the rest are recorded "
+            "as not tried"
+        ),
+    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(

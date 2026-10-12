@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import time
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -50,6 +51,48 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         open_access=(work.get("open_access") or {}).get("is_oa"),
         source="openalex",
     )
+
+
+@dataclass(frozen=True)
+class OaLocation:
+    """One place OpenAlex says a copy of the work can be read for free."""
+
+    pdf_url: Optional[str]
+    landing_page_url: Optional[str]
+    #: OpenAlex's `source.type`: "repository", "journal", "conference", ...
+    source_type: Optional[str]
+    source_name: Optional[str]
+    #: "publishedVersion", "acceptedVersion" or "submittedVersion".
+    version: Optional[str]
+    is_best: bool = False
+
+
+def _oa_locations_from(work: Dict) -> List[OaLocation]:
+    """The work's open-access locations, `best_oa_location` first, each once."""
+    best = work.get("best_oa_location") or {}
+    raw = [best] if isinstance(best, dict) and best else []
+    raw += [loc for loc in work.get("locations") or [] if isinstance(loc, dict)]
+    seen = set()
+    locations: List[OaLocation] = []
+    for loc in raw:
+        if loc is not best and not loc.get("is_oa"):
+            continue
+        pdf_url, landing = loc.get("pdf_url") or None, loc.get("landing_page_url") or None
+        if (pdf_url, landing) in seen or not (pdf_url or landing):
+            continue
+        seen.add((pdf_url, landing))
+        source = loc.get("source") or {}
+        locations.append(
+            OaLocation(
+                pdf_url=str(pdf_url) if pdf_url else None,
+                landing_page_url=str(landing) if landing else None,
+                source_type=source.get("type"),
+                source_name=source.get("display_name"),
+                version=loc.get("version"),
+                is_best=loc is best,
+            )
+        )
+    return locations
 
 
 def _abstract(inverted: Optional[Dict[str, List[int]]]) -> Optional[str]:
@@ -156,53 +199,44 @@ class OpenAlexClient:
 
         return identifiers
 
-    def get_pdf_urls(self, identifiers: Identifiers) -> Dict[str, str]:
-        """Return a mapping of identifier slug to an open-access PDF URL.
+    def get_oa_locations(self, identifiers: Identifiers) -> Dict[str, List[OaLocation]]:
+        """Every open-access location OpenAlex lists per identifier slug, best first.
 
-        Prefers `best_oa_location.pdf_url` (a direct PDF link) over
-        `open_access.oa_url`, which may point at a landing page.
+        A work OpenAlex returns gets an entry even when it has no open-access
+        location, so an absent slug means OpenAlex does not know the article.
+        A failed batch raises `PartialAnswer` carrying the other batches'
+        results, rather than reading as "no open-access copy".
         """
-        pdf_urls: Dict[str, str] = {}
-
+        found: Dict[str, List[OaLocation]] = {}
+        failures: List[str] = []
         for id_type in ("doi", "pmid"):
             values = [
                 str(getattr(identifier, id_type)).strip()
                 for identifier in identifiers
-                if getattr(identifier, id_type) and identifier.slug not in pdf_urls
+                if getattr(identifier, id_type) and identifier.slug not in found
             ]
-            if not values:
-                continue
-
-            batches = [
-                values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-                for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE)
-            ]
-            for batch in batches:
+            for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
+                batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
                 params = {
                     "filter": f"{id_type}:{'|'.join(batch)}",
                     "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
                     "mailto": self.email,
-                    "select": "ids,best_oa_location,open_access",
+                    "select": "ids,best_oa_location,locations",
                 }
                 try:
                     payload = self._request_openalex(params)
-                except Exception:
+                except Exception as exc:  # noqa: BLE001 - reported with the rest
+                    failures.append(f"{id_type} batch of {len(batch)}: {exc}")
                     continue
 
                 for work in payload.get("results", []) or []:
-                    ids_data = work.get("ids", {}) or {}
-                    key = ids_data.get(id_type)
-                    if not key:
-                        continue
-                    identifier = identifiers.lookup(key, key=id_type)
-                    if identifier is None:
-                        continue
-
-                    url = self._pdf_url_from_work(work)
-                    if url:
-                        pdf_urls[identifier.slug] = url
-
-        return pdf_urls
+                    key = (work.get("ids", {}) or {}).get(id_type)
+                    identifier = identifiers.lookup(key, key=id_type) if key else None
+                    if identifier is not None:
+                        found[identifier.slug] = _oa_locations_from(work)
+        if failures:
+            raise PartialAnswer("OpenAlex location lookup failed: " + "; ".join(failures), found)
+        return found
 
     def search_title(self, title: str, limit: int = 5) -> List[Tuple[Identifier, ArticleMetadata]]:
         """Works whose title matches `title`, best first, with their authors.
@@ -312,22 +346,6 @@ class OpenAlexClient:
                 if doi and work.get("is_retracted") is not None:
                     found[doi.lower()] = bool(work["is_retracted"])
         return found
-
-    @staticmethod
-    def _pdf_url_from_work(work: Dict) -> Optional[str]:
-        best_location = work.get("best_oa_location") or {}
-        if isinstance(best_location, dict):
-            url = best_location.get("pdf_url")
-            if url:
-                return str(url)
-
-        open_access = work.get("open_access") or {}
-        if isinstance(open_access, dict):
-            url = open_access.get("oa_url")
-            if url:
-                return str(url)
-
-        return None
 
     def _rate_limit_sleep(self) -> None:
         """Ensure we respect the 10 requests/sec polite pool limit."""
