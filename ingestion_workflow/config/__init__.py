@@ -758,6 +758,7 @@ class Settings(BaseSettings):
     )
     neurostore_upload_max_blocked: int = Field(
         default=20,
+        ge=0,
         description=(
             "Stop the run once this many papers in a row are blocked by transient "
             "failures, rather than spending every paper's retries on an outage; 0 "

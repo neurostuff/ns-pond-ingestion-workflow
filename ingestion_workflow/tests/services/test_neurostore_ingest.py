@@ -647,3 +647,114 @@ def test_any_authorization_value_is_scrubbed_not_only_the_token():
     )
     assert "s3cr3t" not in ni.scrub('{"Authorization": "Bearer s3cr3t"}', ADMIN)
     assert "s3cr3t" not in ni.scrub("authorization=s3cr3t", None)
+
+
+@pytest.mark.parametrize("before_cut", [5, 10, len(ADMIN) - 1])
+def test_a_raw_token_echoed_across_the_excerpt_cut_leaves_no_part_behind(neurostore, study,
+                                                                        token, before_cut):
+    echo = b"x" * (ni.BODY_EXCERPT - before_cut) + ADMIN.encode() + b" and more"
+    neurostore.script = [(422, echo, {})]
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+
+    text = (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()
+    assert artifact["status"] == "refused"
+    assert ADMIN[:before_cut] not in text
+    assert len(artifact["error"]["body_excerpt"]) == ni.BODY_EXCERPT
+
+
+def test_a_raw_token_echoed_in_an_error_field_is_scrubbed(neurostore, study, token):
+    neurostore.script = [(400, {"detail": f"token {ADMIN} rejected", "title": ADMIN}, {})]
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+
+    assert ADMIN not in (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()
+    assert artifact["error"]["detail"] == f"token {ni.REDACTED} rejected"
+    assert artifact["error"]["title"] == ni.REDACTED
+
+
+def test_the_stop_for_an_unsendable_request_carries_no_httpx_error(neurostore, study, token):
+    with _ingester(neurostore) as ingester:
+        def refuse(*args, **kwargs):
+            raise httpx.LocalProtocolError(f"Illegal header value b'{ADMIN}'")
+
+        ingester._client.post = refuse
+        with pytest.raises(ni.NeurostoreConfigError) as stopped:
+            ingester.upload(study)
+
+    assert stopped.value.__context__ is None
+    assert stopped.value.__cause__ is None
+
+
+def test_max_blocked_cannot_be_negative_and_zero_never_stops(neurostore, study, token):
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        Settings(neurostore_upload_max_blocked=-1)
+    neurostore.script = [(503, b"down", {})] * 3
+    with _ingester(neurostore, retries=0, max_blocked=0) as ingester:
+        statuses = [ingester.upload(study)["status"] for _ in range(3)]
+    assert statuses == ["blocked"] * 3
+
+
+def test_log_lines_stay_scrubbed_for_an_ingester_never_closed_and_after_close(
+    neurostore, monkeypatch, tmp_path, caplog
+):
+    secret = "never-closed-token-77"
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("NEUROSTORE_TOKEN", secret)
+    http11 = logging.getLogger("httpcore.http11")
+    with caplog.at_level(logging.DEBUG):
+        ingester = _ingester(neurostore)
+        http11.debug("send_request_headers %s", secret)
+        ingester.close()
+        http11.debug("late line %s", secret)
+        logging.getLogger("httpx").debug("raw %s", secret)
+
+    assert secret not in caplog.text
+    assert "late line" in caplog.text
+
+
+def test_a_dry_run_from_settings_writes_outside_the_pond(neurostore, study, monkeypatch,
+                                                         tmp_path):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
+    data = tmp_path / "data"
+    settings = Settings(neurostore_api_url=neurostore.url, dry_run=True, data_root=data)
+    with ni.NeurostoreIngester.from_settings(settings) as ingester:
+        artifact = ingester.upload(study)
+
+    out = data / ni.DRY_RUN_DIR / study.name
+    assert artifact["status"] == "dry_run"
+    assert artifact["payload_path"] == str(out / ni.PAYLOAD_NAME)
+    assert json.loads((out / ni.DRY_RUN_NAME).read_text()) == artifact
+    assert not (study / ni.UPLOAD_DIR).exists()
+    assert neurostore.requests == []
+
+
+def test_a_dry_run_of_an_invalid_parse_writes_no_upload_artifact(neurostore, study, tmp_path):
+    path = study / "parse" / "coordinate_parse.json"
+    parse = json.loads(path.read_text())
+    del parse["analyses"][0]["role"]
+    path.write_text(json.dumps(parse))
+    root = tmp_path / "dry"
+    artifact = ni.NeurostoreIngester(neurostore.url, dry_run=True, dry_run_root=root).upload(study)
+
+    assert artifact["status"] == "invalid"
+    assert json.loads((root / study.name / ni.DRY_RUN_NAME).read_text()) == artifact
+    assert not (root / study.name / ni.ARTIFACT_NAME).exists()
+    assert not (study / ni.UPLOAD_DIR).exists()
+
+
+def test_every_neurostore_setting_is_in_the_settings_reference():
+    from pathlib import Path
+
+    import yaml
+
+    reference = Path(__file__).parents[3] / "configs" / "settings_reference.yaml"
+    documented = yaml.safe_load(reference.read_text())
+    fields = {n: f for n, f in Settings.model_fields.items() if n.startswith("neurostore_")}
+    assert set(fields) <= set(documented)
+    for name, field in fields.items():
+        default = getattr(field.default, "value", field.default)
+        assert documented[name] == default, name

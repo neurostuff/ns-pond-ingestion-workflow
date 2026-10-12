@@ -12,7 +12,9 @@ Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`: the lates
 upload's outcome at the top, the last successful summary per endpoint under
 `last_uploaded`, and every upload's outcome, in order, under `history`. A dry run
 validates and writes the exact request body to `neurostore_payload.json` and its own
-record to `neurostore_dry_run.json`; it never touches the upload artifact.
+record to `neurostore_dry_run.json`, under `dry_run_root/<study>/` (from_settings:
+`<data_root>/neurostore_dry_run/<study>/`, outside the ns-pond tree); it never touches
+the upload artifact.
 
 How a response is treated:
 
@@ -61,6 +63,8 @@ UPLOAD_PATH = "/api/study-schema-uploads/"
 UPLOAD_DIR = "upload"
 ARTIFACT_NAME = "neurostore_ingest.json"
 DRY_RUN_NAME = "neurostore_dry_run.json"
+#: Under `data_root`: where `from_settings` puts a dry run's files, one directory per study.
+DRY_RUN_DIR = "neurostore_dry_run"
 PAYLOAD_NAME = "neurostore_payload.json"
 #: Bump when the artifact's fields change meaning.
 ARTIFACT_VERSION = 2
@@ -94,6 +98,7 @@ _HTTP_LOGGERS = (
     "httpcore.http11",
     "httpcore.http2",
     "httpcore.proxy",
+    "httpcore.socks",
 )
 
 
@@ -253,18 +258,29 @@ def redact(value: Any, token: Optional[str]) -> Any:
 
 
 class _Scrub(logging.Filter):
-    """Scrubs the token from a log record before any handler sees it."""
+    """Scrubs every live ingester's token from a log record before any handler sees it.
 
-    def __init__(self, token: Optional[str]) -> None:
+    One filter for the module, installed at import, so it keeps working for an
+    ingester that is never closed and for log lines written after it is.
+    """
+
+    def __init__(self) -> None:
         super().__init__()
-        self.token = token
+        self.tokens: set = set()
 
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
-        clean = scrub(message, self.token)
+        clean = scrub(message, None)
+        for token in self.tokens:
+            clean = scrub(clean, token)
         if clean != message:
             record.msg, record.args = clean, ()
         return True
+
+
+_SCRUB = _Scrub()
+for _name in (*_HTTP_LOGGERS, logger.name):
+    logging.getLogger(_name).addFilter(_SCRUB)
 
 
 class NeurostoreIngester:
@@ -281,6 +297,7 @@ class NeurostoreIngester:
         max_blocked: int = 20,
         send_parsed_paper: bool = True,
         dry_run: bool = False,
+        dry_run_root: Optional[Path] = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.url = base_url.rstrip("/") + UPLOAD_PATH
@@ -290,6 +307,7 @@ class NeurostoreIngester:
         self.max_blocked = max_blocked
         self.send_parsed_paper = send_parsed_paper
         self.dry_run = dry_run
+        self.dry_run_root = Path(dry_run_root) if dry_run_root is not None else None
         self._sleep = sleep
         self._blocked_in_a_row = 0
         self._token = None if dry_run else read_token(token_env)
@@ -302,15 +320,15 @@ class NeurostoreIngester:
                 f"the token in {token_env} is not a valid header value: it holds whitespace "
                 "or a non-ASCII character"
             )
-        self._filter = _Scrub(self._token)
-        self._loggers = [logging.getLogger(name) for name in (*_HTTP_LOGGERS, logger.name)]
-        for each in self._loggers:
-            each.addFilter(self._filter)
+        if self._token:
+            _SCRUB.tokens.add(self._token)
         self._client = None if dry_run else httpx.Client(timeout=timeout)
 
     @classmethod
     def from_settings(cls, settings, **kwargs) -> "NeurostoreIngester":
         kwargs.setdefault("dry_run", settings.dry_run)
+        # A run's dry-run output belongs with the run's own data, not in the ns-pond tree.
+        kwargs.setdefault("dry_run_root", Path(settings.data_root) / DRY_RUN_DIR)
         return cls(
             api_url(settings),
             token_env=settings.neurostore_token_env,
@@ -328,8 +346,6 @@ class NeurostoreIngester:
     def close(self) -> None:
         if self._client is not None:
             self._client.close()
-        for each in self._loggers:
-            each.removeFilter(self._filter)
 
     def __enter__(self) -> "NeurostoreIngester":
         return self
@@ -347,7 +363,12 @@ class NeurostoreIngester:
         papers in a row were blocked.
         """
         study_dir = Path(study_dir)
-        out = Path(out_dir) if out_dir is not None else study_dir / UPLOAD_DIR
+        if out_dir is not None:
+            out = Path(out_dir)
+        elif self.dry_run and self.dry_run_root is not None:
+            out = self.dry_run_root / study_dir.name
+        else:
+            out = study_dir / UPLOAD_DIR
         record: Dict[str, Any] = {
             "artifact_version": ARTIFACT_VERSION,
             "study_id": study_dir.name,
@@ -399,6 +420,7 @@ class NeurostoreIngester:
         error: Dict[str, Any] = {}
         for attempt in range(1, self.retries + 2):
             retry_after = None
+            unsendable = False
             record.pop("http_status", None)
             try:
                 response = self._client.post(self.url, content=body, headers=headers)
@@ -408,11 +430,7 @@ class NeurostoreIngester:
             except (httpx.LocalProtocolError, httpx.UnsupportedProtocol) as exc:
                 error = {"detail": self._describe(exc)}
                 attempts.append({"attempt": attempt, "error": type(exc).__name__})
-                self._finish(out, record, Result.MISCONFIGURED, error=error)
-                raise NeurostoreConfigError(
-                    f"the request to {self.url} cannot be sent: {error['detail']}. "
-                    "Stopping the run."
-                ) from None
+                unsendable = True
             except httpx.TransportError as exc:
                 error = {"detail": self._describe(exc)}
                 attempts.append({"attempt": attempt, "error": type(exc).__name__})
@@ -435,6 +453,14 @@ class NeurostoreIngester:
                     if status != 429 and status < 500:
                         return self._finish(out, record, Result.REFUSED, error=error)
                     retry_after = _seconds(response.headers.get("Retry-After"))
+            if unsendable:
+                # Raised here, outside the except block, so the httpx error (whose text
+                # can hold the header) is not kept as this exception's __context__.
+                self._finish(out, record, Result.MISCONFIGURED, error=error)
+                raise NeurostoreConfigError(
+                    f"the request to {self.url} cannot be sent: {error['detail']}. "
+                    "Stopping the run."
+                )
             if attempt <= self.retries:
                 delay = min(max(self.backoff * 2 ** (attempt - 1), retry_after or 0), MAX_DELAY)
                 self._sleep(delay)
@@ -495,7 +521,8 @@ class NeurostoreIngester:
             for field in ("title", "detail", "errors"):
                 if field in parsed:
                     error[field] = parsed[field]
-        error["body_excerpt"] = response.text[:BODY_EXCERPT]
+        # Scrubbed whole, then cut: a cut through the token would leave its head behind.
+        error["body_excerpt"] = scrub(response.text, self._token)[:BODY_EXCERPT]
         return redact(error, self._token)
 
     def _finish(
@@ -513,7 +540,7 @@ class NeurostoreIngester:
         if error is not None:
             record["error"] = redact(error, self._token)
         out.mkdir(parents=True, exist_ok=True)
-        if result is Result.DRY_RUN:
+        if self.dry_run:
             artifact = record
             _write_json(out / DRY_RUN_NAME, artifact)
         else:
