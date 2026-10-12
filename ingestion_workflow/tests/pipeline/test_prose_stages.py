@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
@@ -1648,23 +1649,59 @@ class _RoleFreeReader:
             {"name": "patients > controls, covarying for IQ", "measure": None, "points": points}]}
 
 
-def test_prose_reports_each_repeat_within_a_set_and_each_stray_role(env):
+def test_prose_counts_stray_roles_and_resolve_makes_a_repeat_within_a_set_one_point(env):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="31"))
     _record_upstream(catalog, ref, path)
-    reader = _RoleFreeReader(stray_role=True)
-    _, (read,) = _read_prose(Context(settings, catalog), catalog, ref, reader)
+    ctx = Context(settings, catalog)
+    _, (read,) = _read_prose(ctx, catalog, ref, _RoleFreeReader(stray_role=True))
     assert read.status is Status.OK
-    counts = [read.summary[k] for k in ("coordinates", "duplicate_points", "stray_roles")]
-    assert counts == [2, 1, 3]
+    assert (read.summary["coordinates"], read.summary["stray_roles"]) == (3, 3)
     first, second = read.payload["passages"][0]["analyses"]
-    assert [(d["x"], d["y"], d["z"], d["reason"]) for d in first["duplicates"]] == [
-        (-22.0, -4.0, -18.0, "repeats a point of this analysis")]
-    # The repeat across contrasts is not a duplicate: each keeps the point.
-    kept = [(q["x"], q["y"], q["z"]) for a in (first, second) for q in a["points"]]
-    assert kept == [(-22.0, -4.0, -18.0)] * 2
-    assert second["duplicates"] == []
     assert not any("role" in q for a in (first, second) for q in a["points"])
+    _, (merged,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    one, other = merged.payload["prose"]["analyses"]
+    assert [(c["x"], c["y"], c["z"]) for c in one["coordinates"]] == [(-22.0, -4.0, -18.0)]
+    assert one["metadata"]["dropped"] == [
+        {"x": -22.0, "y": -4.0, "z": -18.0, "reason": "repeats a point of this analysis"}]
+    assert "merged_statistics" not in one["metadata"]   # the repeat gave the same statistic
+    # The repeat across contrasts is not a repeat: each keeps the point.
+    assert [(c["x"], c["y"], c["z"]) for c in other["coordinates"]] == [(-22.0, -4.0, -18.0)]
+    assert (merged.summary["repeated"], merged.summary["merged_statistics"]) == (1, 0)
+
+
+def test_a_place_given_with_three_statistics_is_one_point_carrying_all_three():
+    """nmb-112, as the role-free model answered it: each peak once each as t, Z and p."""
+    from ingestion_workflow.clients.prose_coordinates import clean_answer
+
+    case = json.loads((Path(__file__).parents[1] / "data" / "prose" / "nmb_112.json")
+                      .read_text(encoding="utf-8"))
+    answer = clean_answer(case["answer"], case["text"])
+    prose = {"space": "MNI", "passages": [{"heading": None, "space": "MNI", **answer}]}
+    out, summary = resolve({}, prose, "slug")
+    (analysis,) = out["prose"]["analyses"]
+    places = [(-12.0, -2.0, -16.0), (-60.0, -42.0, 4.0), (64.0, -30.0, -10.0)]
+    assert [(c["x"], c["y"], c["z"], c["statistic_type"], c["statistic_value"])
+            for c in analysis["coordinates"]] == [
+        (*places[0], "T", 6.24), (*places[1], "T", 4.09), (*places[2], "T", 3.71)]
+    assert analysis["metadata"]["merged_statistics"] == [
+        {"x": x, "y": y, "z": z, "statistics": [
+            {"statistic": k, "value": v} for k, v in zip("TZP", values)]}
+        for (x, y, z), values in zip(places, [(6.24, 4.17, 0.001), (4.09, 3.22, 0.001),
+                                              (3.71, 3.01, 0.001)])]
+    assert len(analysis["metadata"]["dropped"]) == 6
+    counts = [summary[k] for k in ("prose_points", "repeated", "merged_statistics")]
+    assert counts == [3, 6, 3]
+
+
+def test_a_place_repeated_across_sets_stays_in_each_after_resolve():
+    """nmb-164: one Talairach peak reported for three contrasts."""
+    names = ["Affect x Group interaction", "libertarians > determinists", "main effect of Affect"]
+    prose = {"passages": [_passage(*[(n, [(50, -50, 15, "result")]) for n in names])]}
+    out, summary = resolve({}, prose, "slug")
+    assert [(a["name"], [(c["x"], c["y"], c["z"]) for c in a["coordinates"]])
+            for a in out["prose"]["analyses"]] == [(n, [(50.0, -50.0, 15.0)]) for n in names]
+    assert (summary["repeated"], summary["merged_statistics"]) == (0, 0)
 
 
 def test_a_role_free_reading_reaches_space_with_roles_only_from_the_roles_stage(env, monkeypatch):
@@ -1755,15 +1792,19 @@ def test_an_earlier_reading_of_the_exact_passage_text_is_reused_at_its_new_span(
     assert read.status is Status.OK
     assert read.summary["reused"] == {"exact.1": [0, 1]}
     assert read.summary["read_again"] == {}
-    assert read.summary["prompt_versions"] == {"unrecorded": 2}
+    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 2}
+    assert read.summary["unrecorded_producers"] == 2
     # re-anchored: the new spans, the old names and points, the role word only counted
     assert [p["span"] for p in read.payload["passages"]] == [p["span"] for p in found["passages"]]
     assert [[(a["name"], [(q["x"], q["y"], q["z"]) for q in a["points"]])
              for a in p["analyses"]] for p in read.payload["passages"]] == [
-        [("patients > controls", [(-22.0, -4.0, -18.0)])],
-        [("controls > patients", [(6.0, -60.0, 40.0)])]]
-    assert (read.summary["stray_roles"], read.summary["duplicate_points"]) == (4, 2)
-    assert {p["producer"]["prompt_version"] for p in read.payload["passages"]} == {None}
+        [("patients > controls", [(-22.0, -4.0, -18.0)] * 2)],
+        [("controls > patients", [(6.0, -60.0, 40.0)] * 2)]]   # resolve makes each repeat one
+    assert read.summary["stray_roles"] == 4
+    # credited to nu-prose under the prompt it read with then
+    assert {(p["producer"]["model"], p["producer"]["prompt_version"], p["producer"]["version"])
+            for p in read.payload["passages"]} == {
+        ("nu-prose", "2026-10-06.n5", "prose.unrecorded")}
 
 
 def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
@@ -1777,7 +1818,7 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     assert reader.calls == 1
     assert read.summary["reused"] == {"exact.1": [0]}
     assert read.summary["read_again"] == {"passage text changed": 1}
-    assert read.summary["prompt_versions"] == {"unrecorded": 1, "2026-10-11.n5-norole": 1}
+    assert read.summary["prompt_versions"] == {"2026-10-06.n5": 1, "2026-10-11.n5-norole": 1}
     # the changed passage holds the model's new answer, not the old one's 3.8
     values = [q["value"] for a in read.payload["passages"][1]["analyses"] for q in a["points"]]
     assert values == [4.1]
@@ -1876,3 +1917,38 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
     assert reader.calls == 1
     assert read.summary["reused"] == {"exact.1": [1]}
     assert read.summary["read_again"] == {"passage text changed": 1}
+
+
+def test_reuse_stays_within_the_nu_prose_models(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "88")
+    _run(_prose(settings, _Reader()), ctx, catalog, ref)
+    role_free = settings.model_copy(update={"prose_model": "nu-prose-norole"})
+    reader = _Counting()
+    _, (again,) = _run(_prose(role_free, reader), ctx, catalog, ref)
+    assert reader.calls == 0 and again.summary["reused"] == {"exact.1": [0, 1]}
+    assert {p["producer"]["model"] for p in again.payload["passages"]} == {"nu-prose"}
+    other = settings.model_copy(update={"prose_model": "another-prose-model"})
+    reader = _Counting()
+    _, (third,) = _run(_prose(other, reader), ctx, catalog, ref)
+    assert reader.calls == 2
+    assert third.summary["read_again"] == {"earlier model not interchangeable": 2}
+    assert {p["producer"]["model"] for p in third.payload["passages"]} == {"another-prose-model"}
+
+
+def test_of_two_earlier_copies_of_a_text_the_first_answered_one_is_taken(env):
+    settings, catalog, ref, ctx, found = _two_passages(env, "89")
+    first, second = _texts(catalog, ref, found)
+    _legacy_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
+                                 (first, ("second copy", (-22, -4, -18, 4.1))),
+                                 (second, ("controls > patients", (6, -60, 40, 3.9)))])
+    _, (read,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert read.payload["passages"][0]["analyses"][0]["name"] == "first copy"
+    # a copy that failed gives way to a later one that was answered
+    blob = catalog.payload(catalog.artifacts([ref.id], "prose")[ref.id][""])
+    failed = {**blob["passages"][0], "error": "server down", "answer": None}
+    blob["passages"] = [failed] + blob["passages"]
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="two",
+                            payload=blob, summary={})])
+    _, (again,) = _run(_prose(settings, _Reader(fail=True)), ctx, catalog, ref)
+    assert again.status is Status.OK and again.summary["reused"] == {"exact.1": [0, 1]}
+    assert again.payload["passages"][0]["analyses"][0]["name"] == "first copy"
