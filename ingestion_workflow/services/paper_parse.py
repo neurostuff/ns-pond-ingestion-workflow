@@ -41,8 +41,9 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 
 logger = get_logger(__name__)
 
-#: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 6
+#: Bump when the same inputs would give different files, including when the
+#: nspond-tables pin moves: its coordinate_blocks numbers the column groups keys hold.
+PAPER_PARSE_VERSION = 7
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -91,7 +92,7 @@ class _Table:
     headings: List[str]
     rows: List[List[Tuple[str, int]]]  # body rows: (cell text, resolved column)
     #: The first and last column of each block of coordinate columns, left to right;
-    #: None when the table's structure names none.
+    #: None when the table has none.
     blocks: Optional[List[Tuple[int, int]]] = None
     _index: Optional[list] = field(default=None, repr=False)
 
@@ -303,10 +304,10 @@ def _grid(raw_path) -> _Table:
 
 
 def _blocks(grid) -> Optional[List[Tuple[int, int]]]:
-    """The table's blocks of coordinate columns, from its header, left to right.
+    """The table's blocks of coordinate columns, left to right, from the table alone.
 
-    Every block is counted whether or not any analysis was read from it, so a
-    block's number does not move when a re-extraction misses one to its left.
+    Every block is counted whether or not any analysis was read from it, so no
+    reading moves a block's number.
     """
     from nspond_tables.read import coordinate_blocks
 
@@ -816,29 +817,35 @@ def _table_analyses(
 def _column_groups(
     grid: _Table, placed: Sequence[Sequence[Optional[Tuple[int, int]]]]
 ) -> Tuple[Dict[int, int], Optional[str]]:
-    """The column group of each x column points were found in, and why it is not the table's own.
+    """Each found x column's column group, and a note when one is not a block of the table's.
 
-    A column group is the block's number in the table's structure. Where the
-    structure is unknown, or does not hold a column a point was found in, the
-    found columns are ranked instead; that number moves when a re-extraction
-    misses a block, so the second value says the table's keys rest on it.
+    A column group is the block's number among the table's blocks of coordinate
+    columns, which come from the table alone, so no reading moves it. A column
+    outside every block is numbered after them, in the order found; that number
+    can move between readings, so the note says the table's keys rest on it.
     """
     columns = sorted({found[1] for points in placed for found in points if found})
     blocks = grid.blocks or []
-    group = {}
+    group: Dict[int, int] = {}
+    outside: List[int] = []
     for col in columns:
         hit = next((i for i, (first, last) in enumerate(blocks) if first <= col <= last), None)
         if hit is None:
-            break
-        group[col] = hit
-    else:
+            outside.append(col)
+        else:
+            group[col] = hit
+    if not outside:
         return group, None
-    unknown = "column groups ranked among the columns its points were found in: " + (
-        f"column {col} is outside the coordinate columns the header names"
-        if blocks
-        else "the header names no coordinate columns"
+    group.update((col, len(blocks) + i) for i, col in enumerate(outside))
+    if not blocks:
+        return group, (
+            "column groups ranked among the columns its points were found in: "
+            "the table shows no block of coordinate columns"
+        )
+    return group, (
+        f"column groups of columns {', '.join(map(str, outside))} ranked after the table's "
+        f"{len(blocks)} block(s) of coordinate columns: no block holds them"
     )
-    return {col: i for i, col in enumerate(columns)}, unknown
 
 
 def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:

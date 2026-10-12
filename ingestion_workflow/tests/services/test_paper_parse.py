@@ -1362,9 +1362,12 @@ def test_a_table_in_a_stated_other_space_parses_and_validates(tmp_path):
 
 
 TWO_BLOCKS = """<table>
-<tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th><th>x</th><th>y</th><th>z</th><th>t</th></tr>
-<tr><td>Insula</td><td>30</td><td>20</td><td>4</td><td>5.1</td><td>-32</td><td>18</td><td>2</td><td>4.4</td></tr>
-<tr><td>ACC</td><td>4</td><td>30</td><td>22</td><td>4.8</td><td>-6</td><td>28</td><td>24</td><td>4.0</td></tr>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th>
+<th>x</th><th>y</th><th>z</th><th>t</th></tr>
+<tr><td>Insula</td><td>30</td><td>20</td><td>4</td><td>5.1</td>
+<td>-32</td><td>18</td><td>2</td><td>4.4</td></tr>
+<tr><td>ACC</td><td>4</td><td>30</td><td>22</td><td>4.8</td>
+<td>-6</td><td>28</td><td>24</td><td>4.0</td></tr>
 </table>"""
 
 
@@ -1416,65 +1419,107 @@ def test_a_block_keeps_its_number_and_key_when_the_block_left_of_it_is_not_read(
     assert alone.tables[0].reason is None
 
 
-@pytest.mark.parametrize(
-    "markup, why",
-    [
-        (
-            TWO_BLOCKS.replace("<th>x</th><th>y</th><th>z</th>", "<th></th><th></th><th></th>"),
-            "the header names no coordinate columns",
-        ),
-        (
-            TWO_BLOCKS.replace(
-                "<th>x</th><th>y</th><th>z</th><th>t</th></tr>",
-                "<th>a</th><th>b</th><th>c</th><th>t</th></tr>",
-            ),
-            "column 5 is outside the coordinate columns the header names",
-        ),
-    ],
-    ids=["no-axis-names", "unnamed-block"],
+#: TWO_BLOCKS with no axis names. Only B's block prints a negative x, so only it
+#: is a block by its body; A's columns are outside every block.
+UNNAMED_BLOCKS = TWO_BLOCKS.replace(
+    "<th>x</th><th>y</th><th>z</th>", "<th></th><th></th><th></th>"
 )
-def test_column_groups_the_structure_cannot_give_are_ranked_and_recorded(tmp_path, markup, why):
-    parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([_task_b()])})
-    (b,) = parse.analyses
-    assert [(c.row, c.column_group) for c in b.cells] == [(0, 0), (1, 0)]
-    note = "column groups ranked among the columns its points were found in: " + why
-    assert parse.tables[0].reason == note
+
+
+def _reason(parse):
+    return parse.tables[0].reason
+
+
+def test_a_column_outside_the_table_blocks_is_numbered_after_them_and_noted(tmp_path):
+    both, omitted = _parse(tmp_path, UNNAMED_BLOCKS, {"tbl1": _collection([_task_a(), _task_b()])})
+    a_alone, _ = _parse(tmp_path, UNNAMED_BLOCKS, {"tbl1": _collection([_task_a()])})
+    b_alone, _ = _parse(tmp_path, UNNAMED_BLOCKS, {"tbl1": _collection([_task_b()])})
+    a, b = both.analyses
+    assert [c.column_group for c in b.cells] == [0, 0]
+    assert [c.column_group for c in a.cells] == [1, 1]
+    # B's block is the table's own: read with A or without, B keeps its key and no note.
+    assert b_alone.analyses[0].key == b.key != a.key == a_alone.analyses[0].key
+    assert _reason(b_alone) is None
+    note = (
+        "column groups of columns 1 ranked after the table's 1 block(s) of coordinate columns: "
+        "no block holds them"
+    )
+    assert _reason(both) == _reason(a_alone) == note
     assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
     assert str(omitted[0]) == f"tbl1: {note}"
 
 
-def test_sync_and_upload_number_a_block_alike_when_the_block_left_of_it_is_not_read(tmp_path):
-    """Sync's parse file and a parse minted again from the extraction's own table agree."""
-    from ingestion_workflow.services.paper_parse import _grid
+def test_column_groups_of_a_table_with_no_blocks_are_ranked_and_noted(tmp_path):
+    # No axis names and no negative x or y: nothing in the table says where its blocks are.
+    markup = UNNAMED_BLOCKS.replace("-32", "32").replace("-6", "6")
+    parse, omitted = _parse(tmp_path, markup, {"tbl1": _collection([_task((32, 18, 2))])})
+    assert [(c.row, c.column_group) for c in parse.analyses[0].cells] == [(0, 0)]
+    note = (
+        "column groups ranked among the columns its points were found in: "
+        "the table shows no block of coordinate columns"
+    )
+    assert _reason(parse) == note
+    assert [(o.table_id, o.reason, o.kept) for o in omitted] == [("tbl1", note, True)]
 
+
+#: Three blocks; the header names the outer two. The middle one is a block by its
+#: body only when some x there is negative.
+THREE_BLOCKS = """<table>
+<tr><th>Region</th><th>x</th><th>y</th><th>z</th><th></th><th></th><th></th>
+<th>x</th><th>y</th><th>z</th></tr>
+<tr><td>Insula</td><td>30</td><td>20</td><td>4</td><td>{x}</td><td>12</td><td>8</td>
+<td>-32</td><td>18</td><td>2</td></tr>
+<tr><td>ACC</td><td>4</td><td>30</td><td>22</td><td>{x}</td><td>36</td><td>20</td>
+<td>-6</td><td>28</td><td>24</td></tr>
+</table>"""
+
+
+@pytest.mark.parametrize(
+    "x, b_group", [(30, 1), (-30, 2)], ids=["middle-outside", "middle-by-body"]
+)
+def test_a_block_the_header_names_never_moves_whatever_else_is_read(tmp_path, x, b_group):
+    markup = THREE_BLOCKS.format(x=x)
+    middle = _task((x, 12, 8), (x, 36, 20))
+    every, _ = _parse(tmp_path, markup, {"tbl1": _collection([_task_a(), middle, _task_b()])})
+    alone, _ = _parse(tmp_path, markup, {"tbl1": _collection([_task_b()])})
+    a, read_middle, b = every.analyses
+    assert [p.column_group for p in b.points] == [b_group, b_group]
+    assert alone.analyses[0].key == b.key
+    assert len({a.key, read_middle.key, b.key}) == 3
+
+
+def test_the_parse_sync_writes_numbers_blocks_from_the_table_and_reports_its_notes(tmp_path):
+    """What sync writes; upload sends that file to neurostore unchanged."""
     (tmp_path / "tbl1.html").write_text(TWO_BLOCKS, encoding="utf-8")
+    (tmp_path / "tbl2.html").write_text(UNNAMED_BLOCKS, encoding="utf-8")
     text = tmp_path / "text.txt"
     text.write_text("Results\n", encoding="utf-8")
     content = ExtractedContent(
         slug="s",
         source=DownloadSource.PUBGET,
         identifier=Identifier(pmid="1"),
-        tables=[ExtractedTable(table_id="tbl1", raw_content_path=tmp_path / "tbl1.html")],
+        tables=[
+            ExtractedTable(table_id=t, raw_content_path=tmp_path / f"{t}.html")
+            for t in ("tbl1", "tbl2")
+        ],
         full_text_path=text,
     )
     bundle = ArticleExtractionBundle(content, ArticleMetadata(title="t"))
-    per_table = {"tbl1": _collection([_task_b()])}
+    task_a = _task_a()
+    task_a.table_id = "tbl2"
+    per_table = {"tbl1": _collection([_task_b()]), "tbl2": _collection([task_a])}
     target = nspond.write_article(tmp_path / "pond", BASE, bundle, per_table, [], stage1=False)
     summary = paper_parse.write(target, bundle, per_table, ParseInputs(article_id="a"))
-    synced = json.loads((target / "parse" / "coordinate_parse.json").read_text())["analyses"]
-
-    paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
-        text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id="tbl1", triage=None)],
+    synced = json.loads((target / "parse" / "coordinate_parse.json").read_text())
+    assert synced["analyses"][0]["key"] == keys.table_key(
+        "tbl1", [(0, 1), (1, 1)], "Patients > Controls"
     )
-    grids = {t.table_id: _grid(t.raw_content_path) for t in content.tables}
-    minted, _ = paper_parse.coordinate_parse(
-        paper, "Results\n", grids, per_table, ParseInputs(article_id="a")
+    note = (
+        "tbl2: column groups of columns 1 ranked after the table's 1 block(s) of coordinate "
+        "columns: no block holds them"
     )
-    assert [a["key"] for a in synced] == [a.key for a in minted.analyses]
-    assert synced[0]["key"] == keys.table_key("tbl1", [(0, 1), (1, 1)], "Patients > Controls")
-    assert "parse_notes" not in summary
+    assert summary["parse_notes"] == [note]
+    assert [t["reason"] for t in synced["tables"] if t["table_id"] == "tbl2"] == [note[6:]]
 
 
 def test_a_statistic_that_reads_as_a_triple_is_not_a_block_of_coordinates(tmp_path):
@@ -1495,8 +1540,10 @@ def test_a_spanning_header_over_statistics_is_not_a_block_of_coordinates(tmp_pat
     markup = """<table>
     <tr><th>Region</th><th colspan="3">Voxel level</th><th>x</th><th>y</th><th>z</th></tr>
     <tr><th></th><th>Z</th><th>p unc</th><th>p FWE</th><th></th><th></th><th></th></tr>
-    <tr><td>PDI</td><td>4.80</td><td>&lt;0.001</td><td>0.03</td><td>27</td><td>14</td><td>-32</td></tr>
-    <tr><td>VAS</td><td>4.60</td><td>&lt;0.001</td><td>0.04</td><td>18</td><td>2</td><td>-32</td></tr>
+    <tr><td>PDI</td><td>4.80</td><td>&lt;0.001</td><td>0.03</td>
+    <td>27</td><td>14</td><td>-32</td></tr>
+    <tr><td>VAS</td><td>4.60</td><td>&lt;0.001</td><td>0.04</td>
+    <td>18</td><td>2</td><td>-32</td></tr>
     </table>"""
     collection = _collection([Analysis(name="PDI", coordinates=[Coordinate(x=27, y=14, z=-32)])])
     parse, omitted = _parse(tmp_path, markup, {"tbl1": collection})

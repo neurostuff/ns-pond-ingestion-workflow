@@ -29,8 +29,10 @@ dependencies = [
   "filelock>=3.15",
   # The table reader, serialiser and the two gates that decide which tables are
   # worth an LLM call. Its own repo so the models can be refitted and the
-  # generator iterated on without touching the pipeline.
-  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@main",
+  # generator iterated on without touching the pipeline. Pinned: its
+  # coordinate_blocks numbers table keys' column groups, so moving the pin is a
+  # PAPER_PARSE_VERSION bump.
+  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@485dc30460b751808af5b2efb6bc2abbf6cf3839",
   "paramiko>=3,<4",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
