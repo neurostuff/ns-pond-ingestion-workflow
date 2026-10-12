@@ -92,7 +92,7 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
     The answer is decoded under `PROMPT`'s JSON schema, so its role is always
     one of the vocabulary's. One that is not -- cut short, or not JSON -- means
     the server did not decode it as the stage asks: `RoleModelUnavailable`. The
-    schema lets an anchor's kind be null, which leaves that set `Unanswered`.
+    schema lets an anchor's kind be null, and such an anchor is recorded as it is.
     """
     raw = (choice.get("message") or {}).get("content") or ""
     try:
@@ -107,8 +107,6 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
             "apply structured_outputs and leave max_completion_tokens for the answer"
         )
     kind = answer.get("anchor_kind") if role == "anchor" else None
-    if role == "anchor" and kind not in PROMPT.anchor_kinds:
-        return Unanswered(f"an anchor with anchor_kind {kind!r}")
     probabilities = role_distribution(
         (choice.get("logprobs") or {}).get("content"), PROMPT.roles
     )

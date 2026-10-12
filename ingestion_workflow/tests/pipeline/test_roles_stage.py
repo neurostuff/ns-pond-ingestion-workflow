@@ -139,7 +139,7 @@ def test_every_set_gets_its_role_from_its_origin_s_model():
     assert kept["metadata"]["set_role"] == {
         "role": "result",
         "anchor_kind": None,
-        "from_prior_study": False,
+        "from_prior_study": None,
         "prior_study_evidence": [],
         "role_confidence": 0.97,
         "role_source": "fake-table@1",
@@ -215,7 +215,7 @@ def test_unassigned_names_every_set_without_a_decided_role():
     "change",
     [
         {"role": "display"},  # not study_schema's
-        {"role": "anchor", "anchor_kind": None},  # an anchor says which kind
+        {"role": "anchor", "anchor_kind": "bogus"},  # an anchor kind is study_schema's
         {"role": "bogus"},
     ],
 )

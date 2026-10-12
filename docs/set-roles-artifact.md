@@ -29,7 +29,7 @@ versions the training rows were built with). The answer is decoded under that JS
 role is always one of study_schema's `CoordinateRole` values. The role is the model's answer, and
 its probability is read from the logprobs of the answer's first role token, renormalised over the
 tokens that begin exactly one role. The models give no "not coordinates" answer and no
-prior-study flag: every set gets a role, and `from_prior_study` is true for a `reference` only.
+prior-study flag: every set gets a role, `from_prior_study` is true for a `reference`, and it is null (unknown) for every other role. Nothing decides that another role's set is not from a prior study, so it is never false.
 
 The stage refuses the prompt when its context versions are not the ones this code builds, and a
 server that does not list the model.
@@ -47,8 +47,8 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
    | Field | Type | Meaning |
    |---|---|---|
    | `role` | `CoordinateRole` value | `result`, `anchor`, `localization`, `reference`, `other` |
-   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node` |
-   | `from_prior_study` | bool | the coordinates come from another publication (always true for `reference`) |
+   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node`; null when the model gave no kind |
+   | `from_prior_study` | bool or null | the coordinates come from another publication: true for `reference`, null (unknown) for the other roles |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
    | `role_confidence` | float | the model's probability for the role it answered, at the role's first token: p(result) for a result |
    | `role_source` | string | the model that decided, `<served model name>@<prompt version>+<checkpoint digest>`: the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
@@ -97,12 +97,14 @@ stopped this run: ...`). No retry is used up; the next run plans them again. A s
 at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,006 tokens:
 serve the models with a `max_model_len` of at least that.
 
-**Failed.** Two answers fail the set's article, with its summary's `unanswered` naming each such
+**Failed.** One case fails the set's article, with its summary's `unanswered` naming each such
 set (`table_id#index`) with its reason, and the stage goes on:
 
 - the server, still listing the model, times out or answers 5xx for that input on every try
-  (`server error on this input after 3 tries: ...`);
-- the model answers `anchor` with a null `anchor_kind`, which the schema allows.
+  (`server error on this input after 3 tries: ...`).
+
+An `anchor` answered with a null `anchor_kind` is not a failure: it is recorded as an anchor with
+no kind (not a result, which is the distinction that matters).
 
 ## Downstream
 

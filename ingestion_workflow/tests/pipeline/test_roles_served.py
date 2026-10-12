@@ -85,12 +85,18 @@ def _probs(**given):
     return {r: given.get(r, 0.0) for r in COORDINATE_ROLES}
 
 
-def test_a_model_without_coordinates_or_prior_answers_calls_only_a_quote_another_study_s():
-    reference = Prediction("reference", None, _probs(reference=0.9, result=0.1))
-    result = Prediction("result", None, _probs(result=1.0))
-    assert decide(reference, source="m", origin="table").from_prior_study is True
-    decided = decide(result, source="m", origin="table")
-    assert (decided.role, decided.from_prior_study) == ("result", False)
+def test_a_reference_is_from_a_prior_study_and_no_other_role_says_either_way():
+    answers = {
+        "reference": Prediction("reference", None, _probs(reference=0.9, result=0.1)),
+        "result": Prediction("result", None, _probs(result=1.0)),
+        "anchor": Prediction("anchor", "seed", _probs(anchor=1.0)),
+        "localization": Prediction("localization", None, _probs(localization=1.0)),
+        "other": Prediction("other", None, _probs(other=1.0)),
+    }
+    got = {r: decide(p, source="m", origin="table").from_prior_study for r, p in answers.items()}
+    # Nothing decides that a set is not from a prior study, so it is null, never False.
+    assert got == {"reference": True, "result": None, "anchor": None,
+                   "localization": None, "other": None}
 
 
 def test_the_stage_records_the_model_s_answer_its_probability_and_its_name():
@@ -109,11 +115,11 @@ def test_the_stage_records_the_model_s_answer_its_probability_and_its_name():
 
 def test_a_set_without_a_usable_answer_gives_the_article_no_roles_and_says_why():
     backend = FakeBackend({"patients": ("result", _probs(result=1.0)),
-                           "Lee": Unanswered("an anchor with anchor_kind None")})
+                           "Lee": Unanswered("server error on this input after 3 tries: boom")})
     with pytest.raises(UnansweredSets) as raised:
         assign_roles(_tables("patients", "Lee"), [], None, {"table": backend})
-    assert raised.value.reasons == {"t2#1": "an anchor with anchor_kind None"}
-    assert "t2#1: an anchor with anchor_kind None" in str(raised.value)
+    assert raised.value.reasons == {"t2#1": "server error on this input after 3 tries: boom"}
+    assert "t2#1: server error on this input after 3 tries: boom" in str(raised.value)
 
 
 # --------------------------------------------------------------------------- the prompt
@@ -309,12 +315,12 @@ def test_an_answer_outside_the_schema_is_a_configuration_error_that_stops_the_ru
     assert len(stub.requests) == 1
 
 
-def test_an_anchor_without_its_kind_is_that_set_s_reason_never_a_default(stub):
-    # The schema lets anchor_kind be null; study_schema does not, for an anchor.
+def test_an_anchor_without_its_kind_is_an_anchor_with_no_kind(stub):
+    # Not a result: that is the distinction recorded.
     stub.reply = lambda body: (200, _choice('{"role": "anchor", "anchor_kind": null}',
                                             RESULT_LIKELY))
     (answer,) = _served(stub).predict(["x"])
-    assert answer == Unanswered("an anchor with anchor_kind None")
+    assert (answer.role, answer.anchor_kind) == ("anchor", None)
 
 
 def test_a_context_longer_than_the_server_s_max_model_len_stops_the_run(stub):
@@ -433,16 +439,18 @@ def test_a_served_model_trained_on_other_contexts_blocks_the_article(env, stub, 
     assert "trained on table context version 1; this code builds 2; retrain them" in said
 
 
-def test_an_anchor_without_its_kind_fails_the_article_with_each_set_s_reason(env, stub):
+def test_an_anchor_without_its_kind_is_recorded_as_an_anchor_through_the_stage(env, stub):
     settings, catalog, ref = env
     stub.reply = lambda body: (
         (200, _choice('{"role": "anchor", "anchor_kind": null}', RESULT_LIKELY))
         if "[NAME] Lee" in str(body["messages"])
         else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
-    _, (failed,) = _run(RolesStage(settings), settings, catalog, ref)
-    assert failed.status is Status.FAILED and failed.payload is None
-    assert failed.summary["unanswered"] == {"t2#1": "an anchor with anchor_kind None"}
-    assert "t2#1: an anchor with anchor_kind None" in failed.error
+    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
+    assert done.status is Status.OK
+    roles = {a["name"]: a["metadata"] for a in done.payload["t2"]["analyses"]}
+    lee = roles["Lee"]["set_role"]
+    assert (lee["role"], lee["anchor_kind"], lee["from_prior_study"]) == ("anchor", None, None)
+    assert roles["Lee"]["held"] is False
 
 
 def test_an_over_long_context_stops_the_stage_and_spends_no_retry(env, stub):

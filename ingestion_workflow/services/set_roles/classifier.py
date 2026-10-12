@@ -44,13 +44,14 @@ def decide(
 ) -> RoleDecision:
     """The recorded role for a set: its model's answer, with that answer's probability.
 
-    A quoted peak (`reference`) is another study's by definition, and the role
-    models give no other prior-study answer. `evidence` is the context's citing
+    A quoted peak (`reference`) is another study's by definition (study_schema:
+    always true for `reference`). Nothing decides it for any other role, so it
+    stays null there and is never set false. `evidence` is the context's citing
     sentences (`context.prior_evidence`), recorded only for a set from a prior study.
     """
     if not isinstance(prediction, Prediction):
         raise TypeError(f"a role needs the classifier's prediction, got {prediction!r}")
-    prior = prediction.role == "reference"
+    prior = True if prediction.role == "reference" else None
     return RoleDecision(
         decided=SetRole(prediction.role, prediction.anchor_kind, prior),
         confidence=prediction.confidence,

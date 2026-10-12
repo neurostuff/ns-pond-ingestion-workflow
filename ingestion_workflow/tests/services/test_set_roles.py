@@ -160,7 +160,7 @@ def test_a_role_outside_study_schema_is_refused():
     for bad in (
         {"role": "simulation"},
         {"role": "anchor:roi"},
-        {"role": "anchor", "anchor_kind": None},
+        {"role": "anchor", "anchor_kind": "bogus"},
         {"role": "result", "anchor_kind": "seed"},
     ):
         try:
@@ -216,7 +216,7 @@ def test_only_a_quoted_peak_is_from_a_prior_study():
     assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.uploaded) == (
         "anchor",
         "seed",
-        False,
+        None,
         True,
     )
     assert decision.prior_study_evidence == ()
