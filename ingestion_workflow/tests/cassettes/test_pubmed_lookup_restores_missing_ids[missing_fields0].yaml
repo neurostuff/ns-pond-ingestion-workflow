@@ -9,19 +9,19 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.5
+      - python-requests/2.34.2
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?api_key=DUMMY&email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests
   response:
     body:
-      string: '{"status":"ok","response-date":"2025-11-12 00:53:22","request":{"warnings":[],"format":"json","idtype":"doi","ids":["10.1002/hbm.24703"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests&api_key=5f71cf0c189dd20a9012d905898f50da4308","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"10.1002/hbm.24703"}]}'
+      string: '{"status":"ok","response-date":"2026-10-12 18:54:58","request":{"warnings":[],"format":"json","idtype":"doi","ids":["10.1002/hbm.24703"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"10.1002/hbm.24703"}]}'
     headers:
       Alt-Svc:
       - clear
       Content-Encoding:
       - gzip
       Date:
-      - Wed, 12 Nov 2025 05:53:22 GMT
+      - Mon, 12 Oct 2026 22:54:58 GMT
       Server:
       - istio-envoy
       Strict-Transport-Security:
@@ -43,15 +43,15 @@ interactions:
       referrer-policy:
       - same-origin
       set-cookie:
-      - ncbi_sid=D6CC06509141D4E3_2392SID; Domain=.nih.gov; expires=Thu, 12 Nov 2026
-        05:53:22 GMT; Max-Age=31536000; Path=/
+      - ncbi_sid=7684C7A7ACD64153_1009SID; Domain=.nih.gov; expires=Tue, 12 Oct 2027
+        22:54:58 GMT; Max-Age=31536000; Path=/
       vary:
       - Accept,Accept-Encoding
       x-content-type-options:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '7'
+      - '6'
       x-frame-options:
       - DENY
     status:
@@ -67,21 +67,21 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - ncbi_sid=D6CC06509141D4E3_2392SID
+      - ncbi_sid=7684C7A7ACD64153_1009SID
       User-Agent:
-      - python-requests/2.32.5
+      - python-requests/2.34.2
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?api_key=DUMMY&email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests
   response:
     body:
-      string: '{"status":"ok","response-date":"2025-11-12 00:53:23","request":{"warnings":[],"format":"json","idtype":"pmcid","ids":["PMC6865431"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests&api_key=5f71cf0c189dd20a9012d905898f50da4308","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"PMC6865431"}]}'
+      string: '{"status":"ok","response-date":"2026-10-12 18:54:58","request":{"warnings":[],"format":"json","idtype":"pmcid","ids":["PMC6865431"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"PMC6865431"}]}'
     headers:
       Alt-Svc:
       - clear
       Content-Encoding:
       - gzip
       Date:
-      - Wed, 12 Nov 2025 05:53:23 GMT
+      - Mon, 12 Oct 2026 22:54:58 GMT
       Server:
       - istio-envoy
       Strict-Transport-Security:
@@ -103,15 +103,15 @@ interactions:
       referrer-policy:
       - same-origin
       set-cookie:
-      - ncbi_sid=D6CC06509141D4E3_2392SID; Domain=.nih.gov; expires=Thu, 12 Nov 2026
-        05:53:23 GMT; Max-Age=31536000; Path=/
+      - ncbi_sid=7684C7A7ACD64153_1009SID; Domain=.nih.gov; expires=Tue, 12 Oct 2027
+        22:54:58 GMT; Max-Age=31536000; Path=/
       vary:
       - Accept,Accept-Encoding
       x-content-type-options:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '7'
+      - '5'
       x-frame-options:
       - DENY
     status:
