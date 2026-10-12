@@ -497,10 +497,11 @@ INGEST_UPLOAD_VERSION = 1
 #: the ingester would delete or supersede them.
 GATED = "held back: upstream not fresh"
 
-#: What an upload records for an article whose text was taken back after it was
-#: uploaded: the ingester cannot take a study back, so neurostore keeps the last upload.
-NOT_TAKEN_BACK = (f"{NO_TEXT}; the ingester cannot take a study back, so neurostore keeps "
-                  "the last upload")
+#: What an upload records, and then blocks on, for an uploaded article whose analyses
+#: were taken back. Neurostore's ingester takes only POSTs of a parse; nothing there
+#: withdraws a study's analyses, so neurostore keeps the last upload until a person
+#: retracts it (the deprecated direct-database upload, `upload_backend: legacy`, can).
+RETRACTION_NEEDED = "retraction needed: no ingester route"
 
 #: The stages the parse is built from, in pipeline order; the prose ones run only with prose.
 GATE_STAGES = ("analyses", "passages", "prose", "resolve", "roles", "space", "sync")
@@ -581,6 +582,9 @@ class IngesterUploadStage:
     analyses it holds against the last upload. Each record's summary names the backend,
     whether it was a dry run, and the ingester's summary or error.
 
+    An uploaded article whose analyses were taken back is recorded, and then blocked, as
+    `RETRACTION_NEEDED`: the ingester has no route that withdraws a study.
+
     A dry run (`dry_run`) validates each parse and writes its request body under the
     ingester's dry-run root, with one JSON line per article under `upload_runs/`; it
     records nothing in the catalog and never touches an upload artifact.
@@ -635,8 +639,12 @@ class IngesterUploadStage:
             synced = upstream.get(ref.id, {}).get("")
             existing = artifacts.get(ref.id, {}).get("")
             if synced is None or synced.status is not Status.OK:
-                if taken_back(synced) and (existing is None or existing.fingerprint != NO_TEXT):
+                if not taken_back(synced):
+                    plan.blocked += 1
+                elif existing is None or existing.fingerprint != NO_TEXT:
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT))
+                elif (existing.error or "").startswith(RETRACTION_NEEDED):
+                    plan.block(RETRACTION_NEEDED)  # recorded already
                 else:
                     plan.blocked += 1
                 continue
@@ -739,11 +747,18 @@ class IngesterUploadStage:
         previous = ctx.catalog.artifacts([w.article_id for w in works], self.name)
         back = [w for w in works if is_take_back(w)]
         works = [w for w in works if not is_take_back(w)]
+        synced = ctx.catalog.artifacts([w.article_id for w in back], "sync")
         for work in back:
             last = _last_upload(previous.get(work.article_id, {}).get(""))
+            sync = synced.get(work.article_id, {}).get("")
+            reason = (sync.error if sync is not None else None) or NO_TEXT
+            # Nothing uploaded, nothing to take back: recorded with the reason alone.
             yield from self._record(work, Outcome.failure(
-                work.article_id, self.name, "", NOT_TAKEN_BACK if last else NO_TEXT,
-                fingerprint=NO_TEXT, summary=self._summary(None, last)))
+                work.article_id, self.name, "",
+                f"{RETRACTION_NEEDED}: {reason}" if last else reason, fingerprint=NO_TEXT,
+                summary={**self._summary(None, last), "reason": reason,
+                         "base_study_id": (last or {}).get("base_study_id"),
+                         **({"retraction_needed": True} if last else {})}))
         held = self.held_back(ctx, [w.ref for w in works],
                               {w.article_id: w.upstream for w in works}, previous)
         learned: List[Tuple[str, str, str]] = []

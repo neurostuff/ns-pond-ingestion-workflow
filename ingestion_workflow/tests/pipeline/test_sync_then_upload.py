@@ -7,6 +7,7 @@ parse lacks, so such a parse would take live analyses out of neurostore.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from pathlib import Path
 
@@ -30,12 +31,14 @@ from ingestion_workflow.pipeline.stages.resolve import ResolveStage
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 from ingestion_workflow.pipeline.stages.sync import (
-    NOT_IN_NEUROSTORE,
+    NO_IDENTIFIER,
     SyncBeforeUploadStage,
     SyncStage,
+    new_articles_root,
 )
 from ingestion_workflow.pipeline.stages.upload import (
     GATED,
+    RETRACTION_NEEDED,
     IngesterUploadStage,
     UploadStage,
     upstream_state,
@@ -162,6 +165,7 @@ def test_sync_runs_before_upload_and_the_legacy_upload_runs_the_other_way_round(
         # Selection and the funnel ask the registry's classes, so they follow the backend too.
         for name in ("sync", "upload"):
             assert STAGE_TYPES[name].upstream_for(settings)[0] == types[name](settings).requires
+    assert SyncBeforeUploadStage.upstream_for(default) == ("space", "tables")
     assert SyncBeforeUploadStage(default).requires == "space"
     assert IngesterUploadStage(default).requires == "sync"
 
@@ -198,17 +202,107 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
     assert (plan.fresh, outcomes) == (1, [])
 
 
-def test_an_article_neurostore_holds_no_base_study_for_waits_for_sync(env, monkeypatch):
+def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch):
+    """The ingester creates the base study from the parse's identifiers and the ParsedPaper's
+    bibliography; until then the copy sits outside the tree pondie reads."""
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "23")
+    sync, upload = build(["sync", "upload"], settings)
+    _, (first,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    new = new_articles_root(settings) / ref.id
+    assert (first.status, first.summary["base_study_id"], first.summary["path"]) == (
+        Status.OK, None, str(new))
+    assert first.summary["new_to_neurostore"] is True
+    header = json.loads((new / "parse" / "coordinate_parse.json").read_text())["header"]
+    assert header["identifiers"]["neurostore_base_study_id"] is None
+    assert header["identifiers"]["pmid"] == "23"
+    assert not (settings.ns_pond_root / "pmids.tsv").exists()
+    assert not settings.ns_pond_root.exists() or list(settings.ns_pond_root.iterdir()) == []
+
+    fake = _Ingester("NEW23")
+    monkeypatch.setattr(upload, "ingester", lambda: fake)
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert done.status is Status.OK and done.summary["base_study_id"] == "NEW23"
+    assert [d for d, _ in fake.sent] == [new]
+    assert catalog.resolve(Identifier(neurostore="NEW23")).id == ref.id
+
+    # The next sync writes it into the tree under its base study and drops the copy.
+    _, (second,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    target = settings.ns_pond_root / "NEW23"
+    assert (second.summary["base_study_id"], second.summary["path"]) == ("NEW23", str(target))
+    assert second.summary["replaces"] == str(new) and not new.exists()
+    assert second.summary["parse_id"] == first.summary["parse_id"]
+    header = json.loads((target / "parse" / "coordinate_parse.json").read_text())["header"]
+    assert header["identifiers"]["neurostore_base_study_id"] == "NEW23"
+    assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["23", "NEW23"]
+    _run(upload, ctx, catalog, ref)
+    assert [d for d, _ in fake.sent] == [new, target]
+    assert fake.sent[1][1]["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
+
+
+def test_an_article_with_nothing_to_create_a_base_study_by_waits(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "28")
+    bare = dataclasses.replace(ref, identifier=Identifier())
     sync = SyncBeforeUploadStage(settings)
-    plan, outcomes = _run(sync, ctx, catalog, ref)
-    assert (plan.blocked, plan.reasons, outcomes) == (1, {NOT_IN_NEUROSTORE: 1}, [])
-    # A base study an earlier upload wrote to names it.
-    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-0",
-                            summary={"base_study_id": "BS23", "analyses": 1})])
-    plan, (synced,) = _run(sync, ctx, catalog, ref)
-    assert synced.summary["base_study_id"] == "BS23"
+    plan = sync.plan(ctx, [bare], catalog.artifacts([ref.id], "sync"),
+                     catalog.artifacts([ref.id], "space"))
+    assert (plan.blocked, plan.reasons, plan.pending) == (1, {NO_IDENTIFIER: 1}, [])
+
+
+def _take_back_space(catalog, ref):
+    catalog.record([Outcome.failure(ref.id, "space", "", NO_TEXT, fingerprint=NO_TEXT)])
+
+
+def test_a_taken_back_article_gets_no_parse_and_waits_for_a_retraction(env, monkeypatch):
+    """Neurostore's ingester only takes a parse: nothing there withdraws a study, so the
+    upload says a retraction is needed rather than pretending it made one."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "29", "BS29")
+    sync, upload = build(["sync", "upload"], settings)
+    _run(sync, ctx, catalog, ref)
+    monkeypatch.setattr(upload, "ingester", lambda: _Ingester("BS29"))
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    assert done.status is Status.OK
+
+    _take_back_space(catalog, ref)
+    _, (back,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert (back.status, back.error, back.fingerprint) == (Status.FAILED, NO_TEXT, NO_TEXT)
+    assert back.summary["retracted"] is True and back.summary["reason"] == NO_TEXT
+    assert not (settings.ns_pond_root / "BS29").exists()
+    assert Path(back.summary["moved_to"]).exists()
+    assert list(settings.ns_pond_root.rglob("coordinate_parse.json")) == []
+
+    monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
+    _, (held,) = _run(upload, ctx, catalog, ref)
+    assert (held.status, held.error) == (Status.FAILED, f"{RETRACTION_NEEDED}: {NO_TEXT}")
+    assert held.summary["retraction_needed"] is True and held.summary["reason"] == NO_TEXT
+    assert held.summary["base_study_id"] == "BS29"
+    assert held.summary["last_upload"]["analyses"] == 1
+    # Recorded once; after that the article is blocked on it, and nothing is sent.
+    plan, outcomes = _run(upload, ctx, catalog, ref)
+    assert (plan.blocked, plan.reasons, outcomes) == (1, {RETRACTION_NEEDED: 1}, [])
+
+
+def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "30")
+    sync, upload = build(["sync", "upload"], settings)
+    _run(sync, ctx, catalog, ref)
+    new = new_articles_root(settings) / ref.id
+    assert new.exists()
+    _take_back_space(catalog, ref)
+    _, (back,) = _run(sync, ctx, catalog, ref)
+    assert back.error == NO_TEXT and back.summary["removed"] == str(new) and not new.exists()
+    monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
+    _, (recorded,) = _run(upload, ctx, catalog, ref)
+    assert (recorded.error, recorded.fingerprint) == (NO_TEXT, NO_TEXT)
+    assert "retraction_needed" not in recorded.summary
+    plan, outcomes = _run(upload, ctx, catalog, ref)
+    assert (plan.blocked, plan.reasons, outcomes) == (1, {}, [])
 
 
 def _dry(settings):

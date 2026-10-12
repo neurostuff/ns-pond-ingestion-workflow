@@ -37,9 +37,20 @@ logger = logging.getLogger(__name__)
 #: 4: the sign split follows study_schema.statistics and is declared, not named.
 SYNC_VERSION = 4
 
-#: Why an article waits for sync: neurostore holds no base study for it yet, and the
-#: corpus directory and the parse's header are named by one.
-NOT_IN_NEUROSTORE = "no neurostore base study id yet"
+#: Why an article neurostore holds no base study for waits for sync: the ingester finds
+#: or creates one by doi, pmid or pmcid, and the article has none of them.
+NO_IDENTIFIER = "no neurostore base study id, and no doi, pmid or pmcid to create one by"
+
+#: Beside the ns-pond tree: `<ns_pond_root>-new/<article_id>/` holds the copy of an article
+#: neurostore holds no base study for yet. Upload sends its parse and the ingester creates
+#: the base study; the next sync writes the article into the tree under that id and
+#: removes this copy. pondie reads only the tree, so it sees no directory not named by one.
+NEW_ARTICLES = "-new"
+
+
+def new_articles_root(settings) -> Path:
+    root = Path(settings.ns_pond_root)
+    return root.parent / f"{root.name}{NEW_ARTICLES}"
 
 
 def legacy_upload(settings) -> bool:
@@ -172,10 +183,11 @@ class SyncStage:
                     work.article_id, self.name, "", str(exc), fingerprint=work.fingerprint
                 )
                 continue
+            root, name = self.location(work, base_study_id)
             try:
                 target = nspond.write_article(
-                    self.settings.ns_pond_root,
-                    base_study_id,
+                    root,
+                    name,
                     bundle,
                     per_table,
                     files,
@@ -197,7 +209,8 @@ class SyncStage:
                     ("resolve", resolved), ("passages", passages))},
                 bundle.article_data.source.value,
             )
-            self._synced.append((base_study_id, bundle))
+            if base_study_id:
+                self._synced.append((base_study_id, bundle))
             # stage1 follows the parse so its splits name their originals by the
             # parse's keys; it is written whether or not the parse is.
             splits: dict = {}
@@ -220,7 +233,8 @@ class SyncStage:
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                summary={"base_study_id": base_study_id, "path": str(target), **parse},
+                summary={"base_study_id": base_study_id, "path": str(target), **parse,
+                         **self.written(work, target)},
             )
 
     def base_study_ids(self, ctx: Context, works: Sequence[Work]) -> Dict[str, Optional[str]]:
@@ -230,6 +244,14 @@ class SyncStage:
     def retracting(self, work: Work) -> bool:
         """Whether the work takes the article out of the corpus rather than writing it."""
         return bool(work.upstream.summary.get("retracted"))
+
+    def location(self, work: Work, base_study_id: Optional[str]) -> Tuple[Path, str]:
+        """(root, directory name) the article is written under."""
+        return Path(self.settings.ns_pond_root), base_study_id
+
+    def written(self, work: Work, target: Path) -> Dict[str, object]:
+        """What the summary adds about where the article was written; nothing here."""
+        return {}
 
     def _retract(self, work: Work, base_study_id: str) -> Outcome:
         """Take a retracted article out of the corpus.
@@ -312,23 +334,28 @@ class SyncStage:
 class SyncBeforeUploadStage(SyncStage):
     """Write the corpus copy and the coordinate parse from `space`, before upload sends it.
 
-    Nothing here waits for an upload: the directory and the parse's header name the base
-    study neurostore already holds for the article (`known_base_study_ids`), and an
-    article it holds none for waits with `NOT_IN_NEUROSTORE`.
+    Nothing here waits for an upload. The directory and the parse's header name the base
+    study neurostore holds for the article (`known_base_study_ids`). An article it holds
+    none for is written under `new_articles_root` with no base study in its header, so the
+    ingester creates one from its identifiers and its ParsedPaper's bibliography.
     """
 
     requires = "space"
+    #: As the direct-database upload was: an article whose analyses found nothing is a
+    #: legitimate `ok` in space, and selection leaves it out rather than writing nothing.
+    requires_flag = "tables"
 
     def __init__(self, settings) -> None:
         super().__init__(settings)
         self.requires = self.upstream_for(settings)[0]
+        self._written_before: Dict[str, Optional[str]] = {}
 
     @classmethod
     def upstream_for(cls, settings):
         """`space`; `upload` under the deprecated direct-database upload, which runs first."""
         if legacy_upload(settings):
             return SyncStage.requires, None
-        return cls.requires, None
+        return cls.requires, cls.requires_flag
 
     def fingerprint_for(self, upstream: Artifact, base_study_id: Optional[str] = None,
                         excluded=None) -> str:
@@ -367,8 +394,9 @@ class SyncBeforeUploadStage(SyncStage):
                 plan.blocked += 1
                 continue
             base_study_id = bases.get(ref.id)
-            if not base_study_id:
-                plan.block(NOT_IN_NEUROSTORE)
+            identifier = ref.identifier
+            if not base_study_id and not (identifier.doi or identifier.pmid or identifier.pmcid):
+                plan.block(NO_IDENTIFIER)
                 continue
             if read_from_bad_page(prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
                                   extracted.get(ref.id, {})):
@@ -382,21 +410,51 @@ class SyncBeforeUploadStage(SyncStage):
         return plan
 
     def base_study_ids(self, ctx: Context, works: Sequence[Work]) -> Dict[str, Optional[str]]:
+        prior = ctx.catalog.artifacts([work.article_id for work in works], self.name)
+        self._written_before = {
+            article_id: (found[""].summary or {}).get("path")
+            for article_id, found in prior.items() if "" in found}
         return known_base_study_ids(ctx, [work.ref for work in works])
+
+    def location(self, work: Work, base_study_id: Optional[str]) -> Tuple[Path, str]:
+        if base_study_id:
+            return Path(self.settings.ns_pond_root), base_study_id
+        return new_articles_root(self.settings), work.article_id
+
+    def written(self, work: Work, target: Path) -> Dict[str, object]:
+        """Marks a copy of an article neurostore holds no base study for; once it has one,
+        the earlier copy outside the tree goes, since the tree now holds the article."""
+        new = new_articles_root(self.settings)
+        if Path(target).parent == new:
+            return {"new_to_neurostore": True}
+        before = Path(self._written_before.get(work.article_id) or target)
+        if before != Path(target) and before.parent == new and before.exists():
+            shutil.rmtree(before)
+            return {"replaces": str(before)}
+        return {}
 
     def retracting(self, work: Work) -> bool:
         return is_take_back(work)
 
     def _retract(self, work: Work, base_study_id: Optional[str]) -> Outcome:
-        """Move the corpus copy of an article whose text was taken back out of the tree.
+        """Take the copy of an article whose analyses were taken back out of the tree.
 
-        Recorded as the take-back the stages before it record, so upload sees it.
+        No parse is written for it. The copy in the tree is moved aside as `SyncStage`
+        moves one; a copy outside it, which neurostore never named, is removed. Recorded
+        with the reason the stages before it recorded, so upload sees the take-back.
         """
+        reason = getattr(work, "reason", None) or NO_TEXT
         moved = super()._retract(work, base_study_id).summary if base_study_id else {}
+        new = new_articles_root(self.settings) / work.article_id
+        removed = None
+        if new.exists():
+            shutil.rmtree(new)
+            removed = str(new)
         return Outcome.failure(
-            work.article_id, self.name, "", NO_TEXT, fingerprint=NO_TEXT,
-            summary={"base_study_id": base_study_id, "retracted": True,
-                     "moved_to": moved.get("moved_to")},
+            work.article_id, self.name, "", reason, fingerprint=NO_TEXT,
+            summary={"base_study_id": base_study_id, "retracted": True, "reason": reason,
+                     "moved_to": moved.get("moved_to"),
+                     **({"removed": removed} if removed else {})},
         )
 
 
