@@ -18,14 +18,14 @@ services/set_roles/
   prose_context.py  a PROSE set's input: its own sentence(s), cut to 400 chars around its coordinates (LOCAL), passage, heading, before/after, citation markers
   label_schema.py   the labeller's strict JSON answer
   labeling.py       per-origin prompts, the resumable codex job, agreement, ledger
-  export.py         encoder rows
+  export.py         role-model training rows
   classifier.py     a prediction as the recorded role, with its confidence and model
   served.py         the role models, NuExtract3 fine-tunes served by vLLM, one request per set
   served_prompt.py  the prompt they were trained and evaluated with
 experiments/role_classifier/
   build_sets.py     labelling units from nu-v21's and the prose model's real training rows (beast)
   label_sets.py     label / compare / totals
-  export_rows.py    the encoder rows
+  export_rows.py    the role-model training rows
 ```
 
 ## Labels
@@ -33,7 +33,7 @@ experiments/role_classifier/
 Each set's label is study_schema's three role fields, the ones `CoordinateParse` has:
 `role` (a `CoordinateRole`), `anchor_kind` (an `AnchorKind`, for an anchor only) and
 `from_prior_study`. The values are imported from `study_schema.models.paper_parse`, never
-retyped (`labels.py`); every row the labeller and the encoder carry uses them.
+retyped (`labels.py`); every row the labeller and the role model carry uses them.
 
 | `role` | Meaning | Uploaded to neurostore |
 |---|---|---|
@@ -48,8 +48,8 @@ positions, rodent stereotaxic coordinates) get no role, not `other`: the labelle
 false` and `role: null`. The served role models have no such answer: they give every set a role.
 
 `from_prior_study` is independent of the role: a seed taken from a meta-analysis is `role:
-anchor`, `anchor_kind: seed`, `from_prior_study: true`. The model has a separate binary head
-for it, and one for the anchor kind.
+anchor`, `anchor_kind: seed`, `from_prior_study: true`. The served model answers
+the role and, for an anchor, its kind; the flag is not its to answer (below).
 
 The current nu-prose model still answers with its own role words
 (`prompts.prose_coordinates.ROLES`); nothing reads them. Resolve keeps every prose point, in
@@ -62,19 +62,19 @@ was no longer a role (`labels/relabel-v4-no-display`). Training reads every labe
 given and takes each set's highest `label_version` (`labeling.latest_labels`); a set whose
 latest label is still `display` is left out.
 
-Decision rule (`classifier.decide`): the set's role is its origin's model's answer. Below a
-coordinates probability of 0.5 the numbers are not coordinates (`role` null); otherwise the role
-is the role head's top answer, however sure, and the record carries its confidence, so the
-unsure ones can be reviewed. `from_prior_study` is set when the flag head reaches
-`prior_threshold` (0.5), and always for a `reference`. Each decision is recorded with its
-confidence, its model (`name@version`) and its origin.
+Decision rule (`classifier.decide`): the set's role is its origin's model's answer, however
+sure, and the record carries its probability (the first role token's mass, renormalised), so the
+unsure ones can be reviewed. There is no not-coordinates answer. An anchor's kind is the model's,
+and may be null. `from_prior_study` is true for a `reference` and null for every other role: the
+model does not answer it. Each decision is recorded with its confidence, its model
+(`name@version`) and its origin.
 
 ## Inputs
 
 Table and prose sets are read from different evidence, so each has its own builder and its
 own version (`TABLE_CONTEXT_VERSION`, `PROSE_CONTEXT_VERSION`). Every label and training row
-records the version of its origin, and a model records its origin and that origin's version;
-the stage refuses a model for another origin or version. Both strings start with
+records the version of its origin, and the served prompt names the context versions it was
+trained on; the stage refuses a model whose prompt names others. Both strings start with
 `[ORIGIN] table|text`, then the short fields (`[POINTS]`, `[CUES]`, `[NAME]`), so truncation
 cuts free text and never structure. No input carries a role: not the extractor's, not a
 dataset's label.
@@ -95,7 +95,7 @@ PYTHONPATH=code python code/experiments/role_classifier/build_sets.py units --wi
 `units/table_units.jsonl` is one unit per real nu-v21 training table (curated, real-positive,
 hand-judged), its sets the row's target analyses; `units/prose_units.jsonl` one per prose
 dataset passage (synthetic ones carry their generator's roles and are not sent to a model),
-plus corpus passages for the encoder only. Each keeps its source row as `base_row`, which
+plus corpus passages for the role model only. Each keeps its source row as `base_row`, which
 the exporter reads.
 
 Labelling runs where `codex login` is (the codex CLI is not installed on beast), through
@@ -124,7 +124,7 @@ The role models are NuExtract3 fine-tunes, trained and served on beast; `role_mo
 `role_model_prose` name each one's server and served model name (`docs/set-roles-artifact.md`).
 
 A prose dataset row that is evaluation data (val, test) or hand-labelled is never sent to a
-labeller; the hand rows are the encoder's prose gold set.
+labeller; the hand rows are the prose role model's gold set.
 
 The labeller skips held-out prose rows and tables whose text repeats another unit's (203; the
 export copies the first copy's labels). `--plain-sample 300` labels 300 of the 5,946 `plain`
@@ -147,7 +147,7 @@ roles are study_schema's (`labels.COORDINATE_ROLES`, `ANCHOR_KINDS`); an MRS vox
 `export.splits` puts in train, and a synthetic unit's `article_id` is `synth:<seed article>`. That is
 the split the role models are evaluated on (the `split` field `export_rows` writes), so
 `--id-map` is required, and must be the map the export uses: without it a slug-id article is split
-under its slug and can seed a unit from the encoder's val or test articles. Pass generation at least
+under its slug and can seed a unit from the role model's val or test articles. Pass generation at least
 the label dirs the export passes, gold ones (`pilot-astra`) included: an article with a gold label is
 forced to test only when the gold dir is read, so a generation run without it can seed from an
 article the export puts in test.
@@ -174,7 +174,7 @@ python experiments/role_classifier/synth/role_units.py OUT_DIR --plan plan.json 
     --units TABLE_UNITS.jsonl PROSE_UNITS.jsonl --labels LABEL_DIR [LABEL_DIR ...] \
     --id-map units/slug_dbids.json [--seed 41]
 
-# leak check: no label syntax in any text field or in what the labeller or the encoder renders,
+# leak check: no label syntax in any text field or in what the labeller or the role model renders,
 # no key a real unit does not have. Text is NFKC-normalised, stripped of zero-width characters
 # and casefolded first, so "role\uff1a other", "Reference - prior study" and "role is localization"
 # are caught as "role: other" is

@@ -297,6 +297,8 @@ def test_the_served_answer_is_the_role_through_the_stage(stub):
     ('{"role": "banana"}', RESULT_LIKELY, "stop", "is not the role schema's"),
     ("{}", RESULT_LIKELY, "stop", "is not the role schema's"),
     ('{"role": null}', RESULT_LIKELY, "stop", "is not the role schema's"),
+    ('{"role": "anchor", "anchor_kind": "voxel"}', RESULT_LIKELY, "stop",
+     "is not the role schema's"),
     # No logprobs, or every alternative at the role token begins two roles or none.
     ('{"role": "result"}', None, "stop", "no role-token logprobs"),
     ('{"role": "result"}', {"re": math.log(0.7), '"': math.log(0.3)}, "stop",
@@ -321,6 +323,13 @@ def test_an_anchor_without_its_kind_is_an_anchor_with_no_kind(stub):
                                             RESULT_LIKELY))
     (answer,) = _served(stub).predict(["x"])
     assert (answer.role, answer.anchor_kind) == ("anchor", None)
+
+
+def test_a_kind_on_an_answer_that_is_not_an_anchor_is_dropped(stub):
+    stub.reply = lambda body: (200, _choice('{"role": "result", "anchor_kind": "roi"}',
+                                            RESULT_LIKELY))
+    (answer,) = _served(stub).predict(["x"])
+    assert (answer.role, answer.anchor_kind) == ("result", None)
 
 
 def test_a_context_longer_than_the_server_s_max_model_len_stops_the_run(stub):
@@ -354,6 +363,32 @@ def test_a_5xx_or_a_timeout_is_asked_again(stub, monkeypatch):
     monkeypatch.setattr(served_module, "TIMEOUT", 0.2)
     (answer,) = _served(stub).predict(["x"])
     assert isinstance(answer, Prediction) and len(stub.requests) == 5
+
+
+def test_a_429_is_asked_again(stub):
+    replies = iter([(429, "slow down")])
+    stub.reply = lambda body: next(replies, (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    waits = []
+    (answer,) = _served(stub, sleep=waits.append).predict(["x"])
+    assert isinstance(answer, Prediction) and len(stub.requests) == 2 and waits == [1]
+
+
+def test_a_429_that_does_not_clear_fails_that_set_only_while_the_server_lists_the_model(stub):
+    stub.reply = lambda body: ((429, "slow down") if "BUSY" in str(body["messages"])
+                               else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    classifier = _served(stub)
+    busy, fine = classifier.predict(["BUSY", "FINE"])
+    assert isinstance(busy, Unanswered) and "HTTP 429" in busy.reason
+    assert isinstance(fine, Prediction) and classifier.stopped is None
+
+
+def test_a_server_that_lists_only_other_models_is_not_up_for_this_one(stub):
+    stub.models = ["some-other-model"]
+    stub.reply = lambda body: (503, "busy")
+    classifier = _served(stub)
+    with pytest.raises(RoleModelUnavailable, match="did not answer in 3 tries"):
+        classifier.predict(["x"])
+    assert classifier.stopped
 
 
 def test_a_server_that_never_answers_stops_the_run_and_is_not_asked_again(stub):

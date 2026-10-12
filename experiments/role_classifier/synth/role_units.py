@@ -265,7 +265,7 @@ class Names:
                 continue
             cls = role_class(lab["role"], lab.get("anchor_kind"))
             if u["origin"] == "table":
-                # Once per labelled set: the encoder reads a caption once per set, so a caption's
+                # Once per labelled set: the role model reads a caption once per set, so a caption's
                 # share of a class's draws is its share of the class's real sets.
                 for field in ("caption", "footer"):
                     raw = " ".join((u.get(field) or "").split())

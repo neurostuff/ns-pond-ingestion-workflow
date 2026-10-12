@@ -77,7 +77,7 @@ class SetRole:
 
     role: Optional[str]
     anchor_kind: Optional[str] = None
-    from_prior_study: Optional[bool] = False
+    from_prior_study: Optional[bool] = None
 
     def __post_init__(self) -> None:
         error = role_error(self.fields())

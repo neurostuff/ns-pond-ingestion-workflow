@@ -205,6 +205,10 @@ def test_the_decision_records_its_model_origin_and_confidence():
     }
 
 
+def test_a_set_role_is_from_a_prior_study_only_when_told_so():
+    assert SetRole("result").from_prior_study is None
+
+
 def test_only_a_quoted_peak_is_from_a_prior_study():
     """The role models give no prior-study answer: a borrowed seed is a seed of this study."""
     decision = decide(

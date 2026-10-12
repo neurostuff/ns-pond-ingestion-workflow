@@ -84,24 +84,27 @@ includes each origin's model, so configuring or retraining one makes the article
 **Stopped, not failed.** The stage stops, logging the reason, when a model's server is down or
 is configured so it cannot answer the stage's requests:
 
-- it still times out or answers 5xx after 3 tries, and no longer lists the model;
-- it refuses a request (HTTP 4xx other than 429), for example a context longer than its
+- it still times out, answers 5xx or answers 429 after 3 tries, and no longer lists this model;
+- it refuses a request (any HTTP 4xx except 429), for example a context longer than its
   `max_model_len` (`configuration error: ... answered HTTP 400 ...`);
-- an answer is not the JSON schema's, because the server did not apply `structured_outputs`
+- an answer is not the JSON schema's (a role, or an anchor's kind, off its lists), because the server did not apply `structured_outputs`
   or cut the answer short (`configuration error: the answer ... is not the role schema's ...`);
 - an answer has no role-token logprobs.
 
 Nothing is recorded for the article it was reading or for the rest of the batch, and the plan
 blocks the run's remaining articles of that origin with the reason (`the table role model
 stopped this run: ...`). No retry is used up; the next run plans them again. A set's context is
-at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,006 tokens:
-serve the models with a `max_model_len` of at least that.
+at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,007 tokens
+(9,943 for the prompt, measured with the NuExtract3 tokenizer on 2,400 four-byte characters,
+and the 64-token answer): serve the models with a `max_model_len` of at least 10,240.
 
 **Failed.** One case fails the set's article, with its summary's `unanswered` naming each such
 set (`table_id#index`) with its reason, and the stage goes on:
 
-- the server, still listing the model, times out or answers 5xx for that input on every try
-  (`server error on this input after 3 tries: ...`).
+- the server, still listing this model, times out, answers 5xx or answers 429 (rate limited) for
+  that input on every try (`server error on this input after 3 tries: ...`). A 429 is asked again
+  like a 5xx. If the server then no longer lists this model (any other model does not count), the
+  stage stops instead.
 
 An `anchor` answered with a null `anchor_kind` is not a failure: it is recorded as an anchor with
 no kind (not a result, which is the distinction that matters).

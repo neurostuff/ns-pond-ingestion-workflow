@@ -1,6 +1,6 @@
-"""One set of labels, the set-role encoder's training rows.
+"""One set of labels, the role models' training rows.
 
-- `encoder_rows`: the set-role encoder's (one input string per set, its role
+- `role_model_rows`: the role models' (one input string per set, its role
   fields), split by article (`splits`).
 Roles come only from the roles stage; no extractor's training rows carry them. Numbers
 labelled not coordinates have no role, and every role a row carries is checked (`checked`).
@@ -100,7 +100,7 @@ def checked(fields: Mapping[str, Any], where: str) -> Dict[str, Any]:
     return {k: fields[k] for k in ROLE_FIELDS}
 
 
-def encoder_rows(
+def role_model_rows(
     units: Iterable[Mapping[str, Any]],
     labels: Mapping[str, Mapping[str, Any]],
     id_map: Optional[Mapping[str, str]] = None,

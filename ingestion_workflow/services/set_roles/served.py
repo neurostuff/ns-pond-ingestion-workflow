@@ -90,7 +90,8 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
     """The prediction in one completion choice.
 
     The answer is decoded under `PROMPT`'s JSON schema, so its role is always
-    one of the vocabulary's. One that is not -- cut short, or not JSON -- means
+    one of the vocabulary's, and its kind (an anchor's only) one of the schema's or
+    null. An answer that is not -- cut short, not JSON, or a kind off the list -- means
     the server did not decode it as the stage asks: `RoleModelUnavailable`. The
     schema lets an anchor's kind be null, and such an anchor is recorded as it is.
     """
@@ -100,13 +101,13 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
     except ValueError:
         answer = None
     role = answer.get("role") if isinstance(answer, dict) else None
-    if role not in PROMPT.roles:
+    kind = answer.get("anchor_kind") if role == "anchor" else None
+    if role not in PROMPT.roles or kind not in (None, *PROMPT.anchor_kinds):
         raise RoleModelUnavailable(
             f"{CONFIGURATION} the answer {raw[:200]!r} (finish_reason "
             f"{choice.get('finish_reason')!r}) is not the role schema's: the server must "
             "apply structured_outputs and leave max_completion_tokens for the answer"
         )
-    kind = answer.get("anchor_kind") if role == "anchor" else None
     probabilities = role_distribution(
         (choice.get("logprobs") or {}).get("content"), PROMPT.roles
     )
@@ -160,7 +161,6 @@ class ServedClassifier:
         model: str,
         *,
         source: str,
-        client: Optional[httpx.Client] = None,
         sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
         self.endpoint = endpoint.rstrip("/")
@@ -168,7 +168,7 @@ class ServedClassifier:
         self.model = model
         #: `name@prompt version+checkpoint digest`, from the stage (`model_identity`).
         self.source = source
-        self._client = client or httpx.Client()
+        self._client = httpx.Client()
         self._sleep = sleep or time.sleep
         self._stopped: Optional[str] = None
         self._lock = threading.Lock()

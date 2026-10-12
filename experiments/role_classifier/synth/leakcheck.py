@@ -1,4 +1,4 @@
-"""Read every synthetic unit as the labeller and the encoder do; fail on any label it carries.
+"""Read every synthetic unit as the labeller and the role model do; fail on any label it carries.
 
     python experiments/role_classifier/synth/leakcheck.py DIR     # DIR holds units.jsonl
 
@@ -6,7 +6,7 @@ Run it on the generator's output and again on the rewrite pass's. The label live
 truth.jsonl only. A unit may hold only the keys real labelling units hold (`UNIT_KEYS`),
 its sets only a name and points, its points only xyz, stat and cluster, and it must say
 its labels are the dataset's (`labels_from: dataset`) so the bulk labelling job skips it.
-Every text field and everything the labeller's prompt and the encoder's inputs render
+Every text field and everything the labeller's prompt and the role model's inputs render
 must be free of label syntax: a label field name, `role =`, `role is <role>`, a
 `[PROPOSED]` hint, or a set name that is a role value with a qualifier ("reference (prior
 study)", "anchor: roi", "Reference - prior study", "Anchor, ROI"). Text is NFKC-normalised,
