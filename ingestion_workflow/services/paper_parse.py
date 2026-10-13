@@ -632,33 +632,22 @@ class MissingRole(ValueError):
 class _Roles:
     """Each analysis's role, as the roles stage wrote it under `metadata.set_role`.
 
-    There is no default: an analysis without one raises `MissingRole`. Numbers the
-    roles stage found are not brain coordinates are no coordinate set, so they are
-    left out with that reason. A citing sentence the parsed paper's text does not
-    hold cannot be a TextSpan; it is left out of the evidence and noted on the
-    omission list instead.
+    There is no default: an analysis without one raises `MissingRole`. A citing
+    sentence the parsed paper's text does not hold cannot be a TextSpan; it is
+    left out of the evidence and noted on the omission list instead.
     """
 
     def __init__(self, text: _Text, omitted: List[Omitted]) -> None:
         self.text = text
         self.omitted = omitted
 
-    def of(self, analysis: Analysis, table_id: Optional[str]) -> Optional[Dict[str, Any]]:
+    def of(self, analysis: Analysis, table_id: Optional[str]) -> Dict[str, Any]:
         decided = (analysis.metadata or {}).get("set_role")
         if not is_decided(analysis.metadata or {}):
             raise MissingRole(
                 f"analysis {analysis.name!r} of {table_id or 'the text'} has no role "
                 "from the roles stage"
             )
-        if decided.get("role") is None:
-            self.omitted.append(
-                Omitted(
-                    analysis.name,
-                    table_id,
-                    f"not brain coordinates, as {decided['role_source']} decided",
-                )
-            )
-            return None
         evidence = []
         for span in decided.get("prior_study_evidence") or []:
             found = self._place(span)
@@ -994,8 +983,6 @@ def _analysis(
     text_spans=None,
 ):
     role = roles.of(analysis, table_id)
-    if role is None:
-        return None, False
     name = analysis.name
     space = _space_value(collection.coordinate_space)
     built = pp.ParsedAnalysis(
