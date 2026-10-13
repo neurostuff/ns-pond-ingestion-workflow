@@ -1,23 +1,22 @@
 """Full-text PDFs from Wiley's Text and Data Mining (TDM) API.
 
 Wiley serves the PDF of an article it publishes to a registered TDM token, at
-``/onlinelibrary/tdm/v1/articles/<DOI>``. Extraction is the pdf source's,
-unchanged, under this source's name (`PdfFileExtractor`).
+``/onlinelibrary/tdm/v1/articles/<DOI>``. The extract stage reads the PDF as
+it reads every downloaded PDF, into the `pdf` text.
 """
 
 from __future__ import annotations
 
 import time
-from pathlib import Path
 from typing import Callable, List, Optional
 from urllib.parse import quote
 
 import httpx
 
 from ingestion_workflow.config import Settings, load_settings
+from ingestion_workflow.extractors.base import BaseExtractor, SourceMisconfigured
 from ingestion_workflow.extractors.pdf_extractor import (
     DOWNLOAD_TIMEOUT,
-    PdfFileExtractor,
     _HostGate,
     fetch_pdf,
     store_pdf,
@@ -50,28 +49,26 @@ WILEY_DOI_PREFIXES = frozenset({
 #: Wiley serves the version of record.
 PUBLISHED_VERSION = "publishedVersion"
 
-NOT_WILEY = "not a Wiley DOI: not requested"
+#: Wiley's answer to a token it refuses. A 403 is not that: it denies this address
+#: the article (so Wiley's own client reports it), and a token Wiley never issued
+#: is still served from an entitled address.
+TOKEN_REFUSED = 401
+
+#: Every Wiley extractor in the process takes its turn here, so the rate holds
+#: across the download stage's batches and every extractor built in the run.
+GATE = _HostGate(time.monotonic, time.sleep, min_interval=REQUEST_INTERVAL_SECONDS)
 
 
 def is_wiley_doi(doi: Optional[str]) -> bool:
     return bool(doi) and doi.split("/", 1)[0].strip().lower() in WILEY_DOI_PREFIXES
 
 
-class WileyExtractor(PdfFileExtractor):
-    """Download Wiley articles' PDFs by DOI; extract them as the pdf source does."""
-
-    SOURCE = DownloadSource.WILEY
+class WileyExtractor(BaseExtractor):
+    """Download Wiley articles' PDFs by DOI."""
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or load_settings()
         self._client = httpx.Client(timeout=DOWNLOAD_TIMEOUT, follow_redirects=True)
-        self._sleep = time.sleep
-        self._clock = time.monotonic
-        self._hosts = _HostGate(
-            lambda: self._clock(),
-            lambda delay: self._sleep(delay),
-            min_interval=REQUEST_INTERVAL_SECONDS,
-        )
 
     def can_address(self, identifier: Identifier) -> bool:
         return is_wiley_doi(identifier.doi)
@@ -83,45 +80,42 @@ class WileyExtractor(PdfFileExtractor):
     ) -> List[DownloadResult]:
         """Each article's PDF, one request at a time: the published rate
         leaves nothing for a second worker to do."""
-        if not identifiers:
-            return []
         token = self.settings.wiley_api_key
         if not token:
-            raise ValueError("no Wiley TDM token: set WILEY_API_KEY")
-        base_dir = Path(self.settings.wiley_cache_root or self.settings.get_cache_dir("wiley"))
+            raise SourceMisconfigured(
+                "no Wiley TDM token: set WILEY_API_KEY, or remove wiley from download_sources"
+            )
+        base_dir = self.settings.get_cache_dir(DownloadSource.WILEY.value)
         results = []
         for identifier in identifiers:
             results.append(self._download_single(identifier, base_dir, token))
             emit_progress(progress_hook)
         return results
 
-    def _download_single(
-        self, identifier: Identifier, base_dir: Path, token: str
-    ) -> DownloadResult:
-        if not self.can_address(identifier):
-            return self._failure(identifier, NOT_WILEY)
+    def _download_single(self, identifier: Identifier, base_dir, token: str) -> DownloadResult:
         url = TDM_URL + quote(identifier.doi, safe="")
         attempt = {"url": url, "provider": "wiley"}
         payload = fetch_pdf(
             lambda target: self._client.get(target, headers={TOKEN_HEADER: token}),
             url,
             attempt,
-            self._hosts,
+            GATE,
         )
+        if attempt.get("status") == TOKEN_REFUSED:
+            raise SourceMisconfigured("Wiley refused the TDM token in WILEY_API_KEY (401)")
         if payload is None:
-            result = self._failure(identifier, str(attempt["reason"]))
-            result.url_attempts = [attempt]
-            return result
+            return DownloadResult(
+                identifier=identifier,
+                source=DownloadSource.WILEY,
+                success=False,
+                error_message=str(attempt["reason"]),
+                url_attempts=[attempt],
+            )
         return DownloadResult(
             identifier=identifier,
-            source=self.SOURCE,
+            source=DownloadSource.WILEY,
             success=True,
-            files=[store_pdf(base_dir, identifier, payload, self.SOURCE)],
+            files=[store_pdf(base_dir, identifier, payload, DownloadSource.WILEY)],
             url_attempts=[attempt],
             article_version=PUBLISHED_VERSION,
-        )
-
-    def _failure(self, identifier: Identifier, message: str) -> DownloadResult:
-        return DownloadResult(
-            identifier=identifier, source=self.SOURCE, success=False, error_message=message
         )

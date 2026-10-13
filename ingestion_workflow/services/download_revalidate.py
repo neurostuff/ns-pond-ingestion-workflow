@@ -120,6 +120,8 @@ def scan(
     already failed is not checked again, and its OK extraction (left by a run that
     stopped, or by a download stage older than the one that fails it) is failed now.
     """
+    from ingestion_workflow.pipeline.stages.extract import made_from
+
     if recorded_path is None:
         from ingestion_workflow.pipeline import Context
 
@@ -155,7 +157,7 @@ def scan(
                                               download.fingerprint, path, download.updated_at))
                 failed[(article_id, source)] = reason
         for (article_id, source), reason in sorted(failed.items()):
-            extraction = extractions.get(article_id, {}).get(source)
+            extraction = made_from(extractions.get(article_id, {}), source)
             if extraction is not None and extraction.status is Status.OK:
                 result.extractions.append((extraction, reason))
     return result
@@ -264,12 +266,12 @@ def _failed(artifact: Artifact) -> Artifact:
 
 
 def _next(ctx, download_stage, ref, downloads, extractions, attempts) -> str:
-    from ingestion_workflow.pipeline.stages.extract import current_extractions
+    from ingestion_workflow.pipeline.stages.extract import current_extractions, text_source
 
     current = current_extractions(ctx, extractions, downloads)
     if any(e.summary.get("has_text", True) for e in current.values()):
         return "switch"
-    if any(d.status is Status.OK and s not in current for s, d in downloads.items()):
+    if any(d.status is Status.OK and text_source(s) not in current for s, d in downloads.items()):
         return "extract"
     if current:
         return "no_text"

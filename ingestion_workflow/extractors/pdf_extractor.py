@@ -1,13 +1,11 @@
 """Download and extract article content from PDFs.
 
-`PdfFileExtractor` is the extraction of a downloaded PDF, Docling's, shared by
-every source whose download is a PDF file; `fetch_pdf` and `store_pdf` are the
-fetching and storing those sources share.
-
-`PdfExtractor` is the fallback source for articles that neither PubMed Central
-(via pubget) nor Elsevier serve as XML. Candidate PDF URLs come from every
-open-access location OpenAlex lists and from Semantic Scholar's
-``openAccessPdf``; each is tried in turn until one is a PDF.
+Fallback source for articles that neither PubMed Central (via pubget) nor
+Elsevier serve as XML. Candidate PDF URLs come from every open-access
+location OpenAlex lists and from Semantic Scholar's ``openAccessPdf``; each is
+tried in turn until one is a PDF. Parsing is Docling's, and it reads every
+downloaded PDF, whichever source fetched it. `fetch_pdf` and `store_pdf` are
+the fetching and storing the sources whose download is a PDF share.
 """
 
 from __future__ import annotations
@@ -90,8 +88,12 @@ _PREPRINT_HOSTS = (
 PREPRINT_VERSION = "submittedVersion"
 
 #: Statuses that may answer differently later; any other 4xx is the URL's answer.
-#: A 429 is not here because `_fetch` handles it before any other status.
+#: A 429 is not here because `fetch_pdf` handles it before any other status.
 _TRANSIENT_CLIENT_STATUSES = {408, 425}
+#: The URL names nothing on the host. That is the URL's answer, so it never
+#: counts toward leaving the host for the run, as a 403 or a page in place of a
+#: PDF does: an API asked about an article it does not have says 404.
+_GONE_STATUSES = {404, 410}
 #: Europe PMC serves its PMC articles under their PMCID; its preprints (PPR ids)
 #: have no other source.
 _PMCID = re.compile(r"pmc\d", re.IGNORECASE)
@@ -423,7 +425,7 @@ def fetch_pdf(
             attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
             if dead:
                 attempt["dead"] = True
-            hosts.answered(host, refused=dead)
+            hosts.answered(host, refused=dead and status not in _GONE_STATUSES)
             return None
         finally:
             response.close()
@@ -455,65 +457,14 @@ def store_pdf(
     )
 
 
-class PdfFileExtractor(BaseExtractor):
-    """The extraction of a source whose download is a PDF file: Docling's.
-
-    Each source extracts into its own `extractions/<source>` directory, so one
-    article's extractions from two PDF sources never overwrite each other.
-    """
-
-    SOURCE: DownloadSource
-
-    #: CUDA cannot be re-initialised in a forked child ("Cannot re-initialize
-    #: CUDA in forked subprocess"), so PDF extraction alone pays for spawn.
-    mp_start_method = "spawn"
-
-    def extract(
-        self,
-        download_results: List[DownloadResult],
-        progress_hook: Callable[[int], None] | None = None,
-    ) -> List[ExtractionResult]:
-        extraction_root = Path(self.settings.data_root) / "extractions" / self.SOURCE.value
-        gpus = usable_cuda_devices()
-        worker_count = self._worker_count(gpus)
-        logger.info(
-            "PDF extraction: %d worker(s) over %s",
-            worker_count,
-            f"GPU(s) {gpus}" if gpus else "CPU",
-        )
-        return self._run_extraction_pipeline(
-            download_results,
-            extraction_root=extraction_root,
-            worker=_extract_pdf_article,
-            worker_count=worker_count,
-            worker_initializer=_pin_worker_to_gpu if gpus else None,
-            worker_initargs=(
-                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
-            ),
-            source_name="PDF",
-            failure_message="PDF extraction did not produce a result.",
-            failure_builder=_build_failure_content,
-            progress_hook=progress_hook,
-        )
-
-    def _worker_count(self, gpus: List[int]) -> int:
-        """How many Docling processes to run at once.
-
-        Docling holds a model per process, so this is bounded by memory rather
-        than by cores: one worker per usable GPU, and one on CPU, where a second
-        worker would contend for the cores the pipeline already threads across.
-        """
-        configured = self.settings.pdf_extract_workers
-        if configured:
-            return max(1, configured)
-        return max(1, len(gpus))
-
-
-class PdfExtractor(PdfFileExtractor):
+class PdfExtractor(BaseExtractor):
     """Extractor that downloads open-access PDFs and parses them with Docling."""
 
-    SOURCE = DownloadSource.PDF
     _SUPPORTED_IDS = {"doi", "pmid"}
+
+    #: CUDA cannot be re-initialised in a forked child ("Cannot re-initialize
+    #: CUDA in forked subprocess"), so this extractor alone pays for spawn.
+    mp_start_method = "spawn"
 
     def __init__(
         self,
@@ -743,6 +694,48 @@ class PdfExtractor(PdfFileExtractor):
             error_message=message,
         )
 
+    # ------------------------------------------------------------------ extract
+
+    def extract(
+        self,
+        download_results: List[DownloadResult],
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> List[ExtractionResult]:
+        extraction_root = Path(self.settings.data_root) / "extractions" / "pdf"
+        gpus = usable_cuda_devices()
+        worker_count = self._worker_count(gpus)
+        logger.info(
+            "PDF extraction: %d worker(s) over %s",
+            worker_count,
+            f"GPU(s) {gpus}" if gpus else "CPU",
+        )
+        return self._run_extraction_pipeline(
+            download_results,
+            extraction_root=extraction_root,
+            worker=_extract_pdf_article,
+            worker_count=worker_count,
+            worker_initializer=_pin_worker_to_gpu if gpus else None,
+            worker_initargs=(
+                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
+            ),
+            source_name="PDF",
+            failure_message="PDF extraction did not produce a result.",
+            failure_builder=_build_failure_content,
+            progress_hook=progress_hook,
+        )
+
+    def _worker_count(self, gpus: List[int]) -> int:
+        """How many Docling processes to run at once.
+
+        Docling holds a model per process, so this is bounded by memory rather
+        than by cores: one worker per usable GPU, and one on CPU, where a second
+        worker would contend for the cores the pipeline already threads across.
+        """
+        configured = self.settings.pdf_extract_workers
+        if configured:
+            return max(1, configured)
+        return max(1, len(gpus))
+
 
 _COORD_COLUMN = re.compile(
     r"coordinate|\bcoords?\b|talairach|\btal\b|\bmni\b|location", re.IGNORECASE
@@ -843,7 +836,7 @@ def _build_failure_content(
 ) -> ExtractedContent:
     return ExtractedContent(
         slug=download_result.identifier.slug,
-        source=download_result.source,
+        source=DownloadSource.PDF,
         identifier=download_result.identifier,
         full_text_path=None,
         tables=[],
@@ -950,7 +943,7 @@ def _extract_pdf_article(
 
     return ExtractedContent(
         slug=slug,
-        source=download_result.source,
+        source=DownloadSource.PDF,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
         tables=extracted_tables,

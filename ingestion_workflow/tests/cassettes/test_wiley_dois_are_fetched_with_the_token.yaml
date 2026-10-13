@@ -2343,7 +2343,6 @@ interactions:
       - Tue, 13 Oct 2026 11:10:48 GMT
       server:
       - cloudflare
-        Path=/; Domain=.wiley.com
       strict-transport-security:
       - max-age=2592000
       x-frame-options:

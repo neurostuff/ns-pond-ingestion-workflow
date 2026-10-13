@@ -1,4 +1,9 @@
-"""Turn downloaded bytes into text and tables, one source at a time."""
+"""Turn downloaded bytes into text and tables, one source at a time.
+
+An extraction is named for the text it makes, which is its download's source,
+except that every downloaded PDF is read the same way into one text, `pdf`
+(`PDF_SOURCES`). What reads an extraction downstream knows only that name.
+"""
 
 from __future__ import annotations
 
@@ -42,12 +47,53 @@ EXTRACTOR_VERSIONS = {
     "ace": 3,
     "pdf": 2,
 }
-#: Wiley's PDFs are extracted by the pdf source's code, so they move with it.
-EXTRACTOR_VERSIONS["wiley"] = EXTRACTOR_VERSIONS["pdf"]
 DEFAULT_EXTRACTOR_VERSION = 1
+
+#: The sources whose download is a PDF file, the one an article's `pdf` text is
+#: read from first. Wiley's is the publisher's version of record; an open-access
+#: copy may be an accepted manuscript or a preprint.
+PDF_SOURCES = ("wiley", "pdf")
+#: Every PDF is read by the pdf source's code, so each PDF source moves with it.
+EXTRACTOR_VERSIONS.update(dict.fromkeys(PDF_SOURCES, EXTRACTOR_VERSIONS["pdf"]))
+
+
+def text_source(download_source: str) -> str:
+    """The extraction a download from `download_source` is read into."""
+    return DownloadSource.PDF.value if download_source in PDF_SOURCES else download_source
+
+
+def extraction_inputs(downloads: Dict[str, Artifact]) -> Dict[str, Artifact]:
+    """The download each extraction reads, by extraction source.
+
+    Each source's own, except that `pdf` reads the first of `PDF_SOURCES` whose
+    download is OK, or, when none is, the first the article has.
+    """
+    out = {source: d for source, d in downloads.items() if source not in PDF_SOURCES}
+    pdfs = [downloads[source] for source in PDF_SOURCES if source in downloads]
+    if pdfs:
+        out[DownloadSource.PDF.value] = next((d for d in pdfs if d.status is Status.OK), pdfs[0])
+    return out
+
+
+def read_from(source: str, extraction: Optional[Artifact]) -> str:
+    """The source whose download the `source` extraction was made from.
+
+    Its own, unless it names another as `download_source`."""
+    if extraction is None:
+        return source
+    return (extraction.summary or {}).get("download_source", source)
+
+
+def made_from(extractions: Dict[str, Artifact], download_source: str) -> Optional[Artifact]:
+    """The article's extraction made from its `download_source` download, if any."""
+    extraction = extractions.get(text_source(download_source))
+    if extraction is not None and read_from(extraction.source, extraction) == download_source:
+        return extraction
+    return None
 
 
 def extraction_fingerprint(source: str, download: Artifact) -> str:
+    """`source` is the download's: the fingerprint names the code that read it."""
     version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
     return fingerprint("extract", source, version, upstream=download.fingerprint)
 
@@ -57,14 +103,17 @@ def file_sha256(path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def from_bad_page(source: Optional[str], downloads: Dict[str, Artifact]) -> bool:
-    """Whether this source's download is now failed as a page that is not the article.
+def from_bad_page(
+    source: Optional[str], extraction: Optional[Artifact], downloads: Dict[str, Artifact]
+) -> bool:
+    """Whether the download the `source` extraction read is now failed as a page that
+    is not the article.
 
     An extraction keeps its fingerprint when its download fails (a download's
     fingerprint names only its source), so this is what tells its text is not the
     article's. A later good download of the source records a new summary, which
     lifts it."""
-    download = downloads.get(source or "")
+    download = downloads.get(read_from(source or "", extraction))
     return (download is not None and download.status is not Status.OK
             and bool(download.summary.get("bad_page")))
 
@@ -92,7 +141,7 @@ def read_from_bad_page(
     if (extraction is not None and extraction.status is not Status.OK
             and extraction.summary.get("bad_page")):
         return True
-    return from_bad_page(source, downloads)
+    return from_bad_page(source, extraction, downloads)
 
 
 #: The error an extraction made from a page that is not the article fails with.
@@ -109,7 +158,7 @@ def failed_validation(extraction: Artifact, reason: str) -> Outcome:
 def without_bad_pages(
     extractions: Dict[str, Artifact], downloads: Dict[str, Artifact]
 ) -> Dict[str, Artifact]:
-    return {s: e for s, e in extractions.items() if not from_bad_page(s, downloads)}
+    return {s: e for s, e in extractions.items() if not from_bad_page(s, e, downloads)}
 
 
 def current_extractions(
@@ -122,11 +171,12 @@ def current_extractions(
     among them by size picks that one: on 2026-10-02, 14,991 articles had an old
     ACE extraction, holding each table twice, that outnumbered their new one.
     """
+    inputs = extraction_inputs(downloads)
     return {
         source: artifact
         for source, artifact in extractions.items()
-        if source in downloads
-        and ctx.is_fresh(artifact, extraction_fingerprint(source, downloads[source]))
+        if source in inputs
+        and ctx.is_fresh(artifact, extraction_fingerprint(inputs[source].source, inputs[source]))
     }
 
 
@@ -137,7 +187,7 @@ class ExtractStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self._extractors: Dict[DownloadSource, object] = {}
-        self._order = list(settings.download_sources)
+        self._order = list(dict.fromkeys(text_source(s) for s in settings.download_sources))
 
     def _priority(self, sources: Sequence[str]) -> List[str]:
         """Configured order first; anything else after, so a source that has
@@ -178,18 +228,18 @@ class ExtractStage:
             return attempts_cache[source]
 
         for ref in refs:
-            downloads = {
+            downloads = extraction_inputs({
                 source: artifact
                 for source, artifact in upstream.get(ref.id, {}).items()
                 if artifact.status is Status.OK
-            }
+            })
             if not downloads:
                 plan.blocked += 1
                 continue
 
             existing = artifacts.get(ref.id, {})
             if any(
-                ctx.is_fresh(existing.get(source), self.fingerprint_for(source, download))
+                ctx.is_fresh(existing.get(source), self.fingerprint_for(download.source, download))
                 for source, download in downloads.items()
             ):
                 plan.fresh += 1
@@ -211,7 +261,7 @@ class ExtractStage:
                 Work(
                     ref=ref,
                     source=source,
-                    fingerprint=self.fingerprint_for(source, download),
+                    fingerprint=self.fingerprint_for(download.source, download),
                     upstream=download,
                 )
             )
@@ -221,7 +271,10 @@ class ExtractStage:
         """Extract each work; a failure over an extraction failed as a bad page keeps
         saying so, since the passages made from that page are still there."""
         earlier = ctx.catalog.artifacts(list({w.article_id for w in works}), self.name)
+        read = {w.article_id: w.upstream.source for w in works if w.upstream.source != w.source}
         for outcome in self._extract(ctx, works):
+            if outcome.article_id in read:
+                outcome.summary["download_source"] = read[outcome.article_id]
             before = earlier.get(outcome.article_id, {}).get(outcome.source)
             if (outcome.status is not Status.OK and before is not None
                     and before.status is not Status.OK and before.summary.get("bad_page")):

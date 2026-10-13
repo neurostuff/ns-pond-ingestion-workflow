@@ -1,0 +1,30 @@
+# Composed: a token Wiley never issued is served from an entitled address, so
+# its 401 cannot be recorded.
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.wiley.com
+      user-agent:
+      - python-httpx/0.28.1
+      wiley-tdm-client-token:
+      - replay-token-wiley-7c41
+    method: GET
+    uri: https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fj.1440-1614.2006.01765.x
+  response:
+    body:
+      string: ''
+    headers:
+      content-length:
+      - '0'
+    status:
+      code: 401
+      message: Unauthorized
+version: 1

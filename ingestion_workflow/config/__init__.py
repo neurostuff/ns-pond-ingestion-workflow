@@ -537,7 +537,6 @@ class Settings(BaseSettings):
             getattr(self, "pdf_cache_root", None),
             getattr(self, "pmc_cache_root", None),
             getattr(self, "europepmc_cache_root", None),
-            getattr(self, "wiley_cache_root", None),
         ):
             if isinstance(optional_dir, Path):
                 optional_dir.mkdir(parents=True, exist_ok=True)
@@ -616,10 +615,6 @@ class Settings(BaseSettings):
     europepmc_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
-    )
-    wiley_cache_root: Optional[Path] = Field(
-        default=None,
-        description="Optional override for the cache of PDFs fetched from Wiley's TDM API",
     )
     pdf_extract_workers: Optional[int] = Field(
         default=None,

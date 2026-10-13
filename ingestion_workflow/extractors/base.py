@@ -15,6 +15,13 @@ ExtractionWorker = Callable[[DownloadResult, Path | str], ExtractionResult]
 FailureBuilder = Callable[[DownloadResult, str], ExtractionResult]
 
 
+class SourceMisconfigured(RuntimeError):
+    """The source can serve no article as configured: its key is missing or refused.
+
+    Every later article would fail the same way, so the download stage stops
+    rather than charge each one a try."""
+
+
 class BaseExtractor:
     """Shared interface for extractor implementations."""
 

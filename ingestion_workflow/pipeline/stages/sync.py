@@ -21,7 +21,7 @@ from ingestion_workflow.services import nspond, paper_parse
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
 from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block
-from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
+from .extract import READ_FROM_BAD_PAGE, read_from, read_from_bad_page
 from .roles import refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,8 @@ def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
         found = downloads.get(article_id, {})
         extraction = _synced_extraction(ctx, extracted.get(article_id, {}), found,
                                         triaged.get(article_id, {}).get(""))
-        download = found.get(extraction.source) if extraction is not None else None
+        download = (found.get(read_from(extraction.source, extraction))
+                    if extraction is not None else None)
         version = (download.summary or {}).get("article_version") if download else None
         if is_preprint(dois[article_id].doi, version):
             out.add(article_id)
@@ -464,7 +465,7 @@ class SyncStage:
         }
 
         files: List[DownloadResult] = []
-        download = downloads.get(work.article_id, {}).get(source)
+        download = downloads.get(work.article_id, {}).get(read_from(source, extraction))
         download_payload = ctx.payload(download)
         if download_payload:
             files.append(DownloadResult.from_dict(download_payload))
