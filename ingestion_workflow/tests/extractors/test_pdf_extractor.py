@@ -11,6 +11,7 @@ from ingestion_workflow.extractors.docling_convert import (
     normalize_text_tokens,
 )
 from ingestion_workflow.extractors.pdf_extractor import (
+    PdfCandidate,
     PdfExtractor,
     _has_suspect_numerics,
     _merge_split_coordinate_columns,
@@ -22,6 +23,7 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.tests.oa_hosts import location, pdf_source
 
 MINIMAL_PDF = b"%PDF-1.4\n%%EOF\n"
 
@@ -35,38 +37,10 @@ def _settings(tmp_path) -> Settings:
     )
 
 
-class _FakeResponse:
-    def __init__(self, content: bytes, status: int = 200) -> None:
-        self.content = content
-        self._status = status
-
-    def raise_for_status(self) -> None:
-        if self._status >= 400:
-            raise RuntimeError(f"HTTP {self._status}")
-
-
-class _FakeSession:
-    def __init__(self, responses: dict[str, _FakeResponse]) -> None:
-        self.responses = responses
-        self.requested: list[str] = []
-
-    def get(self, url, **kwargs):
-        self.requested.append(url)
-        if url not in self.responses:
-            raise RuntimeError("connection refused")
-        return self.responses[url]
-
-
-def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
+def test_download_writes_pdf_and_reports_success(stub, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/has-pdf")])
-    session = _FakeSession({"https://example.org/a.pdf": _FakeResponse(MINIMAL_PDF)})
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
-
-    monkeypatch.setattr(
-        PdfExtractor,
-        "_resolve_pdf_urls",
-        lambda self, ids: {"10-1234-has-pdf": "https://example.org/a.pdf"},
-    )
+    stub.work("10.1234/has-pdf", location(stub.serve("/a.pdf", (200, MINIMAL_PDF)), "repository"))
+    extractor = pdf_source(tmp_path)
 
     results = extractor.download(identifiers)
 
@@ -77,84 +51,97 @@ def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
     assert len(result.files) == 1
     assert result.files[0].file_type is FileType.PDF
     assert result.files[0].file_path.read_bytes() == MINIMAL_PDF
+    assert [a["outcome"] for a in result.url_attempts] == ["pdf"]
 
 
-def test_download_fails_without_a_pdf_url(monkeypatch, tmp_path):
+def test_download_fails_without_a_pdf_url(stub, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/no-pdf")])
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=_FakeSession({}))
-    monkeypatch.setattr(PdfExtractor, "_resolve_pdf_urls", lambda self, ids: {})
+    extractor = pdf_source(tmp_path)
 
     result = extractor.download(identifiers)[0]
 
     assert not result.success
     assert "No open-access PDF URL" in result.error_message
+    assert stub.fetched == []
 
 
-def test_download_rejects_non_pdf_payloads(monkeypatch, tmp_path):
+def test_download_rejects_non_pdf_payloads(stub, tmp_path):
     """Publisher landing pages and paywalls answer 200 with HTML."""
     identifiers = Identifiers([Identifier(doi="10.1234/landing-page")])
-    session = _FakeSession(
-        {"https://example.org/landing": _FakeResponse(b"<html>Subscribe</html>")}
-    )
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
-    monkeypatch.setattr(
-        PdfExtractor,
-        "_resolve_pdf_urls",
-        lambda self, ids: {"10-1234-landing-page": "https://example.org/landing"},
-    )
+    landing = stub.serve("/landing", (200, b"<html>Subscribe</html>"))
+    stub.work("10.1234/landing-page", location(landing, "journal"))
+    extractor = pdf_source(tmp_path)
 
     result = extractor.download(identifiers)[0]
 
     assert not result.success
     assert "not a PDF" in result.error_message
+    assert [a["outcome"] for a in result.url_attempts] == ["not_pdf"]
 
 
-def test_resolve_pdf_urls_falls_back_to_next_provider(monkeypatch, tmp_path):
+def test_resolve_pdf_candidates_asks_every_provider_about_every_article(monkeypatch, tmp_path):
     identifiers = Identifiers(
         [Identifier(doi="10.1234/from-s2"), Identifier(doi="10.1234/from-openalex")]
     )
     extractor = PdfExtractor(settings=_settings(tmp_path))
+    seen: dict[str, list[str]] = {}
 
+    def provider(name, answers):
+        def ask(self, ids):
+            seen[name] = [identifier.slug for identifier in ids]
+            return answers
+        return ask
+
+    s2 = PdfCandidate("https://example.org/s2.pdf", "semantic_scholar", "unknown")
+    repo = PdfCandidate("https://repo.example.org/a.pdf", "openalex", "repository")
+    other = PdfCandidate("https://example.org/oa.pdf", "openalex", "publisher")
     monkeypatch.setattr(
         PdfExtractor,
-        "_semantic_scholar_pdf_urls",
-        lambda self, ids: {"10-1234-from-s2": "https://example.org/s2.pdf"},
+        "_semantic_scholar_pdf_candidates",
+        provider("s2", {"10-1234-from-s2": [s2]}),
+    )
+    monkeypatch.setattr(
+        PdfExtractor,
+        "_openalex_pdf_candidates",
+        provider("openalex", {"10-1234-from-s2": [repo], "10-1234-from-openalex": [other]}),
     )
 
-    seen_by_openalex: list[list[str]] = []
+    candidates, failures = extractor._resolve_pdf_candidates(identifiers)
 
-    def fake_openalex(self, ids):
-        seen_by_openalex.append([identifier.slug for identifier in ids])
-        return {"10-1234-from-openalex": "https://example.org/oa.pdf"}
-
-    monkeypatch.setattr(PdfExtractor, "_openalex_pdf_urls", fake_openalex)
-
-    urls = extractor._resolve_pdf_urls(identifiers)
-
-    assert urls == {
-        "10-1234-from-s2": "https://example.org/s2.pdf",
-        "10-1234-from-openalex": "https://example.org/oa.pdf",
+    # OpenAlex is asked about the article Semantic Scholar answered too, and its
+    # repository copy goes ahead of Semantic Scholar's URL.
+    assert seen == {
+        "s2": ["10-1234-from-s2", "10-1234-from-openalex"],
+        "openalex": ["10-1234-from-s2", "10-1234-from-openalex"],
     }
-    # OpenAlex is only asked about what Semantic Scholar could not answer.
-    assert seen_by_openalex == [["10-1234-from-openalex"]]
+    assert candidates == {"10-1234-from-s2": [repo, s2], "10-1234-from-openalex": [other]}
+    assert failures == {}
 
 
-def test_resolve_pdf_urls_survives_a_failing_provider(monkeypatch, tmp_path):
+def test_resolve_pdf_candidates_survives_a_failing_provider(monkeypatch, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/x")])
     extractor = PdfExtractor(settings=_settings(tmp_path))
 
     def boom(self, ids):
         raise RuntimeError("provider is down")
 
-    monkeypatch.setattr(PdfExtractor, "_semantic_scholar_pdf_urls", boom)
+    oa = PdfCandidate("https://example.org/oa.pdf", "openalex", "publisher")
+    monkeypatch.setattr(PdfExtractor, "_semantic_scholar_pdf_candidates", boom)
     monkeypatch.setattr(
-        PdfExtractor,
-        "_openalex_pdf_urls",
-        lambda self, ids: {"10-1234-x": "https://example.org/oa.pdf"},
+        PdfExtractor, "_openalex_pdf_candidates", lambda self, ids: {"10-1234-x": [oa]}
     )
 
-    assert extractor._resolve_pdf_urls(identifiers) == {
-        "10-1234-x": "https://example.org/oa.pdf"
+    candidates, failures = extractor._resolve_pdf_candidates(identifiers)
+
+    assert candidates == {"10-1234-x": [oa]}
+    assert failures == {
+        "10-1234-x": [
+            {
+                "provider": "semantic_scholar",
+                "outcome": "lookup_failed",
+                "reason": "semantic_scholar lookup failed: provider is down",
+            }
+        ]
     }
 
 

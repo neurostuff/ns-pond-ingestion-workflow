@@ -78,6 +78,11 @@ class DownloadResult:
     error_message: Optional[str] = None
     #: Rejected files moved out of a shared cache: original path -> where it went.
     moved_aside: Dict[str, str] = field(default_factory=dict)
+    #: Each URL tried or passed over for this article, in order, with its outcome.
+    url_attempts: List[Dict[str, object]] = field(default_factory=list)
+    #: The downloaded copy's version as OpenAlex labels it ("publishedVersion",
+    #: "acceptedVersion", "submittedVersion"), when the source knows it.
+    article_version: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -89,6 +94,10 @@ class DownloadResult:
         }
         if self.moved_aside:
             out["moved_aside"] = dict(self.moved_aside)
+        if self.url_attempts:
+            out["url_attempts"] = [dict(attempt) for attempt in self.url_attempts]
+        if self.article_version:
+            out["article_version"] = self.article_version
         return out
 
     @classmethod
@@ -104,6 +113,8 @@ class DownloadResult:
             files=files,
             error_message=payload.get("error_message") or None,
             moved_aside=dict(payload.get("moved_aside") or {}),  # type: ignore[arg-type]
+            url_attempts=[dict(a) for a in payload.get("url_attempts") or []],  # type: ignore[union-attr]
+            article_version=payload.get("article_version") or None,  # type: ignore[arg-type]
         )
 
 

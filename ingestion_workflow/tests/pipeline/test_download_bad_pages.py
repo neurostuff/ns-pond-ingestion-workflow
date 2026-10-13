@@ -5,12 +5,14 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
+from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import DownloadStage
+from ingestion_workflow.tests.oa_hosts import PDF, OaHosts, location, pdf_source
 
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
 
@@ -40,6 +42,22 @@ def page(tmp_path, article_id):
 
 
 @pytest.fixture()
+def hosts(monkeypatch):
+    server = OaHosts()
+    monkeypatch.setattr(OpenAlexClient, "BASE_URL", server.url)
+    yield server
+    server.close()
+
+
+def pdf(hosts, tmp_path, has_article=True):
+    """The real PDF source; OpenAlex lists a repository PDF of the article, or nothing."""
+    if has_article:
+        hosts.work(None, location(hosts.serve("/repo/x.pdf", (200, PDF)), "repository"),
+                   pmid="123")
+    return pdf_source(tmp_path, semantic_scholar_api_key=None)
+
+
+@pytest.fixture()
 def stage(tmp_path):
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
@@ -57,35 +75,37 @@ def run(stage, ctx, ace, pdf):
     return list(stage.execute(ctx, [work]))
 
 
-def test_a_paywall_page_fails_with_its_reason_and_the_next_source_is_tried(tmp_path, stage):
+def test_a_paywall_page_fails_with_its_reason_and_the_next_source_is_tried(
+        tmp_path, stage, hosts):
     ace = FakeSource(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d"))
-    pdf = FakeSource(DownloadSource.PDF, page(tmp_path, "ytpicngb4emb"))
-    first, second = run(*stage, ace, pdf)
+    first, second = run(*stage, ace, pdf(hosts, tmp_path))
     assert (first.source, first.status) == ("ace", Status.FAILED)
     assert first.summary == {"bad_page": "paywall"}
     assert "abstract/extract view" in first.error
     assert (second.source, second.status) == ("pdf", Status.OK)
 
 
-def test_with_no_source_left_the_article_stays_failed(tmp_path, stage):
+def test_with_no_source_left_the_article_stays_failed(tmp_path, stage, hosts):
     ace = FakeSource(DownloadSource.ACE, page(tmp_path, "a6mheoqpeocv"))
-    outcomes = run(*stage, ace, FakeSource(DownloadSource.PDF))
-    assert [o.status for o in outcomes] == [Status.FAILED, Status.PERMANENT]
+    outcomes = run(*stage, ace, pdf(hosts, tmp_path, has_article=False))
+    # no open copy is listed yet, and one may be: the PDF source is asked again later
+    assert [o.status for o in outcomes] == [Status.FAILED, Status.FAILED]
     assert outcomes[0].summary == {"bad_page": "error_page"}
+    assert outcomes[1].error == "No open-access PDF URL found."
 
 
-def test_an_error_page_quoting_404_is_retried_later_not_given_up_on(tmp_path, stage):
+def test_an_error_page_quoting_404_is_retried_later_not_given_up_on(tmp_path, stage, hosts):
     html = tmp_path / "404.html"
     html.write_text("<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1>"
                     + "<p>The page you requested could not be found on this server.</p>" * 5
                     + "</body></html>")
-    outcomes = run(*stage, FakeSource(DownloadSource.ACE, html), FakeSource(DownloadSource.PDF))
+    outcomes = run(*stage, FakeSource(DownloadSource.ACE, html),
+                   pdf(hosts, tmp_path, has_article=False))
     assert outcomes[0].status is Status.FAILED and "404" in outcomes[0].error
 
 
-def test_a_full_article_is_kept(tmp_path, stage):
+def test_a_full_article_is_kept(tmp_path, stage, hosts):
     ace = FakeSource(DownloadSource.ACE, page(tmp_path, "onv6piwppvwo"))
-    pdf = FakeSource(DownloadSource.PDF, page(tmp_path, "ytpicngb4emb"))
-    outcomes = run(*stage, ace, pdf)
+    outcomes = run(*stage, ace, pdf(hosts, tmp_path))
     assert [(o.source, o.status) for o in outcomes] == [("ace", Status.OK)]
-    assert pdf.calls == 0
+    assert hosts.openalex_queries == [] and hosts.fetched == []

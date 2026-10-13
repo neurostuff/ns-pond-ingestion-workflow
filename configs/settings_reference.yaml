@@ -26,9 +26,6 @@ elsevier_cache_root: "/tmp/elsevier_cache"  # Optional override for Elsevier cac
 pdf_cache_root: null  # Optional override for downloaded-PDF cache root directory
 pmc_cache_root: null  # Optional override for the cache of XML fetched from NCBI's PMC
 europepmc_cache_root: null  # Optional override for the cache of XML fetched from Europe PMC
-pdf_url_providers:  # Ordered providers queried for an open-access PDF URL
-  - semantic_scholar
-  - openalex
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
 ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
 # node_path: "/path/to/node/bin"  # Directory holding node (or the binary), put first on PATH. ACE/readabilipy needs node >= 20.19. Also INGEST_NODE_PATH
