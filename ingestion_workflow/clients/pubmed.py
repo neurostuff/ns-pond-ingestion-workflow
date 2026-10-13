@@ -9,7 +9,7 @@ import json
 import re
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-import requests
+import httpx
 import xmltodict
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -36,9 +36,18 @@ class PubMedClient:
         self.email = email
         self.api_key = api_key
         self.tool = tool
-        self._session = requests.Session()
+        self._client = httpx.Client(timeout=30, follow_redirects=True)
         self._last_request = 0.0
         self._min_interval = 1 / (PUBMED_KEYED_REQUEST_LIMIT if api_key else PUBMED_REQUEST_LIMIT)
+
+    def close(self) -> None:
+        self._client.close()
+
+    def __enter__(self) -> "PubMedClient":
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
 
     def get_ids(self, id_type: str, identifiers: Identifiers) -> Identifiers:
         """Fetch additional identifiers for the provided collection."""
@@ -347,7 +356,7 @@ class PubMedClient:
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, object]:
         self._rate_limit_sleep()
-        response = self._session.get(url, params=params, timeout=30)
+        response = self._client.get(url, params=params)
         response.raise_for_status()
         try:
             return response.json()
@@ -378,7 +387,7 @@ class PubMedClient:
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, Any]:
         self._rate_limit_sleep()
-        response = self._session.get(url, params=params, timeout=30)
+        response = self._client.get(url, params=params)
         response.raise_for_status()
         return xmltodict.parse(response.text)
 
