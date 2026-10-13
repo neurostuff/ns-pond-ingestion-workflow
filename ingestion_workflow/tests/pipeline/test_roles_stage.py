@@ -347,13 +347,14 @@ def test_a_missing_prose_model_blocks_only_articles_with_prose_sets(env, served)
     assert plan.reasons == {"no prose role model is configured (role_model_prose)": 1}
 
 
-def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
+def test_a_retrained_model_that_decides_the_same_roles_keeps_the_upload_basis_and_re_syncs(
     env, monkeypatch, served
 ):
-    """But it re-syncs: the parse writes each set's role_source, confidence and evidence."""
+    """But it re-syncs: the parse writes each set's role_source, confidence and evidence. Upload
+    sends what sync wrote, so it follows sync: the same roles leave space's upload basis as
+    it was, and the parse with the new confidences goes up again."""
     settings, catalog, ref = env
     ctx = Context(settings, catalog)
-    uploaded = Artifact(article_id=ref.id, stage="upload", fingerprint="up-1")
 
     def upload_fingerprint(version, answers):
         settings.role_model_table = TABLE_MODEL
@@ -365,8 +366,10 @@ def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
         _, (spaced,) = _run(SpaceStage(settings), ctx, catalog, ref)
         spaced = catalog.artifacts([ref.id], "space")[ref.id][""]
         assert spaced.summary["role_records"] == roled.summary["role_records"]
-        fingerprints.append(SyncStage(settings).fingerprint_for(uploaded, spaced))
-        return roled.fingerprint, UploadStage(settings).fingerprint_for(spaced)
+        synced = Artifact(article_id=ref.id, stage="sync",
+                          fingerprint=SyncStage(settings).fingerprint_for(spaced, "bs-1"))
+        fingerprints.append((synced.fingerprint, UploadStage(settings).fingerprint_for(synced)))
+        return roled.fingerprint, spaced.summary["upload_basis"]
 
     fingerprints = []
     roles_1, upload_1 = upload_fingerprint("1", TABLE_ANSWERS)
@@ -378,22 +381,22 @@ def test_a_retrained_model_that_decides_the_same_roles_uploads_nothing_again(
     assert upload_3 != upload_2  # a set's role changed
     _, upload_4 = upload_fingerprint("4", TABLE_ANSWERS)
     assert upload_4 == upload_1  # the first model's roles again, from a model named otherwise
-    sync_1, sync_2, _, sync_4 = fingerprints
+    (sync_1, sent_1), (sync_2, sent_2), _, (sync_4, sent_4) = fingerprints
     assert len({sync_1, sync_2, sync_4}) == 3
+    assert len({sent_1, sent_2, sent_4}) == 3
 
 
 def test_a_space_artifact_without_role_records_re_syncs_by_its_own_fingerprint(env):
     settings, _, ref = env
-    uploaded = Artifact(article_id=ref.id, stage="upload", fingerprint="up-1")
     sync = SyncStage(settings)
     older, newer = (Artifact(article_id=ref.id, stage="space", fingerprint=f) for f in "ab")
-    assert sync.fingerprint_for(uploaded, older) != sync.fingerprint_for(uploaded, newer)
+    assert sync.fingerprint_for(older, "bs-1") != sync.fingerprint_for(newer, "bs-1")
     same = {"role_records": "r"}
     assert sync.fingerprint_for(
-        uploaded, Artifact(article_id=ref.id, stage="space", fingerprint="a", summary=same)
-    ) == sync.fingerprint_for(
-        uploaded, Artifact(article_id=ref.id, stage="space", fingerprint="b", summary=same)
-    )
+        Artifact(article_id=ref.id, stage="space", fingerprint="a", summary=same), "bs-1"
+    ) != sync.fingerprint_for(
+        Artifact(article_id=ref.id, stage="space", fingerprint="a", summary={"role_records": "s"}),
+        "bs-1")
 
 
 def test_with_its_model_the_stage_writes_every_role(env, monkeypatch, served):

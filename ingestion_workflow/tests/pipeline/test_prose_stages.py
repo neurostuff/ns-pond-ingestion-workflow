@@ -10,6 +10,7 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
@@ -1011,17 +1012,19 @@ def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, 
     assert (prose.fresh, back.status, back.error) == (0, Status.FAILED, NO_TEXT)
 
 
-def test_an_uploaded_article_whose_passages_are_taken_back_leaves_neurostore_and_the_corpus(
-        env, monkeypatch):
-    """Old prose with kept points, and the resolve, roles, space, upload and sync made from it: once
-    passages are taken back, each stage takes back its own, upload retracts the study's
-    pipeline analyses, and sync takes the article out of the corpus."""
-    from ingestion_workflow.pipeline.stage import NO_TEXT
-    from ingestion_workflow.pipeline.stages.sync import SyncStage
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
+def test_an_uploaded_article_whose_passages_are_taken_back_leaves_the_corpus_and_needs_a_retraction(
+        env, monkeypatch, tmp_path):
+    """Old prose with kept points, and the resolve, roles, space, upload and sync made from it:
+    once passages are taken back, each stage takes back its own and sync moves the article out
+    of the corpus. Neurostore's ingester has no route that withdraws a study, so upload records
+    that a retraction is needed, with the base study and what it last sent, and then waits."""
+    from ingestion_workflow.pipeline.upstream import RETRACTION_NEEDED
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="44"))
+    pond = tmp_path / "pond"
+    (pond / "bs-1" / "parse").mkdir(parents=True)
+    (pond / "bs-1" / "parse" / "coordinate_parse.json").write_text("{}")
     catalog.record([
         Outcome.failure(ref.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
         Outcome(article_id=ref.id, stage="prose", source="", fingerprint="old-prose", payload={},
@@ -1034,7 +1037,8 @@ def test_an_uploaded_article_whose_passages_are_taken_back_leaves_neurostore_and
                 summary={"tables": 1}),
         Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
                 summary={"base_study_id": "bs-1", "analyses": 2}),
-        Outcome(article_id=ref.id, stage="sync", source="", fingerprint="old-sync", summary={}),
+        Outcome(article_id=ref.id, stage="sync", source="", fingerprint="old-sync",
+                summary={"base_study_id": "bs-1", "path": str(pond / "bs-1")}),
     ])
     ctx = Context(settings, catalog)
     for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
@@ -1044,25 +1048,13 @@ def test_an_uploaded_article_whose_passages_are_taken_back_leaves_neurostore_and
                                            catalog.artifacts([ref.id], "prose"))
     assert (resolved.fresh, resolved.pending, resolved.blocked) == (0, [], 1)
 
-    retracted = []
-
-    def retract(self, targets, **_):
-        for work, base_study_id in targets:
-            retracted.append(base_study_id)
-            yield Outcome(article_id=work.article_id, stage="upload", source="",
-                          fingerprint=work.fingerprint,
-                          summary={"base_study_id": base_study_id, "retracted": "emptied"})
-
-    monkeypatch.setattr(UploadStage, "_retract", retract)
-    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
-    upload = UploadStage(settings)
-    _run(upload, ctx, catalog, ref)
-    assert retracted == ["bs-1"]
-    again, outcomes = _run(upload, ctx, catalog, ref)  # retracted once, not on every run
-    assert (again.blocked, outcomes) == (1, [])
-    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
-                                    catalog.artifacts([ref.id], "upload"))
-    assert [w.upstream.summary["retracted"] for w in sync.pending] == ["emptied"]
+    synced, uploaded, again = _sync_then_upload(settings, ctx, catalog, ref, pond=pond)
+    assert (synced.status, synced.error, synced.fingerprint) == (Status.FAILED, NO_TEXT, NO_TEXT)
+    assert not (pond / "bs-1").exists() and Path(synced.summary["moved_to"]).exists()
+    assert (uploaded.error, uploaded.fingerprint) == (f"{RETRACTION_NEEDED}: {NO_TEXT}", NO_TEXT)
+    assert uploaded.summary["base_study_id"] == "bs-1"
+    assert uploaded.summary["last_upload"]["analyses"] == 2
+    assert (again.blocked, again.reasons) == (1, {RETRACTION_NEEDED: 1})
 
 
 def test_prose_taken_back_is_read_again_as_soon_as_its_passages_return(env):
@@ -1191,95 +1183,26 @@ def test_the_take_back_runs_through_a_stage_that_last_failed_for_another_reason(
         assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
 
 
-class _Tunnel:
-    def __init__(self, *_, fails=False):
-        self.fails = fails
-
-    def __enter__(self):
-        if self.fails:
-            raise ConnectionError("the tunnel dropped")
-        return self
-
-    def __exit__(self, *exc):
-        return False
-
-
-def _upload_through(monkeypatch, settings, *, fails=False, retracted=None):
-    """UploadStage with neurostore stood in for: the tunnel fails, or each retraction comes back
-    as `retracted` returns."""
+def _sync_then_upload(settings, ctx, catalog, ref, *, pond=None):
+    """sync, then upload, with an ingester that fails the test if anything is sent."""
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
     from ingestion_workflow.pipeline.stages.upload import UploadStage
-    from ingestion_workflow.services import db, upload
 
-    monkeypatch.setattr(db, "SSHTunnel", lambda *a, **k: _Tunnel(fails=fails))
-    monkeypatch.setattr(db, "SessionFactory", lambda *a, **k: None)
-    monkeypatch.setattr(upload.UploadService, "retract",
-                        lambda self, targets, **kw: [retracted(slug, bsid, kw) for slug, bsid in targets])
-    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
-    return UploadStage(settings)
-
-
-def test_a_failed_retraction_keeps_its_base_study_and_is_tried_again(env, monkeypatch):
-    from ingestion_workflow.pipeline.stage import NO_TEXT
-    from ingestion_workflow.pipeline.stages.sync import SyncStage
-    from ingestion_workflow.services.upload import RetractOutcome
-
-    settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="49"))
-    _uploaded_chain(catalog, ref)
-    ctx = Context(settings, catalog)
-    for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
-        _run(stage, ctx, catalog, ref)
-    _, (failed,) = _run(_upload_through(monkeypatch, settings, fails=True), ctx, catalog, ref)
-    assert (failed.status, failed.fingerprint, failed.summary) == (Status.FAILED, NO_TEXT, {"base_study_id": "bs-1"})
-    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
-                                    catalog.artifacts([ref.id], "upload"))
-    assert sync.pending == []  # the article stays in the corpus until neurostore confirms
-
-    asked = []
-
-    def deleted(slug, bsid, kw):
-        asked.append((bsid, kw))
-        return RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted", success=True)
-
-    upload = _upload_through(monkeypatch, settings, retracted=deleted)
-    _, (done,) = _run(upload, ctx, catalog, ref)
-    assert asked == [("bs-1", {"hold_studyset_members": True})]
-    assert (done.status, done.summary["base_study_id"], done.summary["retracted"]) == (Status.OK, "bs-1", "deleted")
+    settings = settings.model_copy(update={"ns_pond_root": pond or Path(settings.data_root) / "pond"})
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    upload = UploadStage(settings)
+    upload.ingester = lambda: pytest.fail("a take-back was sent to neurostore")
+    _, (uploaded,) = _run(upload, ctx, catalog, ref)
     again, outcomes = _run(upload, ctx, catalog, ref)
-    assert (again.blocked, outcomes) == (1, [])
-
-
-def test_a_study_a_studyset_holds_is_held_for_review_not_retracted(env, monkeypatch):
-    from ingestion_workflow.pipeline.scheduler import StageReport
-    from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW
-    from ingestion_workflow.pipeline.stages.sync import SyncStage
-    from ingestion_workflow.services.upload import RetractOutcome
-
-    settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="50"))
-    _uploaded_chain(catalog, ref)
-    ctx = Context(settings, catalog)
-    for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
-        _run(stage, ctx, catalog, ref)
-    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: RetractOutcome(
-        slug=slug, base_study_id=bsid, study_id="s-1", action="held", studysets=["ss1"], success=True))
-    _, (held,) = _run(upload, ctx, catalog, ref)
-    assert held.status is Status.FAILED and held.error.startswith(HELD_FOR_REVIEW)
-    assert held.summary["base_study_id"] == "bs-1" and held.summary["studysets"] == ["ss1"]
-    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
-                                    catalog.artifacts([ref.id], "upload"))
-    assert sync.pending == []
-    again = upload.plan(ctx, [ref], catalog.artifacts([ref.id], "upload"), catalog.artifacts([ref.id], "space"))
-    assert len(again.pending) == 1  # looked at again, so it goes once no studyset holds it
-    assert "1 held for review" in StageReport(stage="upload", failed=1, held=1).line()
+    assert outcomes == []  # recorded once
+    return synced, uploaded, again
 
 
 @pytest.mark.parametrize("roles", ["taken back", "failed", "missing"])
-def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_upload(env, monkeypatch, roles):
-    """Roles taken back while space has not run since, or failed, or never run: upload waits
-    for them and retracts nothing."""
-    from ingestion_workflow.pipeline.stage import NO_TEXT
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
+def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_sync(env, monkeypatch, roles):
+    """Roles taken back while space has not run since, or failed, or never run: sync waits
+    for them, so no parse is written for upload to send, and nothing is taken back."""
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="51"))
@@ -1293,8 +1216,7 @@ def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_upload(env, mon
     elif roles == "failed":
         rows.append(Outcome.failure(ref.id, "roles", "", "no role model", fingerprint="r-1"))
     catalog.record(rows)
-    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
-    plan, outcomes = _run(UploadStage(settings), Context(settings, catalog), catalog, ref)
+    plan, outcomes = _run(SyncStage(settings), Context(settings, catalog), catalog, ref)
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
 
 
@@ -1323,11 +1245,9 @@ def test_roles_read_each_passage_from_the_text_its_spans_index(env, tmp_path):
 
 def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkeypatch):
     """Roles never ran (no model was configured), but the space and upload made before roles
-    existed hold the old text's analyses: roles records the take-back, so space and upload
-    take back theirs, the study is retracted, and the article leaves the corpus."""
-    from ingestion_workflow.pipeline.stage import NO_TEXT
-    from ingestion_workflow.pipeline.stages.sync import SyncStage
-    from ingestion_workflow.services.upload import RetractOutcome
+    existed hold the old text's analyses: roles records the take-back, so space, sync and
+    upload take back theirs, and upload records that the study needs a retraction."""
+    from ingestion_workflow.pipeline.upstream import RETRACTION_NEEDED
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="53"))
@@ -1338,49 +1258,40 @@ def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkey
         assert (stage.name, taken.status, taken.error) == (stage.name, Status.FAILED, NO_TEXT)
     again, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
     assert (again.blocked, outcomes) == (1, [])  # recorded once
-    asked = []
-    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: asked.append(bsid) or
-                             RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted",
-                                            success=True))
-    _, (done,) = _run(upload, ctx, catalog, ref)
-    assert asked == ["bs-1"] and (done.status, done.fingerprint) == (Status.OK, NO_TEXT)
-    sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
-                                    catalog.artifacts([ref.id], "upload"))
-    assert [w.upstream.summary["retracted"] for w in sync.pending] == ["deleted"]
+    synced, uploaded, _ = _sync_then_upload(settings, ctx, catalog, ref)
+    assert synced.error == NO_TEXT
+    assert (uploaded.error, uploaded.summary["base_study_id"]) == (
+        f"{RETRACTION_NEEDED}: {NO_TEXT}", "bs-1")
 
 
 def test_a_take_back_with_no_upload_of_its_own_asks_nothing_of_neurostore(env, monkeypatch):
     """The article was never uploaded by this pipeline, though neurostore knows it: the
-    take-back is recorded and no study is touched."""
-    from ingestion_workflow.pipeline.stage import NO_TEXT
-
+    take-back is recorded and nothing is sent."""
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="54", neurostore="bs-9"))
     _uploaded_chain(catalog, ref, without=("upload",))
     ctx = Context(settings, catalog)
     for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
         _run(stage, ctx, catalog, ref)
-    upload = _upload_through(monkeypatch, settings, retracted=lambda *a: pytest.fail("neurostore was asked"))
-    _, (taken,) = _run(upload, ctx, catalog, ref)
+    _, taken, _ = _sync_then_upload(settings, ctx, catalog, ref)
     assert (taken.status, taken.error, taken.fingerprint) == (Status.FAILED, NO_TEXT, NO_TEXT)
+    assert "retraction_needed" not in taken.summary
 
 
-def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_neurostore_id(env, monkeypatch):
-    from ingestion_workflow.services.upload import RetractOutcome
-
+def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_neurostore_id(
+        env, monkeypatch, tmp_path):
+    """Sync finds the corpus copy by the article's neurostore id and moves it aside."""
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="55", neurostore="bs-9"))
     _uploaded_chain(catalog, ref, upload=Outcome(article_id=ref.id, stage="upload", source="",
                                                  fingerprint="old-upload", summary={"analyses": 2}))
+    pond = tmp_path / "pond"
+    (pond / "bs-9").mkdir(parents=True)
     ctx = Context(settings, catalog)
     for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
         _run(stage, ctx, catalog, ref)
-    asked = []
-    upload = _upload_through(monkeypatch, settings, retracted=lambda slug, bsid, kw: asked.append(bsid) or
-                             RetractOutcome(slug=slug, base_study_id=bsid, study_id="s-1", action="deleted",
-                                            success=True))
-    _run(upload, ctx, catalog, ref)
-    assert asked == ["bs-9"]
+    synced, _, _ = _sync_then_upload(settings, ctx, catalog, ref, pond=pond)
+    assert synced.summary["base_study_id"] == "bs-9" and not (pond / "bs-9").exists()
 
 
 @pytest.mark.parametrize("failed, error", [
@@ -1395,7 +1306,7 @@ def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_ne
 def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(env, monkeypatch, failed, error):
     """A timed-out or broken run in the middle of the chain says nothing about the article's
     text: the stage after it waits, and nothing made from the old text is taken back."""
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="56"))
@@ -1403,27 +1314,28 @@ def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(env, monkey
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-passages",
                             payload={"passages": []}, summary={"passages": 1}),
                     Outcome.failure(ref.id, failed, "", error, fingerprint=f"newer-{failed}")])
-    monkeypatch.setattr(settings, "upload_source", "nuextract-test")
     after = {"passages": ProseStage(settings), "prose": ResolveStage(settings),
              "resolve": _roles(settings, monkeypatch), "roles": SpaceStage(settings),
-             "space": UploadStage(settings)}[failed]
+             "space": SyncStage(settings)}[failed]
     plan, outcomes = _run(after, Context(settings, catalog), catalog, ref)
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
 
 
-@pytest.mark.parametrize("fingerprint, synced", [("no extraction text", True), ("up-1", False)])
-def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(env, fingerprint, synced):
-    """A study an exclusion retracted, with no roles row (the 329 such on the corpus), waits
-    for its roles like any other; one taken back with its text has none to wait for."""
+@pytest.mark.parametrize("space, synced", [("taken back", True), ("ok", False)])
+def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(env, space, synced):
+    """An article with no roles row waits for its roles like any other; one whose analyses
+    were taken back with its text has none to wait for, and sync takes it out of the corpus."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="57"))
-    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint=fingerprint,
-                            summary={"base_study_id": "bs-1", "retracted": "emptied"})])
+    ref = catalog.register(Identifier(pmid="57", neurostore="bs-1"))
+    catalog.record([Outcome.failure(ref.id, "space", "", NO_TEXT, fingerprint=NO_TEXT)
+                    if space == "taken back" else
+                    Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp-1",
+                            summary={"tables": 1})])
     ctx = Context(settings, catalog)
     sync = SyncStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
-                                    catalog.artifacts([ref.id], "upload"))
+                                    catalog.artifacts([ref.id], "space"))
     assert (len(sync.pending), sync.blocked) == ((1, 0) if synced else (0, 1))
 
 
@@ -1468,9 +1380,10 @@ def _roles_after_a_chain(env, monkeypatch, pmid):
 
 
 def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatch):
-    """Prose re-read new passages and now holds no point, so resolve skips it and keeps its old
-    row: that row's indices point into the old list, and roles must not write on them."""
-    from ingestion_workflow.pipeline.stages.roles import RESOLVE_READ_OTHER_PROSE
+    """Prose re-read new passages and now holds no point (w2ni664ashw2): resolve takes back the
+    row made from the earlier reading, and roles takes back its own, never writing on indices
+    into the old list."""
+    from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 
     settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
@@ -1487,10 +1400,11 @@ def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatc
     prose = ProseStage(settings)
     prose.client = lambda: NoPoint()
     _run(prose, ctx, catalog, ref)
-    skipped, _ = _run(ResolveStage(settings), ctx, catalog, ref)
-    assert skipped.skipped == 1
-    plan, outcomes = _run(roles, ctx, catalog, ref)
-    assert (outcomes, plan.reasons) == ([], {RESOLVE_READ_OTHER_PROSE: 1})
+    _, (resolved,) = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (resolved.status, resolved.error, resolved.fingerprint) == (
+        Status.FAILED, NO_ANALYSES, NO_TEXT)
+    _, (roled,) = _run(roles, ctx, catalog, ref)
+    assert (roled.status, roled.error, roled.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
 
 
 def test_resolve_records_the_prose_it_was_made_from(env, monkeypatch):
@@ -2140,3 +2054,142 @@ def test_a_stopped_prose_stage_writes_no_take_back_either(env):
     # the stopping batch, then a later one that holds only the take-back
     assert list(stage.execute(ctx, [take_back, *plan.pending])) == []
     assert list(stage.execute(ctx, [take_back])) == []
+
+
+def _empty_re_read(catalog, ref, *, analyses="no coordinate tables", prose_analyses=1, without=()):
+    """w2ni664ashw2's shape: everything made from an earlier prose reading, then a re-read that
+    found nothing. `analyses` is the tables' state: SKIPPED for no coordinate table, an
+    Outcome, or None for no analyses run."""
+    _uploaded_chain(catalog, ref, without=("passages", *without))
+    rows = [Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="old-resolve",
+                    payload={}, summary={"prose_analyses": prose_analyses}),
+            Outcome(article_id=ref.id, stage="prose", source="", fingerprint="re-read",
+                    payload={"passages": [{"analyses": [], "omitted": []}]},
+                    summary={"passages": 1, "coordinates": 0, "analyses": 0})]
+    if analyses == "no coordinate tables":
+        rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-0",
+                            status=Status.SKIPPED,
+                            summary={"tables": 0, "reason": "no coordinate tables"}))
+    elif analyses is not None:
+        rows.append(analyses)
+    catalog.record(rows)
+
+
+def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(env, monkeypatch):
+    """w2ni664ashw2: the role-free model read the passage again and found no coordinate, and
+    the article has no table. The resolve, roles, space and upload made from the earlier
+    reading's one analysis are taken back, upload records that the study needs a retraction,
+    and roles is not left waiting on a resolve made from other prose."""
+    from ingestion_workflow.pipeline.upstream import RETRACTION_NEEDED
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="90"))
+    _empty_re_read(catalog, ref)
+    ctx = Context(settings, catalog)
+    for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        plan, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error, taken.fingerprint) == (
+            stage.name, Status.FAILED, NO_ANALYSES, NO_TEXT)
+    # recorded once: resolve now skips the article, roles waits on nothing
+    again, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (again.skipped, outcomes) == (1, [])
+    again, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert (again.blocked, again.reasons, outcomes) == (1, {}, [])
+    synced, uploaded, _ = _sync_then_upload(settings, ctx, catalog, ref)
+    assert (synced.error, uploaded.error) == (NO_ANALYSES, f"{RETRACTION_NEEDED}: {NO_ANALYSES}")
+
+
+def test_an_article_never_resolved_with_nothing_to_resolve_is_skipped_not_taken_back(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="91"))
+    catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="empty",
+                            payload={"passages": []}, summary={"passages": 0, "coordinates": 0})])
+    plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.skipped, plan.pending, outcomes) == (1, [], [])
+
+
+def test_a_re_read_that_finds_points_again_rebuilds_a_taken_back_resolve(env):
+    from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="92"))
+    catalog.record([Outcome.failure(ref.id, "resolve", "", NO_ANALYSES, fingerprint=NO_TEXT),
+                    Outcome(article_id=ref.id, stage="prose", source="", fingerprint="found",
+                            payload={"space": "MNI",
+                                     "passages": [_stated("insula", 38, 20, -4, "T", 4.1)]},
+                            summary={"passages": 1, "coordinates": 1, "analyses": 1})])
+    _, (resolved,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert resolved.status is Status.OK and resolved.summary["prose_points"] == 1
+
+
+def _analyses(ref, status=Status.OK, error=None, **summary):
+    if status is Status.FAILED:
+        return Outcome.failure(ref.id, "analyses", "", error, fingerprint="an-1")
+    return Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
+                   status=status, payload={}, summary=summary)
+
+
+@pytest.mark.parametrize("prose_analyses", [1, 0], ids=["made from prose", "tables only"])
+@pytest.mark.parametrize("tables", [
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "APIConnectionError: Connection error."),
+                 id="failed tables run"),
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "TimeoutError: the request timed out"),
+                 id="timeout"),
+    pytest.param(lambda ref: _analyses(ref, Status.FAILED, "the extraction triage judged is gone"),
+                 id="extraction gone"),
+    pytest.param(lambda ref: _analyses(ref, tables=0, unread={"T1": "raw content missing"}),
+                 id="raw content missing"),
+    pytest.param(lambda ref: None, id="no analyses or triage run"),
+])
+def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose_analyses):
+    """A failed, partial or missing tables run says nothing about the article: with empty
+    prose, nothing is taken back and nothing is retracted; resolve blocks, with its reason."""
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="93"))
+    _empty_re_read(catalog, ref, analyses=tables(ref), prose_analyses=prose_analyses)
+    ctx = Context(settings, catalog)
+    plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, outcomes) == (1, [])
+    assert [r.split(":")[0] for r in plan.reasons] == ["tables not read"]
+    assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
+    plan, outcomes = _run(_roles(settings, monkeypatch), ctx, catalog, ref)
+    assert not any(o.error for o in outcomes)
+
+
+def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="94"))
+    _empty_re_read(catalog, ref, analyses=_analyses(
+        ref, tables=0, unread={"T2": "repeats another table's numbers"}))
+    _, (taken,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (taken.status, taken.error) == (Status.FAILED, NO_ANALYSES)
+
+
+def test_a_resolve_made_from_the_tables_alone_is_not_taken_back(env):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="95"))
+    _empty_re_read(catalog, ref, prose_analyses=0)
+    plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
+    assert (plan.skipped, outcomes) == (1, [])
+
+
+def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(env, monkeypatch):
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="97"))
+    _empty_re_read(catalog, ref, without=("upload",))
+    ctx = Context(settings, catalog)
+    for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        _run(stage, ctx, catalog, ref)
+
+    _, done, _ = _sync_then_upload(settings, ctx, catalog, ref)
+    assert (done.status, done.error, done.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
+
+
+def test_the_run_report_counts_an_empty_re_read_as_taken_back(env, monkeypatch):
+    from ingestion_workflow.pipeline.scheduler import run_stages
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="98"))
+    _empty_re_read(catalog, ref)
+    report = run_stages(Context(settings, catalog), [ResolveStage(settings)], [ref])
+    assert (report.stages["resolve"].failed, report.stages["resolve"].taken_back) == (1, 1)

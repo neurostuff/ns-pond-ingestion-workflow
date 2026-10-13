@@ -13,7 +13,15 @@ from ingestion_workflow.models.analysis import UNKNOWN_SPACES, CoordinateSpace
 from ingestion_workflow.models.statistics import normalize_statistic_kind
 
 from ..plan import StagePlan, Work
-from ..stage import Context, take_back_or_block, taking_back
+from ..stage import (
+    NO_ANALYSES,
+    NO_TEXT,
+    Context,
+    needs_taking_back,
+    take_back_or_block,
+    taking_back,
+)
+from ..upstream import Verdict, decide, prose_reading, tables_reading
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
 RESOLVE_VERSION = 10
@@ -323,7 +331,22 @@ class ResolveStage:
             tables = analyses if analyses is not None and analyses.status is Status.OK else None
             read = prose.summary.get("coordinates") or prose.summary.get("analyses")
             if not read and not (tables and tables.summary.get("tables")):
-                plan.skipped += 1  # neither the tables nor the prose hold an analysis
+                # Neither the tables nor the prose hold an analysis. A resolve made from an
+                # earlier prose reading that did is taken back, with everything made from it,
+                # but only when the tables are known to hold none too: a failed or partial
+                # table run says nothing about the article, so it only blocks.
+                existing = artifacts.get(ref.id, {}).get("")
+                if existing is None or not needs_taking_back(existing):
+                    plan.skipped += 1
+                    continue
+                verdict, why = decide(tables_reading(ctx, ref.id, analyses), prose_reading(prose))
+                if verdict is Verdict.HOLD:
+                    plan.block(why)
+                elif verdict is Verdict.TAKE_BACK and existing.summary.get("prose_analyses"):
+                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
+                                             upstream=None, reason=NO_ANALYSES))
+                else:
+                    plan.skipped += 1
                 continue
             fp = self.fingerprint_for(prose, tables)
             existing = artifacts.get(ref.id, {}).get("")

@@ -10,7 +10,7 @@ from ingestion_workflow.catalog import ArticleRef, Outcome, Status
 from ingestion_workflow.utils.console import progress_bar
 
 from .plan import StagePlan
-from .stage import HELD_FOR_REVIEW, NO_TEXT, Context, Stage
+from .stage import HELD_FOR_REVIEW, NO_TEXT, TAKE_BACK_REASONS, Context, Stage
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def run_stages(
             ctx.catalog.record(outcomes)
             stage_report.ok += sum(1 for o in outcomes if o.status is Status.OK)
             stage_report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
-            stage_report.taken_back += sum(1 for o in outcomes if o.error == NO_TEXT
+            stage_report.taken_back += sum(1 for o in outcomes if o.error in TAKE_BACK_REASONS
                                            or (o.status is Status.OK and o.fingerprint == NO_TEXT))
             stage_report.held += sum(1 for o in outcomes
                                      if (o.error or "").startswith(HELD_FOR_REVIEW))

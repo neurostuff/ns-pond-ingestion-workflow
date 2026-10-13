@@ -394,20 +394,26 @@ def test_an_article_with_no_analyses_anywhere_is_not_uploaded():
     assert "if not prepared_analyses and not getattr(" in src
 
 
-def test_an_empty_article_is_skipped_rather_than_failed():
-    """The stage did its job. A failure would be retried on every run, and
-    would never succeed."""
-    import inspect
+def test_an_empty_article_is_skipped_rather_than_failed(monkeypatch):
+    """The stage did its job. A failure would be retried on every run, and would never
+    succeed; an upload would create a study claiming the paper reports no coordinates."""
+    from types import SimpleNamespace
 
+    from ingestion_workflow.catalog import Artifact, Status
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.pipeline.plan import Work
     from ingestion_workflow.pipeline.stages.upload import UploadStage
 
-    gather = inspect.getsource(UploadStage._gather)
-    assert 'if not any((blob or {}).get("analyses") for blob in payload.values()):' in gather
-    assert "return analyses, metadata, empty" in gather
-
-    execute = inspect.getsource(UploadStage._execute)
-    assert "status=Status.SKIPPED" in execute
-    assert '"reason": "no analyses to upload"' in execute
+    stage = UploadStage(Settings())
+    monkeypatch.setattr(stage, "held_back", lambda *a: {})
+    monkeypatch.setattr(stage, "ingester", lambda: pytest.fail("an empty parse was sent"))
+    synced = Artifact("a1", "sync", status=Status.OK, fingerprint="sy",
+                      summary={"base_study_id": "B1", "path": "/pond/B1", "analyses": 0})
+    work = Work(ref=SimpleNamespace(id="a1"), source="", fingerprint="f", upstream=synced)
+    ctx = SimpleNamespace(catalog=SimpleNamespace(artifacts=lambda ids, s: {},
+                                                  add_aliases=lambda learned: None))
+    [out] = stage.execute(ctx, [work])
+    assert (out.status, out.summary["reason"]) == (Status.SKIPPED, "no analyses to upload")
 
 
 def test_the_statistic_priority_is_one_rule_in_one_place():

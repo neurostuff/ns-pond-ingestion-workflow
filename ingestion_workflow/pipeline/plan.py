@@ -16,6 +16,8 @@ class Work:
     source: str
     fingerprint: str
     upstream: Optional[Artifact] = None
+    #: Why a take-back work takes back, one of `stage.TAKE_BACK_REASONS`; NO_TEXT when unset.
+    reason: Optional[str] = None
 
     @property
     def article_id(self) -> str:

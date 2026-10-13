@@ -26,7 +26,6 @@ def test_there_is_no_default_source():
 def test_upload_refuses_to_start_without_a_source():
     import pytest
 
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
     from ingestion_workflow.services.upload import (
         UploadSourceNotSet,
         resolve_upload_source,
@@ -38,13 +37,35 @@ def test_upload_refuses_to_start_without_a_source():
         resolve_upload_source(Settings(upload_source="   "))
     assert resolve_upload_source(Settings(upload_source="nuextract-v19")) == "nuextract-v19"
 
-    # checked before the tunnel is opened, not in __init__ -- planning and
-    # --dry-run change nothing and must still work without a source
-    assert UploadStage(Settings()) is not None
-    execute = inspect.getsource(UploadStage.execute)
-    assert "resolve_upload_source(self.settings)" in execute
-    assert execute.index("resolve_upload_source") < execute.index("self._withdrawn")
-    assert execute.index("resolve_upload_source") < execute.index("self._execute")
+
+
+def test_upload_refuses_to_start_without_a_token(tmp_path, monkeypatch):
+    """The upload stage posts through the ingester, which takes no source; what it will not
+    start without is its admin token. Planning needs none, and the first article sent
+    records the stop before anything goes out."""
+    from types import SimpleNamespace
+
+    import pytest
+    from ingestion_workflow.catalog import Artifact, Status
+    from ingestion_workflow.models.ids import Identifier
+    from ingestion_workflow.pipeline.plan import Work
+    from ingestion_workflow.pipeline.stages.upload import UploadStage
+    from ingestion_workflow.services.neurostore_ingest import NeurostoreAuthError
+
+    monkeypatch.chdir(tmp_path)  # no .env here
+    monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
+    stage = UploadStage(Settings())
+    monkeypatch.setattr(stage, "held_back", lambda *a: {})
+    synced = Artifact("a1", "sync", status=Status.OK, fingerprint="sy",
+                      summary={"base_study_id": "B1", "path": str(tmp_path / "B1"), "analyses": 2})
+    work = Work(ref=SimpleNamespace(id="a1", identifier=Identifier(pmid="1")), source="",
+                fingerprint="f", upstream=synced)
+    ctx = SimpleNamespace(catalog=SimpleNamespace(artifacts=lambda ids, s: {},
+                                                  add_aliases=lambda learned: None))
+    [stopped] = stage.execute(ctx, [work])
+    assert stopped.status is Status.FAILED and stopped.error.startswith("NeurostoreAuthError")
+    with pytest.raises(NeurostoreAuthError):
+        list(stage.execute(ctx, [work]))
 
 
 def test_upload_takes_the_source_from_settings_not_a_constant():
@@ -103,12 +124,15 @@ def test_an_explicit_payload_source_still_wins():
     assert (payload.source or "llm") == "hand-curated"
 
 
-def test_the_source_is_part_of_the_upload_fingerprint():
-    """A different source is a different study version in neurostore, not a
-    relabelling of the same one. Leaving it out of the fingerprint made every
-    already-uploaded article look fresh when the extractor changed."""
-    import inspect
-
+def test_the_neurostore_api_is_part_of_the_upload_fingerprint():
+    """A different API is a different neurostore, not a relabelling of the same one: pointing
+    the run at production after staging sends every parse there, rather than leaving every
+    article uploaded to staging looking fresh."""
+    from ingestion_workflow.catalog import Artifact
     from ingestion_workflow.pipeline.stages.upload import UploadStage
 
-    assert "self.settings.upload_source," in inspect.getsource(UploadStage.fingerprint_for)
+    synced = Artifact("a1", "sync", fingerprint="sy")
+    staging = UploadStage(Settings(neurostore_env="staging")).fingerprint_for(synced)
+    production = UploadStage(Settings(neurostore_env="production")).fingerprint_for(synced)
+    assert staging != production
+    assert UploadStage(Settings(neurostore_env="staging")).fingerprint_for(synced) == staging

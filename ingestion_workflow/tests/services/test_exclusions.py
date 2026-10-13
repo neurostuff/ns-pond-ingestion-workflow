@@ -10,7 +10,7 @@ from ingestion_workflow.cli.main import app
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import exclusions as excl
-from ingestion_workflow.pipeline.stages.upload import UploadStage
+from ingestion_workflow.pipeline.stages.sync import SyncStage
 from ingestion_workflow.services.db import SessionFactory
 from ingestion_workflow.services.nspond import write_corpus_manifest
 from ingestion_workflow.services.upload import UploadService
@@ -76,14 +76,14 @@ def test_marking_nothing_leaves_every_fingerprint_as_it_was():
         fingerprint = "abc"
         summary = {}
 
-    stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    plain = stage.fingerprint_for(Upstream())
-    assert stage.fingerprint_for(Upstream(), {}) == plain
-    assert stage.fingerprint_for(Upstream(), None) == plain
-    marked = stage.fingerprint_for(Upstream(), {"t1": {}})
+    stage = SyncStage(Settings())
+    plain = stage.fingerprint_for(Upstream(), "bs-1")
+    assert stage.fingerprint_for(Upstream(), "bs-1", {}) == plain
+    assert stage.fingerprint_for(Upstream(), "bs-1", None) == plain
+    marked = stage.fingerprint_for(Upstream(), "bs-1", {"t1": {}})
     assert marked != plain
-    assert stage.fingerprint_for(Upstream(), {"t1": {"note": "different note"}}) == marked
-    assert stage.fingerprint_for(Upstream(), {"t1": {}, "t2": {}}) != marked
+    assert stage.fingerprint_for(Upstream(), "bs-1", {"t1": {"note": "different note"}}) == marked
+    assert stage.fingerprint_for(Upstream(), "bs-1", {"t1": {}, "t2": {}}) != marked
 
 
 # -- retraction in neurostore ------------------------------------------------

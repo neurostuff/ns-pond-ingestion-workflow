@@ -93,3 +93,10 @@ upload_connect_timeout: 30  # Connection timeout (seconds) for upload database s
 upload_behavior: "update"  # Behavior for existing studies with source 'llm': 'update' to modify in place, 'insert_new' to create a new study
 upload_metadata_only: false  # When true, only update metadata fields without touching coordinates
 upload_metadata_mode: "fill"  # Metadata update strategy: 'fill' (only empty fields) or 'overwrite'
+neurostore_api_url: null  # Base URL the study_schema ingester upload posts to (<url>/api/study-schema-uploads/); unset, it follows neurostore_env: staging https://staging.neurostore.xyz, production https://neurostore.org; dev must set it
+neurostore_token_env: "NEUROSTORE_TOKEN"  # Name of the environment variable (or .env entry) holding the admin token; the token itself is never a setting
+neurostore_upload_timeout: 120.0  # Seconds to wait for the ingester to answer one upload
+neurostore_upload_retries: 4  # Retries after a 429, a 5xx, a timeout or a lost connection, with doubling backoff, before the paper is recorded as blocked
+neurostore_upload_backoff: 2.0  # Seconds before the first retry; each later retry waits twice as long
+neurostore_upload_max_blocked: 20  # Stop the run once this many papers in a row are blocked; 0 never stops
+neurostore_upload_parsed_paper: true  # Send the ParsedPaper with each parse, for the bibliography and table captions
