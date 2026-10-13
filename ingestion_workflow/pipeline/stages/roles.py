@@ -167,7 +167,7 @@ def assign_roles(
     `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
     without their header and rows go in `unread` (`set_contexts`). Sets of a
     role that is not uploaded -- a reference, a bare slice position (other),
-    a localization, numbers that are not coordinates -- are held: they stay in
+    a localization -- are held: they stay in
     the collection's `analyses`, in their place, so a set's position (pondie's
     `table_id#ordinal`) never moves, and upload leaves them out (`uploaded_sets`).
     """

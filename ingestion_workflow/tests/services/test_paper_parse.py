@@ -446,14 +446,6 @@ def test_a_point_printed_as_stored_gets_no_sign_note():
     assert not [o for o in roles.omitted if o.kept]
 
 
-def test_numbers_that_are_not_coordinates_are_omitted_with_the_deciding_model():
-    built, roles = _one_prose({"set_role": _decided(None, origin="text")})
-    assert built is None
-    assert [(o.name, o.table_id, o.reason) for o in roles.omitted] == [
-        ("marked peak", None, "not brain coordinates, as set-role-text@1 decided")
-    ]
-
-
 def test_prior_study_evidence_is_placed_in_the_parsed_paper_s_text():
     passage = "Peaks matched Smith et al. (40, -52, -18)."
     cited = "Peaks matched Smith et al."
@@ -671,32 +663,6 @@ def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_
     (reading,) = parse.tables
     assert reading.reading == "coordinates"
     assert "omitted 'a > b'" in reading.reason and "omitted 'Unprinted'" in reading.reason
-
-
-def test_a_table_set_that_is_not_coordinates_is_omitted_and_holds_its_rows(tmp_path):
-    """Its rows stay its own, so the next set's cells do not move."""
-    collection = _collection(
-        [
-            Analysis(
-                name="Fear > Neutral",
-                metadata={"set_role": _decided(None)},
-                coordinates=[Coordinate(x=22, y=-4, z=-20), Coordinate(x=36, y=20, z=4)],
-            ),
-            Analysis(
-                name="Surprise > Neutral",
-                coordinates=[Coordinate(x=-10, y=-39, z=44), Coordinate(x=36, y=20, z=4)],
-            ),
-        ]
-    )
-    parse, omitted = _parse(
-        tmp_path, SHARED, {"tbl1": collection}, readings={"tbl1": "coordinates"}
-    )
-    (kept,) = parse.analyses
-    assert [(c.row, c.column_group) for c in kept.cells] == [(4, 0), (5, 0)]
-    assert [str(o) for o in omitted] == [
-        "tbl1: 'Fear > Neutral': not brain coordinates, as set-role-table@1 decided"
-    ]
-    assert "omitted 'Fear > Neutral': not brain coordinates" in parse.tables[0].reason
 
 
 def test_a_placeholder_analysis_with_no_points_is_recorded_as_omitted(tmp_path):
