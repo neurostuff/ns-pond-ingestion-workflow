@@ -196,6 +196,28 @@ article) is retried on the usual schedule; twenty of them with no PDF served
 leave Wiley for the run, as for any PDF host. An answer that is not a PDF fails
 the article and is not kept.
 
+## Dead PDF URLs
+
+The `pdf` source remembers, per article, each PDF URL that has turned out dead.
+A URL is dead when the host answers it with a 4xx other than 408, 425 and 429
+(a 404, 403 or 410, say), or when it answers 200 with something that is not a
+PDF (a landing page or a paywall notice). A 5xx, a timeout, a connection error
+and a 429 are not dead: they may answer differently later. The catalog keeps
+only an article's latest PDF attempt, so each new attempt carries the earlier
+dead URLs forward as `known_dead`, even if a provider no longer lists them.
+Later runs record a dead URL and never fetch it; they fetch only URLs that are
+new or that failed for a passing reason.
+
+A `pdf` download that fails is always written `failed` (retried on the usual
+schedule), never `permanent`: a provider may list a new copy later, and the dead
+URLs are what keep the retries cheap. Other sources still write `permanent` for
+errors that cannot resolve, such as a 404.
+
+Records the `pdf` source wrote `permanent` before this are not migrated. Retry
+them with `ingest run -s download --refresh download:pdf`. The refresh does not
+clear the dead-URL memory: dead URLs stay unfetched, and only the other URLs are
+tried again.
+
 ## Long runs
 
 Runs are resumable by construction: everything a stage produces, including its
