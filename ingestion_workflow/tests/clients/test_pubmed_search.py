@@ -1,5 +1,5 @@
+import json
 import pytest
-import requests
 from ingestion_workflow.clients.pubmed import (
     ESEARCH_MAX_RESULTS,
     PubMedClient,
@@ -130,10 +130,10 @@ def test_pubmed_request_json_handles_invalid_control_chars(monkeypatch):
             return None
 
         def json(self):
-            raise requests.exceptions.JSONDecodeError("bad json", self.text, 0)
+            raise json.JSONDecodeError("bad json", self.text, 0)
 
     monkeypatch.setattr(client, "_rate_limit_sleep", lambda: None)
-    monkeypatch.setattr(client._session, "get", lambda *_args, **_kwargs: DummyResponse(invalid_json))
+    monkeypatch.setattr(client._client, "get", lambda *_args, **_kwargs: DummyResponse(invalid_json))
 
     payload = client._request_json("https://example.com", params=[])
     assert payload["esearchresult"]["ERROR"].startswith("Search Backend failed")
