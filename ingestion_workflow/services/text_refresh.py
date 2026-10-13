@@ -12,8 +12,10 @@ the old text to the new, and `carried` turns it into one catalog write -- the ex
 text hash, the passages' spans remapped. Passages a map cannot carry (a span inside
 rewritten text, or a passage or hit whose characters an edit changed) are left on the
 old hash, so the passages stage reads the text again; so are passages whose text gained
-a caption holding a coordinate, which only a new read finds. The extraction's caption
-spans are the rebuilt text's. The references and the sync are marked stale: the
+a coordinate (in a caption, or in a body an ACE text built again without readability
+recovered), which only a new read finds. The extraction's caption spans are the rebuilt
+text's, and an ACE extraction's `text_source` and `text_from` say how its new text was
+made. The references and the sync are marked stale: the
 references stage reads the new text again (a kept superscript, or a caption, can hold a
 citation marker), its citations' offsets moved meanwhile; and the parse files' spans are
 written again from the text.
@@ -36,6 +38,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.models.extract import text_from
 from ingestion_workflow.services.citations import JATS_SOURCES
 
 logger = logging.getLogger(__name__)
@@ -76,8 +79,11 @@ class Result:
     edits: Optional[List[Tuple[int, int, int, int]]] = None
     #: The rebuilt text's caption spans (`ExtractedContent.figure_captions`).
     figure_captions: Optional[List[dict]] = None
-    #: Whether a caption of the rebuilt text holds a coordinate, which a remap cannot add.
-    captions_hold_coordinates: bool = False
+    #: Whether the text the rebuild inserted holds a coordinate, which a remap cannot add.
+    inserted_coordinates: bool = False
+    #: ACE's `ExtractedContent.text_source` for the rebuilt text: None when its first text
+    #: was kept, and for the other sources, which record none.
+    text_source: Optional[Dict[str, object]] = None
 
 
 def _read(path: Path) -> str:
@@ -111,7 +117,8 @@ def rebuild(job: Job, write: bool) -> Result:
         result.status = "no_download"
         return result
     try:
-        new, result.figure_captions = build(job.source, Path(job.article_file), path, job.pmid)
+        new, result.figure_captions, result.text_source = build(
+            job.source, Path(job.article_file), path, job.pmid)
     except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
         result.status = f"failed: {type(exc).__name__}: {exc}"[:300]
         return result
@@ -123,10 +130,9 @@ def rebuild(job: Job, write: bool) -> Result:
         result.status = "failed: rebuilt text is empty"
         return result
     from ingestion_workflow.services.offsets import diff
-    from ingestion_workflow.services.prose_passages import find
 
-    result.captions_hold_coordinates = any(find(new[c["span"][0]:c["span"][1]]) for c in result.figure_captions or ())
     result.edits = [list(e) for e in diff(old, new).edits]
+    result.inserted_coordinates = _inserts_coordinates(new, result.edits)
     if write:
         _write_atomically(path, new)
         result.status = "rewritten"
@@ -135,27 +141,46 @@ def rebuild(job: Job, write: bool) -> Result:
     return result
 
 
-def build(source: str, article_file: Path, text_path: Path,
-          pmid: Optional[str] = None) -> Tuple[str, List[dict]]:
-    """The text the source's extractor writes for this download, and its caption spans."""
+def _inserts_coordinates(new: str, edits: Sequence[Sequence[int]]) -> bool:
+    """Whether a coordinate of `new` lies in text an edit inserted. Each is read in its
+    whole paragraph, where the word that makes a bare triplet a coordinate ("peak")
+    may be text the edit kept."""
+    from ingestion_workflow.services.prose_passages import find
+
+    for _, _, c, d in edits:
+        if d > c:
+            start = new.rfind("\n", 0, c) + 1
+            end = new.find("\n", d)
+            paragraph = new[start:] if end < 0 else new[start:end]
+            spans = [(start + lo, start + hi) for lo, hi in (h.span for h in find(paragraph))]
+            if any(c < hi and lo < d for lo, hi in spans):
+                return True
+    return False
+
+
+def build(source: str, article_file: Path, text_path: Path, pmid: Optional[str] = None
+          ) -> Tuple[str, List[dict], Optional[Dict[str, object]]]:
+    """The text the source's extractor writes for this download, its caption spans, and
+    for ACE how the text was made (`ExtractedContent.text_source`)."""
     if source in JATS_SOURCES:
         from lxml import etree
 
         from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
 
-        return article_text_and_captions(etree.parse(str(article_file)), article_file.parent)
+        return (*article_text_and_captions(etree.parse(str(article_file)), article_file.parent),
+                None)
     if source == "elsevier":
         from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
 
-        return article_text_and_captions(article_file.read_bytes())
+        return (*article_text_and_captions(article_file.read_bytes()), None)
     if source == "ace":
         from ingestion_workflow.extractors import ace_extractor
         from ingestion_workflow.patches.ace_patch import set_skip_remote_tables
 
         set_skip_remote_tables(True)  # the tables fetched at extraction are in its cache
-        _, text, captions = ace_extractor.article_text_and_captions(
+        built = ace_extractor.article_text_and_captions(
             article_file.read_text(encoding="utf-8"), pmid, text_path.parent / "downloaded_tables")
-        return text, captions
+        return built.text, built.figure_captions, built.text_source
     raise ValueError(f"cannot rebuild the text of {source}")
 
 
@@ -306,9 +331,15 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     extract_payload = dict(catalog.payload(extraction) or {})
     if result.figure_captions is not None:
         extract_payload["figure_captions"] = result.figure_captions
+    summary = {**extraction.summary, "text_sha256": result.new_sha256}
+    # The payload says how the text now on disk was made, not the one it replaced.
+    extract_payload.pop("text_source", None)
+    summary.pop("text_from", None)
+    if result.text_source:
+        extract_payload["text_source"] = result.text_source
+        summary["text_from"] = text_from(result.text_source)
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
-                    fingerprint=extraction.fingerprint, payload=extract_payload,
-                    summary={**extraction.summary, "text_sha256": result.new_sha256})]
+                    fingerprint=extraction.fingerprint, payload=extract_payload, summary=summary)]
     for stage in ("references", "sync"):
         stale = found.get(stage)
         if stale is not None and stale.status is Status.OK:
@@ -326,13 +357,13 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     if moved is None:
         return rows, "stale"
     moved["text_sha256"] = result.new_sha256
-    # spans moved either way; a caption's coordinates are found only by reading the text again
-    read_again = result.captions_hold_coordinates
+    # spans moved either way; coordinates the new text gained are found only by reading it again
+    read_again = result.inserted_coordinates
     rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
                         fingerprint=STALE if read_again else PassagesStage.fingerprint_for(
                             extraction, result.new_sha256),
                         payload=moved, summary=passages.summary))
-    return rows, "captions" if read_again else "remapped"
+    return rows, "read_again" if read_again else "remapped"
 
 
 def carry_all(catalog, results: Iterable[Result], *, write: bool, batch: int = BATCH) -> Counter:

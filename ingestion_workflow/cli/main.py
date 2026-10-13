@@ -700,7 +700,8 @@ def refresh_text(
     passages' spans move to the new text in the same catalog write, and the references
     and the sync are marked stale so they are read and written again. For a change
     to the text alone (pubget keeping superscripts, the figure captions written under
-    "Figure legends").
+    "Figure legends", ACE's short texts built again without readability). An ACE
+    extraction's `text_source` and summary `text_from` are set to how its new text was made.
     """
     from collections import Counter
 
@@ -735,7 +736,8 @@ def refresh_text(
         carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
                f"{carried['stale']:,} left for the passages stage to read again, "
-               f"{carried['captions']:,} remapped and read again for their captions' coordinates")
+               f"{carried['read_again']:,} remapped and read again for the coordinates their "
+               f"new text holds")
     if corpus:
         # an old text two extractions shared, rebuilt two ways, names no single replacement
         replaced = {old: next(iter(news))[1] for old, news in new_of.items()
@@ -766,8 +768,8 @@ def revalidate_downloads(
     ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Fail stored downloads that are not the article: paywall, error, empty-shell and
-    citation-stub pages, checked again without fetching.
+    """Fail stored downloads that are not the article: paywall, error, empty-shell,
+    citation-stub and abstract-only pages, checked again without fetching.
 
     Each is recorded as a failed download with its reason, and the extraction made from
     it fails with "download failed validation: <reason>". A run then moves triage to

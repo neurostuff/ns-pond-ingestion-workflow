@@ -104,9 +104,12 @@ class ExtractedContent:
     error_message: Optional[str] = None
     #: Each figure caption's `{"ids", "span"}` in the text (`extractors.figure_captions`).
     figure_captions: List[Dict[str, object]] = field(default_factory=list)
+    #: How the text was made, when the extractor built it more than one way
+    #: (`ace_extractor.article_text`).
+    text_source: Optional[Dict[str, object]] = None
 
     def to_dict(self) -> Dict[str, object]:
-        return {
+        out = {
             "slug": self.slug,
             "source": self.source.value,
             "identifier": (self.identifier.to_dict() if self.identifier else None),
@@ -117,6 +120,9 @@ class ExtractedContent:
             "error_message": self.error_message,
             "figure_captions": self.figure_captions,
         }
+        if self.text_source:
+            out["text_source"] = self.text_source
+        return out
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> "ExtractedContent":
@@ -136,7 +142,14 @@ class ExtractedContent:
             extracted_at=datetime.fromisoformat(str(payload["extracted_at"])),
             error_message=payload.get("error_message") or None,
             figure_captions=list(payload.get("figure_captions") or []),
+            text_source=payload.get("text_source") or None,
         )
+
+
+def text_from(text_source: Mapping[str, object]) -> str:
+    """The extract summary's `text_from`: which way the text was built, and why it was
+    built more than one way."""
+    return f"{text_source['method']} ({text_source['reason']})"
 
 
 @dataclass

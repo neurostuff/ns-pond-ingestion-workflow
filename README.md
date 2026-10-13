@@ -45,6 +45,15 @@ set `node_path` in the settings file or `INGEST_NODE_PATH` to the directory
 holding a newer node. With ACE enabled, `ingest run` stops at the start and
 names the node version it found when that node is too old.
 
+When the text readability keeps holds under half of the running prose of a page
+with two or more body section headings, ACE extraction builds it again two ways,
+without readability (each paragraph once, without the page's menus) and without
+its table placeholders, and keeps the way with the most prose. Such an extraction
+says which way and why in `summary.text_from` (shown by `ingest show`) and in its
+payload's `text_source`. An extraction made before keeps its text until
+`ingest refresh-text --source ace` rebuilds it; that sets both, and the passages
+stage reads a text again when it gained a coordinate.
+
 ```bash
 ingest add 37961286 PMC10634720 10.1016/j.neuroimage.2023.120   # ids of any kind
 ingest add --query '(fmri OR PET) AND 2010:2025[dp]'            # or a PubMed search
@@ -118,11 +127,15 @@ from the directory a run was started in.
 
 ## When a downloaded page is not the article
 
-A downloaded HTML page that is an empty shell, a paywall notice, an error page or
-a citation stub (a PubMed record, a page with almost no prose) is a failed
-download: its reason is in the artifact's `summary.bad_page`
-(`empty_shell`, `paywall`, `error_page`, `citation_stub`), and the next source
-is tried. ACE moves such a page out of its cache to `<ace cache>-quarantine/`,
+A downloaded HTML page that is an empty shell, a paywall notice, an error page,
+a citation stub (a PubMed record, a page with almost no prose) or only an
+abstract (an abstract and its references: fewer than two body section headings,
+fewer than 20 sentences of running prose, and under 400 words of body prose beside
+the abstract, in any script) is a failed download: its
+reason is in the artifact's `summary.bad_page` (`empty_shell`, `paywall`,
+`error_page`, `citation_stub`, `abstract_only`), and the next source is tried.
+A letter or a commentary without section headings is not abstract-only.
+ACE moves such a page out of its cache to `<ace cache>-quarantine/`,
 under the same relative path, and records both paths in `summary.moved_aside`;
 nothing is deleted. The extraction made from that source's earlier download
 fails with `download failed validation: <reason>`, triage and passages stop
