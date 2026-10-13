@@ -766,6 +766,10 @@ def revalidate_downloads(
     backup: Optional[Path] = typer.Option(
         None, "--backup", help="Where --apply copies the catalog database first; must not exist."
     ),
+    manifest: Optional[Path] = typer.Option(
+        None, "--manifest", "-m", exists=True,
+        help="Check only the articles in this JSONL manifest (default: every article).",
+    ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Fail stored downloads that are not the article: paywall, error, empty-shell,
@@ -787,7 +791,22 @@ def revalidate_downloads(
     settings = _settings(config)
     with _catalog(settings) as catalog:
         ctx = _context(settings, catalog, [])
-        found = revalidate.scan(catalog, list(catalog.all_article_ids()),
+        if manifest:
+            # resolve, not from_manifest: that registers unknown articles, and a dry run
+            # writes nothing
+            wanted = list(Identifiers.load(manifest).identifiers)
+            refs = [catalog.resolve(identifier) for identifier in wanted]
+            unknown = [i.slug for i, ref in zip(wanted, refs) if ref is None]
+            article_ids = list(dict.fromkeys(ref.id for ref in refs if ref is not None))
+            typer.echo(f"manifest {manifest.name}: {len(wanted):,} entries, "
+                       f"{len(article_ids):,} articles in the catalog")
+            if unknown:
+                typer.echo(f"not in the catalog, not checked: {len(unknown):,}")
+                for slug in unknown:
+                    typer.echo(f"  {slug}")
+        else:
+            article_ids = list(catalog.all_article_ids())
+        found = revalidate.scan(catalog, article_ids,
                                 workers=settings.max_workers, recorded_path=ctx.recorded_path)
         effects = revalidate.effects(ctx, DownloadStage(settings), found)
         typer.echo(f"checked {found.checked:,} stored downloads holding a page; "
