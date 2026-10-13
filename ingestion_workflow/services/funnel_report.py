@@ -8,8 +8,9 @@ passed        ok, and the next stage takes it as input
 filtered      recorded, but holding nothing the next stage takes (no tables, ...)
 failed        a failure the scheduler retries
 permanent     a failure it does not retry
-taken_back    every extraction found no text, so what was made from it was withdrawn
-held          upload kept it because a studyset holds the study
+taken_back    what was made from the article's text was withdrawn: every extraction
+              found no text, or the tables and the prose were read again and hold
+              no analysis
 refused       its input passed, but this stage will not read it: the text was
               made from a downloaded page that is not the article
 blocked       never ran here because its input did not pass; the reason names
@@ -47,15 +48,20 @@ from urllib.parse import parse_qs, urlparse
 
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.catalog.blobs import BlobStore
-from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
+from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT, TAKE_BACK_REASONS
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
+from ingestion_workflow.pipeline.stages.sync import (
+    NO_IDENTIFIER,
+    RETRACTION_NOTICE,
+    SHARED_BASE_STUDY,
+)
+from ingestion_workflow.services.neurostore_ingest import Result
 
 PASSED = "passed"
 FILTERED = "filtered"
 FAILED = "failed"
 PERMANENT = "permanent"
 TAKEN_BACK = "taken_back"
-HELD = "held"
 REFUSED = "refused"
 BLOCKED = "blocked"
 PENDING = "pending"
@@ -63,7 +69,7 @@ NOT_ATTEMPTED = "not_attempted"
 STALE = "stale"
 UNACCOUNTED = "unaccounted"
 
-STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, BLOCKED, PENDING,
+STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, REFUSED, BLOCKED, PENDING,
           NOT_ATTEMPTED, STALE, UNACCOUNTED)
 
 #: What each state means, in plain words, for the page.
@@ -72,8 +78,8 @@ MEANINGS = {
     FILTERED: "done, but it holds nothing the next stage reads",
     FAILED: "failed; the pipeline will try again",
     PERMANENT: "failed in a way the pipeline does not retry",
-    TAKEN_BACK: "no extraction found any text, so what was made from it was withdrawn",
-    HELD: "upload kept the study already there, because a studyset holds it",
+    TAKEN_BACK: "what was made from its text was withdrawn: no extraction found any text, "
+                "or a re-read found no analyses",
     REFUSED: "its input passed, but that text came from a downloaded page that is not the article",
     BLOCKED: "never reached this stage: it dropped out at an earlier one",
     PENDING: "ready for this stage, which has not run on it yet",
@@ -84,7 +90,7 @@ MEANINGS = {
 
 #: Of the articles a stage on the upload path takes in, those it leaves out and
 #: those still waiting; the rest passed. The flow diagram sums these.
-EXCLUDED = (FILTERED, FAILED, PERMANENT, TAKEN_BACK, HELD, REFUSED, UNACCOUNTED)
+EXCLUDED = (FILTERED, FAILED, PERMANENT, TAKEN_BACK, REFUSED, UNACCOUNTED)
 WAITING = (PENDING, NOT_ATTEMPTED)
 
 #: The reason upload holds an article back on (`GATED` in the upload stage):
@@ -116,8 +122,16 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("no coordinate tables", "no table holds coordinates"),
     ("neither the tables nor the prose", "nothing for resolve to combine"),
     ("never run on the catalog", "this stage has not run on any article yet"),
-    (HELD_FOR_REVIEW, "the study is in a studyset, so the copy already uploaded stays"),
     (NO_TEXT, "no extractor found text in the download"),
+    (NO_ANALYSES, "the tables and the prose were read again and hold no analysis, so what an "
+                  "earlier reading made was withdrawn; neurostore keeps the last upload"),
+    (RETRACTION_NOTICE, "the paper is a retraction notice, not a study"),
+    (NO_IDENTIFIER, "neurostore holds no base study for it, and it has no doi, pmid or pmcid "
+                    "to create one by"),
+    (SHARED_BASE_STUDY, "another catalog article names the same neurostore base study, so "
+                        "uploading either would replace the other's analyses; the detail names "
+                        "the base study and the other article"),
+    ("no analyses to upload", "never uploaded, and its parse holds no analysis"),
     ("ingest refresh-text", "older extractions record no text hash; `ingest refresh-text` "
                             "records it"),
     ("is not_attempted", "made before its input stage was required, and that stage has "
@@ -128,6 +142,13 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("is refused", "its input came from a page that is not the article"),
     ("is failed", "its input has failed since"),
     ("is blocked", "its input dropped out at an earlier stage"),
+    # The upload's failures, by `_upload_reason`.
+    ("refused by neurostore", "neurostore refused the parse and would again for the same "
+                              "body; the code it gave, if any, follows"),
+    ("neurostore failed every try", "neurostore was up but failed this parse on every try "
+                                    "(5xx, 429, a timeout, or a 2xx that is not its summary)"),
+    ("invalid parse", "the parse failed the checks made before sending it"),
+    ("parse files missing", "sync recorded a parse whose files are not on disk"),
 )
 
 #: A stage that runs per source keeps one artifact per source; the article's
@@ -186,7 +207,6 @@ _EMPTY_INPUT = {"prose": "passages"}
 #: Free-text errors folded into a few categories; the raw text stays for the
 #: drill-down. First match wins, so the specific patterns come first.
 _CATEGORIES: Tuple[Tuple[str, str], ...] = (
-    (r"held for review", "held for review"),
     (r"not open access|does not allow full-text|no open-access pdf", "not open access"),
     (r"did not produce output|did not return a payload|returned no article",
      "source returned no article"),
@@ -330,9 +350,31 @@ def _truthy(value: object) -> bool:
     return value not in (None, 0, "0", "", False, "false")
 
 
+#: The outcomes the upload records as failures, by the first word of its error
+#: ("<result>: [<CODES>: ]<detail>"), and the category each is counted under.
+_UPLOAD_RESULTS = {
+    Result.REFUSED.value: "refused by neurostore",
+    Result.BLOCKED.value: "neurostore failed every try",
+    Result.INVALID.value: "invalid parse",
+    Result.MISSING.value: "parse files missing",
+}
+_UPLOAD_CODES = re.compile(r"[A-Z][A-Z_]+(?:, [A-Z][A-Z_]+)*(?=: )")
+
+
+def _upload_reason(error: str) -> Optional[str]:
+    """An upload failure's category, with neurostore's codes when it gave any."""
+    result, sep, detail = error.partition(": ")
+    if not sep or result not in _UPLOAD_RESULTS:
+        return None
+    codes = _UPLOAD_CODES.match(detail)
+    return _UPLOAD_RESULTS[result] + (f": {codes.group(0)}" if codes else "")
+
+
 def _failure_reason(row: _Row) -> str:
     if row.bad_page:
         return f"bad page: {row.bad_page}"
+    if row.stage == "upload" and row.error and (found := _upload_reason(row.error)):
+        return found
     return categorize(row.error)
 
 
@@ -353,12 +395,11 @@ def _own_state(node: StageNode, rows: List[_Row]) -> Placed:
         return Placed(PASSED, "retracted" if _truthy(best.retracted) else "")
     if best.status == "skipped":
         return Placed(FILTERED,
-                      best.reason or best.error or "skipped: the source cannot handle it")
+                      best.reason or best.error or "skipped: the source cannot handle it",
+                      scrub(best.error or "", 300))
     failures = [r for r in rows if r.status != "ok" and r.error]
-    if failures and all(r.error == NO_TEXT for r in failures):
-        return Placed(TAKEN_BACK, NO_TEXT)
-    if best.error and best.error.startswith(HELD_FOR_REVIEW):
-        return Placed(HELD, HELD_FOR_REVIEW, best.error)
+    if failures and all(r.error in TAKE_BACK_REASONS for r in failures):
+        return Placed(TAKEN_BACK, " + ".join(sorted({r.error for r in failures})))
     reason = " + ".join(sorted({_failure_reason(r) for r in failures})) or "no reason recorded"
     raw = "; ".join((f"{r.source}: " if r.source else "") + scrub(r.error or "", 200)
                     for r in failures)
@@ -391,8 +432,7 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
             entered = before.state == PASSED or (
                 node.name in _INPUT_ON_ATTEMPT and before.state not in _NOT_TRIED)
             reads = _READS_TEXT.get(node.name)
-            if (entered and reads and _from_bad_page(by_stage.get(reads), bad)
-                    and not (node.name == "sync" and _retracted(by_stage.get("upload")))):
+            if entered and reads and _from_bad_page(by_stage.get(reads), bad):
                 # The stage blocks it and leaves any record it made before as it is.
                 out[node.name] = Placed(REFUSED, f"{reads} {READ_FROM_BAD_PAGE}",
                                         recorded=bool(own))
@@ -418,14 +458,14 @@ def _recorded(node: StageNode, own: List[_Row], before: Optional[Placed]) -> Pla
     did not pass."""
     if before is None:
         placed = _own_state(node, own)
-    elif all(r.status != "ok" and r.error == NO_TEXT for r in own):
+    elif all(r.status != "ok" and r.error in TAKE_BACK_REASONS for r in own):
         # The record a stage leaves when its input was taken back: the
         # article dropped out upstream, so it counts as blocked from there.
         placed = _origin(node.upstream, before)
     else:
         mine = _own_state(node, own)
         why = f"input {node.upstream} is {before.state}"
-        if mine.state in (PASSED, HELD):
+        if mine.state == PASSED:
             placed = Placed(STALE, why + (f"; {mine.reason}" if mine.reason else ""),
                             mine.raw or before.reason)
         elif mine.state == UNACCOUNTED:
@@ -450,10 +490,6 @@ def _bad_page_sources(rows: Sequence[_Row]) -> Dict[str, str]:
 def _from_bad_page(rows: Optional[List[_Row]], bad: Dict[str, str]) -> bool:
     """Whether the artifact a stage reads was made from a source's bad page."""
     return bool(rows) and (rows[0].text_source or "") in bad
-
-
-def _retracted(rows: Optional[List[_Row]]) -> bool:
-    return bool(rows) and _truthy(rows[0].retracted)
 
 
 def _pending_reason(node: StageNode, by_stage: Dict[str, List[_Row]]) -> str:
@@ -1211,10 +1247,10 @@ span.click{cursor:pointer;text-decoration:underline dotted}
 "use strict";
 const D=typeof FUNNEL_DATA!=="undefined"?FUNNEL_DATA:JSON.parse(document.getElementById("data").textContent);
 const S=D.strings, STATES=S.state, STAGES=D.stages.map(s=>s.name), GROUP=D.groups;
-const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",held:"#e08a1e",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
+const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
 // Text in each state's colour, dark enough for 4.5:1 on the page's light panels.
-const INK={passed:"#1b6e34",filtered:"#4f5b6e",failed:"#a1261b",permanent:"#7a1914",taken_back:"#6a3fa3",held:"#8a4b08",refused:"#9a3412",blocked:"#4f5b6e",pending:"#6b5300",not_attempted:"#5e4f00",stale:"#7a4a1c",unaccounted:"#a3155f",ok:"#1b6e34",skipped:"#4f5b6e"};
-const DROPS=["filtered","failed","permanent","taken_back","held","refused","pending","not_attempted","unaccounted"];
+const INK={passed:"#1b6e34",filtered:"#4f5b6e",failed:"#a1261b",permanent:"#7a1914",taken_back:"#6a3fa3",refused:"#9a3412",blocked:"#4f5b6e",pending:"#6b5300",not_attempted:"#5e4f00",stale:"#7a4a1c",unaccounted:"#a3155f",ok:"#1b6e34",skipped:"#4f5b6e"};
+const DROPS=["filtered","failed","permanent","taken_back","refused","pending","not_attempted","unaccounted"];
 const fmt=n=>n.toLocaleString("en-US");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const F={dl:new Set(),tried:new Set(),text:new Set(),from:"",to:"",state:new Set(),reason:""};
@@ -1337,7 +1373,7 @@ function sourceTable(cs){
   const src=D.sources.filter(c=>articleOk(c[4],c[5],c[6],c[9]));const T={};
   const add=(s,k,n)=>{T[s]=T[s]||{};T[s][k]=(T[s][k]||0)+n};
   src.forEach(c=>add(S.source[c[1]],S.stage[c[0]]+":"+S.status[c[2]],c[7]));
-  const up=D.trunk[D.trunk.length-1]==="sync"?"upload":D.trunk[D.trunk.length-1];
+  const up=D.trunk[D.trunk.length-1];
   cs.forEach(c=>{const st=S.stage[c[0]];if(st==="triage"&&STATES[c[1]]!=="blocked")add(S.text[c[4]],"judged",c[6]);
     if(st===up&&STATES[c[1]]==="passed"){S.dl[c[3]].split("+").forEach(s=>add(s,"reached",c[6]));add(S.text[c[4]],"reached_judged",c[6])}});
   const cols=[["download:ok","downloaded"],["download:failed","dl failed"],["download:permanent","dl permanent"],["download:skipped","dl skipped"],["extract:ok","extracted"],["extract:failed","extract failed"],["extract:permanent","extract permanent"],["extract:skipped","extract skipped"],["extract:taken_back","extract no text"],["judged","text triage judged"],["reached","has a download, reached "+up],["reached_judged","judged text, reached "+up]];

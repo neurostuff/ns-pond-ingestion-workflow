@@ -73,7 +73,7 @@ log_to_file: true  # Persist logs to a file (defaults to <data_root>/logs/pipeli
 log_to_console: true  # Emit selected logs to the console in addition to the log file
 log_file: null  # Optional override for log file path
 show_progress: true  # Show tqdm progress bars on the console
-dry_run: false  # Perform dry run without making external API calls or file changes
+dry_run: false  # Upload sends nothing and records nothing in the catalog; it writes each request body under <data_root>/neurostore_dry_run/ instead
 
 # ===== Upload =====
 neurostore_env: "staging"  # Which deployment's database `ingest add --from-neurostore` reads. Sets the ssh host, ssh user, container name, docker network and forward port together; any of those set explicitly still wins. The upload stage posts to neurostore_api_url instead
@@ -90,7 +90,4 @@ upload_db_name: "neurostore"  # Database name for uploads
 upload_db_user: "postgres"  # Database user for uploads
 upload_db_password: "example"  # Database password for uploads
 upload_connect_timeout: 30  # Connection timeout (seconds) for upload database sessions
-upload_metadata_only: false  # When true, only update metadata fields without touching coordinates
-upload_metadata_mode: "fill"  # Metadata update strategy: 'fill' (only empty fields) or 'overwrite'
 neurostore_api_url: null  # Base URL of the neurostore the upload stage posts coordinate parses to (<url>/api/study-schema-uploads/), without /api: https://staging.neurostore.xyz or https://neurostore.org. Unset, upload sends nothing
-neurostore_token_env: "NEUROSTORE_TOKEN"  # Name of the environment variable (or .env entry) holding the admin token; the token itself is never a setting

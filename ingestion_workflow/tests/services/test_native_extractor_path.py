@@ -177,20 +177,6 @@ def test_a_table_the_extractor_found_nothing_in_yields_no_collection():
     assert "if collection.analyses:" in src
 
 
-def test_a_named_analysis_with_no_coordinates_is_still_uploaded():
-    """A contrast reported as `n.s.` is an analysis that ran and found
-    nothing -- a result a meta-analyst wants. Only a table the extractor
-    returned NO analyses for is withheld, and that is the empty collection
-    skipped one level up."""
-    import inspect
-
-    from ingestion_workflow.services.upload import UploadService
-
-    src = inspect.getsource(UploadService._build_work_item)
-    assert "if not analysis.coordinates:" not in src
-    assert "if not kept:" in src
-
-
 # -- the table must arrive in the form the model was trained on ----------
 
 def test_the_native_path_serialises_the_table():
@@ -379,43 +365,6 @@ def test_changing_what_reaches_the_model_makes_the_corpus_stale():
     finally:
         mod.EXTRACTION_VERSION = original
     assert stage.fingerprint_for(_Art()) == before
-
-
-def test_an_article_with_no_analyses_anywhere_is_not_uploaded():
-    """`summary.tables` counts collections, not analyses, so the upload gate
-    passes an article whose every table came back empty -- 22 of 49,778 in the
-    v19 corpus run. Uploading one creates a study saying the paper reports no
-    coordinates, which is not what the extractor said."""
-    import inspect
-
-    from ingestion_workflow.services.upload import UploadService
-
-    src = inspect.getsource(UploadService._build_work_item)
-    assert "if not prepared_analyses and not getattr(" in src
-
-
-def test_an_empty_article_is_skipped_rather_than_failed(monkeypatch, tmp_path):
-    """The stage did its job. A failure would be retried on every run, and would never
-    succeed; an upload would create a study claiming the paper reports no coordinates."""
-    from types import SimpleNamespace
-
-    from ingestion_workflow.catalog import Artifact, Status
-    from ingestion_workflow.config import Settings
-    from ingestion_workflow.pipeline.plan import Work
-    from ingestion_workflow.pipeline.stages.upload import UploadStage
-
-    # With no token, a parse sent would stop the stage and record nothing.
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
-    stage = UploadStage(Settings())
-    monkeypatch.setattr(stage, "held_back", lambda *a: {})
-    synced = Artifact("a1", "sync", status=Status.OK, fingerprint="sy",
-                      summary={"base_study_id": "B1", "path": "/pond/B1", "analyses": 0})
-    work = Work(ref=SimpleNamespace(id="a1"), source="", fingerprint="f", upstream=synced)
-    ctx = SimpleNamespace(catalog=SimpleNamespace(artifacts=lambda ids, s: {},
-                                                  add_aliases=lambda learned: None))
-    [out] = stage.execute(ctx, [work])
-    assert (out.status, out.summary["reason"]) == (Status.SKIPPED, "no analyses to upload")
 
 
 def test_the_statistic_priority_is_one_rule_in_one_place():

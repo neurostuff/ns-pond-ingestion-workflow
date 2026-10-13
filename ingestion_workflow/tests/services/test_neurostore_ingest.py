@@ -55,9 +55,7 @@ def study(tmp_path):
 
 
 @pytest.fixture()
-def token(monkeypatch, tmp_path):
-    # read_token falls back to ./.env; a checkout's own .env must not leak into a test.
-    monkeypatch.chdir(tmp_path)
+def token(monkeypatch):
     value = os.environ.get("NEUROSTORE_TOKEN") or REPLAY_TOKEN
     monkeypatch.setenv("NEUROSTORE_TOKEN", value)
     return value
@@ -239,17 +237,89 @@ def test_which_statuses_mean_every_paper_would_fail(token, status, headers, body
     assert type(found) is stop if stop else found is None
 
 
-@pytest.mark.parametrize("body, problem", [
-    (b"<html>maintenance</html>", "not JSON"),
-    (json.dumps({"kind": "parse", "parse_id": "someone-else", "base_study_id": BASE}).encode(),
-     "not this one"),
-    (json.dumps({"kind": "record", "parse_id": "p"}).encode(), "not the ingester's summary"),
+@pytest.mark.parametrize("body, problem, foreign", [
+    (lambda parse: b"<html>maintenance</html>", "not JSON", False),
+    (lambda parse: {"kind": "parse", "parse_id": "someone-else", "base_study_id": BASE},
+     "not this one", False),
+    (lambda parse: {"kind": "record", "parse_id": "p"}, "not the ingester's summary", False),
+    (lambda parse: {"kind": "parse", "parse_id": parse["parse_id"]}, "names no base study",
+     False),
+    (lambda parse: {"kind": "parse", "parse_id": parse["parse_id"],
+                    "base_study_id": "otherBase001"}, "not '22tHjbNRU8t2'", True),
 ])
-def test_a_2xx_that_is_not_this_parse_s_summary_is_not_an_upload(study, token, body, problem):
+def test_a_2xx_that_is_not_this_parse_s_summary_is_not_an_upload(study, token, body, problem,
+                                                                  foreign):
     parse = _files(study)["coordinate_parse"]
+    answer = body(parse)
     with _ingester() as ingester:
-        summary, found = ingester._summary(_response(200, body), parse)
-    assert summary is None and problem in found
+        summary, found, filed_elsewhere = ingester._summary(
+            _response(200, answer if isinstance(answer, bytes) else json.dumps(answer).encode()),
+            parse)
+    assert summary is None and problem in found and filed_elsewhere is foreign
+
+
+@pytest.mark.vcr(record_mode="none")
+def test_a_summary_of_another_base_study_is_refused_not_retried(study, token):
+    """Its base study would be learned as the article's: the same body gets the same
+    answer, so it is the paper's refusal, recorded at once."""
+    sleeps = []
+    with _ingester(sleeps=sleeps) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "refused"
+    assert ni.Result(artifact["status"]).catalog_status is Status.PERMANENT
+    assert artifact["error"]["detail"] == (
+        "the summary is of base study 'otherBase001', not '22tHjbNRU8t2'")
+    assert "summary" not in artifact and sleeps == []
+    assert [a["http_status"] for a in artifact["attempts"]] == [200]
+
+
+@pytest.mark.vcr(record_mode="none")
+def test_a_2xx_that_is_not_a_summary_blocks_the_paper_after_its_tries(study, token):
+    sleeps = []
+    with _ingester(sleeps=sleeps) as ingester:
+        artifact = ingester.upload(study)
+        assert not ingester.down
+    assert artifact["status"] == "blocked"
+    assert ni.Result(artifact["status"]).catalog_status is Status.FAILED
+    assert artifact["error"]["detail"] == (
+        "the 2xx body is not the ingester's summary of a parse upload")
+    assert [a["http_status"] for a in artifact["attempts"]] == [200] * (ni.RETRIES + 1)
+    assert sleeps == [2.0, 4.0, 8.0, 16.0]
+
+
+@pytest.mark.vcr(record_mode="none")
+@pytest.mark.parametrize("asked, waited", [(7, 7.0), (600, ni.MAX_DELAY)], ids=["7", "600"])
+def test_a_429_is_retried_after_the_delay_it_asks_for(study, token, asked, waited):
+    sleeps = []
+    with _ingester(sleeps=sleeps) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "uploaded"
+    assert [a["http_status"] for a in artifact["attempts"]] == [429, 200]
+    assert sleeps == [waited]
+
+
+@pytest.mark.vcr(record_mode="none")
+@pytest.mark.parametrize("status", [502, 503])
+def test_a_proxy_with_nothing_behind_it_is_down(study, token, status):
+    """The outage the stop is for: a proxy answers every try and the health check itself."""
+    sleeps = []
+    with _ingester(sleeps=sleeps) as ingester:
+        with pytest.raises(ni.NeurostoreUnavailable, match="nor its health check"):
+            ingester.upload(study)
+        assert ingester.down
+    assert sleeps == [2.0, 4.0, 8.0, 16.0]
+    assert not (study / ni.UPLOAD_DIR).exists()
+
+
+@pytest.mark.vcr(record_mode="none")
+def test_a_redirect_that_names_the_token_stops_without_it(study, monkeypatch):
+    # The composed Location carries the replay token, so the test sends that one.
+    monkeypatch.setenv("NEUROSTORE_TOKEN", REPLAY_TOKEN)
+    with _ingester() as ingester, pytest.raises(ni.NeurostoreConfigError) as stopped:
+        ingester.upload(study)
+    assert "redirects (302)" in str(stopped.value)
+    assert REPLAY_TOKEN not in str(stopped.value) and ni.REDACTED in str(stopped.value)
+    assert not (study / ni.UPLOAD_DIR).exists()
 
 
 def test_a_down_api_stops_the_upload_after_its_tries_and_writes_nothing(study, token):
@@ -318,13 +388,12 @@ def test_a_dry_run_writes_the_exact_payload_and_sends_nothing(study, monkeypatch
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
     root = tmp_path / "dry"
-    artifact = ni.NeurostoreIngester(LOCAL, dry_run=True, dry_run_root=root).upload(
-        study, run_id="run-7")
+    artifact = ni.NeurostoreIngester(LOCAL, dry_run=True, dry_run_root=root).upload(study)
 
     assert artifact["status"] == "dry_run"
     payload = (root / study.name / ni.PAYLOAD_NAME).read_bytes()
     assert artifact["payload_sha256"] == hashlib.sha256(payload).hexdigest()
-    assert json.loads(payload) == {**_files(study), "run_id": "run-7"}
+    assert json.loads(payload) == _files(study)
     assert not (study / ni.UPLOAD_DIR).exists()
 
 
@@ -359,6 +428,21 @@ def test_a_parse_that_fails_its_checks_here_is_not_sent(study, token, change, pr
 
 
 @pytest.mark.vcr(record_mode="none")
+def test_a_parse_only_the_json_schema_refuses_is_not_sent(study, token):
+    """The model reads a coordinate written as a string as a number; the ingester's own
+    check, study_schema's JSON Schema, does not, so neither does this one."""
+    _edit(study, "coordinate_parse", lambda d: d["analyses"][0]["points"][0].update(
+        coordinates=[str(c) for c in d["analyses"][0]["points"][0]["coordinates"]]))
+    with _ingester() as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "invalid"
+    problems = artifact["error"]["problems"]
+    assert problems and all(p.startswith("coordinate-parse/analyses/0/points/0/coordinates/")
+                            for p in problems), problems
+
+
+@pytest.mark.vcr(record_mode="none")
 def test_a_paper_sync_wrote_no_parse_for_is_recorded_missing(tmp_path, token):
     study = tmp_path / "pond" / "noparse"
     study.mkdir(parents=True)
@@ -368,15 +452,21 @@ def test_a_paper_sync_wrote_no_parse_for_is_recorded_missing(tmp_path, token):
     assert _artifact(study)["status"] == "missing"
 
 
-def test_the_upload_needs_its_api_url_and_reads_its_token_env(monkeypatch, tmp_path):
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("UPLOAD_TOKEN", REPLAY_TOKEN)
+def test_the_upload_needs_its_api_url_and_reads_its_token_from_the_environment_only(
+        monkeypatch, tmp_path):
     with pytest.raises(ni.NeurostoreConfigError, match="neurostore_api_url"):
         ni.api_url(Settings())
-    settings = Settings(neurostore_api_url=LOCAL + "/", neurostore_token_env="UPLOAD_TOKEN")
+    assert not [name for name in Settings.model_fields if "token" in name]
+    settings = Settings(neurostore_api_url=LOCAL + "/")
+    monkeypatch.setenv("NEUROSTORE_TOKEN", REPLAY_TOKEN)
     with ni.NeurostoreIngester.from_settings(settings) as ingester:
         assert ingester.url == LOCAL + ni.UPLOAD_PATH
-        assert ingester.token_env == "UPLOAD_TOKEN"
+    # A token in ./.env is not read: the environment variable is the one source.
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".env").write_text(f"NEUROSTORE_TOKEN={REPLAY_TOKEN}\n")
+    monkeypatch.delenv("NEUROSTORE_TOKEN")
+    with pytest.raises(ni.NeurostoreAuthError, match="no neurostore token"):
+        ni.NeurostoreIngester.from_settings(settings)
 
 
 def test_a_missing_or_malformed_token_stops_before_anything_is_sent(monkeypatch, tmp_path):
@@ -467,6 +557,20 @@ def test_a_token_in_a_transport_error_is_kept_out_of_the_artifact_and_logs(
     assert token not in str(stopped.value)
     assert token not in http_debug.text
     assert "Illegal header value b'Bearer [redacted]'" in http_debug.text
+
+
+#: Every logger httpx and httpcore print a request or a header on.
+HTTP_STACK = ("httpx", "httpcore", "httpcore.connection", "httpcore.http11", "httpcore.http2",
+              "httpcore.proxy", "httpcore.socks")
+
+
+@pytest.mark.parametrize("name", HTTP_STACK)
+def test_every_http_logger_is_scrubbed(token, http_debug, name):
+    http_debug.set_level(logging.DEBUG, logger=name)
+    with _ingester():
+        logging.getLogger(name).debug("sent Authorization: Bearer %s (%s)", "other-secret", token)
+    assert "other-secret" not in http_debug.text and token not in http_debug.text
+    assert f"Bearer {ni.REDACTED}" in http_debug.text
 
 
 def test_closing_an_ingester_drops_its_token_and_keeps_scrubbing_bearer_values(

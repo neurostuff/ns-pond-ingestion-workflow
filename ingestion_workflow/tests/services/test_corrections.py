@@ -21,9 +21,6 @@ from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.pipeline.stages.notices import NoticesStage
 from ingestion_workflow.pipeline.stages.sync import SyncStage
-from ingestion_workflow.pipeline.stages.upload import UploadStage
-from sqlalchemy import text
-from test_exclusions import _uploaded
 
 XML = Path(__file__).parent.parent / "data" / "pubmed" / "efetch_retraction.xml"
 
@@ -373,11 +370,17 @@ def test_a_retracted_paper_s_parsed_paper_carries_its_retraction(tmp_path):
         assert _corrections(cat, ref, ctx) == [{"kind": "retraction", "pmid": "8", "doi": None}]
 
 
-def test_a_retraction_notice_is_never_synced(tmp_path):
+def test_a_retraction_notice_is_never_synced_and_is_recorded_with_its_reason(tmp_path):
     from ingestion_workflow.pipeline.stages.sync import RETRACTION_NOTICE
 
     cat, ref, ctx = _sync(tmp_path, _answered(notice=True))
     with cat:
+        plan = _plan(cat, ref, ctx)
+        (skipped,) = SyncStage(ctx.settings).execute(ctx, plan.pending)
+        assert (skipped.status, skipped.error) == (Status.SKIPPED, RETRACTION_NOTICE)
+        assert skipped.summary == {"reason": RETRACTION_NOTICE, "base_study_id": "BASE1"}
+        cat.record([skipped])
+        assert not (ctx.settings.ns_pond_root / "BASE1").exists()
         plan = _plan(cat, ref, ctx)
         assert (plan.pending, plan.reasons) == ([], {RETRACTION_NOTICE: 1})
 
@@ -411,64 +414,6 @@ def test_never_answered_notices_send_no_corrections(tmp_path):
     with cat:
         assert len(_plan(cat, ref, ctx).pending) == 1
         assert _corrections(cat, ref, ctx) is None
-
-
-def test_a_retracted_paper_with_no_analyses_is_still_sent(monkeypatch):
-    """Its earlier upload is in neurostore, so the parse goes up and marks it."""
-    stage = UploadStage(Settings())
-    monkeypatch.setattr(stage, "held_back", lambda *a: {})
-    sent = []
-    monkeypatch.setattr(stage, "ingester", lambda: SimpleNamespace(
-        upload=lambda d: sent.append(d) or {"status": "uploaded", "summary": {
-            "base_study_id": "OLD1"}}, close=lambda: None))
-    synced = Artifact("a1", "sync", status=Status.OK, fingerprint="sy",
-                      summary={"base_study_id": "OLD1", "path": "/pond/OLD1", "analyses": 0})
-    prior = Artifact("a1", "upload", status=Status.OK, summary={"base_study_id": "OLD1",
-                                                                 "analyses": 3})
-    catalog = SimpleNamespace(artifacts=lambda ids, s: {"a1": {"": prior}} if s == "upload" else {},
-                              add_aliases=lambda learned: None)
-    work = Work(ref=_ref(aid="a1"), source="", fingerprint="f", upstream=synced)
-    [out] = stage.execute(SimpleNamespace(catalog=catalog), [work])
-    assert out.status is Status.OK and [str(d) for d in sent] == ["/pond/OLD1"]
-
-
-# -- neurostore ---------------------------------------------------------------
-
-
-def test_marking_skips_a_database_without_the_m7_columns(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    assert service.mark_retracted({uploaded.base_study_id: {"kind": "retraction"}}) is None
-
-
-def test_marking_sets_the_flag_and_keeps_the_study(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN is_retracted BOOLEAN"))
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN retraction_notice JSON"))
-    notice = {"kind": "retraction", "pmid": "8", "doi": None}
-    assert service.mark_retracted({uploaded.base_study_id: notice}) == 1
-    with engine.connect() as conn:
-        flag, stored = conn.execute(
-            text("SELECT is_retracted, retraction_notice FROM base_studies")
-        ).one()
-        assert flag and '"pmid": "8"' in stored
-        assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
-        assert conn.execute(text("SELECT count(*) FROM points")).scalar() == 2
-
-
-def test_clearing_unsets_the_flag_and_keeps_the_study(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN is_retracted BOOLEAN"))
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN retraction_notice JSON"))
-    service.mark_retracted({uploaded.base_study_id: {"kind": "retraction"}})
-    assert service.mark_retracted({}, [uploaded.base_study_id]) == 1
-    with engine.connect() as conn:
-        flag, stored = conn.execute(
-            text("SELECT is_retracted, retraction_notice FROM base_studies")
-        ).one()
-        assert not flag and stored is None
-        assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
 
 
 def test_a_paper_one_source_failed_for_is_not_fresh_and_is_planned_again():

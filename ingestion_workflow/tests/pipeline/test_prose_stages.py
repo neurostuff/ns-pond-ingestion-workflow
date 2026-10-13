@@ -2136,6 +2136,12 @@ def _analyses(ref, status=Status.OK, error=None, **summary):
     pytest.param(lambda ref: _analyses(ref, tables=0, unread={"T1": "raw content missing"}),
                  id="raw content missing"),
     pytest.param(lambda ref: None, id="no analyses or triage run"),
+    # A failed triage or extraction holds no table verdicts or counts, which must not
+    # read as none.
+    pytest.param(lambda ref: Outcome.failure(ref.id, "triage", "", "TimeoutError: timed out"),
+                 id="failed triage"),
+    pytest.param(lambda ref: Outcome.failure(ref.id, "extract", "pubget", "TimeoutError",
+                                             summary={"tables": 0}), id="failed extraction"),
 ])
 def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose_analyses):
     """A failed, partial or missing tables run says nothing about the article: with empty
@@ -2161,12 +2167,27 @@ def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch)
     assert (taken.status, taken.error) == (Status.FAILED, NO_ANALYSES)
 
 
-def test_a_resolve_made_from_the_tables_alone_is_not_taken_back(env):
+@pytest.mark.parametrize("tables", [
+    pytest.param(lambda ref: None, id="no coordinate tables"),
+    pytest.param(lambda ref: _analyses(ref, tables=0), id="tables read again, none"),
+])
+def test_a_resolve_made_from_the_tables_alone_is_taken_back_once_they_hold_nothing(
+        env, monkeypatch, tables):
+    """The prose added nothing to it, and the tables it was made from were read again
+    whole and hold nothing: it is no longer the article's, so it is taken back like one
+    the prose made, down to the upload's record."""
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="95"))
-    _empty_re_read(catalog, ref, prose_analyses=0)
-    plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
-    assert (plan.skipped, outcomes) == (1, [])
+    found = tables(ref)
+    _empty_re_read(catalog, ref, prose_analyses=0,
+                   **({"analyses": found} if found is not None else {}))
+    ctx = Context(settings, catalog)
+    for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
+        _, (taken,) = _run(stage, ctx, catalog, ref)
+        assert (stage.name, taken.status, taken.error, taken.fingerprint) == (
+            stage.name, Status.FAILED, NO_ANALYSES, NO_TEXT)
+    synced, uploaded, _ = _sync_then_upload(settings, ctx, catalog, ref)
+    assert (synced.error, uploaded.error) == (NO_ANALYSES, NO_ANALYSES)
 
 
 def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(env, monkeypatch):

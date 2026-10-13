@@ -14,6 +14,8 @@ dependencies = [
   "requests>=2.31",
   "python-dotenv>=1.0",
   "httpx>=0.27",
+  # study_schema's JSON Schema, the ingester's own check, run on every parse before upload.
+  "jsonschema>=4.0",
   "tenacity>=8.2",
   "openai>=1.35.0",
   "pandas>=2.2",

@@ -44,10 +44,67 @@ NEW_ARTICLES = "-new"
 #: Why a paper is not synced: PubMed lists it as a retraction notice, not a study.
 RETRACTION_NOTICE = "retraction notice"
 
+#: Why an article is not synced: another catalog article names the same base study. The
+#: ingester keeps one current parse per base study and supersedes what a newer one lacks,
+#: so each upload would replace the other's analyses. When one of them is a preprint and
+#: exactly one is not, that one is synced; otherwise none is, until a person decides.
+SHARED_BASE_STUDY = "shares its neurostore base study with another article"
+#: The stages whose summaries name the base study an article is written under.
+BASE_STUDY_STAGES = ("upload", "sync")
+
 
 def new_articles_root(settings) -> Path:
     root = Path(settings.ns_pond_root)
     return root.parent / f"{root.name}{NEW_ARTICLES}"
+
+
+def shared_base_studies(ctx: Context, bases: Dict[str, str]) -> Dict[str, Tuple[str, List[str]]]:
+    """{article_id: (base study, the other articles naming it)} for the articles in
+    `bases` ({article_id: base study}) that are not synced for SHARED_BASE_STUDY.
+
+    The other articles are any in the catalog whose own base study is the same one, by
+    `known_base_study_ids`."""
+    if not bases:
+        return {}
+    named = ctx.catalog.articles_naming_base_studies(list(bases.values()), BASE_STUDY_STAGES)
+    others = sorted(set().union(*named.values()) - set(bases))
+    found = ctx.catalog.identifiers(others)
+    known = {**known_base_study_ids(
+        ctx, [ArticleRef(id=i, identifier=found[i]) for i in others]), **bases}
+    groups: Dict[str, List[str]] = {}
+    for article_id, base in known.items():
+        groups.setdefault(base, []).append(article_id)
+    groups = {base: sorted(ids) for base, ids in groups.items() if len(ids) > 1}
+    preprints = read_from_preprint(ctx, [i for ids in groups.values() for i in ids])
+    out = {}
+    for base, ids in groups.items():
+        published = [i for i in ids if i not in preprints]
+        kept = published[0] if len(published) == 1 else None
+        for article_id in ids:
+            if article_id in bases and article_id != kept:
+                out[article_id] = (base, [i for i in ids if i != article_id])
+    return out
+
+
+def read_from_preprint(ctx: Context, ids: Sequence[str]) -> set:
+    """The articles whose text sync writes was downloaded as a submitted version."""
+    from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
+
+    if not ids:
+        return set()
+    extracted = ctx.catalog.artifacts(list(ids), "extract")
+    downloads = ctx.catalog.artifacts(list(ids), "download")
+    triaged = ctx.catalog.artifacts(list(ids), "triage")
+    out = set()
+    for article_id in ids:
+        found = downloads.get(article_id, {})
+        extraction = _synced_extraction(ctx, extracted.get(article_id, {}), found,
+                                        triaged.get(article_id, {}).get(""))
+        download = found.get(extraction.source) if extraction is not None else None
+        if download is not None and (download.summary or {}).get(
+                "article_version") == PREPRINT_VERSION:
+            out.add(article_id)
+    return out
 
 
 def known_base_study_ids(ctx: Context, refs: Sequence[ArticleRef]) -> Dict[str, str]:
@@ -125,6 +182,7 @@ class SyncStage:
         excluded = ctx.catalog.exclusions(ids)
         noticed = ctx.catalog.artifacts(ids, "notices")
         bases = known_base_study_ids(ctx, refs)
+        shared = shared_base_studies(ctx, bases)
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
             existing = artifacts.get(ref.id, {}).get("")
@@ -136,17 +194,22 @@ class SyncStage:
                 continue
             base_study_id = bases.get(ref.id)
             identifier = ref.identifier
+            notices = _answered(noticed.get(ref.id, {}).get(""))
+            if notices is not None and (notices.summary or {}).get("retraction_notice"):
+                # A notice can reprint the table it retracts; it is not a study.
+                _skip(plan, ref, spaced, existing, RETRACTION_NOTICE, base_study_id)
+                continue
             if not base_study_id and not (identifier.doi or identifier.pmid or identifier.pmcid):
-                plan.block(NO_IDENTIFIER)
+                _skip(plan, ref, spaced, existing, NO_IDENTIFIER, None)
+                continue
+            if ref.id in shared:
+                base, others = shared[ref.id]
+                _skip(plan, ref, spaced, existing, SHARED_BASE_STUDY, base,
+                      f"shares base study {base} with {', '.join(others)}", shared_with=others)
                 continue
             if read_from_bad_page(prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
                                   extracted.get(ref.id, {})):
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")
-                continue
-            notices = _answered(noticed.get(ref.id, {}).get(""))
-            if notices is not None and (notices.summary or {}).get("retraction_notice"):
-                # A notice can reprint the table it retracts; it is not a study.
-                plan.block(RETRACTION_NOTICE)
                 continue
             fp = self.fingerprint_for(spaced, base_study_id, excluded.get(ref.id), notices)
             if ctx.is_fresh(existing, fp):
@@ -176,6 +239,12 @@ class SyncStage:
             base_study_id = bases.get(work.article_id)
             if self.retracting(work):
                 yield self._retract(work, base_study_id)
+                continue
+            if work.skip is not None:
+                error, summary = work.skip
+                yield Outcome(article_id=work.article_id, stage=self.name, source="",
+                              status=Status.SKIPPED, fingerprint=work.fingerprint, error=error,
+                              summary=summary)
                 continue
             spaced = analyses.get(work.article_id, {}).get("")
             refused = refuse_unassigned(
@@ -367,6 +436,21 @@ class SyncStage:
         )
         self._synced.clear()
         self._retracted.clear()
+
+
+def _skip(plan: StagePlan, ref: ArticleRef, spaced: Artifact, existing: Optional[Artifact],
+          reason: str, base_study_id: Optional[str], error: Optional[str] = None,
+          **summary) -> None:
+    """Plan an article sync records SKIPPED for `reason`, unless that is recorded already.
+
+    The summary keeps the base study, so the article still names it to
+    `shared_base_studies`."""
+    error = error or reason
+    if existing is not None and existing.status is Status.SKIPPED and existing.error == error:
+        plan.block(reason)
+        return
+    plan.pending.append(Work(ref=ref, source="", fingerprint="", upstream=spaced, skip=(
+        error, {"reason": reason, "base_study_id": base_study_id, **summary})))
 
 
 def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:

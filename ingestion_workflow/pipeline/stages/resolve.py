@@ -332,9 +332,10 @@ class ResolveStage:
             read = prose.summary.get("coordinates") or prose.summary.get("analyses")
             if not read and not (tables and tables.summary.get("tables")):
                 # Neither the tables nor the prose hold an analysis. A resolve made from an
-                # earlier prose reading that did is taken back, with everything made from it,
-                # but only when the tables are known to hold none too: a failed or partial
-                # table run says nothing about the article, so it only blocks.
+                # earlier reading of either that did is taken back, with everything made
+                # from it, when `decide` says so: only readings known to hold nothing take
+                # back, and a failed or partial one only blocks. Neither reading here holds
+                # an analysis, so it says HOLD or TAKE_BACK.
                 existing = artifacts.get(ref.id, {}).get("")
                 if existing is None or not needs_taking_back(existing):
                     plan.skipped += 1
@@ -342,11 +343,9 @@ class ResolveStage:
                 verdict, why = decide(tables_reading(ctx, ref.id, analyses), prose_reading(prose))
                 if verdict is Verdict.HOLD:
                     plan.block(why)
-                elif verdict is Verdict.TAKE_BACK and existing.summary.get("prose_analyses"):
+                else:
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
                                              upstream=None, reason=NO_ANALYSES))
-                else:
-                    plan.skipped += 1
                 continue
             fp = self.fingerprint_for(prose, tables)
             existing = artifacts.get(ref.id, {}).get("")

@@ -31,10 +31,6 @@ NO_ANALYSES = "no analyses after re-read"
 #: records its reason as its error.
 TAKE_BACK_REASONS = (NO_TEXT, NO_ANALYSES)
 
-#: What an upload records instead of retracting when a studyset holds the study: the
-#: coordinates under someone's meta-analysis change only after a person has looked.
-HELD_FOR_REVIEW = "held for review"
-
 
 def taken_back(artifact: Optional[Artifact]) -> bool:
     return (artifact is not None and artifact.status is Status.FAILED

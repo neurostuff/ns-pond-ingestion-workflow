@@ -181,7 +181,8 @@ nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
 
 `upload` posts each parse to neurostore's study_schema ingester
 (`POST <neurostore_api_url>/api/study-schema-uploads/`) with the admin token from
-the environment variable `neurostore_token_env` names (`NEUROSTORE_TOKEN`):
+the environment variable `NEUROSTORE_TOKEN` (only from there: it is not a setting
+and is not read from `.env`):
 
 ```yaml
 neurostore_api_url: https://staging.neurostore.xyz   # or https://neurostore.org
@@ -190,8 +191,14 @@ neurostore_api_url: https://staging.neurostore.xyz   # or https://neurostore.org
 Unset, upload sends nothing and every article waits. An article neurostore has
 no base study for is uploaded too: the ingester finds or creates its base study
 by the doi, pmid or pmcid in the parse header, with the bibliography from the
-ParsedPaper; sync holds back a parse with none of the three (`no neurostore base
-study id, and no doi, pmid or pmcid to create one by`). A refused parse (a 4xx
+ParsedPaper. Sync records an article it does not write as skipped, with the
+reason: one with none of the three (`no neurostore base study id, and no doi, pmid
+or pmcid to create one by`), a retraction notice (`retraction notice`), and two
+catalog articles that name the same base study (`shares base study <id> with
+<article>`), since each upload would replace the other's analyses. Of two such
+articles, when one was read from a preprint (its download is a submitted version)
+and the other was not, the other is written and uploaded; otherwise neither is,
+until a person decides. A refused parse (a 4xx
 about the paper, such as `KEY_MISMATCH` or `DUPLICATE_KEY`) is that paper's
 failure and is not retried. When neurostore does not answer a paper's retries
 nor a health check, or refuses the token or the URL, the upload stops for the

@@ -1,7 +1,6 @@
 """Find base studies in Neurostore that this pipeline has not processed.
 
-Read-only. Uses the same database the upload stage writes to, so discovery and
-upload cannot drift apart.
+Read-only, on the database `neurostore_env` names (`services.db`).
 """
 
 from __future__ import annotations
@@ -25,6 +24,26 @@ LLM_SOURCE = "llm"
 #: `base_studies.level` is one of 'group' or 'meta'. Meta-analyses are not
 #: papers to extract coordinates from.
 GROUP_LEVEL = "group"
+
+
+class UploadSourceNotSet(ValueError):
+    """`upload_source` was not configured and discovery was asked for.
+
+    It names the extractor whose study versions count as done, so silence
+    would answer about some other extractor's work; there is no source that
+    is right to guess.
+    """
+
+
+def resolve_upload_source(settings) -> str:
+    source = getattr(settings, "upload_source", None)
+    if source is None or not str(source).strip():
+        raise UploadSourceNotSet(
+            "upload_source is not set. It names the extractor whose study versions "
+            "`ingest add --from-neurostore` counts as done. Set it in the config "
+            "(for example `upload_source: nuextract-v19`)."
+        )
+    return str(source).strip()
 
 
 def unprocessed_base_studies(

@@ -63,16 +63,6 @@ NEUROSTORE_PROFILES: Dict[str, Dict[str, Any]] = {
 }
 
 
-class UploadBehavior(str, Enum):
-    UPDATE = "update"
-    INSERT_NEW = "insert_new"
-
-
-class UploadMetadataMode(str, Enum):
-    FILL = "fill"
-    OVERWRITE = "overwrite"
-
-
 class RoleModel(BaseModel):
     """A set-role model: a NuExtract3 role fine-tune served behind a vLLM endpoint."""
 
@@ -406,7 +396,8 @@ class Settings(BaseSettings):
 
     dry_run: bool = Field(
         default=False,
-        description=("Perform dry run without making external API calls or file changes"),
+        description=("Upload sends nothing and records nothing in the catalog; it writes "
+                     "each request body under <data_root>/neurostore_dry_run/ instead"),
     )
 
 
@@ -698,29 +689,11 @@ class Settings(BaseSettings):
     upload_source: Optional[str] = Field(
         default=None,
         description=(
-            "Which extractor produced these analyses, recorded on the study "
-            "version. This is a key, not a label: neurostore holds one study "
-            "version per source, `upload` matches an existing version by it, "
-            "and `discover` treats a base study as done when a version with "
-            "this source exists. Set it to 'nuextract-v19' when llm_native_"
-            "schema is on, and articles already extracted under 'llm' will be "
-            "picked up again and given a second version rather than "
-            "overwriting the first. "
-            "There is no default on purpose. It used to be 'llm', and under "
-            "the default 'update' behaviour a run that forgot to set it would "
-            "resolve the study to another extractor's version and delete its "
-            "analyses to put its own in their place. `upload` refuses to start "
-            "without it"
+            "The extractor whose studies `ingest add --from-neurostore` looks for: "
+            "it adds the base studies that hold no study version with this source. "
+            "No default, since the answer depends on it; that command refuses to "
+            "start without it"
         ),
-    )
-
-    upload_metadata_only: bool = Field(
-        default=False,
-        description="When true, only update metadata fields without touching coordinates",
-    )
-    upload_metadata_mode: UploadMetadataMode = Field(
-        default=UploadMetadataMode.FILL,
-        description="Metadata update strategy: 'fill' (only empty fields) or 'overwrite'",
     )
 
     # ===== Upload through neurostore's study_schema ingester =====
@@ -731,14 +704,6 @@ class Settings(BaseSettings):
             "(POST <url>/api/study-schema-uploads/), without /api: "
             "https://staging.neurostore.xyz or https://neurostore.org. Unset, upload "
             "sends nothing"
-        ),
-    )
-    neurostore_token_env: str = Field(
-        default="NEUROSTORE_TOKEN",
-        description=(
-            "Name of the environment variable (or .env entry) holding the admin "
-            "token for the ingester. The token itself is not a setting, so it never "
-            "lands in a config file, a log or an upload artifact"
         ),
     )
 

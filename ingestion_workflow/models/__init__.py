@@ -18,14 +18,6 @@ from .download import DownloadedFile, DownloadResult, DownloadSource, FileType
 from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
 from .ids import Identifier, IdentifierExpansion, Identifiers
 from .metadata import ArticleMetadata, Author, is_sufficient, merge_metadata_from_sources
-from .upload import (
-    BaseStudyPayload,
-    PreparedAnalysis,
-    StudyPayload,
-    TablePayload,
-    UploadOutcome,
-    UploadWorkItem,
-)
 
 #: Kept for callers that predate the rename to ExtractedContent.
 ExtractionResult = ExtractedContent
@@ -36,7 +28,6 @@ __all__ = [
     "ArticleExtractionBundle",
     "ArticleMetadata",
     "Author",
-    "BaseStudyPayload",
     "Condition",
     "Contrast",
     "Coordinate",
@@ -57,11 +48,6 @@ __all__ = [
     "ParseAnalysesOutput",
     "ParsedAnalysis",
     "PointsValue",
-    "PreparedAnalysis",
-    "StudyPayload",
-    "TablePayload",
-    "UploadOutcome",
-    "UploadWorkItem",
     "is_sufficient",
     "merge_metadata_from_sources",
 ]

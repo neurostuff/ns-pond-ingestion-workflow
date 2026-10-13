@@ -1,10 +1,10 @@
 """Upload one paper's coordinate parse through neurostore's study_schema ingester.
 
 The ingester is `POST {api}/api/study-schema-uploads/`, admin only. Its body is
-`{"coordinate_parse": <CoordinateParse>, "parsed_paper": <ParsedPaper>}` and optionally a
-`run_id`; its 200 is a summary of what the upload changed. The ParsedPaper is always
-sent: it gives a base study the ingester creates its bibliography, and its
-`bibliography.corrections` mark the paper retracted or not. The upload is one
+`{"coordinate_parse": <CoordinateParse>, "parsed_paper": <ParsedPaper>}`; its 200 is a
+summary of what the upload changed. The ParsedPaper is always sent: it gives a base
+study the ingester creates its bibliography, and its `bibliography.corrections` mark
+the paper retracted or not. The upload is one
 transaction keyed by the parse's analysis content keys, so sending the same parse again
 changes nothing.
 
@@ -19,9 +19,11 @@ the upload artifact.
 How a response is treated:
 
     2xx with this parse's summary   uploaded; the summary is recorded
+    2xx summary of another base     refused: the server filed the parse under a base
+    study                           study the header does not name, and would again
     429, 5xx, a lost connection     retried with backoff; then, if the API is down,
     or timeout, a 2xx that is not   NeurostoreUnavailable, and nothing is written; if
-    this parse's summary            it is up, the paper is recorded as blocked
+    a summary of this parse         it is up, the paper is recorded as blocked
     401, 403, a malformed token     NeurostoreAuthError; nothing is written
     3xx, 405, 415, a 404 that is    NeurostoreConfigError: the URL or the request is
     not about a base study          wrong for every paper alike; nothing is written
@@ -33,8 +35,8 @@ The three errors are `StopRun`s: every later paper would fail the same way, so t
 upload stage stops and leaves its papers pending. The API is up when the ingester's
 route answers a GET with 405: it is served, and takes only POST.
 
-The admin token is read from the environment variable `neurostore_token_env` names
-and is never logged or written: request headers are never recorded, and the token and
+The admin token is read from the environment variable NEUROSTORE_TOKEN and is never
+logged or written: request headers are never recorded, and the token and
 any Authorization or Bearer value are scrubbed from every recorded string and from the
 HTTP libraries' log lines.
 """
@@ -52,9 +54,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import httpx
-from dotenv import dotenv_values
+import jsonschema
 from pydantic import ValidationError
 from study_schema import layouts
+from study_schema.jsonschema import load as load_json_schema
 from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.catalog import Status
@@ -71,6 +74,8 @@ DRY_RUN_NAME = "neurostore_dry_run.json"
 #: Under `data_root`: where `from_settings` puts a dry run's files, one directory per study.
 DRY_RUN_DIR = "neurostore_dry_run"
 PAYLOAD_NAME = "neurostore_payload.json"
+#: The environment variable the admin token is read from; it is never a setting.
+TOKEN_ENV = "NEUROSTORE_TOKEN"
 #: Bump when the artifact's fields change meaning.
 ARTIFACT_VERSION = 3
 
@@ -115,8 +120,8 @@ class Result(str, Enum):
     UPLOADED = "uploaded"
     #: Validated and written, not sent: nothing for the catalog to record.
     DRY_RUN = "dry_run"
-    #: A status the server will give again for the same body (400, 422, an unknown
-    #: base study's 404, ...).
+    #: An answer the server will give again for the same body (400, 422, an unknown
+    #: base study's 404, a summary filed under another base study, ...).
     REFUSED = "refused"
     #: 429, 5xx, a timeout, a lost connection or a 2xx that is not this parse's
     #: summary, on every attempt, from an API that is up.
@@ -169,18 +174,13 @@ def api_url(settings) -> str:
     return settings.neurostore_api_url.rstrip("/")
 
 
-def read_token(name: str) -> Optional[str]:
-    """The token from the environment, or from `.env` as Settings reads its own fields.
-
-    Stripped, because a pasted trailing newline or space is never part of a token.
-    """
-    value = os.environ.get(name) or dotenv_values(".env").get(name) or ""
-    return value.strip() or None
+def read_token() -> Optional[str]:
+    """The token from TOKEN_ENV, stripped: a pasted trailing newline or space is never
+    part of a token."""
+    return (os.environ.get(TOKEN_ENV) or "").strip() or None
 
 
-def build_payload(
-    study_dir: Path, *, run_id: Optional[str] = None
-) -> Tuple[Dict[str, Any], List[str]]:
+def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
     """The request body for one paper, and the checks it passed.
 
     The documents are sent as sync wrote them, after they validate as study_schema's
@@ -209,34 +209,23 @@ def build_payload(
     if not problems:
         problems += layouts.check_paper(layouts.PaperParse(**models), study_dir)
         checks.append("check_paper")
-    problems += _json_schema_problems(raw_parse, raw_paper, checks)
+    problems += _json_schema_problems(raw_parse, raw_paper)
+    checks.append("json_schema")
     if problems:
         raise InvalidParse(problems)
-    payload: Dict[str, Any] = {"coordinate_parse": raw_parse, "parsed_paper": raw_paper}
-    if run_id:
-        payload["run_id"] = run_id
-    return payload, checks
+    return {"coordinate_parse": raw_parse, "parsed_paper": raw_paper}, checks
 
 
-def _json_schema_problems(raw_parse, raw_paper, checks: List[str]) -> List[str]:
-    """The ingester's own check, study_schema's JSON Schema, when jsonschema is installed.
-
-    It is not a dependency of this package; `checks` in the artifact says whether it ran.
-    """
-    try:
-        import jsonschema
-    except ImportError:
-        return []
-    from study_schema.jsonschema import load
-
+def _json_schema_problems(raw_parse, raw_paper) -> List[str]:
+    """The ingester's own check: study_schema's JSON Schema."""
     problems = []
     for name, raw in (("coordinate-parse", raw_parse), ("parsed-paper", raw_paper)):
-        validator = jsonschema.validators.validator_for(load(name))(load(name))
+        schema = load_json_schema(name)
+        validator = jsonschema.validators.validator_for(schema)(schema)
         problems += [
             f"{name}/{'/'.join(str(p) for p in e.path)}: {e.message}"
             for e in validator.iter_errors(raw)
         ]
-    checks.append("json_schema")
     return problems
 
 
@@ -299,14 +288,12 @@ class NeurostoreIngester:
         self,
         base_url: str,
         *,
-        token_env: str = "NEUROSTORE_TOKEN",
         dry_run: bool = False,
         dry_run_root: Optional[Path] = None,
         sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.url = self.base_url + UPLOAD_PATH
-        self.token_env = token_env
         self.dry_run = dry_run
         if dry_run and dry_run_root is None:
             raise ValueError(
@@ -316,14 +303,14 @@ class NeurostoreIngester:
         self.dry_run_root = Path(dry_run_root) if dry_run_root is not None else None
         self._sleep = sleep or time.sleep
         self._down: Optional[str] = None
-        self._token = None if dry_run else read_token(token_env)
+        self._token = None if dry_run else read_token()
         if not dry_run and not self._token:
             raise NeurostoreAuthError(
-                f"no neurostore token: set {token_env} to an admin token for {base_url}"
+                f"no neurostore token: set {TOKEN_ENV} to an admin token for {base_url}"
             )
         if self._token and not _TOKEN.fullmatch(self._token):
             raise NeurostoreAuthError(
-                f"the token in {token_env} is not a valid header value: it holds whitespace "
+                f"the token in {TOKEN_ENV} is not a valid header value: it holds whitespace "
                 "or a non-ASCII character"
             )
         if self._token:
@@ -335,7 +322,7 @@ class NeurostoreIngester:
         kwargs.setdefault("dry_run", settings.dry_run)
         # A run's dry-run output belongs with the run's own data, not in the ns-pond tree.
         kwargs.setdefault("dry_run_root", Path(settings.data_root) / DRY_RUN_DIR)
-        return cls(api_url(settings), token_env=settings.neurostore_token_env, **kwargs)
+        return cls(api_url(settings), **kwargs)
 
     def __repr__(self) -> str:
         return f"NeurostoreIngester({self.url!r}, dry_run={self.dry_run})"
@@ -358,21 +345,14 @@ class NeurostoreIngester:
     def __exit__(self, *exc) -> None:
         self.close()
 
-    def upload(
-        self, study_dir: Path, *, out_dir: Optional[Path] = None, run_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def upload(self, study_dir: Path) -> Dict[str, Any]:
         """Upload one paper, write its artifact, and return it.
 
         `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. Raises a StopRun,
         writing nothing, when the token or the URL is wrong or the API is down.
         """
         study_dir = Path(study_dir)
-        if out_dir is not None:
-            out = Path(out_dir)
-        elif self.dry_run:
-            out = self.dry_run_root / study_dir.name
-        else:
-            out = study_dir / UPLOAD_DIR
+        out = self.dry_run_root / study_dir.name if self.dry_run else study_dir / UPLOAD_DIR
         record: Dict[str, Any] = {
             "artifact_version": ARTIFACT_VERSION,
             "study_id": study_dir.name,
@@ -381,7 +361,7 @@ class NeurostoreIngester:
             "at": utcnow(),
         }
         try:
-            payload, checks = build_payload(study_dir, run_id=run_id)
+            payload, checks = build_payload(study_dir)
         except FileNotFoundError as exc:
             return self._finish(out, record, Result.MISSING, error={"detail": str(exc)})
         except (InvalidParse, json.JSONDecodeError) as exc:
@@ -428,10 +408,12 @@ class NeurostoreIngester:
                 attempts.append({"attempt": attempt, "http_status": status})
                 record["http_status"] = status
                 if response.is_success:
-                    summary, problem = self._summary(response, parse)
+                    summary, problem, foreign = self._summary(response, parse)
                     if problem is None:
                         return self._finish(out, record, Result.UPLOADED, summary=summary)
                     error = {**self._error(response), "detail": problem}
+                    if foreign:
+                        return self._finish(out, record, Result.REFUSED, error=error)
                 else:
                     error = self._error(response)
                     stop = self._stop(response, status)
@@ -472,7 +454,7 @@ class NeurostoreIngester:
         """The error that stops the upload when this status means every paper would fail."""
         if status in (401, 403):
             return NeurostoreAuthError(
-                f"neurostore refused the token in {self.token_env} with {status} at "
+                f"neurostore refused the token in {TOKEN_ENV} with {status} at "
                 f"{self.url}; it must be an admin token for this deployment"
             )
         if 300 <= status < 400:
@@ -491,24 +473,26 @@ class NeurostoreIngester:
         return None
 
     def _summary(self, response: httpx.Response, parse: Dict[str, Any]):
-        """The redacted summary, and why it is not this parse's summary, if it is not."""
+        """(the redacted summary, why it is not this parse's, whether it is this parse's
+        filed under a base study the header does not name)."""
         try:
             summary = response.json()
         except ValueError:
-            return None, "the 2xx body is not JSON, so not the ingester's summary"
+            return None, "the 2xx body is not JSON, so not the ingester's summary", False
         if not isinstance(summary, dict) or summary.get("kind") not in SUMMARY_KINDS:
-            return None, "the 2xx body is not the ingester's summary of a parse upload"
+            return None, "the 2xx body is not the ingester's summary of a parse upload", False
         if summary.get("parse_id") != parse.get("parse_id"):
-            return None, f"the summary is of parse {summary.get('parse_id')!r}, not this one"
+            return (None, f"the summary is of parse {summary.get('parse_id')!r}, not this one",
+                    False)
+        if not summary.get("base_study_id"):
+            return None, "the summary names no base study", False
         expected = (parse["header"].get("identifiers") or {}).get("neurostore_base_study_id")
-        if not summary.get("base_study_id") or (
-            expected and summary["base_study_id"] != expected
-        ):
-            return None, (
-                f"the summary is of base study {summary.get('base_study_id')!r}, "
-                f"not {expected!r}"
-            )
-        return redact(summary, self._token), None
+        if expected and summary["base_study_id"] != expected:
+            # Its id would be learned as this article's alias; the same body gets the same
+            # answer, so it is the paper's refusal, not a failure to retry.
+            return None, (f"the summary is of base study {summary['base_study_id']!r}, "
+                          f"not {expected!r}"), True
+        return redact(summary, self._token), None, False
 
     def _describe(self, exc: Exception) -> str:
         return f"{type(exc).__name__}: {scrub(str(exc), self._token)}"
@@ -615,6 +599,7 @@ __all__ = [
     "Result",
     "StopRun",
     "api_url",
+    "TOKEN_ENV",
     "build_payload",
     "read_token",
     "redact",
