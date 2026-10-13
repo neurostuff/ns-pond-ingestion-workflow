@@ -285,3 +285,80 @@ def test_apply_checks_the_backup_path_before_scanning_and_skips_an_empty_run(
                                 "-c", str(config)])
     assert empty.exit_code == 0, empty.output
     assert "nothing to record" in empty.output and not fresh.exists()
+
+
+@pytest.fixture()
+def two_bad_articles(tmp_path, monkeypatch):
+    from ingestion_workflow.extractors import ace_extractor
+
+    monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
+    monkeypatch.setattr(DownloadStage, "extractor", lambda self, source: AnySource())
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k", download_sources=["pubget", "ace", "pdf"])
+    with Catalog.open(settings.catalog_root) as catalog:
+        article(catalog, settings, tmp_path, "1", PAYWALL)
+        article(catalog, settings, tmp_path, "2", PAYWALL)
+    config = tmp_path / "settings.yaml"
+    config.write_text(json.dumps({
+        "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
+        "catalog_root": str(settings.catalog_root), "download_sources": ["pubget", "ace", "pdf"],
+        "log_to_file": False, "show_progress": False, "max_workers": 1,
+    }))
+    return settings, config
+
+
+def manifest_of(tmp_path, *pmids):
+    from ingestion_workflow.models.ids import Identifiers
+
+    path = tmp_path / "manifest.jsonl"
+    Identifiers([Identifier(pmid=p) for p in pmids]).save(path)
+    return path
+
+
+def failed_downloads(settings):
+    with sqlite3.connect(settings.catalog_root / "catalog.sqlite") as conn:
+        return conn.execute(
+            "SELECT COUNT(*) FROM artifacts WHERE stage='download' AND status='failed'"
+        ).fetchone()[0]
+
+
+def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles):
+    settings, config = two_bad_articles
+    runner = CliRunner()
+    backup = tmp_path / "backup" / "catalog.sqlite"
+
+    dry = runner.invoke(app, ["revalidate-downloads", "-m", str(manifest_of(tmp_path, "1")),
+                              "-c", str(config)])
+    assert dry.exit_code == 0, dry.output
+    assert "checked 1 stored downloads" in dry.output and "bad pages: 1" in dry.output
+    assert failed_downloads(settings) == 0
+
+    applied = runner.invoke(app, ["revalidate-downloads", "--apply", "--backup", str(backup),
+                                  "-m", str(manifest_of(tmp_path, "1")), "-c", str(config)])
+    assert applied.exit_code == 0, applied.output
+    assert failed_downloads(settings) == 1
+    with Catalog.open(settings.catalog_root) as catalog:
+        failed = catalog.artifact(catalog.resolve(Identifier(pmid="1")).id, "download", "ace")
+        left = catalog.artifact(catalog.resolve(Identifier(pmid="2")).id, "download", "ace")
+    assert failed.status == Status.FAILED and left.status == Status.OK
+
+
+def test_without_a_manifest_every_article_is_checked(tmp_path, two_bad_articles):
+    settings, config = two_bad_articles
+    out = CliRunner().invoke(app, ["revalidate-downloads", "-c", str(config)])
+    assert out.exit_code == 0, out.output
+    assert "checked 2 stored downloads" in out.output and "bad pages: 2" in out.output
+    assert "manifest" not in out.output
+
+
+def test_a_manifest_entry_the_catalog_does_not_know_is_reported_and_not_registered(
+    tmp_path, two_bad_articles
+):
+    settings, config = two_bad_articles
+    out = CliRunner().invoke(app, ["revalidate-downloads", "-m",
+                                   str(manifest_of(tmp_path, "1", "999")), "-c", str(config)])
+    assert out.exit_code == 0, out.output
+    assert "not in the catalog, not checked: 1" in out.output and "999" in out.output
+    assert "checked 1 stored downloads" in out.output
+    with Catalog.open(settings.catalog_root) as catalog:
+        assert catalog.count_articles() == 2
