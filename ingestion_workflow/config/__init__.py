@@ -618,13 +618,6 @@ class Settings(BaseSettings):
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
     )
-    pdf_url_providers: List[str] = Field(
-        default_factory=lambda: ["semantic_scholar", "openalex"],
-        description=(
-            "Providers asked for open-access PDF URLs; every one is asked about every "
-            "article, and this order breaks ties between equally ranked copies"
-        ),
-    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(

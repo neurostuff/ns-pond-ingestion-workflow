@@ -430,7 +430,8 @@ class PdfExtractor(BaseExtractor):
     ) -> Tuple[Dict[str, List[PdfCandidate]], Dict[str, List[Dict[str, object]]]]:
         """Every candidate URL per article from every provider, in the order to try them.
 
-        Each provider is asked about every article: the first provider's URL is
+        Both providers are asked about every article, and their order breaks
+        ties between equally ranked copies: the first provider's URL is
         often a publisher copy that refuses the download while a repository
         holds the same article. Also returns, per article, each provider whose
         lookup failed for it, so that its absence is recorded rather than read
@@ -449,15 +450,12 @@ class PdfExtractor(BaseExtractor):
                     }
                 )
 
-        for provider in self.settings.pdf_url_providers:
+        for provider, ask in (
+            ("semantic_scholar", self._semantic_scholar_pdf_candidates),
+            ("openalex", self._openalex_pdf_candidates),
+        ):
             try:
-                if provider == "semantic_scholar":
-                    by_slug = self._semantic_scholar_pdf_candidates(identifiers)
-                elif provider == "openalex":
-                    by_slug = self._openalex_pdf_candidates(identifiers)
-                else:
-                    logger.warning("Unknown pdf_url provider: %s", provider)
-                    continue
+                by_slug = ask(identifiers)
             except LocationLookupFailed as exc:
                 logger.warning("PDF URL lookup partly failed for provider %s: %s", provider, exc)
                 by_slug = exc.found
