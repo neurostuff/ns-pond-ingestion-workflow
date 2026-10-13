@@ -215,9 +215,13 @@ class Assessor:
         for name, stage in self.stages():
             found = found_by_stage[name] = ctx.catalog.artifacts(ids, name)
             parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
+            # Sync's claims on shared base studies are one query over the whole catalog:
+            # asked once for every article here, not once per article's plan.
+            shared = stage.contended(ctx, refs, parents) if name == "sync" else None
             for ref in refs:
-                state = upstream_state(stage.plan(ctx, [ref], found, parents),
-                                       found.get(ref.id, {}).get(""))
+                plan = (stage.plan(ctx, [ref], found, parents) if shared is None
+                        else stage.plan_contended(ctx, [ref], found, parents, shared))
+                state = upstream_state(plan, found.get(ref.id, {}).get(""))
                 if state:
                     behind[ref.id][name] = state
         if "prose" not in found_by_stage:

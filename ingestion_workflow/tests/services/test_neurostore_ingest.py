@@ -299,6 +299,18 @@ def test_a_429_is_retried_after_the_delay_it_asks_for(study, token, asked, waite
 
 
 @pytest.mark.vcr(record_mode="none")
+def test_a_408_is_retried_like_a_timeout(study, token):
+    """A proxy that timed the request out says nothing about the paper: refusing it for
+    good would never send the paper again."""
+    sleeps = []
+    with _ingester(sleeps=sleeps) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "uploaded"
+    assert [a["http_status"] for a in artifact["attempts"]] == [408, 200]
+    assert sleeps == [ni.BACKOFF]
+
+
+@pytest.mark.vcr(record_mode="none")
 @pytest.mark.parametrize("status", [502, 503])
 def test_a_proxy_with_nothing_behind_it_is_down(study, token, status):
     """The outage the stop is for: a proxy answers every try and the health check itself."""
@@ -586,6 +598,25 @@ def test_closing_an_ingester_drops_its_token_and_keeps_scrubbing_bearer_values(
     assert ni._SCRUB.tokens.count(token) == held
     logging.getLogger("httpcore.http11").debug("late line Bearer %s", token)
     assert "late line Bearer [redacted]" in http_debug.text
+
+
+def test_closing_an_ingester_closes_its_connections(token):
+    ingester = _ingester()
+    client = ingester._client
+    ingester.close()
+    assert client.is_closed
+
+
+@pytest.mark.vcr(str(CASSETTES / "test_a_parse_and_its_parsed_paper_are_posted_as_sync_wrote_them"
+                     ".yaml"))
+def test_an_unreadable_upload_artifact_is_moved_aside_not_overwritten(study, token):
+    path = study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME
+    path.parent.mkdir(parents=True)
+    path.write_text('{"history": [')
+    with _ingester() as ingester:
+        ingester.upload(study)
+    assert path.with_name(path.name + ".unreadable").read_text() == '{"history": ['
+    assert [h["status"] for h in _artifact(study)["history"]] == ["uploaded"]
 
 
 def test_a_dry_run_from_settings_writes_outside_the_pond(study, monkeypatch, tmp_path):

@@ -425,18 +425,19 @@ class Catalog:
         return {row["article_id"] for row in rows}
 
     def articles_naming_base_studies(
-        self, base_study_ids: Sequence[str], stages: Sequence[str]
+        self, base_study_ids: Sequence[str], stages: Sequence[str], skipped_for: str
     ) -> Dict[str, set]:
-        """{base study id: the articles whose neurostore alias, or whose artifact at one of
-        `stages`, names it as `base_study_id`}. One query, whatever the number of ids."""
+        """{base study id: the articles whose artifact at one of `stages` names it as
+        `base_study_id`, when that artifact is ok or was skipped for `skipped_for`}. One
+        query, whatever the number of ids."""
         wanted = json.dumps(sorted(set(base_study_ids)))
         rows = self._conn.execute(
-            "SELECT value AS base, article_id FROM aliases WHERE kind = 'neurostore' "
-            "AND value IN (SELECT value FROM json_each(?)) "
-            "UNION SELECT json_extract(summary, '$.base_study_id'), article_id FROM artifacts "
-            "WHERE stage IN (SELECT value FROM json_each(?)) AND source = '' "
+            "SELECT json_extract(summary, '$.base_study_id') AS base, article_id "
+            "FROM artifacts WHERE stage IN (SELECT value FROM json_each(?)) AND source = '' "
+            "AND (status = 'ok' "
+            "OR (status = 'skipped' AND json_extract(summary, '$.reason') = ?)) "
             "AND json_extract(summary, '$.base_study_id') IN (SELECT value FROM json_each(?))",
-            (wanted, json.dumps(list(stages)), wanted),
+            (json.dumps(list(stages)), skipped_for, wanted),
         )
         out: Dict[str, set] = {}
         for row in rows:

@@ -128,9 +128,9 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     (RETRACTION_NOTICE, "the paper is a retraction notice, not a study"),
     (NO_IDENTIFIER, "neurostore holds no base study for it, and it has no doi, pmid or pmcid "
                     "to create one by"),
-    (SHARED_BASE_STUDY, "another catalog article names the same neurostore base study, so "
-                        "uploading either would replace the other's analyses; the detail names "
-                        "the base study and the other article"),
+    (SHARED_BASE_STUDY, "another catalog article that reaches sync names the same neurostore "
+                        "base study, so uploading either would replace the other's analyses; "
+                        "the detail names the base study and the other article"),
     ("no analyses to upload", "never uploaded, and its parse holds no analysis"),
     ("ingest refresh-text", "older extractions record no text hash; `ingest refresh-text` "
                             "records it"),

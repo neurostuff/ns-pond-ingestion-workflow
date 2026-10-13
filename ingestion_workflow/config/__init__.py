@@ -629,7 +629,7 @@ class Settings(BaseSettings):
     )
     upload_use_ssh: bool = Field(
         default=True,
-        description="Enable SSH tunneling for upload database connections",
+        description="Tunnel over SSH to the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_ssh_host: str = Field(
         default="neurostore.xyz",
@@ -672,19 +672,19 @@ class Settings(BaseSettings):
     )
     upload_db_name: str = Field(
         default="neurostore",
-        description="Database name for uploads",
+        description="Name of the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_db_user: str = Field(
         default="postgres",
-        description="Database user for uploads",
+        description="User for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_db_password: str = Field(
         default="example",
-        description="Database password for uploads",
+        description="Password for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_connect_timeout: int = Field(
         default=30,
-        description="Connection timeout (seconds) for upload database sessions",
+        description="Connection timeout (seconds) for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_source: Optional[str] = Field(
         default=None,

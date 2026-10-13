@@ -21,9 +21,10 @@ How a response is treated:
     2xx with this parse's summary   uploaded; the summary is recorded
     2xx summary of another base     refused: the server filed the parse under a base
     study                           study the header does not name, and would again
-    429, 5xx, a lost connection     retried with backoff; then, if the API is down,
-    or timeout, a 2xx that is not   NeurostoreUnavailable, and nothing is written; if
-    a summary of this parse         it is up, the paper is recorded as blocked
+    408, 429, 5xx, a lost           retried with backoff; then, if the API is down,
+    connection or timeout, a 2xx    NeurostoreUnavailable, and nothing is written; if
+    that is not a summary of this   it is up, the paper is recorded as blocked
+    parse
     401, 403, a malformed token     NeurostoreAuthError; nothing is written
     3xx, 405, 415, a 404 that is    NeurostoreConfigError: the URL or the request is
     not about a base study          wrong for every paper alike; nothing is written
@@ -84,6 +85,9 @@ ARTIFACT_VERSION = 3
 RETRIES = 4
 #: Seconds before the first retry; each later retry waits twice as long.
 BACKOFF = 2.0
+#: The 4xx answers that say nothing about the paper: a proxy timing the request out
+#: (408) or a limiter turning it away (429). They are retried like a 5xx.
+RETRIED = (408, 429)
 #: Seconds one upload may take: neurostore's gunicorn kills a worker request at 120 s
 #: (`--timeout 120`), so waiting longer only waits for an answer that never comes.
 TIMEOUT = 120.0
@@ -123,7 +127,7 @@ class Result(str, Enum):
     #: An answer the server will give again for the same body (400, 422, an unknown
     #: base study's 404, a summary filed under another base study, ...).
     REFUSED = "refused"
-    #: 429, 5xx, a timeout, a lost connection or a 2xx that is not this parse's
+    #: 408, 429, 5xx, a timeout, a lost connection or a 2xx that is not this parse's
     #: summary, on every attempt, from an API that is up.
     BLOCKED = "blocked"
     #: Failed validation here, so never sent.
@@ -419,7 +423,7 @@ class NeurostoreIngester:
                     stop = self._stop(response, status)
                     if stop is not None:
                         raise stop
-                    if status != 429 and status < 500:
+                    if status not in RETRIED and status < 500:
                         return self._finish(out, record, Result.REFUSED, error=error)
                     retry_after = _seconds(response.headers.get("Retry-After"))
             if unsendable:

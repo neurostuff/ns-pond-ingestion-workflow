@@ -2158,6 +2158,23 @@ def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose
     assert not any(o.error for o in outcomes)
 
 
+def test_a_failed_table_reading_holds_in_resolve_and_in_the_upload_gate_alike(env):
+    """Resolve's take-back and upload's gate ask one rule of the same readings: with the
+    prose read again and empty, a table reading that failed takes nothing back in either."""
+    from ingestion_workflow.pipeline.upstream import Assessor, Verdict
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="98"))
+    _empty_re_read(catalog, ref, analyses=_analyses(
+        ref, Status.FAILED, "APIConnectionError: Connection error."))
+    ctx = Context(settings, catalog)
+    plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
+    assessed = Assessor(settings).assess(ctx, [ref])[ref.id]
+    assert assessed.verdict is Verdict.HOLD
+    assert "APIConnectionError: Connection error." in assessed.reason
+
+
 def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="94"))

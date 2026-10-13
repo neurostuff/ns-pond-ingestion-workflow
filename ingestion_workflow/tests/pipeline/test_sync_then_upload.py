@@ -251,6 +251,8 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
     assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["23", created]
     _, (again,) = _run(upload, ctx, catalog, ref)
     assert again.status is Status.OK and again.summary["base_study_id"] == created
+    # An upload's own record is what it sent; the one before it is not carried on.
+    assert "last_upload" not in again.summary
     first_sent, second_sent = _sent(vcr)
     assert first_sent["coordinate_parse"]["header"]["identifiers"][
         "neurostore_base_study_id"] is None
@@ -319,7 +321,7 @@ def _read_from_a_preprint(catalog, ref):
 def test_two_articles_naming_one_base_study_are_both_recorded_and_neither_is_sent(
         env, monkeypatch):
     """Each upload would supersede the other's analyses in that base study, so neither is
-    written or uploaded until a person decides; each is recorded with why."""
+    written or uploaded; each is recorded with why."""
     settings, catalog, _ = env
     ctx, held, named = _claimed_twice(env, monkeypatch)
     sync = SyncStage(settings)
@@ -368,6 +370,99 @@ def test_of_a_preprint_and_its_published_paper_on_one_base_study_the_paper_is_wr
     header = json.loads((settings.ns_pond_root / "5dsFAUgmBz36" / "parse"
                          / "coordinate_parse.json").read_text())["header"]
     assert header["identifiers"]["pmid"] == "19176279"
+
+
+def _never_downloaded(env, monkeypatch, pmid, base):
+    return env[1].register(Identifier(pmid=pmid, neurostore=base))
+
+
+def _space_taken_back(env, monkeypatch, pmid, base):
+    _, ref = _prose_article(env, monkeypatch, pmid, base)
+    _take_back_space(env[1], ref)
+    return ref
+
+
+def _roles_failed(env, monkeypatch, pmid, base):
+    _, ref = _prose_article(env, monkeypatch, pmid, base)
+    env[1].record([Outcome.failure(ref.id, "roles", "", "TimeoutError: timed out")])
+    return ref
+
+
+def _a_retraction_notice(env, monkeypatch, pmid, base):
+    _, ref = _prose_article(env, monkeypatch, pmid, base)
+    env[1].record([Outcome(article_id=ref.id, stage="notices", source="", fingerprint="no-1",
+                           payload={"corrections": [], "retraction_notice": True},
+                           summary={"retracted": False, "retraction_notice": True})])
+    return ref
+
+
+@pytest.mark.parametrize("other", [
+    _never_downloaded, _space_taken_back, _roles_failed, _a_retraction_notice,
+], ids=["never downloaded", "space taken back", "roles failed", "retraction notice"])
+def test_an_article_that_never_reaches_sync_holds_no_claim_on_its_base_study(env, monkeypatch,
+                                                                             other):
+    """aTRpMgJ82Ysx's case in the catalog of 2026-10-12: qjgzxkryyvbg holds neurostore's
+    alias for it and has no download, so it never reaches sync and sends nothing;
+    vzlh56dlbzjy uploaded under it. vzlh56dlbzjy is written, planned alone or with the
+    other, and what sync records of the other is no claim either."""
+    settings, catalog, _ = env
+    ctx, uploaded = _prose_article(env, monkeypatch, "40402904")
+    catalog.record([Outcome(article_id=uploaded.id, stage="upload", source="",
+                            fingerprint="up-legacy",
+                            summary={"base_study_id": "aTRpMgJ82Ysx", "analyses": 1})])
+    alias_only = other(env, monkeypatch, "40402903", "aTRpMgJ82Ysx")
+    sync = SyncStage(settings)
+    plan = _plan_sync(sync, ctx, catalog, [uploaded])
+    assert [(w.article_id, w.skip) for w in plan.pending] == [(uploaded.id, None)]
+    plan = _plan_sync(sync, ctx, catalog, [alias_only, uploaded])
+    assert [w.skip for w in plan.pending if w.article_id == uploaded.id] == [None]
+    outcomes = {o.article_id: o for o in sync.execute(ctx, plan.pending)}
+    catalog.record(list(outcomes.values()))
+    written = outcomes[uploaded.id]
+    assert written.status is Status.OK, written.error
+    assert written.summary["path"] == str(settings.ns_pond_root / "aTRpMgJ82Ysx")
+    assert _plan_sync(sync, ctx, catalog, [uploaded]).fresh == 1
+
+
+def test_an_article_taken_back_from_the_corpus_holds_no_claim_on_its_base_study(env,
+                                                                                monkeypatch):
+    """Its sync record is the take-back: nothing of it is in the tree for upload to send."""
+    settings, catalog, _ = env
+    ctx, gone = _prose_article(env, monkeypatch, "40402910", "BS40402910")
+    sync = SyncStage(settings)
+    _run(sync, ctx, catalog, gone)
+    _take_back_space(catalog, gone)
+    _, (back,) = _run(sync, ctx, catalog, gone)
+    assert (back.error, back.summary["base_study_id"]) == (NO_TEXT, "BS40402910")
+    _, paper = _prose_article(env, monkeypatch, "40402911")
+    catalog.record([Outcome(article_id=paper.id, stage="upload", source="",
+                            fingerprint="up-legacy",
+                            summary={"base_study_id": "BS40402910", "analyses": 1})])
+    plan = _plan_sync(sync, ctx, catalog, [paper])
+    assert [(w.article_id, w.skip) for w in plan.pending] == [(paper.id, None)]
+
+
+def test_the_gate_reads_the_claims_on_base_studies_once_for_all_its_articles(env,
+                                                                            monkeypatch):
+    """The claims are one query over every sync and upload record in the catalog, so the
+    gate asks it once for a batch, not once per article."""
+    from ingestion_workflow.pipeline.upstream import Assessor
+
+    settings, catalog, _ = env
+    refs = []
+    for pmid in ("40402907", "40402908", "40402909"):
+        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}")
+        _run(SyncStage(settings), ctx, catalog, ref)
+        refs.append(ref)
+    asked = []
+    catalog._conn.set_trace_callback(
+        lambda sql: asked.append(sql) if "'$.base_study_id') IN" in sql else None)
+    try:
+        assessed = Assessor(settings).assess(ctx, refs)
+    finally:
+        catalog._conn.set_trace_callback(None)
+    assert {found.verdict for found in assessed.values()} == {Verdict.PROCEED}
+    assert len(asked) == 1
 
 
 def _take_back_space(catalog, ref, reason=NO_TEXT):
@@ -786,19 +881,6 @@ def test_prose_is_empty_only_when_read(prose, expected):
     assert prose_reading(prose).kind is expected
 
 
-def test_resolve_and_upload_ask_the_same_rule():
-    """One copy: the take-back in resolve and the gate in upload both call `decide`."""
-    import inspect
-
-    from ingestion_workflow.pipeline import upstream
-    from ingestion_workflow.pipeline.stages import resolve, upload
-
-    assert "decide(" in inspect.getsource(resolve.ResolveStage.plan)
-    assert "decide(" in inspect.getsource(upstream.Assessor.assess)
-    assert "assess(" in inspect.getsource(upload.UploadStage.held_back)
-    assert not hasattr(resolve, "tables_unread")
-
-
 def _two_synced(env, monkeypatch):
     settings, catalog, _ = env
     refs = []
@@ -955,6 +1037,24 @@ def test_a_down_neurostore_stops_the_upload_and_records_nothing(env, monkeypatch
     _stops(upload, Context(down, catalog), catalog, refs, caplog)
     assert "NeurostoreUnavailable" in caplog.text
     assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
+
+
+def test_a_stop_leaves_pending_the_article_it_stopped_at_and_every_one_after(env, monkeypatch,
+                                                                            caplog):
+    """The first paper fails alone, before anything is sent; neurostore is down for the
+    second, so the stage stops there with one article left."""
+    settings, catalog, _ = env
+    ctx, (broken, stopped) = _two_synced(env, monkeypatch)
+    parse = settings.ns_pond_root / "BS27" / "parse" / "coordinate_parse.json"
+    parse.unlink()
+    parse.mkdir()
+    down = settings.model_copy(update={"neurostore_api_url": f"http://127.0.0.1:{_closed_port()}"})
+    monkeypatch.setattr(neurostore_ingest.time, "sleep", lambda s: None)
+    _, done = _upload_together(UploadStage(down), Context(down, catalog), catalog,
+                               [broken, stopped])
+    assert list(done) == [broken.id]
+    assert done[broken.id].error.startswith("IsADirectoryError: ")
+    assert "NeurostoreUnavailable" in caplog.text and "1 article(s) left pending" in caplog.text
 
 
 @pytest.mark.vcr

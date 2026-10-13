@@ -44,12 +44,12 @@ NEW_ARTICLES = "-new"
 #: Why a paper is not synced: PubMed lists it as a retraction notice, not a study.
 RETRACTION_NOTICE = "retraction notice"
 
-#: Why an article is not synced: another catalog article names the same base study. The
-#: ingester keeps one current parse per base study and supersedes what a newer one lacks,
-#: so each upload would replace the other's analyses. When one of them is a preprint and
-#: exactly one is not, that one is synced; otherwise none is, until a person decides.
+#: Why an article is not synced: another catalog article that reaches sync names the same
+#: base study. The ingester keeps one current parse per base study and supersedes what a
+#: newer one lacks, so each upload would replace the other's analyses. When one of them is
+#: a preprint and exactly one is not, that one is synced; otherwise none is.
 SHARED_BASE_STUDY = "shares its neurostore base study with another article"
-#: The stages whose summaries name the base study an article is written under.
+#: The stages whose records name the base study an article is written under.
 BASE_STUDY_STAGES = ("upload", "sync")
 
 
@@ -58,19 +58,24 @@ def new_articles_root(settings) -> Path:
     return root.parent / f"{root.name}{NEW_ARTICLES}"
 
 
-def shared_base_studies(ctx: Context, bases: Dict[str, str]) -> Dict[str, Tuple[str, List[str]]]:
-    """{article_id: (base study, the other articles naming it)} for the articles in
-    `bases` ({article_id: base study}) that are not synced for SHARED_BASE_STUDY.
+def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tuple[str, List[str]]]:
+    """{article_id: (base study, the other contenders for it)} for the articles in `writing`
+    ({article_id: base study}, the ones sync would write now) that are not synced for
+    SHARED_BASE_STUDY.
 
-    The other articles are any in the catalog whose own base study is the same one, by
-    `known_base_study_ids`."""
-    if not bases:
+    The contenders for a base study are the articles in `writing` and those whose sync or
+    upload record names it and is ok or skipped for SHARED_BASE_STUDY, each grouped by its
+    own `known_base_study_ids`. An alias alone is no claim, nor is a take-back or another
+    skip: none of them reaches the write, so none sends anything to supersede.
+    """
+    if not writing:
         return {}
-    named = ctx.catalog.articles_naming_base_studies(list(bases.values()), BASE_STUDY_STAGES)
-    others = sorted(set().union(*named.values()) - set(bases))
+    named = ctx.catalog.articles_naming_base_studies(
+        list(writing.values()), BASE_STUDY_STAGES, SHARED_BASE_STUDY)
+    others = sorted(set().union(*named.values()) - set(writing))
     found = ctx.catalog.identifiers(others)
     known = {**known_base_study_ids(
-        ctx, [ArticleRef(id=i, identifier=found[i]) for i in others]), **bases}
+        ctx, [ArticleRef(id=i, identifier=found[i]) for i in others]), **writing}
     groups: Dict[str, List[str]] = {}
     for article_id, base in known.items():
         groups.setdefault(base, []).append(article_id)
@@ -81,7 +86,7 @@ def shared_base_studies(ctx: Context, bases: Dict[str, str]) -> Dict[str, Tuple[
         published = [i for i in ids if i not in preprints]
         kept = published[0] if len(published) == 1 else None
         for article_id in ids:
-            if article_id in bases and article_id != kept:
+            if article_id in writing and article_id != kept:
                 out[article_id] = (base, [i for i in ids if i != article_id])
     return out
 
@@ -173,6 +178,34 @@ class SyncStage:
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
+        return self.plan_contended(ctx, refs, artifacts, upstream,
+                                   self.contended(ctx, refs, upstream))
+
+    def contended(
+        self, ctx: Context, refs: Sequence[ArticleRef], upstream: Dict[str, Dict[str, Artifact]]
+    ) -> Dict[str, Tuple[str, List[str]]]:
+        """`shared_base_studies` of the articles in `refs` that `plan` would write: space
+        ok, roles assigned, not a retraction notice, and a known base study."""
+        ids = [ref.id for ref in refs]
+        roled = with_roles(ctx, ids)
+        noticed = ctx.catalog.artifacts(ids, "notices")
+        bases = known_base_study_ids(ctx, refs)
+        return shared_base_studies(ctx, {
+            ref.id: bases[ref.id] for ref in refs
+            if ref.id in bases and ref.id in roled
+            and (spaced := upstream.get(ref.id, {}).get("")) is not None
+            and spaced.status is Status.OK
+            and not _retraction_notice(_answered(noticed.get(ref.id, {}).get("")))})
+
+    def plan_contended(
+        self,
+        ctx: Context,
+        refs: Sequence[ArticleRef],
+        artifacts: Dict[str, Dict[str, Artifact]],
+        upstream: Dict[str, Dict[str, Artifact]],
+        shared: Dict[str, Tuple[str, List[str]]],
+    ) -> StagePlan:
+        """`plan`, with `contended` worked out already: once for many one-article plans."""
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         roled = with_roles(ctx, ids)
@@ -182,7 +215,6 @@ class SyncStage:
         excluded = ctx.catalog.exclusions(ids)
         noticed = ctx.catalog.artifacts(ids, "notices")
         bases = known_base_study_ids(ctx, refs)
-        shared = shared_base_studies(ctx, bases)
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
             existing = artifacts.get(ref.id, {}).get("")
@@ -195,7 +227,7 @@ class SyncStage:
             base_study_id = bases.get(ref.id)
             identifier = ref.identifier
             notices = _answered(noticed.get(ref.id, {}).get(""))
-            if notices is not None and (notices.summary or {}).get("retraction_notice"):
+            if _retraction_notice(notices):
                 # A notice can reprint the table it retracts; it is not a study.
                 _skip(plan, ref, spaced, existing, RETRACTION_NOTICE, base_study_id)
                 continue
@@ -443,14 +475,18 @@ def _skip(plan: StagePlan, ref: ArticleRef, spaced: Artifact, existing: Optional
           **summary) -> None:
     """Plan an article sync records SKIPPED for `reason`, unless that is recorded already.
 
-    The summary keeps the base study, so the article still names it to
-    `shared_base_studies`."""
+    The summary keeps the base study, so an article skipped for SHARED_BASE_STUDY still
+    names it to `shared_base_studies`."""
     error = error or reason
     if existing is not None and existing.status is Status.SKIPPED and existing.error == error:
         plan.block(reason)
         return
     plan.pending.append(Work(ref=ref, source="", fingerprint="", upstream=spaced, skip=(
         error, {"reason": reason, "base_study_id": base_study_id, **summary})))
+
+
+def _retraction_notice(notices: Optional[Artifact]) -> bool:
+    return notices is not None and bool((notices.summary or {}).get("retraction_notice"))
 
 
 def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:

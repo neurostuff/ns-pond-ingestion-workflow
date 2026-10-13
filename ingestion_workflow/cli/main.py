@@ -358,7 +358,7 @@ def _upload_source(settings: Settings) -> str:
 
 
 def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[Identifier]:
-    """Read the database the upload stage writes to, and take nothing else."""
+    """Read the neurostore deployment's database directly, and take nothing else."""
     from ingestion_workflow.services.db import SessionFactory, SSHTunnel
     from ingestion_workflow.services.discover import unprocessed_base_studies
 
