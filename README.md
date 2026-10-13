@@ -166,6 +166,36 @@ To undo a take-back: once the article has text again, the next run makes
 everything again from it and uploads the new parse; a moved corpus directory can
 be moved back from `-retracted/`.
 
+## Wiley's PDFs
+
+The `wiley` download source fetches an article's PDF from Wiley's Text and Data
+Mining API (`https://api.wiley.com/onlinelibrary/tdm/v1/articles/<DOI>`). It is
+last in the default `download_sources`, so Wiley is asked only for articles no
+other source serves. It asks only about articles whose DOI has one of the
+prefixes Crossref lists for Wiley (member 311), and it needs a TDM token from
+Wiley in `WILEY_API_KEY` (or `wiley_api_key`). With `wiley` listed and no token,
+the download stage stops for the rest of the run, with that reason, when it
+first comes to ask Wiley: nothing is asked and no article is charged a try. A
+401 from Wiley (the token refused) stops the stage the same way.
+
+Its PDFs are kept as `<cache_root>/wiley/<article>/article.pdf`, the pdf
+source's layout in a root of its own. Every downloaded PDF, whichever source
+fetched it, is read the same way into the article's one `pdf` text
+(`extractions/pdf/`, and `processed/pdf/` in the corpus). An article with both a
+Wiley PDF and an open-access one gets its text from Wiley's, the version of
+record. The extraction's catalog summary names the download it read
+(`download_source: wiley`) when that is not the pdf source's.
+
+Wiley's TDM terms allow 60 requests per 10 minutes, so the source asks one
+article at a time, at most once every 10 seconds, across every batch and
+extractor in the process. A 429 is waited out for as long as its Retry-After
+asks, up to 60 seconds; a longer wait, or a fourth 429 in a row, leaves Wiley
+for the rest of the run. A 404 is permanent for that article, and never counts
+toward leaving Wiley for the run. A 403 (Wiley denying this address the
+article) is retried on the usual schedule; twenty of them with no PDF served
+leave Wiley for the run, as for any PDF host. An answer that is not a PDF fails
+the article and is not kept.
+
 ## Long runs
 
 Runs are resumable by construction: everything a stage produces, including its

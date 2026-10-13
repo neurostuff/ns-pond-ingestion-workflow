@@ -32,6 +32,7 @@ class DownloadSource(str, Enum):
     PDF = "pdf"
     PMC = "pmc"
     EUROPEPMC = "europepmc"
+    WILEY = "wiley"
 
 
 @dataclass

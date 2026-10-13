@@ -5,11 +5,16 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from ingestion_workflow.models.ids import Identifier, Identifiers
+from ingestion_workflow.tests import wiley_tdm
 
 
 @pytest.fixture(scope="session")
 def vcr_cassette_dir() -> str:
     return str(Path(__file__).parent / "cassettes")
+
+
+def pytest_recording_configure(config, vcr):
+    vcr.register_matcher("wiley_token", wiley_tdm.same_token)
 
 
 @pytest.fixture(scope="session")
@@ -20,6 +25,7 @@ def vcr_config():
             "x-api-key",
             "x-els-apikey",
             "x-els-insttoken",
+            ("wiley-tdm-client-token", wiley_tdm.REPLAY_TOKEN),
         ],
         "filter_query_parameters": ["api_key"],
         "record_mode": "once",

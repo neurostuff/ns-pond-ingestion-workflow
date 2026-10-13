@@ -1,0 +1,36 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.wiley.com
+      user-agent:
+      - python-httpx/0.28.1
+      wiley-tdm-client-token:
+      - replay-token-wiley-7c41
+    method: GET
+    uri: https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fingestion-workflow-no-such-article
+  response:
+    body:
+      string: ''
+    headers:
+      connection:
+      - keep-alive
+      content-length:
+      - '0'
+      content-type:
+      - text/plain
+      date:
+      - Tue, 13 Oct 2026 11:10:53 GMT
+    status:
+      code: 404
+      message: The DOI you have requested cannot be found. The DOI may not be available
+        or it may belong to a publisher other than Wiley. Please check that the DOI
+        can be found in Wiley Online Library and try again.
+version: 1

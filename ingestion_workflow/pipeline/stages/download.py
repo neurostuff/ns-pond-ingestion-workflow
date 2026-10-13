@@ -6,7 +6,7 @@ import logging
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.base import BaseExtractor, SourceMisconfigured
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
 from ingestion_workflow.services import download_check
 
@@ -27,6 +27,7 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         PdfExtractor,
         PmcExtractor,
         PubgetExtractor,
+        WileyExtractor,
     )
 
     factories = {
@@ -36,16 +37,14 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         DownloadSource.PDF: PdfExtractor,
         DownloadSource.PMC: PmcExtractor,
         DownloadSource.EUROPEPMC: EuropePmcExtractor,
+        DownloadSource.WILEY: WileyExtractor,
     }
     return factories[source](settings=settings)
 
 
 def supports(extractor: BaseExtractor, ref: ArticleRef) -> bool:
     """Whether this source can address the article with the ids we hold."""
-    fields = getattr(extractor, "_SUPPORTED_IDS", None)
-    if not fields:
-        return True
-    return any(getattr(ref.identifier, str(field), None) for field in fields)
+    return extractor.can_address(ref.identifier)
 
 
 class DownloadStage:
@@ -56,6 +55,8 @@ class DownloadStage:
         self.settings = settings
         self._order = [DownloadSource(name) for name in settings.download_sources]
         self._extractors: Dict[DownloadSource, BaseExtractor] = {}
+        #: Why the stage stopped for the rest of this run.
+        self._stopped: Optional[str] = None
 
     def extractor(self, source: DownloadSource) -> BaseExtractor:
         if source not in self._extractors:
@@ -122,6 +123,10 @@ class DownloadStage:
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         """Run the waterfall: each article falls through to the next source on failure."""
+        if self._stopped:
+            logger.error("download stopped: %s; %d article(s) left pending",
+                         self._stopped, len(works))
+            return
         remaining = {work.article_id: work.ref for work in works}
         preferred: Dict[str, str] = {work.article_id: work.source for work in works}
 
@@ -139,6 +144,8 @@ class DownloadStage:
                 yield outcome
                 if outcome.status is Status.OK:
                     remaining.pop(outcome.article_id, None)
+            if self._stopped:
+                return
 
     def _eligible(
         self, source: DownloadSource, article_id: str, preferred: Dict[str, str], ref: ArticleRef
@@ -171,6 +178,13 @@ class DownloadStage:
                 results = extractor.download(identifiers, dead_urls=dead)
             else:
                 results = extractor.download(identifiers)
+        except SourceMisconfigured as exc:
+            # Not these articles' failure: recording one would spend every remaining
+            # article's tries. They stay pending, and so does every later batch.
+            self._stopped = f"{source.value}: {exc}"
+            logger.error("download stopped: %s; %d article(s) left pending",
+                         self._stopped, len(refs))
+            return
         except Exception as exc:  # a source outage must not lose the batch
             logger.warning("download[%s] batch failed: %s", source.value, exc)
             for ref in refs:
@@ -282,11 +296,11 @@ def _fail_extractions(ctx: Context, source: str, bad_pages: Dict[str, str]) -> I
     would read as the article's text to anything not checking the download."""
     if not bad_pages:
         return
-    from .extract import failed_validation
+    from .extract import failed_validation, made_from
 
     found = ctx.catalog.artifacts(list(bad_pages), "extract")
     for article_id, reason in bad_pages.items():
-        extraction = found.get(article_id, {}).get(source)
+        extraction = made_from(found.get(article_id, {}), source)
         if extraction is not None and extraction.status is Status.OK:
             yield failed_validation(extraction, reason)
 

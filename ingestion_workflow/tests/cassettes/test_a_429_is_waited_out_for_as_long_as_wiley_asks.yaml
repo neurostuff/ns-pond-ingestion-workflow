@@ -1,0 +1,60 @@
+# Composed: a 429 with Retry-After, which Wiley does not give on demand, then a PDF
+# to the same request (a stand-in: the recorded article's bytes are in another cassette).
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.wiley.com
+      user-agent:
+      - python-httpx/0.28.1
+      wiley-tdm-client-token:
+      - replay-token-wiley-7c41
+    method: GET
+    uri: https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fj.1440-1614.2006.01765.x
+  response:
+    body:
+      string: ''
+    headers:
+      content-length:
+      - '0'
+      retry-after:
+      - '30'
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.wiley.com
+      user-agent:
+      - python-httpx/0.28.1
+      wiley-tdm-client-token:
+      - replay-token-wiley-7c41
+    method: GET
+    uri: https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fj.1440-1614.2006.01765.x
+  response:
+    body:
+      string: "%PDF-1.4\n%%EOF\n"
+    headers:
+      content-length:
+      - '15'
+      content-type:
+      - 'application/pdf'
+    status:
+      code: 200
+      message: OK
+version: 1

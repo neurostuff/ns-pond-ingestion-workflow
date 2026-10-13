@@ -177,8 +177,10 @@ class Settings(BaseSettings):
     # ===== Download configuration =====
     download_sources: List[str] = Field(
         # PMC first: its Cloud Service holds the Open Access subset pubget reads
-        # and the author manuscripts pubget cannot, each with its licence
-        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf"],
+        # and the author manuscripts pubget cannot, each with its licence.
+        # Wiley last: at one request per 10 seconds, it is asked only for what
+        # no other source serves.
+        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf", "wiley"],
         description="Ordered list of download sources to attempt",
     )
 
@@ -186,6 +188,11 @@ class Settings(BaseSettings):
     elsevier_api_key: Optional[str] = Field(
         default=None,
         description="API key for Elsevier full-text access",
+    )
+
+    wiley_api_key: Optional[str] = Field(
+        default=None,
+        description="Wiley Text and Data Mining token, sent as Wiley-TDM-Client-Token",
     )
 
     # ===== Elsevier proxy configuration =====

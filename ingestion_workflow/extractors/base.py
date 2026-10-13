@@ -15,6 +15,13 @@ ExtractionWorker = Callable[[DownloadResult, Path | str], ExtractionResult]
 FailureBuilder = Callable[[DownloadResult, str], ExtractionResult]
 
 
+class SourceMisconfigured(RuntimeError):
+    """The source can serve no article as configured: its key is missing or refused.
+
+    Every later article would fail the same way, so the download stage stops
+    rather than charge each one a try."""
+
+
 class BaseExtractor:
     """Shared interface for extractor implementations."""
 
@@ -22,6 +29,15 @@ class BaseExtractor:
     #: every worker, which costs ~3.2s each because `pubget` pulls in nilearn
     #: and sklearn; only an extractor that touches CUDA needs to pay it.
     mp_start_method: str = "fork"
+
+    #: Identifier fields this source can look an article up by; empty means any.
+    _SUPPORTED_IDS = frozenset()
+
+    def can_address(self, identifier: Identifier) -> bool:
+        """Whether this source can look the article up with the ids we hold."""
+        if not self._SUPPORTED_IDS:
+            return True
+        return any(getattr(identifier, str(field), None) for field in self._SUPPORTED_IDS)
 
     def download(
         self,

@@ -19,6 +19,7 @@ _LAZY = {
     "PdfExtractor": ".pdf_extractor",
     "PmcExtractor": ".pmc_extractor",
     "PubgetExtractor": ".pubget_extractor",
+    "WileyExtractor": ".wiley_extractor",
 }
 
 __all__ = ["BaseExtractor", *sorted(_LAZY)]

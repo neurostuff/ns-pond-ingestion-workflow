@@ -1,9 +1,11 @@
-"""Download and extract article content from open-access PDFs.
+"""Download and extract article content from PDFs.
 
 Fallback source for articles that neither PubMed Central (via pubget) nor
 Elsevier serve as XML. Candidate PDF URLs come from every open-access
 location OpenAlex lists and from Semantic Scholar's ``openAccessPdf``; each is
-tried in turn until one is a PDF. Parsing is Docling's.
+tried in turn until one is a PDF. Parsing is Docling's, and it reads every
+downloaded PDF, whichever source fetched it. `fetch_pdf` and `store_pdf` are
+the fetching and storing the sources whose download is a PDF share.
 """
 
 from __future__ import annotations
@@ -86,8 +88,12 @@ _PREPRINT_HOSTS = (
 PREPRINT_VERSION = "submittedVersion"
 
 #: Statuses that may answer differently later; any other 4xx is the URL's answer.
-#: A 429 is not here because `_fetch` handles it before any other status.
+#: A 429 is not here because `fetch_pdf` handles it before any other status.
 _TRANSIENT_CLIENT_STATUSES = {408, 425}
+#: The URL names nothing on the host. That is the URL's answer, so it never
+#: counts toward leaving the host for the run, as a 403 or a page in place of a
+#: PDF does: an API asked about an article it does not have says 404.
+_GONE_STATUSES = {404, 410}
 #: Europe PMC serves its PMC articles under their PMCID; its preprints (PPR ids)
 #: have no other source.
 _PMCID = re.compile(r"pmc\d", re.IGNORECASE)
@@ -283,7 +289,7 @@ def _is_pdf(payload: bytes) -> bool:
     return payload.startswith(PDF_MAGIC)
 
 
-def _retry_after(response: requests.Response) -> Optional[float]:
+def _retry_after(response: Any) -> Optional[float]:
     """The host's Retry-After in seconds, given as seconds or as an HTTP date.
 
     None when there is none or it cannot be read; a date already past is 0.
@@ -309,14 +315,22 @@ class _HostGate:
 
     A host that asked to be left alone is not asked again before the time it
     gave, by any worker, and one that asked for longer than the run should wait
-    is left for the rest of the run.
+    is left for the rest of the run. A host that publishes a request rate is
+    asked at most once per `min_interval` seconds.
     """
 
-    def __init__(self, clock: Callable[[], float], sleep: Callable[[float], None]) -> None:
+    def __init__(
+        self,
+        clock: Callable[[], float],
+        sleep: Callable[[float], None],
+        min_interval: float = 0.0,
+    ) -> None:
         self._clock = clock
         self._sleep = sleep
+        self._min_interval = min_interval
         self._lock = threading.Lock()
         self._not_before: Dict[str, float] = {}
+        self._next_slot: Dict[str, float] = {}
         self._strikes: Counter = Counter()
         self._refusals: Counter = Counter()
         self._served: Counter = Counter()
@@ -327,10 +341,14 @@ class _HostGate:
             return self._deferred.get(host)
 
     def wait(self, host: str) -> None:
+        """Sleep until `host` may be asked, and take that slot."""
         with self._lock:
-            delay = self._not_before.get(host, 0.0) - self._clock()
-        if delay > 0:
-            self._sleep(delay)
+            now = self._clock()
+            start = max(now, self._not_before.get(host, 0.0), self._next_slot.get(host, 0.0))
+            # Reserved under the lock, so two workers never take the same slot.
+            self._next_slot[host] = start + self._min_interval
+        if start > now:
+            self._sleep(start - now)
 
     def rate_limited(self, host: str, retry_after: Optional[float]) -> Optional[str]:
         """Note a 429. Returns why the host is now left for the run, or None to retry."""
@@ -361,6 +379,82 @@ class _HostGate:
                         f"deferred: {host} refused {self._refusals[host]} URLs this run "
                         "and served no PDF",
                     )
+
+
+def fetch_pdf(
+    get: Callable[[str], Any], url: str, attempt: Dict[str, object], hosts: _HostGate
+) -> Optional[bytes]:
+    """The PDF at `url`, or None with the outcome written into `attempt`.
+
+    `get` sends the request (a requests or an httpx GET) and returns its response.
+    A 429 is waited out for as long as the host asks, by every worker,
+    unless it asks for longer than the run should wait; see `_HostGate`.
+    The host is checked before every request, so a URL on a host that this
+    or another worker has left for the run is recorded `deferred`, not asked.
+    """
+    host = _host(url)
+    while True:
+        deferred = hosts.deferred(host)
+        if deferred is not None:
+            attempt.update(outcome="deferred", reason=deferred)
+            return None
+        hosts.wait(host)
+        try:
+            response = get(url)
+        except Exception as exc:  # noqa: BLE001 - recorded on the attempt
+            attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
+            return None
+        status = response.status_code
+        attempt["status"] = status
+        if status == 429:
+            retry_after = _retry_after(response)
+            response.close()
+            deferred = hosts.rate_limited(host, retry_after)
+            if deferred is not None:
+                attempt.update(
+                    outcome="rate_limited",
+                    reason=f"PDF fetch failed: 429 from {host}; {deferred}",
+                )
+                return None
+            continue
+        try:
+            response.raise_for_status()
+            payload = response.content
+        except Exception as exc:  # noqa: BLE001 - recorded on the attempt
+            dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
+            attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
+            if dead:
+                attempt["dead"] = True
+            hosts.answered(host, refused=dead and status not in _GONE_STATUSES)
+            return None
+        finally:
+            response.close()
+        if not _is_pdf(payload):
+            # Landing pages and paywall interstitials return HTML with a 200.
+            attempt.update(
+                outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF."
+            )
+            hosts.answered(host, refused=True)
+            return None
+        attempt.update(outcome="pdf", reason="PDF downloaded")
+        hosts.answered(host, served=True)
+        return payload
+
+
+def store_pdf(
+    base_dir: Path, identifier: Identifier, payload: bytes, source: DownloadSource
+) -> DownloadedFile:
+    """Write a fetched PDF to `<base_dir>/<article>/article.pdf`."""
+    article_dir = base_dir / safe_hash_stem(identifier.slug)
+    article_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = article_dir / "article.pdf"
+    pdf_path.write_bytes(payload)
+    return DownloadedFile(
+        file_path=pdf_path,
+        file_type=FileType.PDF,
+        content_type="application/pdf",
+        source=source,
+    )
 
 
 class PdfExtractor(BaseExtractor):
@@ -540,22 +634,11 @@ class PdfExtractor(BaseExtractor):
                 if attempt["outcome"] != "deferred":
                     tried.append(attempt)
                 continue
-            article_dir = base_dir / safe_hash_stem(identifier.slug)
-            article_dir.mkdir(parents=True, exist_ok=True)
-            pdf_path = article_dir / "article.pdf"
-            pdf_path.write_bytes(payload)
             return DownloadResult(
                 identifier=identifier,
                 source=DownloadSource.PDF,
                 success=True,
-                files=[
-                    DownloadedFile(
-                        file_path=pdf_path,
-                        file_type=FileType.PDF,
-                        content_type="application/pdf",
-                        source=DownloadSource.PDF,
-                    )
-                ],
+                files=[store_pdf(base_dir, identifier, payload, DownloadSource.PDF)],
                 url_attempts=attempts,
                 article_version=candidate.version,
             )
@@ -595,60 +678,12 @@ class PdfExtractor(BaseExtractor):
         return None
 
     def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
-        """The PDF at `url`, or None with the outcome written into `attempt`.
-
-        A 429 is waited out for as long as the host asks, by every worker,
-        unless it asks for longer than the run should wait; see `_HostGate`.
-        The host is checked before every request, so a URL on a host that this
-        or another worker has left for the run is recorded `deferred`, not asked.
-        """
-        host = _host(url)
-        while True:
-            deferred = self._hosts.deferred(host)
-            if deferred is not None:
-                attempt.update(outcome="deferred", reason=deferred)
-                return None
-            self._hosts.wait(host)
-            try:
-                response = self._session.get(url, timeout=DOWNLOAD_TIMEOUT, stream=True)
-            except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
-                return None
-            status = response.status_code
-            attempt["status"] = status
-            if status == 429:
-                retry_after = _retry_after(response)
-                response.close()
-                deferred = self._hosts.rate_limited(host, retry_after)
-                if deferred is not None:
-                    attempt.update(
-                        outcome="rate_limited",
-                        reason=f"PDF fetch failed: 429 from {host}; {deferred}",
-                    )
-                    return None
-                continue
-            try:
-                response.raise_for_status()
-                payload = response.content
-            except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
-                attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
-                if dead:
-                    attempt["dead"] = True
-                self._hosts.answered(host, refused=dead)
-                return None
-            finally:
-                response.close()
-            if not _is_pdf(payload):
-                # Landing pages and paywall interstitials return HTML with a 200.
-                attempt.update(
-                    outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF."
-                )
-                self._hosts.answered(host, refused=True)
-                return None
-            attempt.update(outcome="pdf", reason="PDF downloaded")
-            self._hosts.answered(host, served=True)
-            return payload
+        return fetch_pdf(
+            lambda target: self._session.get(target, timeout=DOWNLOAD_TIMEOUT, stream=True),
+            url,
+            attempt,
+            self._hosts,
+        )
 
     @staticmethod
     def _failure(identifier: Identifier, message: str) -> DownloadResult:
@@ -688,7 +723,6 @@ class PdfExtractor(BaseExtractor):
             failure_builder=_build_failure_content,
             progress_hook=progress_hook,
         )
-
 
     def _worker_count(self, gpus: List[int]) -> int:
         """How many Docling processes to run at once.
