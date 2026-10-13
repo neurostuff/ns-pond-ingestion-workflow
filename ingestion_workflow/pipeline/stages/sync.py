@@ -49,6 +49,10 @@ RETRACTION_NOTICE = "retraction notice"
 #: newer one lacks, so each upload would replace the other's analyses. When one of them is
 #: a preprint and exactly one is not, that one is synced; otherwise none is.
 SHARED_BASE_STUDY = "shares its neurostore base study with another article"
+#: DOI prefixes of preprint servers: bioRxiv and medRxiv, Research Square. #91's
+#: `article_version` labels only copies a source reported as one; these papers have a
+#: DOI of their own that says it.
+PREPRINT_DOI_PREFIXES = ("10.1101/", "10.21203/")
 #: The stages whose records name the base study an article is written under.
 BASE_STUDY_STAGES = ("upload", "sync")
 
@@ -80,7 +84,7 @@ def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tupl
     for article_id, base in known.items():
         groups.setdefault(base, []).append(article_id)
     groups = {base: sorted(ids) for base, ids in groups.items() if len(ids) > 1}
-    preprints = read_from_preprint(ctx, [i for ids in groups.values() for i in ids])
+    preprints = preprints_among(ctx, [i for ids in groups.values() for i in ids])
     out = {}
     for base, ids in groups.items():
         published = [i for i in ids if i not in preprints]
@@ -91,12 +95,20 @@ def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tupl
     return out
 
 
-def read_from_preprint(ctx: Context, ids: Sequence[str]) -> set:
-    """The articles whose text sync writes was downloaded as a submitted version."""
+def is_preprint(doi: Optional[str], article_version: Optional[str]) -> bool:
+    """A preprint server's DOI, or text downloaded as a submitted version."""
     from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
 
+    return article_version == PREPRINT_VERSION or (
+        doi is not None and doi.lower().startswith(PREPRINT_DOI_PREFIXES))
+
+
+def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
+    """The articles of `ids` that are preprints, by DOI or by the download sync's text
+    came from."""
     if not ids:
         return set()
+    dois = ctx.catalog.identifiers(list(ids))
     extracted = ctx.catalog.artifacts(list(ids), "extract")
     downloads = ctx.catalog.artifacts(list(ids), "download")
     triaged = ctx.catalog.artifacts(list(ids), "triage")
@@ -106,8 +118,8 @@ def read_from_preprint(ctx: Context, ids: Sequence[str]) -> set:
         extraction = _synced_extraction(ctx, extracted.get(article_id, {}), found,
                                         triaged.get(article_id, {}).get(""))
         download = found.get(extraction.source) if extraction is not None else None
-        if download is not None and (download.summary or {}).get(
-                "article_version") == PREPRINT_VERSION:
+        version = (download.summary or {}).get("article_version") if download else None
+        if is_preprint(dois[article_id].doi, version):
             out.add(article_id)
     return out
 

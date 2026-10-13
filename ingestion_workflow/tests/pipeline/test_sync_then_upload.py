@@ -34,6 +34,7 @@ from ingestion_workflow.pipeline.stages.sync import (
     RETRACTION_NOTICE,
     SHARED_BASE_STUDY,
     SyncStage,
+    is_preprint,
     new_articles_root,
 )
 from ingestion_workflow.pipeline.stages.upload import NO_API_URL, UploadStage
@@ -134,10 +135,10 @@ def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
         yield settings, catalog, path
 
 
-def _prose_article(env, monkeypatch, pmid, neurostore=None):
+def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None):
     """An article read through prose, resolve, roles and space; triage passed no table."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid=pmid, neurostore=neurostore))
+    ref = catalog.register(Identifier(pmid=pmid, neurostore=neurostore, doi=doi))
     _record_upstream(catalog, ref, path)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
                             summary={"source": "pubget", "tables": 0, "passed": 0})])
@@ -293,13 +294,14 @@ def test_an_article_with_nothing_to_create_a_base_study_by_is_recorded_with_why(
     assert (plan.blocked, plan.reasons, plan.pending) == (1, {NO_IDENTIFIER: 1}, [])
 
 
-def _claimed_twice(env, monkeypatch):
+def _claimed_twice(env, monkeypatch, dois=(None, None)):
     """om54glpssubo and udjyuoxv2dbo's shape in the catalog of 2026-10-12: one holds
     neurostore's alias for base study 5dsFAUgmBz36, the other an upload record naming the
     same base study."""
     settings, catalog, _ = env
-    ctx, held = _prose_article(env, monkeypatch, "19452633", "5dsFAUgmBz36")
-    _, named = _prose_article(env, monkeypatch, "19176279")
+    ctx, held = _prose_article(env, monkeypatch, "19452633", "5dsFAUgmBz36",
+                               doi=dois[0])
+    _, named = _prose_article(env, monkeypatch, "19176279", doi=dois[1])
     catalog.record([Outcome(article_id=named.id, stage="upload", source="",
                             fingerprint="up-legacy",
                             summary={"base_study_id": "5dsFAUgmBz36", "analyses": 1})])
@@ -370,6 +372,45 @@ def test_of_a_preprint_and_its_published_paper_on_one_base_study_the_paper_is_wr
     header = json.loads((settings.ns_pond_root / "5dsFAUgmBz36" / "parse"
                          / "coordinate_parse.json").read_text())["header"]
     assert header["identifiers"]["pmid"] == "19176279"
+
+
+@pytest.mark.parametrize("dois, written", [
+    (("10.1101/2020.01.01.123456", "10.1016/j.neuroimage.2020.1"), 1),
+    (("10.21203/rs.3.rs-123456/v1", "10.1016/j.neuroimage.2020.1"), 1),
+    (("10.1016/j.neuroimage.2020.2", "10.1016/j.neuroimage.2020.1"), None),
+    (("10.1101/2020.01.01.123456", "10.21203/rs.3.rs-123456/v1"), None),
+], ids=["biorxiv and published", "research square and published", "both published",
+        "both preprints"])
+def test_a_preprint_server_doi_makes_the_other_article_the_one_that_is_written(
+        env, monkeypatch, dois, written):
+    """Of a preprint and its published paper, by DOI prefix alone, the paper is written
+    and the preprint recorded with why; two of a kind are all recorded, none written."""
+    settings, catalog, _ = env
+    ctx, first, second = _claimed_twice(env, monkeypatch, dois)
+    sync = SyncStage(settings)
+    plan = _plan_sync(sync, ctx, catalog, [first, second])
+    outcomes = {o.article_id: o for o in sync.execute(ctx, plan.pending)}
+    sync.finish()
+    pair = {first.id: second, second.id: first}
+    kept = second if written else None
+    for ref in (first, second):
+        out = outcomes[ref.id]
+        if ref is kept:
+            assert out.status is Status.OK, out.error
+        else:
+            assert (out.status, out.error) == (
+                Status.SKIPPED, f"shares base study 5dsFAUgmBz36 with {pair[ref.id].id}")
+    assert (settings.ns_pond_root / "5dsFAUgmBz36").exists() == bool(written)
+
+
+def test_is_preprint_by_doi_prefix_or_by_the_version_of_the_download():
+    assert is_preprint("10.1101/2020.01.01.1", None)
+    assert is_preprint("10.1101/2020.01.01.1".upper(), None)
+    assert is_preprint("10.21203/rs.3.rs-1/v1", None)
+    assert is_preprint("10.1016/j.x", "submittedVersion")
+    assert not is_preprint("10.1016/j.x", "publishedVersion")
+    assert not is_preprint(None, None)
+    assert not is_preprint("10.11011/x", None)
 
 
 def _never_downloaded(env, monkeypatch, pmid, base):
