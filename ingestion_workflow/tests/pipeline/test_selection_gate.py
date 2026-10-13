@@ -92,11 +92,12 @@ def test_there_is_no_second_gate_in_the_stage(catalog):
     assert "requires_flag" not in inspect.getsource(AnalysesStage.plan)
 
 
-@pytest.mark.parametrize("stage, upstream", [("space", "roles"), ("upload", "space")])
-def test_space_and_upload_are_gated_on_analyses_having_found_something(tmp_path, stage, upstream):
+@pytest.mark.parametrize("stage, upstream", [("space", "roles"), ("sync", "space")])
+def test_space_and_sync_are_gated_on_analyses_having_found_something(tmp_path, stage, upstream):
     """An article the model read and found nothing in is a legitimate `ok`, so
     the status check does not exclude it. 30,741 of them would be planned to
-    upload nothing. `space` carries the count through to `upload`."""
+    upload nothing. `space` carries the count through to `sync`, which runs
+    before upload."""
     from ingestion_workflow.pipeline.stages import STAGE_TYPES
 
     assert STAGE_TYPES[stage].requires == upstream
@@ -135,7 +136,7 @@ def test_every_stage_that_gates_uses_the_same_declaration():
 
     declared = {n: getattr(t, "requires_flag", None) for n, t in STAGE_TYPES.items()}
     assert {n: f for n, f in declared.items() if f} == {
-        "analyses": "passed", "roles": "tables", "space": "tables", "upload": "tables"}
+        "analyses": "passed", "roles": "tables", "space": "tables", "sync": "tables"}
     for name, flag in declared.items():
         if flag:
             assert getattr(STAGE_TYPES[name], "requires", None), \

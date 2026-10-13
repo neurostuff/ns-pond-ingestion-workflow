@@ -169,7 +169,7 @@ def test_nothing_after_prose_reads_prose_made_from_a_bad_page(env, tmp_path):
         Outcome(ref.id, "resolve", "", Status.OK, "r-1", {"prose": {}},
                 summary={"tables": 0, "prose_analyses": 1}),
         Outcome(ref.id, "roles", "", Status.OK, "ro-1", {}),
-        Outcome(ref.id, "upload", "", Status.OK, "up-1", {}, summary={"base_study_id": "b1"}),
+        Outcome(ref.id, "space", "", Status.OK, "sp-1", {}, summary={"tables": 1}),
     ])
 
     def plans():
@@ -272,12 +272,13 @@ def test_sync_still_retracts_an_article_whose_prose_came_from_a_bad_page(env, tm
     catalog.record([
         Outcome(ref.id, "prose", "", Status.OK, "pr-1", {"analyses": []},
                 summary={"source": "ace", "passages": 1}),
-        Outcome(ref.id, "upload", "", Status.OK, NO_TEXT, {},
-                summary={"base_study_id": "b1", "retracted": True}),
+        Outcome.failure(ref.id, "space", "", NO_TEXT, fingerprint=NO_TEXT),
+        Outcome(ref.id, "sync", "", Status.OK, "sy-1", {}, summary={"base_study_id": "b1"}),
     ])
     refresh(*env, served(DownloadSource.ACE, page(tmp_path, "bvqhehtd4k4d")), tmp_path)
     stage = SyncStage(settings)
-    plan = stage.plan(Context(settings, catalog), [ref], {}, catalog.artifacts([ref.id], "upload"))
+    plan = stage.plan(Context(settings, catalog), [ref], catalog.artifacts([ref.id], "sync"),
+                      catalog.artifacts([ref.id], "space"))
     assert (len(plan.pending), plan.blocked) == (1, 0)
 
 

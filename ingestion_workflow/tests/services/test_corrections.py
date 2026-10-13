@@ -17,13 +17,10 @@ from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.notices import corrections_from_pubmed
-from ingestion_workflow.models.upload import UploadOutcome
 from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.pipeline.stages.notices import NoticesStage
-from ingestion_workflow.pipeline.stages.upload import UploadStage
-from sqlalchemy import text
-from test_exclusions import _uploaded
+from ingestion_workflow.pipeline.stages.sync import SyncStage
 
 XML = Path(__file__).parent.parent / "data" / "pubmed" / "efetch_retraction.xml"
 
@@ -310,235 +307,113 @@ class _Upstream:
     summary = {}
 
 
-def test_only_a_retraction_moves_the_upload_fingerprint():
-    stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    plain = stage.fingerprint_for(_Upstream())
-    assert stage.fingerprint_for(_Upstream(), None, _notices()) == plain
-    assert (
-        stage.fingerprint_for(_Upstream(), None, _notices(retracted=True, status=Status.FAILED))
-        == plain
-    )
-    retracted = stage.fingerprint_for(_Upstream(), None, _notices(retracted=True))
-    assert retracted != plain
-    assert stage.fingerprint_for(_Upstream(), None, _notices(notice=True)) not in (
-        plain,
-        retracted,
-    )
-
-
-def _execute(monkeypatch, notices, base_study_id="BASE1", empty=False, prior=None):
-    from ingestion_workflow.services import db
-    from ingestion_workflow.services import upload as svc
-
-    work = Work(
-        ref=SimpleNamespace(id="a1", identifier=Identifier(pmid="1")),
-        source="",
-        fingerprint="f",
-        upstream=None,
-    )
-    catalog = SimpleNamespace(
-        exclusions=lambda ids: {},
-        add_aliases=lambda learned: None,
-        artifacts=lambda ids, stage: {"a1": {"": notices}}
-        if stage == "notices"
-        else ({"a1": {"": prior}} if prior and stage == "upload" else {}),
-    )
-    stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    calls = {"marked": [], "retract": [], "uploaded": [], "cleared": []}
-    monkeypatch.setattr(
-        stage,
-        "_gather",
-        lambda ctx, ws, ex: (
-            ({}, {}, list(ws))
-            if empty
-            else ({w.ref.identifier.slug: {"t": object()} for w in ws}, {}, [])
-        ),
-    )
-
-    class Tunnel:
-        def __init__(self, settings):
-            pass
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    monkeypatch.setattr(db, "SSHTunnel", Tunnel)
-    monkeypatch.setattr(db, "SessionFactory", lambda settings, tunnel=None: None)
-    monkeypatch.setattr(svc.UploadService, "__init__", lambda self, s, f: None)
-    monkeypatch.setattr(
-        svc.UploadService,
-        "prepare_work_items",
-        lambda self, a, m, **kw: calls["uploaded"].extend(a) or list(a),
-    )
-    monkeypatch.setattr(
-        svc.UploadService,
-        "run",
-        lambda self, items, **kw: [
-            UploadOutcome(slug=s, base_study_id=base_study_id, study_id="S1", success=True)
-            for s in items
-        ],
-    )
-    monkeypatch.setattr(
-        svc.UploadService, "mark_retracted", lambda self, t, clear=(): calls["marked"].append(t) or calls["cleared"].extend(clear) or 1,
-    )
-    monkeypatch.setattr(
-        svc.UploadService, "retract", lambda self, t: calls["retract"].append(t) or []
-    )
-    # The space payload holds no set, so upload's check for decided roles passes.
-    ctx = SimpleNamespace(catalog=catalog, payload=lambda artifact: {})
-    return list(stage.execute(ctx, [work])), calls
-
-
-def test_a_retracted_paper_is_uploaded_kept_and_marked(monkeypatch):
-    [out], calls = _execute(monkeypatch, _notices(retracted=True))
-    assert out.status is Status.OK and out.summary["retraction_marked"] is True
-    assert "retracted" not in out.summary  # sync would take it out of the corpus
-    assert calls["marked"] == [{"BASE1": {"kind": "retraction", "pmid": "8", "doi": None}}]
-    assert calls["uploaded"] and calls["retract"] == []
-
-
-def test_a_retraction_notice_is_never_uploaded(monkeypatch):
-    [out], calls = _execute(monkeypatch, _notices(notice=True))
-    assert out.status is Status.SKIPPED and out.summary == {"reason": "retraction notice"}
-    assert calls["uploaded"] == [] and calls["marked"] == []
-
-
-def test_a_paper_with_no_retraction_is_uploaded_unmarked(monkeypatch):
-    [out], calls = _execute(monkeypatch, _notices())
-    assert (
-        out.status is Status.OK
-        and "retraction_marked" not in out.summary
-        and calls["marked"] == []
-    )
-
-
-def test_an_upload_neurostore_could_not_mark_is_planned_again():
-    stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    spaced = Artifact("a1", "space", fingerprint="abc")
-    fp = stage.fingerprint_for(spaced, None, _notices(retracted=True))
-    catalog = SimpleNamespace(
-        attempt_counts=lambda *a: {},
-        exclusions=lambda ids: {},
-        artifacts=lambda ids, s: {"a1": {"": _notices(retracted=True)}},
-        blobs=SimpleNamespace(exists=lambda blob: True),
-    )
-    from ingestion_workflow.pipeline.stage import Context
-
-    ctx = Context(Settings(), catalog)
-    for marked, fresh in ((True, 1), (False, 0)):
-        done = {
-            "a1": {
-                "": Artifact("a1", "upload", fingerprint=fp, summary={"retraction_marked": marked})
-            }
-        }
-        assert stage.plan(ctx, [_ref(aid="a1")], done, {"a1": {"": spaced}}).fresh == fresh
-
-
-# -- neurostore ---------------------------------------------------------------
-
-
-def test_marking_skips_a_database_without_the_m7_columns(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    assert service.mark_retracted({uploaded.base_study_id: {"kind": "retraction"}}) is None
-
-
-def test_marking_sets_the_flag_and_keeps_the_study(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN is_retracted BOOLEAN"))
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN retraction_notice JSON"))
-    notice = {"kind": "retraction", "pmid": "8", "doi": None}
-    assert service.mark_retracted({uploaded.base_study_id: notice}) == 1
-    with engine.connect() as conn:
-        flag, stored = conn.execute(
-            text("SELECT is_retracted, retraction_notice FROM base_studies")
-        ).one()
-        assert flag and '"pmid": "8"' in stored
-        assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
-        assert conn.execute(text("SELECT count(*) FROM points")).scalar() == 2
-
-
-def test_a_failed_refresh_keeps_the_last_ok_notices_and_upload_still_sees_it(tmp_path, monkeypatch):
+def _sync(tmp_path, *notices):
+    """A catalog with one article ready for sync, its notices as given."""
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.pipeline.stage import Context
 
-    stage = UploadStage(Settings(upload_source="nuextract-v21"))
-    with Catalog.open(tmp_path / "cat") as cat:
-        [retracted, notice_paper] = cat.register_many(
-            [Identifier(pmid="1"), Identifier(pmid="2")]
-        )
+    cat = Catalog.open(tmp_path / "cat")
+    ref = cat.register(Identifier(pmid="1", neurostore="BASE1"))
+    cat.record([Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp",
+                        summary={"tables": 1}),
+                Outcome(article_id=ref.id, stage="roles", source="", fingerprint="ro")])
+    cat.record([Outcome(article_id=ref.id, stage="notices", source="", fingerprint="f", **n)
+                for n in notices])
+    return cat, ref, Context(Settings(ns_pond_root=tmp_path / "pond"), cat)
 
-        def ok(ref, **summary):
-            return Outcome(article_id=ref.id, stage="notices", source="", status=Status.OK,
-                           fingerprint="f", summary=summary, payload={})
 
-        cat.record([
-            ok(retracted, retracted=True, retraction={"kind": "retraction", "pmid": "8", "doi": None},
-               retraction_notice=False),
-            ok(notice_paper, retracted=False, retraction=None, retraction_notice=True),
-        ])
-        before = cat.artifacts([retracted.id], "notices")[retracted.id][""]
-        fp_before = stage.fingerprint_for(_Upstream(), None, before)
-        cat.record([Outcome.failure(r.id, "notices", "", "pubmed: down", fingerprint="f")
-                    for r in (retracted, notice_paper)])
+def _plan(cat, ref, ctx):
+    stage = SyncStage(ctx.settings)
+    return stage.plan(ctx, [ref], cat.artifacts([ref.id], "sync"), cat.artifacts([ref.id], "space"))
 
-        kept = cat.artifacts([retracted.id, notice_paper.id], "notices")
-        assert kept[retracted.id][""].status is Status.OK
-        assert kept[retracted.id][""].summary["retracted"]
-        assert stage.fingerprint_for(_Upstream(), None, kept[retracted.id][""]) == fp_before
+
+def _corrections(cat, ref, ctx):
+    """The corrections sync gives the parsed paper, through the bibliography it writes."""
+    from ingestion_workflow.models.metadata import ArticleMetadata
+    from ingestion_workflow.pipeline.stages.sync import _parse_inputs
+    from ingestion_workflow.services.paper_parse import _bibliography
+
+    found = {s: cat.artifacts([ref.id], s).get(ref.id, {}) for s in (
+        "extract", "metadata", "space", "triage", "analyses", "prose", "resolve", "passages",
+        "notices")}
+    inputs = _parse_inputs(ctx, Work(ref=ref, source="", fingerprint="f"), "BASE1", {}, found,
+                           "pubget")
+    bibliography = _bibliography(ArticleMetadata(title="T"), "T", (), inputs.corrections)
+    return (None if bibliography.corrections is None
+            else [c.model_dump(mode="json") for c in bibliography.corrections])
+
+
+def _answered(retracted=False, notice=False, corrections=None, status=Status.OK):
+    retraction = {"kind": "retraction", "pmid": "8", "doi": None} if retracted else None
+    found = corrections if corrections is not None else ([retraction] if retracted else [])
+    return dict(status=status,
+                payload={"corrections": found, "retraction_notice": notice},
+                summary={"retracted": retracted, "retraction": retraction,
+                         "retraction_notice": notice},
+                **({"error": "pubmed: down"} if status is not Status.OK else {}))
+
+
+def test_only_answered_notices_move_the_sync_fingerprint():
+    stage = SyncStage(Settings())
+    plain = stage.fingerprint_for(_Upstream(), "BASE1")
+    assert stage.fingerprint_for(_Upstream(), "BASE1", None,
+                                 _notices(retracted=True, status=Status.FAILED)) == plain
+    answered = stage.fingerprint_for(_Upstream(), "BASE1", None, _notices(retracted=True))
+    assert answered != plain
+
+
+def test_a_retracted_paper_s_parsed_paper_carries_its_retraction(tmp_path):
+    """Neurostore's ingester marks the base study retracted from these corrections."""
+    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True))
+    with cat:
+        assert len(_plan(cat, ref, ctx).pending) == 1
+        assert _corrections(cat, ref, ctx) == [{"kind": "retraction", "pmid": "8", "doi": None}]
+
+
+def test_a_retraction_notice_is_never_synced_and_is_recorded_with_its_reason(tmp_path):
+    from ingestion_workflow.pipeline.stages.sync import RETRACTION_NOTICE
+
+    cat, ref, ctx = _sync(tmp_path, _answered(notice=True))
+    with cat:
+        plan = _plan(cat, ref, ctx)
+        (skipped,) = SyncStage(ctx.settings).execute(ctx, plan.pending)
+        assert (skipped.status, skipped.error) == (Status.SKIPPED, RETRACTION_NOTICE)
+        assert skipped.summary == {"reason": RETRACTION_NOTICE, "base_study_id": "BASE1"}
+        cat.record([skipped])
+        assert not (ctx.settings.ns_pond_root / "BASE1").exists()
+        plan = _plan(cat, ref, ctx)
+        assert (plan.pending, plan.reasons) == ([], {RETRACTION_NOTICE: 1})
+
+
+def test_a_withdrawn_retraction_is_cleared(tmp_path):
+    """Notices that answered with no retraction send an empty list, which the ingester reads
+    as "not retracted" and clears an earlier mark by."""
+    cat, ref, ctx = _sync(tmp_path, _answered())
+    with cat:
+        assert _corrections(cat, ref, ctx) == []
+
+
+def test_a_failed_refresh_keeps_the_last_ok_notices_and_sync_still_sees_it(tmp_path):
+    from ingestion_workflow.catalog import Outcome
+
+    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True))
+    with cat:
+        before = _plan(cat, ref, ctx).pending[0].fingerprint
+        cat.record([Outcome.failure(ref.id, "notices", "", "pubmed: down", fingerprint="f")])
+        kept = cat.artifacts([ref.id], "notices")[ref.id][""]
+        assert kept.status is Status.OK and kept.summary["retracted"]
+        assert _plan(cat, ref, ctx).pending[0].fingerprint == before
+        assert _corrections(cat, ref, ctx) == [{"kind": "retraction", "pmid": "8", "doi": None}]
         # The failure is still an attempt, so the scheduler's backoff sees it.
-        assert cat.attempt_counts([retracted.id], "notices", "")[retracted.id][0] == 1
-
-        # Upload still skips the notice paper.
-        [out], calls = _execute(monkeypatch, kept[notice_paper.id][""])
-        assert out.status is Status.SKIPPED and calls["uploaded"] == []
-
-        # Never answered: unknown, recorded as a failure, uploaded as if no notices.
-        [fresh] = cat.register_many([Identifier(pmid="3")])
-        cat.record([Outcome.failure(fresh.id, "notices", "", "pubmed: down", fingerprint="f")])
-        unknown = cat.artifacts([fresh.id], "notices")[fresh.id][""]
-        assert unknown.status is Status.FAILED
-        assert stage.fingerprint_for(_Upstream(), None, unknown) == stage.fingerprint_for(_Upstream())
+        assert cat.attempt_counts([ref.id], "notices", "")[ref.id][0] == 1
 
 
-def test_a_retracted_paper_with_no_analyses_is_still_marked(monkeypatch):
-    prior = Artifact("a1", "upload", status=Status.OK, summary={"base_study_id": "OLD1"})
-    [out], calls = _execute(monkeypatch, _notices(retracted=True), empty=True, prior=prior)
-    assert out.status is Status.SKIPPED and out.summary["reason"] == "no analyses to upload"
-    assert out.summary["base_study_id"] == "OLD1" and out.summary["retraction_marked"] is True
-    assert calls["marked"] == [{"OLD1": {"kind": "retraction", "pmid": "8", "doi": None}}]
-    assert calls["uploaded"] == []
-
-
-def test_a_withdrawn_retraction_is_cleared(monkeypatch):
-    prior = Artifact(
-        "a1", "upload", status=Status.OK,
-        summary={"base_study_id": "OLD1", "retraction_marked": True},
-    )
-    [out], calls = _execute(monkeypatch, _notices(), prior=prior)
-    assert out.status is Status.OK and "retraction_marked" not in out.summary
-    assert calls["cleared"] == ["OLD1"] and calls["uploaded"]
-    # Never-marked papers have nothing to clear.
-    _, calls = _execute(monkeypatch, _notices())
-    assert calls["cleared"] == []
-
-
-def test_clearing_unsets_the_flag_and_keeps_the_study(tmp_path):
-    service, engine, uploaded = _uploaded(tmp_path)
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN is_retracted BOOLEAN"))
-        conn.execute(text("ALTER TABLE base_studies ADD COLUMN retraction_notice JSON"))
-    service.mark_retracted({uploaded.base_study_id: {"kind": "retraction"}})
-    assert service.mark_retracted({}, [uploaded.base_study_id]) == 1
-    with engine.connect() as conn:
-        flag, stored = conn.execute(
-            text("SELECT is_retracted, retraction_notice FROM base_studies")
-        ).one()
-        assert not flag and stored is None
-        assert conn.execute(text("SELECT count(*) FROM studies")).scalar() == 1
+def test_never_answered_notices_send_no_corrections(tmp_path):
+    """Unknown, not "no notices": the ingester leaves the retraction mark as it is."""
+    cat, ref, ctx = _sync(tmp_path, _answered(status=Status.FAILED))
+    with cat:
+        assert len(_plan(cat, ref, ctx).pending) == 1
+        assert _corrections(cat, ref, ctx) is None
 
 
 def test_a_paper_one_source_failed_for_is_not_fresh_and_is_planned_again():

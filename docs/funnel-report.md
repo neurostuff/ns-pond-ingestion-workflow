@@ -28,7 +28,7 @@ ingest report trace 222lv3326a2c -c configs/beast.yaml   # one article, as JSON
 The main view runs top to bottom, one box per stage that gates articles, in the
 order the pipeline runs them (the stage registry's default stages: download,
 extract, passages, metadata, notices, triage, analyses, prose, resolve, roles,
-space, upload, sync). **In** is every article whose input passed; for triage,
+space, sync, upload). **In** is every article whose input passed; for triage,
 whose metadata was attempted. Each of them then passed, was left out, or is
 waiting. The box beside lists what was left out and what waits, by state and
 reason, with what each means in plain words. Records made under an older stage
@@ -82,8 +82,7 @@ the number of live articles; a row that does not is marked with a cross.
 | passed | ok, and the next stage takes it as input |
 | filtered | recorded, but nothing for the next stage (no coordinate tables, triage passed no table, ...) |
 | failed / permanent | a failure the scheduler retries / does not retry, with its reason |
-| taken_back | every extraction found no text, so what was made from it was withdrawn |
-| held | upload kept the study because a studyset holds it |
+| taken_back | what was made from the article's text was withdrawn: every extraction found no text, or the tables and the prose were read again and hold no analysis |
 | refused | its input passed, but the stage will not read it: the text came from a downloaded page that is not the article |
 | blocked | its input did not pass; the reason names the stage where it dropped out and why. A failed or empty record left from an earlier run counts here, with its own status and reason added (`leftover skipped: ...`) |
 | pending | its input passed and nothing is recorded here yet; `nothing to read (passages = 0)` marks an input with nothing in it, and `tables wait behind it` an article whose tables reach resolve only after this step |

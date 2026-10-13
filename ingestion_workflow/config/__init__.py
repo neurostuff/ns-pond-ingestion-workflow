@@ -63,16 +63,6 @@ NEUROSTORE_PROFILES: Dict[str, Dict[str, Any]] = {
 }
 
 
-class UploadBehavior(str, Enum):
-    UPDATE = "update"
-    INSERT_NEW = "insert_new"
-
-
-class UploadMetadataMode(str, Enum):
-    FILL = "fill"
-    OVERWRITE = "overwrite"
-
-
 class RoleModel(BaseModel):
     """A set-role model: a NuExtract3 role fine-tune served behind a vLLM endpoint."""
 
@@ -406,7 +396,8 @@ class Settings(BaseSettings):
 
     dry_run: bool = Field(
         default=False,
-        description=("Perform dry run without making external API calls or file changes"),
+        description=("Upload sends nothing and records nothing in the catalog; it writes "
+                     "each request body under <data_root>/neurostore_dry_run/ instead"),
     )
 
 
@@ -630,14 +621,15 @@ class Settings(BaseSettings):
     neurostore_env: NeurostoreEnv = Field(
         default=NeurostoreEnv.STAGING,
         description=(
-            "Which deployment to upload to. Sets the ssh host, ssh user, "
-            "container name, docker network and forward port together; any of "
-            "those set explicitly still wins"
+            "Which deployment's database `ingest add --from-neurostore` reads. Sets "
+            "the ssh host, ssh user, container name, docker network and forward port "
+            "together; any of those set explicitly still wins. The upload stage posts "
+            "to neurostore_api_url instead"
         ),
     )
     upload_use_ssh: bool = Field(
         default=True,
-        description="Enable SSH tunneling for upload database connections",
+        description="Tunnel over SSH to the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_ssh_host: str = Field(
         default="neurostore.xyz",
@@ -680,53 +672,39 @@ class Settings(BaseSettings):
     )
     upload_db_name: str = Field(
         default="neurostore",
-        description="Database name for uploads",
+        description="Name of the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_db_user: str = Field(
         default="postgres",
-        description="Database user for uploads",
+        description="User for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_db_password: str = Field(
         default="example",
-        description="Database password for uploads",
+        description="Password for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_connect_timeout: int = Field(
         default=30,
-        description="Connection timeout (seconds) for upload database sessions",
+        description="Connection timeout (seconds) for the neurostore database `ingest add --from-neurostore` reads",
     )
     upload_source: Optional[str] = Field(
         default=None,
         description=(
-            "Which extractor produced these analyses, recorded on the study "
-            "version. This is a key, not a label: neurostore holds one study "
-            "version per source, `upload` matches an existing version by it, "
-            "and `discover` treats a base study as done when a version with "
-            "this source exists. Set it to 'nuextract-v19' when llm_native_"
-            "schema is on, and articles already extracted under 'llm' will be "
-            "picked up again and given a second version rather than "
-            "overwriting the first. "
-            "There is no default on purpose. It used to be 'llm', and under "
-            "the default 'update' behaviour a run that forgot to set it would "
-            "resolve the study to another extractor's version and delete its "
-            "analyses to put its own in their place. `upload` refuses to start "
-            "without it"
+            "The extractor whose studies `ingest add --from-neurostore` looks for: "
+            "it adds the base studies that hold no study version with this source. "
+            "No default, since the answer depends on it; that command refuses to "
+            "start without it"
         ),
     )
 
-    upload_behavior: UploadBehavior = Field(
-        default=UploadBehavior.UPDATE,
+    # ===== Upload through neurostore's study_schema ingester =====
+    neurostore_api_url: Optional[str] = Field(
+        default=None,
         description=(
-            "Behavior for an existing study with the configured upload_source: "
-            "'update' to modify in place, 'insert_new' to create a new study"
+            "Base URL of the neurostore the upload stage posts coordinate parses to "
+            "(POST <url>/api/study-schema-uploads/), without /api: "
+            "https://staging.neurostore.xyz or https://neurostore.org. Unset, upload "
+            "sends nothing"
         ),
-    )
-    upload_metadata_only: bool = Field(
-        default=False,
-        description="When true, only update metadata fields without touching coordinates",
-    )
-    upload_metadata_mode: UploadMetadataMode = Field(
-        default=UploadMetadataMode.FILL,
-        description="Metadata update strategy: 'fill' (only empty fields) or 'overwrite'",
     )
 
 

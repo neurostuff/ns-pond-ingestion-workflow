@@ -1,4 +1,4 @@
-"""Materialise uploaded articles into the ns-pond tree pondie reads."""
+"""Materialise articles into the ns-pond tree pondie reads, with the parse upload sends."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from ingestion_workflow.services import nspond, paper_parse
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context
+from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .roles import refuse_unassigned, with_roles
 
@@ -31,26 +31,155 @@ logger = logging.getLogger(__name__)
 #: 4: the sign split follows study_schema.statistics and is declared, not named.
 SYNC_VERSION = 4
 
+#: Why an article neurostore holds no base study for waits for sync: the ingester finds
+#: or creates one by doi, pmid or pmcid, and the article has none of them.
+NO_IDENTIFIER = "no neurostore base study id, and no doi, pmid or pmcid to create one by"
+
+#: Beside the ns-pond tree: `<ns_pond_root>-new/<article_id>/` holds the copy of an article
+#: neurostore holds no base study for yet. Upload sends its parse and the ingester creates
+#: the base study; the next sync writes the article into the tree under that id and
+#: removes this copy. pondie reads only the tree, so it sees no directory not named by one.
+NEW_ARTICLES = "-new"
+
+#: Why a paper is not synced: PubMed lists it as a retraction notice, not a study.
+RETRACTION_NOTICE = "retraction notice"
+
+#: Why an article is not synced: another catalog article that reaches sync names the same
+#: base study. The ingester keeps one current parse per base study and supersedes what a
+#: newer one lacks, so each upload would replace the other's analyses. When one of them is
+#: a preprint and exactly one is not, that one is synced; otherwise none is.
+SHARED_BASE_STUDY = "shares its neurostore base study with another article"
+#: DOI prefixes of preprint servers: bioRxiv and medRxiv, Research Square. #91's
+#: `article_version` labels only copies a source reported as one; these papers have a
+#: DOI of their own that says it.
+PREPRINT_DOI_PREFIXES = ("10.1101/", "10.21203/")
+#: The stages whose records name the base study an article is written under.
+BASE_STUDY_STAGES = ("upload", "sync")
+
+
+def new_articles_root(settings) -> Path:
+    root = Path(settings.ns_pond_root)
+    return root.parent / f"{root.name}{NEW_ARTICLES}"
+
+
+def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tuple[str, List[str]]]:
+    """{article_id: (base study, the other contenders for it)} for the articles in `writing`
+    ({article_id: base study}, the ones sync would write now) that are not synced for
+    SHARED_BASE_STUDY.
+
+    The contenders for a base study are the articles in `writing` and those whose sync or
+    upload record names it and is ok or skipped for SHARED_BASE_STUDY, each grouped by its
+    own `known_base_study_ids`. An alias alone is no claim, nor is a take-back or another
+    skip: none of them reaches the write, so none sends anything to supersede.
+    """
+    if not writing:
+        return {}
+    named = ctx.catalog.articles_naming_base_studies(
+        list(writing.values()), BASE_STUDY_STAGES, SHARED_BASE_STUDY)
+    others = sorted(set().union(*named.values()) - set(writing))
+    found = ctx.catalog.identifiers(others)
+    known = {**known_base_study_ids(
+        ctx, [ArticleRef(id=i, identifier=found[i]) for i in others]), **writing}
+    groups: Dict[str, List[str]] = {}
+    for article_id, base in known.items():
+        groups.setdefault(base, []).append(article_id)
+    groups = {base: sorted(ids) for base, ids in groups.items() if len(ids) > 1}
+    preprints = preprints_among(ctx, [i for ids in groups.values() for i in ids])
+    out = {}
+    for base, ids in groups.items():
+        published = [i for i in ids if i not in preprints]
+        kept = published[0] if len(published) == 1 else None
+        for article_id in ids:
+            if article_id in writing and article_id != kept:
+                out[article_id] = (base, [i for i in ids if i != article_id])
+    return out
+
+
+def is_preprint(doi: Optional[str], article_version: Optional[str]) -> bool:
+    """A preprint server's DOI, or text downloaded as a submitted version."""
+    from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
+
+    return article_version == PREPRINT_VERSION or (
+        doi is not None and doi.lower().startswith(PREPRINT_DOI_PREFIXES))
+
+
+def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
+    """The articles of `ids` that are preprints, by DOI or by the download sync's text
+    came from."""
+    if not ids:
+        return set()
+    dois = ctx.catalog.identifiers(list(ids))
+    extracted = ctx.catalog.artifacts(list(ids), "extract")
+    downloads = ctx.catalog.artifacts(list(ids), "download")
+    triaged = ctx.catalog.artifacts(list(ids), "triage")
+    out = set()
+    for article_id in ids:
+        found = downloads.get(article_id, {})
+        extraction = _synced_extraction(ctx, extracted.get(article_id, {}), found,
+                                        triaged.get(article_id, {}).get(""))
+        download = found.get(extraction.source) if extraction is not None else None
+        version = (download.summary or {}).get("article_version") if download else None
+        if is_preprint(dois[article_id].doi, version):
+            out.add(article_id)
+    return out
+
+
+def known_base_study_ids(ctx: Context, refs: Sequence[ArticleRef]) -> Dict[str, str]:
+    """{article_id: base study id} for the articles neurostore holds a base study for.
+
+    The one an earlier upload wrote to, else the article's neurostore alias, else the
+    one an earlier sync named its directory by.
+    """
+    ids = [ref.id for ref in refs]
+    uploaded = ctx.catalog.artifacts(ids, "upload")
+    synced = ctx.catalog.artifacts(ids, "sync")
+    out = {}
+    for ref in refs:
+        upload = uploaded.get(ref.id, {}).get("")
+        sync = synced.get(ref.id, {}).get("")
+        found = (
+            ((upload.summary or {}).get("base_study_id")
+             if upload is not None and upload.status in (Status.OK, Status.SKIPPED) else None)
+            or ref.identifier.neurostore
+            or ((sync.summary or {}).get("base_study_id") if sync is not None else None)
+        )
+        if found:
+            out[ref.id] = found
+    return out
+
 
 class SyncStage:
+    """Write the corpus copy and the coordinate parse from `space`, before upload sends it.
+
+    Nothing here waits for an upload. The directory and the parse's header name the base
+    study neurostore holds for the article (`known_base_study_ids`). An article it holds
+    none for is written under `new_articles_root` with no base study in its header, so the
+    ingester creates one from its identifiers and its ParsedPaper's bibliography.
+    """
+
     name = "sync"
-    requires = "upload"
+    requires = "space"
+    #: An article whose analyses found nothing is a legitimate `ok` in space, and
+    #: selection leaves it out rather than writing nothing.
+    requires_flag = "tables"
 
     def __init__(self, settings) -> None:
         self.settings = settings
         self._synced: List[Tuple[str, ArticleExtractionBundle]] = []
         self._retracted: List[str] = []
+        self._written_before: Dict[str, Optional[str]] = {}
 
-    def fingerprint_for(self, upstream: Artifact, spaced: Optional[Artifact] = None) -> str:
-        # Upload follows the decided role values alone, but the parse also writes each
-        # set's role_source, role_confidence and evidence, so a retrained model that
-        # decides the same roles still re-syncs. A space artifact from before roles
-        # summarised its records stands in by its own fingerprint.
-        records = (
-            ((spaced.summary or {}).get("role_records") or spaced.fingerprint) if spaced else None
-        )
+    def fingerprint_for(self, upstream: Artifact, base_study_id: Optional[str] = None,
+                        excluded=None, notices: Optional[Artifact] = None) -> str:
+        # The base study is in the parse's header, and the notices are the parsed paper's
+        # corrections. A person's exclusions change what is written, so marking a table
+        # re-syncs and upload then sends the parse without it.
+        marked = excl.digest(excluded or {})
         return fingerprint(
-            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION, records,
+            "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION,
+            (upstream.summary or {}).get("role_records"), "before upload", base_study_id,
+            _answered(notices).fingerprint if _answered(notices) else None,
+            *([marked] if marked else []),
             upstream=upstream.fingerprint,
         )
 
@@ -61,38 +190,76 @@ class SyncStage:
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
+        return self.plan_contended(ctx, refs, artifacts, upstream,
+                                   self.contended(ctx, refs, upstream))
+
+    def contended(
+        self, ctx: Context, refs: Sequence[ArticleRef], upstream: Dict[str, Dict[str, Artifact]]
+    ) -> Dict[str, Tuple[str, List[str]]]:
+        """`shared_base_studies` of the articles in `refs` that `plan` would write: space
+        ok, roles assigned, not a retraction notice, and a known base study."""
+        ids = [ref.id for ref in refs]
+        roled = with_roles(ctx, ids)
+        noticed = ctx.catalog.artifacts(ids, "notices")
+        bases = known_base_study_ids(ctx, refs)
+        return shared_base_studies(ctx, {
+            ref.id: bases[ref.id] for ref in refs
+            if ref.id in bases and ref.id in roled
+            and (spaced := upstream.get(ref.id, {}).get("")) is not None
+            and spaced.status is Status.OK
+            and not _retraction_notice(_answered(noticed.get(ref.id, {}).get("")))})
+
+    def plan_contended(
+        self,
+        ctx: Context,
+        refs: Sequence[ArticleRef],
+        artifacts: Dict[str, Dict[str, Artifact]],
+        upstream: Dict[str, Dict[str, Artifact]],
+        shared: Dict[str, Tuple[str, List[str]]],
+    ) -> StagePlan:
+        """`plan`, with `contended` worked out already: once for many one-article plans."""
         plan = StagePlan(stage=self.name)
-        roled = with_roles(ctx, [ref.id for ref in refs])
-        spaced = ctx.catalog.artifacts([ref.id for ref in refs], "space")
-        # the parse files write the prose's passages
-        prose = ctx.catalog.artifacts([ref.id for ref in refs], "prose")
-        downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
-        extracted = ctx.catalog.artifacts([ref.id for ref in refs], "extract")
+        ids = [ref.id for ref in refs]
+        roled = with_roles(ctx, ids)
+        prose = ctx.catalog.artifacts(ids, "prose")
+        downloads = ctx.catalog.artifacts(ids, "download")
+        extracted = ctx.catalog.artifacts(ids, "extract")
+        excluded = ctx.catalog.exclusions(ids)
+        noticed = ctx.catalog.artifacts(ids, "notices")
+        bases = known_base_study_ids(ctx, refs)
         for ref in refs:
-            upload = upstream.get(ref.id, {}).get("")
-            if upload is None or upload.status is not Status.OK:
+            spaced = upstream.get(ref.id, {}).get("")
+            existing = artifacts.get(ref.id, {}).get("")
+            if spaced is None or spaced.status is not Status.OK:
+                take_back_or_block(plan, ref, spaced, existing)
+                continue
+            if ref.id not in roled:
                 plan.blocked += 1
                 continue
-            # A study retracted because its text was taken back leaves the corpus even
-            # though its roles went with the text; anything else, other retractions
-            # included, is written only with OK roles.
-            text_gone = upload.summary.get("retracted") and upload.fingerprint == NO_TEXT
-            if not text_gone and ref.id not in roled:
-                plan.blocked += 1
+            base_study_id = bases.get(ref.id)
+            identifier = ref.identifier
+            notices = _answered(noticed.get(ref.id, {}).get(""))
+            if _retraction_notice(notices):
+                # A notice can reprint the table it retracts; it is not a study.
+                _skip(plan, ref, spaced, existing, RETRACTION_NOTICE, base_study_id)
                 continue
-            if not upload.summary.get("base_study_id"):
-                plan.blocked += 1
+            if not base_study_id and not (identifier.doi or identifier.pmid or identifier.pmcid):
+                _skip(plan, ref, spaced, existing, NO_IDENTIFIER, None)
                 continue
-            if not upload.summary.get("retracted") and read_from_bad_page(
-                    prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
-                    extracted.get(ref.id, {})):
+            if ref.id in shared:
+                base, others = shared[ref.id]
+                _skip(plan, ref, spaced, existing, SHARED_BASE_STUDY, base,
+                      f"shares base study {base} with {', '.join(others)}", shared_with=others)
+                continue
+            if read_from_bad_page(prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
+                                  extracted.get(ref.id, {})):
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
-            fp = self.fingerprint_for(upload, spaced.get(ref.id, {}).get(""))
-            if ctx.is_fresh(artifacts.get(ref.id, {}).get(""), fp):
+            fp = self.fingerprint_for(spaced, base_study_id, excluded.get(ref.id), notices)
+            if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
-            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=upload))
+            plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=spaced))
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
@@ -108,12 +275,20 @@ class SyncStage:
         read = ctx.catalog.artifacts(ids, "analyses")
         prose = ctx.catalog.artifacts(ids, "prose")
         resolved = ctx.catalog.artifacts(ids, "resolve")
+        noticed = ctx.catalog.artifacts(ids, "notices")
 
         excluded = ctx.catalog.exclusions(ids)
+        bases = self.base_study_ids(ctx, works)
         for work in works:
-            base_study_id = work.upstream.summary.get("base_study_id")
-            if work.upstream.summary.get("retracted"):
+            base_study_id = bases.get(work.article_id)
+            if self.retracting(work):
                 yield self._retract(work, base_study_id)
+                continue
+            if work.skip is not None:
+                error, summary = work.skip
+                yield Outcome(article_id=work.article_id, stage=self.name, source="",
+                              status=Status.SKIPPED, fingerprint=work.fingerprint, error=error,
+                              summary=summary)
                 continue
             spaced = analyses.get(work.article_id, {}).get("")
             refused = refuse_unassigned(
@@ -132,10 +307,11 @@ class SyncStage:
                     work.article_id, self.name, "", str(exc), fingerprint=work.fingerprint
                 )
                 continue
+            root, name = self.location(work, base_study_id)
             try:
                 target = nspond.write_article(
-                    self.settings.ns_pond_root,
-                    base_study_id,
+                    root,
+                    name,
                     bundle,
                     per_table,
                     files,
@@ -154,10 +330,11 @@ class SyncStage:
                 {stage: found.get(work.article_id, {}) for stage, found in (
                     ("extract", extractions), ("metadata", metadata), ("space", analyses),
                     ("triage", triaged), ("analyses", read), ("prose", prose),
-                    ("resolve", resolved), ("passages", passages))},
+                    ("resolve", resolved), ("passages", passages), ("notices", noticed))},
                 bundle.article_data.source.value,
             )
-            self._synced.append((base_study_id, bundle))
+            if base_study_id:
+                self._synced.append((base_study_id, bundle))
             # stage1 follows the parse so its splits name their originals by the
             # parse's keys; it is written whether or not the parse is.
             splits: dict = {}
@@ -180,11 +357,42 @@ class SyncStage:
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                summary={"base_study_id": base_study_id, "path": str(target), **parse},
+                summary={"base_study_id": base_study_id, "path": str(target), **parse,
+                         **self.written(work, target)},
             )
 
-    def _retract(self, work: Work, base_study_id: str) -> Outcome:
-        """Take a retracted article out of the corpus.
+    def base_study_ids(self, ctx: Context, works: Sequence[Work]) -> Dict[str, Optional[str]]:
+        """{article_id: the base study its directory and parse header are named by}."""
+        prior = ctx.catalog.artifacts([work.article_id for work in works], self.name)
+        self._written_before = {
+            article_id: (found[""].summary or {}).get("path")
+            for article_id, found in prior.items() if "" in found}
+        return known_base_study_ids(ctx, [work.ref for work in works])
+
+    def location(self, work: Work, base_study_id: Optional[str]) -> Tuple[Path, str]:
+        """(root, directory name) the article is written under."""
+        if base_study_id:
+            return Path(self.settings.ns_pond_root), base_study_id
+        return new_articles_root(self.settings), work.article_id
+
+    def written(self, work: Work, target: Path) -> Dict[str, object]:
+        """Marks a copy of an article neurostore holds no base study for; once it has one,
+        the earlier copy outside the tree goes, since the tree now holds the article."""
+        new = new_articles_root(self.settings)
+        if Path(target).parent == new:
+            return {"new_to_neurostore": True}
+        before = Path(self._written_before.get(work.article_id) or target)
+        if before != Path(target) and before.parent == new and before.exists():
+            shutil.rmtree(before)
+            return {"replaces": str(before)}
+        return {}
+
+    def retracting(self, work: Work) -> bool:
+        """Whether the work takes the article out of the corpus rather than writing it."""
+        return is_take_back(work)
+
+    def _move_aside(self, base_study_id: str) -> Optional[Path]:
+        """Move the article's directory out of the tree; where it went, if it was there.
 
         Moved, not deleted: the corpus is not reproducible from the catalog
         alone, so the directory goes to a sibling `<root>-retracted/` tree,
@@ -199,14 +407,27 @@ class SyncStage:
             moved.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(source), str(moved))
         self._retracted.append(base_study_id)
-        return Outcome(
-            article_id=work.article_id,
-            stage=self.name,
-            source="",
-            status=Status.OK,
-            fingerprint=work.fingerprint,
-            summary={"base_study_id": base_study_id, "retracted": True,
-                     "moved_to": str(moved) if moved else None},
+        return moved
+
+    def _retract(self, work: Work, base_study_id: Optional[str]) -> Outcome:
+        """Take the copy of an article whose analyses were taken back out of the tree.
+
+        No parse is written for it. The copy in the tree is moved aside as `SyncStage`
+        moves one; a copy outside it, which neurostore never named, is removed. Recorded
+        with the reason the stages before it recorded, so upload sees the take-back.
+        """
+        reason = work.reason or NO_TEXT
+        moved = self._move_aside(base_study_id) if base_study_id else None
+        new = new_articles_root(self.settings) / work.article_id
+        removed = None
+        if new.exists():
+            shutil.rmtree(new)
+            removed = str(new)
+        return Outcome.failure(
+            work.article_id, self.name, "", reason, fingerprint=NO_TEXT,
+            summary={"base_study_id": base_study_id, "retracted": True, "reason": reason,
+                     "moved_to": str(moved) if moved else None,
+                     **({"removed": removed} if removed else {})},
         )
 
     def _assemble(self, ctx, work, extractions, metadata, analyses, downloads, triaged,
@@ -261,6 +482,31 @@ class SyncStage:
         self._retracted.clear()
 
 
+def _skip(plan: StagePlan, ref: ArticleRef, spaced: Artifact, existing: Optional[Artifact],
+          reason: str, base_study_id: Optional[str], error: Optional[str] = None,
+          **summary) -> None:
+    """Plan an article sync records SKIPPED for `reason`, unless that is recorded already.
+
+    The summary keeps the base study, so an article skipped for SHARED_BASE_STUDY still
+    names it to `shared_base_studies`."""
+    error = error or reason
+    if existing is not None and existing.status is Status.SKIPPED and existing.error == error:
+        plan.block(reason)
+        return
+    plan.pending.append(Work(ref=ref, source="", fingerprint="", upstream=spaced, skip=(
+        error, {"reason": reason, "base_study_id": base_study_id, **summary})))
+
+
+def _retraction_notice(notices: Optional[Artifact]) -> bool:
+    return notices is not None and bool((notices.summary or {}).get("retraction_notice"))
+
+
+def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:
+    """The notices artifact when PubMed has answered for the paper; the catalog keeps
+    the last OK answer through a failed refresh, so anything else means never answered."""
+    return notices if notices is not None and notices.status is Status.OK else None
+
+
 def _parse_inputs(
     ctx: Context, work: Work, base_study_id, excluded, found, source
 ) -> paper_parse.ParseInputs:
@@ -293,6 +539,7 @@ def _parse_inputs(
         restatements=((resolved.summary or {}).get("restated_points") or ())
         if resolved is not None else (),
         fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
+        corrections=(payload("notices") or {}).get("corrections") if ok("notices") else None,
     )
 
 

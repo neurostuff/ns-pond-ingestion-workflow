@@ -17,7 +17,7 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.catalog.blobs import BlobStore
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.pipeline.stage import HELD_FOR_REVIEW, NO_TEXT
+from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 from ingestion_workflow.services.funnel_report import (
@@ -26,7 +26,6 @@ from ingestion_workflow.services.funnel_report import (
     FAILED,
     FILTERED,
     GLOSSARY,
-    HELD,
     NOT_ATTEMPTED,
     PASSED,
     PENDING,
@@ -108,8 +107,10 @@ def catalog(tmp_path):
         _ok(d, "triage", source="pubget", passed=0),
         _ok(e, "download", "ace"), Outcome.failure(e, "extract", "ace", NO_TEXT),
         Outcome.failure(e, "passages", "", NO_TEXT),
-        *_through(f, _upstream("upload")),
-        Outcome.failure(f, "upload", "", f"{HELD_FOR_REVIEW}: in 2 studysets"),
+        # Read again and found empty: sync and upload record the take-back.
+        *_through(f, _upstream("sync")),
+        Outcome.failure(f, "sync", "", NO_ANALYSES, fingerprint=NO_TEXT),
+        Outcome.failure(f, "upload", "", NO_ANALYSES, fingerprint=NO_TEXT),
         *_through(g, "passages"),
         # Space never ran for h, but an upload from before is still there.
         *_through(h, "roles"), _ok(h, "upload"),
@@ -164,7 +165,9 @@ def test_failures_carry_the_recorded_reason(funnel):
     assert _where(funnel, ids["C"], "extract")[:2] == (FAILED, "file or payload missing")
     assert _where(funnel, ids["E"], "extract")[:2] == (TAKEN_BACK, NO_TEXT)
     assert _where(funnel, ids["E"], "passages")[:2] == (BLOCKED, f"extract taken_back: {NO_TEXT}")
-    assert _where(funnel, ids["F"], "upload")[:2] == (HELD, HELD_FOR_REVIEW)
+    assert _where(funnel, ids["F"], "sync")[:2] == (TAKEN_BACK, NO_ANALYSES)
+    assert _where(funnel, ids["F"], "upload")[:2] == (
+        BLOCKED, f"sync taken_back: {NO_ANALYSES}")
     assert _where(funnel, ids["J"], "analyses")[:2] == (FILTERED, "no coordinate tables")
     assert _where(funnel, ids["D"], "triage")[:2] == (FILTERED, "triage passed no table")
     assert _where(funnel, ids["D"], "analyses")[:2] == (
@@ -419,7 +422,8 @@ def test_bad_pages_are_their_own_reason(wide):
     assert _where(funnel, ids["S"], "resolve")[:2] == (STALE, "input prose is refused")
 
 
-def test_sync_refuses_prose_from_a_bad_page_unless_retracted(wider):
+def test_sync_refuses_prose_from_a_bad_page_whatever_upload_recorded(wider):
+    """Sync's plan refuses it whatever the upload holds, a legacy retraction among them."""
     root, ids = wider
     conn = open_readonly(root)
     try:
@@ -428,7 +432,7 @@ def test_sync_refuses_prose_from_a_bad_page_unless_retracted(wider):
         conn.close()
     assert _where(funnel, ids["S"], _upstream("sync", prose=False))[0] == PASSED
     assert _where(funnel, ids["S"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
-    assert _where(funnel, ids["V"], "sync")[0] == PASSED
+    assert _where(funnel, ids["V"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
 
 
 def test_dimensions_include_tried_sources_and_registration_day(wide):
@@ -465,7 +469,8 @@ def test_funnel_ids_match_the_page(wider, wide):
     assert _ids(root, "--stage", "download", "--judged", "ace") == {
         ids["S"], ids["V"], ids["Y"]}
     # The stage graph decides what sync waits on.
-    assert _ids(root, "--stage", "sync", "--state", "refused", "--no-prose") == {ids["S"]}
+    assert _ids(root, "--stage", "sync", "--state", "refused", "--no-prose") == {
+        ids["S"], ids["V"]}
     assert _ids(root, "--stage", "sync", "--state", "stale", "--prose") == {ids["S"], ids["V"]}
     assert _ids(root, "--stage", "download", "--state", "failed", "--from", "2026-01-03") == {
         ids["T"]}
@@ -872,3 +877,98 @@ def test_a_held_back_upload_says_which_upstream_and_how_many_are_missing(tmp_pat
     assert any(word in reason and "stale or failed" in meaning for word, meaning in GLOSSARY)
     stages = {s["stage"]: s for s in trace_article(tmp_path / "held", a)["stages"]}
     assert stages["upload"]["records"][0]["reason"] == held
+
+
+# -- the upload's exits -----------------------------------------------------------
+
+
+def test_every_exit_sync_and_upload_record_is_counted_under_its_own_reason(tmp_path):
+    """Each reason sync and upload record, in the words they record it, lands in one
+    category of its own; the detail keeps the article's case."""
+    from ingestion_workflow.pipeline.stages.sync import (
+        NO_IDENTIFIER,
+        RETRACTION_NOTICE,
+        SHARED_BASE_STUDY,
+    )
+    from ingestion_workflow.pipeline.upstream import GATED
+
+    cat = Catalog.open(tmp_path / "exits")
+    to_sync = _upstream("sync")
+
+    def synced_then(article, outcome):
+        return [*_through(article, to_sync), _ok(article, "sync", base_study_id="b"), outcome]
+
+    def skipped(article, stage, reason, error=None):
+        return Outcome(article_id=article, stage=stage, source="", status=Status.SKIPPED,
+                       error=error or reason, summary={"reason": reason})
+
+    def upload_failed(article, error, permanent=True):
+        return Outcome.failure(article, "upload", "", error, permanent=permanent)
+
+    cases = {
+        "notice": lambda a: [*_through(a, to_sync), skipped(a, "sync", RETRACTION_NOTICE)],
+        "bare": lambda a: [*_through(a, to_sync), skipped(a, "sync", NO_IDENTIFIER)],
+        "shared": lambda a: [*_through(a, to_sync), skipped(
+            a, "sync", SHARED_BASE_STUDY, "shares base study 5dsFAUgmBz36 with om54glpssubo")],
+        "no text": lambda a: [*_through(a, to_sync),
+                              Outcome.failure(a, "sync", "", NO_TEXT, fingerprint=NO_TEXT)],
+        "re-read": lambda a: [*_through(a, to_sync),
+                              Outcome.failure(a, "sync", "", NO_ANALYSES, fingerprint=NO_TEXT)],
+        "held": lambda a: synced_then(a, upload_failed(
+            a, f"{GATED}: analyses stale; the parse holds 0 analyses, the last upload 12 "
+               "(12 missing)", permanent=False)),
+        "empty": lambda a: synced_then(a, skipped(a, "upload", "no analyses to upload")),
+        "key": lambda a: synced_then(a, upload_failed(
+            a, "refused: KEY_MISMATCH: Analysis keys must be derived from their name, space "
+               "and points.")),
+        "unknown": lambda a: synced_then(a, upload_failed(
+            a, "refused: Record doesnotexist1 not found in BaseStudy")),
+        "foreign": lambda a: synced_then(a, upload_failed(
+            a, "refused: the summary is of base study 'otherBase001', not '22tHjbNRU8t2'")),
+        "invalid": lambda a: synced_then(a, upload_failed(a, "invalid: invalid parse")),
+        "missing": lambda a: synced_then(a, upload_failed(
+            a, "missing: [Errno 2] No such file or directory: 'coordinate_parse.json'")),
+        "blocked": lambda a: synced_then(a, upload_failed(
+            a, "blocked: Internal Server Error", permanent=False)),
+    }
+    ids = {name: cat.register(Identifier(pmid=str(3000 + i))).id for i, name in enumerate(cases)}
+    cat.record([o for name, make in cases.items() for o in make(ids[name])])
+    cat.close()
+    conn = open_readonly(tmp_path / "exits")
+    try:
+        funnel = build_funnel(conn, samples=5)
+    finally:
+        conn.close()
+    expected = {
+        "notice": ("sync", FILTERED, RETRACTION_NOTICE),
+        "bare": ("sync", FILTERED, NO_IDENTIFIER),
+        "shared": ("sync", FILTERED, SHARED_BASE_STUDY),
+        "no text": ("sync", TAKEN_BACK, NO_TEXT),
+        "re-read": ("sync", TAKEN_BACK, NO_ANALYSES),
+        "held": ("upload", FAILED, "held back: upstream not fresh: analyses stale"),
+        "empty": ("upload", FILTERED, "no analyses to upload"),
+        "key": ("upload", PERMANENT, "refused by neurostore: KEY_MISMATCH"),
+        "unknown": ("upload", PERMANENT, "refused by neurostore"),
+        "foreign": ("upload", PERMANENT, "refused by neurostore"),
+        "invalid": ("upload", PERMANENT, "invalid parse"),
+        "missing": ("upload", PERMANENT, "parse files missing"),
+        "blocked": ("upload", FAILED, "neurostore failed every try"),
+    }
+    for name, (stage, state, reason) in expected.items():
+        assert _where(funnel, ids[name], stage)[:2] == (state, reason), name
+    # The take-backs and the sync exits are blocked at upload with sync's reason.
+    assert _where(funnel, ids["shared"], "upload")[:2] == (
+        BLOCKED, f"sync filtered: {SHARED_BASE_STUDY}")
+    assert _where(funnel, ids["shared"], "sync")[4] == (
+        "shares base study 5dsFAUgmBz36 with om54glpssubo")
+    assert _where(funnel, ids["re-read"], "upload")[:2] == (
+        BLOCKED, f"sync taken_back: {NO_ANALYSES}")
+    counts = {}
+    for (stage, state, reason, *_), (count, _) in funnel.cells.items():
+        if stage in ("sync", "upload") and state not in (PASSED, BLOCKED):
+            counts[(stage, state, reason)] = counts.get((stage, state, reason), 0) + count
+    assert counts == {key: sum(1 for v in expected.values() if v == key)
+                      for key in set(expected.values())}
+    # Each category has words of its own on the page.
+    for _, _, reason in expected.values():
+        assert any(key in reason for key, _ in GLOSSARY), reason

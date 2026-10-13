@@ -108,11 +108,18 @@ extraction recording `has_text: false`), that work is no longer the article's,
 so it is taken back: `passages`, `prose`, `resolve`, `roles` and `space` record
 their artifacts failed with `no extraction text`, whatever state they were in
 (a stage that never made one, such as `roles` before its model was configured,
-records the failure too, so the stages after it see the take-back), `upload`
-retracts the article's study version from neurostore (annotated analyses stay;
-an article this pipeline never uploaded is left alone), and `sync` moves its
-corpus directory to `<ns_pond_root>-retracted/<base_study_id>-<time>/`. The
+records the failure too, so the stages after it see the take-back), `sync`
+writes no parse and moves its corpus directory to
+`<ns_pond_root>-retracted/<base_study_id>-<time>/`, and `upload` records the
+reason once, with the base study and what the last upload sent, and sends
+nothing again. Nothing is deleted from neurostore: it keeps the last upload. The
 run's summary counts these per stage as `taken back`.
+
+The same happens when the prose is read again and holds nothing, and the tables
+are known to hold nothing too (`no analyses after re-read`). A table or prose
+reading that failed, was cut short or has not run only holds the upload back
+(`held back: upstream not fresh: ...`), with how many analyses the parse holds
+against the last upload.
 
 `roles` reads the prose sets' passages from the current `passages` artifact, so
 it waits on any article whose prose was read from an earlier one: after
@@ -149,18 +156,15 @@ copies the catalog database to a new `<path>` first, then records the failures;
 stop other runs first. Running it again records nothing new. Then
 `ingest run --stage download` plans each article's next source.
 
-A study any studyset holds is not retracted: upload records it failed with
-`held for review: in N studysets`, keeps its `base_study_id`, leaves it in the
-corpus, and counts it as `held for review`; the run's log lists their base
-study ids, and the catalog keeps them (`stage = 'upload' AND error LIKE 'held for review%'`).
-They are looked at again on every run, and retracted once no studyset holds them.
-A retraction that fails (the tunnel drops, say) also keeps `base_study_id` and is
-tried again on the next run; sync leaves the article in the corpus until
-neurostore has confirmed it.
+A retracted paper is marked, not removed: sync writes the notices stage's
+corrections into the ParsedPaper's `bibliography.corrections`, upload always
+sends the ParsedPaper with the parse, and neurostore sets the base study's
+`is_retracted` from them. A paper that is itself a retraction notice is not
+synced (`retraction notice`).
 
-To undo one: once the article has text again, the next run makes everything
-again from it and uploads a new study version; a moved corpus directory can be
-moved back from `-retracted/`.
+To undo a take-back: once the article has text again, the next run makes
+everything again from it and uploads the new parse; a moved corpus directory can
+be moved back from `-retracted/`.
 
 ## Long runs
 
@@ -175,15 +179,44 @@ nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
 
 ## Choosing a deployment
 
+`upload` posts each parse to neurostore's study_schema ingester
+(`POST <neurostore_api_url>/api/study-schema-uploads/`) with the admin token from
+the environment variable `NEUROSTORE_TOKEN` (only from there: it is not a setting
+and is not read from `.env`):
+
+```yaml
+neurostore_api_url: https://staging.neurostore.xyz   # or https://neurostore.org
+```
+
+Unset, upload sends nothing and every article waits. An article neurostore has
+no base study for is uploaded too: the ingester finds or creates its base study
+by the doi, pmid or pmcid in the parse header, with the bibliography from the
+ParsedPaper. Sync records an article it does not write as skipped, with the
+reason: one with none of the three (`no neurostore base study id, and no doi, pmid
+or pmcid to create one by`), a retraction notice (`retraction notice`), and two
+catalog articles that reach sync under the same base study (`shares base study <id>
+with <article>`), since each upload would replace the other's analyses. An article
+reaches sync when sync would write it now or has a sync or upload record; one that
+only holds neurostore's alias for the base study does not. Of two such articles,
+when one was read from a preprint (its download is a submitted version) and the
+other was not, the other is written and uploaded; otherwise neither is. A refused
+parse (a 4xx
+about the paper, such as `KEY_MISMATCH` or `DUPLICATE_KEY`) is that paper's
+failure and is not retried. When neurostore does not answer a paper's retries
+nor a health check, or refuses the token or the URL, the upload stops for the
+rest of the run and its articles stay pending; nothing is recorded for them.
+`dry_run: true` validates each parse and writes the request bodies under
+`<data_root>/neurostore_dry_run/`, recording nothing in the catalog.
+
 ```yaml
 neurostore_env: staging     # or dev, or production
 ```
 
-One line moves the ssh host, ssh user, container name, docker network and
-forward port together, because Docker names containers per compose project and
-those cannot be derived from the hostname. Every connection logs which
-deployment it reached. `production` is inferred from the compose file and not
-yet verified against the live host — see [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design).
+`ingest add --from-neurostore` reads a deployment's database directly. That one
+line moves the ssh host, ssh user, container name, docker network and forward
+port together, because Docker names containers per compose project and those
+cannot be derived from the hostname. `production` is inferred from the compose
+file and not yet verified against the live host — see [Design](https://github.com/neurostuff/ns-pond-ingestion-workflow/wiki/Design).
 
 ## Configuration
 

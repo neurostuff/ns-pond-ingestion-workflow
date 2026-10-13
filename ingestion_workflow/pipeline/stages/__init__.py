@@ -19,7 +19,7 @@ from .upload import UploadStage
 #: Canonical order. A stage may only require one that appears before it.
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
 #: `extract` keeps and it decides which of them `analyses` spends a call on.
-#: `space` sits between `analyses` and `upload`, so a table goes out with the
+#: `space` sits between `analyses` and `sync`, so a table goes out with the
 #: space its article states.
 #:
 #: Prose has the same two steps as tables, and they run only when
@@ -31,16 +31,20 @@ from .upload import UploadStage
 #: and `space` then reads resolve instead of analyses.
 #:
 #: `notices` is PubMed's retraction and erratum links for each paper. Only
-#: `upload` reads it, so looking them up again re-runs nothing upstream.
+#: `sync` reads it, for the parsed paper's corrections, so looking them up again
+#: re-runs nothing upstream.
 #:
 #: `reflist` fetches each paper's Crossref list and `references` reads each
 #: extraction's list and citations, the Crossref list filling its gaps. Nothing
 #: downstream reads them yet, so they run only when asked for by name.
 #:
 #: `roles` always runs: it decides what each set of resolve's (or analyses',
-#: without prose) is for, and space, upload and sync read only what it passed.
-STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices", "triage", "analyses",
-               "prose", "resolve", "roles", "space", "upload", "sync")
+#: without prose) is for, and space, sync and upload read only what it passed.
+#:
+#: `sync` writes the corpus copy and the coordinate parse, and `upload` then
+#: posts that parse to neurostore's study_schema ingester.
+STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices",
+               "triage", "analyses", "prose", "resolve", "roles", "space", "sync", "upload")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
@@ -62,8 +66,8 @@ STAGE_TYPES = {
     "resolve": ResolveStage,
     "roles": RolesStage,
     "space": SpaceStage,
-    "upload": UploadStage,
     "sync": SyncStage,
+    "upload": UploadStage,
 }
 
 

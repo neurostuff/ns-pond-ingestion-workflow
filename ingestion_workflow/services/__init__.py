@@ -14,7 +14,6 @@ _LAZY = {
     "PubMedIDLookupService": ".id_lookup",
     "PubMedSearchService": ".search",
     "SemanticScholarIDLookupService": ".id_lookup",
-    "UploadService": ".upload",
 }
 
 __all__ = sorted([*_LAZY, "logging", "nspond"])

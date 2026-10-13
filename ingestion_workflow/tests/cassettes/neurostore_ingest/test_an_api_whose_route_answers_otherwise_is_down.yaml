@@ -1,0 +1,75 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - 127.0.0.1:28084
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: http://127.0.0.1:28084/api/study-schema-uploads/
+  response:
+    body:
+      string: '{"type": "about:blank", "title": "Method Not Allowed", "detail": "Method
+        Not Allowed", "status": 405, "request_id": "342388c20e814e5d", "timestamp":
+        "2026-10-13T01:51:31.063349Z"}'
+    headers:
+      allow:
+      - POST
+      content-length:
+      - '179'
+      content-type:
+      - application/json
+      date:
+      - Tue, 13 Oct 2026 01:51:30 GMT
+      server:
+      - uvicorn
+      vary:
+      - Origin
+      x-request-id:
+      - 342388c20e814e5d
+    status:
+      code: 405
+      message: Method Not Allowed
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - 127.0.0.1:28084
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: http://127.0.0.1:28084/nothing-here/api/study-schema-uploads/
+  response:
+    body:
+      string: '{"type": "about:blank", "title": "Not Found", "detail": "Not Found",
+        "status": 404, "request_id": "fa3f032999644c72", "timestamp": "2026-10-13T01:51:31.066091Z"}'
+    headers:
+      content-length:
+      - '161'
+      content-type:
+      - application/json
+      date:
+      - Tue, 13 Oct 2026 01:51:30 GMT
+      server:
+      - uvicorn
+      vary:
+      - Origin
+      x-request-id:
+      - fa3f032999644c72
+    status:
+      code: 404
+      message: Not Found
+version: 1

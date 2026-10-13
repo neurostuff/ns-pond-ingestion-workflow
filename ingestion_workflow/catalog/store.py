@@ -424,6 +424,26 @@ class Catalog:
         )
         return {row["article_id"] for row in rows}
 
+    def articles_naming_base_studies(
+        self, base_study_ids: Sequence[str], stages: Sequence[str], skipped_for: str
+    ) -> Dict[str, set]:
+        """{base study id: the articles whose artifact at one of `stages` names it as
+        `base_study_id`, when that artifact is ok or was skipped for `skipped_for`}. One
+        query, whatever the number of ids."""
+        wanted = json.dumps(sorted(set(base_study_ids)))
+        rows = self._conn.execute(
+            "SELECT json_extract(summary, '$.base_study_id') AS base, article_id "
+            "FROM artifacts WHERE stage IN (SELECT value FROM json_each(?)) AND source = '' "
+            "AND (status = 'ok' "
+            "OR (status = 'skipped' AND json_extract(summary, '$.reason') = ?)) "
+            "AND json_extract(summary, '$.base_study_id') IN (SELECT value FROM json_each(?))",
+            (json.dumps(list(stages)), skipped_for, wanted),
+        )
+        out: Dict[str, set] = {}
+        for row in rows:
+            out.setdefault(row["base"], set()).add(row["article_id"])
+        return out
+
     def all_article_ids(self) -> Iterator[str]:
         for row in self._conn.execute(
             "SELECT id FROM articles WHERE merged_into IS NULL ORDER BY created_at, id"

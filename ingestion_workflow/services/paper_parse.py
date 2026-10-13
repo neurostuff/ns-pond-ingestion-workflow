@@ -85,6 +85,9 @@ class ParseInputs:
     restatements: Sequence[Mapping[str, Any]] = ()
     #: artifact kind -> fingerprint of every catalog artifact read.
     fingerprints: Mapping[str, str] = field(default_factory=dict)
+    #: The notices stage's corrections of the paper ({kind, pmid, doi}); None while
+    #: PubMed has not answered, which neurostore's ingester reads as "not looked up".
+    corrections: Optional[Sequence[Mapping[str, Any]]] = None
 
 
 @dataclass
@@ -219,7 +222,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         text_path=text_file.relative_to(root).as_posix(),
         text_sha256=hashlib.sha256(raw).hexdigest(),
         text_length=len(text.text),
-        bibliography=_bibliography(meta, title, types),
+        bibliography=_bibliography(meta, title, types, inputs.corrections),
         is_meta_analysis=bool(is_meta),
         is_meta_analysis_basis=_meta_basis(title, types) if is_meta else None,
         sections=_sections(text.text),
@@ -233,7 +236,7 @@ def _text_file(root: Path, source: str) -> Optional[Path]:
     return found[0] if found else None
 
 
-def _bibliography(meta, title: str, types: Sequence[str]):
+def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
     raw = (((meta.raw_metadata or {}).get("pubmed") or {}).get("MedlineCitation") or {}).get(
         "Article"
     ) or {}
@@ -254,6 +257,9 @@ def _bibliography(meta, title: str, types: Sequence[str]):
         keywords=list(meta.keywords) or None,
         license=meta.license,
         open_access=meta.open_access,
+        corrections=None if corrections is None else [
+            pp.Correction(kind=c["kind"], pmid=c.get("pmid"), doi=c.get("doi"))
+            for c in corrections],
         provider=meta.source,
     )
 

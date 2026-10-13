@@ -352,13 +352,13 @@ def _complete(identifiers: Identifiers) -> int:
 def _upload_source(settings: Settings) -> str:
     """`discover` asks which base studies have no study from this extractor,
     so an unset source would silently answer about the wrong one."""
-    from ingestion_workflow.services.upload import resolve_upload_source
+    from ingestion_workflow.services.discover import resolve_upload_source
 
     return resolve_upload_source(settings)
 
 
 def _discover_from_neurostore(settings: Settings, limit: Optional[int]) -> List[Identifier]:
-    """Read the database the upload stage writes to, and take nothing else."""
+    """Read the neurostore deployment's database directly, and take nothing else."""
     from ingestion_workflow.services.db import SessionFactory, SSHTunnel
     from ingestion_workflow.services.discover import unprocessed_base_studies
 

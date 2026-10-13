@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact
 
@@ -16,6 +16,11 @@ class Work:
     source: str
     fingerprint: str
     upstream: Optional[Artifact] = None
+    #: Why a take-back work takes back, one of `stage.TAKE_BACK_REASONS`; NO_TEXT when unset.
+    reason: Optional[str] = None
+    #: When the stage records the article SKIPPED instead of making its output:
+    #: (the error naming this article's case, the summary, whose `reason` it is counted by).
+    skip: Optional[Tuple[str, Dict[str, Any]]] = None
 
     @property
     def article_id(self) -> str:
