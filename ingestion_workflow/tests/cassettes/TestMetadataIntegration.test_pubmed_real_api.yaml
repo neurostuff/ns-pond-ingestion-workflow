@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.32.3
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?api_key=DUMMY&db=pubmed&email=jamesdkent21%40gmail.com&id=31268615&retmode=xml&tool=ingestion-workflow
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&email=jamesdkent21%40gmail.com&id=31268615&retmode=xml&tool=ingestion-workflow
   response:
     body:
       string: |-
