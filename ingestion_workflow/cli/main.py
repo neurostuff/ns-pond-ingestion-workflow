@@ -775,10 +775,6 @@ def revalidate_downloads(
     """Fail stored downloads that are not the article: paywall, error, empty-shell,
     citation-stub and abstract-only pages, checked again without fetching.
 
-    With `--manifest` (the file `ingest run --manifest` takes) only those articles are
-    checked; a manifest entry the catalog does not know is listed and nothing is
-    registered for it. Without it every article is.
-
     Each is recorded as a failed download with its reason, and the extraction made from
     it fails with "download failed validation: <reason>". A run then moves triage to
     another source's text, and `run --stage download` plans the next source. Running it

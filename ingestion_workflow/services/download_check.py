@@ -132,9 +132,6 @@ _RECORD_TITLE = re.compile(r"\bPubMed(?: - NCBI)?\s*$|^\s*PsycNET Record Display
 _ERROR_BODY = re.compile(
     r"page not found|error 404|404 not found|currently unavailable"
     r"|internal server error|does not exist at this address"
-    # The bot-protection interstitial (Thieme-Connect's reads "This process is
-    # protecting Thieme-Connect from malicious requests caused by AI crawlers"), served
-    # with a 200 in place of the article, so no status or heading gives it away.
     r"|\bprotecting [^.]{1,60} from malicious requests caused by AI crawlers",
     re.I,
 )
