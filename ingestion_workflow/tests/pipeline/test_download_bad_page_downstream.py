@@ -7,6 +7,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import (
     DownloadedFile,
     DownloadResult,
@@ -26,7 +27,7 @@ from ingestion_workflow.tests.oa_hosts import PDF, OaHosts, location, pdf_source
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
 
 
-class Source:
+class Source(BaseExtractor):
     def __init__(self, source, result):
         self.source, self.result = source, result
 

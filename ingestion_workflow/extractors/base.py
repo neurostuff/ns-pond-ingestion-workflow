@@ -23,6 +23,15 @@ class BaseExtractor:
     #: and sklearn; only an extractor that touches CUDA needs to pay it.
     mp_start_method: str = "fork"
 
+    #: Identifier fields this source can look an article up by; empty means any.
+    _SUPPORTED_IDS = frozenset()
+
+    def can_address(self, identifier: Identifier) -> bool:
+        """Whether this source can look the article up with the ids we hold."""
+        if not self._SUPPORTED_IDS:
+            return True
+        return any(getattr(identifier, str(field), None) for field in self._SUPPORTED_IDS)
+
     def download(
         self,
         identifiers: Identifiers,

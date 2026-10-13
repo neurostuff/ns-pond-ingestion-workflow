@@ -7,6 +7,7 @@ import pytest
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
@@ -17,7 +18,7 @@ from ingestion_workflow.tests.oa_hosts import PDF, OaHosts, location, pdf_source
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
 
 
-class FakeSource:
+class FakeSource(BaseExtractor):
     def __init__(self, source, page=None):
         self.source, self.page, self.calls = source, page, 0
 

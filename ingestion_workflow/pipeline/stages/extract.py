@@ -42,6 +42,8 @@ EXTRACTOR_VERSIONS = {
     "ace": 3,
     "pdf": 2,
 }
+#: Wiley's PDFs are extracted by the pdf source's code, so they move with it.
+EXTRACTOR_VERSIONS["wiley"] = EXTRACTOR_VERSIONS["pdf"]
 DEFAULT_EXTRACTOR_VERSION = 1
 
 

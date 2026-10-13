@@ -166,6 +166,27 @@ To undo a take-back: once the article has text again, the next run makes
 everything again from it and uploads the new parse; a moved corpus directory can
 be moved back from `-retracted/`.
 
+## Wiley's PDFs
+
+The `wiley` download source fetches an article's PDF from Wiley's Text and Data
+Mining API (`https://api.wiley.com/onlinelibrary/tdm/v1/articles/<DOI>`). It is
+last in the default `download_sources`, so Wiley is asked only for articles no
+other source serves. It asks only about articles whose DOI has one of the
+prefixes Crossref lists for Wiley (member 311), and it needs a TDM token from
+Wiley in `WILEY_API_KEY` (or `wiley_api_key`). Without the token each article
+fails with that reason and nothing is asked.
+
+Its PDFs are kept as `<wiley_cache_root>/<article>/article.pdf` (by default
+under `<cache_root>/wiley`), the pdf source's layout in a root of its own, and
+the pdf source's Docling extraction reads them into `extractions/wiley/`.
+
+Wiley's TDM terms allow 60 requests per 10 minutes, so the source asks one
+article at a time, at most once every 10 seconds. A 429 is waited out for as
+long as its Retry-After asks, up to 60 seconds; a longer wait, or a fourth 429
+in a row, leaves Wiley for the rest of the run. A 404 is permanent. A 403
+(Wiley refusing this token or address the article) is retried on the usual
+schedule. An answer that is not a PDF fails the article and is not kept.
+
 ## Long runs
 
 Runs are resumable by construction: everything a stage produces, including its

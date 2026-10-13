@@ -20,12 +20,14 @@ download_sources:  # Ordered list of download sources to attempt
   - elsevier
   - ace
   - pdf
+  - wiley  # Wiley's TDM API: the PDF of an article with a Wiley DOI, read as the pdf source reads its PDFs
 pubget_cache_root: "/tmp/pubget_cache"  # Optional override for Pubget cache root directory
 ace_cache_root: "/tmp/ace_cache"  # Optional override for ACE cache root directory
 elsevier_cache_root: "/tmp/elsevier_cache"  # Optional override for Elsevier cache root directory
 pdf_cache_root: null  # Optional override for downloaded-PDF cache root directory
 pmc_cache_root: null  # Optional override for the cache of XML fetched from NCBI's PMC
 europepmc_cache_root: null  # Optional override for the cache of XML fetched from Europe PMC
+wiley_cache_root: null  # Optional override for the cache of PDFs fetched from Wiley's TDM API
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
 ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
 # node_path: "/path/to/node/bin"  # Directory holding node (or the binary), put first on PATH. ACE/readabilipy needs node >= 20.19. Also INGEST_NODE_PATH
@@ -45,6 +47,7 @@ elsevier_api_key: "MY_ELSEVIER_API_KEY"  # API key for Elsevier full-text access
 elsevier_http_proxy: "socks5://127.0.0.1:1080"  # HTTP proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
 elsevier_https_proxy: "socks5://127.0.0.1:1080"  # HTTPS proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
 elsevier_use_proxy: true  # Whether to route Elsevier requests through configured proxy
+wiley_api_key: "MY_WILEY_TDM_TOKEN"  # Wiley Text and Data Mining token, sent as Wiley-TDM-Client-Token. Also WILEY_API_KEY
 
 # ===== LLM =====
 llm_api_key: null  # API key for the configured LLM provider

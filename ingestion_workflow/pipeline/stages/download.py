@@ -27,6 +27,7 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         PdfExtractor,
         PmcExtractor,
         PubgetExtractor,
+        WileyExtractor,
     )
 
     factories = {
@@ -36,16 +37,14 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         DownloadSource.PDF: PdfExtractor,
         DownloadSource.PMC: PmcExtractor,
         DownloadSource.EUROPEPMC: EuropePmcExtractor,
+        DownloadSource.WILEY: WileyExtractor,
     }
     return factories[source](settings=settings)
 
 
 def supports(extractor: BaseExtractor, ref: ArticleRef) -> bool:
     """Whether this source can address the article with the ids we hold."""
-    fields = getattr(extractor, "_SUPPORTED_IDS", None)
-    if not fields:
-        return True
-    return any(getattr(ref.identifier, str(field), None) for field in fields)
+    return extractor.can_address(ref.identifier)
 
 
 class DownloadStage:

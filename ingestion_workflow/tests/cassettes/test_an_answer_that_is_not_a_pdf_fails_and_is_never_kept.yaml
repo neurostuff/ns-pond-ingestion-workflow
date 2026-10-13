@@ -1,0 +1,31 @@
+# Composed: a 200 that is an HTML page, not a PDF, which Wiley does not give on demand.
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.wiley.com
+      user-agent:
+      - python-httpx/0.28.1
+      wiley-tdm-client-token:
+      - replay-token-wiley-7c41
+    method: GET
+    uri: https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fj.1440-1614.2006.01765.x
+  response:
+    body:
+      string: '<html><body><h1>Access to this content is restricted</h1></body></html>'
+    headers:
+      content-length:
+      - '71'
+      content-type:
+      - 'text/html'
+    status:
+      code: 200
+      message: OK
+version: 1

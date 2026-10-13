@@ -177,8 +177,10 @@ class Settings(BaseSettings):
     # ===== Download configuration =====
     download_sources: List[str] = Field(
         # PMC first: its Cloud Service holds the Open Access subset pubget reads
-        # and the author manuscripts pubget cannot, each with its licence
-        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf"],
+        # and the author manuscripts pubget cannot, each with its licence.
+        # Wiley last: at one request per 10 seconds, it is asked only for what
+        # no other source serves.
+        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf", "wiley"],
         description="Ordered list of download sources to attempt",
     )
 
@@ -186,6 +188,11 @@ class Settings(BaseSettings):
     elsevier_api_key: Optional[str] = Field(
         default=None,
         description="API key for Elsevier full-text access",
+    )
+
+    wiley_api_key: Optional[str] = Field(
+        default=None,
+        description="Wiley Text and Data Mining token, sent as Wiley-TDM-Client-Token",
     )
 
     # ===== Elsevier proxy configuration =====
@@ -530,6 +537,7 @@ class Settings(BaseSettings):
             getattr(self, "pdf_cache_root", None),
             getattr(self, "pmc_cache_root", None),
             getattr(self, "europepmc_cache_root", None),
+            getattr(self, "wiley_cache_root", None),
         ):
             if isinstance(optional_dir, Path):
                 optional_dir.mkdir(parents=True, exist_ok=True)
@@ -608,6 +616,10 @@ class Settings(BaseSettings):
     europepmc_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
+    )
+    wiley_cache_root: Optional[Path] = Field(
+        default=None,
+        description="Optional override for the cache of PDFs fetched from Wiley's TDM API",
     )
     pdf_extract_workers: Optional[int] = Field(
         default=None,

@@ -1,9 +1,13 @@
-"""Download and extract article content from open-access PDFs.
+"""Download and extract article content from PDFs.
 
-Fallback source for articles that neither PubMed Central (via pubget) nor
-Elsevier serve as XML. Candidate PDF URLs come from every open-access
-location OpenAlex lists and from Semantic Scholar's ``openAccessPdf``; each is
-tried in turn until one is a PDF. Parsing is Docling's.
+`PdfFileExtractor` is the extraction of a downloaded PDF, Docling's, shared by
+every source whose download is a PDF file; `fetch_pdf` and `store_pdf` are the
+fetching and storing those sources share.
+
+`PdfExtractor` is the fallback source for articles that neither PubMed Central
+(via pubget) nor Elsevier serve as XML. Candidate PDF URLs come from every
+open-access location OpenAlex lists and from Semantic Scholar's
+``openAccessPdf``; each is tried in turn until one is a PDF.
 """
 
 from __future__ import annotations
@@ -283,7 +287,7 @@ def _is_pdf(payload: bytes) -> bool:
     return payload.startswith(PDF_MAGIC)
 
 
-def _retry_after(response: requests.Response) -> Optional[float]:
+def _retry_after(response: Any) -> Optional[float]:
     """The host's Retry-After in seconds, given as seconds or as an HTTP date.
 
     None when there is none or it cannot be read; a date already past is 0.
@@ -309,14 +313,22 @@ class _HostGate:
 
     A host that asked to be left alone is not asked again before the time it
     gave, by any worker, and one that asked for longer than the run should wait
-    is left for the rest of the run.
+    is left for the rest of the run. A host that publishes a request rate is
+    asked at most once per `min_interval` seconds.
     """
 
-    def __init__(self, clock: Callable[[], float], sleep: Callable[[float], None]) -> None:
+    def __init__(
+        self,
+        clock: Callable[[], float],
+        sleep: Callable[[float], None],
+        min_interval: float = 0.0,
+    ) -> None:
         self._clock = clock
         self._sleep = sleep
+        self._min_interval = min_interval
         self._lock = threading.Lock()
         self._not_before: Dict[str, float] = {}
+        self._next_slot: Dict[str, float] = {}
         self._strikes: Counter = Counter()
         self._refusals: Counter = Counter()
         self._served: Counter = Counter()
@@ -327,10 +339,14 @@ class _HostGate:
             return self._deferred.get(host)
 
     def wait(self, host: str) -> None:
+        """Sleep until `host` may be asked, and take that slot."""
         with self._lock:
-            delay = self._not_before.get(host, 0.0) - self._clock()
-        if delay > 0:
-            self._sleep(delay)
+            now = self._clock()
+            start = max(now, self._not_before.get(host, 0.0), self._next_slot.get(host, 0.0))
+            # Reserved under the lock, so two workers never take the same slot.
+            self._next_slot[host] = start + self._min_interval
+        if start > now:
+            self._sleep(start - now)
 
     def rate_limited(self, host: str, retry_after: Optional[float]) -> Optional[str]:
         """Note a 429. Returns why the host is now left for the run, or None to retry."""
@@ -363,14 +379,141 @@ class _HostGate:
                     )
 
 
-class PdfExtractor(BaseExtractor):
-    """Extractor that downloads open-access PDFs and parses them with Docling."""
+def fetch_pdf(
+    get: Callable[[str], Any], url: str, attempt: Dict[str, object], hosts: _HostGate
+) -> Optional[bytes]:
+    """The PDF at `url`, or None with the outcome written into `attempt`.
 
-    _SUPPORTED_IDS = {"doi", "pmid"}
+    `get` sends the request (a requests or an httpx GET) and returns its response.
+    A 429 is waited out for as long as the host asks, by every worker,
+    unless it asks for longer than the run should wait; see `_HostGate`.
+    The host is checked before every request, so a URL on a host that this
+    or another worker has left for the run is recorded `deferred`, not asked.
+    """
+    host = _host(url)
+    while True:
+        deferred = hosts.deferred(host)
+        if deferred is not None:
+            attempt.update(outcome="deferred", reason=deferred)
+            return None
+        hosts.wait(host)
+        try:
+            response = get(url)
+        except Exception as exc:  # noqa: BLE001 - recorded on the attempt
+            attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
+            return None
+        status = response.status_code
+        attempt["status"] = status
+        if status == 429:
+            retry_after = _retry_after(response)
+            response.close()
+            deferred = hosts.rate_limited(host, retry_after)
+            if deferred is not None:
+                attempt.update(
+                    outcome="rate_limited",
+                    reason=f"PDF fetch failed: 429 from {host}; {deferred}",
+                )
+                return None
+            continue
+        try:
+            response.raise_for_status()
+            payload = response.content
+        except Exception as exc:  # noqa: BLE001 - recorded on the attempt
+            dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
+            attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
+            if dead:
+                attempt["dead"] = True
+            hosts.answered(host, refused=dead)
+            return None
+        finally:
+            response.close()
+        if not _is_pdf(payload):
+            # Landing pages and paywall interstitials return HTML with a 200.
+            attempt.update(
+                outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF."
+            )
+            hosts.answered(host, refused=True)
+            return None
+        attempt.update(outcome="pdf", reason="PDF downloaded")
+        hosts.answered(host, served=True)
+        return payload
+
+
+def store_pdf(
+    base_dir: Path, identifier: Identifier, payload: bytes, source: DownloadSource
+) -> DownloadedFile:
+    """Write a fetched PDF to `<base_dir>/<article>/article.pdf`."""
+    article_dir = base_dir / safe_hash_stem(identifier.slug)
+    article_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = article_dir / "article.pdf"
+    pdf_path.write_bytes(payload)
+    return DownloadedFile(
+        file_path=pdf_path,
+        file_type=FileType.PDF,
+        content_type="application/pdf",
+        source=source,
+    )
+
+
+class PdfFileExtractor(BaseExtractor):
+    """The extraction of a source whose download is a PDF file: Docling's.
+
+    Each source extracts into its own `extractions/<source>` directory, so one
+    article's extractions from two PDF sources never overwrite each other.
+    """
+
+    SOURCE: DownloadSource
 
     #: CUDA cannot be re-initialised in a forked child ("Cannot re-initialize
-    #: CUDA in forked subprocess"), so this extractor alone pays for spawn.
+    #: CUDA in forked subprocess"), so PDF extraction alone pays for spawn.
     mp_start_method = "spawn"
+
+    def extract(
+        self,
+        download_results: List[DownloadResult],
+        progress_hook: Callable[[int], None] | None = None,
+    ) -> List[ExtractionResult]:
+        extraction_root = Path(self.settings.data_root) / "extractions" / self.SOURCE.value
+        gpus = usable_cuda_devices()
+        worker_count = self._worker_count(gpus)
+        logger.info(
+            "PDF extraction: %d worker(s) over %s",
+            worker_count,
+            f"GPU(s) {gpus}" if gpus else "CPU",
+        )
+        return self._run_extraction_pipeline(
+            download_results,
+            extraction_root=extraction_root,
+            worker=_extract_pdf_article,
+            worker_count=worker_count,
+            worker_initializer=_pin_worker_to_gpu if gpus else None,
+            worker_initargs=(
+                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
+            ),
+            source_name="PDF",
+            failure_message="PDF extraction did not produce a result.",
+            failure_builder=_build_failure_content,
+            progress_hook=progress_hook,
+        )
+
+    def _worker_count(self, gpus: List[int]) -> int:
+        """How many Docling processes to run at once.
+
+        Docling holds a model per process, so this is bounded by memory rather
+        than by cores: one worker per usable GPU, and one on CPU, where a second
+        worker would contend for the cores the pipeline already threads across.
+        """
+        configured = self.settings.pdf_extract_workers
+        if configured:
+            return max(1, configured)
+        return max(1, len(gpus))
+
+
+class PdfExtractor(PdfFileExtractor):
+    """Extractor that downloads open-access PDFs and parses them with Docling."""
+
+    SOURCE = DownloadSource.PDF
+    _SUPPORTED_IDS = {"doi", "pmid"}
 
     def __init__(
         self,
@@ -540,22 +683,11 @@ class PdfExtractor(BaseExtractor):
                 if attempt["outcome"] != "deferred":
                     tried.append(attempt)
                 continue
-            article_dir = base_dir / safe_hash_stem(identifier.slug)
-            article_dir.mkdir(parents=True, exist_ok=True)
-            pdf_path = article_dir / "article.pdf"
-            pdf_path.write_bytes(payload)
             return DownloadResult(
                 identifier=identifier,
                 source=DownloadSource.PDF,
                 success=True,
-                files=[
-                    DownloadedFile(
-                        file_path=pdf_path,
-                        file_type=FileType.PDF,
-                        content_type="application/pdf",
-                        source=DownloadSource.PDF,
-                    )
-                ],
+                files=[store_pdf(base_dir, identifier, payload, DownloadSource.PDF)],
                 url_attempts=attempts,
                 article_version=candidate.version,
             )
@@ -595,60 +727,12 @@ class PdfExtractor(BaseExtractor):
         return None
 
     def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
-        """The PDF at `url`, or None with the outcome written into `attempt`.
-
-        A 429 is waited out for as long as the host asks, by every worker,
-        unless it asks for longer than the run should wait; see `_HostGate`.
-        The host is checked before every request, so a URL on a host that this
-        or another worker has left for the run is recorded `deferred`, not asked.
-        """
-        host = _host(url)
-        while True:
-            deferred = self._hosts.deferred(host)
-            if deferred is not None:
-                attempt.update(outcome="deferred", reason=deferred)
-                return None
-            self._hosts.wait(host)
-            try:
-                response = self._session.get(url, timeout=DOWNLOAD_TIMEOUT, stream=True)
-            except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
-                return None
-            status = response.status_code
-            attempt["status"] = status
-            if status == 429:
-                retry_after = _retry_after(response)
-                response.close()
-                deferred = self._hosts.rate_limited(host, retry_after)
-                if deferred is not None:
-                    attempt.update(
-                        outcome="rate_limited",
-                        reason=f"PDF fetch failed: 429 from {host}; {deferred}",
-                    )
-                    return None
-                continue
-            try:
-                response.raise_for_status()
-                payload = response.content
-            except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
-                attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
-                if dead:
-                    attempt["dead"] = True
-                self._hosts.answered(host, refused=dead)
-                return None
-            finally:
-                response.close()
-            if not _is_pdf(payload):
-                # Landing pages and paywall interstitials return HTML with a 200.
-                attempt.update(
-                    outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF."
-                )
-                self._hosts.answered(host, refused=True)
-                return None
-            attempt.update(outcome="pdf", reason="PDF downloaded")
-            self._hosts.answered(host, served=True)
-            return payload
+        return fetch_pdf(
+            lambda target: self._session.get(target, timeout=DOWNLOAD_TIMEOUT, stream=True),
+            url,
+            attempt,
+            self._hosts,
+        )
 
     @staticmethod
     def _failure(identifier: Identifier, message: str) -> DownloadResult:
@@ -658,49 +742,6 @@ class PdfExtractor(BaseExtractor):
             success=False,
             error_message=message,
         )
-
-    # ------------------------------------------------------------------ extract
-
-    def extract(
-        self,
-        download_results: List[DownloadResult],
-        progress_hook: Callable[[int], None] | None = None,
-    ) -> List[ExtractionResult]:
-        extraction_root = Path(self.settings.data_root) / "extractions" / "pdf"
-        gpus = usable_cuda_devices()
-        worker_count = self._worker_count(gpus)
-        logger.info(
-            "PDF extraction: %d worker(s) over %s",
-            worker_count,
-            f"GPU(s) {gpus}" if gpus else "CPU",
-        )
-        return self._run_extraction_pipeline(
-            download_results,
-            extraction_root=extraction_root,
-            worker=_extract_pdf_article,
-            worker_count=worker_count,
-            worker_initializer=_pin_worker_to_gpu if gpus else None,
-            worker_initargs=(
-                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
-            ),
-            source_name="PDF",
-            failure_message="PDF extraction did not produce a result.",
-            failure_builder=_build_failure_content,
-            progress_hook=progress_hook,
-        )
-
-
-    def _worker_count(self, gpus: List[int]) -> int:
-        """How many Docling processes to run at once.
-
-        Docling holds a model per process, so this is bounded by memory rather
-        than by cores: one worker per usable GPU, and one on CPU, where a second
-        worker would contend for the cores the pipeline already threads across.
-        """
-        configured = self.settings.pdf_extract_workers
-        if configured:
-            return max(1, configured)
-        return max(1, len(gpus))
 
 
 _COORD_COLUMN = re.compile(
@@ -802,7 +843,7 @@ def _build_failure_content(
 ) -> ExtractedContent:
     return ExtractedContent(
         slug=download_result.identifier.slug,
-        source=DownloadSource.PDF,
+        source=download_result.source,
         identifier=download_result.identifier,
         full_text_path=None,
         tables=[],
@@ -909,7 +950,7 @@ def _extract_pdf_article(
 
     return ExtractedContent(
         slug=slug,
-        source=DownloadSource.PDF,
+        source=download_result.source,
         identifier=download_result.identifier,
         full_text_path=full_text_path,
         tables=extracted_tables,

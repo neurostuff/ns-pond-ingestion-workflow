@@ -9,6 +9,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.cli.main import app
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
@@ -23,7 +24,7 @@ PAYWALL = "bvqhehtd4k4d"
 ARTICLE = "onv6piwppvwo"
 
 
-class AnySource:
+class AnySource(BaseExtractor):
     """A source's extractor, to next_source: it asks only whether the article is addressable."""
 
 
