@@ -4,15 +4,15 @@ and file hosts."""
 from __future__ import annotations
 
 import re
+import time
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from urllib.parse import urlsplit
 
 import pytest
 import requests
-from ingestion_workflow.catalog import ArticleRef, Catalog, Status
+from ingestion_workflow.catalog import ArticleRef, Catalog, Outcome, Status
 from ingestion_workflow.clients.openalex import OpenAlexClient
-from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.extractors import pdf_extractor
 from ingestion_workflow.extractors.pdf_extractor import (
     SKIPPED_PMC,
@@ -36,15 +36,6 @@ from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.download import DownloadStage
 from ingestion_workflow.tests.oa_hosts import EMAIL, HTML, PDF, OaHosts, location, pdf_source
 from tenacity import wait_none
-
-
-@pytest.fixture
-def stub(monkeypatch):
-    server = OaHosts()
-    monkeypatch.setattr(OpenAlexClient, "BASE_URL", server.url)
-    monkeypatch.setattr(SemanticScholarClient, "BASE_URL", server.url + "/graph/v1/paper/batch")
-    yield server
-    server.close()
 
 
 def _download(extractor, *dois) -> list[DownloadResult]:
@@ -277,8 +268,10 @@ class _LocalOnlySession(requests.Session):
     def __init__(self) -> None:
         super().__init__()
         self.refused: list[str] = []
+        self.asked: list[dict] = []
 
     def get(self, url, **kwargs):
+        self.asked.append(kwargs)
         if urlsplit(url).hostname != "127.0.0.1":
             self.refused.append(url)
             raise requests.ConnectionError(f"test refuses {url}")
@@ -310,7 +303,6 @@ def test_a_rate_limited_copy_keeps_an_article_retryable_after_a_404(stub, other_
 
     assert _outcomes(result) == ["rate_limited", "http_error"]
     assert "404" in result.error_message
-    assert result.permanent is False
     assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
@@ -329,7 +321,6 @@ def test_an_article_whose_every_copy_is_dead_stays_retryable(stub, tmp_path):
 
     assert _outcomes(result) == ["not_pdf", "http_error", "landing_page_only"]
     assert [a.get("dead") for a in result.url_attempts] == [True, True, None]
-    assert result.permanent is False
     outcome = _stage_outcome(tmp_path, result)
     assert outcome.status is Status.FAILED
     assert outcome.summary["url_outcomes"] == {
@@ -345,7 +336,6 @@ def test_a_failed_lookup_keeps_an_article_retryable(stub, tmp_path, monkeypatch)
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert _outcomes(result) == ["lookup_failed", "http_error"]
-    assert result.permanent is False
     assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
@@ -356,14 +346,13 @@ def test_a_server_error_or_timeout_is_not_final(stub, tmp_path):
 
     a, b = _download(pdf_source(tmp_path, session=_LocalOnlySession()), "10.1234/a", "10.1234/b")
 
-    assert _outcomes(a) == ["http_error"] and a.permanent is False
-    assert _outcomes(b) == ["fetch_error"] and b.permanent is False
+    assert _outcomes(a) == ["http_error"] and _stage_outcome(tmp_path, a).status is Status.FAILED
+    assert _outcomes(b) == ["fetch_error"] and _stage_outcome(tmp_path, b).status is Status.FAILED
 
 
 def test_an_article_with_no_candidate_is_not_permanent(stub, tmp_path):
     result = _download(pdf_source(tmp_path), "10.1234/unknown")[0]
 
-    assert result.permanent is False
     assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
@@ -478,6 +467,30 @@ def test_a_url_listed_twice_keeps_every_label_either_listing_carries():
         assert merged.open_access is True and merged.landing_page is False
 
 
+def test_the_first_of_two_typed_listings_describes_the_url():
+    url = "https://a.org/1.pdf"
+
+    (merged,) = _try_order(
+        [
+            PdfCandidate(url, "openalex", "repository"),
+            PdfCandidate(url, "semantic_scholar", "publisher"),
+        ]
+    )
+
+    assert (merged.provider, merged.location_type) == ("openalex", "repository")
+    assert merged.also_listed_by == ("semantic_scholar",)
+
+
+def test_a_url_one_provider_lists_twice_is_not_listed_by_another():
+    url = "https://a.org/1.pdf"
+
+    (merged,) = _try_order(
+        [PdfCandidate(url, "openalex", "repository"), PdfCandidate(url, "openalex", "publisher")]
+    )
+
+    assert merged.also_listed_by == ()
+
+
 def test_a_second_listing_supplies_a_label_the_first_lacks():
     first = PdfCandidate("https://example.org/a.pdf", "openalex", "repository")
     second = PdfCandidate("https://example.org/a.pdf", "semantic_scholar", "unknown",
@@ -516,9 +529,11 @@ def test_only_a_dead_url_is_remembered():
     assert remembered_dead_urls(attempts) == {"a.org/1.pdf?": "403"}
 
 
-class _Answer:
-    def __init__(self, status, headers=None):
-        self.status_code, self.headers = status, headers or {}
+def _answer(headers):
+    response = requests.Response()
+    response.status_code = 429
+    response.headers.update(headers)
+    return response
 
 
 @pytest.mark.parametrize(
@@ -527,16 +542,30 @@ class _Answer:
 def test_retry_after_is_read_as_seconds_and_never_negative(header, seconds):
     headers = {} if header is None else {"Retry-After": header}
 
-    assert _retry_after(_Answer(429, headers)) == seconds
+    assert _retry_after(_answer(headers)) == seconds
 
 
 def test_retry_after_is_read_as_an_http_date():
     def asked(offset):
         when = format_datetime(datetime.now(timezone.utc) + offset, usegmt=True)
-        return _retry_after(_Answer(429, {"Retry-After": when}))
+        return _retry_after(_answer({"Retry-After": when}))
 
     assert 3590 < asked(timedelta(hours=1)) <= 3600
     assert asked(timedelta(hours=-1)) == 0.0
+
+
+@pytest.mark.parametrize(
+    "form",
+    [
+        lambda when: time.asctime(when.timetuple()),
+        lambda when: format_datetime(when.replace(tzinfo=None)),  # "-0000": no zone given
+    ],
+    ids=["asctime", "no-zone"],
+)
+def test_retry_after_is_read_as_a_date_with_no_zone_in_utc(form):
+    when = form(datetime.now(timezone.utc) + timedelta(hours=1))
+
+    assert 3590 < _retry_after(_answer({"Retry-After": when})) <= 3600
 
 
 def test_a_host_giving_a_date_an_hour_away_is_left_for_the_run(stub, tmp_path):
@@ -563,11 +592,12 @@ def test_which_http_statuses_mean_the_url_is_dead(stub, tmp_path, status, dead):
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert result.url_attempts[0].get("dead", False) is dead
-    assert result.permanent is False
+    assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
-def test_a_payload_that_only_starts_like_a_pdf_is_not_one(stub, tmp_path):
-    payload = stub.serve("/repo/a.pdf", (200, b"%PDF\n<html>"))
+@pytest.mark.parametrize("body", [b"%PDF\n<html>", b"<html>%PDF-1.4</html>"])
+def test_a_payload_that_does_not_start_as_a_pdf_is_not_one(stub, tmp_path, body):
+    payload = stub.serve("/repo/a.pdf", (200, body))
     stub.work("10.1234/a", location(payload, "repository"))
 
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
@@ -662,7 +692,7 @@ def test_a_host_left_for_the_run_is_not_asked_again_for_other_articles(
     assert stub.fetched == ["/repo/a.pdf"]
     assert _outcomes(b) == ["deferred", "http_error"]
     assert b.url_attempts[0]["reason"] == f"deferred: {_host(stub.url)} asked to wait 900s"
-    assert b.permanent is False and a.permanent is False
+    assert [_stage_outcome(tmp_path, r).status for r in (a, b)] == [Status.FAILED] * 2
     assert extractor.slept == []
 
 
@@ -675,7 +705,7 @@ def test_a_host_that_keeps_answering_429_is_left_after_three_waits(stub, tmp_pat
     assert extractor.slept == [2.0, 4.0, 8.0]
     assert stub.fetched == ["/repo/a.pdf"] * 4
     assert result.url_attempts[0]["reason"].endswith("kept answering 429")
-    assert result.permanent is False
+    assert _stage_outcome(tmp_path, result).status is Status.FAILED
 
 
 def test_no_worker_asks_a_host_before_the_time_it_gave():
@@ -836,6 +866,36 @@ def test_an_article_its_pmid_batch_answered_did_not_fail(stub, tmp_path, monkeyp
     assert result.success and _outcomes(result) == ["pdf"]
 
 
+def test_the_pmid_pass_skips_an_article_the_doi_pass_answered(stub):
+    stub.work("10.1234/a", pmid="12345")
+
+    OpenAlexClient(email=EMAIL).get_locations(
+        Identifiers([Identifier(doi="10.1234/a", pmid="12345")])
+    )
+
+    assert [q["filter"][0].split(":")[0] for q in stub.openalex_queries] == ["doi"]
+
+
+def test_openalex_s_best_copy_is_tried_first_among_equal_copies(stub, tmp_path):
+    first = location(stub.serve("/repo/a.pdf", (200, PDF)), "repository")
+    best = location(stub.serve("/repo/b.pdf", (200, PDF)), "repository")
+    stub.work("10.1234/a", first, best, best=best)
+
+    _download(pdf_source(tmp_path), "10.1234/a")
+
+    assert stub.fetched == ["/repo/b.pdf"]
+
+
+def test_openalex_is_not_asked_without_an_email_or_a_key(stub, tmp_path):
+    extractor = pdf_source(tmp_path, openalex_email=None, semantic_scholar_api_key=None)
+
+    result = _download(extractor, "10.1234/a")[0]
+
+    assert stub.openalex_queries == []
+    assert result.url_attempts == []
+    assert result.error_message == "No open-access PDF URL found."
+
+
 def test_a_work_with_no_location_still_answers_for_its_article(stub):
     stub.work("10.1234/a")
     identifiers = Identifiers([Identifier(doi="10.1234/a")])
@@ -910,6 +970,14 @@ def test_semantic_scholar_is_not_asked_without_a_key(stub, tmp_path):
     assert result.error_message == "No open-access PDF URL found."
 
 
+def test_every_fetch_is_streamed_with_a_timeout(stub, tmp_path):
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (200, PDF)), "repository"))
+    session = _LocalOnlySession()
+
+    assert _download(pdf_source(tmp_path, session=session), "10.1234/a")[0].success
+    assert session.asked == [{"timeout": pdf_extractor.DOWNLOAD_TIMEOUT, "stream": True}]
+
+
 def test_a_europe_pmc_preprint_pdf_is_fetched(stub, tmp_path):
     preprint = "https://europepmc.org/api/fulltextRepo?pprId=PPR1&type=FILE&fileName=a.pdf"
     stub.work("10.1234/a", location(preprint, "repository", version="submittedVersion"))
@@ -960,10 +1028,11 @@ def catalog(tmp_path):
         yield opened
 
 
-def _run(tmp_path, catalog, ref, refresh=()):
+def _run(tmp_path, catalog, ref, refresh=(), **settings):
     """One run of the download stage's PDF source, recorded in the catalog."""
     stage = DownloadStage(pdf_source(tmp_path).settings)
-    stage._extractors[DownloadSource.PDF] = pdf_source(tmp_path)  # a new run: a new host gate
+    # a new run: a new host gate
+    stage._extractors[DownloadSource.PDF] = pdf_source(tmp_path, **settings)
     ctx = Context(stage.settings, catalog, refresh=refresh)
     outcomes = list(stage._download(ctx, DownloadSource.PDF, [ref]))
     catalog.record(outcomes)
@@ -1008,14 +1077,72 @@ def test_a_dead_url_is_fetched_once_and_a_new_copy_is_still_tried(stub, tmp_path
     assert stub.fetched == ["/repo/a.pdf", "/repo/b.pdf"]
 
 
-def test_a_refresh_fetches_a_dead_url_again(stub, tmp_path, catalog):
+def test_a_refresh_still_skips_a_dead_url(stub, tmp_path, catalog):
     stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
     ref = catalog.register(Identifier(doi="10.1234/a"))
+    _run(tmp_path, catalog, ref)
+    stub.works[0]["locations"] = [location(stub.serve("/repo/b.pdf", (200, PDF)), "journal")]
+    (found,) = _run(tmp_path, catalog, ref)  # the dead copy is not listed this time
+    stub.works[0]["locations"].insert(0, location(stub.url + "/repo/a.pdf", "repository"))
+
+    (refreshed,) = _run(tmp_path, catalog, ref, refresh=["download:pdf"])
+
+    assert stub.fetched == ["/repo/a.pdf", "/repo/b.pdf", "/repo/b.pdf"]
+    assert [a["outcome"] for a in found.summary["url_attempts"]] == ["pdf", "known_dead"]
+    assert [a["outcome"] for a in refreshed.summary["url_attempts"]] == ["known_dead", "pdf"]
+
+
+@pytest.mark.parametrize(
+    "lost, middle_outcomes",
+    [("lookup", {"lookup_failed": 1, "known_dead": 1}), ("outage", {"known_dead": 1})],
+)
+def test_a_dead_url_is_remembered_through_a_run_that_did_not_list_it(
+    stub, tmp_path, catalog, monkeypatch, lost, middle_outcomes
+):
+    monkeypatch.setattr(OpenAlexClient._request_openalex.retry, "wait", wait_none())
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
+    _run(tmp_path, catalog, ref)
+
+    if lost == "lookup":
+        stub.openalex_status = 500
+        (middle,) = _run(tmp_path, catalog, ref)
+        stub.openalex_status = 200
+    else:  # the PDF cache cannot be made, so the whole batch fails
+        (tmp_path / "not-a-dir").write_text("")
+        (middle,) = _run(tmp_path, catalog, ref, pdf_cache_root=tmp_path / "not-a-dir")
+    (last,) = _run(tmp_path, catalog, ref)
+
+    assert middle.status is Status.FAILED
+    assert middle.summary["url_outcomes"] == middle_outcomes
+    assert stub.fetched == ["/repo/a.pdf"]
+    assert last.summary["url_outcomes"] == {"known_dead": 1}
+    assert "403" in last.summary["url_attempts"][0]["reason"]
+
+
+def test_a_dead_url_listed_later_as_a_closed_copy_is_recorded_once_as_dead(
+    stub, tmp_path, catalog
+):
+    url = stub.serve("/repo/a.pdf", (403, b"no"))
+    stub.work("10.1234/a", location(url, "repository"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
+    _run(tmp_path, catalog, ref)
+    stub.works[0]["locations"] = [{**location(url, "repository"), "is_oa": False}]
+
+    (outcome,) = _run(tmp_path, catalog, ref)
+
+    assert [a["outcome"] for a in outcome.summary["url_attempts"]] == ["known_dead"]
+
+
+def test_the_dead_urls_come_from_the_pdf_download_not_another_source(stub, tmp_path, catalog):
+    stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
+    ref = catalog.register(Identifier(doi="10.1234/a"))
+    catalog.record([Outcome.failure(ref.id, "download", "ace", "no page", summary={"files": 0})])
 
     _run(tmp_path, catalog, ref)
-    _run(tmp_path, catalog, ref, refresh=["download:pdf"])
+    _run(tmp_path, catalog, ref)
 
-    assert stub.fetched == ["/repo/a.pdf"] * 2
+    assert stub.fetched == ["/repo/a.pdf"]
 
 
 def _host(url):

@@ -83,10 +83,6 @@ class DownloadResult:
     #: The downloaded copy's version as OpenAlex labels it ("publishedVersion",
     #: "acceptedVersion", "submittedVersion"), when the source knows it.
     article_version: Optional[str] = None
-    #: Whether a failure is final, when the source decides it; None leaves it to
-    #: the download stage's reading of the error message. The PDF source says
-    #: False: it remembers dead URLs rather than giving up. Not stored.
-    permanent: Optional[bool] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {

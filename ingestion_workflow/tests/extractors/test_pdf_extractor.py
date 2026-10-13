@@ -23,6 +23,7 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.tests.oa_hosts import location, pdf_source
 
 MINIMAL_PDF = b"%PDF-1.4\n%%EOF\n"
 
@@ -36,43 +37,10 @@ def _settings(tmp_path) -> Settings:
     )
 
 
-class _FakeResponse:
-    def __init__(self, content: bytes, status: int = 200) -> None:
-        self.content = content
-        self._status = status
-
-    def raise_for_status(self) -> None:
-        if self._status >= 400:
-            raise RuntimeError(f"HTTP {self._status}")
-
-
-class _FakeSession:
-    def __init__(self, responses: dict[str, _FakeResponse]) -> None:
-        self.responses = responses
-        self.requested: list[str] = []
-
-    def get(self, url, **kwargs):
-        self.requested.append(url)
-        if url not in self.responses:
-            raise RuntimeError("connection refused")
-        return self.responses[url]
-
-
-def _candidates(slug: str, url: str, location_type: str = "repository"):
-    """What `_resolve_pdf_candidates` returns for one article with one URL."""
-    return {slug: [PdfCandidate(url=url, provider="openalex", location_type=location_type)]}, {}
-
-
-def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
+def test_download_writes_pdf_and_reports_success(stub, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/has-pdf")])
-    session = _FakeSession({"https://example.org/a.pdf": _FakeResponse(MINIMAL_PDF)})
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
-
-    monkeypatch.setattr(
-        PdfExtractor,
-        "_resolve_pdf_candidates",
-        lambda self, ids: _candidates("10-1234-has-pdf", "https://example.org/a.pdf"),
-    )
+    stub.work("10.1234/has-pdf", location(stub.serve("/a.pdf", (200, MINIMAL_PDF)), "repository"))
+    extractor = pdf_source(tmp_path)
 
     results = extractor.download(identifiers)
 
@@ -86,33 +54,23 @@ def test_download_writes_pdf_and_reports_success(monkeypatch, tmp_path):
     assert [a["outcome"] for a in result.url_attempts] == ["pdf"]
 
 
-def test_download_fails_without_a_pdf_url(monkeypatch, tmp_path):
+def test_download_fails_without_a_pdf_url(stub, tmp_path):
     identifiers = Identifiers([Identifier(doi="10.1234/no-pdf")])
-    session = _FakeSession({})
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
-    monkeypatch.setattr(PdfExtractor, "_resolve_pdf_candidates", lambda self, ids: ({}, {}))
+    extractor = pdf_source(tmp_path)
 
     result = extractor.download(identifiers)[0]
 
     assert not result.success
     assert "No open-access PDF URL" in result.error_message
-    assert session.requested == []
+    assert stub.fetched == []
 
 
-def test_download_rejects_non_pdf_payloads(monkeypatch, tmp_path):
+def test_download_rejects_non_pdf_payloads(stub, tmp_path):
     """Publisher landing pages and paywalls answer 200 with HTML."""
     identifiers = Identifiers([Identifier(doi="10.1234/landing-page")])
-    session = _FakeSession(
-        {"https://example.org/landing": _FakeResponse(b"<html>Subscribe</html>")}
-    )
-    extractor = PdfExtractor(settings=_settings(tmp_path), session=session)
-    monkeypatch.setattr(
-        PdfExtractor,
-        "_resolve_pdf_candidates",
-        lambda self, ids: _candidates(
-            "10-1234-landing-page", "https://example.org/landing", "publisher"
-        ),
-    )
+    landing = stub.serve("/landing", (200, b"<html>Subscribe</html>"))
+    stub.work("10.1234/landing-page", location(landing, "journal"))
+    extractor = pdf_source(tmp_path)
 
     result = extractor.download(identifiers)[0]
 

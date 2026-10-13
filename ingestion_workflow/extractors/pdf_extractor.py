@@ -86,7 +86,8 @@ _PREPRINT_HOSTS = (
 PREPRINT_VERSION = "submittedVersion"
 
 #: Statuses that may answer differently later; any other 4xx is the URL's answer.
-_TRANSIENT_CLIENT_STATUSES = {408, 425, 429}
+#: A 429 is not here because `_fetch` handles it before any other status.
+_TRANSIENT_CLIENT_STATUSES = {408, 425}
 #: Europe PMC serves its PMC articles under their PMCID; its preprints (PPR ids)
 #: have no other source.
 _PMCID = re.compile(r"pmc\d", re.IGNORECASE)
@@ -259,16 +260,35 @@ def remembered_dead_urls(url_attempts: Sequence[Dict[str, object]]) -> Dict[str,
     }
 
 
+def with_dead_urls_kept(
+    previous: Sequence[Dict[str, object]], attempts: Sequence[Dict[str, object]]
+) -> List[Dict[str, object]]:
+    """`attempts`, then a `known_dead` entry for each URL `previous` found dead
+    that `attempts` does not.
+
+    The catalog keeps only an article's latest PDF attempt, so a dead URL this
+    run did not list (a failed lookup, a source outage) would otherwise be
+    forgotten and fetched again once it is listed.
+    """
+    kept = remembered_dead_urls(attempts)
+    carried = [
+        {"url": a["url"], "outcome": "known_dead", "dead": True, "reason": a.get("reason") or ""}
+        for a in previous
+        if a.get("url") and a.get("dead") and _url_key(str(a["url"])) not in kept
+    ]
+    return [*attempts, *carried]
+
+
 def _is_pdf(payload: bytes) -> bool:
     return payload.startswith(PDF_MAGIC)
 
 
-def _retry_after(response: Any) -> Optional[float]:
+def _retry_after(response: requests.Response) -> Optional[float]:
     """The host's Retry-After in seconds, given as seconds or as an HTTP date.
 
     None when there is none or it cannot be read; a date already past is 0.
     """
-    header = (getattr(response, "headers", None) or {}).get("Retry-After")
+    header = response.headers.get("Retry-After")
     if header is None:
         return None
     try:
@@ -277,15 +297,11 @@ def _retry_after(response: Any) -> Optional[float]:
         pass
     try:
         when = parsedate_to_datetime(header)
+        if when.tzinfo is None:  # the asctime form and "-0000" carry no zone; HTTP dates are UTC
+            when = when.replace(tzinfo=timezone.utc)
         return max(0.0, (when - datetime.now(timezone.utc)).total_seconds())
     except (TypeError, ValueError):
         return None
-
-
-def _close(response: Any) -> None:
-    close = getattr(response, "close", None)
-    if callable(close):
-        close()
 
 
 class _HostGate:
@@ -381,9 +397,9 @@ class PdfExtractor(BaseExtractor):
         """Download each article's PDF.
 
         `dead_urls` holds, per slug, the URLs an earlier run found dead
-        (`remembered_dead_urls`); they are recorded, not fetched again. A
-        failure is never final: a later run fetches only URLs that are new, or
-        that failed for a passing reason.
+        (`remembered_dead_urls`); they are recorded, never fetched again. A
+        later run fetches only URLs that are new, or that failed for a passing
+        reason.
         """
         if not identifiers:
             return []
@@ -564,6 +580,9 @@ class PdfExtractor(BaseExtractor):
         candidate: PdfCandidate, dead_urls: Mapping[str, str]
     ) -> Optional[Dict[str, object]]:
         """What to record for a candidate that is not fetched, else None."""
+        dead = dead_urls.get(_url_key(candidate.url))
+        if dead is not None:
+            return {"outcome": "known_dead", "dead": True, "reason": dead}
         if not candidate.open_access:
             return {"outcome": "not_open_access", "reason": "closed copy: not fetched"}
         if candidate.landing_page:
@@ -573,9 +592,6 @@ class PdfExtractor(BaseExtractor):
             }
         if _is_pmc_copy(candidate.url):
             return {"outcome": "skipped_pmc", "reason": SKIPPED_PMC}
-        dead = dead_urls.get(_url_key(candidate.url))
-        if dead is not None:
-            return {"outcome": "known_dead", "dead": True, "reason": dead}
         return None
 
     def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
@@ -598,11 +614,11 @@ class PdfExtractor(BaseExtractor):
             except Exception as exc:  # noqa: BLE001 - recorded on the attempt
                 attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
                 return None
-            status = getattr(response, "status_code", None)
+            status = response.status_code
             attempt["status"] = status
             if status == 429:
                 retry_after = _retry_after(response)
-                _close(response)
+                response.close()
                 deferred = self._hosts.rate_limited(host, retry_after)
                 if deferred is not None:
                     attempt.update(
@@ -615,18 +631,14 @@ class PdfExtractor(BaseExtractor):
                 response.raise_for_status()
                 payload = response.content
             except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-                dead = (
-                    status is not None
-                    and 400 <= status < 500
-                    and status not in _TRANSIENT_CLIENT_STATUSES
-                )
+                dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
                 attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
                 if dead:
                     attempt["dead"] = True
                 self._hosts.answered(host, refused=dead)
                 return None
             finally:
-                _close(response)
+                response.close()
             if not _is_pdf(payload):
                 # Landing pages and paywall interstitials return HTML with a 200.
                 attempt.update(
@@ -640,14 +652,11 @@ class PdfExtractor(BaseExtractor):
 
     @staticmethod
     def _failure(identifier: Identifier, message: str) -> DownloadResult:
-        # Never final, whatever the message quotes: dead URLs are remembered
-        # instead, and a provider may list a new copy.
         return DownloadResult(
             identifier=identifier,
             source=DownloadSource.PDF,
             success=False,
             error_message=message,
-            permanent=False,
         )
 
     # ------------------------------------------------------------------ extract
