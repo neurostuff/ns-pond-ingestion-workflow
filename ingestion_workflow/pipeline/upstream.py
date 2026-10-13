@@ -33,11 +33,6 @@ TABLES_NOT_READ = "tables not read"
 PROSE_NOT_READ = "prose not read"
 #: What a held-back upload's error starts with.
 GATED = "held back: upstream not fresh"
-#: What an upload records, and then blocks on, for an uploaded article whose analyses
-#: were taken back. Neurostore's ingester takes only POSTs of a parse; nothing there
-#: withdraws a study's analyses, so neurostore keeps the last upload until a person
-#: retracts it there.
-RETRACTION_NEEDED = "retraction needed: no ingester route"
 
 #: The stages a parse is built from, in pipeline order; the prose ones run only with prose.
 GATE_STAGES = ("analyses", "passages", "prose", "resolve", "roles", "space", "sync")
@@ -256,7 +251,6 @@ __all__ = [
     "GATE_STAGES",
     "Kind",
     "PROSE_NOT_READ",
-    "RETRACTION_NEEDED",
     "Reading",
     "SOURCE_MARK",
     "SOURCE_STAGES",

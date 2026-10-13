@@ -630,9 +630,10 @@ class Settings(BaseSettings):
     neurostore_env: NeurostoreEnv = Field(
         default=NeurostoreEnv.STAGING,
         description=(
-            "Which deployment to upload to. Sets the ssh host, ssh user, "
-            "container name, docker network and forward port together; any of "
-            "those set explicitly still wins"
+            "Which deployment's database `ingest add --from-neurostore` reads. Sets "
+            "the ssh host, ssh user, container name, docker network and forward port "
+            "together; any of those set explicitly still wins. The upload stage posts "
+            "to neurostore_api_url instead"
         ),
     )
     upload_use_ssh: bool = Field(
@@ -713,13 +714,6 @@ class Settings(BaseSettings):
         ),
     )
 
-    upload_behavior: UploadBehavior = Field(
-        default=UploadBehavior.UPDATE,
-        description=(
-            "Behavior for an existing study with the configured upload_source: "
-            "'update' to modify in place, 'insert_new' to create a new study"
-        ),
-    )
     upload_metadata_only: bool = Field(
         default=False,
         description="When true, only update metadata fields without touching coordinates",
@@ -733,10 +727,10 @@ class Settings(BaseSettings):
     neurostore_api_url: Optional[str] = Field(
         default=None,
         description=(
-            "Base URL of the neurostore API that coordinate parses are posted to "
-            "(POST <url>/api/study-schema-uploads/). Unset, it follows "
-            "neurostore_env: staging is https://staging.neurostore.xyz, production "
-            "https://neurostore.org; dev has no known URL and must set it"
+            "Base URL of the neurostore the upload stage posts coordinate parses to "
+            "(POST <url>/api/study-schema-uploads/), without /api: "
+            "https://staging.neurostore.xyz or https://neurostore.org. Unset, upload "
+            "sends nothing"
         ),
     )
     neurostore_token_env: str = Field(
@@ -745,37 +739,6 @@ class Settings(BaseSettings):
             "Name of the environment variable (or .env entry) holding the admin "
             "token for the ingester. The token itself is not a setting, so it never "
             "lands in a config file, a log or an upload artifact"
-        ),
-    )
-    neurostore_upload_timeout: float = Field(
-        default=120.0,
-        description="Seconds to wait for the ingester to answer one upload",
-    )
-    neurostore_upload_retries: int = Field(
-        default=4,
-        description=(
-            "Retries after a 429, a 5xx, a timeout or a lost connection, with "
-            "doubling backoff, before the paper is recorded as blocked"
-        ),
-    )
-    neurostore_upload_backoff: float = Field(
-        default=2.0,
-        description="Seconds before the first retry; each later retry waits twice as long",
-    )
-    neurostore_upload_max_blocked: int = Field(
-        default=20,
-        ge=0,
-        description=(
-            "Stop the run once this many papers in a row are blocked by transient "
-            "failures, rather than spending every paper's retries on an outage; 0 "
-            "never stops"
-        ),
-    )
-    neurostore_upload_parsed_paper: bool = Field(
-        default=True,
-        description=(
-            "Send the ParsedPaper with each parse, so a base study the ingester "
-            "creates gets its bibliography and its tables their captions"
         ),
     )
 

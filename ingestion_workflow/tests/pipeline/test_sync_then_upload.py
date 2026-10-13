@@ -1,14 +1,20 @@
 """`sync` writes the coordinate parse, then `upload` posts it to neurostore's ingester.
 
 Upload holds back a parse built from a table or prose reading that is stale or failed:
-the ingester keys analyses by the parse's keys and deletes or supersedes the ones a new
-parse lacks, so such a parse would take live analyses out of neurostore.
+the ingester keys analyses by the parse's keys and supersedes the ones a new parse lacks,
+so such a parse would take live analyses out of neurostore.
+
+Upload goes through the real client. The tests that send replay cassettes recorded
+against the private, local neurostore `test_neurostore_ingest` describes, which holds
+base studies BS21, BS29 and BS42; the rest allow no request at all, so a parse sent that
+should not be fails them.
 """
 
 from __future__ import annotations
 
 import dataclasses
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -29,10 +35,9 @@ from ingestion_workflow.pipeline.stages.sync import (
     SyncStage,
     new_articles_root,
 )
-from ingestion_workflow.pipeline.stages.upload import UploadStage
+from ingestion_workflow.pipeline.stages.upload import NO_API_URL, UploadStage
 from ingestion_workflow.pipeline.upstream import (
     GATED,
-    RETRACTION_NEEDED,
     Kind,
     Reading,
     Verdict,
@@ -42,19 +47,34 @@ from ingestion_workflow.pipeline.upstream import (
     upstream_state,
 )
 from ingestion_workflow.services import neurostore_ingest
-from ingestion_workflow.services.set_roles import ANCHOR_KINDS, COORDINATE_ROLES, Prediction
-from ingestion_workflow.services.set_roles.model import CONTEXT_VERSIONS, META_FILE
+from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
+from ingestion_workflow.tests.services.test_neurostore_ingest import (
+    LOCAL,
+    REPLAY_TOKEN,
+    _closed_port,
+)
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
+from test_roles_stage import PROSE_MODEL, TABLE_MODEL, served  # noqa: F401 - a fixture
+
+CASSETTES = Path(__file__).parents[1] / "cassettes" / "sync_then_upload"
 
 
-def _meta(path: Path, origin: str) -> Path:
-    """A role model's metadata, which is all the plan reads of it."""
-    path.mkdir(parents=True, exist_ok=True)
-    (path / META_FILE).write_text(json.dumps({
-        "name": f"set-roles-{origin}", "version": "1", "roles": list(COORDINATE_ROLES),
-        "anchor_kinds": list(ANCHOR_KINDS), "origin": origin,
-        "context_version": CONTEXT_VERSIONS[origin]}))
-    return path
+@pytest.fixture(scope="module")
+def vcr_cassette_dir():
+    return str(CASSETTES)
+
+
+@pytest.fixture(scope="module")
+def vcr_config():
+    return {
+        "filter_headers": ["authorization", "cookie", "set-cookie"],
+        "record_mode": "none",
+        "match_on": ["method", "scheme", "host", "port", "path", "query", "body"],
+    }
+
+
+#: For the tests that send: they record their cassette once, against the local neurostore.
+RECORDS = pytest.mark.vcr(record_mode="once")
 
 
 class _ByName:
@@ -69,37 +89,13 @@ class _ByName:
         out = []
         for text in texts:
             role = "other" if any(f"[NAME] {o}" in text for o in self.others) else "result"
-            out.append(Prediction(0.99, {r: float(r == role) for r in COORDINATE_ROLES}, {}, 0.0))
+            out.append(Prediction(role, None, {r: float(r == role) for r in COORDINATE_ROLES}))
         return out
 
 
-class _Ingester:
-    """Stands in for neurostore's ingester: reads the parse the way the client does."""
-
-    def __init__(self, base_study_id):
-        self.base_study_id = base_study_id
-        self.sent = []
-
-    def upload(self, study_dir):
-        payload, checks = neurostore_ingest.build_payload(Path(study_dir))
-        self.sent.append((Path(study_dir), payload))
-        parse_id = payload["coordinate_parse"]["parse_id"]
-        record = {"status": "uploaded", "study_id": Path(study_dir).name, "parse_id": parse_id,
-                  "checks": checks, "dry_run": False,
-                  "summary": {"kind": "parse", "base_study_id": self.base_study_id,
-                              "parse_id": parse_id, "study_id": "S1"}}
-        return {**record, "last_uploaded": {"x": record}, "history": [record]}
-
-    def close(self):
-        pass
-
-
-class _Refuses:
-    def upload(self, study_dir):
-        raise AssertionError(f"a held-back parse was sent: {study_dir}")
-
-    def close(self):
-        pass
+def _sent(vcr):
+    """The body of each upload the cassette replayed."""
+    return [json.loads(r.body) for r in vcr.requests if r.method == "POST"]
 
 
 def _run(stage, ctx, catalog, ref):
@@ -117,12 +113,21 @@ def _roles(settings, monkeypatch, classifier):
 
 
 @pytest.fixture()
-def env(tmp_path):
+def token(monkeypatch, tmp_path):
+    # read_token falls back to ./.env; a checkout's own .env must not leak into a test.
+    monkeypatch.chdir(tmp_path)
+    value = os.environ.get("NEUROSTORE_TOKEN") or REPLAY_TOKEN
+    monkeypatch.setenv("NEUROSTORE_TOKEN", value)
+    return value
+
+
+@pytest.fixture()
+def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
-                        prose_model="nu-prose", llm_api_key="x",
-                        role_model_table=_meta(tmp_path / "table", "table"),
-                        role_model_prose=_meta(tmp_path / "text", "text"))
+                        prose_model="nu-prose-v2", llm_api_key="x",
+                        role_model_table=TABLE_MODEL, role_model_prose=PROSE_MODEL,
+                        neurostore_api_url=LOCAL)
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
@@ -157,7 +162,9 @@ def test_sync_runs_before_upload_and_upload_reads_what_sync_wrote():
     assert not hasattr(Settings(), "upload_backend")
 
 
-def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env, monkeypatch):
+@RECORDS
+def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env, monkeypatch,
+                                                                             vcr):
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
     sync, upload = build(["sync", "upload"], settings)
@@ -170,14 +177,14 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
         == "BS21"
     assert (settings.ns_pond_root / "BS21" / "stage1" / "analyses.json").exists()
 
-    fake = _Ingester("BS21")
-    monkeypatch.setattr(upload, "ingester", lambda: fake)
     _, (done,) = _run(upload, ctx, catalog, ref)
     upload.finish()
     assert done.status is Status.OK, done.error
-    ((sent_from, payload),) = fake.sent
-    assert sent_from == settings.ns_pond_root / "BS21"
+    (payload,) = _sent(vcr)
     assert payload["coordinate_parse"] == json.loads(written.read_text())
+    assert payload["parsed_paper"] == json.loads(
+        (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text())
+    assert done.summary["base_study_id"] == "BS21"
     summary = done.summary
     assert (summary["backend"], summary["dry_run"], summary["gate"]) == ("ingester", False, None)
     assert summary["parse_id"] == synced.summary["parse_id"] == summary["ingester"]["parse_id"]
@@ -189,8 +196,9 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
     assert (plan.fresh, outcomes) == (1, [])
 
 
-@pytest.mark.parametrize("fingerprint", ["", "up-legacy"])
-def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fingerprint):
+@RECORDS
+@pytest.mark.parametrize("fingerprint", ["", "up-legacy"], ids=["unfingerprinted", "legacy"])
+def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fingerprint, vcr):
     """A direct-database upload, a migrated one with no fingerprint among them, did not send
     this parse; the parse goes up through the ingester once."""
     settings, catalog, _ = env
@@ -199,15 +207,15 @@ def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fi
     catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint=fingerprint,
                             summary={"base_study_id": "BS42", "analyses": 1})])
     upload = UploadStage(settings)
-    fake = _Ingester("BS42")
-    monkeypatch.setattr(upload, "ingester", lambda: fake)
     plan, (done,) = _run(upload, ctx, catalog, ref)
-    assert (plan.fresh, done.status, len(fake.sent)) == (0, Status.OK, 1)
+    assert (plan.fresh, done.status, len(_sent(vcr))) == (0, Status.OK, 1)
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.fresh, outcomes) == (1, [])
 
 
-def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch):
+@RECORDS
+def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
+                                                                                vcr):
     """The ingester creates the base study from the parse's identifiers and the ParsedPaper's
     bibliography; until then the copy sits outside the tree pondie reads."""
     settings, catalog, _ = env
@@ -225,26 +233,30 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
     assert not (settings.ns_pond_root / "pmids.tsv").exists()
     assert not settings.ns_pond_root.exists() or list(settings.ns_pond_root.iterdir()) == []
 
-    fake = _Ingester("NEW23")
-    monkeypatch.setattr(upload, "ingester", lambda: fake)
     _, (done,) = _run(upload, ctx, catalog, ref)
-    assert done.status is Status.OK and done.summary["base_study_id"] == "NEW23"
-    assert [d for d, _ in fake.sent] == [new]
-    assert catalog.resolve(Identifier(neurostore="NEW23")).id == ref.id
+    assert done.status is Status.OK, done.error
+    created = done.summary["base_study_id"]
+    assert created and done.summary["ingester"]["study_id"] == ref.id
+    assert catalog.resolve(Identifier(neurostore=created)).id == ref.id
 
     # The next sync writes it into the tree under its base study and drops the copy.
     _, (second,) = _run(sync, ctx, catalog, ref)
     sync.finish()
-    target = settings.ns_pond_root / "NEW23"
-    assert (second.summary["base_study_id"], second.summary["path"]) == ("NEW23", str(target))
+    target = settings.ns_pond_root / created
+    assert (second.summary["base_study_id"], second.summary["path"]) == (created, str(target))
     assert second.summary["replaces"] == str(new) and not new.exists()
     assert second.summary["parse_id"] == first.summary["parse_id"]
     header = json.loads((target / "parse" / "coordinate_parse.json").read_text())["header"]
-    assert header["identifiers"]["neurostore_base_study_id"] == "NEW23"
-    assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["23", "NEW23"]
-    _run(upload, ctx, catalog, ref)
-    assert [d for d, _ in fake.sent] == [new, target]
-    assert fake.sent[1][1]["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
+    assert header["identifiers"]["neurostore_base_study_id"] == created
+    assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["23", created]
+    _, (again,) = _run(upload, ctx, catalog, ref)
+    assert again.status is Status.OK and again.summary["base_study_id"] == created
+    first_sent, second_sent = _sent(vcr)
+    assert first_sent["coordinate_parse"]["header"]["identifiers"][
+        "neurostore_base_study_id"] is None
+    assert second_sent["coordinate_parse"]["header"]["identifiers"][
+        "neurostore_base_study_id"] == created
+    assert second_sent["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
 
 
 def test_an_article_with_nothing_to_create_a_base_study_by_waits(env, monkeypatch):
@@ -261,17 +273,18 @@ def _take_back_space(catalog, ref, reason=NO_TEXT):
     catalog.record([Outcome.failure(ref.id, "space", "", reason, fingerprint=NO_TEXT)])
 
 
-@pytest.mark.parametrize("reason", [NO_TEXT, NO_ANALYSES])
-def test_a_taken_back_article_gets_no_parse_and_waits_for_a_retraction(env, monkeypatch, reason):
-    """Neurostore's ingester only takes a parse: nothing there withdraws a study, so the
-    upload says a retraction is needed rather than pretending it made one."""
+@RECORDS
+@pytest.mark.parametrize("reason", [NO_TEXT, NO_ANALYSES], ids=["no-text", "no-analyses"])
+def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason(
+        env, monkeypatch, reason, vcr):
+    """Nothing is deleted from neurostore: it keeps the last upload, and the upload stage
+    records the take-back's reason and sends nothing again."""
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "29", "BS29")
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
-    monkeypatch.setattr(upload, "ingester", lambda: _Ingester("BS29"))
     _, (done,) = _run(upload, ctx, catalog, ref)
-    assert done.status is Status.OK
+    assert done.status is Status.OK, done.error
 
     _take_back_space(catalog, ref, reason)
     _, (back,) = _run(sync, ctx, catalog, ref)
@@ -282,17 +295,17 @@ def test_a_taken_back_article_gets_no_parse_and_waits_for_a_retraction(env, monk
     assert Path(back.summary["moved_to"]).exists()
     assert list(settings.ns_pond_root.rglob("coordinate_parse.json")) == []
 
-    monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
-    _, (held,) = _run(upload, ctx, catalog, ref)
-    assert (held.status, held.error) == (Status.FAILED, f"{RETRACTION_NEEDED}: {reason}")
-    assert held.summary["retraction_needed"] is True and held.summary["reason"] == reason
-    assert held.summary["base_study_id"] == "BS29"
-    assert held.summary["last_upload"]["analyses"] == 1
-    # Recorded once; after that the article is blocked on it, and nothing is sent.
+    _, (back,) = _run(upload, ctx, catalog, ref)
+    assert (back.status, back.error, back.fingerprint) == (Status.FAILED, reason, NO_TEXT)
+    assert back.summary["reason"] == reason and back.summary["base_study_id"] == "BS29"
+    assert back.summary["last_upload"]["analyses"] == 1
+    # Recorded once; after that the article waits, and nothing is sent.
     plan, outcomes = _run(upload, ctx, catalog, ref)
-    assert (plan.blocked, plan.reasons, outcomes) == (1, {RETRACTION_NEEDED: 1}, [])
+    assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
+    assert len(_sent(vcr)) == 1
 
 
+@pytest.mark.vcr
 def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch):
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "30")
@@ -303,10 +316,9 @@ def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeyp
     _take_back_space(catalog, ref)
     _, (back,) = _run(sync, ctx, catalog, ref)
     assert back.error == NO_TEXT and back.summary["removed"] == str(new) and not new.exists()
-    monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
     _, (recorded,) = _run(upload, ctx, catalog, ref)
     assert (recorded.error, recorded.fingerprint) == (NO_TEXT, NO_TEXT)
-    assert "retraction_needed" not in recorded.summary
+    assert recorded.summary["base_study_id"] is None and "last_upload" not in recorded.summary
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.blocked, plan.reasons, outcomes) == (1, {}, [])
 
@@ -406,7 +418,7 @@ def _icafz5_payload():
 def _icafz5(tmp_path, monkeypatch, catalog, *, analyses_fresh=False, unread=None):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
-                        role_model_table=_meta(tmp_path / "table", "table"))
+                        role_model_table=TABLE_MODEL, neurostore_api_url=LOCAL)
     ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"))
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1005",
                             summary={"source": "ace", "tables": 3, "passed": 2})])
@@ -447,11 +459,25 @@ def _sync_as_written(ctx, catalog, ref, analyses):
                  **({"parse_omitted": omitted} if omitted else {})})])
 
 
-def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypatch):
+def _handed_to_the_client(done, settings):
+    """The gate let the parse through: the client was given the directory sync recorded,
+    which holds no files here, since these sync records stand for what sync wrote."""
+    record = done.summary["ingester"]
+    assert (record["status"], record["study_id"]) == ("missing", "NTKEuAF4Autf")
+    assert done.error.startswith("missing: ")
+    assert str(settings.ns_pond_root / "NTKEuAF4Autf") in record["error"]["detail"]
+
+
+@pytest.fixture()
+def icafz5_env(served, token):  # noqa: F811 - the imported fixture
+    """The role server's model card and the token, which `_icafz5`'s settings need."""
+
+
+@pytest.mark.vcr
+def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypatch, icafz5_env):
     with Catalog.open(tmp_path / "k") as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
-        monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
         _, (held,) = _run(upload, ctx, catalog, ref)
         assert held.status is Status.FAILED
         assert held.error == (f"{GATED}: analyses stale; the parse holds 0 analyses, "
@@ -469,7 +495,6 @@ def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypat
         # A dry run holds it back the same way, in its own record.
         dry = _dry(settings)
         dry_upload = UploadStage(dry)
-        monkeypatch.setattr(dry_upload, "ingester", lambda: _Refuses())
         _, outcomes = _run(dry_upload, Context(dry, catalog), catalog, ref)
         assert outcomes == []
         (line,) = _dry_lines(settings)
@@ -477,11 +502,11 @@ def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypat
         assert catalog.artifact(ref.id, "upload", "").error == held.error
 
 
-def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch):
+@pytest.mark.vcr
+def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch, icafz5_env):
     with Catalog.open(tmp_path / "k") as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
-        monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
         _run(upload, ctx, catalog, ref)
         # The analyses read again from today's triage; everything after them follows.
         triage = catalog.artifact(ref.id, "triage", "")
@@ -493,37 +518,29 @@ def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch)
         _sync_as_written(ctx, catalog, ref, analyses=12)
         assert upload.held_back(ctx, [ref], {ref.id: catalog.artifact(ref.id, "sync", "")},
                                 catalog.artifacts([ref.id], "upload")) == {}
-        sent = []
-        monkeypatch.setattr(upload, "ingester", lambda: type("I", (), {
-            "upload": lambda self, d: sent.append(d) or {
-                "status": "uploaded", "summary": {"base_study_id": "NTKEuAF4Autf"}},
-            "close": lambda self: None})())
         _, (done,) = _run(upload, ctx, catalog, ref)
-        assert done.status is Status.OK and done.summary["gate"] is None
-        assert sent == [settings.ns_pond_root / "NTKEuAF4Autf"]
+        assert done.summary["gate"] is None
+        _handed_to_the_client(done, settings)
 
 
-def test_a_person_can_leave_the_tables_out_with_a_reason(tmp_path, monkeypatch):
+@pytest.mark.vcr
+def test_a_person_can_leave_the_tables_out_with_a_reason(tmp_path, monkeypatch, icafz5_env):
     with Catalog.open(tmp_path / "k") as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
-        monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
         _run(upload, ctx, catalog, ref)
         catalog.exclude([(ref.id, "source:tables", "MEG dipole fits, not results", "")])
         # The mark re-syncs the article, and its upload is planned again.
         _sync_as_written(ctx, catalog, ref, analyses=0)
-        sent = []
-        monkeypatch.setattr(upload, "ingester", lambda: type("I", (), {
-            "upload": lambda self, d: sent.append(d) or {
-                "status": "uploaded", "summary": {"base_study_id": "NTKEuAF4Autf"}},
-            "close": lambda self: None})())
         _, (done,) = _run(upload, ctx, catalog, ref)
-        assert done.status is Status.OK and len(sent) == 1
+        _handed_to_the_client(done, settings)
         assert done.summary["gate"]["excused"] == {"analyses": "MEG dipole fits, not results"}
 
 
 @pytest.mark.parametrize("excuse", [None, "the third table is a figure, not coordinates"])
-def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, monkeypatch, excuse):
+@pytest.mark.vcr
+def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, monkeypatch, excuse,
+                                                                   icafz5_env):
     """The analyses ran, fresh, but one table's raw content was missing: its analyses are
     not in the parse, so it is not sent unless a person leaves the tables out."""
     with Catalog.open(tmp_path / "k") as catalog:
@@ -533,23 +550,19 @@ def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, mon
             catalog.exclude([(ref.id, "source:tables", excuse, "")])
             _sync_as_written(ctx, catalog, ref, analyses=0)
         upload = UploadStage(settings)
-        sent = []
-        monkeypatch.setattr(upload, "ingester", lambda: type("I", (), {
-            "upload": lambda self, d: sent.append(d) or {
-                "status": "uploaded", "summary": {"base_study_id": "NTKEuAF4Autf"}},
-            "close": lambda self: None})())
         _, (done,) = _run(upload, ctx, catalog, ref)
         if excuse:
-            assert done.status is Status.OK and len(sent) == 1
+            _handed_to_the_client(done, settings)
             assert done.summary["gate"] == {"excused": {"analyses": excuse}}
         else:
-            assert sent == [] and done.error == (
+            assert "ingester" not in done.summary and done.error == (
                 f"{GATED}: tables not read: raw content missing; the parse holds 0 analyses, "
                 "the last upload 12 (12 missing)")
             assert done.summary["gate"]["upstream"] == {
                 "analyses": "tables not read: raw content missing"}
 
 
+@pytest.mark.vcr
 def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monkeypatch):
     """The tables failed in the model, so the parse holds the prose's analyses alone."""
     settings, catalog, _ = env
@@ -564,7 +577,6 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
                             Artifact(ref.id, "triage", fingerprint="tr-2"))),
     ])
     upload = UploadStage(settings)
-    monkeypatch.setattr(upload, "ingester", lambda: _Refuses())
     _, (held,) = _run(upload, ctx, catalog, ref)
     assert held.error == (
         f"{GATED}: analyses failed: UnreadableAnswer: Expecting ',' delimiter: line 1 column "
@@ -682,21 +694,105 @@ def test_resolve_and_upload_ask_the_same_rule():
     assert not hasattr(resolve, "tables_unread")
 
 
-def test_a_stop_records_the_paper_and_stops_before_the_next_batch(env, monkeypatch):
+def _two_synced(env, monkeypatch):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "27", "BS27")
-    _run(SyncStage(settings), ctx, catalog, ref)
+    refs = []
+    for pmid in ("27", "31"):
+        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}")
+        _run(SyncStage(settings), ctx, catalog, ref)
+        refs.append(ref)
+    return ctx, refs
+
+
+def _stops(upload, ctx, catalog, refs, caplog):
+    """Both articles' plans, run as two batches: the first stops, the second sends nothing."""
+    outcomes = []
+    for ref in refs:
+        plan = upload.plan(ctx, [ref], catalog.artifacts([ref.id], "upload"),
+                           catalog.artifacts([ref.id], "sync"))
+        assert len(plan.pending) == 1
+        outcomes += list(upload.execute(ctx, plan.pending))
+    assert outcomes == []
+    assert catalog.artifacts([r.id for r in refs], "upload") == {}
+    assert "upload stopped" in caplog.text and "1 article(s) left pending" in caplog.text
+    # Pending still: a later run plans both again.
+    for ref in refs:
+        plan = upload.plan(ctx, [ref], {}, catalog.artifacts([ref.id], "sync"))
+        assert len(plan.pending) == 1
+
+
+@pytest.mark.vcr(
+    str(Path(__file__).parents[1] / "cassettes" / "neurostore_ingest"
+        / "test_a_key_the_ingester_refuses_is_the_paper_s_failure[KEY_MISMATCH].yaml"),
+    match_on=["method", "scheme", "host", "port", "path", "query"])
+def test_a_key_the_ingester_refuses_is_recorded_as_the_article_s_failure_with_its_code(
+        tmp_path, token):
+    """neurostore's real KEY_MISMATCH refusal, as the client records it, is a permanent
+    failure of that article whose reason names the code; nothing stops."""
+    from ingestion_workflow.tests.services.test_paper_parse import _written
+
+    _, _, written = _written(tmp_path)
+    with neurostore_ingest.NeurostoreIngester(LOCAL) as ingester:
+        artifact = ingester.upload(written["dir"].parent)
+    upload = UploadStage(Settings(data_root=tmp_path, neurostore_api_url=LOCAL))
+    from types import SimpleNamespace
+
+    work = Work(ref=SimpleNamespace(id="a1"), source="", fingerprint="f")
+    outcome = upload._outcome(work, artifact, {"base_study_id": None}, [])
+    assert outcome.status is Status.PERMANENT
+    assert outcome.error == ("refused: KEY_MISMATCH: Analysis keys must be derived from their "
+                             "name, space and points.")
+    assert upload._stopped is None
+
+
+@RECORDS
+def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(env, monkeypatch,
+                                                                         caplog, vcr):
+    """Recorded with NEUROSTORE_TOKEN set to a token the local neurostore does not know."""
+    settings, catalog, _ = env
+    ctx, refs = _two_synced(env, monkeypatch)
     upload = UploadStage(settings)
+    _stops(upload, ctx, catalog, refs, caplog)
+    assert "NeurostoreAuthError" in caplog.text and "with 401" in caplog.text
+    assert len(_sent(vcr)) == 1
+    assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
 
-    class Unauthorized:
-        def upload(self, study_dir):
-            raise neurostore_ingest.NeurostoreAuthError("401 from the ingester")
 
-        def close(self):
-            pass
+def test_a_down_neurostore_stops_the_upload_and_records_nothing(env, monkeypatch, caplog):
+    settings, catalog, _ = env
+    ctx, refs = _two_synced(env, monkeypatch)
+    down = settings.model_copy(update={"neurostore_api_url": f"http://127.0.0.1:{_closed_port()}"})
+    upload = UploadStage(down)
+    monkeypatch.setattr(neurostore_ingest.time, "sleep", lambda s: None)
+    _stops(upload, Context(down, catalog), catalog, refs, caplog)
+    assert "NeurostoreUnavailable" in caplog.text
+    assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
 
-    monkeypatch.setattr(upload, "ingester", lambda: Unauthorized())
-    _, (stopped,) = _run(upload, ctx, catalog, ref)
-    assert stopped.status is Status.FAILED and "401 from the ingester" in stopped.error
-    with pytest.raises(neurostore_ingest.NeurostoreAuthError):
-        list(upload.execute(ctx, [Work(ref=ref, source="", fingerprint="x")]))
+
+@pytest.mark.vcr
+def test_no_token_stops_the_upload_before_anything_is_sent(env, monkeypatch, caplog):
+    settings, catalog, _ = env
+    ctx, refs = _two_synced(env, monkeypatch)
+    monkeypatch.delenv("NEUROSTORE_TOKEN")
+    _stops(UploadStage(settings), ctx, catalog, refs, caplog)
+    assert "no neurostore token" in caplog.text
+
+
+@pytest.mark.vcr
+def test_with_no_neurostore_named_every_article_waits(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "33", "BS33")
+    _run(SyncStage(settings), ctx, catalog, ref)
+    unnamed = settings.model_copy(update={"neurostore_api_url": None})
+    plan, outcomes = _run(UploadStage(unnamed), Context(unnamed, catalog), catalog, ref)
+    assert (plan.blocked, plan.reasons, outcomes) == (1, {NO_API_URL: 1}, [])
+
+
+def test_the_neurostore_api_is_part_of_the_upload_fingerprint(tmp_path):
+    """A different API is a different neurostore: pointing the run at production after
+    staging sends every parse there, rather than leaving them looking fresh."""
+    synced = Artifact("a1", "sync", fingerprint="sy")
+    staging, production = (
+        UploadStage(Settings(data_root=tmp_path, neurostore_api_url=url)).fingerprint_for(synced)
+        for url in ("https://staging.neurostore.xyz", "https://neurostore.org"))
+    assert staging != production

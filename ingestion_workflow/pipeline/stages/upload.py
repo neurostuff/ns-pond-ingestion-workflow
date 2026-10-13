@@ -11,8 +11,8 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context, is_take_back, taken_back
-from ..upstream import GATED, RETRACTION_NEEDED, Assessor, Verdict, short_reason
+from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block
+from ..upstream import GATED, Assessor, Verdict, short_reason
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,8 @@ INGEST_UPLOAD_VERSION = 1
 
 #: Under the dry-run root: one JSON line per article for each dry run of the stage.
 DRY_RUN_RUNS = "upload_runs"
+#: Why every article waits when no neurostore is named.
+NO_API_URL = "no neurostore_api_url is configured"
 
 
 def _sent_by_ingester(existing: Optional[Artifact]) -> bool:
@@ -41,14 +43,18 @@ def _last_upload(existing: Optional[Artifact]) -> Optional[Dict[str, Any]]:
 class UploadStage:
     """Post the coordinate parse sync wrote to neurostore's study_schema ingester.
 
-    One call per article. The ingester keys analyses by the parse's keys and deletes or
-    supersedes the ones a new parse lacks, so a parse built from a table or prose
-    reading that is not fresh is held back (`GATED`) with what is behind and how many
-    analyses it holds against the last upload. Each record's summary names the backend,
-    whether it was a dry run, and the ingester's summary or error.
+    One call per article. The ingester keys analyses by the parse's keys and supersedes
+    the ones a new parse lacks, so a parse built from a table or prose reading that is
+    not fresh is held back (`GATED`) with what is behind and how many analyses it holds
+    against the last upload. Each record's summary names the backend, whether it was a
+    dry run, and the ingester's summary or error.
 
-    An uploaded article whose analyses were taken back is recorded, and then blocked, as
-    `RETRACTION_NEEDED`: the ingester has no route that withdraws a study.
+    An article whose analyses were taken back is recorded once with the take-back's
+    reason, and is not sent again; nothing is deleted from neurostore.
+
+    When the client raises a `StopRun` (the API is down, or the token or the URL is
+    wrong for every paper), the stage stops for the rest of the run: that article and
+    the rest stay pending, and nothing is recorded for them.
 
     A dry run (`dry_run`) validates each parse and writes its request body under the
     ingester's dry-run root, with one JSON line per article under `upload_runs/`; it
@@ -61,7 +67,8 @@ class UploadStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self._ingester = None
-        self._stopped: Optional[BaseException] = None
+        #: Why the stage stopped for the rest of this run.
+        self._stopped: Optional[str] = None
         self.assessor = Assessor(settings)
         self._dry_path: Optional[Path] = None
         self._dry_counts: Dict[str, int] = {}
@@ -72,13 +79,10 @@ class UploadStage:
         return bool(getattr(self.settings, "dry_run", False))
 
     def fingerprint_for(self, upstream: Artifact) -> str:
-        from ingestion_workflow.services.neurostore_ingest import api_url
-
         # A different API is a different neurostore, so the same parse goes to it anew.
         return fingerprint(
-            "upload", "ingester", INGEST_UPLOAD_VERSION, api_url(self.settings),
-            bool(self.settings.neurostore_upload_parsed_paper),
-            upstream=upstream.fingerprint,
+            "upload", "ingester", INGEST_UPLOAD_VERSION,
+            (self.settings.neurostore_api_url or "").rstrip("/"), upstream=upstream.fingerprint,
         )
 
     def plan(
@@ -89,21 +93,17 @@ class UploadStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
+        if not self.settings.neurostore_api_url:
+            for _ in refs:
+                plan.block(NO_API_URL)
+            return plan
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         candidates = []
         for ref in refs:
             synced = upstream.get(ref.id, {}).get("")
             existing = artifacts.get(ref.id, {}).get("")
             if synced is None or synced.status is not Status.OK:
-                if not taken_back(synced):
-                    plan.blocked += 1
-                elif existing is None or existing.fingerprint != NO_TEXT:
-                    plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
-                                             reason=synced.error))
-                elif (existing.error or "").startswith(RETRACTION_NEEDED):
-                    plan.block(RETRACTION_NEEDED)  # recorded already
-                else:
-                    plan.blocked += 1
+                take_back_or_block(plan, ref, synced, existing)
                 continue
             fp = self.fingerprint_for(synced)
             # Only this stage's own record can be fresh: a direct-database upload's, a
@@ -176,24 +176,20 @@ class UploadStage:
         return out
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        if self._stopped is not None:
-            self.close()
-            raise self._stopped
+        if self._stopped:
+            logger.error("upload stopped: %s; %d article(s) left pending",
+                         self._stopped, len(works))
+            return
         previous = ctx.catalog.artifacts([w.article_id for w in works], self.name)
         back = [w for w in works if is_take_back(w)]
         works = [w for w in works if not is_take_back(w)]
-        synced = ctx.catalog.artifacts([w.article_id for w in back], "sync")
         for work in back:
             last = _last_upload(previous.get(work.article_id, {}).get(""))
-            sync = synced.get(work.article_id, {}).get("")
-            reason = work.reason or (sync.error if sync is not None else None) or NO_TEXT
-            # Nothing uploaded, nothing to take back: recorded with the reason alone.
+            # Recorded with its reason and never sent again; neurostore keeps what it holds.
             yield from self._record(work, Outcome.failure(
-                work.article_id, self.name, "",
-                f"{RETRACTION_NEEDED}: {reason}" if last else reason, fingerprint=NO_TEXT,
-                summary={**self._summary(None, last), "reason": reason,
-                         "base_study_id": (last or {}).get("base_study_id"),
-                         **({"retraction_needed": True} if last else {})}))
+                work.article_id, self.name, "", work.reason, fingerprint=NO_TEXT,
+                summary={**self._summary(None, last), "reason": work.reason,
+                         "base_study_id": (last or {}).get("base_study_id")}))
         held = self.held_back(ctx, [w.ref for w in works],
                               {w.article_id: w.upstream for w in works}, previous)
         learned: List[Tuple[str, str, str]] = []
@@ -206,7 +202,7 @@ class UploadStage:
     def _upload(self, ctx, works, previous, held, learned) -> Iterator[Outcome]:
         from ingestion_workflow.services.neurostore_ingest import StopRun
 
-        for work in works:
+        for index, work in enumerate(works):
             last = _last_upload(previous.get(work.article_id, {}).get(""))
             summary = self._summary(work.upstream, last)
             gate = held.get(work.article_id)
@@ -227,13 +223,11 @@ class UploadStage:
             try:
                 artifact = self.ingester().upload(Path(work.upstream.summary.get("path") or ""))
             except StopRun as exc:
-                # Recorded, then the run stops before the next batch: every later
-                # article would fail the same way.
-                self._stopped = exc
-                logger.error("upload: stopping the run: %s", exc)
-                yield from self._record(work, Outcome.failure(
-                    work.article_id, self.name, "", f"{type(exc).__name__}: {exc}",
-                    fingerprint=work.fingerprint, summary=summary))
+                # Not this article's failure: recording one would spend every remaining
+                # article's retries. This article and the rest stay pending.
+                self._stopped = f"{type(exc).__name__}: {exc}"
+                logger.error("upload stopped: %s; %d article(s) left pending",
+                             self._stopped, len(works) - index)
                 return
             except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
                 logger.warning("upload failed for %s: %s", work.article_id, exc)
@@ -275,6 +269,8 @@ class UploadStage:
                            status=Status.OK, fingerprint=work.fingerprint, summary=summary)
         error = record.get("error") or {}
         detail = error.get("detail") or error.get("title") or "no detail"
+        if error.get("codes"):  # KEY_MISMATCH, DUPLICATE_KEY, NOT_CURRENT, ...
+            detail = f"{', '.join(error['codes'])}: {detail}"
         if status is None:  # a dry run: the outcome goes to the dry run's own record
             return Outcome(article_id=work.article_id, stage=self.name, source="",
                            status=Status.SKIPPED, fingerprint=work.fingerprint,
@@ -329,6 +325,3 @@ class UploadStage:
                 self._dry_path)
             self._dry_counts = {}
             self._dry_path = None
-        if self._stopped is not None:
-            stopped, self._stopped = self._stopped, None
-            raise stopped

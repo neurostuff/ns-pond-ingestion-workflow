@@ -394,7 +394,7 @@ def test_an_article_with_no_analyses_anywhere_is_not_uploaded():
     assert "if not prepared_analyses and not getattr(" in src
 
 
-def test_an_empty_article_is_skipped_rather_than_failed(monkeypatch):
+def test_an_empty_article_is_skipped_rather_than_failed(monkeypatch, tmp_path):
     """The stage did its job. A failure would be retried on every run, and would never
     succeed; an upload would create a study claiming the paper reports no coordinates."""
     from types import SimpleNamespace
@@ -404,9 +404,11 @@ def test_an_empty_article_is_skipped_rather_than_failed(monkeypatch):
     from ingestion_workflow.pipeline.plan import Work
     from ingestion_workflow.pipeline.stages.upload import UploadStage
 
+    # With no token, a parse sent would stop the stage and record nothing.
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NEUROSTORE_TOKEN", raising=False)
     stage = UploadStage(Settings())
     monkeypatch.setattr(stage, "held_back", lambda *a: {})
-    monkeypatch.setattr(stage, "ingester", lambda: pytest.fail("an empty parse was sent"))
     synced = Artifact("a1", "sync", status=Status.OK, fingerprint="sy",
                       summary={"base_study_id": "B1", "path": "/pond/B1", "analyses": 0})
     work = Work(ref=SimpleNamespace(id="a1"), source="", fingerprint="f", upstream=synced)

@@ -1,12 +1,12 @@
 """Upload one paper's coordinate parse through neurostore's study_schema ingester.
 
 The ingester is `POST {api}/api/study-schema-uploads/`, admin only. Its body is
-`{"coordinate_parse": <CoordinateParse>}`, here with the paper's ParsedPaper beside it
-(table captions and the bibliography of a base study it creates) and optionally a
-`run_id`; its 200 is a summary of what the upload changed. The upload is one
-transaction and is keyed by the parse's analysis keys, so sending the same parse
-again changes nothing, and a re-parse that reads an analysis from other cells is
-aliased onto the old one rather than duplicated.
+`{"coordinate_parse": <CoordinateParse>, "parsed_paper": <ParsedPaper>}` and optionally a
+`run_id`; its 200 is a summary of what the upload changed. The ParsedPaper is always
+sent: it gives a base study the ingester creates its bibliography, and its
+`bibliography.corrections` mark the paper retracted or not. The upload is one
+transaction keyed by the parse's analysis content keys, so sending the same parse again
+changes nothing.
 
 Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`: the latest
 upload's outcome at the top, the last successful summary per endpoint under
@@ -19,14 +19,19 @@ the upload artifact.
 How a response is treated:
 
     2xx with this parse's summary   uploaded; the summary is recorded
-    401, 403, a malformed token     NeurostoreAuthError stops the run
-    3xx, 405, 415, a 404 that is    NeurostoreConfigError stops the run: the URL or
-    not about a base study          the request is wrong for every paper alike
-    429, 5xx, timeout, lost         retried with backoff, then recorded as blocked;
-    connection, a 2xx that is not   `max_blocked` papers blocked in a row stop the
-    this parse's summary            run (NeurostoreUnavailable)
-    any other status                refused: recorded at once and never retried,
-                                    since the same body gets the same answer
+    429, 5xx, a lost connection     retried with backoff; then, if the API is down,
+    or timeout, a 2xx that is not   NeurostoreUnavailable, and nothing is written; if
+    this parse's summary            it is up, the paper is recorded as blocked
+    401, 403, a malformed token     NeurostoreAuthError; nothing is written
+    3xx, 405, 415, a 404 that is    NeurostoreConfigError: the URL or the request is
+    not about a base study          wrong for every paper alike; nothing is written
+    any other status                refused: recorded at once and never retried, since
+                                    the same body gets the same answer (422
+                                    KEY_MISMATCH or DUPLICATE_KEY among them)
+
+The three errors are `StopRun`s: every later paper would fail the same way, so the
+upload stage stops and leaves its papers pending. The API is up when the ingester's
+route answers a GET with 405: it is served, and takes only POST.
 
 The admin token is read from the environment variable `neurostore_token_env` names
 and is never logged or written: request headers are never recorded, and the token and
@@ -67,14 +72,18 @@ DRY_RUN_NAME = "neurostore_dry_run.json"
 DRY_RUN_DIR = "neurostore_dry_run"
 PAYLOAD_NAME = "neurostore_payload.json"
 #: Bump when the artifact's fields change meaning.
-ARTIFACT_VERSION = 2
+ARTIFACT_VERSION = 3
 
-#: The API each `neurostore_env` uploads to when `neurostore_api_url` is unset. dev
-#: has no entry because its public URL has not been confirmed; set the URL for it.
-API_URLS = {
-    "staging": "https://staging.neurostore.xyz",
-    "production": "https://neurostore.org",
-}
+#: Retries after a transient failure. With BACKOFF the waits are 2, 4, 8 and 16 s, so a
+#: paper gives a restarting API about half a minute before the health check is asked.
+RETRIES = 4
+#: Seconds before the first retry; each later retry waits twice as long.
+BACKOFF = 2.0
+#: Seconds one upload may take: neurostore's gunicorn kills a worker request at 120 s
+#: (`--timeout 120`), so waiting longer only waits for an answer that never comes.
+TIMEOUT = 120.0
+#: Seconds the health check waits for its answer.
+HEALTH_TIMEOUT = 30.0
 
 #: How much of a refused or failed response body the artifact keeps.
 BODY_EXCERPT = 2000
@@ -110,11 +119,8 @@ class Result(str, Enum):
     #: base study's 404, ...).
     REFUSED = "refused"
     #: 429, 5xx, a timeout, a lost connection or a 2xx that is not this parse's
-    #: summary, on every attempt.
+    #: summary, on every attempt, from an API that is up.
     BLOCKED = "blocked"
-    UNAUTHORIZED = "unauthorized"
-    #: The URL or the request is wrong for every paper (3xx, 405, 415, a route 404).
-    MISCONFIGURED = "misconfigured"
     #: Failed validation here, so never sent.
     INVALID = "invalid"
     #: sync wrote no parse for the paper.
@@ -144,7 +150,7 @@ class NeurostoreConfigError(StopRun):
 
 
 class NeurostoreUnavailable(StopRun):
-    """Too many papers in a row were blocked by transient failures."""
+    """The API did not answer a paper's tries, nor its health check."""
 
 
 class InvalidParse(ValueError):
@@ -154,13 +160,13 @@ class InvalidParse(ValueError):
 
 
 def api_url(settings) -> str:
-    """The API base URL: `neurostore_api_url`, else the one `neurostore_env` names."""
-    if settings.neurostore_api_url:
-        return settings.neurostore_api_url.rstrip("/")
-    env = getattr(settings.neurostore_env, "value", settings.neurostore_env)
-    if env not in API_URLS:
-        raise ValueError(f"no API URL is known for neurostore_env {env!r}; set neurostore_api_url")
-    return API_URLS[env]
+    """The API base URL, `neurostore_api_url`; NeurostoreConfigError when it is unset."""
+    if not settings.neurostore_api_url:
+        raise NeurostoreConfigError(
+            "no neurostore_api_url: set it to the base URL of the neurostore the upload "
+            "posts to (https://staging.neurostore.xyz, say), without /api"
+        )
+    return settings.neurostore_api_url.rstrip("/")
 
 
 def read_token(name: str) -> Optional[str]:
@@ -173,7 +179,7 @@ def read_token(name: str) -> Optional[str]:
 
 
 def build_payload(
-    study_dir: Path, *, parsed_paper: bool = True, run_id: Optional[str] = None
+    study_dir: Path, *, run_id: Optional[str] = None
 ) -> Tuple[Dict[str, Any], List[str]]:
     """The request body for one paper, and the checks it passed.
 
@@ -206,9 +212,7 @@ def build_payload(
     problems += _json_schema_problems(raw_parse, raw_paper, checks)
     if problems:
         raise InvalidParse(problems)
-    payload: Dict[str, Any] = {"coordinate_parse": raw_parse}
-    if parsed_paper:
-        payload["parsed_paper"] = raw_paper
+    payload: Dict[str, Any] = {"coordinate_parse": raw_parse, "parsed_paper": raw_paper}
     if run_id:
         payload["run_id"] = run_id
     return payload, checks
@@ -258,15 +262,16 @@ def redact(value: Any, token: Optional[str]) -> Any:
 
 
 class _Scrub(logging.Filter):
-    """Scrubs every live ingester's token from a log record before any handler sees it.
+    """Scrubs every open ingester's token from a log record before any handler sees it.
 
-    One filter for the module, installed at import, so it keeps working for an
-    ingester that is never closed and for log lines written after it is.
+    One filter for the module, installed at import, so ingesters add nothing to the
+    loggers; each holds its token here only until it is closed.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self.tokens: set = set()
+        #: One entry per open ingester, so closing one keeps another's same token.
+        self.tokens: List[str] = []
 
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
@@ -284,28 +289,24 @@ for _name in (*_HTTP_LOGGERS, logger.name):
 
 
 class NeurostoreIngester:
-    """Posts parses to one neurostore API with one admin token; one per run."""
+    """Posts parses to one neurostore API with one admin token; one per run.
+
+    A context manager: closing it closes its connections and drops its token from the
+    log filter.
+    """
 
     def __init__(
         self,
         base_url: str,
         *,
         token_env: str = "NEUROSTORE_TOKEN",
-        timeout: float = 120.0,
-        retries: int = 4,
-        backoff: float = 2.0,
-        max_blocked: int = 20,
-        send_parsed_paper: bool = True,
         dry_run: bool = False,
         dry_run_root: Optional[Path] = None,
-        sleep: Callable[[float], None] = time.sleep,
+        sleep: Optional[Callable[[float], None]] = None,
     ) -> None:
-        self.url = base_url.rstrip("/") + UPLOAD_PATH
+        self.base_url = base_url.rstrip("/")
+        self.url = self.base_url + UPLOAD_PATH
         self.token_env = token_env
-        self.retries = retries
-        self.backoff = backoff
-        self.max_blocked = max_blocked
-        self.send_parsed_paper = send_parsed_paper
         self.dry_run = dry_run
         if dry_run and dry_run_root is None:
             raise ValueError(
@@ -313,8 +314,8 @@ class NeurostoreIngester:
                 "payloads (from_settings uses <data_root>/neurostore_dry_run)"
             )
         self.dry_run_root = Path(dry_run_root) if dry_run_root is not None else None
-        self._sleep = sleep
-        self._blocked_in_a_row = 0
+        self._sleep = sleep or time.sleep
+        self._down: Optional[str] = None
         self._token = None if dry_run else read_token(token_env)
         if not dry_run and not self._token:
             raise NeurostoreAuthError(
@@ -326,31 +327,30 @@ class NeurostoreIngester:
                 "or a non-ASCII character"
             )
         if self._token:
-            _SCRUB.tokens.add(self._token)
-        self._client = None if dry_run else httpx.Client(timeout=timeout)
+            _SCRUB.tokens.append(self._token)
+        self._client = None if dry_run else httpx.Client(timeout=TIMEOUT)
 
     @classmethod
     def from_settings(cls, settings, **kwargs) -> "NeurostoreIngester":
         kwargs.setdefault("dry_run", settings.dry_run)
         # A run's dry-run output belongs with the run's own data, not in the ns-pond tree.
         kwargs.setdefault("dry_run_root", Path(settings.data_root) / DRY_RUN_DIR)
-        return cls(
-            api_url(settings),
-            token_env=settings.neurostore_token_env,
-            timeout=settings.neurostore_upload_timeout,
-            retries=settings.neurostore_upload_retries,
-            backoff=settings.neurostore_upload_backoff,
-            max_blocked=settings.neurostore_upload_max_blocked,
-            send_parsed_paper=settings.neurostore_upload_parsed_paper,
-            **kwargs,
-        )
+        return cls(api_url(settings), token_env=settings.neurostore_token_env, **kwargs)
 
     def __repr__(self) -> str:
         return f"NeurostoreIngester({self.url!r}, dry_run={self.dry_run})"
 
+    @property
+    def down(self) -> Optional[str]:
+        """Why the API is taken to be down for the rest of this run, or None."""
+        return self._down
+
     def close(self) -> None:
         if self._client is not None:
             self._client.close()
+            self._client = None
+        if self._token in _SCRUB.tokens:
+            _SCRUB.tokens.remove(self._token)
 
     def __enter__(self) -> "NeurostoreIngester":
         return self
@@ -364,8 +364,7 @@ class NeurostoreIngester:
         """Upload one paper, write its artifact, and return it.
 
         `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. Raises a StopRun,
-        after writing the artifact, when the token or the URL is wrong or too many
-        papers in a row were blocked.
+        writing nothing, when the token or the URL is wrong or the API is down.
         """
         study_dir = Path(study_dir)
         if out_dir is not None:
@@ -382,9 +381,7 @@ class NeurostoreIngester:
             "at": utcnow(),
         }
         try:
-            payload, checks = build_payload(
-                study_dir, parsed_paper=self.send_parsed_paper, run_id=run_id
-            )
+            payload, checks = build_payload(study_dir, run_id=run_id)
         except FileNotFoundError as exc:
             return self._finish(out, record, Result.MISSING, error={"detail": str(exc)})
         except (InvalidParse, json.JSONDecodeError) as exc:
@@ -403,18 +400,9 @@ class NeurostoreIngester:
             _write_atomic(out / PAYLOAD_NAME, body)
             record["payload_path"] = str(out / PAYLOAD_NAME)
             return self._finish(out, record, Result.DRY_RUN)
-        artifact = self._send(out, record, body, parse)
-        if artifact["status"] == Result.BLOCKED.value:
-            self._blocked_in_a_row += 1
-            if self.max_blocked and self._blocked_in_a_row >= self.max_blocked:
-                raise NeurostoreUnavailable(
-                    f"{self._blocked_in_a_row} papers in a row were blocked by {self.url} "
-                    f"(last: {artifact['error'].get('detail')}); stopping the run until it "
-                    "answers again."
-                )
-        else:
-            self._blocked_in_a_row = 0
-        return artifact
+        if self._down:
+            raise NeurostoreUnavailable(self._down)
+        return self._send(out, record, body, parse)
 
     def _send(
         self, out: Path, record: Dict[str, Any], body: bytes, parse: Dict[str, Any]
@@ -423,20 +411,16 @@ class NeurostoreIngester:
         attempts: List[Dict[str, Any]] = []
         record["attempts"] = attempts
         error: Dict[str, Any] = {}
-        for attempt in range(1, self.retries + 2):
+        for attempt in range(1, RETRIES + 2):
             retry_after = None
             unsendable = False
             record.pop("http_status", None)
             try:
                 response = self._client.post(self.url, content=body, headers=headers)
-            except httpx.TimeoutException:
-                error = {"detail": "timeout"}
-                attempts.append({"attempt": attempt, "error": "timeout"})
             except (httpx.LocalProtocolError, httpx.UnsupportedProtocol) as exc:
                 error = {"detail": self._describe(exc)}
-                attempts.append({"attempt": attempt, "error": type(exc).__name__})
                 unsendable = True
-            except httpx.TransportError as exc:
+            except httpx.TransportError as exc:  # timeouts, refused and dropped connections
                 error = {"detail": self._describe(exc)}
                 attempts.append({"attempt": attempt, "error": type(exc).__name__})
             else:
@@ -452,44 +436,57 @@ class NeurostoreIngester:
                     error = self._error(response)
                     stop = self._stop(response, status)
                     if stop is not None:
-                        result, exc_class, message = stop
-                        self._finish(out, record, result, error=error)
-                        raise exc_class(f"{message} Stopping the run.")
+                        raise stop
                     if status != 429 and status < 500:
                         return self._finish(out, record, Result.REFUSED, error=error)
                     retry_after = _seconds(response.headers.get("Retry-After"))
             if unsendable:
                 # Raised here, outside the except block, so the httpx error (whose text
                 # can hold the header) is not kept as this exception's __context__.
-                self._finish(out, record, Result.MISCONFIGURED, error=error)
                 raise NeurostoreConfigError(
-                    f"the request to {self.url} cannot be sent: {error['detail']}. "
-                    "Stopping the run."
+                    f"the request to {self.url} cannot be sent: {error['detail']}"
                 )
-            if attempt <= self.retries:
-                delay = min(max(self.backoff * 2 ** (attempt - 1), retry_after or 0), MAX_DELAY)
+            if attempt <= RETRIES:
+                delay = min(max(BACKOFF * 2 ** (attempt - 1), retry_after or 0), MAX_DELAY)
                 self._sleep(delay)
+        if not self._healthy():
+            self._down = (
+                f"{self.base_url} did not answer {RETRIES + 1} tries nor its health check "
+                f"(last: {error.get('detail') or error.get('status')})"
+            )
+            raise NeurostoreUnavailable(self._down)
+        # Up, and failing on this paper every time: its failure, not an outage, so the
+        # papers after it are still sent.
         return self._finish(out, record, Result.BLOCKED, error=error)
 
-    def _stop(self, response: httpx.Response, status: int):
-        """(result, exception, message) when this status means every paper would fail."""
+    def _healthy(self) -> bool:
+        """Whether the ingester's route is served: it answers a GET, which it does not
+        take, with 405. A proxy with nothing behind it answers 502 or 503, and a server
+        without the route 404."""
+        try:
+            return self._client.get(self.url, timeout=HEALTH_TIMEOUT).status_code == 405
+        except Exception:  # noqa: BLE001 - any failure to answer is an outage
+            return False
+
+    def _stop(self, response: httpx.Response, status: int) -> Optional[StopRun]:
+        """The error that stops the upload when this status means every paper would fail."""
         if status in (401, 403):
-            return Result.UNAUTHORIZED, NeurostoreAuthError, (
+            return NeurostoreAuthError(
                 f"neurostore refused the token in {self.token_env} with {status} at "
-                f"{self.url}; it must be an admin token for this deployment."
+                f"{self.url}; it must be an admin token for this deployment"
             )
         if 300 <= status < 400:
             where = scrub(response.headers.get("Location", "?"), self._token)
-            return Result.MISCONFIGURED, NeurostoreConfigError, (
+            return NeurostoreConfigError(
                 f"{self.url} redirects ({status}) to {where}; set neurostore_api_url to the "
-                "base URL it names (https, without /api)."
+                "base URL it names (without /api)"
             )
         # The ingester's own 404 is for an unknown base study ("Record <id> not found
         # in BaseStudy"); any other 404 means the route is not at this URL.
         if (status == 404 and "BaseStudy" not in response.text) or status in (405, 415):
-            return Result.MISCONFIGURED, NeurostoreConfigError, (
+            return NeurostoreConfigError(
                 f"{self.url} answered {status}: the ingester is not at this URL or does not "
-                "take this request; check neurostore_api_url (the base URL, without /api)."
+                "take this request; check neurostore_api_url (the base URL, without /api)"
             )
         return None
 
@@ -526,6 +523,10 @@ class NeurostoreIngester:
             for field in ("title", "detail", "errors"):
                 if field in parsed:
                     error[field] = parsed[field]
+            codes = sorted({e["code"] for e in parsed.get("errors") or []
+                            if isinstance(e, dict) and e.get("code")})
+            if codes:
+                error["codes"] = codes
         # Scrubbed whole, then cut: a cut through the token would leave its head behind.
         error["body_excerpt"] = scrub(response.text, self._token)[:BODY_EXCERPT]
         return redact(error, self._token)
@@ -603,7 +604,6 @@ def _write_atomic(path: Path, data: bytes) -> None:
 
 
 __all__ = [
-    "API_URLS",
     "ARTIFACT_NAME",
     "DRY_RUN_NAME",
     "PAYLOAD_NAME",
