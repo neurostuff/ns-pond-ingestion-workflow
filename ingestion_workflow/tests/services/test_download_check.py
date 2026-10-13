@@ -37,6 +37,8 @@ def real(article_id: str) -> bytes:
         # "You do not currently have access"
         ("llunnvaq5twj", PAYWALL, "do not currently have access"),
         ("a6mheoqpeocv", ERROR_PAGE, "Currently Unavailable"),
+        # Thieme-Connect's bot-protection page, 65 words, stored as a successful download
+        ("11823921", ERROR_PAGE, "malicious requests caused by AI crawlers"),
         ("2hj3g3mppft2", EMPTY_SHELL, "0 characters"),
         # PubMed's record of the article: its abstract, then lists of similar articles
         ("cgubhcqx6dou", CITATION_STUB, "PubMed"),
@@ -75,6 +77,15 @@ def test_a_full_article_passes(article_id):
 def test_an_article_is_not_judged_by_a_notice_beside_it():
     """Publishers print paywall wording around full texts they serve to a subscriber."""
     html = real("ytpicngb4emb").replace(b"</body>", b"<aside>Purchase this article</aside></body>")
+    assert check_page(html) is None
+
+
+def test_an_article_that_mentions_ai_crawlers_in_its_prose_passes():
+    html = real("ytpicngb4emb").replace(
+        b"</body>",
+        b"<p>Sites are protecting their servers from malicious requests caused by AI "
+        b"crawlers, as our discussion of web scraping in research notes.</p></body>",
+    )
     assert check_page(html) is None
 
 
