@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, Iterator, List, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Outcome, Status
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.utils.console import progress_bar
 
 from .plan import StagePlan
@@ -30,6 +31,10 @@ class StageReport:
     failed: int = 0
     #: Of the failed: taken back for one of `stage.TAKE_BACK_REASONS`.
     taken_back: int = 0
+    #: Why the stage stopped for the rest of the run (`ModelUnavailable`), or None.
+    stopped: Optional[str] = None
+    #: Of the selection, the articles a stop left without an outcome, planned or not.
+    left_pending: int = 0
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -49,6 +54,8 @@ class StageReport:
             if self.taken_back:
                 parts.append(f"{self.taken_back:>6,} taken back")
         parts.append(f"{self.fresh:>7,} fresh")
+        if self.stopped:
+            parts.append(f"STOPPED: {self.stopped}; {self.left_pending:,} article(s) left pending")
         for label, value in (
             ("blocked", self.blocked),
             ("skipped", self.skipped),
@@ -103,18 +110,38 @@ def run_stages(
                 )
             if dry_run or not plan.pending:
                 continue
-            outcomes = list(stage.execute(ctx, plan.pending))
-            ctx.catalog.record(outcomes)
-            stage_report.ok += sum(1 for o in outcomes if o.status is Status.OK)
-            stage_report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
-            stage_report.taken_back += sum(1 for o in outcomes if o.error in TAKE_BACK_REASONS
-                                           or (o.status is Status.OK and o.fingerprint == NO_TEXT))
+            try:
+                _execute_batch(ctx, stage, plan, stage_report)
+            except ModelUnavailable as exc:
+                # The model is down or misconfigured: not these articles' failure, so none
+                # is recorded for the articles it did not answer (that would spend each
+                # one's retries), and no later batch of this stage is asked. They stay pending.
+                stage_report.stopped = str(exc)
+                stage_report.left_pending = len(refs) - (
+                    stage_report.ok + stage_report.failed + stage_report.fresh
+                    + stage_report.blocked + stage_report.skipped + stage_report.permanent)
+                logger.error("%s stopped: %s; %d article(s) left pending",
+                             stage.name, exc, stage_report.left_pending)
+                break
         if bar is not None:
             bar.close()
         if not dry_run and hasattr(stage, "finish"):
             stage.finish()
         logger.info("%s", stage_report.line(planned_only=dry_run))
     return report
+
+
+def _execute_batch(ctx: Context, stage: Stage, plan: StagePlan, report: StageReport) -> None:
+    """Run one planned batch and record its outcomes, those made before a stop included."""
+    outcomes: List[Outcome] = []
+    try:
+        outcomes.extend(stage.execute(ctx, plan.pending))
+    finally:
+        ctx.catalog.record(outcomes)
+        report.ok += sum(1 for o in outcomes if o.status is Status.OK)
+        report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
+        report.taken_back += sum(1 for o in outcomes if o.error in TAKE_BACK_REASONS
+                                 or (o.status is Status.OK and o.fingerprint == NO_TEXT))
 
 
 def _plan_batch(ctx: Context, stage: Stage, batch: List[ArticleRef]) -> StagePlan:

@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
@@ -108,8 +109,6 @@ class ProseStage:
         self.settings = settings
         self._client = None
         self._lock = threading.Lock()
-        #: Why the stage stopped for the rest of this run: the prose server is down.
-        self._stopped: Optional[str] = None
 
     def client(self):
         if self._client is None:
@@ -173,17 +172,9 @@ class ProseStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        from ingestion_workflow.clients.prose_coordinates import (
-            ProseModelUnavailable,
-            clean_answer,
-        )
+        from ingestion_workflow.clients.prose_coordinates import clean_answer
         from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
 
-        pending = len(works)
-        if self._stopped:
-            logger.error("prose stopped: %s; %d article(s) left pending",
-                         self._stopped, pending)
-            return
         back, works = taking_back(self.name, works)
 
         found = [ctx.payload(work.upstream) or {} for work in works]
@@ -224,16 +215,11 @@ class ProseStage:
             with ThreadPoolExecutor(max_workers=max(1, self.settings.n_llm_workers)) as pool:
                 futures = [pool.submit(self._read, p, title, abstract)
                            for p, title, abstract in reading]
-                try:
-                    answers = [f.result() for f in futures]
-                except ProseModelUnavailable as exc:
-                    # An outage is not the articles' failure: recording one would replace
-                    # each OK reading, and the answers stored in it, with a failure. This
-                    # batch and the rest stay pending until the server answers again.
-                    self._stopped = str(exc)
-                    logger.error("prose stopped: %s; %d article(s) left pending", exc, pending)
-                    return
-        # After the outage check: a stopped batch writes nothing, take-backs included.
+                # A `ModelUnavailable` from any read leaves here before anything is
+                # yielded: recording one would replace each OK reading, and the answers
+                # stored in it, with a failure.
+                answers = [f.result() for f in futures]
+        # After the reads: a stopped batch writes nothing, take-backs included.
         yield from back
         answered = iter(answers)
         current = producer(self.settings.prose_model, PROSE_PROMPT_VERSION)
@@ -305,11 +291,9 @@ class ProseStage:
 
     def _read(self, passage, title, abstract):
         """The model's answer as it gave it, and the error if the call failed."""
-        from ingestion_workflow.clients.prose_coordinates import ProseModelUnavailable
-
         try:
             return self.client().read(passage, title=title, abstract=abstract), None
-        except ProseModelUnavailable:
+        except ModelUnavailable:
             raise
         except Exception as exc:  # noqa: BLE001 - one failed call fails its article, not the batch
             logger.warning("prose passage failed: %s", exc)

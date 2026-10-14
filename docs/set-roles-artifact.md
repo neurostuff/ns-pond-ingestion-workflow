@@ -73,7 +73,7 @@ origin's model, `role_values` is a digest of every set's decided `role`, `anchor
 stage read.
 
 **Blocked, not failed.** When a set's origin has no usable model (not configured, its server
-not listing it, or its prompt built on another context version), the articles with sets of that
+not listing it or not reachable when the stage is planned, or its prompt built on another context version), the articles with sets of that
 origin are not attempted: the plan counts them as blocked, with the reason (for example
 `no prose role model is configured (role_model_prose)`), and logs the reason once. Nothing is
 recorded for them, so no retry is used up, and they are planned on the first run with the model
@@ -91,9 +91,12 @@ is configured so it cannot answer the stage's requests:
   or cut the answer short (`configuration error: the answer ... is not the role schema's ...`);
 - an answer has no role-token logprobs.
 
-Nothing is recorded for the article it was reading or for the rest of the batch, and the plan
-blocks the run's remaining articles of that origin with the reason (`the table role model
-stopped this run: ...`). No retry is used up; the next run plans them again. A set's context is
+Nothing is recorded for the article it was reading or for the rest of its batch, no later batch
+of the stage is asked, and the report line reads `STOPPED: <reason>; N article(s) left
+pending`. The articles it answered before the stop keep their roles. No retry is used up; the
+next run plans the rest again. Prose stops the same way, under the same rule (one
+`ModelUnavailable`, handled by the scheduler). A model that is missing or unreachable when the
+stage is planned is not a stop: the articles are blocked with the reason, as above. A set's context is
 at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,007 tokens
 (9,943 for the prompt, measured with the NuExtract3 tokenizer on 2,400 four-byte characters,
 and the 64-token answer): serve the models with a `max_model_len` of at least 10,240.

@@ -6,7 +6,7 @@ JSON schema. The probability of each role is read from the first token of the
 role value: the top 20 alternatives at that position, each counted for the one
 role its text can begin, renormalised over the tokens that begin exactly one role.
 
-`RoleModelUnavailable` stops the stage, and the classifier stays `stopped`
+`ModelUnavailable` stops the stage, and the classifier stays stopped
 without asking again: the server is down, or it answers in a way only its
 configuration explains (it refuses a request, or an answer is not the
 schema's). A server that times out or answers 5xx is asked again; when it
@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
 import httpx
 
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from .classifier import Prediction, Unanswered
 from .served_prompt import PROMPT
 
@@ -39,10 +40,6 @@ MAX_COMPLETION_TOKENS = 64
 #: Seconds to wait for one answer, tries per set, and sets asked at once.
 TIMEOUT, ATTEMPTS, WORKERS = 120.0, 3, 16
 CONFIGURATION = "configuration error:"
-
-
-class RoleModelUnavailable(RuntimeError):
-    """The served model cannot be used in this run: no set of the article gets a role."""
 
 
 def _squeeze(text: str) -> str:
@@ -92,7 +89,7 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
     The answer is decoded under `PROMPT`'s JSON schema, so its role is always
     one of the vocabulary's, and its kind (an anchor's only) one of the schema's or
     null. An answer that is not -- cut short, not JSON, or a kind off the list -- means
-    the server did not decode it as the stage asks: `RoleModelUnavailable`. The
+    the server did not decode it as the stage asks: `ModelUnavailable`. The
     schema lets an anchor's kind be null, and such an anchor is recorded as it is.
     """
     raw = (choice.get("message") or {}).get("content") or ""
@@ -103,7 +100,7 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
     role = answer.get("role") if isinstance(answer, dict) else None
     kind = answer.get("anchor_kind") if role == "anchor" else None
     if role not in PROMPT.roles or kind not in (None, *PROMPT.anchor_kinds):
-        raise RoleModelUnavailable(
+        raise ModelUnavailable(
             f"{CONFIGURATION} the answer {raw[:200]!r} (finish_reason "
             f"{choice.get('finish_reason')!r}) is not the role schema's: the server must "
             "apply structured_outputs and leave max_completion_tokens for the answer"
@@ -112,7 +109,7 @@ def read_answer(choice: Mapping[str, Any]) -> Union[Prediction, Unanswered]:
         (choice.get("logprobs") or {}).get("content"), PROMPT.roles
     )
     if probabilities is None:
-        raise RoleModelUnavailable(
+        raise ModelUnavailable(
             f"{CONFIGURATION} no role-token logprobs to read the role's probability from: "
             "the served model does not write its roles as the role models do"
         )
@@ -193,16 +190,11 @@ class ServedClassifier:
         except Exception:  # noqa: BLE001 - any failure to answer is an outage
             return False
 
-    @property
-    def stopped(self) -> Optional[str]:
-        """Why the model cannot be used for the rest of this run, or None."""
-        return self._stopped
-
-    def _stop(self, reason: str) -> RoleModelUnavailable:
+    def _stop(self, reason: str) -> ModelUnavailable:
         """The error that stops the stage, kept so no set is asked again in this run."""
         with self._lock:
             self._stopped = self._stopped or reason
-        return RoleModelUnavailable(self._stopped)
+        return ModelUnavailable(self._stopped)
 
     def predict(self, texts: Sequence[str]) -> List[Union[Prediction, Unanswered]]:
         with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(texts)))) as pool:
@@ -212,7 +204,7 @@ class ServedClassifier:
         last = ""
         for attempt in range(ATTEMPTS):
             if self._stopped:
-                raise RoleModelUnavailable(self._stopped)
+                raise ModelUnavailable(self._stopped)
             if attempt:
                 self._sleep(2 ** (attempt - 1))
             try:
@@ -232,7 +224,7 @@ class ServedClassifier:
                 )
             try:
                 return read_answer(response.json()["choices"][0])
-            except RoleModelUnavailable as exc:
+            except ModelUnavailable as exc:
                 raise self._stop(str(exc)) from None
         if self._healthy():
             # Up, and failing on this input every time: this set's failure, not an outage,
