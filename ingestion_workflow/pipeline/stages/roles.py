@@ -23,10 +23,10 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
 from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.served import (
-    RoleModelUnavailable,
     ServedClassifier,
     model_identity,
     served_models,
@@ -52,10 +52,6 @@ PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for pros
 #: The setting naming each origin's model, and the origin's name in a reason.
 MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
 _ORIGIN_NAMES = {"table": "table", "text": "prose"}
-
-
-class MissingRoleModel(RuntimeError):
-    """A set's origin has no usable classifier: the article gets no roles at all."""
 
 
 class UnansweredSets(RuntimeError):
@@ -161,7 +157,7 @@ def assign_roles(
     """The payload with every analysis's role decided by its origin's classifier, and a summary.
 
     `classifiers` maps an origin (`table`, `text`) to its classifier (a
-    `ServedClassifier`). A set whose origin has none raises `MissingRoleModel`,
+    `ServedClassifier`). A set whose origin has none raises `ModelUnavailable`,
     and sets the classifier could not answer raise `UnansweredSets` with each
     one's reason: no set is given a role any other way. Each analysis gains
     `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
@@ -180,7 +176,7 @@ def assign_roles(
         # The stage's mapping raises with the reason its model cannot be used.
         chosen[origin] = classifiers.get(origin)
         if chosen[origin] is None:
-            raise MissingRoleModel(f"no {_ORIGIN_NAMES[origin]} role model")
+            raise ModelUnavailable(f"no {_ORIGIN_NAMES[origin]} role model")
     decisions, unanswered = {}, {}
     for origin, items in by_origin.items():
         classifier = chosen[origin]
@@ -373,9 +369,6 @@ class RolesStage:
         name = _ORIGIN_NAMES[origin]
         if served is None:
             return None, f"no {name} role model is configured ({setting})"
-        loaded = self._classifiers.get(origin)
-        if loaded is not None and loaded.stopped:
-            return None, f"the {name} role model stopped this run: {loaded.stopped}"
         where = f"the {name} role model {served.model} at {served.endpoint}"
         try:
             PROMPT.check(origin)
@@ -398,13 +391,13 @@ class RolesStage:
         return fingerprint("roles-model", origin, CONTEXT_VERSIONS[origin], source or reason)
 
     def classifier(self, origin: str) -> ServedClassifier:
-        """The origin's classifier; `MissingRoleModel` with the reason when it has none."""
+        """The origin's classifier; `ModelUnavailable` with the reason when it has none."""
         if origin not in self._classifiers:
             with self._lock:
                 if origin not in self._classifiers:
                     source, reason = self.model_state(origin)
                     if source is None:
-                        raise MissingRoleModel(reason)
+                        raise ModelUnavailable(reason)
                     served = getattr(self.settings, MODEL_SETTINGS[origin])
                     self._classifiers[origin] = ServedClassifier(
                         served.endpoint, served.model, source=source
@@ -551,22 +544,10 @@ class RolesStage:
                 if unread:
                     # Its sets were read without the table's header and rows: say which, and why.
                     summary["tables_without_text"] = unread
-            except RoleModelUnavailable as exc:
-                # An outage or a misconfigured server is not the article's failure:
-                # recording one would spend every remaining article's retries. This
-                # article and the rest stay pending, and the plan blocks them this run.
-                logger.error("roles stopped: %s; %d article(s) left pending", exc,
-                             len(works) - works.index(work))
-                return
-            except MissingRoleModel as exc:
-                yield Outcome.failure(
-                    work.article_id,
-                    self.name,
-                    "",
-                    f"no role for its sets: {exc}",
-                    fingerprint=work.fingerprint,
-                )
-                continue
+            except ModelUnavailable:
+                # Not the article's failure: the scheduler stops the stage and this
+                # article and the rest stay pending.
+                raise
             except UnansweredSets as exc:
                 yield Outcome.failure(
                     work.article_id,

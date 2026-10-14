@@ -7,9 +7,11 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.scheduler import run_stages
 from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
@@ -2001,22 +2003,16 @@ def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(en
     server = _server(up=False)
     stage = _prose(settings, _served(settings, server))
     with caplog.at_level("ERROR"):
-        assert _execute(stage, ctx, catalog, [read, unread]) == []
-        asked = len(server.calls)
-        # a batch after it, one that needs no call: nothing written
-        assert _execute(stage, ctx, catalog, [same]) == []
-    assert asked and len(server.calls) == asked
+        report = run_stages(ctx, [stage], [read, unread, same])
+    assert "did not answer" in report.stages["prose"].stopped
     after = catalog.artifacts([read.id, unread.id, same.id], "prose")
     assert unread.id not in after
     for i in (read.id, same.id):
         assert after[i][""].ok and after[i][""].fingerprint == before[i][""].fingerprint
         assert catalog.payload(after[i][""]) == stored[i]
         assert all(p["answer"] is not None for p in stored[i]["passages"])
-    stops = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
-    assert len(stops) == 2 and all("prose stopped: nu-prose-v2 at" in m and "did not answer" in m
-                                   for m in stops)
-    assert [m.rsplit("; ", 1)[1] for m in stops] == [
-        "2 article(s) left pending", "1 article(s) left pending"]
+    (stop,) = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
+    assert stop.startswith("prose stopped: nu-prose-v2 at") and "did not answer" in stop
 
 
 def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(env):
@@ -2049,9 +2045,11 @@ def test_a_stopped_prose_stage_writes_no_take_back_either(env):
     plan = ProseStage(settings).plan(ctx, [read, unread], catalog.artifacts(ids, "prose"),
                                      catalog.artifacts(ids, "passages"))
     stage = _prose(settings, _served(settings, _server(up=False)))
-    # the stopping batch, then a later one that holds only the take-back
-    assert list(stage.execute(ctx, [take_back, *plan.pending])) == []
-    assert list(stage.execute(ctx, [take_back])) == []
+    written = []
+    with pytest.raises(ModelUnavailable):
+        for outcome in stage.execute(ctx, [take_back, *plan.pending]):
+            written.append(outcome)
+    assert written == []
 
 
 def _empty_re_read(catalog, ref, *, analyses="no coordinate tables", prose_analyses=1, without=()):
@@ -2220,8 +2218,6 @@ def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(
 
 
 def test_the_run_report_counts_an_empty_re_read_as_taken_back(env, monkeypatch):
-    from ingestion_workflow.pipeline.scheduler import run_stages
-
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="98"))
     _empty_re_read(catalog, ref)

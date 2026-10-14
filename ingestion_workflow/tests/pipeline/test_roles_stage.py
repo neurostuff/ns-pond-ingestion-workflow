@@ -8,13 +8,13 @@ from types import SimpleNamespace
 
 import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import RoleModel, Settings
 from ingestion_workflow.models import AnalysisCollection
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.roles import (
-    MissingRoleModel,
     RolesStage,
     assign_roles,
     unassigned,
@@ -194,10 +194,10 @@ def test_an_unsure_answer_is_still_the_model_s_and_says_how_unsure():
 def test_a_set_whose_origin_has_no_model_gets_no_role_at_all():
     table = FakeClassifier(TABLE_ANSWERS)
     payload = {**_tables(), "prose": _prose()}
-    with pytest.raises(MissingRoleModel, match="prose"):
+    with pytest.raises(ModelUnavailable, match="prose"):
         assign_roles(payload, PASSAGES, TEXT, {"table": table})
     assert table.seen == []  # nothing is decided for an article it cannot finish
-    with pytest.raises(MissingRoleModel, match="table"):
+    with pytest.raises(ModelUnavailable, match="table"):
         assign_roles(_tables(), [], TEXT, {"text": FakeClassifier({})})
 
 

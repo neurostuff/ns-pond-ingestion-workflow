@@ -13,9 +13,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import RoleModel, Settings
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.pipeline.scheduler import run_stages
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.roles import (
     RolesStage,
@@ -34,7 +36,6 @@ from ingestion_workflow.services.set_roles import (
 )
 from ingestion_workflow.services.set_roles import served as served_module
 from ingestion_workflow.services.set_roles.served import (
-    RoleModelUnavailable,
     ServedClassifier,
     role_distribution,
 )
@@ -309,10 +310,10 @@ def test_an_answer_outside_the_schema_is_a_configuration_error_that_stops_the_ru
 ):
     stub.reply = lambda body: (200, _choice(content, alternatives, finish_reason))
     classifier = _served(stub)
-    with pytest.raises(RoleModelUnavailable, match="configuration error") as raised:
+    with pytest.raises(ModelUnavailable, match="configuration error") as raised:
         classifier.predict(["x"])
     assert why in str(raised.value) and classifier.stopped == str(raised.value)
-    with pytest.raises(RoleModelUnavailable):
+    with pytest.raises(ModelUnavailable):
         classifier.predict(["y"])
     assert len(stub.requests) == 1
 
@@ -336,13 +337,13 @@ def test_a_context_longer_than_the_server_s_max_model_len_stops_the_run(stub):
     stub.reply = lambda body: (TOO_LONG if "LONGSET" in str(body["messages"])
                                else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
     classifier = _served(stub)
-    with pytest.raises(RoleModelUnavailable) as raised:
+    with pytest.raises(ModelUnavailable) as raised:
         classifier.predict(["LONGSET"])
     said = str(raised.value)
     assert said.startswith(f"configuration error: {stub.url}/chat/completions answered HTTP 400")
     assert "maximum context length is 4096 tokens" in said
     # Not asked again, and no other set is asked in this run either.
-    with pytest.raises(RoleModelUnavailable, match="maximum context length"):
+    with pytest.raises(ModelUnavailable, match="maximum context length"):
         classifier.predict(["SHORTSET"])
     assert len(stub.requests) == 1
 
@@ -386,7 +387,7 @@ def test_a_server_that_lists_only_other_models_is_not_up_for_this_one(stub):
     stub.models = ["some-other-model"]
     stub.reply = lambda body: (503, "busy")
     classifier = _served(stub)
-    with pytest.raises(RoleModelUnavailable, match="did not answer in 3 tries"):
+    with pytest.raises(ModelUnavailable, match="did not answer in 3 tries"):
         classifier.predict(["x"])
     assert classifier.stopped
 
@@ -395,11 +396,11 @@ def test_a_server_that_never_answers_stops_the_run_and_is_not_asked_again(stub):
     stub.reply = lambda body: (503, "down")
     stub.healthy = False
     classifier = _served(stub)
-    with pytest.raises(RoleModelUnavailable, match="did not answer in 3 tries: HTTP 503"):
+    with pytest.raises(ModelUnavailable, match="did not answer in 3 tries: HTTP 503"):
         classifier.predict(["x"])
     asked = len(stub.requests)
     assert asked == 3
-    with pytest.raises(RoleModelUnavailable):
+    with pytest.raises(ModelUnavailable):
         classifier.predict(["y"])
     assert len(stub.requests) == asked
 
@@ -496,19 +497,14 @@ def test_an_over_long_context_stops_the_stage_and_spends_no_retry(env, stub):
                             payload=_tables("patients"), summary={"tables": 1})])
     stub.reply = lambda body: (TOO_LONG if "[NAME] Lee" in str(body["messages"])
                                else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
-    ctx = Context(settings, catalog)
     ids = [ref.id, other.id]
-    stage = RolesStage(settings)
-    planned = stage.plan(ctx, [ref, other], catalog.artifacts(ids, "roles"),
-                         catalog.artifacts(ids, "analyses"))
-    assert len(planned.pending) == 2
-    assert list(stage.execute(ctx, planned.pending)) == []
-    again = stage.plan(ctx, [ref, other], catalog.artifacts(ids, "roles"),
-                       catalog.artifacts(ids, "analyses"))
-    assert (again.blocked, again.pending) == (2, [])
-    (said,) = again.reasons
-    assert said.startswith("the table role model stopped this run: configuration error: ")
-    assert "maximum context length is 4096 tokens" in said
+    # `other` is answered first and kept; `ref` is the one the server refuses.
+    report = run_stages(Context(settings, catalog), [RolesStage(settings)], [other, ref])
+    roles = report.stages["roles"]
+    assert "configuration error: " in roles.stopped
+    assert "maximum context length is 4096 tokens" in roles.stopped
+    assert (roles.ok, roles.failed) == (1, 0)
+    assert catalog.artifacts(ids, "roles").keys() == {other.id}
     assert catalog.attempt_counts(ids, "roles", "") in ({}, {i: (0, None) for i in ids})
 
 
@@ -525,33 +521,18 @@ def test_a_server_down_mid_run_leaves_every_article_pending_and_spends_no_retry(
         stub.healthy = False
         return 503, "down"
 
-    stub.reply = crashed
     ctx = Context(settings, catalog)
-    refs, ids = [ref, other], [ref.id, other.id]
-
-    def plan(stage):
-        stub.healthy = True
-        return stage.plan(ctx, refs, catalog.artifacts(ids, "roles"),
-                          catalog.artifacts(ids, "analyses"))
-
+    ids = [ref.id, other.id]
     for _ in range(ctx.max_attempts + 1):
-        stage = RolesStage(settings)
-        planned = plan(stage)
-        assert len(planned.pending) == 2
-        outcomes = list(stage.execute(ctx, planned.pending))
-        assert outcomes == []
-        catalog.record(outcomes)
-        # The rest of the run is blocked with the reason, not attempted.
-        again = plan(stage)
-        assert (again.blocked, again.pending) == (2, [])
-        (said,) = again.reasons
-        assert "stopped this run" in said and "HTTP 503" in said
+        stub.healthy, stub.reply = True, crashed
+        report = run_stages(ctx, [RolesStage(settings)], [ref, other])
+        assert "did not answer in 3 tries: HTTP 503" in report.stages["roles"].stopped
+        assert catalog.artifacts(ids, "roles") == {}
     assert catalog.attempt_counts(ids, "roles", "") in ({}, {i: (0, None) for i in ids})
+    stub.healthy = True
     stub.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
-    stage = RolesStage(settings)
-    planned = plan(stage)
-    assert (len(planned.pending), planned.permanent) == (2, 0)
-    assert {o.status for o in stage.execute(ctx, planned.pending)} == {Status.OK}
+    report = run_stages(ctx, [RolesStage(settings)], [ref, other])
+    assert (report.stages["roles"].ok, report.stages["roles"].stopped) == (2, None)
 
 
 def _card(root):
