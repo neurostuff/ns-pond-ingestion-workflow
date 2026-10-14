@@ -33,6 +33,8 @@ class StageReport:
     taken_back: int = 0
     #: Why the stage stopped for the rest of the run (`ModelUnavailable`), or None.
     stopped: Optional[str] = None
+    #: Of the selection, the articles a stop left without an outcome, planned or not.
+    left_pending: int = 0
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -53,7 +55,7 @@ class StageReport:
                 parts.append(f"{self.taken_back:>6,} taken back")
         parts.append(f"{self.fresh:>7,} fresh")
         if self.stopped:
-            parts.append(f"STOPPED: {self.stopped}")
+            parts.append(f"STOPPED: {self.stopped}; {self.left_pending:,} article(s) left pending")
         for label, value in (
             ("blocked", self.blocked),
             ("skipped", self.skipped),
@@ -98,25 +100,29 @@ def run_stages(
         bar = None if dry_run else progress_bar(
             ctx.settings, len(refs), stage.name, unit="article"
         )
-        try:
-            for batch in batched(refs):
-                plan = _plan_batch(ctx, stage, batch)
-                stage_report.absorb(plan)
-                if bar is not None:
-                    bar.update(len(batch))
-                    bar.set_postfix_str(
-                        f"{stage_report.ok:,} done, {stage_report.fresh:,} fresh", refresh=False
-                    )
-                if dry_run or not plan.pending:
-                    continue
+        for batch in batched(refs):
+            plan = _plan_batch(ctx, stage, batch)
+            stage_report.absorb(plan)
+            if bar is not None:
+                bar.update(len(batch))
+                bar.set_postfix_str(
+                    f"{stage_report.ok:,} done, {stage_report.fresh:,} fresh", refresh=False
+                )
+            if dry_run or not plan.pending:
+                continue
+            try:
                 _execute_batch(ctx, stage, plan, stage_report)
-        except ModelUnavailable as exc:
-            # The model is down or misconfigured: not these articles' failure, so none is
-            # recorded for the articles it did not answer (that would spend each one's
-            # retries), and no later batch of this stage is asked. They stay pending.
-            stage_report.stopped = str(exc)
-            logger.error("%s stopped: %s; the articles not recorded stay pending",
-                         stage.name, exc)
+            except ModelUnavailable as exc:
+                # The model is down or misconfigured: not these articles' failure, so none
+                # is recorded for the articles it did not answer (that would spend each
+                # one's retries), and no later batch of this stage is asked. They stay pending.
+                stage_report.stopped = str(exc)
+                stage_report.left_pending = len(refs) - (
+                    stage_report.ok + stage_report.failed + stage_report.fresh
+                    + stage_report.blocked + stage_report.skipped + stage_report.permanent)
+                logger.error("%s stopped: %s; %d article(s) left pending",
+                             stage.name, exc, stage_report.left_pending)
+                break
         if bar is not None:
             bar.close()
         if not dry_run and hasattr(stage, "finish"):

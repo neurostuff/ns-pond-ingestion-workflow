@@ -191,14 +191,18 @@ def test_an_unsure_answer_is_still_the_model_s_and_says_how_unsure():
     )
 
 
-def test_a_set_whose_origin_has_no_model_gets_no_role_at_all():
+def test_a_set_whose_origin_has_no_model_gets_no_role_at_all(tmp_path):
+    from ingestion_workflow.pipeline.stages.roles import _Classifiers
+
     table = FakeClassifier(TABLE_ANSWERS)
+    stage = RolesStage(Settings(data_root=tmp_path, prose_model="nu-prose"))
+    stage._classifiers["table"] = table  # the one origin with a model
     payload = {**_tables(), "prose": _prose()}
-    with pytest.raises(ModelUnavailable, match="prose"):
-        assign_roles(payload, PASSAGES, TEXT, {"table": table})
+    with pytest.raises(ModelUnavailable, match="no prose role model is configured"):
+        assign_roles(payload, PASSAGES, TEXT, _Classifiers(stage))
     assert table.seen == []  # nothing is decided for an article it cannot finish
-    with pytest.raises(ModelUnavailable, match="table"):
-        assign_roles(_tables(), [], TEXT, {"text": FakeClassifier({})})
+    with pytest.raises(ModelUnavailable, match="no table role model is configured"):
+        assign_roles(_tables(), [], TEXT, _Classifiers(RolesStage(Settings(data_root=tmp_path))))
 
 
 def test_unassigned_names_every_set_without_a_decided_role():

@@ -164,7 +164,7 @@ def test_an_unreachable_server_is_down_and_not_asked_again(tmp_path):
     client = _served(_settings(tmp_path), server)
     with pytest.raises(ModelUnavailable, match="did not answer in 1 tries: APIConnection"):
         client.read(PASSAGE)
-    assert client.down and server.calls == ["/v1/chat/completions", "/v1/models"]
+    assert server.calls == ["/v1/chat/completions", "/v1/models"]
     with pytest.raises(ModelUnavailable):
         client.read(PASSAGE)
     assert len(server.calls) == 2
@@ -174,23 +174,31 @@ def test_a_server_up_that_fails_on_one_input_fails_that_passage_only(tmp_path):
     client = _served(_settings(tmp_path), _server(fails=lambda content: "FFA" in content))
     with pytest.raises(RuntimeError, match="server error on this input after 1 tries") as failed:
         client.read(PASSAGE)
-    assert not isinstance(failed.value, ModelUnavailable) and client.down is None
+    assert not isinstance(failed.value, ModelUnavailable)
     assert client.read(Passage(text="Nothing at (1, 2, 3).")) == {"space": "MNI", "analyses": []}
 
 
 def test_a_server_that_fails_and_does_not_list_the_model_is_down(tmp_path):
-    client = _served(_settings(tmp_path), _server(listed=("nu-v21",), fails=lambda content: True))
+    server = _server(listed=("nu-v21",), fails=lambda content: True)
+    client = _served(_settings(tmp_path), server)
     with pytest.raises(ModelUnavailable, match="InternalServerError"):
         client.read(PASSAGE)
-    assert client.down
+    calls = len(server.calls)
+    with pytest.raises(ModelUnavailable):
+        client.read(PASSAGE)
+    assert len(server.calls) == calls
 
 
 def test_a_refused_input_fails_its_passage_and_a_refused_model_is_down(tmp_path):
     refused = _served(_settings(tmp_path), _server(fails=lambda content: True, status=400))
     with pytest.raises(openai.BadRequestError):
         refused.read(PASSAGE)
-    assert refused.down is None
-    unknown = _served(_settings(tmp_path), _server(fails=lambda content: True, status=404))
+    with pytest.raises(openai.BadRequestError):  # no outage to remember: asked again
+        refused.read(PASSAGE)
+    server = _server(fails=lambda content: True, status=404)
+    unknown = _served(_settings(tmp_path), server)
     with pytest.raises(ModelUnavailable, match="HTTP 404"):
         unknown.read(PASSAGE)
-    assert unknown.down is None   # no outage to remember: the next call is told the same
+    with pytest.raises(ModelUnavailable, match="HTTP 404"):  # told the same, by the server
+        unknown.read(PASSAGE)
+    assert server.calls == ["/v1/chat/completions"] * 2

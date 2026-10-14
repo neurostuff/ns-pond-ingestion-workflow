@@ -312,9 +312,10 @@ def test_an_answer_outside_the_schema_is_a_configuration_error_that_stops_the_ru
     classifier = _served(stub)
     with pytest.raises(ModelUnavailable, match="configuration error") as raised:
         classifier.predict(["x"])
-    assert why in str(raised.value) and classifier.stopped == str(raised.value)
-    with pytest.raises(ModelUnavailable):
+    assert why in str(raised.value)
+    with pytest.raises(ModelUnavailable) as again:
         classifier.predict(["y"])
+    assert str(again.value) == str(raised.value)
     assert len(stub.requests) == 1
 
 
@@ -380,7 +381,8 @@ def test_a_429_that_does_not_clear_fails_that_set_only_while_the_server_lists_th
     classifier = _served(stub)
     busy, fine = classifier.predict(["BUSY", "FINE"])
     assert isinstance(busy, Unanswered) and "HTTP 429" in busy.reason
-    assert isinstance(fine, Prediction) and classifier.stopped is None
+    assert isinstance(fine, Prediction)
+    assert isinstance(classifier.predict(["FINE AGAIN"])[0], Prediction)  # not stopped
 
 
 def test_a_server_that_lists_only_other_models_is_not_up_for_this_one(stub):
@@ -389,7 +391,10 @@ def test_a_server_that_lists_only_other_models_is_not_up_for_this_one(stub):
     classifier = _served(stub)
     with pytest.raises(ModelUnavailable, match="did not answer in 3 tries"):
         classifier.predict(["x"])
-    assert classifier.stopped
+    asked = len(stub.requests)
+    with pytest.raises(ModelUnavailable, match="did not answer in 3 tries"):
+        classifier.predict(["y"])
+    assert len(stub.requests) == asked
 
 
 def test_a_server_that_never_answers_stops_the_run_and_is_not_asked_again(stub):
@@ -722,7 +727,8 @@ def test_a_server_up_but_failing_on_one_input_fails_that_set_only(stub):
     poisoned, fine = classifier.predict(["POISON", "FINE"])
     assert isinstance(poisoned, Unanswered)
     assert poisoned.reason.startswith("server error on this input after 3 tries: HTTP 500")
-    assert isinstance(fine, Prediction) and classifier.stopped is None
+    assert isinstance(fine, Prediction)
+    assert isinstance(classifier.predict(["FINE AGAIN"])[0], Prediction)  # not stopped
     (after,) = classifier.predict(["FINE"])
     assert isinstance(after, Prediction)
 

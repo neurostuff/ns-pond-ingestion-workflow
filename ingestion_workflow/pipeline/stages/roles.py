@@ -157,7 +157,7 @@ def assign_roles(
     """The payload with every analysis's role decided by its origin's classifier, and a summary.
 
     `classifiers` maps an origin (`table`, `text`) to its classifier (a
-    `ServedClassifier`). A set whose origin has none raises `ModelUnavailable`,
+    `ServedClassifier`), which raises `ModelUnavailable` for an origin it has none for,
     and sets the classifier could not answer raise `UnansweredSets` with each
     one's reason: no set is given a role any other way. Each analysis gains
     `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
@@ -173,10 +173,8 @@ def assign_roles(
         by_origin[item[2]].append(item)
     chosen = {}
     for origin in sorted(by_origin):
-        # The stage's mapping raises with the reason its model cannot be used.
-        chosen[origin] = classifiers.get(origin)
-        if chosen[origin] is None:
-            raise ModelUnavailable(f"no {_ORIGIN_NAMES[origin]} role model")
+        # The stage's mapping raises `ModelUnavailable` with the reason its model cannot be used.
+        chosen[origin] = classifiers[origin]
     decisions, unanswered = {}, {}
     for origin, items in by_origin.items():
         classifier = chosen[origin]

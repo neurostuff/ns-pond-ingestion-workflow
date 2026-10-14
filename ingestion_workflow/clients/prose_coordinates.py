@@ -3,7 +3,7 @@
 A server that does not answer is asked again by the SDK. When it still does
 not answer, the server's model listing is asked: if it lists the model, the
 server is up and fails on this input alone, which is that passage's failure;
-otherwise `ModelUnavailable` is raised, and the client stays `down`
+otherwise `ModelUnavailable` is raised, and the client stays down
 without asking again.
 """
 
@@ -154,11 +154,6 @@ class ProseCoordinateClient(GenericLLMClient):
         if not isinstance(answer, dict) or not isinstance(answer.get("analyses"), list):
             raise UnreadableAnswer("the prose answer is not an object with its analyses")
         return answer
-
-    @property
-    def down(self) -> Optional[str]:
-        """Why the server is taken to be down for the rest of this run, or None."""
-        return self._down
 
     def _healthy(self) -> bool:
         """Whether the server answers its model listing and lists this model."""

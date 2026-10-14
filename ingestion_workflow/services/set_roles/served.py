@@ -6,7 +6,7 @@ JSON schema. The probability of each role is read from the first token of the
 role value: the top 20 alternatives at that position, each counted for the one
 role its text can begin, renormalised over the tokens that begin exactly one role.
 
-`ModelUnavailable` stops the stage, and the classifier stays `stopped`
+`ModelUnavailable` stops the stage, and the classifier stays stopped
 without asking again: the server is down, or it answers in a way only its
 configuration explains (it refuses a request, or an answer is not the
 schema's). A server that times out or answers 5xx is asked again; when it
@@ -189,11 +189,6 @@ class ServedClassifier:
             return any(c.get("id") == self.model for c in served_models(self.endpoint))
         except Exception:  # noqa: BLE001 - any failure to answer is an outage
             return False
-
-    @property
-    def stopped(self) -> Optional[str]:
-        """Why the model cannot be used for the rest of this run, or None."""
-        return self._stopped
 
     def _stop(self, reason: str) -> ModelUnavailable:
         """The error that stops the stage, kept so no set is asked again in this run."""

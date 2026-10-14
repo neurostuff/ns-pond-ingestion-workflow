@@ -14,9 +14,11 @@ from ingestion_workflow.pipeline import scheduler
 from ingestion_workflow.pipeline.scheduler import batched, run_stages
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
+from ingestion_workflow.pipeline.stages.resolve import ResolveStage
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.catalog import Outcome, Status
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.tests.clients.test_prose_client import _served, _server
 from ingestion_workflow.tests.pipeline import test_prose_stages as prose
 from ingestion_workflow.tests.pipeline import test_roles_served as roles
 from ingestion_workflow.tests.pipeline.test_prose_stages import env as prose_env  # noqa: F401
@@ -59,7 +61,7 @@ def test_an_unreachable_prose_server_stops_the_stage_for_the_run(prose_env, monk
     settings.prose_api_base = f"http://127.0.0.1:{_closed_port()}/v1"
     settings.llm_max_retries = 1
     ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"))
-    monkeypatch.setattr(scheduler, "batched", lambda refs: batched(refs, 1))
+    _one_at_a_time(monkeypatch)
     report = run_stages(ctx, [ProseStage(settings)], refs)
     stage = report.stages["prose"]
     assert "did not answer in 2 tries" in stage.stopped
@@ -68,28 +70,65 @@ def test_an_unreachable_prose_server_stops_the_stage_for_the_run(prose_env, monk
     assert f"STOPPED: {stage.stopped}" in stage.line()
 
 
-@pytest.mark.vcr
+def _one_at_a_time(monkeypatch):
+    monkeypatch.setattr(scheduler, "batched", lambda refs: batched(refs, 1))
+
+
+def test_a_prose_stop_leaves_the_articles_pending_for_the_next_run(prose_env, monkeypatch):
+    settings, catalog, path = prose_env
+    settings.n_llm_workers = 1  # so the calls after the first failure are countable
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"))
+    _one_at_a_time(monkeypatch)
+    ids = [r.id for r in refs]
+    down = _server(up=False)
+    report = run_stages(ctx, [prose._prose(settings, _served(settings, down))], refs)
+    stage = report.stages["prose"]
+    assert "did not answer" in stage.stopped
+    # the one passage asked and the health check; the later batches never ask
+    assert down.calls == ["/v1/chat/completions", "/v1/models"]
+    assert (stage.left_pending, stage.ok, stage.failed) == (3, 0, 0)
+    assert "STOPPED:" in stage.line() and "3 article(s) left pending" in stage.line()
+    assert catalog.artifacts(ids, "prose") == {}
+    assert catalog.attempt_counts(ids, "prose", "") in ({}, {i: (0, None) for i in ids})
+    up = _server()
+    report = run_stages(ctx, [prose._prose(settings, _served(settings, up))], refs)
+    assert (report.stages["prose"].ok, report.stages["prose"].stopped) == (3, None)
+
+
 def test_a_refused_key_stops_prose(prose_env):
     settings, catalog, path = prose_env
-    settings.prose_api_base = "http://prose.test/v1"
     ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"))
-    report = run_stages(ctx, [ProseStage(settings)], refs)
+    refused = _server(fails=lambda content: True, status=401)
+    report = run_stages(ctx, [prose._prose(settings, _served(settings, refused))], refs)
     stage = report.stages["prose"]
     assert "HTTP 401" in stage.stopped and "nu-prose-v2" in stage.stopped
-    assert (stage.ok, stage.failed) == (0, 0)
+    assert (stage.ok, stage.failed, stage.left_pending) == (0, 0, 2)
     assert catalog.artifacts([r.id for r in refs], "prose") == {}
 
 
-@pytest.mark.vcr
 def test_prose_reads_a_passage_when_the_server_answers(prose_env):
     settings, catalog, path = prose_env
-    settings.prose_api_base = "http://prose.test/v1"
     ctx, refs = _prose_articles(settings, catalog, path, ("1",))
-    report = run_stages(ctx, [ProseStage(settings)], refs)
+    report = run_stages(
+        ctx, [prose._prose(settings, _served(settings, _server()))], refs)
     stage = report.stages["prose"]
     assert (stage.ok, stage.failed, stage.stopped) == (1, 0, None)
     (read,) = catalog.artifacts([refs[0].id], "prose")[refs[0].id].values()
     assert read.status is Status.OK
+
+
+def test_a_stopped_prose_stage_blocks_resolve_without_failing_it(prose_env):
+    settings, catalog, path = prose_env
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"))
+    ids = [r.id for r in refs]
+    down = _server(up=False)
+    stages = [prose._prose(settings, _served(settings, down)), ResolveStage(settings)]
+    report = run_stages(ctx, stages, refs)
+    assert report.stages["prose"].stopped
+    resolve = report.stages["resolve"]
+    assert (resolve.blocked, resolve.failed, resolve.ok, resolve.stopped) == (2, 0, 0, None)
+    assert catalog.artifacts(ids, "resolve") == {}
+    assert catalog.attempt_counts(ids, "resolve", "") in ({}, {i: (0, None) for i in ids})
 
 
 # --------------------------------------------------------------------------- roles
@@ -131,3 +170,23 @@ def test_roles_decides_every_set_when_the_server_answers(roles_env, stub):  # no
     report = run_stages(Context(settings, catalog), [RolesStage(settings)], [ref])
     stage = report.stages["roles"]
     assert (stage.ok, stage.failed, stage.stopped) == (1, 0, None)
+
+
+def test_a_roles_stop_leaves_the_later_batches_unasked(roles_env, stub, monkeypatch):  # noqa: F811
+    settings, catalog, ref = roles_env
+    refs = _role_articles(catalog, ref, "controls")
+    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
+
+    def crashed(body):  # down after the plan listed the model
+        stub.healthy = False
+        return 503, "down"
+
+    stub.reply = crashed
+    _one_at_a_time(monkeypatch)
+    report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
+    stage = report.stages["roles"]
+    assert (stage.planned, stage.left_pending) == (1, 2)
+    assert "left pending" in stage.line()
+    # only the first article's sets are asked; the second batch is not
+    assert stub.requests and not any("[NAME] controls" in str(r) for r in stub.requests)
+    assert catalog.artifacts([r.id for r in refs], "roles") == {}
