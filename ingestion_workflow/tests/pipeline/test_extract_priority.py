@@ -223,3 +223,43 @@ def test_work_is_one_per_article_across_a_batch(env):
 
     assert len(plan.pending) == len(refs)
     assert {w.source for w in plan.pending} == {"pubget"}
+
+
+def test_with_a_wiley_and_a_pdf_download_the_pdf_text_reads_wileys(env):
+    settings, catalog = env
+    settings = settings.merge_overrides({"download_sources": ["pdf"]})
+    ref = catalog.register(Identifier(pmid="25", doi="10.1002/x"))
+    downloaded(catalog, ref, "pdf", "wiley")
+
+    (work,) = plan_for(settings, catalog, [ref]).pending
+    assert (work.source, work.upstream.source) == ("pdf", "wiley")
+
+    extracted(catalog, ref, "pdf", download_source="wiley")
+    assert plan_for(settings, catalog, [ref]).fresh == 1
+
+
+def test_a_stale_better_extraction_is_replanned_though_a_lower_one_is_fresh(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="26", doi="10.1/h"))
+    downloaded(catalog, ref, "ace", "elsevier")
+    extracted(catalog, ref, "ace")
+    catalog.record([Outcome(ref.id, "extract", "elsevier", fingerprint="older-version",
+                            payload={"tables": []})])
+
+    plan = plan_for(settings, catalog, [ref])
+
+    assert plan.fresh == 0
+    assert [w.source for w in plan.pending] == ["elsevier"]
+
+
+def test_refreshing_extract_replans_an_article_whose_chosen_source_is_fresh(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="27", doi="10.1/i"))
+    downloaded(catalog, ref, "ace", "elsevier")
+    extracted(catalog, ref, "elsevier")
+    assert plan_for(settings, catalog, [ref]).fresh == 1
+
+    plan = plan_for(settings, catalog, [ref], refresh=["extract"])
+
+    assert plan.fresh == 0
+    assert [w.source for w in plan.pending] == ["elsevier"]
