@@ -6,11 +6,12 @@ stages. `add` puts articles in, `run` advances them, `status`/`show` report.
 
 from __future__ import annotations
 
+import itertools
 import json
 import logging
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import typer
 
@@ -111,7 +112,24 @@ def add(
         None, "--query", "-q", help="PubMed query to search (repeatable)."
     ),
     start_year: Optional[int] = typer.Option(
-        None, "--start-year", help="Earliest year for queries."
+        None, "--start-year", help="Earliest year for --query (PubMed)."
+    ),
+    openalex_query: Optional[List[str]] = typer.Option(
+        None,
+        "--openalex-query",
+        help=(
+            "OpenAlex query, matched against title and abstract of journal articles "
+            "(repeatable). Its syntax is not PubMed's, so give each provider its own query. "
+            "A comma would start a new filter, so leave commas out."
+        ),
+    ),
+    openalex_year: Optional[int] = typer.Option(
+        None,
+        "--openalex-year",
+        help=(
+            "Publication year for --openalex-query. PubMed's year belongs in the "
+            "--query text, e.g. 2026[dp]."
+        ),
     ),
     pdfs: Optional[Path] = typer.Option(
         None,
@@ -182,6 +200,7 @@ def add(
     local = _read_pdfs(settings, pdfs) if pdfs else []
     found += [pdf.identifier for pdf in local if pdf.identifier and not pdf.supplement]
 
+    searched: Dict[str, List[Identifier]] = {}
     if query:
         from ingestion_workflow.services.search import PubMedSearchService
 
@@ -189,15 +208,30 @@ def add(
             service = PubMedSearchService(text, settings, start_year=start_year or 1990)
             results = service.search()
             typer.echo(f"query {text!r}: {len(results.identifiers):,} results")
-            found += list(results.identifiers)
+            searched.setdefault("pubmed", []).extend(results.identifiers)
+    if openalex_query:
+        from ingestion_workflow.services.search import OpenAlexSearchService
+
+        for text in openalex_query:
+            service = OpenAlexSearchService(text, settings, year=openalex_year)
+            results = service.search()
+            typer.echo(f"openalex query {text!r}: {len(results.identifiers):,} results")
+            searched.setdefault("openalex", []).extend(results.identifiers)
+    # The catalog is keyed by DOI, PMID and PMCID, so register_many skips a work with none.
+    hits = [i for records in searched.values() for i in records]
+    unplaceable = sum(1 for i in hits if not (i.doi or i.pmid or i.pmcid))
+    found += hits
 
     if not found:
         raise typer.BadParameter(
-            "give identifiers, --file, --manifest, --query, --pdfs or --neurostore"
+            "give identifiers, --file, --manifest, --query, --openalex-query, "
+            "--pdfs or --neurostore"
         )
 
     with _catalog(settings) as catalog:
         before = catalog.count_articles()
+        if searched:
+            _report_search(catalog, searched, unplaceable)
         refs = catalog.register_many(found)
         if enrich:
             refs = _enrich(settings, catalog, refs)
@@ -211,6 +245,33 @@ def add(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
         f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
     )
+
+
+def _report_search(
+    catalog: Catalog, searched: Dict[str, List[Identifier]], unplaceable: int
+) -> None:
+    """Per-provider hits, their overlap, and how many the catalog already holds.
+
+    PubMed's search returns PMIDs only, so it overlaps OpenAlex only where
+    OpenAlex gives the work a PMID; the count is a lower bound until `--enrich`.
+    """
+    from ingestion_workflow.services.search import collapse
+
+    articles, members = collapse(searched)
+    for source, found in articles.items():
+        typer.echo(f"  {source}: {len(found):,} articles")
+    for a, b in itertools.combinations(articles, 2):
+        typer.echo(f"  {a} and {b} share {len(articles[a] & articles[b]):,}")
+    union = set().union(*articles.values())
+    known = {a for a in union if any(catalog.resolve(record) for record in members[a])}
+    typer.echo(
+        f"  {len(union):,} distinct: {len(known):,} already in the catalog, "
+        f"{len(union) - len(known):,} new"
+    )
+    if unplaceable:
+        typer.echo(
+            f"  {unplaceable:,} OpenAlex works have no DOI, PMID or PMCID and were not registered"
+        )
 
 
 def _read_pdfs(settings: Settings, folder: Path) -> list:

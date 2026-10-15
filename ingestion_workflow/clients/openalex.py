@@ -18,6 +18,7 @@ from ingestion_workflow.utils.doi import normalize_doi
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
+OPENALEX_SEARCH_PAGE_SIZE = 200  # the most a page holds
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
 
@@ -285,6 +286,38 @@ class OpenAlexClient:
             "results"
         ) or self._request_openalex({**params, "search": words}).get("results")
         return [(_identifier_from(work.get("ids")), _metadata_from(work)) for work in works or []]
+
+    def search(
+        self, query: str, *, year: Optional[int] = None, per_page: int = OPENALEX_SEARCH_PAGE_SIZE
+    ) -> Identifiers:
+        """Every journal article whose title or abstract matches `query`, by cursor.
+
+        Only `type:article` is searched: unfiltered, most of the extra hits are
+        preprints, datasets, dissertations and peer-review reports. A work with
+        no DOI, PMID or PMCID is kept, carrying its OpenAlex id, so the caller
+        can count what the catalog cannot hold.
+        """
+        filters = [f"title_and_abstract.search:({query})", "type:article"]
+        if year is not None:
+            filters.append(f"publication_year:{year}")
+        params = {
+            "filter": ",".join(filters),
+            "select": "ids,doi",
+            "per_page": str(per_page),
+            "mailto": self.email,
+            "cursor": "*",
+        }
+        found: List[Identifier] = []
+        while params["cursor"]:
+            payload = self._request_openalex(params)
+            for work in payload.get("results", []) or []:
+                ids = work.get("ids") or {}
+                identifier = _identifier_from({**ids, "doi": ids.get("doi") or work.get("doi")})
+                if ids.get("openalex"):
+                    identifier["openalex"] = ids["openalex"]
+                found.append(identifier)
+            params = {**params, "cursor": payload["meta"].get("next_cursor")}
+        return Identifiers(found)
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """Article metadata by DOI or PMID, keyed by identifier slug.
