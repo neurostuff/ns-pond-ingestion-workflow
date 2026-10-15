@@ -84,3 +84,55 @@ def test_elsevier_download_mixed_success(monkeypatch, tmp_path):
     assert metadata["lookup_type"] == "doi"
     assert metadata["lookup_value"] == "10.1234/success"
     assert metadata["identifier_slug"] == third.identifier.slug
+
+
+NO_TABLE_CAPTION = "Greater insula activation in patients (x = -34, y = 16, z = -6; p < 0.05)."
+
+NO_TABLE_ARTICLE = f"""<?xml version="1.0" encoding="utf-8"?>
+<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd"
+  xmlns:ce="http://www.elsevier.com/xml/common/dtd" xmlns:ja="http://www.elsevier.com/xml/ja/dtd"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+<coredata><dc:title>T</dc:title></coredata>
+<originalText><ja:article><ja:body><ce:sections>
+<ce:section id="s1"><ce:section-title>Results</ce:section-title>
+<ce:para>Patients showed more activity.</ce:para>
+<ce:figure id="f1"><ce:label>Fig. 1</ce:label><ce:caption><ce:simple-para>{NO_TABLE_CAPTION.replace("<", "&lt;")}</ce:simple-para></ce:caption></ce:figure>
+</ce:section></ce:sections></ja:body></ja:article></originalText>
+</full-text-retrieval-response>"""
+
+
+def test_an_article_without_tables_keeps_its_figure_caption_spans(tmp_path):
+    from ingestion_workflow.extractors.elsevier_extractor import _extract_elsevier_article
+    from ingestion_workflow.extractors.utils import build_downloaded_file
+    from ingestion_workflow.models import DownloadResult
+    from ingestion_workflow.pipeline.stages.passages import find_passages
+
+    download_dir = tmp_path / "download"
+    download_dir.mkdir()
+    (download_dir / "content.xml").write_text(NO_TABLE_ARTICLE, encoding="utf-8")
+    (download_dir / "metadata.json").write_text("{}", encoding="utf-8")
+    source = DownloadSource.ELSEVIER
+    download = DownloadResult(
+        identifier=Identifier(pmid="18602375"),
+        source=source,
+        success=True,
+        files=[
+            build_downloaded_file(download_dir / "content.xml", FileType.XML, source=source),
+            build_downloaded_file(download_dir / "metadata.json", FileType.JSON, source=source),
+        ],
+    )
+
+    extraction = _extract_elsevier_article(download, tmp_path / "extracted")
+
+    assert extraction.error_message == "Elsevier found no tables in the article."
+    assert extraction.tables == []
+    text = extraction.full_text_path.read_text(encoding="utf-8")
+    assert [text[slice(*c["span"])] for c in extraction.figure_captions] == [
+        f"Fig. 1 {NO_TABLE_CAPTION}"
+    ]
+
+    how, passages, _, _ = find_passages(
+        {"text_path": str(extraction.full_text_path), "figure_captions": extraction.figure_captions}
+    )
+    assert [(h.x, h.y, h.z) for p in passages for h in p.hits] == [(-34.0, 16.0, -6.0)]
+    assert all(p.from_legend for p in passages)
