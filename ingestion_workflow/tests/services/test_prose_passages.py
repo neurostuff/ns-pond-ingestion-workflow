@@ -132,3 +132,23 @@ def test_a_passage_re_read_places_the_hits_realignment_missed(text, printed):
     (p,) = passages(text)
     got = [(text[a:b], (h.x, h.y, h.z)) for h in p.hits for a, b in [h.span]]
     assert [(s.strip("()"), xyz) for s, xyz in got] == [(s.strip("()"), xyz) for s, xyz in printed]
+
+
+def test_a_one_letter_heading_has_a_place_in_the_text():
+    # PMC3920282 (PMID 23294001) writes its sections as "## M", "## R", "## D"; the
+    # heading before the passage used to have no position in the original text.
+    text = (
+        "was reported previously ( Duncan et al., 2006 ). \n\n\n\n## R \n  \n"
+        "Of the included subjects, 33 were men and 45 were women, age 31.8 ± 11.7 years. "
+        "Increased frontal spike-related activation was observed in VPA-resistant subjects. "
+        "The affected regions were medial frontal cortex, along the paracingulate "
+        "(MNI x = 2, y = 14, z = 46), and the right insula (MNI x = 38, y = 8, z = 1). "
+        "These regions were not seen in controls.\n"
+    )
+    (p,) = passages(text)
+    assert [(h.x, h.y, h.z) for h in p.hits] == [(2, 14, 46), (38, 8, 1)]
+    assert p.heading == "R"
+    assert text[slice(*p.heading_span)] == "R"
+    assert all(text[slice(*h.span)] for h in p.hits)
+    assert text[slice(*p.hits[0].span)].startswith("x = 2")
+    assert p.text.endswith("These regions were not seen in controls.")

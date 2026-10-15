@@ -136,3 +136,10 @@ def test_a_span_holding_a_whole_edit_covers_its_replacement():
 def test_touching_edits_merge():
     assert OffsetMap([(0, 2, 0, 1), (2, 4, 1, 1)]).edits == ((0, 4, 0, 1),)
     assert not OffsetMap()
+
+
+def test_wrap_keeps_the_group_a_pair_of_equal_letters_would_move():
+    old = "\n\n## R \n  \nOf"
+    new, m = offsets.wrap(re.compile(r"^\s*#{1,6}\s+(.+?)\s*$", re.M), "\n\n#", "\n\n", old)
+    assert new == "\n\n#R\n\n\nOf"
+    assert m.span(old.index("R"), old.index("R") + 1) == (new.index("R"), new.index("R") + 1)

@@ -11,6 +11,7 @@ its own copy: `view` is what the prose model reads of a span, rebuilt from the t
 from __future__ import annotations
 
 import re
+from functools import partial
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -138,15 +139,16 @@ def _table_row(m: re.Match) -> str:
 #: broken across a PDF's columns rejoined, headings set apart, line ends marked.
 #: A PDF's column or page break can fall inside a triplet ("[-21, -6,\n\n-27]"),
 #: and a paragraph break ends a sentence, so it is closed up first.
-CLEANING = ((LINE, _table_row), (SPACES, " "), (BROKEN_LIST, r"\1 "),
-            (HEADING, lambda m: f"\n\n#{m.group(1)}\n\n"), (NEWLINE, " \n"))
+CLEANING = (partial(offsets.sub, LINE, _table_row), partial(offsets.sub, SPACES, " "),
+            partial(offsets.sub, BROKEN_LIST, r"\1 "), partial(offsets.wrap, HEADING, "\n\n#", "\n\n"),
+            partial(offsets.sub, NEWLINE, " \n"))
 
 
 def cleaned(text: str) -> Tuple[str, offsets.Chain]:
     """The text the detector reads, and the maps from `text` to it."""
     maps = []
-    for rx, repl in CLEANING:
-        text, step = offsets.sub(rx, repl, text)
+    for clean in CLEANING:
+        text, step = clean(text)
         maps.append(step)
     return text, offsets.Chain(maps)
 
