@@ -57,6 +57,8 @@ def build_failure_extraction(
     source: DownloadSource,
     message: str,
     full_text_path: Path | None = None,
+    *,
+    figure_captions: list[dict] | None = None,
 ) -> "ExtractedContent":
     from ingestion_workflow.models import ExtractedContent  # local import to avoid cycles
 
@@ -68,6 +70,7 @@ def build_failure_extraction(
         tables=[],
         has_coordinates=False,
         error_message=message,
+        figure_captions=figure_captions or [],
     )
 
 

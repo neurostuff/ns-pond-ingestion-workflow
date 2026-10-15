@@ -15,6 +15,7 @@ from typing import Dict, Iterator, List, Optional, Sequence
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
 from ingestion_workflow.models.extract import text_from
+from ingestion_workflow.extractors.figure_captions import captions_digest
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -391,6 +392,8 @@ class ExtractStage:
         if content.full_text_path and Path(content.full_text_path).is_file():
             # What passages chains on: a text rewritten in place (refresh-text) updates it.
             summary["text_sha256"] = file_sha256(content.full_text_path)
+        # Passages reads the legends by these spans, so they chain into its fingerprint.
+        summary["captions_sha256"] = captions_digest(content.figure_captions)
         if content.text_source:
             summary["text_from"] = text_from(content.text_source)
         if content.error_message:

@@ -219,6 +219,7 @@ class PassagesStage:
     @staticmethod
     def fingerprint_for(extraction: Artifact, text_sha256: str) -> str:
         return fingerprint("passages", PASSAGES_VERSION, "extract", extraction.source, text_sha256,
+                           extraction.summary.get("captions_sha256"),
                            upstream=extraction.fingerprint)
 
     def plan(

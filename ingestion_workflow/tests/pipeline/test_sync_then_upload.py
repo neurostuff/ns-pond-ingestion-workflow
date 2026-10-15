@@ -51,6 +51,7 @@ from ingestion_workflow.pipeline.upstream import (
 from ingestion_workflow.services import neurostore_ingest
 from ingestion_workflow.services.funnel_report import FILTERED, build_funnel, open_readonly
 from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
+from ingestion_workflow.tests.upload_body import without_input_fingerprints
 from ingestion_workflow.tests.services.test_neurostore_ingest import (
     LOCAL,
     REPLAY_TOKEN,
@@ -72,7 +73,7 @@ def vcr_config():
     return {
         "filter_headers": ["authorization", "cookie", "set-cookie"],
         "record_mode": "none",
-        "match_on": ["method", "scheme", "host", "port", "path", "query", "body"],
+        "match_on": ["method", "scheme", "host", "port", "path", "query", "upload_body"],
     }
 
 
@@ -182,9 +183,23 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
     upload.finish()
     assert done.status is Status.OK, done.error
     (payload,) = _sent(vcr)
-    assert payload["coordinate_parse"] == json.loads(written.read_text())
-    assert payload["parsed_paper"] == json.loads(
-        (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text())
+    # the replayed body is the recorded one: its input fingerprints are the recorded run's
+    assert without_input_fingerprints(payload["coordinate_parse"]) == without_input_fingerprints(
+        json.loads(written.read_text()))
+    assert without_input_fingerprints(payload["parsed_paper"]) == without_input_fingerprints(json.loads(
+        (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text()))
+    # The matcher blanks the input fingerprints of the replayed body; the parse written here is
+    # where they are held to the catalog's artifacts.
+    held = {"extraction": catalog.artifacts([ref.id], "extract")[ref.id]["pubget"].fingerprint,
+            "metadata": catalog.artifacts([ref.id], "metadata")[ref.id][""].fingerprint,
+            "triage": catalog.artifacts([ref.id], "triage")[ref.id][""].fingerprint,
+            "analyses": catalog.artifacts([ref.id], "space")[ref.id][""].fingerprint}
+    for name in ("parsed_paper", "coordinate_parse"):
+        inputs = json.loads((settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())[
+            "header"]["inputs"]
+        assert inputs and all(i["fingerprint"] == held.get(i["artifact_kind"], i["fingerprint"])
+                              for i in inputs)
+    assert {i["artifact_kind"] for i in json.loads(written.read_text())["header"]["inputs"]} >= {"analyses"}
     assert done.summary["base_study_id"] == "BS21"
     summary = done.summary
     assert (summary["backend"], summary["dry_run"], summary["gate"]) == ("ingester", False, None)
@@ -1012,9 +1027,9 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
     assert (vcr.play_count, vcr.all_played) == (answers, True)
     (answered,) = _recorded_body(
         "test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote.yaml")
-    assert answered == {name: json.loads((settings.ns_pond_root / "BS21" / "parse"
-                                          / f"{name}.json").read_text())
-                        for name in ("coordinate_parse", "parsed_paper")}
+    assert without_input_fingerprints(answered) == without_input_fingerprints(
+        {name: json.loads((settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())
+         for name in ("coordinate_parse", "parsed_paper")})
     # Neither is tried again in this run: one is fresh, the other waits out its retry.
     plan, again = _upload_together(UploadStage(settings), ctx, catalog, [failing, sent])
     assert (plan.fresh, plan.permanent, again) == (1, 1, {})
