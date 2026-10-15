@@ -122,7 +122,8 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("no coordinate tables", "no table holds coordinates"),
     ("neither the tables nor the prose", "nothing for resolve to combine"),
     ("never run on the catalog", "this stage has not run on any article yet"),
-    (NO_TEXT, "no extractor found text in the download"),
+    (NO_TEXT, "no extractor found text it can use in the download; an extraction row "
+              "with a reason says why one was set aside"),
     (NO_ANALYSES, "the tables and the prose were read again and hold no analysis, so what an "
                   "earlier reading made was withdrawn; neurostore keeps the last upload"),
     (RETRACTION_NOTICE, "the paper is a retraction notice, not a study"),
@@ -529,7 +530,8 @@ def _dimensions(rows: Sequence[_Row]) -> Tuple[str, str, str]:
 def _row_reason(row: _Row) -> str:
     """The reason on one per-source download or extraction row."""
     if row.status == "ok":
-        return ""
+        # An extraction that holds nothing because of its file says why.
+        return row.reason or ""
     if row.status == "skipped" and not row.bad_page:
         return row.reason or categorize(row.error)
     return _failure_reason(row)
