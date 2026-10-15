@@ -37,6 +37,14 @@ logger = logging.getLogger(__name__)
 #: pdf 1 -> 2: its text already kept tables; bumped so the whole corpus is
 #: re-extracted in one pass under the same code.
 #:
+#: A change whose effect on stored extractions can be computed from their stored
+#: output is applied by refreshing just those (`--refresh extract:<source>` over a
+#: manifest) instead: setting aside a PDF whose text layer maps symbols to digits
+#: (scripts/symbols_as_digits_manifest.py). Fingerprints hash inputs, not outputs,
+#: so triage and analyses stay fresh over a re-extracted table: a refresh of
+#: `extract:<source>` is always followed by `--refresh triage --refresh analyses` on
+#: the same manifest, which alone also recovers a deploy interrupted between the two.
+#:
 #: pmc and europepmc are extracted by pubget's code, from pubget's layout, so
 #: a change to pubget's extraction bumps them too. Listed at the version they
 #: have run at since they were added, so registering them re-extracts nothing.
@@ -91,6 +99,19 @@ def made_from(extractions: Dict[str, Artifact], download_source: str) -> Optiona
     if extraction is not None and read_from(extraction.source, extraction) == download_source:
         return extraction
     return None
+
+
+#: Why a PDF extraction holds no text and no tables although its file was read: its text
+#: layer maps `=` to 5 and the minus to 2, so a coordinate `x = -22` reads `x5222` and a
+#: legend's `-22, 56, 42` reads `222, 56, 42`.
+SYMBOLS_AS_DIGITS = ("the PDF's text layer maps math symbols to digits (= as 5, minus as 2), "
+                     "so its signs and coordinates cannot be trusted")
+
+
+def unusable(extraction: Artifact) -> bool:
+    """Whether an extraction was set aside for what its file is, so that another
+    source's text stands in for it."""
+    return bool(extraction.summary.get("symbols_as_digits"))
 
 
 def extraction_fingerprint(source: str, download: Artifact) -> str:
@@ -218,7 +239,8 @@ class ExtractStage:
         work whose result is thrown away. The configured `download_sources`
         order decides which one, and a source is only tried when every source
         above it has been ruled out. The article is fresh when that source's
-        extraction is, not when a lower one's is.
+        extraction is, not when a lower one's is. A fresh extraction that is
+        `unusable` rules its source out too.
         """
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
@@ -248,20 +270,22 @@ class ExtractStage:
             is_fresh = False
             for source in self._priority(list(downloads)):
                 download = downloads[source]
-                if ctx.is_fresh(existing.get(source), self.fingerprint_for(download.source, download)):
+                extraction = existing.get(source)
+                if ctx.is_fresh(extraction, self.fingerprint_for(download.source, download)):
                     is_fresh = True
+                    if unusable(extraction):
+                        continue
                     break
                 count, last = attempts(source).get(ref.id, (0, None))
-                if ctx.should_attempt(existing.get(source), count, last, self.name, source):
+                if ctx.should_attempt(extraction, count, last, self.name, source):
                     chosen = (source, download)
                     break
 
-            if is_fresh:
-                plan.fresh += 1
-                continue
-
             if chosen is None:
-                plan.permanent += 1
+                if is_fresh:
+                    plan.fresh += 1
+                else:
+                    plan.permanent += 1
                 continue
 
             source, download = chosen
@@ -296,8 +320,8 @@ class ExtractStage:
 
         for source_name, group in by_source.items():
             source = DownloadSource(source_name)
-            usable, unusable = self._split_usable(ctx, group)
-            yield from unusable
+            usable, rejected = self._split_usable(ctx, group)
+            yield from rejected
             if not usable:
                 continue
             downloads = [download for _, download in usable]
@@ -372,6 +396,9 @@ class ExtractStage:
                 fingerprint=work.fingerprint,
             )
 
+        if content.symbols_as_digits:
+            return self._set_aside(work, source, content)
+
         tables = content.tables or []
         produced_something = bool(content.full_text_path) or bool(tables)
         if content.error_message and not produced_something:
@@ -408,4 +435,26 @@ class ExtractStage:
             fingerprint=work.fingerprint,
             payload=content.to_dict(),
             summary=summary,
+        )
+
+    def _set_aside(self, work: Work, source: str, content: ExtractedContent) -> Outcome:
+        """An extraction holding no text and no tables: both were read from a text layer
+        that lost its signs, and a coordinate in the wrong hemisphere is worse than none.
+
+        Recorded OK, as an article whose extractor found no text is: the answer is the
+        file's, and passages takes back what was made from the earlier text when no other
+        source has any."""
+        return Outcome(
+            article_id=work.article_id,
+            stage=self.name,
+            source=source,
+            status=Status.OK,
+            fingerprint=work.fingerprint,
+            payload=content.to_dict(),
+            summary={
+                "tables": 0,
+                "tables_with_coordinates": 0,
+                "has_text": False,
+                "symbols_as_digits": content.symbols_as_digits,
+            },
         )

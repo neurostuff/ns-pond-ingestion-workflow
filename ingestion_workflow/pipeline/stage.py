@@ -159,12 +159,17 @@ class Context:
         (`.cache/extract/...`). They are relative to the directory holding the
         catalog, which is where the default `.catalog` and `.cache` sit side by
         side, so where a run is started from does not change what exists."""
-        if not path:
-            return None
-        recorded = Path(path)
-        if recorded.is_absolute():
-            return recorded
-        return Path(self.catalog.root).resolve().parent / recorded
+        return recorded_path(self.catalog.root, path)
+
+
+def recorded_path(catalog_root: Path | str, path: Optional[str]) -> Optional[Path]:
+    """`Context.recorded_path`, for a reader that holds only the catalog's directory."""
+    if not path:
+        return None
+    recorded = Path(path)
+    if recorded.is_absolute():
+        return recorded
+    return Path(catalog_root).resolve().parent / recorded
 
 
 class Stage(Protocol):

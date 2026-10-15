@@ -883,6 +883,17 @@ def _extract_pdf_article(
     full_text_path = output_dir / "article.txt"
     full_text_path.write_text(full_text, encoding="utf-8")
 
+    misread = symbols_as_digits(full_text)
+    if misread:
+        # The cells are read from the same layer, so the tables lost their signs too.
+        return ExtractedContent(
+            slug=slug,
+            source=DownloadSource.PDF,
+            identifier=download_result.identifier,
+            symbols_as_digits={**misread, "tables_set_aside": len(document.tables)},
+            article_version=download_result.article_version,
+        )
+
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(full_text))
 
     extracted_tables: List[ExtractedTable] = []
@@ -1073,4 +1084,29 @@ def _has_suspect_numerics(frame: Any) -> bool:
     )
 
 
-__all__ = ["PdfCandidate", "PdfExtractor", "remembered_dead_urls"]
+#: What a text layer that maps `=` to 5 makes of things papers type often: `P 5 0.05`,
+#: `p 5 .001`, `x5222, y5` (its minus a 2, or a minus `normalize_text_tokens` restored),
+#: `size5 12`. And the p-values typed with `=`, which a sound layer has instead; fonts
+#: that lose `=` keep `<`, so `<` does not count.
+_EQUALS_AS_5 = re.compile(
+    r"\b[Pp]\s?5\s?0?\.\d|\b[xyz]\s?5\s?-?\d{1,3}\s*,\s*[xyz]\s?5|size\s?5\s?\d{2}"
+)
+_EQUALS_TYPED = re.compile(r"\b[Pp]\s?=\s?0?\.\d")
+#: Fewer than this are what coincidence gives ("cluster size 5 12").
+_MIN_SYMBOLS_AS_DIGITS = 3
+
+
+def symbols_as_digits(text: str) -> Optional[Dict[str, int]]:
+    """How often `text` reads as `=` mapped to 5, or None when it does not.
+
+    The text is taken as such when the misread forms are at least three and outnumber
+    the typed ones. Such a layer maps the minus to 2 as well, which no rule can tell
+    from a digit, so the text cannot be repaired."""
+    misread = len(_EQUALS_AS_5.findall(text))
+    typed = len(_EQUALS_TYPED.findall(text))
+    if misread < _MIN_SYMBOLS_AS_DIGITS or misread <= typed:
+        return None
+    return {"misread": misread, "typed": typed}
+
+
+__all__ = ["PdfCandidate", "PdfExtractor", "remembered_dead_urls", "symbols_as_digits"]

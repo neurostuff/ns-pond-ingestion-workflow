@@ -49,7 +49,7 @@ from urllib.parse import parse_qs, urlparse
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.catalog.blobs import BlobStore
 from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT, TAKE_BACK_REASONS
-from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
+from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE, SYMBOLS_AS_DIGITS
 from ingestion_workflow.pipeline.stages.sync import (
     NO_IDENTIFIER,
     RETRACTION_NOTICE,
@@ -331,6 +331,8 @@ class _Row:
     bad_page: Optional[str]
     passages: object
     hashed: object
+    #: An extraction set aside for what its file is (`extract.unusable`).
+    set_aside: object
 
 
 @dataclass
@@ -422,6 +424,8 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
     for row in rows:
         by_stage[row.stage].append(row)
     bad = _bad_page_sources(rows)
+    # An extraction set aside for what its file is names why the article has no text.
+    set_aside = any(_truthy(r.set_aside) for r in by_stage.get("extract", ()))
     out: Dict[str, Placed] = {}
     for node in graph:
         own = by_stage.get(node.name)
@@ -450,6 +454,8 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
             out[node.name] = Placed(NOT_ATTEMPTED, "this stage has never run on the catalog")
         else:
             out[node.name] = Placed(PENDING, _pending_reason(node, by_stage))
+        if set_aside and out[node.name].reason == NO_TEXT:
+            out[node.name].reason = SYMBOLS_AS_DIGITS
     return out
 
 
@@ -529,7 +535,7 @@ def _dimensions(rows: Sequence[_Row]) -> Tuple[str, str, str]:
 def _row_reason(row: _Row) -> str:
     """The reason on one per-source download or extraction row."""
     if row.status == "ok":
-        return ""
+        return SYMBOLS_AS_DIGITS if _truthy(row.set_aside) else ""
     if row.status == "skipped" and not row.bad_page:
         return row.reason or categorize(row.error)
     return _failure_reason(row)
@@ -541,7 +547,8 @@ SELECT a.article_id, a.stage, a.source, a.status, substr(a.error, 1, 400),
        json_extract(a.summary, '$.reason'), json_extract(a.summary, '$.source'),
        json_extract(a.summary, '$.coordinates'), json_extract(a.summary, '$.analyses'),
        json_extract(a.summary, '$.retracted'), json_extract(a.summary, '$.bad_page'),
-       json_extract(a.summary, '$.passages'), json_extract(a.summary, '$.text_sha256') IS NOT NULL
+       json_extract(a.summary, '$.passages'), json_extract(a.summary, '$.text_sha256') IS NOT NULL,
+       json_extract(a.summary, '$.symbols_as_digits') IS NOT NULL
 FROM artifacts a"""
 _ROWS_SQL = _ROW_COLUMNS + " ORDER BY a.article_id"
 

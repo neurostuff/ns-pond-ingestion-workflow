@@ -110,6 +110,10 @@ class ExtractedContent:
     #: The version of the copy the text was read from, when the download knew it
     #: ("submittedVersion" is a preprint).
     article_version: Optional[str] = None
+    #: Set when the text was read and set aside because its layer maps math symbols to
+    #: digits (`pdf_extractor.symbols_as_digits`): the counts that showed it, and how
+    #: many tables went with it. Such content holds no text and no tables.
+    symbols_as_digits: Optional[Dict[str, int]] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -127,6 +131,8 @@ class ExtractedContent:
             out["text_source"] = self.text_source
         if self.article_version:
             out["article_version"] = self.article_version
+        if self.symbols_as_digits:
+            out["symbols_as_digits"] = self.symbols_as_digits
         return out
 
     @classmethod
@@ -149,6 +155,7 @@ class ExtractedContent:
             figure_captions=list(payload.get("figure_captions") or []),
             text_source=payload.get("text_source") or None,
             article_version=payload.get("article_version") or None,  # type: ignore[arg-type]
+            symbols_as_digits=payload.get("symbols_as_digits") or None,  # type: ignore[arg-type]
         )
 
 
