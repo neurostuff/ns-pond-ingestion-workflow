@@ -178,9 +178,14 @@ class Settings(BaseSettings):
     download_sources: List[str] = Field(
         # PMC first: its Cloud Service holds the Open Access subset pubget reads
         # and the author manuscripts pubget cannot, each with its licence.
+        # Springer Nature's JATS after Elsevier's XML: publisher XML before a
+        # scraped page or a PDF, and after the PMC copies of the same JATS, which
+        # spend none of its daily quota.
         # Wiley last: at one request per 10 seconds, it is asked only for what
         # no other source serves.
-        default_factory=lambda: ["pmc", "europepmc", "pubget", "elsevier", "ace", "pdf", "wiley"],
+        default_factory=lambda: [
+            "pmc", "europepmc", "pubget", "elsevier", "springer", "ace", "pdf", "wiley"
+        ],
         description="Ordered list of download sources to attempt",
     )
 
@@ -193,6 +198,11 @@ class Settings(BaseSettings):
     wiley_api_key: Optional[str] = Field(
         default=None,
         description="Wiley Text and Data Mining token, sent as Wiley-TDM-Client-Token",
+    )
+
+    springer_api_key: Optional[str] = Field(
+        default=None,
+        description="Springer Nature Open Access API key",
     )
 
     # ===== Elsevier proxy configuration =====

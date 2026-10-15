@@ -45,13 +45,15 @@ logger = logging.getLogger(__name__)
 #: `extract:<source>` is always followed by `--refresh triage --refresh analyses` on
 #: the same manifest, which alone also recovers a deploy interrupted between the two.
 #:
-#: pmc and europepmc are extracted by pubget's code, from pubget's layout, so
-#: a change to pubget's extraction bumps them too. Listed at the version they
-#: have run at since they were added, so registering them re-extracts nothing.
+#: pmc, europepmc and springer are extracted by pubget's code, from pubget's
+#: layout, so a change to pubget's extraction bumps them too. Listed at the
+#: version they have run at since they were added, so registering them
+#: re-extracts nothing.
 EXTRACTOR_VERSIONS = {
     "pubget": 2,
     "pmc": 1,
     "europepmc": 1,
+    "springer": 1,
     "elsevier": 2,
     "ace": 3,
     "pdf": 2,

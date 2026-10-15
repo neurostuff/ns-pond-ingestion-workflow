@@ -196,6 +196,33 @@ article) is retried on the usual schedule; twenty of them with no PDF served
 leave Wiley for the run, as for any PDF host. An answer that is not a PDF fails
 the article and is not kept.
 
+## Springer Nature's open-access JATS
+
+The `springer` download source fetches an article's full-text JATS from
+Springer Nature's Open Access API (`https://api.springernature.com/openaccess/jats`).
+It serves only the articles Springer Nature publishes open access under a
+licence (gold, and hybrid with one); an article that is free to read without a
+licence, or open only through a repository copy, is not there. It comes after
+`elsevier` in the default `download_sources`, so an article PMC or Europe PMC
+already serves never spends the API's quota. It asks only about articles whose
+DOI has one of the prefixes Crossref lists for Springer Nature (member 297),
+and it needs an Open Access API key in `SPRINGER_API_KEY` (or
+`springer_api_key`). With `springer` listed and no key, or a key the API
+refuses (401), the download stage stops for the rest of the run, as for Wiley.
+
+The JATS is kept as `<cache_root>/springer/<article>/article.xml`, with its
+tables beside it as pubget lays out a PMC article, and is read by pubget's
+code into the article's `springer` text.
+
+A key may make 100 requests a minute and 500 a day. The source names 20 DOIs
+in each request (the most a query takes) and asks at most once every 0.6
+seconds. A 429 is waited out for as long as its Retry-After asks, up to 60
+seconds; a longer wait, or a fourth 429 in a row, is the day's quota spent:
+the source is left for the rest of the run, and the articles it had not
+answered stay pending for it, uncharged, while later sources are tried. An
+article the API does not return is not open access there, and is permanent
+for this source.
+
 ## Dead PDF URLs
 
 The `pdf` source remembers, per article, each PDF URL that has turned out dead.

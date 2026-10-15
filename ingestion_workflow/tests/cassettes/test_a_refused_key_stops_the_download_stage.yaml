@@ -1,0 +1,45 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.springernature.com
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://api.springernature.com/openaccess/jats?p=2&q=doi%3A%2210.1186%2Fs12877-026-07992-9%22+OR+doi%3A%2210.1007%2Fs002210000402%22
+  response:
+    body:
+      string: '{"status": "Fail","message": "Authentication failed. API key is invalid
+        or missing","error": {"error": "Unauthorized", "error_description": "API key
+        is invalid or missing. Ensure that a valid API key is included in the request
+        URL."}}'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 15 Oct 2026 22:18:13 GMT
+      server:
+      - istio-envoy
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-cache:
+      - miss
+      x-envoy-upstream-service-time:
+      - '99'
+      x-served-by:
+      - DFW
+    status:
+      code: 401
+      message: Unauthorized
+version: 1
