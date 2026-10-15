@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-SCHEMA_VERSION = 1
+#: 2: doi aliases hold the bare DOI, not a resolver URL.
+SCHEMA_VERSION = 2
 
 DDL = """
 CREATE TABLE IF NOT EXISTS articles (

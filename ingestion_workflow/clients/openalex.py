@@ -6,7 +6,7 @@ import re
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 import requests
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -329,7 +329,7 @@ class OpenAlexClient:
         Crossref's): author-year citations are matched on these.
         """
         found: Dict[str, Dict] = {}
-        wanted = sorted({d.lower().strip() for d in dois if d})
+        wanted = sorted({d.lower() for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
             batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
             payload = self._request_openalex(
@@ -402,7 +402,7 @@ class OpenAlexClient:
             if doi.lower() in answered:
                 continue
             try:
-                works.append((doi.lower(), self._request_openalex({"mailto": self.email, "select": select}, f"doi:{doi}")))
+                works.append((doi.lower(), self._request_openalex({"mailto": self.email, "select": select}, f"doi:{quote(doi, safe='/')}")))
             except requests.HTTPError as exc:
                 if exc.response is None or exc.response.status_code != 404:
                     raise

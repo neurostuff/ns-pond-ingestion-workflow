@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.utils.doi import normalize_doi
 
 from .blobs import BlobStore
 from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
@@ -87,12 +88,46 @@ class Catalog:
         for pragma in PRAGMAS:
             conn.execute(pragma)
         conn.executescript(DDL)
+        row = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        # a catalog with no version row was just created
+        version = int(row["value"]) if row else SCHEMA_VERSION
+        catalog = cls(conn, root)
+        if version < 2:
+            catalog._bare_doi_aliases()
         conn.execute(
             "INSERT INTO meta(key, value) VALUES('schema_version', ?) "
-            "ON CONFLICT(key) DO NOTHING",
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             (str(SCHEMA_VERSION),),
         )
-        return cls(conn, root)
+        return catalog
+
+    def _bare_doi_aliases(self) -> None:
+        """Rewrite doi aliases stored as resolver URLs to the bare DOI.
+
+        An identifier now registers its bare DOI, so a URL-form alias would no
+        longer be found and the article would be registered twice. When the bare
+        DOI is already an alias of the same article the URL form is dropped; of
+        another article it is left, and logged, for a person to settle.
+        """
+        with self._write() as conn:
+            for row in conn.execute("SELECT value, article_id FROM aliases WHERE kind='doi'").fetchall():
+                bare = normalize_doi(row["value"])
+                if bare == row["value"]:
+                    continue
+                other = conn.execute(
+                    "SELECT article_id FROM aliases WHERE kind='doi' AND value=?", (bare,)
+                ).fetchone()
+                if other is None:
+                    conn.execute(
+                        "UPDATE aliases SET value=? WHERE kind='doi' AND value=?", (bare, row["value"])
+                    )
+                elif other["article_id"] == row["article_id"]:
+                    conn.execute("DELETE FROM aliases WHERE kind='doi' AND value=?", (row["value"],))
+                else:
+                    logger.warning(
+                        "catalog: doi %s of %s is also %s of %s; left as it is",
+                        row["value"], row["article_id"], bare, other["article_id"],
+                    )
 
     def close(self) -> None:
         self._conn.close()
