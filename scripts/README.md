@@ -6,6 +6,7 @@ One-off tools that are not part of the `ingest` command.
 |---|---|
 | `generate_manifest.py` | build a JSONL identifiers manifest from a list of ids |
 | `run_elsevier_tables.py` | fetch a few Elsevier articles and dump their tables, for debugging |
+| `symbols_as_digits_manifest.py` | list the articles whose stored PDF text maps math symbols to digits, for `--refresh extract:pdf` |
 
 Removed in the catalog refactor, because `ingest` now covers them:
 

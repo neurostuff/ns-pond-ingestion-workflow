@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from dataclasses import replace
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
@@ -37,8 +36,10 @@ logger = logging.getLogger(__name__)
 #: pdf 1 -> 2: its text already kept tables; bumped so the whole corpus is
 #: re-extracted in one pass under the same code.
 #:
-#: pdf 2 -> 3: a PDF whose text layer maps math symbols to digits is recorded as
-#: holding nothing (`SYMBOLS_AS_DIGITS`).
+#: A change whose effect on stored extractions can be computed from their stored
+#: output is applied by refreshing just those (`--refresh extract:<source>` over a
+#: manifest) instead: setting aside a PDF whose text layer maps symbols to digits
+#: (scripts/symbols_as_digits_manifest.py).
 #:
 #: pmc and europepmc are extracted by pubget's code, from pubget's layout, so
 #: a change to pubget's extraction bumps them too. Listed at the version they
@@ -49,7 +50,7 @@ EXTRACTOR_VERSIONS = {
     "europepmc": 1,
     "elsevier": 2,
     "ace": 3,
-    "pdf": 3,
+    "pdf": 2,
 }
 DEFAULT_EXTRACTOR_VERSION = 1
 
@@ -97,17 +98,16 @@ def made_from(extractions: Dict[str, Artifact], download_source: str) -> Optiona
 
 
 #: Why a PDF extraction holds no text and no tables although its file was read: its text
-#: layer maps `=` to 5 and the minus to 2 (or a control character), so a coordinate
+#: layer maps `=` to 5 and the minus to 2 or a control character, so a coordinate
 #: `x = -22` reads `x5222` and a legend's `-22, 56, 42` reads `222, 56, 42`.
-SYMBOLS_AS_DIGITS = ("the PDF's text layer maps math symbols to digits (= as 5, minus as 2), "
-                     "so its signs and coordinates cannot be trusted")
+SYMBOLS_AS_DIGITS = ("the PDF's text layer maps math symbols to digits (= as 5, minus as 2 "
+                     "or a control character), so its signs and coordinates cannot be trusted")
 
 
 def unusable(extraction: Artifact) -> bool:
-    """Whether an extraction holds nothing because of what its file is.
-
-    Only such an extraction records a `reason`; another source's text stands in for it."""
-    return bool(extraction.summary.get("reason"))
+    """Whether an extraction was set aside for what its file is, so that another
+    source's text stands in for it."""
+    return bool(extraction.summary.get("symbols_as_digits"))
 
 
 def extraction_fingerprint(source: str, download: Artifact) -> str:
@@ -316,8 +316,8 @@ class ExtractStage:
 
         for source_name, group in by_source.items():
             source = DownloadSource(source_name)
-            usable, unusable = self._split_usable(ctx, group)
-            yield from unusable
+            usable, rejected = self._split_usable(ctx, group)
+            yield from rejected
             if not usable:
                 continue
             downloads = [download for _, download in usable]
@@ -392,13 +392,10 @@ class ExtractStage:
                 fingerprint=work.fingerprint,
             )
 
-        tables = content.tables or []
-        if source == DownloadSource.PDF.value and content.full_text_path:
-            from ingestion_workflow.extractors.pdf_extractor import symbols_as_digits
+        if content.symbols_as_digits:
+            return self._set_aside(work, source, content)
 
-            misread = symbols_as_digits(Path(content.full_text_path).read_text(encoding="utf-8"))
-            if misread:
-                return self._symbols_as_digits(work, source, content, misread)
+        tables = content.tables or []
         produced_something = bool(content.full_text_path) or bool(tables)
         if content.error_message and not produced_something:
             return Outcome.failure(
@@ -434,29 +431,25 @@ class ExtractStage:
             summary=summary,
         )
 
-    def _symbols_as_digits(
-        self, work: Work, source: str, content: ExtractedContent, misread: Dict[str, int]
-    ) -> Outcome:
+    def _set_aside(self, work: Work, source: str, content: ExtractedContent) -> Outcome:
         """An extraction holding no text and no tables: both were read from a text layer
-        that lost every sign, and a coordinate in the wrong hemisphere is worse than none.
+        that lost its signs, and a coordinate in the wrong hemisphere is worse than none.
 
         Recorded OK, as an article whose extractor found no text is: the answer is the
-        file's and only a new extractor changes it, and passages takes back what was made
-        from the earlier text when no other source has any."""
+        file's, and passages takes back what was made from the earlier text when no other
+        source has any. `reason` is what the funnel shows."""
         return Outcome(
             article_id=work.article_id,
             stage=self.name,
             source=source,
             status=Status.OK,
             fingerprint=work.fingerprint,
-            payload=replace(content, full_text_path=None, tables=[], has_coordinates=False,
-                            figure_captions=[]).to_dict(),
+            payload=content.to_dict(),
             summary={
                 "tables": 0,
                 "tables_with_coordinates": 0,
                 "has_text": False,
                 "reason": SYMBOLS_AS_DIGITS,
-                "symbols_as_digits": misread,
-                "tables_read": len(content.tables or []),
+                "symbols_as_digits": content.symbols_as_digits,
             },
         )

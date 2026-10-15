@@ -122,8 +122,7 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("no coordinate tables", "no table holds coordinates"),
     ("neither the tables nor the prose", "nothing for resolve to combine"),
     ("never run on the catalog", "this stage has not run on any article yet"),
-    (NO_TEXT, "no extractor found text it can use in the download; an extraction row "
-              "with a reason says why one was set aside"),
+    (NO_TEXT, "no extractor found text in the download"),
     (NO_ANALYSES, "the tables and the prose were read again and hold no analysis, so what an "
                   "earlier reading made was withdrawn; neurostore keeps the last upload"),
     (RETRACTION_NOTICE, "the paper is a retraction notice, not a study"),
@@ -423,6 +422,9 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
     for row in rows:
         by_stage[row.stage].append(row)
     bad = _bad_page_sources(rows)
+    # An extraction set aside for what its file is names why the article has no text.
+    set_aside = next((r.reason for r in by_stage.get("extract", ())
+                      if r.status == "ok" and r.reason), None)
     out: Dict[str, Placed] = {}
     for node in graph:
         own = by_stage.get(node.name)
@@ -451,6 +453,8 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
             out[node.name] = Placed(NOT_ATTEMPTED, "this stage has never run on the catalog")
         else:
             out[node.name] = Placed(PENDING, _pending_reason(node, by_stage))
+        if set_aside and out[node.name].reason == NO_TEXT:
+            out[node.name].reason = set_aside
     return out
 
 

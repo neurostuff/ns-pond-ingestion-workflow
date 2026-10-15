@@ -883,6 +883,17 @@ def _extract_pdf_article(
     full_text_path = output_dir / "article.txt"
     full_text_path.write_text(full_text, encoding="utf-8")
 
+    misread = symbols_as_digits(full_text)
+    if misread:
+        # The cells are read from the same layer, so the tables lost their signs too.
+        return ExtractedContent(
+            slug=slug,
+            source=DownloadSource.PDF,
+            identifier=download_result.identifier,
+            symbols_as_digits={**misread, "tables_set_aside": len(document.tables)},
+            article_version=download_result.article_version,
+        )
+
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(full_text))
 
     extracted_tables: List[ExtractedTable] = []
@@ -1073,13 +1084,23 @@ def _has_suspect_numerics(frame: Any) -> bool:
     )
 
 
-#: What a text layer that maps math glyphs to digits (`=` as 5, the minus as 2) makes of
-#: three things papers type often: `P 5 0.05`, `x5222, y5`, `size5 12`.
-_SYMBOLS_AS_DIGITS = re.compile(
-    r"\b[Pp]\s?5\s?0\.\d|\b[xyz]\s?5\s?2?\d{1,3}\s*,\s*[xyz]\s?5|size\s?5\s?\d{2}"
-)
-#: The same p-values with their symbols intact, which a sound layer has instead.
-_TYPED_SYMBOLS = re.compile(r"\b[Pp]\s?[=<]\s?0\.\d")
+_CONTROL = r"[\x00-\x08\x0b\x0c\x0e-\x1f]"
+#: Per symbol, what a text layer that maps it to a digit or a control character makes of
+#: things papers type often, and the same things typed. `=` as 5: `P 5 0.05`, `p 5 .001`,
+#: `x5222, y5` (whose minus may be a control character too), `size5 12`. The minus as a
+#: control character, where `=` survives or is a 5 itself: `x = \x0022`, `t 5 \x002.5`.
+#: Fonts that lose `=` keep `<`, so only `=` counts as typed.
+_SYMBOL_FORMS = {
+    "equals": (
+        re.compile(r"\b[Pp]\s?5\s?0?\.\d|\b[xyz]\s?5\s?" + _CONTROL
+                   + r"?\d{1,3}\s*,\s*[xyz]\s?5|size\s?5\s?\d{2}"),
+        re.compile(r"\b[Pp]\s?=\s?0?\.\d"),
+    ),
+    "minus": (
+        re.compile(r"\b[xyztXYZT]\s?[=5]\s?" + _CONTROL + r"\d"),
+        re.compile(r"\b[xyztXYZT]\s?=\s?-\s?\d"),
+    ),
+}
 #: Fewer than this are what coincidence gives ("cluster size 5 12").
 _MIN_SYMBOLS_AS_DIGITS = 3
 
@@ -1087,13 +1108,17 @@ _MIN_SYMBOLS_AS_DIGITS = 3
 def symbols_as_digits(text: str) -> Optional[Dict[str, int]]:
     """How often `text` reads as math symbols mapped to digits, or None when it does not.
 
-    The text is taken as such when the misread forms are at least three and outnumber
-    the typed ones."""
-    misread = len(_SYMBOLS_AS_DIGITS.findall(text))
-    typed = len(_TYPED_SYMBOLS.findall(text))
-    if misread < _MIN_SYMBOLS_AS_DIGITS or misread <= typed:
-        return None
-    return {"misread": misread, "typed": typed}
+    A symbol is misread when its misread forms are at least three and outnumber its typed
+    ones; the text is, when either symbol is. The counts are keyed `<symbol>_misread` and
+    `<symbol>_typed`."""
+    counts: Dict[str, int] = {}
+    for symbol, (misread, typed) in _SYMBOL_FORMS.items():
+        counts[f"{symbol}_misread"] = len(misread.findall(text))
+        counts[f"{symbol}_typed"] = len(typed.findall(text))
+    if any(counts[f"{s}_misread"] >= _MIN_SYMBOLS_AS_DIGITS
+           and counts[f"{s}_misread"] > counts[f"{s}_typed"] for s in _SYMBOL_FORMS):
+        return counts
+    return None
 
 
 __all__ = ["PdfCandidate", "PdfExtractor", "remembered_dead_urls", "symbols_as_digits"]

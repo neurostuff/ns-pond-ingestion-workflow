@@ -3,10 +3,15 @@
 Article 2fbrux6ypmwb (PMID 27004598, HBM, Wiley PDF): its ACE text reads
 `x=-22, y=56, z=42, Z=3.48`, its PDF text `x5222, y556, z542, Z53.48`, and the
 figure legend `222, 56, 42` for `-22, 56, 42`. Ranked above ACE, the PDF text
-replaced the good one.
+replaced the good one. The excerpts below are from the stored texts of the
+articles named.
 """
 
 from __future__ import annotations
+
+import importlib.util
+import json
+from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
@@ -21,43 +26,162 @@ from ingestion_workflow.pipeline.stages import ExtractStage, PassagesStage, Tria
 from ingestion_workflow.pipeline.stages.extract import SYMBOLS_AS_DIGITS, extraction_fingerprint
 from ingestion_workflow.services.funnel_report import build_funnel, open_readonly
 
-#: The PDF text of 2fbrux6ypmwb's results and legend, as Docling read it.
-MISREAD = (
-    "Activation was thresholded at P 5 0.001 uncorrected with a cluster size5 20 voxels. "
-    "The left hippocampus responded more to novel scenes (peak voxel MNI coordinate: "
-    "x5222, y556, z542, Z53.48) and the right one to familiar scenes (x5244, y518, z532, "
-    "Z53.12). Figure 2. Peaks at 222, 56, 42; 244, 18, 32 (P 5 0.002)."
+#: `=` as 5, its minus as 2: P values, coordinates, a matrix size.
+HBM_2FBRUX6YPMWB = (
+    "between the N-back task and the DDT (r 5 20.004, P 5 0.979). "
+    "Pcorrected50.047; peak voxel MNI coordinate: x5222, y556, z542, Z53.48, Puncorrected "
+    "Pcorrected50.019; peak voxel MNI coordinate: x5266, y5212, z5214, Z53.63, Puncorrected "
+    "flip angle578; FOV5256 3 256 mm; and matrix size5256 3 256."
 )
-#: The same passage as ACE read it from the publisher's HTML.
-TYPED = (
-    "Activation was thresholded at P = 0.001 uncorrected with a cluster size = 20 voxels. "
-    "The left hippocampus responded more to novel scenes (peak voxel MNI coordinate: "
-    "x = -22, y = 56, z = 42, Z = 3.48) and the right one to familiar scenes "
-    "(x = -44, y = 18, z = 32, Z = 3.12). Figure 2. Peaks at -22, 56, 42; -44, 18, 32 "
-    "(P < 0.002)."
+#: `=` as 5 beside a `<` the font kept, which outnumbers it.
+HBM_JWPMJ3GZ7EMV = (
+    "| P 50.77 |\n| P 50.19 |\n| 0.74 | P < 0.0001 | P 5 0.90 |\n"
+    "is significant (P<0.05) and when all its coefficients are significant using "
+    "t-statistic (P<0.05). This is assessed by the selected hybrid model (P<0.001)"
+)
+#: `=` as 5 in APA p-values, with no leading zero.
+JINS_H6Y37JZOLVND = (
+    "using an individual voxel probability threshold of p 5 .001, indicated that "
+    "resulted in an overall significance of p 5 .048. There was a significant effect of "
+    "group (F(1,21) 5 7.17, p 5 .014)"
+)
+#: The minus as a control character, `=` intact and typed in more p-values.
+W3VRP6ZACAN4 = (
+    "in the pre-SMA (x = \x004, y = 6, z = 52). Activations were found in the right cuneus "
+    "(x = 12, y = \x0086, z = 34), the inferior temporal gyrus (x = \x0052, y = \x0062, "
+    "z = \x002). [F(1, 23) = 2.46, p = .13] [F(3, 69) = 5.87, p = .003]"
+)
+#: Three control-character minus signs against five typed p-values, which do not count
+#: against them: a different symbol.
+TALAIRACH_76XOTCQFWTXR = (
+    "at the same location in Talairach space (about x=\x0042, Y=\x0057, z=\x006), with a "
+    "standard deviation (F(1,6)=10.9; p=0.016). (F(5,30) = 3.63, p = 0.011), due to faster "
+    "responding to words than to pseudo-words (F(1,6)=23.6, p=0.003), p = 0.04, p = 0.02"
+)
+#: Both at once: `x5 \x008` is a 5 for `=` and a control character for the minus.
+PSYCHOPHYSIOLOGY_SUKDWLE3ICVJ = (
+    "during phobic than nonphobic stimulus presentation (x528, y5 \x008, z5 \x0013, "
+    "z53.28, p5.01; Figure 2A). related to arousal level (right hemisphere: x514, "
+    "y5 \x0031, z5 \x007, z53.31, p5.1, 17 voxels"
+)
+#: A sound text layer: `=` and `<` typed, coordinates with their minus signs.
+CLEAN_CD6FEP6C7MXV = (
+    "with coordinates in a similarly central location (x = -24, y = 0, z = -16). By "
+    "contrast, in response (F = 3.74, degrees of freedom [df] = 1,14, P = 0.07) between "
+    "condition elicited by supraliminal neutral (t = 4.28, df = 14, P = 0.001), "
+    "in hypothesized regions of interest (threshold, P < 0.05, SVC) | 2, 34, \t4 | 38 |"
 )
 
 
-def test_the_misread_layer_is_recognised():
-    assert symbols_as_digits(MISREAD) == {"misread": 5, "typed": 0}
+@pytest.mark.parametrize("text, misread", [
+    (HBM_2FBRUX6YPMWB, {"equals_misread": 4, "equals_typed": 0}),
+    (HBM_JWPMJ3GZ7EMV, {"equals_misread": 3, "equals_typed": 0}),
+    (JINS_H6Y37JZOLVND, {"equals_misread": 3, "equals_typed": 0}),
+    (W3VRP6ZACAN4, {"minus_misread": 5, "minus_typed": 0}),
+    (TALAIRACH_76XOTCQFWTXR, {"minus_misread": 3, "equals_typed": 5}),
+    (PSYCHOPHYSIOLOGY_SUKDWLE3ICVJ, {"equals_misread": 6, "minus_misread": 4}),
+], ids=["2fbrux6ypmwb", "jwpmj3gz7emv", "h6y37jzolvnd", "w3vrp6zacan4", "76xotcqfwtxr",
+        "sukdwle3icvj"])
+def test_the_misread_layers_found_in_the_corpus_are_recognised(text, misread):
+    found = symbols_as_digits(text)
+    assert found is not None
+    assert {key: found[key] for key in misread} == misread
 
 
-def test_a_text_with_its_symbols_typed_is_not():
-    assert symbols_as_digits(TYPED) is None
+@pytest.mark.parametrize("form", [
+    "P 5 0.05", "p50.77", "p 5 .001", "x5222, y5", "z5214, x5", "y5 \x008, z5", "size5 20",
+    "x = \x0022", "Y=\x0057", "z5 \x0013", "t 5 \x002.5", "T = \x003.1",
+])
+def test_each_misread_form_counts(form):
+    assert symbols_as_digits("; ".join([form] * 3)) is not None
+
+
+@pytest.mark.parametrize("near_miss", [
+    "ap 5 0.05", "p 5 1.5", "size 5 1 ", "x5222 and y5", "x = 22", "x = \t22", "max 5 \x002",
+])
+def test_what_only_looks_like_a_misread_form_does_not(near_miss):
+    assert symbols_as_digits("; ".join([near_miss] * 3)) is None
+
+
+def test_a_sound_text_layer_is_not_misread():
+    assert symbols_as_digits(CLEAN_CD6FEP6C7MXV) is None
 
 
 def test_one_or_two_coincidences_are_not_a_misread_layer():
-    """A cluster of "size 5 12" voxels and an axis labelled "x 5 210, y 5" happen."""
     assert symbols_as_digits("clusters of size 5 12 voxels at (x 5 210, y 5 mm)") is None
-    assert symbols_as_digits("clusters of size 5 12 voxels") is None
 
 
-def test_a_text_with_more_typed_p_values_than_misread_forms_is_not():
-    """Three coincidences in a paper that types its p-values the rest of the time."""
-    coincidences = "size 5 12, size 5 14 and size 5 16 voxels"
-    typed = " ".join(f"P = 0.0{i}" for i in range(1, 5))
-    assert symbols_as_digits(f"{coincidences}. {typed}") is None
-    assert symbols_as_digits(f"{coincidences}. {typed[:16]}") is not None
+@pytest.mark.parametrize("misread, typed", [
+    ("P50.019, P50.203, P 5 0.979", "P = 0.07, P = 0.001, P = 0.04"),
+    ("p 5 .001, p 5 .048, p 5 .014", "p = .13, p = .003, p = .034"),
+    ("x = \x004, y = \x0086, z = \x002", "x = -24, z = -16, t = -4.28"),
+])
+def test_a_symbol_misread_no_more_often_than_it_is_typed_is_not_misread(misread, typed):
+    assert symbols_as_digits(f"{misread}. {typed}") is None
+    first = misread.split(", ")[0]
+    assert symbols_as_digits(f"{misread}, {first}. {typed}") is not None
+
+
+# -- the extractor -----------------------------------------------------------------
+
+
+def _pdf(path: Path, lines) -> Path:
+    """A one-page PDF whose text layer holds `lines`, as a publisher's would."""
+    ops = "".join(f"BT /F1 11 Tf 56 {760 - 16 * i} Td ({line}) Tj ET\n"
+                  for i, line in enumerate(lines))
+    objects = [
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        "/Resources << /Font << /F1 5 0 R >> >> >>",
+        f"<< /Length {len(ops)} >>\nstream\n{ops}endstream",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out, offsets = "%PDF-1.4\n", []
+    for number, body in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += f"{number} 0 obj\n{body}\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n"
+    out += "".join(f"{offset:010d} 00000 n \n" for offset in offsets)
+    out += f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n"
+    path.write_bytes(out.encode("latin-1"))
+    return path
+
+
+def _read_pdf(tmp_path, lines):
+    from ingestion_workflow.extractors.pdf_extractor import _extract_pdf_article
+    from ingestion_workflow.models import DownloadedFile, DownloadResult, FileType
+
+    pdf = _pdf(tmp_path / "article.pdf", lines)
+    identifier = Identifier(pmid="27004598")
+    download = DownloadResult(identifier, DownloadSource.WILEY, True, files=[
+        DownloadedFile(file_path=pdf, file_type=FileType.PDF, content_type="application/pdf",
+                       source=DownloadSource.WILEY)])
+    return _extract_pdf_article(download, tmp_path / "extractions")
+
+
+MISREAD_LINES = [
+    "Activation was thresholded at P 5 0.001 with a cluster size5 20 voxels.",
+    "Peak voxel MNI coordinate: x5222, y556, z542, Z53.48 (P 5 0.002).",
+]
+
+
+def test_the_pdf_extractor_sets_a_misread_text_aside(tmp_path):
+    content = _read_pdf(tmp_path, MISREAD_LINES)
+
+    assert content.symbols_as_digits["equals_misread"] == 4
+    assert (content.full_text_path, content.tables, content.figure_captions) == (None, [], [])
+
+
+def test_the_pdf_extractor_keeps_a_sound_text(tmp_path):
+    content = _read_pdf(tmp_path, [
+        "Activation was thresholded at P = 0.001 with a cluster size = 20 voxels.",
+        "Peak voxel MNI coordinate: x = -22, y = 56, z = 42, Z = 3.48 (P = 0.002).",
+    ])
+
+    assert content.symbols_as_digits is None
+    assert "thresholded at P = 0.001" in content.full_text_path.read_text(encoding="utf-8")
 
 
 # -- the stages ------------------------------------------------------------------
@@ -88,20 +212,36 @@ def _downloaded(catalog, ref, *sources):
                             payload={})])
 
 
-def _extracted(settings, catalog, ref, source, download_source, text, tmp_path):
-    """Record what the extract stage makes of `text` and one table of peaks read from it."""
+def _table():
+    return ExtractedTable(table_id="t1", raw_content_path=None,
+                          coordinates=[Coordinate(x=222.0, y=56.0, z=42.0)])
+
+
+def _work(catalog, ref, source, download_source):
+    download = catalog.artifact(ref.id, "download", download_source)
+    return Work(ref=ref, source=source, upstream=download,
+                fingerprint=extraction_fingerprint(download_source, download))
+
+
+def _set_aside(settings, catalog, ref, download_source="wiley"):
+    """Record what the extract stage makes of the pdf extractor's set-aside content."""
+    content = ExtractedContent(
+        slug=ref.id, source=DownloadSource.PDF,
+        symbols_as_digits={"equals_misread": 7, "equals_typed": 0, "minus_misread": 0,
+                           "minus_typed": 0, "tables_set_aside": 2})
+    outcome = ExtractStage(settings)._outcome(
+        _work(catalog, ref, "pdf", download_source), "pdf", content)
+    catalog.record([outcome])
+    return outcome
+
+
+def _extracted(settings, catalog, ref, source, text, tmp_path, tables=1):
     path = tmp_path / f"{ref.id}-{source}.txt"
     path.write_text(text, encoding="utf-8")
-    download = catalog.artifact(ref.id, "download", download_source)
-    work = Work(ref=ref, source=source, upstream=download,
-                fingerprint=extraction_fingerprint(download_source, download))
-    content = ExtractedContent(
-        slug=ref.id, source=DownloadSource(source), full_text_path=path,
-        tables=[ExtractedTable(table_id="t1", raw_content_path=None,
-                               coordinates=[Coordinate(x=222.0, y=56.0, z=42.0)])],
-        figure_captions=[{"ids": ["2"], "span": [0, 10]}],
-    )
-    outcome = ExtractStage(settings)._outcome(work, source, content)
+    content = ExtractedContent(slug=ref.id, source=DownloadSource(source), full_text_path=path,
+                               tables=[_table() for _ in range(tables)])
+    outcome = ExtractStage(settings)._outcome(_work(catalog, ref, source, source), source,
+                                              content)
     catalog.record([outcome])
     return outcome
 
@@ -112,75 +252,74 @@ def _plan(stage, settings, catalog, ref, upstream_stage):
                       catalog.artifacts(ids, upstream_stage))
 
 
-def test_a_misread_pdf_holds_no_text_and_no_tables_and_says_why(env):
-    settings, catalog, tmp_path = env
+def test_set_aside_content_is_recorded_as_holding_nothing_and_why(env):
+    settings, catalog, _ = env
     ref = catalog.register(Identifier(pmid="27004598"))
     _downloaded(catalog, ref, "wiley")
 
-    outcome = _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
+    outcome = _set_aside(settings, catalog, ref)
 
     assert outcome.status is Status.OK
     assert outcome.summary == {
         "tables": 0, "tables_with_coordinates": 0, "has_text": False,
-        "reason": SYMBOLS_AS_DIGITS, "symbols_as_digits": {"misread": 5, "typed": 0},
-        "tables_read": 1}
+        "reason": SYMBOLS_AS_DIGITS,
+        "symbols_as_digits": {"equals_misread": 7, "equals_typed": 0, "minus_misread": 0,
+                              "minus_typed": 0, "tables_set_aside": 2}}
     content = ExtractedContent.from_dict(outcome.payload)
-    assert (content.full_text_path, content.tables, content.figure_captions) == (None, [], [])
+    assert (content.full_text_path, content.tables) == (None, [])
+    assert content.symbols_as_digits["tables_set_aside"] == 2
 
 
-def test_a_pdf_with_its_symbols_typed_keeps_its_text_and_tables(env):
-    settings, catalog, tmp_path = env
-    ref = catalog.register(Identifier(pmid="1"))
+def test_a_pdf_read_into_tables_and_no_text_is_recorded_as_before(env):
+    settings, catalog, _ = env
+    ref = catalog.register(Identifier(pmid="3"))
     _downloaded(catalog, ref, "pdf")
+    content = ExtractedContent(slug=ref.id, source=DownloadSource.PDF, tables=[_table()])
 
-    outcome = _extracted(settings, catalog, ref, "pdf", "pdf", TYPED, tmp_path)
+    outcome = ExtractStage(settings)._outcome(_work(catalog, ref, "pdf", "pdf"), "pdf", content)
 
-    assert (outcome.summary["has_text"], outcome.summary["tables"]) == (True, 1)
-    assert "reason" not in outcome.summary
-
-
-def test_only_a_pdf_text_layer_is_checked(env):
-    """The misreading is a PDF text layer's; ACE reads the publisher's HTML."""
-    settings, catalog, tmp_path = env
-    ref = catalog.register(Identifier(pmid="2"))
-    _downloaded(catalog, ref, "ace")
-
-    outcome = _extracted(settings, catalog, ref, "ace", "ace", MISREAD, tmp_path)
-
-    assert (outcome.summary["has_text"], outcome.summary["tables"]) == (True, 1)
+    assert (outcome.status, outcome.summary["tables"], outcome.summary["has_text"]) == (
+        Status.OK, 1, False)
+    assert "symbols_as_digits" not in outcome.summary
 
 
-def test_the_source_below_a_misread_pdf_is_extracted_and_then_the_article_is_fresh(env):
+def test_the_source_below_a_set_aside_pdf_is_extracted_and_then_the_article_is_fresh(env):
     settings, catalog, tmp_path = env
     ref = catalog.register(Identifier(pmid="27004598"))
     _downloaded(catalog, ref, "wiley", "ace")
-    _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
+    _set_aside(settings, catalog, ref)
 
     plan = _plan(ExtractStage(settings), settings, catalog, ref, "download")
     assert [(w.source, w.upstream.source) for w in plan.pending] == [("ace", "ace")]
 
-    _extracted(settings, catalog, ref, "ace", "ace", TYPED, tmp_path)
+    _extracted(settings, catalog, ref, "ace", CLEAN_CD6FEP6C7MXV, tmp_path)
     plan = _plan(ExtractStage(settings), settings, catalog, ref, "download")
     assert (plan.pending, plan.fresh) == ([], 1)
 
 
-def test_a_misread_pdf_alone_is_fresh_not_retried(env):
-    settings, catalog, tmp_path = env
+@pytest.mark.parametrize("ace_failed", [False, True])
+def test_a_set_aside_pdf_with_nothing_else_due_is_fresh_not_retried(env, ace_failed):
+    settings, catalog, _ = env
     ref = catalog.register(Identifier(pmid="27004598"))
-    _downloaded(catalog, ref, "wiley")
-    _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
+    _downloaded(catalog, ref, *(["wiley", "ace"] if ace_failed else ["wiley"]))
+    if ace_failed:
+        catalog.record([Outcome.failure(ref.id, "extract", "ace", "nope", permanent=True)])
+    _set_aside(settings, catalog, ref)
 
     plan = _plan(ExtractStage(settings), settings, catalog, ref, "download")
 
     assert (plan.pending, plan.fresh, plan.permanent) == ([], 1, 0)
 
 
-def test_triage_judges_the_ace_text_beside_a_misread_pdf(env):
+@pytest.mark.parametrize("ace_tables", [1, 0])
+def test_triage_and_passages_read_the_ace_text_beside_a_set_aside_pdf(env, ace_tables):
+    """Also when ACE kept no table, as for a text-only ACE beside a PDF whose two tables
+    were set aside."""
     settings, catalog, tmp_path = env
     ref = catalog.register(Identifier(pmid="27004598"))
     _downloaded(catalog, ref, "wiley", "ace")
-    _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
-    _extracted(settings, catalog, ref, "ace", "ace", TYPED, tmp_path)
+    _set_aside(settings, catalog, ref)
+    _extracted(settings, catalog, ref, "ace", CLEAN_CD6FEP6C7MXV, tmp_path, tables=ace_tables)
 
     (work,) = _plan(TriageStage(settings), settings, catalog, ref, "metadata").pending
     assert work.upstream.source == "ace"
@@ -188,19 +327,23 @@ def test_triage_judges_the_ace_text_beside_a_misread_pdf(env):
     assert work.upstream.source == "ace"
 
 
-def test_what_was_made_from_a_misread_pdf_alone_is_taken_back(env):
-    """Passages read from the garbled text before it was recognised are taken back, and
-    triage judges the extraction again, which now holds no table."""
-    settings, catalog, tmp_path = env
-    ref = catalog.register(Identifier(pmid="27004598"))
-    _downloaded(catalog, ref, "wiley")
-    _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
+def _made_from_the_misread_text(catalog, ref):
     catalog.record([
         Outcome(article_id=ref.id, stage="passages", source="", fingerprint="from-misread-text",
                 payload={"passages": []}, summary={"passages": 3, "source": "pdf"}),
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="from-misread-tables",
                 payload={"source": "pdf", "tables": []}, summary={"source": "pdf"}),
     ])
+
+
+def test_what_was_made_from_a_set_aside_pdf_alone_is_taken_back(env):
+    """Passages read from the misread text before it was set aside are taken back, and
+    triage judges the extraction again, which now holds no table."""
+    settings, catalog, _ = env
+    ref = catalog.register(Identifier(pmid="27004598"))
+    _downloaded(catalog, ref, "wiley")
+    _made_from_the_misread_text(catalog, ref)
+    _set_aside(settings, catalog, ref)
 
     passages = PassagesStage(settings)
     plan = _plan(passages, settings, catalog, ref, "extract")
@@ -212,12 +355,65 @@ def test_what_was_made_from_a_misread_pdf_alone_is_taken_back(env):
     assert ExtractedContent.from_dict(catalog.payload(work.upstream)).tables == []
 
 
-def test_the_funnel_gives_the_reason_on_the_pdf_extraction(env):
-    settings, catalog, tmp_path = env
+def test_the_funnel_names_the_set_aside_text_as_why_an_article_has_none(env):
+    settings, catalog, _ = env
     ref = catalog.register(Identifier(pmid="27004598"))
     _downloaded(catalog, ref, "wiley")
-    _extracted(settings, catalog, ref, "pdf", "wiley", MISREAD, tmp_path)
+    _made_from_the_misread_text(catalog, ref)
+    _set_aside(settings, catalog, ref)
+    passages = PassagesStage(settings)
+    catalog.record(list(passages.execute(
+        Context(settings, catalog), _plan(passages, settings, catalog, ref, "extract").pending)))
+    other = catalog.register(Identifier(pmid="4"))
+    _downloaded(catalog, other, "pdf")
+    catalog.record([
+        Outcome(article_id=other.id, stage="extract", source="pdf", fingerprint="x",
+                payload={}, summary={"tables": 0, "has_text": False}),
+        Outcome.failure(other.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
+    ])
 
     funnel = build_funnel(open_readonly(settings.catalog_root))
 
     assert ("extract", "pdf", "ok", SYMBOLS_AS_DIGITS) in {k[:4] for k in funnel.sources}
+    reasons = {aid: key[2] for key, (_, sample) in funnel.cells.items()
+               if key[0] == "passages" for aid, _ in sample}
+    assert reasons == {ref.id: SYMBOLS_AS_DIGITS, other.id: NO_TEXT}
+
+
+# -- the manifest of stored misread texts -----------------------------------------
+
+SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "symbols_as_digits_manifest.py"
+
+
+def _script():
+    spec = importlib.util.spec_from_file_location("symbols_as_digits_manifest", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_manifest_lists_the_articles_whose_stored_pdf_text_is_misread(env):
+    """Extractions stored before the extractor set such texts aside: the misread one
+    is listed; a sound PDF, a misread ACE text and one already set aside are not."""
+    settings, catalog, tmp_path = env
+    refs = {name: catalog.register(Identifier(pmid=pmid, doi=f"10.1002/hbm.{pmid}"))
+            for name, pmid in [("misread", "27004598"), ("sound", "5"), ("ace", "6"),
+                               ("set aside", "7")]}
+    for name, ref in refs.items():
+        _downloaded(catalog, ref, "ace" if name == "ace" else "wiley")
+    for name, source, text in [("misread", "pdf", HBM_2FBRUX6YPMWB),
+                               ("sound", "pdf", CLEAN_CD6FEP6C7MXV),
+                               ("ace", "ace", HBM_2FBRUX6YPMWB)]:
+        path = tmp_path / f"{name}.txt"
+        path.write_text(text, encoding="utf-8")
+        catalog.record([Outcome(article_id=refs[name].id, stage="extract", source=source,
+                                fingerprint="v2", payload={"full_text_path": str(path)},
+                                summary={"tables": 1, "has_text": True})])
+    _set_aside(settings, catalog, refs["set aside"])
+    manifest = tmp_path / "misread.jsonl"
+
+    assert _script().main([str(settings.catalog_root), str(manifest)]) == 0
+
+    (row,) = [json.loads(line) for line in manifest.read_text().splitlines()]
+    assert set(row) == {"neurostore", "pmid", "doi", "pmcid", "other_ids"}
+    assert (row["pmid"], row["doi"]) == ("27004598", "10.1002/hbm.27004598")
