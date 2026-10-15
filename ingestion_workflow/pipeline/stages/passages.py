@@ -218,11 +218,8 @@ class PassagesStage:
 
     @staticmethod
     def fingerprint_for(extraction: Artifact, text_sha256: str) -> str:
-        # Left out when the extraction records none, so those keep the fingerprint they were
-        # read under: an older extraction not recording the digest is not one with no captions.
-        captions = extraction.summary.get("captions_sha256")
         return fingerprint("passages", PASSAGES_VERSION, "extract", extraction.source, text_sha256,
-                           *(() if captions is None else (captions,)),
+                           extraction.summary.get("captions_sha256"),
                            upstream=extraction.fingerprint)
 
     def plan(

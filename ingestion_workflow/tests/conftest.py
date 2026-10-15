@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from ingestion_workflow.models.ids import Identifier, Identifiers
-from ingestion_workflow.tests import wiley_tdm
+from ingestion_workflow.tests import upload_body, wiley_tdm
 
 
 @pytest.fixture(scope="session")
@@ -15,6 +15,7 @@ def vcr_cassette_dir() -> str:
 
 def pytest_recording_configure(config, vcr):
     vcr.register_matcher("wiley_token", wiley_tdm.same_token)
+    vcr.register_matcher("upload_body", upload_body.same_body_but_input_fingerprints)
 
 
 @pytest.fixture(scope="session")

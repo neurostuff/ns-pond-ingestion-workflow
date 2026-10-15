@@ -9,6 +9,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.scheduler import run_stages
@@ -843,7 +844,7 @@ def test_a_declared_payload_stays_declared_after_analyses_fails(env, tmp_path, m
 def _record_extraction(catalog, ref, text_file, figure_captions=(), source="pubget", tables=0, hashed=True):
     from ingestion_workflow.pipeline.stages.extract import file_sha256
 
-    summary = {"tables": tables, "has_text": True}
+    summary = {"tables": tables, "has_text": True, "captions_sha256": captions_digest(figure_captions)}
     if hashed:
         summary["text_sha256"] = file_sha256(text_file)
     catalog.record([Outcome(article_id=ref.id, stage="extract", source=source, fingerprint="ex-1",
