@@ -188,6 +188,18 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
         json.loads(written.read_text()))
     assert without_input_fingerprints(payload["parsed_paper"]) == without_input_fingerprints(json.loads(
         (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text()))
+    # The matcher blanks the input fingerprints of the replayed body; the parse written here is
+    # where they are held to the catalog's artifacts.
+    held = {"extraction": catalog.artifacts([ref.id], "extract")[ref.id]["pubget"].fingerprint,
+            "metadata": catalog.artifacts([ref.id], "metadata")[ref.id][""].fingerprint,
+            "triage": catalog.artifacts([ref.id], "triage")[ref.id][""].fingerprint,
+            "analyses": catalog.artifacts([ref.id], "space")[ref.id][""].fingerprint}
+    for name in ("parsed_paper", "coordinate_parse"):
+        inputs = json.loads((settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())[
+            "header"]["inputs"]
+        assert inputs and all(i["fingerprint"] == held.get(i["artifact_kind"], i["fingerprint"])
+                              for i in inputs)
+    assert {i["artifact_kind"] for i in json.loads(written.read_text())["header"]["inputs"]} >= {"analyses"}
     assert done.summary["base_study_id"] == "BS21"
     summary = done.summary
     assert (summary["backend"], summary["dry_run"], summary["gate"]) == ("ingester", False, None)
