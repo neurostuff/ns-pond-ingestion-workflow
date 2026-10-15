@@ -1,0 +1,109 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://doaj.org/article/5285bc2cee0841caa25c796cb0947ec2
+  response:
+    body:
+      string: '<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta
+        http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible"
+        content="IE=Edge"><meta name="robots" content="noindex,nofollow"><meta name="viewport"
+        content="width=device-width,initial-scale=1"><meta http-equiv="content-security-policy"
+        content="default-src &#39;none&#39;; script-src &#39;nonce-R2equHt2NQrW3a6TVX7wyx&#39;
+        &#39;unsafe-eval&#39; https://challenges.cloudflare.com; script-src-attr &#39;none&#39;;
+        style-src &#39;unsafe-inline&#39;; img-src &#39;self&#39; https://challenges.cloudflare.com;
+        connect-src &#39;self&#39; https://challenges.cloudflare.com; frame-src &#39;self&#39;
+        https://challenges.cloudflare.com blob:; child-src &#39;self&#39; https://challenges.cloudflare.com
+        blob:; worker-src blob:; form-action http: https:; base-uri &#39;self&#39;"><style>*{box-sizing:border-box;margin:0;padding:0}html{line-height:1.15;-webkit-text-size-adjust:100%;color:#313131;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe
+        UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe
+        UI Emoji","Segoe UI Symbol","Noto Color Emoji"}body{display:flex;flex-direction:column;height:100vh;min-height:100vh}.main-content{margin:8rem
+        auto;padding-left:1.5rem;max-width:60rem}@media (width <= 720px){.main-content{margin-top:4rem}}#challenge-error-text{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0ibm9uZSI+PHBhdGggZmlsbD0iI0IyMEYwMyIgZD0iTTE2IDNhMTMgMTMgMCAxIDAgMTMgMTNBMTMuMDE1IDEzLjAxNSAwIDAgMCAxNiAzbTAgMjRhMTEgMTEgMCAxIDEgMTEtMTEgMTEuMDEgMTEuMDEgMCAwIDEtMTEgMTEiLz48cGF0aCBmaWxsPSIjQjIwRjAzIiBkPSJNMTcuMDM4IDE4LjYxNUgxNC44N0wxNC41NjMgOS41aDIuNzgzem0tMS4wODQgMS40MjdxLjY2IDAgMS4wNTcuMzg4LjQwNy4zODkuNDA3Ljk5NCAwIC41OTYtLjQwNy45ODQtLjM5Ny4zOS0xLjA1Ny4zODktLjY1IDAtMS4wNTYtLjM4OS0uMzk4LS4zODktLjM5OC0uOTg0IDAtLjU5Ny4zOTgtLjk4NS40MDYtLjM5NyAxLjA1Ni0uMzk3Ii8+PC9zdmc+");background-repeat:no-repeat;background-size:contain;padding-left:34px}</style><meta
+        http-equiv="refresh" content="360"></head><body><div class="main-wrapper"
+        role="main"><div class="main-content"><noscript><div class="h2"><span id="challenge-error-text">Enable
+        JavaScript and cookies to continue</span></div></noscript></div></div><script
+        nonce="R2equHt2NQrW3a6TVX7wyx">(function(){window._cf_chl_opt = {cFPWv: ''b'',cH:
+        ''eFFPsWhrcxp6Hh9IT5PViNX0Km8EgZTh0Mhx4Znrjjk-1792105415-1.2.1.1-Wvwth.NE2F.W_l3E_5Vn0m6B9uhDjLQUKXu3fLnh4NY7BT.U9MPBZYgXrNidpBzD'',cITimeS:
+        ''1792105415'',cN: ''R2equHt2NQrW3a6TVX7wyx'',cRay: ''a4b2753df8c6df67'',cTplC:0,cTplO:0,cTplV:5,cType:
+        ''managed'',cUPMDTk:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc",cvId:
+        ''3'',cZone: ''doaj.org'',fa:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_f_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc",md:
+        ''cWDJ1S4gGbcjH3l1vVQf8UJCFrYAq7lcCqlfBCo7Jh0-1792105415-1.2.1.1-5xyE1rPJ5H8wTyE1wGtupni2rOo73ZHLF2IMD9lXU5cAy51IGt6gunfaQiwF0Xt46oRI9abc7Zap5XFGZp90Y3GS_T3RCju2E3W4TS5Vf_0M4eRR5z3yjoXOhgqObbB.6PYOjn5Y8anu3PNMEcFpWKEBYEDGJQzhRc5TJg_CzbIy5h2hgzwTOsGNtjbGfFD9NfDF7qJ4DHKxDsdlhlMSz5wQdp3XJ7SvbHWLYxD.nXnaUaqF4m_So8uPv053Czg7PXpoaIVmVeaSPj_38DRPV_iYXHEUHMRlVHo0mSGi.Pc6gz3sEFcHQxJs6F6ljapb8jwm87UN4hONI2naSwn6GLLxzeqFvAMPAMm.heH92zkduchESvns3v98EpLbFbC9zt3Z66m868wcWf26lzWhByqqlkOZrhdiCNizZDYiJeAHB.GQHCd4tvWPxcoMmfGwYHArODwipVPWL2sfX7E2Lvt6eovhI33qtUMFe8f0pVqPndaG2bm65FAg1CH4cvzLkO1K3ZMcMMEET6rzcd7limQIGAdj3Md2h_ypZ7kXDjI3FvrNfLiw3nwIhkLn6XEDvQN.jG4vBmhI4ydmhBiRfJlcGVHhSAmSCA8LsmHO.F.DIN10N2brhgyUVP8.j6dkotq7KGNjpqcXHiKguSPKoi5qKUhmhXZhP1HQgynTupuBWUZywRtaLkEH6PhNAQbffME7VmHFyotVMWspCQPui5sio20BzIQPTIsII6IYaTqqvNOl1rq3WM0k1DJYhwhdiD90hNAUjukCRTmzJalAocv26b.XVAcGYUtwXQJTDnlLj3bmeGVN4fI7Zfk0jyb0q0zcJI1faAWsmb3GU.tGCWR8MowH5YcXLm7WwwTQz3nGwqzAXzprDqlHPrN939wX3P9Y9tnSE75kq0RTaZrL.aLlYfVUGIDeOamF2uKYcghAvH_mXepbIDeHp3XGYN1vqN3tSmGe3m9WnfDI92XsF9ASZaaqtK2pxRXZVdsv_2be0miOJTWjGgMbttMFEed9_SbzHDFS9bu.CyOf10fSY_6JMRL8V.4mMUAFAMlNdEawC7B6jguw0.toCGOPZvRgTP5rT248V7HaZlhtm0uNIpsgxseoDIFmC1Ko2wVzkKQ'',mdrd:
+        ''XV87AVa9aQSSJP3PXRZqtJwpdrc6AtuL_DEKyYRkoG4-1792105415-1.2.1.1-GJ36WQ4RTgERBFg185r0rB7ot5YdeKjTUPtMzziFu8TqjLozthr5AKGTv9LJy_syDHiWPTrbEeQvLjW62FJhbu4SHg_6nMzjbUSUji4kI93azC8q.KNebV7_FE_dMpzPPvA0R_0b_c70L4cf5eIJJ4vnOW7hg1t5SEeRjOItoidISsWTfOrL23tfJmMkcAzdnUXpsXljtabqQ2qDIwm14bYkKfoNwm89w7p647dvujMzs.k7BeievoL7lPOmAGH3'',};var
+        a = document.createElement(''script'');a.nonce = ''R2equHt2NQrW3a6TVX7wyx'';a.src
+        = ''/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=a4b2753df8c6df67'';window._cf_chl_opt.cOgUHash
+        = location.hash === '''' && location.href.indexOf(''#'') !== -1 ? ''#'' :
+        location.hash;window._cf_chl_opt.cOgUQuery = location.search === '''' && location.href.slice(0,
+        location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf(''?'')
+        !== -1 ? ''?'' : location.search;if (window.history && window.history.replaceState)
+        {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null,
+        null,"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_rt_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc"+
+        window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null,
+        null, ogU);}}document.getElementsByTagName(''head'')[0].appendChild(a);}());</script></body></html>'
+    headers:
+      Accept-Ch:
+      - Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile,
+        Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List,
+        Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile,
+        UA-Model, UA-Platform-Version, UA-Platform, UA
+      CF-RAY:
+      - a4b2753df8c6df67-DFW
+      Cf-Mitigated:
+      - challenge
+      Connection:
+      - close
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - 'default-src ''none''; script-src ''nonce-R2equHt2NQrW3a6TVX7wyx'' ''unsafe-eval''
+        https://challenges.cloudflare.com; script-src-attr ''none''; style-src ''unsafe-inline'';
+        img-src ''self'' https://challenges.cloudflare.com; connect-src ''self'' https://challenges.cloudflare.com;
+        frame-src ''self'' https://challenges.cloudflare.com blob:; child-src ''self''
+        https://challenges.cloudflare.com blob:; worker-src blob:; form-action http:
+        https:; base-uri ''self'''
+      Content-Type:
+      - text/html; charset=UTF-8
+      Critical-Ch:
+      - Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile,
+        Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List,
+        Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile,
+        UA-Model, UA-Platform-Version, UA-Platform, UA
+      Cross-Origin-Embedder-Policy:
+      - require-corp
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Cross-Origin-Resource-Policy:
+      - same-origin
+      Date:
+      - Thu, 15 Oct 2026 23:03:35 GMT
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Origin-Agent-Cluster:
+      - ?1
+      Permissions-Policy:
+      - accelerometer=(),camera=(),clipboard-read=(),clipboard-write=(),geolocation=(),gyroscope=(),hid=(),magnetometer=(),microphone=(),payment=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),sync-xhr=(),usb=(),xr-spatial-tracking=*
+      Referrer-Policy:
+      - same-origin
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=bjB4ghvD%2FGKV%2FONFo6EH70rzo8SPyhz40XzbfY4D%2BBm9mwtT8aA2qpzgrRl1NdQcdS0N78WBdXCQ9ae3qX2tye4iWpsvDAJhRsx2RJfzknkAPMI0yupbnGB1"}]}'
+      Server:
+      - cloudflare
+      Server-Timing:
+      - chlray;desc="a4b2753df8c6df67"
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 403
+      message: Forbidden
+version: 1

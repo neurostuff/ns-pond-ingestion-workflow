@@ -22,7 +22,9 @@ from ingestion_workflow.extractors.pdf_extractor import (
     _retry_after,
     _try_order,
     _type_of,
+    _url_key,
     _version_of,
+    citation_pdf_url,
     remembered_dead_urls,
 )
 from ingestion_workflow.models import (
@@ -100,7 +102,7 @@ def test_a_403_then_a_page_that_is_not_a_pdf_fall_through_to_the_next_url(stub, 
 def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_path):
     first = stub.serve("/repo/a.pdf", (403, b"Forbidden"))
     second = stub.serve("/journal/a.pdf", (200, HTML))
-    landing = stub.url + "/landing/a"
+    landing = stub.serve("/landing/a", (200, HTML))
     stub.work(
         "10.1234/a",
         location(first, "repository"),
@@ -111,9 +113,8 @@ def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert not result.success
-    assert _outcomes(result) == ["http_error", "not_pdf", "landing_page_only"]
-    assert result.error_message == f"Response from {second} is not a PDF."
-    assert "/landing/a" not in stub.fetched
+    assert _outcomes(result) == ["http_error", "not_pdf", "no_pdf_link"]
+    assert result.error_message == f"Landing page {landing} names no citation_pdf_url."
 
     ref = ArticleRef(id="art1", identifier=result.identifier)
     stage = DownloadStage(pdf_source(tmp_path).settings)
@@ -125,16 +126,18 @@ def test_every_attempt_is_recorded_and_the_last_reason_is_the_outcome(stub, tmp_
     assert DownloadResult.from_dict(result.to_dict()).url_attempts == result.url_attempts
 
 
-def test_an_open_access_landing_page_alone_is_recorded_not_fetched(stub, tmp_path):
-    landing = stub.url + "/landing/a"
-    stub.serve("/landing/a", (200, HTML))
+def test_a_landing_page_naming_no_pdf_is_fetched_once_and_remembered_dead(stub, tmp_path):
+    landing = stub.serve("/landing/a", (200, HTML))
     stub.work("10.1234/a", location(None, "repository", landing=landing))
 
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
     assert not result.success
-    assert result.error_message == f"OA landing page only: {landing}"
-    assert stub.fetched == []
+    assert result.error_message == f"Landing page {landing} names no citation_pdf_url."
+    assert stub.fetched == ["/landing/a"]
+    assert remembered_dead_urls(result.url_attempts) == {
+        _url_key(landing): result.error_message
+    }
 
 
 def test_a_429_is_waited_out_as_the_host_asks(stub, tmp_path):
@@ -309,7 +312,7 @@ def test_a_rate_limited_copy_keeps_an_article_retryable_after_a_404(stub, other_
 def test_an_article_whose_every_copy_is_dead_stays_retryable(stub, tmp_path):
     forbidden = stub.serve("/journal/a.pdf", (403, b"no"))
     html = stub.serve("/repo/a.pdf", (200, HTML))
-    landing = stub.url + "/landing/a"
+    landing = stub.serve("/landing/a", (200, HTML))
     stub.work(
         "10.1234/a",
         location(forbidden, "journal"),
@@ -319,12 +322,12 @@ def test_an_article_whose_every_copy_is_dead_stays_retryable(stub, tmp_path):
 
     result = _download(pdf_source(tmp_path), "10.1234/a")[0]
 
-    assert _outcomes(result) == ["not_pdf", "http_error", "landing_page_only"]
-    assert [a.get("dead") for a in result.url_attempts] == [True, True, None]
+    assert _outcomes(result) == ["not_pdf", "http_error", "no_pdf_link"]
+    assert [a.get("dead") for a in result.url_attempts] == [True, True, True]
     outcome = _stage_outcome(tmp_path, result)
     assert outcome.status is Status.FAILED
     assert outcome.summary["url_outcomes"] == {
-        "not_pdf": 1, "http_error": 1, "landing_page_only": 1
+        "not_pdf": 1, "http_error": 1, "no_pdf_link": 1
     }
 
 
@@ -612,10 +615,11 @@ def test_the_error_names_the_last_url_passed_over_when_none_was_fetched(tmp_path
         PdfCandidate(f"https://example.org/{n}", "openalex", "repository", landing_page=True)
         for n in (1, 2)
     )
+    dead = {_url_key(first.url): "first is gone", _url_key(second.url): "second is gone"}
 
-    result = extractor._download_single(identifier, [first, second], tmp_path)
+    result = extractor._download_single(identifier, [first, second], tmp_path, dead_urls=dead)
 
-    assert result.error_message == f"OA landing page only: {second.url}"
+    assert result.error_message == "second is gone"
 
 
 def test_the_error_names_the_last_failed_lookup_when_there_is_no_url(tmp_path):
@@ -934,7 +938,8 @@ def test_a_real_openalex_listing_fetches_the_pdf_link_not_the_landing_page(tmp_p
     assert session.refused == [PLOS_PDF]
     assert result.url_attempts[0]["url"] == PLOS_PDF
     assert result.url_attempts[0]["location_type"] == "publisher"
-    assert "landing_page_only" in _outcomes(result)
+    pmc_pages = [a for a in result.url_attempts if "/pmc/articles/" in a["url"]]
+    assert pmc_pages and {a["outcome"] for a in pmc_pages} == {"skipped_pmc"}
 
 
 # -- what counts, and how often -------------------------------------------------------
@@ -1147,3 +1152,195 @@ def test_the_dead_urls_come_from_the_pdf_download_not_another_source(stub, tmp_p
 
 def _host(url):
     return urlsplit(url).netloc
+
+
+# -- landing pages -----------------------------------------------------------------
+
+
+def _landing(pdf_href: str) -> bytes:
+    return (
+        '<html><head><meta name="citation_title" content="A">'
+        f'<meta name="citation_pdf_url" content="{pdf_href}"></head><body>A</body></html>'
+    ).encode()
+
+
+def test_a_landing_page_is_followed_to_the_pdf_it_names(stub, tmp_path):
+    stub.serve("/files/a.pdf", (200, PDF))
+    landing = stub.serve("/article/a", (200, _landing("/files/a.pdf")))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert result.success
+    assert stub.fetched == ["/article/a", "/files/a.pdf"]
+    (attempt,) = result.url_attempts
+    assert attempt["url"] == landing
+    assert attempt["pdf_url"] == stub.url + "/files/a.pdf"
+    assert attempt["outcome"] == "pdf"
+    assert result.files[0].file_path.read_bytes() == PDF
+
+
+def test_a_landing_page_answering_with_the_pdf_is_the_pdf(stub, tmp_path):
+    landing = stub.serve("/article/a", (200, PDF))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert result.success
+    assert stub.fetched == ["/article/a"]
+    assert "pdf_url" not in result.url_attempts[0]
+
+
+def test_a_dead_pdf_behind_a_landing_page_leaves_the_page_dead(stub, tmp_path):
+    stub.serve("/files/a.pdf", (200, HTML))
+    landing = stub.serve("/article/a", (200, _landing("/files/a.pdf")))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert result.error_message == f"Response from {stub.url}/files/a.pdf is not a PDF."
+    assert remembered_dead_urls(result.url_attempts) == {
+        _url_key(landing): result.error_message
+    }
+    stub.fetched.clear()
+    again = pdf_source(tmp_path).download(
+        Identifiers([result.identifier]),
+        dead_urls={result.identifier.slug: remembered_dead_urls(result.url_attempts)},
+    )[0]
+    assert _outcomes(again) == ["known_dead"]
+    assert stub.fetched == []
+
+
+def test_a_pdf_a_landing_page_names_that_is_listed_itself_is_fetched_once(stub, tmp_path):
+    pdf = stub.serve("/files/a.pdf", (403, b"no"))
+    landing = stub.serve("/article/a", (200, _landing(pdf)))
+    stub.work("10.1234/a", location(pdf, "journal"), location(None, "repository", landing=landing))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    assert _outcomes(result) == ["http_error", "listed_elsewhere"]
+    assert stub.fetched == ["/files/a.pdf", "/article/a"]
+    assert "403" in result.error_message
+
+
+def test_a_pdf_a_landing_page_names_that_an_earlier_run_found_dead_is_not_fetched(
+    stub, tmp_path
+):
+    pdf = stub.serve("/files/a.pdf", (200, PDF))
+    landing = stub.serve("/article/a", (200, _landing(pdf)))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
+    identifier = Identifier(doi="10.1234/a")
+
+    result = pdf_source(tmp_path).download(
+        Identifiers([identifier]), dead_urls={identifier.slug: {_url_key(pdf): "gone"}}
+    )[0]
+
+    assert _outcomes(result) == ["known_dead"]
+    assert result.url_attempts[0]["pdf_url"] == pdf
+    assert stub.fetched == ["/article/a"]
+
+
+def test_a_landing_page_naming_a_pmc_copy_leaves_it_to_the_pmc_sources(stub, tmp_path):
+    pmc = "https://pmc.ncbi.nlm.nih.gov/articles/PMC1/pdf/a.pdf"
+    landing = stub.serve("/article/a", (200, _landing(pmc)))
+    stub.work("10.1234/a", location(None, "repository", landing=landing))
+    session = _LocalOnlySession()
+
+    result = _download(pdf_source(tmp_path, session=session), "10.1234/a")[0]
+
+    assert result.error_message == SKIPPED_PMC
+    assert session.refused == []
+
+
+def test_a_pmc_article_page_listed_as_a_landing_page_gets_the_pmc_reason(stub, tmp_path):
+    page = "https://www.ncbi.nlm.nih.gov/pmc/articles/3701683"
+    stub.work("10.1234/a", location(None, "repository", landing=page))
+    session = _LocalOnlySession()
+
+    result = _download(pdf_source(tmp_path, session=session), "10.1234/a")[0]
+
+    assert _outcomes(result) == ["skipped_pmc"]
+    assert result.error_message == SKIPPED_PMC
+    assert session.refused == []
+
+
+def test_a_host_refusing_landing_pages_is_left_for_the_run(stub, tmp_path):
+    dois = [f"10.1234/r{n}" for n in range(21)]
+    for doi in dois:
+        stub.work(doi, location(None, "repository",
+                                landing=stub.serve(f"/article/{doi}", (403, b"no"))))
+
+    results = _download(pdf_source(tmp_path), *dois)
+
+    assert [r.url_attempts[0]["outcome"] for r in results[:20]] == ["http_error"] * 20
+    assert results[0].error_message.startswith("landing page fetch failed: 403")
+    assert results[20].url_attempts[0]["outcome"] == "deferred"
+    assert "refused 20 URLs this run and served no PDF" in results[20].error_message
+    assert len(stub.fetched) == 20
+
+
+@pytest.mark.parametrize(
+    "page, expected",
+    [
+        (b'<meta name="citation_pdf_url" content="/a.pdf">', "https://h.org/a.pdf"),
+        (b'<META NAME="Citation_PDF_URL" CONTENT="https://x.org/b.pdf">', "https://x.org/b.pdf"),
+        (b'<meta name="citation_pdf_url" content="https://x.org/1.pdf">'
+         b'<meta name="citation_pdf_url" content="https://x.org/2.pdf">', "https://x.org/1.pdf"),
+        (b'<meta name="citation_pdf_url" content="">', None),
+        (b'<meta name="citation_pdf_url" content="javascript:void(0)">', None),
+        (b'<link rel="alternate" type="application/pdf" href="/a.pdf">', None),
+        (b"<html><body>no tag</body></html>", None),
+    ],
+)
+def test_the_pdf_a_page_names_is_its_first_citation_pdf_url(page, expected):
+    assert citation_pdf_url(page, "https://h.org/article/1") == expected
+
+
+# Real pages, recorded: OpenAlex lists only a landing page for each.
+COLUMBIA_LANDING = "https://doi.org/10.7916/d86h5vxd"
+BIELEFELD_LANDING = "https://pub.uni-bielefeld.de/record/3019133"
+DOAJ_LANDING = "https://doaj.org/article/5285bc2cee0841caa25c796cb0947ec2"
+
+
+@pytest.mark.vcr(ignore_localhost=True)
+def test_a_real_repository_landing_page_is_followed_to_its_pdf(stub, tmp_path, vcr):
+    stub.work("10.5665/sleep.2712", location(None, "repository", landing=COLUMBIA_LANDING))
+
+    result = _download(pdf_source(tmp_path, semantic_scholar_api_key=None),
+                       "10.5665/sleep.2712")[0]
+
+    assert result.success, result.error_message
+    (attempt,) = result.url_attempts
+    assert attempt["url"] == COLUMBIA_LANDING
+    assert attempt["pdf_url"].startswith("https://academiccommons.columbia.edu/doi/")
+    assert attempt["outcome"] == "pdf"
+    assert result.files[0].file_path.stat().st_size > 100_000
+    assert vcr.all_played
+
+
+@pytest.mark.vcr(ignore_localhost=True)
+def test_a_real_landing_page_without_citation_pdf_url_fails_plainly(stub, tmp_path, vcr):
+    stub.work("10.1234/bielefeld", location(None, "repository", landing=BIELEFELD_LANDING))
+
+    result = _download(pdf_source(tmp_path, semantic_scholar_api_key=None),
+                       "10.1234/bielefeld")[0]
+
+    assert _outcomes(result) == ["no_pdf_link"]
+    assert result.error_message == (
+        f"Landing page {BIELEFELD_LANDING} names no citation_pdf_url."
+    )
+    assert vcr.all_played
+
+
+@pytest.mark.vcr(ignore_localhost=True)
+def test_a_real_refused_landing_page_counts_toward_leaving_its_host(stub, tmp_path, vcr):
+    stub.work("10.1234/doaj", location(None, "journal", landing=DOAJ_LANDING))
+    extractor = pdf_source(tmp_path, semantic_scholar_api_key=None)
+
+    result = _download(extractor, "10.1234/doaj")[0]
+
+    (attempt,) = result.url_attempts
+    assert attempt["outcome"] == "http_error" and attempt["status"] == 403
+    assert attempt["dead"] is True
+    assert extractor._hosts._refusals["doaj.org"] == 1
+    assert vcr.all_played

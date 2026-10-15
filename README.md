@@ -196,12 +196,24 @@ article) is retried on the usual schedule; twenty of them with no PDF served
 leave Wiley for the run, as for any PDF host. An answer that is not a PDF fails
 the article and is not kept.
 
+## Landing pages
+
+When OpenAlex lists an open-access copy by its landing page alone, with no PDF
+link, the `pdf` source fetches the page once and follows the PDF it names in
+`<meta name="citation_pdf_url">`, the tag publishers and repositories put there
+for Google Scholar. Both requests go through the same host limits as any PDF:
+a host that refuses is left for the run, and a 429 is waited out or deferred.
+The attempt records the page as its `url` and the PDF as its `pdf_url`. A page
+that names no PDF fails with `no_pdf_link`; a PDF on PubMed Central or Europe
+PMC is left to those sources, as is a PMC article page listed as a landing page.
+
 ## Dead PDF URLs
 
 The `pdf` source remembers, per article, each PDF URL that has turned out dead.
 A URL is dead when the host answers it with a 4xx other than 408, 425 and 429
 (a 404, 403 or 410, say), or when it answers 200 with something that is not a
-PDF (a landing page or a paywall notice). A 5xx, a timeout, a connection error
+PDF (a landing page or a paywall notice). A landing page is dead when it names
+no PDF or the PDF it names is dead. A 5xx, a timeout, a connection error
 and a 429 are not dead: they may answer differently later. The catalog keeps
 only an article's latest PDF attempt, so each new attempt carries the earlier
 dead URLs forward as `known_dead`, even if a provider no longer lists them.
