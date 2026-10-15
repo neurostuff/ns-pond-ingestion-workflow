@@ -227,7 +227,7 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
     the extraction records the captions' spans, and the passages are marked to be read again,
     since only a read finds the caption's coordinate."""
     from ingestion_workflow.catalog import Catalog, Outcome
-    from ingestion_workflow.extractors.figure_captions import HEADING
+    from ingestion_workflow.extractors.figure_captions import HEADING, captions_digest
     from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
     from ingestion_workflow.models.ids import Identifier
     from ingestion_workflow.services.prose_passages import passages
@@ -270,6 +270,7 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
         extraction = catalog.artifacts([ref_id], "extract")[ref_id]["pubget"]
         assert catalog.payload(extraction)["figure_captions"] == captions
         assert extraction.summary["text_sha256"] == R.sha256(new)
+        assert extraction.summary["captions_sha256"] == captions_digest(captions)
         stored = catalog.artifacts([ref_id], "passages")[ref_id][""]
         assert stored.fingerprint == R.STALE  # read again: the caption's coordinate is new
         moved = catalog.payload(stored)
@@ -287,6 +288,43 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
 
         _, again, _, _ = find_passages({"text_path": str(text), "figure_captions": captions})
         assert [(p.hits[0].x, p.from_legend) for p in again] == [(-22.0, False), (-34.0, True)]
+
+
+def test_carried_passages_are_fresh_for_the_extraction_that_now_records_the_captions(tmp_path):
+    """Captions with no coordinate leave the passages carried, not read again; the fingerprint
+    they are carried under is the one the plan computes from the extraction as rewritten."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.extractors.figure_captions import HEADING
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+    from ingestion_workflow.models.ids import Identifier
+    from ingestion_workflow.pipeline.stages.passages import PassagesStage
+    from ingestion_workflow.services.prose_passages import passages
+
+    xml = tmp_path / "pmcid_9" / "article.xml"
+    xml.parent.mkdir()
+    xml.write_text(CAPTIONED.replace("(x = -34, y = 16, z = -6; p &lt; 0.05)", "(p &lt; 0.05)"))
+    new, _ = article_text_and_captions(etree.parse(str(xml)), xml.parent)
+    old = new[: new.index(HEADING)].rstrip().removesuffix("##").rstrip()
+    text = tmp_path / "article.txt"
+    text.write_text(old, encoding="utf-8")
+    found = passages(old)
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(pmid="9")).id
+        catalog.record([
+            Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                    payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),
+            Outcome(article_id=ref_id, stage="passages", source="", fingerprint="pa-1", summary={},
+                    payload={"text_from": "extract", "full_text_path": str(text), "text_sha256": R.sha256(old),
+                             "passages": [{"span": list(p.span), "before": None, "after": None, "heading": None,
+                                           "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
+                                                    for h in p.hits]} for p in found]}),
+        ])
+        result = R.rebuild(R.Job(ref_id, "pubget", str(text), str(xml)), write=True)
+        assert result.status == "rewritten" and not result.inserted_coordinates
+        assert R.carry_all(catalog, [result], write=True) == {"remapped": 1}
+        extraction = catalog.artifacts([ref_id], "extract")[ref_id]["pubget"]
+        stored = catalog.artifacts([ref_id], "passages")[ref_id][""]
+        assert stored.fingerprint == PassagesStage.fingerprint_for(extraction, R.sha256(new))
 
 
 def test_jobs_find_each_source_s_article_file():

@@ -632,7 +632,7 @@ def _extract_pubget_article(
             source,
             message,
             full_text_path,
-            figure_captions,
+            figure_captions=figure_captions,
         )
 
     sources_path = tables_output_dir / "table_sources.json"

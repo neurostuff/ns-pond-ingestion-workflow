@@ -701,7 +701,7 @@ def _extract_elsevier_article(
             DownloadSource.ELSEVIER,
             message,
             full_text_path,
-            figure_captions,
+            figure_captions=figure_captions,
         )
 
     if not tables:
@@ -712,7 +712,7 @@ def _extract_elsevier_article(
             DownloadSource.ELSEVIER,
             message,
             full_text_path,
-            figure_captions,
+            figure_captions=figure_captions,
         )
 
     # Process each table
@@ -809,7 +809,7 @@ def _extract_elsevier_article(
             DownloadSource.ELSEVIER,
             message,
             full_text_path,
-            figure_captions,
+            figure_captions=figure_captions,
         )
 
     # Write manifest

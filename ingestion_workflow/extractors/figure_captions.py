@@ -12,6 +12,8 @@ Table captions are the table path's and are left where the extractor puts them.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from typing import Iterable, List, Optional, Sequence, Tuple
 
@@ -23,6 +25,12 @@ _ATX = re.compile(r"(?m)^#{1,6} \S")
 
 #: (figure ids, caption text), one per distinct caption.
 Caption = Tuple[List[str], str]
+
+
+def captions_digest(captions: Sequence[dict]) -> str:
+    """The caption spans as one value: passages reads legends by them, so a change in them
+    is a change in what passages finds."""
+    return hashlib.sha256(json.dumps(list(captions), sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def squash(text: str) -> str:

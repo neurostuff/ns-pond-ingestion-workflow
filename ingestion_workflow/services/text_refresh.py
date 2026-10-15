@@ -34,10 +34,11 @@ import multiprocessing
 import os
 from concurrent.futures import ProcessPoolExecutor
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models.extract import text_from
 from ingestion_workflow.services.citations import JATS_SOURCES
 
@@ -329,9 +330,10 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
                         summary={**extraction.summary, "text_sha256": result.old_sha256})], "none"
     offset_map = OffsetMap(tuple(e) for e in result.edits or ())
     extract_payload = dict(catalog.payload(extraction) or {})
+    summary = {**extraction.summary, "text_sha256": result.new_sha256}
     if result.figure_captions is not None:
         extract_payload["figure_captions"] = result.figure_captions
-    summary = {**extraction.summary, "text_sha256": result.new_sha256}
+        summary["captions_sha256"] = captions_digest(result.figure_captions)
     # The payload says how the text now on disk was made, not the one it replaced.
     extract_payload.pop("text_source", None)
     summary.pop("text_from", None)
@@ -361,7 +363,7 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     read_again = result.inserted_coordinates
     rows.append(Outcome(article_id=result.article_id, stage="passages", source="", status=Status.OK,
                         fingerprint=STALE if read_again else PassagesStage.fingerprint_for(
-                            extraction, result.new_sha256),
+                            replace(extraction, summary=summary), result.new_sha256),
                         payload=moved, summary=passages.summary))
     return rows, "read_again" if read_again else "remapped"
 

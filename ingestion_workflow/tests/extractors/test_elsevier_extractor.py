@@ -97,6 +97,7 @@ NO_TABLE_ARTICLE = f"""<?xml version="1.0" encoding="utf-8"?>
 <ce:section id="s1"><ce:section-title>Results</ce:section-title>
 <ce:para>Patients showed more activity.</ce:para>
 <ce:figure id="f1"><ce:label>Fig. 1</ce:label><ce:caption><ce:simple-para>{NO_TABLE_CAPTION.replace("<", "&lt;")}</ce:simple-para></ce:caption></ce:figure>
+<ce:figure id="f2"><ce:label>Fig. 2</ce:label><ce:caption><ce:simple-para>Second map (x = 10, y = -20, z = 30).</ce:simple-para></ce:caption></ce:figure>
 </ce:section></ce:sections></ja:body></ja:article></originalText>
 </full-text-retrieval-response>"""
 
@@ -126,13 +127,15 @@ def test_an_article_without_tables_keeps_its_figure_caption_spans(tmp_path):
 
     assert extraction.error_message == "Elsevier found no tables in the article."
     assert extraction.tables == []
+    assert not extraction.has_coordinates
     text = extraction.full_text_path.read_text(encoding="utf-8")
     assert [text[slice(*c["span"])] for c in extraction.figure_captions] == [
-        f"Fig. 1 {NO_TABLE_CAPTION}"
+        f"Fig. 1 {NO_TABLE_CAPTION}",
+        "Fig. 2 Second map (x = 10, y = -20, z = 30).",
     ]
 
     how, passages, _, _ = find_passages(
         {"text_path": str(extraction.full_text_path), "figure_captions": extraction.figure_captions}
     )
-    assert [(h.x, h.y, h.z) for p in passages for h in p.hits] == [(-34.0, 16.0, -6.0)]
+    assert sorted((h.x, h.y, h.z) for p in passages for h in p.hits) == [(-34.0, 16.0, -6.0), (10.0, -20.0, 30.0)]
     assert all(p.from_legend for p in passages)
