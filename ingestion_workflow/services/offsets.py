@@ -176,6 +176,30 @@ def sub(pattern: Union[str, "re.Pattern"], repl: Union[str, Callable], text: str
     return "".join(out), OffsetMap(edits)
 
 
+def wrap(pattern: "re.Pattern", before: str, after: str, text: str) -> Tuple[str, OffsetMap]:
+    """Replace what each match has around its first group with `before` and `after`, and
+    the map from `text` to the result.
+
+    The group's text is untouched and so keeps its place. `sub` diffs the whole match, and
+    its character diff can pair a short group ("R") with an equal letter elsewhere in the
+    match, which leaves the group with no position in the result.
+    """
+    out, edits, at, shift = [], [], 0, 0
+    for m in pattern.finditer(text):
+        a, b = m.span(1)
+        out += [text[at:m.start()], before, text[a:b], after]
+        old_before, old_after = text[m.start():a], text[b:m.end()]
+        if old_before != before:
+            edits += _refine(old_before, before, m.start(), m.start() + shift)
+        shift += len(before) - len(old_before)
+        if old_after != after:
+            edits += _refine(old_after, after, b, b + shift)
+        shift += len(after) - len(old_after)
+        at = m.end()
+    out.append(text[at:])
+    return "".join(out), OffsetMap(edits)
+
+
 def diff(old: str, new: str, words: bool = False) -> OffsetMap:
     """The map from `old` to `new`, read from their differences: line by line, then
     character by character inside each changed block.
