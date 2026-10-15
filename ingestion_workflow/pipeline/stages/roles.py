@@ -352,6 +352,8 @@ class RolesStage:
         self._classifiers: Dict[str, Any] = {}
         self._lock = threading.Lock()
         self._said: Set[str] = set()
+        #: Why the stage stopped in this run: no classifier is loaded after it, and none asks.
+        self._stopped: Optional[str] = None
 
     @classmethod
     def upstream_for(cls, settings):
@@ -400,6 +402,8 @@ class RolesStage:
         """The origin's classifier; `ModelUnavailable` with the reason when it has none."""
         if origin not in self._classifiers:
             with self._lock:
+                if self._stopped:
+                    raise ModelUnavailable(self._stopped)
                 if origin not in self._classifiers:
                     source, reason = self.model_state(origin)
                     if source is None:
@@ -408,6 +412,9 @@ class RolesStage:
                     self._classifiers[origin] = ServedClassifier(
                         served.endpoint, served.model, source=source
                     )
+                    # Stored before the check, so a stop that did not see it is seen here.
+                    if self._stopped:
+                        self._classifiers[origin].stop(self._stopped)
         return self._classifiers[origin]
 
     def models(self) -> Dict[str, str]:
@@ -548,8 +555,11 @@ class RolesStage:
             if outage is not None:
                 raise outage
         except BaseException as exc:
+            # Not under the lock, which a classifier being loaded holds for its server's answer.
+            reason = f"the roles stage stopped: {type(exc).__name__}: {exc}"
+            self._stopped = self._stopped or reason
             for classifier in list(self._classifiers.values()):
-                classifier.stop(f"the roles stage stopped: {type(exc).__name__}: {exc}")
+                classifier.stop(self._stopped)
             raise
         finally:
             # Not waited for: the articles under way are left to their stopped classifiers,

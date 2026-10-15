@@ -209,8 +209,9 @@ class Stub:
         #: False: the model listing answers 503 too, as a server that is down does.
         self.healthy = True
         self.requests = []
-        #: Model listings answered.
+        #: Model listings answered, and an Event a listing waits on when set.
         self.listings = 0
+        self.gate = None
         self.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
         stub = self
 
@@ -229,6 +230,8 @@ class Stub:
 
             def do_GET(self):
                 stub.listings += 1
+                if stub.gate is not None:
+                    stub.gate.wait(10)
                 if not stub.healthy:
                     self._send(503, "down")
                     return
@@ -998,9 +1001,15 @@ def test_an_article_s_failure_among_many_at_once_fails_that_article_only(both, m
 
 
 def test_an_outage_deep_in_the_run_starts_no_later_article(both):
-    """The outage is the 101st of 200 articles: no set is sent once it is met."""
-    settings, catalog, table, _ = both
-    refs = [_resolved(catalog, n, _tables("refused" if n == 100 else f"set {n}"))
+    """The outage is the 101st of 200 articles: no article is started once it is met.
+
+    After it, every other article is prose: one started then would be sent to
+    the text server, which is still up.
+    """
+    settings, catalog, table, text = both
+    refs = [_resolved(catalog, n, _tables("refused") if n == 100
+                      else _prose_sets(f"late {n}") if n > 100 and n % 2
+                      else _tables(f"set {n}"))
             for n in range(200)]
     answered, arrived, refused_at = table.reply, [], []
 
@@ -1009,10 +1018,10 @@ def test_an_outage_deep_in_the_run_starts_no_later_article(both):
         if "[NAME] refused" in str(body["messages"]):
             refused_at.append(time.monotonic())
             return TOO_LONG
-        time.sleep(0.05)
         return answered(body)
 
     table.reply = reply
+    _timed(text, [], 0.05)
     ids = [r.id for r in refs]
     report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
     roles = report.stages["roles"]
@@ -1021,10 +1030,53 @@ def test_an_outage_deep_in_the_run_starts_no_later_article(both):
     assert roles.ok >= 37 and roles.failed == 0 and roles.ok + roles.left_pending == 200
     kept = catalog.artifacts(ids, "roles")
     assert ids[100] not in kept and len(kept) == roles.ok
-    asked = {json.dumps(b["messages"]) for _, b in arrived}
-    assert not any(f"[NAME] set {n}" in a for a in asked for n in range(164, 200))
+    # Before the refusal was read, at most the 63 under way with it finished, so at most
+    # 63 more were started: none from the 164th on.
+    asked = {json.dumps(b["messages"]) for b in table.requests + text.requests}
+    assert not any(f"[NAME] {kind} {n}" in a
+                   for a in asked for kind in ("set", "late") for n in range(164, 200))
     (stop,) = refused_at
     assert not [t for t, _ in arrived if t > stop + 0.2]
+
+
+def test_a_model_loaded_after_a_stop_sends_nothing(both):
+    """An article under way that first needs the other origin's model after a stop is not sent."""
+    settings, catalog, table, text = both
+    refused = _resolved(catalog, 0, _tables("refused"))
+    prose = _resolved(catalog, 1, _prose_sets("seed"))
+    table.reply = lambda body: TOO_LONG
+    stage = RolesStage(settings)
+    with pytest.raises(ModelUnavailable, match="maximum context length"):
+        list(stage.execute(*_planned(stage, settings, catalog, [refused])))
+    ctx, works = _planned(stage, settings, catalog, [prose])
+    listed = text.listings
+    with pytest.raises(ModelUnavailable, match="maximum context length"):
+        list(stage.execute(ctx, works))
+    assert (text.requests, text.listings) == ([], listed)
+
+
+def test_an_interrupt_while_a_model_is_loading_sends_it_nothing(both):
+    """Ctrl-C while the text model's listing is awaited: once loaded, it is already stopped."""
+    settings, catalog, _, text = both
+    stage = RolesStage(settings)
+    ctx, works = _planned(stage, settings, catalog, [_resolved(catalog, 0, _prose_sets("seed"))])
+    listed, text.gate = text.listings, threading.Event()
+    previous = signal.signal(signal.SIGINT, signal.default_int_handler)
+
+    def interrupt():
+        while text.listings == listed:
+            time.sleep(0.01)
+        os.kill(os.getpid(), signal.SIGINT)
+
+    threading.Thread(target=interrupt, daemon=True).start()
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            list(stage.execute(ctx, works))
+    finally:
+        signal.signal(signal.SIGINT, previous)
+    text.gate.set()
+    time.sleep(0.5)  # the model is loaded, and its article's set would have been asked
+    assert text.requests == []
 
 
 def test_a_failed_article_does_not_stop_the_others_from_starting(both, monkeypatch):
