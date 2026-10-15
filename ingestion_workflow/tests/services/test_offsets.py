@@ -143,3 +143,12 @@ def test_wrap_keeps_the_group_a_pair_of_equal_letters_would_move():
     new, m = offsets.wrap(re.compile(r"^\s*#{1,6}\s+(.+?)\s*$", re.M), "\n\n#", "\n\n", old)
     assert new == "\n\n#R\n\n\nOf"
     assert m.span(old.index("R"), old.index("R") + 1) == (new.index("R"), new.index("R") + 1)
+
+
+def test_wrap_keeps_every_group_at_its_own_characters_across_matches():
+    old = "a\n\n##  R \n  \nb\n## Méthodes et résultats \n\n\n### Δ-test  \nc"
+    new, m = offsets.wrap(re.compile(r"^\s*#{1,6}\s+(.+?)\s*$", re.M), "\n\n#", "\n\n", old)
+    for name in ("R", "Méthodes et résultats", "Δ-test"):
+        a = old.index(name)
+        assert m.span(a, a + len(name)) == (new.index(name), new.index(name) + len(name))
+        assert new[new.index(name) - 3:new.index(name)] == "\n\n#"

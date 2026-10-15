@@ -11,8 +11,8 @@ its own copy: `view` is what the prose model reads of a span, rebuilt from the t
 from __future__ import annotations
 
 import re
-from functools import partial
 from dataclasses import dataclass, field
+from functools import partial
 from typing import List, Optional, Tuple
 
 from ingestion_workflow.services import offsets
