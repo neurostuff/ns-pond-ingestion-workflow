@@ -19,9 +19,9 @@ import collections
 import logging
 import re
 import threading
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from pathlib import Path
-from typing import Any, Deque, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.clients.model_server import ModelUnavailable
@@ -514,10 +514,12 @@ class RolesStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        """Each work's outcome, in the order of `works`, `ARTICLES` of them classified at once.
+        """Each work's outcome as it is decided, `ARTICLES` of them classified at once.
 
-        After a `ModelUnavailable` no article is started; the outcomes ahead of
-        it are yielded, then it is raised, and the articles from it on stay pending.
+        After a `ModelUnavailable` no article is started: the ones under way are
+        finished and yielded, then it is raised, and the article that met it and
+        those not started stay pending. On any exception that leaves the stage, an
+        interrupt included, every classifier is stopped, so no set not yet sent is.
         """
         back, works = taking_back(self.name, works)
         yield from back
@@ -525,20 +527,34 @@ class RolesStage:
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
         passages = ctx.catalog.artifacts(ids, "passages")
-        window: Deque[Tuple[Work, Future]] = collections.deque()
+        queue = collections.deque(works)
+        window: Dict[Future, Work] = {}
+        outage: Optional[ModelUnavailable] = None
         pool = ThreadPoolExecutor(max_workers=ARTICLES, thread_name_prefix="roles")
         try:
-            for work in works:
-                while window and (len(window) == ARTICLES or window[0][1].done()):
-                    yield self._outcome(*window.popleft())
-                if any(_stopped_by(future) for _, future in window):
-                    break
-                window.append((work, self._start(ctx, pool, work, triaged, extractions,
-                                                 passages)))
-            while window:
-                yield self._outcome(*window.popleft())
+            while window or (queue and outage is None):
+                while queue and outage is None and len(window) < ARTICLES:
+                    work = queue.popleft()
+                    window[self._start(ctx, pool, work, triaged, extractions, passages)] = work
+                done, _ = wait(window, return_when=FIRST_COMPLETED)
+                for future in done:
+                    work = window.pop(future)
+                    try:
+                        outcome = self._outcome(work, future)
+                    except ModelUnavailable as exc:
+                        outage = outage or exc
+                        continue
+                    yield outcome
+            if outage is not None:
+                raise outage
+        except BaseException as exc:
+            for classifier in list(self._classifiers.values()):
+                classifier.stop(f"the roles stage stopped: {type(exc).__name__}: {exc}")
+            raise
         finally:
-            pool.shutdown(cancel_futures=True)
+            # Not waited for: the articles under way are left to their stopped classifiers,
+            # which send nothing more. None is queued, as no more are started than it has threads.
+            pool.shutdown(wait=False)
 
     def _start(self, ctx: Context, pool: ThreadPoolExecutor, work: Work, triaged, extractions,
                passages) -> Future:
@@ -573,12 +589,14 @@ class RolesStage:
         return pool.submit(_assign, inputs)
 
     def _outcome(self, work: Work, future: Future) -> Outcome:
-        """The work's outcome once its roles are decided; `ModelUnavailable` is raised."""
+        """The work's outcome once its roles are decided; `ModelUnavailable` is raised.
+
+        Not the article's failure: the scheduler stops the stage and this article
+        and the rest stay pending.
+        """
         try:
             done = future.result()
         except ModelUnavailable:
-            # Not the article's failure: the scheduler stops the stage and this
-            # article and the rest stay pending.
             raise
         except UnansweredSets as exc:
             return Outcome.failure(
@@ -625,12 +643,6 @@ def _assign(inputs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         # Its sets were read without the table's header and rows: say which, and why.
         summary["tables_without_text"] = unread
     return assigned, summary
-
-
-def _stopped_by(future: Future) -> bool:
-    """Whether the work on `future` ended in a model outage."""
-    return (future.done() and not future.cancelled()
-            and isinstance(future.exception(), ModelUnavailable))
 
 
 class _Classifiers(Mapping):

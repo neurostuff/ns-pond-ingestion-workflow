@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import signal
 import socket
 import threading
 import time
@@ -755,10 +756,11 @@ def test_an_article_the_server_always_fails_on_does_not_starve_the_rest(env, stu
     ids = [ref.id, other.id]
     planned = stage.plan(ctx, [ref, other], catalog.artifacts(ids, "roles"),
                          catalog.artifacts(ids, "analyses"))
-    poisoned, fine = stage.execute(ctx, planned.pending)
-    assert (poisoned.article_id, poisoned.status) == (ref.id, Status.FAILED)
+    by_article = {o.article_id: o for o in stage.execute(ctx, planned.pending)}
+    poisoned, fine = by_article[ref.id], by_article[other.id]
+    assert poisoned.status is Status.FAILED
     assert "server error on this input" in poisoned.summary["unanswered"]["t2#1"]
-    assert (fine.article_id, fine.status) == (other.id, Status.OK)
+    assert fine.status is Status.OK
 
 
 def test_a_weights_only_re_merge_into_the_same_path_is_a_new_source(env, stub, tmp_path):
@@ -820,10 +822,11 @@ def both(tmp_path):
     text.close()
 
 
-def _resolved(catalog, n, payload):
+def _resolved(catalog, n, payload, passages=None):
     """An article whose resolve holds `payload`, with the prose and passages it was read from."""
     ref = catalog.register(Identifier(pmid=str(100 + n)))
-    summary = ({"tables": 0, "prose_analyses": 1, "prose_read": f"pr-{n}"} if "p" in payload
+    prose = "p" in (payload or {})
+    summary = ({"tables": 0, "prose_analyses": 1, "prose_read": f"pr-{n}"} if prose
                else {"tables": 1, "prose_analyses": 0, "basis": f"an-{n}"})
     catalog.record([
         Outcome(article_id=ref.id, stage="resolve", source="", fingerprint=f"r-{n}",
@@ -831,7 +834,7 @@ def _resolved(catalog, n, payload):
         Outcome(article_id=ref.id, stage="prose", source="", fingerprint=f"pr-{n}",
                 payload={}, summary={"passages_read": f"pa-{n}"}),
         Outcome(article_id=ref.id, stage="passages", source="", fingerprint=f"pa-{n}",
-                payload={}),
+                payload=passages or {}),
     ])
     return ref
 
@@ -877,8 +880,7 @@ def test_the_table_and_text_servers_are_asked_at_the_same_time(both):
     assert len(plan.pending) == 12
     listed = (table.listings, text.listings)
     outcomes = list(stage.execute(ctx, plan.pending))
-    # In the order planned, every one decided.
-    assert [o.article_id for o in outcomes] == ids
+    assert sorted(o.article_id for o in outcomes) == sorted(ids)
     assert {o.status for o in outcomes} == {Status.OK}
     # Each classifier is loaded once, by one article, however many ask for it at once.
     assert (table.listings, text.listings) == (listed[0] + 1, listed[1] + 1)
@@ -888,16 +890,73 @@ def test_the_table_and_text_servers_are_asked_at_the_same_time(both):
     assert any(a < d and c < b for a, b in by_server[table] for c, d in by_server[text])
 
 
-def test_a_server_never_has_more_than_its_share_of_sets_in_flight(env, stub):
-    settings, catalog, ref = env
-    many = _tables(*[f"set {i}" for i in range(3 * served_module.WORKERS)])
-    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-9",
-                            payload=many, summary={"tables": 1})])
+def _planned(stage, settings, catalog, refs):
+    ctx = Context(settings, catalog)
+    ids = [r.id for r in refs]
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, "roles"),
+                      catalog.artifacts(ids, "resolve"))
+    assert len(plan.pending) == len(refs)
+    return ctx, plan.pending
+
+
+def test_a_server_is_asked_32_sets_at_once_across_every_article(both):
+    """The cap is the server's, shared by the articles under way, not each article's."""
+    settings, catalog, table, _ = both
+    refs = [_resolved(catalog, n, _tables(*[f"set {i}" for i in range(10)])) for n in range(8)]
     spans = []
-    _timed(stub, spans, 0.3)
-    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
-    assert done.status is Status.OK
-    assert _most_at_once([(a, b) for _, a, b in spans]) == served_module.WORKERS
+    _timed(table, spans, 0.3)
+    stage = RolesStage(settings)
+    outcomes = list(stage.execute(*_planned(stage, settings, catalog, refs)))
+    assert {o.status for o in outcomes} == {Status.OK} and len(outcomes) == 8
+    assert _most_at_once([(a, b) for _, a, b in spans]) == 32
+
+
+def test_no_more_than_64_articles_are_under_way(both, monkeypatch):
+    # The server's cap above the window, so the sets in flight are the articles under way.
+    monkeypatch.setattr(served_module, "WORKERS", 100)
+    settings, catalog, table, _ = both
+    refs = [_resolved(catalog, n, _tables("patients")) for n in range(70)]
+    spans = []
+    _timed(table, spans, 1.0)
+    stage = RolesStage(settings)
+    outcomes = list(stage.execute(*_planned(stage, settings, catalog, refs)))
+    assert len(outcomes) == 70
+    assert _most_at_once([(a, b) for _, a, b in spans]) == 64
+
+
+def test_an_interrupt_stops_the_stage_at_once_and_sends_no_other_set(both):
+    """Ctrl-C leaves while sets are held at the server; the queued ones are never sent."""
+    settings, catalog, table, _ = both
+    previous = signal.signal(signal.SIGINT, signal.default_int_handler)
+    refs = [_resolved(catalog, n, _tables("patients", "controls")) for n in range(40)]
+    release, reply = threading.Event(), table.reply
+
+    def held(body):
+        release.wait(10)
+        return reply(body)
+
+    table.reply = held
+    stage = RolesStage(settings)
+    ctx, works = _planned(stage, settings, catalog, refs)
+
+    def interrupt():
+        while len(table.requests) < 32:
+            time.sleep(0.01)
+        os.kill(os.getpid(), signal.SIGINT)
+
+    threading.Thread(target=interrupt, daemon=True).start()
+    began = time.monotonic()
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            list(stage.execute(ctx, works))
+        took = time.monotonic() - began
+    finally:
+        signal.signal(signal.SIGINT, previous)
+    sent = len(table.requests)
+    release.set()
+    time.sleep(0.5)  # the held sets are answered, and the threads asking them are free
+    assert took < 5, f"the interrupt waited {took:.1f}s for the window"
+    assert sent == len(table.requests) == 32
 
 
 def test_an_outage_starts_no_article_and_keeps_those_ahead_of_it(both, monkeypatch):
@@ -936,3 +995,68 @@ def test_an_article_s_failure_among_many_at_once_fails_that_article_only(both, m
     found = catalog.artifacts(ids, "roles")
     assert [found[i][""].status for i in ids] == [Status.FAILED if n == 3 else Status.OK
                                                  for n in range(8)]
+
+
+def test_an_outage_deep_in_the_run_starts_no_later_article(both):
+    """The outage is the 101st of 200 articles: no set is sent once it is met."""
+    settings, catalog, table, _ = both
+    refs = [_resolved(catalog, n, _tables("refused" if n == 100 else f"set {n}"))
+            for n in range(200)]
+    answered, arrived, refused_at = table.reply, [], []
+
+    def reply(body):
+        arrived.append((time.monotonic(), body))
+        if "[NAME] refused" in str(body["messages"]):
+            refused_at.append(time.monotonic())
+            return TOO_LONG
+        time.sleep(0.05)
+        return answered(body)
+
+    table.reply = reply
+    ids = [r.id for r in refs]
+    report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
+    roles = report.stages["roles"]
+    assert "maximum context length is 4096 tokens" in roles.stopped
+    # 101st started only once no more than 63 were under way: 37 or more were done, and kept.
+    assert roles.ok >= 37 and roles.failed == 0 and roles.ok + roles.left_pending == 200
+    kept = catalog.artifacts(ids, "roles")
+    assert ids[100] not in kept and len(kept) == roles.ok
+    asked = {json.dumps(b["messages"]) for _, b in arrived}
+    assert not any(f"[NAME] set {n}" in a for a in asked for n in range(164, 200))
+    (stop,) = refused_at
+    assert not [t for t, _ in arrived if t > stop + 0.2]
+
+
+def test_a_failed_article_does_not_stop_the_others_from_starting(both, monkeypatch):
+    settings, catalog, table, _ = both
+    monkeypatch.setattr(roles_module, "ARTICLES", 2)
+    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
+    refs = [_resolved(catalog, n, _tables("poison" if n == 0 else f"set {n}")) for n in range(6)]
+    table.reply = lambda body: ((500, "engine error") if "[NAME] poison" in str(body["messages"])
+                                else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    stage = RolesStage(settings)
+    outcomes = {o.article_id: o.status for o in
+                stage.execute(*_planned(stage, settings, catalog, refs))}
+    assert outcomes == {r.id: Status.FAILED if n == 0 else Status.OK for n, r in enumerate(refs)}
+
+
+def test_each_way_an_article_fails_leaves_the_others_decided(both):
+    """An analysis that is not one, a passages text that changed, an upstream payload gone."""
+    settings, catalog, _, _ = both
+    refs = [_resolved(catalog, n, _tables("patients")) for n in range(6)]
+    broken = [
+        _resolved(catalog, 6, {"t2": {"analyses": ["not a set"]}}),
+        _resolved(catalog, 7, _tables("patients"),
+                  passages={"passages": [{"span": [0, 4]}], "full_text_path": "/gone.txt"}),
+        _resolved(catalog, 8, None),
+    ]
+    stage = RolesStage(settings)
+    ctx, works = _planned(stage, settings, catalog, refs[:3] + broken + refs[3:])
+    outcomes = {o.article_id: o for o in stage.execute(ctx, works)}
+    assert {outcomes[r.id].status for r in refs} == {Status.OK}
+    not_a_set, changed, gone = (outcomes[r.id] for r in broken)
+    assert {o.status for o in (not_a_set, changed, gone)} == {Status.FAILED}
+    assert not_a_set.error.startswith("AttributeError: ")
+    assert changed.error == "LookupError: the text the passages index is gone or has changed"
+    assert gone.error == "the resolve payload is gone"
+    assert gone.fingerprint == next(w.fingerprint for w in works if w.article_id == broken[2].id)
