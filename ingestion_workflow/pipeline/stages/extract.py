@@ -98,10 +98,10 @@ def made_from(extractions: Dict[str, Artifact], download_source: str) -> Optiona
 
 
 #: Why a PDF extraction holds no text and no tables although its file was read: its text
-#: layer maps `=` to 5 and the minus to 2 or a control character, so a coordinate
-#: `x = -22` reads `x5222` and a legend's `-22, 56, 42` reads `222, 56, 42`.
-SYMBOLS_AS_DIGITS = ("the PDF's text layer maps math symbols to digits (= as 5, minus as 2 "
-                     "or a control character), so its signs and coordinates cannot be trusted")
+#: layer maps `=` to 5 and the minus to 2, so a coordinate `x = -22` reads `x5222` and a
+#: legend's `-22, 56, 42` reads `222, 56, 42`.
+SYMBOLS_AS_DIGITS = ("the PDF's text layer maps math symbols to digits (= as 5, minus as 2), "
+                     "so its signs and coordinates cannot be trusted")
 
 
 def unusable(extraction: Artifact) -> bool:
@@ -437,7 +437,7 @@ class ExtractStage:
 
         Recorded OK, as an article whose extractor found no text is: the answer is the
         file's, and passages takes back what was made from the earlier text when no other
-        source has any. `reason` is what the funnel shows."""
+        source has any."""
         return Outcome(
             article_id=work.article_id,
             stage=self.name,
@@ -449,7 +449,6 @@ class ExtractStage:
                 "tables": 0,
                 "tables_with_coordinates": 0,
                 "has_text": False,
-                "reason": SYMBOLS_AS_DIGITS,
                 "symbols_as_digits": content.symbols_as_digits,
             },
         )

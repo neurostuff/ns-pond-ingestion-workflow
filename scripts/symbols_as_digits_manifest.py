@@ -1,16 +1,17 @@
-"""List the articles whose stored PDF text maps math symbols to digits, as a manifest.
+"""List the articles whose stored PDF text the pdf extractor now reads differently.
 
-The pdf extractor sets such a text aside (`pdf_extractor.symbols_as_digits`), but only
-when it runs. Extractions stored before that keep their misread text and tables, and
-their fingerprints are unchanged, so this finds them by running the same check over
-their stored texts, for a targeted refresh:
+The extractor restores a minus its text layer gave as a NUL (`normalize_text_tokens`)
+and sets aside a text that maps `=` to 5 (`pdf_extractor.symbols_as_digits`), but only
+when it runs. Extractions stored before that keep their old text and tables, and their
+fingerprints are unchanged, so this finds them by running the same code over their
+stored texts, for a targeted refresh:
 
     python scripts/symbols_as_digits_manifest.py <catalog root> <manifest.jsonl>
     ingest run -m <manifest.jsonl> --stage extract --refresh extract:pdf
     ingest run -m <manifest.jsonl>
 
-The catalog is opened read-only. Extractions already set aside hold no text, so a
-second run after the refresh lists none of them.
+The catalog is opened read-only. A re-extracted text is already repaired, and one set
+aside holds no text, so a second run after the refresh lists none of them.
 """
 
 from __future__ import annotations
@@ -26,12 +27,21 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from ingestion_workflow.catalog import Catalog, Status  # noqa: E402
+from ingestion_workflow.extractors.docling_convert import normalize_text_tokens  # noqa: E402
 from ingestion_workflow.extractors.pdf_extractor import symbols_as_digits  # noqa: E402
 from ingestion_workflow.models.ids import Identifier, Identifiers  # noqa: E402
+from ingestion_workflow.pipeline.stage import recorded_path  # noqa: E402
+
+
+def read_differently(text: str) -> bool:
+    """Whether the extractor would now repair `text` or set it aside."""
+    repaired = normalize_text_tokens(text)
+    return repaired != text or symbols_as_digits(repaired) is not None
 
 
 def misread_articles(catalog_root: Path) -> List[Identifier]:
-    """The identifiers of the articles whose OK pdf extraction's stored text is misread."""
+    """The identifiers of the articles whose OK pdf extraction's stored text the
+    extractor would now read differently."""
     root = Path(catalog_root).resolve()
     conn = sqlite3.connect((root / "catalog.sqlite").as_uri() + "?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
@@ -43,13 +53,9 @@ def misread_articles(catalog_root: Path) -> List[Identifier]:
             extraction = by_source.get("pdf")
             if extraction is None or extraction.status is not Status.OK:
                 continue
-            text_path = (catalog.payload(extraction) or {}).get("full_text_path")
-            if not text_path:
-                continue
-            # A relative path is relative to the directory holding the catalog
-            # (`Context.recorded_path`).
-            path = Path(text_path) if Path(text_path).is_absolute() else root.parent / text_path
-            if path.is_file() and symbols_as_digits(path.read_text(encoding="utf-8")):
+            path = recorded_path(root, (catalog.payload(extraction) or {}).get("full_text_path"))
+            if path is not None and path.is_file() and read_differently(
+                    path.read_text(encoding="utf-8")):
                 found.append(article_id)
         return list(catalog.identifiers(found).values())
     finally:

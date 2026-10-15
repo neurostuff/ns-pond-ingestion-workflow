@@ -39,8 +39,11 @@ _MINUS_TOKENS = (
     "－",  # fullwidth hyphen-minus
 )
 
-# Docling emits GLYPH<0> where a leading minus failed to map.
-_MINUS_GLYPH = re.compile(r"GLYPH<0>\s*(?=\d)")
+# Docling emits GLYPH<0> where a leading minus failed to map, and a text layer whose
+# font has no mapping for it gives the glyph's code 0 itself. A NUL right before a digit
+# was a minus in every case read in the corpus (coordinates, t and z values, -80 C);
+# with a space between it is also an approximation or a binary minus, so it is left.
+_MINUS_GLYPH = re.compile(r"GLYPH<0>\s*(?=\d)|\x00(?=\d)")
 _DASH_BEFORE_DIGIT = re.compile(r"-(\s+)(?=\d)")
 
 # Docling's cell bbox is drawn around the glyphs it recognised, so a minus sign
@@ -52,7 +55,7 @@ _SIGN_CHARS = ("-", "+") + _MINUS_TOKENS
 
 
 def normalize_text_tokens(text: Any) -> Any:
-    """Replace Docling GLYPH tokens and typographic dashes with plain ASCII."""
+    """Replace Docling GLYPH tokens, a NUL minus and typographic dashes with plain ASCII."""
     if not isinstance(text, str):
         return text
 

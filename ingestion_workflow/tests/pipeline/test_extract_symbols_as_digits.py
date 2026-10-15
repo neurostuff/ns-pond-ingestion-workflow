@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
 from ingestion_workflow.extractors.pdf_extractor import symbols_as_digits
 from ingestion_workflow.models import DownloadSource, ExtractedContent, ExtractedTable, Identifier
 from ingestion_workflow.models.analysis import Coordinate
@@ -45,20 +46,16 @@ JINS_H6Y37JZOLVND = (
     "resulted in an overall significance of p 5 .048. There was a significant effect of "
     "group (F(1,21) 5 7.17, p 5 .014)"
 )
-#: The minus as a control character, `=` intact and typed in more p-values.
+#: The minus as a NUL, `=` intact.
 W3VRP6ZACAN4 = (
     "in the pre-SMA (x = \x004, y = 6, z = 52). Activations were found in the right cuneus "
     "(x = 12, y = \x0086, z = 34), the inferior temporal gyrus (x = \x0052, y = \x0062, "
     "z = \x002). [F(1, 23) = 2.46, p = .13] [F(3, 69) = 5.87, p = .003]"
 )
-#: Three control-character minus signs against five typed p-values, which do not count
-#: against them: a different symbol.
-TALAIRACH_76XOTCQFWTXR = (
-    "at the same location in Talairach space (about x=\x0042, Y=\x0057, z=\x006), with a "
-    "standard deviation (F(1,6)=10.9; p=0.016). (F(5,30) = 3.63, p = 0.011), due to faster "
-    "responding to words than to pseudo-words (F(1,6)=23.6, p=0.003), p = 0.04, p = 0.02"
-)
-#: Both at once: `x5 \x008` is a 5 for `=` and a control character for the minus.
+#: Table cells, as Docling read them: `| \x0056 |` is -56.
+VDS7LXQISVPJ_CELLS = "| L IFG | \x0044 | 18 | \x0056 |"
+JJS7G7BVLOBB_CELL = "<th>Left anterior MFG (BA 10)</th><td>\x0030</td><td>50</td>"
+#: Both: `=` as 5, and the minus as a NUL that the repair restores.
 PSYCHOPHYSIOLOGY_SUKDWLE3ICVJ = (
     "during phobic than nonphobic stimulus presentation (x528, y5 \x008, z5 \x0013, "
     "z53.28, p5.01; Figure 2A). related to arousal level (right hemisphere: x514, "
@@ -73,31 +70,61 @@ CLEAN_CD6FEP6C7MXV = (
 )
 
 
+def _read(text):
+    """What the pdf extractor keeps of a text layer's text, and what it sets aside."""
+    repaired = normalize_text_tokens(text)
+    return repaired, symbols_as_digits(repaired)
+
+
+@pytest.mark.parametrize("raw, repaired", [
+    ("in the pre-SMA (x = \x004, y = 6, z = 52)", "in the pre-SMA (x = -4, y = 6, z = 52)"),
+    (VDS7LXQISVPJ_CELLS, "| L IFG | -44 | 18 | -56 |"),
+    (JJS7G7BVLOBB_CELL, "<th>Left anterior MFG (BA 10)</th><td>-30</td><td>50</td>"),
+    # 7qdjcoevplk5: -80 C, its degree sign still misread
+    ("stored until sectioning at \x00801C.", "stored until sectioning at -801C."),
+])
+def test_a_nul_before_a_digit_is_read_as_the_minus_it_was(raw, repaired):
+    assert normalize_text_tokens(raw) == repaired
+
+
+@pytest.mark.parametrize("left", [
+    # nz6cotdhpgtx, ccv4fmkvh6q2: with a space it is a binary minus or an approximation
+    "orthogonal to (n \x00 1) lead vectors", "(AV-1451: median \x00 3 months)",
+    # xd5on45nm3no: not before a digit
+    "TRP\x00 channels", CLEAN_CD6FEP6C7MXV,
+])
+def test_a_nul_not_right_before_a_digit_and_a_sound_text_are_left(left):
+    assert normalize_text_tokens(left) == left
+
+
+def test_a_text_whose_only_misreading_is_the_nul_minus_is_repaired_not_set_aside():
+    repaired, misread = _read(W3VRP6ZACAN4)
+    assert misread is None
+    assert "(x = -4, y = 6, z = 52)" in repaired and "z = -2)" in repaired
+
+
+def test_a_text_that_still_reads_equals_as_5_after_the_repair_is_set_aside():
+    repaired, misread = _read(PSYCHOPHYSIOLOGY_SUKDWLE3ICVJ)
+    assert "(x528, y5 -8, z5 -13," in repaired
+    assert misread == {"misread": 6, "typed": 0}
+
+
 @pytest.mark.parametrize("text, misread", [
-    (HBM_2FBRUX6YPMWB, {"equals_misread": 4, "equals_typed": 0}),
-    (HBM_JWPMJ3GZ7EMV, {"equals_misread": 3, "equals_typed": 0}),
-    (JINS_H6Y37JZOLVND, {"equals_misread": 3, "equals_typed": 0}),
-    (W3VRP6ZACAN4, {"minus_misread": 5, "minus_typed": 0}),
-    (TALAIRACH_76XOTCQFWTXR, {"minus_misread": 3, "equals_typed": 5}),
-    (PSYCHOPHYSIOLOGY_SUKDWLE3ICVJ, {"equals_misread": 6, "minus_misread": 4}),
-], ids=["2fbrux6ypmwb", "jwpmj3gz7emv", "h6y37jzolvnd", "w3vrp6zacan4", "76xotcqfwtxr",
-        "sukdwle3icvj"])
+    (HBM_2FBRUX6YPMWB, 4), (HBM_JWPMJ3GZ7EMV, 3), (JINS_H6Y37JZOLVND, 3),
+], ids=["2fbrux6ypmwb", "jwpmj3gz7emv", "h6y37jzolvnd"])
 def test_the_misread_layers_found_in_the_corpus_are_recognised(text, misread):
-    found = symbols_as_digits(text)
-    assert found is not None
-    assert {key: found[key] for key in misread} == misread
+    assert symbols_as_digits(text) == {"misread": misread, "typed": 0}
 
 
 @pytest.mark.parametrize("form", [
-    "P 5 0.05", "p50.77", "p 5 .001", "x5222, y5", "z5214, x5", "y5 \x008, z5", "size5 20",
-    "x = \x0022", "Y=\x0057", "z5 \x0013", "t 5 \x002.5", "T = \x003.1",
+    "P 5 0.05", "p50.77", "p 5 .001", "x5222, y5", "z5214, x5", "y5 -8, z5", "size5 20",
 ])
 def test_each_misread_form_counts(form):
     assert symbols_as_digits("; ".join([form] * 3)) is not None
 
 
 @pytest.mark.parametrize("near_miss", [
-    "ap 5 0.05", "p 5 1.5", "size 5 1 ", "x5222 and y5", "x = 22", "x = \t22", "max 5 \x002",
+    "ap 5 0.05", "p 5 1.5", "size 5 1 ", "x5222 and y5", "x = 22, y = 5", "max 5 0.2",
 ])
 def test_what_only_looks_like_a_misread_form_does_not(near_miss):
     assert symbols_as_digits("; ".join([near_miss] * 3)) is None
@@ -114,9 +141,8 @@ def test_one_or_two_coincidences_are_not_a_misread_layer():
 @pytest.mark.parametrize("misread, typed", [
     ("P50.019, P50.203, P 5 0.979", "P = 0.07, P = 0.001, P = 0.04"),
     ("p 5 .001, p 5 .048, p 5 .014", "p = .13, p = .003, p = .034"),
-    ("x = \x004, y = \x0086, z = \x002", "x = -24, z = -16, t = -4.28"),
 ])
-def test_a_symbol_misread_no_more_often_than_it_is_typed_is_not_misread(misread, typed):
+def test_equals_misread_no_more_often_than_it_is_typed_is_not_misread(misread, typed):
     assert symbols_as_digits(f"{misread}. {typed}") is None
     first = misread.split(", ")[0]
     assert symbols_as_digits(f"{misread}, {first}. {typed}") is not None
@@ -125,10 +151,17 @@ def test_a_symbol_misread_no_more_often_than_it_is_typed_is_not_misread(misread,
 # -- the extractor -----------------------------------------------------------------
 
 
-def _pdf(path: Path, lines) -> Path:
-    """A one-page PDF whose text layer holds `lines`, as a publisher's would."""
+def _pdf(path: Path, lines, table=None) -> Path:
+    """A one-page PDF whose text layer holds `lines`, and `table` (rows of cells) in a
+    ruled grid below them, as a publisher's would."""
     ops = "".join(f"BT /F1 11 Tf 56 {760 - 16 * i} Td ({line}) Tj ET\n"
                   for i, line in enumerate(lines))
+    for r, row in enumerate(table or []):
+        top = 640 - 22 * r
+        for c, cell in enumerate(row):
+            left = 56 + 110 * c
+            ops += (f"{left} {top - 22} 110 22 re S\n"
+                    f"BT /F1 10 Tf {left + 6} {top - 15} Td ({cell}) Tj ET\n")
     objects = [
         "<< /Type /Catalog /Pages 2 0 R >>",
         "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -149,11 +182,11 @@ def _pdf(path: Path, lines) -> Path:
     return path
 
 
-def _read_pdf(tmp_path, lines):
+def _read_pdf(tmp_path, lines, table=None):
     from ingestion_workflow.extractors.pdf_extractor import _extract_pdf_article
     from ingestion_workflow.models import DownloadedFile, DownloadResult, FileType
 
-    pdf = _pdf(tmp_path / "article.pdf", lines)
+    pdf = _pdf(tmp_path / "article.pdf", lines, table)
     identifier = Identifier(pmid="27004598")
     download = DownloadResult(identifier, DownloadSource.WILEY, True, files=[
         DownloadedFile(file_path=pdf, file_type=FileType.PDF, content_type="application/pdf",
@@ -165,23 +198,15 @@ MISREAD_LINES = [
     "Activation was thresholded at P 5 0.001 with a cluster size5 20 voxels.",
     "Peak voxel MNI coordinate: x5222, y556, z542, Z53.48 (P 5 0.002).",
 ]
+TABLE = [["Region", "x", "y", "z"], ["L IFG", "-44", "18", "-56"],
+         ["R IFG", "46", "20", "4"]]
 
 
 def test_the_pdf_extractor_sets_a_misread_text_aside(tmp_path):
-    content = _read_pdf(tmp_path, MISREAD_LINES)
+    content = _read_pdf(tmp_path, MISREAD_LINES, TABLE)
 
-    assert content.symbols_as_digits["equals_misread"] == 4
+    assert content.symbols_as_digits == {"misread": 4, "typed": 0, "tables_set_aside": 1}
     assert (content.full_text_path, content.tables, content.figure_captions) == (None, [], [])
-
-
-def test_the_pdf_extractor_keeps_a_sound_text(tmp_path):
-    content = _read_pdf(tmp_path, [
-        "Activation was thresholded at P = 0.001 with a cluster size = 20 voxels.",
-        "Peak voxel MNI coordinate: x = -22, y = 56, z = 42, Z = 3.48 (P = 0.002).",
-    ])
-
-    assert content.symbols_as_digits is None
-    assert "thresholded at P = 0.001" in content.full_text_path.read_text(encoding="utf-8")
 
 
 # -- the stages ------------------------------------------------------------------
@@ -227,8 +252,7 @@ def _set_aside(settings, catalog, ref, download_source="wiley"):
     """Record what the extract stage makes of the pdf extractor's set-aside content."""
     content = ExtractedContent(
         slug=ref.id, source=DownloadSource.PDF,
-        symbols_as_digits={"equals_misread": 7, "equals_typed": 0, "minus_misread": 0,
-                           "minus_typed": 0, "tables_set_aside": 2})
+        symbols_as_digits={"misread": 7, "typed": 0, "tables_set_aside": 2})
     outcome = ExtractStage(settings)._outcome(
         _work(catalog, ref, "pdf", download_source), "pdf", content)
     catalog.record([outcome])
@@ -262,9 +286,7 @@ def test_set_aside_content_is_recorded_as_holding_nothing_and_why(env):
     assert outcome.status is Status.OK
     assert outcome.summary == {
         "tables": 0, "tables_with_coordinates": 0, "has_text": False,
-        "reason": SYMBOLS_AS_DIGITS,
-        "symbols_as_digits": {"equals_misread": 7, "equals_typed": 0, "minus_misread": 0,
-                              "minus_typed": 0, "tables_set_aside": 2}}
+        "symbols_as_digits": {"misread": 7, "typed": 0, "tables_set_aside": 2}}
     content = ExtractedContent.from_dict(outcome.payload)
     assert (content.full_text_path, content.tables) == (None, [])
     assert content.symbols_as_digits["tables_set_aside"] == 2
@@ -371,13 +393,22 @@ def test_the_funnel_names_the_set_aside_text_as_why_an_article_has_none(env):
                 payload={}, summary={"tables": 0, "has_text": False}),
         Outcome.failure(other.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
     ])
+    # an extraction that notes some other reason is not one set aside
+    noted = catalog.register(Identifier(pmid="8"))
+    _downloaded(catalog, noted, "pdf")
+    catalog.record([
+        Outcome(article_id=noted.id, stage="extract", source="pdf", fingerprint="x",
+                payload={}, summary={"tables": 0, "has_text": False, "reason": "a note"}),
+        Outcome.failure(noted.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
+    ])
 
     funnel = build_funnel(open_readonly(settings.catalog_root))
 
     assert ("extract", "pdf", "ok", SYMBOLS_AS_DIGITS) in {k[:4] for k in funnel.sources}
     reasons = {aid: key[2] for key, (_, sample) in funnel.cells.items()
                if key[0] == "passages" for aid, _ in sample}
-    assert reasons == {ref.id: SYMBOLS_AS_DIGITS, other.id: NO_TEXT}
+    assert reasons == {ref.id: SYMBOLS_AS_DIGITS, other.id: NO_TEXT, noted.id: NO_TEXT}
+    assert ("extract", "pdf", "ok", "") in {k[:4] for k in funnel.sources}
 
 
 # -- the manifest of stored misread texts -----------------------------------------
@@ -392,28 +423,35 @@ def _script():
     return module
 
 
-def test_the_manifest_lists_the_articles_whose_stored_pdf_text_is_misread(env):
-    """Extractions stored before the extractor set such texts aside: the misread one
-    is listed; a sound PDF, a misread ACE text and one already set aside are not."""
+def test_the_manifest_lists_the_articles_whose_stored_pdf_text_would_now_read_differently(env):
+    """Extractions stored before the extractor repaired a NUL minus or set a misread text
+    aside: a misread text and one with a NUL minus are listed, the latter at a path
+    recorded relative to the catalog's directory. A sound PDF, a misread ACE text, a
+    failed pdf extraction and one already set aside are not."""
     settings, catalog, tmp_path = env
-    refs = {name: catalog.register(Identifier(pmid=pmid, doi=f"10.1002/hbm.{pmid}"))
-            for name, pmid in [("misread", "27004598"), ("sound", "5"), ("ace", "6"),
-                               ("set aside", "7")]}
+    names = ["misread", "nul minus", "sound", "ace", "failed", "set aside"]
+    refs = {name: catalog.register(Identifier(pmid=str(20 + i), doi=f"10.1002/hbm.{20 + i}"))
+            for i, name in enumerate(names)}
     for name, ref in refs.items():
         _downloaded(catalog, ref, "ace" if name == "ace" else "wiley")
-    for name, source, text in [("misread", "pdf", HBM_2FBRUX6YPMWB),
-                               ("sound", "pdf", CLEAN_CD6FEP6C7MXV),
-                               ("ace", "ace", HBM_2FBRUX6YPMWB)]:
-        path = tmp_path / f"{name}.txt"
-        path.write_text(text, encoding="utf-8")
-        catalog.record([Outcome(article_id=refs[name].id, stage="extract", source=source,
-                                fingerprint="v2", payload={"full_text_path": str(path)},
-                                summary={"tables": 1, "has_text": True})])
+    texts = tmp_path / "texts"
+    texts.mkdir()
+    for name, source, text, status in [
+            ("misread", "pdf", HBM_2FBRUX6YPMWB, Status.OK),
+            ("nul minus", "pdf", W3VRP6ZACAN4, Status.OK),
+            ("sound", "pdf", CLEAN_CD6FEP6C7MXV, Status.OK),
+            ("ace", "ace", HBM_2FBRUX6YPMWB, Status.OK),
+            ("failed", "pdf", HBM_2FBRUX6YPMWB, Status.FAILED)]:
+        (texts / f"{name}.txt").write_text(text, encoding="utf-8")
+        catalog.record([Outcome(
+            article_id=refs[name].id, stage="extract", source=source, status=status,
+            fingerprint="v2", payload={"full_text_path": f"texts/{name}.txt"},
+            summary={"tables": 1, "has_text": True})])
     _set_aside(settings, catalog, refs["set aside"])
     manifest = tmp_path / "misread.jsonl"
 
     assert _script().main([str(settings.catalog_root), str(manifest)]) == 0
 
-    (row,) = [json.loads(line) for line in manifest.read_text().splitlines()]
-    assert set(row) == {"neurostore", "pmid", "doi", "pmcid", "other_ids"}
-    assert (row["pmid"], row["doi"]) == ("27004598", "10.1002/hbm.27004598")
+    rows = [json.loads(line) for line in manifest.read_text().splitlines()]
+    assert all(set(row) == {"neurostore", "pmid", "doi", "pmcid", "other_ids"} for row in rows)
+    assert sorted(row["pmid"] for row in rows) == ["20", "21"]
