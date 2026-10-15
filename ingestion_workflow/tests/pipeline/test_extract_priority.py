@@ -93,28 +93,98 @@ def test_it_falls_through_when_the_preferred_source_fails(env):
     assert [w.source for w in plan.pending] == ["ace"]
 
 
-def test_a_success_from_any_source_is_fresh(env):
-    settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC5", pmid="5"))
-    downloaded(catalog, ref, "pubget", "ace")
-    stage = ExtractStage(settings)
-    download = catalog.artifact(ref.id, "download", "ace")
+def extracted(catalog, ref, source, download_source=None):
+    download = catalog.artifact(ref.id, "download", download_source or source)
     catalog.record(
         [
             Outcome(
                 article_id=ref.id,
                 stage="extract",
-                source="ace",
-                fingerprint=stage.fingerprint_for("ace", download),
+                source=source,
+                fingerprint=ExtractStage(Settings()).fingerprint_for(
+                    download.source, download
+                ),
                 payload={"tables": []},
             )
         ]
     )
 
+
+def test_a_success_from_the_chosen_source_is_fresh(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmcid="PMC5", pmid="5"))
+    downloaded(catalog, ref, "pubget", "ace")
+    extracted(catalog, ref, "pubget")
+
     plan = plan_for(settings, catalog, [ref])
 
     assert plan.pending == []
     assert plan.fresh == 1
+
+
+def test_an_ace_extraction_does_not_hold_back_a_better_download_added_later(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="20", doi="10.1/e"))
+    downloaded(catalog, ref, "ace")
+    extracted(catalog, ref, "ace")
+    assert plan_for(settings, catalog, [ref]).fresh == 1
+
+    downloaded(catalog, ref, "elsevier")
+    plan = plan_for(settings, catalog, [ref])
+
+    assert plan.fresh == 0
+    assert [w.source for w in plan.pending] == ["elsevier"]
+
+
+def test_a_wiley_download_is_read_as_pdf_and_outranks_ace(env):
+    settings, catalog = env
+    settings = settings.merge_overrides({"download_sources": ["pdf", "ace"]})
+    ref = catalog.register(Identifier(pmid="21", doi="10.1002/w"))
+    downloaded(catalog, ref, "ace")
+    extracted(catalog, ref, "ace")
+    downloaded(catalog, ref, "wiley")
+
+    plan = plan_for(settings, catalog, [ref])
+
+    assert [(w.source, w.upstream.source) for w in plan.pending] == [("pdf", "wiley")]
+
+
+def test_a_better_source_that_failed_for_good_leaves_the_ace_extraction_fresh(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="22", doi="10.1/f"))
+    downloaded(catalog, ref, "ace", "elsevier")
+    extracted(catalog, ref, "ace")
+    catalog.record([Outcome.failure(ref.id, "extract", "elsevier", "nope", permanent=True)])
+
+    plan = plan_for(settings, catalog, [ref])
+
+    assert plan.pending == []
+    assert plan.fresh == 1
+
+
+def test_a_better_source_in_backoff_leaves_the_lower_fresh_extraction_standing(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="23", doi="10.1/g"))
+    downloaded(catalog, ref, "ace", "elsevier")
+    extracted(catalog, ref, "ace")
+    catalog.record([Outcome.failure(ref.id, "extract", "elsevier", "timeout")])
+
+    waiting = plan_for(settings, catalog, [ref], max_attempts=3, retry_after=timedelta(days=1))
+    assert (waiting.fresh, waiting.pending) == (1, [])
+
+    due = plan_for(settings, catalog, [ref], max_attempts=3, retry_after=timedelta(0))
+    assert [w.source for w in due.pending] == ["elsevier"]
+
+
+def test_an_article_with_only_ace_stays_fresh(env):
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="24"))
+    downloaded(catalog, ref, "ace")
+    extracted(catalog, ref, "ace")
+
+    plan = plan_for(settings, catalog, [ref])
+
+    assert (plan.fresh, plan.pending) == (1, [])
 
 
 def test_a_source_dropped_from_the_config_is_still_reachable(env):

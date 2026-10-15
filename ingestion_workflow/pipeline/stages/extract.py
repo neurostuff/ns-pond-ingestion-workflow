@@ -216,7 +216,8 @@ class ExtractStage:
         the analyses stage consumes a single extraction, so doing the others is
         work whose result is thrown away. The configured `download_sources`
         order decides which one, and a source is only tried when every source
-        above it has been ruled out.
+        above it has been ruled out. The article is fresh when that source's
+        extraction is, not when a lower one's is.
         """
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
@@ -238,19 +239,25 @@ class ExtractStage:
                 continue
 
             existing = artifacts.get(ref.id, {})
-            if any(
-                ctx.is_fresh(existing.get(source), self.fingerprint_for(download.source, download))
-                for source, download in downloads.items()
-            ):
-                plan.fresh += 1
-                continue
-
+            # The first source not ruled out is the article's one extraction: fresh
+            # if that source's is, else the work. A source ruled out (permanent, or
+            # in backoff) lets the next one stand, so a lower fresh extraction is
+            # kept until the better source is due again.
             chosen = None
+            is_fresh = False
             for source in self._priority(list(downloads)):
+                download = downloads[source]
+                if ctx.is_fresh(existing.get(source), self.fingerprint_for(download.source, download)):
+                    is_fresh = True
+                    break
                 count, last = attempts(source).get(ref.id, (0, None))
                 if ctx.should_attempt(existing.get(source), count, last, self.name, source):
-                    chosen = (source, downloads[source])
+                    chosen = (source, download)
                     break
+
+            if is_fresh:
+                plan.fresh += 1
+                continue
 
             if chosen is None:
                 plan.permanent += 1
