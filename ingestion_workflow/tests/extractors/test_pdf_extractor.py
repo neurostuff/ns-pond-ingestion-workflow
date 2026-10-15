@@ -252,6 +252,16 @@ def test_cell_text_from_layer_keeps_docling_read_when_layer_is_corrupt():
     assert _cell_text_from_layer(cell, text_page, page_height=100.0) is None
 
 
+def test_cell_text_from_layer_keeps_docling_read_when_only_the_sign_is_corrupt():
+    r"""The box itself reads "50", but the widened read shows its sign as a NUL.
+
+    Returning "50" would drop the sign; Docling's "\x0050" is repaired to "-50"."""
+    cell = _FakeCell("\x0050")
+    text_page = _FakeTextPage("50", padded="\x0050")
+
+    assert _cell_text_from_layer(cell, text_page, page_height=100.0) is None
+
+
 def test_cell_text_from_layer_still_recovers_a_dropped_minus():
     """The widened read is accepted when it only adds a sign character."""
     cell = _FakeCell("48")

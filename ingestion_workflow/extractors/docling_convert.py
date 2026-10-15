@@ -299,7 +299,11 @@ def _cell_text_from_layer(cell: Any, text_page: Any, page_height: float) -> Opti
         return None
 
     padded = _bounded_text(text_page, bbox.l - _SIGN_PAD, bottom, bbox.r, top)
-    if padded and not _is_unusable(padded) and padded != exact and padded.endswith(exact):
+    if padded and _is_unusable(padded):
+        # The sign outside the box is a control character ("\x0050"): `exact` lost it,
+        # and Docling's own read keeps it for `normalize_text_tokens` to restore.
+        return None
+    if padded and padded != exact and padded.endswith(exact):
         prefix = padded[: -len(exact)]
         if prefix in _SIGN_CHARS:
             return padded

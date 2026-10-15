@@ -39,7 +39,10 @@ logger = logging.getLogger(__name__)
 #: A change whose effect on stored extractions can be computed from their stored
 #: output is applied by refreshing just those (`--refresh extract:<source>` over a
 #: manifest) instead: setting aside a PDF whose text layer maps symbols to digits
-#: (scripts/symbols_as_digits_manifest.py).
+#: (scripts/symbols_as_digits_manifest.py). Fingerprints hash inputs, not outputs,
+#: so triage and analyses stay fresh over a re-extracted table: a refresh of
+#: `extract:<source>` is always followed by `--refresh triage --refresh analyses` on
+#: the same manifest, which alone also recovers a deploy interrupted between the two.
 #:
 #: pmc and europepmc are extracted by pubget's code, from pubget's layout, so
 #: a change to pubget's extraction bumps them too. Listed at the version they
