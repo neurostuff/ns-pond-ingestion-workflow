@@ -1,0 +1,89 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1%7C10.1016%2Fs0924-9338%2802%2900676-4%7C10.1038%2Fnature14539&mailto=test%40example.com&per_page=50&select=doi%2Cis_retracted
+  response:
+    body:
+      string: '{"meta": {"count": 3, "db_response_time_ms": 37, "page": 1, "per_page":
+        50, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    \"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\"\n    or
+        \"10.1016/s0924-9338(02)00676-4\"\n    or 10.1038/nature14539\n  )", "x_new_oql":
+        "get works where DOI is (\"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\"
+        or \"10.1016/s0924-9338(02)00676-4\" or 10.1038/nature14539)", "oqo": {"get_rows":
+        "works", "filter_rows": [{"join": "or", "filters": [{"column_id": "doi", "value":
+        "10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1"}, {"column_id":
+        "doi", "value": "10.1016/s0924-9338(02)00676-4"}, {"column_id": "doi", "value":
+        "10.1038/nature14539"}]}]}, "url": "/works?filter=doi:10.1002%2F%28sici%291097-0193%281998%296:3%3C160::aid-hbm5%3E3.0.co%3B2-1|10.1016%2Fs0924-9338%2802%2900676-4|10.1038%2Fnature14539&per_page=50"},
+        "cost_usd": 0.0001}, "results": [{"doi": "https://doi.org/10.1038/nature14539",
+        "is_retracted": false}, {"doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "is_retracted": false}, {"doi": "https://doi.org/10.1016/s0924-9338(02)00676-4",
+        "is_retracted": false}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4af879e3dc0f789-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 15 Oct 2026 14:31:51 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '990'
+      X-RateLimit-Remaining-USD:
+      - '0.099'
+      X-RateLimit-Reset:
+      - '34090'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Te%2BsOplH2V4Z9fjWXxziz37ILe8EYozbU0W7gVlNJUM%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792074710"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=Te%2BsOplH2V4Z9fjWXxziz37ILe8EYozbU0W7gVlNJUM%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792074710"
+    status:
+      code: 200
+      message: OK
+version: 1

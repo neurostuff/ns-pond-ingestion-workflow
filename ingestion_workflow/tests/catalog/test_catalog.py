@@ -418,3 +418,59 @@ def test_an_already_fused_article_still_resolves(tmp_path):
         assert catalog._conn.execute("SELECT count(*) FROM articles").fetchone()[0] == before
         # a new paper's PMID beside the fused article's DOI is still refused
         assert catalog.register(Identifier(pmid="3", doi="10.1/a")).id != fused.id
+
+
+SICI = "10.1002/(sici)1097-0193(1997)5:4<312::aid-hbm18>3.0.co;2-f"
+
+
+def _as_version_one(root, *aliases):
+    """A catalog written before doi aliases were bare: URL-form rows, schema version 1."""
+    with Catalog.open(root) as cat:
+        for article, kind, value in aliases:
+            cat._conn.execute(
+                "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, '2026-01-01')", (article,)
+            )
+            cat._conn.execute(
+                "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)", (kind, value, article)
+            )
+        cat._conn.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
+
+
+def _aliases(root, kind="doi"):
+    with Catalog.open(root) as cat:
+        return {
+            (row["value"], row["article_id"])
+            for row in cat._conn.execute("SELECT value, article_id FROM aliases WHERE kind=?", (kind,))
+        }
+
+
+def test_a_url_form_doi_alias_is_found_again_as_the_bare_doi(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_one(root, ("a1", "pmid", "9234"), ("a1", "doi", "https://doi.org/" + SICI))
+
+    with Catalog.open(root) as cat:
+        ref = cat.register(Identifier(pmid="9234", doi="https://doi.org/" + SICI))
+        assert ref.id == "a1"
+        assert cat.count_articles() == 1
+    assert _aliases(root) == {(SICI, "a1")}
+
+
+def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a1", "doi", SICI))
+    assert _aliases(root) == {(SICI, "a1")}
+
+
+def test_a_bare_doi_another_article_has_is_left_and_logged(tmp_path, caplog):
+    root = tmp_path / "cat"
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI))
+    assert _aliases(root) == {("https://doi.org/" + SICI, "a1"), (SICI, "a2")}
+    assert "a1" in caplog.text and "a2" in caplog.text
+
+
+def test_a_current_catalog_is_not_rewritten(tmp_path):
+    root = tmp_path / "cat"
+    with Catalog.open(root) as cat:
+        cat._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
+        cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', 'https://x.org/10.1/a', 'a1')")
+    assert _aliases(root) == {("https://x.org/10.1/a", "a1")}

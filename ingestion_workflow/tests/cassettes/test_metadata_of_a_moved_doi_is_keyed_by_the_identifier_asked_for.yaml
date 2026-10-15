@@ -1,0 +1,520 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1469-8749.2004.tb00996.x%7C10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1&mailto=test%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 2, "db_response_time_ms": 19, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    \"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\"\n    or
+        10.1111/j.1469-8749.2004.tb00996.x\n  )", "x_new_oql": "get works where DOI
+        is (\"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\" or 10.1111/j.1469-8749.2004.tb00996.x)",
+        "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
+        "doi", "value": "10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1"},
+        {"column_id": "doi", "value": "10.1111/j.1469-8749.2004.tb00996.x"}]}]}, "url":
+        "/works?filter=doi:10.1002%2F%28sici%291097-0193%281998%296:3%3C160::aid-hbm5%3E3.0.co%3B2-1|10.1111%2Fj.1469-8749.2004.tb00996.x&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2016444985",
+        "doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "mag": "2016444985", "pmid": "https://pubmed.ncbi.nlm.nih.gov/9673671"}, "display_name":
+        "Analysis of fMRI data by blind separation into independent spatial components",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5021255536",
+        "display_name": "Martin J. McKeown", "orcid": "https://orcid.org/0000-0002-4048-0817",
+        "observed_orcids": ["https://orcid.org/0000-0002-4048-0817"]}, "institutions":
+        [{"id": "https://openalex.org/I1307098950", "display_name": "Salk Institute
+        for Biological Studies", "ror": "https://ror.org/03xez1567", "country_code":
+        "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
+        {"id": "https://openalex.org/I1344073410", "display_name": "Howard Hughes
+        Medical Institute", "ror": "https://ror.org/006w34k90", "country_code": "US",
+        "type": "facility", "lineage": ["https://openalex.org/I1344073410"]}], "countries":
+        ["US"], "is_corresponding": true, "raw_author_name": "Martin J. Mckeown",
+        "raw_affiliation_strings": ["Howard Hughes Medical Institute, Computational
+        Neurobiology Laboratory, Salk Institute for Biological Studies, La Jolla,
+        California 92186-5800"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Howard Hughes Medical Institute, Computational Neurobiology Laboratory, Salk
+        Institute for Biological Studies, La Jolla, California 92186-5800", "institution_ids":
+        ["https://openalex.org/I1307098950", "https://openalex.org/I1344073410"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5053345339",
+        "display_name": "Scott Makeig", "orcid": "https://orcid.org/0000-0002-9048-8438",
+        "observed_orcids": ["https://orcid.org/0000-0002-9048-8438"]}, "institutions":
+        [{"id": "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}, {"id": "https://openalex.org/I4210105790",
+        "display_name": "Naval Health Research Center", "ror": "https://ror.org/01hzj5y23",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I1312537475",
+        "https://openalex.org/I1330347796", "https://openalex.org/I3130687028", "https://openalex.org/I4210105790",
+        "https://openalex.org/I4391768141"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Scott Makeig", "raw_affiliation_strings": ["Cognitive
+        Psychophysiology Laboratory, Naval Health Research Center, San Diego, California
+        92186-5122", "Department of Neurosciences, School of Medicine, University
+        of California at San Diego, La Jolla, California 92093"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Cognitive Psychophysiology Laboratory,
+        Naval Health Research Center, San Diego, California 92186-5122", "institution_ids":
+        ["https://openalex.org/I4210105790"]}, {"raw_affiliation_string": "Department
+        of Neurosciences, School of Medicine, University of California at San Diego,
+        La Jolla, California 92093", "institution_ids": ["https://openalex.org/I36258959"]}]},
+        {"author_position": "middle", "author": {"id": null, "display_name": "Greg
+        G. Brown", "orcid": null, "observed_orcids": []}, "institutions": [{"id":
+        "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Greg G. Brown", "raw_affiliation_strings":
+        ["Department of Psychiatry, School of Medicine, University of California at
+        San Diego, La Jolla, California 92093"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Psychiatry, School of Medicine,
+        University of California at San Diego, La Jolla, California 92093", "institution_ids":
+        ["https://openalex.org/I36258959"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5055443847", "display_name": "Tzyy\u2010Ping
+        Jung", "orcid": "https://orcid.org/0000-0002-8377-2166", "observed_orcids":
+        ["https://orcid.org/0000-0002-8377-2166"]}, "institutions": [{"id": "https://openalex.org/I1307098950",
+        "display_name": "Salk Institute for Biological Studies", "ror": "https://ror.org/03xez1567",
+        "country_code": "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
+        {"id": "https://openalex.org/I1344073410", "display_name": "Howard Hughes
+        Medical Institute", "ror": "https://ror.org/006w34k90", "country_code": "US",
+        "type": "facility", "lineage": ["https://openalex.org/I1344073410"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Tzyy-Ping Jung", "raw_affiliation_strings":
+        ["Howard Hughes Medical Institute, Computational Neurobiology Laboratory,
+        Salk Institute for Biological Studies, La Jolla, California 92186-5800"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Howard Hughes
+        Medical Institute, Computational Neurobiology Laboratory, Salk Institute for
+        Biological Studies, La Jolla, California 92186-5800", "institution_ids": ["https://openalex.org/I1307098950",
+        "https://openalex.org/I1344073410"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5090735118", "display_name": "Sandra S. Kindermann",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I36258959",
+        "display_name": "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Sandra
+        S. Kindermann", "raw_affiliation_strings": ["Department of Psychiatry, School
+        of Medicine, University of California at San Diego, La Jolla, California 92093"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychiatry, School of Medicine, University of California at San Diego,
+        La Jolla, California 92093", "institution_ids": ["https://openalex.org/I36258959"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5105179107",
+        "display_name": "Anthony J. Bell", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I1307098950", "display_name":
+        "Salk Institute for Biological Studies", "ror": "https://ror.org/03xez1567",
+        "country_code": "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
+        {"id": "https://openalex.org/I1344073410", "display_name": "Howard Hughes
+        Medical Institute", "ror": "https://ror.org/006w34k90", "country_code": "US",
+        "type": "facility", "lineage": ["https://openalex.org/I1344073410"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Anthony J. Bell", "raw_affiliation_strings":
+        ["Howard Hughes Medical Institute, Computational Neurobiology Laboratory,
+        Salk Institute for Biological Studies, La Jolla, California 92186-5800"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Howard Hughes
+        Medical Institute, Computational Neurobiology Laboratory, Salk Institute for
+        Biological Studies, La Jolla, California 92186-5800", "institution_ids": ["https://openalex.org/I1307098950",
+        "https://openalex.org/I1344073410"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5044141636", "display_name": "Terrence J. Sejnowski",
+        "orcid": "https://orcid.org/0000-0002-0622-7391", "observed_orcids": ["https://orcid.org/0000-0002-0622-7391"]},
+        "institutions": [{"id": "https://openalex.org/I1307098950", "display_name":
+        "Salk Institute for Biological Studies", "ror": "https://ror.org/03xez1567",
+        "country_code": "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
+        {"id": "https://openalex.org/I1344073410", "display_name": "Howard Hughes
+        Medical Institute", "ror": "https://ror.org/006w34k90", "country_code": "US",
+        "type": "facility", "lineage": ["https://openalex.org/I1344073410"]}, {"id":
+        "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Terrence J. Sejnowski",
+        "raw_affiliation_strings": ["Department of Biology, University of California
+        at San Diego, La Jolla, California 92093", "Howard Hughes Medical Institute,
+        Computational Neurobiology Laboratory, Salk Institute for Biological Studies,
+        La Jolla, California 92186-5800"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Biology, University of California at San Diego, La Jolla, California
+        92093", "institution_ids": ["https://openalex.org/I36258959"]}, {"raw_affiliation_string":
+        "Howard Hughes Medical Institute, Computational Neurobiology Laboratory, Salk
+        Institute for Biological Studies, La Jolla, California 92186-5800", "institution_ids":
+        ["https://openalex.org/I1307098950", "https://openalex.org/I1344073410"]}]}],
+        "publication_year": 1998, "abstract_inverted_index": {"Current": [0], "analytical":
+        [1], "techniques": [2], "applied": [3], "to": [4, 25, 194, 222, 258, 272,
+        286, 325], "functional": [5], "magnetic": [6], "resonance": [7], "imaging":
+        [8], "(fMRI)": [9], "data": [10, 38, 59, 103, 275, 336], "require": [11],
+        "a": [12, 32, 95, 110, 134, 210, 316, 327], "priori": [13, 317], "knowledge":
+        [14], "or": [15, 187, 300], "specific": [16], "assumptions": [17, 309, 318],
+        "about": [18, 310, 319], "the": [19, 26, 41, 68, 139, 206, 229, 240, 247,
+        259, 280, 332], "time": [20, 98, 106, 135, 140, 241, 321], "courses": [21,
+        178, 242], "of": [22, 47, 84, 100, 118, 142, 152, 179, 234, 246, 261, 334,
+        348, 354], "processes": [23], "contributing": [24], "measured": [27], "signals.":
+        [28], "Here": [29], "we": [30], "describe": [31], "new": [33], "method": [34,
+        330], "for": [35, 199, 331, 343], "analyzing": [36], "fMRI": [37, 58, 274,
+        303, 335], "based": [39, 305], "on": [40, 306], "independent": [42, 79, 120],
+        "component": [43, 82, 92, 132, 203, 224], "analysis": [44, 225, 333], "(ICA)":
+        [45], "algorithm": [46, 208], "Bell": [48], "and": [49, 70, 74, 94, 129, 147,
+        209, 231, 243, 255, 267, 293, 314, 339], "Sejnowski": [50], "([1995]:": [51],
+        "Neural": [52], "Comput": [53], "7:1129-1159).": [54], "We": [55], "decomposed":
+        [56], "eight": [57, 124], "sets": [60], "from": [61, 104, 337], "4": [62],
+        "normal": [63, 338], "subjects": [64], "performing": [65], "Stroop": [66],
+        "color-naming,": [67], "Brown": [69], "Peterson": [71], "work/number": [72],
+        "task,": [73], "control": [75, 148], "tasks": [76], "into": [77], "spatially":
+        [78, 119], "components.": [80, 121], "Each": [81], "consisted": [83], "voxel":
+        [85], "values": [86], "at": [87], "fixed": [88], "three-dimensional": [89],
+        "locations": [90], "(a": [91], "\"map\"),": [93], "unique": [96], "associated":
+        [97, 351], "course": [99, 136, 141], "activation.": [101, 236], "Given": [102],
+        "144": [105], "points": [107], "collected": [108], "during": [109], "6-min":
+        [111], "trial,": [112], "ICA": [113, 126, 181, 207, 249, 282, 323], "extracted":
+        [114], "an": [115], "equal": [116], "number": [117], "In": [122], "all": [123],
+        "trials,": [125], "derived": [127], "one": [128, 131], "only": [130, 307],
+        "with": [133, 352], "closely": [137], "matching": [138], "40-sec": [143],
+        "alternations": [144], "between": [145, 202, 288], "experimental": [146],
+        "tasks.": [149, 356], "The": [150], "regions": [151, 163, 172, 245], "maximum":
+        [153], "activity": [154, 350], "in": [155, 227], "these": [156], "consistently":
+        [157, 299], "task-related": [158, 235, 248, 269, 302], "components": [159,
+        182, 250], "generally": [160], "overlapped": [161], "active": [162, 244],
+        "detected": [164, 174], "by": [165, 175, 279], "standard": [166], "correlational":
+        [167], "analysis,": [168], "but": [169], "included": [170], "frontal": [171],
+        "not": [173], "correlation.": [176], "Time": [177], "other": [180, 294], "were":
+        [183, 220, 251, 256, 276], "transiently": [184, 301], "task-related,": [185],
+        "quasiperiodic,": [186], "slowly": [188], "varying.": [189], "By": [190],
+        "utilizing": [191], "higher-order": [192], "statistics": [193], "enforce":
+        [195], "successively": [196], "stricter": [197], "criteria": [198], "spatial":
+        [200, 230, 312], "independence": [201], "maps,": [204], "both": [205], "related":
+        [211], "fourth-order": [212], "decomposition": [213], "technique": [214],
+        "(Comon": [215], "[1994]:": [216], "Signal": [217], "Processing": [218], "36:11-20)":
+        [219], "superior": [221], "principal": [223], "(PCA)": [226], "determining":
+        [228], "temporal": [232], "extent": [233], "For": [237], "each": [238], "subject,":
+        [239], "consistent": [252], "across": [253], "trials": [254], "robust": [257],
+        "addition": [260], "simulated": [262, 268], "noise.": [263], "Simulated":
+        [264], "movement": [265], "artifact": [266], "activations": [270], "added":
+        [271], "actual": [273], "clearly": [277], "separated": [278], "algorithm.":
+        [281], "can": [283], "be": [284, 326], "used": [285], "distinguish": [287],
+        "nontask-related": [289], "signal": [290], "components,": [291], "movements,":
+        [292], "artifacts,": [295], "as": [296, 298], "well": [297], "activations,":
+        [304], "weak": [308], "their": [311, 320], "distributions": [313], "without":
+        [315], "courses.": [322], "appears": [324], "highly": [328], "promising":
+        [329], "clinical": [340], "populations,": [341], "especially": [342], "uncovering":
+        [344], "unpredictable": [345], "transient": [346], "patterns": [347], "brain":
+        [349], "performance": [353], "psychomotor": [355]}, "primary_location": {"id":
+        "doi:10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1", "doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/%28SICI%291097-0193%281998%296%3A3%3C160%3A%3AAID-HBM5%3E3.0.CO%3B2-1",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "open_access": {"is_oa": true, "oa_status":
+        "bronze", "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/%28SICI%291097-0193%281998%296%3A3%3C160%3A%3AAID-HBM5%3E3.0.CO%3B2-1",
+        "any_repository_has_fulltext": true}}, {"ids": {"openalex": "https://openalex.org/W2097872544",
+        "doi": "https://doi.org/10.1017/s0012162204001306", "mag": "2097872544", "pmid":
+        "https://pubmed.ncbi.nlm.nih.gov/15540637"}, "display_name": "Voxel-based
+        morphometry elucidates structural neuroanatomy of high-functioning autism
+        and Asperger syndrome", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5104073635", "display_name": "Hower Kwon", "orcid":
+        null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210137306",
+        "display_name": "Stanford Medicine", "ror": "https://ror.org/03mtd9a03", "country_code":
+        "US", "type": "healthcare", "lineage": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}, {"id": "https://openalex.org/I97018004",
+        "display_name": "Stanford University", "ror": "https://ror.org/00f54p054",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I97018004"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Hower
+        Kwon", "raw_affiliation_strings": ["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine, Stanford, California, USA.
+        howerk@alum.mit.edu", "Department of Psychiatry and Behavioral Sciences, Stanford
+        University School of Medicine , Stanford, California, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Department of Psychiatry
+        and Behavioral Sciences, Stanford University School of Medicine, Stanford,
+        California, USA. howerk@alum.mit.edu", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}, {"raw_affiliation_string": "Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5037729638", "display_name": "Andrew W Ow",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210137306",
+        "display_name": "Stanford Medicine", "ror": "https://ror.org/03mtd9a03", "country_code":
+        "US", "type": "healthcare", "lineage": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}, {"id": "https://openalex.org/I97018004",
+        "display_name": "Stanford University", "ror": "https://ror.org/00f54p054",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I97018004"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Andrew
+        W Ow", "raw_affiliation_strings": ["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5064979035", "display_name": "Kate E Pedatella",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210137306",
+        "display_name": "Stanford Medicine", "ror": "https://ror.org/03mtd9a03", "country_code":
+        "US", "type": "healthcare", "lineage": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}, {"id": "https://openalex.org/I97018004",
+        "display_name": "Stanford University", "ror": "https://ror.org/00f54p054",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I97018004"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Kate E
+        Pedatella", "raw_affiliation_strings": ["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5087509488", "display_name": "Linda J. Lotspeich",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210137306",
+        "display_name": "Stanford Medicine", "ror": "https://ror.org/03mtd9a03", "country_code":
+        "US", "type": "healthcare", "lineage": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}, {"id": "https://openalex.org/I97018004",
+        "display_name": "Stanford University", "ror": "https://ror.org/00f54p054",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I97018004"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Linda
+        J Lotspeich", "raw_affiliation_strings": ["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5046688401", "display_name": "Allan L. Reiss",
+        "orcid": "https://orcid.org/0000-0002-1979-4942", "observed_orcids": ["https://orcid.org/0000-0002-1979-4942"]},
+        "institutions": [{"id": "https://openalex.org/I4210137306", "display_name":
+        "Stanford Medicine", "ror": "https://ror.org/03mtd9a03", "country_code": "US",
+        "type": "healthcare", "lineage": ["https://openalex.org/I4210137306", "https://openalex.org/I97018004"]},
+        {"id": "https://openalex.org/I97018004", "display_name": "Stanford University",
+        "ror": "https://ror.org/00f54p054", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I97018004"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Allan L Reiss", "raw_affiliation_strings": ["Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Psychiatry and Behavioral Sciences, Stanford University School
+        of Medicine , Stanford, California, USA", "institution_ids": ["https://openalex.org/I4210137306",
+        "https://openalex.org/I97018004"]}]}], "publication_year": 2004, "abstract_inverted_index":
+        {"Efforts": [0], "to": [1, 17, 213], "examine": [2], "the": [3, 101, 117,
+        121, 137, 147, 156, 176, 179, 186, 202, 222, 228], "structural": [4, 48],
+        "neuroanatomy": [5], "of": [6, 12, 34, 39, 42, 96, 111, 120, 178, 193, 201,
+        218, 224, 230], "autism": [7, 59], "by": [8], "using": [9], "traditional":
+        [10], "methods": [11], "imaging": [13], "analysis": [14], "have": [15], "led":
+        [16], "variable": [18], "findings,": [19], "often": [20], "based": [21], "on":
+        [22], "methodological": [23], "differences": [24, 44, 99], "in": [25, 116,
+        124, 155, 175, 182, 198, 205, 221, 227], "image": [26], "acquisition": [27],
+        "and": [28, 77, 106, 152, 163, 209, 233], "analysis.": [29], "A": [30], "voxel-based":
+        [31], "computational": [32], "method": [33], "whole-brain": [35], "anatomy":
+        [36], "allows": [37], "examination": [38], "small": [40], "patterns": [41],
+        "tissue": [43], "between": [45, 100], "groups.": [46, 102], "High-resolution":
+        [47], "magnetic": [49], "resonance": [50], "images": [51], "were": [52], "acquired":
+        [53], "for": [54], "nine": [55], "males": [56, 127], "with": [57, 67, 104,
+        126, 146, 184, 207], "high-functioning": [58], "(HFA;": [60], "mean": [61,
+        71], "age": [62, 72, 83], "14y": [63], "[SD3y": [64], "4mo]),": [65], "11":
+        [66], "Asperger": [68], "syndrome": [69], "(ASP;": [70], "13y": [73, 84],
+        "6mo": [74], "[SD2y": [75], "5mo]),": [76], "13": [78], "comparison": [79,
+        125, 131, 183], "(COM)": [80], "participants": [81], "(mean": [82], "7mo":
+        [85], "[SD": [86], "3y": [87], "1mo]).": [88], "Using": [89], "statistical":
+        [90], "parametric": [91], "mapping,": [92], "we": [93], "examined": [94],
+        "contrasts": [95, 134], "gray": [97, 113, 142, 172, 195], "matter": [98, 114,
+        143, 173, 196], "Males": [103], "HFA": [105, 151, 189, 208], "ASP": [107,
+        148, 153, 168, 210], "had": [108, 140, 170], "a": [109], "pattern": [110],
+        "decreased": [112, 194], "density": [115, 144, 174, 197], "ventromedial":
+        [118, 199], "regions": [119], "temporal": [122, 159, 203], "cortex": [123,
+        204], "from": [128], "an": [129, 216], "age-matched": [130], "group.": [132,
+        190], "Examining": [133], "revealed": [135], "that": [136], "COM": [138, 187],
+        "group": [139, 154, 169], "increased": [141], "compared": [145], "or": [149,
+        188], "combined": [150], "right": [157], "inferior": [158], "gyrus,": [160],
+        "entorhinal": [161], "cortex,": [162], "rostral": [164], "fusiform": [165],
+        "gyrus.": [166], "The": [167, 191], "less": [171], "body": [177], "cingulate":
+        [180], "gyrus": [181], "either": [185], "findings": [192], "aspects": [200],
+        "individuals": [206], "lends": [211], "support": [212], "theories": [214],
+        "suggesting": [215], "involvement": [217], "these": [219], "areas": [220],
+        "pathophysiology": [223], "autism,": [225], "particularly": [226], "integration":
+        [229], "visual": [231], "stimuli": [232], "affective": [234], "information.":
+        [235]}, "primary_location": {"id": "doi:10.1017/s0012162204001306", "doi":
+        "https://doi.org/10.1017/s0012162204001306", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1017/s0012162204001306", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S158041768", "display_name": "Developmental Medicine
+        & Child Neurology", "issn_l": "0012-1622", "issn": ["0012-1622", "1469-8749"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core",
+        "dongbi-b", "doyens", "jufo-3", "ki-jl-1", "medline", "norway-1", "poland-100",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Developmental Medicine &amp; Child
+        Neurology", "raw_type": "journal-article"}, "open_access": {"is_oa": false,
+        "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext": false}}],
+        "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4af87ac298069fb-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 15 Oct 2026 14:31:53 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '986'
+      X-RateLimit-Remaining-USD:
+      - '0.0986'
+      X-RateLimit-Reset:
+      - '34087'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792074713"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792074713"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=test%40example.com&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+  response:
+    body:
+      string: '{"ids":{"openalex":"https://openalex.org/W2097872544","doi":"https://doi.org/10.1017/s0012162204001306","mag":"2097872544","pmid":"https://pubmed.ncbi.nlm.nih.gov/15540637"},"display_name":"Voxel-based
+        morphometry elucidates structural neuroanatomy of high-functioning autism
+        and Asperger syndrome","authorships":[{"author_position":"first","author":{"id":"https://openalex.org/A5104073635","display_name":"Hower
+        Kwon","orcid":null,"observed_orcids":[]},"institutions":[{"id":"https://openalex.org/I4210137306","display_name":"Stanford
+        Medicine","ror":"https://ror.org/03mtd9a03","country_code":"US","type":"healthcare","lineage":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"id":"https://openalex.org/I97018004","display_name":"Stanford
+        University","ror":"https://ror.org/00f54p054","country_code":"US","type":"education","lineage":["https://openalex.org/I97018004"]}],"countries":["US"],"is_corresponding":false,"raw_author_name":"Hower
+        Kwon","raw_affiliation_strings":["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine, Stanford, California, USA.
+        howerk@alum.mit.edu","Department of Psychiatry and Behavioral Sciences, Stanford
+        University School of Medicine , Stanford, California, USA"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine,
+        Stanford, California, USA. howerk@alum.mit.edu","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5037729638","display_name":"Andrew
+        W Ow","orcid":null,"observed_orcids":[]},"institutions":[{"id":"https://openalex.org/I4210137306","display_name":"Stanford
+        Medicine","ror":"https://ror.org/03mtd9a03","country_code":"US","type":"healthcare","lineage":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"id":"https://openalex.org/I97018004","display_name":"Stanford
+        University","ror":"https://ror.org/00f54p054","country_code":"US","type":"education","lineage":["https://openalex.org/I97018004"]}],"countries":["US"],"is_corresponding":false,"raw_author_name":"Andrew
+        W Ow","raw_affiliation_strings":["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5064979035","display_name":"Kate
+        E Pedatella","orcid":null,"observed_orcids":[]},"institutions":[{"id":"https://openalex.org/I4210137306","display_name":"Stanford
+        Medicine","ror":"https://ror.org/03mtd9a03","country_code":"US","type":"healthcare","lineage":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"id":"https://openalex.org/I97018004","display_name":"Stanford
+        University","ror":"https://ror.org/00f54p054","country_code":"US","type":"education","lineage":["https://openalex.org/I97018004"]}],"countries":["US"],"is_corresponding":false,"raw_author_name":"Kate
+        E Pedatella","raw_affiliation_strings":["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5087509488","display_name":"Linda
+        J. Lotspeich","orcid":null,"observed_orcids":[]},"institutions":[{"id":"https://openalex.org/I4210137306","display_name":"Stanford
+        Medicine","ror":"https://ror.org/03mtd9a03","country_code":"US","type":"healthcare","lineage":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"id":"https://openalex.org/I97018004","display_name":"Stanford
+        University","ror":"https://ror.org/00f54p054","country_code":"US","type":"education","lineage":["https://openalex.org/I97018004"]}],"countries":["US"],"is_corresponding":false,"raw_author_name":"Linda
+        J Lotspeich","raw_affiliation_strings":["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]},{"author_position":"last","author":{"id":"https://openalex.org/A5046688401","display_name":"Allan
+        L. Reiss","orcid":"https://orcid.org/0000-0002-1979-4942","observed_orcids":["https://orcid.org/0000-0002-1979-4942"]},"institutions":[{"id":"https://openalex.org/I4210137306","display_name":"Stanford
+        Medicine","ror":"https://ror.org/03mtd9a03","country_code":"US","type":"healthcare","lineage":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]},{"id":"https://openalex.org/I97018004","display_name":"Stanford
+        University","ror":"https://ror.org/00f54p054","country_code":"US","type":"education","lineage":["https://openalex.org/I97018004"]}],"countries":["US"],"is_corresponding":false,"raw_author_name":"Allan
+        L Reiss","raw_affiliation_strings":["Department of Psychiatry and Behavioral
+        Sciences, Stanford University School of Medicine , Stanford, California, USA"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
+        , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]}],"publication_year":2004,"abstract_inverted_index":{"Efforts":[0],"to":[1,17,213],"examine":[2],"the":[3,101,117,121,137,147,156,176,179,186,202,222,228],"structural":[4,48],"neuroanatomy":[5],"of":[6,12,34,39,42,96,111,120,178,193,201,218,224,230],"autism":[7,59],"by":[8],"using":[9],"traditional":[10],"methods":[11],"imaging":[13],"analysis":[14],"have":[15],"led":[16],"variable":[18],"findings,":[19],"often":[20],"based":[21],"on":[22],"methodological":[23],"differences":[24,44,99],"in":[25,116,124,155,175,182,198,205,221,227],"image":[26],"acquisition":[27],"and":[28,77,106,152,163,209,233],"analysis.":[29],"A":[30],"voxel-based":[31],"computational":[32],"method":[33],"whole-brain":[35],"anatomy":[36],"allows":[37],"examination":[38],"small":[40],"patterns":[41],"tissue":[43],"between":[45,100],"groups.":[46,102],"High-resolution":[47],"magnetic":[49],"resonance":[50],"images":[51],"were":[52],"acquired":[53],"for":[54],"nine":[55],"males":[56,127],"with":[57,67,104,126,146,184,207],"high-functioning":[58],"(HFA;":[60],"mean":[61,71],"age":[62,72,83],"14y":[63],"[SD3y":[64],"4mo]),":[65],"11":[66],"Asperger":[68],"syndrome":[69],"(ASP;":[70],"13y":[73,84],"6mo":[74],"[SD2y":[75],"5mo]),":[76],"13":[78],"comparison":[79,125,131,183],"(COM)":[80],"participants":[81],"(mean":[82],"7mo":[85],"[SD":[86],"3y":[87],"1mo]).":[88],"Using":[89],"statistical":[90],"parametric":[91],"mapping,":[92],"we":[93],"examined":[94],"contrasts":[95,134],"gray":[97,113,142,172,195],"matter":[98,114,143,173,196],"Males":[103],"HFA":[105,151,189,208],"ASP":[107,148,153,168,210],"had":[108,140,170],"a":[109],"pattern":[110],"decreased":[112,194],"density":[115,144,174,197],"ventromedial":[118,199],"regions":[119],"temporal":[122,159,203],"cortex":[123,204],"from":[128],"an":[129,216],"age-matched":[130],"group.":[132,190],"Examining":[133],"revealed":[135],"that":[136],"COM":[138,187],"group":[139,154,169],"increased":[141],"compared":[145],"or":[149,188],"combined":[150],"right":[157],"inferior":[158],"gyrus,":[160],"entorhinal":[161],"cortex,":[162],"rostral":[164],"fusiform":[165],"gyrus.":[166],"The":[167,191],"less":[171],"body":[177],"cingulate":[180],"gyrus":[181],"either":[185],"findings":[192],"aspects":[200],"individuals":[206],"lends":[211],"support":[212],"theories":[214],"suggesting":[215],"involvement":[217],"these":[219],"areas":[220],"pathophysiology":[223],"autism,":[225],"particularly":[226],"integration":[229],"visual":[231],"stimuli":[232],"affective":[234],"information.":[235]},"primary_location":{"id":"doi:10.1017/s0012162204001306","doi":"https://doi.org/10.1017/s0012162204001306","is_oa":false,"landing_page_url":"https://doi.org/10.1017/s0012162204001306","pdf_url":null,"source":{"id":"https://openalex.org/S158041768","display_name":"Developmental
+        Medicine & Child Neurology","issn_l":"0012-1622","issn":["0012-1622","1469-8749"],"is_oa":false,"is_in_doaj":false,"is_core":true,"listed_in":["cwts-core","dongbi-b","doyens","jufo-3","ki-jl-1","medline","norway-1","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Developmental
+        Medicine &amp; Child Neurology","raw_type":"journal-article"},"open_access":{"is_oa":false,"oa_status":"closed","oa_url":null,"any_repository_has_fulltext":false}}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4af87ad9a5df086-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 15 Oct 2026 14:31:53 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '986'
+      X-RateLimit-Remaining-USD:
+      - '0.0986'
+      X-RateLimit-Reset:
+      - '34087'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792074713"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792074713"
+    status:
+      code: 200
+      message: OK
+version: 1
