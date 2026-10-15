@@ -691,18 +691,7 @@ def _extract_elsevier_article(
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(article_text))
 
     # Extract tables
-    try:
-        tables = extract_tables_from_article(payload)
-    except Exception as exc:
-        message = f"Elsevier table extraction failed: {exc}"
-        logger.error("%s: %s", slug, message)
-        return build_failure_extraction(
-            download_result,
-            DownloadSource.ELSEVIER,
-            message,
-            full_text_path,
-            figure_captions=figure_captions,
-        )
+    tables = extract_tables_from_article(payload)
 
     if not tables:
         message = "Elsevier found no tables in the article."
@@ -796,20 +785,6 @@ def _extract_elsevier_article(
                 coordinates=coordinates,
                 space=article_space,
             )
-        )
-
-    # Check if extraction succeeded
-    if not extracted_tables:
-        message = "Elsevier failed to extract any tables."
-        if failure_reasons:
-            message = f"{message} Reasons: {' | '.join(failure_reasons)}"
-        logger.error("%s: %s", slug, message)
-        return build_failure_extraction(
-            download_result,
-            DownloadSource.ELSEVIER,
-            message,
-            full_text_path,
-            figure_captions=figure_captions,
         )
 
     # Write manifest
