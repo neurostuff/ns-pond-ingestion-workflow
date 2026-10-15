@@ -37,8 +37,12 @@ _ROLE_KEY = '"role":"'
 TOP_LOGPROBS = 20
 #: Room for the answer, which is about 15 tokens (`{"role": "anchor", "anchor_kind": "seed"}`).
 MAX_COMPLETION_TOKENS = 64
-#: Seconds to wait for one answer, tries per set, and sets asked at once.
-TIMEOUT, ATTEMPTS, WORKERS = 120.0, 3, 16
+#: Seconds to wait for one answer, and tries per set.
+TIMEOUT, ATTEMPTS = 120.0, 3
+#: Sets asked of one server at once, from every article the stage has in hand: about
+#: twice the `--max-num-seqs` the role servers are served with on beast, so a full
+#: batch waits behind the running one. Each has its own pooled, kept-alive connection.
+WORKERS = 32
 CONFIGURATION = "configuration error:"
 
 
@@ -165,10 +169,11 @@ class ServedClassifier:
         self.model = model
         #: `name@prompt version+checkpoint digest`, from the stage (`model_identity`).
         self.source = source
-        self._client = httpx.Client()
+        self._client = httpx.Client(limits=httpx.Limits(max_keepalive_connections=WORKERS))
         self._sleep = sleep or time.sleep
         self._stopped: Optional[str] = None
         self._lock = threading.Lock()
+        self._pool = ThreadPoolExecutor(max_workers=WORKERS, thread_name_prefix=model)
 
     def body(self, text: str) -> Dict[str, Any]:
         """The request for one serialised context."""
@@ -190,15 +195,18 @@ class ServedClassifier:
         except Exception:  # noqa: BLE001 - any failure to answer is an outage
             return False
 
-    def _stop(self, reason: str) -> ModelUnavailable:
-        """The error that stops the stage, kept so no set is asked again in this run."""
+    def stop(self, reason: str) -> ModelUnavailable:
+        """The error that stops the stage, kept so no set is asked again in this run.
+
+        The first reason stays: a set not yet sent raises it instead of being sent.
+        """
         with self._lock:
             self._stopped = self._stopped or reason
         return ModelUnavailable(self._stopped)
 
     def predict(self, texts: Sequence[str]) -> List[Union[Prediction, Unanswered]]:
-        with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(texts)))) as pool:
-            return list(pool.map(self._ask, texts))
+        """Each text's answer, asked on the pool every caller of this classifier shares."""
+        return list(self._pool.map(self._ask, texts))
 
     def _ask(self, text: str) -> Union[Prediction, Unanswered]:
         last = ""
@@ -218,16 +226,16 @@ class ServedClassifier:
             if response.status_code >= 400:
                 # Every request has the one shape `body` builds, so a refusal -- a context
                 # longer than the server's max_model_len, say -- is how the model is served.
-                raise self._stop(
+                raise self.stop(
                     f"{CONFIGURATION} {self.url} answered HTTP {response.status_code} for "
                     f"{self.model}: {response.text[:300]}"
                 )
             try:
                 return read_answer(response.json()["choices"][0])
             except ModelUnavailable as exc:
-                raise self._stop(str(exc)) from None
+                raise self.stop(str(exc)) from None
         if self._healthy():
             # Up, and failing on this input every time: this set's failure, not an outage,
             # so the articles after it are still read.
             return Unanswered(f"server error on this input after {ATTEMPTS} tries: {last}")
-        raise self._stop(f"{self.model} at {self.url} did not answer in {ATTEMPTS} tries: {last}")
+        raise self.stop(f"{self.model} at {self.url} did not answer in {ATTEMPTS} tries: {last}")
