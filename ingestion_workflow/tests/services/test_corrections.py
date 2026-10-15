@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import json
 
 import pytest
+import requests
 import xmltodict
 from ingestion_workflow.catalog import Artifact, Status
 from ingestion_workflow.clients.pubmed import PubMedClient
@@ -199,9 +200,14 @@ def _openalex_client(monkeypatch, sent):
     from ingestion_workflow.clients.openalex import OpenAlexClient
 
     client = OpenAlexClient(email="t@example.com")
-    monkeypatch.setattr(
-        client, "_request_openalex", lambda params: sent.append(params) or json.loads(OPENALEX.read_text())
-    )
+
+    def answer(params, work=""):
+        if work:  # a DOI the batch did not return: OpenAlex does not know it either
+            raise requests.HTTPError(response=SimpleNamespace(status_code=404))
+        sent.append(params)
+        return json.loads(OPENALEX.read_text())
+
+    monkeypatch.setattr(client, "_request_openalex", answer)
     return client
 
 
@@ -436,10 +442,10 @@ def test_a_failed_batch_keeps_the_batches_before_it(monkeypatch):
     client = _openalex_client(monkeypatch, sent)
     real = client._request_openalex
 
-    def third_fails(params):
+    def third_fails(params, work=""):
         if len(sent) == 2:
             raise RuntimeError("503")
-        return real(params)
+        return real(params, work)
 
     monkeypatch.setattr(client, "_request_openalex", third_fails)
     with pytest.raises(PartialAnswer) as caught:

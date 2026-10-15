@@ -7,16 +7,17 @@ from typing import Optional
 
 #: A DOI inside running text; trailing punctuation is left for `clean_doi`.
 DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>]+")
-#: A DOI printed as a resolver URL, capturing the DOI.
-DOI_URL = re.compile(r'(?i)https?://[^/\s]+/(10\.\d{4,9}/[^\s"\'<>()]+)')
+#: The resolver address in front of a DOI printed as a URL.
+RESOLVER = re.compile(r"(?i)https?://[^/\s]+/(?=10\.\d{4,9}/)")
 _TRAILING = ".,;:"
 
 
 def normalize_doi(value: Optional[str]) -> Optional[str]:
     """The bare DOI of `value`, which may be a resolver URL or `doi:`-prefixed."""
     value = (value or "").strip()
-    if value.lower().startswith("http"):
-        value = DOI_URL.sub(r"\1", value)
+    # Everything after the resolver is the DOI, brackets included: SICI and
+    # Elsevier DOIs contain `(`, `)`, `<` and `>`.
+    value = RESOLVER.sub("", value, count=1) if value.lower().startswith("http") else value
     if value.lower().startswith("doi:"):
         value = value[4:]
     return value or None

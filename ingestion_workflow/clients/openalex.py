@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
@@ -20,6 +20,12 @@ OPENALEX_BATCH_LOOKUP_SIZE = 100
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
+
+
+def _can_be_retried(exc: BaseException) -> bool:
+    """A work OpenAlex does not have answers 404 every time."""
+    response = getattr(exc, "response", None)
+    return getattr(response, "status_code", None) != 404
 
 
 _METADATA_FIELDS = (
@@ -51,6 +57,17 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         open_access=(work.get("open_access") or {}).get("is_oa"),
         source="openalex",
     )
+
+
+def _cited_work(work: Dict) -> Dict:
+    return {
+        "authors": [
+            str((a.get("author") or {}).get("display_name") or "")
+            for a in work.get("authorships", []) or []
+        ],
+        "year": work.get("publication_year"),
+        "pmid": _identifier_from(work.get("ids")).pmid,
+    }
 
 
 @dataclass(frozen=True)
@@ -293,11 +310,16 @@ class OpenAlexClient:
                         "select": _METADATA_FIELDS,
                     }
                 )
+                answered = set()
                 for work in payload.get("results", []) or []:
                     value = getattr(_identifier_from(work.get("ids")), id_type)
                     identifier = wanted.get(str(value).lower()) if value else None
                     if identifier is not None:
+                        answered.add(str(value).lower())
                         results[identifier.slug] = _metadata_from(work)
+                if id_type == "doi":
+                    for doi, work in self._works_asked_singly(batch, answered, _METADATA_FIELDS):
+                        results[wanted[doi].slug] = _metadata_from(work)
         return results
 
     def get_cited_works(self, dois: List[str]) -> Dict[str, Dict]:
@@ -318,18 +340,14 @@ class OpenAlexClient:
                     "select": "ids,publication_year,authorships",
                 }
             )
+            answered = set()
             for work in payload.get("results", []) or []:
                 ids = _identifier_from(work.get("ids"))
-                if not ids.doi:
-                    continue
-                found[ids.doi.lower()] = {
-                    "authors": [
-                        str((a.get("author") or {}).get("display_name") or "")
-                        for a in work.get("authorships", []) or []
-                    ],
-                    "year": work.get("publication_year"),
-                    "pmid": ids.pmid,
-                }
+                if ids.doi and ids.doi.lower() in batch:
+                    answered.add(ids.doi.lower())
+                    found[ids.doi.lower()] = _cited_work(work)
+            for doi, work in self._works_asked_singly(batch, answered, "ids,publication_year,authorships"):
+                found[doi] = _cited_work(work)
         return found
 
     def get_retractions(self, dois: List[str]) -> Dict[str, bool]:
@@ -355,11 +373,40 @@ class OpenAlexClient:
                 )
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
                 raise PartialAnswer(str(exc), found) from exc
+            answered = set()
             for work in payload.get("results", []) or []:
                 doi = normalize_doi(work.get("doi"))
-                if doi and work.get("is_retracted") is not None:
+                if doi and doi.lower() in batch and work.get("is_retracted") is not None:
+                    answered.add(doi.lower())
                     found[doi.lower()] = bool(work["is_retracted"])
+            try:
+                singly = self._works_asked_singly(batch, answered, "is_retracted")
+            except Exception as exc:  # noqa: BLE001 - carries the earlier batches
+                raise PartialAnswer(str(exc), found) from exc
+            for doi, work in singly:
+                if work.get("is_retracted") is not None:
+                    found[doi] = bool(work["is_retracted"])
         return found
+
+    def _works_asked_singly(
+        self, asked: List[str], answered: set, select: str
+    ) -> List[Tuple[str, Dict]]:
+        """The works of the asked DOIs the batch answer did not return, by asked DOI.
+
+        OpenAlex answers a batch with each work's current DOI, so a DOI the
+        journal has since moved comes back under another name; `/works/doi:`
+        resolves the old one. A DOI OpenAlex does not know is left out.
+        """
+        works = []
+        for doi in asked:
+            if doi.lower() in answered:
+                continue
+            try:
+                works.append((doi.lower(), self._request_openalex({"mailto": self.email, "select": select}, f"doi:{doi}")))
+            except requests.HTTPError as exc:
+                if exc.response is None or exc.response.status_code != 404:
+                    raise
+        return works
 
     def _rate_limit_sleep(self) -> None:
         """Ensure we respect the 10 requests/sec polite pool limit."""
@@ -372,11 +419,12 @@ class OpenAlexClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
+        retry=retry_if_exception(_can_be_retried),
     )
-    def _request_openalex(self, params: Dict[str, str]) -> Dict:
-        """Issue a GET request to the OpenAlex Works endpoint."""
+    def _request_openalex(self, params: Dict[str, str], work: str = "") -> Dict:
+        """Issue a GET request to the OpenAlex Works endpoint, or to one `work` of it."""
         self._rate_limit_sleep()
-        url = urljoin(self.BASE_URL, self.LOOKUP_ENDPOINT)
+        url = urljoin(self.BASE_URL, f"{self.LOOKUP_ENDPOINT}/{work}" if work else self.LOOKUP_ENDPOINT)
         if self.api_key:
             params = {**params, "api_key": self.api_key}
         try:
