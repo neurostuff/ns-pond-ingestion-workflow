@@ -3,17 +3,19 @@ how its JATS is read."""
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import re
+import socket
 from datetime import timedelta
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import pytest
 import vcr as vcrpy
 import yaml
-from ingestion_workflow.catalog import Catalog, Status
+from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import springer_extractor
 from ingestion_workflow.extractors.base import SourceExhausted, SourceMisconfigured
@@ -22,8 +24,10 @@ from ingestion_workflow.extractors.pdf_extractor import _HostGate
 from ingestion_workflow.extractors.springer_extractor import (
     NO_BODY,
     NOT_OPEN_ACCESS,
+    QUERY_REFUSED,
     SpringerExtractor,
     doi_query,
+    query_doi,
 )
 from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models import (
@@ -35,6 +39,11 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.pipeline import Context, run_stages
 from ingestion_workflow.pipeline.stages import DownloadStage, ExtractStage
+from ingestion_workflow.pipeline.stages.extract import EXTRACTOR_VERSIONS
+from ingestion_workflow.pipeline.stages.triage import TIE_ORDER
+from ingestion_workflow.services.citations import JATS_SOURCES
+from ingestion_workflow.services.metadata import MetadataService
+from lxml import etree
 
 #: BMC Geriatrics, CC BY: a case report with two tables and three figures.
 CASE_REPORT = "10.1186/s12877-026-07992-9"
@@ -101,6 +110,8 @@ def slept(monkeypatch):
 
     gate = _HostGate(lambda: now[0], sleep, min_interval=springer_extractor.GATE._min_interval)
     monkeypatch.setattr(springer_extractor, "GATE", gate)
+    # the backoff after a 5xx or a dropped connection
+    monkeypatch.setattr(springer_extractor.time, "sleep", sleep)
     return slept
 
 
@@ -243,7 +254,7 @@ def test_a_springer_article_is_read_into_its_springer_text(tmp_path, slept):
 
 
 @pytest.mark.vcr(match_on=MATCH_ON)
-def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr):
+def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr, caplog):
     """The API refusing the key is not the articles' failure: none is charged a try,
     and the stage asks nothing more this run."""
     settings = _settings(tmp_path, springer_api_key="not-a-springer-key")
@@ -258,6 +269,8 @@ def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr):
     assert not any(ctx.catalog.artifacts(ids, "download").values())
     assert ctx.catalog.attempt_counts(ids, "download", "springer") == {}
     assert len(DownloadStage(settings).plan(ctx, refs, {}, {}).pending) == 2
+    assert "refused the API key in SPRINGER_API_KEY (401)" in caplog.text
+    assert "not-a-springer-key" not in caplog.text
 
 
 @pytest.mark.vcr(record_mode="none")
@@ -349,3 +362,291 @@ def test_an_article_served_without_its_body_is_not_a_download_and_is_asked_again
     later = Context(settings, ctx.catalog, retry_after=timedelta(0))
     assert [w.ref.identifier.doi.lower() for w in
             DownloadStage(settings).plan(later, refs, found, {}).pending] == [BODILESS]
+
+
+# -- composed answers: the API gives none of these on demand -------------------------
+
+
+def _uri(dois, start=1) -> str:
+    params = {"p": len(dois), "q": doi_query(dois)}
+    if start > 1:
+        params["s"] = start
+    return "https://api.springernature.com/openaccess/jats?" + urlencode(params)
+
+
+def _answer(uri, status=200, body=b"", headers=None) -> dict:
+    return {
+        "request": {"body": None, "headers": {}, "method": "GET", "uri": uri},
+        "response": {"body": {"string": body}, "headers": headers or {},
+                     "status": {"code": status, "message": ""}},
+    }
+
+
+def _cassette(tmp_path, *interactions) -> Path:
+    path = tmp_path / "composed.yaml"
+    path.write_text(yaml.safe_dump({"version": 1, "interactions": list(interactions)}),
+                    encoding="utf-8")
+    return path
+
+
+def _five_articles() -> dict:
+    """The real five-article answer's articles, by DOI, as their XML."""
+    recorded = yaml.safe_load(FIVE_BMC.read_text(encoding="utf-8"))
+    body = gzip.decompress(recorded["interactions"][0]["response"]["body"]["string"])
+    root = etree.fromstring(body)
+    return {a.findtext("front/article-meta/article-id[@pub-id-type='doi']"): a
+            for a in root.iterfind("records/article")}
+
+
+def _response(articles, total=None) -> bytes:
+    """A jats answer holding `articles`, as the API wraps them."""
+    total = len(articles) if total is None else total
+    records = b"".join(etree.tostring(a) for a in articles)
+    return (b"<response><result><total>%d</total><start>1</start>"
+            b"<recordsDisplayed>%d</recordsDisplayed></result><records>%s</records></response>"
+            % (total, len(articles), records))
+
+
+NO_DATA_404 = json.dumps({"status": "Fail", "message": "No data was found for the given query."})
+
+
+def _download(extractor, *identifiers, **kwargs):
+    return extractor.download(Identifiers(
+        [i if isinstance(i, Identifier) else Identifier(doi=i) for i in identifiers]), **kwargs)
+
+
+def test_a_server_error_is_retried_with_backoff(tmp_path, slept):
+    case = _five_articles()[CASE_REPORT]
+    uri = _uri([CASE_REPORT])
+    cassette = _cassette(tmp_path, _answer(uri, 503), _answer(uri, 503),
+                         _answer(uri, body=_response([case])))
+
+    with _replay(cassette) as played:
+        (result,) = _download(SpringerExtractor(_settings(tmp_path)), CASE_REPORT)
+
+    assert played.all_played
+    assert result.success
+    assert slept == [2.0, 4.0]
+
+
+def test_a_batch_the_server_keeps_failing_fails_alone_and_is_retried(tmp_path, slept):
+    """Three 503s fail that batch's 20 articles for a later run, not for good, and the
+    next batch is still asked; no failure quotes the URL or its key."""
+    recorded = yaml.safe_load(TWO_QUERIES.read_text(encoding="utf-8"))
+    first_uri = recorded["interactions"][0]["request"]["uri"]
+    cassette = _cassette(tmp_path, *[_answer(first_uri, 503)] * 3, recorded["interactions"][1])
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, *TWENTY_ONE)
+
+    with _replay(cassette) as played:
+        run_stages(ctx, [DownloadStage(settings)], refs)
+        assert played.all_played
+
+    found = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+    status = {ref.identifier.doi.lower(): found[ref.id]["springer"] for ref in refs}
+    last = status.pop(LAST.lower())
+    assert last.status is Status.PERMANENT
+    assert {a.status for a in status.values()} == {Status.FAILED}
+    assert {a.error for a in status.values()} == {
+        "Springer Nature request failed: HTTP status 503"}
+    _assert_key_kept_out(ctx, refs, settings.springer_api_key)
+    _assert_key_kept_out(ctx, refs, "api.springernature.com")
+
+
+def test_a_connection_that_keeps_failing_fails_the_batch_by_kind_alone(
+        tmp_path, slept, monkeypatch):
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    # nothing listens there: the connection is refused, for real
+    monkeypatch.setattr(springer_extractor, "API_URL", f"http://127.0.0.1:{port}/openaccess/jats")
+    settings = _settings(tmp_path)
+
+    (result,) = _download(SpringerExtractor(settings), CASE_REPORT)
+
+    assert (result.success, result.error_message) == (
+        False, "Springer Nature request failed: ConnectError")
+    assert slept == [2.0, 4.0]
+
+
+def test_a_malformed_later_answer_fails_only_its_own_batch(tmp_path, slept):
+    recorded = yaml.safe_load(TWO_QUERIES.read_text(encoding="utf-8"))
+    cassette = _cassette(tmp_path, recorded["interactions"][0],
+                         _answer(_uri([LAST]), body=b"<response><records><article"))
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, *TWENTY_ONE)
+
+    with _replay(cassette):
+        run_stages(ctx, [DownloadStage(settings)], refs)
+
+    found = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+    status = {ref.identifier.doi.lower(): found[ref.id]["springer"] for ref in refs}
+    assert status[CASE_REPORT].status is Status.OK
+    assert status[MOLECULAR_PAIN].status is Status.OK
+    assert (status[LAST.lower()].status, status[LAST.lower()].error) == (
+        Status.FAILED, "Springer Nature sent an answer that is not XML")
+
+
+def test_a_404_that_does_not_say_no_data_is_not_taken_as_not_open_access(tmp_path, slept):
+    cassette = _cassette(tmp_path, _answer(_uri([LAST]), 404, b"<html>Not Found</html>"))
+
+    with _replay(cassette):
+        (result,) = _download(SpringerExtractor(_settings(tmp_path)), LAST)
+
+    assert result.error_message == "Springer Nature request failed: HTTP status 404"
+    assert result.error_message != NOT_OPEN_ACCESS
+
+
+def test_a_refused_query_is_halved_until_the_doi_it_cannot_name_is_alone(tmp_path, slept):
+    """A 400 is one DOI's: the others in its query are still asked, and only it is final.
+    A Markdown backslash and look-alike dashes are dropped from what is asked."""
+    articles = _five_articles()
+    escaped = "10.1007/978-981-33-6044-0\\_18"
+    dashed = "10.1186/s13195\u2010026\u201002139\u20109"
+    assert query_doi(escaped) == "10.1007/978-981-33-6044-0_18"
+    asked = [CASE_REPORT, query_doi(escaped), query_doi(dashed)]
+    cassette = _cassette(
+        tmp_path,
+        _answer(_uri(asked), 400),
+        _answer(_uri(asked[:1]), body=_response([articles[CASE_REPORT]])),
+        _answer(_uri(asked[1:]), 400),
+        _answer(_uri(asked[1:2]), 400),
+        _answer(_uri(asked[2:]), body=_response([articles["10.1186/s13195-026-02139-9"]])),
+    )
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, CASE_REPORT, escaped, dashed)
+
+    with _replay(cassette) as played:
+        run_stages(ctx, [DownloadStage(settings)], refs)
+        assert played.all_played
+
+    found = ctx.catalog.artifacts([ref.id for ref in refs], "download")
+    case, refused, served = (found[ref.id]["springer"] for ref in refs)
+    assert case.status is Status.OK and served.status is Status.OK
+    assert (refused.status, refused.error) == (Status.PERMANENT, QUERY_REFUSED)
+
+
+def test_dois_are_matched_by_value_not_case_or_order_and_shared_ones_both_served(tmp_path, slept):
+    """Two identifiers with one DOI (in two spellings) are asked once and both served;
+    the answer's articles, out of the order asked, each go to their own DOI."""
+    articles = _five_articles()
+    other = "10.1186/s13195-026-02115-3"
+    asked = ["10.1186/S12877-026-07992-9", other]
+    cassette = _cassette(tmp_path, _answer(
+        _uri(asked), body=_response([articles[other], articles[CASE_REPORT]])))
+    identifiers = [Identifier(doi="10.1186/S12877\u2010026\u201007992\u20109"),
+                   Identifier(doi=other), Identifier(doi=CASE_REPORT, pmid="40000001")]
+    progress = []
+
+    with _replay(cassette) as played:
+        results = _download(SpringerExtractor(_settings(tmp_path)), *identifiers,
+                            progress_hook=progress.append)
+        assert played.play_count == 1
+
+    assert len(results) == len(identifiers) == sum(progress)
+    assert {id(r.identifier) for r in results} == {id(i) for i in identifiers}
+    for result in results:
+        assert result.success
+        article = etree.parse(str(result.files[0].file_path))
+        served_doi = article.findtext("front/article-meta/article-id[@pub-id-type='doi']")
+        wanted = other if result.identifier.doi == other else CASE_REPORT
+        assert served_doi == wanted
+
+
+@pytest.mark.parametrize("body_first", [False, True])
+def test_every_page_is_read_and_a_duplicate_with_a_body_is_kept(tmp_path, slept, body_first):
+    """More records than a page holds are paged with `s`; of two records for one DOI
+    the one with a body is kept, whichever page it is on."""
+    case = _five_articles()[CASE_REPORT]
+    stripped = etree.fromstring(etree.tostring(case))
+    stripped.remove(stripped.find("body"))
+    pages = [case, stripped] if body_first else [stripped, case]
+    cassette = _cassette(
+        tmp_path,
+        _answer(_uri([CASE_REPORT]), body=_response(pages[:1], total=2)),
+        _answer(_uri([CASE_REPORT], start=2), body=_response(pages[1:], total=2)),
+    )
+
+    with _replay(cassette) as played:
+        (result,) = _download(SpringerExtractor(_settings(tmp_path)), CASE_REPORT)
+        assert played.all_played
+
+    assert result.success
+    assert etree.parse(str(result.files[0].file_path)).find("body") is not None
+
+
+def test_a_fourth_429_in_a_row_is_the_quota_spent(tmp_path, slept):
+    cassette = _cassette(tmp_path, *[_answer(_uri([CASE_REPORT]), 429)] * 4)
+
+    with _replay(cassette) as played:
+        with pytest.raises(SourceExhausted, match="kept answering 429"):
+            _download(SpringerExtractor(_settings(tmp_path)), CASE_REPORT)
+        assert played.all_played
+
+    assert slept == [2.0, 4.0, 8.0]
+
+
+def test_a_403_is_the_quota_spent_leaving_every_article_pending_and_said_in_the_report(
+        tmp_path, slept, caplog):
+    """A refusal of a key the API knows: nothing is charged, Springer is asked nothing
+    more, the next source is still asked, and the run report says so."""
+    message = "Account over its daily limit"
+    cassette = _cassette(tmp_path, _answer(
+        _uri([CASE_REPORT, LAST]), 403,
+        json.dumps({"status": "Fail", "message": message}).encode()))
+    settings = _settings(tmp_path, download_sources=["springer", "wiley"], wiley_api_key=None)
+    wiley_doi = "10.1111/j.1440-1614.2006.01765.x"
+    ctx, refs = _catalog(settings, CASE_REPORT, LAST, wiley_doi)
+
+    with _replay(cassette) as played:
+        report = run_stages(ctx, [DownloadStage(settings)], refs)
+        assert played.play_count == 1
+
+    ids = [ref.id for ref in refs]
+    assert not any(ctx.catalog.artifacts(ids, "download").values())
+    assert ctx.catalog.attempt_counts(ids, "download", "springer") == {}
+    line = report.render()
+    assert f"springer EXHAUSTED: Springer Nature refused this key (403): {message}" in line
+    assert "2 article(s) left pending for it" in line
+    # the next source was still reached: it stopped the stage for want of its own token
+    assert "download stopped: wiley: no Wiley TDM token" in caplog.text
+    assert len(DownloadStage(settings).plan(ctx, refs[:2], {}, {}).pending) == 2
+
+
+def test_springer_is_not_asked_about_an_article_another_source_already_served(tmp_path):
+    settings = _settings(tmp_path, download_sources=["elsevier", "springer"])
+    ctx, refs = _catalog(settings, CASE_REPORT)
+    stage = DownloadStage(settings)
+    ctx.catalog.record([Outcome(refs[0].id, "download", "elsevier", Status.OK,
+                                fingerprint=stage.fingerprint_for(DownloadSource.ELSEVIER),
+                                payload={"files": []})])
+
+    found = ctx.catalog.artifacts([refs[0].id], "download")
+    plan = stage.plan(ctx, refs, found, {})
+
+    assert (plan.pending, plan.fresh) == ([], 1)
+
+
+def test_a_springer_extraction_has_the_jats_metadata_fallback(tmp_path, slept):
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, *FIVE)
+    with _replay(FIVE_BMC):
+        run_stages(ctx, [DownloadStage(settings)], refs)
+    case = next(ref for ref in refs if ref.identifier.doi.lower() == CASE_REPORT)
+    run_stages(ctx, [ExtractStage(settings)], [case])
+    artifact = ctx.catalog.artifacts([case.id], "extract")[case.id]["springer"]
+    content = ExtractedContent.from_dict(ctx.catalog.payload(artifact))
+
+    metadata = MetadataService(settings)._get_fallback_metadata(content)
+
+    assert metadata.title.startswith("A case report of potentially inappropriate")
+
+
+def test_springer_ranks_with_the_publisher_xml_sources():
+    order = Settings().download_sources
+    assert order.index("europepmc") < order.index("elsevier") < order.index("springer")
+    assert order.index("springer") < order.index("ace") < order.index("pdf") < order.index("wiley")
+    assert TIE_ORDER.index("elsevier") < TIE_ORDER.index("springer") < TIE_ORDER.index("ace")
+    assert "springer" in JATS_SOURCES
+    # extracted by pubget's code, as pmc and europepmc are, at the version it started at
+    assert EXTRACTOR_VERSIONS["springer"] == 1

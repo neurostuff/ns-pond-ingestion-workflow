@@ -178,9 +178,10 @@ class Settings(BaseSettings):
     download_sources: List[str] = Field(
         # PMC first: its Cloud Service holds the Open Access subset pubget reads
         # and the author manuscripts pubget cannot, each with its licence.
-        # Springer Nature's JATS after Elsevier's XML: publisher XML before a
-        # scraped page or a PDF, and after the PMC copies of the same JATS, which
-        # spend none of its daily quota.
+        # Springer Nature's JATS after the PMC copies of the same JATS, which
+        # spend none of its daily quota, and before a scraped page or a PDF.
+        # Elsevier, before it, is asked about every DOI, Springer's included:
+        # that spends Elsevier's requests, not Springer's.
         # Wiley last: at one request per 10 seconds, it is asked only for what
         # no other source serves.
         default_factory=lambda: [

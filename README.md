@@ -215,13 +215,20 @@ tables beside it as pubget lays out a PMC article, and is read by pubget's
 code into the article's `springer` text.
 
 A key may make 100 requests a minute and 500 a day. The source names 20 DOIs
-in each request (the most a query takes) and asks at most once every 0.6
-seconds. A 429 is waited out for as long as its Retry-After asks, up to 60
-seconds; a longer wait, or a fourth 429 in a row, is the day's quota spent:
-the source is left for the rest of the run, and the articles it had not
-answered stay pending for it, uncharged, while later sources are tried. An
-article the API does not return is not open access there, and is permanent
-for this source.
+in each request (the most a query takes), reads every page of the answer, and
+asks at most once every 0.6 seconds. A DOI is asked with its look-alike dashes
+made hyphens and without a backslash, and matched to the article returned
+without regard to case. A 429 is waited out for as long as its Retry-After
+asks, up to 60 seconds. A longer wait, a fourth 429 in a row, or a 403 is taken
+as the day's quota spent: the source is left for the rest of the run, the
+articles it had not answered stay pending for it, uncharged, while later
+sources are tried, and the run report says `springer EXHAUSTED` with the API's
+reason. A 5xx or a dropped connection is retried twice; then that request's
+articles fail, to be retried on the usual schedule. An article the API does not
+return (or a 404 saying it found no data) is not open access there, and is
+permanent for this source; one returned without its body is retried. A query
+the API refuses (400) is halved until the DOI it cannot name is alone; that one
+is permanent.
 
 ## Dead PDF URLs
 
