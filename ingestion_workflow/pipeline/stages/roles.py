@@ -19,14 +19,16 @@ import collections
 import logging
 import re
 import threading
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Any, Deque, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
 from ingestion_workflow.services.set_roles.labels import is_decided
 from ingestion_workflow.services.set_roles.served import (
+    WORKERS,
     ServedClassifier,
     model_identity,
     served_models,
@@ -43,6 +45,12 @@ logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
 ROLES_VERSION = 4
+
+#: Articles classified at once, their inputs held in memory meanwhile. An article
+#: waits on one origin's server at a time, so both servers are supplied only while
+#: articles of both kinds are in hand; twice `served.WORKERS` keeps each server
+#: that deep even when every article has a single set waiting on it.
+ARTICLES = 2 * WORKERS
 
 #: Why roles waits on an article whose prose indexes a passages list other than the current one.
 RESOLVE_READ_OTHER_PROSE = ("its resolve was made from other prose: "
@@ -506,80 +514,123 @@ class RolesStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        """Each work's outcome, in the order of `works`, `ARTICLES` of them classified at once.
+
+        After a `ModelUnavailable` no article is started; the outcomes ahead of
+        it are yielded, then it is raised, and the articles from it on stay pending.
+        """
         back, works = taking_back(self.name, works)
         yield from back
         ids = [work.article_id for work in works]
         triaged = ctx.catalog.artifacts(ids, "triage")
         extractions = ctx.catalog.artifacts(ids, "extract")
         passages = ctx.catalog.artifacts(ids, "passages")
-        for work in works:
-            payload = ctx.payload(work.upstream)
-            if payload is None:
-                yield Outcome.failure(
-                    work.article_id,
-                    self.name,
-                    "",
-                    f"the {self.requires} payload is gone",
-                    fingerprint=work.fingerprint,
-                )
-                continue
-            try:
-                read = passages.get(work.article_id, {}).get("")
-                read_payload = (
-                    ctx.payload(read) if read is not None and read.status is Status.OK else None
-                )
-                triage = triaged.get(work.article_id, {}).get("")
-                text = _article_text(triage, extractions.get(work.article_id, {}), ctx)
-                unread: Dict[str, str] = {}
-                assigned, summary = assign_roles(
-                    payload,
-                    _read_passages(ctx, read_payload),
-                    text,
-                    _Classifiers(self),
-                    raw_tables(triage, extractions.get(work.article_id, {}), ctx),
-                    unread,
-                )
-                if unread:
-                    # Its sets were read without the table's header and rows: say which, and why.
-                    summary["tables_without_text"] = unread
-            except ModelUnavailable:
-                # Not the article's failure: the scheduler stops the stage and this
-                # article and the rest stay pending.
-                raise
-            except UnansweredSets as exc:
-                yield Outcome.failure(
-                    work.article_id,
-                    self.name,
-                    "",
-                    f"no role for its sets: {exc}",
-                    fingerprint=work.fingerprint,
-                    summary={"unanswered": exc.reasons},
-                )
-                continue
-            except Exception as exc:
-                logger.warning("roles failed for %s: %s", work.article_id, exc)
-                yield Outcome.failure(
-                    work.article_id,
-                    self.name,
-                    "",
-                    f"{type(exc).__name__}: {exc}",
-                    fingerprint=work.fingerprint,
-                )
-                continue
-            # What the roles were decided on, for upload's freshness (`space.upload_basis`).
-            parent = work.upstream
-            basis = (parent.summary or {}).get("basis") if parent.stage == "resolve" else None
-            summary["input"] = fingerprint("roles-input", ROLES_VERSION,
-                                           upstream=basis or parent.fingerprint)
-            yield Outcome(
-                article_id=work.article_id,
-                stage=self.name,
-                source="",
-                status=Status.OK,
-                fingerprint=work.fingerprint,
-                payload=assigned,
-                summary=summary,
+        window: Deque[Tuple[Work, Future]] = collections.deque()
+        pool = ThreadPoolExecutor(max_workers=ARTICLES, thread_name_prefix="roles")
+        try:
+            for work in works:
+                while window and (len(window) == ARTICLES or window[0][1].done()):
+                    yield self._outcome(*window.popleft())
+                if any(_stopped_by(future) for _, future in window):
+                    break
+                window.append((work, self._start(ctx, pool, work, triaged, extractions,
+                                                 passages)))
+            while window:
+                yield self._outcome(*window.popleft())
+        finally:
+            pool.shutdown(cancel_futures=True)
+
+    def _start(self, ctx: Context, pool: ThreadPoolExecutor, work: Work, triaged, extractions,
+               passages) -> Future:
+        """The work's roles, being decided on `pool`.
+
+        Its inputs are read here, on the stage's thread, which the catalog's
+        connection belongs to; the pool only waits on the role servers.
+        """
+        future: Future = Future()
+        payload = ctx.payload(work.upstream)
+        if payload is None:
+            future.set_result(Outcome.failure(work.article_id, self.name, "",
+                                              f"the {self.requires} payload is gone",
+                                              fingerprint=work.fingerprint))
+            return future
+        try:
+            read = passages.get(work.article_id, {}).get("")
+            read_payload = (
+                ctx.payload(read) if read is not None and read.status is Status.OK else None
             )
+            triage = triaged.get(work.article_id, {}).get("")
+            inputs = (
+                payload,
+                _read_passages(ctx, read_payload),
+                _article_text(triage, extractions.get(work.article_id, {}), ctx),
+                _Classifiers(self),
+                raw_tables(triage, extractions.get(work.article_id, {}), ctx),
+            )
+        except Exception as exc:  # noqa: BLE001 - the article's failure, yielded in its place
+            future.set_exception(exc)
+            return future
+        return pool.submit(_assign, inputs)
+
+    def _outcome(self, work: Work, future: Future) -> Outcome:
+        """The work's outcome once its roles are decided; `ModelUnavailable` is raised."""
+        try:
+            done = future.result()
+        except ModelUnavailable:
+            # Not the article's failure: the scheduler stops the stage and this
+            # article and the rest stay pending.
+            raise
+        except UnansweredSets as exc:
+            return Outcome.failure(
+                work.article_id,
+                self.name,
+                "",
+                f"no role for its sets: {exc}",
+                fingerprint=work.fingerprint,
+                summary={"unanswered": exc.reasons},
+            )
+        except Exception as exc:  # noqa: BLE001 - the article's failure, not the stage's
+            logger.warning("roles failed for %s: %s", work.article_id, exc)
+            return Outcome.failure(
+                work.article_id,
+                self.name,
+                "",
+                f"{type(exc).__name__}: {exc}",
+                fingerprint=work.fingerprint,
+            )
+        if isinstance(done, Outcome):
+            return done
+        assigned, summary = done
+        # What the roles were decided on, for upload's freshness (`space.upload_basis`).
+        parent = work.upstream
+        basis = (parent.summary or {}).get("basis") if parent.stage == "resolve" else None
+        summary["input"] = fingerprint("roles-input", ROLES_VERSION,
+                                       upstream=basis or parent.fingerprint)
+        return Outcome(
+            article_id=work.article_id,
+            stage=self.name,
+            source="",
+            status=Status.OK,
+            fingerprint=work.fingerprint,
+            payload=assigned,
+            summary=summary,
+        )
+
+
+def _assign(inputs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """`assign_roles` on a work's inputs; tables read without their text go in the summary."""
+    unread: Dict[str, str] = {}
+    assigned, summary = assign_roles(*inputs, unread)
+    if unread:
+        # Its sets were read without the table's header and rows: say which, and why.
+        summary["tables_without_text"] = unread
+    return assigned, summary
+
+
+def _stopped_by(future: Future) -> bool:
+    """Whether the work on `future` ended in a model outage."""
+    return (future.done() and not future.cancelled()
+            and isinstance(future.exception(), ModelUnavailable))
 
 
 class _Classifiers(Mapping):

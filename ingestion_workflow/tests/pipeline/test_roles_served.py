@@ -19,6 +19,7 @@ from ingestion_workflow.config import RoleModel, Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.scheduler import run_stages
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.stages import roles as roles_module
 from ingestion_workflow.pipeline.stages.roles import (
     RolesStage,
     UnansweredSets,
@@ -192,6 +193,11 @@ RESULT_LIKELY = {"result": math.log(0.6), "anchor": math.log(0.1), "re": math.lo
                  "other": math.log(0.1)}
 
 
+class _Server(ThreadingHTTPServer):
+    # vLLM's backlog, not http.server's 5: a stage asks for more connections at once than that.
+    request_queue_size = 2048
+
+
 class Stub:
     """An OpenAI-compatible server: `/v1/models` lists `models`; `reply(body)` answers a chat."""
 
@@ -202,6 +208,8 @@ class Stub:
         #: False: the model listing answers 503 too, as a server that is down does.
         self.healthy = True
         self.requests = []
+        #: Model listings answered.
+        self.listings = 0
         self.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
         stub = self
 
@@ -219,6 +227,7 @@ class Stub:
                 self.wfile.write(data)
 
             def do_GET(self):
+                stub.listings += 1
                 if not stub.healthy:
                     self._send(503, "down")
                     return
@@ -231,7 +240,7 @@ class Stub:
                 status, payload = stub.reply(body)
                 self._send(status, payload)
 
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server = _Server(("127.0.0.1", 0), Handler)
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}/v1"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
@@ -782,3 +791,148 @@ def test_a_table_file_that_cannot_be_serialised_is_recorded_with_why(tmp_path, m
     list(set_contexts(_tables("patients"), [], None, {"t2": tmp_path / "t2.html"}, unread))
     assert unread["t2"].startswith(
         f"its raw table file cannot be read ({tmp_path / 't2.html'}): RuntimeError: bad markup")
+
+
+# --------------------------------------------------------------------------- articles at once
+
+
+TEXT_MODEL = "nx-roles-text"
+
+
+def _prose_sets(*names):
+    return {"p": {"analyses": [
+        {"name": n, "description": None, "metadata": {"source": "prose", "passages": [0]},
+         "coordinates": [{"x": 1.0, "y": 2.0, "z": 3.0, "space": "MNI"}]} for n in names]}}
+
+
+@pytest.fixture
+def both(tmp_path):
+    """A table server and a text server, and a run with prose on that uses them."""
+    table, text = Stub(), Stub(models=(TEXT_MODEL,))
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
+                        prose_model="nu-prose")
+    settings.role_model_table = RoleModel(endpoint=table.url, model=MODEL)
+    settings.role_model_prose = RoleModel(endpoint=text.url, model=TEXT_MODEL)
+    with Catalog.open(settings.catalog_root) as catalog:
+        yield settings, catalog, table, text
+    table.close()
+    text.close()
+
+
+def _resolved(catalog, n, payload):
+    """An article whose resolve holds `payload`, with the prose and passages it was read from."""
+    ref = catalog.register(Identifier(pmid=str(100 + n)))
+    summary = ({"tables": 0, "prose_analyses": 1, "prose_read": f"pr-{n}"} if "p" in payload
+               else {"tables": 1, "prose_analyses": 0, "basis": f"an-{n}"})
+    catalog.record([
+        Outcome(article_id=ref.id, stage="resolve", source="", fingerprint=f"r-{n}",
+                payload=payload, summary=summary),
+        Outcome(article_id=ref.id, stage="prose", source="", fingerprint=f"pr-{n}",
+                payload={}, summary={"passages_read": f"pa-{n}"}),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint=f"pa-{n}",
+                payload={}),
+    ])
+    return ref
+
+
+def _timed(stub, spans, hold):
+    """Answer as `stub` does after `hold` seconds, recording when each request was in flight."""
+    reply = stub.reply
+
+    def timed(body):
+        start = time.monotonic()
+        time.sleep(hold(body) if callable(hold) else hold)
+        spans.append((stub, start, time.monotonic()))
+        return reply(body)
+
+    stub.reply = timed
+
+
+def _most_at_once(spans):
+    edges = sorted([(s, 1) for s, _ in spans] + [(e, -1) for _, e in spans])
+    most = now = 0
+    for _, step in edges:
+        now += step
+        most = max(most, now)
+    return most
+
+
+def test_the_table_and_text_servers_are_asked_at_the_same_time(both):
+    """Articles are classified together, so neither server waits on the other's articles."""
+    settings, catalog, table, text = both
+    refs = [_resolved(catalog, n, _tables("patients", "controls") if n % 2 else
+                      _prose_sets("seed"))
+            for n in range(12)]
+    text.reply = lambda body: (200, _choice('{"role": "anchor", "anchor_kind": "seed"}',
+                                            {"anchor": math.log(0.9), "result": math.log(0.1)}))
+    spans = []
+    _timed(table, spans, 0.1)
+    _timed(text, spans, 0.1)
+    stage = RolesStage(settings)
+    ctx = Context(settings, catalog)
+    ids = [r.id for r in refs]
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, "roles"),
+                      catalog.artifacts(ids, "resolve"))
+    assert len(plan.pending) == 12
+    listed = (table.listings, text.listings)
+    outcomes = list(stage.execute(ctx, plan.pending))
+    # In the order planned, every one decided.
+    assert [o.article_id for o in outcomes] == ids
+    assert {o.status for o in outcomes} == {Status.OK}
+    # Each classifier is loaded once, by one article, however many ask for it at once.
+    assert (table.listings, text.listings) == (listed[0] + 1, listed[1] + 1)
+    by_server = {s: [(a, b) for k, a, b in spans if k is s] for s in (table, text)}
+    # More than one article's sets at a server at once, and the two servers busy together.
+    assert _most_at_once(by_server[table]) > 2 and _most_at_once(by_server[text]) > 1
+    assert any(a < d and c < b for a, b in by_server[table] for c, d in by_server[text])
+
+
+def test_a_server_never_has_more_than_its_share_of_sets_in_flight(env, stub):
+    settings, catalog, ref = env
+    many = _tables(*[f"set {i}" for i in range(3 * served_module.WORKERS)])
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-9",
+                            payload=many, summary={"tables": 1})])
+    spans = []
+    _timed(stub, spans, 0.3)
+    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
+    assert done.status is Status.OK
+    assert _most_at_once([(a, b) for _, a, b in spans]) == served_module.WORKERS
+
+
+def test_an_outage_starts_no_article_and_keeps_those_ahead_of_it(both, monkeypatch):
+    """Once a model stops the stage no article is begun; those ahead that finish are kept."""
+    settings, catalog, table, text = both
+    monkeypatch.setattr(roles_module, "ARTICLES", 3)
+    refs = [_resolved(catalog, 0, _prose_sets("first")),
+            _resolved(catalog, 1, _prose_sets("second")),
+            _resolved(catalog, 2, _tables("refused")),
+            _resolved(catalog, 3, _prose_sets("late"))]
+    table.reply = lambda body: TOO_LONG
+    text.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
+    spans = []
+    _timed(text, spans, lambda body: 0.5 if "[NAME] first" in str(body["messages"]) else 1)
+    ids = [r.id for r in refs]
+    report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
+    roles = report.stages["roles"]
+    assert "maximum context length is 4096 tokens" in roles.stopped
+    assert (roles.ok, roles.failed, roles.left_pending) == (2, 0, 2)
+    # Room in the window once `first` was done, but `late` was not begun: the table model stopped.
+    assert not any("[NAME] late" in str(b["messages"]) for b in text.requests)
+    assert catalog.artifacts(ids, "roles").keys() == {ids[0], ids[1]}
+    assert catalog.attempt_counts(ids, "roles", "") in ({}, {i: (0, None) for i in ids})
+
+
+def test_an_article_s_failure_among_many_at_once_fails_that_article_only(both, monkeypatch):
+    settings, catalog, table, text = both
+    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
+    refs = [_resolved(catalog, n, _tables("poison" if n == 3 else "patients")) for n in range(8)]
+    table.reply = lambda body: ((500, "engine error") if "[NAME] poison" in str(body["messages"])
+                                else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
+    ids = [r.id for r in refs]
+    report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
+    roles = report.stages["roles"]
+    assert (roles.ok, roles.failed, roles.stopped) == (7, 1, None)
+    found = catalog.artifacts(ids, "roles")
+    assert [found[i][""].status for i in ids] == [Status.FAILED if n == 3 else Status.OK
+                                                 for n in range(8)]

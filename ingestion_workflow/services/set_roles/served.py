@@ -37,8 +37,12 @@ _ROLE_KEY = '"role":"'
 TOP_LOGPROBS = 20
 #: Room for the answer, which is about 15 tokens (`{"role": "anchor", "anchor_kind": "seed"}`).
 MAX_COMPLETION_TOKENS = 64
-#: Seconds to wait for one answer, tries per set, and sets asked at once.
-TIMEOUT, ATTEMPTS, WORKERS = 120.0, 3, 16
+#: Seconds to wait for one answer, and tries per set.
+TIMEOUT, ATTEMPTS = 120.0, 3
+#: Sets asked of one server at once, from every article the stage has in hand: twice
+#: the role servers' vLLM `--max-num-seqs` (16), so a full batch is queued behind the
+#: running one. Below httpx's 100 pooled connections, so no request waits on the pool.
+WORKERS = 32
 CONFIGURATION = "configuration error:"
 
 
@@ -169,6 +173,7 @@ class ServedClassifier:
         self._sleep = sleep or time.sleep
         self._stopped: Optional[str] = None
         self._lock = threading.Lock()
+        self._pool = ThreadPoolExecutor(max_workers=WORKERS, thread_name_prefix=model)
 
     def body(self, text: str) -> Dict[str, Any]:
         """The request for one serialised context."""
@@ -197,8 +202,8 @@ class ServedClassifier:
         return ModelUnavailable(self._stopped)
 
     def predict(self, texts: Sequence[str]) -> List[Union[Prediction, Unanswered]]:
-        with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(texts)))) as pool:
-            return list(pool.map(self._ask, texts))
+        """Each text's answer, asked on the pool every caller of this classifier shares."""
+        return list(self._pool.map(self._ask, texts))
 
     def _ask(self, text: str) -> Union[Prediction, Unanswered]:
         last = ""
