@@ -59,6 +59,14 @@ def _decided(role="result", *, origin="table", anchor_kind=None, prior=False, ev
     }
 
 
+def _bare_table(table_id, caption=None, headings=None, footer=None, triage=None):
+    """The model's parsed table, with only what the coordinate parse reads of it."""
+    return pp.ParsedTable(
+        table_id=table_id, caption=caption, footer=footer, column_headings=headings,
+        triage=triage,
+    )
+
+
 def _roles(text=""):
     return paper_parse._Roles(paper_parse._Text(text), [])
 
@@ -583,20 +591,21 @@ def test_passages_indexing_another_text_place_nothing():
     assert _insula(text, {"passages": [{"text": "The peak"}]})[0] is None  # a prose result from before spans
 
 
-def _parse(tmp_path, markup, per_table, text="Results\n", **inputs):
+def _parse(tmp_path, markup, per_table, text="Results\n", caption=None, footer=None, **inputs):
     """coordinate_parse over one table `tbl1` read from `markup`."""
     from ingestion_workflow.services.paper_parse import _grid
 
     (tmp_path / "t.html").write_text(markup, encoding="utf-8")
+    grid = _grid(tmp_path / "t.html")
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id="tbl1", triage=None)],
+        tables=[_bare_table("tbl1", caption, grid.headings, footer)],
     )
     return paper_parse.coordinate_parse(
         paper,
         text,
-        {"tbl1": _grid(tmp_path / "t.html")},
+        {"tbl1": grid},
         per_table,
         ParseInputs(article_id="a", **inputs),
     )
@@ -1264,7 +1273,7 @@ def _two_tables(tmp_path, markup, per_table):
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id=t, triage=None) for t in per_table],
+        tables=[_bare_table(t) for t in per_table],
     )
     return paper_parse.coordinate_parse(
         paper,
@@ -1462,7 +1471,7 @@ def _table_and_text(tmp_path, order):
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id="1", triage=None)],
+        tables=[_bare_table("1")],
     )
     return paper_parse.coordinate_parse(
         paper,
@@ -1558,7 +1567,195 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 6
+    assert paper_parse.PAPER_PARSE_VERSION == 7
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.6"
+        "paper_parse.7"
+    }
+
+
+# PMC4366046 table 2 (PMID 25789862): seeds placed in rat, positions from bregma.
+BREGMA_TABLE = """<table>
+<tr><th>Network</th><th>Brain region</th><th>Coordinates in Bregma (in mm) M-L; D-V; A-P</th></tr>
+<tr><td>DMN</td><td>Rostral Anterior Cingulate Cortex</td><td>0.5; 2.5; 1.7</td></tr>
+<tr><td>Motor Network</td><td>Primary Motor Cortex</td><td>3.0; 1.5; 1.7</td></tr>
+</table>"""
+# The same paper's table 1: the human seeds, in Talairach.
+TALAIRACH_TABLE = """<table>
+<tr><th>Network</th><th>Brain region</th><th>Coordinates in Talairach (in mm) X; Y; Z</th></tr>
+<tr><td>DMN</td><td>Posterior Cingulate Cortex</td><td>0; -47; 29</td></tr>
+</table>"""
+BREGMA_HEADINGS = ["Network", "Brain region", "Coordinates in Bregma (in mm) M-L; D-V; A-P"]
+RAT_CAPTION = "Table 2. Seed placement in rat for; DMN, motor network."
+HUMAN_CAPTION = "Table 1. Seed placement in humans for; DMN, motor network."
+
+
+def _seeds():
+    return _collection(
+        [
+            Analysis(name="DMN", coordinates=[Coordinate(x=0.5, y=2.5, z=1.7)]),
+            Analysis(name="Motor Network", coordinates=[Coordinate(x=3.0, y=1.5, z=1.7)]),
+        ]
+    )
+
+
+def test_a_bregma_table_is_left_out_with_its_reason(tmp_path):
+    parse, omitted = _parse(tmp_path, BREGMA_TABLE, {"tbl1": _seeds()}, caption=RAT_CAPTION)
+    assert parse.analyses == []
+    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+        ("DMN", "tbl1", paper_parse.RODENT_ATLAS_REASON),
+        ("Motor Network", "tbl1", paper_parse.RODENT_ATLAS_REASON),
+    ]
+    [reading] = parse.tables
+    assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.RODENT_ATLAS_REASON)
+
+
+def test_a_bregma_table_overrides_the_analyses_stage_s_reading(tmp_path):
+    parse, _ = _parse(
+        tmp_path, BREGMA_TABLE, {"tbl1": _seeds()}, caption=RAT_CAPTION,
+        readings={"tbl1": "coordinates"},
+    )
+    assert [t.reading for t in parse.tables] == ["no_coordinates"]
+
+
+def test_a_talairach_table_is_still_read(tmp_path):
+    parse, omitted = _parse(
+        tmp_path, TALAIRACH_TABLE, {"tbl1": _collection(
+            [Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)])]
+        )}, caption=HUMAN_CAPTION,
+    )
+    assert [a.name for a in parse.analyses] == ["DMN"]
+    assert omitted == []
+
+
+def _rodent(caption=None, headings=None, footer=None):
+    return paper_parse.is_rodent_atlas_table(_bare_table("t", caption, headings, footer))
+
+
+XYZ = ["Region", "x", "y", "z"]
+
+
+@pytest.mark.parametrize(
+    "caption, headings, footer",
+    [
+        ("Seed placement in rat", ["Coordinates in Bregma (mm)"], None),
+        ("Injection sites in mice (Franklin and Paxinos)", XYZ, None),
+        ("Rat brain regions, Paxinos & Watson", XYZ, None),
+        ("Sites", XYZ, "Coordinates in the atlas of Paxinos and Watson"),
+        ("Coordinates, Franklin & Paxinos", XYZ, None),
+        ("Electrode sites in mice", ["Region", "AP", "ML", "DV"], None),
+        ("Electrode sites in mice", ["Region", "A-P", "M/L", "D V"], None),
+        ("Sites", XYZ, "Rats; coordinates relative to bregma"),
+        ("Wistar rats: tracer sites", ["Region", "mm from bregma"], None),
+        ("Sprague-Dawley recording sites", ["Region", "Interaural (mm)"], None),
+        ("Sites in the C57BL/6 mouse brain", ["Region", "Bregma"], None),
+        ("RAT TARGETS, PAXINOS", XYZ, None),
+        ("Rat targets, paxinos atlas", XYZ, None),
+        ("Mouse targets, Franklin atlas; mice n=4", XYZ, None),
+        ("Rat targets", ["Region", "interaural"], None),
+    ],
+)
+def test_what_marks_a_table_as_rodent_stereotaxic(caption, headings, footer):
+    assert _rodent(caption, headings, footer)
+
+
+@pytest.mark.parametrize(
+    "caption, headings, footer",
+    [
+        ("Activation in humans, MNI coordinates", XYZ, None),
+        ("Peaks in the Mai and Paxinos atlas", XYZ, None),
+        ("Participants used a mouse to respond; Mai and Paxinos atlas", XYZ, None),
+        ("Mouse-click task; DBS targets", ["Region", "AP", "ML", "DV"], None),
+        ("TMS targets, distance from bregma", XYZ, None),
+        ("Interaural time difference sites", XYZ, None),
+        ("Rated confidence", XYZ, "ratio of 3 to 1; a pirate task; Paxinos"),
+        ("Bregmatic suture sites", XYZ, "Rats"),
+        ("Electrode sites in mice", ["Region", "AP", "ML"], None),
+        ("Electrode sites in rat", ["Region", "MAP", "XML", "DVD"], None),
+        ("Electrode sites in rat", ["Region", "MAP", "ML", "DV"], None),
+        ("Electrode sites in rat", ["Region", "AP", "XML", "DV"], None),
+        ("Electrode sites in rat", ["Region", "AP", "ML", "DVD"], None),
+        ("Targets in humans", ["Region", "AP", "ML", "DV"], None),
+        ("Peaks in the Paxinos atlas", XYZ, None),
+        ("Seeds in Paxinos and Mai", XYZ, "rated"),
+    ],
+)
+def test_what_does_not_mark_a_table_as_rodent_stereotaxic(caption, headings, footer):
+    assert not _rodent(caption, headings, footer)
+
+
+def test_a_rodent_word_only_in_a_body_row_does_not_leave_a_table_out(tmp_path):
+    markup = TALAIRACH_TABLE.replace("Posterior Cingulate Cortex", "Rat bregma Paxinos")
+    parse, omitted = _parse(
+        tmp_path, markup, {"tbl1": _collection(
+            [Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)])]
+        )}, caption=HUMAN_CAPTION,
+    )
+    assert [a.name for a in parse.analyses] == ["DMN"] and omitted == []
+
+
+def test_a_footer_alone_leaves_a_table_out(tmp_path):
+    parse, omitted = _parse(
+        tmp_path, TALAIRACH_TABLE, {"tbl1": _collection(
+            [Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)])]
+        )}, caption="Seeds", footer="Rats; positions from bregma",
+    )
+    assert parse.analyses == [] and omitted[0].reason == paper_parse.RODENT_ATLAS_REASON
+
+
+def _paper_parse(tmp_path, tables, per_table, **inputs):
+    """coordinate_parse over several tables: {table_id: (markup, parsed table)}."""
+    from ingestion_workflow.services.paper_parse import _grid
+
+    grids = {}
+    for table_id, (markup, _) in tables.items():
+        (tmp_path / f"{table_id}.html").write_text(markup, encoding="utf-8")
+        grids[table_id] = _grid(tmp_path / f"{table_id}.html")
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        text_sha256="0" * 64,
+        tables=[table for _, table in tables.values()],
+    )
+    return paper_parse.coordinate_parse(
+        paper, "Results\n", grids, per_table, ParseInputs(article_id="a", **inputs)
+    )
+
+
+def _dmn():
+    return _collection([Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)])])
+
+
+def test_a_paper_with_a_rodent_table_and_a_human_one_keeps_the_human_analyses(tmp_path):
+    rat, human = _seeds(), _dmn()
+    parse, omitted = _paper_parse(
+        tmp_path,
+        {
+            "rat": (BREGMA_TABLE, _bare_table("rat", RAT_CAPTION, BREGMA_HEADINGS)),
+            "human": (TALAIRACH_TABLE, _bare_table("human", HUMAN_CAPTION)),
+        },
+        {"rat": rat, "human": human},
+    )
+    assert [a.name for a in parse.analyses] == ["DMN"]
+    assert [(o.table_id, o.name) for o in omitted] == [("rat", "DMN"), ("rat", "Motor Network")]
+    assert len(parse.analyses) + len(omitted) == len(rat.analyses) + len(human.analyses)
+    assert {t.table_id: t.reading for t in parse.tables} == {
+        "rat": "no_coordinates",
+        "human": "coordinates",
+    }
+
+
+def test_a_rodent_table_a_person_excluded_or_triage_rejected_keeps_that_reason(tmp_path):
+    rejected = pp.TableTriage(passes=False, route="gate")
+    parse, _ = _paper_parse(
+        tmp_path,
+        {
+            "hand": (BREGMA_TABLE, _bare_table("hand", RAT_CAPTION, BREGMA_HEADINGS)),
+            "gate": (BREGMA_TABLE, _bare_table("gate", RAT_CAPTION, BREGMA_HEADINGS, triage=rejected)),
+        },
+        {"hand": _seeds(), "gate": _seeds()},
+        excluded={"hand": {"reason": "not_coordinates", "note": "a design matrix"}},
+    )
+    got = {t.table_id: (t.reading, t.reason) for t in parse.tables}
+    assert got == {
+        "hand": ("excluded_by_hand", "not_coordinates; a design matrix"),
+        "gate": ("rejected_by_triage", "gate"),
     }
