@@ -60,6 +60,26 @@ CREATE TABLE IF NOT EXISTS exclusions (
     PRIMARY KEY (article_id, table_id)
 );
 
+-- One row per `ingest add --search`: what was asked and what each provider was
+-- sent. `providers` maps a provider to {query, records, without_id}.
+CREATE TABLE IF NOT EXISTS searches (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    query       TEXT NOT NULL,
+    years       TEXT NOT NULL,
+    searched_at TEXT NOT NULL,
+    providers   TEXT NOT NULL
+);
+
+-- The catalog article each provider's hit resolved to, after registration and
+-- enrichment. Read through `articles.merged_into`, never rewritten.
+CREATE TABLE IF NOT EXISTS search_hits (
+    search_id  INTEGER NOT NULL,
+    provider   TEXT NOT NULL,
+    article_id TEXT NOT NULL,
+    PRIMARY KEY (search_id, provider, article_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS search_hits_article_idx ON search_hits(article_id);
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL

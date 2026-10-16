@@ -741,3 +741,99 @@ def test_an_article_holding_two_pmids_presents_the_lower(catalog):
         assert presented.pmids == ["12671262", "22387514", "9999999999"]
     assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).other_ids is None
 
+
+
+def test_a_search_follows_its_articles_through_a_merge(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        pmid_only = catalog.register(Identifier(pmid="1"))
+        doi_only = catalog.register(Identifier(doi="10.1/m"))
+        other = catalog.register(Identifier(doi="10.1/o"))
+        search_id = catalog.record_search(
+            "q", "2026", {"pubmed": "p", "sciencedirect": "s", "openalex": "o"},
+            {
+                "pubmed": [pmid_only.id, None],
+                "sciencedirect": [doi_only.id, other.id],
+                # one provider found both halves: they are one article after the merge
+                "openalex": [pmid_only.id, doi_only.id],
+            },
+        )
+        assert catalog.search_articles(search_id, only="sciencedirect") == [other.id]
+        assert catalog.search_articles(search_id, only="pubmed") == []
+
+        # enrichment later learns the two records are one article
+        merged = catalog.register(Identifier(pmid="1", doi="10.1/m"))
+
+        assert catalog.search_articles(search_id, only="sciencedirect") == [other.id]
+        both = catalog.search_articles(search_id, found_by=["pubmed"])
+        assert both == [merged.id]
+        assert catalog.search_articles(search_id, found_by=["sciencedirect"]).count(merged.id) == 1
+        assert catalog.search_articles(search_id, found_by=["openalex"]) == [merged.id]
+        assert catalog.searches()[0]["providers"]["openalex"]["articles"] == 1
+        (run,) = catalog.searches()
+        assert run["providers"]["pubmed"]["without_id"] == 1
+        assert run["providers"]["pubmed"]["articles"] == 1
+
+
+def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path):
+    """A process without the search tables merges articles and never touches their hits."""
+    with Catalog.open(tmp_path / "cat") as catalog:
+        old = catalog.register(Identifier(pmid="1"))
+        new = catalog.register(Identifier(doi="10.1/m"))
+        search_id = catalog.record_search(
+            "q", "2026", {"pubmed": "p", "sciencedirect": "s"},
+            {"pubmed": [old.id], "sciencedirect": [new.id]},
+        )
+        with catalog._write() as conn:
+            survivor = catalog._merge(conn, [old.id, new.id])
+        retired = ({old.id, new.id} - {survivor}).pop()
+
+        assert catalog.search_articles(search_id) == [survivor]
+        assert catalog.search_articles(search_id, only="pubmed") == []
+        assert catalog.search_articles(search_id, found_by=["sciencedirect"]) == [survivor]
+        assert retired not in catalog.search_articles(search_id)
+        assert catalog.identifiers([survivor])[survivor] == Identifier(pmid="1", doi="10.1/m")
+        providers = catalog.searches()[0]["providers"]
+        assert providers["pubmed"]["articles"] == providers["sciencedirect"]["articles"] == 1
+
+
+def test_a_search_names_its_articles_oldest_first(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        refs = [catalog.register(Identifier(doi=f"10.1/{n}")) for n in "abc"]
+        # ids sort differently from creation
+        for ref, day in zip(refs, ("2026-01-03", "2026-01-01", "2026-01-02")):
+            catalog._conn.execute("UPDATE articles SET created_at=? WHERE id=?", (day, ref.id))
+        search_id = catalog.record_search(
+            "q", "2026", {"pubmed": "p"}, {"pubmed": [ref.id for ref in refs]}
+        )
+
+        by_age = [refs[1].id, refs[2].id, refs[0].id]
+        assert catalog.search_articles(search_id) == by_age
+        assert catalog.search_articles(search_id, found_by=["pubmed"]) == by_age
+        assert catalog.search_articles(search_id, only="pubmed") == by_age
+
+
+def test_a_catalog_from_before_searches_gains_the_tables_and_stays_at_its_version(tmp_path):
+    import sqlite3
+
+    with Catalog.open(tmp_path / "cat") as catalog:
+        catalog.register(Identifier(doi="10.1/z"))
+    conn = sqlite3.connect(tmp_path / "cat" / "catalog.sqlite")
+    conn.execute("DROP TABLE searches")
+    conn.execute("DROP TABLE search_hits")
+    conn.commit()
+    conn.close()
+
+    with Catalog.open(tmp_path / "cat") as catalog:
+        assert catalog.searches() == []
+        assert catalog.count_articles() == 1
+    assert not list((tmp_path / "cat").glob("catalog.pre-*"))
+
+
+def test_an_unknown_search_or_provider_is_refused(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        ref = catalog.register(Identifier(doi="10.1/k"))
+        search_id = catalog.record_search("q", "2026", {"pubmed": "p"}, {"pubmed": [ref.id]})
+        with pytest.raises(KeyError, match="no search 9"):
+            catalog.search_articles(9)
+        with pytest.raises(KeyError, match="did not search openalex"):
+            catalog.search_articles(search_id, only="openalex")

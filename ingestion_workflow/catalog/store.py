@@ -578,6 +578,133 @@ class Catalog:
 
     # -- exclusions ----------------------------------------------------------
 
+    # -- searches ------------------------------------------------------------
+
+    def record_search(
+        self,
+        query: str,
+        years: str,
+        rendered: Mapping[str, str],
+        resolved: Mapping[str, Sequence[Optional[str]]],
+    ) -> int:
+        """Keep one search run: its query, years, each provider's query and hits.
+
+        `resolved` is, per provider, the article each of its records is now (see
+        `resolve_hits`), None for a record with no DOI, PMID or PMCID. The run's
+        id is returned.
+        """
+        providers = {
+            name: {
+                "query": rendered[name],
+                "records": len(ids),
+                "without_id": sum(1 for a in ids if a is None),
+            }
+            for name, ids in resolved.items()
+        }
+        with self._write() as conn:
+            search_id = conn.execute(
+                "INSERT INTO searches(query, years, searched_at, providers) VALUES(?, ?, ?, ?)",
+                (query, years, utcnow(), json.dumps(providers)),
+            ).lastrowid
+            conn.executemany(
+                "INSERT OR IGNORE INTO search_hits(search_id, provider, article_id) "
+                "VALUES(?, ?, ?)",
+                [
+                    (search_id, name, article_id)
+                    for name, ids in resolved.items()
+                    for article_id in set(ids) - {None}
+                ],
+            )
+        return search_id
+
+    def _search_hits(self, search_id: int) -> Dict[str, set]:
+        """Per provider, the articles it found now: each hit followed through any merge.
+
+        Read-time, because a process that predates these tables merges articles
+        without moving their hits.
+        """
+        merged = {
+            row["id"]: row["merged_into"]
+            for row in self._conn.execute(
+                "SELECT id, merged_into FROM articles WHERE merged_into IS NOT NULL"
+            )
+        }
+
+        def live(article_id: str) -> str:
+            seen = set()
+            while article_id in merged and article_id not in seen:
+                seen.add(article_id)
+                article_id = merged[article_id]
+            return article_id
+
+        found: Dict[str, set] = {}
+        for row in self._conn.execute(
+            "SELECT provider, article_id FROM search_hits WHERE search_id=?", (search_id,)
+        ):
+            found.setdefault(row["provider"], set()).add(live(row["article_id"]))
+        return found
+
+    def searches(self) -> List[Dict[str, Any]]:
+        """Every search run, oldest first, with each provider's query, records and articles."""
+        runs = []
+        for row in self._conn.execute("SELECT * FROM searches ORDER BY id").fetchall():
+            providers = json.loads(row["providers"])
+            found = self._search_hits(row["id"])
+            for name, detail in providers.items():
+                detail["articles"] = len(found.get(name, ()))
+            runs.append(
+                {
+                    "id": row["id"],
+                    "query": row["query"],
+                    "years": row["years"],
+                    "searched_at": row["searched_at"],
+                    "providers": providers,
+                }
+            )
+        return runs
+
+    def search_articles(
+        self,
+        search_id: int,
+        *,
+        found_by: Sequence[str] = (),
+        only: Optional[str] = None,
+    ) -> List[str]:
+        """The articles of a search run, oldest first.
+
+        With `found_by`, those any provider named there found; with `only`,
+        those that provider found and no other provider of the run did. Raises
+        KeyError for a run or provider the catalog does not hold.
+        """
+        row = self._conn.execute(
+            "SELECT providers FROM searches WHERE id=?", (search_id,)
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"no search {search_id}")
+        searched = json.loads(row["providers"])
+        for name in [*found_by, *([only] if only else [])]:
+            if name not in searched:
+                raise KeyError(f"search {search_id} did not search {name}")
+        found = self._search_hits(search_id)
+        if only:
+            others = set().union(*(a for p, a in found.items() if p != only))
+            chosen = found.get(only, set()) - others
+        elif found_by:
+            chosen = set().union(*(found.get(p, set()) for p in found_by))
+        else:
+            chosen = set().union(*found.values())
+        ordered: List[Tuple[str, str]] = []
+        for chunk in _chunks(sorted(chosen), 900):
+            ordered += [
+                (r["created_at"], r["id"])
+                for r in self._conn.execute(
+                    "SELECT id, created_at FROM articles "
+                    f"WHERE id IN ({','.join('?' * len(chunk))})",
+                    tuple(chunk),
+                )
+            ]
+        return [article_id for _, article_id in sorted(ordered)]
+
     #: The table id that stands for every table of an article.
     WHOLE_ARTICLE = "*"
 
