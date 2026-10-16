@@ -837,3 +837,28 @@ def test_an_unknown_search_or_provider_is_refused(tmp_path):
             catalog.search_articles(9)
         with pytest.raises(KeyError, match="did not search openalex"):
             catalog.search_articles(search_id, only="openalex")
+
+
+def test_a_merge_carries_exclusions_over(catalog):
+    a = catalog.register(Identifier(doi="10.1/x1"))
+    b = catalog.register(Identifier(pmcid="PMC41"))
+    catalog.exclude([(a.id, "t1", "no coordinates", ""), (b.id, "t2", "a figure", "see paper")])
+    catalog.exclude([(b.id, Catalog.WHOLE_ARTICLE, "review", "")])
+
+    merged = catalog.register(Identifier(doi="10.1/x1", pmcid="PMC41"))
+
+    marks = catalog.exclusions([merged.id])
+    assert set(marks[merged.id]) == {"t1", "t2", Catalog.WHOLE_ARTICLE}
+    assert marks[merged.id]["t2"]["note"] == "see paper"
+    assert set(catalog.exclusions()) == {merged.id}
+
+
+def test_both_sides_excluding_one_table_leave_one_verdict(catalog):
+    a = catalog.register(Identifier(doi="10.1/x2"))
+    b = catalog.register(Identifier(pmcid="PMC42"))
+    catalog.exclude([(a.id, "t1", "no coordinates", ""), (b.id, "t1", "a figure", "")])
+
+    merged = catalog.register(Identifier(doi="10.1/x2", pmcid="PMC42"))
+
+    assert list(catalog.exclusions()) == [merged.id]
+    assert list(catalog.exclusions()[merged.id]) == ["t1"]

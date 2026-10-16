@@ -422,7 +422,22 @@ class Catalog:
             conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (survivor, other))
             conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (survivor, other))
             self._move_artifacts(conn, other, survivor)
+            self._move_exclusions(conn, other, survivor)
         return survivor
+
+    @staticmethod
+    def _move_exclusions(conn: sqlite3.Connection, loser: str, survivor: str) -> None:
+        """Carry a person's table exclusions to the survivor.
+
+        Both sides excluding one table is the same verdict twice: the survivor's
+        row stays and the loser's goes. Left behind, a row sits on an article
+        nothing reads and its table comes back into the corpus.
+        """
+        conn.execute(
+            "UPDATE OR IGNORE exclusions SET article_id = ? WHERE article_id = ?",
+            (survivor, loser),
+        )
+        conn.execute("DELETE FROM exclusions WHERE article_id = ?", (loser,))
 
     @staticmethod
     def _move_artifacts(conn: sqlite3.Connection, loser: str, survivor: str) -> None:
