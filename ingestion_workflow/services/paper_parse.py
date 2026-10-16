@@ -283,12 +283,22 @@ def _sections(text: str):
     return out or None
 
 
-#: A rodent stereotaxic table prints positions from bregma (a skull landmark) or in a
-#: rodent atlas's axes. "Paxinos" alone is not enough: Mai & Paxinos is a human atlas, so
-#: an atlas reference also needs a rodent in the same words, and so do the bare axes.
-_BREGMA = re.compile(r"\bbregma\b", re.IGNORECASE)
-_RODENT = re.compile(r"\b(?:rats?|mice|mouse|murine|rodents?)\b", re.IGNORECASE)
-_RODENT_ATLAS = re.compile(r"\b(?:Paxinos|Franklin)\b")
+#: A rodent stereotaxic table prints positions from bregma (a skull landmark), from the
+#: interaural line, or along an atlas's AP/ML/DV axes. Each of those also turns up in
+#: human work (a TMS landmark, a DBS target, "Mai and Paxinos"), so it counts only beside
+#: a sign of the animal: a rodent word or strain, or an atlas made for rodents.
+#: A bare "mouse" is not one (a computer mouse); "mouse brain" is.
+_ANIMAL = re.compile(
+    r"\b(?:rats?|mice|rodents?|murine|mouse\s+brain)\b"
+    r"|\b(?:Sprague[- ]Dawley|Wistar|Long[- ]Evans|C57BL)",
+    re.IGNORECASE,
+)
+_RODENT_ATLAS = re.compile(
+    r"\b(?:Paxinos\s*(?:&|and)\s*(?:Watson|Franklin)|Franklin\s*(?:&|and)\s*Paxinos)\b",
+    re.IGNORECASE,
+)
+_ATLAS_AUTHOR = re.compile(r"\b(?:Paxinos|Franklin)\b", re.IGNORECASE)
+_LANDMARK = re.compile(r"\b(?:bregma|interaural)\b", re.IGNORECASE)
 _STEREOTAXIC_AXES = tuple(
     re.compile(pattern) for pattern in (r"\bA[-/ ]?P\b", r"\bM[-/ ]?L\b", r"\bD[-/ ]?V\b")
 )
@@ -301,10 +311,12 @@ RODENT_ATLAS_REASON = (
 def is_rodent_atlas_table(table) -> bool:
     """Whether a table's caption, footer and column headings say its points are rodent atlas positions."""
     words = " ".join([table.caption or "", table.footer or "", *(table.column_headings or [])])
-    if _BREGMA.search(words):
+    if _RODENT_ATLAS.search(words):
         return True
-    return bool(_RODENT.search(words)) and (
-        bool(_RODENT_ATLAS.search(words)) or all(axis.search(words) for axis in _STEREOTAXIC_AXES)
+    return bool(_ANIMAL.search(words)) and (
+        bool(_LANDMARK.search(words))
+        or bool(_ATLAS_AUTHOR.search(words))
+        or all(axis.search(words) for axis in _STEREOTAXIC_AXES)
     )
 
 
