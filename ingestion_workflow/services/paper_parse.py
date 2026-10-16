@@ -43,7 +43,7 @@ from ingestion_workflow.services.set_roles.labels import is_decided
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 6
+PAPER_PARSE_VERSION = 7
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -283,6 +283,31 @@ def _sections(text: str):
     return out or None
 
 
+#: A rodent stereotaxic table prints positions from bregma (a skull landmark) or in a
+#: rodent atlas's axes. "Paxinos" alone is not enough: Mai & Paxinos is a human atlas, so
+#: an atlas reference also needs a rodent in the same words, and so do the bare axes.
+_BREGMA = re.compile(r"\bbregma\b", re.IGNORECASE)
+_RODENT = re.compile(r"\b(?:rats?|mice|mouse|murine|rodents?)\b", re.IGNORECASE)
+_RODENT_ATLAS = re.compile(r"\b(?:Paxinos|Franklin)\b")
+_STEREOTAXIC_AXES = tuple(
+    re.compile(pattern) for pattern in (r"\bA[-/ ]?P\b", r"\bM[-/ ]?L\b", r"\bD[-/ ]?V\b")
+)
+RODENT_ATLAS_REASON = (
+    "its coordinates are rodent stereotaxic positions (bregma-relative or in a rodent "
+    "atlas's axes), not brain coordinates in a template space"
+)
+
+
+def is_rodent_atlas_table(table) -> bool:
+    """Whether a table's caption, footer and column headings say its points are rodent atlas positions."""
+    words = " ".join([table.caption or "", table.footer or "", *(table.column_headings or [])])
+    if _BREGMA.search(words):
+        return True
+    return bool(_RODENT.search(words)) and (
+        bool(_RODENT_ATLAS.search(words)) or all(axis.search(words) for axis in _STEREOTAXIC_AXES)
+    )
+
+
 def _grid(raw_path) -> _Table:
     """The table's header cells and body rows, as nspond_tables reads them."""
     from nspond_tables import serialize
@@ -509,7 +534,13 @@ def coordinate_parse(
     roles = _Roles(text, omitted)
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, pp.ParsedAnalysis] = {}
+    rodent = _rodent_tables(paper)
     for table_id, collection in per_table.items():
+        if table_id in rodent:
+            omitted += [
+                Omitted(a.name, table_id, RODENT_ATLAS_REASON) for a in collection.analyses
+            ]
+            continue
         table_analyses = []
         for a in collection.analyses:
             if a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
@@ -572,7 +603,7 @@ def coordinate_parse(
         parse_id=parse_id,
         text_sha256=paper.text_sha256,
         analyses=analyses,
-        tables=_readings(paper, per_table, inputs, omitted) or None,
+        tables=_readings(paper, per_table, inputs, omitted, rodent) or None,
         omitted_analyses=[
             pp.OmittedAnalysis(
                 name=o.name,
@@ -1070,15 +1101,22 @@ def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     )
 
 
+def _rodent_tables(paper) -> Set[str]:
+    """Ids of the paper's rodent atlas tables."""
+    return {t.table_id for t in paper.tables or [] if is_rodent_atlas_table(t)}
+
+
 def _readings(
     paper,
     per_table: Mapping[str, AnalysisCollection],
     inputs: ParseInputs,
     omitted: Sequence[Omitted] = (),
+    rodent: Set[str] = frozenset(),
 ):
     """One TableReading per table of the paper whose reading is known.
 
-    A hand exclusion wins, then a triage rejection, then what the analyses stage
+    A hand exclusion wins, then a triage rejection, then a rodent atlas table (read as
+    holding no coordinates, with its reason), then what the analyses stage
     recorded. An article analysed before readings were recorded has them only
     for the tables it made a collection for; the rest are not recorded. A table
     some of whose analyses were left out names them in `reason`.
@@ -1102,6 +1140,12 @@ def _readings(
             out.append(
                 pp.TableReading(
                     table_id=tid, reading="rejected_by_triage", reason=table.triage.route
+                )
+            )
+        elif tid in rodent:
+            out.append(
+                pp.TableReading(
+                    table_id=tid, reading="no_coordinates", reason=RODENT_ATLAS_REASON
                 )
             )
         elif inputs.readings is not None and tid in inputs.readings:

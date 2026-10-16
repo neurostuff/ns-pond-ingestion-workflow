@@ -59,6 +59,13 @@ def _decided(role="result", *, origin="table", anchor_kind=None, prior=False, ev
     }
 
 
+def _bare_table(table_id, caption=None, headings=None):
+    """A parsed table with only what the coordinate parse reads of it."""
+    return SimpleNamespace(
+        table_id=table_id, triage=None, caption=caption, footer=None, column_headings=headings
+    )
+
+
 def _roles(text=""):
     return paper_parse._Roles(paper_parse._Text(text), [])
 
@@ -583,20 +590,21 @@ def test_passages_indexing_another_text_place_nothing():
     assert _insula(text, {"passages": [{"text": "The peak"}]})[0] is None  # a prose result from before spans
 
 
-def _parse(tmp_path, markup, per_table, text="Results\n", **inputs):
+def _parse(tmp_path, markup, per_table, text="Results\n", caption=None, **inputs):
     """coordinate_parse over one table `tbl1` read from `markup`."""
     from ingestion_workflow.services.paper_parse import _grid
 
     (tmp_path / "t.html").write_text(markup, encoding="utf-8")
+    grid = _grid(tmp_path / "t.html")
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id="tbl1", triage=None)],
+        tables=[_bare_table("tbl1", caption, grid.headings)],
     )
     return paper_parse.coordinate_parse(
         paper,
         text,
-        {"tbl1": _grid(tmp_path / "t.html")},
+        {"tbl1": grid},
         per_table,
         ParseInputs(article_id="a", **inputs),
     )
@@ -1264,7 +1272,7 @@ def _two_tables(tmp_path, markup, per_table):
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id=t, triage=None) for t in per_table],
+        tables=[_bare_table(t) for t in per_table],
     )
     return paper_parse.coordinate_parse(
         paper,
@@ -1462,7 +1470,7 @@ def _table_and_text(tmp_path, order):
     paper = SimpleNamespace(
         header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
         text_sha256="0" * 64,
-        tables=[SimpleNamespace(table_id="1", triage=None)],
+        tables=[_bare_table("1")],
     )
     return paper_parse.coordinate_parse(
         paper,
@@ -1558,7 +1566,78 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 6
+    assert paper_parse.PAPER_PARSE_VERSION == 7
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.6"
+        "paper_parse.7"
     }
+
+
+# PMC4366046 table 2 (PMID 25789862): seeds placed in rat, positions from bregma.
+BREGMA_TABLE = """<table>
+<tr><th>Network</th><th>Brain region</th><th>Coordinates in Bregma (in mm) M-L; D-V; A-P</th></tr>
+<tr><td>DMN</td><td>Rostral Anterior Cingulate Cortex</td><td>0.5; 2.5; 1.7</td></tr>
+<tr><td>Motor Network</td><td>Primary Motor Cortex</td><td>3.0; 1.5; 1.7</td></tr>
+</table>"""
+# The same paper's table 1: the human seeds, in Talairach.
+TALAIRACH_TABLE = """<table>
+<tr><th>Network</th><th>Brain region</th><th>Coordinates in Talairach (in mm) X; Y; Z</th></tr>
+<tr><td>DMN</td><td>Posterior Cingulate Cortex</td><td>0; -47; 29</td></tr>
+</table>"""
+RAT_CAPTION = "Table 2. Seed placement in rat for; DMN, motor network."
+HUMAN_CAPTION = "Table 1. Seed placement in humans for; DMN, motor network."
+
+
+def _seeds():
+    return _collection(
+        [
+            Analysis(name="DMN", coordinates=[Coordinate(x=0.5, y=2.5, z=1.7)]),
+            Analysis(name="Motor Network", coordinates=[Coordinate(x=3.0, y=1.5, z=1.7)]),
+        ]
+    )
+
+
+def test_a_bregma_table_is_left_out_with_its_reason(tmp_path):
+    parse, omitted = _parse(tmp_path, BREGMA_TABLE, {"tbl1": _seeds()}, caption=RAT_CAPTION)
+    assert parse.analyses == []
+    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+        ("DMN", "tbl1", paper_parse.RODENT_ATLAS_REASON),
+        ("Motor Network", "tbl1", paper_parse.RODENT_ATLAS_REASON),
+    ]
+    [reading] = parse.tables
+    assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.RODENT_ATLAS_REASON)
+
+
+def test_a_bregma_table_overrides_the_analyses_stage_s_reading(tmp_path):
+    parse, _ = _parse(
+        tmp_path, BREGMA_TABLE, {"tbl1": _seeds()}, caption=RAT_CAPTION,
+        readings={"tbl1": "coordinates"},
+    )
+    assert [t.reading for t in parse.tables] == ["no_coordinates"]
+
+
+def test_a_talairach_table_is_still_read(tmp_path):
+    parse, omitted = _parse(
+        tmp_path, TALAIRACH_TABLE, {"tbl1": _collection(
+            [Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)])]
+        )}, caption=HUMAN_CAPTION,
+    )
+    assert [a.name for a in parse.analyses] == ["DMN"]
+    assert omitted == []
+
+
+@pytest.mark.parametrize(
+    "caption, headings, rodent",
+    [
+        ("Seed placement in rat", ["Coordinates in Bregma (mm)"], True),
+        ("Injection sites in mouse (Franklin and Paxinos atlas)", ["Region", "x", "y", "z"], True),
+        ("Rat brain regions, Paxinos & Watson", ["Region", "x", "y", "z"], True),
+        ("Electrode sites in mice", ["Region", "AP", "ML", "DV"], True),
+        ("Electrode sites", ["Region", "AP", "ML", "DV"], False),
+        ("Peaks in the Mai and Paxinos atlas", ["Region", "x", "y", "z"], False),
+        ("Activation in humans, MNI coordinates", ["Region", "x", "y", "z"], False),
+        ("Rated confidence, ratio of mouse clicks", ["Region", "x", "y", "z"], False),
+    ],
+)
+def test_what_marks_a_table_as_rodent_stereotaxic(caption, headings, rodent):
+    table = SimpleNamespace(caption=caption, footer=None, column_headings=headings)
+    assert paper_parse.is_rodent_atlas_table(table) is rodent
