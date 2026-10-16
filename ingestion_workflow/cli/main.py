@@ -33,6 +33,7 @@ from ingestion_workflow.services.logging import configure_logging
 from ingestion_workflow.services.search import (
     SEARCH_SERVICES,
     SearchReport,
+    SearchRun,
     resolve_hits,
     surviving,
 )
@@ -213,7 +214,8 @@ def add(
 
     if (year or provider) and not search:
         raise typer.BadParameter("--year and --provider apply to --search")
-    searched = _search(settings, search, year, provider) if search else {}
+    run = _search(settings, search, year, provider) if search else None
+    searched = run.hits if run else {}
     found += [record for records in searched.values() for record in records]
 
     if not found:
@@ -231,8 +233,14 @@ def add(
         refs = list({ref.id: ref for ref in refs}.values())
         after = catalog.count_articles()
         if searched:
-            report = SearchReport.build(surviving(catalog, held), resolve_hits(catalog, searched))
+            resolved = resolve_hits(catalog, searched)
+            report = SearchReport.build(surviving(catalog, held), resolved)
             _report_search(report)
+            search_id = catalog.record_search(run.query, run.years, run.rendered, resolved)
+            typer.echo(
+                f"  kept as search {search_id}: `ingest searches manifest {search_id}` "
+                "selects its articles by provider"
+            )
         if local:
             _attach_pdfs(
                 settings, catalog, pdfs, local, in_place=in_place, prefer_over=prefer_over or ()
@@ -246,8 +254,8 @@ def add(
 
 def _search(
     settings: Settings, text: str, year: Optional[str], providers: Optional[List[SearchProvider]]
-) -> Dict[str, List[Identifier]]:
-    """Each provider's hits for the query `text`."""
+) -> SearchRun:
+    """The query `text` run at each provider."""
     from ingestion_workflow.services.query_dialect import QueryError, Years, parse
     from ingestion_workflow.services.search import search_services
 
@@ -263,7 +271,10 @@ def _search(
     for name, service in services.items():
         searched[name] = list(service.search().identifiers)
         typer.echo(f"{name}: {len(searched[name]):,} records")
-    return searched
+    return SearchRun(
+        text, str(query.years), {name: service.rendered for name, service in services.items()},
+        searched,
+    )
 
 
 def _report_search(report: SearchReport) -> None:
@@ -1077,6 +1088,69 @@ def report_funnel_ids(
                             day_from=day_from, day_to=day_to, prose=prose,
                             by_source=by_source, group=reason_group):
         typer.echo("\t".join(row))
+
+
+# -- searches ----------------------------------------------------------------
+
+searches_app = typer.Typer(
+    help="The searches `add --search` ran, and their articles by provider.", no_args_is_help=True
+)
+app.add_typer(searches_app, name="searches")
+
+
+@searches_app.command("list")
+def searches_list(config: Optional[Path] = ConfigOption) -> None:
+    """Each search kept: id, time, query, years, and per provider the query sent and its counts."""
+    with _catalog(_settings(config)) as catalog:
+        runs = catalog.searches()
+    for run in runs:
+        typer.echo(f"search {run['id']}  {run['searched_at']}  years {run['years']}")
+        typer.echo(f"  query {run['query']}")
+        for name, found in run["providers"].items():
+            typer.echo(
+                f"  {name}: {found['articles']:,} articles from {found['records']:,} records, "
+                f"{found['without_id']:,} without an id; sent {found['query']}"
+            )
+    if not runs:
+        typer.echo("no searches kept.")
+
+
+@searches_app.command("manifest")
+def searches_manifest(
+    search_id: int = typer.Argument(..., help="The search's id, from `searches list`."),
+    found_by: Optional[List[SearchProvider]] = typer.Option(
+        None, "--found-by", help="Articles any of these providers found (repeatable)."
+    ),
+    only_found_by: Optional[SearchProvider] = typer.Option(
+        None, "--only-found-by", help="Articles this provider found and no other did."
+    ),
+    out: Optional[Path] = typer.Option(
+        None, "--out", "-o",
+        help="JSONL manifest to write; default <data_root>/manifests/search-<id>.jsonl.",
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write a manifest of a search's articles, for `ingest run --manifest`.
+
+    With neither option, every article the search found. `--found-by` and
+    `--only-found-by` are exclusive.
+    """
+    if found_by and only_found_by:
+        raise typer.BadParameter("give --found-by or --only-found-by, not both")
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        try:
+            ids = catalog.search_articles(
+                search_id,
+                found_by=[p.value for p in found_by or ()],
+                only=only_found_by.value if only_found_by else None,
+            )
+        except KeyError as exc:
+            raise typer.BadParameter(exc.args[0]) from None
+        identifiers = catalog.identifiers(ids)
+    path = out or settings.data_root / "manifests" / f"search-{search_id}.jsonl"
+    Identifiers([identifiers[i] for i in ids]).save(path)
+    typer.echo(f"{len(ids):,} articles -> {path}")
 
 
 def main() -> None:

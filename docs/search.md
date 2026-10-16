@@ -146,3 +146,29 @@ DOI, PMID and PMCID, `add` prints, counted in catalog articles:
 
 A PubMed search returns PMIDs only, and the other providers mostly DOIs, so the
 overlap is counted after enrichment, when an article's identifiers have met.
+
+## Keeping a search, and selecting by provider
+
+Every `add --search` keeps its run in the catalog and prints its id
+(`kept as search 3`): the query as given, the years, the query each provider
+was sent, when it ran, and each hit's provider and the catalog article it
+resolved to (after enrichment, as the report counts them), with the number of
+records per provider that had no DOI, PMID or PMCID. A later run is a new
+search; nothing is overwritten. If articles of a search are merged afterwards,
+its hits follow the merge. Searches run before this was kept are not in the
+catalog.
+
+```bash
+ingest searches list
+ingest searches manifest 3 --only-found-by sciencedirect
+ingest searches manifest 3 --found-by pubmed --found-by openalex --found-by semantic_scholar --out rest.jsonl
+ingest run --manifest rest.jsonl
+```
+
+`searches manifest ID` writes a JSONL identifiers manifest (default
+`<data_root>/manifests/search-ID.jsonl`; the format `run --manifest` and
+`add --manifest` read) of the search's articles: all of them, those any
+`--found-by` provider found, or those `--only-found-by` one provider found and
+no other provider of that search did. The two options are exclusive, and a
+provider the search did not use is refused. To run everything except the
+ScienceDirect-only articles, select with `--found-by` the other providers.

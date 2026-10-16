@@ -6,6 +6,7 @@ import os
 import ingestion_workflow.cli.main as cli
 import pytest
 from ingestion_workflow.catalog import Catalog
+from ingestion_workflow.models.ids import Identifier
 from typer.testing import CliRunner
 
 
@@ -233,3 +234,105 @@ def test_a_split_sciencedirect_search_prints_each_part(config, monkeypatch):
         assert line in out
     # the plan is printed before the search pages anything
     assert out.index("split by year") < out.index("sciencedirect: 54 records")
+
+
+# -- the search is kept ------------------------------------------------------
+
+ALL_PROVIDERS = "test_every_provider_is_searched_and_counted_after_enrichment.yaml"
+
+
+def _manifest_lines(path):
+    return [json.loads(line) for line in path.read_text().splitlines()]
+
+
+def _searches(config, *args):
+    result = CliRunner().invoke(cli.app, ["searches", *args, "--config", str(config)])
+    assert result.exit_code == 0, result.output
+    return result.output
+
+
+@pytest.mark.vcr(ALL_PROVIDERS)
+def test_a_search_is_kept_with_what_each_provider_found(config, tmp_path):
+    out = _add(config, "--search", "fMRI AND misophonia")
+
+    assert "kept as search 1" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        (run,) = catalog.searches()
+        assert run["query"] == "fMRI AND misophonia"
+        assert run["years"] == "1990 onward"
+        providers = run["providers"]
+        assert list(providers) == ["pubmed", "semantic_scholar", "openalex", "sciencedirect"]
+        assert providers["sciencedirect"]["query"] == (
+            '{"qs": "fMRI AND misophonia", "date": "1990-9999"}'
+        )
+        assert providers["semantic_scholar"]["query"] == (
+            "query=fMRI + misophonia year=1990-"
+        )
+        assert {n: p["articles"] for n, p in providers.items()} == {
+            "pubmed": 11, "semantic_scholar": 13, "openalex": 12, "sciencedirect": 73,
+        }
+        assert providers["semantic_scholar"]["without_id"] == 2
+        assert providers["semantic_scholar"]["records"] == 15
+        assert len(catalog.search_articles(1)) == 87
+        assert len(catalog.search_articles(1, only="sciencedirect")) == 70
+        assert len(catalog.search_articles(1, found_by=["pubmed", "openalex"])) == 11 + 12 - 10
+
+
+@pytest.mark.vcr(ALL_PROVIDERS)
+def test_the_articles_only_one_provider_found_are_a_manifest(config, tmp_path):
+    _add(config, "--search", "fMRI AND misophonia")
+    only = tmp_path / "only.jsonl"
+    rest = tmp_path / "rest.jsonl"
+
+    out = _searches(
+        config, "manifest", "1", "--only-found-by", "sciencedirect", "--out", str(only)
+    )
+    _searches(
+        config, "manifest", "1", "--out", str(rest),
+        "--found-by", "pubmed", "--found-by", "semantic_scholar", "--found-by", "openalex",
+    )
+
+    assert f"70 articles -> {only}" in out
+    only_ids, rest_ids = _manifest_lines(only), _manifest_lines(rest)
+    assert len(only_ids) == 70 and len(rest_ids) == 17
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        held_back = {catalog.resolve(Identifier(**row)).id for row in only_ids}
+        kept = {catalog.resolve(Identifier(**row)).id for row in rest_ids}
+        assert not held_back & kept
+        assert len(held_back | kept) == catalog.count_articles() == 87
+
+
+@pytest.mark.vcr(ALL_PROVIDERS)
+def test_searches_list_names_the_query_each_provider_was_sent(config):
+    _add(config, "--search", "fMRI AND misophonia")
+    out = _searches(config, "list")
+
+    assert "search 1" in out and "years 1990 onward" in out
+    assert "query fMRI AND misophonia" in out
+    assert "sciencedirect: 73 articles from 73 records, 0 without an id; sent {" in out
+    assert "semantic_scholar: 13 articles from 15 records, 2 without an id" in out
+
+
+@pytest.mark.vcr("test_a_second_run_finds_them_in_the_catalog.yaml")
+def test_a_second_search_is_a_second_run(config, tmp_path):
+    _openalex(config)
+    out = _openalex(config)
+
+    assert "kept as search 2" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert [run["id"] for run in catalog.searches()] == [1, 2]
+        assert catalog.search_articles(1) == catalog.search_articles(2)
+
+
+@pytest.mark.vcr("test_a_second_run_finds_them_in_the_catalog.yaml")
+def test_a_manifest_names_only_what_the_search_searched(config, tmp_path):
+    _openalex(config)
+    for args in (["manifest", "7"], ["manifest", "1", "--only-found-by", "pubmed"]):
+        result = CliRunner().invoke(cli.app, ["searches", *args, "--config", str(config)])
+        assert result.exit_code == 2, result.output
+    result = CliRunner().invoke(
+        cli.app,
+        ["searches", "manifest", "1", "--found-by", "openalex", "--only-found-by", "openalex",
+         "--config", str(config)],
+    )
+    assert result.exit_code == 2

@@ -422,6 +422,12 @@ class Catalog:
             conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (survivor, other))
             conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (survivor, other))
             self._move_artifacts(conn, other, survivor)
+            # a provider that found both halves keeps one row
+            conn.execute(
+                "UPDATE OR IGNORE search_hits SET article_id=? WHERE article_id=?",
+                (survivor, other),
+            )
+            conn.execute("DELETE FROM search_hits WHERE article_id=?", (other,))
         return survivor
 
     @staticmethod
@@ -577,6 +583,112 @@ class Catalog:
         return _artifact(row) if row else None
 
     # -- exclusions ----------------------------------------------------------
+
+    # -- searches ------------------------------------------------------------
+
+    def record_search(
+        self,
+        query: str,
+        years: str,
+        rendered: Mapping[str, str],
+        resolved: Mapping[str, Sequence[Optional[str]]],
+    ) -> int:
+        """Keep one search run: its query, years, each provider's query and hits.
+
+        `resolved` is, per provider, the article each of its records is now (see
+        `resolve_hits`), None for a record with no DOI, PMID or PMCID. The run's
+        id is returned.
+        """
+        providers = {
+            name: {
+                "query": rendered[name],
+                "records": len(ids),
+                "without_id": sum(1 for a in ids if a is None),
+            }
+            for name, ids in resolved.items()
+        }
+        with self._write() as conn:
+            search_id = conn.execute(
+                "INSERT INTO searches(query, years, searched_at, providers) VALUES(?, ?, ?, ?)",
+                (query, years, utcnow(), json.dumps(providers)),
+            ).lastrowid
+            conn.executemany(
+                "INSERT OR IGNORE INTO search_hits(search_id, provider, article_id) "
+                "VALUES(?, ?, ?)",
+                [
+                    (search_id, name, article_id)
+                    for name, ids in resolved.items()
+                    for article_id in set(ids) - {None}
+                ],
+            )
+        return search_id
+
+    def searches(self) -> List[Dict[str, Any]]:
+        """Every search run, oldest first, with each provider's query, records and articles."""
+        runs = []
+        for row in self._conn.execute("SELECT * FROM searches ORDER BY id").fetchall():
+            providers = json.loads(row["providers"])
+            counts = {
+                hit["provider"]: hit["n"]
+                for hit in self._conn.execute(
+                    "SELECT provider, COUNT(*) AS n FROM search_hits WHERE search_id=? "
+                    "GROUP BY provider",
+                    (row["id"],),
+                )
+            }
+            for name, detail in providers.items():
+                detail["articles"] = counts.get(name, 0)
+            runs.append(
+                {
+                    "id": row["id"],
+                    "query": row["query"],
+                    "years": row["years"],
+                    "searched_at": row["searched_at"],
+                    "providers": providers,
+                }
+            )
+        return runs
+
+    def search_articles(
+        self,
+        search_id: int,
+        *,
+        found_by: Sequence[str] = (),
+        only: Optional[str] = None,
+    ) -> List[str]:
+        """The articles of a search run, oldest first.
+
+        With `found_by`, those any provider named there found; with `only`,
+        those that provider found and no other provider of the run did. Raises
+        KeyError for a run or provider the catalog does not hold.
+        """
+        row = self._conn.execute(
+            "SELECT providers FROM searches WHERE id=?", (search_id,)
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"no search {search_id}")
+        searched = json.loads(row["providers"])
+        for name in [*found_by, *([only] if only else [])]:
+            if name not in searched:
+                raise KeyError(f"search {search_id} did not search {name}")
+        if only:
+            where = (
+                "h.provider = ? AND NOT EXISTS (SELECT 1 FROM search_hits o WHERE "
+                "o.search_id = h.search_id AND o.article_id = h.article_id "
+                "AND o.provider != h.provider)"
+            )
+            args: tuple = (only,)
+        elif found_by:
+            where, args = f"h.provider IN ({','.join('?' * len(found_by))})", tuple(found_by)
+        else:
+            where, args = "1", ()
+        rows = self._conn.execute(
+            "SELECT DISTINCT h.article_id, a.created_at FROM search_hits h "
+            "JOIN articles a ON a.id = h.article_id "
+            f"WHERE h.search_id = ? AND {where} ORDER BY a.created_at, h.article_id",
+            (search_id, *args),
+        )
+        return [r["article_id"] for r in rows]
 
     #: The table id that stands for every table of an article.
     WHOLE_ARTICLE = "*"

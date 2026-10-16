@@ -402,6 +402,16 @@ def resolve_hits(
     return resolved
 
 
+@dataclass(frozen=True)
+class SearchRun:
+    """One search as run: the query as given, its years, what each provider was sent and found."""
+
+    query: str
+    years: str
+    rendered: Dict[str, str]
+    hits: Dict[str, List[Identifier]]
+
+
 def surviving(catalog: Catalog, before: Set[str]) -> Set[str]:
     """The articles that the articles in `before` are now, after any merges."""
     now = set(catalog.all_article_ids())
