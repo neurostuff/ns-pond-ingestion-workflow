@@ -411,7 +411,7 @@ def _most_tables(candidates: Dict[str, Artifact]) -> Optional[Artifact]:
 
 #: A tie on tables goes to the first of these (a source not listed comes after them, by
 #: name): publisher XML before ACE's page, a PDF's conversion last.
-TIE_ORDER = ("pubget", "pmc", "europepmc", "elsevier", "ace", "pdf")
+TIE_ORDER = ("pubget", "pmc", "europepmc", "elsevier", "springer", "ace", "pdf")
 
 
 def _rank(source: str) -> int:

@@ -33,6 +33,7 @@ class DownloadSource(str, Enum):
     PMC = "pmc"
     EUROPEPMC = "europepmc"
     WILEY = "wiley"
+    SPRINGER = "springer"
 
 
 @dataclass

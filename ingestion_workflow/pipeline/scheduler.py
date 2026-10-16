@@ -35,6 +35,8 @@ class StageReport:
     stopped: Optional[str] = None
     #: Of the selection, the articles a stop left without an outcome, planned or not.
     left_pending: int = 0
+    #: What the stage has to say of the run beyond its counts (a source spent).
+    notes: List[str] = field(default_factory=list)
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -63,6 +65,7 @@ class StageReport:
         ):
             if value:
                 parts.append(f"{value:>6,} {label}")
+        parts.extend(self.notes)
         return "   ".join(parts)
 
 
@@ -127,6 +130,8 @@ def run_stages(
             bar.close()
         if not dry_run and hasattr(stage, "finish"):
             stage.finish()
+        if hasattr(stage, "take_notes"):
+            stage_report.notes.extend(stage.take_notes())
         logger.info("%s", stage_report.line(planned_only=dry_run))
     return report
 

@@ -25,10 +25,12 @@ from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.services.citations import JATS_SOURCES
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +253,7 @@ class MetadataService:
         """Extract metadata from extractor-specific files."""
         if extracted_content.source == DownloadSource.ELSEVIER:
             return self._get_elsevier_fallback(extracted_content)
-        elif extracted_content.source in (DownloadSource.PUBGET, DownloadSource.PMC, DownloadSource.EUROPEPMC):
+        elif extracted_content.source.value in JATS_SOURCES:
             return self._get_pubget_fallback(extracted_content)
         elif extracted_content.source == DownloadSource.ACE:
             # ACE doesn't provide reliable metadata
@@ -382,6 +384,13 @@ class MetadataService:
             candidate_files.append(article_dir.parent / "article.xml")
             candidate_files.append(article_dir / "article.xml")
 
+        # PMC and Europe PMC lay their XML out as pubget does, under their own root;
+        # Springer Nature, whose articles may have no PMCID, by the article's slug.
+        source = extracted_content.source.value
+        configured = getattr(self.settings, f"{source}_cache_root", None)
+        base_dir = configured if configured is not None else self.settings.cache_root / source
+        candidate_files.append(base_dir / safe_hash_stem(extracted_content.slug) / "article.xml")
+
         if extracted_content.identifier and extracted_content.identifier.pmcid:
             pmcid_value = extracted_content.identifier.pmcid.strip().upper()
             if pmcid_value.startswith("PMC"):
@@ -390,11 +399,6 @@ class MetadataService:
             # Normalize to the canonical integer format used on disk (removes leading zeros).
             if pmcid_value.isdigit():
                 pmcid_value = str(int(pmcid_value))
-
-            # PMC and Europe PMC lay their XML out as pubget does, under their own root
-            source = extracted_content.source.value
-            configured = getattr(self.settings, f"{source}_cache_root", None)
-            base_dir = configured if configured is not None else self.settings.cache_root / source
 
             bucket = article_bucket_from_pmcid(int(pmcid_value))
             pmcid_dir = f"pmcid_{pmcid_value}"
