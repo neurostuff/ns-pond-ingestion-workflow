@@ -3,9 +3,11 @@
 Fallback source for articles that neither PubMed Central (via pubget) nor
 Elsevier serve as XML. Candidate PDF URLs come from every open-access
 location OpenAlex lists and from Semantic Scholar's ``openAccessPdf``; each is
-tried in turn until one is a PDF. Parsing is Docling's, and it reads every
-downloaded PDF, whichever source fetched it. `fetch_pdf` and `store_pdf` are
-the fetching and storing the sources whose download is a PDF share.
+tried in turn until one is a PDF. A location with only a landing page is
+followed through the PDF the page names in ``citation_pdf_url``. Parsing is
+Docling's, and it reads every downloaded PDF, whichever source fetched it.
+`fetch_pdf` and `store_pdf` are the fetching and storing the sources whose
+download is a PDF share.
 """
 
 from __future__ import annotations
@@ -21,9 +23,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import requests
 
@@ -99,6 +102,9 @@ _GONE_STATUSES = {404, 410}
 _PMCID = re.compile(r"pmc\d", re.IGNORECASE)
 
 SKIPPED_PMC = "skipped: handled by the PMC/Europe PMC sources"
+#: Outcomes of a fetch that stopped before asking for the PDF: a host left for
+#: the run, or a PDF a landing page names that is not fetched from there.
+_NOT_ASKED = {"deferred", "known_dead", "listed_elsewhere", "skipped_pmc"}
 
 
 @dataclass(frozen=True)
@@ -112,8 +118,8 @@ class PdfCandidate:
     source: Optional[str] = None
     #: OpenAlex's label: "publishedVersion", "acceptedVersion" or "submittedVersion".
     version: Optional[str] = None
-    #: An open-access landing page with no PDF link. It is recorded, not fetched:
-    #: reading an HTML page is the HTML sources' job.
+    #: An open-access landing page with no PDF link. It is fetched once for the
+    #: PDF it names in its `citation_pdf_url` meta tag.
     landing_page: bool = False
     #: A location OpenAlex lists as closed. It is recorded, not fetched.
     open_access: bool = True
@@ -234,8 +240,8 @@ def _try_order(candidates: Sequence[PdfCandidate]) -> List[PdfCandidate]:
     Repository copies, then publisher copies, then untyped ones. A submitted
     version is a preprint whose text and tables can differ from the published
     article, so it goes after every other copy. Within a rank the providers'
-    order holds. Landing pages and closed locations, which are only recorded,
-    come last.
+    order holds. Landing pages, which cost a second request, come after every
+    PDF link, and closed locations, which are only recorded, come last.
     """
     merged: Dict[str, PdfCandidate] = {}
     for candidate in candidates:
@@ -386,12 +392,41 @@ class _HostGate:
                     )
 
 
-def fetch_pdf(
-    get: Callable[[str], Any], url: str, attempt: Dict[str, object], hosts: _HostGate
-) -> Optional[bytes]:
-    """The PDF at `url`, or None with the outcome written into `attempt`.
+class _CitationPdfUrl(HTMLParser):
+    """The first `<meta name="citation_pdf_url">` of a page, the Highwire / Google
+    Scholar tag publishers and repositories use to name an article's PDF."""
 
-    `get` sends the request (a requests or an httpx GET) and returns its response.
+    def __init__(self) -> None:
+        super().__init__()
+        self.url: Optional[str] = None
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        if self.url is None and tag == "meta":
+            found = dict(attrs)
+            if (found.get("name") or "").lower() == "citation_pdf_url" and found.get("content"):
+                self.url = found["content"].strip()
+
+
+def citation_pdf_url(page: bytes, page_url: str) -> Optional[str]:
+    """The absolute PDF URL `page` (fetched from `page_url`) names, if it names one."""
+    parser = _CitationPdfUrl()
+    parser.feed(page.decode("utf-8", "replace"))
+    if not parser.url:
+        return None
+    url = urljoin(page_url, parser.url)
+    return url if urlsplit(url).scheme in ("http", "https") else None
+
+
+def _answer(
+    get: Callable[[str], Any], url: str, attempt: Dict[str, object], hosts: _HostGate, what: str
+) -> Optional[Tuple[bytes, str]]:
+    """The body of a 2xx answer for `url` and the URL it came from after redirects,
+    or None with the outcome written into `attempt`.
+
+    A refusal is counted against the host that answered, after redirects: a
+    resolver such as doi.org fronts many hosts, and one of them refusing must
+    not leave the others for the run.
+
     A 429 is waited out for as long as the host asks, by every worker,
     unless it asks for longer than the run should wait; see `_HostGate`.
     The host is checked before every request, so a URL on a host that this
@@ -407,7 +442,7 @@ def fetch_pdf(
         try:
             response = get(url)
         except Exception as exc:  # noqa: BLE001 - recorded on the attempt
-            attempt.update(outcome="fetch_error", reason=f"PDF fetch failed: {exc}")
+            attempt.update(outcome="fetch_error", reason=f"{what} fetch failed: {exc}")
             return None
         status = response.status_code
         attempt["status"] = status
@@ -418,32 +453,50 @@ def fetch_pdf(
             if deferred is not None:
                 attempt.update(
                     outcome="rate_limited",
-                    reason=f"PDF fetch failed: 429 from {host}; {deferred}",
+                    reason=f"{what} fetch failed: 429 from {host}; {deferred}",
                 )
                 return None
             continue
+        answered_from = str(response.url)
         try:
             response.raise_for_status()
-            payload = response.content
+            return response.content, answered_from
         except Exception as exc:  # noqa: BLE001 - recorded on the attempt
             dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
-            attempt.update(outcome="http_error", reason=f"PDF fetch failed: {exc}")
+            attempt.update(outcome="http_error", reason=f"{what} fetch failed: {exc}")
             if dead:
                 attempt["dead"] = True
-            hosts.answered(host, refused=dead and status not in _GONE_STATUSES)
+            hosts.answered(_host(answered_from), refused=dead and status not in _GONE_STATUSES)
             return None
         finally:
             response.close()
-        if not _is_pdf(payload):
-            # Landing pages and paywall interstitials return HTML with a 200.
-            attempt.update(
-                outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF."
-            )
-            hosts.answered(host, refused=True)
-            return None
-        attempt.update(outcome="pdf", reason="PDF downloaded")
-        hosts.answered(host, served=True)
-        return payload
+
+
+def _as_pdf(
+    answer: Tuple[bytes, str], url: str, attempt: Dict[str, object], hosts: _HostGate
+) -> Optional[bytes]:
+    """`answer`'s body if it is a PDF; either way, credited to the host that sent it."""
+    payload, answered_from = answer
+    if not _is_pdf(payload):
+        # Landing pages and paywall interstitials return HTML with a 200.
+        attempt.update(outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF.")
+        hosts.answered(_host(answered_from), refused=True)
+        return None
+    attempt.update(outcome="pdf", reason="PDF downloaded")
+    hosts.answered(_host(answered_from), served=True)
+    return payload
+
+
+def fetch_pdf(
+    get: Callable[[str], Any], url: str, attempt: Dict[str, object], hosts: _HostGate
+) -> Optional[bytes]:
+    """The PDF at `url`, or None with the outcome written into `attempt`.
+
+    `get` sends the request (a requests or an httpx GET) and returns its response.
+    Rate limits and hosts left for the run are handled as `_answer` says.
+    """
+    answer = _answer(get, url, attempt, hosts, "PDF")
+    return None if answer is None else _as_pdf(answer, url, attempt, hosts)
 
 
 def store_pdf(
@@ -625,6 +678,7 @@ class PdfExtractor(BaseExtractor):
         attempts: List[Dict[str, object]] = [dict(failure) for failure in lookup_failures]
         tried: List[Dict[str, object]] = []
         dead_urls = dead_urls or {}
+        listed = {_url_key(c.url) for c in candidates}
 
         for candidate in candidates:
             attempt = candidate.describe()
@@ -633,10 +687,15 @@ class PdfExtractor(BaseExtractor):
             if passed_over is not None:
                 attempt.update(passed_over)
                 continue
-            payload = self._fetch(candidate.url, attempt)
+            if candidate.landing_page:
+                payload = self._fetch_through_landing_page(
+                    candidate.url, attempt, dead_urls, listed
+                )
+            else:
+                payload = self._fetch(candidate.url, attempt)
             if payload is None:
-                # a host left for the run was not asked: the error names a URL that was
-                if attempt["outcome"] != "deferred":
+                # the error names a URL that was asked, not one passed over on the way
+                if attempt["outcome"] not in _NOT_ASKED:
                     tried.append(attempt)
                 continue
             return DownloadResult(
@@ -673,22 +732,59 @@ class PdfExtractor(BaseExtractor):
             return {"outcome": "known_dead", "dead": True, "reason": dead}
         if not candidate.open_access:
             return {"outcome": "not_open_access", "reason": "closed copy: not fetched"}
-        if candidate.landing_page:
-            return {
-                "outcome": "landing_page_only",
-                "reason": f"OA landing page only: {candidate.url}",
-            }
         if _is_pmc_copy(candidate.url):
             return {"outcome": "skipped_pmc", "reason": SKIPPED_PMC}
         return None
 
+    def _get(self, url: str) -> Any:
+        return self._session.get(url, timeout=DOWNLOAD_TIMEOUT, stream=True)
+
     def _fetch(self, url: str, attempt: Dict[str, object]) -> Optional[bytes]:
-        return fetch_pdf(
-            lambda target: self._session.get(target, timeout=DOWNLOAD_TIMEOUT, stream=True),
-            url,
-            attempt,
-            self._hosts,
-        )
+        return fetch_pdf(self._get, url, attempt, self._hosts)
+
+    def _fetch_through_landing_page(
+        self,
+        url: str,
+        attempt: Dict[str, object],
+        dead_urls: Mapping[str, str],
+        listed: set,
+    ) -> Optional[bytes]:
+        """The PDF the landing page at `url` names, fetched once each.
+
+        The attempt keeps the landing page as its `url` and the PDF it names as
+        `pdf_url`, so a dead PDF leaves the page remembered dead too. A page
+        that answers with the PDF itself is the PDF.
+        """
+        answer = _answer(self._get, url, attempt, self._hosts, "landing page")
+        if answer is None:
+            return None
+        page, page_url = answer
+        if _is_pdf(page):
+            return _as_pdf(answer, url, attempt, self._hosts)
+        self._hosts.answered(_host(page_url))
+        pdf_url = citation_pdf_url(page, page_url)
+        if pdf_url is None:
+            attempt.update(
+                outcome="no_pdf_link",
+                dead=True,
+                reason=f"Landing page {url} names no citation_pdf_url.",
+            )
+            return None
+        attempt["pdf_url"] = pdf_url
+        key = _url_key(pdf_url)
+        if key in dead_urls:
+            attempt.update(outcome="known_dead", dead=True, reason=dead_urls[key])
+            return None
+        if key in listed:
+            # tried, or passed over, as its own candidate
+            attempt.update(
+                outcome="listed_elsewhere", reason=f"{pdf_url} is listed as its own copy."
+            )
+            return None
+        if _is_pmc_copy(pdf_url):
+            attempt.update(outcome="skipped_pmc", reason=SKIPPED_PMC)
+            return None
+        return self._fetch(pdf_url, attempt)
 
     @staticmethod
     def _failure(identifier: Identifier, message: str) -> DownloadResult:
@@ -1114,4 +1210,10 @@ def symbols_as_digits(text: str) -> Optional[Dict[str, int]]:
     return {"misread": misread, "typed": typed}
 
 
-__all__ = ["PdfCandidate", "PdfExtractor", "remembered_dead_urls", "symbols_as_digits"]
+__all__ = [
+    "PdfCandidate",
+    "PdfExtractor",
+    "citation_pdf_url",
+    "remembered_dead_urls",
+    "symbols_as_digits",
+]
