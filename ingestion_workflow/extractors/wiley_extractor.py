@@ -8,7 +8,7 @@ it reads every downloaded PDF, into the `pdf` text.
 from __future__ import annotations
 
 import time
-from typing import Callable, List, Optional
+from typing import Callable, List
 from urllib.parse import quote
 
 import httpx
@@ -21,6 +21,7 @@ from ingestion_workflow.extractors.pdf_extractor import (
     fetch_pdf,
     store_pdf,
 )
+from ingestion_workflow.extractors.utils import doi_prefix
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifier, Identifiers
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -59,10 +60,6 @@ TOKEN_REFUSED = 401
 GATE = _HostGate(time.monotonic, time.sleep, min_interval=REQUEST_INTERVAL_SECONDS)
 
 
-def is_wiley_doi(doi: Optional[str]) -> bool:
-    return bool(doi) and doi.split("/", 1)[0].strip().lower() in WILEY_DOI_PREFIXES
-
-
 class WileyExtractor(BaseExtractor):
     """Download Wiley articles' PDFs by DOI."""
 
@@ -71,7 +68,7 @@ class WileyExtractor(BaseExtractor):
         self._client = httpx.Client(timeout=DOWNLOAD_TIMEOUT, follow_redirects=True)
 
     def can_address(self, identifier: Identifier) -> bool:
-        return is_wiley_doi(identifier.doi)
+        return doi_prefix(identifier.doi) in WILEY_DOI_PREFIXES
 
     def download(
         self,

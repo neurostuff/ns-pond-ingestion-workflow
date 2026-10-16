@@ -23,7 +23,7 @@ from lxml import html as lhtml
 
 logger = logging.getLogger(__name__)
 
-JATS_SOURCES = ("pubget", "pmc", "europepmc")
+JATS_SOURCES = ("pubget", "pmc", "europepmc", "springer")
 
 #: How sure a publisher link's placement is: 23 of 25 read by hand were right, and 96%
 #: of links are placed by a 40-character context that occurs once in the text.

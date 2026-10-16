@@ -6,7 +6,7 @@ import logging
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.extractors.base import BaseExtractor, SourceMisconfigured
+from ingestion_workflow.extractors.base import BaseExtractor, SourceExhausted, SourceMisconfigured
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
 from ingestion_workflow.services import download_check
 
@@ -27,6 +27,7 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         PdfExtractor,
         PmcExtractor,
         PubgetExtractor,
+        SpringerExtractor,
         WileyExtractor,
     )
 
@@ -38,6 +39,7 @@ def build_extractor(source: DownloadSource, settings) -> BaseExtractor:
         DownloadSource.PMC: PmcExtractor,
         DownloadSource.EUROPEPMC: EuropePmcExtractor,
         DownloadSource.WILEY: WileyExtractor,
+        DownloadSource.SPRINGER: SpringerExtractor,
     }
     return factories[source](settings=settings)
 
@@ -57,6 +59,8 @@ class DownloadStage:
         self._extractors: Dict[DownloadSource, BaseExtractor] = {}
         #: Why the stage stopped for the rest of this run.
         self._stopped: Optional[str] = None
+        #: Each spent source's reason and the articles it left pending, for the run report.
+        self._exhausted: Dict[str, List[object]] = {}
 
     def extractor(self, source: DownloadSource) -> BaseExtractor:
         if source not in self._extractors:
@@ -178,6 +182,17 @@ class DownloadStage:
                 results = extractor.download(identifiers, dead_urls=dead)
             else:
                 results = extractor.download(identifiers)
+        except SourceExhausted as exc:
+            # The articles it did not answer are not its failures: they stay
+            # pending for it, and go on to the next source. The source itself
+            # remembers that it is spent, and asks nothing more this run.
+            results = exc.results
+            answered = {result.identifier.slug for result in results}
+            refs = [ref for ref in refs if ref.identifier.slug in answered]
+            left = len(by_id) - len(refs)
+            logger.error("download[%s] stopped for this run: %s; %d article(s) left pending",
+                         source.value, exc, left)
+            self._exhausted.setdefault(source.value, [str(exc), 0])[1] += left
         except SourceMisconfigured as exc:
             # Not these articles' failure: recording one would spend every remaining
             # article's tries. They stay pending, and so does every later batch.
@@ -218,6 +233,14 @@ class DownloadStage:
                     fingerprint=fp,
                     summary=_url_summary(with_dead_urls_kept(previous.get(ref.id, []), [])),
                 )
+
+    def take_notes(self) -> List[str]:
+        """What the run report says of the sources spent since it last asked."""
+        notes = [f"{source} EXHAUSTED: {reason}; {left:,} article(s) left pending for {source}"
+                 " (later sources still tried)"
+                 for source, (reason, left) in self._exhausted.items()]
+        self._exhausted.clear()
+        return notes
 
     def _pdf_attempts(
         self, ctx: Context, refs: List[ArticleRef]
@@ -313,6 +336,7 @@ _PERMANENT_MARKERS = (
     "404",
     "unsupported identifier",
     "does not allow full-text download",
+    "query refused",
 )
 
 

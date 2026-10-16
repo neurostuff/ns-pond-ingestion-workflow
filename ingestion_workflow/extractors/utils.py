@@ -29,6 +29,11 @@ DEFAULT_CONTENT_TYPES: dict[FileType, str] = {
 }
 
 
+def doi_prefix(doi: Optional[str]) -> Optional[str]:
+    """The registrant prefix of a DOI ("10.1007"), lower-cased; None without a DOI."""
+    return doi.split("/", 1)[0].strip().lower() if doi else None
+
+
 def build_downloaded_file(
     path: Path,
     file_type: FileType,

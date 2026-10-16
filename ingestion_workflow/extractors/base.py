@@ -22,6 +22,17 @@ class SourceMisconfigured(RuntimeError):
     rather than charge each one a try."""
 
 
+class SourceExhausted(RuntimeError):
+    """The source will serve nothing more this run: its quota is spent.
+
+    `results` are the articles it answered before. The rest are not its
+    failures, so they stay pending for this source and go on to the next."""
+
+    def __init__(self, message: str, results: List[DownloadResult]) -> None:
+        super().__init__(message)
+        self.results = results
+
+
 class BaseExtractor:
     """Shared interface for extractor implementations."""
 

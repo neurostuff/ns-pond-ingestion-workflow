@@ -19,6 +19,7 @@ _LAZY = {
     "PdfExtractor": ".pdf_extractor",
     "PmcExtractor": ".pmc_extractor",
     "PubgetExtractor": ".pubget_extractor",
+    "SpringerExtractor": ".springer_extractor",
     "WileyExtractor": ".wiley_extractor",
 }
 

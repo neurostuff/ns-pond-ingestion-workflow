@@ -372,6 +372,11 @@ class _HostGate:
                 return None
             return self._deferred.setdefault(host, reason)
 
+    def defer(self, host: str, reason: str) -> str:
+        """Leave `host` for the rest of the run; the reason it was first left for."""
+        with self._lock:
+            return self._deferred.setdefault(host, reason)
+
     def answered(self, host: str, *, served: bool = False, refused: bool = False) -> None:
         with self._lock:
             self._strikes[host] = 0

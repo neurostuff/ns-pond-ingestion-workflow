@@ -207,6 +207,42 @@ The attempt records the page as its `url` and the PDF as its `pdf_url`. A page
 that names no PDF fails with `no_pdf_link`; a PDF on PubMed Central or Europe
 PMC is left to those sources, as is a PMC article page listed as a landing page.
 
+## Springer Nature's open-access JATS
+
+The `springer` download source fetches an article's full-text JATS from
+Springer Nature's Open Access API (`https://api.springernature.com/openaccess/jats`).
+It serves only the articles Springer Nature publishes open access under a
+licence (gold, and hybrid with one); an article that is free to read without a
+licence, or open only through a repository copy, is not there. It comes after
+`elsevier` in the default `download_sources`, so an article PMC or Europe PMC
+already serves never spends the API's quota. It asks only about articles whose
+DOI has one of the prefixes Crossref lists for Springer Nature (member 297),
+and it needs an Open Access API key in `SPRINGER_API_KEY` (or
+`springer_api_key`). With `springer` listed and no key, or a key the API
+refuses (401), the download stage stops for the rest of the run, as for Wiley.
+
+The JATS is kept as `<cache_root>/springer/<article>/article.xml`, with its
+tables beside it as pubget lays out a PMC article, and is read by pubget's
+code into the article's `springer` text.
+
+A key may make 100 requests a minute and 500 a day. The source names 20 DOIs
+in each request (the most a query takes), reads every page of the answer, and
+asks at most once every 0.6 seconds. A DOI is asked with its look-alike dashes
+made hyphens and without a backslash, and matched to the article returned
+without regard to case. A 429 is waited out for as long as its Retry-After
+asks, up to 60 seconds. A longer wait, a fourth 429 in a row, or a 403 is taken
+as the day's quota spent: the source is left for the rest of the run, the
+articles it had not answered stay pending for it, uncharged, while later
+sources are tried, and the run report says `springer EXHAUSTED` with the API's
+reason. A 5xx or a dropped connection is retried twice; then that request's
+articles fail, to be retried on the usual schedule. An article the API does not
+return (or a 404 saying it found no data) is not open access there, and is
+permanent for this source; one returned without its body is retried. A query
+the API refuses (400) is halved until the DOI it cannot name is alone; that one
+is permanent. If every DOI of the query is refused even alone, the query is at
+fault rather than the DOIs: the source is left for the run as for a spent
+quota, and none of them is charged.
+
 ## Dead PDF URLs
 
 The `pdf` source remembers, per article, each PDF URL that has turned out dead.
