@@ -51,6 +51,7 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.utils.preprints import is_preprint_host
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -76,18 +77,8 @@ _HOST_REFUSAL_LIMIT = 20
 _TYPE_RANK = {"repository": 0, "publisher": 1, "unknown": 2}
 _PUBLISHER_SOURCE_TYPES = {"journal", "conference", "book series", "ebook platform"}
 
-#: Servers whose copies are preprints. A copy there with no version label is
-#: taken as a submitted version, so it is tried after any published copy.
-_PREPRINT_HOSTS = (
-    "arxiv.org",
-    "biorxiv.org",
-    "medrxiv.org",
-    "osf.io",
-    "preprints.org",
-    "psyarxiv.com",
-    "researchsquare.com",
-    "ssrn.com",
-)
+#: A copy on a preprint server with no version label is taken as a submitted version,
+#: so it is tried after any published copy.
 PREPRINT_VERSION = "submittedVersion"
 
 #: Statuses that may answer differently later; any other 4xx is the URL's answer.
@@ -169,7 +160,7 @@ def _is_pmc_copy(url: str) -> bool:
 
 def _version_of(url: str, version: Optional[str]) -> Optional[str]:
     host = (urlsplit(url).hostname or "").lower()
-    if version is None and any(_host_matches(host, d) for d in _PREPRINT_HOSTS):
+    if version is None and is_preprint_host(host):
         return PREPRINT_VERSION
     return version
 

@@ -418,14 +418,19 @@ def test_a_preprint_server_doi_makes_the_other_article_the_one_that_is_written(
     assert (settings.ns_pond_root / "5dsFAUgmBz36").exists() == bool(written)
 
 
-def test_is_preprint_by_doi_prefix_or_by_the_version_of_the_download():
-    assert is_preprint("10.1101/2020.01.01.1", None)
-    assert is_preprint("10.1101/2020.01.01.1".upper(), None)
-    assert is_preprint("10.21203/rs.3.rs-1/v1", None)
+def test_is_preprint_by_a_preprint_servers_doi_or_by_the_version_of_the_download():
+    assert is_preprint("10.1101/2019.12.11.873174", None)
+    assert is_preprint("10.1101/2019.12.11.873174".upper(), None)
+    assert is_preprint("10.64898/2025.11.28.690060", None)
+    assert is_preprint("10.21203/rs.3.rs-2556690/v2", None)
+    assert is_preprint("10.48550/arxiv.2111.08743", None)
+    assert is_preprint("10.2139/ssrn.3349212", None)
     assert is_preprint("10.1016/j.x", "submittedVersion")
     assert not is_preprint("10.1016/j.x", "publishedVersion")
     assert not is_preprint(None, None)
     assert not is_preprint("10.11011/x", None)
+    assert not is_preprint("10.1101/gr.112680.110", None)
+    assert not is_preprint("10.1101/lm.022889.111", "publishedVersion")
 
 
 def _never_downloaded(env, monkeypatch, pmid, base):

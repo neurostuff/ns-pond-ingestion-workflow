@@ -17,6 +17,7 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import nspond, paper_parse
+from ingestion_workflow.utils.preprints import is_preprint_doi
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
@@ -49,10 +50,6 @@ RETRACTION_NOTICE = "retraction notice"
 #: newer one lacks, so each upload would replace the other's analyses. When one of them is
 #: a preprint and exactly one is not, that one is synced; otherwise none is.
 SHARED_BASE_STUDY = "shares its neurostore base study with another article"
-#: DOI prefixes of preprint servers: bioRxiv and medRxiv, Research Square. #91's
-#: `article_version` labels only copies a source reported as one; these papers have a
-#: DOI of their own that says it.
-PREPRINT_DOI_PREFIXES = ("10.1101/", "10.21203/")
 #: The stages whose records name the base study an article is written under.
 BASE_STUDY_STAGES = ("upload", "sync")
 
@@ -99,8 +96,7 @@ def is_preprint(doi: Optional[str], article_version: Optional[str]) -> bool:
     """A preprint server's DOI, or text downloaded as a submitted version."""
     from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
 
-    return article_version == PREPRINT_VERSION or (
-        doi is not None and doi.lower().startswith(PREPRINT_DOI_PREFIXES))
+    return article_version == PREPRINT_VERSION or is_preprint_doi(doi)
 
 
 def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
