@@ -50,10 +50,6 @@ RETRACTION_NOTICE = "retraction notice"
 #: newer one lacks, so each upload would replace the other's analyses. When one of them is
 #: a preprint and exactly one is not, that one is synced; otherwise none is.
 SHARED_BASE_STUDY = "shares its neurostore base study with another article"
-#: DOI prefixes of preprint servers: bioRxiv and medRxiv, Research Square. #91's
-#: `article_version` labels only copies a source reported as one; these papers have a
-#: DOI of their own that says it.
-PREPRINT_DOI_PREFIXES = ("10.1101/", "10.21203/")
 #: The stages whose records name the base study an article is written under.
 BASE_STUDY_STAGES = ("upload", "sync")
 

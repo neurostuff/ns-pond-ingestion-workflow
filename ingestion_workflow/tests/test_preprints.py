@@ -18,7 +18,10 @@ PREPRINTS = [
     ("10.64898/2025.11.26.25341017", "medrxiv"),
     ("10.48550/arxiv.2111.08743", "arxiv"),
     ("10.48550/arxiv.hep-th/9901001", "arxiv"),
-    ("10.31219/osf.io/6meyw", "osf"),
+    ("10.48550/arxiv.cond-mat.mes-hall/0101001", "arxiv"),
+    ("10.48550/arxiv.math.gt/0309136", "arxiv"),
+    ("10.31219/osf.io/6meyw", "osf_preprints"),
+    ("10.31222/osf.io/abcde", "metaarxiv"),
     ("10.31234/osf.io/32nzp", "psyarxiv"),
     ("10.31234/osf.io/mzg9x_v2", "psyarxiv"),
     ("10.31224/osf.io/m4tqn", "engrxiv"),
@@ -34,6 +37,9 @@ PREPRINTS = [
     ("10.36227/techrxiv.16611568", "techrxiv"),
     ("10.26434/chemrxiv.11597133.v1", "chemrxiv"),
     ("10.26434/chemrxiv.11977707", "chemrxiv"),
+    ("10.26434/chemrxiv-2022-nbwr4", "chemrxiv"),
+    ("10.26434/chemrxiv-2023-5rglc-v2", "chemrxiv"),
+    ("10.26434/chemrxiv.15010587/v1", "chemrxiv"),
     ("10.2196/preprints.25731", "jmir_preprints"),
 ]
 
@@ -57,6 +63,14 @@ NOT_PREPRINTS = [
     "10.11011/x",
     "10.1101/2019.12.11.8731",
     "10.1101/2019.12.11.873174x",
+    # a version is part of a registered DOI only in each server's own form
+    "10.48550/arxiv.2111.08743v2",
+    "10.20944/preprints202005.0098",
+    "10.21203/rs.3.pex-1234567/v1",
+    "10.2139/ssrn.123abc",
+    "10.2139/ssrn.",
+    "10.26434/chemrxiv",
+    "10.26434/chemrxiv_123",
 ]
 
 
@@ -76,6 +90,23 @@ def test_the_spelling_of_a_doi_does_not_change_its_server():
     assert preprint_server("https://doi.org/10.1101/2019.12.11.873174") == "biorxiv"
     assert preprint_server("DOI:10.48550/arXiv.2111.08743") == "arxiv"
     assert preprint_server("10.31234/OSF.IO/32NZP") == "psyarxiv"
+
+
+#: study_schema's PreprintServer values, pinned from study_schema#40. Ingestion does not
+#: depend on study_schema yet, so this list is the contract until it does; the bump comes
+#: when #40 merges, and this becomes the enum itself.
+STUDY_SCHEMA_PREPRINT_SERVERS = {
+    "biorxiv", "medrxiv", "arxiv", "researchsquare", "osf_preprints", "arabixiv",
+    "metaarxiv", "engrxiv", "focus_archive", "frenxiv", "ina_rxiv", "lawarxiv",
+    "lis_scholarship_archive", "marxiv", "mindrxiv", "nutrixiv", "paleorxiv", "psyarxiv",
+    "socarxiv", "sportrxiv", "africarxiv", "mediarxiv", "bodoarxiv", "edarxiv",
+    "biohackrxiv", "ssrn", "preprints_org", "authorea", "techrxiv", "chemrxiv",
+    "jmir_preprints",
+}
+
+
+def test_the_registrys_servers_are_study_schemas_preprint_servers():
+    assert {s.name for s in PREPRINT_SERVERS} == STUDY_SCHEMA_PREPRINT_SERVERS
 
 
 def test_no_doi_is_no_preprint():
