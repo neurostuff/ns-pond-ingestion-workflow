@@ -35,9 +35,6 @@ interactions:
       - Mon, 17 Nov 2025 22:24:23 GMT
       Server:
       - cloudflare
-      Set-Cookie:
-      - sails.sid=s%3AWjeNW23cCKksbBVzMZKaApFQOxqEyfyt.cI5LVUHummcMeIPQRRTDtOg%2FQV9R%2F%2FiJTNxqyzYFMro;
-        Path=/; HttpOnly
       - __cf_bm=Yvn2YDz8wKWacWE5p7AUhHdMIb3xaNpowxX0IsnQ8Xw-1763418263-1.0.1.1-H.Oi80ITN7wqi6HBbuFRuX8nzLwjJnWmoM2PIl8DT4VnpWCTDXY74LxyEbiH1X0wt.8v4flkjWDJDZSAWGxk0q7Ck3nlZgoNKInEfv5IIpg;
         path=/; expires=Mon, 17-Nov-25 22:54:23 GMT; domain=.postman-echo.com; HttpOnly;
         Secure; SameSite=None

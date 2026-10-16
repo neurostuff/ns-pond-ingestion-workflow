@@ -37,10 +37,6 @@ interactions:
       - Wed, 12 Nov 2025 01:56:13 GMT
       server:
       - cloudflare
-      set-cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ;
-        path=/; expires=Wed, 12-Nov-25 02:26:13 GMT; domain=.elsevier.com; HttpOnly;
-        Secure; SameSite=None
       tdm-policy:
       - https://www.elsevier.com/tdm/tdmrep-policy.json
       tdm-reservation:
@@ -50,7 +46,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - beb935529ed987ba
       x-els-resourceversion:
@@ -71,8 +67,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -109,7 +103,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 926e1de35e03b694
       x-els-resourceversion:
@@ -130,8 +124,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -168,7 +160,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d42440f367dc6199
       x-els-resourceversion:
@@ -189,8 +181,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -227,7 +217,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 41c03444149f2a13
       x-els-resourceversion:
@@ -248,8 +238,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -286,7 +274,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 6a7daa0eda775b9c
       x-els-resourceversion:
@@ -307,8 +295,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -345,7 +331,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 343cd988929033da
       x-els-resourceversion:
@@ -366,8 +352,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -1112,7 +1096,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - aaaadefbf7bf9072
       x-els-resourceversion:
@@ -1133,8 +1117,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -1718,7 +1700,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d3bc5f1e99405c4d
       x-els-resourceversion:
@@ -1739,8 +1721,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -1779,7 +1759,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8c82c2d6d7910940
       x-els-resourceversion:
@@ -1800,8 +1780,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -1840,7 +1818,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 884f9f5f2cf43c55
       x-els-resourceversion:
@@ -1861,8 +1839,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -2575,7 +2551,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 17b411d04fd9a255
       x-els-resourceversion:
@@ -2596,8 +2572,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -3159,7 +3133,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c464d56263b6170a
       x-els-resourceversion:
@@ -3180,8 +3154,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -3945,7 +3917,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 34e96d3038bd3e1f
       x-els-resourceversion:
@@ -3966,8 +3938,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -4006,7 +3976,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 9915f7f634976dcc
       x-els-resourceversion:
@@ -4027,8 +3997,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -4065,7 +4033,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 3ebd1dee8d557470
       x-els-resourceversion:
@@ -4086,8 +4054,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -4747,7 +4713,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 6ed5fc2f2404bd9d
       x-els-resourceversion:
@@ -4768,8 +4734,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -5299,7 +5263,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c19e2d02276f339f
       x-els-resourceversion:
@@ -5320,8 +5284,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -5360,7 +5322,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - f8b1740855edfa47
       x-els-resourceversion:
@@ -5381,8 +5343,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -5419,7 +5379,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - bfa44621ce733673
       x-els-resourceversion:
@@ -5440,8 +5400,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -6059,7 +6017,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 68acc827a06d3a04
       x-els-resourceversion:
@@ -6080,8 +6038,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -6810,7 +6766,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8b3daa0115b9c26c
       x-els-resourceversion:
@@ -6831,8 +6787,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -7565,7 +7519,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 9718d31cba85a2be
       x-els-resourceversion:
@@ -7586,8 +7540,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -8223,7 +8175,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4af1a1ddd2510589
       x-els-resourceversion:
@@ -8244,8 +8196,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -8284,7 +8234,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ae8b4e425d0c091b
       x-els-resourceversion:
@@ -8305,8 +8255,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -8343,7 +8291,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d3da7d13e083de4b
       x-els-resourceversion:
@@ -8364,8 +8312,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -9222,7 +9168,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 6b4142e5b4c5d48a
       x-els-resourceversion:
@@ -9243,8 +9189,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -9281,7 +9225,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b8a3b37a1da1638c
       x-els-resourceversion:
@@ -9302,8 +9246,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -9340,7 +9282,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 27643154f5ac4cfb
       x-els-resourceversion:
@@ -9361,8 +9303,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -9399,7 +9339,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 77bce5524286831c
       x-els-resourceversion:
@@ -9420,8 +9360,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -9458,7 +9396,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4158e7eabe663f26
       x-els-resourceversion:
@@ -9479,8 +9417,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10160,7 +10096,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c8d6d565d76fbd89
       x-els-resourceversion:
@@ -10181,8 +10117,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10219,7 +10153,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d307fd0b77eb5f2e
       x-els-resourceversion:
@@ -10240,8 +10174,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10278,7 +10210,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 91d325bbbdde7383
       x-els-resourceversion:
@@ -10299,8 +10231,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10337,7 +10267,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 59906647fb2138f4
       x-els-resourceversion:
@@ -10358,8 +10288,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10875,7 +10803,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8bfdf386bab551f3
       x-els-resourceversion:
@@ -10896,8 +10824,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10934,7 +10860,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 274c85803bc2a7f7
       x-els-resourceversion:
@@ -10955,8 +10881,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -10993,7 +10917,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2151e399579d0dad
       x-els-resourceversion:
@@ -11014,8 +10938,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -12365,7 +12287,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4323ccf1ed7c89b5
       x-els-resourceversion:
@@ -12386,8 +12308,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -12424,7 +12344,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 539568c5fd1deae9
       x-els-resourceversion:
@@ -12445,8 +12365,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -12485,7 +12403,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - df4b656835ef6680
       x-els-resourceversion:
@@ -12506,8 +12424,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -12544,7 +12460,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 3b3ad11c79e04c2c
       x-els-resourceversion:
@@ -12565,8 +12481,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -13099,7 +13013,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - fa6fa7b4a230e7f2
       x-els-resourceversion:
@@ -13120,8 +13034,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -13651,7 +13563,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 623c0e80fc6cff9e
       x-els-resourceversion:
@@ -13672,8 +13584,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -14342,7 +14252,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 6ed1bfe61d127bb9
       x-els-resourceversion:
@@ -14363,8 +14273,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -14401,7 +14309,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - bdc0cf1d2673f565
       x-els-resourceversion:
@@ -14422,8 +14330,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -14670,7 +14576,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 609b57d3411fc77b
       x-els-resourceversion:
@@ -14691,8 +14597,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -15539,7 +15443,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - db752e8bc43872cd
       x-els-resourceversion:
@@ -15560,8 +15464,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -15598,7 +15500,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 25583ccacd89db3f
       x-els-resourceversion:
@@ -15619,8 +15521,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -15659,7 +15559,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - da32d7816f35dbf0
       x-els-resourceversion:
@@ -15680,8 +15580,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -16222,7 +16120,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2533c1a98de5fdd3
       x-els-resourceversion:
@@ -16243,8 +16141,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -16715,7 +16611,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8ff5a51553dde452
       x-els-resourceversion:
@@ -16736,8 +16632,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -16776,7 +16670,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 192c6aa57dd8f8aa
       x-els-resourceversion:
@@ -16797,8 +16691,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -16835,7 +16727,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - f1704cf8b9d84170
       x-els-resourceversion:
@@ -16856,8 +16748,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -17428,7 +17318,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4ee8cbc3c155a53b
       x-els-resourceversion:
@@ -17449,8 +17339,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -18138,7 +18026,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 6231c690c6c959c9
       x-els-resourceversion:
@@ -18159,8 +18047,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -18454,7 +18340,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - a7c3cc6425783351
       x-els-resourceversion:
@@ -18475,8 +18361,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -18874,7 +18758,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ef3b0d097d57f19a
       x-els-resourceversion:
@@ -18895,8 +18779,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -19515,7 +19397,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c34f62e10761a42b
       x-els-resourceversion:
@@ -19536,8 +19418,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -19576,7 +19456,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - fc90535801afaea3
       x-els-resourceversion:
@@ -19597,8 +19477,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -19635,7 +19513,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 453173f539b457cc
       x-els-resourceversion:
@@ -19656,8 +19534,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -20461,7 +20337,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 1a486b093075b8dd
       x-els-resourceversion:
@@ -20482,8 +20358,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -20520,7 +20394,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8044af806c378b2d
       x-els-resourceversion:
@@ -20541,8 +20415,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -20579,7 +20451,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 74356e59619be4c2
       x-els-resourceversion:
@@ -20600,8 +20472,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -21414,7 +21284,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - a5670ff92bffd348
       x-els-resourceversion:
@@ -21435,8 +21305,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22202,7 +22070,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 79a31a2205a5347d
       x-els-resourceversion:
@@ -22223,8 +22091,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22263,7 +22129,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 15baa90a8e9b736e
       x-els-resourceversion:
@@ -22284,8 +22150,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22322,7 +22186,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 42de87a627ba7391
       x-els-resourceversion:
@@ -22343,8 +22207,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22383,7 +22245,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c6e3225c8b0b743b
       x-els-resourceversion:
@@ -22404,8 +22266,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22442,7 +22302,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - f8fcd6ed980dba61
       x-els-resourceversion:
@@ -22463,8 +22323,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -22901,7 +22759,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 299ab867554f0603
       x-els-resourceversion:
@@ -22922,8 +22780,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -23311,7 +23167,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 0d1bb1e8a1fa9b91
       x-els-resourceversion:
@@ -23332,8 +23188,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -23895,7 +23749,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2c938d8959e12533
       x-els-resourceversion:
@@ -23916,8 +23770,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -23956,7 +23808,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b990fbe881943593
       x-els-resourceversion:
@@ -23977,8 +23829,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -24015,7 +23865,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 7322718530cded1d
       x-els-resourceversion:
@@ -24036,8 +23886,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -24076,7 +23924,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 849df6ebdd40ad5f
       x-els-resourceversion:
@@ -24097,8 +23945,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -24135,7 +23981,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 53de522be41ec7b7
       x-els-resourceversion:
@@ -24156,8 +24002,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -24698,7 +24542,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ceb15767c79942a4
       x-els-resourceversion:
@@ -24719,8 +24563,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -25491,7 +25333,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b2dccb2ca49974a8
       x-els-resourceversion:
@@ -25512,8 +25354,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -25998,7 +25838,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 1547827a2cd66a24
       x-els-resourceversion:
@@ -26019,8 +25859,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -26059,7 +25897,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 47f1330f2e285109
       x-els-resourceversion:
@@ -26080,8 +25918,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -26118,7 +25954,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4ef27653c1cb67e2
       x-els-resourceversion:
@@ -26139,8 +25975,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -26758,7 +26592,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 9f73ed00ea63c7bf
       x-els-resourceversion:
@@ -26779,8 +26613,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -27321,7 +27153,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - a3f0fa3f60f8ce79
       x-els-resourceversion:
@@ -27342,8 +27174,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -27380,7 +27210,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 7630e23c51019373
       x-els-resourceversion:
@@ -27401,8 +27231,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -27439,7 +27267,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 0710fe0d5323b2e4
       x-els-resourceversion:
@@ -27460,8 +27288,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -28173,7 +27999,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 0ccb3a183987ac38
       x-els-resourceversion:
@@ -28194,8 +28020,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -28957,7 +28781,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c7ee7e9612b2edb1
       x-els-resourceversion:
@@ -28978,8 +28802,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -29018,7 +28840,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8c9d850d0ef28911
       x-els-resourceversion:
@@ -29039,8 +28861,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -29077,7 +28897,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2dbfb4ba7685c4cf
       x-els-resourceversion:
@@ -29098,8 +28918,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -29584,7 +29402,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 9d8ca7a3d4054b97
       x-els-resourceversion:
@@ -29605,8 +29423,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -29645,7 +29461,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 43b1e9e43cb765e2
       x-els-resourceversion:
@@ -29666,8 +29482,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -29704,7 +29518,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ec99bd42d51c2b0f
       x-els-resourceversion:
@@ -29725,8 +29539,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -30469,7 +30281,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ec0210dde88c73da
       x-els-resourceversion:
@@ -30490,8 +30302,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -30530,7 +30340,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 80006a7f4181ca49
       x-els-resourceversion:
@@ -30551,8 +30361,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -30589,7 +30397,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 51dec0371a0fec56
       x-els-resourceversion:
@@ -30610,8 +30418,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -31313,7 +31119,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 1fd7cef6b2930535
       x-els-resourceversion:
@@ -31334,8 +31140,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -31374,7 +31178,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 420f5b97fa52ca46
       x-els-resourceversion:
@@ -31395,8 +31199,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -31433,7 +31235,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2c7d5938f2ab201d
       x-els-resourceversion:
@@ -31454,8 +31256,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -31492,7 +31292,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b55a2c4a7ddcc896
       x-els-resourceversion:
@@ -31513,8 +31313,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -31551,7 +31349,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - aeb75807cf90dea4
       x-els-resourceversion:
@@ -31572,8 +31370,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -32276,7 +32072,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 7bb217759ae6ea01
       x-els-resourceversion:
@@ -32297,8 +32093,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -32756,7 +32550,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 288c4564d275e591
       x-els-resourceversion:
@@ -32777,8 +32571,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -33584,7 +33376,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b7e53af85264cf68
       x-els-resourceversion:
@@ -33605,8 +33397,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -33643,7 +33433,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - b8fda7ebf463dd80
       x-els-resourceversion:
@@ -33664,8 +33454,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -33702,7 +33490,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - c6e46a629890b3e8
       x-els-resourceversion:
@@ -33723,8 +33511,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -33763,7 +33549,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 9bc45e9cfde0038e
       x-els-resourceversion:
@@ -33784,8 +33570,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -33822,7 +33606,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2aafcd2baa0d8304
       x-els-resourceversion:
@@ -33843,8 +33627,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -34622,7 +34404,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - bcc8aa32ca72e838
       x-els-resourceversion:
@@ -34643,8 +34425,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -35505,7 +35285,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d6842a0213965983
       x-els-resourceversion:
@@ -35526,8 +35306,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -36123,7 +35901,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 99d30ebea12bb3b2
       x-els-resourceversion:
@@ -36144,8 +35922,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37212,7 +36988,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8dfa050a0c658913
       x-els-resourceversion:
@@ -37233,8 +37009,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37273,7 +37047,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 62eea8ce30bc5764
       x-els-resourceversion:
@@ -37294,8 +37068,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37332,7 +37104,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - bd782e058a3f375c
       x-els-resourceversion:
@@ -37353,8 +37125,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37391,7 +37161,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4bd93ebb78d0afd7
       x-els-resourceversion:
@@ -37412,8 +37182,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37450,7 +37218,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 5506789a73b037e5
       x-els-resourceversion:
@@ -37471,8 +37239,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37511,7 +37277,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 94ce679ff04b736a
       x-els-resourceversion:
@@ -37532,8 +37298,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -37570,7 +37334,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 7ffb0556abf95935
       x-els-resourceversion:
@@ -37591,8 +37355,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -38173,7 +37935,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 2a9d60984041a6e0
       x-els-resourceversion:
@@ -38194,8 +37956,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -38838,7 +38598,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 674310abf337c094
       x-els-resourceversion:
@@ -38859,8 +38619,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -39435,7 +39193,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - e3312b4654e51038
       x-els-resourceversion:
@@ -39456,8 +39214,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -40309,7 +40065,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d85d296f8d32c36e
       x-els-resourceversion:
@@ -40330,8 +40086,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -40368,7 +40122,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 4f66c54335b8fad0
       x-els-resourceversion:
@@ -40389,8 +40143,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -40427,7 +40179,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ce78ec06413181b5
       x-els-resourceversion:
@@ -40448,8 +40200,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -41082,7 +40832,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 56d31770bb40a7ab
       x-els-resourceversion:
@@ -41103,8 +40853,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -41712,7 +41460,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - d6afc369616deade
       x-els-resourceversion:
@@ -41733,8 +41481,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -42508,7 +42254,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 8a9a556e350bd5f5
       x-els-resourceversion:
@@ -42529,8 +42275,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -43042,7 +42786,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - ea3c53684c869e08
       x-els-resourceversion:
@@ -43063,8 +42807,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -43783,7 +43525,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - af462302e62e8786
       x-els-resourceversion:
@@ -43804,8 +43546,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -44355,7 +44095,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - f541c3d5a6c220a5
       x-els-resourceversion:
@@ -44376,8 +44116,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -44414,7 +44152,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - a9742391f0bde413
       x-els-resourceversion:
@@ -44435,8 +44173,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - __cf_bm=2jHI_jMrqbvm2mCtIqEaPqYPdjZs5CFIZO.X4FiCZCk-1762912573-1.0.1.1-jHE23jrg64BCEfw4bN9iSN5mW7TsNFQFH3CeUFfJw.7bVye7dS3QwG_4HadR19qEZPXwXXcpZ_ul0CRIVg9obzq6Pi4r76qQOfGGXnOeiqQ
       host:
       - api.elsevier.com
       user-agent:
@@ -44473,7 +44209,7 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       x-els-apikey:
-      - 01a77abe21a80c7e6fe2aef35a78bd3b
+      - replay
       x-els-reqid:
       - 49f4ca8f5e3cd3c9
       x-els-resourceversion:
