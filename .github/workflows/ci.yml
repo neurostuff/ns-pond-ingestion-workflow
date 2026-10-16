@@ -56,7 +56,8 @@ jobs:
       # The two docling tests download its model weights from Hugging Face; cached per docling version.
       - name: Read docling's version
         id: docling
-        run: echo "version=$(uv pip show docling | sed -n 's/^Version: //p')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(uv pip show docling | sed -n 's/^Version: //p')" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         id: weights
