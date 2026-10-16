@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 #: 2: doi aliases hold the bare DOI, not a resolver URL.
-SCHEMA_VERSION = 2
+#: 3: doi aliases hold the canonical DOI: bare and lower case.
+SCHEMA_VERSION = 3
 
 DDL = """
 CREATE TABLE IF NOT EXISTS articles (

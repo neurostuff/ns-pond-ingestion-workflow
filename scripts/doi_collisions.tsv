@@ -1,0 +1,15 @@
+doi	action	article	other	evidence
+10.1016/0022-510X(96)00033-0	drop	zzpi5yzd6ilp	oe4kyijveeam	Crossref: J Neurol Sci 139:78-82 (1996), which is PMID 8836976 (oe4kyijveeam); zzpi5yzd6ilp is PMID 8156707, the Japanese-language paper of the same title in Rinsho Shinkeigaku (1994)
+10.1016/S0042-6989(98)00147-3	merge-duplicate-pubmed-records	xlpvunfuirds	audyw3wqv6ai	PMIDs 9893863 and 11438374 are two PubMed records of one Vision Res paper (same title, Nov 1998); Crossref: Vision Res 38:3447-3453
+10.1038/331585A0	drop	zmb5tpdxocp6	3hkokmk6dncx	PubMed: the DOI is PMID 3277066 (3hkokmk6dncx, Nature 1988); zmb5tpdxocp6 is PMID 24936406, Neuroimage Clin, DOI 10.1016/j.nicl.2013.03.010
+10.1093/CERCOR/11.9.888	keep	cr7arxmalorn	sx2w4n6hsjws	Crossref: one item, Krieg Cortical Kudos 2001, Cereb Cortex 11:888-890; PubMed indexes its two awards (PMIDs 11552704, 11532893) as two records
+10.1093/CERCOR/13.2.215	keep	uo73c7awzen2	vxsertod2lbb	Crossref: one item, Krieg Cortical Kudos 2002, Cereb Cortex 13:215-218; PubMed indexes its two awards (PMIDs 12553312, 12507952) as two records
+10.1093/CERCOR/BHI069	drop	7so7ytedjzdk	rqrdhpauuxqt	PubMed: the DOI is PMID 15772373 (rqrdhpauuxqt, Cereb Cortex 2005); 7so7ytedjzdk is PMID 16168676, NeuroImage, DOI 10.1016/j.neuroimage.2005.07.049
+10.1093/CERCOR/BHI095	drop	rpidhhkqyp7g	7eofosmcgzcz	PubMed: the DOI is PMID 15858162 (7eofosmcgzcz, Cereb Cortex 2006); rpidhhkqyp7g is PMID 16406257, NeuroImage, DOI 10.1016/j.neuroimage.2005.11.026
+10.1093/CERCOR/BHJ003	drop	shnihq775srm	7fzxvpbwurtd	PubMed: the DOI is PMID 16033925 (7fzxvpbwurtd, Cereb Cortex 2006); shnihq775srm is PMID 16520064, NeuroImage, DOI 10.1016/j.neuroimage.2006.01.008
+10.1093/CERCOR/BHJ116	drop	ypupq2cnwd2r	ucrcu7yn7t6x	PubMed: the DOI is PMID 16436686 (ucrcu7yn7t6x, Cereb Cortex 2006); ypupq2cnwd2r is PMID 17258912, NeuroImage, DOI 10.1016/j.neuroimage.2006.11.041
+10.1093/CERCOR/BHL078	drop	3vstiiscbeu4	ukaqpbsx6sjs	PubMed: the DOI is PMID 16990438 (ukaqpbsx6sjs, Cereb Cortex 2007); 3vstiiscbeu4 is PMID 22846335, Neuropsychologia, DOI 10.1016/j.neuropsychologia.2012.07.035
+10.1093/CERCOR/BHM207	drop	r3xiua2ddv2f	pbwndixwtx5c	PubMed: the DOI is PMID 18063564 (pbwndixwtx5c, Cereb Cortex 2008); r3xiua2ddv2f is PMID 18674847, Neurobiol Aging, DOI 10.1016/j.neurobiolaging.2008.05.022
+10.1111/J.1399-6576.1993.TB03813.X	drop	e4izsjyla75k	gjrquy6oq7i5	PubMed: the DOI is PMID 8279258 (gjrquy6oq7i5, Acta Anaesthesiol Scand Nov 1993); e4izsjyla75k is PMID 8067234, May 1994, DOI 10.1111/j.1399-6576.1994.tb03921.x
+10.1249/01.MSS.0000202025.48774.31	drop	icr762zkgh5b	ltw36blwo7bv	PubMed: the DOI is PMID 16531912 (ltw36blwo7bv, Med Sci Sports Exerc Feb 2006); icr762zkgh5b is PMID 16286874, Nov 2005, DOI 10.1249/01.mss.0000186726.18341.70
+10.3233/RNN-1999-00078	merge-duplicate-pubmed-records	4zthqtxshrnl	mrsrr5sc44li	PMIDs 22387514 and 12671262 are two PubMed records of one Restor Neurol Neurosci paper (same title, 1999); Crossref: 14:183-187

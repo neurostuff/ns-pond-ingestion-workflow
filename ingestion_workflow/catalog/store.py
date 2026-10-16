@@ -11,14 +11,15 @@ import logging
 import hashlib
 import json
 import sqlite3
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 from ingestion_workflow.utils.doi import normalize_doi
 
+from .backup import backup
 from .blobs import BlobStore
 from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
 from .schema import DDL, PRAGMAS, SCHEMA_VERSION
@@ -60,6 +61,30 @@ def _article_id(seed: str) -> str:
     return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 
 
+def _presented(aliases: Sequence[Tuple[str, str]]) -> Identifier:
+    """The Identifier an article presents, from its alias rows.
+
+    An article holds several PMIDs when two PubMed records of one paper were
+    merged on purpose, or from before the registration guard. It presents the
+    lowest, PubMed's earlier record, as `pmid`, so every stage asks about the
+    same one, and the rest under `other_ids[DUPLICATE_PUBMED_RECORDS]`. For
+    other kinds the last row read wins.
+    """
+    fields: Dict[str, str] = {}
+    pmids: List[str] = []
+    for kind, value in aliases:
+        if kind == "pmid":
+            pmids.append(value)
+        else:
+            fields[kind] = value
+    pmids.sort(key=lambda p: (len(p), p))
+    return Identifier(
+        **{kind: fields.get(kind) for kind in ALIAS_KINDS if kind != "pmid"},
+        pmid=pmids[0] if pmids else None,
+        other_ids={DUPLICATE_PUBMED_RECORDS: ",".join(pmids[1:])} if len(pmids) > 1 else None,
+    )
+
+
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
     pairs = []
     for kind in ALIAS_KINDS:
@@ -91,43 +116,97 @@ class Catalog:
         row = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
         # a catalog with no version row was just created
         version = int(row["value"]) if row else SCHEMA_VERSION
+        if version > SCHEMA_VERSION:
+            conn.close()
+            raise RuntimeError(
+                f"{root / 'catalog.sqlite'} is schema version {version}; this code reads "
+                f"version {SCHEMA_VERSION}. Update the code instead of opening it with this one."
+            )
         catalog = cls(conn, root)
-        if version < 2:
-            catalog._bare_doi_aliases()
-        conn.execute(
-            "INSERT INTO meta(key, value) VALUES('schema_version', ?) "
-            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-            (str(SCHEMA_VERSION),),
-        )
+        if version < SCHEMA_VERSION:
+            try:
+                catalog._migrate()
+            except BaseException:
+                conn.close()
+                raise
+        elif row is None:
+            conn.execute(
+                "INSERT INTO meta(key, value) VALUES('schema_version', ?)", (str(SCHEMA_VERSION),)
+            )
         return catalog
 
-    def _bare_doi_aliases(self) -> None:
-        """Rewrite doi aliases stored as resolver URLs to the bare DOI.
+    def _migrate(self) -> None:
+        """Bring the catalog up to `SCHEMA_VERSION`.
 
-        An identifier now registers its bare DOI, so a URL-form alias would no
-        longer be found and the article would be registered twice. When the bare
-        DOI is already an alias of the same article the URL form is dropped; of
-        another article it is left, and logged, for a person to settle.
+        Under the write lock, the version is read again: a process that opened
+        the catalog while another migrated it waits here, then finds it current.
+        A copy is taken next, beside the catalog, because the rewrite drops the
+        spellings it replaces; without the copy nothing is migrated. The data
+        and the new version commit together, so a failed migration leaves the
+        catalog as it was.
         """
         with self._write() as conn:
-            for row in conn.execute("SELECT value, article_id FROM aliases WHERE kind='doi'").fetchall():
-                bare = normalize_doi(row["value"])
-                if bare == row["value"]:
-                    continue
-                other = conn.execute(
-                    "SELECT article_id FROM aliases WHERE kind='doi' AND value=?", (bare,)
-                ).fetchone()
-                if other is None:
-                    conn.execute(
-                        "UPDATE aliases SET value=? WHERE kind='doi' AND value=?", (bare, row["value"])
-                    )
-                elif other["article_id"] == row["article_id"]:
-                    conn.execute("DELETE FROM aliases WHERE kind='doi' AND value=?", (row["value"],))
-                else:
-                    logger.warning(
-                        "catalog: doi %s of %s is also %s of %s; left as it is",
-                        row["value"], row["article_id"], bare, other["article_id"],
-                    )
+            version = int(conn.execute(
+                "SELECT value FROM meta WHERE key='schema_version'").fetchone()["value"])
+            if version >= SCHEMA_VERSION:
+                return
+            # Copied through a second connection: sqlite cannot back up from the
+            # one holding the write lock. That lock keeps any write out between
+            # the copy and the rewrite.
+            with closing(sqlite3.connect(self.root / "catalog.sqlite")) as reader:
+                copy = backup(reader, self.root / f"catalog.pre-v{version}.sqlite")
+            logger.warning("catalog: schema %d -> %d; backed up to %s",
+                           version, SCHEMA_VERSION, copy)
+            self._canonical_doi_aliases(conn)
+            conn.execute(
+                "UPDATE meta SET value=? WHERE key='schema_version'", (str(SCHEMA_VERSION),)
+            )
+
+    def _canonical_doi_aliases(self, conn: sqlite3.Connection) -> Dict[str, int]:
+        """Rewrite doi aliases to the canonical DOI that lookups use: bare, and
+        lower case.
+
+        A DOI held in another spelling (a resolver URL, upper case) would not be
+        found, and its article would be registered a second time. Where the
+        canonical DOI is already an alias: of the same article, the other
+        spelling is dropped; of another article that could be this paper, the
+        two are merged; of a different paper (another PMID or PMCID), the
+        spelling is left, and logged, for a person to settle.
+        """
+        counts = dict.fromkeys(("rewritten", "dropped", "merged", "left"), 0)
+        rows = conn.execute("SELECT value, article_id FROM aliases WHERE kind='doi'").fetchall()
+        for row in rows:
+            value, canonical = row["value"], normalize_doi(row["value"])
+            if canonical == value:
+                continue
+            other = conn.execute(
+                "SELECT article_id FROM aliases WHERE kind='doi' AND value=?", (canonical,)
+            ).fetchone()
+            if other is None:
+                conn.execute("UPDATE aliases SET value=? WHERE kind='doi' AND value=?",
+                             (canonical, value))
+                counts["rewritten"] += 1
+                continue
+            # An earlier row of this pass may have merged this article away.
+            mine = self._follow_merge(row["article_id"])
+            theirs = self._follow_merge(other["article_id"])
+            if mine != theirs and self._compatible(conn, [theirs, mine], {}):
+                mine = theirs = self._merge(conn, [theirs, mine])
+                counts["merged"] += 1
+            if mine == theirs:
+                conn.execute("DELETE FROM aliases WHERE kind='doi' AND value=?", (value,))
+                counts["dropped"] += 1
+            else:
+                logger.warning(
+                    "catalog: doi %s of %s is also %s of %s, another paper; left as it is",
+                    value, mine, canonical, theirs,
+                )
+                counts["left"] += 1
+        logger.warning(
+            "catalog: canonical doi aliases: %(rewritten)d rewritten, %(dropped)d other "
+            "spellings dropped, %(merged)d articles merged, %(left)d left", counts,
+        )
+        return counts
 
     def close(self) -> None:
         self._conn.close()
@@ -162,7 +241,7 @@ class Catalog:
 
     #: Kinds an article may hold only one of. Two PMIDs on one article means two
     #: papers were fused; the same for two PMCIDs. DOIs are not on the list --
-    #: one paper legitimately has several (a preprint, an erratum, case variants).
+    #: one paper legitimately has several (a preprint, an erratum).
     SINGULAR = ("pmid", "pmcid")
 
     def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
@@ -305,9 +384,10 @@ class Catalog:
         is not known until the upload stage has run.
         """
         rows = [
-            (kind, value, article_id)
+            (alias_kind, alias_value, article_id)
             for article_id, kind, value in pairs
-            if article_id and kind in ALIAS_KINDS and value
+            if article_id and kind in ALIAS_KINDS
+            for alias_kind, alias_value in _alias_pairs(Identifier(**{kind: value}))
         ]
         if not rows:
             return
@@ -416,23 +496,19 @@ class Catalog:
         rows = self._conn.execute(
             "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)
         ).fetchall()
-        fields = {row["kind"]: row["value"] for row in rows}
-        return Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
+        return _presented([(row["kind"], row["value"]) for row in rows])
 
     def identifiers(self, article_ids: Sequence[str]) -> Dict[str, Identifier]:
         """Batch form of `identifier`, one query per chunk instead of per article."""
-        out: Dict[str, Dict[str, str]] = {aid: {} for aid in article_ids}
+        out: Dict[str, List[Tuple[str, str]]] = {aid: [] for aid in article_ids}
         for chunk in _chunks(article_ids, 900):
             marks = ",".join("?" * len(chunk))
             for row in self._conn.execute(
                 f"SELECT article_id, kind, value FROM aliases WHERE article_id IN ({marks})",
                 tuple(chunk),
             ):
-                out[row["article_id"]][row["kind"]] = row["value"]
-        return {
-            aid: Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
-            for aid, fields in out.items()
-        }
+                out[row["article_id"]].append((row["kind"], row["value"]))
+        return {aid: _presented(aliases) for aid, aliases in out.items()}
 
     def count_articles(self) -> int:
         row = self._conn.execute(

@@ -16,7 +16,7 @@ import xmltodict
 from ingestion_workflow.catalog import Artifact, Status
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 from ingestion_workflow.models.notices import corrections_from_pubmed
 from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
@@ -192,6 +192,27 @@ def test_the_stage_records_what_pubmed_said_and_fails_what_it_did_not_return():
     assert out["a5"].status is not Status.OK
 
 
+def test_every_pubmed_record_of_a_paper_is_asked_for_its_notices():
+    """A paper PubMed indexes twice; the retraction is linked to the other record."""
+    stage = NoticesStage(Settings())
+    found = {p: corrections_from_pubmed(a) for p, a in _articles().items()}
+    asked = []
+
+    def get_notices(pmids):
+        asked.extend(pmids)
+        return {p: found[p] for p in pmids if p in found}
+
+    stage._client = SimpleNamespace(get_notices=get_notices)
+    ident = Identifier(pmid="5", other_ids={DUPLICATE_PUBMED_RECORDS: "9500320"})
+    ref = SimpleNamespace(id="a1", identifier=ident)
+    [out] = stage.execute(_ctx(), [Work(ref=ref, source="", fingerprint="f", upstream=None)])
+    assert asked == ["5", "9500320"]
+    assert out.status is Status.OK and out.summary["retraction"]["pmid"] == "15016483"
+    meta = {"a1": {"": Artifact("a1", "metadata")}}
+    [work] = stage.plan(_ctx(), [ref], {}, meta).pending
+    assert work.fingerprint == stage.fingerprint_for("5,9500320") != stage.fingerprint_for("5")
+
+
 OPENALEX = Path(__file__).parent.parent / "data" / "openalex" / "retractions.json"
 RETRACTED_DOI, CLEAN_DOI = "10.1016/S0140-6736(97)11096-0", "10.1038/nature14539"
 
@@ -228,7 +249,7 @@ def _openalex_stage(retracted, error=None, pubmed=None):
     def get_retractions(dois):
         if error:
             raise error
-        return {d.lower(): r for d, r in retracted.items() if d in dois}
+        return {d.lower(): r for d, r in retracted.items() if d.lower() in dois}
 
     stage._openalex = SimpleNamespace(get_retractions=get_retractions)
     stage._client = SimpleNamespace(get_notices=lambda pmids: pubmed or {})
@@ -292,7 +313,7 @@ def test_a_doi_in_a_notice_citation_is_found_through_the_shared_helper():
     assert find_doi("Lancet. 1997;350:1. doi: 10.1016/S0924-9338(02)00676-4.") == "10.1016/S0924-9338(02)00676-4"
     assert find_doi("Lancet 1997") is None
     assert normalize_doi("https://doi.org/10.1000/x") == normalize_doi("doi:10.1000/x") == "10.1000/x"
-    assert normalize_doi("HTTPS://DOI.ORG/10.1000/X") == "10.1000/X"
+    assert normalize_doi("HTTPS://DOI.ORG/10.1000/X") == "10.1000/x"
 
 
 # -- upload -------------------------------------------------------------------

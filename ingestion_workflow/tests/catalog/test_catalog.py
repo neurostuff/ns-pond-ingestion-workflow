@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import sqlite3
+import threading
+import time
+
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 
 
 @pytest.fixture()
@@ -461,11 +465,11 @@ def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_pat
     assert _aliases(root) == {(SICI, "a1")}
 
 
-def test_a_bare_doi_another_article_has_is_left_and_logged(tmp_path, caplog):
+def test_a_bare_doi_another_article_has_is_merged_when_it_can_be_the_same_paper(tmp_path):
     root = tmp_path / "cat"
     _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI))
-    assert _aliases(root) == {("https://doi.org/" + SICI, "a1"), (SICI, "a2")}
-    assert "a1" in caplog.text and "a2" in caplog.text
+    assert _aliases(root) == {(SICI, "a1")}
+    assert _articles(root) == {("a1", None), ("a2", "a1")}
 
 
 def test_a_current_catalog_is_not_rewritten(tmp_path):
@@ -474,3 +478,266 @@ def test_a_current_catalog_is_not_rewritten(tmp_path):
         cat._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
         cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', 'https://x.org/10.1/a', 'a1')")
     assert _aliases(root) == {("https://x.org/10.1/a", "a1")}
+
+
+# -- doi case --------------------------------------------------------------------
+
+UPPER = "10.1001/ARCHGENPSYCHIATRY.2012.135"
+
+
+def test_a_doi_is_found_whatever_its_case(catalog):
+    """A search service that lower-cases DOIs used to make a second article."""
+    first = catalog.register(Identifier(pmid="1", doi=UPPER))
+    assert catalog.resolve(Identifier(doi=UPPER.lower())).id == first.id
+    assert catalog.register(Identifier(doi=UPPER.lower())).id == first.id
+    assert catalog.count_articles() == 1
+
+
+def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog):
+    """Enrichment sets `identifier.doi` as the provider spelled it."""
+    identifier = Identifier(pmid="1")
+    identifier.doi = UPPER
+    assert identifier.doi == UPPER.lower()
+    ref = catalog.register(identifier)
+    catalog.add_aliases([(ref.id, "doi", "10.1/LEARNED")])
+    assert _aliases(catalog.root) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
+    assert catalog.resolve(Identifier(doi="10.1/Learned")).id == ref.id
+
+
+def test_only_basic_latin_letters_ignore_case(catalog):
+    """DOI Handbook 4.3.4: A and a are one letter, Á and á are two."""
+    upper = catalog.register(Identifier(doi="10.26321/Á.GUTIÉRREZ.ZARZA.02.2018.03"))
+    lower = catalog.register(Identifier(doi="10.26321/á.gutiérrez.zarza.02.2018.03"))
+    assert upper.id != lower.id
+    assert upper.identifier.doi == "10.26321/Á.gutiÉrrez.zarza.02.2018.03"
+
+
+def _as_version_two(root, *aliases, outcomes=()):
+    """A catalog written while doi aliases kept their case: schema version 2."""
+    with Catalog.open(root) as cat:
+        for article, created, kind, value in aliases:
+            cat._conn.execute(
+                "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)", (article, created)
+            )
+            cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
+                              (kind, value, article))
+        cat.record(list(outcomes))
+        cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+
+
+def _articles(root):
+    with Catalog.open(root) as cat:
+        rows = cat._conn.execute("SELECT id, merged_into FROM articles")
+        return {(row["id"], row["merged_into"]) for row in rows}
+
+
+def test_an_upper_case_doi_alias_is_found_again_lower_case(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER))
+    with Catalog.open(root) as cat:
+        assert cat.register(Identifier(doi=UPPER.lower())).id == "a1"
+        assert cat.count_articles() == 1
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
+
+
+def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER),
+                    ("a1", "2026-01-01", "doi", UPPER.lower()))
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
+
+
+def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "pmid", "1"),
+        ("old", "2026-01-01", "doi", "10.1/ab"),
+        outcomes=[Outcome(article_id="new", stage="download", source="ace", payload={"n": 1}),
+                  Outcome(article_id="old", stage="extract", source="ace", payload={"n": 2})],
+    )
+
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        with Catalog.open(root) as cat:
+            assert cat.resolve(Identifier(doi="10.1/AB")).id == "old"
+            assert cat.resolve(Identifier(pmid="1")).id == "old"
+            assert {a.stage for a in cat.artifacts_for_article("old")} == {"download", "extract"}
+            assert cat.payload(cat.artifact("old", "download", "ace")) == {"n": 1}
+            assert cat.blobs.exists(cat.artifact("old", "download", "ace").blob)
+            assert cat.stranded_artifacts() == 0
+    assert _articles(root) == {("old", None), ("new", "old")}
+    assert _aliases(root) == {("10.1/ab", "old")}
+    assert "1 articles merged" in caplog.text
+
+
+def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
+    """The production case: 10.1093/CERCOR/11.9.888 on PMID 11552704 and
+    10.1093/cercor/11.9.888 on PMID 11532893; one of them has the wrong DOI."""
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "pmid", "11552704"),
+        ("a1", "2026-01-01", "doi", "10.1093/CERCOR/11.9.888"),
+        ("a2", "2026-01-01", "pmid", "11532893"),
+        ("a2", "2026-01-01", "doi", "10.1093/cercor/11.9.888"),
+    )
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _articles(root) == {("a1", None), ("a2", None)}
+    assert _aliases(root) == {("10.1093/CERCOR/11.9.888", "a1"), ("10.1093/cercor/11.9.888", "a2")}
+    assert "another paper" in caplog.text and "1 left" in caplog.text
+
+
+def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "doi", UPPER), ("a1", "2026-01-01", "doi", UPPER.lower()),
+        ("a2", "2026-01-01", "pmid", "1"), ("a2", "2026-01-01", "doi", "10.1/X"),
+        ("a3", "2026-01-01", "pmid", "2"), ("a3", "2026-01-01", "doi", "10.1/x"),
+        ("a4", "2026-01-01", "doi", "10.1/Y"), ("a5", "2026-01-02", "doi", "10.1/y"),
+    )
+    first = (_articles(root), _aliases(root))
+    assert first[1] == {
+        (UPPER.lower(), "a1"), ("10.1/X", "a2"), ("10.1/x", "a3"), ("10.1/y", "a4")}
+    with Catalog.open(root) as cat:
+        with cat._write() as conn:
+            again = cat._canonical_doi_aliases(conn)
+    assert again == {"rewritten": 0, "dropped": 0, "merged": 0, "left": 1}
+    assert (_articles(root), _aliases(root)) == first
+
+
+def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog):
+    """The second spelling still names the article the first one merged away."""
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("old", "2026-01-01", "doi", "10.1/ab"),
+        ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "doi", "10.1/Ab"),
+    )
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _aliases(root) == {("10.1/ab", "old")}
+    assert "2 other spellings dropped, 1 articles merged" in caplog.text
+
+
+def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _aliases(root) == {(UPPER.lower(), "a1")}
+    copy = root / "catalog.pre-v2.sqlite"
+    assert str(copy) in caplog.text
+    with sqlite3.connect(f"file:{copy}?mode=ro", uri=True) as conn:
+        assert conn.execute("SELECT value FROM aliases").fetchall() == [(UPPER,)]
+        version = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        assert version == ("2",)
+
+
+def _version_and_dois(root):
+    with sqlite3.connect(f"file:{root / 'catalog.sqlite'}?mode=ro", uri=True) as conn:
+        version = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]
+        return version, {r for r in conn.execute("SELECT value, article_id FROM aliases")}
+
+
+def test_without_a_backup_nothing_is_migrated(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    (root / "catalog.pre-v2.sqlite").write_text("an earlier copy")
+    with pytest.raises(FileExistsError, match="pre-v2"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
+
+
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "doi", "10.1/AA"),          # rewritten before the failure
+        ("a2", "2026-01-01", "doi", "10.1/BB"), ("a3", "2026-01-02", "doi", "10.1/bb"),
+    )
+    before = _version_and_dois(root)
+
+    def crash(*args):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Catalog, "_merge", crash)
+    with pytest.raises(OSError, match="disk full"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == before
+
+
+def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_path, monkeypatch):
+    """A second process must not back up or migrate again, nor fail on the first's copy."""
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    rewrite = Catalog._canonical_doi_aliases
+    migrating = threading.Event()
+
+    def slow(self, conn):
+        migrating.set()
+        time.sleep(0.5)
+        return rewrite(self, conn)
+
+    monkeypatch.setattr(Catalog, "_canonical_doi_aliases", slow)
+    errors = []
+
+    def open_it():
+        try:
+            Catalog.open(root).close()
+        except BaseException as exc:  # noqa: BLE001 - reported below
+            errors.append(exc)
+
+    first = threading.Thread(target=open_it)
+    first.start()
+    assert migrating.wait(5)
+    second = threading.Thread(target=open_it)
+    second.start()
+    first.join()
+    second.join()
+    assert errors == []
+    assert _version_and_dois(root) == ("3", {(UPPER.lower(), "a1")})
+    assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
+
+
+def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
+    """A failure writing the version undoes the rewrite too."""
+    from ingestion_workflow.catalog import store
+
+    class Unwritable(int):
+        def __str__(self):
+            raise OSError("disk full")
+
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    monkeypatch.setattr(store, "SCHEMA_VERSION", Unwritable(3))
+    with pytest.raises(OSError, match="disk full"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
+
+
+def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
+    """Older code would write its own version back and register the upper-case
+    spelling as a second article."""
+    from ingestion_workflow.catalog import store
+
+    root = tmp_path / "cat"
+    Catalog.open(root).close()
+    monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
+    with pytest.raises(RuntimeError, match="schema version 3; this code reads version 2"):
+        Catalog.open(root)
+    assert _version_and_dois(root)[0] == "3"
+
+
+def test_an_article_holding_two_pmids_presents_the_lower(catalog):
+    """Two PubMed records of one paper, merged on purpose; every stage asks PubMed
+    for the same one, whatever order the rows are read in."""
+    ref = catalog.register(Identifier(pmid="22387514"))
+    catalog._conn.execute(
+        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '12671262', ?)", (ref.id,))
+    catalog._conn.execute(
+        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '9999999999', ?)", (ref.id,))
+    for presented in (catalog.identifier(ref.id), catalog.identifiers([ref.id])[ref.id]):
+        assert presented.pmid == "12671262"
+        assert presented.other_ids == {DUPLICATE_PUBMED_RECORDS: "22387514,9999999999"}
+        assert presented.pmids == ["12671262", "22387514", "9999999999"]
+    assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).other_ids is None
+
