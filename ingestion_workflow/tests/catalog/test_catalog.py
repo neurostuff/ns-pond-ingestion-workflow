@@ -690,3 +690,16 @@ def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError, match="schema version 3; this code reads version 2"):
         Catalog.open(root)
     assert _version_and_dois(root)[0] == "3"
+
+
+def test_an_article_holding_two_pmids_presents_the_lower(catalog):
+    """Two PubMed records of one paper, merged on purpose; every stage asks PubMed
+    for the same one, whatever order the rows are read in."""
+    ref = catalog.register(Identifier(pmid="22387514"))
+    catalog._conn.execute(
+        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '12671262', ?)", (ref.id,))
+    catalog._conn.execute(
+        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '9999999999', ?)", (ref.id,))
+    assert catalog.identifier(ref.id).pmid == "12671262"
+    assert catalog.identifiers([ref.id])[ref.id].pmid == "12671262"
+

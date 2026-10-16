@@ -61,6 +61,20 @@ def _article_id(seed: str) -> str:
     return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 
 
+def _present(fields: Dict[str, str], kind: str, value: str) -> None:
+    """Add one alias to the ids an article presents, one per kind.
+
+    An article holds two PMIDs when two PubMed records of one paper were merged
+    on purpose, or from before the registration guard; it presents the lowest,
+    PubMed's earlier record, so every stage asks PubMed the same one. For other
+    kinds the last row read wins.
+    """
+    held = fields.get(kind)
+    if kind == "pmid" and held and (len(held), held) < (len(value), value):
+        return
+    fields[kind] = value
+
+
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
     pairs = []
     for kind in ALIAS_KINDS:
@@ -463,7 +477,9 @@ class Catalog:
         rows = self._conn.execute(
             "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)
         ).fetchall()
-        fields = {row["kind"]: row["value"] for row in rows}
+        fields: Dict[str, str] = {}
+        for row in rows:
+            _present(fields, row["kind"], row["value"])
         return Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
 
     def identifiers(self, article_ids: Sequence[str]) -> Dict[str, Identifier]:
@@ -475,7 +491,7 @@ class Catalog:
                 f"SELECT article_id, kind, value FROM aliases WHERE article_id IN ({marks})",
                 tuple(chunk),
             ):
-                out[row["article_id"]][row["kind"]] = row["value"]
+                _present(out[row["article_id"]], row["kind"], row["value"])
         return {
             aid: Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
             for aid, fields in out.items()

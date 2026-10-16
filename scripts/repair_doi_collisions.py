@@ -11,9 +11,11 @@ decision the PubMed and Crossref evidence in it supports:
 
 * `drop`: the DOI is `other`'s; `article` holds it as a foreign second DOI, and
   loses it, in whatever spelling it holds it;
-* `merge`: the two articles are one paper; they are merged as the catalog
-  merges, and only if the merge would not leave one article with two PMIDs or
-  PMCIDs;
+* `merge-duplicate-pubmed-records`: PubMed indexes the one paper twice; the
+  two articles are merged as the catalog merges (the older survives, ties to
+  the lower id), and the survivor keeps both PMIDs. The catalog refuses that
+  merge anywhere else, because two PMIDs on one article are otherwise two
+  papers fused;
 * `keep`: two papers that share one DOI; nothing changes. After the version-3
   migration the DOI resolves to the article holding it in lower case, the
   other keeps its spelling (logged by the migration) and is found by its PMID.
@@ -89,15 +91,12 @@ def run(root: Path, *, apply: bool = False, table: Path = TABLE, out=sys.stdout)
                                 "DELETE FROM aliases "
                                 "WHERE kind='doi' AND value=? AND article_id=?",
                                 [(value, article) for value in held])
-                elif action == "merge":
+                elif action == "merge-duplicate-pubmed-records":
                     a, b = catalog._follow_merge(article), catalog._follow_merge(other)
                     if a == b:
                         kind, outcome = "done", "done"
-                    elif not catalog._compatible(conn, [a, b], {}):
-                        kind = "merge refused"
-                        outcome = "merge refused: the two hold different PMIDs or PMCIDs"
                     else:
-                        kind, outcome = "merged", f"merge {a} and {b}"
+                        kind, outcome = "merged", f"merge {a} and {b}, keeping both PMIDs"
                         if apply:
                             catalog._merge(conn, [a, b])
                 elif action == "keep":
