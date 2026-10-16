@@ -1,0 +1,432 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.3389%2Ffmed.2021.721551&mailto=test%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 1,
+        "db_response_time_ms": 9, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where DOI is 10.3389/fmed.2021.721551", "x_new_oql":
+        "get works where DOI is 10.3389/fmed.2021.721551", "oqo": {"get_rows": "works",
+        "filter_rows": [{"column_id": "doi", "value": "10.3389/fmed.2021.721551"}]},
+        "url": "/works?filter=doi:10.3389%2Ffmed.2021.721551&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3190278186",
+        "doi": "https://doi.org/10.3389/fmed.2021.721551", "mag": "3190278186", "pmid":
+        "https://pubmed.ncbi.nlm.nih.gov/34395486"}, "display_name": "Effect of Point
+        Spread Function Deconvolution in Reconstruction of Brain 18F-FDG PET Images
+        on the Diagnostic Thinking Efficacy in Alzheimer''s Disease", "authorships":
+        [{"author_position": "first", "author": {"id": "https://openalex.org/A5047148598",
+        "display_name": "Matthieu Doyen", "orcid": "https://orcid.org/0000-0003-4193-5331",
+        "observed_orcids": ["https://orcid.org/0000-0003-4193-5331"]}, "institutions":
+        [{"id": "https://openalex.org/I154526488", "display_name": "Inserm", "ror":
+        "https://ror.org/02vjkv261", "country_code": "FR", "type": "government", "lineage":
+        ["https://openalex.org/I154526488"]}, {"id": "https://openalex.org/I4210100260",
+        "display_name": "Centre Hospitalier R\u00e9gional et Universitaire de Nancy",
+        "ror": "https://ror.org/016ncsr12", "country_code": "FR", "type": "healthcare",
+        "lineage": ["https://openalex.org/I4210100260"]}, {"id": "https://openalex.org/I4210116041",
+        "display_name": "Imagerie Adaptative Diagnostique et Interventionnelle", "ror":
+        "https://ror.org/025mhc977", "country_code": "FR", "type": "facility", "lineage":
+        ["https://openalex.org/I1294671590", "https://openalex.org/I4210100260", "https://openalex.org/I4210110412",
+        "https://openalex.org/I4210116041", "https://openalex.org/I4210139971", "https://openalex.org/I90183372"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "Matthieu Doyen", "raw_affiliation_strings":
+        ["Universit\u00e9 de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging
+        Platform, Nancy, France", "IADI - Imagerie Adaptative Diagnostique et Interventionnelle
+        (Universit\u00e9 de Lorraine - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue
+        du Morvan, 54500 Vandoeuvre-les-Nancy - France)", "Nancyclotep- Experimental
+        Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Universit\u00e9
+        de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform, Nancy, France",
+        "institution_ids": ["https://openalex.org/I154526488", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "IADI - Imagerie
+        Adaptative Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine
+        - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "institution_ids": []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5072726690",
+        "display_name": "Elise Mairal", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I4210100260", "display_name": "Centre Hospitalier
+        R\u00e9gional et Universitaire de Nancy", "ror": "https://ror.org/016ncsr12",
+        "country_code": "FR", "type": "healthcare", "lineage": ["https://openalex.org/I4210100260"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "Elise Mairal", "raw_affiliation_strings":
+        ["Department of Nuclear Medicine, Universit\u00e9 de Lorraine, CHRU Nancy,
+        Nancy, France", "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue
+        du Morvan 54511 Vandoeuvre-l\u00e8s-Nancy - France)"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Department of Nuclear Medicine,
+        Universit\u00e9 de Lorraine, CHRU Nancy, Nancy, France", "institution_ids":
+        ["https://openalex.org/I4210100260", "https://openalex.org/I90183372"]}, {"raw_affiliation_string":
+        "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511
+        Vandoeuvre-l\u00e8s-Nancy - France)", "institution_ids": ["https://openalex.org/I4210100260"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5061193392",
+        "display_name": "Manon Bordonn\u00e9", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I4210100260", "display_name":
+        "Centre Hospitalier R\u00e9gional et Universitaire de Nancy", "ror": "https://ror.org/016ncsr12",
+        "country_code": "FR", "type": "healthcare", "lineage": ["https://openalex.org/I4210100260"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "Manon Bordonne", "raw_affiliation_strings":
+        ["Department of Nuclear Medicine, Universit\u00e9 de Lorraine, CHRU Nancy,
+        Nancy, France", "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue
+        du Morvan 54511 Vandoeuvre-l\u00e8s-Nancy - France)"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Department of Nuclear Medicine,
+        Universit\u00e9 de Lorraine, CHRU Nancy, Nancy, France", "institution_ids":
+        ["https://openalex.org/I4210100260", "https://openalex.org/I90183372"]}, {"raw_affiliation_string":
+        "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511
+        Vandoeuvre-l\u00e8s-Nancy - France)", "institution_ids": ["https://openalex.org/I4210100260"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5037191569",
+        "display_name": "Timoth\u00e9e Zaragori", "orcid": "https://orcid.org/0000-0002-2050-3591",
+        "observed_orcids": ["https://orcid.org/0000-0002-2050-3591"]}, "institutions":
+        [{"id": "https://openalex.org/I154526488", "display_name": "Inserm", "ror":
+        "https://ror.org/02vjkv261", "country_code": "FR", "type": "government", "lineage":
+        ["https://openalex.org/I154526488"]}, {"id": "https://openalex.org/I4210100260",
+        "display_name": "Centre Hospitalier R\u00e9gional et Universitaire de Nancy",
+        "ror": "https://ror.org/016ncsr12", "country_code": "FR", "type": "healthcare",
+        "lineage": ["https://openalex.org/I4210100260"]}, {"id": "https://openalex.org/I4210116041",
+        "display_name": "Imagerie Adaptative Diagnostique et Interventionnelle", "ror":
+        "https://ror.org/025mhc977", "country_code": "FR", "type": "facility", "lineage":
+        ["https://openalex.org/I1294671590", "https://openalex.org/I4210100260", "https://openalex.org/I4210110412",
+        "https://openalex.org/I4210116041", "https://openalex.org/I4210139971", "https://openalex.org/I90183372"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "Timoth\u00e9e Zaragori",
+        "raw_affiliation_strings": ["Universit\u00e9 de Lorraine, IADI, INSERM U1254
+        and Nancyclotep Imaging Platform, Nancy, France", "IADI - Imagerie Adaptative
+        Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine - CHU de Nancy,
+        4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy - France)",
+        "Nancyclotep- Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire
+        (M\u00e9decine Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les
+        Nancy - France)"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Universit\u00e9 de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform,
+        Nancy, France", "institution_ids": ["https://openalex.org/I154526488", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "IADI - Imagerie
+        Adaptative Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine
+        - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "institution_ids": []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5090518825",
+        "display_name": "V\u00e9ronique Roch", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I154526488", "display_name":
+        "Inserm", "ror": "https://ror.org/02vjkv261", "country_code": "FR", "type":
+        "government", "lineage": ["https://openalex.org/I154526488"]}, {"id": "https://openalex.org/I4210100260",
+        "display_name": "Centre Hospitalier R\u00e9gional et Universitaire de Nancy",
+        "ror": "https://ror.org/016ncsr12", "country_code": "FR", "type": "healthcare",
+        "lineage": ["https://openalex.org/I4210100260"]}, {"id": "https://openalex.org/I4210116041",
+        "display_name": "Imagerie Adaptative Diagnostique et Interventionnelle", "ror":
+        "https://ror.org/025mhc977", "country_code": "FR", "type": "facility", "lineage":
+        ["https://openalex.org/I1294671590", "https://openalex.org/I4210100260", "https://openalex.org/I4210110412",
+        "https://openalex.org/I4210116041", "https://openalex.org/I4210139971", "https://openalex.org/I90183372"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "V\u00e9ronique Roch",
+        "raw_affiliation_strings": ["Universit\u00e9 de Lorraine, IADI, INSERM U1254
+        and Nancyclotep Imaging Platform, Nancy, France", "IADI - Imagerie Adaptative
+        Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine - CHU de Nancy,
+        4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy - France)",
+        "Nancyclotep- Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire
+        (M\u00e9decine Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les
+        Nancy - France)"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Universit\u00e9 de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform,
+        Nancy, France", "institution_ids": ["https://openalex.org/I154526488", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "IADI - Imagerie
+        Adaptative Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine
+        - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "institution_ids": []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5037646908",
+        "display_name": "La\u00ebtitia Imbert", "orcid": "https://orcid.org/0000-0002-7837-1560",
+        "observed_orcids": ["https://orcid.org/0000-0002-7837-1560", "https://orcid.org/0000-0002-2078-6771"]},
+        "institutions": [{"id": "https://openalex.org/I154526488", "display_name":
+        "Inserm", "ror": "https://ror.org/02vjkv261", "country_code": "FR", "type":
+        "government", "lineage": ["https://openalex.org/I154526488"]}, {"id": "https://openalex.org/I4210100260",
+        "display_name": "Centre Hospitalier R\u00e9gional et Universitaire de Nancy",
+        "ror": "https://ror.org/016ncsr12", "country_code": "FR", "type": "healthcare",
+        "lineage": ["https://openalex.org/I4210100260"]}, {"id": "https://openalex.org/I4210116041",
+        "display_name": "Imagerie Adaptative Diagnostique et Interventionnelle", "ror":
+        "https://ror.org/025mhc977", "country_code": "FR", "type": "facility", "lineage":
+        ["https://openalex.org/I1294671590", "https://openalex.org/I4210100260", "https://openalex.org/I4210110412",
+        "https://openalex.org/I4210116041", "https://openalex.org/I4210139971", "https://openalex.org/I90183372"]},
+        {"id": "https://openalex.org/I90183372", "display_name": "Universit\u00e9
+        de Lorraine", "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type":
+        "education", "lineage": ["https://openalex.org/I90183372"]}], "countries":
+        ["FR"], "is_corresponding": false, "raw_author_name": "Laetitia Imbert", "raw_affiliation_strings":
+        ["Department of Nuclear Medicine, Universit\u00e9 de Lorraine, CHRU Nancy,
+        Nancy, France", "Universit\u00e9 de Lorraine, IADI, INSERM U1254 and Nancyclotep
+        Imaging Platform, Nancy, France", "IADI - Imagerie Adaptative Diagnostique
+        et Interventionnelle (Universit\u00e9 de Lorraine - CHU de Nancy, 4e \u00e9tage,
+        Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy - France)", "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511
+        Vandoeuvre-l\u00e8s-Nancy - France)"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Nuclear Medicine, Universit\u00e9
+        de Lorraine, CHRU Nancy, Nancy, France", "institution_ids": ["https://openalex.org/I4210100260",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Universit\u00e9
+        de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform, Nancy, France",
+        "institution_ids": ["https://openalex.org/I154526488", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "IADI - Imagerie
+        Adaptative Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine
+        - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "institution_ids": []}, {"raw_affiliation_string": "Service de M\u00e9decine
+        Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511 Vandoeuvre-l\u00e8s-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260"]}]}, {"author_position":
+        "last", "author": {"id": "https://openalex.org/A5089420219", "display_name":
+        "Antoine Verger", "orcid": "https://orcid.org/0000-0003-2194-0328", "observed_orcids":
+        ["https://orcid.org/0000-0003-2194-0328"]}, "institutions": [{"id": "https://openalex.org/I154526488",
+        "display_name": "Inserm", "ror": "https://ror.org/02vjkv261", "country_code":
+        "FR", "type": "government", "lineage": ["https://openalex.org/I154526488"]},
+        {"id": "https://openalex.org/I4210100260", "display_name": "Centre Hospitalier
+        R\u00e9gional et Universitaire de Nancy", "ror": "https://ror.org/016ncsr12",
+        "country_code": "FR", "type": "healthcare", "lineage": ["https://openalex.org/I4210100260"]},
+        {"id": "https://openalex.org/I4210116041", "display_name": "Imagerie Adaptative
+        Diagnostique et Interventionnelle", "ror": "https://ror.org/025mhc977", "country_code":
+        "FR", "type": "facility", "lineage": ["https://openalex.org/I1294671590",
+        "https://openalex.org/I4210100260", "https://openalex.org/I4210110412", "https://openalex.org/I4210116041",
+        "https://openalex.org/I4210139971", "https://openalex.org/I90183372"]}, {"id":
+        "https://openalex.org/I90183372", "display_name": "Universit\u00e9 de Lorraine",
+        "ror": "https://ror.org/04vfs2w97", "country_code": "FR", "type": "education",
+        "lineage": ["https://openalex.org/I90183372"]}], "countries": ["FR"], "is_corresponding":
+        true, "raw_author_name": "Antoine Verger", "raw_affiliation_strings": ["Department
+        of Nuclear Medicine, Universit\u00e9 de Lorraine, CHRU Nancy, Nancy, France",
+        "Universit\u00e9 de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform,
+        Nancy, France", "IADI - Imagerie Adaptative Diagnostique et Interventionnelle
+        (Universit\u00e9 de Lorraine - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue
+        du Morvan, 54500 Vandoeuvre-les-Nancy - France)", "Nancyclotep- Experimental
+        Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "Service de M\u00e9decine Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511
+        Vandoeuvre-l\u00e8s-Nancy - France)"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Nuclear Medicine, Universit\u00e9
+        de Lorraine, CHRU Nancy, Nancy, France", "institution_ids": ["https://openalex.org/I4210100260",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Universit\u00e9
+        de Lorraine, IADI, INSERM U1254 and Nancyclotep Imaging Platform, Nancy, France",
+        "institution_ids": ["https://openalex.org/I154526488", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "IADI - Imagerie
+        Adaptative Diagnostique et Interventionnelle (Universit\u00e9 de Lorraine
+        - CHU de Nancy, 4e \u00e9tage, Tour Drouet, rue du Morvan, 54500 Vandoeuvre-les-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260", "https://openalex.org/I4210116041",
+        "https://openalex.org/I90183372"]}, {"raw_affiliation_string": "Nancyclotep-
+        Experimental Imaging Platform = Plate-forme d''imagerie mol\u00e9culaire (M\u00e9decine
+        Nucl\u00e9aire 5 rue du Morvan \u2013 54500 Vandoeuvre les Nancy - France)",
+        "institution_ids": []}, {"raw_affiliation_string": "Service de M\u00e9decine
+        Nucl\u00e9aire [CHRU Nancy] (rue du Morvan 54511 Vandoeuvre-l\u00e8s-Nancy
+        - France)", "institution_ids": ["https://openalex.org/I4210100260"]}]}], "publication_year":
+        2021, "abstract_inverted_index": {"Purpose:": [0], "This": [1], "study": [2],
+        "aims": [3], "to": [4, 18, 29, 81, 159, 175, 203], "determine": [5], "the":
+        [6, 30, 92, 99, 103, 116, 119, 156, 160, 171, 176, 198, 204, 208], "effect":
+        [7, 52], "of": [8, 53, 69, 109, 122, 129, 135, 147, 200, 224, 237], "applying":
+        [9], "Point": [10], "Spread": [11], "Function": [12], "(PSF)": [13], "deconvolution,":
+        [14], "which": [15], "is": [16], "known": [17], "improve": [19], "contrast":
+        [20], "and": [21, 74, 101, 140, 181, 186, 226, 231], "spatial": [22], "resolution":
+        [23], "in": [24, 34, 155, 170, 214], "brain": [25, 43, 65], "18F-FDG": [26,
+        66, 250], "PET": [27, 67, 251], "images,": [28], "diagnostic": [31, 58, 215],
+        "thinking": [32, 241], "efficacy": [33, 242], "Alzheimer''s": [35], "disease":
+        [36], "(AD).": [37], "Methods:": [38], "We": [39], "compared": [40, 80, 158,
+        174], "Hoffman": [41], "3-D": [42], "phantom": [44, 163], "images": [45, 68,
+        252], "reconstructed": [46, 253], "with": [47, 89, 180, 230, 254], "or": [48,
+        255], "without": [49, 182, 232, 256], "PSF.": [50, 257], "The": [51], "PSF":
+        [54, 157, 162, 183, 233], "deconvolution": [55], "on": [56], "AD": [57, 70,
+        172, 219, 246], "clinical": [59], "performance": [60], "was": [61, 153], "determined":
+        [62], "from": [63], "digital": [64], "(n": [71, 76, 83], "=": [72, 77, 84],
+        "38)": [73], "healthy": [75, 201], "35)": [78], "subjects": [79, 202], "controls":
+        [82], "36).": [85], "Performances": [86], "were": [87, 168, 194, 220], "assessed":
+        [88], "SPM": [90, 110], "at": [91, 102], "group": [93, 173, 199], "level":
+        [94, 105], "(p": [95, 112], "<": [96, 113], "0.001": [97], "for": [98, 115,
+        178, 217, 228, 244, 249], "voxel)": [100, 117], "individual": [104, 209],
+        "by": [106, 118], "visual": [107], "interpretation": [108], "T-maps": [111],
+        "0.005": [114], "consensual": [120], "analysis": [121], "three": [123], "experienced":
+        [124], "raters.": [125], "Results:": [126], "A": [127], "mix": [128], "large":
+        [130], "hypometabolic": [131, 166, 192], "(1,483cm3,": [132], "mean": [133,
+        145], "value": [134, 146], "\u2212867": [136], "\u00b1": [137, 149], "492":
+        [138], "Bq/ml)": [139, 151], "intense": [141], "hypermetabolic": [142], "(902":
+        [143], "cm3,": [144], "1,623": [148], "1,242": [150], "areas": [152, 167,
+        193], "observed": [154, 169, 195, 221], "no": [161, 190, 211], "images.":
+        [164], "Significant": [165], "controls,": [177], "reconstructions": [179,
+        229], "(respectively": [184], "23.7": [185], "26.2": [187], "cm3),": [188],
+        "whereas": [189], "significant": [191, 212], "when": [196], "comparing": [197],
+        "control": [205], "group.": [206], "At": [207], "level,": [210], "differences":
+        [213], "performances": [216, 243], "discriminating": [218], "visually": [222],
+        "(sensitivity": [223], "89": [225], "92%": [227], "respectively,": [234],
+        "similar": [235, 248], "specificity": [236], "74%).": [238], "Conclusion:":
+        [239], "Diagnostic": [240], "diagnosing": [245], "are": [247]}, "primary_location":
+        {"id": "doi:10.3389/fmed.2021.721551", "doi": "https://doi.org/10.3389/fmed.2021.721551",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.3389/fmed.2021.721551",
+        "pdf_url": "https://www.frontiersin.org/articles/10.3389/fmed.2021.721551/pdf",
+        "source": {"id": "https://openalex.org/S2597052008", "display_name": "Frontiers
+        in Medicine", "issn_l": "2296-858X", "issn": ["2296-858X"], "is_oa": true,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "norway-1",
+        "poland-70", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320527",
+        "host_organization_name": "Frontiers Media", "host_organization_lineage":
+        ["https://openalex.org/P4310320527"], "host_organization_lineage_names": ["Frontiers
+        Media"], "type": "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Frontiers in Medicine", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "doi:10.3389/fmed.2021.721551", "doi": "https://doi.org/10.3389/fmed.2021.721551",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.3389/fmed.2021.721551",
+        "pdf_url": "https://www.frontiersin.org/articles/10.3389/fmed.2021.721551/pdf",
+        "source": {"id": "https://openalex.org/S2597052008", "display_name": "Frontiers
+        in Medicine", "issn_l": "2296-858X", "issn": ["2296-858X"], "is_oa": true,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "norway-1",
+        "poland-70", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320527",
+        "host_organization_name": "Frontiers Media", "host_organization_lineage":
+        ["https://openalex.org/P4310320527"], "host_organization_lineage_names": ["Frontiers
+        Media"], "type": "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Frontiers in Medicine", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.3389/fmed.2021.721551", "doi": "https://doi.org/10.3389/fmed.2021.721551",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.3389/fmed.2021.721551",
+        "pdf_url": "https://www.frontiersin.org/articles/10.3389/fmed.2021.721551/pdf",
+        "source": {"id": "https://openalex.org/S2597052008", "display_name": "Frontiers
+        in Medicine", "issn_l": "2296-858X", "issn": ["2296-858X"], "is_oa": true,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "norway-1",
+        "poland-70", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320527",
+        "host_organization_name": "Frontiers Media", "host_organization_lineage":
+        ["https://openalex.org/P4310320527"], "host_organization_lineage_names": ["Frontiers
+        Media"], "type": "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Frontiers in Medicine", "raw_type": "journal-article"},
+        {"id": "pmid:34395486", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/34395486",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Frontiers in
+        medicine", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:8358179",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/8358179",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Front Med (Lausanne)", "raw_type": "Text"}, {"id": "pmh:oai:HAL:hal-03331288v1",
+        "doi": null, "is_oa": true, "landing_page_url": "https://hal.univ-lorraine.fr/hal-03331288",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306402512", "display_name":
+        "HAL (Le Centre pour la Communication Scientifique Directe)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I1294671590", "host_organization_name":
+        "Centre National de la Recherche Scientifique", "host_organization_lineage":
+        ["https://openalex.org/I1294671590"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Frontiers in Medicine, 2021, 8, pp.721551. &#x27E8;10.3389/fmed.2021.721551&#x27E9;",
+        "raw_type": "info:eu-repo/semantics/article"}, {"id": "pmh:oai:doaj.org/article:37344ee86f994bc2837f1d189b6155c7",
+        "doi": null, "is_oa": true, "landing_page_url": "https://doaj.org/article/37344ee86f994bc2837f1d189b6155c7",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401280", "display_name":
+        "DOAJ (DOAJ: Directory of Open Access Journals)", "issn_l": null, "issn":
+        null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": null, "host_organization_name": null, "host_organization_lineage":
+        [], "host_organization_lineage_names": [], "type": "repository"}, "license":
+        "cc-by-sa", "license_id": "https://openalex.org/licenses/cc-by-sa", "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "Frontiers in Medicine, Vol 8 (2021)", "raw_type": "article"}, {"id": "pmh:oai:frl.publisso.de:frl:6478549",
+        "doi": null, "is_oa": true, "landing_page_url": "https://repository.publisso.de/resource/frl:6478549",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4377196269", "display_name":
+        "PUBLISSO (German National Library of Medicine)", "issn_l": null, "issn":
+        null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I4210112663", "host_organization_name":
+        "ZB MED - Information Centre for Life Sciences", "host_organization_lineage":
+        ["https://openalex.org/I4210112663"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "http://lobid.org/resources/99370700165206441#!, 8:721551",
+        "raw_type": "Zeitschriftenartikel"}], "open_access": {"is_oa": true, "oa_status":
+        "gold", "oa_url": "https://www.frontiersin.org/articles/10.3389/fmed.2021.721551/pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4b83099d93a45e3-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:45:18 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '999'
+      X-RateLimit-Remaining-USD:
+      - '0.0999'
+      X-RateLimit-Reset:
+      - '29682'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=qRYzV7mF1sgqxcw4%2BeG7io4NKCiNd6WBxLN9dF%2BCqbE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792165518"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=qRYzV7mF1sgqxcw4%2BeG7io4NKCiNd6WBxLN9dF%2BCqbE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792165518"
+    status:
+      code: 200
+      message: OK
+version: 1

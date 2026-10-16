@@ -13,6 +13,7 @@ metadata too, which is why `metadata` runs after `passages` -- and before
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Dict, Iterator, List, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -25,10 +26,10 @@ from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 1
+METADATA_VERSION = 2
 
 #: Kept in the catalog row for display and for the upload stage.
-SUMMARY_FIELDS = ("title", "journal", "publication_year", "license")
+SUMMARY_FIELDS = ("title", "journal", "publication_year")
 
 class MetadataStage:
     name = "metadata"
@@ -123,8 +124,23 @@ class MetadataStage:
         if not contents:
             return
 
+        from ingestion_workflow.services.text_refresh import _article_file
+
+        # The file each download kept, by the download's own record: a cache's layout
+        # varies (pubget's searches nest a level deeper than the metadata lookup guessed).
+        downloads = ctx.catalog.artifacts([work.article_id for work in by_slug.values()],
+                                          "download")
+        own_files: Dict[str, Path] = {}
+        for content in contents:
+            download = downloads.get(by_slug[content.slug].article_id, {}).get(
+                content.source.value)
+            found_file = _article_file(content.source.value,
+                                       (ctx.payload(download) or {}).get("files", []))
+            if found_file:
+                own_files[content.slug] = Path(found_file)
+
         try:
-            found = self.service.enrich_metadata(contents)
+            found = self.service.enrich_metadata(contents, own_files)
         except Exception as exc:
             logger.warning("metadata batch failed: %s", exc)
             for work in by_slug.values():
@@ -151,5 +167,7 @@ class MetadataStage:
                 payload=metadata.to_dict(),
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
-                } | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
+                } | {"license": metadata.license.code.value,
+                     "license_basis": metadata.license.basis.value,
+                     "authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
             )

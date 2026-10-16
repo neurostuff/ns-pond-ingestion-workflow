@@ -1,0 +1,226 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1093/scan/nsw123"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '36'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "e80de2e17d4a79d0d1955975ff1d17537210119d", "title": "Intranasal
+        oxytocin increases neural responses to social reward in post-traumatic stress
+        disorder", "venue": "Social Cognitive and Affective Neuroscience", "year":
+        2016, "isOpenAccess": true, "openAccessPdf": {"url": "https://doi.org/10.1093/scan/nsw123",
+        "status": "HYBRID", "license": "CCBYNC", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC5390752, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2016-10-25", "authors": [{"authorId": "4349481",
+        "name": "L. Nawijn"}, {"authorId": "88026243", "name": "M. van Zuiden"}, {"authorId":
+        "143993800", "name": "S. Koch"}, {"authorId": "6723470", "name": "J. Frijling"},
+        {"authorId": "2605579", "name": "D. Veltman"}, {"authorId": "6138013", "name":
+        "M. Olff"}], "abstract": "Abstract Therapeutic alliance and perceived social
+        support are important predictors of treatment response for post-traumatic
+        stress disorder (PTSD). Intranasal oxytocin administration may enhance treatment
+        response by increasing sensitivity for social reward and thereby therapeutic
+        alliance and perceived social support. As a first step to investigate this
+        therapeutical potential, we investigated whether intranasal oxytocin enhances
+        neural sensitivity to social reward in PTSD patients. Male and female police
+        officers with (n = 35) and without PTSD (n = 37) were included in a double-blind,
+        randomized, placebo-controlled cross-over fMRI study. After intranasal oxytocin
+        (40\u2009IU) and placebo administration, a social incentive delay task was
+        conducted to investigate neural responses during social reward and punishment
+        anticipation and feedback. Under placebo, PTSD patients showed reduced left
+        anterior insula (AI) responses to social rewards (i.e. happy faces) compared
+        with controls. Oxytocin administration increased left AI responses during
+        social reward in PTSD patients, such that PTSD patients no longer differed
+        from controls under placebo. Furthermore, in PTSD patients, oxytocin increased
+        responses to social reward in the right putamen. By normalizing abberant insula
+        responses and increasing putamen responses to social reward, oxytocin administration
+        may enhance sensitivity for social support and therapeutic alliance in PTSD
+        patients. Future studies are needed to investigate clinical effects of oxytocin."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2525'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:46:05 GMT
+      Via:
+      - 1.1 d45e064f8c3e1035d136019303749e0e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - yle-KUT9V95TIObTbFbsPXNIyXN4WZk9sDTzlVVmyL0JNgRBH2vxOg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FV_9qEXNvHcEH7Q=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2525'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 15:46:05 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - c02c773c-4c6d-450f-b44a-27f2be2024e1
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"ids": ["DOI:10.1093/scan/nsw123"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '36'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "e80de2e17d4a79d0d1955975ff1d17537210119d", "title": "Intranasal
+        oxytocin increases neural responses to social reward in post-traumatic stress
+        disorder", "venue": "Social Cognitive and Affective Neuroscience", "year":
+        2016, "isOpenAccess": true, "openAccessPdf": {"url": "https://doi.org/10.1093/scan/nsw123",
+        "status": "HYBRID", "license": "CCBYNC", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC5390752, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2016-10-25", "authors": [{"authorId": "4349481",
+        "name": "L. Nawijn"}, {"authorId": "88026243", "name": "M. van Zuiden"}, {"authorId":
+        "143993800", "name": "S. Koch"}, {"authorId": "6723470", "name": "J. Frijling"},
+        {"authorId": "2605579", "name": "D. Veltman"}, {"authorId": "6138013", "name":
+        "M. Olff"}], "abstract": "Abstract Therapeutic alliance and perceived social
+        support are important predictors of treatment response for post-traumatic
+        stress disorder (PTSD). Intranasal oxytocin administration may enhance treatment
+        response by increasing sensitivity for social reward and thereby therapeutic
+        alliance and perceived social support. As a first step to investigate this
+        therapeutical potential, we investigated whether intranasal oxytocin enhances
+        neural sensitivity to social reward in PTSD patients. Male and female police
+        officers with (n = 35) and without PTSD (n = 37) were included in a double-blind,
+        randomized, placebo-controlled cross-over fMRI study. After intranasal oxytocin
+        (40\u2009IU) and placebo administration, a social incentive delay task was
+        conducted to investigate neural responses during social reward and punishment
+        anticipation and feedback. Under placebo, PTSD patients showed reduced left
+        anterior insula (AI) responses to social rewards (i.e. happy faces) compared
+        with controls. Oxytocin administration increased left AI responses during
+        social reward in PTSD patients, such that PTSD patients no longer differed
+        from controls under placebo. Furthermore, in PTSD patients, oxytocin increased
+        responses to social reward in the right putamen. By normalizing abberant insula
+        responses and increasing putamen responses to social reward, oxytocin administration
+        may enhance sensitivity for social support and therapeutic alliance in PTSD
+        patients. Future studies are needed to investigate clinical effects of oxytocin."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2525'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:46:06 GMT
+      Via:
+      - 1.1 e9bcf307d6ed54e3e501e39bc538dcfc.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - I7wCON8-DRDTInla--cQA0KkS0t0YY0CZTy9GnB5VbF_TdalKZYLWg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FV_90F-QvHcEkIw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2525'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 15:46:06 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 3a0ba349-4fd5-4702-a1b2-9dc6e97bd31e
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:test@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1093%2Fscan%2Fnsw123&mailto=test%40example.com&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1093\/scan\/nsw123","license":[{"start":{"date-parts":[[2016,11,18]],"date-time":"2016-11-18T00:00:00Z","timestamp":1479427200000},"content-version":"vor","delay-in-days":24,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc\/4.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:46:06 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

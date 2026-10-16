@@ -1,0 +1,56 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:test@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1016%2Fj.seizure.2015.08.008%2Cdoi%3A10.1093%2Fscan%2Fnsw123%2Cdoi%3A10.3758%2Fs13415-016-0459-7%2Cdoi%3A10.1080%2F20445911.2021.1954013%2Cdoi%3A10.9999%2Fno-such-work&mailto=test%40example.com&rows=5&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":4,"items":[{"DOI":"10.1016\/j.seizure.2015.08.008","license":[{"start":{"date-parts":[[2015,11,1]],"date-time":"2015-11-01T00:00:00Z","timestamp":1446336000000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2015,11,1]],"date-time":"2015-11-01T00:00:00Z","timestamp":1446336000000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2016,11,1]],"date-time":"2016-11-01T00:00:00Z","timestamp":1477958400000},"content-version":"vor","delay-in-days":366,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"}]},{"DOI":"10.1093\/scan\/nsw123","license":[{"start":{"date-parts":[[2016,11,18]],"date-time":"2016-11-18T00:00:00Z","timestamp":1479427200000},"content-version":"vor","delay-in-days":24,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc\/4.0\/"}]},{"DOI":"10.3758\/s13415-016-0459-7","license":[{"start":{"date-parts":[[2016,10,8]],"date-time":"2016-10-08T00:00:00Z","timestamp":1475884800000},"content-version":"unspecified","delay-in-days":0,"URL":"http:\/\/www.springer.com\/tdm"}]},{"DOI":"10.1080\/20445911.2021.1954013"}],"items-per-page":5,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '509'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:45:18 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -10,7 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifiers
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.metadata import ArticleMetadata, Author, License, LicenseSource
 
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
@@ -338,6 +338,8 @@ class SemanticScholarClient:
 
             open_access_pdf = record.get("openAccessPdf") or {}
             pdf_url = open_access_pdf.get("url") if isinstance(open_access_pdf, dict) else None
+            stated = open_access_pdf.get("license") if isinstance(open_access_pdf, dict) else None
+            status = open_access_pdf.get("status") if isinstance(open_access_pdf, dict) else None
 
             # Build metadata
             metadata = ArticleMetadata(
@@ -348,6 +350,8 @@ class SemanticScholarClient:
                 publication_year=record.get("year"),
                 open_access=record.get("isOpenAccess"),
                 pdf_url=pdf_url,
+                oa_status=str(status).lower() if status else None,
+                license=License.stated(LicenseSource.SEMANTIC_SCHOLAR, stated),
                 source="semantic_scholar",
                 raw_metadata={"semantic_scholar": record},
             )

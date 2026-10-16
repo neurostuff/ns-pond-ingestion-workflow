@@ -12,7 +12,7 @@ import requests
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.metadata import ArticleMetadata, Author, License, LicenseSource
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
 
@@ -31,8 +31,21 @@ def _can_be_retried(exc: BaseException) -> bool:
 
 _METADATA_FIELDS = (
     "ids,display_name,authorships,publication_year,abstract_inverted_index,"
-    "primary_location,open_access"
+    "primary_location,best_oa_location,locations,open_access"
 )
+
+_VERSIONS = {"publishedVersion": "vor", "acceptedVersion": "am", "submittedVersion": "submitted"}
+
+
+def _license_from(work: Dict) -> Optional[License]:
+    """The licence of the work's primary location, else its best open one, else any."""
+    located = [work.get("primary_location"), work.get("best_oa_location"),
+               *(work.get("locations") or [])]
+    for location in located:
+        if isinstance(location, dict) and location.get("license"):
+            return License.stated(LicenseSource.OPENALEX, str(location["license"]),
+                                  version=_VERSIONS.get(location.get("version")))
+    return None
 
 
 def _identifier_from(ids: Optional[Dict]) -> Identifier:
@@ -56,6 +69,8 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         journal=source.get("display_name"),
         publication_year=work.get("publication_year"),
         open_access=(work.get("open_access") or {}).get("is_oa"),
+        oa_status=(work.get("open_access") or {}).get("oa_status"),
+        license=_license_from(work),
         source="openalex",
     )
 

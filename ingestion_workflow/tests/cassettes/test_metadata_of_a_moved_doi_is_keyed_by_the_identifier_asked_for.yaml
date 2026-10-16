@@ -11,11 +11,18 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1469-8749.2004.tb00996.x%7C10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1&mailto=test%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1469-8749.2004.tb00996.x%7C10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1&mailto=test%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
-      string: '{"meta": {"count": 2, "db_response_time_ms": 19, "page": 1, "per_page":
-        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    \"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\"\n    or
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 2,
+        "db_response_time_ms": 13, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where DOI is (\n    \"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\"\n    or
         10.1111/j.1469-8749.2004.tb00996.x\n  )", "x_new_oql": "get works where DOI
         is (\"10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1\" or 10.1111/j.1469-8749.2004.tb00996.x)",
         "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
@@ -98,10 +105,11 @@ interactions:
         of Psychiatry, School of Medicine, University of California at San Diego,
         La Jolla, California 92093", "institution_ids": ["https://openalex.org/I36258959"]}]},
         {"author_position": "middle", "author": {"id": "https://openalex.org/A5105179107",
-        "display_name": "Anthony J. Bell", "orcid": null, "observed_orcids": []},
-        "institutions": [{"id": "https://openalex.org/I1307098950", "display_name":
-        "Salk Institute for Biological Studies", "ror": "https://ror.org/03xez1567",
-        "country_code": "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
+        "display_name": "Anthony J. Bell", "orcid": "https://orcid.org/0009-0004-7124-7884",
+        "observed_orcids": ["https://orcid.org/0009-0004-7124-7884"]}, "institutions":
+        [{"id": "https://openalex.org/I1307098950", "display_name": "Salk Institute
+        for Biological Studies", "ror": "https://ror.org/03xez1567", "country_code":
+        "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1307098950"]},
         {"id": "https://openalex.org/I1344073410", "display_name": "Howard Hughes
         Medical Institute", "ror": "https://ror.org/006w34k90", "country_code": "US",
         "type": "facility", "lineage": ["https://openalex.org/I1344073410"]}], "countries":
@@ -204,7 +212,85 @@ interactions:
         ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
         "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
         "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
-        Mapping", "raw_type": "journal-article"}, "open_access": {"is_oa": true, "oa_status":
+        Mapping", "raw_type": "journal-article"}, "best_oa_location": {"id": "doi:10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/%28SICI%291097-0193%281998%296%3A3%3C160%3A%3AAID-HBM5%3E3.0.CO%3B2-1",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "locations": [{"id": "doi:10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.0.co;2-1",
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/%28SICI%291097-0193%281998%296%3A3%3C160%3A%3AAID-HBM5%3E3.0.CO%3B2-1",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, {"id": "doi:10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.3.co;2-r",
+        "doi": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.3.co;2-r",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1002/(sici)1097-0193(1998)6:3<160::aid-hbm5>3.3.co;2-r",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S121666818", "display_name":
+        "Human Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, {"id": "pmid:9673671", "doi": null,
+        "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/9673671",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human brain
+        mapping", "raw_type": "Clinical Trial"}, {"id": "pmh:oai:pubmedcentral.nih.gov:6873377",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6873377",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Hum Brain
+        Mapp", "raw_type": "Text"}, {"id": "pmh:oai:CiteSeerX.psu:10.1.1.33.9103",
+        "doi": null, "is_oa": false, "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.33.9103",
+        "pdf_url": null, "source": null, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "ftp://ftp.cnl.salk.edu/pub/jung/HBM.pdf", "raw_type": "text"}, {"id": "pmh:oai:CiteSeerX.psu:10.1.1.555.6369",
+        "doi": null, "is_oa": false, "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.555.6369",
+        "pdf_url": null, "source": null, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "http://www.na-mic.org/Wiki/images/1/1a/1998_McKeown_HBM_ICAfMRI.pdf", "raw_type":
+        "text"}, {"id": "pmh:oai:CiteSeerX.psu:10.1.1.555.7875", "doi": null, "is_oa":
+        false, "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.555.7875",
+        "pdf_url": null, "source": null, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "http://www.biac.duke.edu/education/courses/fall04/fmri/readings/week11/1998_HBM_McKeown.pdf",
+        "raw_type": "text"}, {"id": "pmh:ADA460194", "doi": null, "is_oa": false,
+        "landing_page_url": "http://oai.dtic.mil/oai/oai?&amp;verb=getRecord&amp;metadataPrefix=html&amp;identifier=ADA460194",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4406923043", "display_name":
+        "Defense Technical Information Center (DTIC)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        null, "host_organization_name": null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "DTIC", "raw_type": "Text"}], "open_access": {"is_oa": true, "oa_status":
         "bronze", "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/%28SICI%291097-0193%281998%296%3A3%3C160%3A%3AAID-HBM5%3E3.0.CO%3B2-1",
         "any_repository_has_fulltext": true}}, {"ids": {"openalex": "https://openalex.org/W2097872544",
         "doi": "https://doi.org/10.1017/s0012162204001306", "mag": "2097872544", "pmid":
@@ -335,16 +421,49 @@ interactions:
         "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
         null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
         "is_published": true, "raw_source_name": "Developmental Medicine &amp; Child
-        Neurology", "raw_type": "journal-article"}, "open_access": {"is_oa": false,
-        "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext": false}}],
-        "group_by": []}'
+        Neurology", "raw_type": "journal-article"}, "best_oa_location": null, "locations":
+        [{"id": "doi:10.1017/s0012162204001306", "doi": "https://doi.org/10.1017/s0012162204001306",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1017/s0012162204001306",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S158041768", "display_name":
+        "Developmental Medicine & Child Neurology", "issn_l": "0012-1622", "issn":
+        ["0012-1622", "1469-8749"], "is_oa": false, "is_in_doaj": false, "is_core":
+        true, "listed_in": ["cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-1",
+        "medline", "norway-1", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Developmental
+        Medicine &amp; Child Neurology", "raw_type": "journal-article"}, {"id": "doi:10.1111/j.1469-8749.2004.tb00996.x",
+        "doi": "https://doi.org/10.1111/j.1469-8749.2004.tb00996.x", "is_oa": false,
+        "landing_page_url": "https://doi.org/10.1111/j.1469-8749.2004.tb00996.x",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S158041768", "display_name":
+        "Developmental Medicine & Child Neurology", "issn_l": "0012-1622", "issn":
+        ["0012-1622", "1469-8749"], "is_oa": false, "is_in_doaj": false, "is_core":
+        true, "listed_in": ["cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-1",
+        "medline", "norway-1", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Developmental
+        Medicine &amp; Child Neurology", "raw_type": "journal-article"}, {"id": "pmid:15540637",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/15540637",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Developmental
+        medicine and child neurology", "raw_type": "Journal Article"}], "open_access":
+        {"is_oa": false, "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext":
+        false}}], "group_by": []}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4af87ac298069fb-DFW
+      - a4b843189c43eb33-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -352,7 +471,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 15 Oct 2026 14:31:53 GMT
+      - Fri, 16 Oct 2026 15:57:56 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -372,11 +491,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '986'
+      - '988'
       X-RateLimit-Remaining-USD:
-      - '0.0986'
+      - '0.0988'
       X-RateLimit-Reset:
-      - '34087'
+      - '28924'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -387,13 +506,13 @@ interactions:
         X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
         X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
         X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
-        Content-Disposition
+        Content-Disposition, X-OpenAlex-UI-Token
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792074713"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=aIZxh72TO8qhvB8nKXhJfsrPFbtLKfEFiTegnfhzdDo%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792166276"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792074713"
+      - heroku-nel="https://nel.heroku.com/reports?s=aIZxh72TO8qhvB8nKXhJfsrPFbtLKfEFiTegnfhzdDo%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792166276"
     status:
       code: 200
       message: OK
@@ -409,7 +528,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=test%40example.com&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=test%40example.com&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
       string: '{"ids":{"openalex":"https://openalex.org/W2097872544","doi":"https://doi.org/10.1017/s0012162204001306","mag":"2097872544","pmid":"https://pubmed.ncbi.nlm.nih.gov/15540637"},"display_name":"Voxel-based
@@ -455,7 +574,13 @@ interactions:
         of Psychiatry and Behavioral Sciences, Stanford University School of Medicine
         , Stanford, California, USA","institution_ids":["https://openalex.org/I4210137306","https://openalex.org/I97018004"]}]}],"publication_year":2004,"abstract_inverted_index":{"Efforts":[0],"to":[1,17,213],"examine":[2],"the":[3,101,117,121,137,147,156,176,179,186,202,222,228],"structural":[4,48],"neuroanatomy":[5],"of":[6,12,34,39,42,96,111,120,178,193,201,218,224,230],"autism":[7,59],"by":[8],"using":[9],"traditional":[10],"methods":[11],"imaging":[13],"analysis":[14],"have":[15],"led":[16],"variable":[18],"findings,":[19],"often":[20],"based":[21],"on":[22],"methodological":[23],"differences":[24,44,99],"in":[25,116,124,155,175,182,198,205,221,227],"image":[26],"acquisition":[27],"and":[28,77,106,152,163,209,233],"analysis.":[29],"A":[30],"voxel-based":[31],"computational":[32],"method":[33],"whole-brain":[35],"anatomy":[36],"allows":[37],"examination":[38],"small":[40],"patterns":[41],"tissue":[43],"between":[45,100],"groups.":[46,102],"High-resolution":[47],"magnetic":[49],"resonance":[50],"images":[51],"were":[52],"acquired":[53],"for":[54],"nine":[55],"males":[56,127],"with":[57,67,104,126,146,184,207],"high-functioning":[58],"(HFA;":[60],"mean":[61,71],"age":[62,72,83],"14y":[63],"[SD3y":[64],"4mo]),":[65],"11":[66],"Asperger":[68],"syndrome":[69],"(ASP;":[70],"13y":[73,84],"6mo":[74],"[SD2y":[75],"5mo]),":[76],"13":[78],"comparison":[79,125,131,183],"(COM)":[80],"participants":[81],"(mean":[82],"7mo":[85],"[SD":[86],"3y":[87],"1mo]).":[88],"Using":[89],"statistical":[90],"parametric":[91],"mapping,":[92],"we":[93],"examined":[94],"contrasts":[95,134],"gray":[97,113,142,172,195],"matter":[98,114,143,173,196],"Males":[103],"HFA":[105,151,189,208],"ASP":[107,148,153,168,210],"had":[108,140,170],"a":[109],"pattern":[110],"decreased":[112,194],"density":[115,144,174,197],"ventromedial":[118,199],"regions":[119],"temporal":[122,159,203],"cortex":[123,204],"from":[128],"an":[129,216],"age-matched":[130],"group.":[132,190],"Examining":[133],"revealed":[135],"that":[136],"COM":[138,187],"group":[139,154,169],"increased":[141],"compared":[145],"or":[149,188],"combined":[150],"right":[157],"inferior":[158],"gyrus,":[160],"entorhinal":[161],"cortex,":[162],"rostral":[164],"fusiform":[165],"gyrus.":[166],"The":[167,191],"less":[171],"body":[177],"cingulate":[180],"gyrus":[181],"either":[185],"findings":[192],"aspects":[200],"individuals":[206],"lends":[211],"support":[212],"theories":[214],"suggesting":[215],"involvement":[217],"these":[219],"areas":[220],"pathophysiology":[223],"autism,":[225],"particularly":[226],"integration":[229],"visual":[231],"stimuli":[232],"affective":[234],"information.":[235]},"primary_location":{"id":"doi:10.1017/s0012162204001306","doi":"https://doi.org/10.1017/s0012162204001306","is_oa":false,"landing_page_url":"https://doi.org/10.1017/s0012162204001306","pdf_url":null,"source":{"id":"https://openalex.org/S158041768","display_name":"Developmental
         Medicine & Child Neurology","issn_l":"0012-1622","issn":["0012-1622","1469-8749"],"is_oa":false,"is_in_doaj":false,"is_core":true,"listed_in":["cwts-core","dongbi-b","doyens","jufo-3","ki-jl-1","medline","norway-1","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Developmental
-        Medicine &amp; Child Neurology","raw_type":"journal-article"},"open_access":{"is_oa":false,"oa_status":"closed","oa_url":null,"any_repository_has_fulltext":false}}
+        Medicine &amp; Child Neurology","raw_type":"journal-article"},"best_oa_location":null,"locations":[{"id":"doi:10.1017/s0012162204001306","doi":"https://doi.org/10.1017/s0012162204001306","is_oa":false,"landing_page_url":"https://doi.org/10.1017/s0012162204001306","pdf_url":null,"source":{"id":"https://openalex.org/S158041768","display_name":"Developmental
+        Medicine & Child Neurology","issn_l":"0012-1622","issn":["0012-1622","1469-8749"],"is_oa":false,"is_in_doaj":false,"is_core":true,"listed_in":["cwts-core","dongbi-b","doyens","jufo-3","ki-jl-1","medline","norway-1","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Developmental
+        Medicine &amp; Child Neurology","raw_type":"journal-article"},{"id":"doi:10.1111/j.1469-8749.2004.tb00996.x","doi":"https://doi.org/10.1111/j.1469-8749.2004.tb00996.x","is_oa":false,"landing_page_url":"https://doi.org/10.1111/j.1469-8749.2004.tb00996.x","pdf_url":null,"source":{"id":"https://openalex.org/S158041768","display_name":"Developmental
+        Medicine & Child Neurology","issn_l":"0012-1622","issn":["0012-1622","1469-8749"],"is_oa":false,"is_in_doaj":false,"is_core":true,"listed_in":["cwts-core","dongbi-b","doyens","jufo-3","ki-jl-1","medline","norway-1","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Developmental
+        Medicine &amp; Child Neurology","raw_type":"journal-article"},{"id":"pmid:15540637","doi":null,"is_oa":false,"landing_page_url":"https://pubmed.ncbi.nlm.nih.gov/15540637","pdf_url":null,"source":{"id":"https://openalex.org/S4306525036","display_name":"PubMed","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I1299303238","host_organization_name":"National
+        Institutes of Health","host_organization_lineage":["https://openalex.org/I1299303238"],"host_organization_lineage_names":[],"type":"repository"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Developmental
+        medicine and child neurology","raw_type":"Journal Article"}],"open_access":{"is_oa":false,"oa_status":"closed","oa_url":null,"any_repository_has_fulltext":false}}
 
         '
     headers:
@@ -464,7 +589,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4af87ad9a5df086-DFW
+      - a4b8431abd973ad3-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -472,7 +597,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 15 Oct 2026 14:31:53 GMT
+      - Fri, 16 Oct 2026 15:57:56 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -492,11 +617,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '986'
+      - '988'
       X-RateLimit-Remaining-USD:
-      - '0.0986'
+      - '0.0988'
       X-RateLimit-Reset:
-      - '34087'
+      - '28924'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -507,13 +632,13 @@ interactions:
         X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
         X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
         X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
-        Content-Disposition
+        Content-Disposition, X-OpenAlex-UI-Token
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792074713"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=aIZxh72TO8qhvB8nKXhJfsrPFbtLKfEFiTegnfhzdDo%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792166276"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=Db5Q0bkHVbME%2FcrumhWCEfg9PsitywQ%2F4I9YiCd1EgE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792074713"
+      - heroku-nel="https://nel.heroku.com/reports?s=aIZxh72TO8qhvB8nKXhJfsrPFbtLKfEFiTegnfhzdDo%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792166276"
     status:
       code: 200
       message: OK

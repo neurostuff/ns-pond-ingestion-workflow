@@ -1,0 +1,93 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.3389/fmed.2021.721551"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '41'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "d6e5d51252c4d48e78c7c367403e388f5c2bd15d", "title": "Effect
+        of Point Spread Function Deconvolution in Reconstruction of Brain 18F-FDG
+        PET Images on the Diagnostic Thinking Efficacy in Alzheimer''s Disease", "venue":
+        "Frontiers in Medicine", "year": 2021, "isOpenAccess": true, "openAccessPdf":
+        {"url": "https://www.frontiersin.org/articles/10.3389/fmed.2021.721551/pdf",
+        "status": "GOLD", "license": "CCBY", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC8358179, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2021-07-29", "authors": [{"authorId": "11368556",
+        "name": "M. Doyen"}, {"authorId": "2029682239", "name": "E. Mairal"}, {"authorId":
+        "1420043951", "name": "Manon Bordonn\u00e9"}, {"authorId": "1396309372", "name":
+        "T. Zaragori"}, {"authorId": "6211557", "name": "V\u00e9ronique Roch"}, {"authorId":
+        "33774504", "name": "L. Imbert"}, {"authorId": "2275922", "name": "A. Verger"}],
+        "abstract": "Purpose: This study aims to determine the effect of applying
+        Point Spread Function (PSF) deconvolution, which is known to improve contrast
+        and spatial resolution in brain 18F-FDG PET images, to the diagnostic thinking
+        efficacy in Alzheimer''s disease (AD). Methods: We compared Hoffman 3-D brain
+        phantom images reconstructed with or without PSF. The effect of PSF deconvolution
+        on AD diagnostic clinical performance was determined from digital brain 18F-FDG
+        PET images of AD (n = 38) and healthy (n = 35) subjects compared to controls
+        (n = 36). Performances were assessed with SPM at the group level (p < 0.001
+        for the voxel) and at the individual level by visual interpretation of SPM
+        T-maps (p < 0.005 for the voxel) by the consensual analysis of three experienced
+        raters. Results: A mix of large hypometabolic (1,483cm3, mean value of \u2212867
+        \u00b1 492 Bq/ml) and intense hypermetabolic (902 cm3, mean value of 1,623
+        \u00b1 1,242 Bq/ml) areas was observed in the PSF compared to the no PSF phantom
+        images. Significant hypometabolic areas were observed in the AD group compared
+        to the controls, for reconstructions with and without PSF (respectively 23.7
+        and 26.2 cm3), whereas no significant hypometabolic areas were observed when
+        comparing the group of healthy subjects to the control group. At the individual
+        level, no significant differences in diagnostic performances for discriminating
+        AD were observed visually (sensitivity of 89 and 92% for reconstructions with
+        and without PSF respectively, similar specificity of 74%). Conclusion: Diagnostic
+        thinking efficacy performances for diagnosing AD are similar for 18F-FDG PET
+        images reconstructed with or without PSF."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2798'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 15:45:18 GMT
+      Via:
+      - 1.1 e9bcf307d6ed54e3e501e39bc538dcfc.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 0-Nrljt8iTK87VzGWfjplgy4-CCk_bce1jmLDJFOYfmqrSUIFJAxNw==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FV_2YFl3PHcEUZw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2798'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 15:45:18 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - f24a28d6-2b75-4675-ae4b-1b55c6729387
+    status:
+      code: 200
+      message: OK
+version: 1
