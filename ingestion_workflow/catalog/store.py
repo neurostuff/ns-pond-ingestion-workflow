@@ -725,14 +725,16 @@ class Catalog:
 
     def exclude(self, rows: Sequence[Tuple[str, str, str, str]]) -> int:
         """Record (article_id, table_id, reason, note) verdicts. Idempotent:
-        marking a table again replaces its reason and note."""
+        marking a table again replaces its reason and note. A retired article id is
+        recorded on the article it was merged into, so no row lands where a merge
+        has already passed."""
         now = utcnow()
         with self._write() as conn:
             conn.executemany(
                 "INSERT INTO exclusions(article_id, table_id, reason, note, created_at) "
                 "VALUES(?, ?, ?, ?, ?) ON CONFLICT(article_id, table_id) DO UPDATE SET "
                 "reason=excluded.reason, note=excluded.note",
-                [(a, str(t), r, n or "", now) for a, t, r, n in rows],
+                [(self._follow_merge(a), str(t), r, n or "", now) for a, t, r, n in rows],
             )
         return len(rows)
 

@@ -8,6 +8,7 @@ One-off tools that are not part of the `ingest` command.
 | `run_elsevier_tables.py` | fetch a few Elsevier articles and dump their tables, for debugging |
 | `symbols_as_digits_manifest.py` | list the articles whose stored PDF text the pdf extractor now repairs or sets aside, for `--refresh extract:pdf` |
 | `repair_doi_collisions.py` | settle the DOIs two catalog articles hold in different case, by `doi_collisions.tsv`; run once, before the schema version 3 migration |
+| `repair_exclusions.py` | move exclusions left on merged-away articles to their survivors; run once after the merge fix is deployed |
 
 Removed in the catalog refactor, because `ingest` now covers them:
 

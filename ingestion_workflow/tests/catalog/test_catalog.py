@@ -862,3 +862,14 @@ def test_both_sides_excluding_one_table_leave_one_verdict(catalog):
 
     assert list(catalog.exclusions()) == [merged.id]
     assert list(catalog.exclusions()[merged.id]) == ["t1"]
+
+
+def test_an_exclusion_on_a_retired_id_lands_on_the_survivor(catalog):
+    a = catalog.register(Identifier(doi="10.1/x3"))
+    b = catalog.register(Identifier(pmcid="PMC43"))
+    merged = catalog.register(Identifier(doi="10.1/x3", pmcid="PMC43"))
+    retired = b.id if merged.id == a.id else a.id
+
+    catalog.exclude([(retired, "t1", "a figure", "")])
+
+    assert list(catalog.exclusions()) == [merged.id]
