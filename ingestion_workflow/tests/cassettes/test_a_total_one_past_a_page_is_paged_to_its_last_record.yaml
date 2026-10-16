@@ -1,0 +1,325 @@
+interactions:
+- request:
+    body: '{"qs": "fMRI AND hyperacusis", "date": "2022", "display": {"offset": 0,
+      "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '84'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: '{"resultsFound":26,"results":[{"authors":[{"order":1,"name":"Richard
+        Salvi"},{"order":2,"name":"Guang-Di Chen"},{"order":3,"name":"Senthilvelan
+        Manohar"}],"doi":"10.1016/j.heares.2022.108648","loadDate":"2022-11-08T00:00:00.000Z","openAccess":false,"pages":{"first":"108648"},"pii":"S0378595522002167","publicationDate":"2022-12-31","sourceTitle":"Hearing
+        Research","title":"Hyperacusis: Loudness intolerance, fear, annoyance and
+        pain","uri":"https://www.sciencedirect.com/science/article/pii/S0378595522002167?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
+        426"},{"authors":[{"order":1,"name":"Jos J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00003-7","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"177","last":"200"},"pii":"B9780323919128000037","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 8: Loudness recruitment and hyperacusis:
+        the central-gain model","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000037?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Jos
+        J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00001-3","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"53","last":"72"},"pii":"B9780323919128000013","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 3: Physiological markers of tinnitus and
+        hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000013?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Jos
+        J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00005-0","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"125","last":"148"},"pii":"B9780323919128000050","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 6: Tinnitus and hyperacusis: The nonclassical
+        auditory system","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000050?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Jos
+        J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00008-6","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"25","last":"52"},"pii":"B9780323919128000086","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 2: Epidemiology, etiology, and genetics","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000086?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Jos
+        J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00011-6","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"201","last":"229"},"pii":"B9780323919128000116","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 9: Bottom-up tinnitus models","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000116?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Jos
+        J. Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00012-8","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"231","last":"260"},"pii":"B9780323919128000128","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 10: Top-down tinnitus models","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000128?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Faris
+        Almasabi"},{"order":2,"name":"Marcus L. F. Janssen"},{"order":9,"name":"Jasper
+        V. Smit"}],"doi":"10.1016/j.brainres.2022.147797","loadDate":"2022-01-17T00:00:00.000Z","openAccess":false,"pages":{"first":"147797"},"pii":"S000689932200021X","publicationDate":"2022-03-15","sourceTitle":"Brain
+        Research","title":"The role of the medial geniculate body of the thalamus
+        in the pathophysiology of tinnitus and implications for treatment","uri":"https://www.sciencedirect.com/science/article/pii/S000689932200021X?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
+        1779"},{"authors":[{"order":1,"name":"Xiaoyan Ma"},{"order":2,"name":"Ningxuan
+        Chen"},{"order":9,"name":"Shiming Yang"}],"doi":"10.1016/j.heliyon.2022.e10989","loadDate":"2022-10-08T00:00:00.000Z","openAccess":true,"pages":{"first":"e10989"},"pii":"S2405844022022770","publicationDate":"2022-10-31","sourceTitle":"Heliyon","title":"Surface-based
+        functional metrics and auditory cortex characteristics in chronic tinnitus","uri":"https://www.sciencedirect.com/science/article/pii/S2405844022022770?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
+        8, Issue 10"},{"doi":"10.1016/B978-0-323-91912-8.20001-7","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"303","last":"311"},"pii":"B9780323919128200017","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Index","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128200017?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
+    headers:
+      CF-RAY:
+      - a4b3a239aed1abd2-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:29:03 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - aa92ba90f7372b82
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - aa92ba90f7372b82
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19820'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "fMRI AND hyperacusis", "date": "2022", "display": {"offset": 0,
+      "show": 25}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '84'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":26,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Richard
+        Salvi\"},{\"order\":2,\"name\":\"Guang-Di Chen\"},{\"order\":3,\"name\":\"Senthilvelan
+        Manohar\"}],\"doi\":\"10.1016/j.heares.2022.108648\",\"loadDate\":\"2022-11-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"108648\"},\"pii\":\"S0378595522002167\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis: Loudness intolerance, fear, annoyance
+        and pain\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595522002167?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        426\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00003-7\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"177\",\"last\":\"200\"},\"pii\":\"B9780323919128000037\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 8: Loudness recruitment and hyperacusis:
+        the central-gain model\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000037?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00001-3\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"53\",\"last\":\"72\"},\"pii\":\"B9780323919128000013\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 3: Physiological markers of tinnitus
+        and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000013?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00005-0\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"125\",\"last\":\"148\"},\"pii\":\"B9780323919128000050\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 6: Tinnitus and hyperacusis: The nonclassical
+        auditory system\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000050?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00008-6\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"25\",\"last\":\"52\"},\"pii\":\"B9780323919128000086\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 2: Epidemiology, etiology, and genetics\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000086?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00011-6\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"201\",\"last\":\"229\"},\"pii\":\"B9780323919128000116\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 9: Bottom-up tinnitus models\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000116?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00012-8\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"231\",\"last\":\"260\"},\"pii\":\"B9780323919128000128\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 10: Top-down tinnitus models\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000128?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Faris
+        Almasabi\"},{\"order\":2,\"name\":\"Marcus L. F. Janssen\"},{\"order\":9,\"name\":\"Jasper
+        V. Smit\"}],\"doi\":\"10.1016/j.brainres.2022.147797\",\"loadDate\":\"2022-01-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"147797\"},\"pii\":\"S000689932200021X\",\"publicationDate\":\"2022-03-15\",\"sourceTitle\":\"Brain
+        Research\",\"title\":\"The role of the medial geniculate body of the thalamus
+        in the pathophysiology of tinnitus and implications for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S000689932200021X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        1779\"},{\"authors\":[{\"order\":1,\"name\":\"Xiaoyan Ma\"},{\"order\":2,\"name\":\"Ningxuan
+        Chen\"},{\"order\":9,\"name\":\"Shiming Yang\"}],\"doi\":\"10.1016/j.heliyon.2022.e10989\",\"loadDate\":\"2022-10-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"e10989\"},\"pii\":\"S2405844022022770\",\"publicationDate\":\"2022-10-31\",\"sourceTitle\":\"Heliyon\",\"title\":\"Surface-based
+        functional metrics and auditory cortex characteristics in chronic tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2405844022022770?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        8, Issue 10\"},{\"doi\":\"10.1016/B978-0-323-91912-8.20001-7\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"303\",\"last\":\"311\"},\"pii\":\"B9780323919128200017\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128200017?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jos
+        J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00006-2\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"101\",\"last\":\"124\"},\"pii\":\"B9780323919128000062\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 5: Evoked potentials and neuroimaging
+        in humans with tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000062?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Berthold
+        Langguth\"}],\"doi\":\"10.1016/B978-0-12-820472-6.00034-7\",\"loadDate\":\"2022-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"755\",\"last\":\"769\"},\"pii\":\"B9780128204726000347\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Comprehensive
+        Pharmacology\",\"title\":\"3.33: Tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128204726000347?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Daniel
+        B. Polley\"},{\"order\":2,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.neubiorev.2022.104652\",\"loadDate\":\"2022-04-03T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"104652\"},\"pii\":\"S0149763422001415\",\"publicationDate\":\"2022-06-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"The promise of low-tech intervention
+        in a high-tech era: Remodeling pathological brain circuits using behavioral
+        reverse engineering\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763422001415?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        137\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00013-X\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"261\",\"last\":\"281\"},\"pii\":\"B978032391912800013X\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 11: Behavioral and pharmaceutical therapy\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B978032391912800013X?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jeffrey
+        M. Witkin\"},{\"order\":2,\"name\":\"Arnold Lippa\"},{\"order\":5,\"name\":\"Rok
+        Cerne\"}],\"doi\":\"10.1016/j.bcp.2022.115067\",\"loadDate\":\"2022-04-30T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"115067\"},\"pii\":\"S0006295222001617\",\"publicationDate\":\"2022-07-31\",\"sourceTitle\":\"Biochemical
+        Pharmacology\",\"title\":\"Can GABAkines quiet the noise? The GABA<ce:inf\_loc=post>A</ce:inf>
+        receptor neurobiology and pharmacology of tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006295222001617?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        201\"},{\"doi\":\"10.1016/B978-0-323-91912-8.00010-4\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"xv\",\"last\":\"xix\"},\"pii\":\"B9780323919128000104\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Abbreviations in the main text\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000104?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Nicoly
+        Machado Maciel\"},{\"order\":2,\"name\":\"Gabriela Ferreira Carvalho\"},{\"order\":6,\"name\":\"D\xE9bora
+        Bevilaqua Grossi\"}],\"doi\":\"10.1016/j.gaitpost.2021.04.003\",\"loadDate\":\"2021-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"480\",\"last\":\"486\"},\"pii\":\"S0966636221001259\",\"publicationDate\":\"2022-02-28\",\"sourceTitle\":\"Gait
+        & Posture\",\"title\":\"Gait control of migraine patients with increasing
+        light and sound levels\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0966636221001259?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        92\"},{\"authors\":[{\"order\":1,\"name\":\"Bas MJ Olthof\"},{\"order\":2,\"name\":\"Dominika
+        Lyzwa\"},{\"order\":4,\"name\":\"Adrian Rees\"}],\"doi\":\"10.1016/j.heares.2022.108585\",\"loadDate\":\"2022-07-22T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"108585\"},\"pii\":\"S037859552200154X\",\"publicationDate\":\"2022-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Nitric oxide signalling underlies salicylate-induced
+        increases in neuronal firing in the inferior colliculus: A central mechanism
+        of tinnitus?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859552200154X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        424\"},{\"authors\":[{\"order\":1,\"name\":\"Maryam Sadeghijam\"},{\"order\":2,\"name\":\"Abdollah
+        Moossavi\"},{\"order\":5,\"name\":\"Hamid Haghani\"}],\"doi\":\"10.1016/j.jocn.2021.11.014\",\"loadDate\":\"2022-01-13T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"49\",\"last\":\"55\"},\"pii\":\"S0967586821005622\",\"publicationDate\":\"2022-03-31\",\"sourceTitle\":\"Journal
+        of Clinical Neuroscience\",\"title\":\"Effect of tinnitus distress on auditory
+        steady-state response amplitudes in chronic tinnitus sufferers\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0967586821005622?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        97\"},{\"authors\":[{\"order\":1,\"name\":\"Patricia Simonetti\"},{\"order\":2,\"name\":\"Carla
+        Rachel Ono\"},{\"order\":7,\"name\":\"Jeanne Oiticica\"}],\"doi\":\"10.1016/j.brainres.2021.147728\",\"loadDate\":\"2021-11-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"147728\"},\"pii\":\"S0006899321005850\",\"publicationDate\":\"2022-01-15\",\"sourceTitle\":\"Brain
+        Research\",\"title\":\"Evaluating the efficacy of hearing aids for tinnitus
+        therapy \u2013 A Positron emission tomography study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006899321005850?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        1775\"},{\"authors\":[{\"order\":1,\"name\":\"Liping Lan\"},{\"order\":2,\"name\":\"Yu-Chen
+        Chen\"},{\"order\":8,\"name\":\"Yuexin Cai\"}],\"doi\":\"10.1016/j.pnpbp.2021.110459\",\"loadDate\":\"2021-10-16T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"110459\"},\"pii\":\"S0278584621002189\",\"publicationDate\":\"2022-03-08\",\"sourceTitle\":\"Progress
+        in Neuro-Psychopharmacology and Biological Psychiatry\",\"title\":\"Topological
+        features of limbic dysfunction in chronicity of tinnitus with intact hearing:
+        New hypothesis for \u2018noise-cancellation\u2019 mechanism\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0278584621002189?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        113\"},{\"authors\":[{\"order\":1,\"name\":\"Liping Lan\"},{\"order\":2,\"name\":\"Yin
+        Liu\"},{\"order\":10,\"name\":\"Yuexin Cai\"}],\"doi\":\"10.1016/j.ebiom.2022.103862\",\"loadDate\":\"2022-01-30T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"103862\"},\"pii\":\"S2352396422000469\",\"publicationDate\":\"2022-02-28\",\"sourceTitle\":\"eBioMedicine\",\"title\":\"Specific
+        brain network predictors of interventions with different mechanisms for tinnitus
+        patients\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2352396422000469?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        76\"},{\"authors\":[{\"order\":1,\"name\":\"Christopher M. Davenport\"},{\"order\":2,\"name\":\"Brett
+        J. W. Teubner\"},{\"order\":13,\"name\":\"Stanislav S. Zakharenko\"}],\"doi\":\"10.1016/j.cell.2022.08.022\",\"loadDate\":\"2022-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"3877\",\"last\":\"3895.e21\"},\"pii\":\"S0092867422011175\",\"publicationDate\":\"2022-10-13\",\"sourceTitle\":\"Cell\",\"title\":\"Innate
+        frequency-discrimination hyperacuity in Williams-Beuren syndrome mice\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0092867422011175?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        185, Issue 21\"},{\"authors\":[{\"order\":1,\"name\":\"Alexander J. Billig\"},{\"order\":2,\"name\":\"Meher
+        Lad\"},{\"order\":4,\"name\":\"Timothy D. Griffiths\"}],\"doi\":\"10.1016/j.pneurobio.2022.102326\",\"loadDate\":\"2022-07-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"102326\"},\"pii\":\"S0301008222001125\",\"publicationDate\":\"2022-11-30\",\"sourceTitle\":\"Progress
+        in Neurobiology\",\"title\":\"The hearing hippocampus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0301008222001125?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        218\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00014-1\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"283\",\"last\":\"301\"},\"pii\":\"B9780323919128000141\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 12: Neurofeedback and neuromodulation:
+        hearing aids, cochlear implants, and transcranial stimulation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000141?dgcid=api_sd_search-api-endpoint\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a23fedd54865-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:29:04 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 1aa003b8d3a1a709
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 1aa003b8d3a1a709
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19819'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "fMRI AND hyperacusis", "date": "2022", "display": {"offset": 25,
+      "show": 25}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '85'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: '{"resultsFound":26,"results":[{"authors":[{"order":1,"name":"Jos J.
+        Eggermont"}],"doi":"10.1016/B978-0-323-91912-8.00007-4","loadDate":"2022-03-18T00:00:00.000Z","openAccess":false,"pages":{"first":"149","last":"175"},"pii":"B9780323919128000074","publicationDate":"2022-12-31","sourceTitle":"Tinnitus
+        and Hyperacusis","title":"Chapter 7: Tinnitus and the nonauditory brain","uri":"https://www.sciencedirect.com/science/article/pii/B9780323919128000074?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
+    headers:
+      CF-RAY:
+      - a4b3a2461a13bb67-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:29:05 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - d9d3140a8d96ecbd
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - d9d3140a8d96ecbd
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19818'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

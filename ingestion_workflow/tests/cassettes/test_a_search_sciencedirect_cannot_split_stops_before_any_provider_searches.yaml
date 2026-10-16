@@ -1,0 +1,117 @@
+interactions:
+- request:
+    body: '{"qs": "fMRI AND brain AND cortex AND memory AND patients AND human AND
+      data AND analysis AND model", "date": "2026", "display": {"offset": 0, "show":
+      10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '155'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":1256,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Seong
+        Ho Yun\"},{\"order\":2,\"name\":\"In Hee Cho\"}],\"doi\":\"10.1016/j.brainresbull.2026.112159\",\"loadDate\":\"2026-10-06T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"112159\"},\"pii\":\"S0361923026004466\",\"publicationDate\":\"2026-11-30\",\"sourceTitle\":\"Brain
+        Research Bulletin\",\"title\":\"Structural connectivity between the retrosplenial
+        cortex and hippocampus in the healthy human brain: A diffusion tensor tractography
+        study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0361923026004466?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        246\"},{\"authors\":[{\"order\":1,\"name\":\"Kai Gao\"},{\"order\":2,\"name\":\"Lubin
+        Wang\"},{\"order\":74,\"name\":\"Dewen Hu\"}],\"doi\":\"10.1016/j.media.2026.103949\",\"loadDate\":\"2026-01-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103949\"},\"pii\":\"S1361841526000186\",\"publicationDate\":\"2026-05-31\",\"sourceTitle\":\"Medical
+        Image Analysis\",\"title\":\"Transfer learning from 2D natural images to 4D
+        fMRI brain images via geometric mapping\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1361841526000186?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        110\"},{\"authors\":[{\"order\":1,\"name\":\"Nian Li\"},{\"order\":2,\"name\":\"Liqin
+        Zhang\"},{\"order\":6,\"name\":\"Zhiqiang Gao\"}],\"doi\":\"10.1016/j.neuroscience.2026.01.014\",\"loadDate\":\"2026-01-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"54\",\"last\":\"67\"},\"pii\":\"S0306452226000382\",\"publicationDate\":\"2026-03-05\",\"sourceTitle\":\"Neuroscience\",\"title\":\"Alterations
+        of brain activity in noise-exposed rats after transcutaneous auricular vagus
+        nerve stimulation evaluated via fMRI\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306452226000382?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        596\"},{\"authors\":[{\"order\":1,\"name\":\"Pengwei Yan\"},{\"order\":2,\"name\":\"Yizhi
+        Ge\"},{\"order\":7,\"name\":\"Yesong Guo\"}],\"doi\":\"10.1016/j.neuroscience.2026.04.015\",\"loadDate\":\"2026-04-20T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"46\",\"last\":\"57\"},\"pii\":\"S0306452226002757\",\"publicationDate\":\"2026-06-22\",\"sourceTitle\":\"Neuroscience\",\"title\":\"Relationships
+        between cognitive impairment and regional brain activity induced by central
+        neurotoxicity of FOLFOX and FOLFIRI in colorectal cancer patients: a resting-state
+        fMRI study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306452226002757?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        605\"},{\"authors\":[{\"order\":1,\"name\":\"Xintong Ran\"},{\"order\":2,\"name\":\"Minghui
+        Lv\"},{\"order\":7,\"name\":\"Aijie Wang\"}],\"doi\":\"10.1016/j.neuro.2026.103560\",\"loadDate\":\"2026-09-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103560\"},\"pii\":\"S0161813X26001816\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"NeuroToxicology\",\"title\":\"Abnormal
+        spontaneous brain activity in occupational chronic benzene poisoning: A resting-state
+        fMRI study with machine learning\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0161813X26001816?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        117\"},{\"authors\":[{\"order\":1,\"name\":\"Malsawmkima Kullai\"},{\"order\":2,\"name\":\"Sourav
+        Khanra\"},{\"order\":4,\"name\":\"Chandramouli Roy\"}],\"doi\":\"10.1016/j.pscychresns.2026.112139\",\"loadDate\":\"2026-01-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"112139\"},\"pii\":\"S0925492726000041\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Psychiatry
+        Research: Neuroimaging\",\"title\":\"Early effects of oral naltrexone on craving,
+        resting state and cue-induced brain activation in opioid use disorder: a prospective
+        fMRI study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0925492726000041?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        357\"},{\"authors\":[{\"order\":1,\"name\":\"Andrea Adriano\"},{\"order\":2,\"name\":\"Alice
+        Teghil\"},{\"order\":7,\"name\":\"Maddalena Boccia\"}],\"doi\":\"10.1016/j.neuroimage.2026.121857\",\"loadDate\":\"2026-03-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"121857\"},\"pii\":\"S1053811926001746\",\"publicationDate\":\"2026-05-01\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Echoes
+        of time: Organization of episodic autobiographical memories in the brain according
+        to their remoteness\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811926001746?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        331\"},{\"authors\":[{\"order\":1,\"name\":\"Janusiya A. Muthulingam\"},{\"order\":2,\"name\":\"Jens
+        B. Fr\xF8kj\xE6r\"},{\"order\":7,\"name\":\"Suganthiya S. Croosu\"}],\"doi\":\"10.1016/j.yfrne.2026.101249\",\"loadDate\":\"2026-03-30T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"101249\"},\"pii\":\"S0091302226000191\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Frontiers
+        in Neuroendocrinology\",\"title\":\"Functional brain connectivity in type
+        1 diabetes and associations to diabetes complications \u2013 a systematic
+        review of fMRI studies\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0091302226000191?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        81\"},{\"authors\":[{\"order\":1,\"name\":\"Kaizhou Li\"},{\"order\":2,\"name\":\"Peng
+        Ren\"},{\"order\":9,\"name\":\"Xia Liang\"}],\"doi\":\"10.1016/j.neuroimage.2026.122191\",\"loadDate\":\"2026-09-03T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122191\"},\"pii\":\"S1053811926005069\",\"publicationDate\":\"2026-10-15\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Hierarchical
+        gist representation of events in human brain during naturalistic stimuli\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811926005069?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        340\"},{\"authors\":[{\"order\":1,\"name\":\"Xi Wu\"},{\"order\":2,\"name\":\"Yajing
+        Zhu\"},{\"order\":19,\"name\":\"Bing Zhang\"}],\"doi\":\"10.1016/j.neuroimage.2026.122183\",\"loadDate\":\"2026-08-25T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122183\"},\"pii\":\"S1053811926004982\",\"publicationDate\":\"2026-10-01\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
+        olfactory adaptation of primary olfactory cortex-hippocampus-parietal lobe
+        in Alzheimer\u2019s disease continuum: An olfactory task fMRI study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811926004982?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        339\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a44138da6c7c-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:30:26 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - b4f17c4ba19c42b8
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - b4f17c4ba19c42b8
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19751'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

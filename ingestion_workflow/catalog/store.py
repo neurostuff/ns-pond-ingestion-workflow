@@ -489,6 +489,10 @@ class Catalog:
             article_id = row["merged_into"]
         return article_id
 
+    def current_id(self, article_id: str) -> str:
+        """The article `article_id` is now: itself, or the one it was merged into."""
+        return self._follow_merge(article_id)
+
     def ref(self, article_id: str) -> ArticleRef:
         return ArticleRef(id=article_id, identifier=self.identifier(article_id))
 

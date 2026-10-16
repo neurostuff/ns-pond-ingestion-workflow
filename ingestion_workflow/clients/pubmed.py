@@ -20,6 +20,7 @@ from ingestion_workflow.models.notices import Correction, PartialAnswer, correct
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
 PUBMED_KEYED_REQUEST_LIMIT = 10  # what NCBI allows a request carrying an API key
+PUBMED_LAST_YEAR = 9999  # the latest maxdate ESearch takes
 ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
 
@@ -58,9 +59,14 @@ class PubMedClient:
         self,
         query: str,
         *,
-        start_year: int = 1990,
+        start_year: int,
+        end_year: Optional[int] = None,
     ) -> Identifiers:
-        """Search PubMed and return identifiers for matching PMIDs."""
+        """Search PubMed and return identifiers for matching PMIDs.
+
+        A result set too large for one ESearch is collected year by year from
+        `start_year` to `end_year` (default: the latest year PubMed dates a hit).
+        """
 
         query = query.strip()
         if not query:
@@ -71,10 +77,11 @@ class PubMedClient:
             return Identifiers()
 
         if total_count >= ESEARCH_MAX_RESULTS:
+            if end_year is None:
+                end_year = self.latest_year(query)
             # Break large queries into smaller date windows to stay under ESearch limits.
             pmid_set: set[str] = set()
-            current_year = self._current_year()
-            for year in range(start_year, current_year + 1):
+            for year in range(start_year, end_year + 1):
                 year_count = self._esearch_count(query, mindate=year, maxdate=year)
                 if year_count == 0:
                     continue
@@ -120,6 +127,30 @@ class PubMedClient:
         identifiers = Identifiers([Identifier(pmid=pmid) for pmid in pmids])
         identifiers.set_index("pmid")
         return identifiers
+
+    def count(
+        self, query: str, *, mindate: Optional[int] = None, maxdate: Optional[int] = None
+    ) -> int:
+        """How many PubMed hits `query` has, optionally published in mindate-maxdate."""
+        return self._esearch_count(query, mindate=mindate, maxdate=maxdate)
+
+    def latest_year(self, query: str) -> int:
+        """The latest publication year of `query`'s hits, and at least this year.
+
+        A few records are dated years ahead (3 dated 2028 or later on 2026-10-15),
+        so the year is found by bisecting the years after this one.
+        """
+        latest = self._current_year()
+        if not self.count(query, mindate=latest + 1, maxdate=PUBMED_LAST_YEAR):
+            return latest
+        low, high = latest + 1, PUBMED_LAST_YEAR
+        while low < high:
+            middle = (low + high + 1) // 2
+            if self.count(query, mindate=middle, maxdate=PUBMED_LAST_YEAR):
+                low = middle
+            else:
+                high = middle - 1
+        return low
 
     def validate_ids(self, id_type: str, identifiers: Identifiers) -> None:
         """Ensure the identifiers support the requested lookup type."""

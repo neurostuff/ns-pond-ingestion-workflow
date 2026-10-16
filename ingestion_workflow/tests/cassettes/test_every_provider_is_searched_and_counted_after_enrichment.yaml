@@ -1,0 +1,1801 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+1990%3A3000%5Bdp%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAHSPMW/CMBCFd36FdXNo7GYiGxJLh1aoYksyGHMorowN53NVhPLfOQqVWCp58Hvv
+        e3f2BUa0OyRoL8DnI0ILmNGSG6GCb6TsUxRPvzQwVX8RYS6BbxWXSpQLGCM4IR/sz42+i8yW+CH9
+        LvgsohsqYLIxB8syOuPDOxWk81MgtR72759vPXQbzwHr5TZL7nhQy4+V6uHgczqOKXr7L/KVCkUb
+        lDzDu4DCrcs2ePe7QW3ku3fSLBa61kZO22ita/NaN6ZbWUY1V0+VAaZpdgUAAP//AwC++R1sMgEA
+        AA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 16 Oct 2026 03:21:58 GMT
+      ncbi-phid:
+      - 1D346F889B925C3500002A72598DB534.1.1.m_1
+      ncbi-sid:
+      - 27A1D529265BA09C_AF2ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '10'
+      x-ratelimit-remaining:
+      - '9'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "fMRI AND misophonia", "date": "1990-9999", "display": {"offset":
+      0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '88'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":73,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Shagun
+        Ajmera\"},{\"order\":2,\"name\":\"Rafay A. Khan\"},{\"order\":7,\"name\":\"Fatima
+        T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
+        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
+        for cortico-cortical paired associative stimulation (ccPAS) as a potential
+        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        206\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
+        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
+        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        183\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
+        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
+        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        510\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Soumita
+        Ramesh\"}],\"doi\":\"10.1016/j.mehy.2025.111765\",\"loadDate\":\"2025-09-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"111765\"},\"pii\":\"S030698772500204X\",\"publicationDate\":\"2025-11-30\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Is iron dysregulation in the mirror motor cortex
+        associated with misophonia?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S030698772500204X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        204\"},{\"authors\":[{\"order\":1,\"name\":\"Kamalakannan Karupaiah\"},{\"order\":2,\"name\":\"Rakesh
+        Trinesh\"},{\"order\":4,\"name\":\"Prashanth Prabhu\"}],\"doi\":\"10.1016/j.heares.2025.109458\",\"loadDate\":\"2025-10-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109458\"},\"pii\":\"S037859552500276X\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Multichannel auditory cortical responses in misophonia:
+        A neurophysiological investigation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859552500276X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"},{\"order\":2,\"name\":\"Romarua
+        Agbude\"},{\"order\":5,\"name\":\"Itamar Ronen\"}],\"doi\":\"10.1016/j.heares.2025.109440\",\"loadDate\":\"2025-10-06T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109440\"},\"pii\":\"S0378595525002588\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"The neurochemistry of decreased sound tolerance: A
+        magnetic resonance spectroscopy (MRS) study of misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002588?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
+        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        202\"},{\"authors\":[{\"order\":1,\"name\":\"Li Xie\"},{\"order\":2,\"name\":\"Rodrigo
+        Donoso-San Mart\xEDn\"},{\"order\":7,\"name\":\"Marlies Knipper\"}],\"doi\":\"10.1016/j.heares.2025.109305\",\"loadDate\":\"2025-05-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109305\"},\"pii\":\"S0378595525001236\",\"publicationDate\":\"2025-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Cochlear neural contributions to triple network changes
+        in tinnitus, hyperacusis & misophonia? A perspective review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525001236?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        463\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3efc3dfc62fc2-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 03:21:59 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 5596f961dbd811dc
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 5596f961dbd811dc
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19345'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+1990%3A3000%5Bdp%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAHSPMW/CMBCFd36FdXNo7GYiGxJLh1aoYksyGHMorowN53NVhPLfOQqVWCp58Hvv
+        e3f2BUa0OyRoL8DnI0ILmNGSG6GCb6TsUxRPvzQwVX8RYS6BbxWXSpQLGCM4IR/sz42+i8yW+CH9
+        LvgsohsqYLIxB8syOuPDOxWk81MgtR72759vPXQbzwHr5TZL7nhQy4+V6uHgczqOKXr7L/KVCkUb
+        lDzDu4DCrcs2ePe7QW3ku3fSLBa61kZO22ita/NaN6ZbWUY1V0+VAaZpdgUAAP//AwC++R1sMgEA
+        AA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 16 Oct 2026 03:21:59 GMT
+      ncbi-phid:
+      - 1D346F889B925C35000061725A8ED5E4.1.1.m_1
+      ncbi-sid:
+      - 27A1D529265BA09C_AF2ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '10'
+      x-ratelimit-remaining:
+      - '8'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=1000&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+1990%3A3000%5Bdp%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAHRQO2/CMBDe+yuim2nj8zlxzIbE0qFVVbEBgwmucGUSajtVEeK/9xJUiaWSh+91
+        L1/g4OzeRZhfIJ9PDubgkrOxPcAMvl1Mvu9YE08E19mfFV0aQh5L2n7oGAAix6PLR/tzx1K2cXQF
+        U78PPjFZg5KkFaFmUaFpkBo5QaUrkvUIRVMZpIoh1YKolvoGUaOeVIWa9UlVQqJQYwdCFGjEOFs2
+        tazJ3CDWsjEVbGeQo+1SsJlvSm7chbWvwcXzncHrbuDj5f15A+uVz8GVi11iv83bYvG6LDZw9Kk/
+        HfrO238jn/0QOxsKPt+3wXHubdgF304TihX/8y2JxohSIL85CSFKlCXhemmzKx6Lu5ItXK8PvwAA
+        AP//AwDRm+GGqwEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 16 Oct 2026 03:21:59 GMT
+      ncbi-phid:
+      - 1D3370643E30923500002779B7FAFDD1.1.1.m_1
+      ncbi-sid:
+      - 27A1D529265BA09C_AF2ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '10'
+      x-ratelimit-remaining:
+      - '7'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/search/bulk?fields=externalIds&query=fMRI+%2B+misophonia&year=1990-
+  response:
+    body:
+      string: '{"total": 15, "token": null, "data": [{"paperId": "0fb1d9783c6266f06e5cae655f42983cb3bb7ae8",
+        "externalIds": {"MAG": "3095625018", "DOI": "10.1101/2020.10.29.346650", "CorpusId":
+        226228619}}, {"paperId": "141271bafaeba45add3862e41be8742023c953d5", "externalIds":
+        {"DOI": "10.1121/10.0045101", "CorpusId": 291443729}}, {"paperId": "24d0037f251f5f9ddb915c1b60ea7a659c1908a3",
+        "externalIds": {"PubMedCentral": "9406292", "DOI": "10.3389/fnins.2022.827998",
+        "CorpusId": 251497757, "PubMed": "36033627"}}, {"paperId": "348891a1b7bb50760a133ecc1496fa80820d553f",
+        "externalIds": {"DOI": "10.64898/2026.08.30.748122", "CorpusId": 291827369}},
+        {"paperId": "3563e0652e180b21202731af8ddead65f732a471", "externalIds": {"PubMedCentral":
+        "12828915", "DOI": "10.1016/j.biopsych.2025.08.018", "CorpusId": 281222288,
+        "PubMed": "40930374"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "5874030f5bbc27e2412ed83f325c5caf2f0669e8",
+        "externalIds": {"MAG": "2791601637", "CorpusId": 149406919}}, {"paperId":
+        "682b2ae8194923cff5c5a02c43c5e27177916791", "externalIds": {"PubMedCentral":
+        "13584299", "DOI": "10.1186/s12888-026-08331-3", "CorpusId": 289688054, "PubMed":
+        "42374317"}}, {"paperId": "882851e631b55f3a7a5b6b1acc02ceaa4fb2eac3", "externalIds":
+        {"PubMedCentral": "12379371", "DOI": "10.1186/s12868-025-00975-3", "CorpusId":
+        280872007, "PubMed": "40859135"}}, {"paperId": "a86a73327b5e098a603b8570f6a5cae6d9627f4b",
+        "externalIds": {"PubMedCentral": "9397125", "DOI": "10.3389/fnins.2022.880759",
+        "CorpusId": 251448965, "PubMed": "36017175"}}, {"paperId": "c39c4694113c4f4fb199a241cf6d19fc474c4fc6",
+        "externalIds": {"PubMedCentral": "8244967", "DOI": "10.1523/JNEUROSCI.0261-21.2021",
+        "CorpusId": 235094517, "PubMed": "34021042"}}, {"paperId": "cfa4bfeb28a38e73deddb60c370bb0f844cd91c2",
+        "externalIds": {"PubMedCentral": "5321671", "MAG": "2585040246", "DOI": "10.1016/j.cub.2016.12.048",
+        "CorpusId": 530665, "PubMed": "28162895"}}, {"paperId": "dcdff831259ac273b036283779d626d4159185a4",
+        "externalIds": {"MAG": "2945711062", "PubMedCentral": "6525165", "DOI": "10.1038/s41598-019-44084-8",
+        "CorpusId": 156055509, "PubMed": "31101901"}}, {"paperId": "ec4823bce67ca849d36b6d095f5e312919470cb1",
+        "externalIds": {"CorpusId": 235631605}}, {"paperId": "ec59822f4e8103a969451e05cc8e97158b543f99",
+        "externalIds": {"PubMedCentral": "13385084", "DOI": "10.3758/s13415-026-01435-z",
+        "CorpusId": 287499563, "PubMed": "41981382"}}]}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2530'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:00 GMT
+      Via:
+      - 1.1 8139bc666c011a53bdc5037ba6d5931e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 8jLYrg-MhjTzggy2OT8Lh-q4DHjOEMR_KcXq44-mTwa-yVkUnFHYvg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FUS94FWTPHcENjg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2530'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 03:22:00 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - b4741c6e-fbd0-41f4-b142-66bcec818a04
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+misophonia%29%2Ctype%3Aarticle%2Cpublication_year%3A%3E1989&mailto=test%40example.com&per_page=100&select=ids%2Cdoi
+  response:
+    body:
+      string: '{"meta": {"count": 13, "db_response_time_ms": 11, "page": null, "per_page":
+        100, "next_cursor": null, "groups_count": null, "x_query": {"oql": "get works
+        where published after 1989\n  and title-abstract has (fMRI AND misophonia)\n  and
+        type is [article](article)", "x_new_oql": "get articles since 1990 with (fMRI
+        AND misophonia) in the title or abstract", "oqo": {"get_rows": "works", "filter_rows":
+        [{"column_id": "publication_year", "value": 1989, "operator": ">"}, {"column_id":
+        "title_and_abstract.search", "value": "fMRI", "operator": "has"}, {"column_id":
+        "title_and_abstract.search", "value": "misophonia", "operator": "has"}, {"column_id":
+        "type", "value": "article"}]}, "url": "/works?filter=publication_year:%3E1989,title_and_abstract.search:fMRI,title_and_abstract.search:misophonia,type:article&per_page=100&cursor=%2A"},
+        "cost_usd": 0.001}, "results": [{"ids": {"openalex": "https://openalex.org/W2585040246",
+        "doi": "https://doi.org/10.1016/j.cub.2016.12.048", "mag": "2585040246", "pmid":
+        "https://pubmed.ncbi.nlm.nih.gov/28162895"}, "doi": "https://doi.org/10.1016/j.cub.2016.12.048"},
+        {"ids": {"openalex": "https://openalex.org/W3161514681", "doi": "https://doi.org/10.1523/jneurosci.0261-21.2021",
+        "mag": "3161514681", "pmid": "https://pubmed.ncbi.nlm.nih.gov/34021042"},
+        "doi": "https://doi.org/10.1523/jneurosci.0261-21.2021"}, {"ids": {"openalex":
+        "https://openalex.org/W7154237178", "doi": "https://doi.org/10.3758/s13415-026-01435-z",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41981382"}, "doi": "https://doi.org/10.3758/s13415-026-01435-z"},
+        {"ids": {"openalex": "https://openalex.org/W3009373411", "doi": "https://doi.org/10.1097/01.hj.0000657984.74790.d5",
+        "mag": "3009373411"}, "doi": "https://doi.org/10.1097/01.hj.0000657984.74790.d5"},
+        {"ids": {"openalex": "https://openalex.org/W2945711062", "doi": "https://doi.org/10.1038/s41598-019-44084-8",
+        "mag": "2945711062", "pmid": "https://pubmed.ncbi.nlm.nih.gov/31101901"},
+        "doi": "https://doi.org/10.1038/s41598-019-44084-8"}, {"ids": {"openalex":
+        "https://openalex.org/W4292455894", "doi": "https://doi.org/10.3389/fnins.2022.880759",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36017175"}, "doi": "https://doi.org/10.3389/fnins.2022.880759"},
+        {"ids": {"openalex": "https://openalex.org/W3174004108", "doi": "https://doi.org/10.1007/s00106-021-01072-7",
+        "mag": "3174004108", "pmid": "https://pubmed.ncbi.nlm.nih.gov/34170337"},
+        "doi": "https://doi.org/10.1007/s00106-021-01072-7"}, {"ids": {"openalex":
+        "https://openalex.org/W7117369102", "doi": "https://doi.org/10.1016/j.heares.2025.109521",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41475326"}, "doi": "https://doi.org/10.1016/j.heares.2025.109521"},
+        {"ids": {"openalex": "https://openalex.org/W4291005156", "doi": "https://doi.org/10.3389/fnins.2022.827998",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36033627"}, "doi": "https://doi.org/10.3389/fnins.2022.827998"},
+        {"ids": {"openalex": "https://openalex.org/W7166562863", "doi": "https://doi.org/10.1186/s12888-026-08331-3",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42374317"}, "doi": "https://doi.org/10.1186/s12888-026-08331-3"},
+        {"ids": {"openalex": "https://openalex.org/W4413669970", "doi": "https://doi.org/10.1186/s12868-025-00975-3",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/40859135"}, "doi": "https://doi.org/10.1186/s12868-025-00975-3"},
+        {"ids": {"openalex": "https://openalex.org/W7220077228"}, "doi": null}, {"ids":
+        {"openalex": "https://openalex.org/W2335064143", "doi": "https://doi.org/10.1097/01.hj.0000459743.01876.fd",
+        "mag": "2335064143"}, "doi": "https://doi.org/10.1097/01.hj.0000459743.01876.fd"}],
+        "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4b3efc8cab338db-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:00 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.001'
+      X-RateLimit-Credits-Used:
+      - '10'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9659'
+      X-RateLimit-Remaining-USD:
+      - '0.9659'
+      X-RateLimit-Reset:
+      - '74280'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=RKElyhEMYdKd9rDPCqW767hVOj3nksK%2FSgqp5wXC1%2FY%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792120920"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=RKElyhEMYdKd9rDPCqW767hVOj3nksK%2FSgqp5wXC1%2FY%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792120920"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "fMRI AND misophonia", "date": "1990-9999", "display": {"offset":
+      0, "show": 100}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '89'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":73,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Shagun
+        Ajmera\"},{\"order\":2,\"name\":\"Rafay A. Khan\"},{\"order\":7,\"name\":\"Fatima
+        T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
+        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
+        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        183\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
+        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
+        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        510\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
+        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
+        for cortico-cortical paired associative stimulation (ccPAS) as a potential
+        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        206\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Soumita
+        Ramesh\"}],\"doi\":\"10.1016/j.mehy.2025.111765\",\"loadDate\":\"2025-09-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"111765\"},\"pii\":\"S030698772500204X\",\"publicationDate\":\"2025-11-30\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Is iron dysregulation in the mirror motor cortex
+        associated with misophonia?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S030698772500204X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        204\"},{\"authors\":[{\"order\":1,\"name\":\"Kamalakannan Karupaiah\"},{\"order\":2,\"name\":\"Rakesh
+        Trinesh\"},{\"order\":4,\"name\":\"Prashanth Prabhu\"}],\"doi\":\"10.1016/j.heares.2025.109458\",\"loadDate\":\"2025-10-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109458\"},\"pii\":\"S037859552500276X\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Multichannel auditory cortical responses in misophonia:
+        A neurophysiological investigation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859552500276X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"},{\"order\":2,\"name\":\"Romarua
+        Agbude\"},{\"order\":5,\"name\":\"Itamar Ronen\"}],\"doi\":\"10.1016/j.heares.2025.109440\",\"loadDate\":\"2025-10-06T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109440\"},\"pii\":\"S0378595525002588\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"The neurochemistry of decreased sound tolerance: A
+        magnetic resonance spectroscopy (MRS) study of misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002588?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
+        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        202\"},{\"authors\":[{\"order\":1,\"name\":\"Li Xie\"},{\"order\":2,\"name\":\"Rodrigo
+        Donoso-San Mart\xEDn\"},{\"order\":7,\"name\":\"Marlies Knipper\"}],\"doi\":\"10.1016/j.heares.2025.109305\",\"loadDate\":\"2025-05-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109305\"},\"pii\":\"S0378595525001236\",\"publicationDate\":\"2025-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Cochlear neural contributions to triple network changes
+        in tinnitus, hyperacusis & misophonia? A perspective review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525001236?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        463\"},{\"authors\":[{\"order\":1,\"name\":\"Marie-Anick Savard\"},{\"order\":2,\"name\":\"Emily
+        B. J. Coffey\"}],\"doi\":\"10.1016/j.heares.2025.109184\",\"loadDate\":\"2025-01-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109184\"},\"pii\":\"S0378595525000036\",\"publicationDate\":\"2025-03-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Toward cognitive models of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525000036?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        458\"},{\"authors\":[{\"order\":1,\"name\":\"Sajana Aryal\"},{\"order\":2,\"name\":\"Prashanth
+        Prabhu\"}],\"doi\":\"10.1016/j.joto.2023.05.006\",\"loadDate\":\"2023-05-31T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"139\",\"last\":\"145\"},\"pii\":\"S1672293023000338\",\"publicationDate\":\"2023-07-31\",\"sourceTitle\":\"Journal
+        of Otology\",\"title\":\"Auditory brainstem functioning in individuals with
+        misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1672293023000338?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        18, Issue 3\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Lysianne
+        Beynel\"},{\"order\":6,\"name\":\"M. Zachary Rosenthal\"}],\"doi\":\"10.1016/j.jad.2024.01.120\",\"loadDate\":\"2024-01-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"274\",\"last\":\"285\"},\"pii\":\"S0165032724001368\",\"publicationDate\":\"2024-04-01\",\"sourceTitle\":\"Journal
+        of Affective Disorders\",\"title\":\"An experimental examination of neurostimulation
+        and cognitive restructuring as potential components for Misophonia interventions\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0165032724001368?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        350\"},{\"authors\":[{\"order\":1,\"name\":\"Nora Andermane\"},{\"order\":2,\"name\":\"Mathilde
+        Bauer\"},{\"order\":5,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.isci.2023.106299\",\"loadDate\":\"2023-02-28T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106299\"},\"pii\":\"S2589004223003760\",\"publicationDate\":\"2023-04-21\",\"sourceTitle\":\"iScience\",\"title\":\"A
+        phenomenological cartography of misophonia and other forms of sound intolerance\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2589004223003760?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Sukhbinder Kumar\"},{\"order\":2,\"name\":\"Olana
+        Tansley-Hancock\"},{\"order\":10,\"name\":\"Timothy D. Griffiths\"}],\"doi\":\"10.1016/j.cub.2016.12.048\",\"loadDate\":\"2017-02-02T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"527\",\"last\":\"533\"},\"pii\":\"S0960982216315305\",\"publicationDate\":\"2017-02-20\",\"sourceTitle\":\"Current
+        Biology\",\"title\":\"The Brain Basis for Misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0960982216315305?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        27, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Nadine Eijsker\"},{\"order\":2,\"name\":\"Arjan
+        Schr\xF6der\"},{\"order\":5,\"name\":\"Damiaan Denys\"}],\"doi\":\"10.1016/j.euroneuro.2021.05.013\",\"loadDate\":\"2021-07-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"62\",\"last\":\"71\"},\"pii\":\"S0924977X21002443\",\"publicationDate\":\"2021-11-30\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"Structural and functional brain abnormalities
+        in misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X21002443?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        52\"},{\"authors\":[{\"order\":1,\"name\":\"Nimesha Gerlus\"},{\"order\":2,\"name\":\"Lysianne
+        Beynel\"},{\"order\":9,\"name\":\"Andrada Neacsiu\"}],\"doi\":\"10.1016/j.biopsych.2023.02.688\",\"loadDate\":\"2023-04-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s276\"},\"pii\":\"S000632232300762X\",\"publicationDate\":\"2023-05-01\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"448. Identifying the Neural Correlates of Sound and
+        Emotional Processing in Misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S000632232300762X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        93, Issue 9, Supplement\"},{\"authors\":[{\"order\":1,\"name\":\"Nadine Eijsker\"},{\"order\":2,\"name\":\"Arjan
+        Schr\xF6der\"},{\"order\":4,\"name\":\"Damiaan Denys\"}],\"doi\":\"10.1016/j.biopsych.2018.02.410\",\"loadDate\":\"2018-04-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s157\"},\"pii\":\"S0006322318305122\",\"publicationDate\":\"2018-05-01\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"T74. Response Bias on the Stop-Signal Task: An Endophenotype
+        of Misophonia?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322318305122?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        83, Issue 9, Supplement\"},{\"authors\":[{\"order\":1,\"name\":\"N. Eijsker\"},{\"order\":2,\"name\":\"A.
+        Schr\xF6der\"},{\"order\":4,\"name\":\"D. Denys\"}],\"doi\":\"10.1016/S0924-977X(17)31330-5\",\"loadDate\":\"2017-11-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s722\",\"last\":\"s723\"},\"pii\":\"S0924977X17313305\",\"publicationDate\":\"2017-10-31\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"P.1.i.054: Response inhibition in misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X17313305?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        27, Supplement 4\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
+        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
+        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        188\"},{\"authors\":[{\"order\":1,\"name\":\"Mahima Dewan\"},{\"order\":2,\"name\":\"Emily
+        Campbell (Daniels)\"},{\"order\":9,\"name\":\"James A. Waltz\"}],\"doi\":\"10.1016/j.schres.2024.09.026\",\"loadDate\":\"2024-10-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"329\",\"last\":\"336\"},\"pii\":\"S0920996424004353\",\"publicationDate\":\"2024-12-31\",\"sourceTitle\":\"Schizophrenia
+        Research\",\"title\":\"Aberrant salience signaling in auditory processing
+        in schizophrenia: Evidence for abnormalities in both sensory processing and
+        emotional reactivity\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0920996424004353?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        274\"},{\"authors\":[{\"order\":1,\"name\":\"Aidan Mahady\"},{\"order\":2,\"name\":\"Marcel
+        Takac\"},{\"order\":3,\"name\":\"Alexander De Foe\"}],\"doi\":\"10.1016/j.concog.2023.103477\",\"loadDate\":\"2023-02-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103477\"},\"pii\":\"S1053810023000144\",\"publicationDate\":\"2023-03-31\",\"sourceTitle\":\"Consciousness
+        and Cognition\",\"title\":\"What is autonomous sensory meridian response (ASMR)?
+        A narrative review and comparative analysis of related phenomena\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053810023000144?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        109\"},{\"authors\":[{\"order\":1,\"name\":\"Sarah M. Banker\"},{\"order\":2,\"name\":\"Matthew
+        Schafer\"},{\"order\":10,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.biopsych.2025.08.018\",\"loadDate\":\"2025-09-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"389\",\"last\":\"398\"},\"pii\":\"S0006322325014350\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"Neural Tracking of Social Navigation in Autism Spectrum
+        Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        100, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Bur\xE7in \xC7olak\"},{\"order\":2,\"name\":\"Berker
+        Duman\"},{\"order\":5,\"name\":\"Diren\xE7 Sakarya\"}],\"doi\":\"10.1016/j.jocrd.2021.100644\",\"loadDate\":\"2021-03-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"100644\"},\"pii\":\"S2211364921000245\",\"publicationDate\":\"2021-04-30\",\"sourceTitle\":\"Journal
+        of Obsessive-Compulsive and Related Disorders\",\"title\":\"Misophonic symptoms
+        in non-psychotic psychiatric outpatients and its association with trait psychological
+        variables\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2211364921000245?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        29\"},{\"authors\":[{\"order\":1,\"name\":\"Eva Berlot\"},{\"order\":2,\"name\":\"Remo
+        Arts\"},{\"order\":9,\"name\":\"Federico De Martino\"}],\"doi\":\"10.1016/j.nicl.2020.102166\",\"loadDate\":\"2020-01-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"102166\"},\"pii\":\"S221315822030005X\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"NeuroImage:
+        Clinical\",\"title\":\"A 7 Tesla fMRI investigation of human tinnitus percept
+        in cortical and subcortical auditory areas\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S221315822030005X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        25\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
+        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
+        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
+        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        508\"},{\"authors\":[{\"order\":1,\"name\":\"Yange Chang\"},{\"order\":2,\"name\":\"Hanyang
+        Ruan\"},{\"order\":3,\"name\":\"Kathrin Koch\"}],\"doi\":\"10.1016/j.neuroimage.2026.122128\",\"loadDate\":\"2026-07-14T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122128\"},\"pii\":\"S105381192600443X\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
+        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        338\"},{\"authors\":[{\"order\":1,\"name\":\"Emma Holmes\"},{\"order\":2,\"name\":\"Nattawan
+        Utoomprurkporn\"},{\"order\":6,\"name\":\"Timothy D. Griffiths\"}],\"doi\":\"10.1016/j.cortex.2020.10.023\",\"loadDate\":\"2020-11-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"92\",\"last\":\"107\"},\"pii\":\"S0010945220304093\",\"publicationDate\":\"2021-02-28\",\"sourceTitle\":\"Cortex\",\"title\":\"Simultaneous
+        auditory agnosia: Systematic description of a new type of auditory segregation
+        deficit following a right hemisphere lesion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945220304093?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        135\"},{\"authors\":[{\"order\":1,\"name\":\"Davide Martino\"},{\"order\":2,\"name\":\"Tammy
+        Hedderly\"}],\"doi\":\"10.1016/j.parkreldis.2019.02.005\",\"loadDate\":\"2019-02-04T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"117\",\"last\":\"124\"},\"pii\":\"S1353802019300367\",\"publicationDate\":\"2019-02-28\",\"sourceTitle\":\"Parkinsonism
+        & Related Disorders\",\"title\":\"Tics and stereotypies: A comparative clinical
+        review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1353802019300367?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        59\"},{\"authors\":[{\"order\":1,\"name\":\"Boen Deng\"},{\"order\":2,\"name\":\"Divya
+        Bharatkumar Adhia\"},{\"order\":5,\"name\":\"Dirk De Ridder\"}],\"doi\":\"10.1016/j.neurom.2026.08.002\",\"loadDate\":\"2026-08-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{},\"pii\":\"S1094715926013279\",\"publicationDate\":\"2026-08-18\",\"sourceTitle\":\"Neuromodulation:
+        Technology at the Neural Interface\",\"title\":\"Sound-Paired Vagus Nerve
+        Stimulation for Tinnitus: A Safety and Feasibility Trial\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Shiyu
+        Liu\"},{\"order\":2,\"name\":\"Lingxiao Cao\"},{\"order\":11,\"name\":\"Qiyong
+        Gong\"}],\"doi\":\"10.1016/j.jad.2023.10.006\",\"loadDate\":\"2023-10-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"1\",\"last\":\"7\"},\"pii\":\"S0165032723011874\",\"publicationDate\":\"2024-01-01\",\"sourceTitle\":\"Journal
+        of Affective Disorders\",\"title\":\"Trait anxiety mediates the association
+        between hippocampal\u2013insula functional connectivity and anxiety symptom
+        severity in adults with and without generalized anxiety disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0165032723011874?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        344\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada Neacsiu\"},{\"order\":2,\"name\":\"Nimesha
+        Gerlus\"},{\"order\":3,\"name\":\"Shaurya Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"720. How Brain State Can Be Harnessed to Enhance
+        Neuromodulation Outcomes: A Proof of Concept Discussion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322326010693?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        99, Issue 10, Supplement\"},{\"doi\":\"10.1016/B978-0-443-27446-6.00020-0\",\"loadDate\":\"2026-07-31T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"341\",\"last\":\"348\"},\"pii\":\"B9780443274466000200\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Neurobiology
+        of Obsessive-Compulsive Disorder\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jules
+        R. Dugr\xE9\"},{\"order\":2,\"name\":\"Christian J. Hopfer\"},{\"order\":3,\"name\":\"Drew
+        E. Winters\"}],\"doi\":\"10.1016/j.avb.2025.102035\",\"loadDate\":\"2025-02-02T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"102035\"},\"pii\":\"S1359178925000047\",\"publicationDate\":\"2025-04-30\",\"sourceTitle\":\"Aggression
+        and Violent Behavior\",\"title\":\"The dark sides of the brain: A systematic
+        review and meta-analysis of functional neuroimaging studies on trait aggression\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1359178925000047?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        81\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00003-7\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"177\",\"last\":\"200\"},\"pii\":\"B9780323919128000037\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 8: Loudness recruitment and hyperacusis:
+        the central-gain model\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128000037?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Soojung
+        Na\"},{\"order\":2,\"name\":\"Shawn A. Rhoads\"},{\"order\":5,\"name\":\"Xiaosi
+        Gu\"}],\"doi\":\"10.1016/j.neubiorev.2023.105139\",\"loadDate\":\"2023-03-20T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"105139\"},\"pii\":\"S0149763423001082\",\"publicationDate\":\"2023-05-31\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Towards a neurocomputational account
+        of social controllability: From models to mental health\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763423001082?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        148\"},{\"doi\":\"10.1016/B978-0-12-818251-2.09992-6\",\"loadDate\":\"2020-05-27T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"201\",\"last\":\"205\"},\"pii\":\"B9780128182512099926\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"The
+        Highly Sensitive Brain\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128182512099926?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Lysianne
+        Beynel\"},{\"order\":2,\"name\":\"Eva Wiener\"},{\"order\":14,\"name\":\"Zhi-De
+        Deng\"}],\"doi\":\"10.1016/j.neubiorev.2026.106786\",\"loadDate\":\"2026-05-28T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106786\"},\"pii\":\"S0149763426002435\",\"publicationDate\":\"2026-08-31\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Noninvasive brain stimulation combined
+        with evidence-based psychotherapy for psychiatric disorders: A meta-analysis
+        of optimal implementation parameters\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        187\"},{\"authors\":[{\"order\":1,\"name\":\"S. Da Cunha-Bang\"},{\"order\":2,\"name\":\"P.
+        MacDonald Fisher\"},{\"order\":9,\"name\":\"G. Moos Knudsen\"}],\"doi\":\"10.1016/S0924-977X(15)30372-2\",\"loadDate\":\"2015-10-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s306\",\"last\":\"s307\"},\"pii\":\"S0924977X15303722\",\"publicationDate\":\"2015-09-30\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"P.1.i.013 Neural correlates of reactive
+        aggression in psychopathic violent offenders; a functional magnetic resonance
+        study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X15303722?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        25, Supplement 2\"},{\"authors\":[{\"order\":1,\"name\":\"Sewon Oh\"},{\"order\":2,\"name\":\"Xuan
+        Yang\"},{\"order\":6,\"name\":\"Svetlana V. Shinkareva\"}],\"doi\":\"10.1016/j.biopsycho.2025.108994\",\"loadDate\":\"2025-01-22T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"108994\"},\"pii\":\"S0301051125000122\",\"publicationDate\":\"2025-02-28\",\"sourceTitle\":\"Biological
+        Psychology\",\"title\":\"Physiological responses to aversive and non-aversive
+        audiovisual, auditory, and visual stimuli\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0301051125000122?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        195\"},{\"authors\":[{\"order\":1,\"name\":\"Parul Jain\"},{\"order\":2,\"name\":\"Daniela
+        Schiller\"}],\"doi\":\"10.1016/j.neuron.2026.05.031\",\"loadDate\":\"2026-06-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{},\"pii\":\"S0896627326004460\",\"publicationDate\":\"2026-06-24\",\"sourceTitle\":\"Neuron\",\"title\":\"From
+        first impressions to bonds: The neural dynamics of social relationships\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Marina
+        Kliuchko\"},{\"order\":2,\"name\":\"Tuomas Puoliv\xE4li\"},{\"order\":7,\"name\":\"Elvira
+        Brattico\"}],\"doi\":\"10.1016/j.neuroimage.2017.11.041\",\"loadDate\":\"2017-11-22T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"309\",\"last\":\"315\"},\"pii\":\"S1053811917309734\",\"publicationDate\":\"2018-02-15\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Neuroanatomical
+        substrate of noise sensitivity\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811917309734?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        167\"},{\"authors\":[{\"order\":1,\"name\":\"Richard Salvi\"},{\"order\":2,\"name\":\"Guang-Di
+        Chen\"},{\"order\":3,\"name\":\"Senthilvelan Manohar\"}],\"doi\":\"10.1016/j.heares.2022.108648\",\"loadDate\":\"2022-11-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"108648\"},\"pii\":\"S0378595522002167\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis: Loudness intolerance, fear, annoyance
+        and pain\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595522002167?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        426\"},{\"authors\":[{\"order\":1,\"name\":\"Josef P. Rauschecker\"},{\"order\":2,\"name\":\"Elisabeth
+        S. May\"},{\"order\":4,\"name\":\"Markus Ploner\"}],\"doi\":\"10.1016/j.tics.2015.08.002\",\"loadDate\":\"2015-09-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"567\",\"last\":\"578\"},\"pii\":\"S1364661315001795\",\"publicationDate\":\"2015-10-31\",\"sourceTitle\":\"Trends
+        in Cognitive Sciences\",\"title\":\"Frontostriatal Gating of Tinnitus and
+        Chronic Pain\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1364661315001795?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        19, Issue 10\"},{\"authors\":[{\"order\":1,\"name\":\"Natalie Roberts\"},{\"order\":2,\"name\":\"Alissa
+        Beath\"},{\"order\":3,\"name\":\"Simon Boag\"}],\"doi\":\"10.1016/j.concog.2020.103046\",\"loadDate\":\"2020-11-23T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103046\"},\"pii\":\"S1053810020305134\",\"publicationDate\":\"2020-11-30\",\"sourceTitle\":\"Consciousness
+        and Cognition\",\"title\":\"A mixed-methods examination of autonomous sensory
+        meridian response: Comparison to frisson\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053810020305134?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        86\"},{\"authors\":[{\"order\":1,\"name\":\"Erica Greenberg\"},{\"order\":2,\"name\":\"Florentina
+        Lazaroaie\"},{\"order\":3,\"name\":\"Cathy Budman\"}],\"doi\":\"10.1016/B978-0-443-13554-5.00014-6\",\"loadDate\":\"2026-02-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"97\",\"last\":\"109\"},\"pii\":\"B9780443135545000146\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurology\",\"title\":\"Chapter 9: Explosive outbursts in Tourette
+        syndrome and chronic tic disorders\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        215\"},{\"authors\":[{\"order\":1,\"name\":\"Giulia Conte\"},{\"order\":2,\"name\":\"Francesca
+        Valente\"},{\"order\":4,\"name\":\"Francesco Cardona\"}],\"doi\":\"10.1016/j.neubiorev.2020.09.019\",\"loadDate\":\"2020-09-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"21\",\"last\":\"36\"},\"pii\":\"S0149763420305765\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Rage attacks in Tourette Syndrome and
+        Chronic Tic Disorder: a systematic review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763420305765?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        119\"},{\"doi\":\"10.1016/B978-0-323-91912-8.20001-7\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"303\",\"last\":\"311\"},\"pii\":\"B9780323919128200017\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780323919128200017?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Andrea
+        Boscutti\"},{\"order\":2,\"name\":\" Juliana Mendonca De Figueiredo\"},{\"order\":6,\"name\":\"Sudhakar
+        Selvaraj\"}],\"doi\":\"10.1016/j.psc.2023.02.005\",\"loadDate\":\"2023-03-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"307\",\"last\":\"329\"},\"pii\":\"S0193953X23000175\",\"publicationDate\":\"2023-06-30\",\"sourceTitle\":\"Psychiatric
+        Clinics of North America\",\"title\":\"Noninvasive Brain Stimulation Techniques
+        for Treatment-Resistant Depression: Transcranial Magnetic Stimulation and
+        Transcranial Direct Current Stimulation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0193953X23000175?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        46, Issue 2\"},{\"authors\":[{\"order\":1,\"name\":\"Gastone G. Celesia\"}],\"doi\":\"10.1016/B978-0-7020-5310-8.00019-3\",\"loadDate\":\"2013-08-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"383\",\"last\":\"400\"},\"pii\":\"B9780702053108000193\",\"publicationDate\":\"2013-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurophysiology\",\"title\":\"Chapter 19: Positive spontaneous
+        auditory phenomena: auditory hallucinations\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780702053108000193?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        10\"},{\"authors\":[{\"order\":1,\"name\":\"Jos\xE9 A. Hinojosa\"},{\"order\":2,\"name\":\"Roc\xEDo
+        Calvillo-Torres\"},{\"order\":4,\"name\":\"Greig I. de Zubicaray\"}],\"doi\":\"10.1016/j.langsci.2026.101873\",\"loadDate\":\"2026-09-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"101873\"},\"pii\":\"S0388000126000811\",\"publicationDate\":\"2027-01-31\",\"sourceTitle\":\"Language
+        Sciences\",\"title\":\"How language conveys emotion through sound: A review
+        of affective iconicity\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0388000126000811?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        119\"},{\"authors\":[{\"order\":1,\"name\":\"Ashley G. Eng\"},{\"order\":2,\"name\":\"Urveesha
+        Nirjar\"},{\"order\":10,\"name\":\"Michelle M. Martel\"}],\"doi\":\"10.1016/j.yhbeh.2023.105466\",\"loadDate\":\"2023-11-30T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"105466\"},\"pii\":\"S0018506X23001642\",\"publicationDate\":\"2024-02-29\",\"sourceTitle\":\"Hormones
+        and Behavior\",\"title\":\"Attention-deficit/hyperactivity disorder and the
+        menstrual cycle: Theory and evidence\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0018506X23001642?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        158\"},{\"doi\":\"10.1016/B978-0-12-801772-2.09985-9\",\"loadDate\":\"2016-10-06T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"645\",\"last\":\"664\"},\"pii\":\"B9780128017722099859\",\"publicationDate\":\"2016-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurology\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128017722099859?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        139\"},{\"authors\":[{\"order\":1,\"name\":\"Davide Donelli\"},{\"order\":2,\"name\":\"Davide
+        Lazzeroni\"},{\"order\":4,\"name\":\"Michele Antonelli\"}],\"doi\":\"10.1016/bs.pbr.2023.08.001\",\"loadDate\":\"2023-09-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103\",\"last\":\"144\"},\"pii\":\"S0079612323000699\",\"publicationDate\":\"2023-12-31\",\"sourceTitle\":\"Progress
+        in Brain Research\",\"title\":\"Chapter 6: Silence and its effects on the
+        autonomic nervous system: A systematic review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0079612323000699?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        280\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-323-91912-8.00013-X\",\"loadDate\":\"2022-03-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"261\",\"last\":\"281\"},\"pii\":\"B978032391912800013X\",\"publicationDate\":\"2022-12-31\",\"sourceTitle\":\"Tinnitus
+        and Hyperacusis\",\"title\":\"Chapter 11: Behavioral and pharmaceutical therapy\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B978032391912800013X?dgcid=api_sd_search-api-endpoint\"},{\"doi\":\"10.1016/S0079-6123(07)66053-1\",\"loadDate\":\"2007-10-22T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"537\",\"last\":\"542\"},\"pii\":\"S0079612307660531\",\"publicationDate\":\"2007-12-31\",\"sourceTitle\":\"Progress
+        in Brain Research\",\"title\":\"Subject Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0079612307660531?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        166\"},{\"authors\":[{\"order\":1,\"name\":\"Berthold Langguth\"},{\"order\":2,\"name\":\"Ana
+        Bel\xE9n Elgoyhen\"},{\"order\":4,\"name\":\"Richard J. Salvi\"}],\"doi\":\"10.1016/B978-0-7020-5310-8.00018-1\",\"loadDate\":\"2013-08-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"345\",\"last\":\"381\"},\"pii\":\"B9780702053108000181\",\"publicationDate\":\"2013-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurophysiology\",\"title\":\"Chapter 18: Positive spontaneous
+        auditory phenomena: tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780702053108000181?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        10\"},{\"doi\":\"10.1016/B978-0-7020-5310-8.09988-9\",\"loadDate\":\"2013-08-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"461\",\"last\":\"476\"},\"pii\":\"B9780702053108099889\",\"publicationDate\":\"2013-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurophysiology\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780702053108099889?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        10\"},{\"authors\":[{\"order\":1,\"name\":\"Daniel Shepherd\"},{\"order\":2,\"name\":\"Veema
+        Lodhia\"},{\"order\":3,\"name\":\"Michael J. Hautus\"}],\"doi\":\"10.1016/j.ijpsycho.2019.03.005\",\"loadDate\":\"2019-03-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"59\",\"last\":\"67\"},\"pii\":\"S0167876018309905\",\"publicationDate\":\"2019-05-31\",\"sourceTitle\":\"International
+        Journal of Psychophysiology\",\"title\":\"Electrophysiological indices of
+        amplitude modulated sounds and sensitivity to noise\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0167876018309905?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        139\"},{\"doi\":\"10.1016/j.biopsych.2015.03.007\",\"loadDate\":\"2015-04-03T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s142\",\"last\":\"s286\"},\"pii\":\"S0006322315002218\",\"publicationDate\":\"2015-05-01\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"Friday Abstracts\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322315002218?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        77, Issue 9, Supplement\"},{\"authors\":[{\"order\":1,\"name\":\"Sophie A.
+        Froud\"},{\"order\":2,\"name\":\"Benjamin A. Levett\"},{\"order\":6,\"name\":\"Jason
+        D. Warren\"}],\"doi\":\"10.1016/B978-0-443-29198-2.00012-6\",\"loadDate\":\"2025-11-07T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"79\",\"last\":\"114\"},\"pii\":\"B9780443291982000126\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Age-Related
+        Hearing Loss, Brain Health, and Dementia\",\"title\":\"4: A neurological perspective
+        on hearing impairment in dementia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Alexander
+        J. Billig\"},{\"order\":2,\"name\":\"Meher Lad\"},{\"order\":4,\"name\":\"Timothy
+        D. Griffiths\"}],\"doi\":\"10.1016/j.pneurobio.2022.102326\",\"loadDate\":\"2022-07-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"102326\"},\"pii\":\"S0301008222001125\",\"publicationDate\":\"2022-11-30\",\"sourceTitle\":\"Progress
+        in Neurobiology\",\"title\":\"The hearing hippocampus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0301008222001125?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        218\"},{\"doi\":\"10.1016/B978-0-444-62630-1.09986-8\",\"loadDate\":\"2015-02-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"693\",\"last\":\"704\"},\"pii\":\"B9780444626301099868\",\"publicationDate\":\"2015-12-31\",\"sourceTitle\":\"Handbook
+        of Clinical Neurology\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780444626301099868?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        129\"},{\"authors\":[{\"order\":1,\"name\":\"Dirk De Ridder\"},{\"order\":2,\"name\":\"Winfried
+        Schlee\"},{\"order\":57,\"name\":\"Berthold Langguth\"}],\"doi\":\"10.1016/bs.pbr.2020.12.002\",\"loadDate\":\"2021-02-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"1\",\"last\":\"25\"},\"pii\":\"S0079612320302326\",\"publicationDate\":\"2021-12-31\",\"sourceTitle\":\"Progress
+        in Brain Research\",\"title\":\"Chapter 1: Tinnitus and tinnitus disorder:
+        Theoretical and operational definitions (an international multidisciplinary
+        proposal)\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0079612320302326?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        260\"},{\"doi\":\"10.1016/S0924-977X(17)31973-9\",\"loadDate\":\"2017-11-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s1171\",\"last\":\"s1181\"},\"pii\":\"S0924977X17319739\",\"publicationDate\":\"2017-10-31\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"Keyword index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X17319739?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        27, Supplement 4\"},{\"authors\":[{\"order\":1,\"name\":\"Irwin Goldstein\"},{\"order\":2,\"name\":\"Barry
+        R. Komisaruk\"},{\"order\":14,\"name\":\"James G. Pfaus\"}],\"doi\":\"10.1016/j.jsxm.2021.01.172\",\"loadDate\":\"2021-02-19T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"665\",\"last\":\"697\"},\"pii\":\"S1743609521001752\",\"publicationDate\":\"2021-04-30\",\"sourceTitle\":\"The
+        Journal of Sexual Medicine\",\"title\":\"International Society for the Study
+        of Women\u2019s Sexual Health (ISSWSH) Review of Epidemiology and Pathophysiology,
+        and a Consensus Nomenclature and Process of Care for the Management of Persistent
+        Genital Arousal Disorder/Genito-Pelvic Dysesthesia (PGAD/GPD)\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1743609521001752?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        18, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Fatima T. Husain\"}],\"doi\":\"10.1016/bs.plm.2021.02.002\",\"loadDate\":\"2021-04-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"47\",\"last\":\"94\"},\"pii\":\"S0079742121000025\",\"publicationDate\":\"2021-12-31\",\"sourceTitle\":\"Psychology
+        of Learning and Motivation\",\"title\":\"Chapter Two: Learning to control
+        tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0079742121000025?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        74\"},{\"authors\":[{\"order\":1,\"name\":\"Michael J. Toohey\"},{\"order\":2,\"name\":\"Raymond
+        DiGiuseppe\"}],\"doi\":\"10.1016/j.cpr.2017.01.009\",\"loadDate\":\"2017-02-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"93\",\"last\":\"108\"},\"pii\":\"S0272735815301458\",\"publicationDate\":\"2017-04-30\",\"sourceTitle\":\"Clinical
+        Psychology Review\",\"title\":\"Defining and measuring irritability: Construct
+        clarification and differentiation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0272735815301458?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        53\"},{\"doi\":\"10.1016/j.paid.2019.109684\",\"loadDate\":\"2020-02-20T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109684\"},\"pii\":\"S0191886919306166\",\"publicationDate\":\"2020-04-15\",\"sourceTitle\":\"Personality
+        and Individual Differences\",\"title\":\"The International Society for the
+        Study of Individual Differences 2019 Conference\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0191886919306166?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        157\"},{\"doi\":\"10.1016/S0924-977X(17)30965-3\",\"loadDate\":\"2017-10-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"iii\",\"last\":\"xxxvi\"},\"pii\":\"S0924977X17309653\",\"publicationDate\":\"2017-10-31\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"Contents\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X17309653?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        27, Supplement 4\"},{\"doi\":\"10.1016/S0924-977X(19)31754-7\",\"loadDate\":\"2019-12-13T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"iii\",\"last\":\"xxxviii\"},\"pii\":\"S0924977X19317547\",\"publicationDate\":\"2019-12-31\",\"sourceTitle\":\"European
+        Neuropsychopharmacology\",\"title\":\"Contents\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924977X19317547?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        29, Supplement 6\"},{\"doi\":\"10.1016/B978-012370880-9.09015-0\",\"loadDate\":\"2008-01-02T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"405\",\"last\":\"641\"},\"pii\":\"B9780123708809090150\",\"publicationDate\":\"2008-12-31\",\"sourceTitle\":\"The
+        Senses: A Comprehensive Reference\",\"title\":\"Subject Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780123708809090150?dgcid=api_sd_search-api-endpoint\"},{\"doi\":\"10.1016/j.eurpsy.2017.12.023\",\"loadDate\":\"2018-06-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s359\",\"last\":\"s566\"},\"pii\":\"S0924933817330535\",\"publicationDate\":\"2018-03-31\",\"sourceTitle\":\"European
+        Psychiatry\",\"title\":\"Abstracts\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0924933817330535?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        48, Supplement\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3efcbd82bd870-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 03:22:01 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 1b70a0b85f625b8a
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 1b70a0b85f625b8a
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19344'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"ids": ["PMID:41475326", "PMID:34170337", "PMID:28626391", "PMID:41475326",
+      "PMID:34170337", "PMID:41475326", "PMID:41475326"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '128'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=externalIds
+  response:
+    body:
+      string: '[{"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46", "externalIds":
+        {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428, "PubMed": "41475326"}},
+        {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686", "externalIds": {"MAG":
+        "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "985f380c52fa1a5db99374e5fd2cb798a72453ff",
+        "externalIds": {"PubMedCentral": "5454038", "MAG": "2621021054", "DOI": "10.3389/fnbeh.2017.00111",
+        "CorpusId": 30594537, "PubMed": "28626391"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686",
+        "externalIds": {"MAG": "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1245'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:01 GMT
+      Via:
+      - 1.1 1b7fa09f50c08a88d619f90eef5ee94a.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - PeXKp1WjeIAEs5Sb_PYpghCJgHZPQE6BLWotkvjmV7eV2n5bZeYEug==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FUS-AGcZvHcEcaw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1245'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 03:22:01 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - b272cbc1-a7c4-4600-aea7-1000709c8f27
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"ids": ["DOI:10.1016/j.heares.2025.109521", "DOI:10.1007/s00106-021-01072-7",
+      "DOI:10.3389/fnbeh.2017.00111", "DOI:10.1101/2020.10.29.346650", "DOI:10.1121/10.0045101",
+      "DOI:10.64898/2026.08.30.748122", "DOI:10.1016/j.heares.2025.109521", "DOI:10.1097/01.hj.0000657984.74790.d5",
+      "DOI:10.1007/s00106-021-01072-7", "DOI:10.1016/j.heares.2025.109521", "DOI:10.1097/01.hj.0000459743.01876.fd",
+      "DOI:10.1016/j.heares.2025.109521", "DOI:10.1016/j.neubiorev.2026.106584", "DOI:10.1016/j.bbr.2026.116248",
+      "DOI:10.1016/j.mehy.2025.111840", "DOI:10.1016/j.mehy.2025.111765", "DOI:10.1016/j.heares.2025.109458",
+      "DOI:10.1016/j.heares.2025.109440", "DOI:10.1016/j.heares.2026.109772", "DOI:10.1016/j.cortex.2026.06.001",
+      "DOI:10.1016/j.heares.2025.109305", "DOI:10.1016/j.heares.2025.109184", "DOI:10.1016/j.joto.2023.05.006",
+      "DOI:10.1016/j.jad.2024.01.120", "DOI:10.1016/j.isci.2023.106299", "DOI:10.1016/j.euroneuro.2021.05.013",
+      "DOI:10.1016/j.biopsych.2023.02.688", "DOI:10.1016/j.biopsych.2018.02.410",
+      "DOI:10.1016/s0924-977x(17)31330-5", "DOI:10.1016/j.neubiorev.2026.106796",
+      "DOI:10.1016/j.schres.2024.09.026", "DOI:10.1016/j.concog.2023.103477", "DOI:10.1016/j.jocrd.2021.100644",
+      "DOI:10.1016/j.nicl.2020.102166", "DOI:10.1016/j.bbr.2026.116199", "DOI:10.1016/j.neuroimage.2026.122128",
+      "DOI:10.1016/j.cortex.2020.10.023", "DOI:10.1016/j.parkreldis.2019.02.005",
+      "DOI:10.1016/j.neurom.2026.08.002", "DOI:10.1016/j.jad.2023.10.006", "DOI:10.1016/j.biopsych.2026.03.954",
+      "DOI:10.1016/b978-0-443-27446-6.00020-0", "DOI:10.1016/j.avb.2025.102035", "DOI:10.1016/b978-0-323-91912-8.00003-7",
+      "DOI:10.1016/j.neubiorev.2023.105139", "DOI:10.1016/b978-0-12-818251-2.09992-6",
+      "DOI:10.1016/j.neubiorev.2026.106786", "DOI:10.1016/s0924-977x(15)30372-2",
+      "DOI:10.1016/j.biopsycho.2025.108994", "DOI:10.1016/j.neuron.2026.05.031", "DOI:10.1016/j.neuroimage.2017.11.041",
+      "DOI:10.1016/j.heares.2022.108648", "DOI:10.1016/j.tics.2015.08.002", "DOI:10.1016/j.concog.2020.103046",
+      "DOI:10.1016/b978-0-443-13554-5.00014-6", "DOI:10.1016/j.neubiorev.2020.09.019",
+      "DOI:10.1016/b978-0-323-91912-8.20001-7", "DOI:10.1016/j.psc.2023.02.005", "DOI:10.1016/b978-0-7020-5310-8.00019-3",
+      "DOI:10.1016/j.langsci.2026.101873", "DOI:10.1016/j.yhbeh.2023.105466", "DOI:10.1016/b978-0-12-801772-2.09985-9",
+      "DOI:10.1016/bs.pbr.2023.08.001", "DOI:10.1016/b978-0-323-91912-8.00013-x",
+      "DOI:10.1016/s0079-6123(07)66053-1", "DOI:10.1016/b978-0-7020-5310-8.00018-1",
+      "DOI:10.1016/b978-0-7020-5310-8.09988-9", "DOI:10.1016/j.ijpsycho.2019.03.005",
+      "DOI:10.1016/j.biopsych.2015.03.007", "DOI:10.1016/b978-0-443-29198-2.00012-6",
+      "DOI:10.1016/j.pneurobio.2022.102326", "DOI:10.1016/b978-0-444-62630-1.09986-8",
+      "DOI:10.1016/bs.pbr.2020.12.002", "DOI:10.1016/s0924-977x(17)31973-9", "DOI:10.1016/j.jsxm.2021.01.172",
+      "DOI:10.1016/bs.plm.2021.02.002", "DOI:10.1016/j.cpr.2017.01.009", "DOI:10.1016/j.paid.2019.109684",
+      "DOI:10.1016/s0924-977x(17)30965-3", "DOI:10.1016/s0924-977x(19)31754-7", "DOI:10.1016/b978-012370880-9.09015-0",
+      "DOI:10.1016/j.eurpsy.2017.12.023"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3032'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=externalIds
+  response:
+    body:
+      string: '[{"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46", "externalIds":
+        {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428, "PubMed": "41475326"}},
+        {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686", "externalIds": {"MAG":
+        "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "985f380c52fa1a5db99374e5fd2cb798a72453ff",
+        "externalIds": {"PubMedCentral": "5454038", "MAG": "2621021054", "DOI": "10.3389/fnbeh.2017.00111",
+        "CorpusId": 30594537, "PubMed": "28626391"}}, {"paperId": "0fb1d9783c6266f06e5cae655f42983cb3bb7ae8",
+        "externalIds": {"MAG": "3095625018", "DOI": "10.1101/2020.10.29.346650", "CorpusId":
+        226228619}}, {"paperId": "141271bafaeba45add3862e41be8742023c953d5", "externalIds":
+        {"DOI": "10.1121/10.0045101", "CorpusId": 291443729}}, {"paperId": "348891a1b7bb50760a133ecc1496fa80820d553f",
+        "externalIds": {"DOI": "10.64898/2026.08.30.748122", "CorpusId": 291827369}},
+        {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46", "externalIds": {"DOI":
+        "10.1016/j.heares.2025.109521", "CorpusId": 284296428, "PubMed": "41475326"}},
+        {"paperId": "81be8b8d44fd520b1255bfdafca23cbb425c5da6", "externalIds": {"MAG":
+        "3009373411", "DOI": "10.1097/01.hj.0000657984.74790.d5", "CorpusId": 216461040}},
+        {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686", "externalIds": {"MAG":
+        "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "8a4b31781f8cf9f1ff0a4ccb7d50786cb967fa07",
+        "externalIds": {"MAG": "2335064143", "DOI": "10.1097/01.HJ.0000459743.01876.fd",
+        "CorpusId": 147025209}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "2dd8073333be565b9b1be4cd303729583ffddb6e",
+        "externalIds": {"DOI": "10.1016/j.neubiorev.2026.106584", "CorpusId": 285181814,
+        "PubMed": "41616930"}}, {"paperId": "e30d68ec7fa459ee2e1ad06305a9f0d1a68e7339",
+        "externalIds": {"DOI": "10.1016/j.bbr.2026.116248", "CorpusId": 289093538,
+        "PubMed": "42066961"}}, {"paperId": "0b803c7f799154b6cd5a2d1fdefc07eaf09e66e9",
+        "externalIds": {"DOI": "10.1016/j.mehy.2025.111840", "CorpusId": 283337609}},
+        {"paperId": "af675760797d8b7f3002f5da402385924c5710f4", "externalIds": {"DOI":
+        "10.1016/j.mehy.2025.111765", "CorpusId": 281607692}}, {"paperId": "8902befb9aeeb3edd107121e62480da526d010ed",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109458", "CorpusId": 282431106,
+        "PubMed": "41175630"}}, {"paperId": "e24882df7679e6b9131bfa53f29648a9608da9df",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109440", "CorpusId": 281936014,
+        "PubMed": "41072150"}}, {"paperId": "998fd774820c8a9ddad80a5d4993d7ac8a575967",
+        "externalIds": {"DOI": "10.1016/j.heares.2026.109772", "CorpusId": 291016899,
+        "PubMed": "42608265"}}, {"paperId": "2fa997acdf94b758396338a2ce7e608a6f69255f",
+        "externalIds": {"DOI": "10.1016/j.cortex.2026.06.001", "CorpusId": 289157016,
+        "PubMed": "42314337"}}, {"paperId": "3396665a04268365025e58ad8eb631154c0d6ff8",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109305", "CorpusId": 278456823,
+        "PubMed": "40383086"}}, {"paperId": "0ef2c6a5b4c560b4e22a6805242fe412235a977a",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109184", "CorpusId": 275447907,
+        "PubMed": "39874936"}}, {"paperId": "c9678002e13d7ced831052a340154ee831d877df",
+        "externalIds": {"PubMedCentral": "10366628", "DOI": "10.1016/j.joto.2023.05.006",
+        "CorpusId": 259019977, "PubMed": "37497334"}}, {"paperId": "87f9553cd276d9b74758f93a0b41fa95b4303704",
+        "externalIds": {"DOI": "10.1016/j.jad.2024.01.120", "CorpusId": 267033978,
+        "PubMed": "38228276"}}, {"paperId": "f06dac8a20ee0c5c50a4198ede0209ee38b9803f",
+        "externalIds": {"PubMedCentral": "10156615", "DOI": "10.1016/j.isci.2023.106299",
+        "CorpusId": 254215079, "PubMed": "37153450"}}, null, {"paperId": "8cc0ae2660c672df217bd650fc638ac5afe41d00",
+        "externalIds": {"DOI": "10.1016/j.biopsych.2023.02.688", "CorpusId": 258042516}},
+        {"paperId": "c387751c1713865195e43fb035f7c5eea368178d", "externalIds": {"MAG":
+        "2798179975", "DOI": "10.1016/J.BIOPSYCH.2018.02.410", "CorpusId": 54379290}},
+        {"paperId": "339aa771fdb41a92cdccdebc2c49f353ab2ff1a4", "externalIds": {"MAG":
+        "2769431326", "DOI": "10.1016/S0924-977X(17)31330-5", "CorpusId": 53259155}},
+        {"paperId": "b76990315022d64db17f078a50ba4aee0ec12122", "externalIds": {"DOI":
+        "10.1016/j.neubiorev.2026.106796", "CorpusId": 289176773, "PubMed": "42269959"}},
+        {"paperId": "3f7020be24210ff7e8d40bff68c2e2c33e98a801", "externalIds": {"PubMedCentral":
+        "11620929", "DOI": "10.1016/j.schres.2024.09.026", "CorpusId": 273551489,
+        "PubMed": "39454324"}}, {"paperId": "0ac0e9a1a424a69d2334e7f8cda654f8393af642",
+        "externalIds": {"DOI": "10.1016/j.concog.2023.103477", "CorpusId": 256874981,
+        "PubMed": "36806854"}}, {"paperId": "29ac6632bcd04d628bd2d25926674afa612785ed",
+        "externalIds": {"MAG": "3139334723", "DOI": "10.1016/J.JOCRD.2021.100644",
+        "CorpusId": 233709786}}, {"paperId": "4c21cb038157f2653528f8ea84da26c5ba10a8f6",
+        "externalIds": {"PubMedCentral": "6970183", "MAG": "2999914217", "DOI": "10.1016/j.nicl.2020.102166",
+        "CorpusId": 210139311, "PubMed": "31958686"}}, {"paperId": "26a7173c6e6a75bc9b09b9d82d56906b093cdd49",
+        "externalIds": {"PubMedCentral": "13264413", "DOI": "10.1016/j.bbr.2026.116199",
+        "CorpusId": 287210804, "PubMed": "41941945"}}, {"paperId": "4173ab90106b95b5de373fbf4ba4aa4cec4ed0a4",
+        "externalIds": {"DBLP": "journals/neuroimage/ChangRK26", "DOI": "10.1016/j.neuroimage.2026.122128",
+        "CorpusId": 290181501, "PubMed": "42448253"}}, {"paperId": "a8f1acf9dd5510678ea869191d9046f91012f948",
+        "externalIds": {"PubMedCentral": "7856551", "MAG": "3007954620", "DOI": "10.1016/j.cortex.2020.10.023",
+        "CorpusId": 214501931, "PubMed": "33360763"}}, {"paperId": "b3714a1c54d56dceb664b9e21769f0d31c3ea3cf",
+        "externalIds": {"MAG": "2911256680", "DOI": "10.1016/j.parkreldis.2019.02.005",
+        "CorpusId": 73486351, "PubMed": "30773283"}}, {"paperId": "d878cab88d58941f642a7c794324f37ce35f2cf0",
+        "externalIds": {"DOI": "10.1016/j.neurom.2026.08.002", "CorpusId": 291223511,
+        "PubMed": "42730729"}}, {"paperId": "ed715112ed61e466daeed3c54fcfaf0452c767b2",
+        "externalIds": {"DOI": "10.1016/j.jad.2023.10.006", "CorpusId": 263726382,
+        "PubMed": "37802321"}}, {"paperId": "8228e0529ff84e47243abdafcaeb98710033e889",
+        "externalIds": {"DOI": "10.1016/j.biopsych.2026.03.954", "CorpusId": 287793868}},
+        null, {"paperId": "4a1354fb624e86d508ad806e748ca5f236cbd467", "externalIds":
+        {"PubMedCentral": "13218644", "DOI": "10.1016/j.avb.2025.102035", "CorpusId":
+        276103161, "PubMed": "42222527"}}, null, {"paperId": "005845fe1802cd7d2454fb1c5f7ff5c6f2deb5b2",
+        "externalIds": {"PubMedCentral": "10106443", "DOI": "10.1016/j.neubiorev.2023.105139",
+        "CorpusId": 257633499, "PubMed": "36940889"}}, {"paperId": "b8c40e2a2b4b5e4ad59f767f0a1cf2da571d0493",
+        "externalIds": {"DOI": "10.1016/b978-0-12-818251-2.09992-6", "CorpusId": 243548202}},
+        {"paperId": "0e2e0d96ff08636bc628a455ae80906daf309110", "externalIds": {"PubMedCentral":
+        "13551994", "DOI": "10.1016/j.neubiorev.2026.106786", "CorpusId": 289096397,
+        "PubMed": "42214517"}}, {"paperId": "ee422596e6b723f91bbcbc1d90dea0cca2f7e039",
+        "externalIds": {"MAG": "2514461465", "DOI": "10.1016/S0924-977X(15)30372-2",
+        "CorpusId": 54339720}}, {"paperId": "d28777f40505b462c438dbae747c333c32dac216",
+        "externalIds": {"DOI": "10.1016/j.biopsycho.2025.108994", "CorpusId": 275786012,
+        "PubMed": "39855538"}}, {"paperId": "8aacc337ab049cb4f62616a322314a077ba913b9",
+        "externalIds": {"DOI": "10.1016/j.neuron.2026.05.031", "CorpusId": 289548031,
+        "PubMed": "42341753"}}, {"paperId": "d77e5f7ce7950c1c12dcd4322068e6a376024a7f",
+        "externalIds": {"DBLP": "journals/neuroimage/KliuchkoPHTTSB18", "MAG": "2768378909",
+        "DOI": "10.1016/j.neuroimage.2017.11.041", "CorpusId": 3880725, "PubMed":
+        "29175201"}}, {"paperId": "0c017c43fb528eb50c1fc5a1cc37b7385484f0b3", "externalIds":
+        {"DOI": "10.1016/j.heares.2022.108648", "CorpusId": 253395036, "PubMed": "36395696"}},
+        {"paperId": "a6d5c5f3dfae65fa220c35aa04efa29ee063166b", "externalIds": {"MAG":
+        "1857150657", "PubMedCentral": "4587397", "DOI": "10.1016/j.tics.2015.08.002",
+        "CorpusId": 3612200, "PubMed": "26412095"}}, {"paperId": "ee4df6c11747eac7ce242ce350572f59951a1327",
+        "externalIds": {"MAG": "3108765729", "DOI": "10.1016/j.concog.2020.103046",
+        "CorpusId": 227123696, "PubMed": "33242764"}}, {"paperId": "fa1c05b8139812051cccfb3a2508376efaefba9f",
+        "externalIds": {"DOI": "10.1016/B978-0-443-13554-5.00014-6", "CorpusId": 285283531,
+        "PubMed": "41633751"}}, {"paperId": "cb916e09f58084f5147a4ba51ccb8af501573c94",
+        "externalIds": {"MAG": "3088828444", "DOI": "10.1016/j.neubiorev.2020.09.019",
+        "CorpusId": 221885139, "PubMed": "32980398"}}, null, {"paperId": "b566e6b511fbdbed332b4278cc716f3a7316d0a8",
+        "externalIds": {"DOI": "10.1016/j.psc.2023.02.005", "CorpusId": 257578538,
+        "PubMed": "37149347"}}, {"paperId": "14039482ed3bb3cd09562cee01b7cd9b00003307",
+        "externalIds": {"MAG": "2896992566", "DOI": "10.1016/B978-0-7020-5310-8.00019-3",
+        "CorpusId": 151421158}}, {"paperId": "108793fc40ffdb140c52490928ea97045cab839d",
+        "externalIds": {"DOI": "10.1016/j.langsci.2026.101873", "CorpusId": 292189225}},
+        null, null, {"paperId": "84556de3808c875d690e7116a899f35d9afe3012", "externalIds":
+        {"DOI": "10.1016/bs.pbr.2023.08.001", "CorpusId": 261963347, "PubMed": "37714570"}},
+        null, null, {"paperId": "9d6104a8db32444776dad9e64b14cc7ea0de8e78", "externalIds":
+        {"MAG": "2594012190", "DOI": "10.1016/B978-0-7020-5310-8.00018-1", "CorpusId":
+        152266147}}, null, {"paperId": "f93120388e81ff201777c539beb36bae70d275ce",
+        "externalIds": {"MAG": "2922078042", "DOI": "10.1016/j.ijpsycho.2019.03.005",
+        "CorpusId": 81981349, "PubMed": "30880043"}}, {"paperId": "883c6419535836ca4281c3d6c5be0a3362d2af4c",
+        "externalIds": {"MAG": "3014586033", "DOI": "10.1016/J.BIOPSYCH.2015.03.007",
+        "CorpusId": 152077164}}, null, {"paperId": "e29a8fdca803e45692cd60671103c3463d5eebbc",
+        "externalIds": {"PubMedCentral": "10510040", "DOI": "10.1016/j.pneurobio.2022.102326",
+        "CorpusId": 250722167, "PubMed": "35870677"}}, null, {"paperId": "1b028e6c914024098cd2a4b7155fb3107101cf1b",
+        "externalIds": {"DOI": "10.1016/bs.pbr.2020.12.002", "CorpusId": 232066336,
+        "PubMed": "33637213"}}, {"paperId": "de32fade56d84d323f8c8e1228534a6a75c31c8e",
+        "externalIds": {"DOI": "10.1016/S0924-977X(17)31973-9", "CorpusId": 54277767}},
+        {"paperId": "a3ae2a2b713de1aa104a5d019f03c5d458c6552d", "externalIds": {"DOI":
+        "10.1016/j.jsxm.2021.01.172", "CorpusId": 231988320, "PubMed": "33612417"}},
+        {"paperId": "8fd1c1df63186909be3f8ffa3e157dfc7cff0ecd", "externalIds": {"MAG":
+        "3166600901", "DOI": "10.1016/BS.PLM.2021.02.002", "CorpusId": 236686946}},
+        {"paperId": "c3e6ba7ca38c932a7c977a068febc705230daf91", "externalIds": {"MAG":
+        "2584904743", "DOI": "10.1016/j.cpr.2017.01.009", "CorpusId": 3452569, "PubMed":
+        "28284170"}}, {"paperId": "a1375935be9d327933bff9fedfa8470e33b79976", "externalIds":
+        {"MAG": "2998739224", "DOI": "10.1016/j.paid.2019.109684", "CorpusId": 213203301}},
+        {"paperId": "e1183e20bb9ddcdbe44dbc6cfbe58673b621aefe", "externalIds": {"MAG":
+        "2769021861", "DOI": "10.1016/S0924-977X(17)30965-3", "CorpusId": 149368187}},
+        {"paperId": "0464244ce746bd080db67fe02f6ef714cdb4f73d", "externalIds": {"DOI":
+        "10.1016/s0924-977x(19)31754-7", "CorpusId": 209351916}}, null, null]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '11492'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      Via:
+      - 1.1 800cba2437ee092ab9e4755c65d34a72.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - RZA3-_2cCJOp2SwmF40ujzoycEhype5FPjMTiJUlMnOkTA4xdEehjg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FUS-KFSEvHcEcxQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '11492'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 9faae91d-6978-4ef9-8f2b-ef627f9ac3a0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=41475326%2C41475326%2C41475326%2C41475326%2C41616930%2C42066961%2C41175630%2C41072150%2C42608265%2C42314337%2C40383086%2C39874936%2C38228276%2C42269959%2C36806854%2C42448253%2C30773283%2C42730729%2C37802321%2C39855538%2C42341753%2C29175201%2C36395696%2C33242764%2C41633751%2C32980398%2C37149347%2C37714570%2C30880043%2C33637213%2C33612417%2C28284170&idtype=pmid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA61XTW/bMAz9K4GB5tQM+rBkOUCAAT3tMGD3oRiM2Gm9NFZmu8uKov99FCnLAazD
+        MOVG0xKf6CeSz+/ZMFbj65BtM3vM7rO+Gc62G5pNXY0NOAUTesPZhquVkFshtkzgql+vzTBm2/fs
+        UvVd2z1BgO+P99nB9qcK/NnPwXawsK3Ht7OLcz61NT67hVnO80JJocGTc811KZkzBdO61By9vFCa
+        vJwVgitaoJkRWqEpeS5l4UwmjWTGBZOlKfJSommEMKJACCF0WarSebVh2qgcvXluhJLOy4pCCiPR
+        W8CTwLWFYUIKTnGVUtIQcA5nc2tFCYZguEDLUsHZnSkFBNE55QZHVLhAlIZBGIzL4Yx5gSbYqmB4
+        BmMYy/E4EA1S9iYXgOfQjDBgsQw+c3Oq2hf4qiOQ8Ln5U53OL82nvT3BstFa9wYogXet7TYX2x8P
+        L/YC75r9s4V3uHvn9t7l7Gr3mtjbOe7WwNRuoulOPPyDSTw60/OIXuIRTeIRFxCPaBKPzvQ8gjnx
+        6EzPI64lHp3X84he4tF5PY/oJR6d1/NIcZFHAkYewZx4xLjEozM9j5Qb8ui8nkeMSzyiSTziGYhH
+        jEA8kok8OjTP45pqY+cqY+1Y2y05W1fn9sexedupQ8H3B7bnpqxrwaqScVGXTJnSHBSrqxxggeDf
+        TT/AflfNnYXn4dleqhYqD58/XOHubY81+E4luZ0oDEXd1BvccFWjoUU0fW97d5H6/jQ8geNL3XRj
+        e2ibftXZcXWwr129arvVt68PADdj0N2IYITiT8bwl26JMXeV9DzoNkfyCO0qHYPKJIIR+mD6t6L6
+        i3yr0GDTMaiwIxihcydj+I6xxJhHQirG1IoWGFezJhnD97glxjzE0vmg5hnhI0zH5Dx8V17mMY/d
+        9Dyo3UfyCPM8OQ8/R5Z5zEIhPQ8aUJE8ggJJzsNPvmUes7S5QX3gSI3Vx6SZbtBLcFbHeskkxlIx
+        JhGwwLhSeen1QeoiUh9BPiZjeNmyxJh16Q3mOeqh2DyfBG9yHl5oLfOYlXR6fZCCi9RHkOjpGCQN
+        IxhB+6f3K9KckX4VfirS7xWJ2ci9Cn8rN8BAlRzDmH6Dkuvcy+9lnU//V/+N8fjxF6fg67JODwAA
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '8'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=10.1016%2Fj.heares.2025.109521%2C10.1101%2F2020.10.29.346650%2C10.1121%2F10.0045101%2C10.64898%2F2026.08.30.748122%2C10.1016%2Fj.heares.2025.109521%2C10.1097%2F01.hj.0000657984.74790.d5%2C10.1016%2Fj.heares.2025.109521%2C10.1097%2F01.hj.0000459743.01876.fd%2C10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.neubiorev.2026.106584%2C10.1016%2Fj.bbr.2026.116248%2C10.1016%2Fj.mehy.2025.111840%2C10.1016%2Fj.mehy.2025.111765%2C10.1016%2Fj.heares.2025.109458%2C10.1016%2Fj.heares.2025.109440%2C10.1016%2Fj.heares.2026.109772%2C10.1016%2Fj.cortex.2026.06.001%2C10.1016%2Fj.heares.2025.109305%2C10.1016%2Fj.heares.2025.109184%2C10.1016%2Fj.jad.2024.01.120%2C10.1016%2Fj.euroneuro.2021.05.013%2C10.1016%2Fj.biopsych.2023.02.688%2C10.1016%2Fj.biopsych.2018.02.410%2C10.1016%2Fs0924-977x%2817%2931330-5%2C10.1016%2Fj.neubiorev.2026.106796%2C10.1016%2Fj.concog.2023.103477%2C10.1016%2Fj.jocrd.2021.100644%2C10.1016%2Fj.neuroimage.2026.122128%2C10.1016%2Fj.parkreldis.2019.02.005%2C10.1016%2Fj.neurom.2026.08.002%2C10.1016%2Fj.jad.2023.10.006%2C10.1016%2Fj.biopsych.2026.03.954%2C10.1016%2Fb978-0-443-27446-6.00020-0%2C10.1016%2Fb978-0-323-91912-8.00003-7%2C10.1016%2Fb978-0-12-818251-2.09992-6%2C10.1016%2Fs0924-977x%2815%2930372-2%2C10.1016%2Fj.biopsycho.2025.108994%2C10.1016%2Fj.neuron.2026.05.031%2C10.1016%2Fj.neuroimage.2017.11.041%2C10.1016%2Fj.heares.2022.108648%2C10.1016%2Fj.concog.2020.103046%2C10.1016%2Fb978-0-443-13554-5.00014-6%2C10.1016%2Fj.neubiorev.2020.09.019%2C10.1016%2Fb978-0-323-91912-8.20001-7%2C10.1016%2Fj.psc.2023.02.005%2C10.1016%2Fb978-0-7020-5310-8.00019-3%2C10.1016%2Fj.langsci.2026.101873%2C10.1016%2Fj.yhbeh.2023.105466%2C10.1016%2Fb978-0-12-801772-2.09985-9%2C10.1016%2Fbs.pbr.2023.08.001%2C10.1016%2Fb978-0-323-91912-8.00013-x%2C10.1016%2Fs0079-6123%2807%2966053-1%2C10.1016%2Fb978-0-7020-5310-8.00018-1%2C10.1016%2Fb978-0-7020-5310-8.09988-9%2C10.1016%2Fj.ijpsycho.2019.03.005%2C10.1016%2Fj.biopsych.2015.03.007%2C10.1016%2Fb978-0-443-29198-2.00012-6%2C10.1016%2Fb978-0-444-62630-1.09986-8%2C10.1016%2Fbs.pbr.2020.12.002%2C10.1016%2Fs0924-977x%2817%2931973-9%2C10.1016%2Fj.jsxm.2021.01.172%2C10.1016%2Fbs.plm.2021.02.002%2C10.1016%2Fj.cpr.2017.01.009%2C10.1016%2Fj.paid.2019.109684%2C10.1016%2Fs0924-977x%2817%2930965-3%2C10.1016%2Fs0924-977x%2819%2931754-7%2C10.1016%2Fb978-012370880-9.09015-0%2C10.1016%2Fj.eurpsy.2017.12.023&idtype=doi&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA7VabWvcOBD+K2EhoYXa0YvfFAgcFAr34eC+H+Vw1t7ESXa95900CaX//UZ+2bWk
+        kewUGY4esZ6RHo1Go2el+bk6HPPjy2F1s6qfVl9WTXnY17tDGRT5sYSPjLAkoCSg8QXjN4zdENai
+        /nspD8fVzc/Va97sqt09dPDP9y+rTd1sc/i+ejzUOwBWxfF9L/sp6qr9U+JWlISU0OT6MXwocxgx
+        hFFi+CRiRgElm6H9Gr5KYMhEyKMkicnQxug1/J+QKAZY9zGJMpFJiyQkWchJmEYZZay3ICK9JjR8
+        eAQjQpI4FVkEiFSQsIhRTBSLNOIhoVmahJtiwLSkd+XLXVU35Y+wHY9Ch1mkIO7umr6NJizKlLZt
+        +fDeT5jSLCL2xjSJlUbNWVGcOZu1rs/NSTvZlCnN67o5lm9dM4H/BsfinXPipEY1fzzmhWyLwJ8h
+        ZSqv8qWpd/IfiaAhiQHEVW9W9f7wvn6QAFgSFiZZZgPQTAIiOh7jQASLApjx2yeafuaUcxLEEyua
+        ikRzz25d33cMKOFRmqoTrNdN0U2AQoBFkd59U1fb/L7s+2eMMnUK+7x5asrnopJOpEJOghCDZFNv
+        wyHGCWGYjyU9aEusHgRjHop4zPBOpFlAgijiAUujKAnk+sPmC4gJ4owHggrKgqzdKDxITZBspRmL
+        aQDTEEKwILGsR/yZE56ygKF86yGiMiEQl+76+UDIcGr3OE1hN4UkskU0kwMk2jY9L7j8xEmU4A6j
+        PI6jIJa+oFGQ2MMKVgWWlQq3S5nsJ1CDa39Yn0JfDYq+g1SuVcwhTbdrQkWgbqDnHBL0uhqCG3Ka
+        2v7+cFc+DMETQ6rFVxQcKVdKrmgWB8pEDuG+S3m8C006GTiUB29KTJBUBAll/BNJPycJicG10zPN
+        JkHANVO4PobV4ym45E7jxk4b55O4AyBB3m4XmFEmXQJc1CA/gSAoWAIZh7ZckiBD/QYfmLal9bQl
+        Uq5N5PHwtu2zJuQdJaHLnp+HRr1niO59020MMCRE7XWfV0XnGsjkiZLJNUrQHCuhNm4XQDmFrWF6
+        DhY5JVlGAnC+AA8HxoEA3u/3LVBnfAXKotzm1TMIiSPojj/Kt3y7fy5hk27B9FjXsgVUCLRV9S54
+        rZunzXP9Cm0lrDO0tda30vYyIiPrq06w3Eq5cgXq5Lanccm+YeLkkn3txQkADHkytErct7NA6T63
+        AqWzUiVKbzU5KBzZALCqmN/tRhM6s7vpAagW0jCaGtJadT3kagZF5CYImmgCYAxg6iINYCoj9xCg
+        jdwAanhI00daK6qQdB8jGskOOakkBXLevZcsoxAmotdKk2sOaslwmq6X9CnriskcBNFMGghXTVhP
+        im7CvT8oJ4dnB+2kQOzqCYMh+gmDIQrKsVaxXKtOR1nYK0oKc5CipVxrcVJT1iAf9JQ1JAZFZXOj
+        pqlc4TeoqilX97pKjx9VWWGdINpK6wRRVxrC0Fe2FdcUlgozNNaM8JIqS4ubQWdB3BC5x3utNWfu
+        2QxYp7c0B2CKy5GdBs1l3Waq6sJhhu6yeHNQXpOpsNVfeurQFJgxhqrB9B2hqjAjuak6bIpgp8Yc
+        KNFOo9VkiMtMVWYeQ5ouu+qud26LurqSIuzWlGBX+b7696l8v403KV1vyJpmoigYyWEIVggSgyra
+        xKTII06kMv5RNgewl/dRuxr+PjzUr3lVFd3fv+TVE5zH7TXSz/ZS6WbqNqm/qyqLoO1lAn26DSub
+        pm6kgGya7eEePvxZlLtjtanK5mJXHy829cuuuKh2F3//9RV4jclQy90VwsQG9UJDvybDxtcxHga2
+        X8WZBOxYHx6YuvbDQmPCxD8t86ZxkpZp4oWW83LTuo1sBv4ombepVjIm1B8N5OLWygPBLkSkuySe
+        R6TD+iOCXkjPzbcdejky7gVC0UuQGV22zyAzQvsjg17tW8mg6MWWqXtImLtMHXoxMtSd6VC0PzLm
+        I4mViQn1R8P2HmMlYzPweADgD0D2UwDHL0Jo/OA0h9AY74uQ7YHLwscGX1JEdO9pHxARnYHPJIg8
+        4DmSIIL2uNWR50L7ZkfAXpcKf5t0rRVu4Y+U9TXUSspq4dlT+vur20s62vthMXrtnTosRtBlMvPo
+        YXlWZh7hfRFyPmRbSDltPBPDH8/dxHAbz8TwB3s3MdxmiTNtXCQw40wbw/2Hul6TMBnruoHnjKQX
+        Qbgzko5e6CAZl1zMO0jGFksI/FGRxwyBP0IvIUGGB5B5EmSEXiBRmgUs04nStFlIO46KZuZpx5HB
+        grn7XKUzP3efbTzqJKMyyC6QDKhn/+BFSG7/4Db+/IMXPll9hMP90cHqrPbbdcsCbCDlpKz7Zbjf
+        yo88I1zAqeGgbHbpPOPNEq7pM9608RY5WNmYjRCGXVae9SVqH5JnvY0/FYSXxVlVEA5feKtnLk5O
+        myWJnSr/PkDsZONv01uqDa072oJf5vJqVN046/JqhF/iN5tRTTnjN5th450YVsE5RQyz8Z82yblq
+        dDJtjrBL3TsOFaoz7x0HuMdbEbMg1n4tYmJ9LpBRfOtYIAPr8TeHUehr/8FhQH1e6Bk1xY6rPAO7
+        UMCe6pfnBewJvgSdcbn0DDpjuN+Eh1ZnO9MdauH1QUqvB3e/Rpno3yTz/df/RjTRex83AAA=
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '11'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=PMC10872410&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA2VRy2rDMBD8lSKoT7G7kh+RDIZCz4XeSyiqJcdKYq9rOXVDyL935UBJyXFnZ3ZG
+        ozPzk56OnpUM92zFRusH7L2NjZ4sgQJEEXOIef4g0lKIEsTC+jpaP7HyzGY99q7f0oH3zYo1OHaa
+        cLbz2BPRmek0hDtDVzuzAIHJ3l5fOMi1yDgwktlOuwOxJjr6bH90NxxsUmNHggkxbMiCdg77eMZx
+        3xxwpp2tW6Tdoq6C9jGDG3V0TVOFLBEZVzeu0TVZteSKgkl1bxHpwX3s7anKmzWvG6i5VMYI0Aq4
+        MApyqWSTg9FZCpLyfNvRkz6U2SPNvsVZO3r3Ml9CbzWOSwNnZtARziHhwIunXXJqP22bUN8pIXlW
+        FHTg2lr5r66ABjCVkCqp1N9vWBPfkS+byy9KF2rV4gEAAA==
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=pmid%3A41475326%7C41475326%7C41475326%7C41475326%7C41616930%7C42066961%7C41175630%7C41072150%7C42608265%7C42314337%7C40383086%7C39874936%7C38228276%7C42269959%7C36806854%7C42448253%7C30773283%7C42730729%7C37802321%7C39855538%7C42341753%7C29175201%7C36395696%7C33242764%7C41633751%7C32980398%7C37149347%7C37714570%7C30880043%7C33637213%7C33612417%7C28284170&mailto=test%40example.com&per_page=100&select=ids
+  response:
+    body:
+      string: '{"meta": {"count": 29, "db_response_time_ms": 23, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where PMID is (\n    28284170
+        or 29175201 or 30773283 or 30880043 or 32980398 or 33242764\n    or 33612417
+        or 33637213 or 36395696 or 36806854 or 37149347 or 37714570\n    or 37802321
+        or 38228276 or 39855538 or 39874936 or 40383086 or 41072150\n    or 41175630
+        or 41475326 or 41475326 or 41475326 or 41475326 or 41616930\n    or 41633751
+        or 42066961 or 42269959 or 42314337 or 42341753 or 42448253\n    or 42608265
+        or 42730729\n  )", "x_new_oql": "get works where PMID is (28284170 or 29175201
+        or 30773283 or 30880043 or 32980398 or 33242764 or 33612417 or 33637213 or
+        36395696 or 36806854 or 37149347 or 37714570 or 37802321 or 38228276 or 39855538
+        or 39874936 or 40383086 or 41072150 or 41175630 or 41475326 or 41475326 or
+        41475326 or 41475326 or 41616930 or 41633751 or 42066961 or 42269959 or 42314337
+        or 42341753 or 42448253 or 42608265 or 42730729)", "oqo": {"get_rows": "works",
+        "filter_rows": [{"join": "or", "filters": [{"column_id": "ids.pmid", "value":
+        "28284170"}, {"column_id": "ids.pmid", "value": "29175201"}, {"column_id":
+        "ids.pmid", "value": "30773283"}, {"column_id": "ids.pmid", "value": "30880043"},
+        {"column_id": "ids.pmid", "value": "32980398"}, {"column_id": "ids.pmid",
+        "value": "33242764"}, {"column_id": "ids.pmid", "value": "33612417"}, {"column_id":
+        "ids.pmid", "value": "33637213"}, {"column_id": "ids.pmid", "value": "36395696"},
+        {"column_id": "ids.pmid", "value": "36806854"}, {"column_id": "ids.pmid",
+        "value": "37149347"}, {"column_id": "ids.pmid", "value": "37714570"}, {"column_id":
+        "ids.pmid", "value": "37802321"}, {"column_id": "ids.pmid", "value": "38228276"},
+        {"column_id": "ids.pmid", "value": "39855538"}, {"column_id": "ids.pmid",
+        "value": "39874936"}, {"column_id": "ids.pmid", "value": "40383086"}, {"column_id":
+        "ids.pmid", "value": "41072150"}, {"column_id": "ids.pmid", "value": "41175630"},
+        {"column_id": "ids.pmid", "value": "41475326"}, {"column_id": "ids.pmid",
+        "value": "41475326"}, {"column_id": "ids.pmid", "value": "41475326"}, {"column_id":
+        "ids.pmid", "value": "41475326"}, {"column_id": "ids.pmid", "value": "41616930"},
+        {"column_id": "ids.pmid", "value": "41633751"}, {"column_id": "ids.pmid",
+        "value": "42066961"}, {"column_id": "ids.pmid", "value": "42269959"}, {"column_id":
+        "ids.pmid", "value": "42314337"}, {"column_id": "ids.pmid", "value": "42341753"},
+        {"column_id": "ids.pmid", "value": "42448253"}, {"column_id": "ids.pmid",
+        "value": "42608265"}, {"column_id": "ids.pmid", "value": "42730729"}]}]},
+        "url": "/works?filter=ids.pmid:28284170|29175201|30773283|30880043|32980398|33242764|33612417|33637213|36395696|36806854|37149347|37714570|37802321|38228276|39855538|39874936|40383086|41072150|41175630|41475326|41475326|41475326|41475326|41616930|41633751|42066961|42269959|42314337|42341753|42448253|42608265|42730729&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3127429504",
+        "doi": "https://doi.org/10.1016/bs.pbr.2020.12.002", "mag": "3127429504",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/33637213"}}, {"ids": {"openalex":
+        "https://openalex.org/W2584904743", "doi": "https://doi.org/10.1016/j.cpr.2017.01.009",
+        "mag": "2584904743", "pmid": "https://pubmed.ncbi.nlm.nih.gov/28284170"}},
+        {"ids": {"openalex": "https://openalex.org/W3133316194", "doi": "https://doi.org/10.1016/j.jsxm.2021.01.172",
+        "mag": "3133316194", "pmid": "https://pubmed.ncbi.nlm.nih.gov/33612417"}},
+        {"ids": {"openalex": "https://openalex.org/W4308581715", "doi": "https://doi.org/10.1016/j.heares.2022.108648",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36395696"}}, {"ids": {"openalex":
+        "https://openalex.org/W2911256680", "doi": "https://doi.org/10.1016/j.parkreldis.2019.02.005",
+        "mag": "2911256680", "pmid": "https://pubmed.ncbi.nlm.nih.gov/30773283"}},
+        {"ids": {"openalex": "https://openalex.org/W3088828444", "doi": "https://doi.org/10.1016/j.neubiorev.2020.09.019",
+        "mag": "3088828444", "pmid": "https://pubmed.ncbi.nlm.nih.gov/32980398"}},
+        {"ids": {"openalex": "https://openalex.org/W2768378909", "doi": "https://doi.org/10.1016/j.neuroimage.2017.11.041",
+        "mag": "2768378909", "pmid": "https://pubmed.ncbi.nlm.nih.gov/29175201"}},
+        {"ids": {"openalex": "https://openalex.org/W4320889450", "doi": "https://doi.org/10.1016/j.concog.2023.103477",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36806854"}}, {"ids": {"openalex":
+        "https://openalex.org/W4390929604", "doi": "https://doi.org/10.1016/j.jad.2024.01.120",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/38228276"}}, {"ids": {"openalex":
+        "https://openalex.org/W4406277768", "doi": "https://doi.org/10.1016/j.heares.2025.109184",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/39874936"}}, {"ids": {"openalex":
+        "https://openalex.org/W4386396169", "doi": "https://doi.org/10.1016/bs.pbr.2023.08.001",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37714570"}}, {"ids": {"openalex":
+        "https://openalex.org/W4406731572", "doi": "https://doi.org/10.1016/j.biopsycho.2025.108994",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/39855538"}}, {"ids": {"openalex":
+        "https://openalex.org/W3108765729", "doi": "https://doi.org/10.1016/j.concog.2020.103046",
+        "mag": "3108765729", "pmid": "https://pubmed.ncbi.nlm.nih.gov/33242764"}},
+        {"ids": {"openalex": "https://openalex.org/W4410252619", "doi": "https://doi.org/10.1016/j.heares.2025.109305",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/40383086"}}, {"ids": {"openalex":
+        "https://openalex.org/W2922078042", "doi": "https://doi.org/10.1016/j.ijpsycho.2019.03.005",
+        "mag": "2922078042", "pmid": "https://pubmed.ncbi.nlm.nih.gov/30880043"}},
+        {"ids": {"openalex": "https://openalex.org/W4324350788", "doi": "https://doi.org/10.1016/j.psc.2023.02.005",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37149347"}}, {"ids": {"openalex":
+        "https://openalex.org/W4387369418", "doi": "https://doi.org/10.1016/j.jad.2023.10.006",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37802321"}}, {"ids": {"openalex":
+        "https://openalex.org/W7117369102", "doi": "https://doi.org/10.1016/j.heares.2025.109521",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41475326"}}, {"ids": {"openalex":
+        "https://openalex.org/W7127044080", "doi": "https://doi.org/10.1016/b978-0-443-13554-5.00014-6",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41633751"}}, {"ids": {"openalex":
+        "https://openalex.org/W7164157674", "doi": "https://doi.org/10.1016/j.neubiorev.2026.106796",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42269959"}}, {"ids": {"openalex":
+        "https://openalex.org/W7165795050", "doi": "https://doi.org/10.1016/j.neuron.2026.05.031",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42341753"}}, {"ids": {"openalex":
+        "https://openalex.org/W4414866733", "doi": "https://doi.org/10.1016/j.heares.2025.109440",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41072150"}}, {"ids": {"openalex":
+        "https://openalex.org/W4415546344", "doi": "https://doi.org/10.1016/j.heares.2025.109458",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41175630"}}, {"ids": {"openalex":
+        "https://openalex.org/W7126115337", "doi": "https://doi.org/10.1016/j.neubiorev.2026.106584",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41616930"}}, {"ids": {"openalex":
+        "https://openalex.org/W7159803424", "doi": "https://doi.org/10.1016/j.bbr.2026.116248",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42066961"}}, {"ids": {"openalex":
+        "https://openalex.org/W7164042456", "doi": "https://doi.org/10.1016/j.cortex.2026.06.001",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42314337"}}, {"ids": {"openalex":
+        "https://openalex.org/W7168242738", "doi": "https://doi.org/10.1016/j.neuroimage.2026.122128",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42448253"}}, {"ids": {"openalex":
+        "https://openalex.org/W7201980214", "doi": "https://doi.org/10.1016/j.heares.2026.109772",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42608265"}}, {"ids": {"openalex":
+        "https://openalex.org/W7203726743", "doi": "https://doi.org/10.1016/j.neurom.2026.08.002",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42730729"}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4b3efd6ba5d9b31-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:02 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9658'
+      X-RateLimit-Remaining-USD:
+      - '0.9658'
+      X-RateLimit-Reset:
+      - '74278'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=YsSeMM%2F2Y5tbZ7rzfsKVT3r7sUudLVqZblUhhd5DjCc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792120922"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=YsSeMM%2F2Y5tbZ7rzfsKVT3r7sUudLVqZblUhhd5DjCc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792120922"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.heares.2025.109521%7C10.1101%2F2020.10.29.346650%7C10.1121%2F10.0045101%7C10.64898%2F2026.08.30.748122%7C10.1016%2Fj.heares.2025.109521%7C10.1097%2F01.hj.0000657984.74790.d5%7C10.1016%2Fj.heares.2025.109521%7C10.1097%2F01.hj.0000459743.01876.fd%7C10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.neubiorev.2026.106584%7C10.1016%2Fj.bbr.2026.116248%7C10.1016%2Fj.mehy.2025.111840%7C10.1016%2Fj.mehy.2025.111765%7C10.1016%2Fj.heares.2025.109458%7C10.1016%2Fj.heares.2025.109440%7C10.1016%2Fj.heares.2026.109772%7C10.1016%2Fj.cortex.2026.06.001%7C10.1016%2Fj.heares.2025.109305%7C10.1016%2Fj.heares.2025.109184%7C10.1016%2Fj.jad.2024.01.120%7C10.1016%2Fj.euroneuro.2021.05.013%7C10.1016%2Fj.biopsych.2023.02.688%7C10.1016%2Fj.biopsych.2018.02.410%7C10.1016%2Fs0924-977x%2817%2931330-5%7C10.1016%2Fj.neubiorev.2026.106796%7C10.1016%2Fj.concog.2023.103477%7C10.1016%2Fj.jocrd.2021.100644%7C10.1016%2Fj.neuroimage.2026.122128%7C10.1016%2Fj.parkreldis.2019.02.005%7C10.1016%2Fj.neurom.2026.08.002%7C10.1016%2Fj.jad.2023.10.006%7C10.1016%2Fj.biopsych.2026.03.954%7C10.1016%2Fb978-0-443-27446-6.00020-0%7C10.1016%2Fb978-0-323-91912-8.00003-7%7C10.1016%2Fb978-0-12-818251-2.09992-6%7C10.1016%2Fs0924-977x%2815%2930372-2%7C10.1016%2Fj.biopsycho.2025.108994%7C10.1016%2Fj.neuron.2026.05.031%7C10.1016%2Fj.neuroimage.2017.11.041%7C10.1016%2Fj.heares.2022.108648%7C10.1016%2Fj.concog.2020.103046%7C10.1016%2Fb978-0-443-13554-5.00014-6%7C10.1016%2Fj.neubiorev.2020.09.019%7C10.1016%2Fb978-0-323-91912-8.20001-7%7C10.1016%2Fj.psc.2023.02.005%7C10.1016%2Fb978-0-7020-5310-8.00019-3%7C10.1016%2Fj.langsci.2026.101873%7C10.1016%2Fb978-0-12-801772-2.09985-9%7C10.1016%2Fbs.pbr.2023.08.001%7C10.1016%2Fb978-0-323-91912-8.00013-x%7C10.1016%2Fs0079-6123%2807%2966053-1%7C10.1016%2Fb978-0-7020-5310-8.00018-1%7C10.1016%2Fb978-0-7020-5310-8.09988-9%7C10.1016%2Fj.ijpsycho.2019.03.005%7C10.1016%2Fj.biopsych.2015.03.007%7C10.1016%2Fb978-0-443-29198-2.00012-6%7C10.1016%2Fb978-0-444-62630-1.09986-8%7C10.1016%2Fbs.pbr.2020.12.002%7C10.1016%2Fs0924-977x%2817%2931973-9%7C10.1016%2Fj.jsxm.2021.01.172%7C10.1016%2Fbs.plm.2021.02.002%7C10.1016%2Fj.cpr.2017.01.009%7C10.1016%2Fj.paid.2019.109684%7C10.1016%2Fs0924-977x%2817%2930965-3%7C10.1016%2Fs0924-977x%2819%2931754-7%7C10.1016%2Fb978-012370880-9.09015-0%7C10.1016%2Fj.eurpsy.2017.12.023&mailto=test%40example.com&per_page=100&select=ids
+  response:
+    body:
+      string: '{"meta": {"count": 64, "db_response_time_ms": 84, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    10.1016/b978-0-12-801772-2.09985-9
+        or 10.1016/b978-0-12-818251-2.09992-6\n    or 10.1016/b978-0-323-91912-8.00003-7
+        or 10.1016/b978-0-323-91912-8.00013-x\n    or 10.1016/b978-0-323-91912-8.20001-7
+        or 10.1016/b978-0-443-13554-5.00014-6\n    or 10.1016/b978-0-443-27446-6.00020-0
+        or 10.1016/b978-0-443-29198-2.00012-6\n    or 10.1016/b978-0-444-62630-1.09986-8
+        or 10.1016/b978-0-7020-5310-8.00018-1\n    or 10.1016/b978-0-7020-5310-8.00019-3
+        or 10.1016/b978-0-7020-5310-8.09988-9\n    or 10.1016/b978-012370880-9.09015-0
+        or 10.1016/bs.pbr.2020.12.002\n    or 10.1016/bs.pbr.2023.08.001 or 10.1016/bs.plm.2021.02.002\n    or
+        10.1016/j.bbr.2026.116248 or 10.1016/j.biopsych.2015.03.007\n    or 10.1016/j.biopsych.2018.02.410
+        or 10.1016/j.biopsych.2023.02.688\n    or 10.1016/j.biopsych.2026.03.954 or
+        10.1016/j.biopsycho.2025.108994\n    or 10.1016/j.concog.2020.103046 or 10.1016/j.concog.2023.103477\n    or
+        10.1016/j.cortex.2026.06.001 or 10.1016/j.cpr.2017.01.009\n    or 10.1016/j.euroneuro.2021.05.013
+        or 10.1016/j.eurpsy.2017.12.023\n    or 10.1016/j.heares.2022.108648 or 10.1016/j.heares.2025.109184\n    or
+        10.1016/j.heares.2025.109305 or 10.1016/j.heares.2025.109440\n    or 10.1016/j.heares.2025.109458
+        or 10.1016/j.heares.2025.109521\n    or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521\n    or
+        10.1016/j.heares.2025.109521 or 10.1016/j.heares.2026.109772\n    or 10.1016/j.ijpsycho.2019.03.005
+        or 10.1016/j.jad.2023.10.006\n    or 10.1016/j.jad.2024.01.120 or 10.1016/j.jocrd.2021.100644\n    or
+        10.1016/j.jsxm.2021.01.172 or 10.1016/j.langsci.2026.101873\n    or 10.1016/j.mehy.2025.111765
+        or 10.1016/j.mehy.2025.111840\n    or 10.1016/j.neubiorev.2020.09.019 or 10.1016/j.neubiorev.2026.106584\n    or
+        10.1016/j.neubiorev.2026.106796 or 10.1016/j.neuroimage.2017.11.041\n    or
+        10.1016/j.neuroimage.2026.122128 or 10.1016/j.neurom.2026.08.002\n    or 10.1016/j.neuron.2026.05.031
+        or 10.1016/j.paid.2019.109684\n    or 10.1016/j.parkreldis.2019.02.005 or
+        10.1016/j.psc.2023.02.005\n    or \"10.1016/s0079-6123(07)66053-1\" or \"10.1016/s0924-977x(15)30372-2\"\n    or
+        \"10.1016/s0924-977x(17)30965-3\" or \"10.1016/s0924-977x(17)31330-5\"\n    or
+        \"10.1016/s0924-977x(17)31973-9\" or \"10.1016/s0924-977x(19)31754-7\"\n    or
+        10.1097/01.hj.0000459743.01876.fd or 10.1097/01.hj.0000657984.74790.d5\n    or
+        10.1101/2020.10.29.346650 or 10.1121/10.0045101\n    or 10.64898/2026.08.30.748122\n  )",
+        "x_new_oql": "get works where DOI is (10.1016/b978-0-12-801772-2.09985-9 or
+        10.1016/b978-0-12-818251-2.09992-6 or 10.1016/b978-0-323-91912-8.00003-7 or
+        10.1016/b978-0-323-91912-8.00013-x or 10.1016/b978-0-323-91912-8.20001-7 or
+        10.1016/b978-0-443-13554-5.00014-6 or 10.1016/b978-0-443-27446-6.00020-0 or
+        10.1016/b978-0-443-29198-2.00012-6 or 10.1016/b978-0-444-62630-1.09986-8 or
+        10.1016/b978-0-7020-5310-8.00018-1 or 10.1016/b978-0-7020-5310-8.00019-3 or
+        10.1016/b978-0-7020-5310-8.09988-9 or 10.1016/b978-012370880-9.09015-0 or
+        10.1016/bs.pbr.2020.12.002 or 10.1016/bs.pbr.2023.08.001 or 10.1016/bs.plm.2021.02.002
+        or 10.1016/j.bbr.2026.116248 or 10.1016/j.biopsych.2015.03.007 or 10.1016/j.biopsych.2018.02.410
+        or 10.1016/j.biopsych.2023.02.688 or 10.1016/j.biopsych.2026.03.954 or 10.1016/j.biopsycho.2025.108994
+        or 10.1016/j.concog.2020.103046 or 10.1016/j.concog.2023.103477 or 10.1016/j.cortex.2026.06.001
+        or 10.1016/j.cpr.2017.01.009 or 10.1016/j.euroneuro.2021.05.013 or 10.1016/j.eurpsy.2017.12.023
+        or 10.1016/j.heares.2022.108648 or 10.1016/j.heares.2025.109184 or 10.1016/j.heares.2025.109305
+        or 10.1016/j.heares.2025.109440 or 10.1016/j.heares.2025.109458 or 10.1016/j.heares.2025.109521
+        or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521
+        or 10.1016/j.heares.2026.109772 or 10.1016/j.ijpsycho.2019.03.005 or 10.1016/j.jad.2023.10.006
+        or 10.1016/j.jad.2024.01.120 or 10.1016/j.jocrd.2021.100644 or 10.1016/j.jsxm.2021.01.172
+        or 10.1016/j.langsci.2026.101873 or 10.1016/j.mehy.2025.111765 or 10.1016/j.mehy.2025.111840
+        or 10.1016/j.neubiorev.2020.09.019 or 10.1016/j.neubiorev.2026.106584 or 10.1016/j.neubiorev.2026.106796
+        or 10.1016/j.neuroimage.2017.11.041 or 10.1016/j.neuroimage.2026.122128 or
+        10.1016/j.neurom.2026.08.002 or 10.1016/j.neuron.2026.05.031 or 10.1016/j.paid.2019.109684
+        or 10.1016/j.parkreldis.2019.02.005 or 10.1016/j.psc.2023.02.005 or \"10.1016/s0079-6123(07)66053-1\"
+        or \"10.1016/s0924-977x(15)30372-2\" or \"10.1016/s0924-977x(17)30965-3\"
+        or \"10.1016/s0924-977x(17)31330-5\" or \"10.1016/s0924-977x(17)31973-9\"
+        or \"10.1016/s0924-977x(19)31754-7\" or 10.1097/01.hj.0000459743.01876.fd
+        or 10.1097/01.hj.0000657984.74790.d5 or 10.1101/2020.10.29.346650 or 10.1121/10.0045101
+        or 10.64898/2026.08.30.748122)", "oqo": {"get_rows": "works", "filter_rows":
+        [{"join": "or", "filters": [{"column_id": "doi", "value": "10.1016/b978-0-12-801772-2.09985-9"},
+        {"column_id": "doi", "value": "10.1016/b978-0-12-818251-2.09992-6"}, {"column_id":
+        "doi", "value": "10.1016/b978-0-323-91912-8.00003-7"}, {"column_id": "doi",
+        "value": "10.1016/b978-0-323-91912-8.00013-x"}, {"column_id": "doi", "value":
+        "10.1016/b978-0-323-91912-8.20001-7"}, {"column_id": "doi", "value": "10.1016/b978-0-443-13554-5.00014-6"},
+        {"column_id": "doi", "value": "10.1016/b978-0-443-27446-6.00020-0"}, {"column_id":
+        "doi", "value": "10.1016/b978-0-443-29198-2.00012-6"}, {"column_id": "doi",
+        "value": "10.1016/b978-0-444-62630-1.09986-8"}, {"column_id": "doi", "value":
+        "10.1016/b978-0-7020-5310-8.00018-1"}, {"column_id": "doi", "value": "10.1016/b978-0-7020-5310-8.00019-3"},
+        {"column_id": "doi", "value": "10.1016/b978-0-7020-5310-8.09988-9"}, {"column_id":
+        "doi", "value": "10.1016/b978-012370880-9.09015-0"}, {"column_id": "doi",
+        "value": "10.1016/bs.pbr.2020.12.002"}, {"column_id": "doi", "value": "10.1016/bs.pbr.2023.08.001"},
+        {"column_id": "doi", "value": "10.1016/bs.plm.2021.02.002"}, {"column_id":
+        "doi", "value": "10.1016/j.bbr.2026.116248"}, {"column_id": "doi", "value":
+        "10.1016/j.biopsych.2015.03.007"}, {"column_id": "doi", "value": "10.1016/j.biopsych.2018.02.410"},
+        {"column_id": "doi", "value": "10.1016/j.biopsych.2023.02.688"}, {"column_id":
+        "doi", "value": "10.1016/j.biopsych.2026.03.954"}, {"column_id": "doi", "value":
+        "10.1016/j.biopsycho.2025.108994"}, {"column_id": "doi", "value": "10.1016/j.concog.2020.103046"},
+        {"column_id": "doi", "value": "10.1016/j.concog.2023.103477"}, {"column_id":
+        "doi", "value": "10.1016/j.cortex.2026.06.001"}, {"column_id": "doi", "value":
+        "10.1016/j.cpr.2017.01.009"}, {"column_id": "doi", "value": "10.1016/j.euroneuro.2021.05.013"},
+        {"column_id": "doi", "value": "10.1016/j.eurpsy.2017.12.023"}, {"column_id":
+        "doi", "value": "10.1016/j.heares.2022.108648"}, {"column_id": "doi", "value":
+        "10.1016/j.heares.2025.109184"}, {"column_id": "doi", "value": "10.1016/j.heares.2025.109305"},
+        {"column_id": "doi", "value": "10.1016/j.heares.2025.109440"}, {"column_id":
+        "doi", "value": "10.1016/j.heares.2025.109458"}, {"column_id": "doi", "value":
+        "10.1016/j.heares.2025.109521"}, {"column_id": "doi", "value": "10.1016/j.heares.2025.109521"},
+        {"column_id": "doi", "value": "10.1016/j.heares.2025.109521"}, {"column_id":
+        "doi", "value": "10.1016/j.heares.2025.109521"}, {"column_id": "doi", "value":
+        "10.1016/j.heares.2026.109772"}, {"column_id": "doi", "value": "10.1016/j.ijpsycho.2019.03.005"},
+        {"column_id": "doi", "value": "10.1016/j.jad.2023.10.006"}, {"column_id":
+        "doi", "value": "10.1016/j.jad.2024.01.120"}, {"column_id": "doi", "value":
+        "10.1016/j.jocrd.2021.100644"}, {"column_id": "doi", "value": "10.1016/j.jsxm.2021.01.172"},
+        {"column_id": "doi", "value": "10.1016/j.langsci.2026.101873"}, {"column_id":
+        "doi", "value": "10.1016/j.mehy.2025.111765"}, {"column_id": "doi", "value":
+        "10.1016/j.mehy.2025.111840"}, {"column_id": "doi", "value": "10.1016/j.neubiorev.2020.09.019"},
+        {"column_id": "doi", "value": "10.1016/j.neubiorev.2026.106584"}, {"column_id":
+        "doi", "value": "10.1016/j.neubiorev.2026.106796"}, {"column_id": "doi", "value":
+        "10.1016/j.neuroimage.2017.11.041"}, {"column_id": "doi", "value": "10.1016/j.neuroimage.2026.122128"},
+        {"column_id": "doi", "value": "10.1016/j.neurom.2026.08.002"}, {"column_id":
+        "doi", "value": "10.1016/j.neuron.2026.05.031"}, {"column_id": "doi", "value":
+        "10.1016/j.paid.2019.109684"}, {"column_id": "doi", "value": "10.1016/j.parkreldis.2019.02.005"},
+        {"column_id": "doi", "value": "10.1016/j.psc.2023.02.005"}, {"column_id":
+        "doi", "value": "10.1016/s0079-6123(07)66053-1"}, {"column_id": "doi", "value":
+        "10.1016/s0924-977x(15)30372-2"}, {"column_id": "doi", "value": "10.1016/s0924-977x(17)30965-3"},
+        {"column_id": "doi", "value": "10.1016/s0924-977x(17)31330-5"}, {"column_id":
+        "doi", "value": "10.1016/s0924-977x(17)31973-9"}, {"column_id": "doi", "value":
+        "10.1016/s0924-977x(19)31754-7"}, {"column_id": "doi", "value": "10.1097/01.hj.0000459743.01876.fd"},
+        {"column_id": "doi", "value": "10.1097/01.hj.0000657984.74790.d5"}, {"column_id":
+        "doi", "value": "10.1101/2020.10.29.346650"}, {"column_id": "doi", "value":
+        "10.1121/10.0045101"}, {"column_id": "doi", "value": "10.64898/2026.08.30.748122"}]}]},
+        "url": "/works?filter=doi:10.1016%2Fb978-0-12-801772-2.09985-9|10.1016%2Fb978-0-12-818251-2.09992-6|10.1016%2Fb978-0-323-91912-8.00003-7|10.1016%2Fb978-0-323-91912-8.00013-x|10.1016%2Fb978-0-323-91912-8.20001-7|10.1016%2Fb978-0-443-13554-5.00014-6|10.1016%2Fb978-0-443-27446-6.00020-0|10.1016%2Fb978-0-443-29198-2.00012-6|10.1016%2Fb978-0-444-62630-1.09986-8|10.1016%2Fb978-0-7020-5310-8.00018-1|10.1016%2Fb978-0-7020-5310-8.00019-3|10.1016%2Fb978-0-7020-5310-8.09988-9|10.1016%2Fb978-012370880-9.09015-0|10.1016%2Fbs.pbr.2020.12.002|10.1016%2Fbs.pbr.2023.08.001|10.1016%2Fbs.plm.2021.02.002|10.1016%2Fj.bbr.2026.116248|10.1016%2Fj.biopsych.2015.03.007|10.1016%2Fj.biopsych.2018.02.410|10.1016%2Fj.biopsych.2023.02.688|10.1016%2Fj.biopsych.2026.03.954|10.1016%2Fj.biopsycho.2025.108994|10.1016%2Fj.concog.2020.103046|10.1016%2Fj.concog.2023.103477|10.1016%2Fj.cortex.2026.06.001|10.1016%2Fj.cpr.2017.01.009|10.1016%2Fj.euroneuro.2021.05.013|10.1016%2Fj.eurpsy.2017.12.023|10.1016%2Fj.heares.2022.108648|10.1016%2Fj.heares.2025.109184|10.1016%2Fj.heares.2025.109305|10.1016%2Fj.heares.2025.109440|10.1016%2Fj.heares.2025.109458|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2026.109772|10.1016%2Fj.ijpsycho.2019.03.005|10.1016%2Fj.jad.2023.10.006|10.1016%2Fj.jad.2024.01.120|10.1016%2Fj.jocrd.2021.100644|10.1016%2Fj.jsxm.2021.01.172|10.1016%2Fj.langsci.2026.101873|10.1016%2Fj.mehy.2025.111765|10.1016%2Fj.mehy.2025.111840|10.1016%2Fj.neubiorev.2020.09.019|10.1016%2Fj.neubiorev.2026.106584|10.1016%2Fj.neubiorev.2026.106796|10.1016%2Fj.neuroimage.2017.11.041|10.1016%2Fj.neuroimage.2026.122128|10.1016%2Fj.neurom.2026.08.002|10.1016%2Fj.neuron.2026.05.031|10.1016%2Fj.paid.2019.109684|10.1016%2Fj.parkreldis.2019.02.005|10.1016%2Fj.psc.2023.02.005|10.1016%2Fs0079-6123%2807%2966053-1|10.1016%2Fs0924-977x%2815%2930372-2|10.1016%2Fs0924-977x%2817%2930965-3|10.1016%2Fs0924-977x%2817%2931330-5|10.1016%2Fs0924-977x%2817%2931973-9|10.1016%2Fs0924-977x%2819%2931754-7|10.1097%2F01.hj.0000459743.01876.fd|10.1097%2F01.hj.0000657984.74790.d5|10.1101%2F2020.10.29.346650|10.1121%2F10.0045101|10.64898%2F2026.08.30.748122&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3127429504",
+        "doi": "https://doi.org/10.1016/bs.pbr.2020.12.002", "mag": "3127429504",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/33637213"}}, {"ids": {"openalex":
+        "https://openalex.org/W2584904743", "doi": "https://doi.org/10.1016/j.cpr.2017.01.009",
+        "mag": "2584904743", "pmid": "https://pubmed.ncbi.nlm.nih.gov/28284170"}},
+        {"ids": {"openalex": "https://openalex.org/W3133316194", "doi": "https://doi.org/10.1016/j.jsxm.2021.01.172",
+        "mag": "3133316194", "pmid": "https://pubmed.ncbi.nlm.nih.gov/33612417"}},
+        {"ids": {"openalex": "https://openalex.org/W4308581715", "doi": "https://doi.org/10.1016/j.heares.2022.108648",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36395696"}}, {"ids": {"openalex":
+        "https://openalex.org/W2911256680", "doi": "https://doi.org/10.1016/j.parkreldis.2019.02.005",
+        "mag": "2911256680", "pmid": "https://pubmed.ncbi.nlm.nih.gov/30773283"}},
+        {"ids": {"openalex": "https://openalex.org/W3088828444", "doi": "https://doi.org/10.1016/j.neubiorev.2020.09.019",
+        "mag": "3088828444", "pmid": "https://pubmed.ncbi.nlm.nih.gov/32980398"}},
+        {"ids": {"openalex": "https://openalex.org/W3178069758", "doi": "https://doi.org/10.1016/j.euroneuro.2021.05.013",
+        "mag": "3178069758", "pmid": "https://pubmed.ncbi.nlm.nih.gov/34273684"}},
+        {"ids": {"openalex": "https://openalex.org/W2768378909", "doi": "https://doi.org/10.1016/j.neuroimage.2017.11.041",
+        "mag": "2768378909", "pmid": "https://pubmed.ncbi.nlm.nih.gov/29175201"}},
+        {"ids": {"openalex": "https://openalex.org/W4320889450", "doi": "https://doi.org/10.1016/j.concog.2023.103477",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/36806854"}}, {"ids": {"openalex":
+        "https://openalex.org/W4390929604", "doi": "https://doi.org/10.1016/j.jad.2024.01.120",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/38228276"}}, {"ids": {"openalex":
+        "https://openalex.org/W4406277768", "doi": "https://doi.org/10.1016/j.heares.2025.109184",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/39874936"}}, {"ids": {"openalex":
+        "https://openalex.org/W4386396169", "doi": "https://doi.org/10.1016/bs.pbr.2023.08.001",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37714570"}}, {"ids": {"openalex":
+        "https://openalex.org/W4406731572", "doi": "https://doi.org/10.1016/j.biopsycho.2025.108994",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/39855538"}}, {"ids": {"openalex":
+        "https://openalex.org/W3009373411", "doi": "https://doi.org/10.1097/01.hj.0000657984.74790.d5",
+        "mag": "3009373411"}}, {"ids": {"openalex": "https://openalex.org/W3108765729",
+        "doi": "https://doi.org/10.1016/j.concog.2020.103046", "mag": "3108765729",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/33242764"}}, {"ids": {"openalex":
+        "https://openalex.org/W4410252619", "doi": "https://doi.org/10.1016/j.heares.2025.109305",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/40383086"}}, {"ids": {"openalex":
+        "https://openalex.org/W3139334723", "doi": "https://doi.org/10.1016/j.jocrd.2021.100644",
+        "mag": "3139334723"}}, {"ids": {"openalex": "https://openalex.org/W2922078042",
+        "doi": "https://doi.org/10.1016/j.ijpsycho.2019.03.005", "mag": "2922078042",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/30880043"}}, {"ids": {"openalex":
+        "https://openalex.org/W4324350788", "doi": "https://doi.org/10.1016/j.psc.2023.02.005",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37149347"}}, {"ids": {"openalex":
+        "https://openalex.org/W4387369418", "doi": "https://doi.org/10.1016/j.jad.2023.10.006",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37802321"}}, {"ids": {"openalex":
+        "https://openalex.org/W7117369102", "doi": "https://doi.org/10.1016/j.heares.2025.109521",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41475326"}}, {"ids": {"openalex":
+        "https://openalex.org/W7127044080", "doi": "https://doi.org/10.1016/b978-0-443-13554-5.00014-6",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41633751"}}, {"ids": {"openalex":
+        "https://openalex.org/W7164157674", "doi": "https://doi.org/10.1016/j.neubiorev.2026.106796",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42269959"}}, {"ids": {"openalex":
+        "https://openalex.org/W7165795050", "doi": "https://doi.org/10.1016/j.neuron.2026.05.031",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42341753"}}, {"ids": {"openalex":
+        "https://openalex.org/W4414866733", "doi": "https://doi.org/10.1016/j.heares.2025.109440",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41072150"}}, {"ids": {"openalex":
+        "https://openalex.org/W4415546344", "doi": "https://doi.org/10.1016/j.heares.2025.109458",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41175630"}}, {"ids": {"openalex":
+        "https://openalex.org/W7126115337", "doi": "https://doi.org/10.1016/j.neubiorev.2026.106584",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/41616930"}}, {"ids": {"openalex":
+        "https://openalex.org/W7213531726", "doi": "https://doi.org/10.1016/j.langsci.2026.101873"}},
+        {"ids": {"openalex": "https://openalex.org/W3166600901", "doi": "https://doi.org/10.1016/bs.plm.2021.02.002",
+        "mag": "3166600901"}}, {"ids": {"openalex": "https://openalex.org/W2594012190",
+        "doi": "https://doi.org/10.1016/b978-0-7020-5310-8.00018-1", "mag": "2594012190"}},
+        {"ids": {"openalex": "https://openalex.org/W4288083466", "doi": "https://doi.org/10.1016/j.paid.2019.109684"}},
+        {"ids": {"openalex": "https://openalex.org/W2335064143", "doi": "https://doi.org/10.1097/01.hj.0000459743.01876.fd",
+        "mag": "2335064143"}}, {"ids": {"openalex": "https://openalex.org/W2514461465",
+        "doi": "https://doi.org/10.1016/s0924-977x(15)30372-2", "mag": "2514461465"}},
+        {"ids": {"openalex": "https://openalex.org/W4226161704", "doi": "https://doi.org/10.1016/b978-0-323-91912-8.00013-x"}},
+        {"ids": {"openalex": "https://openalex.org/W2769431326", "doi": "https://doi.org/10.1016/s0924-977x(17)31330-5",
+        "mag": "2769431326"}}, {"ids": {"openalex": "https://openalex.org/W2994512747",
+        "doi": "https://doi.org/10.1016/j.eurpsy.2017.12.023", "mag": "2994512747"}},
+        {"ids": {"openalex": "https://openalex.org/W3095625018", "doi": "https://doi.org/10.1101/2020.10.29.346650",
+        "mag": "3095625018"}}, {"ids": {"openalex": "https://openalex.org/W2798179975",
+        "doi": "https://doi.org/10.1016/j.biopsych.2018.02.410", "mag": "2798179975"}},
+        {"ids": {"openalex": "https://openalex.org/W2768134208", "doi": "https://doi.org/10.1016/s0924-977x(17)30965-3",
+        "mag": "2768134208"}}, {"ids": {"openalex": "https://openalex.org/W2896992566",
+        "doi": "https://doi.org/10.1016/b978-0-7020-5310-8.00019-3", "mag": "2896992566"}},
+        {"ids": {"openalex": "https://openalex.org/W4210557598", "doi": "https://doi.org/10.1016/s0924-977x(17)31973-9"}},
+        {"ids": {"openalex": "https://openalex.org/W4225882740", "doi": "https://doi.org/10.1016/b978-0-323-91912-8.00003-7"}},
+        {"ids": {"openalex": "https://openalex.org/W4226218925", "doi": "https://doi.org/10.1016/b978-0-323-91912-8.20001-7"}},
+        {"ids": {"openalex": "https://openalex.org/W4233512387", "doi": "https://doi.org/10.1016/s0079-6123(07)66053-1"}},
+        {"ids": {"openalex": "https://openalex.org/W4239862591", "doi": "https://doi.org/10.1016/b978-0-7020-5310-8.09988-9"}},
+        {"ids": {"openalex": "https://openalex.org/W4243631159", "doi": "https://doi.org/10.1016/b978-012370880-9.09015-0"}},
+        {"ids": {"openalex": "https://openalex.org/W4244137239", "doi": "https://doi.org/10.1016/b978-0-444-62630-1.09986-8"}},
+        {"ids": {"openalex": "https://openalex.org/W4245083061", "doi": "https://doi.org/10.1016/b978-0-12-801772-2.09985-9"}},
+        {"ids": {"openalex": "https://openalex.org/W4250557022", "doi": "https://doi.org/10.1016/s0924-977x(19)31754-7"}},
+        {"ids": {"openalex": "https://openalex.org/W4251832266", "doi": "https://doi.org/10.1016/b978-0-12-818251-2.09992-6"}},
+        {"ids": {"openalex": "https://openalex.org/W4301720203", "doi": "https://doi.org/10.1016/j.biopsych.2015.03.007"}},
+        {"ids": {"openalex": "https://openalex.org/W4362733987", "doi": "https://doi.org/10.1016/j.biopsych.2023.02.688"}},
+        {"ids": {"openalex": "https://openalex.org/W4414522312", "doi": "https://doi.org/10.1016/j.mehy.2025.111765"}},
+        {"ids": {"openalex": "https://openalex.org/W4416029792", "doi": "https://doi.org/10.1016/b978-0-443-29198-2.00012-6"}},
+        {"ids": {"openalex": "https://openalex.org/W4416667044", "doi": "https://doi.org/10.1016/j.mehy.2025.111840"}},
+        {"ids": {"openalex": "https://openalex.org/W7155650625", "doi": "https://doi.org/10.1016/j.biopsych.2026.03.954"}},
+        {"ids": {"openalex": "https://openalex.org/W7159803424", "doi": "https://doi.org/10.1016/j.bbr.2026.116248",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42066961"}}, {"ids": {"openalex":
+        "https://openalex.org/W7164042456", "doi": "https://doi.org/10.1016/j.cortex.2026.06.001",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42314337"}}, {"ids": {"openalex":
+        "https://openalex.org/W7168242738", "doi": "https://doi.org/10.1016/j.neuroimage.2026.122128",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42448253"}}, {"ids": {"openalex":
+        "https://openalex.org/W7171939138", "doi": "https://doi.org/10.1016/b978-0-443-27446-6.00020-0"}},
+        {"ids": {"openalex": "https://openalex.org/W7201980214", "doi": "https://doi.org/10.1016/j.heares.2026.109772",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42608265"}}, {"ids": {"openalex":
+        "https://openalex.org/W7203726743", "doi": "https://doi.org/10.1016/j.neurom.2026.08.002",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/42730729"}}, {"ids": {"openalex":
+        "https://openalex.org/W7204176278", "doi": "https://doi.org/10.1121/10.0045101"}},
+        {"ids": {"openalex": "https://openalex.org/W7208717810", "doi": "https://doi.org/10.64898/2026.08.30.748122"}}],
+        "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4b3efd82a4d154a-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 03:22:03 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9657'
+      X-RateLimit-Remaining-USD:
+      - '0.9657'
+      X-RateLimit-Reset:
+      - '74277'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=YsSeMM%2F2Y5tbZ7rzfsKVT3r7sUudLVqZblUhhd5DjCc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792120922"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=YsSeMM%2F2Y5tbZ7rzfsKVT3r7sUudLVqZblUhhd5DjCc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792120922"
+    status:
+      code: 200
+      message: OK
+version: 1

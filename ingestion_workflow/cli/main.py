@@ -9,8 +9,9 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
+from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import typer
 
@@ -29,6 +30,12 @@ from ingestion_workflow.pipeline import (
 )
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.services.logging import configure_logging
+from ingestion_workflow.services.search import (
+    SEARCH_SERVICES,
+    SearchReport,
+    resolve_hits,
+    surviving,
+)
 
 app = typer.Typer(
     name="ingest",
@@ -95,6 +102,8 @@ def _parse_identifier(token: str) -> Identifier:
 
 # -- add ---------------------------------------------------------------------
 
+SearchProvider = Enum("SearchProvider", {name: name for name in SEARCH_SERVICES}, type=str)
+
 
 @app.command()
 def add(
@@ -107,11 +116,31 @@ def add(
     manifest: Optional[Path] = typer.Option(
         None, "--manifest", "-m", exists=True, help="JSONL identifiers manifest."
     ),
-    query: Optional[List[str]] = typer.Option(
-        None, "--query", "-q", help="PubMed query to search (repeatable)."
+    search: Optional[str] = typer.Option(
+        None,
+        "--search",
+        "-s",
+        help=(
+            "Search query, e.g. 'fMRI OR \"functional MRI\"' (syntax: docs/search.md). "
+            "PubMed and OpenAlex search title and abstract of journal articles, "
+            "Semantic Scholar title and abstract of every publication type, "
+            "ScienceDirect the full text."
+        ),
     ),
-    start_year: Optional[int] = typer.Option(
-        None, "--start-year", help="Earliest year for queries."
+    year: Optional[str] = typer.Option(
+        None,
+        "--year",
+        help=(
+            "Publication year of --search: 2026, or a range 2025:2026; by default 1990 "
+            "onward (BOLD fMRI began in 1990). Each provider "
+            "dates a work its own way: PubMed's [dp] (electronic or print date), "
+            "Semantic Scholar's year, OpenAlex's publication_year, ScienceDirect's date."
+        ),
+    ),
+    provider: Optional[List[SearchProvider]] = typer.Option(
+        None,
+        "--provider",
+        help="Where --search looks (repeatable). Default: all of them.",
     ),
     pdfs: Optional[Path] = typer.Option(
         None,
@@ -182,26 +211,28 @@ def add(
     local = _read_pdfs(settings, pdfs) if pdfs else []
     found += [pdf.identifier for pdf in local if pdf.identifier and not pdf.supplement]
 
-    if query:
-        from ingestion_workflow.services.search import PubMedSearchService
-
-        for text in query:
-            service = PubMedSearchService(text, settings, start_year=start_year or 1990)
-            results = service.search()
-            typer.echo(f"query {text!r}: {len(results.identifiers):,} results")
-            found += list(results.identifiers)
+    if (year or provider) and not search:
+        raise typer.BadParameter("--year and --provider apply to --search")
+    searched = _search(settings, search, year, provider) if search else {}
+    found += [record for records in searched.values() for record in records]
 
     if not found:
         raise typer.BadParameter(
-            "give identifiers, --file, --manifest, --query, --pdfs or --neurostore"
+            "give identifiers, --file, --manifest, --search, --pdfs or --neurostore"
         )
 
     with _catalog(settings) as catalog:
         before = catalog.count_articles()
+        held = set(catalog.all_article_ids()) if searched else set()
         refs = catalog.register_many(found)
         if enrich:
             refs = _enrich(settings, catalog, refs)
+        # Several providers find one article, and enrichment joins records of one.
+        refs = list({ref.id: ref for ref in refs}.values())
         after = catalog.count_articles()
+        if searched:
+            report = SearchReport.build(surviving(catalog, held), resolve_hits(catalog, searched))
+            _report_search(report)
         if local:
             _attach_pdfs(
                 settings, catalog, pdfs, local, in_place=in_place, prefer_over=prefer_over or ()
@@ -211,6 +242,50 @@ def add(
         f"{len(refs):,} identifiers resolved to {after - before:,} new articles "
         f"({len(refs) - (after - before):,} already known); catalog now holds {after:,}."
     )
+
+
+def _search(
+    settings: Settings, text: str, year: Optional[str], providers: Optional[List[SearchProvider]]
+) -> Dict[str, List[Identifier]]:
+    """Each provider's hits for the query `text`."""
+    from ingestion_workflow.services.query_dialect import QueryError, Years, parse
+    from ingestion_workflow.services.search import search_services
+
+    try:
+        query = parse(text, Years.parse(year)) if year else parse(text)
+        typer.echo(f"years: {query.years}" + ("" if year else " (the default; --year to change)"))
+        services = search_services(
+            query, [p.value for p in providers or SearchProvider], settings, typer.echo
+        )
+    except (QueryError, ValueError) as exc:
+        raise typer.BadParameter(str(exc)) from None
+    searched: Dict[str, List[Identifier]] = {}
+    for name, service in services.items():
+        searched[name] = list(service.search().identifiers)
+        typer.echo(f"{name}: {len(searched[name]):,} records")
+    return searched
+
+
+def _report_search(report: SearchReport) -> None:
+    """Per-provider articles, overlap, and how many the catalog already held."""
+    for name, articles in report.articles.items():
+        typer.echo(
+            f"  {name}: {len(articles):,} articles, {report.unique(name):,} found by no other"
+        )
+    for (a, b), shared in report.shared().items():
+        typer.echo(f"  {a} and {b} share {shared:,}")
+    distinct = report.distinct
+    known = len(report.known)
+    typer.echo(
+        f"  {len(distinct):,} distinct: {known:,} already in the catalog, "
+        f"{len(distinct) - known:,} new"
+    )
+    for name, count in report.without_id.items():
+        if count:
+            # The catalog keys articles on DOI, PMID and PMCID; register_many skips the rest.
+            typer.echo(
+                f"  {count:,} {name} records have no DOI, PMID or PMCID and were not registered"
+            )
 
 
 def _read_pdfs(settings: Settings, folder: Path) -> list:

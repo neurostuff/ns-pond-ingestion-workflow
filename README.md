@@ -56,7 +56,7 @@ stage reads a text again when it gained a coordinate.
 
 ```bash
 ingest add 37961286 PMC10634720 10.1016/j.neuroimage.2023.120   # ids of any kind
-ingest add --query '(fmri OR PET) AND 2010:2025[dp]'            # or a PubMed search
+ingest add --search 'fMRI OR PET' --year 2010:2025                # or a search (docs/search.md)
 ingest add --from-neurostore                                    # or work Neurostore is missing
 ingest add --pdfs Originals/                                    # or PDFs you already have
 ingest run --dry-run                                            # what would happen
