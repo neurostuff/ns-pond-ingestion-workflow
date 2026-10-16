@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import logging
+import sqlite3
+from contextlib import closing
 from datetime import timedelta
 from enum import Enum
 from pathlib import Path
@@ -16,6 +18,7 @@ from typing import Dict, List, Optional, Sequence
 import typer
 
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
+from ingestion_workflow.catalog.backup import backup as catalog_backup
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.pipeline import (
@@ -752,17 +755,43 @@ def exclude(
 
 
 @app.command()
-def repair(config: Optional[Path] = ConfigOption) -> None:
-    """Hand over artifacts left attached to articles a merge retired."""
+def repair(
+    apply: bool = typer.Option(False, "--apply", help="Hand them over (default: only count)."),
+    backup: Optional[Path] = typer.Option(
+        None, "--backup", help="Where --apply copies the catalog database first; must not exist."
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Hand over artifacts and exclusions left on articles a merge retired.
+
+    Exclusions are read through the merge either way; this moves the rows so they
+    sit on the article they belong to. Run it again after any run of an older
+    version that merged articles.
+    """
+    if apply and backup is None:
+        raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
+    if apply and backup.exists():
+        raise typer.BadParameter(f"{backup} exists; give a new path", param_hint="--backup")
     settings = _settings(config)
     with _catalog(settings) as catalog:
-        before = catalog.stranded_artifacts()
-        moved = catalog.repair_merges()
-        after = catalog.stranded_artifacts()
-    if not before:
-        typer.echo("nothing to repair.")
-        return
-    typer.echo(f"reattached artifacts from {moved:,} articles: {before:,} stranded -> {after:,}")
+        artifacts, exclusions = catalog.stranded_artifacts(), catalog.stranded_exclusions()
+        typer.echo(f"stranded: {artifacts:,} artifacts, {exclusions:,} exclusions")
+        if not artifacts and not exclusions:
+            typer.echo("nothing to repair.")
+            return
+        if not apply:
+            typer.echo("dry run: nothing written; --apply --backup <path> hands them over")
+            return
+        with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as source:
+            typer.echo(f"catalog copied to {catalog_backup(source, backup)}")
+        done = catalog.repair_merges()
+        typer.echo(
+            f"reattached artifacts from {done.artifact_articles:,} articles; "
+            f"moved {done.exclusions_moved:,} exclusions, "
+            f"dropped {len(done.exclusions_dropped):,} the survivor already held"
+        )
+        for article_id, table_id, reason, note in done.exclusions_dropped:
+            typer.echo(f"  dropped {article_id} {table_id}: {reason} {note}".rstrip())
 
 
 @app.command("refresh-text")
