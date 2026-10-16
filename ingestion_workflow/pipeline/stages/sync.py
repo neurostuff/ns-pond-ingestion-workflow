@@ -17,6 +17,7 @@ from ingestion_workflow.models import (
 )
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.services import nspond, paper_parse
+from ingestion_workflow.utils.preprints import is_preprint_doi
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
@@ -99,8 +100,7 @@ def is_preprint(doi: Optional[str], article_version: Optional[str]) -> bool:
     """A preprint server's DOI, or text downloaded as a submitted version."""
     from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
 
-    return article_version == PREPRINT_VERSION or (
-        doi is not None and doi.lower().startswith(PREPRINT_DOI_PREFIXES))
+    return article_version == PREPRINT_VERSION or is_preprint_doi(doi)
 
 
 def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
