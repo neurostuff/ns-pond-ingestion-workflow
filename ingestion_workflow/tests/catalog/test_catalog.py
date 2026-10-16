@@ -873,3 +873,101 @@ def test_an_exclusion_on_a_retired_id_lands_on_the_survivor(catalog):
     catalog.exclude([(retired, "t1", "a figure", "")])
 
     assert list(catalog.exclusions()) == [merged.id]
+
+
+def _strand(catalog, article_id, table_id, reason="older code", note=""):
+    """A row where a merge by code that does not move exclusions leaves it."""
+    catalog._conn.execute(
+        "INSERT INTO exclusions VALUES (?, ?, ?, ?, '2026-01-01')",
+        (article_id, table_id, reason, note),
+    )
+
+
+def _merged_pair(catalog, tag):
+    a = catalog.register(Identifier(doi=f"10.1/{tag}"))
+    b = catalog.register(Identifier(pmcid=f"PMC{tag}"))
+    survivor = catalog.register(Identifier(doi=f"10.1/{tag}", pmcid=f"PMC{tag}")).id
+    return survivor, (b.id if survivor == a.id else a.id)
+
+
+def test_exclusions_read_a_row_an_older_merge_left_on_a_retired_id(catalog):
+    survivor, retired = _merged_pair(catalog, "61")
+    _strand(catalog, retired, "t1")
+    _strand(catalog, retired, Catalog.WHOLE_ARTICLE)
+
+    for marks in (catalog.exclusions([survivor]), catalog.exclusions()):
+        assert set(marks) == {survivor}
+        assert set(marks[survivor]) == {"t1", Catalog.WHOLE_ARTICLE}
+    assert catalog.exclusions([retired]) == catalog.exclusions([survivor])
+    assert catalog.stranded_exclusions() == 2
+
+
+def test_a_row_stranded_beside_the_survivors_own_shows_the_survivors(catalog):
+    survivor, retired = _merged_pair(catalog, "62")
+    catalog.exclude([(survivor, "t1", "mine", "")])
+    _strand(catalog, retired, "t1", reason="older code")
+
+    assert catalog.exclusions([survivor])[survivor]["t1"]["reason"] == "mine"
+
+
+def test_unexclude_by_a_retired_id_withdraws_the_survivors_verdicts(catalog):
+    survivor, retired = _merged_pair(catalog, "63")
+    catalog.exclude([(survivor, "t1", "r", ""), (survivor, "t2", "r", "")])
+    _strand(catalog, retired, "t3")
+
+    assert catalog.unexclude(retired, "t1") == 1
+    assert set(catalog.exclusions()[survivor]) == {"t2", "t3"}
+    assert catalog.unexclude(retired) == 2
+    assert catalog.exclusions() == {}
+
+
+def test_exclusions_follow_a_chain_of_merges(catalog):
+    ids = [catalog.register(Identifier(pmid=str(n))).id for n in (71, 72, 73)]
+    catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (ids[1], ids[0]))
+    catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (ids[2], ids[1]))
+    _strand(catalog, ids[0], "t1")
+    _strand(catalog, ids[1], "t2")
+
+    assert set(catalog.exclusions([ids[2]])[ids[2]]) == {"t1", "t2"}
+
+    done = catalog.repair_merges()
+
+    assert done.exclusions_moved == 2
+    assert catalog.stranded_exclusions() == 0
+    rows = catalog._conn.execute("SELECT article_id FROM exclusions").fetchall()
+    assert {r["article_id"] for r in rows} == {ids[2]}
+
+
+def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_clashes(catalog):
+    survivor, retired = _merged_pair(catalog, "64")
+    catalog.exclude([(survivor, "t1", "mine", ""), (survivor, "t2", "mine", "")])
+    _strand(catalog, retired, Catalog.WHOLE_ARTICLE)
+    _strand(catalog, retired, "t1", reason="lost reason", note="n")
+
+    done = catalog.repair_merges()
+
+    assert done.exclusions_moved == 1
+    assert done.exclusions_dropped == [(retired, "t1", "lost reason", "n")]
+    marks = catalog.exclusions([survivor])[survivor]
+    assert set(marks) == {"t1", "t2", Catalog.WHOLE_ARTICLE}
+    assert marks["t1"]["reason"] == "mine"
+    assert catalog.stranded_exclusions() == 0
+    assert catalog.repair_merges().exclusions_moved == 0
+
+
+def test_a_failed_repair_leaves_every_row_where_it_was(catalog):
+    first = _merged_pair(catalog, "65")
+    second = _merged_pair(catalog, "66")
+    _strand(catalog, first[1], "t1")
+    _strand(catalog, second[1], "t1")
+    # refuses whichever hand-over comes second, once a survivor holds a row
+    catalog._conn.execute(
+        "CREATE TRIGGER refuse BEFORE UPDATE ON exclusions WHEN EXISTS ("
+        f"SELECT 1 FROM exclusions WHERE article_id IN ('{first[0]}', '{second[0]}')) "
+        "BEGIN SELECT RAISE(ABORT, 'refused'); END"
+    )
+
+    with pytest.raises(sqlite3.DatabaseError, match="refused"):
+        catalog.repair_merges()
+
+    assert catalog.stranded_exclusions() == 2

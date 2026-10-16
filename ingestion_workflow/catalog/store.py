@@ -14,7 +14,7 @@ import sqlite3
 from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, NamedTuple, Optional, Sequence, Tuple
 
 from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 from ingestion_workflow.utils.doi import normalize_doi
@@ -426,18 +426,36 @@ class Catalog:
         return survivor
 
     @staticmethod
-    def _move_exclusions(conn: sqlite3.Connection, loser: str, survivor: str) -> None:
+    def _move_exclusions(
+        conn: sqlite3.Connection, loser: str, survivor: str
+    ) -> List[Tuple[str, str, str, str]]:
         """Carry a person's table exclusions to the survivor.
 
         Both sides excluding one table is the same verdict twice: the survivor's
-        row stays and the loser's goes. Left behind, a row sits on an article
-        nothing reads and its table comes back into the corpus.
+        row stays and the loser's goes. Those rows are returned as (article_id,
+        table_id, reason, note) and logged, so what a clash drops is on record.
         """
+        dropped = [
+            tuple(row)
+            for row in conn.execute(
+                """
+                SELECT article_id, table_id, reason, note FROM exclusions
+                WHERE article_id = ? AND table_id IN (
+                    SELECT table_id FROM exclusions WHERE article_id = ?
+                )
+                """,
+                (loser, survivor),
+            )
+        ]
+        for row in dropped:
+            logger.warning("catalog: exclusion %s %s (%r, %r) dropped; %s holds the same table",
+                           *row, survivor)
         conn.execute(
             "UPDATE OR IGNORE exclusions SET article_id = ? WHERE article_id = ?",
             (survivor, loser),
         )
         conn.execute("DELETE FROM exclusions WHERE article_id = ?", (loser,))
+        return dropped
 
     @staticmethod
     def _move_artifacts(conn: sqlite3.Connection, loser: str, survivor: str) -> None:
@@ -503,6 +521,25 @@ class Catalog:
                 return article_id
             article_id = row["merged_into"]
         return article_id
+
+    def _live_resolver(self):
+        """A function from an article id to the article it is now, from one read of
+        the merges: for reading many rows without a query each."""
+        merged = {
+            row["id"]: row["merged_into"]
+            for row in self._conn.execute(
+                "SELECT id, merged_into FROM articles WHERE merged_into IS NOT NULL"
+            )
+        }
+
+        def live(article_id: str) -> str:
+            seen = set()
+            while article_id in merged and article_id not in seen:
+                seen.add(article_id)
+                article_id = merged[article_id]
+            return article_id
+
+        return live
 
     def current_id(self, article_id: str) -> str:
         """The article `article_id` is now: itself, or the one it was merged into."""
@@ -638,19 +675,7 @@ class Catalog:
         Read-time, because a process that predates these tables merges articles
         without moving their hits.
         """
-        merged = {
-            row["id"]: row["merged_into"]
-            for row in self._conn.execute(
-                "SELECT id, merged_into FROM articles WHERE merged_into IS NOT NULL"
-            )
-        }
-
-        def live(article_id: str) -> str:
-            seen = set()
-            while article_id in merged and article_id not in seen:
-                seen.add(article_id)
-                article_id = merged[article_id]
-            return article_id
+        live = self._live_resolver()
 
         found: Dict[str, set] = {}
         for row in self._conn.execute(
@@ -739,38 +764,68 @@ class Catalog:
         return len(rows)
 
     def unexclude(self, article_id: str, table_id: Optional[str] = None) -> int:
-        """Withdraw a verdict, or every verdict on the article when no table is given."""
+        """Withdraw a verdict, or every verdict on the article when no table is given.
+
+        A retired id withdraws the verdicts of the article it became, and of any
+        article merged into it.
+        """
+        live = self._live_resolver()
+        target = live(article_id)
+        owners = [target] + [
+            row["id"]
+            for row in self._conn.execute(
+                "SELECT id FROM articles WHERE merged_into IS NOT NULL"
+            )
+            if live(row["id"]) == target
+        ]
+        marks = ",".join("?" * len(owners))
         with self._write() as conn:
             if table_id is None:
-                cur = conn.execute("DELETE FROM exclusions WHERE article_id=?", (article_id,))
+                cur = conn.execute(
+                    f"DELETE FROM exclusions WHERE article_id IN ({marks})", owners
+                )
             else:
                 cur = conn.execute(
-                    "DELETE FROM exclusions WHERE article_id=? AND table_id=?",
-                    (article_id, str(table_id)),
+                    f"DELETE FROM exclusions WHERE table_id=? AND article_id IN ({marks})",
+                    (str(table_id), *owners),
                 )
         return cur.rowcount
 
-    def exclusions(self, article_ids: Optional[Sequence[str]] = None) -> Dict[str, Dict[str, Dict[str, str]]]:
-        """article_id -> table_id -> {reason, note, created_at}; every article when none are given."""
-        out: Dict[str, Dict[str, Dict[str, str]]] = {}
+    def exclusions(
+        self, article_ids: Optional[Sequence[str]] = None
+    ) -> Dict[str, Dict[str, Dict[str, str]]]:
+        """article_id -> table_id -> {reason, note, created_at}; every article when none are given.
+
+        Read through `articles.merged_into`, like search hits: a process that
+        predates the move in `_merge` leaves its rows on the retired id. A table
+        both sides excluded shows the survivor's own row.
+        """
+        live = self._live_resolver()
         if article_ids is None:
             rows = self._conn.execute(
                 "SELECT article_id, table_id, reason, note, created_at FROM exclusions"
             ).fetchall()
         else:
-            ids = list(dict.fromkeys(article_ids))
+            wanted = set(article_ids)
+            sources = list(wanted) + [
+                row["id"]
+                for row in self._conn.execute(
+                    "SELECT id FROM articles WHERE merged_into IS NOT NULL"
+                )
+                if live(row["id"]) in wanted and row["id"] not in wanted
+            ]
             rows = []
-            for i in range(0, len(ids), 500):
-                chunk = ids[i:i + 500]
+            for chunk in _chunks(sources, 500):
                 rows += self._conn.execute(
                     "SELECT article_id, table_id, reason, note, created_at FROM exclusions "
                     "WHERE article_id IN (%s)" % ",".join("?" * len(chunk)),
                     chunk,
                 ).fetchall()
-        for row in rows:
-            out.setdefault(row["article_id"], {})[row["table_id"]] = {
+        out: Dict[str, Dict[str, Dict[str, str]]] = {}
+        for row in sorted(rows, key=lambda r: r["article_id"] != live(r["article_id"])):
+            out.setdefault(live(row["article_id"]), {}).setdefault(row["table_id"], {
                 "reason": row["reason"], "note": row["note"], "created_at": row["created_at"],
-            }
+            })
         return out
 
     def artifacts(
@@ -951,26 +1006,61 @@ class Catalog:
         ).fetchone()
         return int(row["n"])
 
-    def repair_merges(self) -> int:
-        """Re-run artifact hand-over for merges that stranded something."""
-        rows = self._conn.execute(
+    def stranded_exclusions(self) -> int:
+        """Exclusions held by an article that a merge retired."""
+        row = self._conn.execute(
             """
-            SELECT DISTINCT a.article_id AS loser, ar.merged_into AS survivor
-            FROM artifacts a JOIN articles ar ON ar.id = a.article_id
+            SELECT COUNT(*) AS n FROM exclusions e
+            JOIN articles ar ON ar.id = e.article_id
             WHERE ar.merged_into IS NOT NULL
             """
-        ).fetchall()
-        if not rows:
-            return 0
+        ).fetchone()
+        return int(row["n"])
+
+    def repair_merges(self) -> Repair:
+        """Re-run the hand-over for merges that stranded artifacts or exclusions.
+
+        What is stranded is read inside the write lock, so a merge committed
+        meanwhile is seen.
+        """
+        moved_artifacts = set()
+        moved_exclusions = 0
+        dropped: List[Tuple[str, str, str, str]] = []
         with self._write() as conn:
-            for row in rows:
-                self._move_artifacts(
-                    conn, row["loser"], self._follow_merge(row["survivor"])
-                )
-        return len(rows)
+            for row in conn.execute(
+                """
+                SELECT DISTINCT a.article_id AS loser, ar.merged_into AS survivor
+                FROM artifacts a JOIN articles ar ON ar.id = a.article_id
+                WHERE ar.merged_into IS NOT NULL
+                """
+            ).fetchall():
+                self._move_artifacts(conn, row["loser"], self._follow_merge(row["survivor"]))
+                moved_artifacts.add(row["loser"])
+            for row in conn.execute(
+                """
+                SELECT DISTINCT e.article_id AS loser, ar.merged_into AS survivor
+                FROM exclusions e JOIN articles ar ON ar.id = e.article_id
+                WHERE ar.merged_into IS NOT NULL
+                """
+            ).fetchall():
+                held = conn.execute(
+                    "SELECT COUNT(*) FROM exclusions WHERE article_id=?", (row["loser"],)
+                ).fetchone()[0]
+                lost = self._move_exclusions(conn, row["loser"], self._follow_merge(row["survivor"]))
+                moved_exclusions += held - len(lost)
+                dropped += lost
+        return Repair(len(moved_artifacts), moved_exclusions, dropped)
 
     def vacuum(self) -> None:
         self._conn.execute("VACUUM")
+
+
+class Repair(NamedTuple):
+    """What `Catalog.repair_merges` handed over."""
+
+    artifact_articles: int
+    exclusions_moved: int
+    exclusions_dropped: List[Tuple[str, str, str, str]]
 
 
 def _artifact(row: sqlite3.Row) -> Artifact:
