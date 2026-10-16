@@ -22,6 +22,9 @@ jobs:
       # PUBMED_EMAIL stays unset: with it the code asks PubMed, which no other cassette holds.
       ELSEVIER_API_KEY: replay
       SEMANTIC_SCHOLAR_API_KEY: replay
+      # typer forces ANSI colour when GITHUB_ACTIONS is set, which splits the help
+      # text the CLI tests assert on.
+      _TYPER_FORCE_DISABLE_TERMINAL: "1"
       # docling pulls CUDA torch from PyPI (several GB); the CPU wheels are enough.
       UV_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
       UV_INDEX_STRATEGY: unsafe-best-match
