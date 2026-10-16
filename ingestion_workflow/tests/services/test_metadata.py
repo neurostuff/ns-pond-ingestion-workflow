@@ -338,6 +338,7 @@ class TestMetadataService:
 class TestMetadataIntegration:
     """Integration tests for metadata workflow."""
 
+    @pytest.mark.stale_cassette
     @pytest.mark.vcr()
     def test_semantic_scholar_real_api(
         self,
@@ -377,6 +378,7 @@ class TestMetadataIntegration:
         assert extracted.slug in result
         assert result[extracted.slug].title is not None
 
+    @pytest.mark.stale_cassette
     @pytest.mark.vcr()
     def test_pubmed_real_api(
         self,

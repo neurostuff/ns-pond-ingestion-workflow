@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Placeholders so the tests that need a key run against their cassettes.
+      # Cassettes are replayed only (--record-mode=none); no secret is used.
+      # PUBMED_EMAIL stays unset: with it the code asks PubMed, which no other cassette holds.
+      ELSEVIER_API_KEY: replay
+      SEMANTIC_SCHOLAR_API_KEY: replay
+      # docling pulls CUDA torch from PyPI (several GB); the CPU wheels are enough.
+      UV_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+      UV_INDEX_STRATEGY: unsafe-best-match
+    steps:
+      - uses: actions/checkout@v4
+
+      # pyproject names nspond-tables by ssh URL; the repo is public, so fetch it over https.
+      - name: Fetch git dependencies over https
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: pyproject.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install
+        run: |
+          uv venv
+          uv pip install -e ".[test]"
+
+      # readabilipy's wheel ships ExtractArticle.js without its node_modules.
+      - name: Install readabilipy's node modules
+        run: |
+          js="$(.venv/bin/python -c 'import pathlib, readabilipy; print(pathlib.Path(readabilipy.__file__).parent / "javascript")')"
+          npm install --prefix "$js" --no-audit --no-fund
+          test -f "$js/node_modules/jsdom/lib/api.js"
+
+      - name: Test
+        run: >
+          .venv/bin/python -m pytest ingestion_workflow
+          -n auto
+          --record-mode=none
+          -m "not docling_models and not stale_cassette"
+          -rs
+          --cov --cov-report=xml --cov-report=html --cov-report=term
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo "## Coverage"
+            echo
+            .venv/bin/python -m coverage report --format=total | sed 's/$/%  (line + branch)/'
+            echo
+            echo "<details><summary>Per file</summary>"
+            echo
+            .venv/bin/python -m coverage report --format=markdown --skip-empty
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage.xml
+            htmlcov/
+
+  # Report-only: the repo has many E501 findings that predate this check.
+  ruff:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - name: Ruff on the files this PR changes
+        run: |
+          git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- '*.py' > changed.txt
+          if [ -s changed.txt ]; then
+            xargs uvx ruff check --output-format=github --exit-zero < changed.txt
+          fi
