@@ -18,7 +18,7 @@ interactions:
         http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible"
         content="IE=Edge"><meta name="robots" content="noindex,nofollow"><meta name="viewport"
         content="width=device-width,initial-scale=1"><meta http-equiv="content-security-policy"
-        content="default-src &#39;none&#39;; script-src &#39;nonce-R2equHt2NQrW3a6TVX7wyx&#39;
+        content="default-src &#39;none&#39;; script-src &#39;nonce-wnJyXgf0XSONAL7qN3Q68F&#39;
         &#39;unsafe-eval&#39; https://challenges.cloudflare.com; script-src-attr &#39;none&#39;;
         style-src &#39;unsafe-inline&#39;; img-src &#39;self&#39; https://challenges.cloudflare.com;
         connect-src &#39;self&#39; https://challenges.cloudflare.com; frame-src &#39;self&#39;
@@ -30,21 +30,21 @@ interactions:
         http-equiv="refresh" content="360"></head><body><div class="main-wrapper"
         role="main"><div class="main-content"><noscript><div class="h2"><span id="challenge-error-text">Enable
         JavaScript and cookies to continue</span></div></noscript></div></div><script
-        nonce="R2equHt2NQrW3a6TVX7wyx">(function(){window._cf_chl_opt = {cFPWv: ''b'',cH:
-        ''eFFPsWhrcxp6Hh9IT5PViNX0Km8EgZTh0Mhx4Znrjjk-1792105415-1.2.1.1-Wvwth.NE2F.W_l3E_5Vn0m6B9uhDjLQUKXu3fLnh4NY7BT.U9MPBZYgXrNidpBzD'',cITimeS:
-        ''1792105415'',cN: ''R2equHt2NQrW3a6TVX7wyx'',cRay: ''a4b2753df8c6df67'',cTplC:0,cTplO:0,cTplV:5,cType:
-        ''managed'',cUPMDTk:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc",cvId:
-        ''3'',cZone: ''doaj.org'',fa:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_f_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc",md:
-        ''cWDJ1S4gGbcjH3l1vVQf8UJCFrYAq7lcCqlfBCo7Jh0-1792105415-1.2.1.1-5xyE1rPJ5H8wTyE1wGtupni2rOo73ZHLF2IMD9lXU5cAy51IGt6gunfaQiwF0Xt46oRI9abc7Zap5XFGZp90Y3GS_T3RCju2E3W4TS5Vf_0M4eRR5z3yjoXOhgqObbB.6PYOjn5Y8anu3PNMEcFpWKEBYEDGJQzhRc5TJg_CzbIy5h2hgzwTOsGNtjbGfFD9NfDF7qJ4DHKxDsdlhlMSz5wQdp3XJ7SvbHWLYxD.nXnaUaqF4m_So8uPv053Czg7PXpoaIVmVeaSPj_38DRPV_iYXHEUHMRlVHo0mSGi.Pc6gz3sEFcHQxJs6F6ljapb8jwm87UN4hONI2naSwn6GLLxzeqFvAMPAMm.heH92zkduchESvns3v98EpLbFbC9zt3Z66m868wcWf26lzWhByqqlkOZrhdiCNizZDYiJeAHB.GQHCd4tvWPxcoMmfGwYHArODwipVPWL2sfX7E2Lvt6eovhI33qtUMFe8f0pVqPndaG2bm65FAg1CH4cvzLkO1K3ZMcMMEET6rzcd7limQIGAdj3Md2h_ypZ7kXDjI3FvrNfLiw3nwIhkLn6XEDvQN.jG4vBmhI4ydmhBiRfJlcGVHhSAmSCA8LsmHO.F.DIN10N2brhgyUVP8.j6dkotq7KGNjpqcXHiKguSPKoi5qKUhmhXZhP1HQgynTupuBWUZywRtaLkEH6PhNAQbffME7VmHFyotVMWspCQPui5sio20BzIQPTIsII6IYaTqqvNOl1rq3WM0k1DJYhwhdiD90hNAUjukCRTmzJalAocv26b.XVAcGYUtwXQJTDnlLj3bmeGVN4fI7Zfk0jyb0q0zcJI1faAWsmb3GU.tGCWR8MowH5YcXLm7WwwTQz3nGwqzAXzprDqlHPrN939wX3P9Y9tnSE75kq0RTaZrL.aLlYfVUGIDeOamF2uKYcghAvH_mXepbIDeHp3XGYN1vqN3tSmGe3m9WnfDI92XsF9ASZaaqtK2pxRXZVdsv_2be0miOJTWjGgMbttMFEed9_SbzHDFS9bu.CyOf10fSY_6JMRL8V.4mMUAFAMlNdEawC7B6jguw0.toCGOPZvRgTP5rT248V7HaZlhtm0uNIpsgxseoDIFmC1Ko2wVzkKQ'',mdrd:
-        ''XV87AVa9aQSSJP3PXRZqtJwpdrc6AtuL_DEKyYRkoG4-1792105415-1.2.1.1-GJ36WQ4RTgERBFg185r0rB7ot5YdeKjTUPtMzziFu8TqjLozthr5AKGTv9LJy_syDHiWPTrbEeQvLjW62FJhbu4SHg_6nMzjbUSUji4kI93azC8q.KNebV7_FE_dMpzPPvA0R_0b_c70L4cf5eIJJ4vnOW7hg1t5SEeRjOItoidISsWTfOrL23tfJmMkcAzdnUXpsXljtabqQ2qDIwm14bYkKfoNwm89w7p647dvujMzs.k7BeievoL7lPOmAGH3'',};var
-        a = document.createElement(''script'');a.nonce = ''R2equHt2NQrW3a6TVX7wyx'';a.src
-        = ''/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=a4b2753df8c6df67'';window._cf_chl_opt.cOgUHash
+        nonce="wnJyXgf0XSONAL7qN3Q68F">(function(){window._cf_chl_opt = {cFPWv: ''b'',cH:
+        ''uwfcVvyHQb6gdp8AV2O_4nHpDkKXUivRdRvLeHmRUcQ-1792111811-1.2.1.1-RBHBJe7fmuNSXDkAbH_T4IWGEKdVyf7E754evqy1mFq3kvEbG6N73ssigYQMytJJ'',cITimeS:
+        ''1792111811'',cN: ''wnJyXgf0XSONAL7qN3Q68F'',cRay: ''a4b31164bdb8087e'',cTplC:0,cTplO:0,cTplV:5,cType:
+        ''managed'',cUPMDTk:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_tk=UGQiN4NxZ3QoiRAzK1SlDUJ1wfZfArD9DGrIrSNE0co-1792111811-1.0.1.1-8bGBYYv_qKLrmzf9LJKHCuRV_6z0cABymc0Ty0LxGqs",cvId:
+        ''3'',cZone: ''doaj.org'',fa:"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_f_tk=UGQiN4NxZ3QoiRAzK1SlDUJ1wfZfArD9DGrIrSNE0co-1792111811-1.0.1.1-8bGBYYv_qKLrmzf9LJKHCuRV_6z0cABymc0Ty0LxGqs",md:
+        ''rWqj11QsqknY0CsngziH5xoQuonzT5VWNiMnDCu3Fpw-1792111811-1.2.1.1-wCwBJbdl5r6nEsAlfUQK6yQm9rmlTJVqsJMw6Bfd78Rd..Di41ZYnZcBTcYgIfX8Gr3Nc3jtTGcQVjxAnqTDrGnrNG1RqWnGRtd9anqcu0BTKWVwqOfr.5DobQNvwhp1I58nT7eCVn.hCGTHD6DhOtqv0XQkayoIEhrlqCIRodCzCqAEBI7fqyABPNmOhAGZ.iQ7EFKzPL5MzVSo3x0dQtYLOV2gCmK7zcrWI1uxE0mGlyzJYO4ucqi6rGf613zvfOmxjwnSoVCxVqgMNRhhi3JylaIINOZpqK8AkjXvSRPsRubkkrjudaYdsrMLAHpCT.gm4l7.bpVyzGXC1cxVW7Gzwe2W9Q7UdjbzjhRRkroSHtDs3rZ7zp3yNkM1wPI_B2IlUBitvcWhvLI2YAEm_M6qvf4Bt0bi7T1W0MXuso_BNshC7yaDM1joYHyZnql3QKZw7mi5Umk_00OTlA8F4wfCXSTFEejbiZp1FLlYsHur8QQXSiXE7qmygGj7tE4TaOK_jj.bk2Y_wSOixtiJdJquL6aTDJNVFUe5kz8MZhVIuSdfpSit.UKMu_Bhf.vcsYJteLK8BpINSdFlM2AM596zP8MBRGaXCd0wj0lNO9xfIxwM19MkV8xfLy0OfBKzySbnWbY0ndWxAeK.Bs9J5aYCiiozu8TVFfXlZ5twUoDMSg._tP.7HVyHLkXGvaA7KQ_lqBZvpzudgBn4C5w7ZcICmqLXWAH66ninRQaGSpjpeqeopzn_7iooUNKUmZsZOWiWp83l_Z6TIT1rJJcyXTvtguOGfm8NkCRS9sswzN7JdyQcI0.KKlIPGGtqHot74JKZolshDlWDabgdROc_wjh4XGkYyLP9iEtgHDYKMScxG648pqSgwWZUEtsQFf9xnjwvlEEfagzQarLxrrj45EkD6BPlMIWHmOFbME6ul7tnv_WweVr5d8KKwEjC_ZtW_nlRi02NBju6_96iVqv3HKwUM1ihTd_H0w4abyORB9Gh9JGuE3y40PFcMl3udDz33lt6Xo50BNLB_HnhssAnNcBHeg.PQn1hroZv_Vk0scT3GMwQjFF4KwvrHVgDET_ZshQEnjBG3jiYuHr1pecLkWA0gv23LwhW_iVCZqMuXU8'',mdrd:
+        ''5QG8u7NgvX9OoZQw8rcnkRrQqRsVNt.L9gMFbyKzPmQ-1792111811-1.2.1.1-EBFtR28ZHZ0h7KpAJy0SRh_jasfHC54MNrGLQkPYePd13aJ0i53KF5cEBCl3D5l5CjBK7clwocnLopREdOXn98OqAWdaQuvWV0TFMRoQ28d92xAHjyD0uQwYhcpns60ZKTajOeW8Tk16mRQJdHUk_A49UpCoJFv8G0DvaRes91PPmlzEEYQVFLnjST6yE.7cYUENJrD.uix3RW21hEC23Cx4.ki20RgjHNv6mdXZ86GL6JrT4w1KVVPdFf4EVBKv'',};var
+        a = document.createElement(''script'');a.nonce = ''wnJyXgf0XSONAL7qN3Q68F'';a.src
+        = ''/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=a4b31164bdb8087e'';window._cf_chl_opt.cOgUHash
         = location.hash === '''' && location.href.indexOf(''#'') !== -1 ? ''#'' :
         location.hash;window._cf_chl_opt.cOgUQuery = location.search === '''' && location.href.slice(0,
         location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf(''?'')
         !== -1 ? ''?'' : location.search;if (window.history && window.history.replaceState)
         {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null,
-        null,"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_rt_tk=9vBglDPX9WinftiPHf4KQQFXudy0eb459j3BIKq9cE4-1792105415-1.0.1.1-pV5kPwMSWmEr18PaF1_YPUTRogcyrn3XKDmRHmMR3vc"+
+        null,"/article/5285bc2cee0841caa25c796cb0947ec2?__cf_chl_rt_tk=UGQiN4NxZ3QoiRAzK1SlDUJ1wfZfArD9DGrIrSNE0co-1792111811-1.0.1.1-8bGBYYv_qKLrmzf9LJKHCuRV_6z0cABymc0Ty0LxGqs"+
         window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null,
         null, ogU);}}document.getElementsByTagName(''head'')[0].appendChild(a);}());</script></body></html>'
     headers:
@@ -54,7 +54,7 @@ interactions:
         Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile,
         UA-Model, UA-Platform-Version, UA-Platform, UA
       CF-RAY:
-      - a4b2753df8c6df67-DFW
+      - a4b31164bdb8087e-DFW
       Cf-Mitigated:
       - challenge
       Connection:
@@ -62,7 +62,7 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Security-Policy:
-      - 'default-src ''none''; script-src ''nonce-R2equHt2NQrW3a6TVX7wyx'' ''unsafe-eval''
+      - 'default-src ''none''; script-src ''nonce-wnJyXgf0XSONAL7qN3Q68F'' ''unsafe-eval''
         https://challenges.cloudflare.com; script-src-attr ''none''; style-src ''unsafe-inline'';
         img-src ''self'' https://challenges.cloudflare.com; connect-src ''self'' https://challenges.cloudflare.com;
         frame-src ''self'' https://challenges.cloudflare.com blob:; child-src ''self''
@@ -82,7 +82,7 @@ interactions:
       Cross-Origin-Resource-Policy:
       - same-origin
       Date:
-      - Thu, 15 Oct 2026 23:03:35 GMT
+      - Fri, 16 Oct 2026 00:50:11 GMT
       Nel:
       - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
       Origin-Agent-Cluster:
@@ -92,11 +92,11 @@ interactions:
       Referrer-Policy:
       - same-origin
       Report-To:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=bjB4ghvD%2FGKV%2FONFo6EH70rzo8SPyhz40XzbfY4D%2BBm9mwtT8aA2qpzgrRl1NdQcdS0N78WBdXCQ9ae3qX2tye4iWpsvDAJhRsx2RJfzknkAPMI0yupbnGB1"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lq1%2FwTHq31wzIMLHnK10ai0cdCB8wfQAvbWL%2B0eWD7MnWYTdNUwVCYIY6kOosgu2Q7LaE5w8vZoBC46O2GbjlV%2FOrS7B%2BQyxj0d%2FR2RTMHX4euXa1Z6Ao1dm"}]}'
       Server:
       - cloudflare
       Server-Timing:
-      - chlray;desc="a4b2753df8c6df67"
+      - chlray;desc="a4b31164bdb8087e"
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:

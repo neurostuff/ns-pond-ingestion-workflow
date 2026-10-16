@@ -19,17 +19,17 @@ interactions:
         <body><a href="https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD">https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD</a></body></html>'
     headers:
       CF-RAY:
-      - a4b2752d6f572d3b-DFW
+      - a4b31157fdcd6b2a-DFW
       Connection:
       - keep-alive
       Content-Type:
       - text/html;charset=utf-8
       Date:
-      - Thu, 15 Oct 2026 23:03:32 GMT
+      - Fri, 16 Oct 2026 00:50:09 GMT
       Nel:
       - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
       Report-To:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=23GEkclH6OnM55d1iiVb9jMZ2dkmVrR3IMmr6eDLl%2FPNERl6eUTaGvcQhrzhD0L1NTqFh7CmBYQjTYD50qkicKuC8ZE%2FFWlEqftKPihA%2BGO7mtJGjfITrM4%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=a66CezHsbT44nxwaVufPngKp3YuNLFFQnyXvrilgQ6fwlZcHyC1e4898UDhWCkqfY0N4A4%2FoEh%2FkJS2Qaskx6Ig2w2t%2B7lPIulMIt9wjG36xkSAlNM9rAZ0%3D"}]}'
       Server:
       - cloudflare
       Strict-Transport-Security:
@@ -41,7 +41,7 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       expires:
-      - Thu, 15 Oct 2026 23:26:02 GMT
+      - Fri, 16 Oct 2026 01:35:33 GMT
       location:
       - https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD
       permissions-policy:
@@ -83,7 +83,7 @@ interactions:
         href=\"/vite/assets/jquery-BK1wMvFZ.js\" as=\"script\" crossorigin=\"anonymous\">\n
         \   <link rel=\"stylesheet\" href=\"/vite/assets/application-GaNzrtCp.css\"
         />\n\n    <meta name=\"csrf-param\" content=\"authenticity_token\" />\n<meta
-        name=\"csrf-token\" content=\"0KzAgaI9dOYyjSG77xkg_gePGUjEZdDGOp_5qyC_w7vJHg9Tcu7udHh4f4vYYC3JopyMwrZSllwaO7zvRy8DWQ\"
+        name=\"csrf-token\" content=\"QQ_VGRkfIl0J-3ooE4gqH799nogWAJMonH8HU9YrZgNlA5_cGGCyTu8cf-zTUB2ptTKP9UUGjJc_J9jwWhy8Ww\"
         />\n    <link rel=\"alternate\" title=\"xml\" type=\"application/xml\" href=\"https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD.xml\"
         />\n<link rel=\"alternate\" title=\"dc_xml\" type=\"text/xml\" href=\"https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD.dc_xml\"
         />\n<link rel=\"alternate\" title=\"oai_dc_xml\" type=\"text/xml\" href=\"https://academiccommons.columbia.edu/doi/10.7916/D86H5VXD.oai_dc_xml\"
@@ -334,9 +334,9 @@ interactions:
       Content-Type:
       - text/html; charset=utf-8
       Date:
-      - Thu, 15 Oct 2026 23:03:33 GMT
+      - Fri, 16 Oct 2026 00:50:09 GMT
       Etag:
-      - W/"a4341ff4e6707b16db99f4424499f850"
+      - W/"b4d61f70263017e018e6e9294454fa0d"
       Link:
       - </vite/assets/jquery-BK1wMvFZ.js>; rel=modulepreload; as=script; crossorigin=anonymous;
         nopush,</vite/assets/application-BLukb6im.js>; rel=modulepreload; as=script;
@@ -365,9 +365,9 @@ interactions:
       X-Permitted-Cross-Domain-Policies:
       - none
       X-Request-Id:
-      - 79c34845-53cb-494e-9f5c-6953aa94ee73
+      - f140ac68-9bf5-4379-a27e-536672273589
       X-Runtime:
-      - '0.035154'
+      - '0.039424'
       X-Xss-Protection:
       - '0'
     status:
@@ -382,8 +382,6 @@ interactions:
       - gzip, deflate
       Connection:
       - keep-alive
-      Cookie:
-      - _academic_commons_session=QlqsCPGpIzPwHj4zomqCOHishZQxbEfkmwpOf5X12JHs1jvmhtYiex7CP6IJ8V6V40FV8li1ppuGbgWCBmKQEnzrGPORjoWbh1KDP9hl5toIUpq9UMJwBY7szWLYlDRBeHo6FcGPUaQrrxGf6DkTJsYBulMa%2FpS0nwghgcpeDNyW%2Fy5TlKQhYuzO0k5WeCEe7ZLB6w4G9E8HUx8BSmg121RDPnvnwL%2BdsalVrxZ2pmDC%2BCBel2nT6BhCPOX4u03DaFuIZYuo1bq3nKMpJohtsbiLAmQFCdLtItXpnWNruL6L0Sz6quwgWu5nIXrBJ6D00w%3D%3D--C5ba59WNRBuK9VN%2B--4zW8sytQTNnzwMjJl7wPWQ%3D%3D
       User-Agent:
       - python-requests/2.34.2
     method: GET
@@ -13407,7 +13405,7 @@ interactions:
       Content-Type:
       - application/pdf; charset=utf-8
       Date:
-      - Thu, 15 Oct 2026 23:03:33 GMT
+      - Fri, 16 Oct 2026 00:50:09 GMT
       Etag:
       - 3825a77cbc989ad3ee09cee59c8c04ce
       Last-Modified:

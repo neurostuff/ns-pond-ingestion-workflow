@@ -1264,6 +1264,60 @@ def test_a_pmc_article_page_listed_as_a_landing_page_gets_the_pmc_reason(stub, t
     assert session.refused == []
 
 
+def test_an_earlier_403_stays_the_error_when_a_landing_page_names_a_pmc_pdf(stub, tmp_path):
+    forbidden = stub.serve("/journal/a.pdf", (403, b"no"))
+    pmc = "https://pmc.ncbi.nlm.nih.gov/articles/PMC1/pdf/a.pdf"
+    landing = stub.serve("/article/a", (200, _landing(pmc)))
+    stub.work("10.1234/a", location(forbidden, "journal"),
+              location(None, "repository", landing=landing))
+    session = _LocalOnlySession()
+
+    result = _download(pdf_source(tmp_path, session=session), "10.1234/a")[0]
+
+    assert _outcomes(result) == ["http_error", "skipped_pmc"]
+    assert result.error_message.startswith("PDF fetch failed: 403")
+
+
+def test_an_earlier_403_stays_the_error_when_a_landing_page_names_a_dead_pdf(stub, tmp_path):
+    forbidden = stub.serve("/journal/a.pdf", (403, b"no"))
+    dead_pdf = stub.url + "/files/gone.pdf"
+    landing = stub.serve("/article/a", (200, _landing(dead_pdf)))
+    stub.work("10.1234/a", location(forbidden, "journal"),
+              location(None, "repository", landing=landing))
+    identifier = Identifier(doi="10.1234/a")
+
+    result = pdf_source(tmp_path).download(
+        Identifiers([identifier]), dead_urls={identifier.slug: {_url_key(dead_pdf): "gone"}}
+    )[0]
+
+    assert _outcomes(result) == ["http_error", "known_dead"]
+    assert result.error_message.startswith("PDF fetch failed: 403")
+
+
+def test_refusals_behind_a_redirect_count_against_the_host_that_refused(
+    stub, other_host, tmp_path
+):
+    good = OaHosts()
+    try:
+        good.serve("/files/a.pdf", (200, PDF))
+        good_page = good.serve("/article/a", (200, _landing("/files/a.pdf")))
+        dois = [f"10.1234/d{n}" for n in range(21)]
+        for n, doi in enumerate(dois):
+            target = other_host.serve(f"/article/{n}", (403, b"no")) if n < 20 else good_page
+            resolver = stub.serve(f"/doi/{n}", (302, b"", {"Location": target}))
+            stub.work(doi, location(None, "journal", landing=resolver))
+        extractor = pdf_source(tmp_path)
+
+        results = _download(extractor, *dois)
+
+        assert [r.url_attempts[0]["outcome"] for r in results[:20]] == ["http_error"] * 20
+        assert results[20].success, results[20].error_message
+        assert extractor._hosts.deferred(urlsplit(stub.url).netloc) is None
+        assert extractor._hosts.deferred(urlsplit(other_host.url).netloc) is not None
+    finally:
+        good.close()
+
+
 def test_a_host_refusing_landing_pages_is_left_for_the_run(stub, tmp_path):
     dois = [f"10.1234/r{n}" for n in range(21)]
     for doi in dois:
@@ -1286,6 +1340,9 @@ def test_a_host_refusing_landing_pages_is_left_for_the_run(stub, tmp_path):
         (b'<META NAME="Citation_PDF_URL" CONTENT="https://x.org/b.pdf">', "https://x.org/b.pdf"),
         (b'<meta name="citation_pdf_url" content="https://x.org/1.pdf">'
          b'<meta name="citation_pdf_url" content="https://x.org/2.pdf">', "https://x.org/1.pdf"),
+        (b'<meta content="https://x.org/c.pdf" name="citation_pdf_url">', "https://x.org/c.pdf"),
+        (b'<meta name="citation_pdf_url" content="/get?id=1&amp;type=pdf">',
+         "https://h.org/get?id=1&type=pdf"),
         (b'<meta name="citation_pdf_url" content="">', None),
         (b'<meta name="citation_pdf_url" content="javascript:void(0)">', None),
         (b'<link rel="alternate" type="application/pdf" href="/a.pdf">', None),

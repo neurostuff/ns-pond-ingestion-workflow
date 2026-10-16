@@ -418,6 +418,10 @@ def _answer(
     """The body of a 2xx answer for `url` and the URL it came from after redirects,
     or None with the outcome written into `attempt`.
 
+    A refusal is counted against the host that answered, after redirects: a
+    resolver such as doi.org fronts many hosts, and one of them refusing must
+    not leave the others for the run.
+
     A 429 is waited out for as long as the host asks, by every worker,
     unless it asks for longer than the run should wait; see `_HostGate`.
     The host is checked before every request, so a URL on a host that this
@@ -448,30 +452,33 @@ def _answer(
                 )
                 return None
             continue
+        answered_from = str(response.url)
         try:
             response.raise_for_status()
-            return response.content, str(response.url)
+            return response.content, answered_from
         except Exception as exc:  # noqa: BLE001 - recorded on the attempt
             dead = 400 <= status < 500 and status not in _TRANSIENT_CLIENT_STATUSES
             attempt.update(outcome="http_error", reason=f"{what} fetch failed: {exc}")
             if dead:
                 attempt["dead"] = True
-            hosts.answered(host, refused=dead and status not in _GONE_STATUSES)
+            hosts.answered(_host(answered_from), refused=dead and status not in _GONE_STATUSES)
             return None
         finally:
             response.close()
 
 
 def _as_pdf(
-    payload: bytes, url: str, attempt: Dict[str, object], hosts: _HostGate
+    answer: Tuple[bytes, str], url: str, attempt: Dict[str, object], hosts: _HostGate
 ) -> Optional[bytes]:
+    """`answer`'s body if it is a PDF; either way, credited to the host that sent it."""
+    payload, answered_from = answer
     if not _is_pdf(payload):
         # Landing pages and paywall interstitials return HTML with a 200.
         attempt.update(outcome="not_pdf", dead=True, reason=f"Response from {url} is not a PDF.")
-        hosts.answered(_host(url), refused=True)
+        hosts.answered(_host(answered_from), refused=True)
         return None
     attempt.update(outcome="pdf", reason="PDF downloaded")
-    hosts.answered(_host(url), served=True)
+    hosts.answered(_host(answered_from), served=True)
     return payload
 
 
@@ -484,7 +491,7 @@ def fetch_pdf(
     Rate limits and hosts left for the run are handled as `_answer` says.
     """
     answer = _answer(get, url, attempt, hosts, "PDF")
-    return None if answer is None else _as_pdf(answer[0], url, attempt, hosts)
+    return None if answer is None else _as_pdf(answer, url, attempt, hosts)
 
 
 def store_pdf(
@@ -748,8 +755,8 @@ class PdfExtractor(BaseExtractor):
             return None
         page, page_url = answer
         if _is_pdf(page):
-            return _as_pdf(page, url, attempt, self._hosts)
-        self._hosts.answered(_host(url))
+            return _as_pdf(answer, url, attempt, self._hosts)
+        self._hosts.answered(_host(page_url))
         pdf_url = citation_pdf_url(page, page_url)
         if pdf_url is None:
             attempt.update(
