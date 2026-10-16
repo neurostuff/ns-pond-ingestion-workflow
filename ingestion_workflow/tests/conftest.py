@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from ingestion_workflow.models.ids import Identifier, Identifiers
-from ingestion_workflow.tests import upload_body, wiley_tdm
+from ingestion_workflow.tests import cassette_secrets, upload_body, wiley_tdm
 
 
 @pytest.fixture(scope="session")
@@ -18,27 +18,15 @@ def pytest_recording_configure(config, vcr):
     vcr.register_matcher("upload_body", upload_body.same_body_but_input_fingerprints)
 
 
-def _without_set_cookie(response):
-    # filter_headers scrubs only requests; a host's session cookies are in its answers
-    headers = response["headers"]
-    for name in [n for n in headers if n.lower() == "set-cookie"]:
-        del headers[name]
-    return response
-
-
 @pytest.fixture(scope="session")
 def vcr_config():
     return {
-        "before_record_response": _without_set_cookie,
+        "before_record_response": cassette_secrets.scrub_response,
         "filter_headers": [
-            "authorization",
-            "x-api-key",
-            "x-els-apikey",
-            "x-els-insttoken",
-            "cookie",
+            *cassette_secrets.SECRET_REQUEST_HEADERS,
             ("wiley-tdm-client-token", wiley_tdm.REPLAY_TOKEN),
         ],
-        "filter_query_parameters": ["api_key"],
+        "filter_query_parameters": list(cassette_secrets.SECRET_QUERY_PARAMETERS),
         "record_mode": "once",
         "ignore_hosts": ["localhost"],
     }

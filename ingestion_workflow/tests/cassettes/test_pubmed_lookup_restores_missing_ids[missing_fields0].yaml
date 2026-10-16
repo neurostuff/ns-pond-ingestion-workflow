@@ -40,9 +40,6 @@ interactions:
       - same-origin
       referrer-policy:
       - same-origin
-      set-cookie:
-      - ncbi_sid=7684C7A7ACD64153_1009SID; Domain=.nih.gov; expires=Tue, 12 Oct 2027
-        22:54:58 GMT; Max-Age=31536000; Path=/
       vary:
       - Accept,Accept-Encoding
       x-content-type-options:
@@ -64,8 +61,6 @@ interactions:
       - gzip, deflate
       Connection:
       - keep-alive
-      Cookie:
-      - ncbi_sid=7684C7A7ACD64153_1009SID
       User-Agent:
       - python-requests/2.34.2
     method: GET
@@ -98,9 +93,6 @@ interactions:
       - same-origin
       referrer-policy:
       - same-origin
-      set-cookie:
-      - ncbi_sid=7684C7A7ACD64153_1009SID; Domain=.nih.gov; expires=Tue, 12 Oct 2027
-        22:54:58 GMT; Max-Age=31536000; Path=/
       vary:
       - Accept,Accept-Encoding
       x-content-type-options:
