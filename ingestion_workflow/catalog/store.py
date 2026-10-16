@@ -422,12 +422,6 @@ class Catalog:
             conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (survivor, other))
             conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (survivor, other))
             self._move_artifacts(conn, other, survivor)
-            # a provider that found both halves keeps one row
-            conn.execute(
-                "UPDATE OR IGNORE search_hits SET article_id=? WHERE article_id=?",
-                (survivor, other),
-            )
-            conn.execute("DELETE FROM search_hits WHERE article_id=?", (other,))
         return survivor
 
     @staticmethod
@@ -623,21 +617,41 @@ class Catalog:
             )
         return search_id
 
+    def _search_hits(self, search_id: int) -> Dict[str, set]:
+        """Per provider, the articles it found now: each hit followed through any merge.
+
+        Read-time, because a process that predates these tables merges articles
+        without moving their hits.
+        """
+        merged = {
+            row["id"]: row["merged_into"]
+            for row in self._conn.execute(
+                "SELECT id, merged_into FROM articles WHERE merged_into IS NOT NULL"
+            )
+        }
+
+        def live(article_id: str) -> str:
+            seen = set()
+            while article_id in merged and article_id not in seen:
+                seen.add(article_id)
+                article_id = merged[article_id]
+            return article_id
+
+        found: Dict[str, set] = {}
+        for row in self._conn.execute(
+            "SELECT provider, article_id FROM search_hits WHERE search_id=?", (search_id,)
+        ):
+            found.setdefault(row["provider"], set()).add(live(row["article_id"]))
+        return found
+
     def searches(self) -> List[Dict[str, Any]]:
         """Every search run, oldest first, with each provider's query, records and articles."""
         runs = []
         for row in self._conn.execute("SELECT * FROM searches ORDER BY id").fetchall():
             providers = json.loads(row["providers"])
-            counts = {
-                hit["provider"]: hit["n"]
-                for hit in self._conn.execute(
-                    "SELECT provider, COUNT(*) AS n FROM search_hits WHERE search_id=? "
-                    "GROUP BY provider",
-                    (row["id"],),
-                )
-            }
+            found = self._search_hits(row["id"])
             for name, detail in providers.items():
-                detail["articles"] = counts.get(name, 0)
+                detail["articles"] = len(found.get(name, ()))
             runs.append(
                 {
                     "id": row["id"],
@@ -671,24 +685,25 @@ class Catalog:
         for name in [*found_by, *([only] if only else [])]:
             if name not in searched:
                 raise KeyError(f"search {search_id} did not search {name}")
+        found = self._search_hits(search_id)
         if only:
-            where = (
-                "h.provider = ? AND NOT EXISTS (SELECT 1 FROM search_hits o WHERE "
-                "o.search_id = h.search_id AND o.article_id = h.article_id "
-                "AND o.provider != h.provider)"
-            )
-            args: tuple = (only,)
+            others = set().union(*(a for p, a in found.items() if p != only))
+            chosen = found.get(only, set()) - others
         elif found_by:
-            where, args = f"h.provider IN ({','.join('?' * len(found_by))})", tuple(found_by)
+            chosen = set().union(*(found.get(p, set()) for p in found_by))
         else:
-            where, args = "1", ()
-        rows = self._conn.execute(
-            "SELECT DISTINCT h.article_id, a.created_at FROM search_hits h "
-            "JOIN articles a ON a.id = h.article_id "
-            f"WHERE h.search_id = ? AND {where} ORDER BY a.created_at, h.article_id",
-            (search_id, *args),
-        )
-        return [r["article_id"] for r in rows]
+            chosen = set().union(*found.values())
+        ordered: List[Tuple[str, str]] = []
+        for chunk in _chunks(sorted(chosen), 900):
+            ordered += [
+                (r["created_at"], r["id"])
+                for r in self._conn.execute(
+                    "SELECT id, created_at FROM articles "
+                    f"WHERE id IN ({','.join('?' * len(chunk))})",
+                    tuple(chunk),
+                )
+            ]
+        return [article_id for _, article_id in sorted(ordered)]
 
     #: The table id that stands for every table of an article.
     WHOLE_ARTICLE = "*"

@@ -61,8 +61,7 @@ CREATE TABLE IF NOT EXISTS exclusions (
 );
 
 -- One row per `ingest add --search`: what was asked and what each provider was
--- sent. `providers` maps a provider to {query, records, without_id}. A table
--- of its own, created on open, so existing catalogs gain it with no migration.
+-- sent. `providers` maps a provider to {query, records, without_id}.
 CREATE TABLE IF NOT EXISTS searches (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     query       TEXT NOT NULL,
@@ -72,7 +71,7 @@ CREATE TABLE IF NOT EXISTS searches (
 );
 
 -- The catalog article each provider's hit resolved to, after registration and
--- enrichment. A merge hands a retired article's rows to the survivor.
+-- enrichment. Read through `articles.merged_into`, never rewritten.
 CREATE TABLE IF NOT EXISTS search_hits (
     search_id  INTEGER NOT NULL,
     provider   TEXT NOT NULL,

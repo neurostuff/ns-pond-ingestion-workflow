@@ -336,3 +336,25 @@ def test_a_manifest_names_only_what_the_search_searched(config, tmp_path):
          "--config", str(config)],
     )
     assert result.exit_code == 2
+
+
+@pytest.mark.vcr(ALL_PROVIDERS)
+def test_a_manifest_defaults_to_the_data_root_and_lists_articles_oldest_first(config, tmp_path):
+    _add(config, "--search", "fMRI AND misophonia")
+
+    out = _searches(config, "manifest", "1", "--only-found-by", "sciencedirect")
+
+    path = tmp_path / "data" / "manifests" / "search-1.jsonl"
+    assert f"70 articles -> {path}" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        written = [catalog.resolve(Identifier(**row)).id for row in _manifest_lines(path)]
+        assert written == catalog.search_articles(1, only="sciencedirect")
+        ages = [
+            catalog._conn.execute("SELECT created_at FROM articles WHERE id=?", (i,)).fetchone()[0]
+            for i in written
+        ]
+        assert ages == sorted(ages)
+
+
+def test_searches_list_with_no_search_kept(config):
+    assert "no searches kept." in _searches(config, "list")
