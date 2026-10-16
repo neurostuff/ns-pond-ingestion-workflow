@@ -1,12 +1,13 @@
-"""Searching OpenAlex for journal articles, paged by cursor to the end."""
+"""Searching OpenAlex, paged by cursor to the end."""
 
 import os
 
 import pytest
 from ingestion_workflow.clients.openalex import OpenAlexClient
+from ingestion_workflow.services.query_dialect import Years, parse, to_openalex
 
 # the cassette matches on the filter, so it also pins `type:article` and the year
-QUERY = "fMRI AND synesthesia"
+FILTER = to_openalex(parse("fMRI AND synesthesia", Years.parse("2026")))
 
 
 def _client() -> OpenAlexClient:
@@ -16,7 +17,7 @@ def _client() -> OpenAlexClient:
 
 @pytest.mark.vcr()
 def test_a_search_follows_the_cursor_to_the_last_page():
-    found = _client().search(QUERY, year=2026, per_page=2)
+    found = _client().search(FILTER, per_page=2)
 
     assert len(found.identifiers) == 3  # two pages: 2 + 1
     assert all(i.doi == i.doi.lower() and not i.doi.startswith("http") for i in found if i.doi)
@@ -24,7 +25,7 @@ def test_a_search_follows_the_cursor_to_the_last_page():
 
 @pytest.mark.vcr()
 def test_a_work_without_any_id_is_kept_with_its_openalex_id():
-    found = _client().search(QUERY, year=2026, per_page=2)
+    found = _client().search(FILTER, per_page=2)
 
     bare = [i for i in found if not (i.doi or i.pmid or i.pmcid)]
     assert len(bare) == 1

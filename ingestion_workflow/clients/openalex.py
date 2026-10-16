@@ -287,21 +287,14 @@ class OpenAlexClient:
         ) or self._request_openalex({**params, "search": words}).get("results")
         return [(_identifier_from(work.get("ids")), _metadata_from(work)) for work in works or []]
 
-    def search(
-        self, query: str, *, year: Optional[int] = None, per_page: int = OPENALEX_SEARCH_PAGE_SIZE
-    ) -> Identifiers:
-        """Every journal article whose title or abstract matches `query`, by cursor.
+    def search(self, filter: str, *, per_page: int = OPENALEX_SEARCH_PAGE_SIZE) -> Identifiers:
+        """Every work matching the /works `filter`, by cursor to the last page.
 
-        Only `type:article` is searched: unfiltered, most of the extra hits are
-        preprints, datasets, dissertations and peer-review reports. A work with
-        no DOI, PMID or PMCID is kept, carrying its OpenAlex id, so the caller
-        can count what the catalog cannot hold.
+        A work with no DOI, PMID or PMCID is kept, carrying its OpenAlex id, so
+        the caller can count what the catalog cannot hold.
         """
-        filters = [f"title_and_abstract.search:({query})", "type:article"]
-        if year is not None:
-            filters.append(f"publication_year:{year}")
         params = {
-            "filter": ",".join(filters),
+            "filter": filter,
             "select": "ids,doi",
             "per_page": str(per_page),
             "mailto": self.email,
@@ -312,7 +305,8 @@ class OpenAlexClient:
             payload = self._request_openalex(params)
             for work in payload.get("results", []) or []:
                 ids = work.get("ids") or {}
-                identifier = _identifier_from({**ids, "doi": ids.get("doi") or work.get("doi")})
+                doi = ids.get("doi") or work.get("doi")
+                identifier = _identifier_from({**ids, "doi": doi.lower() if doi else None})
                 if ids.get("openalex"):
                     identifier["openalex"] = ids["openalex"]
                 found.append(identifier)

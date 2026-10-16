@@ -1,0 +1,2067 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/search/bulk?fields=externalIds&query=fMRI+%2B+%28dyslexia+%7C+tinnitus+%7C+insomnia+%7C+stuttering%29
+  response:
+    body:
+      string: '{"total": 1038, "token": "PCOKWVSKJJGM4TWNJNI3EUSQJIWVNUSRKBFEYK2JFUBHFI4V2LGI3TIMRTGCYEUTZWJNHDEMBWJIYLMSJXGVELCT2KGNEESTRVJM2U4NZXJ4YEQNSVRGWAPYWAKMY",
+        "data": [{"paperId": "0035fac7a2dfdb07d62e9ac52cb71542a52dc68c", "externalIds":
+        {"MAG": "1972461513", "DOI": "10.1117/12.546561", "CorpusId": 143053239}},
+        {"paperId": "0049fab0d52598e04aa4c6cef4ffc9a77f068f9c", "externalIds": {"MAG":
+        "2188188884", "CorpusId": 73645093}}, {"paperId": "018f7d4cdeb302b8102d8521bd2360524f10ebfc",
+        "externalIds": {"MAG": "2052459226", "DOI": "10.1007/s00702-004-0117-z", "CorpusId":
+        19582561, "PubMed": "15206009"}}, {"paperId": "0222321703341f1e49616bc27b6ecd1393c5e7b0",
+        "externalIds": {"DOI": "10.1007/978-3-031-69491-2_26", "CorpusId": 274146477,
+        "PubMed": "39562464"}}, {"paperId": "025a48df22945ac77a965f6fb141e15310dbefb1",
+        "externalIds": {"PubMedCentral": "12947161", "DOI": "10.1093/psyrad/kkag001",
+        "CorpusId": 284519945, "PubMed": "41767428"}}, {"paperId": "02a82735bb71a587e1986b259dc6fc49a625c930",
+        "externalIds": {"MAG": "2912414077", "DOI": "10.1016/j.bandl.2019.01.002",
+        "CorpusId": 72334063, "PubMed": "30721792"}}, {"paperId": "02a862a05c2a0a7b50dbc4ef879fcf88fdef8548",
+        "externalIds": {"MAG": "3089152590", "DOI": "10.1016/B978-0-444-64148-9.00004-1",
+        "CorpusId": 221938478, "PubMed": "32977895"}}, {"paperId": "0356152d950352a3e4dce9bd7d2d02c5a16e7afb",
+        "externalIds": {"PubMedCentral": "8571850", "DOI": "10.1186/s13063-021-05528-7",
+        "CorpusId": 243767277, "PubMed": "34742345"}}, {"paperId": "0365e17ed2e697e9c2edac152f12368b79c47803",
+        "externalIds": {"MAG": "2326394797", "DOI": "10.1007/s00415-006-0152-9", "CorpusId":
+        28024887}}, {"paperId": "0391745cbc9980f7982daabb3b0bdf58d5c607e1", "externalIds":
+        {"MAG": "2022302764", "DOI": "10.1097/00001756-199911080-00036", "CorpusId":
+        23718014, "PubMed": "10599862"}}, {"paperId": "03a5dec4959dfab1ee2d9b874595795e1048f32b",
+        "externalIds": {"MAG": "2520335544", "DOI": "10.1016/j.ejrad.2016.09.011",
+        "CorpusId": 30989374, "PubMed": "27776655"}}, {"paperId": "03ab97a0c7aa31851a89080e494ccd6fc2b48b6d",
+        "externalIds": {"DBLP": "journals/neuroimage/MarkBMSBBKLKMB09", "MAG": "2079500371",
+        "DOI": "10.1016/j.neuroimage.2009.05.021", "CorpusId": 6444200, "PubMed":
+        "19446640"}}, {"paperId": "03e946defe93602ce801c4ce9f1503c96608b8e1", "externalIds":
+        {"DOI": "10.58530/2024/1105", "CorpusId": 274328156}}, {"paperId": "0509c251f632c4599f090910d7c00a058b6ad37e",
+        "externalIds": {"MAG": "2595823169", "DOI": "10.1007/S41105-017-0096-8", "CorpusId":
+        152142941}}, {"paperId": "050accf04fdf2b1bff996ab607fc941bf5c3dc83", "externalIds":
+        {"MAG": "2055365467", "DOI": "10.1080/02699200500074321", "CorpusId": 16040186,
+        "PubMed": "16728334"}}, {"paperId": "050f05a8fc55cbc1026bc5eed66a8d77bed4ac15",
+        "externalIds": {"MAG": "2067602338", "DOI": "10.1016/S1053-8119(09)71113-9",
+        "CorpusId": 54378628}}, {"paperId": "053eac2a32d55dd794cf66e6a498a5f1de325d7d",
+        "externalIds": {"MAG": "2297282302", "CorpusId": 147064732}}, {"paperId":
+        "054b73a1621cd463978f998bf998232755ba9bce", "externalIds": {"MAG": "2020614005",
+        "DOI": "10.1038/ejhg.2011.160", "CorpusId": 24960337, "PubMed": "21897444"}},
+        {"paperId": "054cb54156655a120b53b8cf7e2493ce52633d62", "externalIds": {"MAG":
+        "3036698565", "DOI": "10.1016/j.cortex.2020.05.014", "CorpusId": 219943798,
+        "PubMed": "32659520"}}, {"paperId": "056046a7cee1afdccd962e44516dd80fbadee5ae",
+        "externalIds": {"MAG": "1992662023", "DOI": "10.1007/s00429-014-0944-0", "CorpusId":
+        16518582, "PubMed": "25503643"}}, {"paperId": "059c26e9a081ed8e9b0caa381c1ef40b379420a1",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.0280", "CorpusId": 278751614}},
+        {"paperId": "05c9539c4a47ae056a08f78efca4f466f0a3d525", "externalIds": {"MAG":
+        "25009607", "CorpusId": 186684152}}, {"paperId": "062f3e82ece91f687856fd6d262f57ea34bdf4af",
+        "externalIds": {"DOI": "10.4274/tnd.2022.40501", "CorpusId": 249225182}},
+        {"paperId": "0671edeb4e8801ad106e5fbdceb61d53db9d89e3", "externalIds": {"MAG":
+        "3025983945", "PubMedCentral": "5400289", "DOI": "10.1016/j.tine.2016.10.001",
+        "CorpusId": 205403029, "PubMed": "28439565"}}, {"paperId": "06b6217b01e03a146d4610f9f831dd196337e2a0",
+        "externalIds": {"MAG": "3049730910", "PubMedCentral": "7430003", "DOI": "10.1186/s12906-020-02969-6",
+        "CorpusId": 221136732, "PubMed": "32807158"}}, {"paperId": "073d4ed0193ba840568e247cd5a0ad90f3667629",
+        "externalIds": {"MAG": "3016115206", "DOI": "10.1080/00207454.2020.1746310",
+        "CorpusId": 215751340, "PubMed": "32281466"}}, {"paperId": "07666b6666b6643a8ff544760f872e51901eb670",
+        "externalIds": {"DOI": "10.1093/sleep/zsag091.0487", "CorpusId": 288135762}},
+        {"paperId": "07712705c45de15f42e8db2ad635e06abd311523", "externalIds": {"PubMedCentral":
+        "13420205", "DOI": "10.1002/cns.71066", "CorpusId": 290691345, "PubMed": "42529863"}},
+        {"paperId": "077fa27ae64f1f247878d0e2671ec12f426efa35", "externalIds": {"DOI":
+        "10.1016/j.cortex.2023.07.007", "CorpusId": 260933606, "PubMed": "37660660"}},
+        {"paperId": "078dc35351f9fda5c81fb88730d6b355e138503d", "externalIds": {"MAG":
+        "2534946901", "CorpusId": 151949129}}, {"paperId": "0857da7db1fed4e59d150a4bf72364f5be2949c2",
+        "externalIds": {"CorpusId": 251401683}}, {"paperId": "085ae1b0ded236815174de71371c43a9c159ae01",
+        "externalIds": {"MAG": "2081576800", "PubMedCentral": "3514918", "DOI": "10.4103/2152-7806.103012",
+        "CorpusId": 207487962, "PubMed": "23230528"}}, {"paperId": "0872c3cd324e0c919b616ff53cc3829451cc76e1",
+        "externalIds": {"MAG": "2031231375", "PubMedCentral": "3692444", "DOI": "10.1371/journal.pone.0067331",
+        "CorpusId": 7574231, "PubMed": "23825653"}}, {"paperId": "08a9a271de1b2914deb2db1fc235b30443250f99",
+        "externalIds": {"PubMedCentral": "4082872", "MAG": "2123643536", "DOI": "10.1155/2014/465760",
+        "CorpusId": 15734285, "PubMed": "25024729"}}, {"paperId": "095837db90298c6d89e1a55eaaca0cf1bc58f5ce",
+        "externalIds": {"DOI": "10.1007/s12311-025-01944-6", "CorpusId": 284474094,
+        "PubMed": "41484532"}}, {"paperId": "0969aa377f9e1e22800963fa75650ce1c0256aa7",
+        "externalIds": {"MAG": "2182563702", "CorpusId": 146691616}}, {"paperId":
+        "0970a0287e5c1fdc5b27c2aa6ad31337b9a3e2d9", "externalIds": {"MAG": "2623228687",
+        "CorpusId": 148848022}}, {"paperId": "09720decb84adb096ed3d50a2a00b80a1514440a",
+        "externalIds": {"MAG": "2566498787", "PubMedCentral": "4215464", "DOI": "10.1016/j.nicl.2014.09.011",
+        "CorpusId": 14546588, "PubMed": "25379434"}}, {"paperId": "098b5809ab8bb1da29540dfe3c74b2c24a468f3d",
+        "externalIds": {"DOI": "10.1007/s11325-024-03002-7", "CorpusId": 267545217,
+        "PubMed": "38329566"}}, {"paperId": "09fefe7c77d422aff136a7eae7407ae20fddc528",
+        "externalIds": {"MAG": "2523108242", "DOI": "10.1016/j.heares.2016.09.005",
+        "CorpusId": 4871444, "PubMed": "27663095"}}, {"paperId": "0a25dbe13ef2ee1993f50ec827849f56a0362d57",
+        "externalIds": {"MAG": "1992364832", "PubMedCentral": "4190016", "DOI": "10.1016/j.brainres.2014.08.050",
+        "CorpusId": 45501103, "PubMed": "25152466"}}, {"paperId": "0a52d960522e5161009be487e6a278ed42cddb07",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.0579", "CorpusId": 278752892}},
+        {"paperId": "0aa4bde8267a2adcfb556d2373bfdae6b7c7620c", "externalIds": {"CorpusId":
+        264883930}}, {"paperId": "0b07c6b62bbaa304ad27983abe6a03b98570650a", "externalIds":
+        {"PubMedCentral": "12172929", "DOI": "10.1016/j.ynirp.2023.100158", "CorpusId":
+        256938057, "PubMed": "40568052"}}, {"paperId": "0b152c8fe895e04a3cd8243e582eb8b7edc58dd2",
+        "externalIds": {"PubMedCentral": "8904428", "DOI": "10.3389/fnmol.2022.825286",
+        "CorpusId": 247027262, "PubMed": "35283729"}}, {"paperId": "0b53df95779e2f9b6db1953c81052a00f1faca5b",
+        "externalIds": {"PubMedCentral": "13384069", "DOI": "10.1093/psyrad/kkag025",
+        "CorpusId": 289945631, "PubMed": "42518885"}}, {"paperId": "0b7909a06e2c62dd1ecc64bbeba2a5ec1aca13a4",
+        "externalIds": {"MAG": "2164489300", "CorpusId": 17857405}}, {"paperId": "0b7be76ca80c9392b529ee3dca9aa0e4edb968f8",
+        "externalIds": {"MAG": "2037506281", "PubMedCentral": "3844926", "DOI": "10.1016/j.yebeh.2013.08.028",
+        "CorpusId": 38933908, "PubMed": "24090774"}}, {"paperId": "0b7c3a778faddaa9b50afd98ab503b72195bf960",
+        "externalIds": {"MAG": "2585659555", "DOI": "10.1016/j.jphysparis.2017.01.004",
+        "CorpusId": 3291731, "PubMed": "28161453"}}, {"paperId": "0c3fc7e55d3b6a6689353932e7abce672672e8aa",
+        "externalIds": {"MAG": "2114964163", "DOI": "10.1016/S0387-7604(01)00228-5",
+        "CorpusId": 22559956, "PubMed": "11504602"}}, {"paperId": "0c63deb91d2aa6cbbe0b164aefb3b6b85d5655dc",
+        "externalIds": {"PubMedCentral": "9596274", "DOI": "10.1155/2022/5114721",
+        "CorpusId": 253026304, "PubMed": "36304208"}}, {"paperId": "0c87704f8082210d48ef393245e9b6ec5f59c470",
+        "externalIds": {"DOI": "10.1007/s11682-025-00986-y", "CorpusId": 276534134,
+        "PubMed": "39984808"}}, {"paperId": "0c91c1a050749b3d5a891d8f20578cf0c6a995db",
+        "externalIds": {"PubMedCentral": "12328026", "DOI": "10.1162/nol.a.8", "CorpusId":
+        278388277, "PubMed": "40772236"}}, {"paperId": "0c926195e0cbb3c433d6359fbd954559cc7293a7",
+        "externalIds": {"DOI": "10.1016/j.sleep.2024.12.025", "CorpusId": 274923892,
+        "PubMed": "39721360"}}, {"paperId": "0caede6c19feb3420b4a8bd9db7e9c64a427002d",
+        "externalIds": {"PubMedCentral": "4773384", "MAG": "2257429070", "DOI": "10.1016/j.nicl.2016.02.002",
+        "CorpusId": 25226, "PubMed": "26958463"}}, {"paperId": "0cbb93908c52f95b8de268258c5b477508c7fc38",
+        "externalIds": {"CorpusId": 14529078}}, {"paperId": "0ceb99e507e9323234f1a5b2e264a28858810f44",
+        "externalIds": {"MAG": "2170064747", "PubMedCentral": "3169788", "DOI": "10.3389/fnint.2011.00047",
+        "CorpusId": 1244502, "PubMed": "21927598"}}, {"paperId": "0cfeadc5a19cf4c5ca7deb129a06d0628a1661ea",
+        "externalIds": {"MAG": "2280668141", "DOI": "10.1159/000443372", "CorpusId":
+        27938150, "PubMed": "26784899"}}, {"paperId": "0d49d59c5b42aa3422a49d89045d78286eba9225",
+        "externalIds": {"MAG": "2154531191", "DOI": "10.1016/j.heares.2014.03.001",
+        "CorpusId": 15224870, "PubMed": "24631963"}}, {"paperId": "0dbeb33d7b7842b79bc60dfaedaa754d75d15021",
+        "externalIds": {"DOI": "10.1016/j.nrl.2021.01.007", "CorpusId": 261493519,
+        "PubMed": "33722455"}}, {"paperId": "0de37924e155b5427cd65adba4fd04c2504e4d8d",
+        "externalIds": {"PubMedCentral": "11340108", "DOI": "10.1186/s12906-024-04612-0",
+        "CorpusId": 271922686, "PubMed": "39169368"}}, {"paperId": "0e3c14f7b2b47639747f956335554fd5dc18ec4e",
+        "externalIds": {"CorpusId": 220494794}}, {"paperId": "0e70e9782db48d2fe2d487a252b5e2b1c2cc170a",
+        "externalIds": {"PubMedCentral": "8140185", "DOI": "10.1002/ctm2.378", "CorpusId":
+        235214105, "PubMed": "34047478"}}, {"paperId": "0e96cfecf4122ce6b7ed5db277e32c966c484c75",
+        "externalIds": {"PubMedCentral": "9842899", "DOI": "10.1002/hbm.26072", "CorpusId":
+        252310465, "PubMed": "36111884"}}, {"paperId": "0e9fbb2ee5ae0d8b75e78d06cc1a82fe8132a12c",
+        "externalIds": {"PubMedCentral": "4334979", "MAG": "1978701273", "DOI": "10.1155/2015/475382",
+        "CorpusId": 11808194, "PubMed": "25734018"}}, {"paperId": "0ebd89156748bf6f85cb990c2ab45b26b35ce6ad",
+        "externalIds": {"DOI": "10.1016/j.sleep.2025.106833", "CorpusId": 281661088,
+        "PubMed": "41101144"}}, {"paperId": "0efceb6c83e17bf9d3a3f31ca8b643e4ef71af35",
+        "externalIds": {"PubMedCentral": "6423409", "MAG": "2922301534", "DOI": "10.3389/fnins.2019.00222
+        ", "CorpusId": 73728577, "PubMed": "30930739"}}, {"paperId": "0f1344179ce934d39f76206e9bd45ef14561e39d",
+        "externalIds": {"PubMedCentral": "9752003", "DOI": "10.3389/fneur.2022.986805",
+        "CorpusId": 254129246, "PubMed": "36530635"}}, {"paperId": "0f7991af5a3d28cd14f963178b8dd01ba7f44f4b",
+        "externalIds": {"MAG": "2059924745", "DOI": "10.1016/J.NEUROPSYCHOLOGIA.2007.09.002",
+        "CorpusId": 25621072, "PubMed": "17950764"}}, {"paperId": "0f8d2426bf9113dd43fbdfb3fb453acbcfc8fba2",
+        "externalIds": {"MAG": "2008990368", "DOI": "10.1016/j.neucli.2009.10.004",
+        "CorpusId": 37883903, "PubMed": "20230930"}}, {"paperId": "102c35414d223e5e3d7aef21b40044e38f7ecc43",
+        "externalIds": {"DOI": "10.1038/s41598-026-60796-0", "CorpusId": 290562787}},
+        {"paperId": "10926406282e55acffa291f8482a593edc60fe28", "externalIds": {"PubMedCentral":
+        "4564758", "MAG": "1875784921", "DOI": "10.3389/fnhum.2015.00495", "CorpusId":
+        11171717, "PubMed": "26441595"}}, {"paperId": "110c53e2b10209073629f942fa825d9733ff914b",
+        "externalIds": {"MAG": "2011695670", "DBLP": "journals/neuroimage/Weiskopf12",
+        "DOI": "10.1016/j.neuroimage.2011.10.009", "CorpusId": 25216849, "PubMed":
+        "22019880"}}, {"paperId": "11164fc7206e5e42caad0920ee12a077bfbf2909", "externalIds":
+        {"DOI": "10.1148/radiol.231143", "CorpusId": 267633797, "PubMed": "38349241"}},
+        {"paperId": "1141475614582497785d495350b2d197b20c1e84", "externalIds": {"MAG":
+        "3149273414", "DOI": "10.1002/brb3.1844/v1/review2", "CorpusId": 234708828}},
+        {"paperId": "119742d0a7e068f7ab69b0cb4ce2dc982bd2d230", "externalIds": {"MAG":
+        "2590595081", "PubMedCentral": "5318420", "DOI": "10.3389/fnagi.2017.00031",
+        "CorpusId": 1461837, "PubMed": "28270764"}}, {"paperId": "1225b6d507f107fb2610d5226d9a2af87d070942",
+        "externalIds": {"MAG": "2039678608", "DOI": "10.1159/000241094", "CorpusId":
+        11027298, "PubMed": "19776563"}}, {"paperId": "128c35602769fabf0241d1f59920ce30752f3990",
+        "externalIds": {"MAG": "1977094312", "DOI": "10.1007/s00234-007-0231-3", "CorpusId":
+        12280446, "PubMed": "17404721"}}, {"paperId": "12a8c0dd42e6ab4966b411f2a4680d7bc8b0315c",
+        "externalIds": {"DBLP": "journals/brain/AltunkayaOB25", "DOI": "10.1177/21580014251362839",
+        "CorpusId": 280534813, "PubMed": "40765404"}}, {"paperId": "1360488fcc982bbaeb6af4ac0cde2028c5403777",
+        "externalIds": {"DOI": "10.55231/jpid.2024.v07.i03.00", "CorpusId": 271254589}},
+        {"paperId": "136c04b4d79b838e1c27135008f94d787b6f6490", "externalIds": {"DOI":
+        "10.1016/j.exger.2026.113220", "CorpusId": 289699713, "PubMed": "42379384"}},
+        {"paperId": "138a13450d68ff1b2962cfa4a9c0d6cc6046273c", "externalIds": {"DBLP":
+        "journals/neuroimage/PreibischNREGLG03", "MAG": "2029150330", "DOI": "10.1016/S1053-8119(03)00376-8",
+        "CorpusId": 12375281, "PubMed": "14568504"}}, {"paperId": "13b9a78eb2b413ec1f852ce24e2d7cf408ed0bec",
+        "externalIds": {"PubMedCentral": "11775246", "DOI": "10.1038/s41398-025-03238-1",
+        "CorpusId": 275953390, "PubMed": "39875399"}}, {"paperId": "1408547deb4e03d842d8f5ea5f10ef12f49d70b3",
+        "externalIds": {"MAG": "2980197022", "PubMedCentral": "7267899", "DOI": "10.1002/hbm.24792",
+        "CorpusId": 204032735, "PubMed": "31597004"}}, {"paperId": "1419a3653edc6e3a325e3f91c40c0c499be29390",
+        "externalIds": {"PubMedCentral": "4265683", "MAG": "2168834598", "DOI": "10.1155/2014/765068",
+        "CorpusId": 5156556, "PubMed": "25525448"}}, {"paperId": "14be75bf7aefe425b1340c6cdb98e85651b34ad1",
+        "externalIds": {"MAG": "1965605914", "DOI": "10.1016/j.heares.2015.03.006",
+        "CorpusId": 205102971, "PubMed": "25843940"}}, {"paperId": "14bfbc72b5828a7d3546ddee1ba71b73ded51956",
+        "externalIds": {"CorpusId": 261236520}}, {"paperId": "14eb5c86dbaac4a05c16b35fb02f0376a7366ea6",
+        "externalIds": {"MAG": "2793120268", "PubMedCentral": "5844916", "DOI": "10.3389/fnagi.2018.00059",
+        "CorpusId": 2542207, "PubMed": "29556191"}}, {"paperId": "1507e9db05ec17f808c473fc51ebef575dcc8956",
+        "externalIds": {"DOI": "10.12122/j.issn.1673-4254.2023.09.22", "CorpusId":
+        263801866, "PubMed": "37814879"}}, {"paperId": "158427e0113716e61a61ffe277c49b84a8a523ce",
+        "externalIds": {"DOI": "10.1109/JBHI.2026.3670122", "CorpusId": 286237907,
+        "PubMed": "41774621"}}, {"paperId": "159c5bcfe64e7dcf412761fcb97f921c494cd91d",
+        "externalIds": {"PubMedCentral": "10794389", "DOI": "10.3389/fnins.2023.1232446",
+        "CorpusId": 266827399, "PubMed": "38239827"}}, {"paperId": "15af8fb68df920035ecd3426b98aa06d50b125fb",
+        "externalIds": {"DOI": "10.1007/s40675-025-00350-y", "CorpusId": 283281678}},
+        {"paperId": "16038058ab225ea08b9a60af4cc2489adc214f2c", "externalIds": {"MAG":
+        "2891111415", "CorpusId": 149582080}}, {"paperId": "17493f4a6929d7b4b6cd5fb45d2ed524a399ec6f",
+        "externalIds": {"MAG": "234594442", "CorpusId": 141556493}}, {"paperId": "174fbbac02e0df31043ac0198649c7bd7f074775",
+        "externalIds": {"DOI": "10.1111/ejn.70417", "CorpusId": 285273296, "PubMed":
+        "41630178"}}, {"paperId": "182f93b9d99cf2902045e97117d35fa4e42307ca", "externalIds":
+        {"PubMedCentral": "5957476", "MAG": "2802861806", "DOI": "10.2147/NDT.S162325",
+        "CorpusId": 43979985, "PubMed": "29795981"}}, {"paperId": "19224fc8f5cdbb9c13ad37a31505eedb96d54acd",
+        "externalIds": {"PubMedCentral": "11076408", "DOI": "10.1016/j.conctc.2024.101299",
+        "CorpusId": 269348776, "PubMed": "38720913"}}, {"paperId": "195cc665bb5313b85f7d21040fce5098eab86b72",
+        "externalIds": {"DOI": "10.1111/desc.70093", "CorpusId": 282989852, "PubMed":
+        "41229151"}}, {"paperId": "19709d224795da808546d1912e129e76ae599ceb", "externalIds":
+        {"MAG": "2121176649", "DOI": "10.4015/S101623720800091X", "CorpusId": 111082781}},
+        {"paperId": "198619c3effa7e9f1a27d95f8b1f9970fe3876e2", "externalIds": {"MAG":
+        "2353952222", "CorpusId": 148290509}}, {"paperId": "199adca7956c6e2ea6f19bbc7f80322e6871b774",
+        "externalIds": {"DOI": "10.1016/j.jad.2025.120652", "CorpusId": 282917288,
+        "PubMed": "41218738"}}, {"paperId": "19c33f71f829ab49c610fb77c3ce187c463bea3d",
+        "externalIds": {"MAG": "2940517320", "DOI": "10.1044/2019_AJA-TTR17-18-0039",
+        "CorpusId": 133605675, "PubMed": "31022364"}}, {"paperId": "1a0e4b115f68dead7628ced4871abc484526809b",
+        "externalIds": {"PubMedCentral": "11832474", "DOI": "10.3389/fpsyg.2024.1405425",
+        "CorpusId": 276132000, "PubMed": "39967994"}}, {"paperId": "1a18a5368b4d8a42d4c6b2fcb01ea8823d1488e3",
+        "externalIds": {"MAG": "2093874838", "DOI": "10.1016/j.bandl.2011.12.011",
+        "CorpusId": 44406673, "PubMed": "22281240"}}, {"paperId": "1a305939695df3c73e4fd5717b9f1fbe91f809ba",
+        "externalIds": {"PubMedCentral": "11284775", "DOI": "10.1016/j.neuropsychologia.2024.108821",
+        "CorpusId": 267548674, "PubMed": "38340962"}}, {"paperId": "1a732557991424d3ea7ddba64cc5f20878077307",
+        "externalIds": {"MAG": "2102170278", "PubMedCentral": "2597820", "DOI": "10.1016/J.JNEUROLING.2007.07.002",
+        "CorpusId": 36710292, "PubMed": "19079567"}}, {"paperId": "1a77234d8f0f81c54c2c5129657ef43424e81c98",
+        "externalIds": {"MAG": "2793300658", "PubMedCentral": "5964829", "DOI": "10.1016/j.nicl.2018.02.034",
+        "CorpusId": 3576092, "PubMed": "29845006"}}, {"paperId": "1aa2cdb26e8e924de53d2a6233358e4baaaa7a3b",
+        "externalIds": {"DOI": "10.1055/s-0028-1082029", "CorpusId": 260313562}},
+        {"paperId": "1aa61e620c22d75c5c08ec553b857b624980b2b3", "externalIds": {"DOI":
+        "10.58530/2023/0249", "CorpusId": 272149649}}, {"paperId": "1aae01ef1c7f3440728ec0d170e1ab4a8d4a4ded",
+        "externalIds": {"MAG": "2038533356", "DOI": "10.1007/s00234-007-0255-8", "CorpusId":
+        30511686, "PubMed": "17607570"}}, {"paperId": "1ad0433293c0362665bf4f6941474455c719b21e",
+        "externalIds": {"MAG": "2895887407", "PubMedCentral": "6216076", "DOI": "10.1016/j.dib.2018.10.044",
+        "CorpusId": 53242097, "PubMed": "30417040"}}, {"paperId": "1b035dabd41ac99297d89b92e05d7f3f695f65b1",
+        "externalIds": {"MAG": "92739238", "CorpusId": 140737887}}, {"paperId": "1b28a644740e4ad403de23cc30fe90c8d9363ceb",
+        "externalIds": {"DOI": "10.1007/s11571-025-10223-3", "CorpusId": 276525730,
+        "PubMed": "39991016"}}, {"paperId": "1b533f294c04edbe4840238868ea3e86d52c6d3b",
+        "externalIds": {"PubMedCentral": "11861727", "DOI": "10.1192/j.eurpsy.2024.810",
+        "CorpusId": 272025065}}, {"paperId": "1b70cab0f17afa68eead0c1203beb5e93002a5fe",
+        "externalIds": {"CorpusId": 17355010}}, {"paperId": "1bba6c78b0f17c2edf14d03b3e067a08beb94247",
+        "externalIds": {"MAG": "2050307652", "PubMedCentral": "4473717", "DOI": "10.1016/j.nicl.2015.03.018",
+        "CorpusId": 10236083, "PubMed": "26106566"}}, {"paperId": "1c96cc8acf3f3afd71e23be5b889701fc4d4de5b",
+        "externalIds": {"MAG": "2794199652", "CorpusId": 150358569}}, {"paperId":
+        "1ca1e24801849750623db3866fc800ac9566a2d7", "externalIds": {"PubMedCentral":
+        "12054257", "DOI": "10.1186/s12916-025-04089-9", "CorpusId": 278335568, "PubMed":
+        "40325400"}}, {"paperId": "1d187161f4415f6344d48d5394faecb036636ccb", "externalIds":
+        {"MAG": "2584144449", "DOI": "10.1007/s00330-016-4680-0", "CorpusId": 1989806,
+        "PubMed": "28144739"}}, {"paperId": "1d593792b218d0f530572788892b3a79b5559016",
+        "externalIds": {"CorpusId": 271117408}}, {"paperId": "1d887392e503447bb2f63231c673d86b5f86856f",
+        "externalIds": {"MAG": "2026824040", "DBLP": "journals/neuroimage/PreibischRNEGGL03",
+        "DOI": "10.1016/S1053-8119(03)00157-5", "CorpusId": 1089428, "PubMed": "12880833"}},
+        {"paperId": "1dd872f46e06647e520377cffd9f41fb29f70aed", "externalIds": {"MAG":
+        "2108094569", "DOI": "10.1080/00207450903139671", "CorpusId": 36586612, "PubMed":
+        "19863259"}}, {"paperId": "1e6ef0c455c7b407fd160184558c51977fe5ebb5", "externalIds":
+        {"CorpusId": 248692303}}, {"paperId": "1e7b5c2e428cb341e349700f3ef2a97d2cd5147b",
+        "externalIds": {"DOI": "10.1002/jmri.70417", "CorpusId": 290399602, "PubMed":
+        "42476764"}}, {"paperId": "1eae7d3429ce38ec477067e984a08bc42c0c806d", "externalIds":
+        {"MAG": "1577056301", "PubMedCentral": "4444830", "DOI": "10.3389/fnhum.2015.00305",
+        "CorpusId": 16589497, "PubMed": "26074806"}}, {"paperId": "1ef2992d9e673bda9f0a8e06d6b30b27be82a355",
+        "externalIds": {"MAG": "3049655463", "DOI": "10.1101/2020.08.14.250779", "CorpusId":
+        221142006}}, {"paperId": "1f3fa30ca4e2394e866b45b253370d3e4d3ddbf3", "externalIds":
+        {"MAG": "2088665352", "DOI": "10.1007/s00429-012-0499-x", "CorpusId": 9718150,
+        "PubMed": "23299955"}}, {"paperId": "1f943613b93b7de62715b8a79f79cc03a3514dc4",
+        "externalIds": {"DOI": "10.23880/nnoaj-16000168", "CorpusId": 257214658}},
+        {"paperId": "203c1de47011c877b3a73bce8f85480ac2a6860c", "externalIds": {"PubMedCentral":
+        "5987592", "MAG": "2801540257", "DOI": "10.3389/fpsyt.2018.00220", "CorpusId":
+        44085160, "PubMed": "29896128"}}, {"paperId": "205e27919030d2121be8cbe3f638bd110a95cc09",
+        "externalIds": {"PubMedCentral": "5505504", "MAG": "2613261582", "DOI": "10.1016/j.pscychresns.2017.05.003",
+        "CorpusId": 4705961, "PubMed": "28500965"}}, {"paperId": "20d876b82e78c08edea7888cf06e324abfaa0972",
+        "externalIds": {"PubMedCentral": "5675730", "MAG": "2765346382", "DOI": "10.1016/j.nicl.2017.10.029",
+        "CorpusId": 24601584, "PubMed": "29159044"}}, {"paperId": "20f6a9bba7d1d68855378e75ec02d27cf5fa2bf3",
+        "externalIds": {"MAG": "2952827873", "DOI": "10.1080/03772063.2019.1622461",
+        "CorpusId": 197447041}}, {"paperId": "2137b07fc34ca252e8411d60e623ce34d87ad4f1",
+        "externalIds": {"MAG": "2607446458", "DOI": "10.5075/EPFL-THESIS-7672", "CorpusId":
+        151405493}}, {"paperId": "215e526313f1980ab2794d3bbc61460900c38b41", "externalIds":
+        {"DOI": "10.58530/2024/4231", "CorpusId": 274319552}}, {"paperId": "2177cbbff38e9784eebaf2abc9572c6d3c434687",
+        "externalIds": {"MAG": "2140907667", "DOI": "10.1016/j.ejrad.2015.04.006",
+        "CorpusId": 28430180, "PubMed": "25935516"}}, {"paperId": "2244e093876ca57e08b8bbfb53587fd9ad7b613f",
+        "externalIds": {"MAG": "3097903371", "DOI": "10.1101/2020.10.28.359711", "CorpusId":
+        226228987}}, {"paperId": "229d7caa3e1eb1eb65fee97963015ddf7c7e956f", "externalIds":
+        {"DOI": "10.2139/ssrn.4072445", "CorpusId": 248340400}}, {"paperId": "231b5470863fdbf3aedefcb0287ac884005f8e47",
+        "externalIds": {"DOI": "10.3329/fmcj.v20i1.80716", "CorpusId": 277858468}},
+        {"paperId": "23299a5af4585fcafb99816e979089ec421649ea", "externalIds": {"MAG":
+        "3085294941", "DOI": "10.5935/0946-5448.20200014", "CorpusId": 226695869}},
+        {"paperId": "23ad2ad5ef279d4159f8af9758320f0f73a94085", "externalIds": {"MAG":
+        "2061732394", "DOI": "10.1007/s11881-008-0014-5", "CorpusId": 207323287, "PubMed":
+        "18483867"}}, {"paperId": "23b95790edea71a2cf7d4908c387e1c3f4e07bfd", "externalIds":
+        {"PubMedCentral": "9606586", "DOI": "10.3389/fpsyt.2022.1036997", "CorpusId":
+        252850324, "PubMed": "36311494"}}, {"paperId": "23ee21c0e430027603c7f8a0146a94ad00ec518b",
+        "externalIds": {"PubMedCentral": "12106362", "DOI": "10.3389/fnins.2025.1554287",
+        "CorpusId": 278624978, "PubMed": "40433498"}}, {"paperId": "242200a2edd45a97b7c13db51bb83b048f6ad6f1",
+        "externalIds": {"MAG": "3029817396", "DOI": "10.3760/CMA.J.ISSN.1674-6554.2017.05.005",
+        "CorpusId": 223824512}}, {"paperId": "24736a986f2bf6a4d0fb9f903b197992a10b1271",
+        "externalIds": {"MAG": "2037142799", "DOI": "10.1111/j.1469-8749.2008.03009.x",
+        "CorpusId": 40974888, "PubMed": "18611195"}}, {"paperId": "2502c611203fadc4efadd34b35277b620288225c",
+        "externalIds": {"CorpusId": 4199}}, {"paperId": "251b125e843b5d34aebe1304dfbc22b03e438d14",
+        "externalIds": {"PubMedCentral": "8136997", "DOI": "10.1097/MD.0000000000025988",
+        "CorpusId": 234793220, "PubMed": "34011090"}}, {"paperId": "2541b18b5adb8a1a829487d0d5465aeb727facd1",
+        "externalIds": {"MAG": "1982783097", "DOI": "10.1016/j.wneu.2011.10.017",
+        "CorpusId": 40468225, "PubMed": "22120223"}}, {"paperId": "25517e48d7472721e01f212b28e655ea68207148",
+        "externalIds": {"MAG": "2404644906", "DOI": "10.1055/s-0042-1748052", "CorpusId":
+        18433601, "PubMed": "10821504"}}, {"paperId": "256132c55a7057aeaab5aa6a8b860e82859822ce",
+        "externalIds": {"CorpusId": 6738590}}, {"paperId": "25acc2102ae1eb0a51f020e51c5dc40f758b6626",
+        "externalIds": {"DOI": "10.1016/S1388-2457(12)00678-5", "CorpusId": 53157431}},
+        {"paperId": "25c229bf324fda08fcc71e6773a8b067046d3502", "externalIds": {"MAG":
+        "2154235617", "DBLP": "journals/neuroimage/YouGWCWJSMD11", "PubMedCentral":
+        "3499033", "DOI": "10.1016/j.neuroimage.2010.12.003", "CorpusId": 4816069,
+        "PubMed": "21146615"}}, {"paperId": "26968b792e5b0a6600857f4e85532a632a6c4958",
+        "externalIds": {"DOI": "10.13703/j.0255-2930.20230628-0003", "CorpusId": 266872267,
+        "PubMed": "38191153"}}, {"paperId": "26d5647215c9797fc80d512d014a6749d646ac2a",
+        "externalIds": {"MAG": "1507373504", "CorpusId": 70613730}}, {"paperId": "26f37405a1feaec8ffbee50c38ec9bed12eae134",
+        "externalIds": {"MAG": "3045280338", "DOI": "10.1007/s11682-020-00310-w",
+        "CorpusId": 220722833, "PubMed": "32710331"}}, {"paperId": "26fcbca3dabd0f7d8dbef8f3fa7f716f16308b2a",
+        "externalIds": {"PubMedCentral": "5987869", "MAG": "2789670585", "DOI": "10.1016/j.nicl.2018.03.003",
+        "CorpusId": 3688401, "PubMed": "29876258"}}, {"paperId": "277611f79e92030f846188a5498b8ab3f6a8c7de",
+        "externalIds": {"DOI": "10.1111/bjep.12702", "CorpusId": 270591261, "PubMed":
+        "38886131"}}, {"paperId": "277dc64972df1ce38b69833fac6887daedc13796", "externalIds":
+        {"DOI": "10.35566/jbds/v3n1/s", "CorpusId": 260295694}}, {"paperId": "27f6290b624070412b9079af6ce44c29d5cb969a",
+        "externalIds": {"MAG": "2621895282", "CorpusId": 148717614}}, {"paperId":
+        "282d993061750bd9caa8a017f73ca1bf7ccc399e", "externalIds": {"MAG": "1655854008",
+        "DOI": "10.1016/J.SBSPRO.2015.03.278", "CorpusId": 142515065}}, {"paperId":
+        "28949abe17031078177852e04afda992ef8577c5", "externalIds": {"MAG": "2587100900",
+        "DOI": "10.1016/j.heares.2017.02.004", "CorpusId": 4886683, "PubMed": "28188881"}},
+        {"paperId": "28bfea8966bb095b6cb4c6c309959d5d7060045b", "externalIds": {"MAG":
+        "3165378079", "DOI": "10.1097/MAO.0000000000003194", "CorpusId": 235348113,
+        "PubMed": "34086638"}}, {"paperId": "29850ea03811e5e80d459febb7cfcbebf1e8e586",
+        "externalIds": {"MAG": "1970022248", "DOI": "10.1016/j.wneu.2011.09.009",
+        "CorpusId": 5958713, "PubMed": "22120273"}}, {"paperId": "2a17a0ef3fbfabd529a243ee4dcf4e4bc98fc19e",
+        "externalIds": {"PubMedCentral": "5877472", "MAG": "2782788218", "DOI": "10.1080/23311908.2018.1424680",
+        "CorpusId": 4672737, "PubMed": "29610767"}}, {"paperId": "2a801cf4af87701ee571248887ceb45b0b6d07da",
+        "externalIds": {"DBLP": "conf/cscwd/LiLX24", "DOI": "10.1109/CSCWD61410.2024.10580657",
+        "CorpusId": 271091750}}, {"paperId": "2abc68a4a43bf02f43b8813195b1f52f03a61a4f",
+        "externalIds": {"DOI": "10.13703/j.0255-2930.20241118-k0001", "CorpusId":
+        283105097, "PubMed": "41261539"}}, {"paperId": "2b348246d6268535ff02ec8ec49b49ba6a3e6212",
+        "externalIds": {"DOI": "10.1002/brb3.1927/v4/decision1", "CorpusId": 241840515}},
+        {"paperId": "2b863307375c53769e4a883708741d7305005b90", "externalIds": {"MAG":
+        "2888225949", "CorpusId": 150001574}}, {"paperId": "2bf6a2699847d065f7ce87de03d089b3be64f8d7",
+        "externalIds": {"PubMedCentral": "4062281", "MAG": "2133342484", "DOI": "10.1186/2047-783X-19-32",
+        "CorpusId": 10248425, "PubMed": "24915847"}}, {"paperId": "2c83af89516a0938fbb281beefbba9f041310047",
+        "externalIds": {"MAG": "224747687", "CorpusId": 150727221}}, {"paperId": "2cc265d02481a4b0d18167edcba5277e1ba7a78a",
+        "externalIds": {"DBLP": "journals/neuroimage/WangHMLGZHY26", "DOI": "10.1016/j.neuroimage.2026.121926",
+        "CorpusId": 287497649, "PubMed": "41990895"}}, {"paperId": "2cc9966df7daa562112e4decb85ed6a722c6c64a",
+        "externalIds": {"DOI": "10.1016/j.ajp.2025.104563", "CorpusId": 278991109,
+        "PubMed": "40482291"}}, {"paperId": "2cf12d9d52039ddc3090ba9aa04565d0bdbe7f56",
+        "externalIds": {"PubMedCentral": "9257523", "DOI": "10.3389/fnagi.2022.913191",
+        "CorpusId": 249978193, "PubMed": "35813956"}}, {"paperId": "2d4764cf6ce3743f851e6614e4f77a4db8d79126",
+        "externalIds": {"MAG": "2896933999", "CorpusId": 150139754}}, {"paperId":
+        "2d94954ffc60c6df0ccc95e27c4149b54884cc47", "externalIds": {"DOI": "10.1044/2022_AJA-21-00170",
+        "CorpusId": 250090424, "PubMed": "35759574"}}, {"paperId": "2dea9b06a9d5efe1bc2fae56778dc7b5d3dcc1f3",
+        "externalIds": {"CorpusId": 15221323}}, {"paperId": "2e4dadc310ad504bfb8c98b6015a5721882d40d7",
+        "externalIds": {"DOI": "10.64898/2026.01.21.26344372", "CorpusId": 284976951}},
+        {"paperId": "2e5baa37b40526bb7700afdb90dcef26a2216b43", "externalIds": {"PubMedCentral":
+        "5517493", "MAG": "2737925202", "DOI": "10.3389/fnins.2017.00418", "CorpusId":
+        10406281, "PubMed": "28775679"}}, {"paperId": "2e692890a242019ae7df1a5ddf764df195ad27f2",
+        "externalIds": {"PubMedCentral": "7810854", "DOI": "10.1038/s41598-021-81219-2",
+        "CorpusId": 231615638, "PubMed": "33452376"}}, {"paperId": "2e79f1f4c01737feab25932cf709b95b5db11643",
+        "externalIds": {"CorpusId": 263257119}}, {"paperId": "2e87c2e6fbf2dbd7c589d309b50ace18d2030d7c",
+        "externalIds": {"PubMedCentral": "7344192", "MAG": "3039067092", "DOI": "10.3389/fneur.2020.00609",
+        "CorpusId": 220252089, "PubMed": "32714271"}}, {"paperId": "2ec50dfa171e5ff4eb19815411f5283482f65bf7",
+        "externalIds": {"CorpusId": 51831298}}, {"paperId": "2ec67da8ccb81c3610967e3b7affaa512d952da8",
+        "externalIds": {"PubMedCentral": "11585698", "DOI": "10.1016/j.ijchp.2024.100519",
+        "CorpusId": 273966941, "PubMed": "39582485"}}, {"paperId": "2f1d26317a49fe5caf734f22484d498ff7137779",
+        "externalIds": {"MAG": "2280073628", "DOI": "10.1159/000443364", "CorpusId":
+        39669836, "PubMed": "26918795"}}, {"paperId": "2f3c30baacfa58d959ef470f5e739733d3cdb75a",
+        "externalIds": {"PubMedCentral": "12812531", "DOI": "10.3389/fpsyt.2025.1705969",
+        "CorpusId": 284524029, "PubMed": "41561996"}}, {"paperId": "2f681519d6e65a77889e4418a26bab3ec446905a",
+        "externalIds": {"MAG": "147120316", "DOI": "10.1023/A:1005535102667", "CorpusId":
+        2289802, "PubMed": "10407771"}}, {"paperId": "2f8a0ccbb7e1c1ffa0b39d8938bb95a41ba1cef0",
+        "externalIds": {"MAG": "3032640926", "DOI": "10.3760/CMA.J.ISSN.1005-1201.2016.06.001",
+        "CorpusId": 224322381}}, {"paperId": "300642430c70c8f1c196aa013764a9c1799dc49c",
+        "externalIds": {"DOI": "10.21203/rs.3.rs-1199767/v1", "CorpusId": 245981526}},
+        {"paperId": "30439f70ff91c09fbb5e2518b1ab7ee654fb834d", "externalIds": {"PubMedCentral":
+        "13594855", "DOI": "10.1016/j.dcn.2026.101815", "CorpusId": 291994630, "PubMed":
+        "42743683"}}, {"paperId": "306648df1d9e0e8436a2858c3390475046fe9193", "externalIds":
+        {"MAG": "2201195200", "PubMedCentral": "5350623", "DOI": "10.1016/j.sleep.2015.08.010",
+        "CorpusId": 13491067, "PubMed": "26459678"}}, {"paperId": "30710711051f861e3821603d34aab04ab97d1fd9",
+        "externalIds": {"MAG": "2777705832", "DOI": "10.1016/j.heares.2017.12.003",
+        "CorpusId": 205104453, "PubMed": "29305037"}}, {"paperId": "30cf0948c0107f822f463007a9ce45c8947a2a05",
+        "externalIds": {"MAG": "2309261134", "CorpusId": 147036761}}, {"paperId":
+        "30de4d7ab3fc1ecc393ce53cad79a7b138b6ddb0", "externalIds": {"PubMedCentral":
+        "13254728", "DOI": "10.64898/2026.06.01.26354620", "CorpusId": 288904214,
+        "PubMed": "42292020"}}, {"paperId": "31099231f3186bfeae5a942af4c54d94c3406514",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2023.10.037", "CorpusId": 264385061,
+        "PubMed": "39492234"}}, {"paperId": "31242c35304e05cb67840d46fe58e4ef651405bb",
+        "externalIds": {"MAG": "2992204294", "DOI": "10.1007/s41782-019-00081-5",
+        "CorpusId": 257095475}}, {"paperId": "3151d36005d857924f2b8a426861c20eaf0e0967",
+        "externalIds": {"MAG": "2188130948", "DOI": "10.1016/J.JFLUDIS.2003.07.003",
+        "CorpusId": 16754198, "PubMed": "14643071"}}, {"paperId": "315d884ec9ffa98a4c540d141e9a7aba65a9f971",
+        "externalIds": {"MAG": "2508684468", "DOI": "10.1016/j.ejpn.2016.07.025",
+        "CorpusId": 20805727, "PubMed": "27546352"}}, {"paperId": "317b905820ab2a87719d8b212b94b859a53bccdf",
+        "externalIds": {"DOI": "10.1016/j.neulet.2025.138313", "CorpusId": 279955124,
+        "PubMed": "40628366"}}, {"paperId": "32b07c8df36a037604c25ffb45d7a375e2e746e0",
+        "externalIds": {"DOI": "10.64898/2025.12.03.25341545", "CorpusId": 283552793}},
+        {"paperId": "333366afab8cbe3378ad722bf100cc9c3201d471", "externalIds": {"MAG":
+        "2279283348", "CorpusId": 147506281}}, {"paperId": "333d2f6423d016e6ce80ba2f9ce16ee78ac3bb19",
+        "externalIds": {"DOI": "10.1002/alz70857_100515", "CorpusId": 284181642, "PubMed":
+        "41445238"}}, {"paperId": "33b567a1d1a773a7f845acae0eeff2dc38eaafa2", "externalIds":
+        {"MAG": "3080168576", "DBLP": "journals/cmpb/ZahiaGSF20", "DOI": "10.1016/j.cmpb.2020.105726",
+        "CorpusId": 221637114, "PubMed": "32916543"}}, {"paperId": "34950a201bde5698a12682eda0c0809a7967f561",
+        "externalIds": {"PubMedCentral": "6128096", "MAG": "2888840247", "DOI": "10.1016/j.nicl.2018.08.029",
+        "CorpusId": 52133435, "PubMed": "30202725"}}, {"paperId": "34ff59c701cd99b09df08ef7c69cb5f219eeb317",
+        "externalIds": {"MAG": "2912755539", "DOI": "10.5772/INTECHOPEN.80677", "CorpusId":
+        150425424}}, {"paperId": "350e6e83ae594859dbc29b89b3a4b5278d5e4210", "externalIds":
+        {"DOI": "10.1016/j.sleep.2024.07.012", "CorpusId": 271128808, "PubMed": "39002327"}},
+        {"paperId": "35432dd19b8048e7c62f68ca354097f1d20b3475", "externalIds": {"PubMedCentral":
+        "12930045", "DOI": "10.1016/j.nicl.2026.103960", "CorpusId": 285582557, "PubMed":
+        "41698286"}}, {"paperId": "36068c424d914b22e2155ecaf068832b507967d8", "externalIds":
+        {"PubMedCentral": "12594489", "DOI": "10.1162/NETN.a.31", "CorpusId": 280156881,
+        "PubMed": "41209082"}}, {"paperId": "364df3a4b26a207dae16852e94eae75cc27571dd",
+        "externalIds": {"DBLP": "journals/neuroimage/HallerKJHSLSV13", "MAG": "2128854242",
+        "DOI": "10.1016/j.neuroimage.2013.05.019", "CorpusId": 5862602, "PubMed":
+        "23684872"}}, {"paperId": "36be45f962aa580fc2a17498e4977be3a9373fe0", "externalIds":
+        {"DOI": "10.1002/jdn.70072", "CorpusId": 284017012, "PubMed": "41413843"}},
+        {"paperId": "36cb8117ab2c5c0071f87b5c22a6d3e43d217560", "externalIds": {"CorpusId":
+        195729106}}, {"paperId": "3722471186de60a6b9e44dd9399294fd2e919394", "externalIds":
+        {"DOI": "10.1159/000534659", "CorpusId": 265210366, "PubMed": "37963433"}},
+        {"paperId": "37517e4d06f7fa5b4a433f723c7829bf01d9e599", "externalIds": {"MAG":
+        "1964294279", "DOI": "10.3109/00207454.2012.756484", "CorpusId": 22835918,
+        "PubMed": "23227882"}}, {"paperId": "37f64334264fa7ad162bae3640ab27add2161463",
+        "externalIds": {"MAG": "2003141739", "DOI": "10.1006/BRLN.1998.1951", "CorpusId":
+        15285593, "PubMed": "9576825"}}, {"paperId": "3850f9a6dfd82d8693cf467ecc8d76e8edcab6e9",
+        "externalIds": {"MAG": "2752929727", "DOI": "10.3760/CMA.J.ISSN.1005-1201.2014.08.006",
+        "CorpusId": 149276326}}, {"paperId": "3867c08d537e011b1caf6c042d017e9187c93bb5",
+        "externalIds": {"DOI": "10.1016/j.jad.2025.120455", "CorpusId": 282146433,
+        "PubMed": "41101492"}}, {"paperId": "3881a247fc0f7b48dd8b6188aecbd2fdf0595c3c",
+        "externalIds": {"CorpusId": 211107013}}, {"paperId": "3888c2a8e4a7f0bab157e7e2488a19b018e36822",
+        "externalIds": {"MAG": "2129186295", "DOI": "10.1093/cercor/bht104", "CorpusId":
+        17832613, "PubMed": "23599167"}}, {"paperId": "3893dd74e3dece5881fd18166b153700c6796e6e",
+        "externalIds": {"DOI": "10.31435/ijitss.3(47).2025.3571", "CorpusId": 280874350}},
+        {"paperId": "38b6f6b1bb64082ac528afa88af4a0845a5cf908", "externalIds": {"DOI":
+        "10.1016/j.brainresbull.2026.112115", "CorpusId": 291902615, "PubMed": "42716315"}},
+        {"paperId": "38ffa1060bf73875f277ec8ae4823025c257525e", "externalIds": {"MAG":
+        "1571249459", "DOI": "10.1002/hbm.22098", "CorpusId": 23852419, "PubMed":
+        "22736513"}}, {"paperId": "39291524f495768baed1f769420bc3057931d115", "externalIds":
+        {"CorpusId": 210912811}}, {"paperId": "3957ce5313988c5e59068f8d7efbc3ab423cb46d",
+        "externalIds": {"MAG": "2980983553", "DOI": "10.1007/s00106-017-0432-y", "CorpusId":
+        3661064, "PubMed": "29143096"}}, {"paperId": "395e6dd1cb6986377d45b06fbfa0599066d5f645",
+        "externalIds": {"DOI": "10.1016/j.pnpbp.2026.111718", "CorpusId": 287756854,
+        "PubMed": "42034279"}}, {"paperId": "397999ec6e3ee6a1dd928e652718d58fdab73b23",
+        "externalIds": {"PubMedCentral": "9722753", "DOI": "10.3389/fpsyt.2022.1050403",
+        "CorpusId": 253797904, "PubMed": "36483137"}}, {"paperId": "399028aa21b3adc3476e794c6d1d3c6bf34929d7",
+        "externalIds": {"MAG": "2116245261", "PubMedCentral": "3725398", "DOI": "10.3389/fnhum.2013.00384",
+        "CorpusId": 14465591, "PubMed": "23908615"}}, {"paperId": "399fc7758ca88aab2a18ee8b54b46481b526ecb3",
+        "externalIds": {"MAG": "2957485503", "PubMedCentral": "6667657", "DOI": "10.3389/fnins.2019.00747",
+        "CorpusId": 198168244, "PubMed": "31396035"}}, {"paperId": "3a66e7f6cd47888740ab611379fd6e4853e75db2",
+        "externalIds": {"MAG": "2514526096", "DOI": "10.1097/01.HJ.0000499590.30439.a2",
+        "CorpusId": 151500249}}, {"paperId": "3aba9d1582f974140fb3807f0f2edfed255e3c08",
+        "externalIds": {"MAG": "2154099088", "DOI": "10.1007/978-0-387-78867-8_19",
+        "CorpusId": 145290252}}, {"paperId": "3b2e40929e9200a8d00e7f5968145378c8c118c3",
+        "externalIds": {"MAG": "2104650924", "DOI": "10.55782/ane-2013-1947", "CorpusId":
+        36827319, "PubMed": "24129489"}}, {"paperId": "3b50c205c860a8db46890bbcb5978d8170621f28",
+        "externalIds": {"PubMedCentral": "4203817", "MAG": "2106703958", "DOI": "10.1371/journal.pone.0110704",
+        "CorpusId": 15680233, "PubMed": "25329557"}}, {"paperId": "3b907e6a3ca048ec8ebaddc4e03bb6aea7571d93",
+        "externalIds": {"CorpusId": 264197459}}, {"paperId": "3baa85ddeac391a12f8856c6ca27ff268015cf4b",
+        "externalIds": {"MAG": "2064949830", "DBLP": "journals/neuroimage/HeimGMESKSHA10",
+        "DOI": "10.1016/j.neuroimage.2010.07.009", "CorpusId": 9744379, "PubMed":
+        "20633659"}}, {"paperId": "3bede86390651d1b483a81b6740c40571b0f4864", "externalIds":
+        {"MAG": "1974547899", "DOI": "10.5665/SLEEP.2780", "CorpusId": 28152874, "PubMed":
+        "23814328"}}, {"paperId": "3c3cb50f7fe98841786faa59bd0be446f3dee8ea", "externalIds":
+        {"DOI": "10.52845/cs/2025-5-1-16", "CorpusId": 276549301}}, {"paperId": "3c3d128dd44e069b4d46ff92f6c9c409ab2d4f39",
+        "externalIds": {"MAG": "2112609082", "DOI": "10.1901/jeab.2010.93-291", "CorpusId":
+        207268119, "PubMed": "21119846"}}, {"paperId": "3c3f5e495098e5d382e421e4193d4844e8ce32a2",
+        "externalIds": {"PubMedCentral": "12264675", "DOI": "10.9758/cpn.25.1272",
+        "CorpusId": 280275243}}, {"paperId": "3cbd89c799b14a1dd80b566b517fe5b5c6a18420",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109406", "CorpusId": 280677988,
+        "PubMed": "40845546"}}, {"paperId": "3d6f249c38eda2be98ed4dbfda1c8272a754ebe9",
+        "externalIds": {"MAG": "2126256335", "DOI": "10.5120/8614-2474", "CorpusId":
+        16254568}}, {"paperId": "3da437bf226a561b1019a76201edaa3b69d54485", "externalIds":
+        {"CorpusId": 18565876}}, {"paperId": "3dd09087b9ebd46b0099b3a481b2625b0891d365",
+        "externalIds": {"MAG": "2335033404", "DOI": "10.4172/2161-119X.S3-003", "CorpusId":
+        17520178}}, {"paperId": "3e0e8ced695e3f14da2764e3c52264a93c3896ed", "externalIds":
+        {"PubMedCentral": "3011212", "MAG": "2011371045", "DOI": "10.1016/j.expneurol.2010.06.012",
+        "CorpusId": 12007144, "PubMed": "20599979"}}, {"paperId": "3e6ff85acf8d0200259cf0a0d75ee02f3a36f2b3",
+        "externalIds": {"DOI": "10.1016/j.brainres.2021.147277", "CorpusId": 230972235,
+        "PubMed": "33422540"}}, {"paperId": "3e73d8493fc4cb52d0d91d6e6b742c2a836504ca",
+        "externalIds": {"PubMedCentral": "3229720", "MAG": "2053284322", "DOI": "10.1016/j.jfludis.2011.04.004",
+        "CorpusId": 20639268, "PubMed": "22133409"}}, {"paperId": "3f584f8ad2193c92bae830546a955511e436b987",
+        "externalIds": {"MAG": "2348006291", "CorpusId": 148050885}}, {"paperId":
+        "3fb95aec14857aa6a7e4b05e27edfe63e1b24c11", "externalIds": {"PubMedCentral":
+        "12966446", "DOI": "10.1038/s41398-026-03812-1", "CorpusId": 285537930, "PubMed":
+        "41672980"}}, {"paperId": "4068621468e3a28d8dd0fccd37de5df8abd81821", "externalIds":
+        {"PubMedCentral": "12084730", "DOI": "10.21037/qims-24-1511", "CorpusId":
+        277975309, "PubMed": "40384698"}}, {"paperId": "4081aec4c328a857889611bbe2cd219e3ded8646",
+        "externalIds": {"MAG": "1973849033", "DOI": "10.1016/j.brs.2014.02.005", "CorpusId":
+        33726063, "PubMed": "24685051"}}, {"paperId": "408455d5480c0d97941366612357da558c1ed3d2",
+        "externalIds": {"DOI": "10.1109/TNSRE.2024.3373335", "CorpusId": 268238953,
+        "PubMed": "38437147"}}, {"paperId": "409684459d457398f8680f77528846197d0ee6ae",
+        "externalIds": {"MAG": "2371046245", "CorpusId": 76059467}}, {"paperId": "4159eef01c92247da907b88b01949b8bb8572531",
+        "externalIds": {"MAG": "2909489306", "DOI": "10.1101/522847", "CorpusId":
+        91641789}}, {"paperId": "416e78c86db0aa7f248a6c10b562f644d14f076c", "externalIds":
+        {"MAG": "2597189380", "DOI": "10.1007/s11682-017-9694-y", "CorpusId": 4541511,
+        "PubMed": "28290075"}}, {"paperId": "41a21d79cb778d401a40085f665931b0764bc564",
+        "externalIds": {"DOI": "10.51244/ijrsi.2026.1315ph00034", "CorpusId": 286416888}},
+        {"paperId": "41f2dcc057101e28448c1a8aa20c7faaf72734c2", "externalIds": {"CorpusId":
+        285718987}}, {"paperId": "421a329f3eb30998e3cef5e3f00c98e3ea7e110b", "externalIds":
+        {"MAG": "1525524731", "DOI": "10.1111/j.1460-9568.2006.05147.x", "CorpusId":
+        24524242, "PubMed": "17100855"}}, {"paperId": "429f66d6ca8833e0e0f655b82618d08dd5a7582f",
+        "externalIds": {"MAG": "2052773678", "DOI": "10.1001/ARCHNEUR.1996.00550010108024",
+        "CorpusId": 44751381, "PubMed": "8599565"}}, {"paperId": "42c7ed4ffcf19636e567d9df8ba0cb6b20e439a2",
+        "externalIds": {"MAG": "1556220394", "CorpusId": 60575179}}, {"paperId": "42ef030ad8e2f3a582f971a185cd16d30e2d1106",
+        "externalIds": {"MAG": "2731417250", "PubMedCentral": "5500649", "DOI": "10.3389/fnins.2017.00384",
+        "CorpusId": 10087945, "PubMed": "28736515"}}, {"paperId": "42fc67a9380feba89b226a451e034dbf7012e51e",
+        "externalIds": {"PubMedCentral": "10878029", "DOI": "10.1016/j.schres.2023.08.030",
+        "CorpusId": 261533772, "PubMed": "37678144"}}, {"paperId": "430337dd11de208ce87cb0357737e31d65946a6f",
+        "externalIds": {"MAG": "2391172835", "CorpusId": 147782980}}, {"paperId":
+        "4326f8d429ba3dadc83046ab2ec45ac6c30d5b64", "externalIds": {"MAG": "2025559044",
+        "DOI": "10.1016/J.IJPSYCHO.2012.06.178", "CorpusId": 144875042}}, {"paperId":
+        "436984da631371366b2c6244c865fc9a1b21492c", "externalIds": {"DOI": "10.1093/sleep/zsad077.0383",
+        "CorpusId": 258977242}}, {"paperId": "43924a5603ed614d51f17db6de7587b6bee4439b",
+        "externalIds": {"PubMedCentral": "4273608", "MAG": "2118682739", "DOI": "10.3389/fpsyg.2014.01491",
+        "CorpusId": 14606864, "PubMed": "25566160"}}, {"paperId": "444165f89781a9d736513afce812d33a8f37907c",
+        "externalIds": {"PubMedCentral": "9978488", "DOI": "10.3389/fnhum.2023.990581",
+        "CorpusId": 256977437, "PubMed": "36875235"}}, {"paperId": "4498259481c49145997960333c9391b3e10fe023",
+        "externalIds": {"MAG": "2027925577", "PubMedCentral": "2760154", "DOI": "10.1016/j.heares.2009.08.005",
+        "CorpusId": 205100929, "PubMed": "19699287"}}, {"paperId": "44f42ba1e7153ec27ab6d10fe4e149f4c392b378",
+        "externalIds": {"CorpusId": 46949089}}, {"paperId": "4503fd64ee4ac7c1f8805d948dd815d3edf4710f",
+        "externalIds": {"DOI": "10.2174/0115734056308400240517114616", "CorpusId":
+        270056628, "PubMed": "38798227"}}, {"paperId": "4546d309659876916f878970b77e94e8f421314c",
+        "externalIds": {"MAG": "2376589006", "CorpusId": 148169281}}, {"paperId":
+        "4567d60b103abb971f662c8f79849425fc83858a", "externalIds": {"PubMedCentral":
+        "12682451", "DOI": "10.1155/da/4530547", "CorpusId": 283594316, "PubMed":
+        "41362845"}}, {"paperId": "4599753c32cd0ecb54f76e22eb4c621626d8813b", "externalIds":
+        {"DOI": "10.1007/s00406-022-01485-7", "CorpusId": 252198179, "PubMed": "36094570"}},
+        {"paperId": "45ef5168ae9dfd467a94985f572e75b8312f02d0", "externalIds": {"MAG":
+        "2121531147", "DOI": "10.1111/psyp.12141", "CorpusId": 10194651, "PubMed":
+        "24117474"}}, {"paperId": "45f8dcfd1361a03eac0753b3cb63f708c893f0d2", "externalIds":
+        {"MAG": "2315008837", "DOI": "10.5935/0946-5448.20120019", "CorpusId": 27962337,
+        "PubMed": "24333879"}}, {"paperId": "4614679e93d3a1a439cd8a6bff58931600763326",
+        "externalIds": {"PubMedCentral": "7179344", "MAG": "2874982160", "DOI": "10.3934/Neuroscience.2018.3.179",
+        "CorpusId": 149755881, "PubMed": "32341960"}}, {"paperId": "462aec395294da044297b6d6321166e020a61309",
+        "externalIds": {"MAG": "2082493063", "DOI": "10.1111/J.1469-7610.2006.01684.X",
+        "CorpusId": 18674786, "PubMed": "17073983"}}, {"paperId": "465722b1bbc354479d81823302b3efb75b35890b",
+        "externalIds": {"PubMedCentral": "9627982", "DOI": "10.3389/fnins.2022.976095",
+        "CorpusId": 250332045, "PubMed": "36340775"}}, {"paperId": "465e024fee8ef064d21343ab0836bbc5028ea6a7",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.0074", "CorpusId": 278762027}},
+        {"paperId": "466e9dad2010855ae8837e20eca469ff0f1c5843", "externalIds": {"MAG":
+        "2485014973", "PubMedCentral": "4975911", "DOI": "10.1186/s12901-016-0029-1",
+        "CorpusId": 946112, "PubMed": "27499700"}}, {"paperId": "470abc6f9372ef0e1a30cc8643c34618843f077d",
+        "externalIds": {"MAG": "3092256069", "DOI": "10.1007/s11682-020-00406-3",
+        "CorpusId": 222318996, "PubMed": "33048291"}}, {"paperId": "471cb444887ccd978aef43faeac94a62a3e2f691",
+        "externalIds": {"MAG": "2513469282", "PubMedCentral": "5008055", "DOI": "10.1016/j.nicl.2016.08.021",
+        "CorpusId": 8824657, "PubMed": "27622141"}}, {"paperId": "476859eba94723b5f8d7b78d36d1a851daf3b8d4",
+        "externalIds": {"MAG": "2963561262", "PubMedCentral": "7294063", "DOI": "10.1002/hbm.24980",
+        "CorpusId": 199640281, "PubMed": "32166830"}}, {"paperId": "47f3a15ad0d99e5246bf9a56b2b2f4fcd4329433",
+        "externalIds": {"MAG": "2479638154", "CorpusId": 147808294}}, {"paperId":
+        "4870dc3ac7e527d1e0d83e71e2af98a893370685", "externalIds": {"MAG": "2050374350",
+        "DOI": "10.1016/j.bandl.2011.12.015", "CorpusId": 31602115, "PubMed": "22285025"}},
+        {"paperId": "489349cb0bff0eb443eced80c0be7eab69d81e9d", "externalIds": {"DOI":
+        "10.1016/j.heares.2025.109407", "CorpusId": 280672064, "PubMed": "40850190"}},
+        {"paperId": "49101c15616732cbb54123c3cbf61983a4c48a6e", "externalIds": {"MAG":
+        "2910828995", "DOI": "10.1002/hbm.24521", "CorpusId": 58551239, "PubMed":
+        "30648324"}}, {"paperId": "49878e0eb84e2e716a8c4e383676b35f7b52f7be", "externalIds":
+        {"MAG": "2052175052", "DOI": "10.1016/j.bandl.2008.10.001", "CorpusId": 1316133,
+        "PubMed": "18986695"}}, {"paperId": "498ec46e4d9a979e62ac0ef2af5f2a3af06d3aaf",
+        "externalIds": {"MAG": "2165890406", "DOI": "10.1016/J.JFLUDIS.2004.12.002",
+        "CorpusId": 105105, "PubMed": "15769497"}}, {"paperId": "49b6efa6d392e110d700fcb04c25db0033bb4211",
+        "externalIds": {"DOI": "10.1002/brb3.1927/v2/review1", "CorpusId": 240915975}},
+        {"paperId": "49b7f56901b76020eafc886718ebd5dd413c8099", "externalIds": {"MAG":
+        "2930857398", "DOI": "10.13104/IMRI.2019.23.1.55", "CorpusId": 132448585}},
+        {"paperId": "49f92b4d87395e82e26eaa519652413f249e36a0", "externalIds": {"MAG":
+        "1995055754", "DOI": "10.1016/j.heares.2009.06.009", "CorpusId": 11692538,
+        "PubMed": "19545617"}}, {"paperId": "4ad18419d9dc8a06a4b44825dd48e6a3600b494d",
+        "externalIds": {"MAG": "2765840500", "PubMedCentral": "5665925", "DOI": "10.1038/s41598-017-13921-z",
+        "CorpusId": 34164145, "PubMed": "29093537"}}, {"paperId": "4b0210c2b0f4d902cee69b83647b8b1762a321c2",
+        "externalIds": {"PubMedCentral": "3262831", "MAG": "1965725237", "DOI": "10.1371/journal.pone.0030570",
+        "CorpusId": 15537560, "PubMed": "22276215"}}, {"paperId": "4b871719e58b04abbff7cbf2eb947993af124848",
+        "externalIds": {"MAG": "2362948127", "CorpusId": 147843462}}, {"paperId":
+        "4bc90aee759dc17262618cab8adcbc253993053f", "externalIds": {"MAG": "3197676577",
+        "DOI": "10.1080/23273798.2021.1970200", "CorpusId": 239686889}}, {"paperId":
+        "4bdb9b00460311da78f2de80e4a0adfcaeedf90f", "externalIds": {"MAG": "2486782579",
+        "DOI": "10.1007/978-981-10-0643-2_5", "CorpusId": 148470893}}, {"paperId":
+        "4bdd2a153a37903ad5159a97b6ddc54e34929c92", "externalIds": {"DOI": "10.1093/cercor/bhad016",
+        "CorpusId": 256628540, "PubMed": "36749000"}}, {"paperId": "4c21cb038157f2653528f8ea84da26c5ba10a8f6",
+        "externalIds": {"PubMedCentral": "6970183", "MAG": "2999914217", "DOI": "10.1016/j.nicl.2020.102166",
+        "CorpusId": 210139311, "PubMed": "31958686"}}, {"paperId": "4cab323366c7b07ea763d8c1777434d2eece8a3d",
+        "externalIds": {"PubMedCentral": "4426664", "MAG": "2132956042", "DOI": "10.7554/eLife.06576",
+        "CorpusId": 3979508, "PubMed": "25962854"}}, {"paperId": "4d115e4dd29cfc8755b0ad61ffa7222e0c0ea56b",
+        "externalIds": {"MAG": "1993019658", "DOI": "10.1016/S0093-934X(02)00588-6",
+        "CorpusId": 6855467, "PubMed": "12744948"}}, {"paperId": "4d55aa97e04fcab964d654fe89d242721d5cf44c",
+        "externalIds": {"MAG": "2015047289", "DOI": "10.3109/14992027.2011.652677",
+        "CorpusId": 38152182, "PubMed": "22283490"}}, {"paperId": "4db84941edfb0835267675bf3ddad7331423252b",
+        "externalIds": {"DOI": "10.1016/j.bpsc.2023.03.007", "CorpusId": 257674726,
+        "PubMed": "36958474"}}, {"paperId": "4df14f31b031e648ba48382de6070df235f562f0",
+        "externalIds": {"MAG": "1997335834", "PubMedCentral": "4553247", "DOI": "10.1007/s11145-015-9565-0",
+        "CorpusId": 22560405, "PubMed": "26336330"}}, {"paperId": "4e6c892d8c2f51df349a95458232134664182a47",
+        "externalIds": {"PubMedCentral": "11850948", "DOI": "10.4103/abr.abr_466_23",
+        "CorpusId": 275155773, "PubMed": "40007726"}}, {"paperId": "4e769cad943ba2a8dc1fb3017e89ec19ad088ce6",
+        "externalIds": {"DOI": "10.1016/j.brat.2025.104776", "CorpusId": 278704483,
+        "PubMed": "40398068"}}, {"paperId": "4f00110429dfb601b12eeec777554c36f11e6b7f",
+        "externalIds": {"CorpusId": 251342001}}, {"paperId": "4f2dae0ed3d55613a34fd8d2020d42e443ebecad",
+        "externalIds": {"MAG": "2610807336", "PubMedCentral": "5868987", "DOI": "10.4236/ce.2017.85055",
+        "CorpusId": 4504840, "PubMed": "29600113"}}, {"paperId": "4f544aa9a8766b7ba5431b4e4da27fb23f29820b",
+        "externalIds": {"DBLP": "journals/neuroimage/StevensonVPJ11", "MAG": "2072957739",
+        "PubMedCentral": "3057325", "DOI": "10.1016/j.neuroimage.2010.12.063", "CorpusId":
+        1618053, "PubMed": "21195198"}}, {"paperId": "4f68eeb79b5d3734ffa78af9863fbfd04b176051",
+        "externalIds": {"DOI": "10.1016/s1701-2163(16)35471-8", "CorpusId": 208364502}},
+        {"paperId": "4f95f113c14eeff747d2a38bceb527f5d4b7deff", "externalIds": {"MAG":
+        "2945320047", "DOI": "10.1111/desc.12857", "CorpusId": 155090183, "PubMed":
+        "31090993"}}, {"paperId": "4f96f04d5c6dee1468073ccc777d6316e3bf9754", "externalIds":
+        {"MAG": "3044850110", "PubMedCentral": "7457077", "DOI": "10.3389/fnhum.2020.00289",
+        "CorpusId": 221113560, "PubMed": "32922271"}}, {"paperId": "4fadd908295b6c3a40a46cde34b1f342259e1fa8",
+        "externalIds": {"MAG": "2412328970", "DOI": "10.3109/15622975.2014.913840",
+        "CorpusId": 218865398, "PubMed": "24815521"}}, {"paperId": "5086999e684e95ca9f18be09feaf36cbea8d8899",
+        "externalIds": {"MAG": "3119584565", "DOI": "10.1016/j.cortex.2020.12.005",
+        "CorpusId": 230507939, "PubMed": "33450598"}}, {"paperId": "50fae19581d0ab79d870011577472736616a4814",
+        "externalIds": {"MAG": "2274821195", "CorpusId": 15063419}}, {"paperId": "510b7852dea4f0c85ff657d65e9beb883334c515",
+        "externalIds": {"PubMedCentral": "6481189", "MAG": "2883228697", "DOI": "10.1016/j.dcn.2018.07.001",
+        "CorpusId": 51728667, "PubMed": "30103188"}}, {"paperId": "512f2e2dfbc9dad01740331281d8bd9de757fca4",
+        "externalIds": {"MAG": "2333701008", "DOI": "10.1097/01.DBP.0000390252.11035.5B",
+        "CorpusId": 147368911}}, {"paperId": "51375e3d694f5f0a2662d7728737b349c9a75183",
+        "externalIds": {"MAG": "2924716024", "DOI": "10.1016/J.EURONEURO.2017.08.255",
+        "CorpusId": 85495433}}, {"paperId": "514b4e8d2c902f7c0cd0beeed4a6ae17535a2ea3",
+        "externalIds": {"DOI": "10.1016/j.jad.2025.119954", "CorpusId": 280319931,
+        "PubMed": "40712678"}}, {"paperId": "51d16d1f988923eadcf168fa09a11d8d0a19bd89",
+        "externalIds": {"MAG": "3116166378", "DOI": "10.1080/23273798.2020.1859569",
+        "CorpusId": 234442741}}, {"paperId": "51edb35c3692aa0131c0ae02ac3b470a7048d2ab",
+        "externalIds": {"PubMedCentral": "7905063", "DOI": "10.3389/fnins.2021.621145",
+        "CorpusId": 231876715, "PubMed": "33642982"}}, {"paperId": "51f3affca542716e5e4efd9749b404ab4fe73a8d",
+        "externalIds": {"MAG": "2166967009", "DOI": "10.5665/SLEEP/31.9.1271", "CorpusId":
+        9575717, "PubMed": "18788652"}}, {"paperId": "51fcaf7ecc8ec826fe13e187d2df4b54960d3162",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2025.09.021", "CorpusId": 281522815,
+        "PubMed": "40992106"}}, {"paperId": "51fec694437bccf8b862daacd5cb8efc336461af",
+        "externalIds": {"MAG": "2932288240", "DBLP": "journals/neuroimage/SherwoodPDGBEN19",
+        "DOI": "10.1016/j.neuroimage.2019.03.078", "CorpusId": 102347243, "PubMed":
+        "30954710"}}, {"paperId": "522681c001075ff6e3f08f4b0c7e10b53b0d993d", "externalIds":
+        {"MAG": "2162911385", "DOI": "10.1093/cercor/bhq005", "CorpusId": 15835405,
+        "PubMed": "20139150"}}, {"paperId": "5281ea573d33670b63daa6f9f9df10576d5f50b0",
+        "externalIds": {"MAG": "2084925819", "DOI": "10.1016/J.JNEUROLING.2014.07.004",
+        "CorpusId": 16077477}}, {"paperId": "529a4271befeeb89d47320a040253f0e90c62b0c",
+        "externalIds": {"PubMedCentral": "4931090", "MAG": "2442553927", "DOI": "10.1155/2016/4918186",
+        "CorpusId": 16419910, "PubMed": "27413554"}}, {"paperId": "529eb71d2d22303fa4b32e046e95de747bc075d9",
+        "externalIds": {"MAG": "2422730978", "DOI": "10.18725/OPARU-2856", "CorpusId":
+        148357072}}, {"paperId": "5365a9f094c9db6df70b4349527345ace6c7791c", "externalIds":
+        {"MAG": "2942420578", "DOI": "10.1121/1.5101297", "CorpusId": 150333486}},
+        {"paperId": "53ccd814c9b5b7f1ae78caa53314521d46be97c6", "externalIds": {"DOI":
+        "10.1109/ICETEG66194.2025.11473207", "CorpusId": 287545185}}, {"paperId":
+        "53fdbf496948e88eb0c06dd515ac93fff5a84cca", "externalIds": {"DOI": "10.1093/sleep/zsag252",
+        "CorpusId": 292353900, "PubMed": "42789003"}}, {"paperId": "53fef93c70b6a9a5adf29a50c95427d820af7e06",
+        "externalIds": {"MAG": "2910198808", "CorpusId": 80721048}}, {"paperId": "542b2abd16e37f0c738c55399a294454b33678a6",
+        "externalIds": {"MAG": "3120731837", "DOI": "10.37766/INPLASY2021.1.0038",
+        "CorpusId": 234207811}}, {"paperId": "54428902d191d47300ebbf6e57dbf13c03a45b41",
+        "externalIds": {"DOI": "10.1121/10.0045091", "CorpusId": 291441649}}, {"paperId":
+        "54eeafc7e45a988b6e0517d0c39fd6bfcfc8f58e", "externalIds": {"DOI": "10.58530/2024/1741",
+        "CorpusId": 274316904}}, {"paperId": "54f9e2753f81b955ad128e6311db591b90f8d08f",
+        "externalIds": {"MAG": "2955877131", "PubMedCentral": "6620714", "DOI": "10.3389/fnins.2019.00614",
+        "CorpusId": 195784836, "PubMed": "31333394"}}, {"paperId": "55191e390d22a8e022cf76713af2b60fab60f4ef",
+        "externalIds": {"MAG": "2759970814", "PubMedCentral": "5624934", "DOI": "10.1038/s41598-017-13065-0",
+        "CorpusId": 3061326, "PubMed": "28970534"}}, {"paperId": "552638216fda2eb9d7189ecf11d2874271a28b53",
+        "externalIds": {"MAG": "1559633836", "CorpusId": 35523725}}, {"paperId": "5582176b19018f47d1f132a43feb5b8236b095e7",
+        "externalIds": {"MAG": "2186639375", "CorpusId": 146205838}}, {"paperId":
+        "5591c005ab541b06eb6362a916b3ac52d705a8fa", "externalIds": {"MAG": "2782008376",
+        "CorpusId": 149274420}}, {"paperId": "55c02b5689a40cf4627d922bcd2630fb519ed03a",
+        "externalIds": {"DOI": "10.1016/j.sleep.2023.10.014", "CorpusId": 264049010,
+        "PubMed": "37865032"}}, {"paperId": "55d5de7069262c55a14661fa4573cff92e268c31",
+        "externalIds": {"MAG": "2509841861", "PubMedCentral": "5061614", "DOI": "10.1007/s11881-016-0134-2",
+        "CorpusId": 3411054, "PubMed": "27550556"}}, {"paperId": "5621d7a13e90347bffa58dba4dcada3d423a2eb0",
+        "externalIds": {"MAG": "1988903334", "DOI": "10.1016/J.JFLUDIS.2003.08.001",
+        "CorpusId": 31792235, "PubMed": "14643065"}}, {"paperId": "56246c32b0e6021149844b3a04d19c112675a100",
+        "externalIds": {"PubMedCentral": "9189078", "DOI": "10.1002/hbm.25848", "CorpusId":
+        247676945, "PubMed": "35332961"}}, {"paperId": "564c509518f0acc9343ddbbe67f7c2d89ec2674a",
+        "externalIds": {"DBLP": "journals/titb/ZhangLWZXJPG24", "DOI": "10.1109/JBHI.2024.3423019",
+        "CorpusId": 270971739, "PubMed": "38963749"}}, {"paperId": "565cc45fb290b585cf961551a1d6773530462c8a",
+        "externalIds": {"MAG": "2782758621", "CorpusId": 57672638}}, {"paperId": "56e21084591648b77b67afeaacb5076f2fbae88b",
+        "externalIds": {"MAG": "2582816596", "DOI": "10.1002/hbm.23525", "CorpusId":
+        3373503, "PubMed": "28112466"}}, {"paperId": "570225dd855f720b0b76aff67b4a5564f640a98d",
+        "externalIds": {"PubMedCentral": "12222564", "DOI": "10.1038/s41598-025-08408-1",
+        "CorpusId": 279863966, "PubMed": "40603534"}}, {"paperId": "577862dfc3e46faca9590f7813a55cf7ad8c7def",
+        "externalIds": {"CorpusId": 290472395}}, {"paperId": "57a3e18f317339294bb3cb54c062ed903a5c8779",
+        "externalIds": {"PubMedCentral": "6224336", "MAG": "2898910026", "DOI": "10.3389/fneur.2018.00856",
+        "CorpusId": 53185118, "PubMed": "30450072"}}, {"paperId": "57a98e4ea6e9ce6ee6ed57641a58fccb86933dec",
+        "externalIds": {"MAG": "2061968217", "DBLP": "journals/neuroimage/ToyomuraFK11",
+        "DOI": "10.1016/j.neuroimage.2011.05.039", "CorpusId": 6005443, "PubMed":
+        "21624474"}}, {"paperId": "57d0ee375a589f44d52a0527295c092e4459c00c", "externalIds":
+        {"DOI": "10.1111/jsr.70246", "CorpusId": 283427525, "PubMed": "41316910"}},
+        {"paperId": "5820a90f04a14757969b792cc6273e15370dc76e", "externalIds": {"MAG":
+        "1937930636", "CorpusId": 143227435}}, {"paperId": "583b11bfc1cb32954ca0b30f8fc73ec5b447d323",
+        "externalIds": {"DOI": "10.1212/WNL.0b013e3181ec67bb", "CorpusId": 33416607,
+        "PubMed": "20733152"}}, {"paperId": "585f166ac09220b1436541df918ab7087dabcee3",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.0352", "CorpusId": 278751145}},
+        {"paperId": "58915784690655062ab02c7b4f377cf22a29e4b9", "externalIds": {"MAG":
+        "2029245961", "DOI": "10.1016/j.heares.2014.10.002", "CorpusId": 205102812,
+        "PubMed": "25316625"}}, {"paperId": "58937bb9b64f8c763ef22bbd98b4e98c27141c00",
+        "externalIds": {"PubMedCentral": "4061874", "MAG": "2008325060", "DOI": "10.3390/brainsci3031060",
+        "CorpusId": 205642, "PubMed": "24961521"}}, {"paperId": "591bcc75120cd20cf95c0000415c910a7ad1ef16",
+        "externalIds": {"PubMedCentral": "4375638", "MAG": "2053023419", "DOI": "10.1016/j.nicl.2015.02.013",
+        "CorpusId": 2782269, "PubMed": "25844326"}}, {"paperId": "59601f253b29670dba2f7b5f60e3903ed5fea5f6",
+        "externalIds": {"PubMedCentral": "9277509", "DOI": "10.3389/fnmol.2022.880228",
+        "CorpusId": 250155455, "PubMed": "35845606"}}, {"paperId": "59db35837666878e14e3a961bcec6f108762a342",
+        "externalIds": {"MAG": "2109834899", "CorpusId": 35302812}}, {"paperId": "5a2aed21d9bd53245a77733a760bbe08ead6156a",
+        "externalIds": {"CorpusId": 263437836}}, {"paperId": "5a4af0914ed7498686a7ea184c20d0825d30e002",
+        "externalIds": {"PubMedCentral": "4227573", "MAG": "1995663213", "DOI": "10.3389/fnhum.2014.00830",
+        "CorpusId": 16886534, "PubMed": "25426043"}}, {"paperId": "5b173ee9e15a9ef19ae5f6416d591c3d4e694411",
+        "externalIds": {"MAG": "1625850398", "DOI": "10.1016/j.neuroscience.2015.09.032",
+        "CorpusId": 5089830, "PubMed": "26384961"}}, {"paperId": "5b5d9dbff7619e9b08e9d8c71fe17b364a1843b6",
+        "externalIds": {"MAG": "1979859731", "DOI": "10.1016/J.AVB.2004.05.002", "CorpusId":
+        54876793}}, {"paperId": "5b60b0ffec83a14d7adf575b4424bc2573a262cc", "externalIds":
+        {"DOI": "10.21203/rs.2.384/v1", "CorpusId": 240757719}}, {"paperId": "5b7b056169e0c0b0138b8262495dd6d04c83c6d2",
+        "externalIds": {"DOI": "10.1016/j.jad.2023.08.016", "CorpusId": 260750725,
+        "PubMed": "37562562"}}, {"paperId": "5b8e286790ee33398896b52ed9c1190c25d451a3",
+        "externalIds": {"DOI": "10.1016/j.clineuro.2023.107664", "CorpusId": 257235898,
+        "PubMed": "36868087"}}, {"paperId": "5bf1df0f86324e002b2c38692c77e71ce2bab463",
+        "externalIds": {"MAG": "2355887029", "CorpusId": 7334235}}, {"paperId": "5ca1970ba388fb8141dbec6bb83441ad786d8db0",
+        "externalIds": {"MAG": "2186131809", "CorpusId": 146441546}}, {"paperId":
+        "5d27018be672654cefe66659ce34ffa66a3bdfcf", "externalIds": {"MAG": "2753868901",
+        "DOI": "10.3760/CMA.J.ISSN.1671-8925.2016.12.012", "CorpusId": 79713495}},
+        {"paperId": "5d3a4de995e93f119814f217157dfd34abda4d48", "externalIds": {"MAG":
+        "2807404538", "DOI": "10.1007/s11910-018-0861-3", "CorpusId": 47016573, "PubMed":
+        "29886515"}}, {"paperId": "5d7ea4a5241185425232ed7725f13585172cc213", "externalIds":
+        {"MAG": "574361984", "CorpusId": 261354112}}, {"paperId": "5da425b5a2cc4ad9d3ba18942b80d6264bb722ec",
+        "externalIds": {"PubMedCentral": "13546042", "DOI": "10.2147/NSS.S628716",
+        "CorpusId": 291643319, "PubMed": "42701814"}}, {"paperId": "5dc40619c9d49e4b8710e9b58a7989ba8bf2d6e9",
+        "externalIds": {"MAG": "1890976338", "PubMedCentral": "4515536", "DOI": "10.1155/2015/161478",
+        "CorpusId": 2434907, "PubMed": "26246914"}}, {"paperId": "5de5bb16f68d44c5116bbdb730c9b090490d90a4",
+        "externalIds": {"MAG": "2125820781", "DOI": "10.1016/j.ejrad.2011.03.029",
+        "CorpusId": 6905772, "PubMed": "21458943"}}, {"paperId": "5e21d4ca9301b3235318fc377b1ff4f202d44c5f",
+        "externalIds": {"PubMedCentral": "8720198", "DOI": "10.1002/hbm.25676", "CorpusId":
+        238356586, "PubMed": "34609038"}}, {"paperId": "5e38e258a582b00c8e8839bb5a76922f5570d5ad",
+        "externalIds": {"MAG": "2003869207", "DOI": "10.3766/jaaa.26.3.10", "CorpusId":
+        207651352, "PubMed": "25751698"}}, {"paperId": "5e4915b1680c2d04b36873840793860a53dd2b84",
+        "externalIds": {"MAG": "1497757997", "DOI": "10.1016/j.neucli.2007.12.007",
+        "CorpusId": 207097368, "PubMed": "18423328"}}, {"paperId": "5ea9f2880fb74de2491f31558e5b8fa68ac6c1fe",
+        "externalIds": {"PubMedCentral": "3884211", "MAG": "2159145339", "DOI": "10.3389/fnhum.2013.00932",
+        "CorpusId": 6649567, "PubMed": "24409136"}}, {"paperId": "5ebc893ee7af8b486de468038b2a3e9bed8e90d5",
+        "externalIds": {"MAG": "3088915203", "DOI": "10.1002/brb3.1844/v1/review1",
+        "CorpusId": 225857274}}, {"paperId": "5ef3636a029946eed3a6cdfee940330b4ddbd2d5",
+        "externalIds": {"PubMedCentral": "8946618", "DOI": "10.3390/brainsci12030334",
+        "CorpusId": 247204044, "PubMed": "35326290"}}, {"paperId": "5f4efb6848b6a29e79223d38c63663fd54f916f8",
+        "externalIds": {"MAG": "2001288207", "PubMedCentral": "3788711", "DOI": "10.1371/journal.pone.0076488",
+        "CorpusId": 3963617, "PubMed": "24098513"}}, {"paperId": "5f78f99c21c055df4cf1003d11aaad9339fae91e",
+        "externalIds": {"MAG": "2995819254", "DOI": "10.1016/j.sleep.2019.11.609",
+        "CorpusId": 213217451}}, {"paperId": "5f7a121d7fcb9d1179a235281e8cc5159ea1b6a7",
+        "externalIds": {"PubMedCentral": "8725477", "DOI": "10.1186/s13063-021-05913-2",
+        "CorpusId": 245655012, "PubMed": "34983602"}}, {"paperId": "6000faa0be5007664bfff8c100262a9337fdd5ab",
+        "externalIds": {"MAG": "2908501531", "DOI": "10.1016/j.neuroscience.2018.12.038",
+        "CorpusId": 57072457, "PubMed": "30599268"}}, {"paperId": "6010fd568d76fe7d61b98454211ce155f03a4cd5",
+        "externalIds": {"MAG": "2976878096", "PubMedCentral": "6789966", "DOI": "10.1073/pnas.1904931116",
+        "CorpusId": 202747039, "PubMed": "31548375"}}, {"paperId": "601d606ec4740af930d3f230b2176a395a01d542",
+        "externalIds": {"MAG": "3167136869", "DOI": "10.21203/RS.3.RS-60437/V1", "CorpusId":
+        236312951}}, {"paperId": "604622ad6c4e60e4ea1b902dc0c07e9afba9f19d", "externalIds":
+        {"MAG": "2621276500", "PubMedCentral": "5600281", "DOI": "10.1016/j.brs.2017.05.009",
+        "CorpusId": 4582805, "PubMed": "28629874"}}, {"paperId": "606b9d0cffa849ce63d7fea4e16c95efd292a45e",
+        "externalIds": {"PubMedCentral": "12239473", "DOI": "10.1186/s12916-025-04126-7",
+        "CorpusId": 279983723, "PubMed": "40629377"}}, {"paperId": "61742e2862d25a8d9196a8ff6aaf43bf5de55346",
+        "externalIds": {"MAG": "2012174623", "DOI": "10.1016/j.expneurol.2009.10.016",
+        "CorpusId": 44256765, "PubMed": "19879262"}}, {"paperId": "61b89c38304ba04aea72737347f47e6b1273b2c0",
+        "externalIds": {"MAG": "2108146922", "DOI": "10.3109/00207450903275129", "CorpusId":
+        40659058, "PubMed": "20128672"}}, {"paperId": "61c68d0cb966b4e2c71229f8ce076a7dd62d8f19",
+        "externalIds": {"MAG": "2995556613", "PubMedCentral": "6902344", "DOI": "10.1186/s13063-019-3836-z",
+        "CorpusId": 208869868, "PubMed": "31815645"}}, {"paperId": "6214e491421db648ff979f5cae3473c00965c96f",
+        "externalIds": {"DOI": "10.1007/s11325-024-03064-7", "CorpusId": 269950196,
+        "PubMed": "38772968"}}, {"paperId": "622beee1716d20a2ac6c94efc36230fe0ab33bb5",
+        "externalIds": {"DBLP": "journals/neuroimage/NeefBAFPS16", "MAG": "2511381167",
+        "DOI": "10.1016/j.neuroimage.2016.08.030", "CorpusId": 14864376, "PubMed":
+        "27542724"}}, {"paperId": "625bdd6a1de76155570f0a349c80c831307fac90", "externalIds":
+        {"PubMedCentral": "10694975", "DOI": "10.1186/s12883-023-03481-3", "CorpusId":
+        265553825, "PubMed": "38049760"}}, {"paperId": "6262fd0b0c695a3404500de724768ef758e5e016",
+        "externalIds": {"PubMedCentral": "9796404", "DOI": "10.1111/nyas.14871", "CorpusId":
+        251133078, "PubMed": "35899373"}}, {"paperId": "630021c974f34d65289a1daa1a395796ae88add9",
+        "externalIds": {"MAG": "2156938425", "PubMedCentral": "4380286", "DOI": "10.1177/0956797611419521",
+        "CorpusId": 1087283, "PubMed": "22006060"}}, {"paperId": "6380fed3fcad28bc0cc18d9e35b71998a9f2597c",
+        "externalIds": {"PubMedCentral": "13095619", "DOI": "10.3389/fneur.2026.1769146",
+        "CorpusId": 287322488, "PubMed": "42021772"}}, {"paperId": "638102ee68e8fe2e4a5480db0c19ea10ecbd92a3",
+        "externalIds": {"DOI": "10.1002/brb3.1844/v2/decision1", "CorpusId": 241567704}},
+        {"paperId": "638ff111747e43a5535c549c839c30eda0eff982", "externalIds": {"MAG":
+        "2144315649", "DOI": "10.1093/brain/awn300", "CorpusId": 20912615, "PubMed":
+        "19022856"}}, {"paperId": "63c6add8fb0d9920d591b945ced9f6f607ae9409", "externalIds":
+        {"MAG": "3096830394", "DOI": "10.1002/brb3.1927/v2/response1", "CorpusId":
+        229158110}}, {"paperId": "63dde56de0abc31b1fc5d68070ab6506356a2e59", "externalIds":
+        {"MAG": "3030916150", "DOI": "10.1093/sleep/zsaa056.079", "CorpusId": 219746732}},
+        {"paperId": "64727b1a9667c91f2e3be628cf0425f3b213cc57", "externalIds": {"MAG":
+        "2197311187", "PubMedCentral": "4684365", "DOI": "10.1371/journal.pone.0144419",
+        "CorpusId": 15351027, "PubMed": "26675290"}}, {"paperId": "648f1d72914314681abc536e995056d0e5e296b5",
+        "externalIds": {"PubMedCentral": "11815003", "DOI": "10.1093/ijnp/pyae059.103",
+        "CorpusId": 276313790}}, {"paperId": "64d42cd32c4405cb3d26a18ff0d4888889e9e62f",
+        "externalIds": {"PubMedCentral": "9746182", "DOI": "10.1186/s13063-022-06934-1",
+        "CorpusId": 254611003, "PubMed": "36510305"}}, {"paperId": "651cb6ad0f776f5fc2316097472b59ca09016e1e",
+        "externalIds": {"MAG": "11174118", "DOI": "10.1007/978-1-4757-5351-6_20",
+        "CorpusId": 141155023}}, {"paperId": "652144ebc10eddcec02d0130d7fbcd182d49802e",
+        "externalIds": {"MAG": "828579160", "CorpusId": 142431895}}, {"paperId": "653547377911324f367bd3c27c0febcf78a84a1a",
+        "externalIds": {"CorpusId": 25544148, "PubMed": "17608280"}}, {"paperId":
+        "6568e8be789462278abf282aacdaa70c79b5259e", "externalIds": {"MAG": "2013101679",
+        "DOI": "10.5665/sleep.1718", "CorpusId": 35670023, "PubMed": "22467980"}},
+        {"paperId": "6595a938de3c2808a312191ea18aab30456e035a", "externalIds": {"PubMedCentral":
+        "13250240", "DOI": "10.1002/jnr.70132", "CorpusId": 289134974, "PubMed": "42265860"}},
+        {"paperId": "66190d1e7e40a965a9dcb249dfa7b8838b9eaf64", "externalIds": {"MAG":
+        "1527445481", "DOI": "10.1016/S0074-7742(05)67008-0", "CorpusId": 35955395,
+        "PubMed": "16291025"}}, {"paperId": "6645f5a30ae229c7d3e466e39d793e890faef30a",
+        "externalIds": {"MAG": "2161709867", "PubMedCentral": "2920311", "DOI": "10.1371/journal.pone.0012073",
+        "CorpusId": 1633213, "PubMed": "20711448"}}, {"paperId": "665d8c00674771bbe51ee2fa7df0bdc1ae5a35cb",
+        "externalIds": {"DOI": "10.1016/bs.pbr.2021.01.026", "CorpusId": 233471661,
+        "PubMed": "33931179"}}, {"paperId": "66f775d1b91cb3c34960f99d56cd232d05b90dc8",
+        "externalIds": {"DOI": "10.1016/j.pscychresns.2022.111578", "CorpusId": 254119423,
+        "PubMed": "36525761"}}, {"paperId": "670c732788b008ec3699ac389591d2eb58d48929",
+        "externalIds": {"PubMedCentral": "3956492", "MAG": "2126325214", "DOI": "10.3109/14992027.2013.846482",
+        "CorpusId": 3160670, "PubMed": "24200464"}}, {"paperId": "671b186d1876564c9526f62bc6ff60aa8973e9ef",
+        "externalIds": {"PubMedCentral": "9279810", "DOI": "10.21037/atm-22-2135",
+        "CorpusId": 250134492, "PubMed": "35845541"}}, {"paperId": "672613acc682d749c330b2798c90498e41697e1a",
+        "externalIds": {"MAG": "3018986817", "CorpusId": 219134728}}, {"paperId":
+        "6726aa3b870eeb1766fd81d2c76cdb3e04b9c3fa", "externalIds": {"DOI": "10.1016/j.brainres.2024.149169",
+        "CorpusId": 271926154, "PubMed": "39179194"}}, {"paperId": "6730079d1924b8c331b08948bebebb46acbdcefc",
+        "externalIds": {"CorpusId": 1897243}}, {"paperId": "6746b4ae9c33ffb1ba3333fa7f220ad853141c94",
+        "externalIds": {"DOI": "10.4038/cjol.v14i1.5394", "CorpusId": 277177500}},
+        {"paperId": "67506bc93350c632c534acb6947ef4656d12b847", "externalIds": {"DOI":
+        "10.1016/j.bpsc.2025.11.003", "CorpusId": 283242242, "PubMed": "41275967"}},
+        {"paperId": "678b5f13460242b89b31453a9d019862052b8b9d", "externalIds": {"CorpusId":
+        277218093}}, {"paperId": "67b1d55e3ffd34d2094996125b3211300b183718", "externalIds":
+        {"MAG": "2609025928", "DOI": "10.1093/SLEEPJ/ZSX050.300", "CorpusId": 151842203}},
+        {"paperId": "67df1c41f405acaa6283e751c6603bb45822b4e8", "externalIds": {"PubMedCentral":
+        "6984040", "MAG": "3002324318", "DBLP": "journals/ficn/ShahsavaraniAZB20",
+        "DOI": "10.3389/fncom.2019.00094", "CorpusId": 210714518, "PubMed": "32038211"}},
+        {"paperId": "68505a5d05f075cf4d33a6f1e37613dfcc4fc29b", "externalIds": {"MAG":
+        "2487117755", "DOI": "10.1016/B978-0-12-415994-5.00009-9", "CorpusId": 148301004}},
+        {"paperId": "685ef73e7f3082f2b9794d444e73474e459aa123", "externalIds": {"CorpusId":
+        250332260}}, {"paperId": "68612bf8bc03274661781a6deceeccbc5fc5cc63", "externalIds":
+        {"MAG": "1971933556", "DOI": "10.3342/KJORL-HNS.2015.58.1.1", "CorpusId":
+        58746116}}, {"paperId": "68b8c284f2d63a858f23f0710afab0668351c796", "externalIds":
+        {"MAG": "2007724018", "DOI": "10.1080/13554790701881715", "CorpusId": 46510375,
+        "PubMed": "18781441"}}, {"paperId": "690a5f1caeb65f00fe5a82174e6dbe2555ac657b",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.0269", "CorpusId": 278752328}},
+        {"paperId": "692ab1af9685a3eec594ae7cec3984f6b6798622", "externalIds": {"MAG":
+        "1560351269", "DOI": "10.5772/58262", "CorpusId": 38511373}}, {"paperId":
+        "69531db182003119c40cf0394a22f78b78586305", "externalIds": {"DOI": "10.1186/s41983-025-00982-5",
+        "CorpusId": 279283702}}, {"paperId": "69940247e3934fb8d1f11702e322237b053603ff",
+        "externalIds": {"PubMedCentral": "5261361", "MAG": "2495349858", "DOI": "10.1016/j.tine.2016.07.005",
+        "CorpusId": 205403013, "PubMed": "28133634"}}, {"paperId": "699f6313f8bb9b4289d0c16e361806e0ca897134",
+        "externalIds": {"MAG": "1998070456", "DOI": "10.1007/s00429-013-0509-7", "CorpusId":
+        9776346, "PubMed": "23400699"}}, {"paperId": "69d1d719c4130612b7bf8c9ba9de1ce1923d274b",
+        "externalIds": {"MAG": "2202517429", "CorpusId": 59458242}}, {"paperId": "6a32cfad4c5f2adcc00563170ef709edcb28817d",
+        "externalIds": {"MAG": "2906655538", "DOI": "10.1016/j.jad.2018.12.079", "CorpusId":
+        58549284, "PubMed": "30597294"}}, {"paperId": "6a7b598a7cb398a3aacd4e1f1fa4287702e9eefe",
+        "externalIds": {"DOI": "10.5220/0011235400003438", "CorpusId": 251747449}},
+        {"paperId": "6a9bb99c4a9afa26bb9924246d4c740456c3bcdf", "externalIds": {"MAG":
+        "1983943713", "DOI": "10.1080/13554794.2011.654226", "CorpusId": 24339714,
+        "PubMed": "22519521"}}, {"paperId": "6ab20dd0b4527bbe61b17207ecc168850fb613db",
+        "externalIds": {"MAG": "2362138517", "CorpusId": 76632964}}, {"paperId": "6afac96981abdc1f8533bcd9b3642f0ce2537109",
+        "externalIds": {"MAG": "2136638310", "DBLP": "journals/neuroimage/WilsonJFBAJRB12",
+        "DOI": "10.1016/j.neuroimage.2012.02.009", "CorpusId": 23249898, "PubMed":
+        "22361167"}}, {"paperId": "6b3b4327211864d96cc4e3cc61b38f82d2de5673", "externalIds":
+        {"MAG": "2473535606", "PubMedCentral": "4993149", "DOI": "10.1016/j.tics.2016.06.012",
+        "CorpusId": 3837900, "PubMed": "27422443"}}, {"paperId": "6b41899757f2efca84811a958d1b1e1b93f70b7b",
+        "externalIds": {"MAG": "1996616146", "DOI": "10.2307/1511243", "CorpusId":
+        143481058}}, {"paperId": "6bd637adb83896798cc04ebcaad4b04e3bbca564", "externalIds":
+        {"DOI": "10.1016/j.neuroscience.2021.05.014", "CorpusId": 235126841, "PubMed":
+        "34022324"}}, {"paperId": "6c2d02c00033fbd53d228f8290c40df09760b459", "externalIds":
+        {"MAG": "2133334241", "DOI": "10.1111/j.1467-9450.2010.00808.x", "CorpusId":
+        35942767, "PubMed": "20338015"}}, {"paperId": "6ca0ac744dfba8a89eb53b2e30389c1144f4dbdc",
+        "externalIds": {"MAG": "2146148910", "CorpusId": 5649406}}, {"paperId": "6ca996b9290f46000ba3712c12c892eab5aa780c",
+        "externalIds": {"MAG": "2162156887", "PubMedCentral": "3738857", "DOI": "10.3389/fnhum.2013.00454",
+        "CorpusId": 5464149, "PubMed": "23950742"}}, {"paperId": "6cc6357de059899aea5f966f7bfd15570f38d0f9",
+        "externalIds": {"MAG": "2121128347", "DOI": "10.1001/jamapsychiatry.2013.2810",
+        "CorpusId": 29916445, "PubMed": "24285233"}}, {"paperId": "6d3fc2e11ca9ad664d2a9495465b74c6967d95d9",
+        "externalIds": {"CorpusId": 6725325}}, {"paperId": "6d4cc90b2eea6f8499b6428f90426ee5a7f0554c",
+        "externalIds": {"MAG": "2333144606", "DOI": "10.1016/j.jns.2013.07.2051",
+        "CorpusId": 54424010}}, {"paperId": "6dd1ed6f5c7ce85b12f53d7b8777a46a8fcd3408",
+        "externalIds": {"PubMedCentral": "3987122", "MAG": "2050854011", "DOI": "10.1016/j.neuropsychologia.2012.05.026",
+        "CorpusId": 39696609, "PubMed": "22698991"}}, {"paperId": "6e0f09c7d490f4c28dc6c4a78080fa1fa4398032",
+        "externalIds": {"MAG": "2926293056", "DOI": "10.7868/S0044467717010117", "CorpusId":
+        59412381, "PubMed": "30695548"}}, {"paperId": "6e1a41619396184b334c0d91eaada00ba31c008e",
+        "externalIds": {"DOI": "10.1002/dys.1726", "CorpusId": 251544897, "PubMed":
+        "36329601"}}, {"paperId": "6e29fb0cecfa60e6a521a6c4fb5984754d165654", "externalIds":
+        {"MAG": "2390825191", "CorpusId": 77328348}}, {"paperId": "6e4bb3350b1085252da49dc2775decba446e6929",
+        "externalIds": {"MAG": "2040729664", "DOI": "10.1111/j.1552-6569.2003.tb00193.x",
+        "CorpusId": 29330133, "PubMed": "12889179"}}, {"paperId": "6eae17ea396932acd32708fb93d78ace3c5d8edd",
+        "externalIds": {"DOI": "10.1016/j.sleep.2022.11.033", "CorpusId": 254340169,
+        "PubMed": "36584501"}}, {"paperId": "6f23c09a98048bdfc2160dbe550a0dd6c79d55f7",
+        "externalIds": {"MAG": "2005199603", "DOI": "10.1016/S1053-8119(09)71976-7",
+        "CorpusId": 54246034}}, {"paperId": "6f37264fab7db7e11d9a3c80a46dc9f6fa68bf05",
+        "externalIds": {"MAG": "1606631889", "DOI": "10.4324/9781410600646", "CorpusId":
+        142735182}}, {"paperId": "6f6bbeb652eee7f6923a00ba3731f182f58d744b", "externalIds":
+        {"DOI": "10.1007/s00429-014-0944-0", "CorpusId": 253982791}}, {"paperId":
+        "7028edeeea6a54c41ccc0d2c2bb6a1612d9d93c7", "externalIds": {"MAG": "2000652077",
+        "DOI": "10.1117/12.648771", "CorpusId": 143485582}}, {"paperId": "70807c181dde799f5bb11a0f628a738db4700d34",
+        "externalIds": {"DOI": "10.12122/j.issn.1673-4254.2021.03.16", "CorpusId":
+        233233575, "PubMed": "33849835"}}, {"paperId": "7089b52cec380c8fdfbef397d8c3ed387ff9becd",
+        "externalIds": {"MAG": "2040898606", "DOI": "10.1163/187847612X647667", "CorpusId":
+        144987803}}, {"paperId": "70caa49dd5c222ff28832f58b587a68c54b4c35d", "externalIds":
+        {"PubMedCentral": "10928112", "DOI": "10.1038/s41598-024-55866-0", "CorpusId":
+        268362006, "PubMed": "38467716"}}, {"paperId": "71476395f806bbb63e5a89dd9b3e01b1bead45a0",
+        "externalIds": {"PubMedCentral": "8316917", "DOI": "10.3389/fnins.2021.700670",
+        "CorpusId": 235813211, "PubMed": "34335173"}}, {"paperId": "71856790ac6f2297e37ec730a06fe39d621878de",
+        "externalIds": {"MAG": "2106975911", "DOI": "10.1080/13554794.2010.532141",
+        "CorpusId": 205774838, "PubMed": "21590585"}}, {"paperId": "721988cedd7b33a6146ae319568f67ec48a01820",
+        "externalIds": {"CorpusId": 202548478}}, {"paperId": "722bf6a5de4edaa5fffc0da0bf842a0640ac0f28",
+        "externalIds": {"MAG": "2378840252", "CorpusId": 76003483}}, {"paperId": "724ab3e629261a3502a2d7d5756e1b08f9086093",
+        "externalIds": {"CorpusId": 151958076}}, {"paperId": "72baa411b03376475a1e57eb84a9af9ddfda95e0",
+        "externalIds": {"PubMedCentral": "9421431", "DOI": "10.1016/j.nicl.2022.103111",
+        "CorpusId": 250502058, "PubMed": "35863180"}}, {"paperId": "72d879b8a7ca4b414c33e7bcbe072f3e7e712335",
+        "externalIds": {"DOI": "10.1093/sleep/zsac290", "CorpusId": 254180297, "PubMed":
+        "36462192"}}, {"paperId": "73021777b186904670c5a356d8a70adf3854f505", "externalIds":
+        {"CorpusId": 266477848}}, {"paperId": "73166273d010e473aec9975454e85bba7ff6ce0f",
+        "externalIds": {"PubMedCentral": "12330837", "DOI": "10.1162/IMAG.a.89", "CorpusId":
+        280131252, "PubMed": "40800934"}}, {"paperId": "732583d13f8287ea8f53a3c175e1c10f9d79b32c",
+        "externalIds": {"PubMedCentral": "7669264", "MAG": "3096862364", "DOI": "10.7554/eLife.54591",
+        "CorpusId": 222361204, "PubMed": "33118931"}}, {"paperId": "7420a57115e8c3ec45706897d348f9c35a0c6d64",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2024.05.027", "CorpusId": 269744977,
+        "PubMed": "38749297"}}, {"paperId": "74319f70407cedc20329d84eb39315c00ae58605",
+        "externalIds": {"CorpusId": 15829181}}, {"paperId": "7434f264625f85f5112422b4240960588c50af47",
+        "externalIds": {"PubMedCentral": "10995322", "DOI": "10.3389/fneur.2024.1373390",
+        "CorpusId": 268660981, "PubMed": "38585348"}}, {"paperId": "743fe5d31f2102bbc23cd4bfc9e532bff1516c55",
+        "externalIds": {"PubMedCentral": "8635858", "DOI": "10.3389/fnins.2021.709482",
+        "CorpusId": 244135045, "PubMed": "34867147"}}, {"paperId": "749105bebb57d426122d888ed7b0db5e53f61b42",
+        "externalIds": {"PubMedCentral": "12436418", "DOI": "10.3389/fnhum.2025.1633506",
+        "CorpusId": 281136478, "PubMed": "40964196"}}, {"paperId": "74f69e3a9779a8cb389707bcb1e61477cb727878",
+        "externalIds": {"MAG": "2784877087", "DOI": "10.1111/sjop.12406", "CorpusId":
+        23644878, "PubMed": "29356010"}}, {"paperId": "755165e2179db44ec890990d3711f3ad3e58f23e",
+        "externalIds": {"MAG": "2068297280", "DOI": "10.1016/j.neuropsychologia.2009.04.028",
+        "CorpusId": 13396335, "PubMed": "19433099"}}, {"paperId": "75965f83e4edf623a369d0f73a9cef1647473243",
+        "externalIds": {"MAG": "1967675906", "DBLP": "journals/neuroimage/MarkKBMSBMB11",
+        "DOI": "10.1016/j.neuroimage.2010.10.002", "CorpusId": 13110211, "PubMed":
+        "20934519"}}, {"paperId": "75d15616d495737d46f30693a02c85110a426616", "externalIds":
+        {"MAG": "1154138887", "PubMedCentral": "7343340", "DOI": "10.1016/j.heares.2015.08.005",
+        "CorpusId": 4866594, "PubMed": "26299843"}}, {"paperId": "768b4c02ec187bcf60a79a13383da1ed8c993d0e",
+        "externalIds": {"MAG": "2413284973", "DOI": "10.1007/978-3-319-25474-6_19",
+        "CorpusId": 12065140, "PubMed": "27080658"}}, {"paperId": "76a2a7d10353d0b4b26ffd3f86b7bf3922f06e68",
+        "externalIds": {"MAG": "2095608494", "PubMedCentral": "3010865", "DOI": "10.1017/S1355617708080867",
+        "CorpusId": 17839677, "PubMed": "18577292"}}, {"paperId": "76b4a3a348c0e79674d1bfbb7e5dd66b23ee662b",
+        "externalIds": {"PubMedCentral": "10771825", "DOI": "10.3389/fneur.2023.1278564",
+        "CorpusId": 266512839, "PubMed": "38187141"}}, {"paperId": "76bedd4ac56e897f18e2c8229089f81644c6e17b",
+        "externalIds": {"PubMedCentral": "8612467", "DOI": "10.1503/jpn.210066", "CorpusId":
+        244528808, "PubMed": "34815270"}}, {"paperId": "770d80bdb9c32b094d446267272a7ccbb23276c2",
+        "externalIds": {"PubMedCentral": "8869855", "DOI": "10.3390/brainsci12020243",
+        "CorpusId": 246785662, "PubMed": "35204006"}}, {"paperId": "770dff792d9a66797c937be8aacd9450fdfbff08",
+        "externalIds": {"PubMedCentral": "10392941", "DOI": "10.3389/fneur.2023.1180393",
+        "CorpusId": 260007581, "PubMed": "37533466"}}, {"paperId": "771a7f42e9af0d5baf9a75846cab7ca5fac750ac",
+        "externalIds": {"DOI": "10.1207/s15326942dn3001_1", "CorpusId": 218526616}},
+        {"paperId": "772c35094b609d5582108165abaac6c7fe7c747d", "externalIds": {"MAG":
+        "2148476853", "DBLP": "journals/neuroimage/RobineauRMPKVVS14", "DOI": "10.1016/j.neuroimage.2014.05.072",
+        "CorpusId": 17443001, "PubMed": "24904993"}}, {"paperId": "7736c99e3c5d74c1a802d09bb10a13d3d6f9a9a3",
+        "externalIds": {"MAG": "2788267240", "PubMedCentral": "5860871", "DOI": "10.7554/eLife.30018",
+        "CorpusId": 4013327, "PubMed": "29488880"}}, {"paperId": "775e7f7f7ccf51c3ce2bd92676c5b052bb1269dc",
+        "externalIds": {"DBLP": "journals/neuroimage/ChenZYFYY26", "DOI": "10.1016/j.neuroimage.2026.122120",
+        "CorpusId": 290055856, "PubMed": "42425187"}}, {"paperId": "77732dbffbb61c8c98f73d98138ae8618e5d8900",
+        "externalIds": {"MAG": "2089322070", "DOI": "10.5112/JJLP.50.190", "CorpusId":
+        145502811}}, {"paperId": "778ec7a002c66c735caaa255d963e3f71bef9cd4", "externalIds":
+        {"DOI": "10.13703/j.0255-2930.20200325-0006", "CorpusId": 235821388, "PubMed":
+        "34259410"}}, {"paperId": "7796cb5e13ee3e2a90f91b7878bf0cfb85031f8a", "externalIds":
+        {"CorpusId": 49741000}}, {"paperId": "781b5ed7a9dede70fae4ab2230e9633860959383",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2025.04.024", "CorpusId": 277840563,
+        "PubMed": "40250325"}}, {"paperId": "78759c591bdc098918a70191893c6e75a38c2be6",
+        "externalIds": {"DOI": "10.56618/2071-2693_2025_17_3_7", "CorpusId": 283122182}},
+        {"paperId": "78d0d50b8ffc39e0e5ad6c55032e7558360f392e", "externalIds": {"MAG":
+        "2885590649", "DOI": "10.1016/j.neulet.2018.07.043", "CorpusId": 51911851,
+        "PubMed": "30075284"}}, {"paperId": "7939aac9feca0481ddbd90ab2892ec2e9f5e14a9",
+        "externalIds": {"MAG": "2340658411", "DOI": "10.1068/p2808rvw", "CorpusId":
+        48347620}}, {"paperId": "79fee074a7c1f3642a2e80640f534acbd9187ba5", "externalIds":
+        {"MAG": "2753611536", "CorpusId": 148951979}}, {"paperId": "7a275ffc9a6aa90b36f68b2250fc7171970fc01e",
+        "externalIds": {"PubMedCentral": "10357469", "DOI": "10.3389/fneur.2023.1164869",
+        "CorpusId": 259548594, "PubMed": "37483453"}}, {"paperId": "7a2a15d1e4f432b5434d6c12c3a6886947d7999d",
+        "externalIds": {"MAG": "2616666424", "CorpusId": 149196344}}, {"paperId":
+        "7aef000e0bc501cd02874dae49308ef27d5eb1a6", "externalIds": {"MAG": "2996770343",
+        "DOI": "10.1080/10573569.2019.1707731", "CorpusId": 212919789}}, {"paperId":
+        "7b22adbf15dd365d1f6ea0f20a8cfb990c3a61d3", "externalIds": {"DOI": "10.1007/s11682-021-00618-1",
+        "CorpusId": 245135387, "PubMed": "34897576"}}, {"paperId": "7b30f22fa3bb21a8d26e3e352294345a7ead0abc",
+        "externalIds": {"PubMedCentral": "7667361", "MAG": "3087608594", "DOI": "10.1002/brb3.1844",
+        "CorpusId": 221747153, "PubMed": "32935924"}}, {"paperId": "7b3fca01544be3fb5162b1de831c71649aa36e71",
+        "externalIds": {"PubMedCentral": "12341360", "DOI": "10.1176/appi.neuropsych.20240262",
+        "CorpusId": 279322406, "PubMed": "40509793"}}, {"paperId": "7b7714620f16fc26f61589bc515f1f5ca1a0efae",
+        "externalIds": {"MAG": "2587264526", "DOI": "10.1007/s10548-017-0547-1", "CorpusId":
+        32690018, "PubMed": "28168599"}}, {"paperId": "7b79384fc70372991105044ccfdf5ab53e91ffff",
+        "externalIds": {"PubMedCentral": "5261811", "MAG": "2563455455", "DOI": "10.15761/JSIN.1000139",
+        "CorpusId": 25833715, "PubMed": "28127444"}}, {"paperId": "7b8163a44c40b7005e5e2e9e0e5d876a3b9fc93e",
+        "externalIds": {"MAG": "3174867752", "DOI": "10.21203/rs.3.rs-640684/v1",
+        "CorpusId": 237892763}}, {"paperId": "7ba6c926fab33f1747a2a9d2f246e7d9a3c1937a",
+        "externalIds": {"MAG": "3005635854", "DOI": "10.1016/j.ajp.2020.101945", "CorpusId":
+        211245509, "PubMed": "32086175"}}, {"paperId": "7c90571fa39c43d763d4a6bdf8e107c2a0c0e744",
+        "externalIds": {"MAG": "2598911260", "DOI": "10.1027/0269-8803/a000194", "CorpusId":
+        151321251}}, {"paperId": "7c98ba72d0c214f0d3c151fbf9fcb9ebb27424d1", "externalIds":
+        {"MAG": "2090323052", "DBLP": "journals/neuroimage/SchulzMMBBMB08", "DOI":
+        "10.1016/j.neuroimage.2008.02.012", "CorpusId": 5023238, "PubMed": "18378166"}},
+        {"paperId": "7cc4df4b850271cca56c9429f4b1713b9432906f", "externalIds": {"MAG":
+        "2103761842", "DOI": "10.1080/02687038.2012.714946", "CorpusId": 145765620}},
+        {"paperId": "7d1d9ab01b1540699a26f15645531d483e19f0b2", "externalIds": {"MAG":
+        "2148504670", "DOI": "10.1016/j.neurad.2007.12.002", "CorpusId": 43900076,
+        "PubMed": "18206238"}}, {"paperId": "7d20a8d311eedffbadcd7063f1bc2d5f6da9a606",
+        "externalIds": {"MAG": "2002358960", "DOI": "10.1016/S0896-6273(03)00803-1",
+        "CorpusId": 286066520, "PubMed": "14715131"}}, {"paperId": "7d6d85572f234db9b2a08124c487a86678863648",
+        "externalIds": {"MAG": "2395307350", "CorpusId": 3451018, "PubMed": "11905006"}},
+        {"paperId": "7d8aa01746dd803cae853824a41b59b0cfae7390", "externalIds": {"DBLP":
+        "journals/neuroimage/HasankhaniSD26", "DOI": "10.1016/j.neuroimage.2026.122164",
+        "CorpusId": 291035998, "PubMed": "42580460"}}, {"paperId": "7e0dd71ab7e62bbbb3447a0803a7df817253667d",
+        "externalIds": {"PubMedCentral": "7994340", "DOI": "10.3389/fnins.2021.609640",
+        "CorpusId": 232200912, "PubMed": "33776631"}}, {"paperId": "7e22f49e9635528c5cc24e2c70bcf3e872430d21",
+        "externalIds": {"DOI": "10.13703/j.0255-2930.20210302-0003", "CorpusId": 248083460,
+        "PubMed": "35403392"}}, {"paperId": "7e7acd087d8207a0595e8fbb14ff27e06b071f31",
+        "externalIds": {"PubMedCentral": "7882621", "DOI": "10.3389/fnhum.2021.625321",
+        "CorpusId": 231734274, "PubMed": "33597854"}}, {"paperId": "7ea0efe0449cb55dd8e2ed3bb186b8c450739878",
+        "externalIds": {"MAG": "1919893784", "DOI": "10.3109/00016489.2015.1068952",
+        "CorpusId": 26601985, "PubMed": "26181225"}}, {"paperId": "7ed806acca7e0447e57588b5e258afdcf342f598",
+        "externalIds": {"PubMedCentral": "9744700", "DOI": "10.1007/s00062-022-01170-1",
+        "CorpusId": 248701239, "PubMed": "35556148"}}, {"paperId": "7ed8b9496436af0ff10ac0b00676df19240190d0",
+        "externalIds": {"MAG": "2038570579", "PubMedCentral": "3285375", "DBLP": "journals/imst/MoroczJGMKBAKS12",
+        "DOI": "10.1002/ima.22009", "CorpusId": 2659289, "PubMed": "22368322"}}, {"paperId":
+        "7ef83ba510bf04766a6f4c15b709a924d7af3fed", "externalIds": {"DOI": "10.1016/S1388-2457(10)00753-4",
+        "CorpusId": 53172010}}, {"paperId": "7f0adaabaa5db3d26b388654de13f367ca4fe07d",
+        "externalIds": {"MAG": "1993064012", "DOI": "10.1016/j.pnpbp.2015.01.013",
+        "CorpusId": 19078703, "PubMed": "25645870"}}, {"paperId": "7f1be1511563b001a38b79a6070883f6868e207e",
+        "externalIds": {"DOI": "10.1093/sleep/zsab081", "CorpusId": 232386897, "PubMed":
+        "33772591"}}, {"paperId": "7ffdaac53ac765db61cbae8bdb617f2b5d84042b", "externalIds":
+        {"DOI": "10.1101/2025.07.09.663990", "CorpusId": 282305545}}, {"paperId":
+        "8022a46e8f34ea27464d1c0092766299d2728388", "externalIds": {"DOI": "10.64898/2026.07.06.736136",
+        "CorpusId": 290014728}}, {"paperId": "802a55fc410d49a0738eb7402324f8fd9f507685",
+        "externalIds": {"MAG": "2151830712", "DBLP": "journals/sensors/ReitzRWBALB13",
+        "PubMedCentral": "3673127", "DOI": "10.3390/s130405099", "CorpusId": 6263185,
+        "PubMed": "23595203"}}, {"paperId": "80b932c9cf96581644b376fc521e3f25b5ac302e",
+        "externalIds": {"MAG": "2781835001", "CorpusId": 149140589}}, {"paperId":
+        "80cf0fd84989eac7fcb101218b0434a8fcc063e5", "externalIds": {"MAG": "2110091441",
+        "DOI": "10.1016/S0028-3932(00)00038-5", "CorpusId": 11544569, "PubMed": "10869586"}},
+        {"paperId": "80ecf11bc14105781b2e6dafcaa66bfa4add42a7", "externalIds": {"DOI":
+        "10.1101/2022.06.26.22276920", "CorpusId": 250332066}}, {"paperId": "80fb9ce1d65bb8fa32e6482b6c4011c76781fa37",
+        "externalIds": {"PubMedCentral": "11210179", "DOI": "10.1186/s12993-024-00241-2",
+        "CorpusId": 270739425, "PubMed": "38926731"}}, {"paperId": "819709fce54cb03ac133617d9cee1456b93de640",
+        "externalIds": {"MAG": "2606094250", "PubMedCentral": "5488805", "CorpusId":
+        3678055, "PubMed": "28670621"}}, {"paperId": "821b29ef700bdea0d72f9f3a771876b597139964",
+        "externalIds": {"DOI": "10.1016/j.pscychresns.2025.111986", "CorpusId": 277277088,
+        "PubMed": "40156942"}}, {"paperId": "829feb8dea6a5290387aa2394f443eb36e840579",
+        "externalIds": {"PubMedCentral": "11566913", "DOI": "10.1186/s12906-024-04703-y",
+        "CorpusId": 274057500, "PubMed": "39543627"}}, {"paperId": "82c12689ab5be180934cf6e7518c77c388608e45",
+        "externalIds": {"MAG": "2035317083", "DOI": "10.1016/S1053-8119(09)70779-7",
+        "CorpusId": 54413995}}, {"paperId": "82c59d8545ba71acb1cee29865591d2d63e1d28d",
+        "externalIds": {"MAG": "2144565788", "DOI": "10.1007/s00330-015-3960-4", "CorpusId":
+        11237534, "PubMed": "26350539"}}, {"paperId": "830967706f43e26d6e09cad6cb147735fcfc4ea1",
+        "externalIds": {"MAG": "1982403450", "DOI": "10.1177/107385849600200413",
+        "CorpusId": 143947672}}, {"paperId": "83110ebc31c4a4c71bcd62477209c3392a1b0001",
+        "externalIds": {"MAG": "2164235284", "DOI": "10.1016/j.bandl.2011.12.003",
+        "CorpusId": 17351479, "PubMed": "22377262"}}, {"paperId": "8364a2832485dc3be7dec44230e75836bf46f939",
+        "externalIds": {"MAG": "2918086948", "DOI": "10.1016/j.brs.2019.02.016", "CorpusId":
+        72332654, "PubMed": "30871845"}}, {"paperId": "839f9f972036e659fb9c00cab483f407194708e3",
+        "externalIds": {"MAG": "94328213", "DOI": "10.1016/B978-0-12-420071-5.00006-5",
+        "CorpusId": 141096280}}, {"paperId": "83fc476d19f7443a7c84bfa06d7bcc4883d5f259",
+        "externalIds": {"MAG": "2310499295", "CorpusId": 74769127}}, {"paperId": "8491505d3538f1b83c78a55802f65363f443ce49",
+        "externalIds": {"PubMedCentral": "9733724", "DOI": "10.3389/fneur.2022.1025174",
+        "CorpusId": 253840808, "PubMed": "36504641"}}, {"paperId": "849bc2988fb04369795cc8bdad545159c48a7166",
+        "externalIds": {"MAG": "2071369669", "DOI": "10.1016/S1672-2930(10)50009-6",
+        "CorpusId": 144416671}}, {"paperId": "84dc573f5bf26bd3d4d883eb3214588c8299fcd5",
+        "externalIds": {"MAG": "3011836679", "DOI": "10.1523/JNEUROSCI.2083-19.2020",
+        "CorpusId": 213192310, "PubMed": "32193229"}}, {"paperId": "851c4eda905c09357bc45d9500575fbc66182660",
+        "externalIds": {"CorpusId": 51238508}}, {"paperId": "859c36b311d64bf009ac5202a62755cadb5ceb2b",
+        "externalIds": {"MAG": "2081458234", "DOI": "10.1016/j.ijpsycho.2014.09.002",
+        "CorpusId": 21819020, "PubMed": "25193560"}}, {"paperId": "861e903639e05fec27c8b191c3a09ea21c6ba374",
+        "externalIds": {"DOI": "10.1891/jcpsy-d-21-00006", "CorpusId": 249357463,
+        "PubMed": "36787999"}}, {"paperId": "86370599ba7182f212e727c5561ec1cc5883a87f",
+        "externalIds": {"DOI": "10.1101/2024.11.27.625644", "CorpusId": 274422222}},
+        {"paperId": "86463b07591a8b1a8fc4893d9b9aba46b45eb7da", "externalIds": {"DOI":
+        "10.1016/j.jad.2023.04.100", "CorpusId": 258515458, "PubMed": "37149048"}},
+        {"paperId": "86b3d1cc8ffe511165a6029ef370b3d85855e90a", "externalIds": {"MAG":
+        "2762238975", "DOI": "10.1007/s11325-017-1575-5", "CorpusId": 3959932, "PubMed":
+        "28980102"}}, {"paperId": "874df684f444f93a98b14bc572820fdc842ff64b", "externalIds":
+        {"CorpusId": 266011195}}, {"paperId": "8761547ba1be95d79f128a92688756eda028e525",
+        "externalIds": {"PubMedCentral": "12459975", "DOI": "10.1162/NOL.a.13", "CorpusId":
+        279136840, "PubMed": "41000092"}}, {"paperId": "87996513a0989f33cfbb3df1d9d8cb05ebb1ed3f",
+        "externalIds": {"PubMedCentral": "6905154", "MAG": "2977544583", "DBLP": "journals/neuroimage/DeweyFGPMPH20",
+        "DOI": "10.1016/j.neuroimage.2019.116239", "CorpusId": 203641464, "PubMed":
+        "31586673"}}, {"paperId": "879b63fe0271079152e013105cf744d88823ef91", "externalIds":
+        {"MAG": "2025363546", "DOI": "10.3766/JAAA.19.1.4", "CorpusId": 23942619,
+        "PubMed": "18637408"}}, {"paperId": "87bb1ac85bac9ca9cac00faec0db7f21ea03aa6d",
+        "externalIds": {"MAG": "2886518217", "PubMedCentral": "7050657", "DOI": "10.1080/21683603.2018.1458357",
+        "CorpusId": 149511318, "PubMed": "32123644"}}, {"paperId": "87c6e208a32b44ba8f7d135e5aaa753c7ae99deb",
+        "externalIds": {"DOI": "10.1111/ejn.16201", "CorpusId": 266360973, "PubMed":
+        "38109476"}}, {"paperId": "87e40378b11dc1cd615677bd610cf9f4a9f8e451", "externalIds":
+        {"CorpusId": 252001278}}, {"paperId": "8815ee99b91dda936df0e34524642b95c528d263",
+        "externalIds": {"DOI": "10.1007/s11682-026-01085-2", "CorpusId": 286020171,
+        "PubMed": "41746462"}}, {"paperId": "881ec3672449b078432f1fa7d7d249e68488d3a7",
+        "externalIds": {"MAG": "2060985254", "DOI": "10.1016/S0006-3223(02)01365-3",
+        "CorpusId": 14425686, "PubMed": "12114001"}}, {"paperId": "8826b037bc26f89d3e644ab4504f410c57f55794",
+        "externalIds": {"DOI": "10.58530/2022/2941", "CorpusId": 260524353}}, {"paperId":
+        "8874550be3c29234132a7cd177cb527ed4b4bc63", "externalIds": {"MAG": "2027875773",
+        "DOI": "10.1016/j.bandl.2011.12.005", "CorpusId": 38000109, "PubMed": "22230039"}},
+        {"paperId": "88ab3a2b96bb55c11ce5f30607548e8cc0da9c38", "externalIds": {"PubMedCentral":
+        "11586044", "DOI": "10.7717/peerj.18540", "CorpusId": 274212725, "PubMed":
+        "39583108"}}, {"paperId": "88f5a95cf034db4c2c9dcea05665942767b9ab6c", "externalIds":
+        {"DOI": "10.1093/sleep/zsae067.0382", "CorpusId": 269289071}}, {"paperId":
+        "88f610428c7788223a34d2422375817b80b2ea7f", "externalIds": {"MAG": "2615770009",
+        "DOI": "10.1016/j.neuroscience.2017.05.017", "CorpusId": 207257872, "PubMed":
+        "28527953"}}, {"paperId": "8924ef3c6e4b611f4b8e38cca9b4410a1b7cc537", "externalIds":
+        {"MAG": "3089860972", "DOI": "10.1016/j.jad.2020.09.103", "CorpusId": 222146608,
+        "PubMed": "33011526"}}, {"paperId": "89e943ce92b0b44f06043938e7990964d6e90473",
+        "externalIds": {"MAG": "2971888465", "DOI": "10.1038/s41386-019-0514-5", "CorpusId":
+        201836708, "PubMed": "31486776"}}, {"paperId": "89fdc798651eed17243e63d88545e43cc4fd71da",
+        "externalIds": {"PubMedCentral": "9353050", "DOI": "10.3389/fnhum.2022.894676",
+        "CorpusId": 250928940, "PubMed": "35937674"}}, {"paperId": "8a4b31781f8cf9f1ff0a4ccb7d50786cb967fa07",
+        "externalIds": {"MAG": "2335064143", "DOI": "10.1097/01.HJ.0000459743.01876.fd",
+        "CorpusId": 147025209}}, {"paperId": "8a67374fd2ffdf171362cecf7775c0972dc1b66f",
+        "externalIds": {"PubMedCentral": "12777391", "DOI": "10.1186/s12888-025-07484-x",
+        "CorpusId": 284529513, "PubMed": "41495721"}}, {"paperId": "8bb74cedce80e27cb5ffc5cbd23cd69b69ff85a7",
+        "externalIds": {"MAG": "2755873094", "DOI": "10.5075/epfl-thesis-7874", "CorpusId":
+        148798356}}, {"paperId": "8c2efedc7185d95d6d9f7c9a088dda1aa2860780", "externalIds":
+        {"DOI": "10.31083/j.jin2104116", "CorpusId": 250039052, "PubMed": "35864767"}},
+        {"paperId": "8ca0ebd7008cb986fa572307f2dfb5d7c55f2ade", "externalIds": {"CorpusId":
+        16175355}}, {"paperId": "8ca8421d41dfed12a3d5780dbf268637e9782aeb", "externalIds":
+        {"MAG": "1973095600", "DOI": "10.3109/15622971003637702", "CorpusId": 28612439,
+        "PubMed": "20509830"}}, {"paperId": "8cba13ef4ddd28614b06382f4b661b7d66c4f604",
+        "externalIds": {"DBLP": "journals/neuroimage/Ozernov-Palchik21", "PubMedCentral":
+        "7855566", "MAG": "3099579076", "DOI": "10.1101/2020.09.02.278267", "CorpusId":
+        221510242, "PubMed": "33221445"}}, {"paperId": "8cd8cd024ee9263275b16e20f615f7a22edab526",
+        "externalIds": {"MAG": "2055839817", "DOI": "10.1073/PNAS.240461697", "CorpusId":
+        35912112, "PubMed": "11095716"}}, {"paperId": "8d563352efb33b46c04dca64f732803627fac21e",
+        "externalIds": {"MAG": "2786461534", "DBLP": "conf/cogsci/Jaffe-DaxA17", "CorpusId":
+        24204017}}, {"paperId": "8d830c8be63812276c4a3556397b7979479fd3d7", "externalIds":
+        {"MAG": "2082391140", "DOI": "10.1016/j.cub.2009.08.014", "CorpusId": 263347557,
+        "PubMed": "19825347"}}, {"paperId": "8df71a1a05188a8f3ee47ca1529a6f3a74ae90bd",
+        "externalIds": {"MAG": "2046630687", "PubMedCentral": "3984371", "DOI": "10.1016/j.biopsych.2013.08.031",
+        "CorpusId": 14833427, "PubMed": "24124929"}}, {"paperId": "8dffb456b418fa6c1fd148f81dd9f18cc7d170d7",
+        "externalIds": {"PubMedCentral": "3713164", "MAG": "2088102986", "DOI": "10.1016/j.neuron.2013.05.002",
+        "CorpusId": 838826, "PubMed": "23746630"}}, {"paperId": "8e2a615a52255b7855fb6f5f7f13c5735f6e78d2",
+        "externalIds": {"MAG": "2805425371", "PubMedCentral": "6900770", "DOI": "10.1590/1516-4446-2017-2505",
+        "CorpusId": 44183126, "PubMed": "29846469"}}, {"paperId": "8e4cf1243ea019c7d98925c5f3527fc11635ad2d",
+        "externalIds": {"CorpusId": 14051165}}, {"paperId": "8e4e1fb9b53eb0ee202b7dce54c0e2453e72e4f6",
+        "externalIds": {"DOI": "10.1002/alz70861_109022", "CorpusId": 284133663, "PubMed":
+        "41433403"}}, {"paperId": "8e69a5bc378e7e875f576c6bcceb53af21396860", "externalIds":
+        {"MAG": "2256707155", "CorpusId": 146700306}}, {"paperId": "8eaf2370c44d733166315cee281c1c7e395f2033",
+        "externalIds": {"DOI": "10.31525/ct1-nct04192773", "CorpusId": 242768176}},
+        {"paperId": "8eb162e3a8a619da838e0fc760507d2a6c930e33", "externalIds": {"MAG":
+        "958903777", "DOI": "10.1016/S0755-4982(06)74554-7", "CorpusId": 40158200,
+        "PubMed": "16493347"}}, {"paperId": "8eb82d22a51d7e905affa375b563e1b0b62bb95b",
+        "externalIds": {"DOI": "10.1136/acupmed-2018-011642", "CorpusId": 46816283,
+        "PubMed": "29431624"}}, {"paperId": "8edd96aa43b6125c1b0215bb7f347c94e0130fa9",
+        "externalIds": {"PubMedCentral": "11232624", "DBLP": "journals/peerj-cs/AlkhurayyifS24",
+        "DOI": "10.7717/peerj-cs.2077", "CorpusId": 270534137, "PubMed": "38983227"}},
+        {"paperId": "8f905dbd8097fd40eca4753caae8fd3547423080", "externalIds": {"MAG":
+        "2437791635", "CorpusId": 27107543, "PubMed": "17642143"}}, {"paperId": "8fee4f4e4e3f2f8b771506b3027d1b8a195d269d",
+        "externalIds": {"DOI": "10.1007/s10548-025-01116-z", "CorpusId": 278030958,
+        "PubMed": "40268795"}}, {"paperId": "8ff2a785ed96f4c2743962dfa8b6207dba7a2564",
+        "externalIds": {"MAG": "2990517705", "DOI": "10.3760/cma.j.issn.1673-0860.2018.02.016",
+        "CorpusId": 46818642, "PubMed": "29429190"}}, {"paperId": "9026d7d57aaa8d6b939a9b14091d681d0920d15b",
+        "externalIds": {"MAG": "1976557092", "DOI": "10.1016/J.MRI.2005.12.006", "CorpusId":
+        17699131, "PubMed": "16563950"}}, {"paperId": "902fd7a7b58cef982b944f384bd71ef2b3a60f14",
+        "externalIds": {"MAG": "2253006694", "CorpusId": 146404237}}, {"paperId":
+        "9049065ce0237240339a53be1948775bc537d493", "externalIds": {"MAG": "2020680109",
+        "DOI": "10.1080/13554794.2011.588182", "CorpusId": 27912000, "PubMed": "22023051"}},
+        {"paperId": "9063947c03d3485bd590b2d10c57f5bef88ebe47", "externalIds": {"PubMedCentral":
+        "13268098", "DOI": "10.1038/s41386-026-02431-0", "CorpusId": 288090859, "PubMed":
+        "42098309"}}, {"paperId": "90e629862d1ac216e62c53e4f4a4bf593cf38cc5", "externalIds":
+        {"DOI": "10.58530/2023/3348", "CorpusId": 272183152}}, {"paperId": "910cd1a464796f4028be2c8e554faa470e993b3b",
+        "externalIds": {"PubMedCentral": "8987020", "DOI": "10.3389/fneur.2022.827749",
+        "CorpusId": 247769444, "PubMed": "35401422"}}, {"paperId": "917d8c99501e82487a09bd8e4160690e4c04148d",
+        "externalIds": {"DOI": "10.1101/2022.09.19.508477", "CorpusId": 252408024}},
+        {"paperId": "91d2f4e734371cd7eae21158b6a4453a567b52a4", "externalIds": {"DOI":
+        "10.1016/j.sleep.2025.106482", "CorpusId": 277485349, "PubMed": "40188802"}},
+        {"paperId": "91fac7f1d862c9058661f224dc17f4aadd5a5c9d", "externalIds": {"MAG":
+        "3032714203", "DOI": "10.3760/CMA.J.ISSN.1674-6554.2015.11.023", "CorpusId":
+        226995664}}, {"paperId": "9233bc0c80e40bf9c3deb7149f92b61dfc1c2e2e", "externalIds":
+        {"MAG": "3031327618", "DOI": "10.3760/CMA.J.ISSN.1006-7876.2015.11.014", "CorpusId":
+        226995706}}, {"paperId": "92c2cde2f3c2f512471593cc370009ef2e178585", "externalIds":
+        {"PubMedCentral": "13493256", "DOI": "10.3389/fneur.2026.1796906", "CorpusId":
+        290972953, "PubMed": "42630179"}}, {"paperId": "92e095e9f7ec7f193b048f83f2d762542ed2aafb",
+        "externalIds": {"MAG": "2950377657", "DOI": "10.1007/s10072-019-03978-1",
+        "CorpusId": 189927654, "PubMed": "31209585"}}, {"paperId": "92e526f3258dd4e6f5a16a7b31350d50dacfe3d4",
+        "externalIds": {"DOI": "10.1007/s41105-017-0096-8", "CorpusId": 256468460}},
+        {"paperId": "932c238769d1f0cf80d922f7ec93db67799f659c", "externalIds": {"MAG":
+        "1988237317", "DOI": "10.1002/dys.409", "CorpusId": 21582775, "PubMed": "20680995"}},
+        {"paperId": "935ad772e01289a5f4c422a1ab0aeda992a0bd35", "externalIds": {"MAG":
+        "2308379698", "CorpusId": 147417430}}, {"paperId": "937be93834001ddee6a50ca25041442037494c5b",
+        "externalIds": {"DOI": "10.1002/brb3.1927/v4/response1", "CorpusId": 240909896}},
+        {"paperId": "939f7bd636de821836e3c8ac293aaf8fbc23e082", "externalIds": {"MAG":
+        "2112274743", "DOI": "10.1111/j.1469-8749.2007.00868.x", "CorpusId": 17349611,
+        "PubMed": "17979867"}}, {"paperId": "93bb00af4a762f5de8868d910cc1a3cf1ec6855f",
+        "externalIds": {"PubMedCentral": "6291223", "MAG": "2601774084", "DOI": "10.1177/0734282917698056",
+        "CorpusId": 56477568, "PubMed": "30555207"}}, {"paperId": "93d7e97899cafa886139813c8a44c3276d594a54",
+        "externalIds": {"PubMedCentral": "12955694", "DOI": "10.1016/j.bandl.2022.105219",
+        "CorpusId": 255113744, "PubMed": "36577315"}}, {"paperId": "93f00e24ae948c2dd6296be45c1c8c0d4af41c40",
+        "externalIds": {"MAG": "2021240805", "DOI": "10.1016/j.neucli.2011.12.001",
+        "CorpusId": 152481, "PubMed": "22500699"}}, {"paperId": "94661850065eb35b27b53d60649dcd9e4199f3ad",
+        "externalIds": {"DOI": "10.1016/j.pnpbp.2026.111678", "CorpusId": 286785405,
+        "PubMed": "41875969"}}, {"paperId": "9472e000cdc7cecd7cbee5620cc08d839df170a5",
+        "externalIds": {"MAG": "1975626148", "PubMedCentral": "3961550", "DOI": "10.1016/j.biopsycho.2013.12.016",
+        "CorpusId": 7648813, "PubMed": "24412227"}}, {"paperId": "94c01910392edd135837eada48cefde27c923a77",
+        "externalIds": {"MAG": "1974591241", "DOI": "10.1016/J.BRAINRES.2006.06.099",
+        "CorpusId": 21759450, "PubMed": "16934234"}}, {"paperId": "94c429e208cbfb71b1d38f19aee81d0595da6cd1",
+        "externalIds": {"MAG": "1744982154", "CorpusId": 143285172}}, {"paperId":
+        "94fad21d6000d37edaad502bae0af74be5db2660", "externalIds": {"MAG": "2042409006",
+        "DOI": "10.1177/0004867414551668", "CorpusId": 9681029, "PubMed": "25258418"}},
+        {"paperId": "955f0112bddf76bf77974b033517fe33501bb72a", "externalIds": {"PubMedCentral":
+        "11390676", "DOI": "10.3389/fnins.2024.1290345", "CorpusId": 272257321, "PubMed":
+        "39268040"}}, {"paperId": "95c15195553ca1670f5ac9dbedf73d7bcf910f82", "externalIds":
+        {"CorpusId": 199557894}}, {"paperId": "95e29d47f45150c8d847ee98f71df80847a12a29",
+        "externalIds": {"MAG": "3001631590", "DOI": "10.1056/JP200303200000006", "CorpusId":
+        221265346}}, {"paperId": "95eeb9b83686e22701812db34e70c6441623a15d", "externalIds":
+        {"PubMedCentral": "3823449", "MAG": "1986231689", "DOI": "10.1111/j.1582-4934.2010.01020.x",
+        "CorpusId": 40345593, "PubMed": "20132405"}}, {"paperId": "9671cffe1a695758c267a121c8653fb2159dc582",
+        "externalIds": {"MAG": "2093545194", "DOI": "10.1016/J.JFLUDIS.2003.08.002",
+        "CorpusId": 16679836, "PubMed": "14643069"}}, {"paperId": "96aaf670c5a3d0a32b12e3693de175613abcd071",
+        "externalIds": {"PubMedCentral": "10605023", "DOI": "10.3390/brainsci13101457",
+        "CorpusId": 264116641, "PubMed": "37891824"}}, {"paperId": "96d7c2747cf6fdaf93c8b7536cada99eb50045c0",
+        "externalIds": {"DOI": "10.5220/0011387300003438", "CorpusId": 251750949}},
+        {"paperId": "96f27bb904403f5074623a757fe13f43356ff428", "externalIds": {"MAG":
+        "2381000178", "CorpusId": 75811263}}, {"paperId": "972c0b1c82e8863d477f0d6be61a73b3cbc2d956",
+        "externalIds": {"MAG": "2757632032", "DOI": "10.1016/j.pnpbp.2017.09.020",
+        "CorpusId": 13123502, "PubMed": "28941768"}}, {"paperId": "9737e1ee8dd90314f68ad5b07ffcd0453fb43dbd",
+        "externalIds": {"PubMedCentral": "7902065", "DOI": "10.3389/fnins.2020.623520",
+        "CorpusId": 231791727, "PubMed": "33633528"}}, {"paperId": "97d2065ec28cc33c3cfa39bfe7b6abe29b541a2f",
+        "externalIds": {"DOI": "10.1093/sleep/zsac079.245", "CorpusId": 249258899}},
+        {"paperId": "98191c9feb6f1ab9023c7d6034afec9dd4e10ac2", "externalIds": {"MAG":
+        "3023482279", "DOI": "10.1007/s41782-020-00086-5", "CorpusId": 219065604}},
+        {"paperId": "98b034f82287caff0df7e908e5366d80ac53fdd6", "externalIds": {"PubMedCentral":
+        "10918042", "DOI": "10.1111/desc.13443", "CorpusId": 261580395, "PubMed":
+        "37675857"}}, {"paperId": "9947de8fd0527673a8db027f99247f719709b4a9", "externalIds":
+        {"MAG": "3092428220", "DOI": "10.13201/j.issn.2096-7993.2020.09.004", "CorpusId":
+        222302541, "PubMed": "33040499"}}, {"paperId": "994b6b0f971cc9f39afba21ddd52ada65933f261",
+        "externalIds": {"CorpusId": 212576205}}, {"paperId": "994e706c294d9de253994b9f0d8ed3b9a11c25bc",
+        "externalIds": {"MAG": "1968091519", "DOI": "10.1207/s15326942dn3001_5", "CorpusId":
+        1407052, "PubMed": "16925477"}}, {"paperId": "99b703144345ca0e04624125410b37d65f50e814",
+        "externalIds": {"MAG": "2732025094", "DOI": "10.1016/j.pnpbp.2017.07.001",
+        "CorpusId": 46715755, "PubMed": "28689008"}}, {"paperId": "9a1fa6536bf24bd3867d46565184f99ed4869ff4",
+        "externalIds": {"DBLP": "conf/kes/DaneshKWP03", "MAG": "1539859081", "DOI":
+        "10.1007/978-3-540-45226-3_108", "CorpusId": 43046951}}, {"paperId": "9a9d8ae0a33c6020c93dc6133189c8b8f48502da",
+        "externalIds": {"CorpusId": 18426754}}, {"paperId": "9aef97ef7282f2669370ff6417eca4ce2c303c4b",
+        "externalIds": {"MAG": "2992857734", "DOI": "10.1080/00207454.2019.1702544",
+        "CorpusId": 208956325, "PubMed": "31814488"}}, {"paperId": "9aff93df8328ab6a1343a6d45e956dc28e52bd3e",
+        "externalIds": {"MAG": "1586540251", "PubMedCentral": "2801071", "CorpusId":
+        13759185, "PubMed": "20052399"}}, {"paperId": "9b102d013ba287afe4c696b35320623a4ec8bb7e",
+        "externalIds": {"PubMedCentral": "11900061", "DOI": "10.1186/s12929-025-01127-9",
+        "CorpusId": 271693778, "PubMed": "40069818"}}, {"paperId": "9b7ee459f982ca635199839fd641024c891462d3",
+        "externalIds": {"DOI": "10.1186/s12888-026-08708-4", "CorpusId": 292603461}},
+        {"paperId": "9bb5ca74a392471a0dee5fc33d8b503cad42cde3", "externalIds": {"MAG":
+        "2793436722", "DOI": "10.1007/s11055-018-0563-y", "CorpusId": 3816150}}, {"paperId":
+        "9bf7fb7abb635d999311ca6b9887a4968cf12d2e", "externalIds": {"MAG": "1991371766",
+        "DOI": "10.1212/WNL.0b013e31826357fe", "CorpusId": 28342006, "PubMed": "22875088"}},
+        {"paperId": "9c144a09228b30779b7979527c8212eeb10ceea9", "externalIds": {"MAG":
+        "1964339218", "DOI": "10.1016/j.neuropsychologia.2014.05.016", "CorpusId":
+        43137136, "PubMed": "24905286"}}, {"paperId": "9c81f6f7084da303a63f779596832f03f82ff3b2",
+        "externalIds": {"PubMedCentral": "8214310", "DOI": "10.1016/j.brainres.2021.147532",
+        "CorpusId": 235200104, "PubMed": "34033755"}}, {"paperId": "9cfcb7f6731e7078dfc419f7ae6664fe0242b60b",
+        "externalIds": {"DOI": "10.1017/S1355617723007506", "CorpusId": 266376300}},
+        {"paperId": "9d0742b068fcbb8994c5b4f1ac7fea8d89a719b9", "externalIds": {"PubMedCentral":
+        "13654167", "DOI": "10.21037/qims-2026-1069", "CorpusId": 292302410, "PubMed":
+        "42861109"}}, {"paperId": "9d0d53ba65ebb764e728c5c4aeb55ef905087826", "externalIds":
+        {"DOI": "10.1016/j.sleep.2022.11.036", "CorpusId": 254315818, "PubMed": "36599195"}},
+        {"paperId": "9da9e9a0dd26c72c35d985fa5729a07aea3f38c7", "externalIds": {"CorpusId":
+        267784281}}, {"paperId": "9e1df7bd202276cf6013f29966ced1c4cd95e185", "externalIds":
+        {"MAG": "1993812365", "DOI": "10.1016/j.cub.2009.01.065", "CorpusId": 2393984,
+        "PubMed": "19285401"}}, {"paperId": "9e711415c679d9278f1e7a66fb9f7fff99f5a1ee",
+        "externalIds": {"MAG": "2168075388", "DOI": "10.1109/BIBMW.2008.4686210",
+        "CorpusId": 46331689}}, {"paperId": "9e93cbeaf23c580e17e8591a140d13b0baa5032b",
+        "externalIds": {"MAG": "2522936419", "CorpusId": 152143591}}, {"paperId":
+        "9f30811476ff6f5c46f4fd5c9fe118d68ad53c32", "externalIds": {"DOI": "10.1088/1742-6596/1907/1/012013",
+        "CorpusId": 235288402}}, {"paperId": "9f35ede9601c69e9781ffa076ce2aa51d349ec4d",
+        "externalIds": {"ArXiv": "2510.21748", "DBLP": "journals/corr/abs-2510-21748",
+        "DOI": "10.48550/arXiv.2510.21748", "CorpusId": 282388444}}, {"paperId": "9f447dd5900dba4c2539c2b99494cbc4510658fc",
+        "externalIds": {"MAG": "2530779252", "DOI": "10.1002/hbm.23437", "CorpusId":
+        205850395, "PubMed": "27739608"}}, {"paperId": "9f48574cccfd6a76745daebbe7f0ea4fb295dbdb",
+        "externalIds": {"MAG": "1557119788", "PubMedCentral": "2801072", "CorpusId":
+        13765447, "PubMed": "20052400"}}, {"paperId": "9f7c56f3c17d22acd6f5120fcf363b971eb23cc5",
+        "externalIds": {"MAG": "2047090497", "DOI": "10.1007/s00330-009-1595-z", "CorpusId":
+        2082900, "PubMed": "19760238"}}, {"paperId": "9f831ff6f984ad376a3352ec50877484fe0ee00a",
+        "externalIds": {"MAG": "2440531547", "DOI": "10.1503/jpn.140290", "CorpusId":
+        4421151, "PubMed": "26809225"}}, {"paperId": "9fac06d86fbba7a5079d9e5491716d0d988eeb44",
+        "externalIds": {"DOI": "10.1093/sleep/zsad077.0332", "CorpusId": 258983330}},
+        {"paperId": "a02d1aeaa3818ab3fecd45b70ac0d1fcdd124eeb", "externalIds": {"DOI":
+        "10.1016/j.sleep.2026.109214", "CorpusId": 291095774, "PubMed": "42612566"}},
+        {"paperId": "a0835f929a1fff2843f53d221de099db3749b0c9", "externalIds": {"MAG":
+        "2994855509", "DOI": "10.1007/s11325-019-02001-3", "CorpusId": 209432750,
+        "PubMed": "31865507"}}, {"paperId": "a178ae236a8dda7d657f66e391f8b437f1651a0a",
+        "externalIds": {"MAG": "2965828049", "DOI": "10.11591/IJERE.V8I4.20307", "CorpusId":
+        201397011}}, {"paperId": "a1955947cc732220f68036fc4a94fb83844e7500", "externalIds":
+        {"DOI": "10.1016/j.bbr.2025.115922", "CorpusId": 282889345, "PubMed": "41205626"}},
+        {"paperId": "a19c65ce960cfd0bdaf64aacdf651b0b47fb00f4", "externalIds": {"MAG":
+        "3095644947", "PubMedCentral": "7821580", "DOI": "10.1002/brb3.1927", "CorpusId":
+        226251210, "PubMed": "33146953"}}, {"paperId": "a22c2ebf1d5910f2efabe58056d6af497f058baf",
+        "externalIds": {"DOI": "10.1111/jsr.13790", "CorpusId": 254868857, "PubMed":
+        "36528860"}}, {"paperId": "a2d3acae8e32f4f243bb54683f0501558c248752", "externalIds":
+        {"DOI": "10.1080/03772063.2025.2489047", "CorpusId": 277905384}}, {"paperId":
+        "a3287ffe65a1d93d33afbfcd271623dc99818903", "externalIds": {"MAG": "3011398688",
+        "PubMedCentral": "7082749", "DOI": "10.3389/fnins.2020.00205", "CorpusId":
+        212675829, "PubMed": "32231517"}}, {"paperId": "a34066b182c6dbf9b457cce528365e9a326976e0",
+        "externalIds": {"PubMedCentral": "6974919", "MAG": "2978342124", "DOI": "10.1016/j.dcn.2019.100717",
+        "CorpusId": 203666031, "PubMed": "31704655"}}, {"paperId": "a374845fd09c9eae3400fcac9cd92fc70b9ec445",
+        "externalIds": {"MAG": "1999023791", "PubMedCentral": "3412278", "DOI": "10.3389/fnsys.2012.00057",
+        "CorpusId": 33640086, "PubMed": "22888313"}}, {"paperId": "a39528b315e7621139a95f4fd80be4d359b4c187",
+        "externalIds": {"PubMedCentral": "8152893", "MAG": "3016054137", "DOI": "10.1093/texcom/tgaa011",
+        "CorpusId": 216414144, "PubMed": "34296090"}}, {"paperId": "a3e58b712de67887203fa657b898cfa924109647",
+        "externalIds": {"MAG": "2791125790", "DOI": "10.1093/sleep/zsy056", "CorpusId":
+        4402926, "PubMed": "29590443"}}, {"paperId": "a3f3605c096b83f2d3fa25d33cd798aada61c9a2",
+        "externalIds": {"MAG": "3018832236", "DOI": "10.1097/JOM.0000000000001869",
+        "CorpusId": 219055485, "PubMed": "32730022"}}, {"paperId": "a46c2ce243847c10b9c1e30c247430d58e4a204f",
+        "externalIds": {"DBLP": "journals/ficn/SilvaERMB21", "PubMedCentral": "8458961",
+        "DOI": "10.3389/fncom.2021.594659", "CorpusId": 237445008, "PubMed": "34566613"}},
+        {"paperId": "a4a9c7e523c16e9d5e62b93ec74d8510e7ca48b4", "externalIds": {"CorpusId":
+        250536733}}, {"paperId": "a52fa2d916c24f71eda41c1fac4b28f61ba9c12e", "externalIds":
+        {"MAG": "2099422663", "PubMedCentral": "4585499", "DOI": "10.1093/cercor/bhu184",
+        "CorpusId": 6197053, "PubMed": "25169986"}}, {"paperId": "a547af196460054513fbca6cd4a729622b57c8ef",
+        "externalIds": {"MAG": "2793979842", "DOI": "10.1080/87565641.2017.1292516",
+        "CorpusId": 46853216, "PubMed": "29412010"}}, {"paperId": "a5d6ca076d18cc5c4e9502c6754c7f94af1aec78",
+        "externalIds": {"CorpusId": 55325039}}, {"paperId": "a5fbe690161d3e99d792c4c1145e46c831a298af",
+        "externalIds": {"MAG": "2169232144", "DOI": "10.1002/hbm.20674", "CorpusId":
+        16558428, "PubMed": "19072896"}}, {"paperId": "a690997641a5fd956d3d878b4ff6a2a776e455a1",
+        "externalIds": {"PubMedCentral": "8595248", "DOI": "10.3389/fnins.2021.753010",
+        "CorpusId": 240425788, "PubMed": "34803590"}}, {"paperId": "a6ce6e8c2001c25bc810473a09a1fd481985b978",
+        "externalIds": {"PubMedCentral": "8832877", "DOI": "10.3389/fphar.2022.814623",
+        "CorpusId": 246298376, "PubMed": "35153786"}}, {"paperId": "a6e7da2f5d3a82395480ac1ba17e8fb8a5af13e5",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2025.06.002", "CorpusId": 279210895,
+        "PubMed": "40489936"}}, {"paperId": "a73a582d8c6dbd14e23dba895af5546f67d1eb94",
+        "externalIds": {"PubMedCentral": "6176073", "MAG": "2894408747", "DOI": "10.3389/fnhum.2018.00393",
+        "CorpusId": 52898283, "PubMed": "30333739"}}, {"paperId": "a76e26947b145eaf8831a0fbd0739992bf6673ab",
+        "externalIds": {"MAG": "3031160832", "DOI": "10.1093/sleep/zsaa056.075", "CorpusId":
+        219742788}}, {"paperId": "a80d19d421a67dfcebefd51a173c00741d7e4088", "externalIds":
+        {"MAG": "1569350526", "DOI": "10.21236/ada574240", "CorpusId": 142569130}},
+        {"paperId": "a835d344a06a26f489b6e2e45b9fab0418678dc0", "externalIds": {"MAG":
+        "2750312995", "DOI": "10.1016/j.clinph.2017.07.317", "CorpusId": 53149880}},
+        {"paperId": "a863ee47db580e15908a6a4e073a1486e5a9c154", "externalIds": {"MAG":
+        "2054437168", "PubMedCentral": "4237045", "DOI": "10.3389/fnhum.2014.00936",
+        "CorpusId": 17719861, "PubMed": "25477808"}}, {"paperId": "a874cc279d7eb66fe261bfcb84f52fc9a446d1cd",
+        "externalIds": {"MAG": "2525622518", "DOI": "10.1097/01.HJ.0000503465.51212.44",
+        "CorpusId": 78846287}}, {"paperId": "a8b516c5b8c99b0c656d3d85cedd5c43e0bc95a9",
+        "externalIds": {"PubMedCentral": "13381702", "DOI": "10.3389/fnmol.2026.1871404",
+        "CorpusId": 289963433, "PubMed": "42519718"}}, {"paperId": "a8c821c6395d12fea6371da280ee18072978d206",
+        "externalIds": {"MAG": "3005210128", "PubMedCentral": "7024098", "DOI": "10.1155/2020/7846914",
+        "CorpusId": 211228664, "PubMed": "32089894"}}, {"paperId": "a94b45f0aa6a1b2f9b70b20b52c37070ba904428",
+        "externalIds": {"CorpusId": 8159569}}, {"paperId": "a9a25610933ff6b221f2bede72076274e19a40ff",
+        "externalIds": {"DOI": "10.1101/2021.05.17.444460", "CorpusId": 234795106}},
+        {"paperId": "a9afb1ded22f95d8faf58383bbc5a25a8f66424d", "externalIds": {"PubMedCentral":
+        "4623204", "MAG": "2304254482", "DOI": "10.3389/fnhum.2015.00568", "CorpusId":
+        14414571, "PubMed": "26578924"}}, {"paperId": "a9c04f58a4028a859136aa0666bb8bf94607a7e9",
+        "externalIds": {"MAG": "2014857528", "DOI": "10.1016/S0094-730X(00)80189-8",
+        "CorpusId": 144086372}}, {"paperId": "a9cab0b650dbe49607f691797f51fe611d1d3a4e",
+        "externalIds": {"PubMedCentral": "6261575", "MAG": "2902166958", "DOI": "10.1371/journal.pone.0207281",
+        "CorpusId": 54105380, "PubMed": "30485375"}}, {"paperId": "a9fbd8e5c302b0e2640dc701e7b4afac9cda0210",
+        "externalIds": {"DBLP": "conf/prcv/ZhouLGOP23", "DOI": "10.1007/978-981-99-8558-6_10",
+        "CorpusId": 266966003}}, {"paperId": "aa5228029862f80603e0656886fa734c39bce8d0",
+        "externalIds": {"MAG": "2796838432", "PubMedCentral": "6326732", "DOI": "10.1162/netn_a_00053",
+        "CorpusId": 52074858, "PubMed": "30793074"}}, {"paperId": "aa6c89af11c357a7043cae71f91f89ad0f8a396e",
+        "externalIds": {"DOI": "10.65100/recidh/29", "CorpusId": 282033536}}, {"paperId":
+        "aa74d932d372069eff93a8ac59358d0034e619ed", "externalIds": {"PubMedCentral":
+        "4350869", "MAG": "1974407949", "DOI": "10.1155/2015/345647", "CorpusId":
+        13620655, "PubMed": "25789314"}}, {"paperId": "aaba6f4dcbe436f4f9f13064f715d706ad63bab9",
+        "externalIds": {"MAG": "3147701311", "DOI": "10.1002/brb3.1844/v2/response1",
+        "CorpusId": 234700065}}, {"paperId": "aacacad8f7a32ebd7e8179ae48a8a41cd821f468",
+        "externalIds": {"MAG": "2183193929", "CorpusId": 146594767}}, {"paperId":
+        "aaf4ab322b2fdfdd0aae69832726e30eaeed556d", "externalIds": {"MAG": "2095741105",
+        "DOI": "10.1523/JNEUROSCI.18-17-06939.1998", "CorpusId": 8885024, "PubMed":
+        "9712663"}}, {"paperId": "ab79f15156f69d7d4f9f934fdd1acd9b9e88ce88", "externalIds":
+        {"PubMedCentral": "13443758", "DOI": "10.1192/j.eurpsy.2026.10644", "CorpusId":
+        290821560}}, {"paperId": "abe9856e366e852ca6c530937ca2816ea7418b6a", "externalIds":
+        {"MAG": "2137475052", "DOI": "10.1016/S0304-3940(01)02236-4", "CorpusId":
+        11730882, "PubMed": "11786212"}}, {"paperId": "ac2f6b8a6c0a1bade5c61a0be6618f61798758b7",
+        "externalIds": {"MAG": "2327641163", "DOI": "10.1176/appi.ajp.2016.16010010",
+        "CorpusId": 7204937, "PubMed": "27035529"}}, {"paperId": "ac841d4c7687b29811efbe2bef2db526604177fa",
+        "externalIds": {"MAG": "2240200150", "CorpusId": 146699838}}, {"paperId":
+        "ac943b57ff67a32a803397aaf84986349ee3390d", "externalIds": {"MAG": "2186865169",
+        "CorpusId": 13875590}}, {"paperId": "ad71ef169ff0deb6451cd193c65b0b7da8a5f594",
+        "externalIds": {"MAG": "2738777360", "DOI": "10.1515/nf-2000-0304", "CorpusId":
+        149319563}}, {"paperId": "adaa9f547872fb39b62f6176e2441762cb3df3ab", "externalIds":
+        {"MAG": "2012945497", "DOI": "10.1196/annals.1416.010", "CorpusId": 12092267,
+        "PubMed": "19076399"}}, {"paperId": "adbdb00df4da71acea299a979882d922108f843a",
+        "externalIds": {"PubMedCentral": "5278116", "MAG": "2568639776", "DOI": "10.1016/j.nicl.2016.12.023",
+        "CorpusId": 3794121, "PubMed": "28154796"}}, {"paperId": "ae1448d4272258f23cc287bea0f29d094a0cdfb1",
+        "externalIds": {"MAG": "103776506", "DOI": "10.1177/0022219417711223", "CorpusId":
+        206423763, "PubMed": "28539071"}}, {"paperId": "ae24ba867aee15f9789504f4035e979c923ca0a3",
+        "externalIds": {"MAG": "2114926921", "DOI": "10.3233/RNN-2007-253412", "CorpusId":
+        15107971, "PubMed": "17943007"}}, {"paperId": "ae32671350f2ada5b9188a8104f29de3cdfabf2b",
+        "externalIds": {"DOI": "10.1016/j.sleep.2025.107363", "CorpusId": 285204721}},
+        {"paperId": "aeb4a4f38d2845d4489c4bf628b2bffff5e02d6c", "externalIds": {"PubMedCentral":
+        "9279663", "DOI": "10.3389/fpsyt.2022.863056", "CorpusId": 250150229, "PubMed":
+        "35845454"}}, {"paperId": "aeec1830ca1d61c4877f193fda96948060086561", "externalIds":
+        {"DOI": "10.5539/jel.v11n2p54", "CorpusId": 246327592}}, {"paperId": "aef029613af44d11ac50a8b47e606899827bf839",
+        "externalIds": {"PubMedCentral": "4054964", "MAG": "2084228927", "DOI": "10.1016/j.nicl.2013.03.010",
+        "CorpusId": 16988663, "PubMed": "24936406"}}, {"paperId": "af58a2471346ddd130c3d1dadfecc95ceeada005",
+        "externalIds": {"DOI": "10.1007/s11682-017-9694-y", "CorpusId": 255342196}},
+        {"paperId": "afa624c55b5208a199632c05c054e4d193d973f3", "externalIds": {"MAG":
+        "3030520831", "DOI": "10.3760/CMA.J.ISSN.1671-8925.2017.07.010", "CorpusId":
+        220382916}}, {"paperId": "b0185fbd91cc33ac795aa2e2afafedc5f10dba69", "externalIds":
+        {"MAG": "2609832245", "DOI": "10.1093/sleepj/zsx050.296", "CorpusId": 151635263}},
+        {"paperId": "b037a2c31792c0d09f6eeb257691d98f427b5996", "externalIds": {"MAG":
+        "2790588584", "PubMedCentral": "5866298", "DOI": "10.2196/resprot.9095", "CorpusId":
+        4567988, "PubMed": "29523503"}}, {"paperId": "b059b395a9b7de51dce704a2e825841d402ef21c",
+        "externalIds": {"MAG": "2921966391", "DOI": "10.1016/j.neuroscience.2019.02.032",
+        "CorpusId": 73500290, "PubMed": "30851356"}}, {"paperId": "b0f220eda24264bf072943528cdca3be55564bab",
+        "externalIds": {"CorpusId": 260637394}}, {"paperId": "b0f9dbfd87bc58b29abc6dd3a24604cee7e91c8d",
+        "externalIds": {"MAG": "1987824404", "DBLP": "journals/neuroimage/WienbruchPWER06",
+        "DOI": "10.1016/J.NEUROIMAGE.2006.06.023", "CorpusId": 8660097, "PubMed":
+        "16901722"}}, {"paperId": "b0ff3d9790b932f494bbfa367f875bccc2ad110d", "externalIds":
+        {"PubMedCentral": "5526749", "MAG": "2582213403", "DOI": "10.1016/j.jfludis.2017.01.002",
+        "CorpusId": 3610253, "PubMed": "28214015"}}, {"paperId": "b185b0f91f4c2dfc1dbeb38d12f2728ee3b90180",
+        "externalIds": {"CorpusId": 12158707}}, {"paperId": "b1c22686bcdaf8f663224604805d4ef09b26f45a",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2025.08.022", "CorpusId": 283257866,
+        "PubMed": "41289800"}}, {"paperId": "b1de11b8dcada5c13913c309a11956731d44d382",
+        "externalIds": {"DBLP": "journals/neuroimage/XuZXXFLZCC24", "DOI": "10.1016/j.neuroimage.2024.120566",
+        "CorpusId": 268289847, "PubMed": "38467345"}}, {"paperId": "b21628f859743dbd5b27eb646b93b50122dd351d",
+        "externalIds": {"MAG": "3080873932", "DOI": "10.1093/oso/9780190935689.003.0018",
+        "CorpusId": 225207591}}, {"paperId": "b23344d37ca0895d58695fdcc0136cfd8315973d",
+        "externalIds": {"MAG": "3017713496", "DOI": "10.13189/ijnbs.2020.080101",
+        "CorpusId": 219095468}}, {"paperId": "b270cc81aa6a03d03f35b05ac69f944ed84a88e0",
+        "externalIds": {"PubMedCentral": "6433888", "MAG": "2924644334", "DOI": "10.3389/fnins.2019.00246",
+        "CorpusId": 81985237, "PubMed": "30941010"}}, {"paperId": "b27dff33aeb872079c3f650d7d85b66f6dea11cc",
+        "externalIds": {"MAG": "2768727627", "DOI": "10.5167/uzh-128420", "CorpusId":
+        149133001}}, {"paperId": "b34ceb23a6add67fbfaf0ffad1c898d7b887d7d8", "externalIds":
+        {"PubMedCentral": "5787069", "MAG": "2789643562", "DOI": "10.3389/fnins.2018.00009",
+        "CorpusId": 26016754, "PubMed": "29410609"}}, {"paperId": "b35b2e15ab1080837377e473ebe6eb8e90717a39",
+        "externalIds": {"DOI": "10.1017/S1041610222000539", "CorpusId": 251257731,
+        "PubMed": "35918182"}}, {"paperId": "b35da77812d9d6d9d1e1cf3dd0a08fdb8ce9fc89",
+        "externalIds": {"CorpusId": 51838781}}, {"paperId": "b37ed66d6b06cd51a33a3c2f288d87072819622e",
+        "externalIds": {"DOI": "10.1007/s00406-022-01534-1", "CorpusId": 257101276,
+        "PubMed": "36811711"}}, {"paperId": "b3a915ce397104e8cf1117e6ce51fc8e01054ab0",
+        "externalIds": {"MAG": "2590028002", "PubMedCentral": "5604484", "DOI": "10.15761/JSIN.1000150",
+        "CorpusId": 6921674, "PubMed": "28936361"}}, {"paperId": "b4121392d90727eec767ff390bc4792de6309056",
+        "externalIds": {"DOI": "10.1177/21580014261455378", "CorpusId": 289176879,
+        "PubMed": "42272341"}}, {"paperId": "b4b412de1a48fc5f052c3c891d1cd7e21ab1d001",
+        "externalIds": {"MAG": "2971059467", "CorpusId": 41691792}}, {"paperId": "b573c60c66e613aa9d96873b996d8222d50d0c54",
+        "externalIds": {"PubMedCentral": "10681641", "DOI": "10.1002/hbm.26495", "CorpusId":
+        264846735, "PubMed": "37909347"}}, {"paperId": "b596a33336cd171f89f3e668aa408999f206babe",
+        "externalIds": {"MAG": "2788493490", "CorpusId": 148786028}}, {"paperId":
+        "b6514114e62dbfe40ce77d65f0766d56b0e3aebc", "externalIds": {"PubMedCentral":
+        "8087661", "DOI": "10.1038/s41598-021-88845-w", "CorpusId": 233471824, "PubMed":
+        "33931676"}}, {"paperId": "b66b8628238f57831476b0e1e483d13f1dbf09c8", "externalIds":
+        {"PubMedCentral": "11614717", "DOI": "10.1016/j.cortex.2024.08.012", "CorpusId":
+        273883847, "PubMed": "39566125"}}, {"paperId": "b691f22d25b6c4d547fcca45b42108e8bfab9f13",
+        "externalIds": {"DOI": "10.1016/j.brainres.2026.150482", "CorpusId": 290835093,
+        "PubMed": "42546895"}}, {"paperId": "b7140f3e9ca1a865450f0e32af334f4dac60d703",
+        "externalIds": {"MAG": "1966225024", "DOI": "10.1016/J.CLINPH.2009.07.022",
+        "CorpusId": 53200736}}, {"paperId": "b754498cb86a2402327f4f202f0a50a612835350",
+        "externalIds": {"PubMedCentral": "12901484", "DOI": "10.3389/fnins.2025.1622756",
+        "CorpusId": 285211859, "PubMed": "41694716"}}, {"paperId": "b7d5ef9c7843bebe5c5fa0d6ab42a759e3fdf74a",
+        "externalIds": {"PubMedCentral": "9260156", "DOI": "10.3389/fpubh.2022.915053",
+        "CorpusId": 250012764, "PubMed": "35812514"}}, {"paperId": "b839bda61305e78246658e7bdf9f4a57a1654e44",
+        "externalIds": {"PubMedCentral": "10149502", "DOI": "10.1016/j.nicl.2023.103413",
+        "CorpusId": 258219337, "PubMed": "37099876"}}, {"paperId": "b87447f56c8d7a2f0a59cce9a13465c1f186b896",
+        "externalIds": {"MAG": "2894616990", "CorpusId": 150316236}}, {"paperId":
+        "b8758f6f4bc10d1aa92760be493137f6abb7134d", "externalIds": {"MAG": "2389746731",
+        "CorpusId": 76832882}}, {"paperId": "b878fc90cee0dbf8e96fbd798be416406cd27c00",
+        "externalIds": {"MAG": "2342987909", "CorpusId": 147759988}}, {"paperId":
+        "b87af105989c4576787cbd8e1eade0dacc154cdc", "externalIds": {"DOI": "10.36740/wlek/214420",
+        "CorpusId": 287346885}}, {"paperId": "b9f326ecbc46efb60916ff919dd57d28c44b5475",
+        "externalIds": {"PubMedCentral": "12623780", "DOI": "10.1038/s41598-025-24177-3",
+        "CorpusId": 272952138, "PubMed": "41249429"}}, {"paperId": "ba746d69034de126135e743bb0880957fc6f050b",
+        "externalIds": {"DOI": "10.1016/j.neuroscience.2024.11.046", "CorpusId": 274169691,
+        "PubMed": "39579856"}}, {"paperId": "ba803f1e6f51f3423059e3b338597096bfb79853",
+        "externalIds": {"PubMedCentral": "5338867", "MAG": "2588602169", "DOI": "10.1016/j.dib.2017.02.029",
+        "CorpusId": 2970104, "PubMed": "28289697"}}, {"paperId": "bac0e906d68aa2a9547fa37815177b2e437e9769",
+        "externalIds": {"PubMedCentral": "10136511", "DOI": "10.3390/brainsci13040672",
+        "CorpusId": 258231456, "PubMed": "37190637"}}, {"paperId": "bacdcb6300ed494450a77ea25f68975987bc12ac",
+        "externalIds": {"DOI": "10.31826/9781463212308-001", "CorpusId": 208877962}},
+        {"paperId": "bb109b2aa0b1e62eae61598057854ba3c43e822c", "externalIds": {"PubMedCentral":
+        "6909243", "MAG": "2991099354", "DOI": "10.3389/fnins.2019.01299", "CorpusId":
+        208639047, "PubMed": "31866810"}}, {"paperId": "bb49d99ea2095c9eec431ebc872eb28aec117b6e",
+        "externalIds": {"MAG": "2525146837", "DBLP": "journals/neuroimage/MorkenHHS17",
+        "DOI": "10.1016/j.neuroimage.2016.09.060", "CorpusId": 18788376, "PubMed":
+        "27688204"}}, {"paperId": "bbf14d335208b73ec4f30c1565ccfe12e63c2e75", "externalIds":
+        {"DOI": "10.1016/j.jpsychires.2023.11.008", "CorpusId": 265326876, "PubMed":
+        "38000184"}}, {"paperId": "bc3360410a91b70290f7d182809bd3790f2efd84", "externalIds":
+        {"MAG": "2603509207", "CorpusId": 151556149}}, {"paperId": "bc38246e9870eb91363f20fd05a4eb5104b82b5f",
+        "externalIds": {"MAG": "2027526452", "DOI": "10.1016/J.JNEUROLING.2007.02.001",
+        "CorpusId": 53175596}}, {"paperId": "bc7950c84dee83eead48b47315d92932cd5f4094",
+        "externalIds": {"PubMedCentral": "12872798", "DOI": "10.3389/fnins.2026.1745862",
+        "CorpusId": 285039024, "PubMed": "41658941"}}, {"paperId": "bca240c607119fc3a6cd5b018c01b4bf92e55730",
+        "externalIds": {"DOI": "10.13201/j.issn.2096-7993.2023.07.014", "CorpusId":
+        260702071, "PubMed": "37549953"}}, {"paperId": "bcd851deab311d566a0466d859ea1dea8a968006",
+        "externalIds": {"MAG": "2765225474", "CorpusId": 149128516}}, {"paperId":
+        "bd91d3a5af12a8d71d3fd5a5d458be8b4b43f12a", "externalIds": {"PubMedCentral":
+        "11437901", "DOI": "10.1186/s10194-024-01877-1", "CorpusId": 272950735, "PubMed":
+        "39333887"}}, {"paperId": "bddab011b1b3eb72abc473323e9a882f46cf1d0f", "externalIds":
+        {"DOI": "10.1016/j.ijpsycho.2021.07.095", "CorpusId": 239150471}}, {"paperId":
+        "be02b5adfe1041ab0a585c0ab130632b527e5f62", "externalIds": {"MAG": "3031478857",
+        "DOI": "10.1093/sleep/zsaa056.071", "CorpusId": 219742325}}, {"paperId": "be4cdd04f268d0a68de27ad883272eb83f728d86",
+        "externalIds": {"MAG": "1999424534", "PubMedCentral": "3338206", "DOI": "10.1111/J.1751-228X.2009.01069.X",
+        "CorpusId": 55231714, "PubMed": "22545067"}}, {"paperId": "be4faae393feb04dd4ef905fec39f95d89c39cf0",
+        "externalIds": {"DOI": "10.58530/2023/3349", "CorpusId": 272157885}}, {"paperId":
+        "befc876329c9fc810f020ce0fa895dc33588da7c", "externalIds": {"MAG": "2089198362",
+        "DBLP": "journals/neuroimage/MaurerSBMBMB11", "DOI": "10.1016/j.neuroimage.2010.10.055",
+        "CorpusId": 12462706, "PubMed": "21040695"}}, {"paperId": "befda7e401ffd5dcdfa3661e22a7d3a16041826a",
+        "externalIds": {"MAG": "2998883473", "PubMedCentral": "6971169", "DOI": "10.3389/fpsyg.2019.02945",
+        "CorpusId": 210165957, "PubMed": "31993008"}}, {"paperId": "bf29e75b5adc6ff4aec82c895131b83a00b819a6",
+        "externalIds": {"PubMedCentral": "10161000", "DOI": "10.1073/pnas.2220777120",
+        "CorpusId": 258311847, "PubMed": "37098063"}}, {"paperId": "bf5db8970f40bcdf1c17906e9e6378a801ad68f5",
+        "externalIds": {"MAG": "2759484353", "CorpusId": 149199355}}, {"paperId":
+        "bf6bdce11463cb24a991bac79f805440cb8fa9c6", "externalIds": {"DOI": "10.1101/2022.11.14.516174",
+        "CorpusId": 253524788}}, {"paperId": "bf98ceacb7902da351f466781e3a364c651ecabd",
+        "externalIds": {"PubMedCentral": "12584528", "DOI": "10.1186/s12916-025-04437-9",
+        "CorpusId": 282737894, "PubMed": "41188871"}}, {"paperId": "bfe479fa96194617d036c82c38749b8b7367d821",
+        "externalIds": {"DOI": "10.33093/ijoras.2025.7.1.11", "CorpusId": 277732902}},
+        {"paperId": "c008066fccb8ebed80dcf6e4c118214ba2db8e4e", "externalIds": {"PubMedCentral":
+        "8741389", "DOI": "10.1155/2021/2804533", "CorpusId": 245626230, "PubMed":
+        "35003251"}}, {"paperId": "c0215040fb9d1ed0c9e6b937eb61de107023b370", "externalIds":
+        {"DBLP": "conf/bica/KorostelevaMAA20", "DOI": "10.1016/j.procs.2021.06.057",
+        "CorpusId": 237436407}}, {"paperId": "c02d198673b2e811b730314b985f942639034fca",
+        "externalIds": {"PubMedCentral": "10665544", "DOI": "10.1016/j.bpsc.2023.04.012",
+        "CorpusId": 258883807, "PubMed": "37230386"}}, {"paperId": "c06c1af554e8f1c661e2c34bf0e8f84a859d7ca1",
+        "externalIds": {"MAG": "2331565496", "DOI": "10.15844/PEDNEURBRIEFS-17-8-1",
+        "CorpusId": 146943743}}, {"paperId": "c08f9af9c78cf1725ea1e412bb7ba4bb890f3076",
+        "externalIds": {"DOI": "10.1111/lang.12652", "CorpusId": 269822315}}, {"paperId":
+        "c0941876896bea155860d872148437c6b3bb0a56", "externalIds": {"DOI": "10.1093/sleep/zsaf090.0514",
+        "CorpusId": 278747103}}, {"paperId": "c0d08a457a295b430b0d7d466ee52a31f878f9d9",
+        "externalIds": {"PubMedCentral": "10464489", "DOI": "10.3389/fnins.2023.1234477",
+        "CorpusId": 260980155, "PubMed": "37650097"}}, {"paperId": "c10131b6a9e0c796d7c764a377fe96dde760c656",
+        "externalIds": {"MAG": "2747141953", "DOI": "10.1007/s00330-017-5012-8", "CorpusId":
+        33233290, "PubMed": "28828546"}}, {"paperId": "c1941b861e5af4e50dda245482d36ccc50674efd",
+        "externalIds": {"MAG": "2902980792", "PubMedCentral": "6291517", "DOI": "10.3389/fnins.2018.00917",
+        "CorpusId": 54458778, "PubMed": "30574065"}}, {"paperId": "c1d2305a5d816c05c30cb808008e89979c24ed27",
+        "externalIds": {"PubMedCentral": "4224062", "MAG": "2072244387", "DOI": "10.3389/fnhum.2014.00904",
+        "CorpusId": 15691607, "PubMed": "25426052"}}, {"paperId": "c2031eb0b332169b06652bd7db00875c7d22876e",
+        "externalIds": {"MAG": "3095353431", "PubMedCentral": "7603304", "DOI": "10.1038/s41598-020-75111-8",
+        "CorpusId": 226219311, "PubMed": "33127943"}}, {"paperId": "c21ab3d66f8deedb0472f317d72717b042c36b61",
+        "externalIds": {"DOI": "10.1007/s11055-018-0563-y", "CorpusId": 254857133}},
+        {"paperId": "c227a7261181de3a7d92b5e9c067bbbcab2ad8f3", "externalIds": {"MAG":
+        "1541110015", "PubMedCentral": "3345361", "DOI": "10.1002/brb3.21", "CorpusId":
+        11843368, "PubMed": "22574285"}}, {"paperId": "c2292b872db8acf60a3f9fb78f954ffa6660a093",
+        "externalIds": {"DOI": "10.5935/0946-5448.20210015", "CorpusId": 235209043,
+        "PubMed": "34410084"}}, {"paperId": "c22c6f45fff713f9122c2eae902db597f3261f39",
+        "externalIds": {"MAG": "2023306457", "DOI": "10.1207/s15326942dn3001_3", "CorpusId":
+        28222996, "PubMed": "16925475"}}, {"paperId": "c232af6d7325d61008b19724839183db4e96e479",
+        "externalIds": {"DOI": "10.1016/j.jad.2026.121841", "CorpusId": 287705437,
+        "PubMed": "42031015"}}, {"paperId": "c39c1c91c6fc21a72cdd2ae8eb2017859849b14b",
+        "externalIds": {"MAG": "3013701723", "DOI": "10.1093/med/9780198713005.003.0113",
+        "CorpusId": 216304412}}, {"paperId": "c3be22727e13eca4f397376c04656d55d6a50ea6",
+        "externalIds": {"MAG": "1980824110", "DOI": "10.1016/J.JOTO.2014.10.001",
+        "CorpusId": 143856639}}, {"paperId": "c40284fe83daf2d9b576829d516c80f0c4aa3cba",
+        "externalIds": {"DOI": "10.1016/j.heares.2024.109122", "CorpusId": 273053635,
+        "PubMed": "39437583"}}, {"paperId": "c4155fdaf87029acaace8bd73c28795afd77f344",
+        "externalIds": {"PubMedCentral": "12109338", "DOI": "10.3390/biomedicines13051210",
+        "CorpusId": 278694635, "PubMed": "40427037"}}, {"paperId": "c4534ec1a61ceaa2745098ab36298c250a2c0ba0",
+        "externalIds": {"MAG": "2996563517", "PubMedCentral": "6925178", "DOI": "10.1038/s41598-019-56127-1",
+        "CorpusId": 209420712, "PubMed": "31863033"}}, {"paperId": "c4ceee504095d7e90520a07503a240050536b534",
+        "externalIds": {"MAG": "2732039380", "DOI": "10.53841/bpsecp.2005.22.2.62",
+        "CorpusId": 148740860}}, {"paperId": "c4d08a0aff940fb0441b77f249378bf194f9bd7c",
+        "externalIds": {"MAG": "2134977136", "DOI": "10.4088/JCP.V66N1008", "CorpusId":
+        35431066, "PubMed": "16259539"}}, {"paperId": "c4f92c3570ea4748ad8e1c53af078f0d1b83b7c7",
+        "externalIds": {"DOI": "10.1109/ICTBIG68706.2025.11323817", "CorpusId": 284722032}},
+        {"paperId": "c53e39afb555e91adcd35188ca472598e1d35f96", "externalIds": {"MAG":
+        "2583928517", "DOI": "10.1109/IECBES.2016.7843460", "CorpusId": 45251988}},
+        {"paperId": "c54ad6052f1d53995b64a057f587c551fbe57986", "externalIds": {"MAG":
+        "2558730986", "DOI": "10.3348/JKSR.2016.75.6.434", "CorpusId": 152178816}},
+        {"paperId": "c586c2b74a8efefd836862c42fc39d03af7b4853", "externalIds": {"MAG":
+        "2945580504", "DOI": "10.1055/S-0039-1686398", "CorpusId": 181720459}}, {"paperId":
+        "c595200c616a927570de0942ad06efb8e10e163e", "externalIds": {"DOI": "10.1007/s00429-013-0509-7",
+        "CorpusId": 253980675}}, {"paperId": "c5ad24db75107cf0ccf94630c54a9061d703f0a4",
+        "externalIds": {"MAG": "2036543705", "DOI": "10.1038/382066A0", "CorpusId":
+        4349839, "PubMed": "8657305"}}, {"paperId": "c5ff4ff33ec83293b4e8dcb4d5609615cde81334",
+        "externalIds": {"MAG": "2053954139", "DOI": "10.1016/j.neuchi.2009.01.016",
+        "CorpusId": 196394794, "PubMed": "19303613"}}, {"paperId": "c6939fc78f84280b76b48de56835cc95ce09f698",
+        "externalIds": {"MAG": "2921610262", "CorpusId": 87890532}}, {"paperId": "c6b64a8fbb61441de091d56aa8a205f062433e4e",
+        "externalIds": {"MAG": "2463911727", "DOI": "10.4172/2167-0870.1000271", "CorpusId":
+        32252827}}, {"paperId": "c6e6f61da78dd15f8e98b5386caf0ce7fe8cc2c2", "externalIds":
+        {"MAG": "275454511", "DOI": "10.3233/BME-141120", "CorpusId": 27152472, "PubMed":
+        "25227007"}}, {"paperId": "c72f398516efcad57b451d45ff9bc907157b70c4", "externalIds":
+        {"MAG": "1976489279", "DOI": "10.1523/JNEUROSCI.5996-10.2012", "CorpusId":
+        2223896, "PubMed": "22262880"}}, {"paperId": "c8012310223bc5be6d808ac14a0e827bc74edb23",
+        "externalIds": {"MAG": "2046097230", "DOI": "10.1080/00131880802082625", "CorpusId":
+        5866888}}, {"paperId": "c857e72cccf80d013dfde1a38bdd58dbf5f4c361", "externalIds":
+        {"MAG": "1983080930", "DOI": "10.4236/JBBS.2013.32017", "CorpusId": 36268551}},
+        {"paperId": "c85a26792432838eff72cbcaa5df62c9b5a0d51a", "externalIds": {"MAG":
+        "2328747573", "CorpusId": 147220904}}, {"paperId": "c887806e8b3b7a938ad5cec146ac57146dc05157",
+        "externalIds": {"DOI": "10.3389/fneur.2026.1921227", "CorpusId": 292540101}},
+        {"paperId": "c921c01812a455421dd0beecff1dcce0b3561699", "externalIds": {"MAG":
+        "2056352300", "DOI": "10.1055/s-2006-941139", "CorpusId": 72877277}}, {"paperId":
+        "c94cbe75247196122e1f768027e56983daa245c0", "externalIds": {"PubMedCentral":
+        "10727775", "DOI": "10.1162/netn_a_00335", "CorpusId": 261574710, "PubMed":
+        "38144685"}}, {"paperId": "c9815ecb5c67a5c67c1c9233006e1319d807d074", "externalIds":
+        {"MAG": "2052889426", "DOI": "10.1016/j.heares.2013.07.010", "CorpusId": 16785367,
+        "PubMed": "23895873"}}, {"paperId": "c9862b3e89d0676babb0fb1ae43ccfc01681ea8a",
+        "externalIds": {"MAG": "2805444823", "DOI": "10.1093/sleep/zsy095", "CorpusId":
+        44131658, "PubMed": "29860407"}}, {"paperId": "c98e9cdf9220881fb6dee869a04aa1d562ab8015",
+        "externalIds": {"PubMedCentral": "11322055", "DOI": "10.3389/fnins.2024.1414154",
+        "CorpusId": 271614443, "PubMed": "39145301"}}, {"paperId": "c9ca2d41bcde571186650c9a149617a9f28e021b",
+        "externalIds": {"MAG": "2904642356", "DOI": "10.1016/J.CTIM.2018.12.006",
+        "CorpusId": 58432969, "PubMed": "30670257"}}, {"paperId": "c9d2a3d78d3c8b4e011b71a2299d6c875b8d2aac",
+        "externalIds": {"DOI": "10.57197/jdr-2023-0057", "CorpusId": 266341839}},
+        {"paperId": "ca2278920a53cac8f230ef1169ea36696dbc8c26", "externalIds": {"MAG":
+        "3134297077", "DOI": "10.1007/s11682-021-00486-9", "CorpusId": 236199264,
+        "PubMed": "34296381"}}, {"paperId": "ca4df4079ff0dc2f49fa80e53c5126bf47ca248b",
+        "externalIds": {"DOI": "10.1016/j.jpain.2025.105487", "CorpusId": 279901956,
+        "PubMed": "40615016"}}, {"paperId": "ca75e2c73addd3626461dc01640a1d0c7677021b",
+        "externalIds": {"MAG": "3108172727", "DOI": "10.1101/2020.11.18.378265", "CorpusId":
+        227172712}}, {"paperId": "caa138850a2d244cd948f0c604a9e1793f374012", "externalIds":
+        {"MAG": "989269901", "DOI": "10.1007/s11910-015-0579-4", "CorpusId": 15989756,
+        "PubMed": "26228377"}}, {"paperId": "caa74b55a176059fe5af0d5459b5ddaf055a554b",
+        "externalIds": {"MAG": "2971625572", "PubMedCentral": "6761222", "DOI": "10.3389/fnins.2019.01010",
+        "CorpusId": 202670087, "PubMed": "31607851"}}, {"paperId": "cb3f92cdedf806864a18f2a0ce91e5187aa934fa",
+        "externalIds": {"DOI": "10.1097/AUD.0000000000000424", "CorpusId": 6003916,
+        "PubMed": "28225361"}}, {"paperId": "cb7d13bad4fe86af256be9d6ec41c5db92647109",
+        "externalIds": {"MAG": "2578198663", "CorpusId": 73587404}}, {"paperId": "cc30b9bfb4530f64637f5f38259bdc4a58d33411",
+        "externalIds": {"DOI": "10.1016/j.cortex.2022.03.025", "CorpusId": 248547745,
+        "PubMed": "35661478"}}, {"paperId": "cc65dd7f97b864f160230e01108c70089ba866a4",
+        "externalIds": {"PubMedCentral": "8133209", "DOI": "10.1097/MD.0000000000025854",
+        "CorpusId": 235187734, "PubMed": "34106630"}}, {"paperId": "cc676678ad6d9099f61c17605b0bf176b3cc6361",
+        "externalIds": {"DOI": "10.1177/02841851241310398", "CorpusId": 276247007,
+        "PubMed": "39925044"}}, {"paperId": "cc6a016fb48503ad29086004d97547cc6409f8b8",
+        "externalIds": {"MAG": "2166833916", "DOI": "10.1016/j.cortex.2013.11.006",
+        "CorpusId": 31444781, "PubMed": "24508158"}}, {"paperId": "ccda4dc77a407c6a042a086ff0837dfed2deab51",
+        "externalIds": {"MAG": "1964278082", "DOI": "10.1121/1.4900359", "CorpusId":
+        120475707}}, {"paperId": "cd04705a06540be4298925391023899f95745bad", "externalIds":
+        {"MAG": "2963648078", "DOI": "10.53846/goediss-7503", "CorpusId": 199618044}},
+        {"paperId": "cd4e98489602cb21dfd28d1d3660de39aa106977", "externalIds": {"PubMedCentral":
+        "4870257", "MAG": "2405696974", "DOI": "10.3389/fnhum.2016.00224", "CorpusId":
+        23175827, "PubMed": "27242487"}}, {"paperId": "cd685bbb2e3a770ce9da0041c105e4ba975359d4",
+        "externalIds": {"PubMedCentral": "12483877", "DOI": "10.3389/fneur.2025.1643509",
+        "CorpusId": 281391080, "PubMed": "41041679"}}, {"paperId": "cdd6e3b5ea57a5dbf8d0848888e8afb96dd57008",
+        "externalIds": {"MAG": "2895165036", "PubMedCentral": "6190597", "DOI": "10.1016/j.nicl.2018.10.006",
+        "CorpusId": 52925746, "PubMed": "30316176"}}, {"paperId": "cdd89463412c69b487ded09594345e9053a248a9",
+        "externalIds": {"MAG": "1979340886", "DOI": "10.1111/j.1467-9450.2008.00688.x",
+        "CorpusId": 25891045, "PubMed": "18826418"}}, {"paperId": "cddacdebf536bbe19ec52a9c7166b68b1bb5967d",
+        "externalIds": {"MAG": "2105981402", "DOI": "10.1080/17470210701425845", "CorpusId":
+        11010889, "PubMed": "17676552"}}, {"paperId": "cdff6a82e50712584af357a5f97d0467c08b2890",
+        "externalIds": {"MAG": "2082480536", "DOI": "10.1097/00001756-200207190-00014",
+        "CorpusId": 46700351, "PubMed": "12151788"}}, {"paperId": "ce4c64f62cd1ebc870f6ccbb9528b965968e2906",
+        "externalIds": {"PubMedCentral": "9159350", "DOI": "10.3389/fnins.2022.924359",
+        "CorpusId": 248865819, "PubMed": "35663551"}}, {"paperId": "ce82f4f4b5f6998a585b33a8b7922c49fb9d0a35",
+        "externalIds": {"PubMedCentral": "10233256", "DOI": "10.1093/cercor/bhad024",
+        "CorpusId": 253247484, "PubMed": "36790738"}}, {"paperId": "ceabceade9188a81c9374328bef21753b5a1707f",
+        "externalIds": {"PubMedCentral": "8240196", "DOI": "10.1186/s10194-021-01280-0",
+        "CorpusId": 235664197, "PubMed": "34187358"}}, {"paperId": "ceb2e999cf22e1848e6419649bf60307a87fe5ad",
+        "externalIds": {"MAG": "2967507990", "DOI": "10.1016/j.clinph.2019.07.028",
+        "CorpusId": 199544049, "PubMed": "31451333"}}, {"paperId": "cec47fa6c4374de3fe09ab0d66a1936a41f9f858",
+        "externalIds": {"MAG": "2026619722", "DOI": "10.1016/S0010-9452(08)70418-0",
+        "CorpusId": 4479664, "PubMed": "17131580"}}, {"paperId": "cf1f08915e1db1de5bc290f15760d1cfc7fbdc6a",
+        "externalIds": {"PubMedCentral": "7340148", "MAG": "3040286812", "DOI": "10.3389/fnins.2020.00592",
+        "CorpusId": 220267659, "PubMed": "32714128"}}, {"paperId": "cf6e882d430a2a2ff6cbb0db3a980db230664184",
+        "externalIds": {"PubMedCentral": "6932986", "MAG": "2989691790", "DOI": "10.3389/fnins.2019.01314",
+        "CorpusId": 209415772, "PubMed": "31920484"}}, {"paperId": "cfce5c6dcf1b4db13495e40e0875ca3cb1694b6a",
+        "externalIds": {"DOI": "10.1016/j.sleep.2022.04.024", "CorpusId": 248486141,
+        "PubMed": "35576773"}}, {"paperId": "cff4d2973ef01533e18aa470d4fefa4e607ca615",
+        "externalIds": {"MAG": "3044735758", "DOI": "10.1212/WNL.0000000000009842",
+        "CorpusId": 220716219, "PubMed": "32699140"}}, {"paperId": "d0494ba80d487ac34dc19cce2be083cf3294aca8",
+        "externalIds": {"CorpusId": 220658249}}, {"paperId": "d079f416e9ade537f07cf438f0be61335da109ec",
+        "externalIds": {"MAG": "260823306", "DOI": "10.21236/ada613313", "CorpusId":
+        141742007}}, {"paperId": "d09226615cf188bbf3e7addff0d28c9e3a1ca3b1", "externalIds":
+        {"MAG": "2010376447", "PubMedCentral": "2693396", "DOI": "10.1080/15265160802617936",
+        "CorpusId": 45816007, "PubMed": "19132618"}}, {"paperId": "d0c157855b999aa28bccbd6f6b4b44bc3fb97b4a",
+        "externalIds": {"MAG": "2390241877", "CorpusId": 148028798}}, {"paperId":
+        "d1757293351563496273076f3932121855b33b08", "externalIds": {"PubMedCentral":
+        "12618344", "DOI": "10.1007/s13365-025-01270-x", "CorpusId": 280746058, "PubMed":
+        "40835806"}}, {"paperId": "d1b4c3115abb0af8e3c53a24f41cf5a11b00332c", "externalIds":
+        {"PubMedCentral": "12935941", "DOI": "10.3389/fpsyt.2026.1743024", "CorpusId":
+        286169276, "PubMed": "41767140"}}, {"paperId": "d1cfd6c7a618d50ab4460aeca19375552412d40f",
+        "externalIds": {"MAG": "2947305286", "CorpusId": 190900334}}, {"paperId":
+        "d1d94778f27f94e8997677e28a398c8a4fe5e297", "externalIds": {"MAG": "2770918586",
+        "DOI": "10.1097/MAO.0000000000001626", "CorpusId": 3415374, "PubMed": "29210942"}},
+        {"paperId": "d2847c61ca72e0f895c9e8d20aba9efb889ce976", "externalIds": {"MAG":
+        "2789769240", "DOI": "10.1080/15402002.2018.1435546", "CorpusId": 3372171,
+        "PubMed": "29451994"}}, {"paperId": "d287af14939198a84dcab781896ddbe8b39d2913",
+        "externalIds": {"DOI": "10.4038/sljr.v11i1.166", "CorpusId": 284285857}},
+        {"paperId": "d29af851e00105a340b513bb94fe7824568dcb84", "externalIds": {"PubMedCentral":
+        "4937025", "MAG": "2466828199", "DOI": "10.3389/fnagi.2016.00174", "CorpusId":
+        10576100, "PubMed": "27458377"}}, {"paperId": "d32516849249e37f818b8067f81f0de7cd97b269",
+        "externalIds": {"PubMedCentral": "5425485", "MAG": "2612209543", "DOI": "10.3389/fnins.2017.00259",
+        "CorpusId": 12863516, "PubMed": "28553199"}}, {"paperId": "d3944d23c904ff5f74938f95c28aeff4fa8f4404",
+        "externalIds": {"DOI": "10.25259/abp_21_2025", "CorpusId": 285995992}}, {"paperId":
+        "d40ff464af9cafa6eccc6f1278fc6b50e00eafab", "externalIds": {"PubMedCentral":
+        "10233035", "DOI": "10.3389/fnins.2023.1135437", "CorpusId": 258744542, "PubMed":
+        "37274202"}}, {"paperId": "d43cb5b730b3c420d1f90e7e44ad82b88b1cbd70", "externalIds":
+        {"MAG": "2359205342", "CorpusId": 76568872}}, {"paperId": "d461abe8536f4c5cac6181aa5b42e1e1c5ea0ada",
+        "externalIds": {"DOI": "10.64898/2026.06.20.733490", "CorpusId": 289632860}},
+        {"paperId": "d46558476be4ed4ce946ccdeee868454fe83d8b5", "externalIds": {"MAG":
+        "2062103943", "DOI": "10.1016/j.brainres.2008.06.107", "CorpusId": 9315214,
+        "PubMed": "18639536"}}, {"paperId": "d491ff6244e1b7eab4d7138ce71be29ec0adc9ee",
+        "externalIds": {"MAG": "2153069899", "DOI": "10.2190/R783-4G36-58V7-5154",
+        "CorpusId": 145803265}}, {"paperId": "d4af55c4c0e668549512be173b024c8f84f468c6",
+        "externalIds": {"MAG": "2330891521", "DOI": "10.1016/j.bandc.2016.03.005",
+        "CorpusId": 8378325, "PubMed": "27054909"}}, {"paperId": "d5212cd712ac029b42ce07bf89b543945c3fa246",
+        "externalIds": {"PubMedCentral": "12253958", "DOI": "10.1101/2023.07.05.547873",
+        "CorpusId": 259765073, "PubMed": "38280408"}}, {"paperId": "d52da0ebddfcbb27dd50b4d2836d500834f12e3e",
+        "externalIds": {"DOI": "10.58530/2025/1461", "CorpusId": 281341030}}, {"paperId":
+        "d530c5650e011d64d1a7a6b9c71b36eae4db4ff5", "externalIds": {"PubMedCentral":
+        "8835346", "DOI": "10.3389/fnins.2021.737993", "CorpusId": 246298505, "PubMed":
+        "35153654"}}, {"paperId": "d54040508c33d2aecac4d65352da469e02932a28", "externalIds":
+        {"DOI": "10.1093/cercor/bhaf314", "CorpusId": 283241946, "PubMed": "41283931"}},
+        {"paperId": "d5443aaa9902c272a20e794fc0685aa23cd956e8", "externalIds": {"DOI":
+        "10.1007/s00234-005-1451-z", "CorpusId": 264223741}}, {"paperId": "d55e6087d34645bc2f65fbe1a8fe68c28bb2278c",
+        "externalIds": {"MAG": "2088480485", "DOI": "10.1073/pnas.1008950108", "CorpusId":
+        6231858, "PubMed": "21173250"}}, {"paperId": "d5627db70a396e99892f406090307f4a8c8364f4",
+        "externalIds": {"PubMedCentral": "9163026", "DOI": "10.1038/s41539-022-00126-x",
+        "CorpusId": 249284509, "PubMed": "35654944"}}, {"paperId": "d5695bb747ee3ffbe1b2069b776a7c327b252f1a",
+        "externalIds": {"MAG": "3159543576", "DOI": "10.1093/SLEEP/ZSAB072.761", "CorpusId":
+        235569510}}, {"paperId": "d649cd48829d17fc3e61c8b51f96292d5340d309", "externalIds":
+        {"DOI": "10.62051/ijepes.v4n1.06", "CorpusId": 279458988}}, {"paperId": "d6511890c5db269067954efc4d2ce85add79bf8f",
+        "externalIds": {"PubMedCentral": "12642418", "DOI": "10.1101/2025.11.11.687905",
+        "CorpusId": 282992446, "PubMed": "41292856"}}, {"paperId": "d6ebce5f6ef5817812fbaa1eacb98bb278a2e882",
+        "externalIds": {"DOI": "10.1093/sleep/zsaf090.1207", "CorpusId": 278765431}},
+        {"paperId": "d702eb0faf0b806aa7da6de5955e85b7480ee645", "externalIds": {"MAG":
+        "2005567886", "DOI": "10.1016/j.heares.2012.03.003", "CorpusId": 24459494,
+        "PubMed": "22445697"}}, {"paperId": "d70a927c48363e72e0ea9743036fecb5e58389f8",
+        "externalIds": {"MAG": "2950631086", "PubMedCentral": "5565317", "DOI": "10.1101/100479",
+        "CorpusId": 5083249, "PubMed": "28825896"}}, {"paperId": "d73bbb27239fed965e2453b8f770751267338d4b",
+        "externalIds": {"PubMedCentral": "4557829", "MAG": "2141627883", "DOI": "10.1371/journal.pone.0137291",
+        "CorpusId": 7293467, "PubMed": "26332128"}}, {"paperId": "d768776b5b3fb0ae1b74f7eacd4fb1ade50c9a1a",
+        "externalIds": {"CorpusId": 54814484}}, {"paperId": "d7826c10bc2a86e6a396bf52dca5fc6f6e872466",
+        "externalIds": {"PubMedCentral": "6258809", "MAG": "2901040459", "DOI": "10.3389/fnins.2018.00853",
+        "CorpusId": 53873291}}, {"paperId": "d7a38ca60b7fcf83342fee3ef6c4069930e86caf",
+        "externalIds": {"PubMedCentral": "13106473", "DOI": "10.3389/fnins.2026.1794237",
+        "CorpusId": 287380135, "PubMed": "42040346"}}, {"paperId": "d7e12632f36d47e1e0976bcd3cbde03817e9971e",
+        "externalIds": {"MAG": "2796176205", "DOI": "10.1016/j.amjoto.2018.04.002",
+        "CorpusId": 4893803, "PubMed": "29655489"}}, {"paperId": "d7e21cdc25cf453324968bec47a06b82ecb362f3",
+        "externalIds": {"MAG": "2802376760", "CorpusId": 149963857}}, {"paperId":
+        "d81ffa016d215dcf2d07f2a8208d706e0d746841", "externalIds": {"MAG": "3163392353",
+        "DOI": "10.1007/s11682-021-00544-2", "CorpusId": 236558914, "PubMed": "34499294"}},
+        {"paperId": "d87d489c774c08290b16368b9bde96bca3d99b42", "externalIds": {"MAG":
+        "1973699844", "PubMedCentral": "3692468", "DOI": "10.1371/journal.pone.0067778",
+        "CorpusId": 5795354, "PubMed": "23825684"}}, {"paperId": "d8ab7377332312aab89dcd419bb36f93331a0382",
+        "externalIds": {"MAG": "831026344", "CorpusId": 141973324}}, {"paperId": "d91daeea518d9a05eb02498bab1abc789b352396",
+        "externalIds": {"MAG": "2989052078", "DOI": "10.1101/841817", "CorpusId":
+        209600076}}, {"paperId": "d9238e3c55175f55fa0236b4f0408a8b8ae87581", "externalIds":
+        {"DBLP": "journals/ijeh/ShiehT08", "MAG": "2049914164", "DOI": "10.1504/IJEH.2008.022670",
+        "CorpusId": 15405921, "PubMed": "19174368"}}, {"paperId": "d9621d15fe55033131215bf0de1fbc7d199f9219",
+        "externalIds": {"MAG": "3106632447", "PubMedCentral": "8294667", "DOI": "10.1162/nol_a_00027",
+        "CorpusId": 227074589, "PubMed": "34296194"}}, {"paperId": "d9840c2f89d3a1a9f54edcf0edc54dc0c630adbf",
+        "externalIds": {"MAG": "2380653883", "CorpusId": 597670}}, {"paperId": "d98e6dd57b5dde5b64a2a6e73a1c4895bd1c9b1d",
+        "externalIds": {"MAG": "2990591592", "DOI": "10.1016/j.jneuroling.2019.100884",
+        "CorpusId": 208508885}}, {"paperId": "d9b15d4a6c7856da3c8ef4e5a861e893b8b10f9f",
+        "externalIds": {"MAG": "2060283053", "DOI": "10.1016/j.bandl.2010.06.005",
+        "CorpusId": 10106679, "PubMed": "20739053"}}, {"paperId": "da3b5a53502ab45858344ae9050f8d57e155df40",
+        "externalIds": {"PubMedCentral": "4238753", "MAG": "2024602020", "DOI": "10.2147/NDT.S69681",
+        "CorpusId": 15979055, "PubMed": "25484585"}}, {"paperId": "da6a088585ade1c45c7a3fd13fa2da28664d18c3",
+        "externalIds": {"DOI": "10.1016/j.sleep.2026.108964", "CorpusId": 287359912,
+        "PubMed": "42000583"}}, {"paperId": "db2f52e2fbeec0e20b6819cf2579d1f441c2b6dc",
+        "externalIds": {"DOI": "10.1016/j.neurol.2022.11.014", "CorpusId": 257264214,
+        "PubMed": "36863903"}}, {"paperId": "db7bf44dcdcd7fc5892e45d3a29c7ee786a34903",
+        "externalIds": {"DOI": "10.1101/2021.03.05.434151", "CorpusId": 232200332}},
+        {"paperId": "dbe0f162a51467b8077791a63982eab36e85850a", "externalIds": {"MAG":
+        "2441102501", "PubMedCentral": "4913992", "DOI": "10.2147/NDT.S109633", "CorpusId":
+        16502581, "PubMed": "27366068"}}, {"paperId": "dbfa12784c074d3d720c5cb1826e60b77c840423",
+        "externalIds": {"MAG": "2804632146", "DOI": "10.1016/j.jpsychires.2018.05.013",
+        "CorpusId": 44100855, "PubMed": "29804003"}}, {"paperId": "dc1b4200b07dfb32cd9ad5a956a0af760971313c",
+        "externalIds": {"MAG": "2048610733", "DBLP": "journals/neuroimage/ChangKLL09",
+        "PubMedCentral": "2693291", "DOI": "10.1016/j.neuroimage.2009.01.066", "CorpusId":
+        13797273, "PubMed": "19401143"}}, {"paperId": "dc6e90f318ade9f3411eeab5522350fc661a524b",
+        "externalIds": {"DOI": "10.1016/j.sleep.2025.108745", "CorpusId": 284308571,
+        "PubMed": "41456358"}}, {"paperId": "dc70e57ed6aa3efc6fcfd9c0e44c6bf973fd1708",
+        "externalIds": {"MAG": "2557594465", "DOI": "10.1016/j.neuroscience.2016.11.033",
+        "CorpusId": 37528025, "PubMed": "27919696"}}, {"paperId": "dd2599a28c019f64b378200aaf31865e1e69d757",
+        "externalIds": {"PubMedCentral": "13655151", "DOI": "10.3389/fpsyt.2026.1944503",
+        "CorpusId": 292459243, "PubMed": "42865784"}}, {"paperId": "dd858e99c7b171d97556a1047a79f3a28ffbcb56",
+        "externalIds": {"PubMedCentral": "9356738", "DOI": "10.2147/NSS.S366234",
+        "CorpusId": 246023349, "PubMed": "35942365"}}, {"paperId": "dde923a1f1f71a83015cfdbca6c9c27a61a8777b",
+        "externalIds": {"MAG": "3174576769", "DOI": "10.21203/rs.3.rs-19894/v1", "CorpusId":
+        238127970}}, {"paperId": "ddfbeef962554ba780d14bb0326ebdddeae320a2", "externalIds":
+        {"MAG": "3021853032", "DOI": "10.1016/j.ajp.2020.102056", "CorpusId": 218680807,
+        "PubMed": "32417745"}}, {"paperId": "de11880446a2c975572e1ff5ab61d3b6d694885c",
+        "externalIds": {"PubMedCentral": "13117985", "DOI": "10.3390/jcm15083080",
+        "CorpusId": 287583512, "PubMed": "42074880"}}, {"paperId": "de6e44181c0acfba493943999a1b53fc7fe028d5",
+        "externalIds": {"MAG": "2153428858", "DOI": "10.2307/1511244", "CorpusId":
+        145353000}}, {"paperId": "de725d2773c9e44105649b80a89fa58f78bda8fe", "externalIds":
+        {"CorpusId": 260896633}}, {"paperId": "de972eea4c142bd01029768b20255ff39fd8a95f",
+        "externalIds": {"MAG": "3083257636", "DOI": "10.1101/2020.09.07.286013", "CorpusId":
+        221589716}}, {"paperId": "df3e94ef5102b668b687091861e935bba99ff5d3", "externalIds":
+        {"DOI": "10.1101/2021.06.07.447429", "CorpusId": 235396694}}, {"paperId":
+        "df5c172d3262522192bb53a15d9032a908afb58d", "externalIds": {"PubMedCentral":
+        "13526343", "DOI": "10.2147/NSS.S618511", "CorpusId": 291418512, "PubMed":
+        "42670502"}}, {"paperId": "df8dbd123fc5ffbfcdf170188aa64f3f053c6913", "externalIds":
+        {"MAG": "3088464698", "DOI": "10.1016/B978-0-444-64148-9.00019-3", "CorpusId":
+        221937715, "PubMed": "32977883"}}, {"paperId": "df9987975cd0d4d0b6c5337dda84d6240b7880b9",
+        "externalIds": {"MAG": "637681178", "CorpusId": 142099174}}, {"paperId": "dfa33d30843e0ed29e98a3e07452044029f435d7",
+        "externalIds": {"MAG": "2238354483", "CorpusId": 146386884}}, {"paperId":
+        "e019dfe2619f12b5fd7d952883ba86db34c31832", "externalIds": {"DOI": "10.1016/j.clinimag.2022.04.015",
+        "CorpusId": 248654037, "PubMed": "35561588"}}, {"paperId": "e06dc81000f500d3803d9b050a556fa35ea87b97",
+        "externalIds": {"PubMedCentral": "4112936", "MAG": "1979774615", "DOI": "10.3389/fnhum.2014.00535",
+        "CorpusId": 9847765, "PubMed": "25120447"}}, {"paperId": "e09fb745e21392e24bb4d713df8ba3a840c3aaf3",
+        "externalIds": {"PubMedCentral": "9339653", "DOI": "10.3389/fnins.2022.919440",
+        "CorpusId": 250655244, "PubMed": "35924227"}}, {"paperId": "e0d6eeee39ed4d6438a567edb2efc1b1d6916f43",
+        "externalIds": {"MAG": "1978469359", "DOI": "10.2217/14796708.1.5.659", "CorpusId":
+        71689338}}, {"paperId": "e19f61b7591ef237740325f94957dd618f62ef96", "externalIds":
+        {"DOI": "10.1016/j.brainres.2025.150106", "CorpusId": 283906791, "PubMed":
+        "41397531"}}, {"paperId": "e1c8318a2a58356748a9dcc4a6876b015327544d", "externalIds":
+        {"MAG": "2113092398", "DOI": "10.1080/17549500802588161", "CorpusId": 145390544}},
+        {"paperId": "e219c6bd8a3dcd666be617404dda8a8453465242", "externalIds": {"MAG":
+        "2770214047", "DOI": "10.1101/219923", "CorpusId": 90157473}}, {"paperId":
+        "e24b135a6b278c197e0383b7a6be73a05c4615c1", "externalIds": {"PubMedCentral":
+        "12838918", "DOI": "10.3390/brainsci16010055", "CorpusId": 284450774, "PubMed":
+        "41594776"}}, {"paperId": "e292bac914514b02ad17425ae7d3f09e2729fcae", "externalIds":
+        {"DBLP": "journals/neuroimage/MenghiniHCPV06", "MAG": "1966928447", "DOI":
+        "10.1016/J.NEUROIMAGE.2006.08.024", "CorpusId": 40436762, "PubMed": "17035046"}},
+        {"paperId": "e2a800ca96d25be971dffffa17c41a20656c6782", "externalIds": {"MAG":
+        "2072608027", "DOI": "10.1016/j.neuropsychologia.2014.07.024", "CorpusId":
+        8323994, "PubMed": "25084224"}}, {"paperId": "e3015b9ab0268356b1ab65437e2dbe8d57269b76",
+        "externalIds": {"CorpusId": 261290085}}, {"paperId": "e35f2c196d53bc1f6cd7046cc7e14933238e2cbe",
+        "externalIds": {"PubMedCentral": "5901935", "MAG": "2794832941", "DOI": "10.1155/2018/3678534",
+        "CorpusId": 44075020, "PubMed": "29808082"}}, {"paperId": "e36206c08cb1c91747b34f0a0e4a59c427e7e2e1",
+        "externalIds": {"CorpusId": 5001353}}, {"paperId": "e36da5203a077703fb3df79e556d383d9617c082",
+        "externalIds": {"DOI": "10.1007/s41782-020-00086-5", "CorpusId": 257096280}},
+        {"paperId": "e37f65b99a127d4f3c0d74853588d551101987be", "externalIds": {"MAG":
+        "2889136417", "DOI": "10.1007/s00234-018-2087-0", "CorpusId": 52119716, "PubMed":
+        "30159629"}}, {"paperId": "e39792afbd72d36e19cb98c5ebdd6de36849c79f", "externalIds":
+        {"DOI": "10.1016/j.ctim.2026.103391", "CorpusId": 288696125, "PubMed": "42191050"}},
+        {"paperId": "e3a94b02937f3c5a5077a127f9e48f03c17a6e4c", "externalIds": {"MAG":
+        "2067452274", "DBLP": "journals/neuroimage/GoswamiS11", "DOI": "10.1016/j.neuroimage.2010.08.072",
+        "CorpusId": 26721537, "PubMed": "20828624"}}, {"paperId": "e3c1a1ec9cee170df155dc8bf443c2912fb46678",
+        "externalIds": {"DOI": "10.64898/2026.08.20.26359720", "CorpusId": 291318050}},
+        {"paperId": "e3dba883acaeb036358b422cb7d8471610553455", "externalIds": {"PubMedCentral":
+        "7535924", "MAG": "3037159166", "DOI": "10.1016/j.neuropsychologia.2020.107543",
+        "CorpusId": 220072302, "PubMed": "32598966"}}, {"paperId": "e4426aa3217e5203f3167cad4f8e3f138d814c33",
+        "externalIds": {"MAG": "2116117105", "DOI": "10.1016/J.BANDL.2007.04.005",
+        "CorpusId": 18712557, "PubMed": "17531310"}}, {"paperId": "e46e0374dbfe1d151ef3d00da647667b98717a95",
+        "externalIds": {"CorpusId": 108284813}}, {"paperId": "e49f8083480306df3ff0f2db508d219322e8d73a",
+        "externalIds": {"PubMedCentral": "11184054", "DOI": "10.3389/fpsyt.2024.1364713",
+        "CorpusId": 270269237, "PubMed": "38895035"}}, {"paperId": "e4a8965e6542235281b105988f6bfe0c5fcfd1b6",
+        "externalIds": {"DOI": "10.1101/2024.11.07.24316911", "CorpusId": 273900536}},
+        {"paperId": "e4ee93b7673eed7f095ccec3bd0747d9ddd97471", "externalIds": {"DBLP":
+        "journals/access/IcerSBDAK25", "DOI": "10.1109/ACCESS.2025.3631397", "CorpusId":
+        282926831}}, {"paperId": "e5b4799616ad2e818b701e7aed07458751f38a48", "externalIds":
+        {"PubMedCentral": "6969343", "MAG": "2950299207", "DOI": "10.1016/j.dcn.2019.100674",
+        "CorpusId": 195063616, "PubMed": "31252201"}}, {"paperId": "e5ccfe1668a0bb1d29ac7eafb9ab6fa7530b9bae",
+        "externalIds": {"MAG": "1276148724", "CorpusId": 142180035}}, {"paperId":
+        "e660349bf28e0c725a8343f1531b276af2474f83", "externalIds": {"PubMedCentral":
+        "12872572", "DOI": "10.3389/fneur.2026.1679885", "CorpusId": 284987708, "PubMed":
+        "41657421"}}, {"paperId": "e6684657701e00f132e0d4f7177f191ea0035235", "externalIds":
+        {"MAG": "2339404531", "DOI": "10.5664/jcsm.5586", "CorpusId": 12549118, "PubMed":
+        "26715399"}}, {"paperId": "e6d2a983b0bf3aa3a3d8c95c4b6d9255c1c8b12f", "externalIds":
+        {"PubMedCentral": "9221874", "DOI": "10.3390/clockssleep4020025", "CorpusId":
+        249259927, "PubMed": "35735605"}}, {"paperId": "e6efe300efc5eb40232d11e7b261d6ca351c157f",
+        "externalIds": {"MAG": "2040001680", "DOI": "10.1007/S11910-002-0037-Y", "CorpusId":
+        43320704, "PubMed": "12359104"}}, {"paperId": "e6f4e686e37300aec71db2f2e6ef4759cb6246c7",
+        "externalIds": {"MAG": "2483769125", "DOI": "10.1016/j.brainres.2016.07.024",
+        "CorpusId": 41697811, "PubMed": "27425430"}}, {"paperId": "e71603b86689890f93171966ca2ea48d5c45334e",
+        "externalIds": {"MAG": "2111522951", "DOI": "10.1016/j.brs.2008.11.001", "CorpusId":
+        16658561, "PubMed": "20633412"}}, {"paperId": "e79bf0f3c9c533bb1c4d1acd3a85a8b17b7a9916",
+        "externalIds": {"MAG": "2607959428", "CorpusId": 152177577}}, {"paperId":
+        "e7d16b30ce37ac08e48f1fd353a7639232749dc3", "externalIds": {"MAG": "3108494137",
+        "PubMedCentral": "7713994", "DOI": "10.1093/braincomms/fcaa173", "CorpusId":
+        228066562, "PubMed": "33305260"}}, {"paperId": "e86b16dda8dfc40e56927a21454a8c39835f166a",
+        "externalIds": {"MAG": "320335016", "CorpusId": 142050232}}, {"paperId": "e8adfc055eacf289da441024477c5b72ace8b740",
+        "externalIds": {"MAG": "1990311582", "DBLP": "journals/neuroimage/GrandeMHAH11",
+        "DOI": "10.1016/j.neuroimage.2011.05.033", "CorpusId": 7258228, "PubMed":
+        "21609767"}}, {"paperId": "e90119563e9105418f42c5770a6cb172a755a629", "externalIds":
+        {"PubMedCentral": "5996039", "MAG": "2805643889", "DOI": "10.3389/fnagi.2018.00167",
+        "CorpusId": 46936301, "PubMed": "29922151"}}, {"paperId": "e91743e2f8a6dea070b6a67c6cff159de91773c4",
+        "externalIds": {"MAG": "2809587263", "DOI": "10.1007/s00429-018-1698-x", "CorpusId":
+        49313477, "PubMed": "29922909"}}, {"paperId": "e92b6f93d6062b79a5b93ab6798faad557127a20",
+        "externalIds": {"MAG": "2413426676", "DOI": "10.3760/CMA.J.ISSN.0376-2491.2015.21.014",
+        "CorpusId": 23153175, "PubMed": "26675798"}}, {"paperId": "e9618efb676a5df902a71d599bc67cf235ecb239",
+        "externalIds": {"MAG": "2439767068", "DOI": "10.1212/01.WNL.0000078769.20679.0E",
+        "CorpusId": 11699452, "PubMed": "12874431"}}, {"paperId": "e967745a4c4be05bff2bf905fbaab90233f79d15",
+        "externalIds": {"DOI": "10.3760/cma.j.cn112137-20201109-03040", "CorpusId":
+        236092940, "PubMed": "34275247"}}, {"paperId": "e9967bcba63c1694f78faba73b961ed09031842e",
+        "externalIds": {"CorpusId": 55066170}}, {"paperId": "ea9b7395fb692c7789cc7a8d9b01f319eeffd0b0",
+        "externalIds": {"MAG": "329561904", "CorpusId": 142160668}}, {"paperId": "ead1009d41e91d84969b4104e6e9d3c0615366c7",
+        "externalIds": {"MAG": "2912551576", "PubMedCentral": "6389729", "DOI": "10.1016/j.nicl.2019.101715",
+        "CorpusId": 71148790, "PubMed": "30798165"}}, {"paperId": "eb0d9e8552d4541091abbc8d3514da39fb09cab5",
+        "externalIds": {"PubMedCentral": "13293808", "DOI": "10.3389/fneur.2026.1831863",
+        "CorpusId": 289237171, "PubMed": "42369362"}}, {"paperId": "eb2a3666766a71111addabccc02da5c1cbdb042e",
+        "externalIds": {"MAG": "2081088104", "DOI": "10.1007/s11065-006-9017-3", "CorpusId":
+        23358391, "PubMed": "17242993"}}, {"paperId": "eb34a54f412b57d658e1168083539f10f7b396dc",
+        "externalIds": {"DOI": "10.1016/j.nrleng.2021.01.007", "CorpusId": 232245052,
+        "PubMed": "37659838"}}, {"paperId": "ec07a8225313646078b22c86049cf48ebd9c33f8",
+        "externalIds": {"MAG": "2518851605", "CorpusId": 151974213}}, {"paperId":
+        "ec4823bce67ca849d36b6d095f5e312919470cb1", "externalIds": {"CorpusId": 235631605}},
+        {"paperId": "ec6e527c63b96af0a2b69f19da3fb82f173aa9eb", "externalIds": {"DOI":
+        "10.1159/000552137", "CorpusId": 287658829, "PubMed": "42008368"}}, {"paperId":
+        "ecade4e81f3ac42dce53e8222ca8a64af2f6c1a8", "externalIds": {"MAG": "2103902198",
+        "DOI": "10.1152/JN.2000.83.2.1058", "CorpusId": 229270, "PubMed": "10669517"}},
+        {"paperId": "ecbcc252bbf4ac5ff7f8918e28070e305137d1c7", "externalIds": {"PubMedCentral":
+        "10157050", "DOI": "10.3389/fnins.2023.1131916", "CorpusId": 258219021, "PubMed":
+        "37152608"}}, {"paperId": "ed1b9538efc5eddd3a2844f84100d7cbde2d043f", "externalIds":
+        {"MAG": "3094047041", "DOI": "10.1016/bs.pbr.2020.08.007", "CorpusId": 226622767,
+        "PubMed": "33637228"}}, {"paperId": "ed525f45727121f5ffa959e1284a8b8120a60869",
+        "externalIds": {"MAG": "2915112040", "PubMedCentral": "6687562", "DOI": "10.3171/2018.10.JNS181659",
+        "CorpusId": 73426411, "PubMed": "30738400"}}, {"paperId": "ed623d73c44077f65fadfb295ff105c31afb39c0",
+        "externalIds": {"PubMedCentral": "13556582", "DOI": "10.1093/ijnp/pyag040.214",
+        "CorpusId": 291900865}}, {"paperId": "edb1d1c7af5e885edffbdb26f2d8fac49fde4ab2",
+        "externalIds": {"MAG": "2470327113", "PubMedCentral": "5064341", "DOI": "10.1002/brb3.529",
+        "CorpusId": 6970845, "PubMed": "27781143"}}, {"paperId": "ee06fb0788ef59498fc4c80f775233738b21a78a",
+        "externalIds": {"PubMedCentral": "12303962", "DOI": "10.3389/fnsys.2025.1639981",
+        "CorpusId": 280179699, "PubMed": "40735370"}}, {"paperId": "ee0efb087eb81b7f333c2ca2ae4b73b8f454d5a0",
+        "externalIds": {"DBLP": "journals/neuroimage/MonzalvoFBDD12", "MAG": "2021120260",
+        "DOI": "10.1016/j.neuroimage.2012.02.035", "CorpusId": 9351310, "PubMed":
+        "22387166"}}, {"paperId": "ee18547e79bf669f35351f45c29e37c7bc544ae7", "externalIds":
+        {"DOI": "10.1007/s11682-026-01090-5", "CorpusId": 286230729, "PubMed": "41779099"}},
+        {"paperId": "eefdcbacfd627a852672911e992d1c3d3544bf0e", "externalIds": {"DOI":
+        "10.1016/j.pscychresns.2026.112152", "CorpusId": 285310050, "PubMed": "41643286"}},
+        {"paperId": "ef09eeb57ee377f7b2335a7b4b922aa670f09737", "externalIds": {"PubMedCentral":
+        "7721231", "MAG": "3092581765", "DOI": "10.1002/hbm.25221", "CorpusId": 222319565,
+        "PubMed": "33048406"}}, {"paperId": "ef104aed0482907d59e42f499cea895a9b809a4c",
+        "externalIds": {"PubMedCentral": "11736283", "DOI": "10.3389/fpsyt.2024.1481167",
+        "CorpusId": 275039318, "PubMed": "39822388"}}, {"paperId": "efc7e4c602b6b72047ffe089721e47a11a366afb",
+        "externalIds": {"MAG": "956637554", "CorpusId": 142014467}}, {"paperId": "f010180afc633e346517de45f04118c8c0f44e94",
+        "externalIds": {"DOI": "10.1007/s00429-012-0499-x", "CorpusId": 253976896}},
+        {"paperId": "f04ac0bba6148c3c6e42b09d98708cf1ce529025", "externalIds": {"MAG":
+        "2418727490", "CorpusId": 24425073, "PubMed": "12808506"}}, {"paperId": "f04d01aa721f83e2bc5435c48c5666d0ce304674",
+        "externalIds": {"DOI": "10.1213/ANE.0000000000008327", "CorpusId": 292899961,
+        "PubMed": "42868517"}}, {"paperId": "f072d620dcbdf1a28422ecaa7acda8a218031ddb",
+        "externalIds": {"MAG": "2164373199", "DOI": "10.1016/j.heares.2010.04.006",
+        "CorpusId": 46733794, "PubMed": "20430086"}}, {"paperId": "f09f4c79c2a90316312cb0cb6da0c61e9c0e1ffd",
+        "externalIds": {"MAG": "2137994040", "PubMedCentral": "3382568", "DOI": "10.1371/journal.pone.0039747",
+        "CorpusId": 14901242, "PubMed": "22761887"}}, {"paperId": "f0b656100e505d0303c44841af8add9e320110dc",
+        "externalIds": {"MAG": "2988825802", "DOI": "10.1101/834945", "CorpusId":
+        209563030}}, {"paperId": "f0e64ce443a4fb99ef47cf63e51942f04c4bcc62", "externalIds":
+        {"DOI": "10.1002/ohn.459", "CorpusId": 260333781, "PubMed": "37522290"}},
+        {"paperId": "f121f47a533ae79255e01e48b68693597359cbd0", "externalIds": {"MAG":
+        "3189001987", "DOI": "10.21203/rs.3.rs-704477/v1", "CorpusId": 238804293}},
+        {"paperId": "f17e017d910fddaf0e586ab136ad33b5e5d50b2a", "externalIds": {"MAG":
+        "2902904399", "DOI": "10.21037/qims.2018.11.04", "CorpusId": 58570407, "PubMed":
+        "30598879"}}, {"paperId": "f1d2b8320530862c8a189db07e62447d2f002b79", "externalIds":
+        {"PubMedCentral": "8837129", "DOI": "10.3390/jcm11030617", "CorpusId": 246322080,
+        "PubMed": "35160070"}}, {"paperId": "f24e7cb77a4662db6d38eb5d98ab8599ef39c947",
+        "externalIds": {"MAG": "2084150950", "DOI": "10.1007/s00234-007-0258-5", "CorpusId":
+        28574141}}, {"paperId": "f299ae8ff816271db339e346542fa7f7f97ebf90", "externalIds":
+        {"MAG": "1745615096", "CorpusId": 143025865}}, {"paperId": "f2ea826889d9b49a42ace852337d1c43f942e093",
+        "externalIds": {"MAG": "2990133200", "DOI": "10.36076/ppj.2017.e314", "CorpusId":
+        25506447, "PubMed": "28158166"}}, {"paperId": "f306ca7c33382c64cb851a4231b29fdefe1d7dc1",
+        "externalIds": {"MAG": "2998549014", "DOI": "10.13702/j.1000-0607.190562",
+        "CorpusId": 209448092, "PubMed": "31867907"}}, {"paperId": "f3175ab3fafa50e4a89b5e5206eeda4c15274e48",
+        "externalIds": {"PubMedCentral": "10579103", "DOI": "10.1016/j.cnp.2023.08.004",
+        "CorpusId": 261605436, "PubMed": "37854662"}}, {"paperId": "f3cf217485228cbc9060ae0b5b59d839e9a20dc8",
+        "externalIds": {"PubMedCentral": "4624866", "MAG": "1961831270", "DOI": "10.3389/fncir.2015.00067",
+        "CorpusId": 13228437, "PubMed": "26578894"}}, {"paperId": "f3ea88a6ee282930c843874bc02ffa3cf2dd0a8c",
+        "externalIds": {"PubMedCentral": "9587997", "DOI": "10.1038/s41598-022-22652-9",
+        "CorpusId": 253047803, "PubMed": "36272992"}}, {"paperId": "f3fa97be45dac69b1af64155ac79a71e9a251a36",
+        "externalIds": {"PubMedCentral": "4020302", "MAG": "2134772847", "DOI": "10.1155/2014/549162",
+        "CorpusId": 8612209, "PubMed": "24872895"}}, {"paperId": "f40da2c3df57418c8786aa6577cd1b92bda089dd",
+        "externalIds": {"MAG": "1985665858", "DOI": "10.1097/00001756-200102120-00024",
+        "CorpusId": 8382716, "PubMed": "11209939"}}, {"paperId": "f451ab78387d2b33451fd47bf13176a6e7294c83",
+        "externalIds": {"MAG": "2518854510", "CorpusId": 152007084}}, {"paperId":
+        "f45efb586d6f59f1e8e0eb9de2361984c27f8541", "externalIds": {"MAG": "2904280423",
+        "PubMedCentral": "6291466", "DOI": "10.3389/fnhum.2018.00490", "CorpusId":
+        54458963, "PubMed": "30574080"}}, {"paperId": "f49cada138af80b683737eb3e0d01a6118c4e1c3",
+        "externalIds": {"MAG": "1978455957", "DOI": "10.1212/01.WNL.0000068363.05974.64",
+        "CorpusId": 18021234, "PubMed": "12874401"}}, {"paperId": "f49e6af3be3dc18324fc6db10286d932c75e6989",
+        "externalIds": {"MAG": "2009251336", "DOI": "10.1111/j.1601-183X.2007.00312.x",
+        "CorpusId": 24792927, "PubMed": "17428266"}}, {"paperId": "f5cf702dbeb5dccc503b44aead9de9f46660be97",
+        "externalIds": {"MAG": "1972304266", "DOI": "10.1080/21582041.2012.692098",
+        "CorpusId": 143266821}}, {"paperId": "f6084a0bdfe29a6e28753c2bf1d6bc1e276ff2ba",
+        "externalIds": {"MAG": "2327489419", "DOI": "10.1055/S-2004-833297", "CorpusId":
+        147141291}}, {"paperId": "f624e20d4fa262922bfef788c585cf6b0038455a", "externalIds":
+        {"MAG": "2021687308", "PubMedCentral": "3204998", "DOI": "10.1371/journal.pone.0026639",
+        "CorpusId": 10242309, "PubMed": "22066003"}}, {"paperId": "f643c53f9ab22c22eab3d3621f40ad82173d0415",
+        "externalIds": {"DOI": "10.1038/s41598-021-81219-2", "CorpusId": 257044924}},
+        {"paperId": "f7360268ac6cf230b38c56d9df2fae2e7e37f6a1", "externalIds": {"DOI":
+        "10.1002/dys.1747", "CorpusId": 259200166, "PubMed": "37337459"}}]}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '164937'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 00:52:55 GMT
+      Via:
+      - 1.1 d9139eb2d706e3e133794f0391031de8.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 4ucx9PRzI20LWLsUSz7IVVxgcBsANDUo8K_Ll5ne2KrdfQXjQ5vHJg==
+      X-Amz-Cf-Pop:
+      - IAH51-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FT9IKHk7vHcETTA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '164937'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 00:52:55 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 281c2673-0c70-47e9-ae6b-d35ae58d985f
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/search/bulk?fields=externalIds&query=fMRI+%2B+%28dyslexia+%7C+tinnitus+%7C+insomnia+%7C+stuttering%29&token=PCOKWVSKJJGM4TWNJNI3EUSQJIWVNUSRKBFEYK2JFUBHFI4V2LGI3TIMRTGCYEUTZWJNHDEMBWJIYLMSJXGVELCT2KGNEESTRVJM2U4NZXJ4YEQNSVRGWAPYWAKMY
+  response:
+    body:
+      string: '{"total": 1038, "token": null, "data": [{"paperId": "f76b03337efaba6e90292625126516f52f7794c6",
+        "externalIds": {"MAG": "3042505293", "ArXiv": "2007.09260", "DBLP": "journals/corr/abs-2007-09260",
+        "CorpusId": 220647298}}, {"paperId": "f842d0a02f37465c494bcd72c6aa5e21a4e39506",
+        "externalIds": {"PubMedCentral": "8414185", "DOI": "10.1016/j.heliyon.2021.e07855",
+        "CorpusId": 237454350, "PubMed": "34504967"}}, {"paperId": "f856d1b18fc217dab3f5305a40c2c5f02fe441d2",
+        "externalIds": {"MAG": "1176099148", "DOI": "10.1016/J.SBSPRO.2015.03.273",
+        "CorpusId": 141546644}}, {"paperId": "f8770dc27e0d9555b91e5b1b61b96254974fa1ef",
+        "externalIds": {"DOI": "10.4103/hbc.hbc_29_24", "CorpusId": 275180768}}, {"paperId":
+        "f884c7a3ccb192ab191b3ffca3f67e4ad4b4ebb1", "externalIds": {"PubMedCentral":
+        "5722195", "MAG": "2760769992", "DOI": "10.1016/j.cortex.2017.08.038", "CorpusId":
+        21640124, "PubMed": "29107746"}}, {"paperId": "f88b94ffdc7e1f6c98a336bc59f28ed1d99a55d5",
+        "externalIds": {"PubMedCentral": "10725967", "DOI": "10.3389/fpsyt.2023.1229580",
+        "CorpusId": 265870657, "PubMed": "38111620"}}, {"paperId": "f8b5836d74ac58123fc821b0dcb30397e371223d",
+        "externalIds": {"PubMedCentral": "12661874", "DOI": "10.1186/s13020-025-01236-5",
+        "CorpusId": 283292636, "PubMed": "41310834"}}, {"paperId": "f8b7fc893caa55c160203d1919845dc33c0a43b5",
+        "externalIds": {"MAG": "2095259243", "PubMedCentral": "3569450", "DOI": "10.1371/journal.pone.0055454",
+        "CorpusId": 12108205, "PubMed": "23408984"}}, {"paperId": "f8be181c206416a927995b70b871d599663e93d9",
+        "externalIds": {"DOI": "10.1016/j.neuropsychologia.2021.107886", "CorpusId":
+        234361171, "PubMed": "33971213"}}, {"paperId": "f8df075a41b1a6d2a9ac79380bc9068d531f024e",
+        "externalIds": {"MAG": "2187021935", "CorpusId": 53963437}}, {"paperId": "f8e08d2986ee9ad06942d217ede98a27be9f8e71",
+        "externalIds": {"MAG": "2018721404", "PubMedCentral": "4178249", "DOI": "10.1002/brb3.281",
+        "CorpusId": 6566316, "PubMed": "25365797"}}, {"paperId": "f93cc376b9f7656c42a623df8aefd9bf4cf317ed",
+        "externalIds": {"MAG": "2786424703", "DOI": "10.1101/241216", "CorpusId":
+        116556327}}, {"paperId": "f94d977010659c9edab63980ae89b5b82074ca93", "externalIds":
+        {"DOI": "10.1007/s41105-024-00541-0", "CorpusId": 270942368, "PubMed": "39300981"}},
+        {"paperId": "f96ebdc49c660ef58c8750e38335f814881ef14a", "externalIds": {"PubMedCentral":
+        "6296514", "MAG": "2904890572", "DOI": "10.1371/journal.pone.0208923", "CorpusId":
+        56179105, "PubMed": "30557304"}}, {"paperId": "fa91728cc0a6d6458e0ba7ea21bd5cd3810d092d",
+        "externalIds": {"MAG": "2929665769", "DOI": "10.1016/j.neuroscience.2019.03.054",
+        "CorpusId": 89617372, "PubMed": "30946875"}}, {"paperId": "facdcf542af0ce3a566f661806d16ad8fceb0f70",
+        "externalIds": {"PubMedCentral": "9674867", "DOI": "10.1016/j.dcn.2022.101175",
+        "CorpusId": 253518468, "PubMed": "36401889"}}, {"paperId": "fb46873999fc78b29959d39134f3d94384faf424",
+        "externalIds": {"MAG": "3045949188", "DBLP": "journals/neuroimage/KorzeczekPGDPSN21",
+        "DOI": "10.1101/2020.07.27.219360", "CorpusId": 240155834, "PubMed": "34798230"}},
+        {"paperId": "fba6c0c07bec89da6ee4ab54260d27bf28fa8b50", "externalIds": {"PubMedCentral":
+        "9440808", "DOI": "10.1155/2022/9197858", "CorpusId": 251892361, "PubMed":
+        "36101797"}}, {"paperId": "fbb76f15572f2093eb711ca9b2656ebe5a709725", "externalIds":
+        {"MAG": "1513141104", "CorpusId": 142056426}}, {"paperId": "fbf8b2aac4268b1b7484373b38b43d549798f61e",
+        "externalIds": {"MAG": "2035269455", "PubMedCentral": "3925174", "DOI": "10.1371/journal.pone.0088940",
+        "CorpusId": 12033404, "PubMed": "24551193"}}, {"paperId": "fc2a464e065cba89dd8a4fe923b1445b5c418c23",
+        "externalIds": {"MAG": "2315804408", "DOI": "10.5665/sleep.2940", "CorpusId":
+        29319671, "PubMed": "23997357"}}, {"paperId": "fc3102ea70cbc1507b2123245386f006653aaae0",
+        "externalIds": {"DOI": "10.1016/j.jpsychires.2024.12.038", "CorpusId": 274983303,
+        "PubMed": "39742797"}}, {"paperId": "fc715546b02c1e7ce4ad1ac910b69bc3dc79d2cf",
+        "externalIds": {"MAG": "2751746797", "DOI": "10.1016/j.jfludis.2017.09.003",
+        "CorpusId": 3307948, "PubMed": "28958627"}}, {"paperId": "fc839f5ba81cd25fe083ef8453628cd74b3658e6",
+        "externalIds": {"DOI": "10.1016/j.cortex.2021.11.021", "CorpusId": 246082431,
+        "PubMed": "35144049"}}, {"paperId": "fc8aa8a794c8af465c93b7eb0bb81dfc6f3e7a9c",
+        "externalIds": {"CorpusId": 19006858}}, {"paperId": "fcfa93f0c1146fefafdf1e1d60c30922e2e1e09e",
+        "externalIds": {"PubMedCentral": "12932571", "DOI": "10.3389/fpsyt.2026.1765885",
+        "CorpusId": 285569203, "PubMed": "41756572"}}, {"paperId": "fd19976d8135d97e5a720b556e7605fa8bd0754c",
+        "externalIds": {"MAG": "2012388016", "DOI": "10.1016/J.ICS.2007.02.021", "CorpusId":
+        143493923}}, {"paperId": "fd41bd977335fc72977837c0a62f804212fc1ecf", "externalIds":
+        {"DOI": "10.1007/s41252-022-00297-z", "CorpusId": 253152295}}, {"paperId":
+        "fe1248f97150a7537d119297c07cb751dea8a746", "externalIds": {"DOI": "10.1016/j.heares.2020.108158",
+        "CorpusId": 229372962, "PubMed": "33421659"}}, {"paperId": "fe788d3b797bf2b518806bca3c49feb73cf80997",
+        "externalIds": {"MAG": "2949844243", "DOI": "10.1101/676429", "CorpusId":
+        196656928}}, {"paperId": "fe7e41c4e4ba402b69382b60b895feb23029687e", "externalIds":
+        {"ArXiv": "2106.14083", "DOI": "10.1214/25-ba1552", "CorpusId": 235659066}},
+        {"paperId": "feaccc064cd404e8ec0deaa459f661acc71bb6c0", "externalIds": {"MAG":
+        "2793576554", "PubMedCentral": "5789127", "DOI": "10.1016/j.nicl.2018.01.012",
+        "CorpusId": 23505244, "PubMed": "29387533"}}, {"paperId": "feadcc397a86794aa519c6634265d3f21439f3b6",
+        "externalIds": {"DOI": "10.1109/TIPTEKNO56568.2022.9960204", "CorpusId": 254102530}},
+        {"paperId": "feda1df342a934fc196aa80383f709fec1e31676", "externalIds": {"PubMedCentral":
+        "6881273", "MAG": "2990601360", "DOI": "10.3389/fnhum.2019.00411", "CorpusId":
+        208176781, "PubMed": "31824276"}}, {"paperId": "ff3ab2d4830f9ea3637de6b30dee8e01fd3e00ac",
+        "externalIds": {"DOI": "10.1523/JNEUROSCI.1533-21.2021", "CorpusId": 245594124,
+        "PubMed": "34969869"}}, {"paperId": "ff493129fc7805e0bced0b87e27acc685d9a3371",
+        "externalIds": {"PubMedCentral": "5689580", "MAG": "2615488089", "DOI": "10.18632/oncotarget.17921",
+        "CorpusId": 7830052, "PubMed": "28575872"}}, {"paperId": "ffce7c1cef25eef205c570e34d729a28b5e0de7e",
+        "externalIds": {"MAG": "2612198670", "CorpusId": 55037741}}, {"paperId": "ffe5f0ddbf8936e4d2defb02e985d9fd0a57a685",
+        "externalIds": {"PubMedCentral": "3733005", "MAG": "2130433945", "DOI": "10.3389/fnbeh.2013.00099",
+        "CorpusId": 11241190, "PubMed": "23935570"}}]}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '6468'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 00:52:56 GMT
+      Via:
+      - 1.1 a92ffe3ce5f5153ca1b3de9a8bef30cc.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - l5sO2D39yQ-dYhWOfqQP-84QdWsH4rpPT6uCoE6ulMuOIS6SMJM8Rw==
+      X-Amz-Cf-Pop:
+      - IAH51-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FT9IVFLivHcEqKQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '6468'
+      x-amzn-Remapped-Date:
+      - Fri, 16 Oct 2026 00:52:56 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 7950ef3e-7a8c-4f10-839f-80c05a612070
+    status:
+      code: 200
+      message: OK
+version: 1

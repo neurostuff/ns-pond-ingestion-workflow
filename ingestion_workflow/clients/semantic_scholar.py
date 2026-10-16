@@ -22,6 +22,7 @@ class SemanticScholarClient:
 
     BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
     MATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/search/match"
+    BULK_SEARCH_URL = "https://api.semanticscholar.org/graph/v1/paper/search/bulk"
     _SUPPORTED_ID_TYPES = {"doi", "pmid"}
 
     def __init__(self, api_key: str) -> None:
@@ -160,6 +161,42 @@ class SemanticScholarClient:
             json={"ids": list(request_ids)},
             timeout=30,
         )
+        response.raise_for_status()
+        return response.json()
+
+    def search_bulk(self, params: Dict[str, str]) -> Identifiers:
+        """Every paper the bulk search finds for `params` (`query`, optionally `year`).
+
+        Pages hold up to 1,000 papers; each carries the token for the next one.
+        A paper with no DOI, PMID or PMCID is kept with its Semantic Scholar id.
+        """
+        found: List[Identifier] = []
+        token = None
+        while True:
+            payload = self._request_bulk_search(
+                {**params, "fields": "externalIds", **({"token": token} if token else {})}
+            )
+            for paper in payload.get("data") or []:
+                ids = paper.get("externalIds") or {}
+                found.append(
+                    Identifier(
+                        doi=ids["DOI"].lower() if ids.get("DOI") else None,
+                        pmid=str(ids["PubMed"]) if ids.get("PubMed") else None,
+                        pmcid=str(ids["PubMedCentral"]) if ids.get("PubMedCentral") else None,
+                        other_ids={"semantic_scholar": str(paper["paperId"])},
+                    )
+                )
+            token = payload.get("token")
+            if not token:
+                return Identifiers(found)
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=8),
+    )
+    def _request_bulk_search(self, params: Dict[str, str]) -> Dict[str, object]:
+        self._rate_limit_sleep()
+        response = self._session.get(self.BULK_SEARCH_URL, params=params, timeout=30)
         response.raise_for_status()
         return response.json()
 

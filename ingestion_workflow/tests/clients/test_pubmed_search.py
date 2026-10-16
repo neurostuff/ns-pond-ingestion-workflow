@@ -91,22 +91,23 @@ def test_pubmed_search_service_delegates(settings_with_email):
             self.calls.append((query, start_year))
             return expected
 
+    from ingestion_workflow.services.query_dialect import Years, parse
     from ingestion_workflow.services.search import PubMedSearchService
 
     dummy_client = DummyClient()
     service = PubMedSearchService(
-        "sample query",
+        parse("sample", Years.parse("2000")),
         settings_with_email,
-        start_year=2000,
         client=dummy_client,
     )
 
     results = service.search()
     assert results is expected
-    assert dummy_client.calls == [("sample query", 2000)]
+    assert dummy_client.calls == [('"sample"[tiab] AND "journal article"[pt] AND 2000[dp]', 2000)]
 
 
 def test_pubmed_search_service_requires_email(monkeypatch):
+    from ingestion_workflow.services.query_dialect import parse
     from ingestion_workflow.services.search import PubMedSearchService
 
     monkeypatch.delenv("PUBMED_EMAIL", raising=False)
@@ -115,7 +116,7 @@ def test_pubmed_search_service_requires_email(monkeypatch):
     settings = Settings.model_construct(pubmed_email=None)
 
     with pytest.raises(ValueError):
-        PubMedSearchService("query", settings)
+        PubMedSearchService(parse("query"), settings)
 
 
 def test_pubmed_request_json_handles_invalid_control_chars(monkeypatch):
