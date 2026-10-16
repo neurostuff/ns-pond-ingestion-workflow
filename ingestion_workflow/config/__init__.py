@@ -180,8 +180,9 @@ class Settings(BaseSettings):
         # and the author manuscripts pubget cannot, each with its licence.
         # Springer Nature's JATS after the PMC copies of the same JATS, which
         # spend none of its daily quota, and before a scraped page or a PDF.
-        # Elsevier, before it, is asked about every DOI, Springer's included:
-        # that spends Elsevier's requests, not Springer's.
+        # Elsevier, before it, is asked only for its own DOI prefixes, a few it
+        # served in a run, and articles with a PubMed id and no DOI. A prefix on
+        # both its list and Springer's (10.1007, 10.1038) still goes to Elsevier first.
         # Wiley last: at one request per 10 seconds, it is asked only for what
         # no other source serves.
         default_factory=lambda: [

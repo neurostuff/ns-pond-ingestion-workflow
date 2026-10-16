@@ -37,6 +37,7 @@ from ingestion_workflow.extractors.utils import (
     build_failure_extraction,
     coordinate_from_row,
     coordinate_space_from_guess,
+    doi_prefix,
     parse_table_number,
     safe_hash_stem,
     sanitize_table_id,
@@ -58,6 +59,36 @@ from ingestion_workflow.utils.progress import emit_progress
 
 
 logger = logging.getLogger(__name__)
+
+#: The DOI prefixes Crossref lists for Elsevier BV, member 78
+#: (https://api.crossref.org/members/78, 2026-10-16), then those of other publishers'
+#: DOIs that Elsevier served in the run of 2026-10-16 (attempts from 04:50: 24,222 of
+#: 36,169 served), each with its OK/attempts in that run:
+#:   10.5004  25/25
+#:   10.1007  24/754
+#:   10.1124  19/27
+#:   10.1017  15/112
+#:   10.14283  11/11
+#:   10.1111  10/199
+#:   10.1182  7/7
+#:   10.3967  6/6
+#:   10.26599  5/14
+#:   10.1093  4/360
+#:   10.24920  2/2
+#:   10.3168  2/2
+#:   10.24875  1/6
+#:   10.58888  1/1
+#:   10.15232  1/1
+#: Any other DOI is a request spent for nothing against the 50,000 a week.
+ELSEVIER_DOI_PREFIXES = frozenset({
+    "10.1006", "10.1007", "10.1016", "10.1017", "10.1053", "10.1054", "10.1067",
+    "10.1078", "10.1093", "10.1111", "10.1124", "10.1157", "10.1182", "10.1197",
+    "10.1205", "10.1240", "10.1331", "10.1367", "10.1378", "10.1383", "10.1529",
+    "10.1533", "10.1580", "10.1602", "10.2111", "10.2139", "10.2353", "10.3129",
+    "10.3168", "10.3182", "10.3816", "10.3921", "10.3967", "10.4065", "10.5004",
+    "10.7399", "10.7424", "10.7811", "10.14219", "10.14283", "10.15232", "10.21967",
+    "10.24875", "10.24920", "10.25013", "10.26599", "10.58888",
+})
 
 
 class ElsevierExtractor(BaseExtractor):
@@ -95,6 +126,13 @@ class ElsevierExtractor(BaseExtractor):
         self.settings = settings or load_settings()
         self._client = client
         self._cache = cache
+
+    def can_address(self, identifier: Identifier) -> bool:
+        # An article with no DOI is looked up by its PubMed id, which Elsevier
+        # serves; one with a DOI is asked only when its prefix is one Elsevier has served.
+        if not identifier.doi:
+            return bool(identifier.pmid)
+        return doi_prefix(identifier.doi) in ELSEVIER_DOI_PREFIXES
 
     def download(
         self,
