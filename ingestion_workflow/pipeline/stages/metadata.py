@@ -134,10 +134,12 @@ class MetadataStage:
         for content in contents:
             download = downloads.get(by_slug[content.slug].article_id, {}).get(
                 content.source.value)
-            found_file = _article_file(content.source.value,
-                                       (ctx.payload(download) or {}).get("files", []))
-            if found_file:
-                own_files[content.slug] = Path(found_file)
+            files = (ctx.payload(download) or {}).get("files", [])
+            found_file = ctx.recorded_path(_article_file(content.source.value, files))
+            if found_file is not None:
+                own_files[content.slug] = found_file
+
+        from ingestion_workflow.services.metadata import MetadataService
 
         try:
             found = self.service.enrich_metadata(contents, own_files)
@@ -152,9 +154,19 @@ class MetadataStage:
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)
-            if metadata is None:
+            licence = metadata.license if metadata is not None else None
+            kept = {"license": licence.code.value, "license_basis": licence.basis.value} \
+                if licence else None
+            if metadata is None or not MetadataService.has_metadata(metadata):
                 yield Outcome.failure(
                     work.article_id, self.name, "", "no provider returned metadata",
+                    fingerprint=work.fingerprint, summary=kept,
+                )
+                continue
+            if licence is None:
+                yield Outcome.failure(
+                    work.article_id, self.name, "",
+                    "licence unresolved: a provider that could state one did not answer",
                     fingerprint=work.fingerprint,
                 )
                 continue
@@ -167,7 +179,6 @@ class MetadataStage:
                 payload=metadata.to_dict(),
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
-                } | {"license": metadata.license.code.value,
-                     "license_basis": metadata.license.basis.value,
-                     "authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
+                } | kept | {"authors": len(metadata.authors),
+                            "sufficient": is_sufficient(metadata)},
             )

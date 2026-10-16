@@ -1,0 +1,56 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:test@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fstab.201590143%2Cdoi%3A10.1002%2Fnba.30097%2Cdoi%3A10.1002%2Fps.8775%2Cdoi%3A10.1002%2Fceat.70128%2Cdoi%3A10.1007%2Fs00709-022-01807-5%2Cdoi%3A10.1007%2Fs44470-025-00027-x%2Cdoi%3A10.1016%2Fj.tim.2023.08.014%2Cdoi%3A10.1016%2Fj.engfracmech.2023.109223%2Cdoi%3A10.1016%2Fj.actatropica.2023.106860&mailto=test%40example.com&rows=9&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":9,"items":[{"DOI":"10.1002\/nba.30097","license":[{"start":{"date-parts":[[2015,7,24]],"date-time":"2015-07-24T00:00:00Z","timestamp":1437696000000},"content-version":"tdm","delay-in-days":0,"URL":"http:\/\/doi.wiley.com\/10.1002\/tdm_license_1.1"},{"start":{"date-parts":[[2015,7,24]],"date-time":"2015-07-24T00:00:00Z","timestamp":1437696000000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]},{"DOI":"10.1002\/stab.201590143","license":[{"start":{"date-parts":[[2015,9,2]],"date-time":"2015-09-02T00:00:00Z","timestamp":1441152000000},"content-version":"vor","delay-in-days":1,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]},{"DOI":"10.1007\/s44470-025-00027-x","license":[{"start":{"date-parts":[[2026,1,9]],"date-time":"2026-01-09T00:00:00Z","timestamp":1767916800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"},{"start":{"date-parts":[[2026,1,9]],"date-time":"2026-01-09T00:00:00Z","timestamp":1767916800000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"}]},{"DOI":"10.1002\/ceat.70128","license":[{"start":{"date-parts":[[2025,10,24]],"date-time":"2025-10-24T00:00:00Z","timestamp":1761264000000},"content-version":"vor","delay-in-days":23,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}]},{"DOI":"10.1002\/ps.8775","license":[{"start":{"date-parts":[[2026,3,18]],"date-time":"2026-03-18T00:00:00Z","timestamp":1773792000000},"content-version":"am","delay-in-days":365,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#am"},{"start":{"date-parts":[[2025,3,18]],"date-time":"2025-03-18T00:00:00Z","timestamp":1742256000000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]},{"DOI":"10.1007\/s00709-022-01807-5","license":[{"start":{"date-parts":[[2022,9,5]],"date-time":"2022-09-05T00:00:00Z","timestamp":1662336000000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.springernature.com\/gp\/researchers\/text-and-data-mining"},{"start":{"date-parts":[[2022,9,5]],"date-time":"2022-09-05T00:00:00Z","timestamp":1662336000000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/www.springernature.com\/gp\/researchers\/text-and-data-mining"}]},{"DOI":"10.1016\/j.actatropica.2023.106860","license":[{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2024,2,17]],"date-time":"2024-02-17T00:00:00Z","timestamp":1708128000000},"content-version":"am","delay-in-days":322,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-017"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-037"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-012"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-029"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-004"}]},{"DOI":"10.1016\/j.engfracmech.2023.109223","license":[{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2024,1,30]],"date-time":"2024-01-30T00:00:00Z","timestamp":1706572800000},"content-version":"vor","delay-in-days":304,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0\/"}]},{"DOI":"10.1016\/j.tim.2023.08.014","license":[{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-017"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-037"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-012"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-029"},{"start":{"date-parts":[[2023,11,1]],"date-time":"2023-11-01T00:00:00Z","timestamp":1698796800000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-004"}]}],"items-per-page":9,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '919'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Oct 2026 16:40:20 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

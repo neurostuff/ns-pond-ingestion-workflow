@@ -1,0 +1,51 @@
+{
+  "transport": "https",
+  "status_code": 200,
+  "view": "FULL",
+  "view_requested": "FULL",
+  "view_obtained": "FULL",
+  "identifier": "10.1016/j.neurobiolaging.2012.04.016",
+  "identifier_type": "doi",
+  "rate_limit_limit": null,
+  "rate_limit_remaining": null,
+  "rate_limit_reset_epoch": null,
+  "full_text_retrieved": true,
+  "pii": "S0197-4580(12)00264-3",
+  "doi": "10.1016/j.neurobiolaging.2012.04.016",
+  "supplementary_attachments": [
+    {
+      "ref": "mmc2",
+      "type": "APPLICATION",
+      "category": "standard",
+      "mimetype": "application/word",
+      "multimediatype": "Microsoft Word file",
+      "size": "141192",
+      "api_url": "https://api.elsevier.com/content/object/eid/1-s2.0-S0197458012002643-mmc2.docx?httpAccept=%2A%2F%2A",
+      "cdn_url": "https://ars.els-cdn.com/content/image/1-s2.0-S0197458012002643-mmc2.docx",
+      "extension": "docx"
+    },
+    {
+      "ref": "mmc1",
+      "type": "APPLICATION",
+      "category": "standard",
+      "mimetype": "application/word",
+      "multimediatype": "Microsoft Word file",
+      "size": "14195",
+      "api_url": "https://api.elsevier.com/content/object/eid/1-s2.0-S0197458012002643-mmc1.docx?httpAccept=%2A%2F%2A",
+      "cdn_url": "https://ars.els-cdn.com/content/image/1-s2.0-S0197458012002643-mmc1.docx",
+      "extension": "docx"
+    }
+  ],
+  "identifier_lookup": {
+    "doi": "10.1016/j.neurobiolaging.2012.04.016",
+    "pmid": "22651996"
+  },
+  "requested_record": {
+    "doi": "10.1016/j.neurobiolaging.2012.04.016",
+    "pmid": "22651996"
+  },
+  "slug": "10-1016-j-neurobiolaging-2012-04-016",
+  "lookup_type": "doi",
+  "lookup_value": "10.1016/j.neurobiolaging.2012.04.016",
+  "identifier_slug": "22651996-10-1016-j-neurobiolaging-2012-04-016"
+}

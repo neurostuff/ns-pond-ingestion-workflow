@@ -21,7 +21,7 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, List, Mapping, Optional, Set
 
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
@@ -36,15 +36,16 @@ from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import (
+    WEAK_LICENSES,
     ArticleMetadata,
     Author,
     License,
-    LicenseCode,
     LicenseSource,
     best_license_rank,
     normalise_license,
     preferred_license,
 )
+from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services.citations import JATS_SOURCES
 
 logger = logging.getLogger(__name__)
@@ -69,6 +70,7 @@ class MetadataService:
         self._pubmed_client: Optional[PubMedClient] = None
         self._openalex_client: Optional[OpenAlexClient] = None
         self._crossref_client: Optional[CrossrefClient] = CrossrefClient(settings.crossref_email)
+        self._unanswered: Dict[str, Set[str]] = {}
 
         # Initialize clients if credentials available
         if settings.semantic_scholar_api_key:
@@ -115,6 +117,8 @@ class MetadataService:
 
         results: Dict[str, ArticleMetadata] = {}
         licenses: Dict[str, License] = {}
+        # Article slug -> the licence-stating providers whose request for it failed.
+        self._unanswered: Dict[str, Set[str]] = {}
 
         def note_license(slug: str, metadata: ArticleMetadata) -> None:
             found = preferred_license(licenses.get(slug), metadata.license)
@@ -142,7 +146,7 @@ class MetadataService:
 
         def merge(slug: str, metadata: ArticleMetadata) -> None:
             note_license(slug, metadata)
-            if not self._has_useful_metadata(metadata):
+            if not self.has_metadata(metadata):
                 return
             results[slug] = results[slug].merge_from(metadata) if slug in results else metadata
 
@@ -227,13 +231,24 @@ class MetadataService:
 
         # The article's own fields last, to fill what the APIs did not.
         for slug, own_meta in own.items():
-            if self._has_useful_metadata(own_meta):
+            if self.has_metadata(own_meta):
                 results[slug] = (
                     results[slug].merge_from(own_meta) if slug in results else own_meta
                 )
 
+        # A licence alone makes no record, but it is returned so that it is kept; the
+        # stage records such an article as failed, for want of its metadata.
+        for slug, found_license in licenses.items():
+            results.setdefault(slug, ArticleMetadata(title=""))
+        unanswered = {id_to_content[slug].slug for slug in self._unanswered
+                      if slug in id_to_content}
         for slug, metadata in results.items():
-            metadata.license = licenses.get(slug) or License.assumed()
+            if slug in licenses:
+                metadata.license = licenses[slug]
+            elif slug not in unanswered:
+                metadata.license = License.assumed()
+            # else left unset: a source that could have stated one did not answer, so
+            # the article is retried rather than recorded as stating nothing.
         return results
 
     def _get_semantic_scholar_metadata_cached(
@@ -278,7 +293,11 @@ class MetadataService:
                 fresh_results = client.get_metadata(uncached)
             except Exception as exc:
                 logger.error("%s metadata request failed: %s", name, exc)
-                return results
+                fresh_results = exc.found if isinstance(exc, PartialAnswer) else {}
+                if name in LICENSE_PROVIDERS:
+                    for identifier in uncached:
+                        if identifier.slug not in fresh_results:
+                            self._unanswered.setdefault(identifier.slug, set()).add(name)
             for slug, metadata in fresh_results.items():
                 try:
                     (cache_dir / f"{slug}.json").write_text(
@@ -304,7 +323,7 @@ class MetadataService:
         return None
 
     @staticmethod
-    def _has_useful_metadata(metadata: ArticleMetadata) -> bool:
+    def has_metadata(metadata: ArticleMetadata) -> bool:
         """Return True when metadata contains at least one meaningful field.
 
         A licence alone is not metadata: it is kept, but makes no record.
@@ -581,45 +600,82 @@ _XLINK_HREF = "{http://www.w3.org/1999/xlink}href"
 _ALI_LICENSE_REF = "{http://www.niso.org/schemas/ali/1.0/}license_ref"
 
 
+#: The providers that can state a licence. Until each one asked has answered for an
+#: article, a licence nobody stated is not assumed.
+LICENSE_PROVIDERS = ("semantic_scholar", "crossref", "openalex")
+
+_MANUSCRIPT_IDS = ("manuscript", "manuscript-id", "nihms")
+
+
 def jats_license(root: etree._Element) -> Optional[License]:
     """The licence an article's JATS `<permissions>` states.
 
-    Within a `<license>`, the first of its statements that names a licence wins:
-    `ali:license_ref`, `@xlink:href`, a link in its text, `@license-type`, then its
-    text. A `<copyright-statement>` with no licence is a stated all-rights-reserved.
+    Its statements are `ali:license_ref`s, then the `<license>`'s `@xlink:href`, the
+    links in its text, its `@license-type` and its text. The first wins, except that a
+    weak statement (a TDM grant, a terms page) yields to a definite one, and a
+    `license_ref` whose `specific-use` is `textmining` (the mining grant) yields to a
+    `license_ref` for a version, such as `vor`, when the file has both. A
+    `<copyright-statement>` with no licence is the licence it names, if any, else a
+    stated all-rights-reserved.
+
+    The version is the chosen `license_ref`'s `specific-use` when that is vor or am,
+    else am for a PMC author manuscript, else unknown.
     """
     permissions = root.find(".//article-meta/permissions")
     if permissions is None:
         return None
+    version = _jats_version(root)
+    # (text, specific-use): "" for a license_ref without one, None for the rest
+    stated = [(ref.text, ref.get("specific-use") or "")
+              for ref in permissions.iter(_ALI_LICENSE_REF)]
     licence = permissions.find("license")
-    stated = [ref.text for ref in permissions.iter(_ALI_LICENSE_REF)]
     if licence is not None:
-        stated += [licence.get(_XLINK_HREF)]
-        stated += [link.get(_XLINK_HREF) for link in licence.iter("ext-link", "uri")]
-        stated += [licence.get("license-type"), " ".join(licence.itertext())]
-    stated = [" ".join(text.split()) for text in stated if text and text.strip()]
-    for text in stated:
-        code = normalise_license(text)
-        if code is not LicenseCode.OTHER:
-            return License.stated(LicenseSource.JATS, text, code=code)
+        stated += [(licence.get(_XLINK_HREF), None)]
+        stated += [(link.get(_XLINK_HREF), None) for link in licence.iter("ext-link", "uri")]
+        stated += [(licence.get("license-type"), None), (" ".join(licence.itertext()), None)]
+    stated = [(" ".join(text.split()), use) for text, use in stated if text and text.strip()]
     if stated:
-        return License.stated(LicenseSource.JATS, stated[0])
+        plain_ref = any(use is not None and use != "textmining" for _, use in stated)
+
+        def strength(candidate):
+            text, use = candidate
+            return (normalise_license(text) in WEAK_LICENSES,
+                    use == "textmining" and plain_ref)
+
+        text, use = min(stated, key=strength)  # min keeps the first of equals
+        return License.stated(LicenseSource.JATS, text,
+                              version=use if use in ("vor", "am") else version)
     copyright_line = permissions.findtext("copyright-statement")
     if not (copyright_line and copyright_line.strip()):
         holder = permissions.findtext("copyright-holder")
         year = permissions.findtext("copyright-year")
         if holder:
             copyright_line = " ".join(["©", *(part for part in (year, holder) if part)])
-    return License.stated(LicenseSource.JATS, copyright_line,
-                          code=LicenseCode.ALL_RIGHTS_RESERVED)
+    return License.copyright_line(LicenseSource.JATS, copyright_line, version)
+
+
+def _jats_version(root: etree._Element) -> Optional[str]:
+    """am for a PMC author manuscript (a manuscript id, or the author-manuscript
+    collection), else unknown: a JATS copy does not otherwise say which it is."""
+    meta = root.find(".//article-meta")
+    if meta is None:
+        return None
+    if any(any(key in (aid.get("pub-id-type") or "").lower() for key in _MANUSCRIPT_IDS)
+           for aid in meta.iter("article-id")):
+        return "am"
+    for custom in meta.iter("custom-meta"):
+        if "author manuscript" in " ".join(custom.itertext()).lower():
+            return "am"
+    return None
 
 
 def elsevier_license(content_xml: Path) -> Optional[License]:
     """The licence in an Elsevier full-text record's `coredata`.
 
     An open-access article names its user licence, a Creative Commons one or
-    Elsevier's own; otherwise the record's copyright line stands, as a stated
-    all-rights-reserved. The Article Retrieval API serves the published version.
+    Elsevier's own open-access licence; otherwise the record's copyright line stands:
+    the licence it names, if any, else a stated all-rights-reserved. The Article
+    Retrieval API serves the published version.
     """
     root = etree.parse(str(content_xml)).getroot()
     coredata = next(iter(root.xpath("./*[local-name()='coredata']")), None)
@@ -633,8 +689,7 @@ def elsevier_license(content_xml: Path) -> Optional[License]:
     user_licence = text("openaccessUserLicense")
     if user_licence:
         return License.stated(LicenseSource.ELSEVIER, user_licence, version="vor")
-    return License.stated(LicenseSource.ELSEVIER, text("copyright"), version="vor",
-                          code=LicenseCode.ALL_RIGHTS_RESERVED)
+    return License.copyright_line(LicenseSource.ELSEVIER, text("copyright"), version="vor")
 
 
 def _filled(metadata: Optional[ArticleMetadata]) -> bool:

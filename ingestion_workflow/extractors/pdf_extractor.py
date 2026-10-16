@@ -51,6 +51,7 @@ from ingestion_workflow.models import (
     Identifier,
     Identifiers,
 )
+from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -644,16 +645,23 @@ class PdfExtractor(BaseExtractor):
         if not api_key:
             return {}
         client = SemanticScholarClient(api_key)
-        metadata = client.get_metadata(list(identifiers))
-        return {
-            slug: [
-                PdfCandidate(
-                    url=meta.pdf_url, provider="semantic_scholar", location_type="unknown"
-                )
-            ]
-            for slug, meta in metadata.items()
-            if meta.pdf_url
-        }
+
+        def candidates(metadata):
+            return {
+                slug: [
+                    PdfCandidate(
+                        url=meta.pdf_url, provider="semantic_scholar", location_type="unknown"
+                    )
+                ]
+                for slug, meta in metadata.items()
+                if meta.pdf_url
+            }
+
+        try:
+            return candidates(client.get_metadata(list(identifiers)))
+        except PartialAnswer as exc:
+            unanswered = {i.slug: str(exc) for i in identifiers if i.slug not in exc.found}
+            raise LocationLookupFailed(str(exc), candidates(exc.found), unanswered) from exc
 
     def _openalex_pdf_candidates(self, identifiers: Identifiers) -> Dict[str, List[PdfCandidate]]:
         client = OpenAlexClient.from_settings(self.settings)

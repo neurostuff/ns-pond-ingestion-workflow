@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import shutil
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -27,7 +28,8 @@ from ingestion_workflow.models.metadata import (
     LicenseSource,
     preferred_license,
 )
-from ingestion_workflow.services.metadata import MetadataService
+from ingestion_workflow.services.metadata import MetadataService, jats_license
+from lxml import etree
 
 
 @pytest.fixture
@@ -495,15 +497,20 @@ class TestLicenseNormalisation:
         ("http://creativecommons.org/licenses/by-nc-sa/3.0/", LicenseCode.CC_BY_NC_SA),
         ("https://creativecommons.org/publicdomain/zero/1.0/", LicenseCode.CC0),
         ("https://www.elsevier.com/tdm/userlicense/1.0/", LicenseCode.PUBLISHER_TDM),
-        ("http://www.elsevier.com/open-access/userlicense/1.0/", LicenseCode.PUBLISHER_TDM),
+        ("https://www.elsevier.com/legal/tdmrep-license", LicenseCode.PUBLISHER_TDM),
+        ("http://www.elsevier.com/open-access/userlicense/1.0/", LicenseCode.PUBLISHER_OA),
         ("http://www.springer.com/tdm", LicenseCode.PUBLISHER_TDM),
-        ("http://onlinelibrary.wiley.com/termsAndConditions#vor", LicenseCode.OTHER),
+        ("https://www.springernature.com/gp/researchers/text-and-data-mining",
+         LicenseCode.PUBLISHER_TDM),
+        ("http://doi.wiley.com/10.1002/tdm_license_1.1", LicenseCode.PUBLISHER_TDM),
+        ("http://onlinelibrary.wiley.com/termsAndConditions#vor", LicenseCode.PUBLISHER_TERMS),
+        ("https://www.springer.com/aam-terms-v1", LicenseCode.PUBLISHER_TERMS),
         # Semantic Scholar's openAccessPdf.license and OpenAlex's location license
         ("CCBY", LicenseCode.CC_BY),
         ("CCBYNCND", LicenseCode.CC_BY_NC_ND),
         ("cc-by-nc", LicenseCode.CC_BY_NC),
         ("public-domain", LicenseCode.PUBLIC_DOMAIN),
-        ("publisher-specific-oa", LicenseCode.OTHER),
+        ("publisher-specific-oa", LicenseCode.PUBLISHER_OA),
         ("other-oa", LicenseCode.OTHER),
         # JATS license-type and license-p text
         ("creativeCommonsBy-nc", LicenseCode.CC_BY_NC),
@@ -511,6 +518,11 @@ class TestLicenseNormalisation:
         ("This is an open access article distributed under the terms of the Creative Commons "
          "Attribution-NonCommercial-NoDerivs License", LicenseCode.CC_BY_NC_ND),
         ("This is an open access article under the CC BY-NC license", LicenseCode.CC_BY_NC),
+        ("Creative Commons Attribution Non Commercial No Derivatives", LicenseCode.CC_BY_NC_ND),
+        ("Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License",
+         LicenseCode.CC_BY_NC_SA),
+        ("Creative Commons Attribution-NoDerivatives 4.0 International", LicenseCode.CC_BY_ND),
+        ("Creative Commons Attribution Share Alike", LicenseCode.CC_BY_SA),
         ("This file is available for text mining. It may also be used consistent with the "
          "principles of fair use under the copyright law.", LicenseCode.PUBLISHER_TDM),
         ("Copyright © 2008 Elsevier Inc. All rights reserved.", LicenseCode.ALL_RIGHTS_RESERVED),
@@ -519,18 +531,43 @@ class TestLicenseNormalisation:
         assert License.stated(LicenseSource.CROSSREF, stated).code is code
 
     def test_the_article_file_beats_crossref_vor_beats_openalex_and_s2_beats_crossref_other(self):
-        jats = License.stated(LicenseSource.JATS, "© 2009 The Authors",
-                              code=LicenseCode.ALL_RIGHTS_RESERVED)
+        jats = License.copyright_line(LicenseSource.JATS, "© 2009 The Authors")
         vor = License.stated(LicenseSource.CROSSREF, "http://creativecommons.org/licenses/by/4.0/",
                              version="vor")
         openalex = License.stated(LicenseSource.OPENALEX, "cc-by-nc")
         s2 = License.stated(LicenseSource.SEMANTIC_SCHOLAR, "CCBYNC")
-        tdm = License.stated(LicenseSource.CROSSREF, "http://www.springer.com/tdm")
+        am = License.stated(LicenseSource.CROSSREF, "http://creativecommons.org/licenses/by/4.0/",
+                            version="am")
         assumed = License.assumed()
-        assert preferred_license(tdm, s2, vor, jats, assumed) is jats
-        assert preferred_license(tdm, openalex, vor, assumed) is vor
-        assert preferred_license(tdm, s2, openalex, assumed) is s2  # a tie keeps the first
-        assert preferred_license(assumed, tdm) is tdm
+        assert preferred_license(am, s2, vor, jats, assumed) is jats
+        assert preferred_license(am, openalex, vor, assumed) is vor
+        assert preferred_license(am, s2, openalex, assumed) is s2  # a tie keeps the first
+        assert preferred_license(assumed, am) is am
+
+    def test_a_tdm_grant_or_terms_page_yields_to_a_licence_from_any_source(self):
+        """A closed Springer article's vor deposit is its TDM URL; Wiley's is its terms."""
+        springer_vor = License.stated(LicenseSource.CROSSREF, "http://www.springer.com/tdm",
+                                      version="vor")
+        wiley_vor = License.stated(LicenseSource.CROSSREF,
+                                   "http://onlinelibrary.wiley.com/termsAndConditions#vor",
+                                   version="vor")
+        pmc_tdm = License.stated(LicenseSource.JATS, "This file is available for text mining.")
+        s2 = License.stated(LicenseSource.SEMANTIC_SCHOLAR, "CCBY")
+        assert preferred_license(springer_vor, s2) is s2
+        assert preferred_license(wiley_vor, s2) is s2
+        assert preferred_license(pmc_tdm, s2) is s2
+        # but a weak statement still beats having none
+        assert preferred_license(License.assumed(), springer_vor) is springer_vor
+        # and the article's own copyright line is a definite statement, kept
+        own = License.copyright_line(LicenseSource.JATS, "© 2009 The Authors")
+        assert preferred_license(s2, own) is own
+
+    def test_a_copyright_line_naming_a_licence_is_that_licence(self):
+        line = ("© 2020 Smith. This is an open access article under the CC BY license "
+                "(http://creativecommons.org/licenses/by/4.0/)")
+        assert License.copyright_line(LicenseSource.JATS, line).code is LicenseCode.CC_BY
+        assert License.copyright_line(LicenseSource.JATS, "© 2020 Elsevier Inc.").code \
+            is LicenseCode.ALL_RIGHTS_RESERVED
 
     def test_a_licence_survives_the_cache(self):
         stated = License.stated(LicenseSource.CROSSREF, "https://www.springer.com/tdm",
@@ -543,27 +580,40 @@ class TestLicenseNormalisation:
 class TestOwnFileLicense:
     """The downloaded article's own statement, from real PMC and Elsevier records."""
 
-    @pytest.mark.parametrize("fixture, code, stated_as", [
+    @pytest.mark.parametrize("fixture, code, stated_as, version", [
         ("jats_cc_by_href_pmc2430701.xml", LicenseCode.CC_BY,
-         "https://creativecommons.org/licenses/by/2.0/"),
+         "https://creativecommons.org/licenses/by/2.0/", None),
         ("jats_ali_license_ref_pmc8358179.xml", LicenseCode.CC_BY,
-         "https://creativecommons.org/licenses/by/4.0/"),
+         "https://creativecommons.org/licenses/by/4.0/", None),
         ("jats_copyright_only_pmc3822871.xml", LicenseCode.ALL_RIGHTS_RESERVED,
          "© 2009 The Authors Journal compilation © 2009 Foundation for Cellular and Molecular "
-         "Medicine/Blackwell Publishing Ltd"),
+         "Medicine/Blackwell Publishing Ltd", None),
         ("jats_manuscript_text_mining_pmc2739903.xml", LicenseCode.PUBLISHER_TDM,
          "This file is available for text mining. It may also be used consistent with the "
-         "principles of fair use under the copyright law."),
+         "principles of fair use under the copyright law.", "am"),
     ])
-    def test_jats_permissions(self, metadata_service, fixture, code, stated_as):
+    def test_jats_permissions(self, metadata_service, fixture, code, stated_as, version):
         article = _jats_article(metadata_service, fixture, "10.1000/fixture")
         found = metadata_service._get_fallback_metadata(article).license
         assert (found.code, found.basis, found.stated_by) == (code, LicenseBasis.STATED,
                                                               LicenseSource.JATS)
-        assert found.stated_as == stated_as
+        assert (found.stated_as, found.version) == (stated_as, version)
+
+    def test_a_textmining_license_ref_yields_to_the_vor_one(self):
+        """The mining grant's license_ref first, then the version of record's."""
+        root = etree.fromstring(
+            b'<article xmlns:ali="http://www.niso.org/schemas/ali/1.0/"><front><article-meta>'
+            b'<permissions><license>'
+            b'<ali:license_ref specific-use="textmining">'
+            b'https://creativecommons.org/licenses/by/4.0/'
+            b'</ali:license_ref><ali:license_ref specific-use="vor">'
+            b'https://creativecommons.org/licenses/by-nc/4.0/</ali:license_ref>'
+            b'</license></permissions></article-meta></front></article>')
+        found = jats_license(root)
+        assert (found.code, found.version) == (LicenseCode.CC_BY_NC, "vor")
 
     @pytest.mark.parametrize("fixture, code, stated_as", [
-        ("elsevier_user_license", LicenseCode.PUBLISHER_TDM,
+        ("elsevier_user_license", LicenseCode.PUBLISHER_OA,
          "http://www.elsevier.com/open-access/userlicense/1.0/"),
         ("elsevier_copyright_only", LicenseCode.ALL_RIGHTS_RESERVED,
          "Copyright © 2013 Elsevier Inc. All rights reserved."),
@@ -587,13 +637,14 @@ class TestLicenseFromProviders:
         ])
         by_doi = {slug: meta.license for slug, meta in found.items()}
         assert by_doi[Identifier(doi="10.1016/j.seizure.2015.08.008").slug].code \
-            is LicenseCode.PUBLISHER_TDM
+            is LicenseCode.PUBLISHER_OA
         scan = by_doi[Identifier(doi="10.1093/scan/nsw123").slug]
         assert (scan.code, scan.version) == (LicenseCode.CC_BY_NC, "vor")
         springer = by_doi[Identifier(doi="10.3758/s13415-016-0459-7").slug]
         assert (springer.code, springer.version) == (LicenseCode.PUBLISHER_TDM, None)
         assert by_doi[Identifier(doi="10.1080/20445911.2021.1954013").slug] is None
-        assert Identifier(doi="10.9999/no-such-work").slug not in by_doi
+        # an unknown DOI is answered too, so that the answer is cached
+        assert by_doi[Identifier(doi="10.9999/no-such-work").slug] is None
 
     def test_an_embargoed_crossref_licence_is_not_yet_in_force(self):
         entries = [
@@ -746,3 +797,259 @@ class TestMetadataStageReadsTheDownloadedFile:
         assert License.from_dict(outcome.payload["license"]).stated_by is LicenseSource.JATS
         assert (outcome.summary["license"], outcome.summary["license_basis"]) == (
             "all-rights-reserved", "stated")
+
+
+class TestCrossrefDeposits:
+    """What each publisher deposits, from live Crossref, and the licence taken from it."""
+
+    @pytest.mark.vcr()
+    def test_each_publishers_deposits(self):
+        expected = {
+            # Wiley: its terms page at vor for a closed article, the CC licence for an open one
+            "10.1002/stab.201590143": (LicenseCode.PUBLISHER_TERMS, "vor"),
+            "10.1002/nba.30097": (LicenseCode.PUBLISHER_TERMS, "vor"),  # beside its tdm grant
+            "10.1002/ps.8775": (LicenseCode.PUBLISHER_TERMS, "vor"),    # am terms too
+            "10.1002/ceat.70128": (LicenseCode.CC_BY, "vor"),
+            # Springer: its TDM URL at vor when closed, the CC licence when open
+            "10.1007/s00709-022-01807-5": (LicenseCode.PUBLISHER_TDM, "vor"),
+            "10.1007/s44470-025-00027-x": (LicenseCode.CC_BY, "vor"),
+            # Elsevier: only TDM grants and sharing policies when closed
+            "10.1016/j.tim.2023.08.014": (LicenseCode.PUBLISHER_TDM, None),
+            "10.1016/j.engfracmech.2023.109223": (LicenseCode.CC_BY_NC_ND, "vor"),
+            "10.1016/j.actatropica.2023.106860": (LicenseCode.PUBLISHER_OA, "am"),
+        }
+        found = CrossrefClient("test@example.com").get_metadata(
+            [Identifier(doi=doi) for doi in expected])
+        for doi, (code, version) in expected.items():
+            licence = found[Identifier(doi=doi).slug].license
+            assert (licence.code, licence.version) == (code, version), doi
+        assert found[Identifier(doi="10.1002/ps.8775").slug].license.stated_as.endswith("#vor")
+
+    def test_the_choice_does_not_depend_on_deposit_order(self):
+        def entry(url, version, start):
+            return {"URL": url, "content-version": version, "start": {"date-time": start}}
+
+        entries = [
+            entry("https://doi.org/10.15223/policy-004", "stm-asf", "2023-01-01T00:00:00Z"),
+            entry("https://www.elsevier.com/tdm/userlicense/1.0/", "tdm", "2023-01-01T00:00:00Z"),
+            entry("http://creativecommons.org/licenses/by-nc/4.0/", "am", "2024-06-01T00:00:00Z"),
+            entry("http://creativecommons.org/licenses/by/4.0/", "vor", "2022-01-01T00:00:00Z"),
+            entry("http://creativecommons.org/licenses/by-nc-nd/4.0/", "vor",
+                  "2023-01-01T00:00:00Z"),
+        ]
+        now = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        chosen = {license_from(order, now).stated_as
+                  for order in (entries, entries[::-1], entries[2:] + entries[:2])}
+        # vor over am, then the latest started
+        assert chosen == {"http://creativecommons.org/licenses/by-nc-nd/4.0/"}
+        # with only a grant and a sharing policy, the grant; the policy never
+        closed = license_from(entries[:2], now)
+        assert (closed.code, closed.version) == (LicenseCode.PUBLISHER_TDM, None)
+        assert license_from(entries[:1], now) is None
+
+    def test_a_licence_at_one_version_beats_a_terms_page_at_it(self):
+        entries = [
+            {"URL": "http://onlinelibrary.wiley.com/termsAndConditions#vor",
+             "content-version": "vor", "start": {"date-time": "2020-01-01T00:00:00Z"}},
+            {"URL": "http://creativecommons.org/licenses/by/4.0/",
+             "content-version": "vor", "start": {"date-time": "2019-01-01T00:00:00Z"}},
+        ]
+        assert license_from(entries).code is LicenseCode.CC_BY
+
+    @pytest.mark.vcr()
+    def test_two_articles_sharing_a_doi_each_get_its_licence(self):
+        one, other = (Identifier(doi="10.1093/scan/nsw123", pmid="1"),
+                      Identifier(doi="10.1093/scan/nsw123", pmid="2"))
+        found = CrossrefClient("test@example.com").get_metadata([one, other])
+        assert found[one.slug].license == found[other.slug].license
+        assert found[one.slug].license.code is LicenseCode.CC_BY_NC
+
+
+def _without_permissions(service, article):
+    """The article's JATS with its <permissions> taken out: a file that states nothing."""
+    path = service.settings.cache_root / "pmc" / safe_hash_stem(article.slug) / "article.xml"
+    root = etree.parse(str(path)).getroot()
+    for permissions in root.iter("permissions"):
+        permissions.getparent().remove(permissions)
+    etree.ElementTree(root).write(str(path))
+
+
+class _Crossref503:
+    """A local server answering every request with the statuses given (the last one
+    repeated), and when it was asked."""
+
+    def __init__(self, *statuses, retry_after="0"):
+        import threading
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+        self.statuses, self.asked = list(statuses), []
+        server = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_GET(self):
+                server.asked.append(time.monotonic())
+                status = server.statuses.pop(0) if len(server.statuses) > 1 \
+                    else server.statuses[0]
+                body = b'{"message": {"items": []}}' if status == 200 else b"{}"
+                self.send_response(status)
+                if status != 200:
+                    self.send_header("Retry-After", retry_after)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            do_POST = do_GET
+
+        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
+        self.url = f"http://127.0.0.1:{self.httpd.server_address[1]}/works/"
+
+    def close(self):
+        self.httpd.shutdown()
+
+
+class TestUnansweredProviders:
+    def test_a_crossref_outage_leaves_the_licence_unresolved_not_assumed(self, tmp_path,
+                                                                         monkeypatch):
+        crossref = _Crossref503(503)
+        monkeypatch.setattr(CrossrefClient, "BASE_URL", crossref.url)
+        service = MetadataService(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                                           ns_pond_root=tmp_path / "n"))
+        service._s2_client = service._pubmed_client = service._openalex_client = None
+        service._crossref_client = CrossrefClient("test@example.com")
+        article = _jats_article(service, "jats_copyright_only_pmc3822871.xml", "10.1000/outage")
+        _without_permissions(service, article)
+        try:
+            result = service.enrich_metadata([article])[article.slug]
+        finally:
+            crossref.close()
+        assert len(crossref.asked) == 4  # retried, then given up
+        assert result.title and result.license is None
+        assert not list((tmp_path / "c" / "metadata" / "crossref").glob("*.json"))
+
+    def test_the_same_article_answered_is_assumed(self, tmp_path, monkeypatch):
+        crossref = _Crossref503(200)
+        monkeypatch.setattr(CrossrefClient, "BASE_URL", crossref.url)
+        service = MetadataService(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                                           ns_pond_root=tmp_path / "n"))
+        service._s2_client = service._pubmed_client = service._openalex_client = None
+        service._crossref_client = CrossrefClient("test@example.com")
+        article = _jats_article(service, "jats_copyright_only_pmc3822871.xml", "10.1000/outage")
+        _without_permissions(service, article)
+        try:
+            result = service.enrich_metadata([article])[article.slug]
+        finally:
+            crossref.close()
+        assert result.license == License.assumed()
+
+    def test_a_retry_after_is_waited_out(self, monkeypatch):
+        crossref = _Crossref503(429, 200, retry_after="3")
+        monkeypatch.setattr(CrossrefClient, "BASE_URL", crossref.url)
+        try:
+            found = CrossrefClient("test@example.com").get_metadata(
+                [Identifier(doi="10.1000/x")])
+        finally:
+            crossref.close()
+        assert crossref.asked[1] - crossref.asked[0] >= 3
+        assert found[Identifier(doi="10.1000/x").slug].license is None
+
+
+def _openalex_location(license, version):
+    return {"license": license, "version": version, "is_oa": True}
+
+
+def test_openalex_takes_the_primary_locations_licence_before_the_best_open_ones():
+    from ingestion_workflow.clients.openalex import _license_from
+
+    work = {"primary_location": _openalex_location("cc-by-nc", "publishedVersion"),
+            "best_oa_location": _openalex_location("cc-by", "acceptedVersion"),
+            "locations": [_openalex_location("cc0", "submittedVersion")]}
+    assert (_license_from(work).code, _license_from(work).version) == (LicenseCode.CC_BY_NC, "vor")
+    work["primary_location"] = _openalex_location(None, "publishedVersion")
+    assert (_license_from(work).code, _license_from(work).version) == (LicenseCode.CC_BY, "am")
+    work["best_oa_location"] = None
+    assert _license_from(work).version == "submitted"
+
+
+def _stage_outcome(tmp_path, edit_jats, crossref_url=None):
+    """The metadata stage run on one pubget article whose JATS `edit_jats` changed."""
+    from ingestion_workflow.catalog import Catalog, Outcome, Status
+    from ingestion_workflow.models import DownloadedFile, DownloadResult, FileType
+    from ingestion_workflow.pipeline import Context
+    from ingestion_workflow.pipeline.stages.metadata import MetadataStage
+
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "n",
+                        semantic_scholar_api_key=None, pubmed_email=None)
+    kept = tmp_path / "pubget" / "articles" / "a05" / "pmcid_3822871" / "article.xml"
+    kept.parent.mkdir(parents=True)
+    root = etree.parse(str(LICENSES / "jats_copyright_only_pmc3822871.xml")).getroot()
+    edit_jats(root)
+    etree.ElementTree(root).write(str(kept))
+    identifier = Identifier(doi="10.1111/j.1582-4934.2009.00659.x", pmcid="PMC3822871")
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(identifier)
+        download = DownloadResult(identifier, DownloadSource.PUBGET, True, files=[
+            DownloadedFile(kept, FileType.XML, "text/xml", DownloadSource.PUBGET)])
+        extraction = ExtractedContent(slug=ref.identifier.slug, source=DownloadSource.PUBGET,
+                                      identifier=ref.identifier, has_coordinates=True)
+        catalog.record([
+            Outcome(ref.id, "download", "pubget", Status.OK, "d-1", download.to_dict()),
+            Outcome(ref.id, "extract", "pubget", Status.OK, "e-1", extraction.to_dict()),
+        ])
+        stage = MetadataStage(settings)
+        stage.service._s2_client = stage.service._pubmed_client = None
+        stage.service._openalex_client = None
+        stage.service._crossref_client = CrossrefClient("test@example.com") \
+            if crossref_url else None
+        ctx = Context(settings, catalog)
+        plan = stage.plan(ctx, [ref], {}, catalog.artifacts([ref.id], "extract"))
+        (outcome,) = list(stage.execute(ctx, plan.pending))
+    return outcome
+
+
+def test_a_licence_alone_is_no_metadata_but_is_kept_with_the_failure(tmp_path):
+    def untitled(root):
+        for title in root.iter("article-title"):
+            title.getparent().remove(title)
+
+    outcome = _stage_outcome(tmp_path, untitled)
+    assert outcome.error == "no provider returned metadata"
+    assert outcome.summary == {"license": "all-rights-reserved", "license_basis": "stated"}
+
+
+def test_an_unanswered_crossref_fails_the_article_for_a_retry(tmp_path, monkeypatch):
+    from ingestion_workflow.catalog import Status
+
+    crossref = _Crossref503(503)
+    monkeypatch.setattr(CrossrefClient, "BASE_URL", crossref.url)
+
+    def unlicensed(root):
+        for permissions in root.iter("permissions"):
+            permissions.getparent().remove(permissions)
+
+    try:
+        outcome = _stage_outcome(tmp_path, unlicensed, crossref.url)
+    finally:
+        crossref.close()
+    assert outcome.error.startswith("licence unresolved")
+    assert outcome.status is not Status.PERMANENT
+
+
+def test_a_semantic_scholar_outage_is_not_an_article_it_has_nothing_for(tmp_path, monkeypatch):
+    server = _Crossref503(500)
+    monkeypatch.setattr(SemanticScholarClient, "BASE_URL", server.url)
+    service = MetadataService(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                                       ns_pond_root=tmp_path / "n"))
+    service._s2_client = SemanticScholarClient("replayed")
+    service._pubmed_client = service._openalex_client = service._crossref_client = None
+    article = _jats_article(service, "jats_copyright_only_pmc3822871.xml", "10.1000/outage")
+    _without_permissions(service, article)
+    try:
+        result = service.enrich_metadata([article])[article.slug]
+    finally:
+        server.close()
+    assert result.license is None
