@@ -474,3 +474,126 @@ def test_a_current_catalog_is_not_rewritten(tmp_path):
         cat._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
         cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', 'https://x.org/10.1/a', 'a1')")
     assert _aliases(root) == {("https://x.org/10.1/a", "a1")}
+
+
+# -- doi case --------------------------------------------------------------------
+
+UPPER = "10.1001/ARCHGENPSYCHIATRY.2012.135"
+
+
+def test_a_doi_is_found_whatever_its_case(catalog):
+    """A search service that lower-cases DOIs used to make a second article."""
+    first = catalog.register(Identifier(pmid="1", doi=UPPER))
+    assert catalog.resolve(Identifier(doi=UPPER.lower())).id == first.id
+    assert catalog.register(Identifier(doi=UPPER.lower())).id == first.id
+    assert catalog.count_articles() == 1
+
+
+def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog):
+    """Enrichment sets `identifier.doi` as the provider spelled it."""
+    identifier = Identifier(pmid="1")
+    identifier.doi = UPPER
+    ref = catalog.register(identifier)
+    catalog.add_aliases([(ref.id, "doi", "10.1/LEARNED")])
+    assert _aliases(catalog.root) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
+    assert catalog.resolve(Identifier(doi="10.1/Learned")).id == ref.id
+
+
+def test_only_basic_latin_letters_ignore_case(catalog):
+    """DOI Handbook 4.3.4: A and a are one letter, Á and á are two."""
+    upper = catalog.register(Identifier(doi="10.26321/Á.GUTIÉRREZ.ZARZA.02.2018.03"))
+    lower = catalog.register(Identifier(doi="10.26321/á.gutiérrez.zarza.02.2018.03"))
+    assert upper.id != lower.id
+    assert upper.identifier.doi == "10.26321/Á.gutiÉrrez.zarza.02.2018.03"
+
+
+def _as_version_two(root, *aliases, outcomes=()):
+    """A catalog written while doi aliases kept their case: schema version 2."""
+    with Catalog.open(root) as cat:
+        for article, created, kind, value in aliases:
+            cat._conn.execute(
+                "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)", (article, created)
+            )
+            cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
+                              (kind, value, article))
+        cat.record(list(outcomes))
+        cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+
+
+def _articles(root):
+    with Catalog.open(root) as cat:
+        rows = cat._conn.execute("SELECT id, merged_into FROM articles")
+        return {(row["id"], row["merged_into"]) for row in rows}
+
+
+def test_an_upper_case_doi_alias_is_found_again_lower_case(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER))
+    with Catalog.open(root) as cat:
+        assert cat.register(Identifier(doi=UPPER.lower())).id == "a1"
+        assert cat.count_articles() == 1
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
+
+
+def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER),
+                    ("a1", "2026-01-01", "doi", UPPER.lower()))
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
+
+
+def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "pmid", "1"),
+        ("old", "2026-01-01", "doi", "10.1/ab"),
+        outcomes=[Outcome(article_id="new", stage="download", source="ace", payload={"n": 1}),
+                  Outcome(article_id="old", stage="extract", source="ace", payload={"n": 2})],
+    )
+
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        with Catalog.open(root) as cat:
+            assert cat.resolve(Identifier(doi="10.1/AB")).id == "old"
+            assert cat.resolve(Identifier(pmid="1")).id == "old"
+            assert {a.stage for a in cat.artifacts_for_article("old")} == {"download", "extract"}
+            assert cat.payload(cat.artifact("old", "download", "ace")) == {"n": 1}
+            assert cat.blobs.exists(cat.artifact("old", "download", "ace").blob)
+            assert cat.stranded_artifacts() == 0
+    assert _articles(root) == {("old", None), ("new", "old")}
+    assert _aliases(root) == {("10.1/ab", "old")}
+    assert "1 articles merged" in caplog.text
+
+
+def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
+    """The production case: 10.1093/CERCOR/11.9.888 on PMID 11552704 and
+    10.1093/cercor/11.9.888 on PMID 11532893; one of them has the wrong DOI."""
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "pmid", "11552704"),
+        ("a1", "2026-01-01", "doi", "10.1093/CERCOR/11.9.888"),
+        ("a2", "2026-01-01", "pmid", "11532893"),
+        ("a2", "2026-01-01", "doi", "10.1093/cercor/11.9.888"),
+    )
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _articles(root) == {("a1", None), ("a2", None)}
+    assert _aliases(root) == {("10.1093/CERCOR/11.9.888", "a1"), ("10.1093/cercor/11.9.888", "a2")}
+    assert "another paper" in caplog.text and "1 left" in caplog.text
+
+
+def test_lower_casing_doi_aliases_again_changes_nothing(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "doi", UPPER), ("a1", "2026-01-01", "doi", UPPER.lower()),
+        ("a2", "2026-01-01", "pmid", "1"), ("a2", "2026-01-01", "doi", "10.1/X"),
+        ("a3", "2026-01-01", "pmid", "2"), ("a3", "2026-01-01", "doi", "10.1/x"),
+        ("a4", "2026-01-01", "doi", "10.1/Y"), ("a5", "2026-01-02", "doi", "10.1/y"),
+    )
+    first = (_articles(root), _aliases(root))
+    with Catalog.open(root) as cat:
+        cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+    assert (_articles(root), _aliases(root)) == first
+    assert first[1] == {
+        (UPPER.lower(), "a1"), ("10.1/X", "a2"), ("10.1/x", "a3"), ("10.1/y", "a4")}

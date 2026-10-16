@@ -50,7 +50,7 @@ CASE_REPORT = "10.1186/s12877-026-07992-9"
 #: Molecular Pain, CC BY.
 MOLECULAR_PAIN = "10.1186/1744-8069-9-43"
 #: Machine Learning, 2001, not open access: its ':' fails an unquoted query.
-KLUWER = "10.1023/A:1010933404324"
+KLUWER = "10.1023/a:1010933404324"
 #: Subscription articles, none open access.
 CLOSED = [
     KLUWER,
@@ -163,7 +163,7 @@ def _assert_key_kept_out(ctx, refs, key):
 
 def test_the_query_quotes_every_doi():
     assert doi_query([CASE_REPORT, KLUWER]) == (
-        'doi:"10.1186/s12877-026-07992-9" OR doi:"10.1023/A:1010933404324"')
+        'doi:"10.1186/s12877-026-07992-9" OR doi:"10.1023/a:1010933404324"')
 
 
 @pytest.mark.vcr(match_on=MATCH_ON)
@@ -572,7 +572,7 @@ def test_dois_are_matched_by_value_not_case_or_order_and_shared_ones_both_served
     the answer's articles, out of the order asked, each go to their own DOI."""
     articles = _five_articles()
     other = "10.1186/s13195-026-02115-3"
-    asked = ["10.1186/S12877-026-07992-9", other]
+    asked = [CASE_REPORT, other]
     cassette = _cassette(tmp_path, _answer(
         _uri(asked), body=_response([articles[other], articles[CASE_REPORT]])))
     identifiers = [Identifier(doi="10.1186/S12877\u2010026\u201007992\u20109"),

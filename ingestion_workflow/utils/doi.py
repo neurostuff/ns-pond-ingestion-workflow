@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import string
 from typing import Optional
 
 #: A DOI inside running text; trailing punctuation is left for `clean_doi`.
@@ -10,17 +11,24 @@ DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>]+")
 #: The resolver address in front of a DOI printed as a URL.
 RESOLVER = re.compile(r"(?i)https?://[^/\s]+/(?=10\.\d{4,9}/)")
 _TRAILING = ".,;:"
+#: DOIs are equal ignoring the case of A-Z, and of no other letter: DOI
+#: Handbook 4.3.4, so `10.26321/Á...` and `10.26321/á...` are two DOIs.
+_ASCII_LOWER = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)
 
 
 def normalize_doi(value: Optional[str]) -> Optional[str]:
-    """The bare DOI of `value`, which may be a resolver URL or `doi:`-prefixed."""
+    """The canonical DOI of `value`, which may be a resolver URL or `doi:`-prefixed.
+
+    Canonical is bare and with A-Z in lower case, so two spellings of one DOI
+    compare equal.
+    """
     value = (value or "").strip()
     # Everything after the resolver is the DOI, brackets included: SICI and
     # Elsevier DOIs contain `(`, `)`, `<` and `>`.
     value = RESOLVER.sub("", value, count=1) if value.lower().startswith("http") else value
     if value.lower().startswith("doi:"):
         value = value[4:]
-    return value or None
+    return value.translate(_ASCII_LOWER) or None
 
 
 def clean_doi(doi: str) -> Optional[str]:

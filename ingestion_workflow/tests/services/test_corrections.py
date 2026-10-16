@@ -228,7 +228,7 @@ def _openalex_stage(retracted, error=None, pubmed=None):
     def get_retractions(dois):
         if error:
             raise error
-        return {d.lower(): r for d, r in retracted.items() if d in dois}
+        return {d.lower(): r for d, r in retracted.items() if d.lower() in dois}
 
     stage._openalex = SimpleNamespace(get_retractions=get_retractions)
     stage._client = SimpleNamespace(get_notices=lambda pmids: pubmed or {})
@@ -292,7 +292,7 @@ def test_a_doi_in_a_notice_citation_is_found_through_the_shared_helper():
     assert find_doi("Lancet. 1997;350:1. doi: 10.1016/S0924-9338(02)00676-4.") == "10.1016/S0924-9338(02)00676-4"
     assert find_doi("Lancet 1997") is None
     assert normalize_doi("https://doi.org/10.1000/x") == normalize_doi("doi:10.1000/x") == "10.1000/x"
-    assert normalize_doi("HTTPS://DOI.ORG/10.1000/X") == "10.1000/X"
+    assert normalize_doi("HTTPS://DOI.ORG/10.1000/X") == "10.1000/x"
 
 
 # -- upload -------------------------------------------------------------------

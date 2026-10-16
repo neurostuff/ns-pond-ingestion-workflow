@@ -60,12 +60,21 @@ def _article_id(seed: str) -> str:
     return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 
 
+def _alias_value(kind: str, value: Any) -> Optional[str]:
+    """How an id is stored and looked up. A DOI is canonicalised here rather than
+    trusted from the Identifier: enrichment assigns `identifier.doi` after
+    construction, as the provider spelled it."""
+    if not value:
+        return None
+    return normalize_doi(str(value)) if kind == "doi" else str(value)
+
+
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
     pairs = []
     for kind in ALIAS_KINDS:
-        value = getattr(identifier, kind, None)
+        value = _alias_value(kind, getattr(identifier, kind, None))
         if value:
-            pairs.append((kind, str(value)))
+            pairs.append((kind, value))
     return pairs
 
 
@@ -94,6 +103,8 @@ class Catalog:
         catalog = cls(conn, root)
         if version < 2:
             catalog._bare_doi_aliases()
+        if version < 3:
+            catalog._lower_case_doi_aliases()
         conn.execute(
             "INSERT INTO meta(key, value) VALUES('schema_version', ?) "
             "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -129,6 +140,53 @@ class Catalog:
                         row["value"], row["article_id"], bare, other["article_id"],
                     )
 
+    def _lower_case_doi_aliases(self) -> None:
+        """Rewrite doi aliases to the lower-case DOI that lookups use.
+
+        A DOI held only in upper case would no longer be found, and its article
+        would be registered a second time. Where the lower-case DOI is already
+        an alias: of the same article, the other spelling is dropped; of another
+        article that could be this paper, the two are merged; of a different
+        paper (another PMID or PMCID), the spelling is left, and logged, for a
+        person to settle.
+        """
+        counts = dict.fromkeys(("rewritten", "dropped", "merged", "left"), 0)
+        with self._write() as conn:
+            rows = conn.execute(
+                "SELECT value, article_id FROM aliases WHERE kind='doi'").fetchall()
+            for row in rows:
+                value, canonical = row["value"], normalize_doi(row["value"])
+                # Lower-casing keeps the length. A shorter canonical form is a
+                # resolver URL that `_bare_doi_aliases` left for a person.
+                if canonical == value or len(canonical) != len(value):
+                    continue
+                other = conn.execute(
+                    "SELECT article_id FROM aliases WHERE kind='doi' AND value=?", (canonical,)
+                ).fetchone()
+                if other is None:
+                    conn.execute("UPDATE aliases SET value=? WHERE kind='doi' AND value=?",
+                                 (canonical, value))
+                    counts["rewritten"] += 1
+                    continue
+                mine = self._follow_merge(row["article_id"])
+                theirs = self._follow_merge(other["article_id"])
+                if mine != theirs and self._compatible(conn, [theirs, mine], {}):
+                    mine = theirs = self._merge(conn, [theirs, mine])
+                    counts["merged"] += 1
+                if mine == theirs:
+                    conn.execute("DELETE FROM aliases WHERE kind='doi' AND value=?", (value,))
+                    counts["dropped"] += 1
+                else:
+                    logger.warning(
+                        "catalog: doi %s of %s is also %s of %s, another paper; left as it is",
+                        value, mine, canonical, theirs,
+                    )
+                    counts["left"] += 1
+        logger.info(
+            "catalog: lower-cased doi aliases: %(rewritten)d rewritten, %(dropped)d other "
+            "spellings dropped, %(merged)d articles merged, %(left)d left", counts,
+        )
+
     def close(self) -> None:
         self._conn.close()
 
@@ -162,7 +220,7 @@ class Catalog:
 
     #: Kinds an article may hold only one of. Two PMIDs on one article means two
     #: papers were fused; the same for two PMCIDs. DOIs are not on the list --
-    #: one paper legitimately has several (a preprint, an erratum, case variants).
+    #: one paper legitimately has several (a preprint, an erratum).
     SINGULAR = ("pmid", "pmcid")
 
     def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
@@ -305,9 +363,9 @@ class Catalog:
         is not known until the upload stage has run.
         """
         rows = [
-            (kind, value, article_id)
+            (kind, _alias_value(kind, value), article_id)
             for article_id, kind, value in pairs
-            if article_id and kind in ALIAS_KINDS and value
+            if article_id and kind in ALIAS_KINDS and _alias_value(kind, value)
         ]
         if not rows:
             return
