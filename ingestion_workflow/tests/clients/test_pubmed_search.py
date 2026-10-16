@@ -2,6 +2,7 @@ import json
 import pytest
 from ingestion_workflow.clients.pubmed import (
     ESEARCH_MAX_RESULTS,
+    PUBMED_FIRST_YEAR,
     PubMedClient,
 )
 from ingestion_workflow.config import Settings
@@ -66,16 +67,17 @@ def test_pubmed_client_search_splits_large_result_set(monkeypatch):
         mindate=None,
         maxdate=None,
     ) -> int:
-        if mindate is None and maxdate is None:
-            return ESEARCH_MAX_RESULTS
-        return 2
+        if mindate is not None and mindate == maxdate:
+            return 2
+        return ESEARCH_MAX_RESULTS  # the whole query, and the span it is split over
 
     monkeypatch.setattr(client, "_esearch_count", fake_count)
     monkeypatch.setattr(client, "_collect_esearch_ids", fake_collect)
     monkeypatch.setattr(client, "_current_year", lambda: 1992)
 
     results = client.search("test query", start_year=1990)
-    expected_count = (1992 - 1990 + 1) * 2
+    # up to next year, for in-press articles dated ahead
+    expected_count = (1993 - 1990 + 1) * 2
     assert len(results.identifiers) == expected_count
     assert results.lookup("1990001", key="pmid") is not None
 
@@ -87,23 +89,61 @@ def test_pubmed_search_service_delegates(settings_with_email):
         def __init__(self) -> None:
             self.calls = []
 
-        def search(self, query: str, *, start_year: int) -> Identifiers:
-            self.calls.append((query, start_year))
+        def search(self, query: str, **years) -> Identifiers:
+            self.calls.append((query, years))
             return expected
 
     from ingestion_workflow.services.query_dialect import Years, parse
     from ingestion_workflow.services.search import PubMedSearchService
 
     dummy_client = DummyClient()
-    service = PubMedSearchService(
-        parse("sample", Years.parse("2000")),
-        settings_with_email,
-        client=dummy_client,
-    )
+    for years in (Years.parse("2000"), Years.parse("2024:2026"), None):
+        service = PubMedSearchService(
+            parse("sample", years), settings_with_email, client=dummy_client
+        )
+        assert service.search() is expected
+    term = '"sample"[tiab] AND "journal article"[pt]'
+    assert dummy_client.calls == [
+        (f"{term} AND 2000[dp]", {"start_year": 2000, "end_year": 2000}),
+        (f"{term} AND 2024:2026[dp]", {"start_year": 2024, "end_year": 2026}),
+        # no --year: the client splits over all of PubMed's years
+        (term, {}),
+    ]
 
-    results = service.search()
-    assert results is expected
-    assert dummy_client.calls == [('"sample"[tiab] AND "journal article"[pt] AND 2000[dp]', 2000)]
+
+def test_a_large_search_without_years_is_split_over_all_of_pubmed(monkeypatch):
+    client = PubMedClient(email="tests@example.com")
+    windows = []
+
+    def fake_count(query, *, mindate=None, maxdate=None):
+        if mindate is None or mindate != maxdate:
+            return ESEARCH_MAX_RESULTS
+        return 1
+
+    def fake_collect(query, *, mindate=None, maxdate=None, retmax=None):
+        windows.append(mindate)
+        return [str(mindate)], 1
+
+    monkeypatch.setattr(client, "_esearch_count", fake_count)
+    monkeypatch.setattr(client, "_collect_esearch_ids", fake_collect)
+    monkeypatch.setattr(client, "_current_year", lambda: 2026)
+
+    client.search("test query")
+    assert windows[0] == PUBMED_FIRST_YEAR and windows[-1] == 2027
+    assert windows == list(range(PUBMED_FIRST_YEAR, 2028))
+
+
+def test_a_large_search_with_hits_dated_outside_its_years_is_refused(monkeypatch):
+    client = PubMedClient(email="tests@example.com")
+
+    def fake_count(query, *, mindate=None, maxdate=None):
+        return ESEARCH_MAX_RESULTS if mindate is None else ESEARCH_MAX_RESULTS - 3
+
+    monkeypatch.setattr(client, "_esearch_count", fake_count)
+    monkeypatch.setattr(client, "_current_year", lambda: 2026)
+
+    with pytest.raises(ValueError, match="only 9,997 are dated 1781-2027"):
+        client.search("test query")
 
 
 def test_pubmed_search_service_requires_email(monkeypatch):

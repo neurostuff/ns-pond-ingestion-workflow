@@ -12,6 +12,7 @@ from ingestion_workflow.services.search import (
     SearchReport,
     resolve_hits,
     search_services,
+    surviving,
 )
 
 
@@ -52,11 +53,15 @@ SEARCHED = {
 def report(tmp_path):
     with Catalog.open(tmp_path / "catalog") as catalog:
         catalog.register_many([Identifier(pmid="3")])
-        before = resolve_hits(catalog, SEARCHED)
-        catalog.register_many([r for records in SEARCHED.values() for r in records])
-        # what enrichment registers: PubMed's PMID 2 is OpenAlex's DOI b
-        catalog.register_many([Identifier(pmid="2", doi="10.1/b")])
-        return SearchReport.build(before, resolve_hits(catalog, SEARCHED))
+        return _run(catalog, SEARCHED, enriched=[Identifier(pmid="2", doi="10.1/b")])
+
+
+def _run(catalog, searched, enriched):
+    """What `ingest add` does: snapshot, register, enrich (here: register `enriched`), report."""
+    held = set(catalog.all_article_ids())
+    catalog.register_many([r for records in searched.values() for r in records])
+    catalog.register_many(enriched)
+    return SearchReport.build(surviving(catalog, held), resolve_hits(catalog, searched))
 
 
 def test_articles_are_counted_as_the_catalog_holds_them_after_enrichment(report):
@@ -89,7 +94,42 @@ def test_a_record_without_an_id_is_counted_not_dropped(report):
 def test_the_same_title_without_the_same_id_stays_distinct(tmp_path):
     searched = {"a": [Identifier(doi="10.1/a"), Identifier(doi="10.1/b")]}
     with Catalog.open(tmp_path / "catalog") as catalog:
-        before = resolve_hits(catalog, searched)
-        catalog.register_many(searched["a"])
-        report = SearchReport.build(before, resolve_hits(catalog, searched))
+        report = _run(catalog, searched, enriched=[])
     assert len(report.articles["a"]) == 2
+
+
+def test_a_hit_enrichment_merges_into_a_held_article_is_known(tmp_path):
+    # the catalog holds the paper by DOI only; PubMed's hit is its PMID
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        catalog.register_many([Identifier(doi="10.1/x")])
+        report = _run(
+            catalog,
+            {"pubmed": [Identifier(pmid="111")]},
+            enriched=[Identifier(pmid="111", doi="10.1/x")],
+        )
+        assert catalog.count_articles() == 1
+    assert len(report.distinct) == 1
+    assert len(report.known) == 1
+
+
+def test_held_articles_chained_by_enrichment_are_one_known_article(tmp_path):
+    # held as three articles: DOI x, PMID 1, PMCID 9; enrichment links x to 1 and 1 to 9
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        catalog.register_many(
+            [Identifier(doi="10.1/x"), Identifier(pmid="1"), Identifier(pmcid="PMC9")]
+        )
+        report = _run(
+            catalog,
+            {"openalex": [Identifier(doi="10.1/x")], "pubmed": [Identifier(pmid="1")]},
+            enriched=[Identifier(doi="10.1/x", pmid="1"), Identifier(pmid="1", pmcid="PMC9")],
+        )
+        assert catalog.count_articles() == 1
+    assert len(report.distinct) == 1
+    assert len(report.known) == 1  # never more known than distinct, so never fewer than 0 new
+
+
+def test_an_article_new_this_run_is_not_known(tmp_path):
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        catalog.register_many([Identifier(doi="10.1/held")])
+        report = _run(catalog, {"pubmed": [Identifier(pmid="5")]}, enriched=[])
+    assert len(report.distinct) == 1 and not report.known

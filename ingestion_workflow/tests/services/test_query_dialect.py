@@ -144,6 +144,9 @@ def test_a_comma_cannot_be_said_to_openalex():
         ("fMRI*", "not part of the search syntax"),
         ("fMRI AND title:memory", "not part of the search syntax"),
         ("fMRI AND -rats", "write NOT 'rats'"),
+        ('"fMRI[tiab]"', "not part of the search syntax"),
+        ('"fMRI | PET"', "not part of the search syntax"),
+        ("fMRI+PET", "not part of the search syntax"),
         ("   ", "empty"),
     ],
 )
@@ -186,3 +189,13 @@ def test_sciencedirect_refuses_a_query_over_its_length_limit():
     long = " OR ".join(f'"functional magnetic resonance {n}"' for n in range(8))
     with pytest.raises(QueryError, match="ScienceDirect accepts at most 250"):
         to_sciencedirect(parse(long))
+
+
+def test_a_phrase_s_spacing_is_collapsed():
+    assert parse('"functional   MRI"').expr == Phrase("functional MRI")
+
+
+def test_sciencedirect_takes_exactly_250_characters():
+    assert len(to_sciencedirect(parse("a" * 250))["qs"]) == 250
+    with pytest.raises(QueryError, match="this one is 251"):
+        to_sciencedirect(parse("a" * 251))

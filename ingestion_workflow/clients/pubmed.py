@@ -20,6 +20,8 @@ from ingestion_workflow.models.notices import Correction, PartialAnswer, correct
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
 PUBMED_KEYED_REQUEST_LIMIT = 10  # what NCBI allows a request carrying an API key
+# The earliest publication year in PubMed (measured 2026-10-15: none dated 1000-1780).
+PUBMED_FIRST_YEAR = 1781
 ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
 
@@ -58,9 +60,16 @@ class PubMedClient:
         self,
         query: str,
         *,
-        start_year: int = 1990,
+        start_year: int = PUBMED_FIRST_YEAR,
+        end_year: Optional[int] = None,
     ) -> Identifiers:
-        """Search PubMed and return identifiers for matching PMIDs."""
+        """Search PubMed and return identifiers for matching PMIDs.
+
+        A result set too large for one ESearch is collected year by year from
+        `start_year` to `end_year` (default: next year, for in-press dates). If
+        the hits dated in that span are fewer than all hits, it raises rather
+        than lose the rest.
+        """
 
         query = query.strip()
         if not query:
@@ -71,10 +80,18 @@ class PubMedClient:
             return Identifiers()
 
         if total_count >= ESEARCH_MAX_RESULTS:
+            if end_year is None:
+                end_year = self._current_year() + 1
+            dated = self._esearch_count(query, mindate=start_year, maxdate=end_year)
+            if dated < total_count:
+                raise ValueError(
+                    f"PubMed finds {total_count:,} for {query!r}, more than one search "
+                    f"returns, and only {dated:,} are dated {start_year}-{end_year}, the "
+                    "years it can be split into; narrow the query or its years"
+                )
             # Break large queries into smaller date windows to stay under ESearch limits.
             pmid_set: set[str] = set()
-            current_year = self._current_year()
-            for year in range(start_year, current_year + 1):
+            for year in range(start_year, end_year + 1):
                 year_count = self._esearch_count(query, mindate=year, maxdate=year)
                 if year_count == 0:
                     continue

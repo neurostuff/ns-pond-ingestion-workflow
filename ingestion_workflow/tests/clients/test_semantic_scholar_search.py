@@ -21,3 +21,5 @@ def test_a_bulk_search_follows_the_token_to_the_last_page():
     assert dois and all(doi == doi.lower() for doi in dois)
     assert any(i.pmid for i in found) and any(i.pmcid for i in found)
     assert all(i.other_ids["semantic_scholar"] for i in found)
+    [paper] = [i for i in found if i.doi == "10.1093/psyrad/kkag001"]
+    assert (paper.pmid, paper.pmcid) == ("41767428", "PMC12947161")

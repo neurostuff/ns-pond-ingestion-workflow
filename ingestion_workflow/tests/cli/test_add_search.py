@@ -105,8 +105,15 @@ def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_pat
 def test_pmids_and_dois_meet_only_once_enriched(config):
     # PubMed returns PMIDs and ScienceDirect DOIs: without enrichment they share nothing
     out = _add(
-        config, "--search", "fMRI AND misophonia", "--year", "2026",
-        "--provider", "pubmed", "--provider", "sciencedirect",
+        config,
+        "--search",
+        "fMRI AND misophonia",
+        "--year",
+        "2026",
+        "--provider",
+        "pubmed",
+        "--provider",
+        "sciencedirect",
     )
     for line in [
         "pubmed: 3 articles, 2 found by no other",
@@ -116,3 +123,100 @@ def test_pmids_and_dois_meet_only_once_enriched(config):
         "19 identifiers resolved to 19 new articles (0 already known)",
     ]:
         assert line in out
+
+
+def _fails(config, *args):
+    result = CliRunner().invoke(cli.app, ["add", *args, "--config", str(config)])
+    assert result.exit_code == 2, result.output
+    return " ".join(result.output.replace("│", " ").split())
+
+
+def test_a_query_that_does_not_parse_is_a_usage_error(config):
+    assert "the query ends where a term was expected" in _fails(config, "--search", "fMRI AND")
+
+
+def test_year_and_provider_need_a_search(config):
+    assert "--year and --provider apply to --search" in _fails(config, "--year", "2026")
+    assert "--year and --provider apply to --search" in _fails(config, "--provider", "pubmed")
+
+
+def test_a_bad_year_is_a_usage_error(config):
+    assert "a year is 2026 or a range 2025:2026" in _fails(
+        config, "--search", "fMRI", "--year", "2026-2027"
+    )
+
+
+def test_a_provider_without_its_key_is_a_usage_error(tmp_path, monkeypatch):
+    monkeypatch.delenv("SEMANTIC_SCHOLAR_API_KEY", raising=False)
+    path = tmp_path / "keyless.yaml"
+    path.write_text(json.dumps({"catalog_root": str(tmp_path / "catalog"), "log_to_file": False}))
+    out = _fails(path, "--search", "fMRI", "--provider", "semantic_scholar")
+    assert "semantic_scholar_api_key must be configured" in out
+
+
+def test_a_query_one_provider_cannot_say_is_a_usage_error(config):
+    out = _fails(config, "--search", "abstract: fMRI", "--provider", "sciencedirect")
+    assert "ScienceDirect's search has no abstract field" in out
+
+
+@pytest.mark.vcr(match_on=["method", "scheme", "host", "port", "path", "query", "body"])
+def test_a_search_sciencedirect_cannot_split_stops_before_any_provider_searches(
+    config, tmp_path, monkeypatch
+):
+    # the cassette holds ScienceDirect's one count and no OpenAlex request
+    from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
+
+    monkeypatch.setattr(ScienceDirectClient, "MAX_RESULTS", 30)
+    out = _fails(
+        config,
+        "--search",
+        "fMRI AND misophonia",
+        "--provider",
+        "openalex",
+        "--provider",
+        "sciencedirect",
+    )
+    assert "ScienceDirect finds 73" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 0
+
+
+@pytest.mark.vcr()
+def test_a_search_adds_to_the_ids_given(config, tmp_path):
+    out = _add(
+        config,
+        "10.1016/j.neuroimage.2023.120",
+        "--search",
+        "fMRI AND synesthesia",
+        "--year",
+        "2026",
+        "--provider",
+        "openalex",
+        "--no-enrich",
+    )
+    assert "openalex: 2 articles" in out
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.count_articles() == 3
+
+
+@pytest.mark.vcr(match_on=["method", "scheme", "host", "port", "path", "query", "body"])
+def test_a_split_sciencedirect_search_prints_each_part(config, monkeypatch):
+    from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
+
+    monkeypatch.setattr(ScienceDirectClient, "PAGE_SIZE", 10)
+    monkeypatch.setattr(ScienceDirectClient, "MAX_RESULTS", 30)
+    out = _add(
+        config,
+        "--search",
+        "(fMRI AND misophonia) OR (fMRI AND hyperacusis)",
+        "--year",
+        "2025:2026",
+        "--provider",
+        "sciencedirect",
+        "--no-enrich",
+    )
+    assert "split into 3 queries, each paged to its end:" in out
+    assert '{"qs": "fMRI AND misophonia", "date": "2025-2026"}: 24 found' in out
+    assert '{"qs": "fMRI AND hyperacusis", "date": "2025"}: 19 found' in out
+    assert '{"qs": "fMRI AND hyperacusis", "date": "2026"}: 23 found' in out
+    assert "  54 records" in out  # an article two parts found is one record

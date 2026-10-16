@@ -12,7 +12,7 @@ ingest add --search 'title: fMRI AND memory NOT rats' --year 2025:2026 --provide
 | Option | Meaning |
 |---|---|
 | `--search QUERY` | the query, in the syntax below |
-| `--year 2026`, `--year 2025:2026` | publication year, or an inclusive range |
+| `--year 2026`, `--year 2025:2026` | publication year, or an inclusive range (see below for what each provider dates by) |
 | `--provider NAME` | repeatable: `pubmed`, `semantic_scholar`, `openalex`, `sciencedirect`. Default: all four |
 
 ## Query syntax
@@ -42,15 +42,29 @@ The same query, `fMRI OR "functional MRI"` for 2026, becomes:
 | OpenAlex (`/works`) | `filter=title_and_abstract.search:(fMRI OR "functional MRI"),type:article,publication_year:2026` |
 | ScienceDirect (`/content/search/sciencedirect`) | `{"qs": "fMRI OR \"functional MRI\"", "date": "2026"}` |
 
-- PubMed and OpenAlex are limited to journal articles (`"journal article"[pt]`,
-  `type:article`). `title:` and `abstract:` become `[ti]` / `[ab]` and
-  `title.search` / `abstract.search`.
+What is searched:
+
+| Provider | Default | `title:` | `abstract:` | Publication types | `--year` matches |
+|---|---|---|---|---|---|
+| PubMed | title and abstract `[tiab]` | `[ti]` | `[ab]` | journal articles | `[dp]`: the electronic or the print date |
+| Semantic Scholar | title and abstract | refused | refused | all (preprints, conference papers, ...) | its `year` |
+| OpenAlex | `title_and_abstract.search` | `title.search` | `abstract.search` | `type:article` | `publication_year` (the earliest date) |
+| ScienceDirect | full text `qs` | `title` | refused | all of ScienceDirect | its `date` (the issue year) |
+
+Because each provider dates a work its own way, an article published online
+in December and in print in January can fall in different years at different
+providers; near the ends of a `--year` range, "found by no other" counts are
+inflated by such articles.
+
 - Semantic Scholar's bulk search matches title and abstract together, so a
   `title:` or `abstract:` query is refused for it.
 - ScienceDirect has no abstract field. A default query is searched as `qs`, the
   article's **full text** (references excluded), so it finds articles that only
   mention the terms in their methods or discussion. `title:` is searched as
   `title`; `abstract:` is refused. Its queries are limited to 250 characters.
+  ScienceDirect's web search allows 8 Boolean connectors per field; the API
+  counted the hits of a ninth and accepted ten (checked 2026-10-15), so no
+  connector limit is enforced.
 - OpenAlex separates filters with commas, so a comma in a term or phrase is
   refused for it.
 
@@ -58,11 +72,19 @@ When a provider cannot express part of a query, the search stops with an error
 naming the provider before any provider is searched; nothing is dropped from a
 query. Leave that provider out with `--provider`, or rephrase.
 
-Each provider's results are paged to the end. ScienceDirect serves at most
-6,000 results of one query; a query finding more is run as its top-level `OR`
-clauses, and a clause still finding more as one query per year of `--year`.
-Each sub-query and the number it found is printed, and the union of the parts
-is the whole result. A clause that is still too large after that is an error.
+Each provider's results are paged to the end:
+
+- PubMed returns at most 10,000 hits per search. A search finding more is run
+  one `--year` year at a time, or without `--year` one year at a time from
+  1781 (PubMed's earliest) to next year. If fewer hits are dated in that span
+  than were found, it stops with an error rather than lose the rest.
+- ScienceDirect serves at most 6,000 results of one query. A query finding more
+  is run as its top-level `OR` clauses, and a clause still finding more as one
+  query per year of `--year`. This plan is made from counts before any provider
+  is searched, so a query that cannot be split (one year, no `OR` left, still
+  over 6,000) is an error before any work is done. Each sub-query and the
+  number it found is printed; the union of the parts, with an article found by
+  two parts counted once, is the whole result.
 
 ## Credentials
 
@@ -80,7 +102,9 @@ DOI, PMID and PMCID, `add` prints, counted in catalog articles:
 
 - per provider, the articles it found and how many no other provider found;
 - for each pair of providers, how many articles both found;
-- how many distinct articles there are, and how many the catalog already held;
+- how many distinct articles there are, and how many the catalog already held
+  (an article is already held when it is, or has been merged with, one the
+  catalog held before this run);
 - per provider, how many records had no DOI, PMID or PMCID. The catalog keys
   articles on those, so these records are not registered.
 

@@ -30,7 +30,12 @@ from ingestion_workflow.pipeline import (
 )
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.services.logging import configure_logging
-from ingestion_workflow.services.search import SEARCH_SERVICES, SearchReport, resolve_hits
+from ingestion_workflow.services.search import (
+    SEARCH_SERVICES,
+    SearchReport,
+    resolve_hits,
+    surviving,
+)
 
 app = typer.Typer(
     name="ingest",
@@ -116,12 +121,20 @@ def add(
         "--search",
         "-s",
         help=(
-            "Search title and abstract of journal articles, e.g. "
-            "'fMRI OR \"functional MRI\"'. Syntax: docs/search.md."
+            "Search query, e.g. 'fMRI OR \"functional MRI\"' (syntax: docs/search.md). "
+            "PubMed and OpenAlex search title and abstract of journal articles, "
+            "Semantic Scholar title and abstract of every publication type, "
+            "ScienceDirect the full text."
         ),
     ),
     year: Optional[str] = typer.Option(
-        None, "--year", help="Publication year of --search: 2026, or a range 2025:2026."
+        None,
+        "--year",
+        help=(
+            "Publication year of --search: 2026, or a range 2025:2026. Each provider "
+            "dates a work its own way: PubMed's [dp] (electronic or print date), "
+            "Semantic Scholar's year, OpenAlex's publication_year, ScienceDirect's date."
+        ),
     ),
     provider: Optional[List[SearchProvider]] = typer.Option(
         None,
@@ -209,7 +222,7 @@ def add(
 
     with _catalog(settings) as catalog:
         before = catalog.count_articles()
-        hits_before = resolve_hits(catalog, searched)
+        held = set(catalog.all_article_ids()) if searched else set()
         refs = catalog.register_many(found)
         if enrich:
             refs = _enrich(settings, catalog, refs)
@@ -217,7 +230,8 @@ def add(
         refs = list({ref.id: ref for ref in refs}.values())
         after = catalog.count_articles()
         if searched:
-            _report_search(SearchReport.build(hits_before, resolve_hits(catalog, searched)))
+            report = SearchReport.build(surviving(catalog, held), resolve_hits(catalog, searched))
+            _report_search(report)
         if local:
             _attach_pdfs(
                 settings, catalog, pdfs, local, in_place=in_place, prefer_over=prefer_over or ()
