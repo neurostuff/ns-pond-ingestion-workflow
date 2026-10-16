@@ -78,9 +78,14 @@ def test_a_second_run_finds_them_in_the_catalog(config, tmp_path):
 def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_path):
     out = _add(config, "--search", "fMRI AND misophonia")
 
-    assert 'pubmed: ("fMRI"[tiab] AND "misophonia"[tiab]) AND "journal article"[pt]' in out
-    assert "semantic_scholar: query=fMRI + misophonia" in out
-    assert '{"qs": "fMRI AND misophonia"}: 73 found' in out
+    assert "years: 1990 onward (the default; --year to change)" in out
+    assert (
+        'pubmed: ("fMRI"[tiab] AND "misophonia"[tiab]) AND "journal article"[pt] '
+        "AND 1990:3000[dp]"
+    ) in out
+    assert "semantic_scholar: query=fMRI + misophonia year=1990-" in out
+    assert "type:article,publication_year:>1989" in out
+    assert '{"qs": "fMRI AND misophonia", "date": "1990-9999"}: 73 found' in out
     for line in [
         "pubmed: 11 articles, 1 found by no other",
         "semantic_scholar: 13 articles, 3 found by no other",
@@ -94,7 +99,7 @@ def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_pat
         "87 distinct: 0 already in the catalog, 87 new",
         # each article is enriched and counted once, however many providers found it
         "87 identifiers resolved to 87 new articles (0 already known)",
-        "3 semantic_scholar records have no DOI, PMID or PMCID and were not registered",
+        "2 semantic_scholar records have no DOI, PMID or PMCID and were not registered",
     ]:
         assert line in out
     with Catalog.open(tmp_path / "catalog") as catalog:
@@ -221,9 +226,10 @@ def test_a_split_sciencedirect_search_prints_each_part(config, monkeypatch):
     )
     q = "(fMRI AND misophonia) OR (fMRI AND hyperacusis)"
     for line in [
-        f'{{"qs": "{q}", "date": "2025-2026"}}: 54 found; split by year: 21 + 33 = 54',
-        f'{{"qs": "{q}", "date": "2026"}}: 33 found; split on \'disease\': 17 + 16 = 33',
-        f'{{"qs": "({q}) NOT disease", "date": "2026"}}: 16 found',
+        f'    {{"qs": "{q}", "date": "2025-2026"}}: 54 found; split by year: 21 + 33',
+        f'      {{"qs": "{q}", "date": "2026"}}: 33 found; split into halves of its OR clauses',
+        '        {"qs": "fMRI AND hyperacusis", "date": "2026"}: 23 found',
     ]:
         assert line in out
-    assert "  54 records" in out  # an article two parts found is one record
+    # the plan is printed before the search pages anything
+    assert out.index("split by year") < out.index("sciencedirect: 54 records")

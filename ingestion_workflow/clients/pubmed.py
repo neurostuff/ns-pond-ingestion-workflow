@@ -20,8 +20,6 @@ from ingestion_workflow.models.notices import Correction, PartialAnswer, correct
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
 PUBMED_KEYED_REQUEST_LIMIT = 10  # what NCBI allows a request carrying an API key
-# The earliest publication year in PubMed (measured 2026-10-15: none dated 1000-1780).
-PUBMED_FIRST_YEAR = 1781
 PUBMED_LAST_YEAR = 9999  # the latest maxdate ESearch takes
 ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
@@ -61,7 +59,7 @@ class PubMedClient:
         self,
         query: str,
         *,
-        start_year: int = PUBMED_FIRST_YEAR,
+        start_year: int = 1990,
         end_year: Optional[int] = None,
     ) -> Identifiers:
         """Search PubMed and return identifiers for matching PMIDs.

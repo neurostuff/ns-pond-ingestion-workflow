@@ -6,7 +6,7 @@ import pytest
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.services.query_dialect import parse, to_semantic_scholar
 
-# 1,038 papers when recorded: a full page of 1,000 and a second of 38
+# 1,016 papers from 1990 on when recorded: a full page of 1,000 and a second of 16
 QUERY = "fMRI AND (dyslexia OR tinnitus OR insomnia OR stuttering)"
 
 
@@ -16,7 +16,7 @@ def test_a_bulk_search_follows_the_token_to_the_last_page():
     client = SemanticScholarClient(os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"))
     found = list(client.search_bulk(to_semantic_scholar(parse(QUERY))).identifiers)
 
-    assert len(found) == 1038
+    assert len(found) == 1016
     dois = [i.doi for i in found if i.doi]
     assert dois and all(doi == doi.lower() for doi in dois)
     assert any(i.pmid for i in found) and any(i.pmcid for i in found)

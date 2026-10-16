@@ -56,7 +56,7 @@ Node = Union[Term, Phrase, Not, And, Or]
 @dataclass(frozen=True)
 class Years:
     start: int
-    end: int
+    end: Optional[int]  # None: through the latest year with hits
 
     @classmethod
     def parse(cls, text: str) -> "Years":
@@ -69,12 +69,21 @@ class Years:
             raise QueryError(f"the year range {text!r} ends before it starts")
         return cls(start, end)
 
+    def __str__(self) -> str:
+        if self.end is None:
+            return f"{self.start} onward"
+        return str(self.start) if self.start == self.end else f"{self.start}-{self.end}"
+
+
+# Searched when no years are given: BOLD fMRI began in 1990.
+DEFAULT_YEARS = Years(1990, None)
+
 
 @dataclass(frozen=True)
 class Query:
     expr: Node
     field: Field = Field.TITLE_ABSTRACT
-    years: Optional[Years] = None
+    years: Years = DEFAULT_YEARS
 
 
 OPERATORS = ("AND", "OR", "NOT")
@@ -85,13 +94,13 @@ _TOKEN = re.compile(r'\s*(?:(\()|(\))|"([^"]*)("?)|([^\s()"]+))')
 _FIELD_PREFIX = re.compile(r"\s*(title|abstract)\s*:", re.IGNORECASE)
 
 
-def parse(text: str, years: Optional[Years] = None) -> Query:
+def parse(text: str, years: Years = DEFAULT_YEARS) -> Query:
     """The query `text` means, searched in `years`."""
     field = Field.TITLE_ABSTRACT
     prefix = _FIELD_PREFIX.match(text)
     if prefix:
         field = Field(prefix.group(1).lower())
-        text = text[prefix.end():]
+        text = text[prefix.end() :]
     tokens = _tokenize(text)
     if not tokens:
         raise QueryError("the search query is empty")
@@ -119,7 +128,7 @@ def _tokenize(text: str) -> List[Tuple[str, str]]:
             if not closed:
                 raise QueryError(f'the phrase "{phrase} has no closing quote')
             if not phrase.strip():
-                raise QueryError("an empty phrase \"\" matches nothing")
+                raise QueryError('an empty phrase "" matches nothing')
             _check_characters(phrase)
             tokens.append(("phrase", " ".join(phrase.split())))
         elif word in OPERATORS:
@@ -137,7 +146,7 @@ def _check_characters(text: str) -> None:
     if bad:
         raise QueryError(
             f"{''.join(bad)!r} in {text!r} is not part of the search syntax "
-            "(terms, \"phrases\", AND, OR, NOT, parentheses, and a leading title: or abstract:)"
+            '(terms, "phrases", AND, OR, NOT, parentheses, and a leading title: or abstract:)'
         )
 
 
@@ -196,7 +205,10 @@ class _Parser:
         raise QueryError(f"{value!r} needs a term before it")
 
 
-def _years(years: Years, separator: str) -> str:
+def _years(years: Years, separator: str, onward: str) -> str:
+    """`years` as `start`, `start<separator>end`, or `onward` with {start} filled in."""
+    if years.end is None:
+        return onward.format(start=years.start, before=years.start - 1)
     return str(years.start) if years.start == years.end else f"{years.start}{separator}{years.end}"
 
 
@@ -237,8 +249,8 @@ def to_pubmed(query: Query) -> str:
         return _compound(node, render, " AND ", " OR ", " NOT ")
 
     parts = [_grouped(query.expr, render), '"journal article"[pt]']
-    if query.years:
-        parts.append(f"{_years(query.years, ':')}[dp]")
+    # 3000 is PubMed's own way to say "to the present", dates ahead included
+    parts.append(f"{_years(query.years, ':', '{start}:3000')}[dp]")
     return " AND ".join(parts)
 
 
@@ -262,8 +274,7 @@ def to_semantic_scholar(query: Query) -> Dict[str, str]:
         return _compound(node, render, " + ", " | ", " + -")
 
     params = {"query": render(query.expr)}
-    if query.years:
-        params["year"] = _years(query.years, "-")
+    params["year"] = _years(query.years, "-", "{start}-")
     return params
 
 
@@ -299,8 +310,7 @@ def to_openalex(query: Query) -> str:
         return _boolean_words(node, render)
 
     filters = [f"{_OPENALEX_FILTERS[query.field]}:({render(query.expr)})", "type:article"]
-    if query.years:
-        filters.append(f"publication_year:{_years(query.years, '-')}")
+    filters.append(f"publication_year:{_years(query.years, '-', '>{before}')}")
     return ",".join(filters)
 
 
@@ -331,6 +341,5 @@ def to_sciencedirect(query: Query) -> Dict[str, str]:
             f"this one is {len(text)}: {text}"
         )
     body = {"title" if query.field is Field.TITLE else "qs": text}
-    if query.years:
-        body["date"] = _years(query.years, "-")
+    body["date"] = _years(query.years, "-", "{start}-9999")
     return body

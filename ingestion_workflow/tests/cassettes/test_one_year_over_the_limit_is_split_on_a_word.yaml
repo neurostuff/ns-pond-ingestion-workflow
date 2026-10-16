@@ -59,7 +59,7 @@ interactions:
         338\"}],\"details\":{}}"
     headers:
       CF-RAY:
-      - a4b3a2e898d646a5-DFW
+      - a4b3ddde5c086a03-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -69,7 +69,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 02:29:31 GMT
+      - Fri, 16 Oct 2026 03:09:46 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -83,17 +83,17 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - c931438f7da57c91
+      - 9edbdb097be2e10a
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - c931438f7da57c91
+      - 9edbdb097be2e10a
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19789'
+      - '19709'
       X-RateLimit-Reset:
       - '1792759529'
       allow:
@@ -164,7 +164,7 @@ interactions:
         215"}],"details":{}}'
     headers:
       CF-RAY:
-      - a4b3a2eeeb976b2a-DFW
+      - a4b3dde4ad10f81c-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -174,7 +174,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 02:29:32 GMT
+      - Fri, 16 Oct 2026 03:09:47 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -188,17 +188,17 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - a5e7db219cb5955d
+      - e06b829c4b17f25b
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - a5e7db219cb5955d
+      - e06b829c4b17f25b
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19788'
+      - '19708'
       X-RateLimit-Reset:
       - '1792759529'
       allow:
@@ -213,593 +213,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"qs": "fMRI AND misophonia AND disease", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '95'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":6,"results":[{"authors":[{"order":1,"name":"Despina
-        Melanthiou"},{"order":2,"name":"Georgia Panayiotou"},{"order":7,"name":"Panos
-        Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
-        De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"authors":[{"order":1,"name":"Boen Deng"},{"order":2,"name":"Divya
-        Bharatkumar Adhia"},{"order":5,"name":"Dirk De Ridder"}],"doi":"10.1016/j.neurom.2026.08.002","loadDate":"2026-08-18T00:00:00.000Z","openAccess":true,"pages":{},"pii":"S1094715926013279","publicationDate":"2026-08-18","sourceTitle":"Neuromodulation:
-        Technology at the Neural Interface","title":"Sound-Paired Vagus Nerve Stimulation
-        for Tinnitus: A Safety and Feasibility Trial","uri":"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint"},{"doi":"10.1016/B978-0-443-27446-6.00020-0","loadDate":"2026-07-31T00:00:00.000Z","openAccess":false,"pages":{"first":"341","last":"348"},"pii":"B9780443274466000200","publicationDate":"2026-12-31","sourceTitle":"Neurobiology
-        of Obsessive-Compulsive Disorder","title":"Index","uri":"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Erica
-        Greenberg"},{"order":2,"name":"Florentina Lazaroaie"},{"order":3,"name":"Cathy
-        Budman"}],"doi":"10.1016/B978-0-443-13554-5.00014-6","loadDate":"2026-02-01T00:00:00.000Z","openAccess":false,"pages":{"first":"97","last":"109"},"pii":"B9780443135545000146","publicationDate":"2026-12-31","sourceTitle":"Handbook
-        of Clinical Neurology","title":"Chapter 9: Explosive outbursts in Tourette
-        syndrome and chronic tic disorders","uri":"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        215"},{"authors":[{"order":1,"name":"Sophie A. Froud"},{"order":2,"name":"Benjamin
-        A. Levett"},{"order":6,"name":"Jason D. Warren"}],"doi":"10.1016/B978-0-443-29198-2.00012-6","loadDate":"2025-11-07T00:00:00.000Z","openAccess":false,"pages":{"first":"79","last":"114"},"pii":"B9780443291982000126","publicationDate":"2026-12-31","sourceTitle":"Age-Related
-        Hearing Loss, Brain Health, and Dementia","title":"4: A neurological perspective
-        on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a2f519ffb68c-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:33 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - 49259e108612de10
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - 49259e108612de10
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19787'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND treatment", "date": "2026", "display":
-      {"offset": 0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '97'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":15,"results":[{"authors":[{"order":1,"name":"Pradeep
-        Dheerendra"},{"order":2,"name":"Sukhbinder Kumar"},{"order":5,"name":"Lars
-        F. Muckli"}],"doi":"10.1016/j.mehy.2025.111840","loadDate":"2025-11-24T00:00:00.000Z","openAccess":true,"pages":{"first":"111840"},"pii":"S0306987725002798","publicationDate":"2026-01-31","sourceTitle":"Medical
-        Hypotheses","title":"Reducing hyper mirroring in misophonia: A proposal for
-        cortico-cortical paired associative stimulation (ccPAS) as a potential intervention
-        for treatment","uri":"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        206"},{"authors":[{"order":1,"name":"Shagun Ajmera"},{"order":2,"name":"Rafay
-        A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
-        Research","title":"Altered intrinsic brain connectivity in misophonia, with
-        and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        471"},{"authors":[{"order":1,"name":"Despina Melanthiou"},{"order":2,"name":"Georgia
-        Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Emily B. J. Coffey"},{"order":2,"name":"Philippe
-        Fournier"}],"doi":"10.1016/j.heares.2026.109772","loadDate":"2026-08-08T00:00:00.000Z","openAccess":false,"pages":{"first":"109772"},"pii":"S0378595526002431","publicationDate":"2026-10-31","sourceTitle":"Hearing
-        Research","title":"Special issue on misophonia and hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        480"},{"authors":[{"order":1,"name":"Jamie Ward"}],"doi":"10.1016/j.cortex.2026.06.001","loadDate":"2026-06-09T00:00:00.000Z","openAccess":false,"pages":{"first":"152","last":"156"},"pii":"S0010945226001607","publicationDate":"2026-09-30","sourceTitle":"Cortex","title":"The
-        proximal and distal causes of misophonia","uri":"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        202"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
-        De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"authors":[{"order":1,"name":"Sarah M. Banker"},{"order":2,"name":"Matthew
-        Schafer"},{"order":10,"name":"Daniela Schiller"}],"doi":"10.1016/j.biopsych.2025.08.018","loadDate":"2025-09-08T00:00:00.000Z","openAccess":true,"pages":{"first":"389","last":"398"},"pii":"S0006322325014350","publicationDate":"2026-08-15","sourceTitle":"Biological
-        Psychiatry","title":"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        100, Issue 4"},{"authors":[{"order":1,"name":"Andrada D. Neacsiu"},{"order":2,"name":"Shaurya
-        Dave"},{"order":3,"name":"Nimesha Gerlus"}],"doi":"10.1016/j.bbr.2026.116199","loadDate":"2026-04-05T00:00:00.000Z","openAccess":false,"pages":{"first":"116199"},"pii":"S0166432826001750","publicationDate":"2026-06-25","sourceTitle":"Behavioural
-        Brain Research","title":"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior","uri":"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        508"},{"authors":[{"order":1,"name":"Yange Chang"},{"order":2,"name":"Hanyang
-        Ruan"},{"order":3,"name":"Kathrin Koch"}],"doi":"10.1016/j.neuroimage.2026.122128","loadDate":"2026-07-14T00:00:00.000Z","openAccess":true,"pages":{"first":"122128"},"pii":"S105381192600443X","publicationDate":"2026-09-30","sourceTitle":"NeuroImage","title":"Altered
-        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder","uri":"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        338"},{"authors":[{"order":1,"name":"Boen Deng"},{"order":2,"name":"Divya
-        Bharatkumar Adhia"},{"order":5,"name":"Dirk De Ridder"}],"doi":"10.1016/j.neurom.2026.08.002","loadDate":"2026-08-18T00:00:00.000Z","openAccess":true,"pages":{},"pii":"S1094715926013279","publicationDate":"2026-08-18","sourceTitle":"Neuromodulation:
-        Technology at the Neural Interface","title":"Sound-Paired Vagus Nerve Stimulation
-        for Tinnitus: A Safety and Feasibility Trial","uri":"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a2fb5b0692a5-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:34 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - e119be04dea399d6
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - e119be04dea399d6
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19786'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND patients", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '96'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":9,"results":[{"authors":[{"order":1,"name":"Shagun
-        Ajmera"},{"order":2,"name":"Rafay A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
-        Research","title":"Altered intrinsic brain connectivity in misophonia, with
-        and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        471"},{"authors":[{"order":1,"name":"Despina Melanthiou"},{"order":2,"name":"Georgia
-        Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Pradeep Dheerendra"},{"order":2,"name":"Sukhbinder
-        Kumar"},{"order":5,"name":"Lars F. Muckli"}],"doi":"10.1016/j.mehy.2025.111840","loadDate":"2025-11-24T00:00:00.000Z","openAccess":true,"pages":{"first":"111840"},"pii":"S0306987725002798","publicationDate":"2026-01-31","sourceTitle":"Medical
-        Hypotheses","title":"Reducing hyper mirroring in misophonia: A proposal for
-        cortico-cortical paired associative stimulation (ccPAS) as a potential intervention
-        for treatment","uri":"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        206"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
-        De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"authors":[{"order":1,"name":"Yange Chang"},{"order":2,"name":"Hanyang
-        Ruan"},{"order":3,"name":"Kathrin Koch"}],"doi":"10.1016/j.neuroimage.2026.122128","loadDate":"2026-07-14T00:00:00.000Z","openAccess":true,"pages":{"first":"122128"},"pii":"S105381192600443X","publicationDate":"2026-09-30","sourceTitle":"NeuroImage","title":"Altered
-        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder","uri":"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        338"},{"authors":[{"order":1,"name":"Boen Deng"},{"order":2,"name":"Divya
-        Bharatkumar Adhia"},{"order":5,"name":"Dirk De Ridder"}],"doi":"10.1016/j.neurom.2026.08.002","loadDate":"2026-08-18T00:00:00.000Z","openAccess":true,"pages":{},"pii":"S1094715926013279","publicationDate":"2026-08-18","sourceTitle":"Neuromodulation:
-        Technology at the Neural Interface","title":"Sound-Paired Vagus Nerve Stimulation
-        for Tinnitus: A Safety and Feasibility Trial","uri":"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Lysianne
-        Beynel"},{"order":2,"name":"Eva Wiener"},{"order":14,"name":"Zhi-De Deng"}],"doi":"10.1016/j.neubiorev.2026.106786","loadDate":"2026-05-28T00:00:00.000Z","openAccess":true,"pages":{"first":"106786"},"pii":"S0149763426002435","publicationDate":"2026-08-31","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Noninvasive brain stimulation combined with
-        evidence-based psychotherapy for psychiatric disorders: A meta-analysis of
-        optimal implementation parameters","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        187"},{"authors":[{"order":1,"name":"Erica Greenberg"},{"order":2,"name":"Florentina
-        Lazaroaie"},{"order":3,"name":"Cathy Budman"}],"doi":"10.1016/B978-0-443-13554-5.00014-6","loadDate":"2026-02-01T00:00:00.000Z","openAccess":false,"pages":{"first":"97","last":"109"},"pii":"B9780443135545000146","publicationDate":"2026-12-31","sourceTitle":"Handbook
-        of Clinical Neurology","title":"Chapter 9: Explosive outbursts in Tourette
-        syndrome and chronic tic disorders","uri":"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        215"},{"authors":[{"order":1,"name":"Sophie A. Froud"},{"order":2,"name":"Benjamin
-        A. Levett"},{"order":6,"name":"Jason D. Warren"}],"doi":"10.1016/B978-0-443-29198-2.00012-6","loadDate":"2025-11-07T00:00:00.000Z","openAccess":false,"pages":{"first":"79","last":"114"},"pii":"B9780443291982000126","publicationDate":"2026-12-31","sourceTitle":"Age-Related
-        Hearing Loss, Brain Health, and Dementia","title":"4: A neurological perspective
-        on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a301a941fa6c-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:35 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - dee92af7b0ca6908
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - dee92af7b0ca6908
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19785'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND human", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '93'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: "{\"resultsFound\":12,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Shagun
-        Ajmera\"},{\"order\":2,\"name\":\"Rafay A. Khan\"},{\"order\":7,\"name\":\"Fatima
-        T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
-        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
-        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        471\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
-        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
-        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
-        for cortico-cortical paired associative stimulation (ccPAS) as a potential
-        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        206\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
-        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        510\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
-        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        183\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
-        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
-        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
-        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        202\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
-        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
-        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        188\"},{\"authors\":[{\"order\":1,\"name\":\"Sarah M. Banker\"},{\"order\":2,\"name\":\"Matthew
-        Schafer\"},{\"order\":10,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.biopsych.2025.08.018\",\"loadDate\":\"2025-09-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"389\",\"last\":\"398\"},\"pii\":\"S0006322325014350\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        100, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
-        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        508\"},{\"authors\":[{\"order\":1,\"name\":\"Lysianne Beynel\"},{\"order\":2,\"name\":\"Eva
-        Wiener\"},{\"order\":14,\"name\":\"Zhi-De Deng\"}],\"doi\":\"10.1016/j.neubiorev.2026.106786\",\"loadDate\":\"2026-05-28T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106786\"},\"pii\":\"S0149763426002435\",\"publicationDate\":\"2026-08-31\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Noninvasive brain stimulation combined
-        with evidence-based psychotherapy for psychiatric disorders: A meta-analysis
-        of optimal implementation parameters\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        187\"}],\"details\":{}}"
-    headers:
-      CF-RAY:
-      - a4b3a307da1cec2e-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:36 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - 813e66f91451799b
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - 813e66f91451799b
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19784'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND children", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '96'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":8,"results":[{"authors":[{"order":1,"name":"Shagun
-        Ajmera"},{"order":2,"name":"Rafay A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
-        Research","title":"Altered intrinsic brain connectivity in misophonia, with
-        and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        471"},{"authors":[{"order":1,"name":"Despina Melanthiou"},{"order":2,"name":"Georgia
-        Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Jamie Ward"}],"doi":"10.1016/j.cortex.2026.06.001","loadDate":"2026-06-09T00:00:00.000Z","openAccess":false,"pages":{"first":"152","last":"156"},"pii":"S0010945226001607","publicationDate":"2026-09-30","sourceTitle":"Cortex","title":"The
-        proximal and distal causes of misophonia","uri":"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        202"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
-        De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"authors":[{"order":1,"name":"Sarah M. Banker"},{"order":2,"name":"Matthew
-        Schafer"},{"order":10,"name":"Daniela Schiller"}],"doi":"10.1016/j.biopsych.2025.08.018","loadDate":"2025-09-08T00:00:00.000Z","openAccess":true,"pages":{"first":"389","last":"398"},"pii":"S0006322325014350","publicationDate":"2026-08-15","sourceTitle":"Biological
-        Psychiatry","title":"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        100, Issue 4"},{"doi":"10.1016/B978-0-443-27446-6.00020-0","loadDate":"2026-07-31T00:00:00.000Z","openAccess":false,"pages":{"first":"341","last":"348"},"pii":"B9780443274466000200","publicationDate":"2026-12-31","sourceTitle":"Neurobiology
-        of Obsessive-Compulsive Disorder","title":"Index","uri":"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Erica
-        Greenberg"},{"order":2,"name":"Florentina Lazaroaie"},{"order":3,"name":"Cathy
-        Budman"}],"doi":"10.1016/B978-0-443-13554-5.00014-6","loadDate":"2026-02-01T00:00:00.000Z","openAccess":false,"pages":{"first":"97","last":"109"},"pii":"B9780443135545000146","publicationDate":"2026-12-31","sourceTitle":"Handbook
-        of Clinical Neurology","title":"Chapter 9: Explosive outbursts in Tourette
-        syndrome and chronic tic disorders","uri":"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        215"},{"authors":[{"order":1,"name":"Parul Jain"},{"order":2,"name":"Daniela
-        Schiller"}],"doi":"10.1016/j.neuron.2026.05.031","loadDate":"2026-06-24T00:00:00.000Z","openAccess":false,"pages":{},"pii":"S0896627326004460","publicationDate":"2026-06-24","sourceTitle":"Neuron","title":"From
-        first impressions to bonds: The neural dynamics of social relationships","uri":"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a30e1dc0e7ff-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:37 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - 7e51ed6f8da04d36
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - 7e51ed6f8da04d36
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19783'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND women", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '93'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":1,"results":[{"authors":[{"order":1,"name":"Parul Jain"},{"order":2,"name":"Daniela
-        Schiller"}],"doi":"10.1016/j.neuron.2026.05.031","loadDate":"2026-06-24T00:00:00.000Z","openAccess":false,"pages":{},"pii":"S0896627326004460","publicationDate":"2026-06-24","sourceTitle":"Neuron","title":"From
-        first impressions to bonds: The neural dynamics of social relationships","uri":"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a3145ac4f432-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:38 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - f8d49e1e26332b0d
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - f8d49e1e26332b0d
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19782'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND cohort", "date": "2026", "display": {"offset":
+    body: '{"qs": "fMRI AND misophonia NOT memory", "date": "2026", "display": {"offset":
       0, "show": 10}}'
     headers:
       Accept:
@@ -818,26 +232,33 @@ interactions:
     uri: https://api.elsevier.com/content/search/sciencedirect
   response:
     body:
-      string: '{"resultsFound":4,"results":[{"authors":[{"order":1,"name":"Shagun
-        Ajmera"},{"order":2,"name":"Rafay A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
-        Research","title":"Altered intrinsic brain connectivity in misophonia, with
-        and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        471"},{"authors":[{"order":1,"name":"Despina Melanthiou"},{"order":2,"name":"Georgia
-        Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Lysianne Beynel"},{"order":2,"name":"Eva
-        Wiener"},{"order":14,"name":"Zhi-De Deng"}],"doi":"10.1016/j.neubiorev.2026.106786","loadDate":"2026-05-28T00:00:00.000Z","openAccess":true,"pages":{"first":"106786"},"pii":"S0149763426002435","publicationDate":"2026-08-31","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Noninvasive brain stimulation combined with
-        evidence-based psychotherapy for psychiatric disorders: A meta-analysis of
-        optimal implementation parameters","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        187"},{"authors":[{"order":1,"name":"Sophie A. Froud"},{"order":2,"name":"Benjamin
-        A. Levett"},{"order":6,"name":"Jason D. Warren"}],"doi":"10.1016/B978-0-443-29198-2.00012-6","loadDate":"2025-11-07T00:00:00.000Z","openAccess":false,"pages":{"first":"79","last":"114"},"pii":"B9780443291982000126","publicationDate":"2026-12-31","sourceTitle":"Age-Related
-        Hearing Loss, Brain Health, and Dementia","title":"4: A neurological perspective
-        on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
+      string: "{\"resultsFound\":6,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Halime
+        S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
+        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
+        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        510\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
+        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
+        for cortico-cortical paired associative stimulation (ccPAS) as a potential
+        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        206\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Yange Chang\"},{\"order\":2,\"name\":\"Hanyang
+        Ruan\"},{\"order\":3,\"name\":\"Kathrin Koch\"}],\"doi\":\"10.1016/j.neuroimage.2026.122128\",\"loadDate\":\"2026-07-14T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122128\"},\"pii\":\"S105381192600443X\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
+        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        338\"},{\"authors\":[{\"order\":1,\"name\":\"Boen Deng\"},{\"order\":2,\"name\":\"Divya
+        Bharatkumar Adhia\"},{\"order\":5,\"name\":\"Dirk De Ridder\"}],\"doi\":\"10.1016/j.neurom.2026.08.002\",\"loadDate\":\"2026-08-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{},\"pii\":\"S1094715926013279\",\"publicationDate\":\"2026-08-18\",\"sourceTitle\":\"Neuromodulation:
+        Technology at the Neural Interface\",\"title\":\"Sound-Paired Vagus Nerve
+        Stimulation for Tinnitus: A Safety and Feasibility Trial\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada
+        Neacsiu\"},{\"order\":2,\"name\":\"Nimesha Gerlus\"},{\"order\":3,\"name\":\"Shaurya
+        Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
+        Psychiatry\",\"title\":\"720. How Brain State Can Be Harnessed to Enhance
+        Neuromodulation Outcomes: A Proof of Concept Discussion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322326010693?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        99, Issue 10, Supplement\"}],\"details\":{}}"
     headers:
       CF-RAY:
-      - a4b3a31a9b1ea619-DFW
+      - a4b3ddeaeee3b52a-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -847,7 +268,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 02:29:39 GMT
+      - Fri, 16 Oct 2026 03:09:48 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -861,17 +282,17 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - 5a2f1441f2535e7c
+      - 310a989053f0fe18
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - 5a2f1441f2535e7c
+      - 310a989053f0fe18
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19781'
+      - '19707'
       X-RateLimit-Reset:
       - '1792759529'
       allow:
@@ -886,89 +307,8 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"qs": "fMRI AND misophonia AND mice", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '92'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":3,"results":[{"authors":[{"order":1,"name":"Jose Antonio
-        Lopez-Escamez"},{"order":2,"name":"Dirk De Ridder"},{"order":7,"name":"Sven
-        Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"doi":"10.1016/B978-0-443-27446-6.00020-0","loadDate":"2026-07-31T00:00:00.000Z","openAccess":false,"pages":{"first":"341","last":"348"},"pii":"B9780443274466000200","publicationDate":"2026-12-31","sourceTitle":"Neurobiology
-        of Obsessive-Compulsive Disorder","title":"Index","uri":"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Sophie
-        A. Froud"},{"order":2,"name":"Benjamin A. Levett"},{"order":6,"name":"Jason
-        D. Warren"}],"doi":"10.1016/B978-0-443-29198-2.00012-6","loadDate":"2025-11-07T00:00:00.000Z","openAccess":false,"pages":{"first":"79","last":"114"},"pii":"B9780443291982000126","publicationDate":"2026-12-31","sourceTitle":"Age-Related
-        Hearing Loss, Brain Health, and Dementia","title":"4: A neurological perspective
-        on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a320daea7ad8-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:40 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - f261c9c5357d9f0b
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - f261c9c5357d9f0b
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19780'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND anxiety", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
+    body: '{"qs": "fMRI AND misophonia AND memory", "date": "2026", "display": {"offset":
+      0, "show": 100}}'
     headers:
       Accept:
       - application/json
@@ -986,204 +326,7 @@ interactions:
     uri: https://api.elsevier.com/content/search/sciencedirect
   response:
     body:
-      string: "{\"resultsFound\":13,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Halime
-        S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
-        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        510\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
-        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        183\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
-        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
-        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
-        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        202\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
-        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
-        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        188\"},{\"authors\":[{\"order\":1,\"name\":\"Sarah M. Banker\"},{\"order\":2,\"name\":\"Matthew
-        Schafer\"},{\"order\":10,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.biopsych.2025.08.018\",\"loadDate\":\"2025-09-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"389\",\"last\":\"398\"},\"pii\":\"S0006322325014350\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        100, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
-        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        508\"},{\"authors\":[{\"order\":1,\"name\":\"Boen Deng\"},{\"order\":2,\"name\":\"Divya
-        Bharatkumar Adhia\"},{\"order\":5,\"name\":\"Dirk De Ridder\"}],\"doi\":\"10.1016/j.neurom.2026.08.002\",\"loadDate\":\"2026-08-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{},\"pii\":\"S1094715926013279\",\"publicationDate\":\"2026-08-18\",\"sourceTitle\":\"Neuromodulation:
-        Technology at the Neural Interface\",\"title\":\"Sound-Paired Vagus Nerve
-        Stimulation for Tinnitus: A Safety and Feasibility Trial\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Yange
-        Chang\"},{\"order\":2,\"name\":\"Hanyang Ruan\"},{\"order\":3,\"name\":\"Kathrin
-        Koch\"}],\"doi\":\"10.1016/j.neuroimage.2026.122128\",\"loadDate\":\"2026-07-14T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122128\"},\"pii\":\"S105381192600443X\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
-        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        338\"},{\"authors\":[{\"order\":1,\"name\":\"Lysianne Beynel\"},{\"order\":2,\"name\":\"Eva
-        Wiener\"},{\"order\":14,\"name\":\"Zhi-De Deng\"}],\"doi\":\"10.1016/j.neubiorev.2026.106786\",\"loadDate\":\"2026-05-28T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106786\"},\"pii\":\"S0149763426002435\",\"publicationDate\":\"2026-08-31\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Noninvasive brain stimulation combined
-        with evidence-based psychotherapy for psychiatric disorders: A meta-analysis
-        of optimal implementation parameters\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        187\"}],\"details\":{}}"
-    headers:
-      CF-RAY:
-      - a4b3a3272dbc6bf6-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:41 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - c7e43e32d7e0bc35
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - c7e43e32d7e0bc35
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19779'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND longitudinal", "date": "2026", "display":
-      {"offset": 0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '100'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: "{\"resultsFound\":5,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Halime
-        S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
-        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        510\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
-        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        183\"},{\"authors\":[{\"order\":1,\"name\":\"Parul Jain\"},{\"order\":2,\"name\":\"Daniela
-        Schiller\"}],\"doi\":\"10.1016/j.neuron.2026.05.031\",\"loadDate\":\"2026-06-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{},\"pii\":\"S0896627326004460\",\"publicationDate\":\"2026-06-24\",\"sourceTitle\":\"Neuron\",\"title\":\"From
-        first impressions to bonds: The neural dynamics of social relationships\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Erica
-        Greenberg\"},{\"order\":2,\"name\":\"Florentina Lazaroaie\"},{\"order\":3,\"name\":\"Cathy
-        Budman\"}],\"doi\":\"10.1016/B978-0-443-13554-5.00014-6\",\"loadDate\":\"2026-02-01T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"97\",\"last\":\"109\"},\"pii\":\"B9780443135545000146\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Handbook
-        of Clinical Neurology\",\"title\":\"Chapter 9: Explosive outbursts in Tourette
-        syndrome and chronic tic disorders\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        215\"},{\"authors\":[{\"order\":1,\"name\":\"Sophie A. Froud\"},{\"order\":2,\"name\":\"Benjamin
-        A. Levett\"},{\"order\":6,\"name\":\"Jason D. Warren\"}],\"doi\":\"10.1016/B978-0-443-29198-2.00012-6\",\"loadDate\":\"2025-11-07T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"79\",\"last\":\"114\"},\"pii\":\"B9780443291982000126\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Age-Related
-        Hearing Loss, Brain Health, and Dementia\",\"title\":\"4: A neurological perspective
-        on hearing impairment in dementia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint\"}],\"details\":{}}"
-    headers:
-      CF-RAY:
-      - a4b3a32d6ea8d7d9-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:42 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - abe9c67a99d9aa03
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - abe9c67a99d9aa03
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19778'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND questionnaire", "date": "2026", "display":
-      {"offset": 0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '101'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":9,"results":[{"authors":[{"order":1,"name":"Shagun
+      string: '{"resultsFound":11,"results":[{"authors":[{"order":1,"name":"Shagun
         Ajmera"},{"order":2,"name":"Rafay A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
         Research","title":"Altered intrinsic brain connectivity in misophonia, with
         and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
@@ -1191,12 +334,9 @@ interactions:
         Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
         & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
         and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Pradeep Dheerendra"},{"order":2,"name":"Sukhbinder
-        Kumar"},{"order":5,"name":"Lars F. Muckli"}],"doi":"10.1016/j.mehy.2025.111840","loadDate":"2025-11-24T00:00:00.000Z","openAccess":true,"pages":{"first":"111840"},"pii":"S0306987725002798","publicationDate":"2026-01-31","sourceTitle":"Medical
-        Hypotheses","title":"Reducing hyper mirroring in misophonia: A proposal for
-        cortico-cortical paired associative stimulation (ccPAS) as a potential intervention
-        for treatment","uri":"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        206"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
+        183"},{"authors":[{"order":1,"name":"Jamie Ward"}],"doi":"10.1016/j.cortex.2026.06.001","loadDate":"2026-06-09T00:00:00.000Z","openAccess":false,"pages":{"first":"152","last":"156"},"pii":"S0010945226001607","publicationDate":"2026-09-30","sourceTitle":"Cortex","title":"The
+        proximal and distal causes of misophonia","uri":"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
+        202"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
         De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
         & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
         hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
@@ -1208,315 +348,10 @@ interactions:
         Dave"},{"order":3,"name":"Nimesha Gerlus"}],"doi":"10.1016/j.bbr.2026.116199","loadDate":"2026-04-05T00:00:00.000Z","openAccess":false,"pages":{"first":"116199"},"pii":"S0166432826001750","publicationDate":"2026-06-25","sourceTitle":"Behavioural
         Brain Research","title":"The power of context: Enhancing repetitive transcranial
         magnetic stimulation effects through skillful behavior","uri":"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        508"},{"authors":[{"order":1,"name":"Boen Deng"},{"order":2,"name":"Divya
-        Bharatkumar Adhia"},{"order":5,"name":"Dirk De Ridder"}],"doi":"10.1016/j.neurom.2026.08.002","loadDate":"2026-08-18T00:00:00.000Z","openAccess":true,"pages":{},"pii":"S1094715926013279","publicationDate":"2026-08-18","sourceTitle":"Neuromodulation:
-        Technology at the Neural Interface","title":"Sound-Paired Vagus Nerve Stimulation
-        for Tinnitus: A Safety and Feasibility Trial","uri":"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Erica
-        Greenberg"},{"order":2,"name":"Florentina Lazaroaie"},{"order":3,"name":"Cathy
-        Budman"}],"doi":"10.1016/B978-0-443-13554-5.00014-6","loadDate":"2026-02-01T00:00:00.000Z","openAccess":false,"pages":{"first":"97","last":"109"},"pii":"B9780443135545000146","publicationDate":"2026-12-31","sourceTitle":"Handbook
-        of Clinical Neurology","title":"Chapter 9: Explosive outbursts in Tourette
-        syndrome and chronic tic disorders","uri":"https://www.sciencedirect.com/science/article/pii/B9780443135545000146?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        215"},{"authors":[{"order":1,"name":"Sophie A. Froud"},{"order":2,"name":"Benjamin
-        A. Levett"},{"order":6,"name":"Jason D. Warren"}],"doi":"10.1016/B978-0-443-29198-2.00012-6","loadDate":"2025-11-07T00:00:00.000Z","openAccess":false,"pages":{"first":"79","last":"114"},"pii":"B9780443291982000126","publicationDate":"2026-12-31","sourceTitle":"Age-Related
-        Hearing Loss, Brain Health, and Dementia","title":"4: A neurological perspective
-        on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
-    headers:
-      CF-RAY:
-      - a4b3a333ab2424e9-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:43 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - 66fd8f87c10c053b
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - 66fd8f87c10c053b
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19777'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND randomized", "date": "2026", "display":
-      {"offset": 0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '98'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: "{\"resultsFound\":9,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Shagun
-        Ajmera\"},{\"order\":2,\"name\":\"Rafay A. Khan\"},{\"order\":7,\"name\":\"Fatima
-        T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
-        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
-        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        471\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
-        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
-        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
-        for cortico-cortical paired associative stimulation (ccPAS) as a potential
-        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        206\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
-        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        510\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
-        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        183\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
-        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        508\"},{\"authors\":[{\"order\":1,\"name\":\"Boen Deng\"},{\"order\":2,\"name\":\"Divya
-        Bharatkumar Adhia\"},{\"order\":5,\"name\":\"Dirk De Ridder\"}],\"doi\":\"10.1016/j.neurom.2026.08.002\",\"loadDate\":\"2026-08-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{},\"pii\":\"S1094715926013279\",\"publicationDate\":\"2026-08-18\",\"sourceTitle\":\"Neuromodulation:
-        Technology at the Neural Interface\",\"title\":\"Sound-Paired Vagus Nerve
-        Stimulation for Tinnitus: A Safety and Feasibility Trial\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Yange
-        Chang\"},{\"order\":2,\"name\":\"Hanyang Ruan\"},{\"order\":3,\"name\":\"Kathrin
-        Koch\"}],\"doi\":\"10.1016/j.neuroimage.2026.122128\",\"loadDate\":\"2026-07-14T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122128\"},\"pii\":\"S105381192600443X\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
-        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        338\"},{\"authors\":[{\"order\":1,\"name\":\"Lysianne Beynel\"},{\"order\":2,\"name\":\"Eva
-        Wiener\"},{\"order\":14,\"name\":\"Zhi-De Deng\"}],\"doi\":\"10.1016/j.neubiorev.2026.106786\",\"loadDate\":\"2026-05-28T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106786\"},\"pii\":\"S0149763426002435\",\"publicationDate\":\"2026-08-31\",\"sourceTitle\":\"Neuroscience
-        & Biobehavioral Reviews\",\"title\":\"Noninvasive brain stimulation combined
-        with evidence-based psychotherapy for psychiatric disorders: A meta-analysis
-        of optimal implementation parameters\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002435?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        187\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada Neacsiu\"},{\"order\":2,\"name\":\"Nimesha
-        Gerlus\"},{\"order\":3,\"name\":\"Shaurya Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"720. How Brain State Can Be Harnessed to Enhance
-        Neuromodulation Outcomes: A Proof of Concept Discussion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322326010693?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        99, Issue 10, Supplement\"}],\"details\":{}}"
-    headers:
-      CF-RAY:
-      - a4b3a339eb38f825-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:44 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - 5f533cb38e37f0ae
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - 5f533cb38e37f0ae
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19776'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia NOT patients", "date": "2026", "display": {"offset":
-      0, "show": 10}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '96'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: "{\"resultsFound\":8,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Halime
-        S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
-        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        510\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
-        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
-        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
-        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        202\"},{\"authors\":[{\"order\":1,\"name\":\"Sarah M. Banker\"},{\"order\":2,\"name\":\"Matthew
-        Schafer\"},{\"order\":10,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.biopsych.2025.08.018\",\"loadDate\":\"2025-09-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"389\",\"last\":\"398\"},\"pii\":\"S0006322325014350\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        100, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
-        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        508\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada Neacsiu\"},{\"order\":2,\"name\":\"Nimesha
-        Gerlus\"},{\"order\":3,\"name\":\"Shaurya Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"720. How Brain State Can Be Harnessed to Enhance
-        Neuromodulation Outcomes: A Proof of Concept Discussion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322326010693?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        99, Issue 10, Supplement\"},{\"doi\":\"10.1016/B978-0-443-27446-6.00020-0\",\"loadDate\":\"2026-07-31T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"341\",\"last\":\"348\"},\"pii\":\"B9780443274466000200\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Neurobiology
-        of Obsessive-Compulsive Disorder\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Parul
-        Jain\"},{\"order\":2,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.neuron.2026.05.031\",\"loadDate\":\"2026-06-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{},\"pii\":\"S0896627326004460\",\"publicationDate\":\"2026-06-24\",\"sourceTitle\":\"Neuron\",\"title\":\"From
-        first impressions to bonds: The neural dynamics of social relationships\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint\"}],\"details\":{}}"
-    headers:
-      CF-RAY:
-      - a4b3a3403f4aeaf6-DFW
-      Cache-Control:
-      - no-store, no-cache, must-revalidate, max-age=0
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 16 Oct 2026 02:29:45 GMT
-      Expires:
-      - Thu, 01 Jan 1970 00:00:00 GMT
-      Pragma:
-      - no-cache
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      Vary:
-      - Origin
-      - Access-Control-Request-Method
-      - Access-Control-Request-Headers
-      X-ELS-ReqId:
-      - f156dc63d1e3faac
-      X-ELS-ResourceVersion:
-      - default
-      X-ELS-Status:
-      - OK
-      X-ELS-TransId:
-      - f156dc63d1e3faac
-      X-RateLimit-Limit:
-      - '20000'
-      X-RateLimit-Remaining:
-      - '19775'
-      X-RateLimit-Reset:
-      - '1792759529'
-      allow:
-      - GET
-      cf-cache-status:
-      - DYNAMIC
-      tdm-policy:
-      - https://www.elsevier.com/tdm/tdmrep-policy.json
-      tdm-reservation:
-      - '1'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: '{"qs": "fMRI AND misophonia AND patients", "date": "2026", "display": {"offset":
-      0, "show": 100}}'
-    headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '97'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: PUT
-    uri: https://api.elsevier.com/content/search/sciencedirect
-  response:
-    body:
-      string: '{"resultsFound":9,"results":[{"authors":[{"order":1,"name":"Shagun
-        Ajmera"},{"order":2,"name":"Rafay A. Khan"},{"order":7,"name":"Fatima T. Husain"}],"doi":"10.1016/j.heares.2025.109521","loadDate":"2025-12-26T00:00:00.000Z","openAccess":true,"pages":{"first":"109521"},"pii":"S0378595525003387","publicationDate":"2026-02-28","sourceTitle":"Hearing
-        Research","title":"Altered intrinsic brain connectivity in misophonia, with
-        and without hyperacusis","uri":"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        471"},{"authors":[{"order":1,"name":"Despina Melanthiou"},{"order":2,"name":"Georgia
-        Panayiotou"},{"order":7,"name":"Panos Zanos"}],"doi":"10.1016/j.neubiorev.2026.106584","loadDate":"2026-01-29T00:00:00.000Z","openAccess":true,"pages":{"first":"106584"},"pii":"S0149763426000394","publicationDate":"2026-04-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Linking misophonia and tinnitus: Common
-        and divergent neurobiological mechanisms","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        183"},{"authors":[{"order":1,"name":"Pradeep Dheerendra"},{"order":2,"name":"Sukhbinder
-        Kumar"},{"order":5,"name":"Lars F. Muckli"}],"doi":"10.1016/j.mehy.2025.111840","loadDate":"2025-11-24T00:00:00.000Z","openAccess":true,"pages":{"first":"111840"},"pii":"S0306987725002798","publicationDate":"2026-01-31","sourceTitle":"Medical
-        Hypotheses","title":"Reducing hyper mirroring in misophonia: A proposal for
-        cortico-cortical paired associative stimulation (ccPAS) as a potential intervention
-        for treatment","uri":"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        206"},{"authors":[{"order":1,"name":"Jose Antonio Lopez-Escamez"},{"order":2,"name":"Dirk
-        De Ridder"},{"order":7,"name":"Sven Vanneste"}],"doi":"10.1016/j.neubiorev.2026.106796","loadDate":"2026-06-10T00:00:00.000Z","openAccess":true,"pages":{"first":"106796"},"pii":"S0149763426002538","publicationDate":"2026-09-30","sourceTitle":"Neuroscience
-        & Biobehavioral Reviews","title":"Sound hypersensitivity phenotypes and sound
-        hypersensitivity disorder","uri":"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        188"},{"authors":[{"order":1,"name":"Yange Chang"},{"order":2,"name":"Hanyang
-        Ruan"},{"order":3,"name":"Kathrin Koch"}],"doi":"10.1016/j.neuroimage.2026.122128","loadDate":"2026-07-14T00:00:00.000Z","openAccess":true,"pages":{"first":"122128"},"pii":"S105381192600443X","publicationDate":"2026-09-30","sourceTitle":"NeuroImage","title":"Altered
-        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder","uri":"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint","volumeIssue":"Volume
-        338"},{"authors":[{"order":1,"name":"Boen Deng"},{"order":2,"name":"Divya
-        Bharatkumar Adhia"},{"order":5,"name":"Dirk De Ridder"}],"doi":"10.1016/j.neurom.2026.08.002","loadDate":"2026-08-18T00:00:00.000Z","openAccess":true,"pages":{},"pii":"S1094715926013279","publicationDate":"2026-08-18","sourceTitle":"Neuromodulation:
-        Technology at the Neural Interface","title":"Sound-Paired Vagus Nerve Stimulation
-        for Tinnitus: A Safety and Feasibility Trial","uri":"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Lysianne
+        508"},{"authors":[{"order":1,"name":"Parul Jain"},{"order":2,"name":"Daniela
+        Schiller"}],"doi":"10.1016/j.neuron.2026.05.031","loadDate":"2026-06-24T00:00:00.000Z","openAccess":false,"pages":{},"pii":"S0896627326004460","publicationDate":"2026-06-24","sourceTitle":"Neuron","title":"From
+        first impressions to bonds: The neural dynamics of social relationships","uri":"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint"},{"doi":"10.1016/B978-0-443-27446-6.00020-0","loadDate":"2026-07-31T00:00:00.000Z","openAccess":false,"pages":{"first":"341","last":"348"},"pii":"B9780443274466000200","publicationDate":"2026-12-31","sourceTitle":"Neurobiology
+        of Obsessive-Compulsive Disorder","title":"Index","uri":"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint"},{"authors":[{"order":1,"name":"Lysianne
         Beynel"},{"order":2,"name":"Eva Wiener"},{"order":14,"name":"Zhi-De Deng"}],"doi":"10.1016/j.neubiorev.2026.106786","loadDate":"2026-05-28T00:00:00.000Z","openAccess":true,"pages":{"first":"106786"},"pii":"S0149763426002435","publicationDate":"2026-08-31","sourceTitle":"Neuroscience
         & Biobehavioral Reviews","title":"Noninvasive brain stimulation combined with
         evidence-based psychotherapy for psychiatric disorders: A meta-analysis of
@@ -1531,7 +366,7 @@ interactions:
         on hearing impairment in dementia","uri":"https://www.sciencedirect.com/science/article/pii/B9780443291982000126?dgcid=api_sd_search-api-endpoint"}],"details":{}}'
     headers:
       CF-RAY:
-      - a4b3a3466c71cd08-DFW
+      - a4b3ddf12a06f091-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -1541,7 +376,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 02:29:46 GMT
+      - Fri, 16 Oct 2026 03:09:49 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -1555,17 +390,17 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - 72f62f89945d2dbe
+      - 908d12c6044200bf
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - 72f62f89945d2dbe
+      - 908d12c6044200bf
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19774'
+      - '19706'
       X-RateLimit-Reset:
       - '1792759529'
       allow:
@@ -1580,7 +415,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"qs": "fMRI AND misophonia NOT patients", "date": "2026", "display": {"offset":
+    body: '{"qs": "fMRI AND misophonia NOT memory", "date": "2026", "display": {"offset":
       0, "show": 100}}'
     headers:
       Accept:
@@ -1590,7 +425,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '97'
+      - '95'
       Content-Type:
       - application/json
       User-Agent:
@@ -1599,34 +434,33 @@ interactions:
     uri: https://api.elsevier.com/content/search/sciencedirect
   response:
     body:
-      string: "{\"resultsFound\":8,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Halime
-        S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
+      string: "{\"resultsFound\":6,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Pradeep
+        Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder Kumar\"},{\"order\":5,\"name\":\"Lars
+        F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
+        for cortico-cortical paired associative stimulation (ccPAS) as a potential
+        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        206\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
         Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
         in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
         510\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
         Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
         Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
-        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        202\"},{\"authors\":[{\"order\":1,\"name\":\"Sarah M. Banker\"},{\"order\":2,\"name\":\"Matthew
-        Schafer\"},{\"order\":10,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.biopsych.2025.08.018\",\"loadDate\":\"2025-09-08T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"389\",\"last\":\"398\"},\"pii\":\"S0006322325014350\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Biological
-        Psychiatry\",\"title\":\"Neural Tracking of Social Navigation in Autism Spectrum
-        Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322325014350?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        100, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada D. Neacsiu\"},{\"order\":2,\"name\":\"Shaurya
-        Dave\"},{\"order\":3,\"name\":\"Nimesha Gerlus\"}],\"doi\":\"10.1016/j.bbr.2026.116199\",\"loadDate\":\"2026-04-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116199\"},\"pii\":\"S0166432826001750\",\"publicationDate\":\"2026-06-25\",\"sourceTitle\":\"Behavioural
-        Brain Research\",\"title\":\"The power of context: Enhancing repetitive transcranial
-        magnetic stimulation effects through skillful behavior\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0166432826001750?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        508\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada Neacsiu\"},{\"order\":2,\"name\":\"Nimesha
-        Gerlus\"},{\"order\":3,\"name\":\"Shaurya Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Yange Chang\"},{\"order\":2,\"name\":\"Hanyang
+        Ruan\"},{\"order\":3,\"name\":\"Kathrin Koch\"}],\"doi\":\"10.1016/j.neuroimage.2026.122128\",\"loadDate\":\"2026-07-14T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122128\"},\"pii\":\"S105381192600443X\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Altered
+        Resting-State Co-Activation Patterns in Obsessive-Compulsive Disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S105381192600443X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        338\"},{\"authors\":[{\"order\":1,\"name\":\"Boen Deng\"},{\"order\":2,\"name\":\"Divya
+        Bharatkumar Adhia\"},{\"order\":5,\"name\":\"Dirk De Ridder\"}],\"doi\":\"10.1016/j.neurom.2026.08.002\",\"loadDate\":\"2026-08-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{},\"pii\":\"S1094715926013279\",\"publicationDate\":\"2026-08-18\",\"sourceTitle\":\"Neuromodulation:
+        Technology at the Neural Interface\",\"title\":\"Sound-Paired Vagus Nerve
+        Stimulation for Tinnitus: A Safety and Feasibility Trial\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926013279?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Andrada
+        Neacsiu\"},{\"order\":2,\"name\":\"Nimesha Gerlus\"},{\"order\":3,\"name\":\"Shaurya
+        Dave\"}],\"doi\":\"10.1016/j.biopsych.2026.03.954\",\"loadDate\":\"2026-04-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s407\"},\"pii\":\"S0006322326010693\",\"publicationDate\":\"2026-05-15\",\"sourceTitle\":\"Biological
         Psychiatry\",\"title\":\"720. How Brain State Can Be Harnessed to Enhance
         Neuromodulation Outcomes: A Proof of Concept Discussion\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0006322326010693?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
-        99, Issue 10, Supplement\"},{\"doi\":\"10.1016/B978-0-443-27446-6.00020-0\",\"loadDate\":\"2026-07-31T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"341\",\"last\":\"348\"},\"pii\":\"B9780443274466000200\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Neurobiology
-        of Obsessive-Compulsive Disorder\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780443274466000200?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Parul
-        Jain\"},{\"order\":2,\"name\":\"Daniela Schiller\"}],\"doi\":\"10.1016/j.neuron.2026.05.031\",\"loadDate\":\"2026-06-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{},\"pii\":\"S0896627326004460\",\"publicationDate\":\"2026-06-24\",\"sourceTitle\":\"Neuron\",\"title\":\"From
-        first impressions to bonds: The neural dynamics of social relationships\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0896627326004460?dgcid=api_sd_search-api-endpoint\"}],\"details\":{}}"
+        99, Issue 10, Supplement\"}],\"details\":{}}"
     headers:
       CF-RAY:
-      - a4b3a34cceccf06a-DFW
+      - a4b3ddf76db6921a-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -1636,7 +470,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 02:29:47 GMT
+      - Fri, 16 Oct 2026 03:09:50 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -1650,17 +484,17 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - 7b37d6c8f5c39189
+      - 30e616606fe534e1
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - 7b37d6c8f5c39189
+      - 30e616606fe534e1
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19773'
+      - '19705'
       X-RateLimit-Reset:
       - '1792759529'
       allow:

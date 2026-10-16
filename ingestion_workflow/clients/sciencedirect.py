@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -19,6 +19,15 @@ def identifier_of(result: Dict) -> Identifier:
         doi=result["doi"].lower() if result.get("doi") else None,
         other_ids={"pii": str(result["pii"])} if result.get("pii") else None,
     )
+
+
+def key_of(result: Dict) -> str:
+    """What tells one result from another: its DOI, else its PII, else its title and date."""
+    if result.get("doi"):
+        return result["doi"].lower()
+    if result.get("pii"):
+        return str(result["pii"])
+    return f"{result.get('title')}|{result.get('publicationDate')}"
 
 
 class ScienceDirectClient:
@@ -44,10 +53,10 @@ class ScienceDirectClient:
         payload = self._request({**body, "display": {"offset": 0, "show": 10}})
         return int(payload.get("resultsFound") or 0)
 
-    def page(self, body: Dict[str, str], offset: int) -> List[Identifier]:
-        """The page of results of the search `body` from `offset`."""
+    def page(self, body: Dict[str, str], offset: int) -> List[Tuple[str, Identifier]]:
+        """The page of results of the search `body` from `offset`, each with its key."""
         payload = self._request({**body, "display": {"offset": offset, "show": self.PAGE_SIZE}})
-        return [identifier_of(result) for result in payload.get("results") or []]
+        return [(key_of(result), identifier_of(result)) for result in payload.get("results") or []]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=8))
     def _request(self, body: Dict) -> Dict:

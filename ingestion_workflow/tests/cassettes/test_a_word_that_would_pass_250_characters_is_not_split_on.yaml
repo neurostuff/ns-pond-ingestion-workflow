@@ -1,0 +1,124 @@
+interactions:
+- request:
+    body: '{"qs": "\"functional magnetic resonance imaging\" NOT \"blood oxygen level
+      dependent\" NOT \"resting state functional connectivity\" NOT \"voxel based
+      morphometry\" NOT \"default mode network\" NOT \"anterior cingulate cortex\"
+      NOT \"posterior cingulate cortices\"", "date": "2026", "display": {"offset":
+      0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '320'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":1610,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Wenwen
+        Zhuang\"},{\"order\":2,\"name\":\"Li Hai Tan\"}],\"doi\":\"10.1016/j.tine.2026.100287\",\"loadDate\":\"2026-05-04T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"100287\"},\"pii\":\"S2211949326000128\",\"publicationDate\":\"2026-06-30\",\"sourceTitle\":\"Trends
+        in Neuroscience and Education\",\"title\":\"Brain regions associated with
+        Chinese reading: a multiple-task functional magnetic resonance imaging study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2211949326000128?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        43\"},{\"authors\":[{\"order\":1,\"name\":\"Mahdi Alizadeh\"},{\"order\":2,\"name\":\"Steven
+        Glener\"},{\"order\":6,\"name\":\"Alex Prusky\"}],\"doi\":\"10.1016/j.neurom.2026.06.445\",\"loadDate\":\"2026-10-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"e255\"},\"pii\":\"S1094715926006008\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Neuromodulation:
+        Technology at the Neural Interface\",\"title\":\"ID# 2202150 SIMULTANEOUS
+        BRAIN AND CERVICAL RESTING STATE FUNCTIONAL MAGNETIC RESONANCE IMAGING IN
+        PATIENTS WITH CERVICAL SPONDYLOTIC MYELOPATHY\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926006008?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        29, Issue 7\"},{\"authors\":[{\"order\":1,\"name\":\"Derek J. Doss\"},{\"order\":2,\"name\":\"Ghassan
+        Makhoul\"},{\"order\":18,\"name\":\"Dario Englot\"}],\"doi\":\"10.1016/j.neurom.2026.06.040\",\"loadDate\":\"2026-10-05T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"e25\",\"last\":\"e26\"},\"pii\":\"S1094715926001959\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Neuromodulation:
+        Technology at the Neural Interface\",\"title\":\"ID# 2182562 ANALYSIS OF DYNAMIC
+        FUNCTIONAL MAGNETIC RESONANCE IMAGING CONNECTIVITY WITH DEEP LEARNING TO GUIDE
+        AROUSAL NEUROMODULATION IN EPILEPSY\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1094715926001959?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        29, Issue 7\"},{\"authors\":[{\"order\":1,\"name\":\"Tangyu Gao\"},{\"order\":2,\"name\":\"Wei
+        Liu\"}],\"doi\":\"10.1016/j.pscychresns.2026.112143\",\"loadDate\":\"2026-01-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"112143\"},\"pii\":\"S0925492726000089\",\"publicationDate\":\"2026-06-30\",\"sourceTitle\":\"Psychiatry
+        Research: Neuroimaging\",\"title\":\"Resting-state functional magnetic resonance
+        imaging study of voxel-mirrored homotopy connections in patients with schizophrenia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0925492726000089?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        358\"},{\"authors\":[{\"order\":1,\"name\":\"Mark Ooms\"},{\"order\":2,\"name\":\"Aischa
+        Troost\"},{\"order\":8,\"name\":\"Ali Modabber\"}],\"doi\":\"10.1016/j.jcms.2026.108846\",\"loadDate\":\"2026-09-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"108846\"},\"pii\":\"S1010518226044033\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Journal
+        of Cranio-Maxillofacial Surgery\",\"title\":\"Evaluation of sensory recovery
+        of microvascular free flaps in the tongue and mouth floor region without nerve
+        readaptation after ablative cancer surgery with functional magnetic resonance
+        imaging\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1010518226044033?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        54, Supplement 1\"},{\"authors\":[{\"order\":1,\"name\":\"Skyler Deutsch\"},{\"order\":2,\"name\":\"Juhi
+        Mehta\"},{\"order\":11,\"name\":\"Melanie A. Morrison\"}],\"doi\":\"10.1016/j.nicl.2026.103973\",\"loadDate\":\"2026-02-18T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"103973\"},\"pii\":\"S221315822600032X\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"NeuroImage:
+        Clinical\",\"title\":\"Test-retest reliability of resting-state functional
+        magnetic resonance imaging during deep brain stimulation for Parkinson\u2019s
+        disease\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S221315822600032X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        49\"},{\"authors\":[{\"order\":1,\"name\":\"Chengcheng Gui\"},{\"order\":2,\"name\":\"Mehrnaz
+        Jenabi\"},{\"order\":22,\"name\":\"Brandon S. Imber\"}],\"doi\":\"10.1016/j.ijrobp.2025.11.050\",\"loadDate\":\"2025-11-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"1186\",\"last\":\"1198\"},\"pii\":\"S0360301625065320\",\"publicationDate\":\"2026-04-01\",\"sourceTitle\":\"International
+        Journal of Radiation Oncology*Biology*Physics\",\"title\":\"Functional Magnetic
+        Resonance Imaging\u2013Guided Stereotactic Radiosurgery to Avoid Symptomatic
+        Radionecrosis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0360301625065320?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        124, Issue 5\"},{\"authors\":[{\"order\":1,\"name\":\"David Colman\"},{\"order\":2,\"name\":\"Pierre
+        Pesesse\"},{\"order\":9,\"name\":\"Christophe Demoulin\"}],\"doi\":\"10.1016/j.msksp.2026.103522\",\"loadDate\":\"2026-02-18T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"103522\"},\"pii\":\"S2468781226000378\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Musculoskeletal
+        Science and Practice\",\"title\":\"Cervical muscle activation in response
+        to an extensor endurance test in individuals with and without neck pain: a
+        muscle functional magnetic resonance imaging study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2468781226000378?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        82\"},{\"authors\":[{\"order\":1,\"name\":\"L. Liu\"},{\"order\":2,\"name\":\"Z.
+        Liu\"},{\"order\":7,\"name\":\"H. Cao\"}],\"doi\":\"10.1016/j.ajt.2026.05.886\",\"loadDate\":\"2026-06-19T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s453\"},\"pii\":\"S1600613526011548\",\"publicationDate\":\"2026-06-30\",\"sourceTitle\":\"American
+        Journal of Transplantation\",\"title\":\"Exploring the Value of Functional
+        Magnetic Resonance Imaging in Assessing Subclinical Rejection in Kidney Transplantation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1600613526011548?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26, Issue 7, Supplement 1\"},{\"authors\":[{\"order\":1,\"name\":\"Dario Pfyffer\"},{\"order\":2,\"name\":\"Yiyu
+        Wang\"},{\"order\":11,\"name\":\"Sean Mackey\"}],\"doi\":\"10.1016/j.jpain.2025.106020\",\"loadDate\":\"2026-03-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106020\"},\"pii\":\"S1526590025012477\",\"publicationDate\":\"2026-03-31\",\"sourceTitle\":\"The
+        Journal of Pain\",\"title\":\"373: Differential Encoding of Noxious Heat and
+        Self-Reported Pain Along Corticospinal Networks: A Simultaneous Brain-Spinal
+        Cord Functional Magnetic Resonance Imaging Study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1526590025012477?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        41, Supplement\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3ddf8eb5ab1c9-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 03:09:51 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - b7169b8e66770290
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - b7169b8e66770290
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19704'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

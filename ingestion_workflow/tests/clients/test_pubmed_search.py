@@ -98,17 +98,19 @@ def test_pubmed_search_service_delegates(settings_with_email):
     from ingestion_workflow.services.search import PubMedSearchService
 
     dummy_client = DummyClient()
-    for years in (Years.parse("2000"), Years.parse("2024:2026"), None):
-        service = PubMedSearchService(
-            parse("sample", years), settings_with_email, client=dummy_client
-        )
+    for query in (
+        parse("sample", Years.parse("2000")),
+        parse("sample", Years.parse("2024:2026")),
+        parse("sample"),
+    ):
+        service = PubMedSearchService(query, settings_with_email, client=dummy_client)
         assert service.search() is expected
     term = '"sample"[tiab] AND "journal article"[pt]'
     assert dummy_client.calls == [
         (f"{term} AND 2000[dp]", {"start_year": 2000, "end_year": 2000}),
         (f"{term} AND 2024:2026[dp]", {"start_year": 2024, "end_year": 2026}),
-        # no --year: the client splits over all of PubMed's years
-        (term, {}),
+        # by default 1990 onward: the client finds the latest year to split to
+        (f"{term} AND 1990:3000[dp]", {"start_year": 1990, "end_year": None}),
     ]
 
 
@@ -134,7 +136,7 @@ def test_a_large_search_without_years_is_split_through_its_latest_dated_year(mon
     monkeypatch.setattr(client, "_current_year", lambda: 2026)
 
     assert client.latest_year("test query") == 2031
-    client.search("test query")
+    client.search("test query", start_year=1781)
     assert windows == sorted(DATED)
 
 
@@ -162,7 +164,7 @@ def test_a_large_search_with_hits_dated_outside_its_years_is_refused_when_planne
     monkeypatch.setattr(client, "_current_year", lambda: 2026)
     service = PubMedSearchService(parse("test"), settings_with_email, client=client)
 
-    with pytest.raises(ValueError, match="only 9,997 are dated 1781-2026"):
+    with pytest.raises(ValueError, match="only 9,997 are dated 1990-2026"):
         service.plan()
 
 

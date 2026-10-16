@@ -131,7 +131,8 @@ def add(
         None,
         "--year",
         help=(
-            "Publication year of --search: 2026, or a range 2025:2026. Each provider "
+            "Publication year of --search: 2026, or a range 2025:2026; by default 1990 "
+            "onward (BOLD fMRI began in 1990). Each provider "
             "dates a work its own way: PubMed's [dp] (electronic or print date), "
             "Semantic Scholar's year, OpenAlex's publication_year, ScienceDirect's date."
         ),
@@ -251,19 +252,17 @@ def _search(
     from ingestion_workflow.services.search import search_services
 
     try:
-        query = parse(text, Years.parse(year) if year else None)
+        query = parse(text, Years.parse(year)) if year else parse(text)
+        typer.echo(f"years: {query.years}" + ("" if year else " (the default; --year to change)"))
         services = search_services(
-            query, [p.value for p in providers or SearchProvider], settings
+            query, [p.value for p in providers or SearchProvider], settings, typer.echo
         )
     except (QueryError, ValueError) as exc:
         raise typer.BadParameter(str(exc)) from None
     searched: Dict[str, List[Identifier]] = {}
     for name, service in services.items():
-        typer.echo(f"{name}: {service.rendered}")
         searched[name] = list(service.search().identifiers)
-        for line in service.plan_report:
-            typer.echo(f"    {line}")
-        typer.echo(f"  {len(searched[name]):,} records")
+        typer.echo(f"{name}: {len(searched[name]):,} records")
     return searched
 
 

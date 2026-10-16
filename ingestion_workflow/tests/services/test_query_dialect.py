@@ -84,18 +84,27 @@ def test_nested_groups_render_parenthesized_in_every_dialect():
     )
 
 
-def test_a_single_term_without_a_year():
+def test_without_years_a_query_searches_1990_onward_in_every_dialect():
     query = parse("fMRI")
-    assert to_pubmed(query) == '"fMRI"[tiab] AND "journal article"[pt]'
-    assert to_semantic_scholar(query) == {"query": "fMRI"}
-    assert to_openalex(query) == "title_and_abstract.search:(fMRI),type:article"
+    assert str(query.years) == "1990 onward"
+    assert to_pubmed(query) == '"fMRI"[tiab] AND "journal article"[pt] AND 1990:3000[dp]'
+    assert to_semantic_scholar(query) == {"query": "fMRI", "year": "1990-"}
+    assert to_openalex(query) == (
+        "title_and_abstract.search:(fMRI),type:article,publication_year:>1989"
+    )
+    assert to_sciencedirect(query) == {"qs": "fMRI", "date": "1990-9999"}
+
+
+def test_an_explicit_year_overrides_the_default():
+    assert to_semantic_scholar(parse("fMRI", Years.parse("1980:1989")))["year"] == "1980-1989"
 
 
 def test_a_hyphenated_term_is_quoted_where_a_hyphen_is_an_operator():
     query = parse("resting-state AND fMRI")
     assert to_semantic_scholar(query)["query"] == '"resting-state" + fMRI'
     assert (
-        to_openalex(query) == 'title_and_abstract.search:("resting-state" AND fMRI),type:article'
+        to_openalex(query) == 'title_and_abstract.search:("resting-state" AND fMRI),type:article,'
+        "publication_year:>1989"
     )
 
 
@@ -113,9 +122,12 @@ def test_a_leading_field_limits_where_the_query_matches(
     assert query.field is field
     assert (
         to_pubmed(query)
-        == f'("fMRI"[{pubmed_tag}] OR "PET"[{pubmed_tag}]) AND "journal article"[pt]'
+        == f'("fMRI"[{pubmed_tag}] OR "PET"[{pubmed_tag}]) AND "journal article"[pt] '
+        "AND 1990:3000[dp]"
     )
-    assert to_openalex(query) == f"{openalex_filter}:(fMRI OR PET),type:article"
+    assert to_openalex(query) == (
+        f"{openalex_filter}:(fMRI OR PET),type:article,publication_year:>1989"
+    )
     with pytest.raises(QueryError, match="Semantic Scholar"):
         to_semantic_scholar(query)
 

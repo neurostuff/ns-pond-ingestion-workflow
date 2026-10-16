@@ -12,7 +12,7 @@ ingest add --search 'title: fMRI AND memory NOT rats' --year 2025:2026 --provide
 | Option | Meaning |
 |---|---|
 | `--search QUERY` | the query, in the syntax below |
-| `--year 2026`, `--year 2025:2026` | publication year, or an inclusive range (see below for what each provider dates by) |
+| `--year 2026`, `--year 2025:2026` | publication year, or an inclusive range (see below for what each provider dates by). **`--year` defaults to 1990 onward** (BOLD fMRI began in 1990), through the latest year with hits; give `--year 1980:1989` and so on for earlier work. The range used is printed |
 | `--provider NAME` | repeatable: `pubmed`, `semantic_scholar`, `openalex`, `sciencedirect`. Default: all four |
 
 ## Query syntax
@@ -41,6 +41,9 @@ The same query, `fMRI OR "functional MRI"` for 2026, becomes:
 | Semantic Scholar (`/graph/v1/paper/search/bulk`) | `query=fMRI \| "functional MRI"`, `year=2026` |
 | OpenAlex (`/works`) | `filter=title_and_abstract.search:(fMRI OR "functional MRI"),type:article,publication_year:2026` |
 | ScienceDirect (`/content/search/sciencedirect`) | `{"qs": "fMRI OR \"functional MRI\"", "date": "2026"}` |
+
+The default years, 1990 onward, are sent as `1990:3000[dp]` (PubMed's own
+"to the present"), `year=1990-`, `publication_year:>1989` and `"date": "1990-9999"`.
 
 What is searched:
 
@@ -80,9 +83,8 @@ search plans the split from counts. A search that cannot be split exactly is
 refused at that point, with nothing searched or registered.
 
 - PubMed returns at most 10,000 hits per search. A search finding more is run
-  one `--year` year at a time. Without `--year` it is run one year at a time
-  from 1781 (nothing in PubMed is dated earlier) to the latest year PubMed
-  dates one of its hits; a few records are dated years ahead. If fewer hits are
+  one year at a time over its years; for the default, from 1990 to the latest
+  year PubMed dates one of its hits (a few records are dated years ahead). If fewer hits are
   dated in that span than were found, the search is refused rather than lose
   the rest. The year windows use ESearch's publication date, which counts the
   same records as `[dp]` (checked 2026-10-15: 1,542,428 for 2026 either way).
@@ -92,19 +94,27 @@ refused at that point, with nothing searched or registered.
 - ScienceDirect serves at most 6,000 results of one query and honours at most
   8 connectors. Each query is split until every part fits:
   1. a query with more than 8 connectors into two halves of its `OR` clauses;
-  2. a query finding more than 6,000 into one query per year of `--year`, whose
-     counts must add up to the whole;
-  3. then into `Q AND w` and `Q NOT w`, on the word `w` from a short fixed list
-     (memory, disease, treatment, patients, ...) that comes closest to halving
-     it. The two counts must add up to the query's, or the next word is tried.
-     A word of the query itself is never used;
-  4. then into two halves of its `OR` clauses.
+  2. a query finding more than 6,000 into two halves of its years (for the
+     default, 1990 to the latest year it has hits). The halves' counts must add
+     up to at least the whole, so an undated article would stop the search
+     rather than be lost. They can add up to more: an issue dated across two
+     years (e.g. 1984-1985) is in both, and is one record after deduplication
+     (one query's 1844-2124 slot had 3 such). Halves are halved again down to
+     single years; an empty half costs one count;
+  3. a single year that is an `OR`, into two halves of its `OR` clauses;
+  4. otherwise into `Q AND w` and `Q NOT w`, on a word `w` from a short fixed
+     list (memory, disease, treatment, patients, ...). Words are counted in
+     turn and the first that puts 35-65% of the hits on each side is taken;
+     failing that, the one nearest to half. The two counts must add up to the
+     query's, or the next word is tried. A word of the query itself, a word in
+     every hit or in none, and a word that would take the query past 250
+     characters are never used.
 
-  Every part is split again until it fits; a part that no step can split, or
-  whose added word would pass 250 characters, is refused. The plan is printed
-  as a tree with each part's count and each exact split's sum. The parts of an
-  `OR` split overlap; an article found by several parts is one record, and
-  their union is the whole result.
+  Every part is split again until it fits; a part that no step can split is
+  refused. The plan is printed as it is made, before any provider pages its
+  results: a tree with each part's count and each split's counts. The parts
+  of an `OR` split overlap; their results are deduplicated by DOI, else PII,
+  else title and publication date, and their union is the whole result.
 
   Two other ways to split are not used. The API sorts by date only newest
   first, so paging a query in both date orders is not possible. Its only

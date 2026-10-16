@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import datetime
 import itertools
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.clients.openalex import OpenAlexClient
-from ingestion_workflow.clients.pubmed import ESEARCH_MAX_RESULTS, PUBMED_FIRST_YEAR, PubMedClient
+from ingestion_workflow.clients.pubmed import ESEARCH_MAX_RESULTS, PubMedClient
 from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
@@ -43,8 +44,11 @@ class ArticleSearchService:
         self.query = query
         self.plan_report: List[str] = []
 
-    def plan(self) -> None:
-        """What must be settled before any provider searches. Nothing, by default."""
+    def plan(self, echo: Callable[[str], None] = lambda line: None) -> None:
+        """What must be settled before any provider searches, each line told to `echo`.
+
+        Nothing, by default.
+        """
 
     def search(self) -> Identifiers:  # pragma: no cover - abstract placeholder
         raise NotImplementedError
@@ -65,15 +69,13 @@ class PubMedSearchService(ArticleSearchService):
         self.rendered = to_pubmed(query)
         self._client = client or self._create_client()
 
-    def plan(self) -> None:
+    def plan(self, echo: Callable[[str], None] = lambda line: None) -> None:
         """Refuse a search too large for one ESearch with hits outside the years it splits over."""
         total = self._client.count(self.rendered)
         if total < ESEARCH_MAX_RESULTS:
             return
-        if self.query.years:
-            start, end = self.query.years.start, self.query.years.end
-        else:
-            start, end = PUBMED_FIRST_YEAR, self._client.latest_year(self.rendered)
+        start = self.query.years.start
+        end = self.query.years.end or self._client.latest_year(self.rendered)
         dated = self._client.count(self.rendered, mindate=start, maxdate=end)
         if dated < total:
             raise ValueError(
@@ -84,11 +86,9 @@ class PubMedSearchService(ArticleSearchService):
 
     def search(self) -> Identifiers:
         # A result set too large for one ESearch is split by year over these.
-        if self.query.years:
-            return self._client.search(
-                self.rendered, start_year=self.query.years.start, end_year=self.query.years.end
-            )
-        return self._client.search(self.rendered)
+        return self._client.search(
+            self.rendered, start_year=self.query.years.start, end_year=self.query.years.end
+        )
 
     def _create_client(self) -> PubMedClient:
         if not self.settings.pubmed_email:
@@ -138,8 +138,19 @@ class OpenAlexSearchService(ArticleSearchService):
 # in 93-97% of a 2026 neuroimaging query's hits. The first five here were in
 # 56-65% of them (2026-10-15); the rarer rest suit parts already split.
 SCIENCEDIRECT_PIVOTS = (
-    "memory", "disease", "treatment", "patients", "human", "children", "women",
-    "cohort", "mice", "anxiety", "longitudinal", "questionnaire", "randomized",
+    "memory",
+    "disease",
+    "treatment",
+    "patients",
+    "human",
+    "children",
+    "women",
+    "cohort",
+    "mice",
+    "anxiety",
+    "longitudinal",
+    "questionnaire",
+    "randomized",
 )
 # The API ignores Boolean connectors past this many in one query, silently: a
 # ninth OR added nothing to the count, and a ninth AND or NOT left it unchanged.
@@ -167,47 +178,31 @@ def _and(query: Query, operand) -> Query:
 
 
 OR_HALVES = "into halves of its OR clauses"
+# A word is taken at once when it puts this share of a query's hits on each side.
+SCIENCEDIRECT_BALANCED = (0.35, 0.65)
 
 
-@dataclass
-class _Slot:
-    """One query of a ScienceDirect plan: paged when it has no parts."""
-
-    body: Dict[str, str]
-    total: Optional[int]  # None when the query has too many connectors to be counted
-    how: str = ""
-    parts: Optional[List["_Slot"]] = None
-
-    def leaves(self) -> List["_Slot"]:
-        return [leaf for part in self.parts for leaf in part.leaves()] if self.parts else [self]
-
-    def lines(self, depth: int = 0) -> List[str]:
-        found = "not counted" if self.total is None else f"{self.total:,} found"
-        line = f"{'  ' * depth}{json.dumps(self.body)}: {found}"
-        if self.parts and self.how == OR_HALVES:
-            line += f"; split {self.how} (they overlap; their union is exact)"
-        elif self.parts:
-            totals = " + ".join(f"{part.total:,}" for part in self.parts)
-            line += f"; split {self.how}: {totals} = {self.total:,}"
-        return [line, *(below for part in self.parts or [] for below in part.lines(depth + 1))]
+def _this_year() -> int:
+    return datetime.date.today().year
 
 
 class ScienceDirectSearchService(ArticleSearchService):
     """Articles ScienceDirect matches in full text (or title), split to be paged to the end.
 
     The API serves a query's results only up to a fixed offset and honours a
-    fixed number of Boolean connectors. `plan` splits, from counts alone:
+    fixed number of Boolean connectors. `plan` splits, from counts alone, until
+    every part can be paged:
 
     1. a query with too many connectors into two halves of its OR clauses;
-    2. a query finding too many into one query per year of its range;
-    3. then into "Q AND w" and "Q NOT w" on the word w of SCIENCEDIRECT_PIVOTS
-       that comes closest to halving it, accepted only when the two counts add
-       up to Q's;
-    4. then into two halves of its OR clauses.
+    2. a query finding too many into two halves of its years (an open range
+       ends at the latest year with hits), whose counts must add up to at least
+       its own;
+    3. else, an OR into two halves of its clauses;
+    4. else into "Q AND w" and "Q NOT w" on a word of SCIENCEDIRECT_PIVOTS,
+       accepted only when the two counts add up to Q's.
 
-    Every part of every split is split again until it can be paged; a query
-    none of these can split is refused. The union of the parts is the whole
-    result.
+    A part none of these splits is refused. The union of the parts is the
+    whole result.
     """
 
     def __init__(self, query: Query, settings: Settings) -> None:
@@ -217,29 +212,31 @@ class ScienceDirectSearchService(ArticleSearchService):
             raise ValueError("elsevier_api_key must be configured to search ScienceDirect")
         self._client = ScienceDirectClient(settings.elsevier_api_key)
         # None until `plan`; searching unplanned fails rather than finding nothing
-        self._plan: Optional[_Slot] = None
+        self._leaves: Optional[List[Tuple[Dict[str, str], int]]] = None
 
-    def plan(self) -> None:
-        self._plan = self._split(self.query)
-        self.plan_report = self._plan.lines()
+    def plan(self, echo: Callable[[str], None] = lambda line: None) -> None:
+        self._leaves = []
+        self.plan_report = []
+        self._echo = echo
+        self._split(self.query, None, 0)
 
     def search(self) -> Identifiers:
         size = self._client.PAGE_SIZE
         found: Dict[str, Identifier] = {}
-        bare: List[Identifier] = []
-        for leaf in self._plan.leaves():
-            for offset in range(0, leaf.total, size):
-                for record in self._client.page(leaf.body, offset):
-                    key = record.doi or (record.other_ids or {}).get("pii")
-                    if key:
-                        # parts of an OR split find the same article
-                        found.setdefault(key, record)
-                    else:
-                        bare.append(record)
-        return Identifiers([*found.values(), *bare])
+        for body, total in self._leaves:
+            for offset in range(0, total, size):
+                for key, record in self._client.page(body, offset):
+                    # the halves of an OR split find the same articles
+                    found.setdefault(key, record)
+        return Identifiers(list(found.values()))
 
-    def _split(self, query: Query, total: Optional[int] = None) -> _Slot:
-        """`query`'s plan; `total` is its count when already known."""
+    def _say(self, depth: int, body: Dict[str, str], text: str) -> None:
+        line = f"{'  ' * depth}{json.dumps(body)}: {text}"
+        self.plan_report.append(line)
+        self._echo(line)
+
+    def _split(self, query: Query, total: Optional[int], depth: int) -> None:
+        """Plan `query`, whose count is `total` when already known, printing as it goes."""
         body = to_sciencedirect(query)
         connectors = _connectors(query.expr)
         if connectors > SCIENCEDIRECT_MAX_CONNECTORS:
@@ -249,69 +246,122 @@ class ScienceDirectSearchService(ArticleSearchService):
                     f"and NOT in one query, {json.dumps(body)} has {connectors}, and it is "
                     "not an OR to split; shorten it"
                 )
-            return _Slot(body, None, OR_HALVES, self._halves(query))
+            self._say(depth, body, f"{connectors} connectors, not counted; split {OR_HALVES}")
+            self._halves(query, depth)
+            return
         if total is None:
             total = self._client.count(body)
-        limit = self._client.MAX_RESULTS
-        if total <= limit:
-            return _Slot(body, total)
-        if query.years and query.years.start < query.years.end:
-            parts = [
-                self._split(Query(query.expr, query.field, Years(year, year)))
-                for year in range(query.years.start, query.years.end + 1)
-            ]
-            self._must_add_up(body, total, parts, "its years")
-            return _Slot(body, total, "by year", parts)
-        if connectors < SCIENCEDIRECT_MAX_CONNECTORS:
-            pivot = self._pivot(query, total)
-            if pivot:
-                word, with_count = pivot
-                parts = [
-                    self._split(_and(query, Term(word)), with_count),
-                    self._split(_and(query, Not(Term(word))), total - with_count),
-                ]
-                return _Slot(body, total, f"on {word!r}", parts)
+        if total <= self._client.MAX_RESULTS:
+            self._say(depth, body, f"{total:,} found")
+            self._leaves.append((body, total))
+            return
+        years = query.years
+        if years.end is None:
+            years = Years(years.start, self._latest_year(query))
+        if years.start < years.end:
+            middle = (years.start + years.end) // 2
+            halves = [Years(years.start, middle), Years(middle + 1, years.end)]
+            parts = [Query(query.expr, query.field, half) for half in halves]
+            counts = [self._client.count(to_sciencedirect(part)) for part in parts]
+            # An issue dated across two years is in both halves; one in neither is lost.
+            if sum(counts) < total:
+                raise QueryError(
+                    f"ScienceDirect finds {total:,} for {json.dumps(body)} but only "
+                    f"{counts[0]:,} + {counts[1]:,} in {halves[0]} and {halves[1]}; "
+                    "the split would lose the rest"
+                )
+            overlap = sum(counts) - total
+            self._say(
+                depth,
+                body,
+                f"{total:,} found; split by year: {counts[0]:,} + {counts[1]:,}"
+                + (f" ({overlap:,} in both)" if overlap else ""),
+            )
+            for part, count in zip(parts, counts):
+                self._split(part, count, depth + 1)
+            return
         if isinstance(query.expr, Or):
-            return _Slot(body, total, OR_HALVES, self._halves(query))
-        raise QueryError(
-            f"ScienceDirect finds {total:,} for {json.dumps(body)}, more than the "
-            f"{limit:,} it serves, and none of its splits applies (a year range, a word "
-            "whose with and without counts add up, OR clauses); narrow it"
+            self._say(depth, body, f"{total:,} found; split {OR_HALVES}")
+            self._halves(query, depth)
+            return
+        pivot = self._pivot(query, total) if connectors < SCIENCEDIRECT_MAX_CONNECTORS else None
+        if pivot is None:
+            raise QueryError(
+                f"ScienceDirect finds {total:,} for {json.dumps(body)}, more than the "
+                f"{self._client.MAX_RESULTS:,} it serves, and none of its splits applies "
+                "(years, OR clauses, or a word whose with and without counts add up and "
+                "keep it within 250 characters); narrow it"
+            )
+        word, with_count = pivot
+        self._say(
+            depth,
+            body,
+            f"{total:,} found; split on {word!r}: {with_count:,} + {total - with_count:,}",
         )
+        self._split(_and(query, Term(word)), with_count, depth + 1)
+        self._split(_and(query, Not(Term(word))), total - with_count, depth + 1)
 
-    def _halves(self, query: Query) -> List[_Slot]:
+    def _latest_year(self, query: Query) -> int:
+        """The latest year `query` has hits, and at least this year, found by bisection."""
+
+        def any_from(year: int) -> bool:
+            onward = Query(query.expr, query.field, Years(year, None))
+            return self._client.count(to_sciencedirect(onward)) > 0
+
+        latest = _this_year()
+        if not any_from(latest + 1):
+            return latest
+        low, high = latest + 1, 9999
+        while low < high:
+            middle = (low + high + 1) // 2
+            if any_from(middle):
+                low = middle
+            else:
+                high = middle - 1
+        return low
+
+    def _halves(self, query: Query, depth: int) -> None:
         operands = query.expr.operands
         middle = (len(operands) + 1) // 2
-        halves = [operands[:middle], operands[middle:]]
-        return [
-            self._split(Query(half[0] if len(half) == 1 else Or(half), query.field, query.years))
-            for half in halves
-        ]
+        for half in (operands[:middle], operands[middle:]):
+            self._split(
+                Query(half[0] if len(half) == 1 else Or(half), query.field, query.years),
+                None,
+                depth + 1,
+            )
 
     def _pivot(self, query: Query, total: int) -> Optional[Tuple[str, int]]:
-        """The word nearest to halving `query` whose with and without counts add up to `total`."""
+        """A word whose with and without counts add up to `total`, as near halving it as found.
+
+        Words are counted in turn, and the first that leaves a balanced share
+        on each side is taken; otherwise the nearest of those counted.
+        """
         used = _words(query.expr)
-        counts = [
-            (word, self._client.count(to_sciencedirect(_and(query, Term(word)))))
-            for word in SCIENCEDIRECT_PIVOTS
-            if word not in used
-        ]
-        for word, with_count in sorted(counts, key=lambda wc: abs(wc[1] - total / 2)):
+        low, high = SCIENCEDIRECT_BALANCED
+        counted: List[Tuple[str, int]] = []
+        for word in SCIENCEDIRECT_PIVOTS:
+            if word in used:
+                continue
+            try:
+                piece = to_sciencedirect(_and(query, Term(word)))
+            except QueryError:  # the word would take the query past 250 characters
+                continue
+            with_count = self._client.count(piece)
             if not 0 < with_count < total:
                 continue
-            without = self._client.count(to_sciencedirect(_and(query, Not(Term(word)))))
-            if with_count + without == total:
+            if low <= with_count / total <= high:
+                if self._adds_up(query, word, with_count, total):
+                    return word, with_count
+                continue
+            counted.append((word, with_count))
+        for word, with_count in sorted(counted, key=lambda wc: abs(wc[1] - total / 2)):
+            if self._adds_up(query, word, with_count, total):
                 return word, with_count
         return None
 
-    @staticmethod
-    def _must_add_up(body: Dict[str, str], total: int, parts: List[_Slot], what: str) -> None:
-        found = sum(part.total for part in parts)
-        if found != total:
-            raise QueryError(
-                f"ScienceDirect finds {total:,} for {json.dumps(body)} but {found:,} across "
-                f"{what}; the split would not be exact"
-            )
+    def _adds_up(self, query: Query, word: str, with_count: int, total: int) -> bool:
+        without = self._client.count(to_sciencedirect(_and(query, Not(Term(word)))))
+        return with_count + without == total
 
 
 SEARCH_SERVICES = {
@@ -323,16 +373,21 @@ SEARCH_SERVICES = {
 
 
 def search_services(
-    query: Query, providers: Sequence[str], settings: Settings
+    query: Query,
+    providers: Sequence[str],
+    settings: Settings,
+    echo: Callable[[str], None] = lambda line: None,
 ) -> Dict[str, ArticleSearchService]:
     """One service per provider, each with the query rendered in its dialect.
 
     Rendering and planning happen here, so a query one provider cannot express
-    or split fails before any provider is searched.
+    or split fails before any provider is searched. Each provider's query, and
+    each line of its plan as it is made, is told to `echo`.
     """
     services = {name: SEARCH_SERVICES[name](query, settings) for name in providers}
-    for service in services.values():
-        service.plan()
+    for name, service in services.items():
+        echo(f"{name}: {service.rendered}")
+        service.plan(lambda line: echo(f"    {line}"))
     return services
 
 
