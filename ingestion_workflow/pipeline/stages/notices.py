@@ -70,7 +70,7 @@ class NoticesStage:
 
     def fingerprint_for(self, pmids: Optional[str], doi: Optional[str] = None) -> str:
         """`pmids`: every PMID of the paper, comma-joined."""
-        doi = (normalize_doi(doi) or "").lower()
+        doi = normalize_doi(doi) or ""
         return fingerprint("notices", NOTICES_VERSION, str(pmids or ""), doi)
 
     def plan(
@@ -130,7 +130,7 @@ class NoticesStage:
             ident = work.ref.identifier
             pmid = str(ident.pmid) if ident.pmid else None
             answered = [p for p in ident.pmids if p in pubmed]
-            doi = (normalize_doi(ident.doi) or "").lower()
+            doi = ident.doi or ""
             # Each source answers what it can: a failure is the paper's only
             # when the other source has nothing for it.
             from_pubmed = bool(answered)

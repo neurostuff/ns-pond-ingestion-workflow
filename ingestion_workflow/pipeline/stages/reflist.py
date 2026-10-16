@@ -42,7 +42,7 @@ class ReflistStage:
         return self._crossref, self._openalex
 
     def fingerprint_for(self, doi: str) -> str:
-        return fingerprint("reflist", REFLIST_VERSION, doi.lower())
+        return fingerprint("reflist", REFLIST_VERSION, doi)
 
     def plan(
         self,

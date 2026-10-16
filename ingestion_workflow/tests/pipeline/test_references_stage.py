@@ -188,3 +188,14 @@ def test_a_new_crossref_list_makes_the_references_stale_and_fills_their_dois(env
     b2 = next(r for r in outcome.payload["references"] if r["id"] == "B2")
     assert b2["doi"] == "10.1/filters" and b2["id_providers"] == {"doi": "crossref"}
     assert outcome.summary["ids_from_crossref"] == 1
+
+
+def test_fingerprints_follow_the_canonical_doi_and_tell_apart_non_ascii_case(env):
+    from ingestion_workflow.pipeline.stages.notices import NoticesStage
+
+    settings = env[0]
+    for stage, fingerprint_for in ((ReflistStage(settings), lambda s, d: s.fingerprint_for(d)),
+                                   (NoticesStage(settings), lambda s, d: s.fingerprint_for("1", d))):
+        doi = lambda spelling: Identifier(doi=spelling).doi
+        assert fingerprint_for(stage, doi("10.1000/ABC")) == fingerprint_for(stage, doi("doi:10.1000/abc"))
+        assert fingerprint_for(stage, doi("10.26321/Á")) != fingerprint_for(stage, doi("10.26321/á"))
