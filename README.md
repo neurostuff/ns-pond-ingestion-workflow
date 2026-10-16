@@ -228,7 +228,9 @@ articles fail, to be retried on the usual schedule. An article the API does not
 return (or a 404 saying it found no data) is not open access there, and is
 permanent for this source; one returned without its body is retried. A query
 the API refuses (400) is halved until the DOI it cannot name is alone; that one
-is permanent.
+is permanent. If every DOI of the query is refused even alone, the query is at
+fault rather than the DOIs: the source is left for the run as for a spent
+quota, and none of them is charged.
 
 ## Dead PDF URLs
 

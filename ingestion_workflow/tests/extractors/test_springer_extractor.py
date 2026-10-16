@@ -488,13 +488,54 @@ def test_a_malformed_later_answer_fails_only_its_own_batch(tmp_path, slept):
 
 
 def test_a_404_that_does_not_say_no_data_is_not_taken_as_not_open_access(tmp_path, slept):
+    """A gateway's or a moved path's 404 says nothing about the articles: retried."""
     cassette = _cassette(tmp_path, _answer(_uri([LAST]), 404, b"<html>Not Found</html>"))
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, LAST)
 
-    with _replay(cassette):
-        (result,) = _download(SpringerExtractor(_settings(tmp_path)), LAST)
+    with _replay(cassette) as played:
+        run_stages(ctx, [DownloadStage(settings)], refs)
+        assert played.all_played
 
-    assert result.error_message == "Springer Nature request failed: HTTP status 404"
-    assert result.error_message != NOT_OPEN_ACCESS
+    artifact = ctx.catalog.artifacts([refs[0].id], "download")[refs[0].id]["springer"]
+    assert artifact.status is Status.FAILED
+    assert artifact.error != NOT_OPEN_ACCESS
+
+
+def test_a_query_refused_for_every_doi_alone_leaves_springer_with_nothing_charged(
+        tmp_path, slept, caplog):
+    """Every DOI refused even alone is the query's fault, not theirs: none is final."""
+    asked = [CASE_REPORT, MOLECULAR_PAIN, LAST]
+    cassette = _cassette(tmp_path, *[
+        _answer(_uri(dois), 400) for dois in
+        (asked, asked[:1], asked[1:], asked[1:2], asked[2:])])
+    settings = _settings(tmp_path)
+    ctx, refs = _catalog(settings, *asked)
+    stage = DownloadStage(settings)
+
+    with _replay(cassette) as played:
+        report = run_stages(ctx, [stage], refs)
+        assert played.all_played
+        run_stages(ctx, [stage], refs)
+        assert played.play_count == 5
+
+    ids = [ref.id for ref in refs]
+    assert not any(ctx.catalog.artifacts(ids, "download").values())
+    assert ctx.catalog.attempt_counts(ids, "download", "springer") == {}
+    assert "refused every DOI of a query, each asked alone (400)" in report.render()
+
+
+def test_429s_do_not_spend_the_server_error_tries(tmp_path, slept):
+    case = _five_articles()[CASE_REPORT]
+    uri = _uri([CASE_REPORT])
+    cassette = _cassette(tmp_path, _answer(uri, 429), _answer(uri, 503), _answer(uri, 503),
+                         _answer(uri, body=_response([case])))
+
+    with _replay(cassette) as played:
+        (result,) = _download(SpringerExtractor(_settings(tmp_path)), CASE_REPORT)
+        assert played.all_played
+
+    assert result.success
 
 
 def test_a_refused_query_is_halved_until_the_doi_it_cannot_name_is_alone(tmp_path, slept):
@@ -607,7 +648,7 @@ def test_a_403_is_the_quota_spent_leaving_every_article_pending_and_said_in_the_
     assert ctx.catalog.attempt_counts(ids, "download", "springer") == {}
     line = report.render()
     assert f"springer EXHAUSTED: Springer Nature refused this key (403): {message}" in line
-    assert "2 article(s) left pending for it" in line
+    assert "2 article(s) left pending for springer (later sources still tried)" in line
     # the next source was still reached: it stopped the stage for want of its own token
     assert "download stopped: wiley: no Wiley TDM token" in caplog.text
     assert len(DownloadStage(settings).plan(ctx, refs[:2], {}, {}).pending) == 2

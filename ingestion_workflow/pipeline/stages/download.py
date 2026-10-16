@@ -236,7 +236,8 @@ class DownloadStage:
 
     def take_notes(self) -> List[str]:
         """What the run report says of the sources spent since it last asked."""
-        notes = [f"{source} EXHAUSTED: {reason}; {left:,} article(s) left pending for it"
+        notes = [f"{source} EXHAUSTED: {reason}; {left:,} article(s) left pending for {source}"
+                 " (later sources still tried)"
                  for source, (reason, left) in self._exhausted.items()]
         self._exhausted.clear()
         return notes

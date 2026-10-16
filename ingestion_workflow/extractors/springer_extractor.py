@@ -69,6 +69,10 @@ NO_BODY = "Springer Nature served the article's metadata without its body"
 #: A DOI the API refuses to be queried by (400) even alone: final.
 QUERY_REFUSED = "Springer Nature: query refused for this DOI (HTTP 400)"
 
+#: The API refusing every DOI of a query even alone is the query's fault, not the
+#: DOIs': the source is left for the run, with nothing charged.
+QUERIES_REFUSED = "refused every DOI of a query, each asked alone (400)"
+
 #: Tries for a request answered 5xx or not answered, before its batch fails.
 SERVER_ERROR_TRIES = 3
 
@@ -140,6 +144,10 @@ class SpringerExtractor(PubgetExtractor):
             batch = keys[start:start + BATCH_SIZE]
             try:
                 answers = self._ask([query_doi(by_key[k][0].doi) for k in batch], key)
+                if len(batch) > 1 and all(a == QUERY_REFUSED for a in answers.values()):
+                    raise SourceExhausted(
+                        f"Springer Nature {GATE.defer(HOST, QUERIES_REFUSED)}", []
+                    )
             except SourceExhausted as exc:
                 raise SourceExhausted(str(exc), results) from None
             for k in batch:
@@ -210,18 +218,19 @@ class SpringerExtractor(PubgetExtractor):
         params = {"q": doi_query(dois), "p": len(dois), "api_key": key}
         if start > 1:
             params["s"] = start
-        tries = 0
+        # Server errors and dropped connections only: a 429 is the gate's to count.
+        failures = 0
         while True:
             deferred = GATE.deferred(HOST)
             if deferred is not None:
                 raise SourceExhausted(f"Springer Nature {deferred}", [])
             GATE.wait(HOST)
-            tries += 1
             try:
                 response = self._client.get(API_URL, params=params)
             except httpx.HTTPError as exc:
-                if tries < SERVER_ERROR_TRIES:
-                    time.sleep(2.0**tries)
+                failures += 1
+                if failures < SERVER_ERROR_TRIES:
+                    time.sleep(2.0**failures)
                     continue
                 raise _BatchFailed(
                     f"Springer Nature request failed: {type(exc).__name__}"
@@ -241,14 +250,21 @@ class SpringerExtractor(PubgetExtractor):
                     HOST, f"refused this key (403): {_api_message(response, key)}"
                 )
                 raise SourceExhausted(f"Springer Nature {reason}", [])
-            if status >= 500 and tries < SERVER_ERROR_TRIES:
-                time.sleep(2.0**tries)
-                continue
+            if status >= 500:
+                failures += 1
+                if failures < SERVER_ERROR_TRIES:
+                    time.sleep(2.0**failures)
+                    continue
             GATE.answered(HOST)
             if status == 400:
                 raise _QueryRefused()
-            if status == 404 and NO_DATA in response.text:
-                return None
+            if status == 404:
+                if NO_DATA in response.text:
+                    return None
+                # Worded without the status: a "404" in a message reads as final.
+                raise _BatchFailed(
+                    "Springer Nature request failed: not found, without saying it found no data"
+                )
             if status != 200:
                 raise _BatchFailed(f"Springer Nature request failed: HTTP status {status}")
             try:
