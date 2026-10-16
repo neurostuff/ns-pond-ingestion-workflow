@@ -11,18 +11,18 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=test%40example.com&per_page=200&select=ids%2Cdoi
+    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=test%40example.com&per_page=100&select=ids%2Cdoi
   response:
     body:
-      string: '{"meta": {"count": 3, "db_response_time_ms": 16, "page": null, "per_page":
-        200, "next_cursor": null, "groups_count": null, "x_query": {"oql": "get works
+      string: '{"meta": {"count": 3, "db_response_time_ms": 9, "page": null, "per_page":
+        100, "next_cursor": null, "groups_count": null, "x_query": {"oql": "get works
         where published in 2026\n  and title-abstract has (fMRI AND synesthesia)\n  and
         type is [article](article)", "x_new_oql": "get articles from 2026 with (fMRI
         AND synesthesia) in the title or abstract", "oqo": {"get_rows": "works", "filter_rows":
         [{"column_id": "publication_year", "value": 2026}, {"column_id": "title_and_abstract.search",
         "value": "fMRI", "operator": "has"}, {"column_id": "title_and_abstract.search",
         "value": "synesthesia", "operator": "has"}, {"column_id": "type", "value":
-        "article"}]}, "url": "/works?filter=publication_year:2026,title_and_abstract.search:fMRI,title_and_abstract.search:synesthesia,type:article&per_page=200&cursor=%2A"},
+        "article"}]}, "url": "/works?filter=publication_year:2026,title_and_abstract.search:fMRI,title_and_abstract.search:synesthesia,type:article&per_page=100&cursor=%2A"},
         "cost_usd": 0.001}, "results": [{"ids": {"openalex": "https://openalex.org/W7216058027",
         "doi": "https://doi.org/10.25305/unj.340921"}, "doi": "https://doi.org/10.25305/unj.340921"},
         {"ids": {"openalex": "https://openalex.org/W7216603206"}, "doi": null}, {"ids":
@@ -34,7 +34,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4b36f7e5d456d84-DFW
+      - a4b3a442fa0788d1-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -42,7 +42,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 01:54:25 GMT
+      - Fri, 16 Oct 2026 02:30:27 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -62,11 +62,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '9847'
+      - '9693'
       X-RateLimit-Remaining-USD:
-      - '0.9847'
+      - '0.9693'
       X-RateLimit-Reset:
-      - '79535'
+      - '77373'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -81,9 +81,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=vKLsp2h8m50ITBPUUgZDRcctC35C36c9Dl25lJ9gjFo%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792115665"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=D5jMhXz4vBeWUtKNi3eua%2FEjCY7JIkMFCCjf1alYOFA%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792117827"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=vKLsp2h8m50ITBPUUgZDRcctC35C36c9Dl25lJ9gjFo%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792115665"
+      - heroku-nel="https://nel.heroku.com/reports?s=D5jMhXz4vBeWUtKNi3eua%2FEjCY7JIkMFCCjf1alYOFA%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792117827"
     status:
       code: 200
       message: OK

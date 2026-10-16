@@ -1,0 +1,566 @@
+interactions:
+- request:
+    body: '{"qs": "misophonia OR hyperacusis OR phonophobia OR synesthesia OR tinnitus
+      OR stuttering OR dyslexia OR insomnia OR narcolepsy", "date": "2026", "display":
+      {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '183'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":10603,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Zahra
+        Jafari\"},{\"order\":2,\"name\":\"Aalya Bhandari\"}],\"doi\":\"10.1016/j.jadr.2026.101170\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"101170\"},\"pii\":\"S2666915326001484\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Affective Disorders Reports\",\"title\":\"Hyperacusis, misophonia, and
+        mental health in young adults in Canada: Estimated prevalence and associated
+        factors\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2666915326001484?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26\"},{\"authors\":[{\"order\":1,\"name\":\"Leny Vinceslas\"},{\"order\":2,\"name\":\"Vit
+        Drga\"},{\"order\":4,\"name\":\"Ifat Yasin\"}],\"doi\":\"10.1016/j.heares.2026.109766\",\"loadDate\":\"2026-08-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109766\"},\"pii\":\"S0378595526002376\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis scores and listening characteristics: Extended
+        high-frequency audiograms from a young population without tinnitus and with
+        low noise exposure\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002376?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Shagun Ajmera\"},{\"order\":2,\"name\":\"Rafay
+        A. Khan\"},{\"order\":7,\"name\":\"Fatima T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Richard Salvi\"},{\"order\":2,\"name\":\"Tang-Chuan
+        Wang\"},{\"order\":3,\"name\":\"Ann Eddins\"}],\"doi\":\"10.1016/j.heares.2026.109673\",\"loadDate\":\"2026-05-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109673\"},\"pii\":\"S0378595526001504\",\"publicationDate\":\"2026-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis-inducing drug candidates\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526001504?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        477\"},{\"authors\":[{\"order\":1,\"name\":\"Nema Farouk Nasreldeen Hamid\"},{\"order\":2,\"name\":\"M.
+        A. Yashu\"},{\"order\":4,\"name\":\"Wasim Ahmed\"}],\"doi\":\"10.1016/j.otoeng.2026.512375\",\"loadDate\":\"2026-06-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"512375\"},\"pii\":\"S2173573526000591\",\"publicationDate\":\"2026-06-17\",\"sourceTitle\":\"Acta
+        Otorrinolaringologica (English Edition)\",\"title\":\"A systematic review
+        on sound-based therapy for individuals with hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2173573526000591?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Wolfgang
+        Ellermeier\"},{\"order\":2,\"name\":\"Karin Zimmer\"},{\"order\":5,\"name\":\"Sang
+        Hee Park\"}],\"doi\":\"10.1016/j.heares.2026.109809\",\"loadDate\":\"2026-09-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109809\"},\"pii\":\"S0378595526002807\",\"publicationDate\":\"2026-09-11\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis and noise sensitivity: Empirical evidence
+        for two distinct but overlapping constructs\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002807?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Philippe
+        Fournier\"},{\"order\":2,\"name\":\"Pierre H. Bourez\"},{\"order\":6,\"name\":\"Arnaud
+        J. Nore\xF1a\"}],\"doi\":\"10.1016/j.heares.2025.109482\",\"loadDate\":\"2025-11-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109482\"},\"pii\":\"S0378595525002990\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Validating and refining a psychoacoustic test to diagnose
+        hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002990?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        469\"},{\"authors\":[{\"order\":1,\"name\":\"Herbert Silverstein\"},{\"order\":2,\"name\":\"John
+        Peleman\"},{\"order\":3,\"name\":\"Neil Nayak\"}],\"doi\":\"10.1016/j.amjoto.2026.104944\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"104944\"},\"pii\":\"S0196070926001602\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"American
+        Journal of Otolaryngology\",\"title\":\"Hyperacusis surgery: The lifechanging
+        effects of round and oval window reinforcement using a patient reported outcome
+        analysis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0196070926001602?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        47, Issue 6\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
+        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
+        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        188\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a7242d9ec15a-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:32:25 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 8f40e752e0849bd6
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 8f40e752e0849bd6
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19725'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "(misophonia OR hyperacusis OR phonophobia OR synesthesia OR tinnitus
+      OR stuttering OR dyslexia OR insomnia OR narcolepsy) AND memory", "date": "2026",
+      "display": {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '196'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":10603,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Zahra
+        Jafari\"},{\"order\":2,\"name\":\"Aalya Bhandari\"}],\"doi\":\"10.1016/j.jadr.2026.101170\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"101170\"},\"pii\":\"S2666915326001484\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Affective Disorders Reports\",\"title\":\"Hyperacusis, misophonia, and
+        mental health in young adults in Canada: Estimated prevalence and associated
+        factors\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2666915326001484?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26\"},{\"authors\":[{\"order\":1,\"name\":\"Leny Vinceslas\"},{\"order\":2,\"name\":\"Vit
+        Drga\"},{\"order\":4,\"name\":\"Ifat Yasin\"}],\"doi\":\"10.1016/j.heares.2026.109766\",\"loadDate\":\"2026-08-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109766\"},\"pii\":\"S0378595526002376\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis scores and listening characteristics: Extended
+        high-frequency audiograms from a young population without tinnitus and with
+        low noise exposure\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002376?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Shagun Ajmera\"},{\"order\":2,\"name\":\"Rafay
+        A. Khan\"},{\"order\":7,\"name\":\"Fatima T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Richard Salvi\"},{\"order\":2,\"name\":\"Tang-Chuan
+        Wang\"},{\"order\":3,\"name\":\"Ann Eddins\"}],\"doi\":\"10.1016/j.heares.2026.109673\",\"loadDate\":\"2026-05-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109673\"},\"pii\":\"S0378595526001504\",\"publicationDate\":\"2026-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis-inducing drug candidates\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526001504?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        477\"},{\"authors\":[{\"order\":1,\"name\":\"Nema Farouk Nasreldeen Hamid\"},{\"order\":2,\"name\":\"M.
+        A. Yashu\"},{\"order\":4,\"name\":\"Wasim Ahmed\"}],\"doi\":\"10.1016/j.otoeng.2026.512375\",\"loadDate\":\"2026-06-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"512375\"},\"pii\":\"S2173573526000591\",\"publicationDate\":\"2026-06-17\",\"sourceTitle\":\"Acta
+        Otorrinolaringologica (English Edition)\",\"title\":\"A systematic review
+        on sound-based therapy for individuals with hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2173573526000591?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Wolfgang
+        Ellermeier\"},{\"order\":2,\"name\":\"Karin Zimmer\"},{\"order\":5,\"name\":\"Sang
+        Hee Park\"}],\"doi\":\"10.1016/j.heares.2026.109809\",\"loadDate\":\"2026-09-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109809\"},\"pii\":\"S0378595526002807\",\"publicationDate\":\"2026-09-11\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis and noise sensitivity: Empirical evidence
+        for two distinct but overlapping constructs\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002807?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Philippe
+        Fournier\"},{\"order\":2,\"name\":\"Pierre H. Bourez\"},{\"order\":6,\"name\":\"Arnaud
+        J. Nore\xF1a\"}],\"doi\":\"10.1016/j.heares.2025.109482\",\"loadDate\":\"2025-11-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109482\"},\"pii\":\"S0378595525002990\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Validating and refining a psychoacoustic test to diagnose
+        hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002990?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        469\"},{\"authors\":[{\"order\":1,\"name\":\"Herbert Silverstein\"},{\"order\":2,\"name\":\"John
+        Peleman\"},{\"order\":3,\"name\":\"Neil Nayak\"}],\"doi\":\"10.1016/j.amjoto.2026.104944\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"104944\"},\"pii\":\"S0196070926001602\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"American
+        Journal of Otolaryngology\",\"title\":\"Hyperacusis surgery: The lifechanging
+        effects of round and oval window reinforcement using a patient reported outcome
+        analysis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0196070926001602?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        47, Issue 6\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
+        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
+        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        188\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a72a7916f042-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:32:26 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 8ce2223583372b4c
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 8ce2223583372b4c
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19724'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "(misophonia OR hyperacusis OR phonophobia OR synesthesia OR tinnitus
+      OR stuttering OR dyslexia OR insomnia OR narcolepsy) AND disease", "date": "2026",
+      "display": {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '197'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":10603,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Zahra
+        Jafari\"},{\"order\":2,\"name\":\"Aalya Bhandari\"}],\"doi\":\"10.1016/j.jadr.2026.101170\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"101170\"},\"pii\":\"S2666915326001484\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Affective Disorders Reports\",\"title\":\"Hyperacusis, misophonia, and
+        mental health in young adults in Canada: Estimated prevalence and associated
+        factors\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2666915326001484?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26\"},{\"authors\":[{\"order\":1,\"name\":\"Leny Vinceslas\"},{\"order\":2,\"name\":\"Vit
+        Drga\"},{\"order\":4,\"name\":\"Ifat Yasin\"}],\"doi\":\"10.1016/j.heares.2026.109766\",\"loadDate\":\"2026-08-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109766\"},\"pii\":\"S0378595526002376\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis scores and listening characteristics: Extended
+        high-frequency audiograms from a young population without tinnitus and with
+        low noise exposure\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002376?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Shagun Ajmera\"},{\"order\":2,\"name\":\"Rafay
+        A. Khan\"},{\"order\":7,\"name\":\"Fatima T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Richard Salvi\"},{\"order\":2,\"name\":\"Tang-Chuan
+        Wang\"},{\"order\":3,\"name\":\"Ann Eddins\"}],\"doi\":\"10.1016/j.heares.2026.109673\",\"loadDate\":\"2026-05-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109673\"},\"pii\":\"S0378595526001504\",\"publicationDate\":\"2026-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis-inducing drug candidates\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526001504?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        477\"},{\"authors\":[{\"order\":1,\"name\":\"Nema Farouk Nasreldeen Hamid\"},{\"order\":2,\"name\":\"M.
+        A. Yashu\"},{\"order\":4,\"name\":\"Wasim Ahmed\"}],\"doi\":\"10.1016/j.otoeng.2026.512375\",\"loadDate\":\"2026-06-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"512375\"},\"pii\":\"S2173573526000591\",\"publicationDate\":\"2026-06-17\",\"sourceTitle\":\"Acta
+        Otorrinolaringologica (English Edition)\",\"title\":\"A systematic review
+        on sound-based therapy for individuals with hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2173573526000591?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Wolfgang
+        Ellermeier\"},{\"order\":2,\"name\":\"Karin Zimmer\"},{\"order\":5,\"name\":\"Sang
+        Hee Park\"}],\"doi\":\"10.1016/j.heares.2026.109809\",\"loadDate\":\"2026-09-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109809\"},\"pii\":\"S0378595526002807\",\"publicationDate\":\"2026-09-11\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis and noise sensitivity: Empirical evidence
+        for two distinct but overlapping constructs\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002807?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Philippe
+        Fournier\"},{\"order\":2,\"name\":\"Pierre H. Bourez\"},{\"order\":6,\"name\":\"Arnaud
+        J. Nore\xF1a\"}],\"doi\":\"10.1016/j.heares.2025.109482\",\"loadDate\":\"2025-11-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109482\"},\"pii\":\"S0378595525002990\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Validating and refining a psychoacoustic test to diagnose
+        hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002990?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        469\"},{\"authors\":[{\"order\":1,\"name\":\"Herbert Silverstein\"},{\"order\":2,\"name\":\"John
+        Peleman\"},{\"order\":3,\"name\":\"Neil Nayak\"}],\"doi\":\"10.1016/j.amjoto.2026.104944\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"104944\"},\"pii\":\"S0196070926001602\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"American
+        Journal of Otolaryngology\",\"title\":\"Hyperacusis surgery: The lifechanging
+        effects of round and oval window reinforcement using a patient reported outcome
+        analysis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0196070926001602?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        47, Issue 6\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
+        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
+        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        188\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a730bbfff099-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:32:27 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 3ae409f6339e7e71
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 3ae409f6339e7e71
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19723'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "misophonia OR hyperacusis OR phonophobia OR synesthesia OR tinnitus",
+      "date": "2026", "display": {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '131'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":1722,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Zahra
+        Jafari\"},{\"order\":2,\"name\":\"Aalya Bhandari\"}],\"doi\":\"10.1016/j.jadr.2026.101170\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"101170\"},\"pii\":\"S2666915326001484\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Affective Disorders Reports\",\"title\":\"Hyperacusis, misophonia, and
+        mental health in young adults in Canada: Estimated prevalence and associated
+        factors\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2666915326001484?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        26\"},{\"authors\":[{\"order\":1,\"name\":\"Leny Vinceslas\"},{\"order\":2,\"name\":\"Vit
+        Drga\"},{\"order\":4,\"name\":\"Ifat Yasin\"}],\"doi\":\"10.1016/j.heares.2026.109766\",\"loadDate\":\"2026-08-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109766\"},\"pii\":\"S0378595526002376\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis scores and listening characteristics: Extended
+        high-frequency audiograms from a young population without tinnitus and with
+        low noise exposure\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002376?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Shagun Ajmera\"},{\"order\":2,\"name\":\"Rafay
+        A. Khan\"},{\"order\":7,\"name\":\"Fatima T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Nema Farouk Nasreldeen Hamid\"},{\"order\":2,\"name\":\"M.
+        A. Yashu\"},{\"order\":4,\"name\":\"Wasim Ahmed\"}],\"doi\":\"10.1016/j.otoeng.2026.512375\",\"loadDate\":\"2026-06-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"512375\"},\"pii\":\"S2173573526000591\",\"publicationDate\":\"2026-06-17\",\"sourceTitle\":\"Acta
+        Otorrinolaringologica (English Edition)\",\"title\":\"A systematic review
+        on sound-based therapy for individuals with hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2173573526000591?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Wolfgang
+        Ellermeier\"},{\"order\":2,\"name\":\"Karin Zimmer\"},{\"order\":5,\"name\":\"Sang
+        Hee Park\"}],\"doi\":\"10.1016/j.heares.2026.109809\",\"loadDate\":\"2026-09-11T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109809\"},\"pii\":\"S0378595526002807\",\"publicationDate\":\"2026-09-11\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis and noise sensitivity: Empirical evidence
+        for two distinct but overlapping constructs\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002807?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Philippe
+        Fournier\"},{\"order\":2,\"name\":\"Pierre H. Bourez\"},{\"order\":6,\"name\":\"Arnaud
+        J. Nore\xF1a\"}],\"doi\":\"10.1016/j.heares.2025.109482\",\"loadDate\":\"2025-11-21T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109482\"},\"pii\":\"S0378595525002990\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Validating and refining a psychoacoustic test to diagnose
+        hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002990?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        469\"},{\"authors\":[{\"order\":1,\"name\":\"Richard Salvi\"},{\"order\":2,\"name\":\"Tang-Chuan
+        Wang\"},{\"order\":3,\"name\":\"Ann Eddins\"}],\"doi\":\"10.1016/j.heares.2026.109673\",\"loadDate\":\"2026-05-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109673\"},\"pii\":\"S0378595526001504\",\"publicationDate\":\"2026-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Hyperacusis-inducing drug candidates\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526001504?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        477\"},{\"authors\":[{\"order\":1,\"name\":\"Herbert Silverstein\"},{\"order\":2,\"name\":\"John
+        Peleman\"},{\"order\":3,\"name\":\"Neil Nayak\"}],\"doi\":\"10.1016/j.amjoto.2026.104944\",\"loadDate\":\"2026-09-23T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"104944\"},\"pii\":\"S0196070926001602\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"American
+        Journal of Otolaryngology\",\"title\":\"Hyperacusis surgery: The lifechanging
+        effects of round and oval window reinforcement using a patient reported outcome
+        analysis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0196070926001602?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        47, Issue 6\"},{\"authors\":[{\"order\":1,\"name\":\"Jose Antonio Lopez-Escamez\"},{\"order\":2,\"name\":\"Dirk
+        De Ridder\"},{\"order\":7,\"name\":\"Sven Vanneste\"}],\"doi\":\"10.1016/j.neubiorev.2026.106796\",\"loadDate\":\"2026-06-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106796\"},\"pii\":\"S0149763426002538\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Sound hypersensitivity phenotypes and
+        sound hypersensitivity disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426002538?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        188\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a736ed656c55-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:32:28 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - ef79efe75fa48d9b
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - ef79efe75fa48d9b
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19722'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "stuttering OR dyslexia OR insomnia OR narcolepsy", "date": "2026",
+      "display": {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '112'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":9145,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Alaa
+        Mamdouh abdelhamed Radwan\"},{\"order\":2,\"name\":\"HebatAllah Ismail Abdelmotaleb\"}],\"doi\":\"10.1016/j.heares.2026.109829\",\"loadDate\":\"2026-09-30T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109829\"},\"pii\":\"S037859552600300X\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Central auditory processing skills in stuttering school-age
+        children with and without dyslexia: a preliminary study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859552600300X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        482\"},{\"authors\":[{\"order\":1,\"name\":\"Amy Connery\"},{\"order\":2,\"name\":\"Arlene
+        McCurtin\"}],\"doi\":\"10.1016/j.jfludis.2026.106243\",\"loadDate\":\"2026-08-17T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106243\"},\"pii\":\"S0094730X26000513\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"\u201C<ce:italic>Our knowledge, your support</ce:italic>\u201D:
+        Exploring the research priorities of adults who stutter and perceived supports
+        to enable future research partnerships\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000513?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        89\"},{\"authors\":[{\"order\":1,\"name\":\"Am\xE9lie Van Thorre\"},{\"order\":2,\"name\":\"Gilles
+        Vannuscorps\"}],\"doi\":\"10.1016/j.jfludis.2026.106241\",\"loadDate\":\"2026-08-06T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106241\"},\"pii\":\"S0094730X26000495\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"Is covert articulation impaired in developmental
+        stuttering?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000495?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        89\"},{\"authors\":[{\"order\":1,\"name\":\"Takashi Fukagawa\"},{\"order\":2,\"name\":\"Haruhiko
+        Watahiki\"},{\"order\":6,\"name\":\"Natsuko Mizuno\"}],\"doi\":\"10.1016/j.fsir.2026.100529\",\"loadDate\":\"2026-09-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"100529\"},\"pii\":\"S2665910726000812\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Forensic
+        Science International: Reports\",\"title\":\"Characteristics of tetranucleotide
+        repeat stutters with various repeat sequences using synthetic oligonucleotides\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2665910726000812?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        14\"},{\"authors\":[{\"order\":1,\"name\":\"Emmanuel Kwaku Addo\"},{\"order\":2,\"name\":\"Levi
+        C. Ofoe\"},{\"order\":3,\"name\":\"Rodney Gabel\"}],\"doi\":\"10.1016/j.jfludis.2026.106261\",\"loadDate\":\"2026-10-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106261\"},\"pii\":\"S0094730X26000690\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"Directed content analysis of stuttering
+        discourse on a Ghanaian social media platform\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000690?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        90\"},{\"authors\":[{\"order\":1,\"name\":\"S. Van Eerdenbrugh\"},{\"order\":2,\"name\":\"R.
+        Sevenants\"}],\"doi\":\"10.1016/j.jfludis.2026.106259\",\"loadDate\":\"2026-10-07T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106259\"},\"pii\":\"S0094730X26000677\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"Monitoring early stuttering onset before
+        treatment is due: A cross-sectional study\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000677?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        90\"},{\"authors\":[{\"order\":1,\"name\":\"Maedeh Salehi Darjani\"},{\"order\":2,\"name\":\"Mohamadreza
+        Afshar\"},{\"order\":3,\"name\":\"Mehdi Bakhtiar\"}],\"doi\":\"10.1016/j.jcomdis.2026.106701\",\"loadDate\":\"2026-10-06T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106701\"},\"pii\":\"S0021992426000857\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Journal
+        of Communication Disorders\",\"title\":\"Executive functions in stuttering
+        across the life span: A scoping review of behavioral and caregiver-reported
+        measures\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0021992426000857?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        124\"},{\"authors\":[{\"order\":1,\"name\":\"Amanda Ortiz-Alvarez\"},{\"order\":2,\"name\":\"Richard
+        Arenas\"}],\"doi\":\"10.1016/j.jfludis.2026.106257\",\"loadDate\":\"2026-09-19T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"106257\"},\"pii\":\"S0094730X26000653\",\"publicationDate\":\"2026-09-19\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"A phenomenological exploration of stuttering
+        anticipation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000653?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Omer
+        Levy Kardash\"}],\"doi\":\"10.1016/j.jcomdis.2026.106680\",\"loadDate\":\"2026-08-01T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106680\"},\"pii\":\"S002199242600064X\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Journal
+        of Communication Disorders\",\"title\":\"Understanding social anxiety in adolescents
+        who stutter: A multi-informant study of the roles of stuttering severity,
+        parenting styles, social participation and speech avoidance\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S002199242600064X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        123\"},{\"authors\":[{\"order\":1,\"name\":\"Yunyi Hu\"},{\"order\":2,\"name\":\"Thomas
+        Law\"}],\"doi\":\"10.1016/j.jfludis.2026.106239\",\"loadDate\":\"2026-08-12T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106239\"},\"pii\":\"S0094730X26000471\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Journal
+        of Fluency Disorders\",\"title\":\"Code-switching in Cantonese-English bilingual
+        adults who stutter\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0094730X26000471?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        89\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a73d2a208c79-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:32:29 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 336ebe74a80fc9bb
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 336ebe74a80fc9bb
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19721'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

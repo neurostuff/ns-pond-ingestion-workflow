@@ -37,18 +37,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 16 Oct 2026 00:57:21 GMT
+      - Fri, 16 Oct 2026 02:34:02 GMT
       ncbi-phid:
-      - 1D3370643E30923500005136ABA65B6D.1.1.m_1
+      - 1D3370643E30923500002F6330D9D837.1.1.m_1
       ncbi-sid:
-      - EF4D87E44C49EC42_716BSID
+      - 46FB13A8406584A5_68C8SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-      set-cookie:
-      - ncbi_sid=EF4D87E44C49EC42_716BSID; domain=.nih.gov; path=/; expires=Sat, 16
-        Oct 2027 00:57:22 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -67,6 +64,114 @@ interactions:
       code: 200
       message: OK
 - request:
+    body: '{"qs": "fMRI AND misophonia", "display": {"offset": 0, "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '67'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":73,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Shagun
+        Ajmera\"},{\"order\":2,\"name\":\"Rafay A. Khan\"},{\"order\":7,\"name\":\"Fatima
+        T. Husain\"}],\"doi\":\"10.1016/j.heares.2025.109521\",\"loadDate\":\"2025-12-26T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109521\"},\"pii\":\"S0378595525003387\",\"publicationDate\":\"2026-02-28\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Altered intrinsic brain connectivity in misophonia,
+        with and without hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525003387?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        471\"},{\"authors\":[{\"order\":1,\"name\":\"Despina Melanthiou\"},{\"order\":2,\"name\":\"Georgia
+        Panayiotou\"},{\"order\":7,\"name\":\"Panos Zanos\"}],\"doi\":\"10.1016/j.neubiorev.2026.106584\",\"loadDate\":\"2026-01-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"106584\"},\"pii\":\"S0149763426000394\",\"publicationDate\":\"2026-04-30\",\"sourceTitle\":\"Neuroscience
+        & Biobehavioral Reviews\",\"title\":\"Linking misophonia and tinnitus: Common
+        and divergent neurobiological mechanisms\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0149763426000394?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        183\"},{\"authors\":[{\"order\":1,\"name\":\"Halime S\xFCmeyra Sevmez\"}],\"doi\":\"10.1016/j.bbr.2026.116248\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"116248\"},\"pii\":\"S016643282600224X\",\"publicationDate\":\"2026-07-26\",\"sourceTitle\":\"Behavioural
+        Brain Research\",\"title\":\"Developmental plasticity and network-level mechanisms
+        in misophonia: A theory-building review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016643282600224X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        510\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Sukhbinder
+        Kumar\"},{\"order\":5,\"name\":\"Lars F. Muckli\"}],\"doi\":\"10.1016/j.mehy.2025.111840\",\"loadDate\":\"2025-11-24T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"111840\"},\"pii\":\"S0306987725002798\",\"publicationDate\":\"2026-01-31\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Reducing hyper mirroring in misophonia: A proposal
+        for cortico-cortical paired associative stimulation (ccPAS) as a potential
+        intervention for treatment\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306987725002798?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        206\"},{\"authors\":[{\"order\":1,\"name\":\"Pradeep Dheerendra\"},{\"order\":2,\"name\":\"Soumita
+        Ramesh\"}],\"doi\":\"10.1016/j.mehy.2025.111765\",\"loadDate\":\"2025-09-24T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"111765\"},\"pii\":\"S030698772500204X\",\"publicationDate\":\"2025-11-30\",\"sourceTitle\":\"Medical
+        Hypotheses\",\"title\":\"Is iron dysregulation in the mirror motor cortex
+        associated with misophonia?\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S030698772500204X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        204\"},{\"authors\":[{\"order\":1,\"name\":\"Kamalakannan Karupaiah\"},{\"order\":2,\"name\":\"Rakesh
+        Trinesh\"},{\"order\":4,\"name\":\"Prashanth Prabhu\"}],\"doi\":\"10.1016/j.heares.2025.109458\",\"loadDate\":\"2025-10-25T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109458\"},\"pii\":\"S037859552500276X\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Multichannel auditory cortical responses in misophonia:
+        A neurophysiological investigation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859552500276X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"},{\"order\":2,\"name\":\"Romarua
+        Agbude\"},{\"order\":5,\"name\":\"Itamar Ronen\"}],\"doi\":\"10.1016/j.heares.2025.109440\",\"loadDate\":\"2025-10-06T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"109440\"},\"pii\":\"S0378595525002588\",\"publicationDate\":\"2025-12-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"The neurochemistry of decreased sound tolerance: A
+        magnetic resonance spectroscopy (MRS) study of misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525002588?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        468\"},{\"authors\":[{\"order\":1,\"name\":\"Emily B. J. Coffey\"},{\"order\":2,\"name\":\"Philippe
+        Fournier\"}],\"doi\":\"10.1016/j.heares.2026.109772\",\"loadDate\":\"2026-08-08T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109772\"},\"pii\":\"S0378595526002431\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Special issue on misophonia and hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595526002431?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        480\"},{\"authors\":[{\"order\":1,\"name\":\"Jamie Ward\"}],\"doi\":\"10.1016/j.cortex.2026.06.001\",\"loadDate\":\"2026-06-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"152\",\"last\":\"156\"},\"pii\":\"S0010945226001607\",\"publicationDate\":\"2026-09-30\",\"sourceTitle\":\"Cortex\",\"title\":\"The
+        proximal and distal causes of misophonia\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0010945226001607?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        202\"},{\"authors\":[{\"order\":1,\"name\":\"Li Xie\"},{\"order\":2,\"name\":\"Rodrigo
+        Donoso-San Mart\xEDn\"},{\"order\":7,\"name\":\"Marlies Knipper\"}],\"doi\":\"10.1016/j.heares.2025.109305\",\"loadDate\":\"2025-05-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"109305\"},\"pii\":\"S0378595525001236\",\"publicationDate\":\"2025-07-31\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Cochlear neural contributions to triple network changes
+        in tinnitus, hyperacusis & misophonia? A perspective review\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0378595525001236?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        463\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a9876fc96f64-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:34:02 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - 8cf718153dd63e88
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - 8cf718153dd63e88
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19718'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
     body: ''
     headers:
       accept:
@@ -75,8 +180,70 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - ncbi_sid=EF4D87E44C49EC42_716BSID
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAHSPuw7CMAxFd76i8lzxEBtbJRYGEEJstEMajBqUJmA7CFT133F5SCxsvr7n+tFB
+        g+aIBIsO5HFBWAAyGrIN5HBDYheD9qbjOfT51yLk5GWI2JiCFjCbKU4orbkP9FuwGJKPdEfvWMWh
+        ykHIBPZGdDTjp3dNSI8fQ2MlnNa7VQmHvROPk6Jm9a1UWbFZZiW0juOlicGZv8g5JgrGZ3qGsx6V
+        26baO/vakO313Qr6fvQEAAD//wMAej+z8QQBAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 16 Oct 2026 02:34:02 GMT
+      ncbi-phid:
+      - 1D3370643E3092350000326331B2CCD3.1.1.m_1
+      ncbi-sid:
+      - 46FB13A8406584A5_68C8SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '10'
+      x-ratelimit-remaining:
+      - '8'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
       host:
       - eutils.ncbi.nlm.nih.gov
       user-agent:
@@ -107,18 +274,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 16 Oct 2026 00:57:21 GMT
+      - Fri, 16 Oct 2026 02:34:02 GMT
       ncbi-phid:
-      - 1D32B320B0ED256500007823015E26A8.1.1.m_1
+      - 1D32B320B0ED25650000604BC37CAA88.1.1.m_1
       ncbi-sid:
-      - EF4D87E44C49EC42_716BSID
+      - 46FB13A8406584A5_68C8SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-      set-cookie:
-      - ncbi_sid=EF4D87E44C49EC42_716BSID; domain=.nih.gov; path=/; expires=Sat, 16
-        Oct 2027 00:57:22 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -128,7 +292,7 @@ interactions:
       x-ratelimit-limit:
       - '10'
       x-ratelimit-remaining:
-      - '8'
+      - '7'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -174,7 +338,7 @@ interactions:
         "CorpusId": 251448965, "PubMed": "36017175"}}, {"paperId": "c39c4694113c4f4fb199a241cf6d19fc474c4fc6",
         "externalIds": {"PubMedCentral": "8244967", "DOI": "10.1523/JNEUROSCI.0261-21.2021",
         "CorpusId": 235094517, "PubMed": "34021042"}}, {"paperId": "cfa4bfeb28a38e73deddb60c370bb0f844cd91c2",
-        "externalIds": {"MAG": "2585040246", "PubMedCentral": "5321671", "DOI": "10.1016/j.cub.2016.12.048",
+        "externalIds": {"PubMedCentral": "5321671", "MAG": "2585040246", "DOI": "10.1016/j.cub.2016.12.048",
         "CorpusId": 530665, "PubMed": "28162895"}}, {"paperId": "dcdff831259ac273b036283779d626d4159185a4",
         "externalIds": {"MAG": "2945711062", "PubMedCentral": "6525165", "DOI": "10.1038/s41598-019-44084-8",
         "CorpusId": 156055509, "PubMed": "31101901"}}, {"paperId": "ec4823bce67ca849d36b6d095f5e312919470cb1",
@@ -193,27 +357,27 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:22 GMT
+      - Fri, 16 Oct 2026 02:34:03 GMT
       Via:
-      - 1.1 fed6d5675a6866d44a78bb730bff19fc.cloudfront.net (CloudFront)
+      - 1.1 4bbf91f2f9edc22eb68408b6405ae452.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - wbRsYpBniPeSdWdcUuvUHeqbatDLjSMPpqP-5-Hrc9eApHavRs-P6Q==
+      - 963D0JQ_MgO8zevKHE3Lfm_F_kNcbQxXYZgUJl61ryRoWNHmbJV7Mw==
       X-Amz-Cf-Pop:
-      - IAH51-P1
+      - DFW57-P1
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - FT9yCFvPPHcEMwQ=
+      - FUL8WHXVPHcElwg=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
       - '2627'
       x-amzn-Remapped-Date:
-      - Fri, 16 Oct 2026 00:57:22 GMT
+      - Fri, 16 Oct 2026 02:34:03 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - 911a1e53-b826-4146-bfdc-6e98dbb51092
+      - 2496fe68-4ce4-4633-a417-4fc9d36aa556
     status:
       code: 200
       message: OK
@@ -229,17 +393,17 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+misophonia%29%2Ctype%3Aarticle&mailto=test%40example.com&per_page=200&select=ids%2Cdoi
+    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+misophonia%29%2Ctype%3Aarticle&mailto=test%40example.com&per_page=100&select=ids%2Cdoi
   response:
     body:
-      string: '{"meta": {"count": 13, "db_response_time_ms": 17, "page": null, "per_page":
-        200, "next_cursor": null, "groups_count": null, "x_query": {"oql": "get works
+      string: '{"meta": {"count": 13, "db_response_time_ms": 10, "page": null, "per_page":
+        100, "next_cursor": null, "groups_count": null, "x_query": {"oql": "get works
         where title-abstract has (fMRI AND misophonia)\n  and type is [article](article)",
         "x_new_oql": "get articles with (fMRI AND misophonia) in the title or abstract",
         "oqo": {"get_rows": "works", "filter_rows": [{"column_id": "title_and_abstract.search",
         "value": "fMRI", "operator": "has"}, {"column_id": "title_and_abstract.search",
         "value": "misophonia", "operator": "has"}, {"column_id": "type", "value":
-        "article"}]}, "url": "/works?filter=title_and_abstract.search:fMRI,title_and_abstract.search:misophonia,type:article&per_page=200&cursor=%2A"},
+        "article"}]}, "url": "/works?filter=title_and_abstract.search:fMRI,title_and_abstract.search:misophonia,type:article&per_page=100&cursor=%2A"},
         "cost_usd": 0.001}, "results": [{"ids": {"openalex": "https://openalex.org/W2585040246",
         "doi": "https://doi.org/10.1016/j.cub.2016.12.048", "mag": "2585040246", "pmid":
         "https://pubmed.ncbi.nlm.nih.gov/28162895"}, "doi": "https://doi.org/10.1016/j.cub.2016.12.048"},
@@ -276,7 +440,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4b31bef0ce36b6a-DFW
+      - a4b3a98bafa9857d-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -284,7 +448,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:23 GMT
+      - Fri, 16 Oct 2026 02:34:03 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -304,11 +468,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '9936'
+      - '9671'
       X-RateLimit-Remaining-USD:
-      - '0.9936'
+      - '0.9671'
       X-RateLimit-Reset:
-      - '82957'
+      - '77157'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -323,9 +487,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=YsDorqUF0mqFY4u7qkbJCA%2BFzoc5CdKzX0DdCyWa2%2Bk%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792112243"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=4VTx16jgBC1k0y%2F%2BkwuVaBMWzct3kxf%2Bm0Co0WCzTog%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792118043"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=YsDorqUF0mqFY4u7qkbJCA%2BFzoc5CdKzX0DdCyWa2%2Bk%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792112243"
+      - heroku-nel="https://nel.heroku.com/reports?s=4VTx16jgBC1k0y%2F%2BkwuVaBMWzct3kxf%2Bm0Co0WCzTog%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792118043"
     status:
       code: 200
       message: OK
@@ -609,7 +773,7 @@ interactions:
         48, Supplement\"}],\"details\":{}}"
     headers:
       CF-RAY:
-      - a4b31bf0dd1eeafa-DFW
+      - a4b3a98db86124e9-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -619,7 +783,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 00:57:23 GMT
+      - Fri, 16 Oct 2026 02:34:03 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -633,27 +797,23 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - 5689007d3daaa1e7
+      - 8764972a83384def
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - 5689007d3daaa1e7
+      - 8764972a83384def
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19966'
+      - '19717'
       X-RateLimit-Reset:
       - '1792759529'
       allow:
       - GET
       cf-cache-status:
       - DYNAMIC
-      set-cookie:
-      - __cf_bm=CBhgddBNh_OsFktwYIM38s92T4Jss4nfaMr2iF13FIY-1792112243.3402758-1.0.1.1-FRzZE.kfflljkYblpct4uE9pZZYq9F__O.Qp8H0GwMFC0pbbVoDHzOOoqdIlvnBY1f05nH.CpUr_mQR.nEVxWU2FfQDrCvW30zIbQg5EiBO39mpvxbQCZH1JHBRY7SpG;
-        HttpOnly; SameSite=None; Secure; Path=/; Domain=elsevier.com; Expires=Fri,
-        16 Oct 2026 01:27:23 GMT
       tdm-policy:
       - https://www.elsevier.com/tdm/tdmrep-policy.json
       tdm-reservation:
@@ -662,7 +822,8 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"ids": ["PMID:41475326", "PMID:34170337", "PMID:28626391"]}'
+    body: '{"ids": ["PMID:41475326", "PMID:34170337", "PMID:28626391", "PMID:41475326",
+      "PMID:34170337", "PMID:41475326", "PMID:41475326"]}'
     headers:
       Accept:
       - '*/*'
@@ -671,7 +832,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '60'
+      - '128'
       Content-Type:
       - application/json
       User-Agent:
@@ -686,7 +847,15 @@ interactions:
         "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
         "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "985f380c52fa1a5db99374e5fd2cb798a72453ff",
         "externalIds": {"PubMedCentral": "5454038", "MAG": "2621021054", "DOI": "10.3389/fnbeh.2017.00111",
-        "CorpusId": 30594537, "PubMed": "28626391"}}]
+        "CorpusId": 30594537, "PubMed": "28626391"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686",
+        "externalIds": {"MAG": "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}]
 
         '
     headers:
@@ -695,44 +864,46 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '566'
+      - '1245'
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:23 GMT
+      - Fri, 16 Oct 2026 02:34:04 GMT
       Via:
-      - 1.1 4d3534abcc9cdaa12e3b52e1d4f78dce.cloudfront.net (CloudFront)
+      - 1.1 aa3674a12327640af71c59263be8ffc6.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - CxlZ1pQ_rlbS7Sgo-6eKoQ9_-ud8WPXyPgZU2cwxVUlFnDzV5zJjvQ==
+      - t-x7nVKZL90GKMKD7QqwStirqrxs9G3KhEFueJnn59Nki1eiEwjUmQ==
       X-Amz-Cf-Pop:
-      - IAH51-P1
+      - DFW57-P1
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - FT9yJHdjvHcEEYA=
+      - FUL8dHPTvHcEKrg=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '566'
+      - '1245'
       x-amzn-Remapped-Date:
-      - Fri, 16 Oct 2026 00:57:23 GMT
+      - Fri, 16 Oct 2026 02:34:04 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - fd08eba0-abf2-4704-b856-d7ee2a038afc
+      - bcc5c76f-d49b-4f88-aecc-194d07f2365c
     status:
       code: 200
       message: OK
 - request:
     body: '{"ids": ["DOI:10.1016/j.heares.2025.109521", "DOI:10.1007/s00106-021-01072-7",
       "DOI:10.3389/fnbeh.2017.00111", "DOI:10.1101/2020.10.29.346650", "DOI:10.1121/10.0045101",
-      "DOI:10.64898/2026.08.30.748122", "DOI:10.1097/01.hj.0000657984.74790.d5", "DOI:10.1097/01.hj.0000459743.01876.fd",
-      "DOI:10.1016/j.neubiorev.2026.106584", "DOI:10.1016/j.bbr.2026.116248", "DOI:10.1016/j.mehy.2025.111840",
-      "DOI:10.1016/j.mehy.2025.111765", "DOI:10.1016/j.heares.2025.109458", "DOI:10.1016/j.heares.2025.109440",
-      "DOI:10.1016/j.heares.2026.109772", "DOI:10.1016/j.cortex.2026.06.001", "DOI:10.1016/j.heares.2025.109305",
-      "DOI:10.1016/j.heares.2025.109184", "DOI:10.1016/j.joto.2023.05.006", "DOI:10.1016/j.jad.2024.01.120",
-      "DOI:10.1016/j.isci.2023.106299", "DOI:10.1016/j.euroneuro.2021.05.013", "DOI:10.1016/j.biopsych.2023.02.688",
-      "DOI:10.1016/j.biopsych.2018.02.410", "DOI:10.1016/s0924-977x(17)31330-5", "DOI:10.1016/j.neubiorev.2026.106796",
+      "DOI:10.64898/2026.08.30.748122", "DOI:10.1016/j.heares.2025.109521", "DOI:10.1097/01.hj.0000657984.74790.d5",
+      "DOI:10.1007/s00106-021-01072-7", "DOI:10.1016/j.heares.2025.109521", "DOI:10.1097/01.hj.0000459743.01876.fd",
+      "DOI:10.1016/j.heares.2025.109521", "DOI:10.1016/j.neubiorev.2026.106584", "DOI:10.1016/j.bbr.2026.116248",
+      "DOI:10.1016/j.mehy.2025.111840", "DOI:10.1016/j.mehy.2025.111765", "DOI:10.1016/j.heares.2025.109458",
+      "DOI:10.1016/j.heares.2025.109440", "DOI:10.1016/j.heares.2026.109772", "DOI:10.1016/j.cortex.2026.06.001",
+      "DOI:10.1016/j.heares.2025.109305", "DOI:10.1016/j.heares.2025.109184", "DOI:10.1016/j.joto.2023.05.006",
+      "DOI:10.1016/j.jad.2024.01.120", "DOI:10.1016/j.isci.2023.106299", "DOI:10.1016/j.euroneuro.2021.05.013",
+      "DOI:10.1016/j.biopsych.2023.02.688", "DOI:10.1016/j.biopsych.2018.02.410",
+      "DOI:10.1016/s0924-977x(17)31330-5", "DOI:10.1016/j.neubiorev.2026.106796",
       "DOI:10.1016/j.schres.2024.09.026", "DOI:10.1016/j.concog.2023.103477", "DOI:10.1016/j.jocrd.2021.100644",
       "DOI:10.1016/j.nicl.2020.102166", "DOI:10.1016/j.bbr.2026.116199", "DOI:10.1016/j.neuroimage.2026.122128",
       "DOI:10.1016/j.cortex.2020.10.023", "DOI:10.1016/j.parkreldis.2019.02.005",
@@ -763,7 +934,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '2890'
+      - '3032'
       Content-Type:
       - application/json
       User-Agent:
@@ -783,36 +954,44 @@ interactions:
         226228619}}, {"paperId": "141271bafaeba45add3862e41be8742023c953d5", "externalIds":
         {"DOI": "10.1121/10.0045101", "CorpusId": 291443729}}, {"paperId": "348891a1b7bb50760a133ecc1496fa80820d553f",
         "externalIds": {"DOI": "10.64898/2026.08.30.748122", "CorpusId": 291827369}},
+        {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46", "externalIds": {"DOI":
+        "10.1016/j.heares.2025.109521", "CorpusId": 284296428, "PubMed": "41475326"}},
         {"paperId": "81be8b8d44fd520b1255bfdafca23cbb425c5da6", "externalIds": {"MAG":
         "3009373411", "DOI": "10.1097/01.hj.0000657984.74790.d5", "CorpusId": 216461040}},
-        {"paperId": "8a4b31781f8cf9f1ff0a4ccb7d50786cb967fa07", "externalIds": {"MAG":
-        "2335064143", "DOI": "10.1097/01.HJ.0000459743.01876.fd", "CorpusId": 147025209}},
-        {"paperId": "2dd8073333be565b9b1be4cd303729583ffddb6e", "externalIds": {"DOI":
-        "10.1016/j.neubiorev.2026.106584", "CorpusId": 285181814, "PubMed": "41616930"}},
-        {"paperId": "e30d68ec7fa459ee2e1ad06305a9f0d1a68e7339", "externalIds": {"DOI":
-        "10.1016/j.bbr.2026.116248", "CorpusId": 289093538, "PubMed": "42066961"}},
-        {"paperId": "0b803c7f799154b6cd5a2d1fdefc07eaf09e66e9", "externalIds": {"DOI":
-        "10.1016/j.mehy.2025.111840", "CorpusId": 283337609}}, {"paperId": "af675760797d8b7f3002f5da402385924c5710f4",
-        "externalIds": {"DOI": "10.1016/j.mehy.2025.111765", "CorpusId": 281607692}},
-        {"paperId": "8902befb9aeeb3edd107121e62480da526d010ed", "externalIds": {"DOI":
-        "10.1016/j.heares.2025.109458", "CorpusId": 282431106, "PubMed": "41175630"}},
-        {"paperId": "e24882df7679e6b9131bfa53f29648a9608da9df", "externalIds": {"DOI":
-        "10.1016/j.heares.2025.109440", "CorpusId": 281936014, "PubMed": "41072150"}},
-        {"paperId": "998fd774820c8a9ddad80a5d4993d7ac8a575967", "externalIds": {"DOI":
-        "10.1016/j.heares.2026.109772", "CorpusId": 291016899, "PubMed": "42608265"}},
-        {"paperId": "2fa997acdf94b758396338a2ce7e608a6f69255f", "externalIds": {"DOI":
-        "10.1016/j.cortex.2026.06.001", "CorpusId": 289157016, "PubMed": "42314337"}},
-        {"paperId": "3396665a04268365025e58ad8eb631154c0d6ff8", "externalIds": {"DOI":
-        "10.1016/j.heares.2025.109305", "CorpusId": 278456823, "PubMed": "40383086"}},
-        {"paperId": "0ef2c6a5b4c560b4e22a6805242fe412235a977a", "externalIds": {"DOI":
-        "10.1016/j.heares.2025.109184", "CorpusId": 275447907, "PubMed": "39874936"}},
-        {"paperId": "c9678002e13d7ced831052a340154ee831d877df", "externalIds": {"PubMedCentral":
-        "10366628", "DOI": "10.1016/j.joto.2023.05.006", "CorpusId": 259019977, "PubMed":
-        "37497334"}}, {"paperId": "87f9553cd276d9b74758f93a0b41fa95b4303704", "externalIds":
-        {"DOI": "10.1016/j.jad.2024.01.120", "CorpusId": 267033978, "PubMed": "38228276"}},
-        {"paperId": "f06dac8a20ee0c5c50a4198ede0209ee38b9803f", "externalIds": {"PubMedCentral":
-        "10156615", "DOI": "10.1016/j.isci.2023.106299", "CorpusId": 254215079, "PubMed":
-        "37153450"}}, null, {"paperId": "8cc0ae2660c672df217bd650fc638ac5afe41d00",
+        {"paperId": "21e3e481bc82c45fd587888a674f365fa7a0b686", "externalIds": {"MAG":
+        "3192184082", "PubMedCentral": "8760222", "DOI": "10.1007/s00106-021-01072-7",
+        "CorpusId": 235630572, "PubMed": "34170337"}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "8a4b31781f8cf9f1ff0a4ccb7d50786cb967fa07",
+        "externalIds": {"MAG": "2335064143", "DOI": "10.1097/01.HJ.0000459743.01876.fd",
+        "CorpusId": 147025209}}, {"paperId": "3e5f0477a3f11181be5e58808e6bd4338ba91b46",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109521", "CorpusId": 284296428,
+        "PubMed": "41475326"}}, {"paperId": "2dd8073333be565b9b1be4cd303729583ffddb6e",
+        "externalIds": {"DOI": "10.1016/j.neubiorev.2026.106584", "CorpusId": 285181814,
+        "PubMed": "41616930"}}, {"paperId": "e30d68ec7fa459ee2e1ad06305a9f0d1a68e7339",
+        "externalIds": {"DOI": "10.1016/j.bbr.2026.116248", "CorpusId": 289093538,
+        "PubMed": "42066961"}}, {"paperId": "0b803c7f799154b6cd5a2d1fdefc07eaf09e66e9",
+        "externalIds": {"DOI": "10.1016/j.mehy.2025.111840", "CorpusId": 283337609}},
+        {"paperId": "af675760797d8b7f3002f5da402385924c5710f4", "externalIds": {"DOI":
+        "10.1016/j.mehy.2025.111765", "CorpusId": 281607692}}, {"paperId": "8902befb9aeeb3edd107121e62480da526d010ed",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109458", "CorpusId": 282431106,
+        "PubMed": "41175630"}}, {"paperId": "e24882df7679e6b9131bfa53f29648a9608da9df",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109440", "CorpusId": 281936014,
+        "PubMed": "41072150"}}, {"paperId": "998fd774820c8a9ddad80a5d4993d7ac8a575967",
+        "externalIds": {"DOI": "10.1016/j.heares.2026.109772", "CorpusId": 291016899,
+        "PubMed": "42608265"}}, {"paperId": "2fa997acdf94b758396338a2ce7e608a6f69255f",
+        "externalIds": {"DOI": "10.1016/j.cortex.2026.06.001", "CorpusId": 289157016,
+        "PubMed": "42314337"}}, {"paperId": "3396665a04268365025e58ad8eb631154c0d6ff8",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109305", "CorpusId": 278456823,
+        "PubMed": "40383086"}}, {"paperId": "0ef2c6a5b4c560b4e22a6805242fe412235a977a",
+        "externalIds": {"DOI": "10.1016/j.heares.2025.109184", "CorpusId": 275447907,
+        "PubMed": "39874936"}}, {"paperId": "c9678002e13d7ced831052a340154ee831d877df",
+        "externalIds": {"PubMedCentral": "10366628", "DOI": "10.1016/j.joto.2023.05.006",
+        "CorpusId": 259019977, "PubMed": "37497334"}}, {"paperId": "87f9553cd276d9b74758f93a0b41fa95b4303704",
+        "externalIds": {"DOI": "10.1016/j.jad.2024.01.120", "CorpusId": 267033978,
+        "PubMed": "38228276"}}, {"paperId": "f06dac8a20ee0c5c50a4198ede0209ee38b9803f",
+        "externalIds": {"PubMedCentral": "10156615", "DOI": "10.1016/j.isci.2023.106299",
+        "CorpusId": 254215079, "PubMed": "37153450"}}, null, {"paperId": "8cc0ae2660c672df217bd650fc638ac5afe41d00",
         "externalIds": {"DOI": "10.1016/j.biopsych.2023.02.688", "CorpusId": 258042516}},
         {"paperId": "c387751c1713865195e43fb035f7c5eea368178d", "externalIds": {"MAG":
         "2798179975", "DOI": "10.1016/J.BIOPSYCH.2018.02.410", "CorpusId": 54379290}},
@@ -909,31 +1088,31 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '10813'
+      - '11492'
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:24 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       Via:
-      - 1.1 a92ffe3ce5f5153ca1b3de9a8bef30cc.cloudfront.net (CloudFront)
+      - 1.1 8139bc666c011a53bdc5037ba6d5931e.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - HaSzLMELsNDx6acgPWYQwbsHaDK7wFuUEnuua9vusu4xb0aqMyJtEA==
+      - bwq3KPbVu1XrhrywGVKllxekABwvXIbr3vY7nGRdXzjaFzC2G1VHgA==
       X-Amz-Cf-Pop:
-      - IAH51-P1
+      - DFW57-P1
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - FT9yTHeiPHcENhw=
+      - FUL8nFeTPHcEELA=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '10813'
+      - '11492'
       x-amzn-Remapped-Date:
-      - Fri, 16 Oct 2026 00:57:24 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - 5f2eb8ed-fcc1-4a4c-9074-e90c352b8d68
+      - bad642e8-bbc2-42cd-a377-993a28313efa
     status:
       code: 200
       message: OK
@@ -951,25 +1130,25 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=41475326%2C41616930%2C42066961%2C41175630%2C41072150%2C42608265%2C42314337%2C40383086%2C39874936%2C38228276%2C42269959%2C36806854%2C42448253%2C30773283%2C42730729%2C37802321%2C39855538%2C29175201%2C42341753%2C36395696%2C33242764%2C41633751%2C32980398%2C37149347%2C37714570%2C30880043%2C33637213%2C33612417%2C28284170&idtype=pmid&tool=ingestion-workflow
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=41475326%2C41475326%2C41475326%2C41475326%2C41616930%2C42066961%2C41175630%2C41072150%2C42608265%2C42314337%2C40383086%2C39874936%2C38228276%2C42269959%2C36806854%2C42448253%2C30773283%2C42730729%2C37802321%2C39855538%2C29175201%2C42341753%2C36395696%2C33242764%2C41633751%2C32980398%2C37149347%2C37714570%2C30880043%2C33637213%2C33612417%2C28284170&idtype=pmid&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -982,14 +1161,11 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Fri, 16 Oct 2026 00:57:24 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       referrer-policy:
       - same-origin
       server:
       - istio-envoy
-      set-cookie:
-      - ncbi_sid=FBFC9E7BAD175B33_1171SID; Domain=.nih.gov; expires=Sat, 16 Oct 2027
-        00:57:24 GMT; Max-Age=31536000; Path=/
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -1002,7 +1178,7 @@ interactions:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '9'
+      - '10'
       x-frame-options:
       - DENY
       x-ua-compatible:
@@ -1021,52 +1197,50 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - ncbi_sid=FBFC9E7BAD175B33_1171SID
       host:
       - pmc.ncbi.nlm.nih.gov
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=10.1016%2Fj.heares.2025.109521%2C10.1101%2F2020.10.29.346650%2C10.1121%2F10.0045101%2C10.64898%2F2026.08.30.748122%2C10.1097%2F01.hj.0000657984.74790.d5%2C10.1097%2F01.hj.0000459743.01876.fd%2C10.1016%2Fj.neubiorev.2026.106584%2C10.1016%2Fj.bbr.2026.116248%2C10.1016%2Fj.mehy.2025.111840%2C10.1016%2Fj.mehy.2025.111765%2C10.1016%2Fj.heares.2025.109458%2C10.1016%2Fj.heares.2025.109440%2C10.1016%2Fj.heares.2026.109772%2C10.1016%2Fj.cortex.2026.06.001%2C10.1016%2Fj.heares.2025.109305%2C10.1016%2Fj.heares.2025.109184%2C10.1016%2Fj.jad.2024.01.120%2C10.1016%2Fj.euroneuro.2021.05.013%2C10.1016%2Fj.biopsych.2023.02.688%2C10.1016%2Fj.biopsych.2018.02.410%2C10.1016%2Fs0924-977x%2817%2931330-5%2C10.1016%2Fj.neubiorev.2026.106796%2C10.1016%2Fj.concog.2023.103477%2C10.1016%2Fj.jocrd.2021.100644%2C10.1016%2Fj.neuroimage.2026.122128%2C10.1016%2Fj.parkreldis.2019.02.005%2C10.1016%2Fj.neurom.2026.08.002%2C10.1016%2Fj.jad.2023.10.006%2C10.1016%2Fj.biopsych.2026.03.954%2C10.1016%2Fb978-0-443-27446-6.00020-0%2C10.1016%2Fb978-0-323-91912-8.00003-7%2C10.1016%2Fb978-0-12-818251-2.09992-6%2C10.1016%2Fs0924-977x%2815%2930372-2%2C10.1016%2Fj.biopsycho.2025.108994%2C10.1016%2Fj.neuroimage.2017.11.041%2C10.1016%2Fj.neuron.2026.05.031%2C10.1016%2Fj.heares.2022.108648%2C10.1016%2Fj.concog.2020.103046%2C10.1016%2Fb978-0-443-13554-5.00014-6%2C10.1016%2Fj.neubiorev.2020.09.019%2C10.1016%2Fb978-0-323-91912-8.20001-7%2C10.1016%2Fj.psc.2023.02.005%2C10.1016%2Fb978-0-7020-5310-8.00019-3%2C10.1016%2Fj.langsci.2026.101873%2C10.1016%2Fj.yhbeh.2023.105466%2C10.1016%2Fb978-0-12-801772-2.09985-9%2C10.1016%2Fbs.pbr.2023.08.001%2C10.1016%2Fb978-0-323-91912-8.00013-x%2C10.1016%2Fs0079-6123%2807%2966053-1%2C10.1016%2Fb978-0-7020-5310-8.00018-1%2C10.1016%2Fb978-0-7020-5310-8.09988-9%2C10.1016%2Fj.ijpsycho.2019.03.005%2C10.1016%2Fj.biopsych.2015.03.007%2C10.1016%2Fb978-0-443-29198-2.00012-6%2C10.1016%2Fb978-0-444-62630-1.09986-8%2C10.1016%2Fbs.pbr.2020.12.002%2C10.1016%2Fs0924-977x%2817%2931973-9%2C10.1016%2Fj.jsxm.2021.01.172%2C10.1016%2Fbs.plm.2021.02.002%2C10.1016%2Fj.cpr.2017.01.009%2C10.1016%2Fj.paid.2019.109684%2C10.1016%2Fs0924-977x%2817%2930965-3%2C10.1016%2Fs0924-977x%2819%2931754-7%2C10.1016%2Fb978-012370880-9.09015-0%2C10.1016%2Fj.eurpsy.2017.12.023&idtype=doi&tool=ingestion-workflow
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=10.1016%2Fj.heares.2025.109521%2C10.1101%2F2020.10.29.346650%2C10.1121%2F10.0045101%2C10.64898%2F2026.08.30.748122%2C10.1016%2Fj.heares.2025.109521%2C10.1097%2F01.hj.0000657984.74790.d5%2C10.1016%2Fj.heares.2025.109521%2C10.1097%2F01.hj.0000459743.01876.fd%2C10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.neubiorev.2026.106584%2C10.1016%2Fj.bbr.2026.116248%2C10.1016%2Fj.mehy.2025.111840%2C10.1016%2Fj.mehy.2025.111765%2C10.1016%2Fj.heares.2025.109458%2C10.1016%2Fj.heares.2025.109440%2C10.1016%2Fj.heares.2026.109772%2C10.1016%2Fj.cortex.2026.06.001%2C10.1016%2Fj.heares.2025.109305%2C10.1016%2Fj.heares.2025.109184%2C10.1016%2Fj.jad.2024.01.120%2C10.1016%2Fj.euroneuro.2021.05.013%2C10.1016%2Fj.biopsych.2023.02.688%2C10.1016%2Fj.biopsych.2018.02.410%2C10.1016%2Fs0924-977x%2817%2931330-5%2C10.1016%2Fj.neubiorev.2026.106796%2C10.1016%2Fj.concog.2023.103477%2C10.1016%2Fj.jocrd.2021.100644%2C10.1016%2Fj.neuroimage.2026.122128%2C10.1016%2Fj.parkreldis.2019.02.005%2C10.1016%2Fj.neurom.2026.08.002%2C10.1016%2Fj.jad.2023.10.006%2C10.1016%2Fj.biopsych.2026.03.954%2C10.1016%2Fb978-0-443-27446-6.00020-0%2C10.1016%2Fb978-0-323-91912-8.00003-7%2C10.1016%2Fb978-0-12-818251-2.09992-6%2C10.1016%2Fs0924-977x%2815%2930372-2%2C10.1016%2Fj.biopsycho.2025.108994%2C10.1016%2Fj.neuroimage.2017.11.041%2C10.1016%2Fj.neuron.2026.05.031%2C10.1016%2Fj.heares.2022.108648%2C10.1016%2Fj.concog.2020.103046%2C10.1016%2Fb978-0-443-13554-5.00014-6%2C10.1016%2Fj.neubiorev.2020.09.019%2C10.1016%2Fb978-0-323-91912-8.20001-7%2C10.1016%2Fj.psc.2023.02.005%2C10.1016%2Fb978-0-7020-5310-8.00019-3%2C10.1016%2Fj.langsci.2026.101873%2C10.1016%2Fj.yhbeh.2023.105466%2C10.1016%2Fb978-0-12-801772-2.09985-9%2C10.1016%2Fbs.pbr.2023.08.001%2C10.1016%2Fb978-0-323-91912-8.00013-x%2C10.1016%2Fs0079-6123%2807%2966053-1%2C10.1016%2Fb978-0-7020-5310-8.00018-1%2C10.1016%2Fb978-0-7020-5310-8.09988-9%2C10.1016%2Fj.ijpsycho.2019.03.005%2C10.1016%2Fj.biopsych.2015.03.007%2C10.1016%2Fb978-0-443-29198-2.00012-6%2C10.1016%2Fb978-0-444-62630-1.09986-8%2C10.1016%2Fbs.pbr.2020.12.002%2C10.1016%2Fs0924-977x%2817%2931973-9%2C10.1016%2Fj.jsxm.2021.01.172%2C10.1016%2Fbs.plm.2021.02.002%2C10.1016%2Fj.cpr.2017.01.009%2C10.1016%2Fj.paid.2019.109684%2C10.1016%2Fs0924-977x%2817%2930965-3%2C10.1016%2Fs0924-977x%2819%2931754-7%2C10.1016%2Fb978-012370880-9.09015-0%2C10.1016%2Fj.eurpsy.2017.12.023&idtype=doi&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
-        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
+        H4sIAAAAAAAAA7VabWvcOBD+K2EhoYXa0YvfFAgcFAr34eC+H+Vw1t7ESXa95900CaX//UZ+2bWk
+        kewUGY4esZ6RH41G42dH83N1OObHl8PqZlU/rb6smvKwr3eHMijyYwkPGWFJQElA4wvGbnh0Q+IW
+        9d9LeTiubn6uXvNmV+3uYYJ/vn9Zbepmm8Pz1eOh3gGwKo7vezlPUVftnxK3oiSkhCbXj+FDmcMb
+        Q3hLDI9EzCig5DCMX8NTCQyZCHmUJDEZxhi9hv8TEsUA6x4mUSYyaZGEJAs5CdMoo4z1FkSk14SG
+        D49gREgSpyKLAJEKEhYxiolikUY8JDRLk3BTDJiW9K58uavqpvwRtu+jMGEWKYi7u6YfowmLMmVs
+        Wz689wumNIuIfTBNYmVQc1YUZ85hberzcNIuNmXK8LpujuVbN0zgv8Gx+OScOKlRzR+PeSHHIvBn
+        SJnKq3xp6p38RyJoSGIAcdWbVb0/vK8fJAC2hIVJltkANJOAiI7fcSCCRQGs+O0TTT9zyjkJ4okd
+        TUWiuWe3ru87BpTwKE3VBdbrpugWQCHAokifvqmrbX5f9vMzRpm6hH3ePDXlc1FJJ1IhF0GIQbKp
+        t+EQ44QwzMeSHowlVg+CMQ9FPGZ4J9IsIEEU8YClUZQEcv/h8AXEBHHGA0EFZUHWHhQepCZIjtKM
+        xTSAZQghWJBY9iP+zAlPWcBQvvUQUZkQDpfSFI5LSCJqQnb9kiGquC2imXxBoh3T84bLR5xECe4w
+        yuM4CmLpCxoFiT2sYFdgW6lwu5TJeQI1uPaH9Sn01aDoJ0jlXsUc0nS7J1QE6gF6ziFBr6shuCGn
+        qePvD3flwxA8MaRafEfBz3Kn5I5mcaAs5BDuu5THu9Ckk4FDefCmxARJRZBQxj+R9HOSkBhcO73S
+        bBIEXDOF62NYPZ6CS540bpy0cT6JOwAS5O1xgRVl0iXARQ3yEwiCgiWQcWjLJQky1G/wgGlHWk9b
+        IuXaQh4Pb9s+a0LeURK6nPl5GNRnhujeN925AUNC1Fn3eVV0roFMniiZXKMEw7ESauNxAZRTOBqm
+        52CTU5JlJADnC/BwYHwQwPv9sQbqjK9AWZTbvHoGIXEE3fFH+ZZv988lHNItmB7rWo6ACoGxqt4F
+        r3XztHmuX2GshH2Gsdb6VtpeRmRkfdUJllspV65Andz2NC7ZN0ycXLKvvTgBgCFPhlGJ+3YWKN3j
+        VqB0VqpE6a0mXwqfbABYVczvTqMJndnT9ABUC2kYTQ1po7oecg2DInITBE00ATBeYOoiDWAqI/cr
+        QBu5AdTwkKaPtFFUIek+RjSSHXJSSQrkfHovWUYhTESvlSb3HNSS4TRdL+lL1hWT+RJEM2kgXDVh
+        Mym6Cff+oJwcnh20kwKxqycMhugnDIYoKMdexXKvOh1lYa8oKZerT1oKAylqyhrkg56yhsSgqGxu
+        1DSVK/wGVTXl6l5X6fGjKitsEkRbaZMg6kpDGPrKtuOawlJhhsaaEV5SZWlxM+gsiBsiz3ivteas
+        PZsB6/SW5gBMcTmy06C5rMdMVV04zNBdFm8OymsyFbb6S08dmgIz3qFqMP1EqCrMSG6qDpsi2Kkx
+        B0q0y2g1GeIyU5WZnyFNl1115Z3boq6upAi7NSXYVb6v/n0q32/jTUrXG7KmmSgKRnJ4BSsEiUEV
+        bWJS5BEnUhn/KJsD2Mt61K6Gvw8P9WteVUX39y9ZeoLvcVtG+tkWlW6mqkl9raosgnaWCfSpGlY2
+        Td1IAdk028M9PPizKHfHalOVzcWuPl5s6pddcVHtLv7+6yvwGpOhltoVwsQG9UJDL5Nh79cxHl5s
+        L8WZBOxYHx6YKvthoTFh4p+WWWmcpGWaeKHlLG5aj5HNwB8ls5pqJWNC/dFACrdWHgh2ISJdkXge
+        kQ7rjwhakJ6bbzv0cmTcG4SilyAzKrbPIDNC+yODlvatZFD0YtvEiTN8UfRiZKg706Fof2TMSxIr
+        ExPqj4btPsZKxmbg8QOAXwDZvwI4fhFC4wunOYTGeF+EbBdcFj42+JIiortP+4CI6Ax8JkHkAs+R
+        BBG0x6OOXBfaDzsC9rpV+N2ka69wC3+krLehVlJWC8+e0u9f3V7S0d4/FqPb3qmPxQi6TGYeXSzP
+        yswjvC9CzotsCymnjWdi+OW5mxhu45kYfmHvJobbLPFNGzcJzPimjeH+Q13vSZiMdd1godw9boKY
+        l7vHFp5J6W0XbkI6egmBP2rymCHwR+glJMhwATJPgozQCyRKs4FlOlGaNgtpx1HTzDztODJYMHef
+        u3Tm5+6zjUedZHQG2QWSAfXsH7wJye0f3Maff/DGJ6uPcLg/Olif1X67blmADaSclHW/DPdb+ZBn
+        hAv4ajgom1M6v/FmC9f0N9608RY5WNuYjRCGXVae9S1qH5JnvY0/FYS3xVlVEA5f+KhnLk5OmyWJ
+        nTr/PkDsZOPv0Fu6Da0n2oJfpng16m6cVbwa4Zf4zWZ0U874zWbYeCeGdXBOEcNs/KdNcu4anUyb
+        I+xSdcehQ3Vm3XGAe6yKmA2x9rKIifW5QUbzrWODDKzH3xxGo6/9B4cB9VnQM3qKHaU8A7tQwJ76
+        l+cF7Am+BJ1xu/QMOmO434SHdmc70x1q4fVCSu8Hd99GmejfJPP91/90ZGfAHzcAAA==
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -1079,14 +1253,11 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Fri, 16 Oct 2026 00:57:25 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       referrer-policy:
       - same-origin
       server:
       - istio-envoy
-      set-cookie:
-      - ncbi_sid=FBFC9E7BAD175B33_1171SID; Domain=.nih.gov; expires=Sat, 16 Oct 2027
-        00:57:25 GMT; Max-Age=31536000; Path=/
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -1099,7 +1270,7 @@ interactions:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '11'
+      - '12'
       x-frame-options:
       - DENY
       x-ua-compatible:
@@ -1118,8 +1289,6 @@ interactions:
       - gzip, deflate
       connection:
       - keep-alive
-      cookie:
-      - ncbi_sid=FBFC9E7BAD175B33_1171SID
       host:
       - pmc.ncbi.nlm.nih.gov
       user-agent:
@@ -1129,12 +1298,12 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA2VR0WqDMBT9lRGYT9XdRGNVEAZ7Hux9lJGZWNNWrzPpXCn9991YGB19vOeec8/J
-        yZk5r/zRsYrhnq3YZNyIgzOxVt4QKEDkMYeYywcBlVxXQi6sr6NxnlVnNqtpsMOWDrxvVqzFqVeE
-        s53DgYhW+9MY7ox9Y/UCBCZ7e33hUKxFxoGRzPTKHojl6eiz+VH9eDBJgz0JPGLYkAXtLA7xjNO+
-        PeBMO9N0SLtFXQftYwY36uiapg5ZIjKub1yja7J6yRUFk/reIlKj/dibUy3bNW9aaHhRai1AlcCF
-        LkEWZdFK0CpLoaA832ZypA9lDkiz63BWlt69zJfQW4PT0sCZabSEc0g48Pxpl5y6T9Ml1HdKiMzy
-        nA5cW6v+1RXQAKYFpGVRln+/YXR8R75sLr8xmbgx4gEAAA==
+        H4sIAAAAAAAAA2VRy2rDMBD8lSKoT7G7kh+RDIZCz4XeSyiqJcdKYq9rOXVDyL935UBJyXFnZ3ZG
+        ozPzk56OnpUM92zFRusH7L2NjZ4sgQJEEXOIef4gRJlmJeQL6+to/cTKM5v12Lt+SwfeNyvW4Nhp
+        wtnOY09EZ6bTEO4MXe3MAgQme3t94SDXIuPASGY77Q7Emujos/3R3XCwSY0dCSbEsCEL2jns4xnH
+        fXPAmXa2bpF2i7oK2scMbtTRNU0VskRkXN24Rtdk1ZIrCibVvUWkB/ext6cqb9a8bqDmUhkjQCvg
+        wijIpZJNDkZnKUjK821HT/pQZo80+xZn7ejdy3wJvdU4Lg2cmUFHOIeEAy+edsmp/bRtQn2nhORZ
+        UdCBa2vlv7oCGsBUQqqkUn+/YU18R75sLr+4O04X4gEAAA==
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -1147,14 +1316,11 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Fri, 16 Oct 2026 00:57:25 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       referrer-policy:
       - same-origin
       server:
       - istio-envoy
-      set-cookie:
-      - ncbi_sid=FBFC9E7BAD175B33_1171SID; Domain=.nih.gov; expires=Sat, 16 Oct 2027
-        00:57:25 GMT; Max-Age=31536000; Path=/
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -1167,7 +1333,7 @@ interactions:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '7'
+      - '6'
       x-frame-options:
       - DENY
       x-ua-compatible:
@@ -1189,20 +1355,21 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=pmid%3A41475326%7C41616930%7C42066961%7C41175630%7C41072150%7C42608265%7C42314337%7C40383086%7C39874936%7C38228276%7C42269959%7C36806854%7C42448253%7C30773283%7C42730729%7C37802321%7C39855538%7C29175201%7C42341753%7C36395696%7C33242764%7C41633751%7C32980398%7C37149347%7C37714570%7C30880043%7C33637213%7C33612417%7C28284170&mailto=test%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=pmid%3A41475326%7C41475326%7C41475326%7C41475326%7C41616930%7C42066961%7C41175630%7C41072150%7C42608265%7C42314337%7C40383086%7C39874936%7C38228276%7C42269959%7C36806854%7C42448253%7C30773283%7C42730729%7C37802321%7C39855538%7C29175201%7C42341753%7C36395696%7C33242764%7C41633751%7C32980398%7C37149347%7C37714570%7C30880043%7C33637213%7C33612417%7C28284170&mailto=test%40example.com&per_page=100&select=ids
   response:
     body:
-      string: '{"meta": {"count": 29, "db_response_time_ms": 18, "page": 1, "per_page":
+      string: '{"meta": {"count": 29, "db_response_time_ms": 15, "page": 1, "per_page":
         100, "groups_count": null, "x_query": {"oql": "get works where PMID is (\n    28284170
         or 29175201 or 30773283 or 30880043 or 32980398 or 33242764\n    or 33612417
         or 33637213 or 36395696 or 36806854 or 37149347 or 37714570\n    or 37802321
         or 38228276 or 39855538 or 39874936 or 40383086 or 41072150\n    or 41175630
-        or 41475326 or 41616930 or 41633751 or 42066961 or 42269959\n    or 42314337
-        or 42341753 or 42448253 or 42608265 or 42730729\n  )", "x_new_oql": "get works
-        where PMID is (28284170 or 29175201 or 30773283 or 30880043 or 32980398 or
-        33242764 or 33612417 or 33637213 or 36395696 or 36806854 or 37149347 or 37714570
-        or 37802321 or 38228276 or 39855538 or 39874936 or 40383086 or 41072150 or
-        41175630 or 41475326 or 41616930 or 41633751 or 42066961 or 42269959 or 42314337
+        or 41475326 or 41475326 or 41475326 or 41475326 or 41616930\n    or 41633751
+        or 42066961 or 42269959 or 42314337 or 42341753 or 42448253\n    or 42608265
+        or 42730729\n  )", "x_new_oql": "get works where PMID is (28284170 or 29175201
+        or 30773283 or 30880043 or 32980398 or 33242764 or 33612417 or 33637213 or
+        36395696 or 36806854 or 37149347 or 37714570 or 37802321 or 38228276 or 39855538
+        or 39874936 or 40383086 or 41072150 or 41175630 or 41475326 or 41475326 or
+        41475326 or 41475326 or 41616930 or 41633751 or 42066961 or 42269959 or 42314337
         or 42341753 or 42448253 or 42608265 or 42730729)", "oqo": {"get_rows": "works",
         "filter_rows": [{"join": "or", "filters": [{"column_id": "ids.pmid", "value":
         "28284170"}, {"column_id": "ids.pmid", "value": "29175201"}, {"column_id":
@@ -1217,12 +1384,14 @@ interactions:
         "value": "39874936"}, {"column_id": "ids.pmid", "value": "40383086"}, {"column_id":
         "ids.pmid", "value": "41072150"}, {"column_id": "ids.pmid", "value": "41175630"},
         {"column_id": "ids.pmid", "value": "41475326"}, {"column_id": "ids.pmid",
-        "value": "41616930"}, {"column_id": "ids.pmid", "value": "41633751"}, {"column_id":
-        "ids.pmid", "value": "42066961"}, {"column_id": "ids.pmid", "value": "42269959"},
-        {"column_id": "ids.pmid", "value": "42314337"}, {"column_id": "ids.pmid",
-        "value": "42341753"}, {"column_id": "ids.pmid", "value": "42448253"}, {"column_id":
-        "ids.pmid", "value": "42608265"}, {"column_id": "ids.pmid", "value": "42730729"}]}]},
-        "url": "/works?filter=ids.pmid:28284170|29175201|30773283|30880043|32980398|33242764|33612417|33637213|36395696|36806854|37149347|37714570|37802321|38228276|39855538|39874936|40383086|41072150|41175630|41475326|41616930|41633751|42066961|42269959|42314337|42341753|42448253|42608265|42730729&per_page=100"},
+        "value": "41475326"}, {"column_id": "ids.pmid", "value": "41475326"}, {"column_id":
+        "ids.pmid", "value": "41475326"}, {"column_id": "ids.pmid", "value": "41616930"},
+        {"column_id": "ids.pmid", "value": "41633751"}, {"column_id": "ids.pmid",
+        "value": "42066961"}, {"column_id": "ids.pmid", "value": "42269959"}, {"column_id":
+        "ids.pmid", "value": "42314337"}, {"column_id": "ids.pmid", "value": "42341753"},
+        {"column_id": "ids.pmid", "value": "42448253"}, {"column_id": "ids.pmid",
+        "value": "42608265"}, {"column_id": "ids.pmid", "value": "42730729"}]}]},
+        "url": "/works?filter=ids.pmid:28284170|29175201|30773283|30880043|32980398|33242764|33612417|33637213|36395696|36806854|37149347|37714570|37802321|38228276|39855538|39874936|40383086|41072150|41175630|41475326|41475326|41475326|41475326|41616930|41633751|42066961|42269959|42314337|42341753|42448253|42608265|42730729&per_page=100"},
         "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3127429504",
         "doi": "https://doi.org/10.1016/bs.pbr.2020.12.002", "mag": "3127429504",
         "pmid": "https://pubmed.ncbi.nlm.nih.gov/33637213"}}, {"ids": {"openalex":
@@ -1288,7 +1457,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4b31bfc38b26b5c-DFW
+      - a4b3a9987a504660-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -1296,7 +1465,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:25 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -1316,11 +1485,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '9935'
+      - '9670'
       X-RateLimit-Remaining-USD:
-      - '0.9935'
+      - '0.967'
       X-RateLimit-Reset:
-      - '82955'
+      - '77155'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -1335,9 +1504,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=JkcokAfUEtGKwT4w4H2AResdxtqSb%2B%2BkvE7an4Gmapc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792112245"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=e3uFizcehUbVQwFUPLxh7J%2BUwm52Ghh520N4MiUn2%2BE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792118045"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=JkcokAfUEtGKwT4w4H2AResdxtqSb%2B%2BkvE7an4Gmapc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792112245"
+      - heroku-nel="https://nel.heroku.com/reports?s=e3uFizcehUbVQwFUPLxh7J%2BUwm52Ghh520N4MiUn2%2BE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792118045"
     status:
       code: 200
       message: OK
@@ -1353,10 +1522,10 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.heares.2025.109521%7C10.1101%2F2020.10.29.346650%7C10.1121%2F10.0045101%7C10.64898%2F2026.08.30.748122%7C10.1097%2F01.hj.0000657984.74790.d5%7C10.1097%2F01.hj.0000459743.01876.fd%7C10.1016%2Fj.neubiorev.2026.106584%7C10.1016%2Fj.bbr.2026.116248%7C10.1016%2Fj.mehy.2025.111840%7C10.1016%2Fj.mehy.2025.111765%7C10.1016%2Fj.heares.2025.109458%7C10.1016%2Fj.heares.2025.109440%7C10.1016%2Fj.heares.2026.109772%7C10.1016%2Fj.cortex.2026.06.001%7C10.1016%2Fj.heares.2025.109305%7C10.1016%2Fj.heares.2025.109184%7C10.1016%2Fj.jad.2024.01.120%7C10.1016%2Fj.euroneuro.2021.05.013%7C10.1016%2Fj.biopsych.2023.02.688%7C10.1016%2Fj.biopsych.2018.02.410%7C10.1016%2Fs0924-977x%2817%2931330-5%7C10.1016%2Fj.neubiorev.2026.106796%7C10.1016%2Fj.concog.2023.103477%7C10.1016%2Fj.jocrd.2021.100644%7C10.1016%2Fj.neuroimage.2026.122128%7C10.1016%2Fj.parkreldis.2019.02.005%7C10.1016%2Fj.neurom.2026.08.002%7C10.1016%2Fj.jad.2023.10.006%7C10.1016%2Fj.biopsych.2026.03.954%7C10.1016%2Fb978-0-443-27446-6.00020-0%7C10.1016%2Fb978-0-323-91912-8.00003-7%7C10.1016%2Fb978-0-12-818251-2.09992-6%7C10.1016%2Fs0924-977x%2815%2930372-2%7C10.1016%2Fj.biopsycho.2025.108994%7C10.1016%2Fj.neuroimage.2017.11.041%7C10.1016%2Fj.neuron.2026.05.031%7C10.1016%2Fj.heares.2022.108648%7C10.1016%2Fj.concog.2020.103046%7C10.1016%2Fb978-0-443-13554-5.00014-6%7C10.1016%2Fj.neubiorev.2020.09.019%7C10.1016%2Fb978-0-323-91912-8.20001-7%7C10.1016%2Fj.psc.2023.02.005%7C10.1016%2Fb978-0-7020-5310-8.00019-3%7C10.1016%2Fj.langsci.2026.101873%7C10.1016%2Fb978-0-12-801772-2.09985-9%7C10.1016%2Fbs.pbr.2023.08.001%7C10.1016%2Fb978-0-323-91912-8.00013-x%7C10.1016%2Fs0079-6123%2807%2966053-1%7C10.1016%2Fb978-0-7020-5310-8.00018-1%7C10.1016%2Fb978-0-7020-5310-8.09988-9%7C10.1016%2Fj.ijpsycho.2019.03.005%7C10.1016%2Fj.biopsych.2015.03.007%7C10.1016%2Fb978-0-443-29198-2.00012-6%7C10.1016%2Fb978-0-444-62630-1.09986-8%7C10.1016%2Fbs.pbr.2020.12.002%7C10.1016%2Fs0924-977x%2817%2931973-9%7C10.1016%2Fj.jsxm.2021.01.172%7C10.1016%2Fbs.plm.2021.02.002%7C10.1016%2Fj.cpr.2017.01.009%7C10.1016%2Fj.paid.2019.109684%7C10.1016%2Fs0924-977x%2817%2930965-3%7C10.1016%2Fs0924-977x%2819%2931754-7%7C10.1016%2Fb978-012370880-9.09015-0%7C10.1016%2Fj.eurpsy.2017.12.023&mailto=test%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.heares.2025.109521%7C10.1101%2F2020.10.29.346650%7C10.1121%2F10.0045101%7C10.64898%2F2026.08.30.748122%7C10.1016%2Fj.heares.2025.109521%7C10.1097%2F01.hj.0000657984.74790.d5%7C10.1016%2Fj.heares.2025.109521%7C10.1097%2F01.hj.0000459743.01876.fd%7C10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.neubiorev.2026.106584%7C10.1016%2Fj.bbr.2026.116248%7C10.1016%2Fj.mehy.2025.111840%7C10.1016%2Fj.mehy.2025.111765%7C10.1016%2Fj.heares.2025.109458%7C10.1016%2Fj.heares.2025.109440%7C10.1016%2Fj.heares.2026.109772%7C10.1016%2Fj.cortex.2026.06.001%7C10.1016%2Fj.heares.2025.109305%7C10.1016%2Fj.heares.2025.109184%7C10.1016%2Fj.jad.2024.01.120%7C10.1016%2Fj.euroneuro.2021.05.013%7C10.1016%2Fj.biopsych.2023.02.688%7C10.1016%2Fj.biopsych.2018.02.410%7C10.1016%2Fs0924-977x%2817%2931330-5%7C10.1016%2Fj.neubiorev.2026.106796%7C10.1016%2Fj.concog.2023.103477%7C10.1016%2Fj.jocrd.2021.100644%7C10.1016%2Fj.neuroimage.2026.122128%7C10.1016%2Fj.parkreldis.2019.02.005%7C10.1016%2Fj.neurom.2026.08.002%7C10.1016%2Fj.jad.2023.10.006%7C10.1016%2Fj.biopsych.2026.03.954%7C10.1016%2Fb978-0-443-27446-6.00020-0%7C10.1016%2Fb978-0-323-91912-8.00003-7%7C10.1016%2Fb978-0-12-818251-2.09992-6%7C10.1016%2Fs0924-977x%2815%2930372-2%7C10.1016%2Fj.biopsycho.2025.108994%7C10.1016%2Fj.neuroimage.2017.11.041%7C10.1016%2Fj.neuron.2026.05.031%7C10.1016%2Fj.heares.2022.108648%7C10.1016%2Fj.concog.2020.103046%7C10.1016%2Fb978-0-443-13554-5.00014-6%7C10.1016%2Fj.neubiorev.2020.09.019%7C10.1016%2Fb978-0-323-91912-8.20001-7%7C10.1016%2Fj.psc.2023.02.005%7C10.1016%2Fb978-0-7020-5310-8.00019-3%7C10.1016%2Fj.langsci.2026.101873%7C10.1016%2Fb978-0-12-801772-2.09985-9%7C10.1016%2Fbs.pbr.2023.08.001%7C10.1016%2Fb978-0-323-91912-8.00013-x%7C10.1016%2Fs0079-6123%2807%2966053-1%7C10.1016%2Fb978-0-7020-5310-8.00018-1%7C10.1016%2Fb978-0-7020-5310-8.09988-9%7C10.1016%2Fj.ijpsycho.2019.03.005%7C10.1016%2Fj.biopsych.2015.03.007%7C10.1016%2Fb978-0-443-29198-2.00012-6%7C10.1016%2Fb978-0-444-62630-1.09986-8%7C10.1016%2Fbs.pbr.2020.12.002%7C10.1016%2Fs0924-977x%2817%2931973-9%7C10.1016%2Fj.jsxm.2021.01.172%7C10.1016%2Fbs.plm.2021.02.002%7C10.1016%2Fj.cpr.2017.01.009%7C10.1016%2Fj.paid.2019.109684%7C10.1016%2Fs0924-977x%2817%2930965-3%7C10.1016%2Fs0924-977x%2819%2931754-7%7C10.1016%2Fb978-012370880-9.09015-0%7C10.1016%2Fj.eurpsy.2017.12.023&mailto=test%40example.com&per_page=100&select=ids
   response:
     body:
-      string: '{"meta": {"count": 64, "db_response_time_ms": 27, "page": 1, "per_page":
+      string: '{"meta": {"count": 64, "db_response_time_ms": 35, "page": 1, "per_page":
         100, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    10.1016/b978-0-12-801772-2.09985-9
         or 10.1016/b978-0-12-818251-2.09992-6\n    or 10.1016/b978-0-323-91912-8.00003-7
         or 10.1016/b978-0-323-91912-8.00013-x\n    or 10.1016/b978-0-323-91912-8.20001-7
@@ -1371,18 +1540,19 @@ interactions:
         10.1016/j.cortex.2026.06.001 or 10.1016/j.cpr.2017.01.009\n    or 10.1016/j.euroneuro.2021.05.013
         or 10.1016/j.eurpsy.2017.12.023\n    or 10.1016/j.heares.2022.108648 or 10.1016/j.heares.2025.109184\n    or
         10.1016/j.heares.2025.109305 or 10.1016/j.heares.2025.109440\n    or 10.1016/j.heares.2025.109458
-        or 10.1016/j.heares.2025.109521\n    or 10.1016/j.heares.2026.109772 or 10.1016/j.ijpsycho.2019.03.005\n    or
-        10.1016/j.jad.2023.10.006 or 10.1016/j.jad.2024.01.120\n    or 10.1016/j.jocrd.2021.100644
-        or 10.1016/j.jsxm.2021.01.172\n    or 10.1016/j.langsci.2026.101873 or 10.1016/j.mehy.2025.111765\n    or
-        10.1016/j.mehy.2025.111840 or 10.1016/j.neubiorev.2020.09.019\n    or 10.1016/j.neubiorev.2026.106584
-        or 10.1016/j.neubiorev.2026.106796\n    or 10.1016/j.neuroimage.2017.11.041
-        or 10.1016/j.neuroimage.2026.122128\n    or 10.1016/j.neurom.2026.08.002 or
-        10.1016/j.neuron.2026.05.031\n    or 10.1016/j.paid.2019.109684 or 10.1016/j.parkreldis.2019.02.005\n    or
-        10.1016/j.psc.2023.02.005 or \"10.1016/s0079-6123(07)66053-1\"\n    or \"10.1016/s0924-977x(15)30372-2\"
-        or \"10.1016/s0924-977x(17)30965-3\"\n    or \"10.1016/s0924-977x(17)31330-5\"
-        or \"10.1016/s0924-977x(17)31973-9\"\n    or \"10.1016/s0924-977x(19)31754-7\"
-        or 10.1097/01.hj.0000459743.01876.fd\n    or 10.1097/01.hj.0000657984.74790.d5
-        or 10.1101/2020.10.29.346650\n    or 10.1121/10.0045101 or 10.64898/2026.08.30.748122\n  )",
+        or 10.1016/j.heares.2025.109521\n    or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521\n    or
+        10.1016/j.heares.2025.109521 or 10.1016/j.heares.2026.109772\n    or 10.1016/j.ijpsycho.2019.03.005
+        or 10.1016/j.jad.2023.10.006\n    or 10.1016/j.jad.2024.01.120 or 10.1016/j.jocrd.2021.100644\n    or
+        10.1016/j.jsxm.2021.01.172 or 10.1016/j.langsci.2026.101873\n    or 10.1016/j.mehy.2025.111765
+        or 10.1016/j.mehy.2025.111840\n    or 10.1016/j.neubiorev.2020.09.019 or 10.1016/j.neubiorev.2026.106584\n    or
+        10.1016/j.neubiorev.2026.106796 or 10.1016/j.neuroimage.2017.11.041\n    or
+        10.1016/j.neuroimage.2026.122128 or 10.1016/j.neurom.2026.08.002\n    or 10.1016/j.neuron.2026.05.031
+        or 10.1016/j.paid.2019.109684\n    or 10.1016/j.parkreldis.2019.02.005 or
+        10.1016/j.psc.2023.02.005\n    or \"10.1016/s0079-6123(07)66053-1\" or \"10.1016/s0924-977x(15)30372-2\"\n    or
+        \"10.1016/s0924-977x(17)30965-3\" or \"10.1016/s0924-977x(17)31330-5\"\n    or
+        \"10.1016/s0924-977x(17)31973-9\" or \"10.1016/s0924-977x(19)31754-7\"\n    or
+        10.1097/01.hj.0000459743.01876.fd or 10.1097/01.hj.0000657984.74790.d5\n    or
+        10.1101/2020.10.29.346650 or 10.1121/10.0045101\n    or 10.64898/2026.08.30.748122\n  )",
         "x_new_oql": "get works where DOI is (10.1016/b978-0-12-801772-2.09985-9 or
         10.1016/b978-0-12-818251-2.09992-6 or 10.1016/b978-0-323-91912-8.00003-7 or
         10.1016/b978-0-323-91912-8.00013-x or 10.1016/b978-0-323-91912-8.20001-7 or
@@ -1397,6 +1567,7 @@ interactions:
         or 10.1016/j.cpr.2017.01.009 or 10.1016/j.euroneuro.2021.05.013 or 10.1016/j.eurpsy.2017.12.023
         or 10.1016/j.heares.2022.108648 or 10.1016/j.heares.2025.109184 or 10.1016/j.heares.2025.109305
         or 10.1016/j.heares.2025.109440 or 10.1016/j.heares.2025.109458 or 10.1016/j.heares.2025.109521
+        or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521 or 10.1016/j.heares.2025.109521
         or 10.1016/j.heares.2026.109772 or 10.1016/j.ijpsycho.2019.03.005 or 10.1016/j.jad.2023.10.006
         or 10.1016/j.jad.2024.01.120 or 10.1016/j.jocrd.2021.100644 or 10.1016/j.jsxm.2021.01.172
         or 10.1016/j.langsci.2026.101873 or 10.1016/j.mehy.2025.111765 or 10.1016/j.mehy.2025.111840
@@ -1435,29 +1606,32 @@ interactions:
         "10.1016/j.heares.2025.109184"}, {"column_id": "doi", "value": "10.1016/j.heares.2025.109305"},
         {"column_id": "doi", "value": "10.1016/j.heares.2025.109440"}, {"column_id":
         "doi", "value": "10.1016/j.heares.2025.109458"}, {"column_id": "doi", "value":
-        "10.1016/j.heares.2025.109521"}, {"column_id": "doi", "value": "10.1016/j.heares.2026.109772"},
-        {"column_id": "doi", "value": "10.1016/j.ijpsycho.2019.03.005"}, {"column_id":
-        "doi", "value": "10.1016/j.jad.2023.10.006"}, {"column_id": "doi", "value":
-        "10.1016/j.jad.2024.01.120"}, {"column_id": "doi", "value": "10.1016/j.jocrd.2021.100644"},
-        {"column_id": "doi", "value": "10.1016/j.jsxm.2021.01.172"}, {"column_id":
-        "doi", "value": "10.1016/j.langsci.2026.101873"}, {"column_id": "doi", "value":
-        "10.1016/j.mehy.2025.111765"}, {"column_id": "doi", "value": "10.1016/j.mehy.2025.111840"},
-        {"column_id": "doi", "value": "10.1016/j.neubiorev.2020.09.019"}, {"column_id":
-        "doi", "value": "10.1016/j.neubiorev.2026.106584"}, {"column_id": "doi", "value":
-        "10.1016/j.neubiorev.2026.106796"}, {"column_id": "doi", "value": "10.1016/j.neuroimage.2017.11.041"},
-        {"column_id": "doi", "value": "10.1016/j.neuroimage.2026.122128"}, {"column_id":
-        "doi", "value": "10.1016/j.neurom.2026.08.002"}, {"column_id": "doi", "value":
-        "10.1016/j.neuron.2026.05.031"}, {"column_id": "doi", "value": "10.1016/j.paid.2019.109684"},
-        {"column_id": "doi", "value": "10.1016/j.parkreldis.2019.02.005"}, {"column_id":
-        "doi", "value": "10.1016/j.psc.2023.02.005"}, {"column_id": "doi", "value":
-        "10.1016/s0079-6123(07)66053-1"}, {"column_id": "doi", "value": "10.1016/s0924-977x(15)30372-2"},
-        {"column_id": "doi", "value": "10.1016/s0924-977x(17)30965-3"}, {"column_id":
-        "doi", "value": "10.1016/s0924-977x(17)31330-5"}, {"column_id": "doi", "value":
-        "10.1016/s0924-977x(17)31973-9"}, {"column_id": "doi", "value": "10.1016/s0924-977x(19)31754-7"},
-        {"column_id": "doi", "value": "10.1097/01.hj.0000459743.01876.fd"}, {"column_id":
-        "doi", "value": "10.1097/01.hj.0000657984.74790.d5"}, {"column_id": "doi",
-        "value": "10.1101/2020.10.29.346650"}, {"column_id": "doi", "value": "10.1121/10.0045101"},
-        {"column_id": "doi", "value": "10.64898/2026.08.30.748122"}]}]}, "url": "/works?filter=doi:10.1016%2Fb978-0-12-801772-2.09985-9|10.1016%2Fb978-0-12-818251-2.09992-6|10.1016%2Fb978-0-323-91912-8.00003-7|10.1016%2Fb978-0-323-91912-8.00013-x|10.1016%2Fb978-0-323-91912-8.20001-7|10.1016%2Fb978-0-443-13554-5.00014-6|10.1016%2Fb978-0-443-27446-6.00020-0|10.1016%2Fb978-0-443-29198-2.00012-6|10.1016%2Fb978-0-444-62630-1.09986-8|10.1016%2Fb978-0-7020-5310-8.00018-1|10.1016%2Fb978-0-7020-5310-8.00019-3|10.1016%2Fb978-0-7020-5310-8.09988-9|10.1016%2Fb978-012370880-9.09015-0|10.1016%2Fbs.pbr.2020.12.002|10.1016%2Fbs.pbr.2023.08.001|10.1016%2Fbs.plm.2021.02.002|10.1016%2Fj.bbr.2026.116248|10.1016%2Fj.biopsych.2015.03.007|10.1016%2Fj.biopsych.2018.02.410|10.1016%2Fj.biopsych.2023.02.688|10.1016%2Fj.biopsych.2026.03.954|10.1016%2Fj.biopsycho.2025.108994|10.1016%2Fj.concog.2020.103046|10.1016%2Fj.concog.2023.103477|10.1016%2Fj.cortex.2026.06.001|10.1016%2Fj.cpr.2017.01.009|10.1016%2Fj.euroneuro.2021.05.013|10.1016%2Fj.eurpsy.2017.12.023|10.1016%2Fj.heares.2022.108648|10.1016%2Fj.heares.2025.109184|10.1016%2Fj.heares.2025.109305|10.1016%2Fj.heares.2025.109440|10.1016%2Fj.heares.2025.109458|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2026.109772|10.1016%2Fj.ijpsycho.2019.03.005|10.1016%2Fj.jad.2023.10.006|10.1016%2Fj.jad.2024.01.120|10.1016%2Fj.jocrd.2021.100644|10.1016%2Fj.jsxm.2021.01.172|10.1016%2Fj.langsci.2026.101873|10.1016%2Fj.mehy.2025.111765|10.1016%2Fj.mehy.2025.111840|10.1016%2Fj.neubiorev.2020.09.019|10.1016%2Fj.neubiorev.2026.106584|10.1016%2Fj.neubiorev.2026.106796|10.1016%2Fj.neuroimage.2017.11.041|10.1016%2Fj.neuroimage.2026.122128|10.1016%2Fj.neurom.2026.08.002|10.1016%2Fj.neuron.2026.05.031|10.1016%2Fj.paid.2019.109684|10.1016%2Fj.parkreldis.2019.02.005|10.1016%2Fj.psc.2023.02.005|10.1016%2Fs0079-6123%2807%2966053-1|10.1016%2Fs0924-977x%2815%2930372-2|10.1016%2Fs0924-977x%2817%2930965-3|10.1016%2Fs0924-977x%2817%2931330-5|10.1016%2Fs0924-977x%2817%2931973-9|10.1016%2Fs0924-977x%2819%2931754-7|10.1097%2F01.hj.0000459743.01876.fd|10.1097%2F01.hj.0000657984.74790.d5|10.1101%2F2020.10.29.346650|10.1121%2F10.0045101|10.64898%2F2026.08.30.748122&per_page=100"},
+        "10.1016/j.heares.2025.109521"}, {"column_id": "doi", "value": "10.1016/j.heares.2025.109521"},
+        {"column_id": "doi", "value": "10.1016/j.heares.2025.109521"}, {"column_id":
+        "doi", "value": "10.1016/j.heares.2025.109521"}, {"column_id": "doi", "value":
+        "10.1016/j.heares.2026.109772"}, {"column_id": "doi", "value": "10.1016/j.ijpsycho.2019.03.005"},
+        {"column_id": "doi", "value": "10.1016/j.jad.2023.10.006"}, {"column_id":
+        "doi", "value": "10.1016/j.jad.2024.01.120"}, {"column_id": "doi", "value":
+        "10.1016/j.jocrd.2021.100644"}, {"column_id": "doi", "value": "10.1016/j.jsxm.2021.01.172"},
+        {"column_id": "doi", "value": "10.1016/j.langsci.2026.101873"}, {"column_id":
+        "doi", "value": "10.1016/j.mehy.2025.111765"}, {"column_id": "doi", "value":
+        "10.1016/j.mehy.2025.111840"}, {"column_id": "doi", "value": "10.1016/j.neubiorev.2020.09.019"},
+        {"column_id": "doi", "value": "10.1016/j.neubiorev.2026.106584"}, {"column_id":
+        "doi", "value": "10.1016/j.neubiorev.2026.106796"}, {"column_id": "doi", "value":
+        "10.1016/j.neuroimage.2017.11.041"}, {"column_id": "doi", "value": "10.1016/j.neuroimage.2026.122128"},
+        {"column_id": "doi", "value": "10.1016/j.neurom.2026.08.002"}, {"column_id":
+        "doi", "value": "10.1016/j.neuron.2026.05.031"}, {"column_id": "doi", "value":
+        "10.1016/j.paid.2019.109684"}, {"column_id": "doi", "value": "10.1016/j.parkreldis.2019.02.005"},
+        {"column_id": "doi", "value": "10.1016/j.psc.2023.02.005"}, {"column_id":
+        "doi", "value": "10.1016/s0079-6123(07)66053-1"}, {"column_id": "doi", "value":
+        "10.1016/s0924-977x(15)30372-2"}, {"column_id": "doi", "value": "10.1016/s0924-977x(17)30965-3"},
+        {"column_id": "doi", "value": "10.1016/s0924-977x(17)31330-5"}, {"column_id":
+        "doi", "value": "10.1016/s0924-977x(17)31973-9"}, {"column_id": "doi", "value":
+        "10.1016/s0924-977x(19)31754-7"}, {"column_id": "doi", "value": "10.1097/01.hj.0000459743.01876.fd"},
+        {"column_id": "doi", "value": "10.1097/01.hj.0000657984.74790.d5"}, {"column_id":
+        "doi", "value": "10.1101/2020.10.29.346650"}, {"column_id": "doi", "value":
+        "10.1121/10.0045101"}, {"column_id": "doi", "value": "10.64898/2026.08.30.748122"}]}]},
+        "url": "/works?filter=doi:10.1016%2Fb978-0-12-801772-2.09985-9|10.1016%2Fb978-0-12-818251-2.09992-6|10.1016%2Fb978-0-323-91912-8.00003-7|10.1016%2Fb978-0-323-91912-8.00013-x|10.1016%2Fb978-0-323-91912-8.20001-7|10.1016%2Fb978-0-443-13554-5.00014-6|10.1016%2Fb978-0-443-27446-6.00020-0|10.1016%2Fb978-0-443-29198-2.00012-6|10.1016%2Fb978-0-444-62630-1.09986-8|10.1016%2Fb978-0-7020-5310-8.00018-1|10.1016%2Fb978-0-7020-5310-8.00019-3|10.1016%2Fb978-0-7020-5310-8.09988-9|10.1016%2Fb978-012370880-9.09015-0|10.1016%2Fbs.pbr.2020.12.002|10.1016%2Fbs.pbr.2023.08.001|10.1016%2Fbs.plm.2021.02.002|10.1016%2Fj.bbr.2026.116248|10.1016%2Fj.biopsych.2015.03.007|10.1016%2Fj.biopsych.2018.02.410|10.1016%2Fj.biopsych.2023.02.688|10.1016%2Fj.biopsych.2026.03.954|10.1016%2Fj.biopsycho.2025.108994|10.1016%2Fj.concog.2020.103046|10.1016%2Fj.concog.2023.103477|10.1016%2Fj.cortex.2026.06.001|10.1016%2Fj.cpr.2017.01.009|10.1016%2Fj.euroneuro.2021.05.013|10.1016%2Fj.eurpsy.2017.12.023|10.1016%2Fj.heares.2022.108648|10.1016%2Fj.heares.2025.109184|10.1016%2Fj.heares.2025.109305|10.1016%2Fj.heares.2025.109440|10.1016%2Fj.heares.2025.109458|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2025.109521|10.1016%2Fj.heares.2026.109772|10.1016%2Fj.ijpsycho.2019.03.005|10.1016%2Fj.jad.2023.10.006|10.1016%2Fj.jad.2024.01.120|10.1016%2Fj.jocrd.2021.100644|10.1016%2Fj.jsxm.2021.01.172|10.1016%2Fj.langsci.2026.101873|10.1016%2Fj.mehy.2025.111765|10.1016%2Fj.mehy.2025.111840|10.1016%2Fj.neubiorev.2020.09.019|10.1016%2Fj.neubiorev.2026.106584|10.1016%2Fj.neubiorev.2026.106796|10.1016%2Fj.neuroimage.2017.11.041|10.1016%2Fj.neuroimage.2026.122128|10.1016%2Fj.neurom.2026.08.002|10.1016%2Fj.neuron.2026.05.031|10.1016%2Fj.paid.2019.109684|10.1016%2Fj.parkreldis.2019.02.005|10.1016%2Fj.psc.2023.02.005|10.1016%2Fs0079-6123%2807%2966053-1|10.1016%2Fs0924-977x%2815%2930372-2|10.1016%2Fs0924-977x%2817%2930965-3|10.1016%2Fs0924-977x%2817%2931330-5|10.1016%2Fs0924-977x%2817%2931973-9|10.1016%2Fs0924-977x%2819%2931754-7|10.1097%2F01.hj.0000459743.01876.fd|10.1097%2F01.hj.0000657984.74790.d5|10.1101%2F2020.10.29.346650|10.1121%2F10.0045101|10.64898%2F2026.08.30.748122&per_page=100"},
         "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3127429504",
         "doi": "https://doi.org/10.1016/bs.pbr.2020.12.002", "mag": "3127429504",
         "pmid": "https://pubmed.ncbi.nlm.nih.gov/33637213"}}, {"ids": {"openalex":
@@ -1567,7 +1741,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4b31bfd49626100-DFW
+      - a4b3a9999b7bffb0-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -1575,7 +1749,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 16 Oct 2026 00:57:25 GMT
+      - Fri, 16 Oct 2026 02:34:05 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -1595,11 +1769,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '9934'
+      - '9669'
       X-RateLimit-Remaining-USD:
-      - '0.9934'
+      - '0.9669'
       X-RateLimit-Reset:
-      - '82955'
+      - '77155'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -1614,9 +1788,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=JkcokAfUEtGKwT4w4H2AResdxtqSb%2B%2BkvE7an4Gmapc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792112245"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=e3uFizcehUbVQwFUPLxh7J%2BUwm52Ghh520N4MiUn2%2BE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792118045"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=JkcokAfUEtGKwT4w4H2AResdxtqSb%2B%2BkvE7an4Gmapc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792112245"
+      - heroku-nel="https://nel.heroku.com/reports?s=e3uFizcehUbVQwFUPLxh7J%2BUwm52Ghh520N4MiUn2%2BE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792118045"
     status:
       code: 200
       message: OK

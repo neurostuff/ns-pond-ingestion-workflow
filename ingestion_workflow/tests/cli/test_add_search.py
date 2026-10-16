@@ -166,17 +166,21 @@ def test_a_search_sciencedirect_cannot_split_stops_before_any_provider_searches(
     # the cassette holds ScienceDirect's one count and no OpenAlex request
     from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
 
-    monkeypatch.setattr(ScienceDirectClient, "MAX_RESULTS", 30)
+    # eight ANDs leave no room for a word, and it has no year range or OR clauses
+    monkeypatch.setattr(ScienceDirectClient, "MAX_RESULTS", 1)
     out = _fails(
         config,
         "--search",
-        "fMRI AND misophonia",
+        "fMRI AND brain AND cortex AND memory AND patients AND human AND data AND analysis "
+        "AND model",
+        "--year",
+        "2026",
         "--provider",
         "openalex",
         "--provider",
         "sciencedirect",
     )
-    assert "ScienceDirect finds 73" in out
+    assert "none of its splits applies" in out
     with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 0
 
@@ -215,8 +219,11 @@ def test_a_split_sciencedirect_search_prints_each_part(config, monkeypatch):
         "sciencedirect",
         "--no-enrich",
     )
-    assert "split into 3 queries, each paged to its end:" in out
-    assert '{"qs": "fMRI AND misophonia", "date": "2025-2026"}: 24 found' in out
-    assert '{"qs": "fMRI AND hyperacusis", "date": "2025"}: 19 found' in out
-    assert '{"qs": "fMRI AND hyperacusis", "date": "2026"}: 23 found' in out
+    q = "(fMRI AND misophonia) OR (fMRI AND hyperacusis)"
+    for line in [
+        f'{{"qs": "{q}", "date": "2025-2026"}}: 54 found; split by year: 21 + 33 = 54',
+        f'{{"qs": "{q}", "date": "2026"}}: 33 found; split on \'disease\': 17 + 16 = 33',
+        f'{{"qs": "({q}) NOT disease", "date": "2026"}}: 16 found',
+    ]:
+        assert line in out
     assert "  54 records" in out  # an article two parts found is one record

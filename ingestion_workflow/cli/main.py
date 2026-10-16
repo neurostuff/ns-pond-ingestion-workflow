@@ -261,10 +261,8 @@ def _search(
     for name, service in services.items():
         typer.echo(f"{name}: {service.rendered}")
         searched[name] = list(service.search().identifiers)
-        if len(service.parts) > 1:
-            typer.echo(f"  split into {len(service.parts)} queries, each paged to its end:")
-        for rendered, total in service.parts:
-            typer.echo(f"    {rendered}: {total:,} found")
+        for line in service.plan_report:
+            typer.echo(f"    {line}")
         typer.echo(f"  {len(searched[name]):,} records")
     return searched
 

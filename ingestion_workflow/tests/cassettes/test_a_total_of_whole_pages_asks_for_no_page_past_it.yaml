@@ -58,7 +58,7 @@ interactions:
         131, Issue 2\"}],\"details\":{}}"
     headers:
       CF-RAY:
-      - a4b36ecf4cbfe79e-DFW
+      - a4b3a2477fac5367-DFW
       Cache-Control:
       - no-store, no-cache, must-revalidate, max-age=0
       Connection:
@@ -68,7 +68,7 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 16 Oct 2026 01:53:57 GMT
+      - Fri, 16 Oct 2026 02:29:06 GMT
       Expires:
       - Thu, 01 Jan 1970 00:00:00 GMT
       Pragma:
@@ -82,17 +82,124 @@ interactions:
       - Access-Control-Request-Method
       - Access-Control-Request-Headers
       X-ELS-ReqId:
-      - 1e44acd6daf1f839
+      - 6e5a3b338aa8511b
       X-ELS-ResourceVersion:
       - default
       X-ELS-Status:
       - OK
       X-ELS-TransId:
-      - 1e44acd6daf1f839
+      - 6e5a3b338aa8511b
       X-RateLimit-Limit:
       - '20000'
       X-RateLimit-Remaining:
-      - '19936'
+      - '19817'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"qs": "fMRI AND hyperacusis", "date": "2020", "display": {"offset": 0,
+      "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '84'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":10,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Eddie
+        Wong\"},{\"order\":2,\"name\":\"Kelly Radziwon\"},{\"order\":10,\"name\":\"Condon
+        Lau\"}],\"doi\":\"10.1016/j.heares.2020.107908\",\"loadDate\":\"2020-02-06T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"107908\"},\"pii\":\"S037859551930365X\",\"publicationDate\":\"2020-04-30\",\"sourceTitle\":\"Hearing
+        Research\",\"title\":\"Functional magnetic resonance imaging of enhanced central
+        auditory gain and electrophysiological correlates in a behavioral model of
+        hyperacusis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S037859551930365X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        389\"},{\"authors\":[{\"order\":1,\"name\":\"Jos J. Eggermont\"}],\"doi\":\"10.1016/B978-0-12-809324-5.24127-8\",\"loadDate\":\"2020-09-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"896\",\"last\":\"922\"},\"pii\":\"B9780128093245241278\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"The
+        Senses: A Comprehensive Reference\",\"title\":\"2.46: Tinnitus\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128093245241278?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        2\"},{\"authors\":[{\"order\":1,\"name\":\"Rebecca S. Dewey\"},{\"order\":2,\"name\":\"Susan
+        T. Francis\"},{\"order\":7,\"name\":\"Deborah A. Hall\"}],\"doi\":\"10.1016/j.neuroimage.2019.116239\",\"loadDate\":\"2019-10-03T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"116239\"},\"pii\":\"S1053811919308304\",\"publicationDate\":\"2020-01-01\",\"sourceTitle\":\"NeuroImage\",\"title\":\"The
+        association between subcortical and cortical fMRI and lifetime noise exposure
+        in listeners with normal hearing thresholds\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811919308304?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        204\"},{\"authors\":[{\"order\":1,\"name\":\"Meredith E. Adams\"},{\"order\":2,\"name\":\"Tina
+        C. Huang\"},{\"order\":4,\"name\":\"Steven W. Cheung\"}],\"doi\":\"10.1016/j.otc.2020.04.002\",\"loadDate\":\"2020-05-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"583\",\"last\":\"603\"},\"pii\":\"S0030666520300566\",\"publicationDate\":\"2020-08-31\",\"sourceTitle\":\"Otolaryngologic
+        Clinics of North America\",\"title\":\"Tinnitus Neuroimaging\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0030666520300566?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        53, Issue 4\"},{\"authors\":[{\"order\":1,\"name\":\"Wei-Kai Li\"},{\"order\":2,\"name\":\"Yu-Chen
+        Chen\"},{\"order\":4,\"name\":\"Xiao Wang\"}],\"doi\":\"10.1016/j.ifacol.2021.04.173\",\"loadDate\":\"2021-05-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"786\",\"last\":\"791\"},\"pii\":\"S2405896321003153\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"IFAC-PapersOnLine\",\"title\":\"Functional
+        Brain Network Estimation with Human-Guided Modularity Representation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S2405896321003153?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        53, Issue 5\"},{\"authors\":[{\"order\":1,\"name\":\"Y. L\xE9v\xEAque\"},{\"order\":2,\"name\":\"R.
+        Masson\"},{\"order\":7,\"name\":\"G. Demarquay\"}],\"doi\":\"10.1016/j.neurol.2020.01.360\",\"loadDate\":\"2020-04-17T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"829\",\"last\":\"838\"},\"pii\":\"S003537872030463X\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"Revue
+        Neurologique\",\"title\":\"Self-perceived attention difficulties are associated
+        with sensory hypersensitivity in migraine\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S003537872030463X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        176, Issue 10\"},{\"authors\":[{\"order\":1,\"name\":\"Kendra D. Maclaine\"},{\"order\":2,\"name\":\"Daniel
+        A. Llano\"}],\"doi\":\"10.1016/B978-0-12-809324-5.24174-6\",\"loadDate\":\"2020-09-09T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"884\",\"last\":\"895\"},\"pii\":\"B9780128093245241746\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"The
+        Senses: A Comprehensive Reference\",\"title\":\"2.45: The Aging Central Auditory
+        System\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128093245241746?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        2\"},{\"authors\":[{\"order\":1,\"name\":\"Lisa M. Deuel\"},{\"order\":2,\"name\":\"Lauren
+        C. Seeberger\"}],\"doi\":\"10.1007/s13311-020-00900-y\",\"loadDate\":\"2023-12-31T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"1434\",\"last\":\"1455\"},\"pii\":\"S1878747923012515\",\"publicationDate\":\"2020-10-31\",\"sourceTitle\":\"Neurotherapeutics\",\"title\":\"Complementary
+        Therapies in Parkinson Disease: a Review of Acupuncture, Tai Chi, Qi Gong,
+        Yoga, and Cannabis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1878747923012515?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        17, Issue 4\"},{\"doi\":\"10.1016/B978-0-12-817424-1.09996-1\",\"loadDate\":\"2020-02-28T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"719\",\"last\":\"748\"},\"pii\":\"B9780128174241099961\",\"publicationDate\":\"2020-12-31\",\"sourceTitle\":\"Functional
+        and Clinical Neuroanatomy\",\"title\":\"Index\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/B9780128174241099961?dgcid=api_sd_search-api-endpoint\"},{\"authors\":[{\"order\":1,\"name\":\"Jean-Pascal
+        Lefaucheur\"},{\"order\":2,\"name\":\"Andr\xE9 Aleman\"},{\"order\":31,\"name\":\"Ulf
+        Ziemann\"}],\"doi\":\"10.1016/j.clinph.2019.11.002\",\"loadDate\":\"2020-01-01T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"474\",\"last\":\"528\"},\"pii\":\"S1388245719312799\",\"publicationDate\":\"2020-02-29\",\"sourceTitle\":\"Clinical
+        Neurophysiology\",\"title\":\"Evidence-based guidelines on the therapeutic
+        use of repetitive transcranial magnetic stimulation (rTMS): An update (2014\u20132018)\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1388245719312799?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        131, Issue 2\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a24daba68f63-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:29:07 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - d63aae9c213ef23e
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - d63aae9c213ef23e
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19816'
       X-RateLimit-Reset:
       - '1792759529'
       allow:

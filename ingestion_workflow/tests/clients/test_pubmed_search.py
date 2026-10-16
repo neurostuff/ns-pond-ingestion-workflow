@@ -2,7 +2,7 @@ import json
 import pytest
 from ingestion_workflow.clients.pubmed import (
     ESEARCH_MAX_RESULTS,
-    PUBMED_FIRST_YEAR,
+    PUBMED_LAST_YEAR,
     PubMedClient,
 )
 from ingestion_workflow.config import Settings
@@ -67,17 +67,18 @@ def test_pubmed_client_search_splits_large_result_set(monkeypatch):
         mindate=None,
         maxdate=None,
     ) -> int:
+        if maxdate == PUBMED_LAST_YEAR:
+            return 0  # nothing dated after this year
         if mindate is not None and mindate == maxdate:
             return 2
-        return ESEARCH_MAX_RESULTS  # the whole query, and the span it is split over
+        return ESEARCH_MAX_RESULTS
 
     monkeypatch.setattr(client, "_esearch_count", fake_count)
     monkeypatch.setattr(client, "_collect_esearch_ids", fake_collect)
     monkeypatch.setattr(client, "_current_year", lambda: 1992)
 
     results = client.search("test query", start_year=1990)
-    # up to next year, for in-press articles dated ahead
-    expected_count = (1993 - 1990 + 1) * 2
+    expected_count = (1992 - 1990 + 1) * 2
     assert len(results.identifiers) == expected_count
     assert results.lookup("1990001", key="pmid") is not None
 
@@ -111,39 +112,58 @@ def test_pubmed_search_service_delegates(settings_with_email):
     ]
 
 
-def test_a_large_search_without_years_is_split_over_all_of_pubmed(monkeypatch):
+DATED = {1781, 1900, 2026, 2031}  # one hit in each; 2031 is a record dated years ahead
+
+
+def _dated_count(query, *, mindate=None, maxdate=None):
+    if mindate is None:
+        return ESEARCH_MAX_RESULTS
+    return sum(1 for year in DATED if int(mindate) <= year <= int(maxdate))
+
+
+def test_a_large_search_without_years_is_split_through_its_latest_dated_year(monkeypatch):
     client = PubMedClient(email="tests@example.com")
     windows = []
-
-    def fake_count(query, *, mindate=None, maxdate=None):
-        if mindate is None or mindate != maxdate:
-            return ESEARCH_MAX_RESULTS
-        return 1
 
     def fake_collect(query, *, mindate=None, maxdate=None, retmax=None):
         windows.append(mindate)
         return [str(mindate)], 1
 
-    monkeypatch.setattr(client, "_esearch_count", fake_count)
+    monkeypatch.setattr(client, "_esearch_count", _dated_count)
     monkeypatch.setattr(client, "_collect_esearch_ids", fake_collect)
     monkeypatch.setattr(client, "_current_year", lambda: 2026)
 
+    assert client.latest_year("test query") == 2031
     client.search("test query")
-    assert windows[0] == PUBMED_FIRST_YEAR and windows[-1] == 2027
-    assert windows == list(range(PUBMED_FIRST_YEAR, 2028))
+    assert windows == sorted(DATED)
 
 
-def test_a_large_search_with_hits_dated_outside_its_years_is_refused(monkeypatch):
+def test_the_latest_year_is_this_year_when_nothing_is_dated_ahead(monkeypatch):
+    client = PubMedClient(email="tests@example.com")
+    monkeypatch.setattr(client, "_esearch_count", lambda q, mindate=None, maxdate=None: 0)
+    monkeypatch.setattr(client, "_current_year", lambda: 2026)
+    assert client.latest_year("test query") == 2026
+
+
+def test_a_large_search_with_hits_dated_outside_its_years_is_refused_when_planned(
+    monkeypatch, settings_with_email
+):
+    from ingestion_workflow.services.query_dialect import parse
+    from ingestion_workflow.services.search import PubMedSearchService
+
     client = PubMedClient(email="tests@example.com")
 
     def fake_count(query, *, mindate=None, maxdate=None):
+        if maxdate == PUBMED_LAST_YEAR:
+            return 0
         return ESEARCH_MAX_RESULTS if mindate is None else ESEARCH_MAX_RESULTS - 3
 
     monkeypatch.setattr(client, "_esearch_count", fake_count)
     monkeypatch.setattr(client, "_current_year", lambda: 2026)
+    service = PubMedSearchService(parse("test"), settings_with_email, client=client)
 
-    with pytest.raises(ValueError, match="only 9,997 are dated 1781-2027"):
-        client.search("test query")
+    with pytest.raises(ValueError, match="only 9,997 are dated 1781-2026"):
+        service.plan()
 
 
 def test_pubmed_search_service_requires_email(monkeypatch):
@@ -174,7 +194,9 @@ def test_pubmed_request_json_handles_invalid_control_chars(monkeypatch):
             raise json.JSONDecodeError("bad json", self.text, 0)
 
     monkeypatch.setattr(client, "_rate_limit_sleep", lambda: None)
-    monkeypatch.setattr(client._client, "get", lambda *_args, **_kwargs: DummyResponse(invalid_json))
+    monkeypatch.setattr(
+        client._client, "get", lambda *_args, **_kwargs: DummyResponse(invalid_json)
+    )
 
     payload = client._request_json("https://example.com", params=[])
     assert payload["esearchresult"]["ERROR"].startswith("Search Backend failed")

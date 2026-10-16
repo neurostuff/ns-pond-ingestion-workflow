@@ -62,9 +62,10 @@ inflated by such articles.
   article's **full text** (references excluded), so it finds articles that only
   mention the terms in their methods or discussion. `title:` is searched as
   `title`; `abstract:` is refused. Its queries are limited to 250 characters.
-  ScienceDirect's web search allows 8 Boolean connectors per field; the API
-  counted the hits of a ninth and accepted ten (checked 2026-10-15), so no
-  connector limit is enforced.
+  The API honours at most 8 Boolean connectors (`AND`, `OR`, `NOT`) in one
+  query and silently ignores the rest: measured 2026-10-15, adding a ninth OR
+  term, or a ninth connector's AND or NOT, left the count unchanged. A longer
+  query is split into halves of its `OR` clauses (below).
 - OpenAlex separates filters with commas, so a comma in a term or phrase is
   refused for it.
 
@@ -74,17 +75,42 @@ query. Leave that provider out with `--provider`, or rephrase.
 
 Each provider's results are paged to the end:
 
+Before any provider pages its results, each provider that has to split a
+search plans the split from counts. A search that cannot be split exactly is
+refused at that point, with nothing searched or registered.
+
 - PubMed returns at most 10,000 hits per search. A search finding more is run
-  one `--year` year at a time, or without `--year` one year at a time from
-  1781 (PubMed's earliest) to next year. If fewer hits are dated in that span
-  than were found, it stops with an error rather than lose the rest.
-- ScienceDirect serves at most 6,000 results of one query. A query finding more
-  is run as its top-level `OR` clauses, and a clause still finding more as one
-  query per year of `--year`. This plan is made from counts before any provider
-  is searched, so a query that cannot be split (one year, no `OR` left, still
-  over 6,000) is an error before any work is done. Each sub-query and the
-  number it found is printed; the union of the parts, with an article found by
-  two parts counted once, is the whole result.
+  one `--year` year at a time. Without `--year` it is run one year at a time
+  from 1781 (nothing in PubMed is dated earlier) to the latest year PubMed
+  dates one of its hits; a few records are dated years ahead. If fewer hits are
+  dated in that span than were found, the search is refused rather than lose
+  the rest. The year windows use ESearch's publication date, which counts the
+  same records as `[dp]` (checked 2026-10-15: 1,542,428 for 2026 either way).
+- OpenAlex pages by cursor, 100 works a page, and follows a cursor past the
+  first page only for a request with an API key, so `openalex_api_key` is
+  required.
+- ScienceDirect serves at most 6,000 results of one query and honours at most
+  8 connectors. Each query is split until every part fits:
+  1. a query with more than 8 connectors into two halves of its `OR` clauses;
+  2. a query finding more than 6,000 into one query per year of `--year`, whose
+     counts must add up to the whole;
+  3. then into `Q AND w` and `Q NOT w`, on the word `w` from a short fixed list
+     (memory, disease, treatment, patients, ...) that comes closest to halving
+     it. The two counts must add up to the query's, or the next word is tried.
+     A word of the query itself is never used;
+  4. then into two halves of its `OR` clauses.
+
+  Every part is split again until it fits; a part that no step can split, or
+  whose added word would pass 250 characters, is refused. The plan is printed
+  as a tree with each part's count and each exact split's sum. The parts of an
+  `OR` split overlap; an article found by several parts is one record, and
+  their union is the whole result.
+
+  Two other ways to split are not used. The API sorts by date only newest
+  first, so paging a query in both date orders is not possible. Its only
+  filter, `openAccess`, selects open-access articles when `true`, but `false`
+  means no filter, not the closed ones (for one 2026 query: 6,790 unfiltered,
+  3,191 with `true`, 6,790 with `false`), so it does not partition a query.
 
 ## Credentials
 
@@ -92,7 +118,7 @@ Each provider's results are paged to the end:
 |---|---|
 | PubMed | `pubmed_email` (required), `pubmed_api_key` |
 | Semantic Scholar | `semantic_scholar_api_key` (required) |
-| OpenAlex | `openalex_email`, `openalex_api_key` |
+| OpenAlex | `openalex_api_key` (required), `openalex_email` |
 | ScienceDirect | `elsevier_api_key` (required) |
 
 ## The report

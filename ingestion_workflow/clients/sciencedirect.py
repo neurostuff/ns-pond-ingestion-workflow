@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -39,11 +39,15 @@ class ScienceDirectClient:
         )
         self._last_request = 0.0
 
-    def page(self, body: Dict[str, str], offset: int) -> Tuple[int, List[Identifier]]:
-        """`resultsFound` for the search `body`, and the page of results from `offset`."""
+    def count(self, body: Dict[str, str]) -> int:
+        """`resultsFound` for the search `body`, asking for the smallest page."""
+        payload = self._request({**body, "display": {"offset": 0, "show": 10}})
+        return int(payload.get("resultsFound") or 0)
+
+    def page(self, body: Dict[str, str], offset: int) -> List[Identifier]:
+        """The page of results of the search `body` from `offset`."""
         payload = self._request({**body, "display": {"offset": offset, "show": self.PAGE_SIZE}})
-        found = [identifier_of(result) for result in payload.get("results") or []]
-        return int(payload.get("resultsFound") or 0), found
+        return [identifier_of(result) for result in payload.get("results") or []]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=8))
     def _request(self, body: Dict) -> Dict:

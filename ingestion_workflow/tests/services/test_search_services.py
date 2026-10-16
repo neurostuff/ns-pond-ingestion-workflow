@@ -133,3 +133,10 @@ def test_an_article_new_this_run_is_not_known(tmp_path):
         catalog.register_many([Identifier(doi="10.1/held")])
         report = _run(catalog, {"pubmed": [Identifier(pmid="5")]}, enriched=[])
     assert len(report.distinct) == 1 and not report.known
+
+
+def test_openalex_needs_its_key():
+    # past the first page OpenAlex follows a cursor only with a key
+    settings = Settings.model_construct(openalex_api_key=None, openalex_email="t@example.com")
+    with pytest.raises(ValueError, match="openalex_api_key"):
+        search_services(parse("fMRI"), ["openalex"], settings)

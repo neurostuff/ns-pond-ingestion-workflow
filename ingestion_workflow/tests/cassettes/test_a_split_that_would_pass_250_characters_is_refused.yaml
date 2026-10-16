@@ -1,0 +1,122 @@
+interactions:
+- request:
+    body: '{"qs": "\"functional magnetic resonance imaging\" OR \"blood oxygen level
+      dependent\" OR \"resting state functional connectivity\" OR \"voxel based morphometry\"
+      OR \"default mode network\" OR \"anterior cingulate cortex\" OR \"posterior
+      cingulate cortex\" OR \"insular\"", "date": "2026", "display": {"offset": 0,
+      "show": 10}}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '327'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: PUT
+    uri: https://api.elsevier.com/content/search/sciencedirect
+  response:
+    body:
+      string: "{\"resultsFound\":9715,\"results\":[{\"authors\":[{\"order\":1,\"name\":\"Youbin
+        Kang\"},{\"order\":2,\"name\":\"JeYoung Jung\"},{\"order\":5,\"name\":\"Byung-Joo
+        Ham\"}],\"doi\":\"10.1016/j.jad.2025.120607\",\"loadDate\":\"2025-11-10T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"120607\"},\"pii\":\"S016503272502049X\",\"publicationDate\":\"2026-02-01\",\"sourceTitle\":\"Journal
+        of Affective Disorders\",\"title\":\"Resting-state functional connectivity
+        of the fronto-limbic and default mode network as neural correlates of antidepressant
+        response in major depressive disorder\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S016503272502049X?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        394, Part B\"},{\"authors\":[{\"order\":1,\"name\":\"Anika Holton\"},{\"order\":2,\"name\":\"Tianye
+        Zhai\"},{\"order\":9,\"name\":\"Amy Janes\"}],\"doi\":\"10.1016/j.jad.2026.122208\",\"loadDate\":\"2026-07-10T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122208\"},\"pii\":\"S0165032726010608\",\"publicationDate\":\"2026-11-15\",\"sourceTitle\":\"Journal
+        of Affective Disorders\",\"title\":\"Resting-state functional connectivity
+        and alexithymia: Preliminary predictive evidence\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0165032726010608?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        413\"},{\"authors\":[{\"order\":1,\"name\":\"Chun Yang\"},{\"order\":2,\"name\":\"Yunpeng
+        Liu\"},{\"order\":6,\"name\":\"Huazhan Yin\"}],\"doi\":\"10.1016/j.ijpsycho.2026.113331\",\"loadDate\":\"2026-01-21T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"113331\"},\"pii\":\"S0167876026000139\",\"publicationDate\":\"2026-03-31\",\"sourceTitle\":\"International
+        Journal of Psychophysiology\",\"title\":\"Neural correlates of happiness and
+        its association with social avoidance and distress: Evidence from voxel-based
+        morphometry and resting-state functional connectivity\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0167876026000139?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        221\"},{\"authors\":[{\"order\":1,\"name\":\"Yana Lokshina\"},{\"order\":2,\"name\":\"Jony
+        Sheynin\"},{\"order\":9,\"name\":\"Israel Liberzon\"}],\"doi\":\"10.1016/j.psyneuen.2026.108030\",\"loadDate\":\"2026-09-26T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"108030\"},\"pii\":\"S0306453026002908\",\"publicationDate\":\"2026-12-31\",\"sourceTitle\":\"Psychoneuroendocrinology\",\"title\":\"Early
+        posttrauma disruptions within default mode network connectivity predict PTSD
+        symptom trajectories: evidence from a longitudinal mega-analysis\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0306453026002908?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        194\"},{\"authors\":[{\"order\":1,\"name\":\"Ru Gai\"},{\"order\":2,\"name\":\"Jingyan
+        Jing\"},{\"order\":4,\"name\":\"Heming Gao\"}],\"doi\":\"10.1016/j.neuroimage.2026.122201\",\"loadDate\":\"2026-09-06T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"122201\"},\"pii\":\"S1053811926005161\",\"publicationDate\":\"2026-10-15\",\"sourceTitle\":\"NeuroImage\",\"title\":\"Resting-state
+        functional connectivity in default mode and frontoparietal networks predicts
+        directed forgetting\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1053811926005161?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        340\"},{\"authors\":[{\"order\":1,\"name\":\"Max Rose\"},{\"order\":2,\"name\":\"Linghai
+        Wang\"},{\"order\":7,\"name\":\"Shaolin Yang\"}],\"doi\":\"10.1016/j.jagp.2026.03.198\",\"loadDate\":\"2026-08-14T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"s120\",\"last\":\"s121\"},\"pii\":\"S1064748126002927\",\"publicationDate\":\"2026-10-31\",\"sourceTitle\":\"The
+        American Journal of Geriatric Psychiatry\",\"title\":\"S30. RESTING-STATE
+        FUNCTIONAL CONNECTIVITY IN GENERALIZED ANXIETY DISORDER: COMPARISONS BETWEEN
+        TRANSITIONAL AGE YOUTH AND OLDER ADULTS\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1064748126002927?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        34, Issue 10, Supplement\"},{\"authors\":[{\"order\":1,\"name\":\"Su Lynn
+        Tan\"},{\"order\":2,\"name\":\"McKinley Pawlak\"},{\"order\":4,\"name\":\"Daniel
+        C. Kopala-Sibley\"}],\"doi\":\"10.1016/j.jpsychires.2026.04.038\",\"loadDate\":\"2026-04-29T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"195\",\"last\":\"204\"},\"pii\":\"S0022395626002499\",\"publicationDate\":\"2026-08-31\",\"sourceTitle\":\"Journal
+        of Psychiatric Research\",\"title\":\"Links between parental internalizing
+        disorder severity and default mode network connectivity in adolescent offspring\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0022395626002499?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        199\"},{\"authors\":[{\"order\":1,\"name\":\"Xiaoling Xie\"},{\"order\":2,\"name\":\"Linlin
+        Fan\"},{\"order\":6,\"name\":\"Zhengjia Dai\"}],\"doi\":\"10.1016/j.jad.2026.121803\",\"loadDate\":\"2026-04-15T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"121803\"},\"pii\":\"S0165032726006543\",\"publicationDate\":\"2026-08-15\",\"sourceTitle\":\"Journal
+        of Affective Disorders\",\"title\":\"Bridging stability and variability: Illuminating
+        depression with static and dynamic resting-state functional connectivity\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0165032726006543?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        407\"},{\"authors\":[{\"order\":1,\"name\":\"Xiaoyu Wu\"},{\"order\":2,\"name\":\"Xiang
+        Yu\"},{\"order\":10,\"name\":\"Feifei Zheng\"}],\"doi\":\"10.1016/j.bspc.2026.110912\",\"loadDate\":\"2026-07-02T00:00:00.000Z\",\"openAccess\":false,\"pages\":{\"first\":\"110912\"},\"pii\":\"S1746809426014667\",\"publicationDate\":\"2026-10-15\",\"sourceTitle\":\"Biomedical
+        Signal Processing and Control\",\"title\":\"EEFC-Net for disease classification
+        based on resting-state functional connectivity: Application in the detection
+        of functional constipation\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S1746809426014667?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        126, Part B\"},{\"authors\":[{\"order\":1,\"name\":\"Aliaa Ibnidris\"},{\"order\":2,\"name\":\"Jonathan
+        Ipser\"},{\"order\":13,\"name\":\"Neda Jahanshad\"}],\"doi\":\"10.1016/j.pscychresns.2025.112114\",\"loadDate\":\"2025-12-20T00:00:00.000Z\",\"openAccess\":true,\"pages\":{\"first\":\"112114\"},\"pii\":\"S0925492725001696\",\"publicationDate\":\"2026-07-31\",\"sourceTitle\":\"Psychiatry
+        Research: Neuroimaging\",\"title\":\"Resting-state functional connectivity
+        in HIV \u2013 Findings from the ENIGMA HIV working group\",\"uri\":\"https://www.sciencedirect.com/science/article/pii/S0925492725001696?dgcid=api_sd_search-api-endpoint\",\"volumeIssue\":\"Volume
+        359\"}],\"details\":{}}"
+    headers:
+      CF-RAY:
+      - a4b3a3a9ba95efd9-DFW
+      Cache-Control:
+      - no-store, no-cache, must-revalidate, max-age=0
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 16 Oct 2026 02:30:03 GMT
+      Expires:
+      - Thu, 01 Jan 1970 00:00:00 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      X-ELS-ReqId:
+      - d6fedb757ed354e4
+      X-ELS-ResourceVersion:
+      - default
+      X-ELS-Status:
+      - OK
+      X-ELS-TransId:
+      - d6fedb757ed354e4
+      X-RateLimit-Limit:
+      - '20000'
+      X-RateLimit-Remaining:
+      - '19757'
+      X-RateLimit-Reset:
+      - '1792759529'
+      allow:
+      - GET
+      cf-cache-status:
+      - DYNAMIC
+      tdm-policy:
+      - https://www.elsevier.com/tdm/tdmrep-policy.json
+      tdm-reservation:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

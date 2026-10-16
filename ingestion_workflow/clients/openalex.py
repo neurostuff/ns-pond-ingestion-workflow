@@ -16,9 +16,9 @@ from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
 
-OPENALEX_BATCH_LOOKUP_SIZE = 100
+OPENALEX_BATCH_LOOKUP_SIZE = 100  # the most a page holds, and the most values one OR filter takes
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
-OPENALEX_SEARCH_PAGE_SIZE = 200  # the most a page holds
+OPENALEX_SEARCH_PAGE_SIZE = 100  # the most a page holds; 200 is a deprecated legacy maximum
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
 
@@ -287,16 +287,17 @@ class OpenAlexClient:
         ) or self._request_openalex({**params, "search": words}).get("results")
         return [(_identifier_from(work.get("ids")), _metadata_from(work)) for work in works or []]
 
-    def search(self, filter: str, *, per_page: int = OPENALEX_SEARCH_PAGE_SIZE) -> Identifiers:
+    def search(self, filter: str) -> Identifiers:
         """Every work matching the /works `filter`, by cursor to the last page.
 
-        A work with no DOI, PMID or PMCID is kept, carrying its OpenAlex id, so
-        the caller can count what the catalog cannot hold.
+        OpenAlex follows a cursor past the first page only for a request with an
+        API key. A work with no DOI, PMID or PMCID is kept, carrying its OpenAlex
+        id, so the caller can count what the catalog cannot hold.
         """
         params = {
             "filter": filter,
             "select": "ids,doi",
-            "per_page": str(per_page),
+            "per_page": str(OPENALEX_SEARCH_PAGE_SIZE),
             "mailto": self.email,
             "cursor": "*",
         }
