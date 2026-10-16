@@ -25,17 +25,39 @@ def extractor(tmp_path):
         # Imprints (Academic Press, Churchill Livingstone) with prefixes of their own.
         "10.1006/nimg.1999.0483",
         "10.1053/j.gastro.2009.01.001",
-        # An upper-case prefix is the same prefix.
-        "10.1016/J.CORTEX.2020.01.001",
     ],
 )
 def test_elsevier_is_asked_for_its_own_and_its_imprints_dois(extractor, doi):
     assert extractor.can_address(Identifier(doi=doi))
 
 
+#: Prefixes of other publishers' DOIs that Elsevier served in the run of 2026-10-16.
+SERVED_IN_THE_RUN = [
+    "10.5004", "10.1007", "10.1124", "10.1017", "10.14283", "10.1111", "10.1182",
+    "10.3967", "10.26599", "10.1093", "10.24920", "10.3168", "10.24875", "10.58888",
+    "10.15232",
+]
+
+
+@pytest.mark.parametrize("prefix", SERVED_IN_THE_RUN)
+def test_a_prefix_elsevier_served_in_the_run_is_asked(extractor, prefix):
+    assert extractor.can_address(Identifier(doi=f"{prefix}/x.1"))
+
+
+def test_the_list_is_crossrefs_thirty_two_and_the_fifteen_served(extractor):
+    assert len(ELSEVIER_DOI_PREFIXES) == 32 + len(SERVED_IN_THE_RUN) == 47
+
+
 @pytest.mark.parametrize(
     "doi",
-    ["10.1145/3290605.3300233", "10.5281/zenodo.1234567", "10.1021/acs.jpcb.0c01234"],
+    [
+        "10.1145/3290605.3300233",
+        "10.5281/zenodo.1234567",
+        "10.1021/acs.jpcb.0c01234",
+        # Served in past years, and asked in the run without one success.
+        "10.1101/2023.06.02.543242",
+        "10.1186/s12888-020-02800-w",
+    ],
 )
 def test_elsevier_is_not_asked_for_other_publishers_dois(extractor, doi):
     assert not extractor.can_address(Identifier(doi=doi))
@@ -61,7 +83,7 @@ def test_an_article_with_only_a_pmcid_is_not_asked(extractor):
 @pytest.mark.vcr(filter_query_parameters=["mailto"])
 def test_every_prefix_crossref_lists_for_elsevier_is_asked():
     """The list in code is a copy of Crossref's for Elsevier BV (member 78), plus
-    prefixes Elsevier has served; the cassette is the copy it was taken from."""
+    the prefixes it served in the run; the cassette is the copy it was taken from."""
     mailto = os.environ.get("EMAIL")
     response = requests.get(
         CROSSREF_ELSEVIER, params={"mailto": mailto} if mailto else {}, timeout=30
