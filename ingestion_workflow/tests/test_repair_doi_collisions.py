@@ -101,6 +101,17 @@ def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner
         assert cat.resolve(Identifier(pmid="11532893")).id == "award2"
 
 
+def test_a_doi_the_named_owner_no_longer_holds_is_not_dropped(version_two, tmp_path):
+    """A stale row must not leave the DOI with nobody."""
+    root, _ = version_two
+    stale = tmp_path / "stale.tsv"
+    stale.write_text("doi\taction\tarticle\tother\tevidence\n"
+                     "10.1093/CERCOR/BHI095\tdrop\tneuroimage\taward1\ttest\n", encoding="utf-8")
+    before = _dump(root)
+    assert repair.run(root, apply=True, table=stale, out=io.StringIO()) == {"skipped": 1}
+    assert _dump(root) == before
+
+
 def test_the_repair_runs_only_before_the_migration(version_two):
     root, table = version_two
     Catalog.open(root).close()

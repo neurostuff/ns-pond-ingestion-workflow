@@ -19,9 +19,11 @@ decision the PubMed and Crossref evidence in it supports:
 * `keep`: two papers that share one DOI; nothing changes. After the version-3
   migration the DOI resolves to the article holding it in lower case, the
   other keeps its spelling (logged by the migration) and is found by its PMID.
+  Registering that other paper again with the DOI logs two expected catalog
+  conflicts (the merge refused, the DOI left with its holder).
 
 --apply copies the catalog to `catalog.pre-doi-repair.sqlite` beside it first.
-A second run finds every row done.
+A second run reports every drop and merge row done, and each keep row kept.
 """
 
 from __future__ import annotations

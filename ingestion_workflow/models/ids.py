@@ -34,6 +34,11 @@ def _normalize_pmcid(value: Optional[str]) -> Optional[str]:
     return value or None
 
 
+#: The `other_ids` key holding, comma-joined, the PMIDs of the other PubMed
+#: records of the same paper; `pmid` is the lowest of them all.
+DUPLICATE_PUBMED_RECORDS = "duplicate_pubmed_records"
+
+
 @dataclass
 class Identifier(MutableMapping[str, Optional[str]]):
     neurostore: Optional[str] = None
@@ -52,6 +57,12 @@ class Identifier(MutableMapping[str, Optional[str]]):
         if name == "doi":
             value = normalize_doi(value) if value else None
         super().__setattr__(name, value)
+
+    @property
+    def pmids(self) -> List[str]:
+        """Every PMID of the paper: `pmid`, then its duplicate PubMed records."""
+        duplicates = (self.other_ids or {}).get(DUPLICATE_PUBMED_RECORDS) or ""
+        return [p for p in [self.pmid, *duplicates.split(",")] if p]
 
     def make_slug(self) -> str:
         """Create a slugable representation of the identifiers."""

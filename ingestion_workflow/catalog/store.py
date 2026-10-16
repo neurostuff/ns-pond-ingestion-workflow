@@ -11,12 +11,12 @@ import logging
 import hashlib
 import json
 import sqlite3
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 from ingestion_workflow.utils.doi import normalize_doi
 
 from .backup import backup
@@ -61,18 +61,28 @@ def _article_id(seed: str) -> str:
     return base64.b32encode(digest).decode("ascii").rstrip("=").lower()[:ID_LENGTH]
 
 
-def _present(fields: Dict[str, str], kind: str, value: str) -> None:
-    """Add one alias to the ids an article presents, one per kind.
+def _presented(aliases: Sequence[Tuple[str, str]]) -> Identifier:
+    """The Identifier an article presents, from its alias rows.
 
-    An article holds two PMIDs when two PubMed records of one paper were merged
-    on purpose, or from before the registration guard; it presents the lowest,
-    PubMed's earlier record, so every stage asks PubMed the same one. For other
-    kinds the last row read wins.
+    An article holds several PMIDs when two PubMed records of one paper were
+    merged on purpose, or from before the registration guard. It presents the
+    lowest, PubMed's earlier record, as `pmid`, so every stage asks about the
+    same one, and the rest under `other_ids[DUPLICATE_PUBMED_RECORDS]`. For
+    other kinds the last row read wins.
     """
-    held = fields.get(kind)
-    if kind == "pmid" and held and (len(held), held) < (len(value), value):
-        return
-    fields[kind] = value
+    fields: Dict[str, str] = {}
+    pmids: List[str] = []
+    for kind, value in aliases:
+        if kind == "pmid":
+            pmids.append(value)
+        else:
+            fields[kind] = value
+    pmids.sort(key=lambda p: (len(p), p))
+    return Identifier(
+        **{kind: fields.get(kind) for kind in ALIAS_KINDS if kind != "pmid"},
+        pmid=pmids[0] if pmids else None,
+        other_ids={DUPLICATE_PUBMED_RECORDS: ",".join(pmids[1:])} if len(pmids) > 1 else None,
+    )
 
 
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
@@ -115,7 +125,7 @@ class Catalog:
         catalog = cls(conn, root)
         if version < SCHEMA_VERSION:
             try:
-                catalog._migrate(version)
+                catalog._migrate()
             except BaseException:
                 conn.close()
                 raise
@@ -125,22 +135,31 @@ class Catalog:
             )
         return catalog
 
-    def _migrate(self, version: int) -> None:
-        """Bring a catalog written at `version` up to `SCHEMA_VERSION`.
+    def _migrate(self) -> None:
+        """Bring the catalog up to `SCHEMA_VERSION`.
 
-        A copy is taken first, beside the catalog, because the rewrite drops
-        the spellings it replaces; without the copy nothing is migrated. The
-        data and the new version commit together, so a failed migration leaves
-        the catalog as it was.
+        Under the write lock, the version is read again: a process that opened
+        the catalog while another migrated it waits here, then finds it current.
+        A copy is taken next, beside the catalog, because the rewrite drops the
+        spellings it replaces; without the copy nothing is migrated. The data
+        and the new version commit together, so a failed migration leaves the
+        catalog as it was.
         """
-        copy = backup(self._conn, self.root / f"catalog.pre-v{version}.sqlite")
-        logger.warning("catalog: schema %d -> %d; backed up to %s", version, SCHEMA_VERSION, copy)
         with self._write() as conn:
+            version = int(conn.execute(
+                "SELECT value FROM meta WHERE key='schema_version'").fetchone()["value"])
+            if version >= SCHEMA_VERSION:
+                return
+            # Copied through a second connection: sqlite cannot back up from the
+            # one holding the write lock. That lock keeps any write out between
+            # the copy and the rewrite.
+            with closing(sqlite3.connect(self.root / "catalog.sqlite")) as reader:
+                copy = backup(reader, self.root / f"catalog.pre-v{version}.sqlite")
+            logger.warning("catalog: schema %d -> %d; backed up to %s",
+                           version, SCHEMA_VERSION, copy)
             self._canonical_doi_aliases(conn)
             conn.execute(
-                "INSERT INTO meta(key, value) VALUES('schema_version', ?) "
-                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-                (str(SCHEMA_VERSION),),
+                "UPDATE meta SET value=? WHERE key='schema_version'", (str(SCHEMA_VERSION),)
             )
 
     def _canonical_doi_aliases(self, conn: sqlite3.Connection) -> Dict[str, int]:
@@ -477,25 +496,19 @@ class Catalog:
         rows = self._conn.execute(
             "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)
         ).fetchall()
-        fields: Dict[str, str] = {}
-        for row in rows:
-            _present(fields, row["kind"], row["value"])
-        return Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
+        return _presented([(row["kind"], row["value"]) for row in rows])
 
     def identifiers(self, article_ids: Sequence[str]) -> Dict[str, Identifier]:
         """Batch form of `identifier`, one query per chunk instead of per article."""
-        out: Dict[str, Dict[str, str]] = {aid: {} for aid in article_ids}
+        out: Dict[str, List[Tuple[str, str]]] = {aid: [] for aid in article_ids}
         for chunk in _chunks(article_ids, 900):
             marks = ",".join("?" * len(chunk))
             for row in self._conn.execute(
                 f"SELECT article_id, kind, value FROM aliases WHERE article_id IN ({marks})",
                 tuple(chunk),
             ):
-                _present(out[row["article_id"]], row["kind"], row["value"])
-        return {
-            aid: Identifier(**{kind: fields.get(kind) for kind in ALIAS_KINDS})
-            for aid, fields in out.items()
-        }
+                out[row["article_id"]].append((row["kind"], row["value"]))
+        return {aid: _presented(aliases) for aid, aliases in out.items()}
 
     def count_articles(self) -> int:
         row = self._conn.execute(

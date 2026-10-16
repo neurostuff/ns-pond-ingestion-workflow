@@ -68,9 +68,10 @@ class NoticesStage:
             self._openalex = OpenAlexClient.from_settings(self.settings) or False
         return self._openalex or None
 
-    def fingerprint_for(self, pmid: Optional[str], doi: Optional[str] = None) -> str:
+    def fingerprint_for(self, pmids: Optional[str], doi: Optional[str] = None) -> str:
+        """`pmids`: every PMID of the paper, comma-joined."""
         doi = (normalize_doi(doi) or "").lower()
-        return fingerprint("notices", NOTICES_VERSION, str(pmid or ""), doi)
+        return fingerprint("notices", NOTICES_VERSION, str(pmids or ""), doi)
 
     def plan(
         self,
@@ -83,12 +84,12 @@ class NoticesStage:
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         max_age = timedelta(days=self.settings.notices_max_age_days)
         for ref in refs:
-            pmid, doi = ref.identifier.pmid, ref.identifier.doi
+            pmids, doi = ref.identifier.pmids, ref.identifier.doi
             found = upstream.get(ref.id, {}).get("")
-            if not (pmid or doi) or found is None or found.status is not Status.OK:
+            if not (pmids or doi) or found is None or found.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(pmid, doi)
+            fp = self.fingerprint_for(",".join(pmids), doi)
             existing = artifacts.get(ref.id, {}).get("")
             age = _age(existing) if existing is not None else None
             if ctx.is_fresh(existing, fp) and age is not None and age < max_age:
@@ -102,7 +103,8 @@ class NoticesStage:
         return plan
 
     def _pubmed(self, works: List[Work]) -> Tuple[Dict, Optional[Exception]]:
-        pmids = [work.ref.identifier.pmid for work in works if work.ref.identifier.pmid]
+        # A notice may be linked to any of the paper's PubMed records.
+        pmids = [pmid for work in works for pmid in work.ref.identifier.pmids]
         if not pmids:
             return {}, None
         try:
@@ -127,10 +129,11 @@ class NoticesStage:
         for work in works:
             ident = work.ref.identifier
             pmid = str(ident.pmid) if ident.pmid else None
+            answered = [p for p in ident.pmids if p in pubmed]
             doi = (normalize_doi(ident.doi) or "").lower()
             # Each source answers what it can: a failure is the paper's only
             # when the other source has nothing for it.
-            from_pubmed = pmid in pubmed if pmid else False
+            from_pubmed = bool(answered)
             from_openalex = bool(doi) and doi in retracted
             if not (from_pubmed or from_openalex):
                 errors = [
@@ -149,8 +152,11 @@ class NoticesStage:
                     fingerprint=work.fingerprint,
                 )
                 continue
-            corrections, is_notice = pubmed[pmid] if from_pubmed else ([], False)
-            corrections = list(corrections)
+            corrections, is_notice = [], False
+            for record in answered:
+                found, notice = pubmed[record]
+                corrections += [c for c in found if c not in corrections]
+                is_notice = is_notice or notice
             if retracted.get(doi) and retraction_of(corrections) is None:
                 corrections.append(openalex_retraction())
             retraction = retraction_of(corrections)
@@ -159,7 +165,7 @@ class NoticesStage:
             unanswered = [
                 f"{name}: {type(exc).__name__}: {exc}"
                 for name, exc, asked, got in (
-                    ("pubmed", pubmed_error, pmid, from_pubmed),
+                    ("pubmed", pubmed_error, pmid, len(answered) == len(ident.pmids)),
                     ("openalex", openalex_error, doi, from_openalex),
                 )
                 if exc is not None and asked and not got

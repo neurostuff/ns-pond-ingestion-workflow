@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import sqlite3
+import threading
+import time
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 
 
 @pytest.fixture()
@@ -663,6 +665,39 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
     assert _version_and_dois(root) == before
 
 
+def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_path, monkeypatch):
+    """A second process must not back up or migrate again, nor fail on the first's copy."""
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    rewrite = Catalog._canonical_doi_aliases
+    migrating = threading.Event()
+
+    def slow(self, conn):
+        migrating.set()
+        time.sleep(0.5)
+        return rewrite(self, conn)
+
+    monkeypatch.setattr(Catalog, "_canonical_doi_aliases", slow)
+    errors = []
+
+    def open_it():
+        try:
+            Catalog.open(root).close()
+        except BaseException as exc:  # noqa: BLE001 - reported below
+            errors.append(exc)
+
+    first = threading.Thread(target=open_it)
+    first.start()
+    assert migrating.wait(5)
+    second = threading.Thread(target=open_it)
+    second.start()
+    first.join()
+    second.join()
+    assert errors == []
+    assert _version_and_dois(root) == ("3", {(UPPER.lower(), "a1")})
+    assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
+
+
 def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
     """A failure writing the version undoes the rewrite too."""
     from ingestion_workflow.catalog import store
@@ -700,6 +735,9 @@ def test_an_article_holding_two_pmids_presents_the_lower(catalog):
         "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '12671262', ?)", (ref.id,))
     catalog._conn.execute(
         "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '9999999999', ?)", (ref.id,))
-    assert catalog.identifier(ref.id).pmid == "12671262"
-    assert catalog.identifiers([ref.id])[ref.id].pmid == "12671262"
+    for presented in (catalog.identifier(ref.id), catalog.identifiers([ref.id])[ref.id]):
+        assert presented.pmid == "12671262"
+        assert presented.other_ids == {DUPLICATE_PUBMED_RECORDS: "22387514,9999999999"}
+        assert presented.pmids == ["12671262", "22387514", "9999999999"]
+    assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).other_ids is None
 
