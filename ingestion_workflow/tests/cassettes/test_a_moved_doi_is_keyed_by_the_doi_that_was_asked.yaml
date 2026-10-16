@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1038%2Fnature14539%7C10.1111%2Fj.1469-8749.2004.tb00996.x&mailto=test%40example.com&per_page=50&select=doi%2Cis_retracted
+    uri: https://api.openalex.org/works?filter=doi%3A10.1038%2Fnature14539%7C10.1111%2Fj.1469-8749.2004.tb00996.x&mailto=replay%40example.com&per_page=50&select=doi%2Cis_retracted
   response:
     body:
       string: '{"meta": {"count": 2, "db_response_time_ms": 21, "page": 1, "per_page":
@@ -95,7 +95,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=test%40example.com&select=is_retracted
+    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=replay%40example.com&select=is_retracted
   response:
     body:
       string: '{"is_retracted":false}

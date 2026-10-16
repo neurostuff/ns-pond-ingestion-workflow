@@ -265,7 +265,6 @@ def _downloaded(ctx, ref, source: DownloadSource, payload: bytes, status=Status.
         fingerprint=DownloadStage(settings).fingerprint_for(source), payload=result.to_dict())])
 
 
-@pytest.mark.docling_models
 def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept):
     """Download through the stage from a recorded answer, extract through the stage: the
     text is the `pdf` one, which is all downstream (corpus, parse, triage) knows of."""

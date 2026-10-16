@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.32.5
     method: GET
-    uri: https://api.openalex.org/works?filter=pmid%3A31268615&mailto=test%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=pmid%3A31268615&mailto=replay%40example.com&per_page=100&select=ids
   response:
     body:
       string: '{"meta":{"count":1,"db_response_time_ms":163,"page":1,"per_page":100,"groups_count":null},"results":[{"ids":{"openalex":"https://openalex.org/W2954579665","doi":"https://doi.org/10.1002/hbm.24703","mag":"2954579665","pmid":"https://pubmed.ncbi.nlm.nih.gov/31268615"}}],"group_by":[]}

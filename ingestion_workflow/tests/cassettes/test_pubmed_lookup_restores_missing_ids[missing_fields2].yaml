@@ -11,10 +11,10 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests
   response:
     body:
-      string: '{"status":"ok","response-date":"2026-10-12 18:54:59","request":{"warnings":[],"format":"json","idtype":"doi","ids":["10.1002/hbm.24703"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"10.1002/hbm.24703"}]}'
+      string: '{"status":"ok","response-date":"2026-10-12 18:54:59","request":{"warnings":[],"format":"json","idtype":"doi","ids":["10.1002/hbm.24703"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=replay%40example.com&format=json&ids=10.1002%2Fhbm.24703&idtype=doi&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"10.1002/hbm.24703"}]}'
     headers:
       Alt-Svc:
       - clear
@@ -64,10 +64,10 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests
   response:
     body:
-      string: '{"status":"ok","response-date":"2026-10-12 18:54:59","request":{"warnings":[],"format":"json","idtype":"pmcid","ids":["PMC6865431"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=tests%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"PMC6865431"}]}'
+      string: '{"status":"ok","response-date":"2026-10-12 18:54:59","request":{"warnings":[],"format":"json","idtype":"pmcid","ids":["PMC6865431"],"email":"tests@example.com","tool":"ingestion-workflow-tests","echo":"email=replay%40example.com&format=json&ids=PMC6865431&idtype=pmcid&tool=ingestion-workflow-tests","versions":"no","showaiid":"no"},"records":[{"doi":"10.1002/hbm.24703","pmcid":"PMC6865431","pmid":31268615,"requested-id":"PMC6865431"}]}'
     headers:
       Alt-Svc:
       - clear

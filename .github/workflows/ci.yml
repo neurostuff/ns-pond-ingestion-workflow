@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -19,15 +19,11 @@ jobs:
     env:
       # Placeholders so the tests that need a key run against their cassettes.
       # Cassettes are replayed only (--record-mode=none); no secret is used.
-      # PUBMED_EMAIL stays unset: with it the code asks PubMed, which no other cassette holds.
       ELSEVIER_API_KEY: replay
       SEMANTIC_SCHOLAR_API_KEY: replay
       # typer forces ANSI colour when GITHUB_ACTIONS is set, which splits the help
       # text the CLI tests assert on.
       _TYPER_FORCE_DISABLE_TERMINAL: "1"
-      # docling pulls CUDA torch from PyPI (several GB); the CPU wheels are enough.
-      UV_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
-      UV_INDEX_STRATEGY: unsafe-best-match
     steps:
       - uses: actions/checkout@v4
 
@@ -47,10 +43,36 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install
+      # docling would pull CUDA torch from PyPI (several GB); the CPU wheels are enough.
+      # Installed first, alone, so that no other package is resolved against this index.
+      - name: Install torch (CPU)
         run: |
           uv venv
-          uv pip install -e ".[test]"
+          uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install
+        run: uv pip install -e ".[test]"
+
+      # The two docling tests download its model weights from Hugging Face; cached per docling version.
+      - name: Read docling's version
+        id: docling
+        run: echo "version=$(uv pip show docling | sed -n 's/^Version: //p')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: weights
+        with:
+          path: ~/.cache/huggingface
+          key: huggingface-docling-${{ steps.docling.outputs.version }}
+
+      # The only step that reaches Hugging Face: it runs the tests that load the weights,
+      # so docling fetches exactly the files it uses. The Test step below runs offline.
+      - name: Fetch docling weights
+        if: steps.weights.outputs.cache-hit != 'true'
+        run: >
+          .venv/bin/python -m pytest
+          "ingestion_workflow/tests/pipeline/test_extract_symbols_as_digits.py::test_the_pdf_extractor_sets_a_misread_text_aside"
+          "ingestion_workflow/tests/extractors/test_wiley_extractor.py::test_a_wiley_pdf_is_read_into_the_articles_pdf_text"
+          --record-mode=none
 
       # readabilipy's wheel ships ExtractArticle.js without its node_modules.
       - name: Install readabilipy's node modules
@@ -60,12 +82,16 @@ jobs:
           test -f "$js/node_modules/jsdom/lib/api.js"
 
       - name: Test
+        env:
+          HF_HUB_OFFLINE: "1"
         run: >
           .venv/bin/python -m pytest ingestion_workflow
           -n auto
           --record-mode=none
-          -m "not docling_models and not stale_cassette"
+          --block-network
+          --allowed-hosts=127.0.0.1,localhost
           -rs
+          --durations=25
           --cov --cov-report=xml --cov-report=html --cov-report=term
 
       - name: Coverage summary
@@ -101,8 +127,10 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - name: Ruff on the files this PR changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- '*.py' > changed.txt
+          git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" -- '*.py' > changed.txt
           if [ -s changed.txt ]; then
-            xargs uvx ruff check --output-format=github --exit-zero < changed.txt
+            xargs uvx ruff@0.17.1 check --output-format=github --exit-zero < changed.txt
           fi

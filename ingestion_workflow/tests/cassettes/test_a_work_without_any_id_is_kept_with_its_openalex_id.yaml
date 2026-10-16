@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=test%40example.com&per_page=2&select=ids%2Cdoi
+    uri: https://api.openalex.org/works?cursor=%2A&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=replay%40example.com&per_page=2&select=ids%2Cdoi
   response:
     body:
       string: '{"meta": {"count": 3, "db_response_time_ms": 23, "page": null, "per_page":
@@ -98,7 +98,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?cursor=IlsxLjg3OTAzNzEsIDE3OTA3MjY0MDAwMDAsICdodHRwczovL29wZW5hbGV4Lm9yZy9XNzIxNjYwMzIwNiddIg%3D%3D&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=test%40example.com&per_page=2&select=ids%2Cdoi
+    uri: https://api.openalex.org/works?cursor=IlsxLjg3OTAzNzEsIDE3OTA3MjY0MDAwMDAsICdodHRwczovL29wZW5hbGV4Lm9yZy9XNzIxNjYwMzIwNiddIg%3D%3D&filter=title_and_abstract.search%3A%28fMRI+AND+synesthesia%29%2Ctype%3Aarticle%2Cpublication_year%3A2026&mailto=replay%40example.com&per_page=2&select=ids%2Cdoi
   response:
     body:
       string: '{"meta": {"count": 3, "db_response_time_ms": 21, "page": null, "per_page":

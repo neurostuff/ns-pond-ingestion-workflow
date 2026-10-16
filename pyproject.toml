@@ -82,13 +82,9 @@ src = ["ingestion_workflow"]
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
-[tool.pytest.ini_options]
-markers = [
-  "docling_models: downloads docling's layout and OCR weights from Hugging Face at run time (about 500 MB)",
-  "stale_cassette: its cassette no longer matches the request the code makes; re-record with a live key",
-]
-
 [tool.coverage.run]
 branch = true
+# ACE extraction runs in a process pool; pytest-cov 7 no longer follows children by itself.
+patch = ["subprocess"]
 source = ["ingestion_workflow"]
 omit = ["ingestion_workflow/tests/*"]

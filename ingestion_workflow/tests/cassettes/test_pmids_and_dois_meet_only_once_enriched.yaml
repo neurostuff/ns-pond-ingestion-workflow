@@ -13,7 +13,7 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
@@ -185,7 +185,7 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=0&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
@@ -249,7 +249,7 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=test%40example.com&retmax=1000&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=1000&retmode=json&retstart=0&term=%28%22fMRI%22%5Btiab%5D+AND+%22misophonia%22%5Btiab%5D%29+AND+%22journal+article%22%5Bpt%5D+AND+2026%5Bdp%5D&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
@@ -608,7 +608,7 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=41475326%2C41475326%2C41616930%2C42066961%2C42608265%2C42314337%2C42269959%2C42448253%2C42730729%2C42341753%2C41633751&idtype=pmid&tool=ingestion-workflow
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=41475326%2C41475326%2C41616930%2C42066961%2C42608265%2C42314337%2C42269959%2C42448253%2C42730729%2C42341753%2C41633751&idtype=pmid&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
@@ -674,7 +674,7 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=test%40example.com&format=json&ids=10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.mehy.2025.111840%2C10.1016%2Fj.neubiorev.2026.106584%2C10.1016%2Fj.bbr.2026.116248%2C10.1016%2Fj.heares.2026.109772%2C10.1016%2Fj.cortex.2026.06.001%2C10.1016%2Fj.neubiorev.2026.106796%2C10.1016%2Fj.neuroimage.2026.122128%2C10.1016%2Fj.neurom.2026.08.002%2C10.1016%2Fj.biopsych.2026.03.954%2C10.1016%2Fb978-0-443-27446-6.00020-0%2C10.1016%2Fj.neuron.2026.05.031%2C10.1016%2Fb978-0-443-13554-5.00014-6%2C10.1016%2Fb978-0-443-29198-2.00012-6&idtype=doi&tool=ingestion-workflow
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.heares.2025.109521%2C10.1016%2Fj.mehy.2025.111840%2C10.1016%2Fj.neubiorev.2026.106584%2C10.1016%2Fj.bbr.2026.116248%2C10.1016%2Fj.heares.2026.109772%2C10.1016%2Fj.cortex.2026.06.001%2C10.1016%2Fj.neubiorev.2026.106796%2C10.1016%2Fj.neuroimage.2026.122128%2C10.1016%2Fj.neurom.2026.08.002%2C10.1016%2Fj.biopsych.2026.03.954%2C10.1016%2Fb978-0-443-27446-6.00020-0%2C10.1016%2Fj.neuron.2026.05.031%2C10.1016%2Fb978-0-443-13554-5.00014-6%2C10.1016%2Fb978-0-443-29198-2.00012-6&idtype=doi&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
@@ -741,7 +741,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=pmid%3A41475326%7C41475326%7C41616930%7C42066961%7C42608265%7C42314337%7C42269959%7C42448253%7C42730729%7C42341753%7C41633751&mailto=test%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=pmid%3A41475326%7C41475326%7C41616930%7C42066961%7C42608265%7C42314337%7C42269959%7C42448253%7C42730729%7C42341753%7C41633751&mailto=replay%40example.com&per_page=100&select=ids
   response:
     body:
       string: '{"meta": {"count": 10, "db_response_time_ms": 11, "page": 1, "per_page":
@@ -849,7 +849,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.mehy.2025.111840%7C10.1016%2Fj.neubiorev.2026.106584%7C10.1016%2Fj.bbr.2026.116248%7C10.1016%2Fj.heares.2026.109772%7C10.1016%2Fj.cortex.2026.06.001%7C10.1016%2Fj.neubiorev.2026.106796%7C10.1016%2Fj.neuroimage.2026.122128%7C10.1016%2Fj.neurom.2026.08.002%7C10.1016%2Fj.biopsych.2026.03.954%7C10.1016%2Fb978-0-443-27446-6.00020-0%7C10.1016%2Fj.neuron.2026.05.031%7C10.1016%2Fb978-0-443-13554-5.00014-6%7C10.1016%2Fb978-0-443-29198-2.00012-6&mailto=test%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.heares.2025.109521%7C10.1016%2Fj.mehy.2025.111840%7C10.1016%2Fj.neubiorev.2026.106584%7C10.1016%2Fj.bbr.2026.116248%7C10.1016%2Fj.heares.2026.109772%7C10.1016%2Fj.cortex.2026.06.001%7C10.1016%2Fj.neubiorev.2026.106796%7C10.1016%2Fj.neuroimage.2026.122128%7C10.1016%2Fj.neurom.2026.08.002%7C10.1016%2Fj.biopsych.2026.03.954%7C10.1016%2Fb978-0-443-27446-6.00020-0%7C10.1016%2Fj.neuron.2026.05.031%7C10.1016%2Fb978-0-443-13554-5.00014-6%7C10.1016%2Fb978-0-443-29198-2.00012-6&mailto=replay%40example.com&per_page=100&select=ids
   response:
     body:
       string: '{"meta": {"count": 14, "db_response_time_ms": 14, "page": 1, "per_page":

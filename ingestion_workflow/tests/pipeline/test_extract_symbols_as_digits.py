@@ -202,7 +202,6 @@ TABLE = [["Region", "x", "y", "z"], ["L IFG", "-44", "18", "-56"],
          ["R IFG", "46", "20", "4"]]
 
 
-@pytest.mark.docling_models
 def test_the_pdf_extractor_sets_a_misread_text_aside(tmp_path):
     content = _read_pdf(tmp_path, MISREAD_LINES, TABLE)
 

@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1000%2Fno-such-work-zzz%7C10.1038%2Fnature14539&mailto=test%40example.com&per_page=50&select=doi%2Cis_retracted
+    uri: https://api.openalex.org/works?filter=doi%3A10.1000%2Fno-such-work-zzz%7C10.1038%2Fnature14539&mailto=replay%40example.com&per_page=50&select=doi%2Cis_retracted
   response:
     body:
       string: '{"meta": {"count": 1, "db_response_time_ms": 13, "page": 1, "per_page":
@@ -93,7 +93,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works/doi:10.1000/no-such-work-zzz?mailto=test%40example.com&select=is_retracted
+    uri: https://api.openalex.org/works/doi:10.1000/no-such-work-zzz?mailto=replay%40example.com&select=is_retracted
   response:
     body:
       string: '<!doctype html>

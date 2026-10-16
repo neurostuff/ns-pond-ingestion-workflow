@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.32.5
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=codex-nonexistent-term-zzqvwp%5BTitle%5D&retmode=json&retstart=0&retmax=0&email=tests%40example.com&tool=ingestion-workflow-tests
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=codex-nonexistent-term-zzqvwp%5BTitle%5D&retmode=json&retstart=0&retmax=0&email=replay%40example.com&tool=ingestion-workflow-tests
   response:
     body:
       string: '{"esearchresult":{"count":"0","retmax":"0","retstart":"0","idlist":[],"translationset":[],"translationstack":[],"querytranslation":"codex-nonexistent-term-zzqvwp[Title]"}}'
