@@ -59,7 +59,7 @@ class PubMedClient:
         self,
         query: str,
         *,
-        start_year: int = 1990,
+        start_year: int,
         end_year: Optional[int] = None,
     ) -> Identifiers:
         """Search PubMed and return identifiers for matching PMIDs.

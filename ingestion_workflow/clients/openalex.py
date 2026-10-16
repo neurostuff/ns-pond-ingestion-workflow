@@ -307,7 +307,7 @@ class OpenAlexClient:
             for work in payload.get("results", []) or []:
                 ids = work.get("ids") or {}
                 doi = ids.get("doi") or work.get("doi")
-                identifier = _identifier_from({**ids, "doi": doi.lower() if doi else None})
+                identifier = _identifier_from({**ids, "doi": doi})
                 if ids.get("openalex"):
                     identifier["openalex"] = ids["openalex"]
                 found.append(identifier)

@@ -38,7 +38,7 @@ def test_pubmed_client_search_paginates(monkeypatch):
 
     monkeypatch.setattr(client, "_esearch", fake_esearch)
 
-    results = client.search("test query")
+    results = client.search("test query", start_year=1990)
     assert len(results.identifiers) == 2500
     assert results.lookup("0", key="pmid") is not None
     assert results.lookup("2499", key="pmid") is not None
@@ -207,5 +207,5 @@ def test_pubmed_request_json_handles_invalid_control_chars(monkeypatch):
 @pytest.mark.vcr()
 def test_pubmed_client_search_real_api():
     client = PubMedClient(email="tests@example.com", tool="ingestion-workflow-tests")
-    results = client.search("codex-nonexistent-term-zzqvwp[Title]")
+    results = client.search("codex-nonexistent-term-zzqvwp[Title]", start_year=1990)
     assert isinstance(results, Identifiers)

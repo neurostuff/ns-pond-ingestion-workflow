@@ -9,6 +9,7 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.utils.doi import normalize_doi
 
 _MIN_REQUEST_INTERVAL = 1.0  # bursts at 2 a second were refused with 429
 
@@ -16,7 +17,7 @@ _MIN_REQUEST_INTERVAL = 1.0  # bursts at 2 a second were refused with 429
 def identifier_of(result: Dict) -> Identifier:
     """A search result's DOI, and its PII so a result without a DOI can still be counted."""
     return Identifier(
-        doi=result["doi"].lower() if result.get("doi") else None,
+        doi=result.get("doi"),
         other_ids={"pii": str(result["pii"])} if result.get("pii") else None,
     )
 
@@ -24,7 +25,7 @@ def identifier_of(result: Dict) -> Identifier:
 def key_of(result: Dict) -> str:
     """What tells one result from another: its DOI, else its PII, else its title and date."""
     if result.get("doi"):
-        return result["doi"].lower()
+        return normalize_doi(result["doi"])
     if result.get("pii"):
         return str(result["pii"])
     return f"{result.get('title')}|{result.get('publicationDate')}"

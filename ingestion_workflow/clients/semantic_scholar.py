@@ -180,7 +180,7 @@ class SemanticScholarClient:
                 ids = paper.get("externalIds") or {}
                 found.append(
                     Identifier(
-                        doi=ids["DOI"].lower() if ids.get("DOI") else None,
+                        doi=ids.get("DOI"),
                         pmid=str(ids["PubMed"]) if ids.get("PubMed") else None,
                         pmcid=str(ids["PubMedCentral"]) if ids.get("PubMedCentral") else None,
                         other_ids={"semantic_scholar": str(paper["paperId"])},
