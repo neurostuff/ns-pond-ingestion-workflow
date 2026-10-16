@@ -351,13 +351,13 @@ class OpenAlexClient:
         return results
 
     def get_cited_works(self, dois: List[str]) -> Dict[str, Dict]:
-        """Authors, year and PMID of works by DOI, keyed by lower-case DOI.
+        """Authors, year and PMID of works by DOI, keyed by canonical DOI.
 
         For a reference list that names its entries by DOI alone (most of
         Crossref's): author-year citations are matched on these.
         """
         found: Dict[str, Dict] = {}
-        wanted = sorted({d.lower() for d in (normalize_doi(d) for d in dois) if d})
+        wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
             batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
             payload = self._request_openalex(
@@ -371,15 +371,15 @@ class OpenAlexClient:
             answered = set()
             for work in payload.get("results", []) or []:
                 ids = _identifier_from(work.get("ids"))
-                if ids.doi and ids.doi.lower() in batch:
-                    answered.add(ids.doi.lower())
-                    found[ids.doi.lower()] = _cited_work(work)
+                if ids.doi in batch:
+                    answered.add(ids.doi)
+                    found[ids.doi] = _cited_work(work)
             for doi, work in self._works_asked_singly(batch, answered, "ids,publication_year,authorships"):
                 found[doi] = _cited_work(work)
         return found
 
     def get_retractions(self, dois: List[str]) -> Dict[str, bool]:
-        """OpenAlex's `is_retracted` by lower-case DOI, for the DOIs it knows.
+        """OpenAlex's `is_retracted` by canonical DOI, for the DOIs it knows.
 
         A DOI OpenAlex does not return is absent, not False. A failed batch raises
         `PartialAnswer`, which carries the earlier batches' results, rather than
@@ -387,7 +387,6 @@ class OpenAlexClient:
         """
         found: Dict[str, bool] = {}
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
-        wanted = list(dict.fromkeys(d.lower() for d in wanted))
         for index in range(0, len(wanted), OPENALEX_RETRACTION_BATCH_SIZE):
             batch = wanted[index : index + OPENALEX_RETRACTION_BATCH_SIZE]
             try:
@@ -404,9 +403,9 @@ class OpenAlexClient:
             answered = set()
             for work in payload.get("results", []) or []:
                 doi = normalize_doi(work.get("doi"))
-                if doi and doi.lower() in batch and work.get("is_retracted") is not None:
-                    answered.add(doi.lower())
-                    found[doi.lower()] = bool(work["is_retracted"])
+                if doi in batch and work.get("is_retracted") is not None:
+                    answered.add(doi)
+                    found[doi] = bool(work["is_retracted"])
             try:
                 singly = self._works_asked_singly(batch, answered, "is_retracted")
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
@@ -427,10 +426,10 @@ class OpenAlexClient:
         """
         works = []
         for doi in asked:
-            if doi.lower() in answered:
+            if doi in answered:
                 continue
             try:
-                works.append((doi.lower(), self._request_openalex({"mailto": self.email, "select": select}, f"doi:{quote(doi, safe='/')}")))
+                works.append((doi, self._request_openalex({"mailto": self.email, "select": select}, f"doi:{quote(doi, safe='/')}")))
             except requests.HTTPError as exc:
                 if exc.response is None or exc.response.status_code != 404:
                     raise
