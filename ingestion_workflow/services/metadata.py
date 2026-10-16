@@ -5,9 +5,14 @@ The metadata will be retrieved from the following sources
 in this order:
 1. Semantic Scholar
 2. PubMed
-3. OpenAlex
-4. fallback to processed metadata from extractors
+3. Crossref (licence only)
+4. OpenAlex
+5. fallback to processed metadata from extractors
    (information from the downloaded article)
+
+The licence is a field like the others, but the downloaded article is always
+read for it, and every article gets one: stated by someone, or assumed
+all-rights-reserved when nobody stated any.
 """
 
 from __future__ import annotations
@@ -16,11 +21,12 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional, Set
 
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 
+from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
@@ -29,7 +35,17 @@ from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.metadata import (
+    WEAK_LICENSES,
+    ArticleMetadata,
+    Author,
+    License,
+    LicenseSource,
+    best_license_rank,
+    normalise_license,
+    preferred_license,
+)
+from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services.citations import JATS_SOURCES
 
 logger = logging.getLogger(__name__)
@@ -40,10 +56,12 @@ class MetadataService:
     Service for enriching ExtractedContent with article metadata.
 
     Coordinates metadata fetching from multiple sources:
+    0. The article's own downloaded file, always, for its licence
     1. Semantic Scholar (if API key available)
     2. PubMed (if email configured)
-    3. OpenAlex (if email configured)
-    4. Fallback to extractor-specific files
+    3. Crossref, for the licence alone
+    4. OpenAlex (if email configured)
+    5. The article's own file again, for fields the APIs left empty
     """
 
     def __init__(self, settings: Settings) -> None:
@@ -51,6 +69,8 @@ class MetadataService:
         self._s2_client: Optional[SemanticScholarClient] = None
         self._pubmed_client: Optional[PubMedClient] = None
         self._openalex_client: Optional[OpenAlexClient] = None
+        self._crossref_client: Optional[CrossrefClient] = CrossrefClient(settings.crossref_email)
+        self._unanswered: Dict[str, Set[str]] = {}
 
         # Initialize clients if credentials available
         if settings.semantic_scholar_api_key:
@@ -65,15 +85,23 @@ class MetadataService:
         self._openalex_client = OpenAlexClient.from_settings(settings)
 
     def enrich_metadata(
-        self, extracted_contents: List[ExtractedContent]
+        self,
+        extracted_contents: List[ExtractedContent],
+        own_files: Optional[Mapping[str, Path]] = None,
     ) -> Dict[str, ArticleMetadata]:
         """
         Enrich extracted contents with article metadata.
+
+        Every article returned has a licence: the best-ranked one stated
+        anywhere, else all-rights-reserved, assumed.
 
         Parameters
         ----------
         extracted_contents : list of ExtractedContent
             Content objects to enrich with metadata
+        own_files : mapping of slug to Path, optional
+            The file each article's download kept (JATS article.xml, Elsevier
+            content.xml), read ahead of the places a source's cache lays it out
 
         Returns
         -------
@@ -88,7 +116,39 @@ class MetadataService:
         id_to_content = {item.identifier.slug: item for item in identified_items}
 
         results: Dict[str, ArticleMetadata] = {}
-        sources_checked: List[str] = []
+        licenses: Dict[str, License] = {}
+        # Article slug -> the licence-stating providers whose request for it failed.
+        self._unanswered: Dict[str, Set[str]] = {}
+
+        def note_license(slug: str, metadata: ArticleMetadata) -> None:
+            found = preferred_license(licenses.get(slug), metadata.license)
+            if found is not None:
+                licenses[slug] = found
+
+        def wants_license(slug: str, source: LicenseSource) -> bool:
+            held = licenses.get(slug)
+            return held is None or held.rank > best_license_rank(source)
+
+        # The article's own file is read first and always: its licence covers the
+        # very copy that was downloaded, so a provider is asked for one only when
+        # the file states none or a lower-ranked one.
+        own: Dict[str, ArticleMetadata] = {}
+        for item in extracted_contents:
+            try:
+                own_meta = self._get_fallback_metadata(item, (own_files or {}).get(item.slug))
+            except Exception as exc:
+                logger.warning("Failed to read the article's own metadata for %s: %s",
+                               item.slug, exc)
+                continue
+            if own_meta is not None:
+                own[item.slug] = own_meta
+                note_license(item.slug, own_meta)
+
+        def merge(slug: str, metadata: ArticleMetadata) -> None:
+            note_license(slug, metadata)
+            if not self.has_metadata(metadata):
+                return
+            results[slug] = results[slug].merge_from(metadata) if slug in results else metadata
 
         # Try Semantic Scholar first
         if self._s2_client and identified_items:
@@ -96,16 +156,13 @@ class MetadataService:
                 "Fetching metadata from Semantic Scholar for %d articles",
                 len(identified_items),
             )
-            sources_checked.append("semantic_scholar")
             s2_results = self._get_semantic_scholar_metadata_cached(
                 [item.identifier for item in identified_items]
             )
             for identifier_slug, metadata in s2_results.items():
                 content = id_to_content.get(identifier_slug)
-                if content is None:
-                    continue
-                if self._has_useful_metadata(metadata):
-                    results[content.slug] = metadata
+                if content is not None:
+                    merge(content.slug, metadata)
             logger.info(
                 "Semantic Scholar returned metadata for %d articles",
                 len(s2_results),
@@ -114,7 +171,7 @@ class MetadataService:
         # Each provider fills what the earlier ones left empty, and is skipped
         # only for an article with nothing left to fill. Stopping instead at the
         # first `sufficient` record left 69% of one batch without an abstract
-        # that PubMed had for 98.5% of them.
+        # that PubMed had for 98.5% of them. PubMed states no licence.
         if self._pubmed_client and identified_items:
             identifiers = [
                 item.identifier
@@ -126,24 +183,32 @@ class MetadataService:
                     "Fetching metadata from PubMed for %d articles",
                     len(identifiers),
                 )
-                sources_checked.append("pubmed")
                 pubmed_results = self._get_pubmed_metadata_cached(identifiers)
-                # Merge with existing results
                 for identifier_slug, pubmed_meta in pubmed_results.items():
                     content = id_to_content.get(identifier_slug)
-                    if content is None:
-                        continue
-                    if not self._has_useful_metadata(pubmed_meta):
-                        continue
-                    article_slug = content.slug
-                    if article_slug in results:
-                        results[article_slug] = results[article_slug].merge_from(pubmed_meta)
-                    else:
-                        results[article_slug] = pubmed_meta
+                    if content is not None:
+                        merge(content.slug, pubmed_meta)
                 logger.info(
                     "PubMed returned metadata for %d articles",
                     len(pubmed_results),
                 )
+
+        # Crossref holds the publisher's own licence deposit, which outranks what
+        # OpenAlex infers, so it is asked first and spares OpenAlex those articles.
+        if self._crossref_client and identified_items:
+            identifiers = [
+                item.identifier
+                for item in identified_items
+                if item.identifier.doi and wants_license(item.slug, LicenseSource.CROSSREF)
+            ]
+            if identifiers:
+                logger.info("Fetching licences from Crossref for %d articles", len(identifiers))
+                for identifier_slug, meta in self._cached(
+                    "crossref", self._crossref_client, identifiers
+                ).items():
+                    content = id_to_content.get(identifier_slug)
+                    if content is not None:
+                        merge(content.slug, meta)
 
         # OpenAlex indexes what the other two miss: preprints, and articles
         # outside PMC that Semantic Scholar has no record of. Of three PDFs in
@@ -153,44 +218,37 @@ class MetadataService:
                 item.identifier
                 for item in identified_items
                 if not _filled(results.get(item.slug))
+                or wants_license(item.slug, LicenseSource.OPENALEX)
             ]
             if identifiers:
                 logger.info("Fetching metadata from OpenAlex for %d articles", len(identifiers))
-                sources_checked.append("openalex")
                 for identifier_slug, meta in self._get_openalex_metadata_cached(
                     identifiers
                 ).items():
                     content = id_to_content.get(identifier_slug)
-                    if content is None or not self._has_useful_metadata(meta):
-                        continue
-                    if content.slug in results:
-                        results[content.slug] = results[content.slug].merge_from(meta)
-                    else:
-                        results[content.slug] = meta
+                    if content is not None:
+                        merge(content.slug, meta)
 
-        # The extractor's own metadata last, to fill what the APIs did not.
-        unfilled = [item for item in extracted_contents if not _filled(results.get(item.slug))]
-        if unfilled:
-            logger.info(
-                "Reading extractor metadata for %d articles",
-                len(unfilled),
-            )
-            sources_checked.append("fallback")
-            for item in unfilled:
-                try:
-                    fallback_meta = self._get_fallback_metadata(item)
-                    if fallback_meta and self._has_useful_metadata(fallback_meta):
-                        if item.slug in results:
-                            results[item.slug] = results[item.slug].merge_from(fallback_meta)
-                        else:
-                            results[item.slug] = fallback_meta
-                except Exception as exc:
-                    logger.warning(
-                        "Failed to extract fallback metadata for %s: %s",
-                        item.slug,
-                        exc,
-                    )
+        # The article's own fields last, to fill what the APIs did not.
+        for slug, own_meta in own.items():
+            if self.has_metadata(own_meta):
+                results[slug] = (
+                    results[slug].merge_from(own_meta) if slug in results else own_meta
+                )
 
+        # A licence alone makes no record, but it is returned so that it is kept; the
+        # stage records such an article as failed, for want of its metadata.
+        for slug, found_license in licenses.items():
+            results.setdefault(slug, ArticleMetadata(title=""))
+        unanswered = {id_to_content[slug].slug for slug in self._unanswered
+                      if slug in id_to_content}
+        for slug, metadata in results.items():
+            if slug in licenses:
+                metadata.license = licenses[slug]
+            elif slug not in unanswered:
+                metadata.license = License.assumed()
+            # else left unset: a source that could have stated one did not answer, so
+            # the article is retried rather than recorded as stating nothing.
         return results
 
     def _get_semantic_scholar_metadata_cached(
@@ -211,8 +269,8 @@ class MetadataService:
     def _cached(
         self, name: str, client, identifiers: List[Identifier]
     ) -> Dict[str, ArticleMetadata]:
-        """A provider's metadata, from `<cache>/metadata/<name>/<slug>.json` when held."""
-        cache_dir = self.settings.get_cache_dir("metadata") / name
+        """A provider's metadata, from `<cache>/metadata/<dir>/<slug>.json` when held."""
+        cache_dir = self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS[name]
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         results: Dict[str, ArticleMetadata] = {}
@@ -235,7 +293,11 @@ class MetadataService:
                 fresh_results = client.get_metadata(uncached)
             except Exception as exc:
                 logger.error("%s metadata request failed: %s", name, exc)
-                return results
+                fresh_results = exc.found if isinstance(exc, PartialAnswer) else {}
+                if name in LICENSE_PROVIDERS:
+                    for identifier in uncached:
+                        if identifier.slug not in fresh_results:
+                            self._unanswered.setdefault(identifier.slug, set()).add(name)
             for slug, metadata in fresh_results.items():
                 try:
                     (cache_dir / f"{slug}.json").write_text(
@@ -248,21 +310,24 @@ class MetadataService:
         return results
 
     def _get_fallback_metadata(
-        self, extracted_content: ExtractedContent
+        self, extracted_content: ExtractedContent, own_file: Optional[Path] = None
     ) -> Optional[ArticleMetadata]:
-        """Extract metadata from extractor-specific files."""
+        """Extract metadata from extractor-specific files, `own_file` first when given."""
         if extracted_content.source == DownloadSource.ELSEVIER:
-            return self._get_elsevier_fallback(extracted_content)
+            return self._get_elsevier_fallback(extracted_content, own_file)
         elif extracted_content.source.value in JATS_SOURCES:
-            return self._get_pubget_fallback(extracted_content)
+            return self._get_pubget_fallback(extracted_content, own_file)
         elif extracted_content.source == DownloadSource.ACE:
             # ACE doesn't provide reliable metadata
             return None
         return None
 
     @staticmethod
-    def _has_useful_metadata(metadata: ArticleMetadata) -> bool:
-        """Return True when metadata contains at least one meaningful field."""
+    def has_metadata(metadata: ArticleMetadata) -> bool:
+        """Return True when metadata contains at least one meaningful field.
+
+        A licence alone is not metadata: it is kept, but makes no record.
+        """
         title_present = bool(metadata.title and metadata.title.strip())
         return any(
             [
@@ -272,18 +337,20 @@ class MetadataService:
                 bool(metadata.journal),
                 metadata.publication_year is not None,
                 bool(metadata.keywords),
-                bool(metadata.license),
                 metadata.source is not None,
                 metadata.open_access is not None,
             ]
         )
 
     def _get_elsevier_fallback(
-        self, extracted_content: ExtractedContent
+        self, extracted_content: ExtractedContent, content_xml: Optional[Path] = None
     ) -> Optional[ArticleMetadata]:
-        """Extract metadata from Elsevier metadata.json file."""
+        """Extract metadata from Elsevier metadata.json file, and the licence from
+        the full-text record (`content_xml`, else the one beside metadata.json)."""
         # Find the metadata.json file from the download
         candidate_files: List[Path] = []
+        if content_xml is not None:
+            candidate_files.append(content_xml.parent / "metadata.json")
 
         if extracted_content.full_text_path:
             article_dir = extracted_content.full_text_path.parent
@@ -306,8 +373,12 @@ class MetadataService:
             None,
         )
 
+        if content_xml is None and metadata_file is not None:
+            content_xml = metadata_file.parent / "content.xml"
+        license = (elsevier_license(content_xml)
+                   if content_xml is not None and content_xml.exists() else None)
         if metadata_file is None:
-            return None
+            return ArticleMetadata(title="", license=license) if license else None
 
         try:
             data = json.loads(metadata_file.read_text(encoding="utf-8"))
@@ -353,8 +424,8 @@ class MetadataService:
                         authors.append(Author(name=str(author["name"])))
 
             if not title:
-                # No title means this isn't useful metadata
-                return None
+                # No title means this isn't useful metadata, though its licence is kept
+                return ArticleMetadata(title="", license=license) if license else None
 
             return ArticleMetadata(
                 title=title,
@@ -362,6 +433,7 @@ class MetadataService:
                 abstract=abstract,
                 journal=journal,
                 publication_year=year,
+                license=license,
                 source="elsevier_fallback",
                 raw_metadata={"elsevier": data},
             )
@@ -374,10 +446,10 @@ class MetadataService:
             return None
 
     def _get_pubget_fallback(
-        self, extracted_content: ExtractedContent
+        self, extracted_content: ExtractedContent, own_file: Optional[Path] = None
     ) -> Optional[ArticleMetadata]:
         """Extract metadata from Pubget article.xml file."""
-        candidate_files: List[Path] = []
+        candidate_files: List[Path] = [own_file] if own_file is not None else []
 
         if extracted_content.full_text_path:
             article_dir = extracted_content.full_text_path.parent
@@ -486,8 +558,9 @@ class MetadataService:
                     except ValueError:
                         pass
 
+            license = jats_license(root)
             if not title:
-                return None
+                return ArticleMetadata(title="", license=license) if license else None
 
             return ArticleMetadata(
                 title=title,
@@ -495,6 +568,7 @@ class MetadataService:
                 abstract=abstract,
                 journal=journal,
                 publication_year=year,
+                license=license,
                 source="pubget_fallback",
                 raw_metadata={},
             )
@@ -507,10 +581,115 @@ class MetadataService:
             return None
 
 
-#: What a later provider is still asked for. Keywords, license and open
-#: access are left out: no provider fills them reliably, so demanding them
-#: sent every article to every provider.
+#: What a later provider is still asked for. Keywords and open access are
+#: left out: no provider fills them reliably, so demanding them sent every
+#: article to every provider. The licence is asked for by its own rule, the
+#: precedence of who stated it, since PubMed states none.
 FILLED = ("title", "abstract", "journal", "publication_year", "authors")
+
+#: Each provider's cache under `<cache>/metadata/`. The cache holds parsed records, so
+#: a parse that reads more of the response (the licence) needs a directory of its own.
+PROVIDER_CACHE_DIRS = {
+    "semantic_scholar": "semantic_scholar-license",
+    "pubmed": "pubmed",
+    "openalex": "openalex-license",
+    "crossref": "crossref",
+}
+
+_XLINK_HREF = "{http://www.w3.org/1999/xlink}href"
+_ALI_LICENSE_REF = "{http://www.niso.org/schemas/ali/1.0/}license_ref"
+
+
+#: The providers that can state a licence. Until each one asked has answered for an
+#: article, a licence nobody stated is not assumed.
+LICENSE_PROVIDERS = ("semantic_scholar", "crossref", "openalex")
+
+_MANUSCRIPT_IDS = ("manuscript", "manuscript-id", "nihms")
+
+
+def jats_license(root: etree._Element) -> Optional[License]:
+    """The licence an article's JATS `<permissions>` states.
+
+    Its statements are `ali:license_ref`s, then the `<license>`'s `@xlink:href`, the
+    links in its text, its `@license-type` and its text. The first wins, except that a
+    weak statement (a TDM grant, a terms page) yields to a definite one, and a
+    `license_ref` whose `specific-use` is `textmining` (the mining grant) yields to a
+    `license_ref` for a version, such as `vor`, when the file has both. A
+    `<copyright-statement>` with no licence is the licence it names, if any, else a
+    stated all-rights-reserved.
+
+    The version is the chosen `license_ref`'s `specific-use` when that is vor or am,
+    else am for a PMC author manuscript, else unknown.
+    """
+    permissions = root.find(".//article-meta/permissions")
+    if permissions is None:
+        return None
+    version = _jats_version(root)
+    # (text, specific-use): "" for a license_ref without one, None for the rest
+    stated = [(ref.text, ref.get("specific-use") or "")
+              for ref in permissions.iter(_ALI_LICENSE_REF)]
+    licence = permissions.find("license")
+    if licence is not None:
+        stated += [(licence.get(_XLINK_HREF), None)]
+        stated += [(link.get(_XLINK_HREF), None) for link in licence.iter("ext-link", "uri")]
+        stated += [(licence.get("license-type"), None), (" ".join(licence.itertext()), None)]
+    stated = [(" ".join(text.split()), use) for text, use in stated if text and text.strip()]
+    if stated:
+        plain_ref = any(use is not None and use != "textmining" for _, use in stated)
+
+        def strength(candidate):
+            text, use = candidate
+            return (normalise_license(text) in WEAK_LICENSES,
+                    use == "textmining" and plain_ref)
+
+        text, use = min(stated, key=strength)  # min keeps the first of equals
+        return License.stated(LicenseSource.JATS, text,
+                              version=use if use in ("vor", "am") else version)
+    copyright_line = permissions.findtext("copyright-statement")
+    if not (copyright_line and copyright_line.strip()):
+        holder = permissions.findtext("copyright-holder")
+        year = permissions.findtext("copyright-year")
+        if holder:
+            copyright_line = " ".join(["©", *(part for part in (year, holder) if part)])
+    return License.copyright_line(LicenseSource.JATS, copyright_line, version)
+
+
+def _jats_version(root: etree._Element) -> Optional[str]:
+    """am for a PMC author manuscript (a manuscript id, or the author-manuscript
+    collection), else unknown: a JATS copy does not otherwise say which it is."""
+    meta = root.find(".//article-meta")
+    if meta is None:
+        return None
+    if any(any(key in (aid.get("pub-id-type") or "").lower() for key in _MANUSCRIPT_IDS)
+           for aid in meta.iter("article-id")):
+        return "am"
+    for custom in meta.iter("custom-meta"):
+        if "author manuscript" in " ".join(custom.itertext()).lower():
+            return "am"
+    return None
+
+
+def elsevier_license(content_xml: Path) -> Optional[License]:
+    """The licence in an Elsevier full-text record's `coredata`.
+
+    An open-access article names its user licence, a Creative Commons one or
+    Elsevier's own open-access licence; otherwise the record's copyright line stands:
+    the licence it names, if any, else a stated all-rights-reserved. The Article
+    Retrieval API serves the published version.
+    """
+    root = etree.parse(str(content_xml)).getroot()
+    coredata = next(iter(root.xpath("./*[local-name()='coredata']")), None)
+    if coredata is None:
+        return None
+
+    def text(name: str) -> Optional[str]:
+        found = coredata.xpath(f"./*[local-name()='{name}']")
+        return " ".join(found[0].itertext()).strip() if found else None
+
+    user_licence = text("openaccessUserLicense")
+    if user_licence:
+        return License.stated(LicenseSource.ELSEVIER, user_licence, version="vor")
+    return License.copyright_line(LicenseSource.ELSEVIER, text("copyright"), version="vor")
 
 
 def _filled(metadata: Optional[ArticleMetadata]) -> bool:

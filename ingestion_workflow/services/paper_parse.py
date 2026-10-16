@@ -32,6 +32,7 @@ from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
 from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
+from ingestion_workflow.models.metadata import LicenseBasis
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME, SPLIT_RULE
 from ingestion_workflow.services.coordinate_space import sectionize
@@ -255,7 +256,10 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         language=language or None,
         publication_types=list(types) or None,
         keywords=list(meta.keywords) or None,
-        license=meta.license,
+        # The parse's licence is a bare string, so an assumed one is left out rather
+        # than passed off as stated.
+        license=(meta.license.code.value
+                 if meta.license and meta.license.basis is LicenseBasis.STATED else None),
         open_access=meta.open_access,
         corrections=None if corrections is None else [
             pp.Correction(kind=c["kind"], pmid=c.get("pmid"), doi=c.get("doi"))

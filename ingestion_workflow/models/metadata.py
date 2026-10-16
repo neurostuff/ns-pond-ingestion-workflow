@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -39,6 +41,234 @@ class Author:
         )
 
 
+class LicenseCode(str, Enum):
+    """The licence an article is under, normalised from however it was stated."""
+
+    CC_BY = "cc-by"
+    CC_BY_SA = "cc-by-sa"
+    CC_BY_NC = "cc-by-nc"
+    CC_BY_NC_SA = "cc-by-nc-sa"
+    CC_BY_ND = "cc-by-nd"
+    CC_BY_NC_ND = "cc-by-nc-nd"
+    CC0 = "cc0"
+    PUBLIC_DOMAIN = "public-domain"
+    #: A publisher's own open-access licence, such as Elsevier's open-access user
+    #: licence or OpenAlex's "publisher-specific-oa": free to read on its own terms.
+    PUBLISHER_OA = "publisher-oa"
+    #: A grant to mine the text (Elsevier's TDM user licence and TDM-REP licence,
+    #: Springer's and Wiley's TDM URLs, PMC's "available for text mining"), not the
+    #: article's licence.
+    PUBLISHER_TDM = "publisher-tdm"
+    #: A publisher's terms-of-use page, such as Wiley's termsAndConditions.
+    PUBLISHER_TERMS = "publisher-terms"
+    ALL_RIGHTS_RESERVED = "all-rights-reserved"
+    OTHER = "other"
+
+
+#: The open licences: Creative Commons and the public domain.
+OPEN_LICENSES = frozenset({
+    LicenseCode.CC_BY, LicenseCode.CC_BY_SA, LicenseCode.CC_BY_NC, LicenseCode.CC_BY_NC_SA,
+    LicenseCode.CC_BY_ND, LicenseCode.CC_BY_NC_ND, LicenseCode.CC0, LicenseCode.PUBLIC_DOMAIN,
+})
+
+#: Statements that say nothing definite about the article's own licence: a mining
+#: grant, a terms-of-use page, something unrecognised.
+WEAK_LICENSES = frozenset({LicenseCode.PUBLISHER_TDM, LicenseCode.PUBLISHER_TERMS,
+                           LicenseCode.OTHER})
+
+
+class LicenseBasis(str, Enum):
+    #: Someone said so: a licence, a TDM grant, or a copyright statement with no licence.
+    STATED = "stated"
+    #: Every source that could state one answered, and none did, so all rights are
+    #: taken as reserved.
+    ASSUMED = "assumed"
+
+
+class LicenseSource(str, Enum):
+    """Who stated the licence."""
+
+    JATS = "jats"
+    ELSEVIER = "elsevier"
+    CROSSREF = "crossref"
+    OPENALEX = "openalex"
+    SEMANTIC_SCHOLAR = "semantic_scholar"
+
+
+#: Which source wins among statements of equal strength, best first. The article's own
+#: file describes the very copy that was downloaded; Crossref's version-of-record entry
+#: is the publisher's deposit; OpenAlex and Semantic Scholar infer theirs; Crossref's
+#: other entries cover an accepted manuscript or no stated version.
+LICENSE_PRECEDENCE = (
+    ((LicenseSource.JATS, None), (LicenseSource.ELSEVIER, None)),
+    ((LicenseSource.CROSSREF, "vor"),),
+    ((LicenseSource.OPENALEX, None), (LicenseSource.SEMANTIC_SCHOLAR, None)),
+    ((LicenseSource.CROSSREF, None),),
+)
+
+_CC_URL = re.compile(r"creativecommons\.org/licenses/([a-z-]+)")
+_CC_PHRASE = re.compile(r"\bcc[ -]?by((?:[ -](?:nc|nd|sa))*)\b")
+_COMPACT = {
+    "ccby": LicenseCode.CC_BY,
+    "ccbysa": LicenseCode.CC_BY_SA,
+    "ccbync": LicenseCode.CC_BY_NC,
+    "ccbyncsa": LicenseCode.CC_BY_NC_SA,
+    "ccbysanc": LicenseCode.CC_BY_NC_SA,
+    "ccbynd": LicenseCode.CC_BY_ND,
+    "ccbyncnd": LicenseCode.CC_BY_NC_ND,
+    "ccbyndnc": LicenseCode.CC_BY_NC_ND,
+    "cc0": LicenseCode.CC0,
+    "cczero": LicenseCode.CC0,
+    "publicdomain": LicenseCode.PUBLIC_DOMAIN,
+    "publisherspecificoa": LicenseCode.PUBLISHER_OA,
+}
+#: Publisher TDM grants as they appear: Elsevier's TDM user licence and TDM-REP licence,
+#: Springer's, Springer Nature's and Wiley's TDM URLs, PMC's text-mining paragraph.
+_TDM = re.compile(r"text[ -]and[ -]data[ -]mining|text mining|\btdm")
+
+
+def _cc_from_parts(parts: str) -> Optional[LicenseCode]:
+    return _COMPACT.get("ccby" + re.sub(r"[^a-z]", "", parts))
+
+
+def normalise_license(stated: str) -> LicenseCode:
+    """The code for a licence as some source wrote it: a URL, a short code or a paragraph."""
+    text = " ".join(stated.lower().split())
+    url = _CC_URL.search(text)
+    if url:
+        return _cc_from_parts(url.group(1).removeprefix("by")) or LicenseCode.OTHER
+    if "creativecommons.org/publicdomain/zero" in text:
+        return LicenseCode.CC0
+    if "creativecommons.org/publicdomain/mark" in text:
+        return LicenseCode.PUBLIC_DOMAIN
+    compact = re.sub(r"[^a-z0-9]", "", text).replace("creativecommons", "cc")
+    if compact in _COMPACT:
+        return _COMPACT[compact]
+    if re.sub(r"\d+$", "", compact) in _COMPACT:  # "CC BY 4.0"
+        return _COMPACT[re.sub(r"\d+$", "", compact)]
+    phrase = _CC_PHRASE.search(text)
+    if phrase:
+        return _cc_from_parts(phrase.group(1)) or LicenseCode.OTHER
+    if "creative commons" in text and "attribution" in text:
+        parts = ""
+        if re.search(r"non[ -]?commercial", text):
+            parts += "nc"
+        if re.search(r"share[ -]?alike", text):
+            parts += "sa"
+        if re.search(r"no[ -]?deriv", text):
+            parts += "nd"
+        return _cc_from_parts(parts) or LicenseCode.OTHER
+    if "cc0" in text or "public domain dedication" in text:
+        return LicenseCode.CC0
+    if "public domain" in text:
+        return LicenseCode.PUBLIC_DOMAIN
+    if "open-access/userlicense" in text:
+        return LicenseCode.PUBLISHER_OA
+    if _TDM.search(text):
+        return LicenseCode.PUBLISHER_TDM
+    if "all rights reserved" in text or "all rights are reserved" in text:
+        return LicenseCode.ALL_RIGHTS_RESERVED
+    if re.match(r"(https?:)?//|www\.|doi\.org/", text):
+        return LicenseCode.PUBLISHER_TERMS
+    return LicenseCode.OTHER
+
+
+@dataclass(frozen=True)
+class License:
+    """An article's licence, with who stated it and how, or that nobody did."""
+
+    code: LicenseCode
+    basis: LicenseBasis
+    stated_by: Optional[LicenseSource] = None
+    #: The URL or text as the source gave it.
+    stated_as: Optional[str] = None
+    #: The version it covers when the source says: vor, am or submitted.
+    version: Optional[str] = None
+
+    @classmethod
+    def stated(
+        cls,
+        by: LicenseSource,
+        stated_as: Optional[str],
+        version: Optional[str] = None,
+        code: Optional[LicenseCode] = None,
+    ) -> Optional["License"]:
+        """The licence `by` stated, or None when it stated nothing.
+
+        `code` is given when it is already known.
+        """
+        stated_as = " ".join((stated_as or "").split())
+        if not stated_as:
+            return None
+        return cls(
+            code=code or normalise_license(stated_as),
+            basis=LicenseBasis.STATED,
+            stated_by=by,
+            stated_as=stated_as,
+            version=version,
+        )
+
+    @classmethod
+    def copyright_line(
+        cls, by: LicenseSource, line: Optional[str], version: Optional[str] = None
+    ) -> Optional["License"]:
+        """A copyright line with no licence beside it: the open licence it names, if
+        any, else a stated all-rights-reserved."""
+        found = cls.stated(by, line, version)
+        if found is None or found.code in OPEN_LICENSES:
+            return found
+        return cls.stated(by, line, version, code=LicenseCode.ALL_RIGHTS_RESERVED)
+
+    @classmethod
+    def assumed(cls) -> "License":
+        return cls(code=LicenseCode.ALL_RIGHTS_RESERVED, basis=LicenseBasis.ASSUMED)
+
+    @property
+    def rank(self) -> Tuple[int, int]:
+        """Lower wins: any definite statement (an open licence, all rights reserved)
+        before a weak one (WEAK_LICENSES), and an assumed one last; then the source's
+        place in LICENSE_PRECEDENCE."""
+        if self.basis is LicenseBasis.ASSUMED:
+            return (2, len(LICENSE_PRECEDENCE))
+        strength = 1 if self.code in WEAK_LICENSES else 0
+        for tier, sources in enumerate(LICENSE_PRECEDENCE):
+            for source, version in sources:
+                if self.stated_by is source and version in (None, self.version):
+                    return (strength, tier)
+        return (strength, len(LICENSE_PRECEDENCE))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "code": self.code.value,
+            "basis": self.basis.value,
+            "stated_by": self.stated_by.value if self.stated_by else None,
+            "stated_as": self.stated_as,
+            "version": self.version,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "License":
+        return cls(
+            code=LicenseCode(data["code"]),
+            basis=LicenseBasis(data["basis"]),
+            stated_by=LicenseSource(data["stated_by"]) if data.get("stated_by") else None,
+            stated_as=data.get("stated_as"),
+            version=data.get("version"),
+        )
+
+
+def best_license_rank(source: LicenseSource) -> Tuple[int, int]:
+    """The best rank a statement by `source` can have."""
+    return (0, next(tier for tier, sources in enumerate(LICENSE_PRECEDENCE)
+                    if any(by is source for by, _ in sources)))
+
+
+def preferred_license(*licenses: Optional[License]) -> Optional[License]:
+    """The statement ranked first; the earlier one on a tie."""
+    found = [lic for lic in licenses if lic is not None]
+    return min(found, key=lambda lic: lic.rank) if found else None
+
+
 @dataclass
 class ArticleMetadata:
     """
@@ -66,14 +296,18 @@ class ArticleMetadata:
     # Keywords or MeSH terms
     keywords: List[str] = field(default_factory=list)
 
-    # License information (e.g., CC-BY)
-    license: Optional[str] = None
+    # The licence, as the best-ranked source stated it (or assumed)
+    license: Optional[License] = None
 
     # Primary source of metadata (pubmed, semantic_scholar, etc.)
     source: Optional[str] = None
 
     # Whether the article is open access
     open_access: Optional[bool] = None
+
+    # How it is open, kept apart from the licence: gold, hybrid, green, bronze,
+    # diamond or closed. Bronze is free to read, not openly licensed.
+    oa_status: Optional[str] = None
 
     # Direct link to an open-access PDF, when a provider reports one
     pdf_url: Optional[str] = None
@@ -128,9 +362,10 @@ class ArticleMetadata:
             journal=self.journal or other.journal,
             publication_year=self.publication_year or other.publication_year,
             keywords=merged_keywords,
-            license=self.license or other.license,
+            license=preferred_license(self.license, other.license),
             source=self.source or other.source,
             open_access=merged_open_access,
+            oa_status=self.oa_status or other.oa_status,
             pdf_url=self.pdf_url or other.pdf_url,
             raw_metadata=merged_raw,
         )
@@ -144,9 +379,10 @@ class ArticleMetadata:
             "journal": self.journal,
             "publication_year": self.publication_year,
             "keywords": self.keywords,
-            "license": self.license,
+            "license": self.license.to_dict() if self.license else None,
             "source": self.source,
             "open_access": self.open_access,
+            "oa_status": self.oa_status,
             "pdf_url": self.pdf_url,
             "raw_metadata": self.raw_metadata,
         }
@@ -163,9 +399,10 @@ class ArticleMetadata:
             journal=data.get("journal"),
             publication_year=data.get("publication_year"),
             keywords=data.get("keywords", []),
-            license=data.get("license"),
+            license=License.from_dict(data["license"]) if data.get("license") else None,
             source=data.get("source"),
             open_access=data.get("open_access"),
+            oa_status=data.get("oa_status"),
             pdf_url=data.get("pdf_url"),
             raw_metadata=data.get("raw_metadata", {}),
         )
@@ -192,6 +429,7 @@ def merge_metadata_from_sources(
     - Title: Use first non-None value
     - Authors: Prefer most complete list
     - Abstract: Use longest available abstract
+    - License: the statement `License.rank` puts first
     - Other fields: First non-None value wins
 
     Parameters
@@ -221,8 +459,9 @@ def merge_metadata_from_sources(
 
 
 #: Fields that make metadata worth keeping. Deliberately not "all of them":
-#: no provider returns keywords, license and open_access together, and treating
-#: their absence as incomplete is what made every run refetch every article.
+#: no provider returns keywords and open_access together, and treating their
+#: absence as incomplete is what made every run refetch every article. A licence
+#: is always set, assumed when nobody stated one.
 ENOUGH = ("title", "abstract", "journal", "publication_year")
 
 

@@ -1,0 +1,27 @@
+{
+  "transport": "https",
+  "status_code": 200,
+  "view": "FULL",
+  "view_requested": "FULL",
+  "view_obtained": "FULL",
+  "identifier": "10.1016/j.seizure.2015.08.008",
+  "identifier_type": "doi",
+  "rate_limit_limit": null,
+  "rate_limit_remaining": null,
+  "rate_limit_reset_epoch": null,
+  "full_text_retrieved": true,
+  "pii": "S1059-1311(15)00210-1",
+  "doi": "10.1016/j.seizure.2015.08.008",
+  "identifier_lookup": {
+    "doi": "10.1016/j.seizure.2015.08.008",
+    "pmid": "26552557"
+  },
+  "requested_record": {
+    "doi": "10.1016/j.seizure.2015.08.008",
+    "pmid": "26552557"
+  },
+  "slug": "10-1016-j-seizure-2015-08-008",
+  "lookup_type": "doi",
+  "lookup_value": "10.1016/j.seizure.2015.08.008",
+  "identifier_slug": "26552557-10-1016-j-seizure-2015-08-008"
+}
