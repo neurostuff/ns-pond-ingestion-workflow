@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 #: 2: doi aliases hold the bare DOI, not a resolver URL.
-#: 3: doi aliases are lower case.
+#: 3: doi aliases hold the canonical DOI: bare and lower case.
 SCHEMA_VERSION = 3
 
 DDL = """

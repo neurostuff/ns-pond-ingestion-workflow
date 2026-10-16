@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sqlite3
+
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
@@ -461,11 +463,11 @@ def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_pat
     assert _aliases(root) == {(SICI, "a1")}
 
 
-def test_a_bare_doi_another_article_has_is_left_and_logged(tmp_path, caplog):
+def test_a_bare_doi_another_article_has_is_merged_when_it_can_be_the_same_paper(tmp_path):
     root = tmp_path / "cat"
     _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI))
-    assert _aliases(root) == {("https://doi.org/" + SICI, "a1"), (SICI, "a2")}
-    assert "a1" in caplog.text and "a2" in caplog.text
+    assert _aliases(root) == {(SICI, "a1")}
+    assert _articles(root) == {("a1", None), ("a2", "a1")}
 
 
 def test_a_current_catalog_is_not_rewritten(tmp_path):
@@ -493,6 +495,7 @@ def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog):
     """Enrichment sets `identifier.doi` as the provider spelled it."""
     identifier = Identifier(pmid="1")
     identifier.doi = UPPER
+    assert identifier.doi == UPPER.lower()
     ref = catalog.register(identifier)
     catalog.add_aliases([(ref.id, "doi", "10.1/LEARNED")])
     assert _aliases(catalog.root) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
@@ -582,7 +585,7 @@ def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
     assert "another paper" in caplog.text and "1 left" in caplog.text
 
 
-def test_lower_casing_doi_aliases_again_changes_nothing(tmp_path):
+def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path):
     root = tmp_path / "cat"
     _as_version_two(
         root,
@@ -592,8 +595,98 @@ def test_lower_casing_doi_aliases_again_changes_nothing(tmp_path):
         ("a4", "2026-01-01", "doi", "10.1/Y"), ("a5", "2026-01-02", "doi", "10.1/y"),
     )
     first = (_articles(root), _aliases(root))
-    with Catalog.open(root) as cat:
-        cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
-    assert (_articles(root), _aliases(root)) == first
     assert first[1] == {
         (UPPER.lower(), "a1"), ("10.1/X", "a2"), ("10.1/x", "a3"), ("10.1/y", "a4")}
+    with Catalog.open(root) as cat:
+        with cat._write() as conn:
+            again = cat._canonical_doi_aliases(conn)
+    assert again == {"rewritten": 0, "dropped": 0, "merged": 0, "left": 1}
+    assert (_articles(root), _aliases(root)) == first
+
+
+def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog):
+    """The second spelling still names the article the first one merged away."""
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("old", "2026-01-01", "doi", "10.1/ab"),
+        ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "doi", "10.1/Ab"),
+    )
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _aliases(root) == {("10.1/ab", "old")}
+    assert "2 other spellings dropped, 1 articles merged" in caplog.text
+
+
+def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
+        assert _aliases(root) == {(UPPER.lower(), "a1")}
+    copy = root / "catalog.pre-v2.sqlite"
+    assert str(copy) in caplog.text
+    with sqlite3.connect(f"file:{copy}?mode=ro", uri=True) as conn:
+        assert conn.execute("SELECT value FROM aliases").fetchall() == [(UPPER,)]
+        version = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        assert version == ("2",)
+
+
+def _version_and_dois(root):
+    with sqlite3.connect(f"file:{root / 'catalog.sqlite'}?mode=ro", uri=True) as conn:
+        version = conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]
+        return version, {r for r in conn.execute("SELECT value, article_id FROM aliases")}
+
+
+def test_without_a_backup_nothing_is_migrated(tmp_path):
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    (root / "catalog.pre-v2.sqlite").write_text("an earlier copy")
+    with pytest.raises(FileExistsError, match="pre-v2"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
+
+
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
+    root = tmp_path / "cat"
+    _as_version_two(
+        root,
+        ("a1", "2026-01-01", "doi", "10.1/AA"),          # rewritten before the failure
+        ("a2", "2026-01-01", "doi", "10.1/BB"), ("a3", "2026-01-02", "doi", "10.1/bb"),
+    )
+    before = _version_and_dois(root)
+
+    def crash(*args):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Catalog, "_merge", crash)
+    with pytest.raises(OSError, match="disk full"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == before
+
+
+def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
+    """A failure writing the version undoes the rewrite too."""
+    from ingestion_workflow.catalog import store
+
+    class Unwritable(int):
+        def __str__(self):
+            raise OSError("disk full")
+
+    root = tmp_path / "cat"
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    monkeypatch.setattr(store, "SCHEMA_VERSION", Unwritable(3))
+    with pytest.raises(OSError, match="disk full"):
+        Catalog.open(root)
+    assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
+
+
+def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
+    """Older code would write its own version back and register the upper-case
+    spelling as a second article."""
+    from ingestion_workflow.catalog import store
+
+    root = tmp_path / "cat"
+    Catalog.open(root).close()
+    monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
+    with pytest.raises(RuntimeError, match="schema version 3; this code reads version 2"):
+        Catalog.open(root)
+    assert _version_and_dois(root)[0] == "3"

@@ -7,6 +7,7 @@ One-off tools that are not part of the `ingest` command.
 | `generate_manifest.py` | build a JSONL identifiers manifest from a list of ids |
 | `run_elsevier_tables.py` | fetch a few Elsevier articles and dump their tables, for debugging |
 | `symbols_as_digits_manifest.py` | list the articles whose stored PDF text the pdf extractor now repairs or sets aside, for `--refresh extract:pdf` |
+| `repair_doi_collisions.py` | settle the DOIs two catalog articles hold in different case, by `doi_collisions.tsv`; run once, before the schema version 3 migration |
 
 Removed in the catalog refactor, because `ingest` now covers them:
 

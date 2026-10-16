@@ -46,6 +46,13 @@ class Identifier(MutableMapping[str, Optional[str]]):
         """Ensure identifiers are normalized immediately after creation."""
         self.normalize()
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        # Enrichment assigns `doi` after construction, as the provider spelled it;
+        # every reader, the catalog included, sees the canonical DOI.
+        if name == "doi":
+            value = normalize_doi(value) if value else None
+        super().__setattr__(name, value)
+
     def make_slug(self) -> str:
         """Create a slugable representation of the identifiers."""
         id_parts = [
@@ -64,7 +71,6 @@ class Identifier(MutableMapping[str, Optional[str]]):
     def normalize(self) -> None:
         """Normalize identifier fields."""
         self.pmid = _normalize_pmid(self.pmid) if self.pmid else None
-        self.doi = normalize_doi(self.doi) if self.doi else None
         self.pmcid = _normalize_pmcid(self.pmcid) if self.pmcid else None
         if self.other_ids is not None:
             normalized = {k: _normalize_identifier(v) for k, v in self.other_ids.items()}

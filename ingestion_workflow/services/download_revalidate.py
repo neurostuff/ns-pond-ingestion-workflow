@@ -15,6 +15,7 @@ import copy
 import multiprocessing
 import sqlite3
 from collections import Counter
+from contextlib import closing
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import timedelta
@@ -22,6 +23,7 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
+from ingestion_workflow.catalog.backup import backup as catalog_backup
 from ingestion_workflow.models import FileType
 from ingestion_workflow.services import download_check
 
@@ -185,18 +187,8 @@ def backup(catalog_root: Path, target: Path) -> Path:
 
     Only the database changes: a failure stores no blob, so the blob store needs no copy.
     """
-    target = Path(target)
-    if target.exists():
-        raise FileExistsError(f"{target} exists; give a new path for the backup")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    source = sqlite3.connect(Path(catalog_root) / "catalog.sqlite")
-    dest = sqlite3.connect(target)
-    try:
-        source.backup(dest)
-    finally:
-        dest.close()
-        source.close()
-    return target
+    with closing(sqlite3.connect(Path(catalog_root) / "catalog.sqlite")) as source:
+        return catalog_backup(source, target)
 
 
 # -- what the stages will do with it -------------------------------------------

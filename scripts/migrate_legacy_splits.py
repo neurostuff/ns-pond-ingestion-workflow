@@ -40,6 +40,7 @@ REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
+from ingestion_workflow.catalog.backup import backup as catalog_backup  # noqa: E402
 from ingestion_workflow.catalog.blobs import BlobStore  # noqa: E402
 from ingestion_workflow.models.statistics import inverted, side  # noqa: E402
 from ingestion_workflow.services.coordinate_flags import inverse_name  # noqa: E402
@@ -170,14 +171,11 @@ def _open(catalog: Path, writable: bool) -> sqlite3.Connection:
 
 
 def _backup(conn: sqlite3.Connection, backup: Path) -> Path:
-    backup.mkdir(parents=True, exist_ok=True)
     target = backup / "catalog.sqlite"
-    if target.exists():
-        raise SystemExit(f"{target} exists; choose an empty backup directory")
-    # The sqlite backup API copies a consistent snapshot, WAL included.
-    with sqlite3.connect(target) as out:
-        conn.backup(out)
-    return target
+    try:
+        return catalog_backup(conn, target)
+    except FileExistsError:
+        raise SystemExit(f"{target} exists; choose an empty backup directory") from None
 
 
 def run(catalog: Path, *, apply: bool = False, backup: Optional[Path] = None,
