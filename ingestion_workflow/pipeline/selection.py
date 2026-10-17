@@ -171,15 +171,11 @@ def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], setting
     """
     if not stage or not selection.refs:
         return selection
-    from ingestion_workflow.pipeline.stages import STAGE_TYPES     # noqa: PLC0415
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES, upstream_of     # noqa: PLC0415
 
     stage_type = STAGE_TYPES.get(stage)
     # Not `gate`: triage already has one, its coordinate gate.
-    if settings is not None and hasattr(stage_type, "upstream_for"):
-        upstream, flag = stage_type.upstream_for(settings)   # space follows prose_model
-    else:
-        upstream = getattr(stage_type, "requires", None)
-        flag = getattr(stage_type, "requires_flag", None)
+    upstream, flag = upstream_of(stage_type, settings)
     if not (upstream and flag):
         return selection
 
