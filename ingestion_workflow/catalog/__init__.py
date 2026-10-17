@@ -5,6 +5,7 @@ from .fingerprint import fingerprint
 from .models import (
     ALIAS_KINDS,
     NO_SOURCE,
+    WHOLE_ARTICLE,
     ArticleRef,
     Artifact,
     Outcome,
@@ -22,6 +23,7 @@ __all__ = [
     "NO_SOURCE",
     "Outcome",
     "Status",
+    "WHOLE_ARTICLE",
     "fingerprint",
     "is_retryable",
     "utcnow",

@@ -15,6 +15,9 @@ ALIAS_KINDS = ("pmcid", "pmid", "doi", "neurostore")
 
 NO_SOURCE = ""
 
+#: The exclusion table id that stands for every table of an article.
+WHOLE_ARTICLE = "*"
+
 
 class Status(str, Enum):
     OK = "ok"

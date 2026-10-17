@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Dict, Mapping, Optional
 
-WHOLE_ARTICLE = "*"
+from ingestion_workflow.catalog import WHOLE_ARTICLE
 
 
 def kept(payload: Optional[Mapping[str, Any]], excluded: Mapping[str, Any]) -> Dict[str, Any]:
