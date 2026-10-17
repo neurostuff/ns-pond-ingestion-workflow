@@ -8,7 +8,7 @@ fingerprint, and every stage after them made from those, so chained on the empty
 from __future__ import annotations
 
 import pytest
-from ingestion_workflow.catalog import Catalog, Outcome
+from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
@@ -370,3 +370,58 @@ def test_a_row_written_meanwhile_in_the_same_second_is_left_alone(env, written):
 
     assert catalog.store_fingerprints(list(found.rewrites.values())) == 0
     assert catalog.artifact(ref.id, "download", "pubget") == run
+
+
+def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again(
+        migrated, monkeypatch):
+    """Roles was fresh in the first plan and blocks in the second: its artifacts are
+    reused now and would not be, so an apply must not go ahead."""
+    settings, catalog, stages, (tables, prose_only, lost, stale) = migrated
+    roles = next(s for s in stages if s.name == "roles")
+    served = iter([True, False])
+    planned = roles.plan
+
+    def plan(*args, **kwargs):
+        up = next(served)
+        monkeypatch.setattr(roles, "model_state", lambda origin: (
+            (f"fake-{origin}@1", None) if up else (None, "the role model is not served")))
+        return planned(*args, **kwargs)
+
+    monkeypatch.setattr(roles, "plan", plan)
+    found = refingerprint(Context(settings, catalog), stages, [tables, prose_only],
+                          catalog.empty_fingerprints())
+
+    assert found.stages["roles"].lost == 2
+    assert found.rerun() == {"roles": 2}
+
+
+def test_only_the_metadata_a_passage_was_read_with_while_it_had_no_fingerprint_is_relabelled(
+        env):
+    settings, catalog, stages, tmp_path = env
+    read, failed = (catalog.register(Identifier(pmid=str(n), pmcid=f"PMC{n}")) for n in (11, 12))
+
+    def passage(metadata):
+        return {"inputs": [{"artifact_kind": "passage_text", "fingerprint": ""},
+                           {"artifact_kind": "metadata", "fingerprint": metadata}]}
+
+    passages = [passage(""), passage("an older metadata's"), passage("")]
+    for ref in (read, failed):
+        catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                                payload={"title": "T", "abstract": "A"})])
+    catalog.record([
+        Outcome(article_id=read.id, stage="prose", source="", fingerprint="p",
+                payload={"passages": passages}),
+        Outcome(article_id=failed.id, stage="prose", source="", fingerprint="p",
+                status=Status.FAILED, payload={"passages": passages}, error="down"),
+    ])
+
+    found = refingerprint(Context(settings, catalog), [MetadataStage(settings)],
+                          [read, failed], catalog.empty_fingerprints())
+
+    filled = found.rewrites[(read.id, "metadata", "")].new.fingerprint
+    relabelled = found.rewrites[(read.id, "prose", "")].payload["passages"]
+    assert [p["inputs"] for p in relabelled] == [
+        passage(filled)["inputs"], passage("an older metadata's")["inputs"],
+        passage(filled)["inputs"]]
+    assert (failed.id, "prose", "") not in found.rewrites
+    assert found.stages["prose"].relabelled == 1

@@ -125,7 +125,7 @@ class _After(Context):
         now = replace(artifact, fingerprint=expected, summary=self._copied(artifact))
         fresh = super().is_fresh(now, expected)
         if not fresh:
-            if not artifact.fingerprint:
+            if not artifact.fingerprint and artifact.ok:
                 self.empty_asked.add(key)
         elif now != artifact:
             self.rewrites[key] = Rewrite(artifact, now)
@@ -144,7 +144,8 @@ class StageCounts:
     carried: int = 0
     #: Payloads whose recorded input fingerprints were relabelled.
     relabelled: int = 0
-    #: Empty fingerprints a plan asked about and could not fill: these run again.
+    #: Empty fingerprints a plan asked about and could not fill, their blob being gone:
+    #: these run again, as they would have without this change.
     empty_rerun: int = 0
     #: Empty fingerprints no plan asks about: no run reads them as they stand.
     empty_unplanned: int = 0
@@ -165,7 +166,7 @@ class Refingerprint:
     plan: RunReport = field(default_factory=RunReport)
 
     def rerun(self) -> Dict[str, int]:
-        """By stage, the artifacts reused now that would run again once this is stored."""
+        """By stage, the artifacts that would run again once this is stored."""
         return {stage: n.empty_rerun + n.lost + n.unasked for stage, n in self.stages.items()
                 if n.empty_rerun + n.lost + n.unasked}
 

@@ -817,12 +817,20 @@ def repair(
             return
         if rerun:
             typer.echo("refusing to write: " + ", ".join(
-                f"{n:,} {stage}" for stage, n in rerun.items()) + " reused now would run again.")
+                f"{n:,} {stage}" for stage, n in rerun.items()) + " would run again.")
             for stage in rerun:
-                for reason, n in found.plan.stages[stage].reasons.items():
+                counts, reasons = found.stages[stage], found.plan.stages[stage].reasons
+                if counts.empty_rerun:
+                    typer.echo(f"  {stage}: {counts.empty_rerun:,} have no fingerprint and "
+                               f"their blob is gone: run the stage for them "
+                               f"(`ingest run -s {stage}`) first")
+                for reason, n in reasons.items():
                     typer.echo(f"  {stage}: {n:,} blocked: {reason}")
-            typer.echo("Give the stages what they block on (serve the models the config "
-                       "names, record text hashes with `ingest refresh-text`), then plan again.")
+                if (counts.lost or counts.unasked) and not reasons:
+                    typer.echo(f"  {stage}: {counts.lost + counts.unasked:,} reused now "
+                               "would not be, with no plan blocking them")
+            typer.echo("Give the blocked stages what they wait on (the models the config "
+                       "names, text hashes from `ingest refresh-text`), then plan again.")
             raise typer.Exit(1)
         typer.echo(f"catalog copied to {catalog.backup(backup)}")
         stored = catalog.store_fingerprints(list(found.rewrites.values()))

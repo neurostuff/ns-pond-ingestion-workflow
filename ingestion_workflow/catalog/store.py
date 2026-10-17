@@ -1011,8 +1011,9 @@ class Catalog:
         `updated_at` stands. A row written since it was read is left alone. Returns how
         many rows were rewritten.
 
-        One transaction, so a carried artifact is never stored without the one it was
-        carried from."""
+        One transaction, so the rewrites are stored together or not at all. A row left
+        alone because a run wrote it meanwhile still has what was carried from it
+        stored, chained on a fingerprint it never got: those run again."""
         rows = [
             (new.fingerprint, json.dumps(new.summary, separators=(",", ":")),
              self.blobs.put(payload) if payload is not None else new.blob,
