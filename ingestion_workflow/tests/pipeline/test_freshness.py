@@ -36,6 +36,11 @@ def test_changed_fingerprint_is_stale(ctx):
     assert not ctx.is_fresh(artifact(), "fp2")
 
 
+def test_an_artifact_without_a_fingerprint_is_not_fresh(ctx):
+    """Nothing says what it was made from; `ingest repair` gives it the one it should carry."""
+    assert not ctx.is_fresh(artifact(fingerprint=""), "fp1")
+
+
 def test_missing_artifact_is_not_fresh(ctx):
     assert not ctx.is_fresh(None, "fp1")
 

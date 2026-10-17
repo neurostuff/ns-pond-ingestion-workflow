@@ -7,24 +7,33 @@ this the selection drops it and the refresh silently does nothing.
 from __future__ import annotations
 
 import pytest
-from ingestion_workflow.catalog import Catalog, Outcome
+from ingestion_workflow.catalog import Artifact, Catalog, Outcome
 from ingestion_workflow.config import Settings
+from ingestion_workflow.models import DownloadSource
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Select, everything, narrow
+from ingestion_workflow.pipeline.stages import DownloadStage
+from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 
 
 @pytest.fixture()
 def catalog(tmp_path):
     with Catalog.open(tmp_path / "cat") as cat:
         done = cat.register(Identifier(pmid="1"))
+        downloaded = DownloadStage(Settings()).fingerprint_for(DownloadSource.ACE)
         cat.record(
             [
-                Outcome(article_id=done.id, stage="download", source="ace"),
-                Outcome(article_id=done.id, stage="extract", source="ace"),
+                Outcome(article_id=done.id, stage="download", source="ace",
+                        fingerprint=downloaded),
+                Outcome(article_id=done.id, stage="extract", source="ace",
+                        fingerprint=extraction_fingerprint("ace", Artifact(
+                            article_id=done.id, stage="download", source="ace",
+                            fingerprint=downloaded))),
             ]
         )
         undone = cat.register(Identifier(pmid="2"))
-        cat.record([Outcome(article_id=undone.id, stage="download", source="ace")])
+        cat.record([Outcome(article_id=undone.id, stage="download", source="ace",
+                            fingerprint=downloaded)])
         yield cat, done, undone
 
 

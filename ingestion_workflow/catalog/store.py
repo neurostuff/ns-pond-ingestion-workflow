@@ -989,6 +989,36 @@ class Catalog:
             counts[stage] = int(row["n"])
         return counts
 
+    def empty_fingerprints(self) -> Dict[str, int]:
+        """OK artifacts with no fingerprint, by stage, on articles no merge retired."""
+        return {
+            row["stage"]: int(row["n"])
+            for row in self._conn.execute(
+                """
+                SELECT a.stage, COUNT(*) AS n FROM artifacts a
+                JOIN articles ar ON ar.id = a.article_id
+                WHERE ar.merged_into IS NULL AND a.status = 'ok' AND a.fingerprint = ''
+                GROUP BY a.stage
+                """
+            )
+        }
+
+    def store_fingerprints(self, rewrites: Sequence[Tuple[Artifact, Artifact]]) -> int:
+        """Give each artifact the fingerprint and summary of its rewritten copy, and
+        nothing else: no attempt is recorded and `updated_at` stands. A row written
+        since it was read is left alone. Returns how many rows were rewritten."""
+        rows = [
+            (new.fingerprint, json.dumps(new.summary, separators=(",", ":")),
+             old.article_id, old.stage, old.source, old.fingerprint, old.updated_at)
+            for old, new in rewrites
+        ]
+        with self._write() as conn:
+            return conn.executemany(
+                "UPDATE artifacts SET fingerprint=?, summary=? WHERE article_id=? AND stage=? "
+                "AND source=? AND fingerprint=? AND updated_at=?",
+                rows,
+            ).rowcount
+
     def stranded_artifacts(self) -> int:
         """Artifacts attached to an article that a merge retired."""
         row = self._conn.execute(

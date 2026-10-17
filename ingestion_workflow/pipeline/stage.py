@@ -102,21 +102,22 @@ class Context:
 
         `--refresh extract` covers the whole stage; `--refresh extract:ace`
         covers one source of it, which is what a single extractor changing
-        calls for. Targeting matters for migrated artifacts especially: they
-        carry no fingerprint, so a version bump cannot reach them and an
-        explicit instruction is the only way.
+        calls for.
         """
         if "all" in self.refresh or stage in self.refresh:
             return True
         return bool(source) and f"{stage}:{source}" in self.refresh
 
     def is_fresh(self, artifact: Optional[Artifact], expected: str) -> bool:
-        """Reusable iff it succeeded, its inputs are unchanged, and its blob survives."""
+        """Reusable iff it succeeded, its inputs are unchanged, and its blob survives.
+
+        An artifact with no fingerprint says nothing about its inputs, so it is
+        not reusable: `ingest repair` stores the fingerprint it should carry."""
         if artifact is None or artifact.status is not Status.OK:
             return False
         if self.refreshing(artifact.stage, artifact.source):
             return False
-        if expected and artifact.fingerprint and artifact.fingerprint != expected:
+        if artifact.fingerprint != expected:
             return False
         if artifact.blob and not self.catalog.blobs.exists(artifact.blob):
             return False
