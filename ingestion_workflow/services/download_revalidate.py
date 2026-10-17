@@ -13,9 +13,7 @@ from __future__ import annotations
 
 import copy
 import multiprocessing
-import sqlite3
 from collections import Counter
-from contextlib import closing
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field, replace
 from datetime import timedelta
@@ -23,7 +21,6 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
-from ingestion_workflow.catalog.backup import backup as catalog_backup
 from ingestion_workflow.models import FileType
 from ingestion_workflow.services import download_check
 
@@ -180,15 +177,6 @@ def apply(catalog: Catalog, revalidation: Revalidation) -> int:
     catalog.record(outcomes)
     revalidation.changed = changed
     return len(outcomes)
-
-
-def backup(catalog_root: Path, target: Path) -> Path:
-    """A consistent copy of the catalog database, WAL included, at `target`.
-
-    Only the database changes: a failure stores no blob, so the blob store needs no copy.
-    """
-    with closing(sqlite3.connect(Path(catalog_root) / "catalog.sqlite")) as source:
-        return catalog_backup(source, target)
 
 
 # -- what the stages will do with it -------------------------------------------

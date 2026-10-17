@@ -72,13 +72,14 @@ def test_the_gate_is_not_a_freshness_filter(catalog):
 def test_the_gate_holds_for_a_manifest_too(catalog, settings, tmp_path):
     """It is applied in `narrow`, not in the stage's `plan`, so it does not
     matter how the selection was built."""
-    from ingestion_workflow.pipeline.selection import from_manifest
+    from ingestion_workflow.pipeline.selection import Selection, resolve_manifest
 
     path = tmp_path / "m.jsonl"
     path.write_text("\n".join(
         json.dumps({"pmid": f"100{n}"}) for n in ("a", "b", "c", "d")) + "\n")
     cat, refs = catalog
-    sel = narrow(cat, from_manifest(cat, path), Select.PENDING, "analyses", settings=settings)
+    manifest = Selection(resolve_manifest(cat, path, register=True).refs, "manifest")
+    sel = narrow(cat, manifest, Select.PENDING, "analyses", settings=settings)
     assert {r.id for r in sel.refs} == {refs["a"], refs["c"]}
 
 
