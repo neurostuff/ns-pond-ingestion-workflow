@@ -7,7 +7,7 @@ import threading
 import time
 
 import pytest
-from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog import WHOLE_ARTICLE, Catalog, Outcome, Status
 from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
 
 
@@ -843,12 +843,12 @@ def test_a_merge_carries_exclusions_over(catalog):
     a = catalog.register(Identifier(doi="10.1/x1"))
     b = catalog.register(Identifier(pmcid="PMC41"))
     catalog.exclude([(a.id, "t1", "no coordinates", ""), (b.id, "t2", "a figure", "see paper")])
-    catalog.exclude([(b.id, Catalog.WHOLE_ARTICLE, "review", "")])
+    catalog.exclude([(b.id, WHOLE_ARTICLE, "review", "")])
 
     merged = catalog.register(Identifier(doi="10.1/x1", pmcid="PMC41"))
 
     marks = catalog.exclusions([merged.id])
-    assert set(marks[merged.id]) == {"t1", "t2", Catalog.WHOLE_ARTICLE}
+    assert set(marks[merged.id]) == {"t1", "t2", WHOLE_ARTICLE}
     assert marks[merged.id]["t2"]["note"] == "see paper"
     assert set(catalog.exclusions()) == {merged.id}
 
@@ -893,11 +893,11 @@ def _merged_pair(catalog, tag):
 def test_exclusions_read_a_row_an_older_merge_left_on_a_retired_id(catalog):
     survivor, retired = _merged_pair(catalog, "61")
     _strand(catalog, retired, "t1")
-    _strand(catalog, retired, Catalog.WHOLE_ARTICLE)
+    _strand(catalog, retired, WHOLE_ARTICLE)
 
     for marks in (catalog.exclusions([survivor]), catalog.exclusions()):
         assert set(marks) == {survivor}
-        assert set(marks[survivor]) == {"t1", Catalog.WHOLE_ARTICLE}
+        assert set(marks[survivor]) == {"t1", WHOLE_ARTICLE}
     assert catalog.exclusions([retired]) == catalog.exclusions([survivor])
     assert catalog.stranded_exclusions() == 2
 
@@ -941,7 +941,7 @@ def test_exclusions_follow_a_chain_of_merges(catalog):
 def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_clashes(catalog):
     survivor, retired = _merged_pair(catalog, "64")
     catalog.exclude([(survivor, "t1", "mine", ""), (survivor, "t2", "mine", "")])
-    _strand(catalog, retired, Catalog.WHOLE_ARTICLE)
+    _strand(catalog, retired, WHOLE_ARTICLE)
     _strand(catalog, retired, "t1", reason="lost reason", note="n")
 
     done = catalog.repair_merges()
@@ -949,10 +949,29 @@ def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_cla
     assert done.exclusions_moved == 1
     assert done.exclusions_dropped == [(retired, "t1", "lost reason", "n")]
     marks = catalog.exclusions([survivor])[survivor]
-    assert set(marks) == {"t1", "t2", Catalog.WHOLE_ARTICLE}
+    assert set(marks) == {"t1", "t2", WHOLE_ARTICLE}
     assert marks["t1"]["reason"] == "mine"
     assert catalog.stranded_exclusions() == 0
     assert catalog.repair_merges().exclusions_moved == 0
+
+
+def test_reads_resolve_a_chain_a_cycle_and_stranded_rows_to_the_live_article(catalog):
+    chain = [catalog.register(Identifier(pmid=str(n))).id for n in (81, 82, 83)]
+    loop = [catalog.register(Identifier(pmid=str(n))).id for n in (84, 85)]
+    for retired, into in [(chain[0], chain[1]), (chain[1], chain[2]), (loop[0], loop[1]), (loop[1], loop[0])]:
+        catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (into, retired))
+    _strand(catalog, chain[0], WHOLE_ARTICLE)
+    _strand(catalog, chain[1], "t1")
+    _strand(catalog, loop[0], "t2")
+    hits = catalog.record_search("q", "2026", {"pubmed": "p"}, {"pubmed": [chain[0], chain[1], loop[0]]})
+
+    assert [catalog.current_id(i) for i in chain] == [chain[2]] * 3
+    assert catalog.current_id(loop[0]) == loop[0]
+    assert set(catalog.exclusions([chain[2]])[chain[2]]) == {WHOLE_ARTICLE, "t1"}
+    assert set(catalog.exclusions()) == {chain[2], loop[0]}
+    assert set(catalog.search_articles(hits)) == {chain[2], loop[0]}
+    assert catalog.unexclude(chain[0]) == 2
+    assert set(catalog.exclusions()) == {loop[0]}
 
 
 def test_a_failed_repair_leaves_every_row_where_it_was(catalog):

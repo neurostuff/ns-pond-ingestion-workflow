@@ -21,7 +21,17 @@ from ingestion_workflow.utils.doi import normalize_doi
 
 from .backup import backup
 from .blobs import BlobStore
-from .models import ALIAS_KINDS, NO_SOURCE, ArticleRef, Artifact, Outcome, Status, utcnow
+from .merges import Merges, follow
+from .models import (
+    ALIAS_KINDS,
+    NO_SOURCE,
+    WHOLE_ARTICLE,
+    ArticleRef,
+    Artifact,
+    Outcome,
+    Status,
+    utcnow,
+)
 from .schema import DDL, PRAGMAS, SCHEMA_VERSION
 
 logger = logging.getLogger(__name__)
@@ -511,35 +521,22 @@ class Catalog:
         return row["id"] if row else sorted(ids)[0]
 
     def _follow_merge(self, article_id: str) -> str:
-        seen = set()
-        while article_id not in seen:
-            seen.add(article_id)
+        """Read from the database at each step: a write path merges as it goes."""
+        def merged_into(article_id: str) -> Optional[str]:
             row = self._conn.execute(
                 "SELECT merged_into FROM articles WHERE id=?", (article_id,)
             ).fetchone()
-            if row is None or not row["merged_into"]:
-                return article_id
-            article_id = row["merged_into"]
-        return article_id
+            return row["merged_into"] if row else None
 
-    def _live_resolver(self):
-        """A function from an article id to the article it is now, from one read of
-        the merges: for reading many rows without a query each."""
-        merged = {
+        return follow(article_id, merged_into)
+
+    def _merges(self) -> Merges:
+        return Merges({
             row["id"]: row["merged_into"]
             for row in self._conn.execute(
                 "SELECT id, merged_into FROM articles WHERE merged_into IS NOT NULL"
             )
-        }
-
-        def live(article_id: str) -> str:
-            seen = set()
-            while article_id in merged and article_id not in seen:
-                seen.add(article_id)
-                article_id = merged[article_id]
-            return article_id
-
-        return live
+        })
 
     def current_id(self, article_id: str) -> str:
         """The article `article_id` is now: itself, or the one it was merged into."""
@@ -675,7 +672,7 @@ class Catalog:
         Read-time, because a process that predates these tables merges articles
         without moving their hits.
         """
-        live = self._live_resolver()
+        live = self._merges().live
 
         found: Dict[str, set] = {}
         for row in self._conn.execute(
@@ -745,9 +742,6 @@ class Catalog:
             ]
         return [article_id for _, article_id in sorted(ordered)]
 
-    #: The table id that stands for every table of an article.
-    WHOLE_ARTICLE = "*"
-
     def exclude(self, rows: Sequence[Tuple[str, str, str, str]]) -> int:
         """Record (article_id, table_id, reason, note) verdicts. Idempotent:
         marking a table again replaces its reason and note. A retired article id is
@@ -769,15 +763,9 @@ class Catalog:
         A retired id withdraws the verdicts of the article it became, and of any
         article merged into it.
         """
-        live = self._live_resolver()
-        target = live(article_id)
-        owners = [target] + [
-            row["id"]
-            for row in self._conn.execute(
-                "SELECT id FROM articles WHERE merged_into IS NOT NULL"
-            )
-            if live(row["id"]) == target
-        ]
+        merges = self._merges()
+        target = merges.live(article_id)
+        owners = [target] + merges.retired_into({target})
         marks = ",".join("?" * len(owners))
         with self._write() as conn:
             if table_id is None:
@@ -800,7 +788,8 @@ class Catalog:
         predates the move in `_merge` leaves its rows on the retired id. A table
         both sides excluded shows the survivor's own row.
         """
-        live = self._live_resolver()
+        merges = self._merges()
+        live = merges.live
         if article_ids is None:
             rows = self._conn.execute(
                 "SELECT article_id, table_id, reason, note, created_at FROM exclusions"
@@ -808,11 +797,7 @@ class Catalog:
         else:
             wanted = set(article_ids)
             sources = list(wanted) + [
-                row["id"]
-                for row in self._conn.execute(
-                    "SELECT id FROM articles WHERE merged_into IS NOT NULL"
-                )
-                if live(row["id"]) in wanted and row["id"] not in wanted
+                retired for retired in merges.retired_into(wanted) if retired not in wanted
             ]
             rows = []
             for chunk in _chunks(sources, 500):

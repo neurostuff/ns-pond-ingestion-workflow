@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Sequence
 
 import typer
 
-from ingestion_workflow.catalog import ArticleRef, Catalog, Status
+from ingestion_workflow.catalog import WHOLE_ARTICLE, ArticleRef, Catalog, Status
 from ingestion_workflow.catalog.backup import backup as catalog_backup
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
@@ -717,7 +717,7 @@ def exclude(
                 raise typer.Exit(code=1)
             # A pmid can alias several articles; say which one this resolved to.
             typer.echo(f"{token} -> article {ref.id} ({ref.identifier.slug})")
-            for table_id in table or [Catalog.WHOLE_ARTICLE]:
+            for table_id in table or [WHOLE_ARTICLE]:
                 rows.append((ref.id, str(table_id), reason, note))
         if file is not None:
             for entry in json.loads(file.read_text()):
@@ -729,7 +729,7 @@ def exclude(
                                f"{entry['article_id']}")
                     continue
                 rows.append((entry["article_id"],
-                             str(entry.get("table_id") or Catalog.WHOLE_ARTICLE),
+                             str(entry.get("table_id") or WHOLE_ARTICLE),
                              entry.get("reason") or entry.get("kind") or reason,
                              entry.get("note") or note))
 
@@ -743,7 +743,7 @@ def exclude(
         if not rows:
             raise typer.BadParameter("give articles, --file, or --list")
         if remove:
-            n = sum(catalog.unexclude(a, None if t == Catalog.WHOLE_ARTICLE and not table else t)
+            n = sum(catalog.unexclude(a, None if t == WHOLE_ARTICLE and not table else t)
                     for a, t, _, _ in rows)
             typer.echo(f"withdrew {n:,} marks")
             return
