@@ -31,7 +31,7 @@ from ingestion_workflow.pipeline import (
     narrow,
     run_stages,
 )
-from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
+from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, upstream_of
 from ingestion_workflow.services.logging import configure_logging
 from ingestion_workflow.services.search import (
     SEARCH_SERVICES,
@@ -590,7 +590,7 @@ def serve(
 def status(config: Optional[Path] = ConfigOption) -> None:
     """Show what each stage has done, and what it could do next."""
     settings = _settings(config)
-    requirements = {name: STAGE_TYPES[name].requires for name in STAGE_ORDER}
+    requirements = {name: upstream_of(STAGE_TYPES[name], settings)[0] for name in STAGE_ORDER}
     with _catalog(settings) as catalog:
         total = catalog.count_articles()
         counts = catalog.status_counts()

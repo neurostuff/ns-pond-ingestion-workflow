@@ -285,7 +285,7 @@ class StageNode:
 
 def stage_graph(prose: bool) -> List[StageNode]:
     """The stages in order, each with the input it waits for, as the stages declare it."""
-    from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, STAGE_TYPES
+    from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, STAGE_TYPES, upstream_of
 
     settings = SimpleNamespace(prose_model="on" if prose else None)
     names = [n for n in STAGE_ORDER if prose or n not in PROSE_STAGES]
@@ -293,10 +293,7 @@ def stage_graph(prose: bool) -> List[StageNode]:
     flags: Dict[str, str] = {}
     for name in names:
         kind = STAGE_TYPES[name]
-        if hasattr(kind, "upstream_for"):
-            up, flag = kind.upstream_for(settings)
-        else:
-            up, flag = kind.requires, getattr(kind, "requires_flag", None)
+        up, flag = upstream_of(kind, settings)
         upstream[name] = up
         if up and flag:
             flags.setdefault(up, flag)

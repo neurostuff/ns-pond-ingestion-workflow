@@ -190,3 +190,37 @@ def test_the_cli_module_is_not_shadowed_by_its_own_function():
 
     assert isinstance(module, types.ModuleType)
     assert hasattr(module, "app")
+
+
+def _ready(output, stage):
+    """The ready column; status leaves out a stage with nothing to show."""
+    rows = [line for line in output.splitlines() if line.startswith(f"{stage} ")]
+    return int(rows[0].split()[-1].replace(",", "")) if rows else 0
+
+
+def _catalog_with_resolved_and_unresolved_articles(tmp_path):
+    """Two articles analysed; only the first has been through resolve."""
+    from ingestion_workflow.catalog import Outcome
+    from ingestion_workflow.models.ids import Identifier
+
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        resolved, analysed = catalog.register_many([Identifier(pmid="1"), Identifier(pmid="2")])
+        catalog.record(
+            [Outcome(article_id=r.id, stage="analyses", source="") for r in (resolved, analysed)]
+            + [Outcome(article_id=resolved.id, stage="resolve", source="")]
+        )
+
+
+def test_status_counts_roles_against_analyses_without_prose(config, tmp_path):
+    _catalog_with_resolved_and_unresolved_articles(tmp_path)
+    out = run("status", "--config", str(config))
+    assert _ready(out, "roles") == 2
+    assert _ready(out, "space") == 0
+
+
+def test_status_counts_roles_against_resolve_with_prose(config, tmp_path):
+    _catalog_with_resolved_and_unresolved_articles(tmp_path)
+    settings = json.loads(config.read_text(encoding="utf-8"))
+    config.write_text(json.dumps({**settings, "prose_model": "prose-model"}), encoding="utf-8")
+    out = run("status", "--config", str(config))
+    assert _ready(out, "roles") == 1

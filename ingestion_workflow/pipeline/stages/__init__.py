@@ -71,6 +71,13 @@ STAGE_TYPES = {
 }
 
 
+def upstream_of(stage_type, settings):
+    """The stage and flag `stage_type` reads under `settings`: roles and space follow `prose_model`."""
+    if hasattr(stage_type, "upstream_for"):
+        return stage_type.upstream_for(settings)
+    return stage_type.requires, getattr(stage_type, "requires_flag", None)
+
+
 def build(names, settings):
     """Instantiate the requested stages in canonical order."""
     enabled = bool(getattr(settings, "prose_model", None))
@@ -102,6 +109,7 @@ __all__ = [
     "RolesStage",
     "STAGE_ORDER",
     "STAGE_TYPES",
+    "upstream_of",
     "SpaceStage",
     "SyncStage",
     "TriageStage",
