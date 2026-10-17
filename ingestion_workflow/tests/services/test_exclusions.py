@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from ingestion_workflow.catalog import Catalog
+from ingestion_workflow.catalog import WHOLE_ARTICLE, Catalog
 from ingestion_workflow.cli.main import app
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
@@ -141,7 +141,7 @@ def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path):
     assert out.exit_code == 0, out.output
     assert f"-> article {a}" in out.output
     with Catalog.open(tmp_path / "catalog") as catalog:
-        assert set(catalog.exclusions()[a]) == {Catalog.WHOLE_ARTICLE}
+        assert set(catalog.exclusions()[a]) == {WHOLE_ARTICLE}
     out = runner.invoke(app, ["exclude", "1", "--remove", "--config", str(config)])
     assert out.exit_code == 0 and "withdrew 1 marks" in out.output
 

@@ -742,8 +742,6 @@ class Catalog:
             ]
         return [article_id for _, article_id in sorted(ordered)]
 
-    WHOLE_ARTICLE = WHOLE_ARTICLE
-
     def exclude(self, rows: Sequence[Tuple[str, str, str, str]]) -> int:
         """Record (article_id, table_id, reason, note) verdicts. Idempotent:
         marking a table again replaces its reason and note. A retired article id is
