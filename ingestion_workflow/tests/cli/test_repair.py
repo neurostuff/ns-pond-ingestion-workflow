@@ -154,6 +154,8 @@ def test_apply_refuses_while_anything_reused_now_would_run_again(migrated):
 
     assert result.exit_code == 1
     assert "refusing to write: 1 download" in result.output
+    assert "download: 1 have no fingerprint and their blob is gone" in result.output
+    assert "blocked" not in result.output.split("refusing to write")[1].split("Give")[0]
     assert _fingerprint(tmp_path, article_id) == ""
     assert not backup.exists()
 

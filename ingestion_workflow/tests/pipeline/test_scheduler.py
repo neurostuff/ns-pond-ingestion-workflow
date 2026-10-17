@@ -187,3 +187,23 @@ def test_a_dry_run_shows_no_progress_bar(env, monkeypatch):
     settings, catalog, refs = env
     run_stages(Context(settings, catalog), [CountingStage()], refs, dry_run=True)
     assert made == []
+
+
+def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
+    from ingestion_workflow.pipeline import BATCH_SIZE
+
+    class Blocking(CountingStage):
+        def plan(self, ctx, refs, artifacts, upstream) -> StagePlan:
+            plan = StagePlan(stage=self.name)
+            for ref in refs:
+                plan.block("waits" if int(ref.identifier.pmid) % 2 else "waits too")
+            return plan
+
+    settings = Settings(data_root=tmp_path / "data", cache_root=tmp_path / "c",
+                        catalog_root=tmp_path / "cat")
+    with Catalog.open(settings.catalog_root) as catalog:
+        refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(BATCH_SIZE + 2)])
+        report = run_stages(Context(settings, catalog), [Blocking()], refs, dry_run=True)
+
+    half = (BATCH_SIZE + 2) // 2
+    assert report.stages["download"].reasons == {"waits too": half, "waits": half}
