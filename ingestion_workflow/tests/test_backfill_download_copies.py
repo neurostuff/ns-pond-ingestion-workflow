@@ -6,6 +6,8 @@ import importlib.util
 import io
 import sqlite3
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -210,3 +212,41 @@ def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, op
     assert counts == {**{k: n for k, n in DRY_RUN.items() if not k.startswith("pmc")},
                       "left: written meanwhile": 1}
     assert f"left\t{ids['pmc']}\tpmc\twritten meanwhile" in out.getvalue()
+
+
+class _Down(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(503)
+        self.end_headers()
+
+    def log_message(self, *args):
+        pass
+
+
+def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalog_root,
+                                                                         tmp_path):
+    root, ids = catalog_root
+    server = HTTPServer(("localhost", 0), _Down)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    down = OpenAlexClient(email="test@example.com")
+    down.BASE_URL = f"http://localhost:{server.server_port}"
+    out = io.StringIO()
+    try:
+        counts = backfill.run(root, openalex=down, apply=True, backup=tmp_path / "b.sqlite",
+                              out=out)
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert counts["left: OpenAlex lookup failed"] == 2
+    assert "pdf\tunrecorded\t-\tpublic" not in counts
+    with Catalog.open(root) as catalog:
+        for name in ("ucl", "koelsch"):
+            assert "copy" not in catalog.artifact(ids[name], "download", "pdf").summary
+    assert f"left\t{ids['ucl']}\tpdf\tOpenAlex lookup failed" in out.getvalue()
+
+    # with OpenAlex back, a rerun types them
+    again = backfill.run(root, openalex=OpenAlexClient(email="test@example.com"),
+                         out=io.StringIO())
+    assert again["pdf\trepository\t-\tpublic"] == 1
+    assert again["pdf\tunrecorded\t-\tpublic"] == 1

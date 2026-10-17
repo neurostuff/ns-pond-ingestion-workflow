@@ -32,7 +32,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import nullcontext
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from lxml import etree
 
@@ -106,15 +106,22 @@ def typed_by_site(root: Path, rows: Sequence[Row], found: List[Found],
                and copy["route"] == CopyRoute.UNRECORDED.value and "url" in copy}
     if not untyped:
         return found
+    failed: Dict[str, str] = {}
     try:
         listed = openalex.get_locations(Identifiers([r.identifier for r in untyped.values()]))
     except LocationLookupFailed as exc:
+        failed = exc.failed
         for slug, why in exc.failed.items():
             print(f"untyped\t{slug}\tOpenAlex lookup failed: {why}", file=out)
         listed = exc.found
     candidates = _openalex_candidates(listed)
     typed = list(found)
     for i, result in untyped.items():
+        if result.identifier.slug in failed:
+            # Typed from no locations it would be recorded as unrecorded, and the next
+            # run skips a recorded row; unwritten, a rerun retries the lookup.
+            typed[i] = (*found[i][:3], None, "OpenAlex lookup failed")
+            continue
         attempt = [a for a in result.url_attempts if a.get("outcome") == "pdf"][-1]
         attempt["site_type"] = site_type(str(attempt.get("pdf_url") or attempt["url"]),
                                          candidates.get(result.identifier.slug, []))
