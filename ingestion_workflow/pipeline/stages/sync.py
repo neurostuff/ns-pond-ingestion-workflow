@@ -12,7 +12,6 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
-    CopyRoute,
     CopyVersion,
     DownloadCopy,
     DownloadResult,
@@ -96,10 +95,12 @@ def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tupl
 
 
 def is_preprint(doi: Optional[str], copy: Optional[DownloadCopy]) -> bool:
-    """A preprint server's DOI, or text read from a copy on a preprint server or of the
-    submitted version."""
-    return is_preprint_doi(doi) or (copy is not None and (
-        copy.route is CopyRoute.PREPRINT_SERVER or copy.version is CopyVersion.SUBMITTED))
+    """A preprint server's DOI, or text read from the submitted version.
+
+    Not text read from a preprint server: a server can hold the accepted manuscript of a
+    journal article, which is the article.
+    """
+    return is_preprint_doi(doi) or (copy is not None and copy.version is CopyVersion.SUBMITTED)
 
 
 def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
@@ -119,11 +120,21 @@ def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
         download = (found.get(read_from(extraction.source, extraction))
                     if extraction is not None else None)
         # A download refreshed since the extraction may have failed, and keeps no copy.
-        copy = (DownloadCopy.from_dict(download.summary["copy"])
+        copy = (_copy_of(download)
                 if download is not None and download.status is Status.OK else None)
         if is_preprint(dois[article_id].doi, copy):
             out.add(article_id)
     return out
+
+
+def _copy_of(download: Artifact) -> DownloadCopy:
+    summary = download.summary or {}
+    if "copy" not in summary:
+        raise RuntimeError(
+            f"download {download.article_id}/{download.source} records no copy: it was stored "
+            "before downloads recorded one; run scripts/backfill_download_copies.py on the "
+            "catalog first")
+    return DownloadCopy.from_dict(summary["copy"])
 
 
 def known_base_study_ids(ctx: Context, refs: Sequence[ArticleRef]) -> Dict[str, str]:

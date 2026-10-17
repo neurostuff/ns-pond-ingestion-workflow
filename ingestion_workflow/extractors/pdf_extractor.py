@@ -173,6 +173,14 @@ def _type_of(source_type: Optional[str]) -> str:
     return "unknown"
 
 
+def site_type(url: str, listed: Sequence[PdfCandidate]) -> str:
+    """The kind of site `url` is on, as the work's typed locations on its host list it:
+    "repository" or "publisher" when they agree, else "unknown"."""
+    host = _host(url)
+    types = {c.location_type for c in listed if _host(c.url) == host} - {"unknown"}
+    return types.pop() if len(types) == 1 else "unknown"
+
+
 def _openalex_candidates(
     locations: Dict[str, List[OaLocation]],
 ) -> Dict[str, List[PdfCandidate]]:
@@ -689,6 +697,9 @@ class PdfExtractor(BaseExtractor):
                 if attempt["outcome"] not in _NOT_ASKED:
                     tried.append(attempt)
                 continue
+            if candidate.location_type == "unknown":
+                attempt["site_type"] = site_type(str(attempt.get("pdf_url") or candidate.url),
+                                                 candidates)
             return DownloadResult(
                 identifier=identifier,
                 source=DownloadSource.PDF,

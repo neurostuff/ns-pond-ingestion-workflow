@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
+from urllib.parse import urlsplit
 
 from ingestion_workflow.utils.doi import normalize_doi
 
@@ -21,6 +22,10 @@ class PreprintServer:
     patterns: Tuple[str, ...]
     #: Hosts whose pages, and those of their subdomains, are this server's.
     hosts: Tuple[str, ...] = ()
+    #: Whether everything it holds is a preprint, whichever version a listing labels it.
+    preprints_only: bool = True
+    #: Its ids as an OSF provider, which name it in osf.io/preprints/<id>/ URLs.
+    osf_ids: Tuple[str, ...] = ()
 
     def __post_init__(self):
         object.__setattr__(
@@ -30,9 +35,13 @@ class PreprintServer:
         return any(p.fullmatch(doi) for p in self._compiled)
 
 
-def _osf(name: str, prefix: str, *hosts: str) -> PreprintServer:
+#: Every OSF provider serves from osf.io; some also from a domain of their own.
+OSF = "osf.io"
+
+
+def _osf(name: str, prefix: str, osf_ids: Tuple[str, ...], *domains: str) -> PreprintServer:
     return PreprintServer(name, (rf"10\.{prefix}/osf\.io/[a-z0-9]{{5}}(_v\d+)?",),
-                          hosts or ("osf.io",))
+                          (OSF, *domains), preprints_only=False, osf_ids=osf_ids)
 
 
 #: bioRxiv and medRxiv share 10.1101 and, since 2025-11, 10.64898 (openRxiv); only the
@@ -48,31 +57,31 @@ PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
                                r"10\.64898/\d{4}\.\d{2}\.\d{2}\.\d{8}"), ("medrxiv.org",)),
     PreprintServer(
         "arxiv", (r"10\.48550/arxiv\.(\d{4}\.\d{4,5}|[a-z-]+(\.[a-z-]+)?/\d{7})",),
-        ("arxiv.org",)),
-    _osf("osf_preprints", "31219"),
-    _osf("arabixiv", "31221"),
-    _osf("metaarxiv", "31222"),
-    _osf("engrxiv", "31224"),
-    _osf("focus_archive", "31225"),
-    _osf("frenxiv", "31226"),
-    _osf("ina_rxiv", "31227"),
-    _osf("lawarxiv", "31228"),
-    _osf("lis_scholarship_archive", "31229"),
-    _osf("marxiv", "31230"),
-    _osf("mindrxiv", "31231"),
-    _osf("nutrixiv", "31232"),
-    _osf("paleorxiv", "31233"),
-    _osf("psyarxiv", "31234", "osf.io", "psyarxiv.com"),
-    _osf("socarxiv", "31235"),
-    _osf("sportrxiv", "31236"),
-    _osf("africarxiv", "31730"),
-    _osf("mediarxiv", "33767"),
-    _osf("bodoarxiv", "34055"),
-    _osf("edarxiv", "35542"),
-    _osf("biohackrxiv", "37044"),
+        ("arxiv.org",), preprints_only=False),
+    _osf("osf_preprints", "31219", ("osf",)),
+    _osf("arabixiv", "31221", ("arabixiv",), "arabixiv.org"),
+    _osf("metaarxiv", "31222", ("metaarxiv",)),
+    _osf("engrxiv", "31224", ("engrxiv",), "engrxiv.org"),
+    _osf("focus_archive", "31225", ("focusarchive",)),
+    _osf("frenxiv", "31226", ("frenxiv",), "frenxiv.org"),
+    _osf("ina_rxiv", "31227", ("inarxiv",)),
+    _osf("lawarxiv", "31228", ("lawarxiv", "lawarchive")),
+    _osf("lis_scholarship_archive", "31229", ("lissa",)),
+    _osf("marxiv", "31230", ("marxiv",), "marxiv.org"),
+    _osf("mindrxiv", "31231", ("mindrxiv",), "mindrxiv.org"),
+    _osf("nutrixiv", "31232", ("nutrixiv",)),
+    _osf("paleorxiv", "31233", ("paleorxiv",), "paleorxiv.org"),
+    _osf("psyarxiv", "31234", ("psyarxiv",), "psyarxiv.com"),
+    _osf("socarxiv", "31235", ("socarxiv",)),
+    _osf("sportrxiv", "31236", ("sportrxiv",)),
+    _osf("africarxiv", "31730", ("africarxiv",)),
+    _osf("mediarxiv", "33767", ("mediarxiv",), "mediarxiv.org"),
+    _osf("bodoarxiv", "34055", ("bodoarxiv",)),
+    _osf("edarxiv", "35542", ("edarxiv",), "edarxiv.org"),
+    _osf("biohackrxiv", "37044", ("biohackrxiv",), "biohackrxiv.org"),
     PreprintServer("researchsquare", (r"10\.21203/rs\.\d+\.(rs-)?\d+/v\d+",),
                    ("researchsquare.com",)),
-    PreprintServer("ssrn", (r"10\.2139/ssrn\.\d+",), ("ssrn.com",)),
+    PreprintServer("ssrn", (r"10\.2139/ssrn\.\d+",), ("ssrn.com",), preprints_only=False),
     PreprintServer("preprints_org", (r"10\.20944/preprints\d{6}\.\d{4}\.v\d+",),
                    ("preprints.org",)),
     PreprintServer("authorea", (r"10\.22541/au\.\d+\.\d+(/v\d+)?",)),
@@ -94,16 +103,30 @@ def is_preprint_doi(doi: Optional[str]) -> bool:
     return preprint_server(doi) is not None
 
 
-def preprint_server_of_host(host: str) -> Optional[str]:
-    """The name of the preprint server whose site `host` (a URL's lower-case netloc) is, or
-    is a subdomain of, else None.
-
-    Every OSF provider serves from osf.io, and its URLs do not say which provider; osf.io
-    is OSF Preprints', the first listed.
-    """
-    return next((s.name for s in PREPRINT_SERVERS for h in s.hosts
+def _server_of_host(host: str) -> Optional[PreprintServer]:
+    return next((s for s in PREPRINT_SERVERS for h in s.hosts
                  if host == h or host.endswith("." + h)), None)
 
 
+def preprint_server_of_url(url: str, doi: Optional[str] = None) -> Optional[PreprintServer]:
+    """The preprint server whose site `url` is on, else None.
+
+    A provider's own domain names it. On osf.io the provider is the one the URL's
+    /preprints/<id>/ path names, else the one whose DOI `doi` (the article's) is, else
+    OSF Preprints.
+    """
+    parts = urlsplit(url)
+    host = (parts.hostname or "").lower()
+    server = _server_of_host(host)
+    if not (host == OSF or host.endswith("." + OSF)):
+        return server
+    path = parts.path.lower().split("/")
+    named = path[2] if len(path) > 2 and path[1] == "preprints" else None
+    by_doi = preprint_server(doi)
+    return next((s for s in PREPRINT_SERVERS if named in s.osf_ids), None) or next(
+        (s for s in PREPRINT_SERVERS if s.osf_ids and s.name == by_doi), server)
+
+
 def is_preprint_host(host: str) -> bool:
-    return preprint_server_of_host(host) is not None
+    """Whether `host`, as a URL's lower-case netloc, is a preprint server or a subdomain of one."""
+    return _server_of_host(host) is not None

@@ -26,6 +26,7 @@ from ingestion_workflow.extractors.pdf_extractor import (
     _version_of,
     citation_pdf_url,
     remembered_dead_urls,
+    site_type,
 )
 from ingestion_workflow.models import (
     DownloadResult,
@@ -774,6 +775,39 @@ def test_a_url_both_providers_list_keeps_the_openalex_version(stub, other_host, 
     outcome = _stage_outcome(tmp_path, result)
     assert outcome.summary["copy"] == {"route": "repository", "version": "submitted",
                                        "access": "public", "url": preprint}
+
+
+def test_an_untyped_pdf_takes_the_type_of_the_work_s_locations_on_its_site(
+        stub, other_host, tmp_path):
+    """Semantic Scholar's URL is the repository's file, OpenAlex lists the repository's
+    landing page for it; a publisher's copy elsewhere does not type it."""
+    s2 = stub.serve("/bitstream/1/a.pdf", (200, PDF))
+    published = other_host.serve("/journal/a.pdf", (403, b"no"))
+    stub.work("10.1234/a", location(None, "repository", landing=stub.url + "/handle/1"),
+              location(published, "journal"))
+    stub.s2["DOI:10.1234/a"] = s2
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    fetched = result.url_attempts[-1]
+    assert (fetched["provider"], fetched["location_type"], fetched["site_type"]) == (
+        "semantic_scholar", "unknown", "repository")
+    assert _stage_outcome(tmp_path, result).summary["copy"] == {
+        "route": "repository", "access": "public", "url": s2}
+
+
+@pytest.mark.parametrize("listed, expected", [
+    ([PdfCandidate("https://repo.example.edu/handle/1", "openalex", "repository")],
+     "repository"),
+    ([PdfCandidate("https://REPO.example.edu/x/", "openalex", "publisher")], "publisher"),
+    # a site the work's locations disagree about, or none lists, is not typed
+    ([PdfCandidate("https://repo.example.edu/1", "openalex", "repository"),
+      PdfCandidate("https://repo.example.edu/2", "openalex", "publisher")], "unknown"),
+    ([PdfCandidate("https://other.example.edu/1", "openalex", "repository")], "unknown"),
+    ([PdfCandidate("https://repo.example.edu/1", "openalex", "unknown")], "unknown"),
+])
+def test_the_site_type_of_a_url(listed, expected):
+    assert site_type("https://repo.example.edu/bitstream/a.pdf", listed) == expected
 
 
 def test_an_unlabelled_copy_on_a_preprint_server_counts_as_a_preprint():

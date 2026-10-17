@@ -1,0 +1,202 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1460-9568.2007.05889.x%7C10.1111%2Fepi.14017&mailto=replay%40example.com&per_page=100&select=ids%2Cbest_oa_location%2Clocations
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 2,
+        "db_response_time_ms": 34, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where DOI is (10.1111/epi.14017 or 10.1111/j.1460-9568.2007.05889.x)",
+        "x_new_oql": "get works where DOI is (10.1111/epi.14017 or 10.1111/j.1460-9568.2007.05889.x)",
+        "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
+        "doi", "value": "10.1111/epi.14017"}, {"column_id": "doi", "value": "10.1111/j.1460-9568.2007.05889.x"}]}]},
+        "url": "/works?filter=doi:10.1111%2Fepi.14017|10.1111%2Fj.1460-9568.2007.05889.x&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2158398361",
+        "doi": "https://doi.org/10.1111/j.1460-9568.2007.05889.x", "mag": "2158398361",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/18028117"}, "best_oa_location": null,
+        "locations": [{"id": "doi:10.1111/j.1460-9568.2007.05889.x", "doi": "https://doi.org/10.1111/j.1460-9568.2007.05889.x",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1111/j.1460-9568.2007.05889.x",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S171130801", "display_name":
+        "European Journal of Neuroscience", "issn_l": "0953-816X", "issn": ["0953-816X",
+        "1460-9568"], "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in":
+        ["anvur-class-a", "anvur-scientific", "cwts-core", "dongbi-c", "doyens", "jufo-2",
+        "ki-jl-1", "medline", "norway-1", "poland-100", "russia-white-list-2", "vabb-shw"],
+        "host_organization": "https://openalex.org/P4310320595", "host_organization_name":
+        "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "European Journal of Neuroscience",
+        "raw_type": "journal-article"}, {"id": "pmid:18028117", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/18028117", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "The European
+        journal of neuroscience", "raw_type": "Journal Article"}, {"id": "pmh:oai:CiteSeerX.psu:10.1.1.69.4394",
+        "doi": null, "is_oa": false, "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.69.4394",
+        "pdf_url": null, "source": null, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "http://www.stefan-koelsch.de/papers/Koelsch+_EuropJNeurosci_ECG_personality_fMRI_amygdala.pdf",
+        "raw_type": "text"}, {"id": "pmh:oai:edoc.mpg.de:351317", "doi": null, "is_oa":
+        false, "landing_page_url": "http://edoc.mpg.de/351317", "pdf_url": null, "source":
+        {"id": "https://openalex.org/S4406922265", "display_name": "Max Planck Institute
+        for Plasma Physics", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": null, "host_organization_name":
+        null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "European Journal of Neuroscience, v.26, 3328-3338 (2007)", "raw_type": "Article"},
+        {"id": "pmh:oai:eprints.ucl.ac.uk.OAI2:162377", "doi": null, "is_oa": false,
+        "landing_page_url": "http://discovery.ucl.ac.uk/162377/", "pdf_url": null,
+        "source": {"id": "https://openalex.org/S4306400024", "display_name": "UCL
+        Discovery (University College London)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I45129253", "host_organization_name": "University College
+        London", "host_organization_lineage": ["https://openalex.org/I45129253"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "EUR J NEUROSCI , 26 (11) 3328 - 3338. (2007)",
+        "raw_type": "Article"}, {"id": "pmh:oai:escidoc.org:escidoc:719602", "doi":
+        null, "is_oa": false, "landing_page_url": "http://hdl.handle.net/11858/00-001M-0000-0010-9984-D",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S7407052962", "display_name":
+        "Max Planck Digital Library", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I4210088280", "host_organization_name": "Max Planck
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I4210088280"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "", "raw_type": "info:eu-repo/semantics/article"},
+        {"id": "pmh:oai:pure.mpg.de:item_719602", "doi": null, "is_oa": false, "landing_page_url":
+        "http://hdl.handle.net/11858/00-001M-0000-0010-9984-D", "pdf_url": null, "source":
+        {"id": "https://openalex.org/S4306400654", "display_name": "MPG.PuRe (Max
+        Planck Society)", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I149899117",
+        "host_organization_name": "Max Planck Society", "host_organization_lineage":
+        ["https://openalex.org/I149899117"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "European
+        Journal of Neuroscience", "raw_type": "info:eu-repo/semantics/article"}]},
+        {"ids": {"openalex": "https://openalex.org/W2790874817", "doi": "https://doi.org/10.1111/epi.14017",
+        "mag": "2790874817", "pmid": "https://pubmed.ncbi.nlm.nih.gov/29383717"},
+        "best_oa_location": {"id": "doi:10.1111/epi.14017", "doi": "https://doi.org/10.1111/epi.14017",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1111/epi.14017", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/epi.14017", "source":
+        {"id": "https://openalex.org/S203153751", "display_name": "Epilepsia", "issn_l":
+        "0013-9580", "issn": ["0013-9580", "1528-1157", "1528-1167"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core",
+        "dongbi-b", "doyens", "jufo-2", "ki-jl-1", "medline", "norway-1", "poland-140",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Epilepsia", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.1111/epi.14017", "doi": "https://doi.org/10.1111/epi.14017",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1111/epi.14017", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/epi.14017", "source":
+        {"id": "https://openalex.org/S203153751", "display_name": "Epilepsia", "issn_l":
+        "0013-9580", "issn": ["0013-9580", "1528-1157", "1528-1167"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core",
+        "dongbi-b", "doyens", "jufo-2", "ki-jl-1", "medline", "norway-1", "poland-140",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Epilepsia", "raw_type": "journal-article"},
+        {"id": "pmid:29383717", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/29383717",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Epilepsia",
+        "raw_type": "Journal Article"}, {"id": "pmh:oai:eprints.ucl.ac.uk.OAI2:10062208",
+        "doi": null, "is_oa": false, "landing_page_url": "https://discovery.ucl.ac.uk/id/eprint/10062208/",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400024", "display_name":
+        "UCL Discovery (University College London)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I45129253", "host_organization_name": "University College
+        London", "host_organization_lineage": ["https://openalex.org/I45129253"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Epilepsia , 59 (3) pp. 627-635. (2018)", "raw_type":
+        "Article"}]}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4c2204dfa474864-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 17 Oct 2026 20:41:48 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '995'
+      X-RateLimit-Remaining-USD:
+      - '0.0995'
+      X-RateLimit-Reset:
+      - '11892'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=RXkukvu5J9deX%2Fso0bIvlxKryZwyJQkm6NFgNx4wdu4%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792269708"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=RXkukvu5J9deX%2Fso0bIvlxKryZwyJQkm6NFgNx4wdu4%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792269708"
+    status:
+      code: 200
+      message: OK
+version: 1
