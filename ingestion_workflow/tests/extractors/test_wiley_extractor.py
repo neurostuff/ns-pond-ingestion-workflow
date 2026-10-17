@@ -13,10 +13,15 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import wiley_extractor
 from ingestion_workflow.extractors.base import SourceMisconfigured
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.extractors.pdf_extractor import PDF_MAGIC, _HostGate, store_pdf
 from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.extractors.wiley_extractor import TDM_URL, WileyExtractor
 from ingestion_workflow.models import (
+    CopyAccess,
+    CopyRoute,
+    CopyVersion,
+    DownloadCopy,
     DownloadResult,
     DownloadSource,
     ExtractedContent,
@@ -118,7 +123,9 @@ def test_wiley_dois_are_fetched_with_the_token(wiley, slept, tmp_path, vcr):
     assert not (tmp_path / "cache" / "pdf").exists()
     assert (pdf.file_type, pdf.source) == (FileType.PDF, DownloadSource.WILEY)
     assert pdf.file_path.read_bytes().startswith(PDF_MAGIC)
-    assert served.article_version == "publishedVersion"
+    assert copy_of(served) == DownloadCopy(
+        route=CopyRoute.PUBLISHER, version=CopyVersion.VOR, access=CopyAccess.TDM_GRANT,
+        url=TDM_URL + "10.1111%2Fj.1440-1614.2006.01765.x")
     assert served.url_attempts == [{
         "url": TDM_URL + "10.1111%2Fj.1440-1614.2006.01765.x", "provider": "wiley",
         "status": 200, "outcome": "pdf", "reason": "PDF downloaded",

@@ -25,6 +25,7 @@ from urllib.parse import quote
 import requests
 
 from ingestion_workflow.catalog import ArticleRef, Catalog, Outcome, Status
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.extractors.utils import build_downloaded_file
 from ingestion_workflow.models import (
     DownloadResult,
@@ -396,7 +397,8 @@ def attach(
                 status=Status.OK,
                 fingerprint=fingerprint,
                 payload=result.to_dict(),
-                summary={"files": 1, "types": ["pdf"], "from": str(pdf.path)},
+                summary={"files": 1, "types": ["pdf"], "from": str(pdf.path),
+                         "copy": copy_of(result).to_dict()},
             )
         )
         status[pdf.path] = f"attached over {','.join(held)}" if held else "attached"

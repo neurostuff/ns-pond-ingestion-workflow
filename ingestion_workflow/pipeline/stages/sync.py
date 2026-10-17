@@ -12,6 +12,9 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
+    CopyRoute,
+    CopyVersion,
+    DownloadCopy,
     DownloadResult,
     ExtractedContent,
 )
@@ -92,11 +95,11 @@ def shared_base_studies(ctx: Context, writing: Dict[str, str]) -> Dict[str, Tupl
     return out
 
 
-def is_preprint(doi: Optional[str], article_version: Optional[str]) -> bool:
-    """A preprint server's DOI, or text downloaded as a submitted version."""
-    from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
-
-    return article_version == PREPRINT_VERSION or is_preprint_doi(doi)
+def is_preprint(doi: Optional[str], copy: Optional[DownloadCopy]) -> bool:
+    """A preprint server's DOI, or text read from a copy on a preprint server or of the
+    submitted version."""
+    return is_preprint_doi(doi) or (copy is not None and (
+        copy.route is CopyRoute.PREPRINT_SERVER or copy.version is CopyVersion.SUBMITTED))
 
 
 def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
@@ -115,8 +118,10 @@ def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
                                         triaged.get(article_id, {}).get(""))
         download = (found.get(read_from(extraction.source, extraction))
                     if extraction is not None else None)
-        version = (download.summary or {}).get("article_version") if download else None
-        if is_preprint(dois[article_id].doi, version):
+        # A download refreshed since the extraction may have failed, and keeps no copy.
+        copy = (DownloadCopy.from_dict(download.summary["copy"])
+                if download is not None and download.status is Status.OK else None)
+        if is_preprint(dois[article_id].doi, copy):
             out.add(article_id)
     return out
 

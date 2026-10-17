@@ -94,6 +94,16 @@ def is_preprint_doi(doi: Optional[str]) -> bool:
     return preprint_server(doi) is not None
 
 
+def preprint_server_of_host(host: str) -> Optional[str]:
+    """The name of the preprint server whose site `host` (a URL's lower-case netloc) is, or
+    is a subdomain of, else None.
+
+    Every OSF provider serves from osf.io, and its URLs do not say which provider; osf.io
+    is OSF Preprints', the first listed.
+    """
+    return next((s.name for s in PREPRINT_SERVERS for h in s.hosts
+                 if host == h or host.endswith("." + h)), None)
+
+
 def is_preprint_host(host: str) -> bool:
-    """Whether `host`, as a URL's lower-case netloc, is a preprint server or a subdomain of one."""
-    return any(host == h or host.endswith("." + h) for s in PREPRINT_SERVERS for h in s.hosts)
+    return preprint_server_of_host(host) is not None

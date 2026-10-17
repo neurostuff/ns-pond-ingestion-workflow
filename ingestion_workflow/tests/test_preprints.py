@@ -5,6 +5,7 @@ from ingestion_workflow.utils.preprints import (
     is_preprint_doi,
     is_preprint_host,
     preprint_server,
+    preprint_server_of_host,
 )
 
 #: Real DOIs from the catalog, each with the server the registry names.
@@ -140,3 +141,15 @@ def test_a_preprint_server_host_and_its_subdomains_are_preprint_hosts(host):
 @pytest.mark.parametrize("host", ["notarxiv.org", "arxiv.org.example.com", "doi.org", "", "www.nature.com"])
 def test_other_hosts_are_not(host):
     assert not is_preprint_host(host)
+
+
+@pytest.mark.parametrize("host, server", [
+    ("export.arxiv.org", "arxiv"),
+    ("www.medrxiv.org", "medrxiv"),
+    ("psyarxiv.com", "psyarxiv"),
+    # every OSF provider serves from osf.io, and the URL does not say which
+    ("osf.io", "osf_preprints"),
+    ("www.nature.com", None),
+])
+def test_a_host_names_its_preprint_server(host, server):
+    assert preprint_server_of_host(host) == server

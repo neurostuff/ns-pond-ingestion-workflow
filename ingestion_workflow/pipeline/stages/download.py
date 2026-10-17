@@ -7,6 +7,7 @@ from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.extractors.base import BaseExtractor, SourceExhausted, SourceMisconfigured
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
 from ingestion_workflow.services import download_check
 
@@ -296,7 +297,7 @@ class DownloadStage:
                 "files": len(result.files),
                 "types": sorted({f.file_type.value for f in result.files}),
                 **_url_summary(result.url_attempts),
-                **({"article_version": result.article_version} if result.article_version else {}),
+                "copy": copy_of(result).to_dict(),
             },
         )
 

@@ -695,7 +695,6 @@ class PdfExtractor(BaseExtractor):
                 success=True,
                 files=[store_pdf(base_dir, identifier, payload, DownloadSource.PDF)],
                 url_attempts=attempts,
-                article_version=candidate.version,
             )
 
         recorded = [
@@ -983,7 +982,6 @@ def _extract_pdf_article(
             source=DownloadSource.PDF,
             identifier=download_result.identifier,
             symbols_as_digits={**misread, "tables_set_aside": len(document.tables)},
-            article_version=download_result.article_version,
         )
 
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(full_text))
@@ -1052,7 +1050,6 @@ def _extract_pdf_article(
         tables=extracted_tables,
         has_coordinates=any(table.coordinates for table in extracted_tables),
         figure_captions=figure_captions,
-        article_version=download_result.article_version,
     )
 
 

@@ -47,8 +47,6 @@ WILEY_DOI_PREFIXES = frozenset({
     "10.18934", "10.21815", "10.22541", "10.64286",
 })
 
-#: Wiley serves the version of record.
-PUBLISHED_VERSION = "publishedVersion"
 
 #: Wiley's answer to a token it refuses. A 403 is not that: it denies this address
 #: the article (so Wiley's own client reports it), and a token Wiley never issued
@@ -114,5 +112,4 @@ class WileyExtractor(BaseExtractor):
             success=True,
             files=[store_pdf(base_dir, identifier, payload, DownloadSource.WILEY)],
             url_attempts=[attempt],
-            article_version=PUBLISHED_VERSION,
         )

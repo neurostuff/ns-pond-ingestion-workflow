@@ -30,7 +30,6 @@ from ingestion_workflow.extractors.pdf_extractor import (
 from ingestion_workflow.models import (
     DownloadResult,
     DownloadSource,
-    ExtractedContent,
     Identifier,
     Identifiers,
 )
@@ -771,12 +770,10 @@ def test_a_url_both_providers_list_keeps_the_openalex_version(stub, other_host, 
     assert copy["also_listed_by"] == ["semantic_scholar"]
     assert copy["version"] == "submittedVersion"
     assert copy["location_type"] == "repository"
-    assert result.article_version == "submittedVersion"
 
     outcome = _stage_outcome(tmp_path, result)
-    assert outcome.summary["article_version"] == outcome.payload["article_version"]
-    assert outcome.payload["article_version"] == "submittedVersion"
-    assert DownloadResult.from_dict(result.to_dict()).article_version == "submittedVersion"
+    assert outcome.summary["copy"] == {"route": "repository", "version": "submitted",
+                                       "access": "public", "url": preprint}
 
 
 def test_an_unlabelled_copy_on_a_preprint_server_counts_as_a_preprint():
@@ -796,34 +793,6 @@ def test_a_preprint_label_from_openalex_is_not_overwritten_by_the_host_rule():
                             version="acceptedVersion")
 
     assert _try_order([labelled])[0].version == "acceptedVersion"
-
-
-def test_the_extraction_says_which_version_its_text_came_from(tmp_path, monkeypatch):
-    from ingestion_workflow.extractors import docling_convert
-    from ingestion_workflow.models import DownloadedFile, FileType
-
-    class _Document:
-        tables: list = []
-        pictures: list = []
-
-        def export_to_text(self):
-            return "Results were reported in MNI space."
-
-    monkeypatch.setattr(docling_convert, "convert_pdf", lambda path: _Document())
-    pdf = tmp_path / "a.pdf"
-    pdf.write_bytes(PDF)
-    download = DownloadResult(
-        identifier=Identifier(doi="10.1234/a"),
-        source=DownloadSource.PDF,
-        success=True,
-        files=[DownloadedFile(pdf, FileType.PDF, "application/pdf", DownloadSource.PDF)],
-        article_version="submittedVersion",
-    )
-
-    content = pdf_extractor._extract_pdf_article(download, tmp_path / "out")
-
-    assert content.article_version == "submittedVersion"
-    assert ExtractedContent.from_dict(content.to_dict()).article_version == "submittedVersion"
 
 
 # -- OpenAlex batch failures ----------------------------------------------------------
