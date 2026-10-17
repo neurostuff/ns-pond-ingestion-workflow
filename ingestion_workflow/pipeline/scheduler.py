@@ -37,6 +37,8 @@ class StageReport:
     left_pending: int = 0
     #: What the stage has to say of the run beyond its counts (a source spent).
     notes: List[str] = field(default_factory=list)
+    #: Why its plans blocked what they did, with how many.
+    reasons: Dict[str, int] = field(default_factory=dict)
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -44,6 +46,8 @@ class StageReport:
         self.blocked += plan.blocked
         self.skipped += plan.skipped
         self.permanent += plan.permanent
+        for reason, count in plan.reasons.items():
+            self.reasons[reason] = self.reasons.get(reason, 0) + count
 
     def line(self, *, planned_only: bool = False) -> str:
         parts = [f"{self.stage:<16}"]

@@ -228,3 +228,18 @@ def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path):
         plan = stage.plan(ctx, refs, catalog.artifacts([r.id for r in refs], "download"), {})
 
         assert len(plan.pending) == len(refs)
+
+
+def test_the_migrate_command_says_to_run_repair(legacy, tmp_path):
+    import ingestion_workflow.cli.main as cli
+    from typer.testing import CliRunner
+
+    config = tmp_path / "settings.yaml"
+    config.write_text(json.dumps({
+        "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
+        "catalog_root": str(tmp_path / "cat"), "log_to_file": False, "show_progress": False,
+    }), encoding="utf-8")
+    result = CliRunner().invoke(cli.app, ["migrate", str(legacy), "-s", "download",
+                                          "--config", str(config)])
+    assert result.exit_code == 0, result.output
+    assert "run `ingest repair`" in result.output

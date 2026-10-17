@@ -783,8 +783,14 @@ def repair(
     with _catalog(settings) as catalog:
         artifacts, exclusions = catalog.stranded_artifacts(), catalog.stranded_exclusions()
         typer.echo(f"stranded: {artifacts:,} artifacts, {exclusions:,} exclusions")
-        stranded = bool(artifacts or exclusions)
-        if apply and stranded:
+        if artifacts or exclusions:
+            # Planned after the hand-over only, so the table a dry run prints is the
+            # one an --apply writes.
+            later = "fingerprints are planned once nothing is stranded"
+            if not apply:
+                typer.echo(f"dry run: nothing written; --apply --backup <path> hands them "
+                           f"over; {later}")
+                return
             typer.echo(f"catalog copied to {catalog.backup(backup)}")
             done = catalog.repair_merges()
             typer.echo(
@@ -794,21 +800,31 @@ def repair(
             )
             for article_id, table_id, reason, note in done.exclusions_dropped:
                 typer.echo(f"  dropped {article_id} {table_id}: {reason} {note}".rstrip())
+            typer.echo(f"{later}: run `ingest repair` again")
+            return
         stages = build([n for n in STAGE_ORDER if settings.prose_model or n not in PROSE_STAGES],
                        settings)
         found = refingerprint(_context(settings, catalog, []), stages,
                               everything(catalog).refs, catalog.empty_fingerprints())
         typer.echo(_render_refingerprint(found))
-        if not found.rewrites and not stranded:
+        if not found.rewrites:
             typer.echo("nothing to repair.")
             return
+        rerun = found.rerun()
         if not apply:
-            typer.echo("dry run: nothing written; --apply --backup <path> writes them")
+            typer.echo("dry run: nothing written; --apply --backup <path> writes them"
+                       + (" once nothing would run again" if rerun else ""))
             return
-        if not found.rewrites:
-            return
-        if not stranded:
-            typer.echo(f"catalog copied to {catalog.backup(backup)}")
+        if rerun:
+            typer.echo("refusing to write: " + ", ".join(
+                f"{n:,} {stage}" for stage, n in rerun.items()) + " reused now would run again.")
+            for stage in rerun:
+                for reason, n in found.plan.stages[stage].reasons.items():
+                    typer.echo(f"  {stage}: {n:,} blocked: {reason}")
+            typer.echo("Give the stages what they block on (serve the models the config "
+                       "names, record text hashes with `ingest refresh-text`), then plan again.")
+            raise typer.Exit(1)
+        typer.echo(f"catalog copied to {catalog.backup(backup)}")
         stored = catalog.store_fingerprints(list(found.rewrites.values()))
         typer.echo(f"stored {stored:,} fingerprints; "
                    f"{len(found.rewrites) - stored:,} artifacts were written meanwhile")
@@ -816,19 +832,16 @@ def repair(
 
 def _render_refingerprint(found) -> str:
     lines = ["fingerprints:",
-             f"  {'stage':<11}{'filled':>10}{'carried':>10}{'empty, runs again':>19}"
-             f"{'empty, unplanned':>18}{'fresh, runs again':>19}{'not asked, stale':>18}"]
+             f"  {'stage':<11}{'filled':>10}{'carried':>10}{'relabelled':>12}"
+             f"{'empty, runs again':>19}{'empty, unplanned':>18}{'fresh, runs again':>19}"
+             f"{'not asked, stale':>18}"]
     for stage in STAGE_ORDER:
         n = found.stages.get(stage)
         if n is None:
             continue
-        lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}{n.empty_rerun:>19,}"
-                     f"{n.empty_unplanned:>18,}{n.lost:>19,}{n.unasked:>18,}")
-    if found.conflicts:
-        lines.append(f"  {found.conflicts:,} artifacts two plans disagree about are left alone")
-    rerun = sum(n.lost + n.unasked for n in found.stages.values())
-    if rerun:
-        lines.append(f"  {rerun:,} artifacts reused now would run again after --apply")
+        lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}{n.relabelled:>12,}"
+                     f"{n.empty_rerun:>19,}{n.empty_unplanned:>18,}{n.lost:>19,}"
+                     f"{n.unasked:>18,}")
     return "\n".join(lines)
 
 
@@ -992,6 +1005,9 @@ def migrate(
     with _catalog(settings) as catalog:
         report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
     typer.echo(report.render())
+    if not dry_run:
+        typer.echo("migrated artifacts carry no fingerprint, so none is fresh: "
+                   "run `ingest repair` to store the ones the plan expects")
 
 
 # -- report ------------------------------------------------------------------

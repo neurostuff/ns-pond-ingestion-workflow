@@ -306,10 +306,8 @@ def _flush(
         return len(pending)
     refs = catalog.register_many([identifier for identifier, _ in pending])
     # No fingerprint: the legacy cache recorded nothing about the prompt, model
-    # or extractor version behind a row, so there is nothing to compare against.
-    # An empty fingerprint reads as "provenance unknown, accept it", which keeps
-    # a migration from re-downloading the whole corpus. Force a recompute with
-    # `ingest run --refresh <stage>`.
+    # or extractor version behind a row. An empty fingerprint is not fresh;
+    # `ingest repair` stores the one each stage's plan expects.
     outcomes = [
         Outcome(
             article_id=ref.id,
