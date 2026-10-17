@@ -91,3 +91,19 @@ def test_numbered_markers_index_the_list_and_statistics_are_not_markers():
 
     assert style == "numbered"
     assert [(c["text_span"]["text"], c["references"]) for c in found] == [("[1, 3]", ["cr1", "cr3"])]
+
+
+def test_a_crossref_doi_is_canonical_and_keeps_the_case_of_a_non_ascii_letter():
+    refs = L.from_crossref({"reference": [
+        {"DOI": "https://doi.org/10.26321/ÁBC.Def"},
+        {"DOI": "10.26321/áBC.Def"},
+    ]})
+
+    assert [r["doi"] for r in refs] == ["10.26321/Ábc.def", "10.26321/ábc.def"]
+
+
+def test_a_source_entry_ties_to_crossref_s_across_spellings_of_one_doi():
+    listed = L.from_crossref({"reference": [{"key": "b1", "DOI": "10.1523/JNEUROSCI.1.2001"}]})
+    own = [{"id": "x1", "doi": "doi:10.1523/jneurosci.1.2001", "pmid": None, "authors": [], "year": None}]
+
+    assert L.tie(own, listed)["x1"] is listed[0]

@@ -19,7 +19,6 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models.notices import openalex_retraction, retraction_of
-from ingestion_workflow.utils.doi import normalize_doi
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -70,8 +69,7 @@ class NoticesStage:
 
     def fingerprint_for(self, pmids: Optional[str], doi: Optional[str] = None) -> str:
         """`pmids`: every PMID of the paper, comma-joined."""
-        doi = (normalize_doi(doi) or "").lower()
-        return fingerprint("notices", NOTICES_VERSION, str(pmids or ""), doi)
+        return fingerprint("notices", NOTICES_VERSION, str(pmids or ""), doi or "")
 
     def plan(
         self,
@@ -130,7 +128,7 @@ class NoticesStage:
             ident = work.ref.identifier
             pmid = str(ident.pmid) if ident.pmid else None
             answered = [p for p in ident.pmids if p in pubmed]
-            doi = (normalize_doi(ident.doi) or "").lower()
+            doi = ident.doi or ""
             # Each source answers what it can: a failure is the paper's only
             # when the other source has nothing for it.
             from_pubmed = bool(answered)

@@ -20,11 +20,6 @@ def _year(value) -> Optional[int]:
     return int(m.group(1)) if m else None
 
 
-def _doi(value: Optional[str]) -> Optional[str]:
-    value = normalize_doi(value)
-    return value.lower() if value else None
-
-
 def _fold(s: str) -> str:
     s = unicodedata.normalize("NFKD", s or "")
     return "".join(c for c in s if not unicodedata.combining(c)).lower()
@@ -56,7 +51,7 @@ def from_crossref(message: Optional[Dict]) -> List[dict]:
             "label": None,  # Crossref keeps no printed number; numbered markers index the position
             "key": e.get("key"),
             "text": text or e.get("DOI") or "",
-            "doi": _doi(e.get("DOI")),
+            "doi": normalize_doi(e.get("DOI")),
             "pmid": None,
             "id_providers": {"doi": "crossref"} if e.get("DOI") else {},
             "pmcid": None,
@@ -100,7 +95,7 @@ def tie(own: List[dict], listed: List[dict]) -> Dict[str, dict]:
     by_key = {r["key"]: r for r in listed if r.get("key")}
     out: Dict[str, dict] = {}
     for i, r in enumerate(own):
-        doi = _doi(r.get("doi"))
+        doi = normalize_doi(r.get("doi"))
         if doi and doi in by_doi:
             out[r["id"]] = by_doi[doi]
             continue

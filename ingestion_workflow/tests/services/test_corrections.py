@@ -275,7 +275,7 @@ def test_a_paper_with_only_a_doi_is_planned_and_marked_retracted_by_openalex():
 def test_the_fingerprint_follows_the_doi_as_well_as_the_pmid():
     stage = NoticesStage(Settings())
     assert stage.fingerprint_for(None, "10.1000/a") != stage.fingerprint_for(None, "10.1000/b")
-    assert stage.fingerprint_for(None, "https://doi.org/10.1000/A") == stage.fingerprint_for(None, "10.1000/a")
+    assert stage.fingerprint_for(None, Identifier(doi="https://doi.org/10.1000/A").doi) == stage.fingerprint_for(None, "10.1000/a")
     assert stage.fingerprint_for("1", None) != stage.fingerprint_for("2", None)
 
 
