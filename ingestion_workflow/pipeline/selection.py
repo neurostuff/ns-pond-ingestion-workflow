@@ -58,12 +58,6 @@ def resolve_manifest(catalog: Catalog, path: Path, *, register: bool) -> Manifes
     )
 
 
-def from_manifest(catalog: Catalog, path: Path) -> Selection:
-    """Articles named by a JSONL identifiers manifest, registering any new ones."""
-    refs = resolve_manifest(catalog, path, register=True).refs
-    return Selection(refs, f"{len(refs):,} articles from {path.name}")
-
-
 def from_identifiers(catalog: Catalog, identifiers: Sequence[Identifier]) -> Selection:
     refs = catalog.register_many(list(identifiers))
     return Selection(refs, f"{len(refs):,} articles")

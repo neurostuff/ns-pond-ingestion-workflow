@@ -7,7 +7,6 @@ from .selection import (
     Selection,
     everything,
     from_identifiers,
-    from_manifest,
     narrow,
     resolve_manifest,
 )
@@ -29,7 +28,6 @@ __all__ = [
     "build",
     "everything",
     "from_identifiers",
-    "from_manifest",
     "narrow",
     "run_stages",
 ]

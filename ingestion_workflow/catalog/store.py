@@ -170,11 +170,10 @@ class Catalog:
                 "SELECT value FROM meta WHERE key='schema_version'").fetchone()["value"])
             if version >= SCHEMA_VERSION:
                 return
-            # Copied through a second connection: sqlite cannot back up from the
-            # one holding the write lock. That lock keeps any write out between
-            # the copy and the rewrite.
-            with closing(sqlite3.connect(self.root / "catalog.sqlite")) as reader:
-                copy = backup(reader, self.root / f"catalog.pre-v{version}.sqlite")
+            # `backup` reads through a second connection, as sqlite cannot back up
+            # from the one holding the write lock. That lock keeps any write out
+            # between the copy and the rewrite.
+            copy = self.backup(self.root / f"catalog.pre-v{version}.sqlite")
             logger.warning("catalog: schema %d -> %d; backed up to %s",
                            version, SCHEMA_VERSION, copy)
             self._canonical_doi_aliases(conn)

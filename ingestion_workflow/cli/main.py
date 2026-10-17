@@ -34,7 +34,6 @@ from ingestion_workflow.pipeline import (
     Selection,
     build,
     everything,
-    from_manifest,
     narrow,
     resolve_manifest,
     run_stages,
@@ -535,7 +534,11 @@ def _select(
     refresh: Sequence[str] = (),
     settings=None,
 ) -> Selection:
-    base = from_manifest(catalog, manifest) if manifest else everything(catalog)
+    if manifest:
+        refs = resolve_manifest(catalog, manifest, register=True).refs
+        base = Selection(refs, f"{len(refs):,} articles from {manifest.name}")
+    else:
+        base = everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
     return narrow(catalog, base, mode, only, refresh, settings, stages=stage or ())
 
