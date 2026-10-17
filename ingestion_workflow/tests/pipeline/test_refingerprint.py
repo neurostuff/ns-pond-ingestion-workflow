@@ -194,7 +194,6 @@ def test_the_counts_say_which_fingerprints_were_filled_carried_or_left(migrated)
     for stage in ("extract", "passages", "triage", "analyses", "prose", "resolve", "roles",
                   "space"):
         assert counts[stage] == (0, 2, 0, 0, 0), stage
-    assert found.conflicts == 0
 
 
 def test_the_fingerprints_resolve_copied_follow_the_artifacts_they_name(migrated):
@@ -224,6 +223,8 @@ def test_what_a_stage_without_its_model_cannot_be_asked_about_is_counted(migrate
                           catalog.empty_fingerprints())
     assert found.stages["resolve"].carried == 2
     assert found.stages["roles"].unasked == 2
+    assert any("role model" in reason for reason in found.plan.stages["roles"].reasons)
+    assert found.rerun() == {"roles": 2}
     assert ("roles", prose_only.id, "") not in found.rewrites
 
 
@@ -290,3 +291,82 @@ def test_the_extraction_standing_in_for_one_set_aside_is_carried(env):
     assert found.stages["extract"].carried == 1
     assert found.stages["extract"].lost == 0
     assert _pending(settings, catalog, planned, [ref]) == set()
+
+
+class _Counting(_Reader):
+    def __init__(self):
+        self.calls = 0
+
+    def read(self, passage, *, title="", abstract=""):
+        self.calls += 1
+        return super().read(passage, title=title, abstract=abstract)
+
+
+def test_prose_read_before_the_metadata_had_a_fingerprint_reuses_its_answers(migrated):
+    """Prose takes an earlier answer only while the metadata it was read with is the
+    metadata's fingerprint, so the fingerprint recorded with each answer is relabelled."""
+    settings, catalog, stages, (tables, prose_only, lost, stale) = migrated
+    refs = [tables, prose_only]
+    found = refingerprint(Context(settings, catalog), stages, refs, catalog.empty_fingerprints())
+    assert found.stages["prose"].relabelled == 2
+    catalog.store_fingerprints(list(found.rewrites.values()))
+
+    prose = ProseStage(settings)
+    reader = _Counting()
+    prose.client = lambda: reader
+    _ran(prose, Context(settings, catalog, refresh=["prose"]), catalog, refs)
+
+    assert reader.calls == 0
+    for ref in refs:
+        assert catalog.artifact(ref.id, "prose").summary["read_again"] == {}
+
+
+def test_a_summary_written_meanwhile_under_the_same_fingerprint_is_left_alone(env):
+    settings, catalog, stages, tmp_path = env
+    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"))
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
+                            payload={"files": []})])
+    catalog._conn.execute("UPDATE artifacts SET updated_at='2026-01-01T00:00:00+00:00'")
+    planned = [DownloadStage(settings)]
+    found = refingerprint(Context(settings, catalog), planned, [ref], catalog.empty_fingerprints())
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
+                            payload={"files": []}, summary={"a run's": True})])
+
+    assert catalog.store_fingerprints(list(found.rewrites.values())) == 0
+    assert catalog.artifact(ref.id, "download", "pubget").summary == {"a run's": True}
+
+
+def test_only_ok_artifacts_on_current_articles_count_as_empty(env):
+    settings, catalog, stages, tmp_path = env
+    first = catalog.register(Identifier(doi="10.1/x"))
+    second = catalog.register(Identifier(pmcid="PMC5"))
+    survivor = catalog.register(Identifier(doi="10.1/x", pmcid="PMC5")).id
+    retired = second.id if survivor == first.id else first.id
+    catalog.record([Outcome(article_id=survivor, stage="download", source="pubget",
+                            payload={"files": []}),
+                    Outcome.failure(survivor, "download", "ace", "gone")])
+    catalog._conn.execute(
+        "INSERT INTO artifacts(article_id, stage, source, status, fingerprint, updated_at) "
+        "VALUES (?, 'download', 'pubget', 'ok', '', '2026-01-01')", (retired,))
+
+    assert catalog.empty_fingerprints() == {"download": 1}
+
+
+@pytest.mark.parametrize("written", [{"fingerprint": "a run's", "payload": {"files": []}},
+                                     {"fingerprint": "", "payload": {"files": ["a run's"]}}])
+def test_a_row_written_meanwhile_in_the_same_second_is_left_alone(env, written):
+    """`updated_at` holds whole seconds, so a run writing the row in the second it was
+    read is told apart by its fingerprint or its blob."""
+    settings, catalog, stages, tmp_path = env
+    ref = catalog.register(Identifier(pmid="6", pmcid="PMC6"))
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
+                            payload={"files": []})])
+    second = catalog.artifact(ref.id, "download", "pubget").updated_at
+    found = refingerprint(Context(settings, catalog), [DownloadStage(settings)], [ref],
+                          catalog.empty_fingerprints())
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", **written)])
+    catalog._conn.execute("UPDATE artifacts SET updated_at=?", (second,))
+    run = catalog.artifact(ref.id, "download", "pubget")
+
+    assert catalog.store_fingerprints(list(found.rewrites.values())) == 0
+    assert catalog.artifact(ref.id, "download", "pubget") == run

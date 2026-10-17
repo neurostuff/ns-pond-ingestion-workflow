@@ -120,7 +120,7 @@ def test_the_default_counts_the_fingerprints_it_would_fill(migrated):
     out = _repair(config)
 
     row = next(line.split() for line in out.splitlines() if line.split()[:1] == ["download"])
-    assert row[1:] == ["1", "0", "0", "0", "0", "0"]
+    assert row[1:] == ["1", "0", "0", "0", "0", "0", "0"]
     assert "dry run" in out
     assert _fingerprint(tmp_path, article_id) == ""
 
@@ -137,3 +137,35 @@ def test_apply_copies_the_catalog_then_stores_the_fingerprints(migrated):
     with closing(sqlite3.connect(backup)) as old:
         assert old.execute("SELECT fingerprint FROM artifacts").fetchone()[0] == ""
     assert "nothing to repair" in _repair(config)
+
+
+def test_apply_refuses_while_anything_reused_now_would_run_again(migrated):
+    """A download whose blob is gone cannot be given a fingerprint that makes it fresh."""
+    config, tmp_path, article_id = migrated
+    with Catalog.open(tmp_path / "catalog") as cat:
+        ref = cat.register(Identifier(pmid="2", pmcid="PMC2"))
+        cat.record([Outcome(article_id=ref.id, stage="download", source="pubget",
+                            payload={"files": ["gone"]})])
+        cat.blobs._path(cat.artifact(ref.id, "download", "pubget").blob).unlink()
+    backup = tmp_path / "before.sqlite"
+
+    result = CliRunner().invoke(cli.app, ["repair", "--apply", "--backup", str(backup),
+                                          "--config", str(config)])
+
+    assert result.exit_code == 1
+    assert "refusing to write: 1 download" in result.output
+    assert _fingerprint(tmp_path, article_id) == ""
+    assert not backup.exists()
+
+
+def test_fingerprints_wait_for_the_hand_over(stranded):
+    config, tmp_path, survivor, retired = stranded
+    with Catalog.open(tmp_path / "catalog") as cat:
+        cat.record([Outcome(article_id=survivor, stage="download", source="pubget",
+                            payload={"files": []})])
+
+    assert "fingerprints:" not in _repair(config)
+    out = _repair(config, "--apply", "--backup", str(tmp_path / "before.sqlite"))
+    assert "fingerprints:" not in out and "run `ingest repair` again" in out
+    assert _fingerprint(tmp_path, survivor) == ""
+    assert "fingerprints:" in _repair(config)

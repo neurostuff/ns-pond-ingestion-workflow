@@ -994,19 +994,26 @@ class Catalog:
             )
         }
 
-    def store_fingerprints(self, rewrites: Sequence[Tuple[Artifact, Artifact]]) -> int:
-        """Give each artifact the fingerprint and summary of its rewritten copy, and
-        nothing else: no attempt is recorded and `updated_at` stands. A row written
-        since it was read is left alone. Returns how many rows were rewritten."""
+    def store_fingerprints(
+        self, rewrites: Sequence[Tuple[Artifact, Artifact, Optional[Any]]]
+    ) -> int:
+        """Give each artifact the fingerprint and summary of its rewritten copy, and the
+        payload given with it, if any, and nothing else: no attempt is recorded and
+        `updated_at` stands. A row written since it was read is left alone. Returns how
+        many rows were rewritten.
+
+        One transaction, so a carried artifact is never stored without the one it was
+        carried from."""
         rows = [
             (new.fingerprint, json.dumps(new.summary, separators=(",", ":")),
-             old.article_id, old.stage, old.source, old.fingerprint, old.updated_at)
-            for old, new in rewrites
+             self.blobs.put(payload) if payload is not None else new.blob,
+             old.article_id, old.stage, old.source, old.fingerprint, old.blob, old.updated_at)
+            for old, new, payload in rewrites
         ]
         with self._write() as conn:
             return conn.executemany(
-                "UPDATE artifacts SET fingerprint=?, summary=? WHERE article_id=? AND stage=? "
-                "AND source=? AND fingerprint=? AND updated_at=?",
+                "UPDATE artifacts SET fingerprint=?, summary=?, blob=? WHERE article_id=? "
+                "AND stage=? AND source=? AND fingerprint=? AND blob IS ? AND updated_at=?",
                 rows,
             ).rowcount
 
