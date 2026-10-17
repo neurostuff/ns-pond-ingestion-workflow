@@ -178,15 +178,14 @@ def test_slug_parsing_recovers_what_it_can(slug, expected):
     assert _identifier_from_slug(slug) == expected
 
 
-def test_migrated_artifacts_are_not_treated_as_stale(legacy, tmp_path):
-    """The whole point of migrating: the pipeline must consider the work done.
-
-    A migrated row carries no fingerprint, because the legacy cache recorded
-    nothing about the versions behind it. If that read as "stale", a migration
-    would re-download the entire corpus.
-    """
+def test_migrated_artifacts_are_fresh_once_repair_stores_their_fingerprints(legacy, tmp_path):
+    """The legacy cache recorded nothing about the versions behind its work, so a
+    migrated row carries no fingerprint and is not fresh. `ingest repair` stores the
+    one the plan expects, and then the pipeline considers the work done: migrating
+    must not mean downloading the entire corpus again."""
     from ingestion_workflow.config import Settings
     from ingestion_workflow.pipeline import Context
+    from ingestion_workflow.pipeline.refingerprint import refingerprint
     from ingestion_workflow.pipeline.stages import DownloadStage
 
     settings = Settings(
@@ -199,10 +198,16 @@ def test_migrated_artifacts_are_not_treated_as_stale(legacy, tmp_path):
         stage = DownloadStage(settings)
         ctx = Context(settings, catalog)
         refs = [catalog.ref(article_id) for article_id in catalog.all_article_ids()]
-        plan = stage.plan(ctx, refs, catalog.artifacts([r.id for r in refs], "download"), {})
 
-        assert plan.pending == []
-        assert plan.fresh == len(refs)
+        def plan():
+            return stage.plan(ctx, refs, catalog.artifacts([r.id for r in refs], "download"), {})
+
+        assert len(plan().pending) == len(refs)
+        found = refingerprint(ctx, [stage], refs, catalog.empty_fingerprints())
+        assert catalog.store_fingerprints(list(found.rewrites.values())) == len(refs)
+
+        assert plan().pending == []
+        assert plan().fresh == len(refs)
 
 
 def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path):
