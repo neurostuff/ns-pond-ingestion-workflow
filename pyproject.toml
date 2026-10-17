@@ -32,7 +32,7 @@ dependencies = [
   # The table reader, serialiser and the two gates that decide which tables are
   # worth an LLM call. Its own repo so the models can be refitted and the
   # generator iterated on without touching the pipeline.
-  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@main",
+  "nspond-tables @ git+https://github.com/neurostuff/coordinate-table-identifier.git@main",
   "paramiko>=3,<4",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",

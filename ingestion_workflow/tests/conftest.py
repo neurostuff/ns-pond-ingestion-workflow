@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,18 @@ def vcr_config():
         "record_mode": "once",
         "ignore_hosts": ["localhost"],
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def readabilipy_node_modules():
+    """readabilipy runs `npm install` on its first use, inside site-packages. xdist workers
+    reaching that together corrupt each other's node_modules, so one installs it and the
+    rest wait."""
+    from filelock import FileLock
+    from readabilipy.simple_json import have_node
+
+    with FileLock(Path(tempfile.gettempdir()) / "readabilipy-npm-install.lock"):
+        have_node()
 
 
 @pytest.fixture(autouse=True)
