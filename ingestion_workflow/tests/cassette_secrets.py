@@ -7,6 +7,8 @@ Elsevier echoes the key it was sent in its answer, so answers are scrubbed too.
 from __future__ import annotations
 
 REPLAY_ELSEVIER_KEY = "replay"
+# Sent to PubMed, Crossref and OpenAlex to identify the caller: a person's address.
+REPLAY_EMAIL = "replay@example.com"
 
 # Sent by clients: dropped from the request when recording.
 SECRET_REQUEST_HEADERS = (
@@ -17,6 +19,7 @@ SECRET_REQUEST_HEADERS = (
     "cookie",
 )
 SECRET_QUERY_PARAMETERS = ("api_key", "apiKey")
+EMAIL_QUERY_PARAMETERS = ("email", "mailto")
 # Echoed by a host: kept in the answer, with the placeholder in the key's place.
 ECHOED_KEY_HEADERS = {"x-els-apikey": REPLAY_ELSEVIER_KEY}
 

@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -26,10 +27,33 @@ def vcr_config():
             *cassette_secrets.SECRET_REQUEST_HEADERS,
             ("wiley-tdm-client-token", wiley_tdm.REPLAY_TOKEN),
         ],
-        "filter_query_parameters": list(cassette_secrets.SECRET_QUERY_PARAMETERS),
+        "filter_query_parameters": [
+            *cassette_secrets.SECRET_QUERY_PARAMETERS,
+            *((name, cassette_secrets.REPLAY_EMAIL) for name in cassette_secrets.EMAIL_QUERY_PARAMETERS),
+        ],
         "record_mode": "once",
         "ignore_hosts": ["localhost"],
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def readabilipy_node_modules():
+    """readabilipy runs `npm install` on its first use, inside site-packages. xdist workers
+    reaching that together corrupt each other's node_modules, so one installs it and the
+    rest wait."""
+    from filelock import FileLock
+    from readabilipy.simple_json import have_node
+
+    with FileLock(Path(tempfile.gettempdir()) / "readabilipy-npm-install.lock"):
+        have_node()
+
+
+@pytest.fixture(autouse=True)
+def no_ambient_email(monkeypatch):
+    """Settings read PUBMED_EMAIL, then EMAIL, so a developer's own address would change
+    which requests a test makes; a test that wants one sets it."""
+    monkeypatch.delenv("PUBMED_EMAIL", raising=False)
+    monkeypatch.delenv("EMAIL", raising=False)
 
 
 @pytest.fixture(scope="session")

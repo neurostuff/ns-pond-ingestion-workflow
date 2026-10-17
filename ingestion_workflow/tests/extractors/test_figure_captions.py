@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 from lxml import etree
 
 from ingestion_workflow.extractors.figure_captions import HEADING, append_legends, dedupe
@@ -92,6 +93,7 @@ def test_elsevier_writes_its_figure_captions_after_the_text():
 PAGE = Path(__file__).parent.parent / "data" / "test_html" / "Nature neuroscience" / "33106677.html"
 
 
+@pytest.mark.vcr()
 def test_ace_writes_its_figcaptions_after_the_text(tmp_path, monkeypatch):
     """A Nature page, its first figure's caption given a coordinate."""
     import re

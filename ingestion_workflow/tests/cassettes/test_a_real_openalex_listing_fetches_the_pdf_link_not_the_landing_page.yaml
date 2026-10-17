@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1371%2Fjournal.pone.0068910&mailto=pipeline%40example.org&per_page=100&select=ids%2Cbest_oa_location%2Clocations
+    uri: https://api.openalex.org/works?filter=doi%3A10.1371%2Fjournal.pone.0068910&mailto=replay%40example.com&per_page=100&select=ids%2Cbest_oa_location%2Clocations
   response:
     body:
       string: '{"meta": {"count": 1, "db_response_time_ms": 12, "page": 1, "per_page":

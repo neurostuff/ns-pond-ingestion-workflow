@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1%7C10.1016%2Fs0924-9338%2802%2900676-4%7C10.1038%2Fnature14539&mailto=test%40example.com&per_page=50&select=doi%2Cis_retracted
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1%7C10.1016%2Fs0924-9338%2802%2900676-4%7C10.1038%2Fnature14539&mailto=replay%40example.com&per_page=50&select=doi%2Cis_retracted
   response:
     body:
       string: '{"meta": {"count": 3, "db_response_time_ms": 37, "page": 1, "per_page":

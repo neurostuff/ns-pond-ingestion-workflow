@@ -6,7 +6,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-from dotenv import load_dotenv
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
@@ -15,6 +14,7 @@ from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.services.metadata import MetadataService
+from ingestion_workflow.tests import cassette_secrets
 
 
 @pytest.fixture
@@ -384,10 +384,7 @@ class TestMetadataIntegration:
         manifest_identifiers,
     ):
         """Test with real PubMed API (VCR cassette)."""
-        load_dotenv()
-        pubmed_email = os.getenv("PUBMED_EMAIL") or os.getenv("EMAIL")
-        if not pubmed_email:
-            pytest.skip("PUBMED_EMAIL/EMAIL environment variable not set")
+        pubmed_email = cassette_secrets.REPLAY_EMAIL
         pubmed_api_key = os.getenv("PUBMED_API_KEY")
 
         identifier = next(
