@@ -32,7 +32,7 @@ dependencies = [
   # The table reader, serialiser and the two gates that decide which tables are
   # worth an LLM call. Its own repo so the models can be refitted and the
   # generator iterated on without touching the pipeline.
-  "nspond-tables @ git+ssh://git@github.com/neurostuff/coordinate-table-identifier.git@main",
+  "nspond-tables @ git+https://github.com/neurostuff/coordinate-table-identifier.git@main",
   "paramiko>=3,<4",
   "pubget @ git+https://github.com/neuroquery/pubget.git@main",
   "ACE @ git+https://github.com/neurosynth/ACE.git@master",
@@ -57,6 +57,7 @@ test = [
   "pytest>=8.2",
   "pytest-cov>=4.1",
   "pytest-recording>=0.13",
+  "pytest-xdist>=3.5",
 ]
 lint = [
   "ruff>=0.6",
@@ -80,3 +81,10 @@ src = ["ingestion_workflow"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.coverage.run]
+branch = true
+# ACE extraction runs in a process pool; pytest-cov 7 no longer follows children by itself.
+patch = ["subprocess"]
+source = ["ingestion_workflow"]
+omit = ["ingestion_workflow/tests/*"]

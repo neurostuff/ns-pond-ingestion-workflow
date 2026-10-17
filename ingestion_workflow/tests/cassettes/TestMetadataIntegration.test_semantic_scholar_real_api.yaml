@@ -13,9 +13,9 @@ interactions:
       Content-Type:
       - application/json
       User-Agent:
-      - python-requests/2.32.5
+      - python-requests/2.34.2
     method: POST
-    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
   response:
     body:
       string: '[{"paperId": "185cdce001c430556cfc3721f86a91849d20856d", "title": "Modulating
@@ -29,7 +29,7 @@ interactions:
         author or copyright owner provided with this content. Please go to the source
         to verify the license and copyright information for your use."}, "publicationDate":
         "2019-10-15", "authors": [{"authorId": "144167506", "name": "P. Riedel"},
-        {"authorId": "14872187", "name": "Matthias Heil"}, {"authorId": "1762318",
+        {"authorId": "2055740772", "name": "Matthias Heil"}, {"authorId": "1762318",
         "name": "S. Bender"}, {"authorId": "3123685", "name": "Gabriel Dippel"}, {"authorId":
         "3336825", "name": "Franziska M. Korb"}, {"authorId": "2272108", "name": "M.
         Smolka"}, {"authorId": "8426521", "name": "M. Marxen"}], "abstract": "The
@@ -63,31 +63,31 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '2863'
+      - '2865'
       Content-Type:
       - application/json
       Date:
-      - Wed, 12 Nov 2025 20:56:51 GMT
+      - Fri, 16 Oct 2026 22:24:27 GMT
       Via:
-      - 1.1 8139bc666c011a53bdc5037ba6d5931e.cloudfront.net (CloudFront)
+      - 1.1 c31337642f54c5bd34bb485701d02e8a.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - GzeIeYP3be1kiWvP6nAZfnBYPXAC7QmAtzjjOYLUDEiWdCKDrBiAmA==
+      - IQMAO5EyyVOcInVIJUGY6QVv3Sn9-3Gaoihz5w9eMXovmeJV3lgIVQ==
       X-Amz-Cf-Pop:
       - DFW57-P1
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - T8snEG_lvHcERsQ=
+      - FW6UcEdAvHcEgoQ=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
-      - '2863'
+      - '2865'
       x-amzn-Remapped-Date:
-      - Wed, 12 Nov 2025 20:56:51 GMT
+      - Fri, 16 Oct 2026 22:24:27 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - eb806215-329b-4af5-8338-3fbb6421fa0f
+      - db9e9733-d39c-4243-8e0e-65450d320512
     status:
       code: 200
       message: OK

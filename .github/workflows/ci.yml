@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Placeholders so the tests that need a key run against their cassettes.
+      ELSEVIER_API_KEY: replay
+      SEMANTIC_SCHOLAR_API_KEY: replay
+      # typer forces ANSI colour when GITHUB_ACTIONS is set, which splits the help
+      # text the CLI tests assert on.
+      _TYPER_FORCE_DISABLE_TERMINAL: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Editable, so coverage measures the checkout rather than a copy in site-packages.
+      - run: pip install -e ".[test]"
+
+      - uses: actions/cache@v4
+        id: weights
+        with:
+          path: ~/.cache/huggingface
+          key: huggingface-docling-${{ hashFiles('pyproject.toml') }}
+
+      # The only step that reaches Hugging Face: the tests that load docling's weights.
+      - name: Fetch docling weights
+        if: steps.weights.outputs.cache-hit != 'true'
+        run: >
+          pytest
+          "ingestion_workflow/tests/pipeline/test_extract_symbols_as_digits.py::test_the_pdf_extractor_sets_a_misread_text_aside"
+          "ingestion_workflow/tests/extractors/test_wiley_extractor.py::test_a_wiley_pdf_is_read_into_the_articles_pdf_text"
+          --record-mode=none
+
+      - name: Test
+        env:
+          HF_HUB_OFFLINE: "1"
+        run: >
+          pytest ingestion_workflow -n auto
+          --record-mode=none --block-network --allowed-hosts=127.0.0.1,localhost
+          -rs --durations=25
+          --cov --cov-report=xml --cov-report=html --cov-report=term
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo "## Coverage"
+            echo
+            echo "$(coverage report --format=total)%  (line + branch)"
+            echo
+            echo "<details><summary>Per file</summary>"
+            echo
+            coverage report --format=markdown --skip-empty
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage.xml
+            htmlcov/
+
+  # Report-only: the repo has many E501 findings that predate this check.
+  ruff:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff==0.17.1
+      - name: Ruff on the files this PR changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" -- '*.py' > changed.txt
+          if [ -s changed.txt ]; then
+            xargs ruff check --output-format=github --exit-zero < changed.txt
+          fi

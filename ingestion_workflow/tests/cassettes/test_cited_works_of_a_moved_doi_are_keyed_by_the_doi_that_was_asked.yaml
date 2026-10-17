@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1%7C10.1111%2Fj.1469-8749.2004.tb00996.x&mailto=test%40example.com&per_page=100&select=ids%2Cpublication_year%2Cauthorships
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2F%28sici%291097-0193%281998%296%3A3%3C160%3A%3Aaid-hbm5%3E3.0.co%3B2-1%7C10.1111%2Fj.1469-8749.2004.tb00996.x&mailto=replay%40example.com&per_page=100&select=ids%2Cpublication_year%2Cauthorships
   response:
     body:
       string: '{"meta": {"count": 2, "db_response_time_ms": 15, "page": 1, "per_page":
@@ -281,7 +281,7 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=test%40example.com&select=ids%2Cpublication_year%2Cauthorships
+    uri: https://api.openalex.org/works/doi:10.1111/j.1469-8749.2004.tb00996.x?mailto=replay%40example.com&select=ids%2Cpublication_year%2Cauthorships
   response:
     body:
       string: '{"ids":{"openalex":"https://openalex.org/W2097872544","doi":"https://doi.org/10.1017/s0012162204001306","mag":"2097872544","pmid":"https://pubmed.ncbi.nlm.nih.gov/15540637"},"publication_year":2004,"authorships":[{"author_position":"first","author":{"id":"https://openalex.org/A5104073635","display_name":"Hower
