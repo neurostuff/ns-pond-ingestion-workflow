@@ -980,6 +980,44 @@ class Catalog:
             counts[stage] = int(row["n"])
         return counts
 
+    def empty_fingerprints(self) -> Dict[str, int]:
+        """OK artifacts with no fingerprint, by stage, on articles no merge retired."""
+        return {
+            row["stage"]: int(row["n"])
+            for row in self._conn.execute(
+                """
+                SELECT a.stage, COUNT(*) AS n FROM artifacts a
+                JOIN articles ar ON ar.id = a.article_id
+                WHERE ar.merged_into IS NULL AND a.status = 'ok' AND a.fingerprint = ''
+                GROUP BY a.stage
+                """
+            )
+        }
+
+    def store_fingerprints(
+        self, rewrites: Sequence[Tuple[Artifact, Artifact, Optional[Any]]]
+    ) -> int:
+        """Give each artifact the fingerprint and summary of its rewritten copy, and the
+        payload given with it, if any, and nothing else: no attempt is recorded and
+        `updated_at` stands. A row written since it was read is left alone. Returns how
+        many rows were rewritten.
+
+        One transaction, so the rewrites are stored together or not at all. A row left
+        alone because a run wrote it meanwhile still has what was carried from it
+        stored, chained on a fingerprint it never got: those run again."""
+        rows = [
+            (new.fingerprint, json.dumps(new.summary, separators=(",", ":")),
+             self.blobs.put(payload) if payload is not None else new.blob,
+             old.article_id, old.stage, old.source, old.fingerprint, old.blob, old.updated_at)
+            for old, new, payload in rewrites
+        ]
+        with self._write() as conn:
+            return conn.executemany(
+                "UPDATE artifacts SET fingerprint=?, summary=?, blob=? WHERE article_id=? "
+                "AND stage=? AND source=? AND fingerprint=? AND blob IS ? AND updated_at=?",
+                rows,
+            ).rowcount
+
     def stranded_artifacts(self) -> int:
         """Artifacts attached to an article that a merge retired."""
         row = self._conn.execute(

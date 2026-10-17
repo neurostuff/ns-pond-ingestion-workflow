@@ -31,7 +31,8 @@ from ingestion_workflow.pipeline import (
     narrow,
     run_stages,
 )
-from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, upstream_of
+from ingestion_workflow.pipeline.refingerprint import refingerprint
+from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, STAGE_TYPES, upstream_of
 from ingestion_workflow.services.logging import configure_logging
 from ingestion_workflow.services.search import (
     SEARCH_SERVICES,
@@ -756,17 +757,24 @@ def exclude(
 
 @app.command()
 def repair(
-    apply: bool = typer.Option(False, "--apply", help="Hand them over (default: only count)."),
+    apply: bool = typer.Option(False, "--apply", help="Write the repairs (default: only count)."),
     backup: Optional[Path] = typer.Option(
         None, "--backup", help="Where --apply copies the catalog database first; must not exist."
     ),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Hand over artifacts and exclusions left on articles a merge retired.
+    """Hand over what a merge stranded, and store the fingerprints artifacts lack.
 
-    Exclusions are read through the merge either way; this moves the rows so they
-    sit on the article they belong to. Run it again after any run of an older
-    version that merged articles.
+    Exclusions are read through the merge either way; this moves the rows, artifacts
+    with them, so they sit on the article they belong to. Run it again after any run
+    of an older version that merged articles.
+
+    An artifact with no fingerprint is not fresh. Every stage is planned as `ingest
+    run --dry-run` plans it, under this config, and each such artifact the plan would
+    reuse once it had the fingerprint expected of it is given that fingerprint; those
+    made from it are carried over to the fingerprint they are expected to have now.
+    Nothing is made again. Plan with the config the runs use and its models served,
+    or the stages reading them cannot be asked.
     """
     if apply and backup is None:
         raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
@@ -776,22 +784,79 @@ def repair(
     with _catalog(settings) as catalog:
         artifacts, exclusions = catalog.stranded_artifacts(), catalog.stranded_exclusions()
         typer.echo(f"stranded: {artifacts:,} artifacts, {exclusions:,} exclusions")
-        if not artifacts and not exclusions:
+        if artifacts or exclusions:
+            # Planned after the hand-over only, so the table a dry run prints is the
+            # one an --apply writes.
+            later = "fingerprints are planned once nothing is stranded"
+            if not apply:
+                typer.echo(f"dry run: nothing written; --apply --backup <path> hands them "
+                           f"over; {later}")
+                return
+            _backup_catalog(settings, backup)
+            done = catalog.repair_merges()
+            typer.echo(
+                f"reattached artifacts from {done.artifact_articles:,} articles; "
+                f"moved {done.exclusions_moved:,} exclusions, "
+                f"dropped {len(done.exclusions_dropped):,} the survivor already held"
+            )
+            for article_id, table_id, reason, note in done.exclusions_dropped:
+                typer.echo(f"  dropped {article_id} {table_id}: {reason} {note}".rstrip())
+            typer.echo(f"{later}: run `ingest repair` again")
+            return
+        stages = build([n for n in STAGE_ORDER if settings.prose_model or n not in PROSE_STAGES],
+                       settings)
+        found = refingerprint(_context(settings, catalog, []), stages,
+                              everything(catalog).refs, catalog.empty_fingerprints())
+        typer.echo(_render_refingerprint(found))
+        if not found.rewrites:
             typer.echo("nothing to repair.")
             return
+        rerun = found.rerun()
         if not apply:
-            typer.echo("dry run: nothing written; --apply --backup <path> hands them over")
+            typer.echo("dry run: nothing written; --apply --backup <path> writes them"
+                       + (" once nothing would run again" if rerun else ""))
             return
-        with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as source:
-            typer.echo(f"catalog copied to {catalog_backup(source, backup)}")
-        done = catalog.repair_merges()
-        typer.echo(
-            f"reattached artifacts from {done.artifact_articles:,} articles; "
-            f"moved {done.exclusions_moved:,} exclusions, "
-            f"dropped {len(done.exclusions_dropped):,} the survivor already held"
-        )
-        for article_id, table_id, reason, note in done.exclusions_dropped:
-            typer.echo(f"  dropped {article_id} {table_id}: {reason} {note}".rstrip())
+        if rerun:
+            typer.echo("refusing to write: " + ", ".join(
+                f"{n:,} {stage}" for stage, n in rerun.items()) + " would run again.")
+            for stage in rerun:
+                counts, reasons = found.stages[stage], found.plan.stages[stage].reasons
+                if counts.empty_rerun:
+                    typer.echo(f"  {stage}: {counts.empty_rerun:,} have no fingerprint and "
+                               f"their blob is gone: run the stage for them "
+                               f"(`ingest run -s {stage}`) first")
+                for reason, n in reasons.items():
+                    typer.echo(f"  {stage}: {n:,} blocked: {reason}")
+                if (counts.lost or counts.unasked) and not reasons:
+                    typer.echo(f"  {stage}: {counts.lost + counts.unasked:,} reused now "
+                               "would not be, with no plan blocking them")
+            typer.echo("Give the blocked stages what they wait on (the models the config "
+                       "names, text hashes from `ingest refresh-text`), then plan again.")
+            raise typer.Exit(1)
+        _backup_catalog(settings, backup)
+        stored = catalog.store_fingerprints(list(found.rewrites.values()))
+        typer.echo(f"stored {stored:,} fingerprints; "
+                   f"{len(found.rewrites) - stored:,} artifacts were written meanwhile")
+
+
+def _backup_catalog(settings: Settings, backup: Path) -> None:
+    with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as source:
+        typer.echo(f"catalog copied to {catalog_backup(source, backup)}")
+
+
+def _render_refingerprint(found) -> str:
+    lines = ["fingerprints:",
+             f"  {'stage':<11}{'filled':>10}{'carried':>10}{'relabelled':>12}"
+             f"{'empty, runs again':>19}{'empty, unplanned':>18}{'fresh, runs again':>19}"
+             f"{'not asked, stale':>18}"]
+    for stage in STAGE_ORDER:
+        n = found.stages.get(stage)
+        if n is None:
+            continue
+        lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}{n.relabelled:>12,}"
+                     f"{n.empty_rerun:>19,}{n.empty_unplanned:>18,}{n.lost:>19,}"
+                     f"{n.unasked:>18,}")
+    return "\n".join(lines)
 
 
 @app.command("refresh-text")
@@ -967,6 +1032,9 @@ def migrate(
     with _catalog(settings) as catalog:
         report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
     typer.echo(report.render())
+    if not dry_run:
+        typer.echo("migrated artifacts carry no fingerprint, so none is fresh: "
+                   "run `ingest repair` to store the ones the plan expects")
 
 
 # -- report ------------------------------------------------------------------

@@ -1,8 +1,6 @@
 """`--refresh` must be able to name one source of a stage.
 
-A migrated artifact carries no fingerprint, so a version bump cannot reach it.
-An explicit instruction is the only way to redo that work, and it has to be
-targetable or redoing one extractor means redoing all of them.
+Redoing one extractor's work must not mean redoing all of them.
 """
 
 from __future__ import annotations
@@ -13,6 +11,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import DownloadStage, ExtractStage
+from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 
 
 def artifact(stage="extract", source="ace", fingerprint="fp"):
@@ -33,22 +32,17 @@ def ctx(settings, refresh=()):
     return Context(settings, Catalog.open(settings.catalog_root), refresh=refresh)
 
 
-def test_a_migrated_artifact_is_fresh_without_an_instruction(settings):
-    """Migration writes no fingerprint on purpose, so a bump cannot reach it."""
-    migrated = artifact(fingerprint="")
-    assert ctx(settings).is_fresh(migrated, "a-different-fingerprint")
-
-
-def test_naming_the_source_reaches_it(settings):
-    migrated = artifact(fingerprint="")
-    assert not ctx(settings, ["extract:ace"]).is_fresh(migrated, "whatever")
+def test_naming_the_source_reaches_a_fresh_artifact(settings):
+    fresh = artifact(fingerprint="x")
+    assert ctx(settings).is_fresh(fresh, "x")
+    assert not ctx(settings, ["extract:ace"]).is_fresh(fresh, "x")
 
 
 def test_naming_one_source_leaves_the_others_alone(settings):
     c = ctx(settings, ["extract:ace"])
-    assert not c.is_fresh(artifact(source="ace", fingerprint=""), "x")
-    assert c.is_fresh(artifact(source="pubget", fingerprint=""), "x")
-    assert c.is_fresh(artifact(source="elsevier", fingerprint=""), "x")
+    assert not c.is_fresh(artifact(source="ace", fingerprint="x"), "x")
+    assert c.is_fresh(artifact(source="pubget", fingerprint="x"), "x")
+    assert c.is_fresh(artifact(source="elsevier", fingerprint="x"), "x")
 
 
 def test_the_whole_stage_still_works(settings):
@@ -64,7 +58,7 @@ def test_all_still_works(settings):
 
 def test_a_source_of_another_stage_is_untouched(settings):
     c = ctx(settings, ["extract:ace"])
-    assert c.is_fresh(artifact(stage="download", source="ace"), "")
+    assert c.is_fresh(artifact(stage="download", source="ace"), "fp")
 
 
 def test_it_requeues_only_articles_with_nothing_higher(settings):
@@ -82,10 +76,12 @@ def test_it_requeues_only_articles_with_nothing_higher(settings):
                             article_id=ref.id, stage="download", source=source,
                             fingerprint=f"dl-{source}", payload={"files": []},
                         ),
-                        # migrated: no fingerprint
                         Outcome(
                             article_id=ref.id, stage="extract", source=source,
-                            fingerprint="", payload={"tables": []},
+                            fingerprint=extraction_fingerprint(source, Artifact(
+                                article_id=ref.id, stage="download", source=source,
+                                fingerprint=f"dl-{source}")),
+                            payload={"tables": []},
                         ),
                     ]
                 )
