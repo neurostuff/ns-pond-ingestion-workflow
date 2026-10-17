@@ -35,10 +35,32 @@ class Selection:
         return len(self.refs)
 
 
+@dataclass
+class ManifestArticles:
+    """What a JSONL identifiers manifest names, as the catalog knows it."""
+
+    entries: int
+    refs: List[ArticleRef]
+    unknown: List[Identifier]  # entries the catalog holds no article for
+
+
+def resolve_manifest(catalog: Catalog, path: Path, *, register: bool) -> ManifestArticles:
+    """The articles a manifest names; `register` adds the unknown ones to the catalog,
+    otherwise they are listed and nothing is written."""
+    identifiers = list(Identifiers.load(path).identifiers)
+    if register:
+        return ManifestArticles(len(identifiers), catalog.register_many(identifiers), [])
+    found = [(identifier, catalog.resolve(identifier)) for identifier in identifiers]
+    return ManifestArticles(
+        len(identifiers),
+        [ref for _, ref in found if ref is not None],
+        [identifier for identifier, ref in found if ref is None],
+    )
+
+
 def from_manifest(catalog: Catalog, path: Path) -> Selection:
     """Articles named by a JSONL identifiers manifest, registering any new ones."""
-    identifiers = Identifiers.load(path)
-    refs = catalog.register_many(list(identifiers.identifiers))
+    refs = resolve_manifest(catalog, path, register=True).refs
     return Selection(refs, f"{len(refs):,} articles from {path.name}")
 
 

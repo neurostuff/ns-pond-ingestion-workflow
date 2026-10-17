@@ -145,6 +145,16 @@ class Catalog:
             )
         return catalog
 
+    def backup(self, target: Path | str) -> Path:
+        """Copy this catalog's database to `target`, a path not yet taken.
+
+        A second connection reads the copy: sqlite cannot back up from one that
+        holds the write lock, and a reader sees a consistent snapshot of what
+        the others have committed.
+        """
+        with closing(sqlite3.connect(self.root / "catalog.sqlite")) as reader:
+            return backup(reader, Path(target))
+
     def _migrate(self) -> None:
         """Bring the catalog up to `SCHEMA_VERSION`.
 

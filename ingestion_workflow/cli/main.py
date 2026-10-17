@@ -8,8 +8,6 @@ from __future__ import annotations
 
 import json
 import logging
-import sqlite3
-from contextlib import closing
 from datetime import timedelta
 from enum import Enum
 from pathlib import Path
@@ -18,7 +16,16 @@ from typing import Dict, List, Optional, Sequence
 import typer
 
 from ingestion_workflow.catalog import WHOLE_ARTICLE, ArticleRef, Catalog, Status
-from ingestion_workflow.catalog.backup import backup as catalog_backup
+from ingestion_workflow.cli.options import (
+    BackupOption,
+    CatalogOption,
+    ConfigOption,
+    ProseOption,
+    apply_option,
+    dry_run_option,
+    manifest_option,
+    require_new_backup,
+)
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.pipeline import (
@@ -29,6 +36,7 @@ from ingestion_workflow.pipeline import (
     everything,
     from_manifest,
     narrow,
+    resolve_manifest,
     run_stages,
 )
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, upstream_of
@@ -47,9 +55,6 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
-
-ConfigOption = typer.Option(None, "--config", "-c", help="YAML settings file.")
-
 
 # -- shared plumbing ---------------------------------------------------------
 
@@ -117,9 +122,7 @@ def add(
     file: Optional[Path] = typer.Option(
         None, "--file", "-f", exists=True, help="Text file with one identifier per line."
     ),
-    manifest: Optional[Path] = typer.Option(
-        None, "--manifest", "-m", exists=True, help="JSONL identifiers manifest."
-    ),
+    manifest: Optional[Path] = manifest_option("JSONL identifiers manifest."),
     search: Optional[str] = typer.Option(
         None,
         "--search",
@@ -483,9 +486,7 @@ def run(
             "retryable failure. `all`: every article."
         ),
     ),
-    manifest: Optional[Path] = typer.Option(
-        None, "--manifest", "-m", exists=True, help="Restrict to a JSONL manifest."
-    ),
+    manifest: Optional[Path] = manifest_option("Restrict to a JSONL manifest."),
     refresh: Optional[List[str]] = typer.Option(
         None,
         "--refresh",
@@ -497,7 +498,7 @@ def run(
         ),
     ),
     limit: Optional[int] = typer.Option(None, "--limit", "-n", help="Stop after N articles."),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and change nothing."),
+    dry_run: bool = dry_run_option("Print the plan and change nothing."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Advance articles through the pipeline."""
@@ -756,10 +757,8 @@ def exclude(
 
 @app.command()
 def repair(
-    apply: bool = typer.Option(False, "--apply", help="Hand them over (default: only count)."),
-    backup: Optional[Path] = typer.Option(
-        None, "--backup", help="Where --apply copies the catalog database first; must not exist."
-    ),
+    apply: bool = apply_option("Hand them over (default: only count)."),
+    backup: Optional[Path] = BackupOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Hand over artifacts and exclusions left on articles a merge retired.
@@ -768,10 +767,7 @@ def repair(
     sit on the article they belong to. Run it again after any run of an older
     version that merged articles.
     """
-    if apply and backup is None:
-        raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
-    if apply and backup.exists():
-        raise typer.BadParameter(f"{backup} exists; give a new path", param_hint="--backup")
+    require_new_backup(apply, backup)
     settings = _settings(config)
     with _catalog(settings) as catalog:
         artifacts, exclusions = catalog.stranded_artifacts(), catalog.stranded_exclusions()
@@ -782,8 +778,7 @@ def repair(
         if not apply:
             typer.echo("dry run: nothing written; --apply --backup <path> hands them over")
             return
-        with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as source:
-            typer.echo(f"catalog copied to {catalog_backup(source, backup)}")
+        typer.echo(f"catalog copied to {catalog.backup(backup)}")
         done = catalog.repair_merges()
         typer.echo(
             f"reattached artifacts from {done.artifact_articles:,} articles; "
@@ -803,8 +798,7 @@ def refresh_text(
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
     ),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Report what would change; write nothing."),
+    dry_run: bool = dry_run_option("Report what would change; write nothing."),
     report: Optional[Path] = typer.Option(
         None, "--report", help="Write one JSON line per extraction here."),
     config: Optional[Path] = ConfigOption,
@@ -877,14 +871,9 @@ def refresh_text(
 
 @app.command("revalidate-downloads")
 def revalidate_downloads(
-    apply: bool = typer.Option(False, "--apply", help="Record the failures (default: dry run)."),
-    backup: Optional[Path] = typer.Option(
-        None, "--backup", help="Where --apply copies the catalog database first; must not exist."
-    ),
-    manifest: Optional[Path] = typer.Option(
-        None, "--manifest", "-m", exists=True,
-        help="Check only the articles in this JSONL manifest (default: every article).",
-    ),
+    apply: bool = apply_option("Record the failures (default: dry run)."),
+    backup: Optional[Path] = BackupOption,
+    manifest: Optional[Path] = manifest_option("Check only the articles in this JSONL manifest (default: every article)."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Fail stored downloads that are not the article: paywall, error, empty-shell,
@@ -899,26 +888,20 @@ def revalidate_downloads(
     from ingestion_workflow.pipeline.stages import DownloadStage
     from ingestion_workflow.services import download_revalidate as revalidate
 
-    if apply and backup is None:
-        raise typer.BadParameter("--apply needs --backup <path>", param_hint="--backup")
-    if apply and backup.exists():
-        raise typer.BadParameter(f"{backup} exists; give a new path", param_hint="--backup")
+    require_new_backup(apply, backup)
     settings = _settings(config)
     with _catalog(settings) as catalog:
         ctx = _context(settings, catalog, [])
         if manifest:
-            # resolve, not from_manifest: that registers unknown articles, and a dry run
-            # writes nothing
-            wanted = list(Identifiers.load(manifest).identifiers)
-            refs = [catalog.resolve(identifier) for identifier in wanted]
-            unknown = [i.slug for i, ref in zip(wanted, refs) if ref is None]
-            article_ids = list(dict.fromkeys(ref.id for ref in refs if ref is not None))
-            typer.echo(f"manifest {manifest.name}: {len(wanted):,} entries, "
+            # a dry run writes nothing, so unknown articles are not registered
+            named = resolve_manifest(catalog, manifest, register=False)
+            article_ids = list(dict.fromkeys(ref.id for ref in named.refs))
+            typer.echo(f"manifest {manifest.name}: {named.entries:,} entries, "
                        f"{len(article_ids):,} articles in the catalog")
-            if unknown:
-                typer.echo(f"not in the catalog, not checked: {len(unknown):,}")
-                for slug in unknown:
-                    typer.echo(f"  {slug}")
+            if named.unknown:
+                typer.echo(f"not in the catalog, not checked: {len(named.unknown):,}")
+                for identifier in named.unknown:
+                    typer.echo(f"  {identifier.slug}")
         else:
             article_ids = list(catalog.all_article_ids())
         found = revalidate.scan(catalog, article_ids,
@@ -940,8 +923,7 @@ def revalidate_downloads(
         if not found.outcomes():
             typer.echo("nothing to record; no backup made")
             return
-        copied = revalidate.backup(settings.catalog_root, backup)
-        typer.echo(f"catalog copied to {copied}")
+        typer.echo(f"catalog copied to {catalog.backup(backup)}")
         recorded = revalidate.apply(catalog, found)
         changed = found.changed
         left = f"; left {changed:,} rows another run rewrote since the scan" if changed else ""
@@ -957,7 +939,7 @@ def migrate(
         ..., exists=True, file_okay=False, help="Pre-refactor .cache directory"
     ),
     stage: Optional[List[str]] = typer.Option(None, "--stage", "-s", help="Only these stages."),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Count what would be imported."),
+    dry_run: bool = dry_run_option("Count what would be imported."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
     """Import pre-refactor sqlite caches into the catalog. Reads only."""
@@ -975,10 +957,6 @@ report_app = typer.Typer(help="Reports read from the catalog. They never write t
                          no_args_is_help=True)
 app.add_typer(report_app, name="report")
 
-CatalogOption = typer.Option(
-    None, "--catalog",
-    help="Catalog directory (holding catalog.sqlite); defaults to the config's.")
-
 
 def _catalog_root(catalog: Optional[Path], config: Optional[Path]) -> Path:
     return catalog if catalog is not None else _settings(config).catalog_root
@@ -989,9 +967,7 @@ def report_funnel(
     out: Path = typer.Option(Path("funnel.html"), "--out", "-o", help="HTML file to write."),
     samples: int = typer.Option(
         20, "--samples", help="Article ids kept per bucket for the drill-down."),
-    prose: Optional[bool] = typer.Option(
-        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
-        "defaults to whether the catalog holds any."),
+    prose: Optional[bool] = ProseOption,
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
@@ -1027,9 +1003,7 @@ def _pipeline_settings(config: Optional[Path]):
 @report_app.command("trace")
 def report_trace(
     article_id: str = typer.Argument(..., help="Article id, as the page lists it."),
-    prose: Optional[bool] = typer.Option(
-        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
-        "defaults to whether the catalog holds any."),
+    prose: Optional[bool] = ProseOption,
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
@@ -1048,9 +1022,7 @@ def report_serve(
     port: int = typer.Option(8765, "--port", help="Port on 127.0.0.1."),
     samples: int = typer.Option(
         20, "--samples", help="Article ids kept per bucket for the drill-down."),
-    prose: Optional[bool] = typer.Option(
-        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
-        "defaults to whether the catalog holds any."),
+    prose: Optional[bool] = ProseOption,
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
@@ -1090,9 +1062,7 @@ def report_funnel_ids(
         None, "--from", help="Registered on or after this day (YYYY-MM-DD)."),
     day_to: Optional[str] = typer.Option(
         None, "--to", help="Registered on or before this day (YYYY-MM-DD)."),
-    prose: Optional[bool] = typer.Option(
-        None, "--prose/--no-prose", help="Stage graph with or without the prose stages; "
-        "defaults to whether the catalog holds any."),
+    prose: Optional[bool] = ProseOption,
     by_source: Optional[str] = typer.Option(
         None, "--by-source", help="List this source's own download or extraction rows at "
         "--stage (download or extract), as the page's source table does."),

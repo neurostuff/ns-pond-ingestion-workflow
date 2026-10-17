@@ -2,7 +2,15 @@
 
 from .plan import StagePlan, Work
 from .scheduler import BATCH_SIZE, RunReport, StageReport, run_stages
-from .selection import Select, Selection, everything, from_identifiers, from_manifest, narrow
+from .selection import (
+    Select,
+    Selection,
+    everything,
+    from_identifiers,
+    from_manifest,
+    narrow,
+    resolve_manifest,
+)
 from .stage import Context, Stage
 from .stages import STAGE_ORDER, STAGE_TYPES, build
 
