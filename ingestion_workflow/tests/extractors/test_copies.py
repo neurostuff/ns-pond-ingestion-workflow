@@ -11,9 +11,6 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.extractors.copies import DOWNLOAD_COPY, copy_of
 from ingestion_workflow.models import (
-    CopyAccess,
-    CopyRoute,
-    CopyVersion,
     DownloadCopy,
     DownloadedFile,
     DownloadResult,
@@ -21,6 +18,7 @@ from ingestion_workflow.models import (
     FileType,
     Identifier,
 )
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 COPIES = Path(__file__).resolve().parents[1] / "data" / "copies"
 
@@ -41,33 +39,33 @@ def test_every_download_source_has_a_rule():
 
 @pytest.mark.parametrize("source, fixture, version, access", [
     # PMC10518222: an NIH manuscript whose cloud record says TDM; its VoR is CC BY-NC.
-    (DownloadSource.PMC, "pmc_tdm_manuscript", CopyVersion.AM, CopyAccess.TDM_GRANT),
-    (DownloadSource.PMC, "pmc_open_access", CopyVersion.VOR, CopyAccess.PUBLIC),
+    (DownloadSource.PMC, "pmc_tdm_manuscript", CopyVersion.am, CopyAccess.tdm_grant),
+    (DownloadSource.PMC, "pmc_open_access", CopyVersion.vor, CopyAccess.public),
     # PMC12036453: a Research Square preprint, by its article version's status.
-    (DownloadSource.PMC, "pmc_preprint", CopyVersion.SUBMITTED, CopyAccess.PUBLIC),
+    (DownloadSource.PMC, "pmc_preprint", CopyVersion.submitted, CopyAccess.public),
     # PMC12823415: a Nature VoR whose related-article names its bioRxiv preprint.
-    (DownloadSource.PMC, "pmc_links_its_preprint", CopyVersion.VOR, CopyAccess.PUBLIC),
+    (DownloadSource.PMC, "pmc_links_its_preprint", CopyVersion.vor, CopyAccess.public),
     # PMC4001721, from efetch, with no cloud record: the JATS licence says text mining only.
-    (DownloadSource.PMC, "pmc_efetch_tdm_manuscript", CopyVersion.AM, CopyAccess.TDM_GRANT),
+    (DownloadSource.PMC, "pmc_efetch_tdm_manuscript", CopyVersion.am, CopyAccess.tdm_grant),
     # PMC4180771: efetch's JATS names an HHMI manuscript id, under Nature's terms, which
     # PMC's cloud record codes TDM.
-    (DownloadSource.PUBGET, "pubget_manuscript", CopyVersion.AM, CopyAccess.TDM_GRANT),
+    (DownloadSource.PUBGET, "pubget_manuscript", CopyVersion.am, CopyAccess.tdm_grant),
     # PMC10635735: an NIH manuscript under CC BY.
-    (DownloadSource.PUBGET, "pubget_cc_manuscript", CopyVersion.AM, CopyAccess.PUBLIC),
+    (DownloadSource.PUBGET, "pubget_cc_manuscript", CopyVersion.am, CopyAccess.public),
     # PMC3713899: a VoR under an open licence that is not Creative Commons.
-    (DownloadSource.PUBGET, "pubget_open_licence", CopyVersion.VOR, CopyAccess.PUBLIC),
-    (DownloadSource.EUROPEPMC, "europepmc", CopyVersion.VOR, CopyAccess.PUBLIC),
+    (DownloadSource.PUBGET, "pubget_open_licence", CopyVersion.vor, CopyAccess.public),
+    (DownloadSource.EUROPEPMC, "europepmc", CopyVersion.vor, CopyAccess.public),
     # PMC4180771 again, as Europe PMC's JATS names it: by its NIHMS id.
-    (DownloadSource.EUROPEPMC, "europepmc_manuscript", CopyVersion.AM, CopyAccess.TDM_GRANT),
+    (DownloadSource.EUROPEPMC, "europepmc_manuscript", CopyVersion.am, CopyAccess.tdm_grant),
     # PMC2778627, whole: a corrupt tag in its references, past the front matter.
-    (DownloadSource.PUBGET, "pubget_malformed", CopyVersion.VOR, CopyAccess.PUBLIC),
+    (DownloadSource.PUBGET, "pubget_malformed", CopyVersion.vor, CopyAccess.public),
     # PMC4684219, to the end of its front matter: a corrupt namespace in its root
     # element, which loses the front matter.
-    (DownloadSource.PUBGET, "pubget_lost_front", None, CopyAccess.UNRECORDED),
+    (DownloadSource.PUBGET, "pubget_lost_front", None, CopyAccess.unrecorded),
 ])
 def test_a_pmc_copy_is_read_from_its_jats_and_cloud_record(source, fixture, version, access):
     assert copy_of(_held(source, fixture)) == DownloadCopy(
-        route=CopyRoute.PMC, version=version, access=access)
+        route=CopyRoute.pmc, version=version, access=access)
 
 
 def test_a_copy_whose_front_matter_is_lost_records_no_version():
@@ -85,20 +83,20 @@ def test_the_cloud_record_decides_access_over_the_jats_licence(tmp_path):
     held.files.append(DownloadedFile(record, FileType.JSON, "application/json",
                                      DownloadSource.PMC))
 
-    assert copy_of(held).access is CopyAccess.PUBLIC
+    assert copy_of(held).access is CopyAccess.public
 
 
 @pytest.mark.parametrize("source, access", [
-    (DownloadSource.ELSEVIER, CopyAccess.TDM_GRANT),
-    (DownloadSource.SPRINGER, CopyAccess.PUBLIC),
+    (DownloadSource.ELSEVIER, CopyAccess.tdm_grant),
+    (DownloadSource.SPRINGER, CopyAccess.public),
     # Scraped through the university's network, which may hold a subscription.
-    (DownloadSource.ACE, CopyAccess.UNRECORDED),
+    (DownloadSource.ACE, CopyAccess.unrecorded),
 ])
 def test_a_publisher_copy_is_its_version_of_record(source, access):
     held = DownloadResult(identifier=Identifier(doi="10.1/x"), source=source, success=True)
 
     assert copy_of(held) == DownloadCopy(
-        route=CopyRoute.PUBLISHER, version=CopyVersion.VOR, access=access)
+        route=CopyRoute.publisher, version=CopyVersion.vor, access=access)
 
 
 def _fetched_pdf(**attempt) -> DownloadResult:
@@ -116,15 +114,15 @@ def _fetched_pdf(**attempt) -> DownloadResult:
 
 
 @pytest.mark.parametrize("location_type, route", [
-    ("repository", CopyRoute.REPOSITORY),
-    ("publisher", CopyRoute.PUBLISHER),
+    ("repository", CopyRoute.repository),
+    ("publisher", CopyRoute.publisher),
 ])
 def test_a_pdf_copy_is_the_location_it_was_fetched_from(location_type, route):
     held = _fetched_pdf(url="https://site.example.edu/a.pdf", location_type=location_type,
                         version="acceptedVersion")
 
     assert copy_of(held) == DownloadCopy(
-        route=route, version=CopyVersion.AM, access=CopyAccess.PUBLIC,
+        route=route, version=CopyVersion.am, access=CopyAccess.public,
         url="https://site.example.edu/a.pdf")
 
 
@@ -133,7 +131,7 @@ def test_a_pdf_on_pmc_is_pmc_s_copy():
     held = _fetched_pdf(url=url, location_type="repository", version="acceptedVersion")
 
     assert copy_of(held) == DownloadCopy(
-        route=CopyRoute.PMC, version=CopyVersion.AM, access=CopyAccess.PUBLIC, url=url)
+        route=CopyRoute.pmc, version=CopyVersion.am, access=CopyAccess.public, url=url)
 
 
 def test_a_pdf_on_a_preprint_server_names_the_server():
@@ -144,19 +142,19 @@ def test_a_pdf_on_a_preprint_server_names_the_server():
                         location_type="repository", version="submittedVersion")
 
     assert copy_of(held) == DownloadCopy(
-        route=CopyRoute.PREPRINT_SERVER, version=CopyVersion.SUBMITTED,
-        access=CopyAccess.PUBLIC, preprint_server="biorxiv",
+        route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+        access=CopyAccess.public, preprint_server="biorxiv",
         url="https://www.biorxiv.org/content/10.1101/2020.01.01.123456v1.full.pdf")
 
 
 @pytest.mark.parametrize("url, version, expected", [
     # 2ecgjgulmuoc: Research Square holds only preprints, whatever OpenAlex labels it.
     ("https://www.researchsquare.com/article/rs-2725537/latest.pdf", "acceptedVersion",
-     CopyVersion.SUBMITTED),
+     CopyVersion.submitted),
     ("https://www.medrxiv.org/content/10.1101/2021.01.01.21249999v1.full.pdf",
-     "publishedVersion", CopyVersion.SUBMITTED),
+     "publishedVersion", CopyVersion.submitted),
     # arXiv also holds authors' accepted manuscripts.
-    ("https://arxiv.org/pdf/2111.08743", "acceptedVersion", CopyVersion.AM),
+    ("https://arxiv.org/pdf/2111.08743", "acceptedVersion", CopyVersion.am),
 ])
 def test_a_server_holding_only_preprints_holds_the_submitted_version(url, version, expected):
     held = _fetched_pdf(url=url, location_type="repository", version=version)
@@ -179,7 +177,7 @@ def test_an_osf_pdf_names_its_provider_when_the_url_or_the_doi_says(url, doi, se
 
     copy = copy_of(held)
 
-    assert (copy.route, copy.preprint_server) == (CopyRoute.PREPRINT_SERVER, server)
+    assert (copy.route, copy.preprint_server) == (CopyRoute.preprint_server, server)
 
 
 def test_a_semantic_scholar_pdf_is_the_kind_of_site_that_served_it():
@@ -188,7 +186,7 @@ def test_a_semantic_scholar_pdf_is_the_kind_of_site_that_served_it():
                         site_type="repository")
 
     assert copy_of(held) == DownloadCopy(
-        route=CopyRoute.REPOSITORY, access=CopyAccess.PUBLIC,
+        route=CopyRoute.repository, access=CopyAccess.public,
         url="https://discovery.ucl.ac.uk/10062208/1/a.pdf")
 
 
@@ -197,26 +195,26 @@ def test_a_semantic_scholar_pdf_on_a_site_nothing_types_has_no_recorded_route():
                         location_type="unknown", site_type="unknown")
 
     assert copy_of(held) == DownloadCopy(
-        route=CopyRoute.UNRECORDED, access=CopyAccess.PUBLIC, url="https://example.org/a.pdf")
+        route=CopyRoute.unrecorded, access=CopyAccess.public, url="https://example.org/a.pdf")
 
 
 def test_a_pdf_with_no_fetch_recorded_is_unrecorded():
     held = DownloadResult(identifier=Identifier(doi="10.1/x"), source=DownloadSource.PDF,
                           success=True)
 
-    assert copy_of(held) == DownloadCopy(route=CopyRoute.UNRECORDED,
-                                         access=CopyAccess.UNRECORDED)
+    assert copy_of(held) == DownloadCopy(route=CopyRoute.unrecorded,
+                                         access=CopyAccess.unrecorded)
 
 
 def test_a_copy_round_trips_through_its_summary():
-    copy = DownloadCopy(route=CopyRoute.PREPRINT_SERVER, version=CopyVersion.SUBMITTED,
-                        access=CopyAccess.PUBLIC, url="https://arxiv.org/pdf/1",
+    copy = DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+                        access=CopyAccess.public, url="https://arxiv.org/pdf/1",
                         preprint_server="arxiv")
 
     assert copy.to_dict() == {"route": "preprint_server", "version": "submitted",
                               "access": "public", "url": "https://arxiv.org/pdf/1",
                               "preprint_server": "arxiv"}
     assert DownloadCopy.from_dict(copy.to_dict()) == copy
-    unrecorded = DownloadCopy(route=CopyRoute.UNRECORDED, access=CopyAccess.UNRECORDED)
+    unrecorded = DownloadCopy(route=CopyRoute.unrecorded, access=CopyAccess.unrecorded)
     assert unrecorded.to_dict() == {"route": "unrecorded", "access": "unrecorded"}
     assert DownloadCopy.from_dict(unrecorded.to_dict()) == unrecorded

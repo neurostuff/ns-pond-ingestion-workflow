@@ -124,10 +124,10 @@ def test_reposting_the_same_parse_changes_nothing(study, token):
 
 def _new_paper(study):
     """The fixture paper as one neurostore has no base study for, with its own ids."""
-    ids = {"pmid": "31000001", "pmcid": None, "doi": "10.5555/ingest.new.31000001",
-           "neurostore_base_study_id": None}
+    ids = {"pmid": "31000001", "pmcid": None, "doi": "10.5555/ingest.new.31000001"}
     for name in ("coordinate_parse", "parsed_paper"):
-        _edit(study, name, lambda d: d["header"]["identifiers"].update(ids))
+        _edit(study, name, lambda d: (d["header"]["identifiers"].update(ids),
+                                      d["header"].update(neurostore_base_study_id=None)))
 
 
 @pytest.mark.vcr
@@ -164,7 +164,7 @@ def test_a_paper_s_corrections_go_up_in_its_parsed_paper(study, token, vcr):
 
 @pytest.mark.vcr
 def test_an_unknown_base_study_is_the_paper_s_refusal_not_a_stop(study, token):
-    _edit(study, "coordinate_parse", lambda d: d["header"]["identifiers"].update(
+    _edit(study, "coordinate_parse", lambda d: d["header"].update(
         neurostore_base_study_id="doesnotexist1"))
     with _ingester() as ingester:
         artifact = ingester.upload(study)
@@ -377,7 +377,7 @@ def test_an_api_whose_route_answers_otherwise_is_down(token):
 def test_a_later_failure_or_dry_run_keeps_the_upload_on_record(study, token, tmp_path):
     with _ingester() as ingester:
         uploaded = ingester.upload(study)
-        _edit(study, "coordinate_parse", lambda d: d["header"]["identifiers"].update(
+        _edit(study, "coordinate_parse", lambda d: d["header"].update(
             neurostore_base_study_id="doesnotexist2"))
         ingester.upload(study)
     before = (study / ni.UPLOAD_DIR / ni.ARTIFACT_NAME).read_text()

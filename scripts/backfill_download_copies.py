@@ -53,11 +53,11 @@ from ingestion_workflow.extractors.pdf_extractor import (  # noqa: E402
     site_type,
 )
 from ingestion_workflow.models import (  # noqa: E402
-    CopyRoute,
     DownloadResult,
     DownloadSource,
     Identifiers,
 )
+from study_schema.models.paper_parse import CopyRoute  # noqa: E402
 
 CHUNK = 500
 
@@ -103,7 +103,7 @@ def typed_by_site(root: Path, rows: Sequence[Row], found: List[Found],
     untyped = {i: DownloadResult.from_dict(blobs.get(rows[i][2]))
                for i, (_, source, _, copy, _) in enumerate(found)
                if source == DownloadSource.PDF.value and copy is not None
-               and copy["route"] == CopyRoute.UNRECORDED.value and "url" in copy}
+               and copy["route"] == CopyRoute.unrecorded.value and "url" in copy}
     if not untyped:
         return found
     failed: Dict[str, str] = {}

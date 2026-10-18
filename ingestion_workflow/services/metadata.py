@@ -20,6 +20,7 @@ from typing import Dict, List, Optional
 
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
+from study_schema.models.paper_parse import MetadataSource
 
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient
@@ -362,7 +363,7 @@ class MetadataService:
                 abstract=abstract,
                 journal=journal,
                 publication_year=year,
-                source="elsevier_fallback",
+                source=MetadataSource.elsevier.value,
                 raw_metadata={"elsevier": data},
             )
         except Exception as exc:
@@ -488,7 +489,7 @@ class MetadataService:
                 abstract=abstract,
                 journal=journal,
                 publication_year=year,
-                source="pubget_fallback",
+                source=MetadataSource.jats.value,
                 raw_metadata={},
             )
         except Exception as exc:

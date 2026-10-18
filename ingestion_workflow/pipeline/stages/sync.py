@@ -8,11 +8,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
+from study_schema.models.paper_parse import CopyVersion
+
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import (
     AnalysisCollection,
     ArticleExtractionBundle,
-    CopyVersion,
     DownloadCopy,
     DownloadResult,
     ExtractedContent,
@@ -100,7 +101,7 @@ def is_preprint(doi: Optional[str], copy: Optional[DownloadCopy]) -> bool:
     Not text read from a preprint server: a server can hold the accepted manuscript of a
     journal article, which is the article.
     """
-    return is_preprint_doi(doi) or (copy is not None and copy.version is CopyVersion.SUBMITTED)
+    return is_preprint_doi(doi) or (copy is not None and copy.version is CopyVersion.submitted)
 
 
 def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
@@ -311,7 +312,7 @@ class SyncStage:
                 yield refused
                 continue
             try:
-                bundle, per_table, files = self._assemble(
+                bundle, per_table, files, text_copy = self._assemble(
                     ctx, work, extractions, metadata, analyses, downloads, triaged,
                     excluded.get(work.article_id, {}),
                 )
@@ -339,7 +340,7 @@ class SyncStage:
                 )
                 continue
             inputs = _parse_inputs(
-                ctx, work, base_study_id, excluded.get(work.article_id, {}),
+                ctx, work, base_study_id, text_copy, excluded.get(work.article_id, {}),
                 {stage: found.get(work.article_id, {}) for stage, found in (
                     ("extract", extractions), ("metadata", metadata), ("space", analyses),
                     ("triage", triaged), ("analyses", read), ("prose", prose),
@@ -478,11 +479,15 @@ class SyncStage:
 
         files: List[DownloadResult] = []
         download = downloads.get(work.article_id, {}).get(read_from(source, extraction))
+        if download is None or download.status is not Status.OK:
+            raise LookupError(f"no ok download of the {read_from(source, extraction)} copy "
+                              "the text was read from")
         download_payload = ctx.payload(download)
         if download_payload:
             files.append(DownloadResult.from_dict(download_payload))
 
-        return ArticleExtractionBundle(content, article_metadata), per_table, files
+        return ArticleExtractionBundle(content, article_metadata), per_table, files, _copy_of(
+            download)
 
     def finish(self) -> None:
         """Write the corpus-level manifest once the run is over."""
@@ -521,7 +526,7 @@ def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:
 
 
 def _parse_inputs(
-    ctx: Context, work: Work, base_study_id, excluded, found, source
+    ctx: Context, work: Work, base_study_id, text_copy: DownloadCopy, excluded, found, source
 ) -> paper_parse.ParseInputs:
     """What the parse files need from the catalog beyond the bundle."""
     def ok(stage, key=""):
@@ -540,6 +545,8 @@ def _parse_inputs(
               "triage": ok("triage")}
     return paper_parse.ParseInputs(
         article_id=work.article_id,
+        text_copy=text_copy,
+        dois=ctx.catalog.aliases(work.article_id, "doi"),
         base_study_id=base_study_id,
         triage=payload("triage"),
         excluded=excluded or {},

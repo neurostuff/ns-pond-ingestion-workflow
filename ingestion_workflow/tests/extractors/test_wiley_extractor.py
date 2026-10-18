@@ -18,9 +18,6 @@ from ingestion_workflow.extractors.pdf_extractor import PDF_MAGIC, _HostGate, st
 from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.extractors.wiley_extractor import TDM_URL, WileyExtractor
 from ingestion_workflow.models import (
-    CopyAccess,
-    CopyRoute,
-    CopyVersion,
     DownloadCopy,
     DownloadResult,
     DownloadSource,
@@ -39,6 +36,7 @@ from ingestion_workflow.pipeline.stages.extract import (
 )
 from ingestion_workflow.pipeline.stages.triage import judged_extraction
 from ingestion_workflow.tests import wiley_tdm
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 #: A 129 KB article Wiley serves.
 SERVED_DOI = "10.1111/j.1440-1614.2006.01765.x"
@@ -124,7 +122,7 @@ def test_wiley_dois_are_fetched_with_the_token(wiley, slept, tmp_path, vcr):
     assert (pdf.file_type, pdf.source) == (FileType.PDF, DownloadSource.WILEY)
     assert pdf.file_path.read_bytes().startswith(PDF_MAGIC)
     assert copy_of(served) == DownloadCopy(
-        route=CopyRoute.PUBLISHER, version=CopyVersion.VOR, access=CopyAccess.TDM_GRANT,
+        route=CopyRoute.publisher, version=CopyVersion.vor, access=CopyAccess.tdm_grant,
         url=TDM_URL + "10.1111%2Fj.1440-1614.2006.01765.x")
     assert served.url_attempts == [{
         "url": TDM_URL + "10.1111%2Fj.1440-1614.2006.01765.x", "provider": "wiley",
