@@ -518,8 +518,11 @@ class TestLicences:
         wiley = [c for c in meta.reported_copies if c.route == "publisher"]
         assert [(c.version, c.reported_by, c.license.license_id) for c in wiley] == [
             ("vor", "openalex", "cc-by-nc")]
-        # PMC's own copy is the one held
+        # PMC's own copy is the one held, and PubMed's record is no copy
         assert not [c for c in meta.reported_copies if c.route == "pmc"]
+        assert not [c for c in meta.reported_copies if "pubmed.ncbi" in c.url]
+        assert meta.raw_metadata["openalex"]["locations"][1]["landing_page_url"] == (
+            "https://pubmed.ncbi.nlm.nih.gov/35820077")
         # what was decided survives the artifact
         assert ArticleMetadata.from_dict(meta.to_dict()).to_dict() == meta.to_dict()
         assert meta.raw_metadata["crossref"]["license"]

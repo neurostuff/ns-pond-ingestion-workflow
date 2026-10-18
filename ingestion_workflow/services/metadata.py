@@ -24,6 +24,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Set
+from urllib.parse import urlsplit
 
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
@@ -616,6 +617,8 @@ PROVIDER_CACHE_DIRS = {
 
 _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 _OA_STATUSES = {status.value for status in OaStatus}
+#: OpenAlex lists the paper's PubMed record as a location; it is an index entry, not a copy.
+_PUBMED = "pubmed.ncbi.nlm.nih.gov"
 #: The providers that list copies at URLs, so may state the licence of a copy at one.
 _LOCATING = {MetadataSource.openalex.value, MetadataSource.semantic_scholar.value}
 
@@ -720,7 +723,7 @@ def _decide_licenses(
         listed.append((s2_pdf["url"], None, None, MetadataSource.semantic_scholar))
     for url, version, location_type, by in listed:
         route, version, server = located(url, doi, version, location_type)
-        if url in held_urls or route in held_hosts:
+        if url in held_urls or route in held_hosts or urlsplit(url).hostname == _PUBMED:
             continue
         metadata.reported_copies.append(ReportedCopy(
             route=route, version=version, url=url, preprint_server=server, reported_by=by,
