@@ -38,7 +38,8 @@ _METADATA_FIELDS = (
 )
 
 
-# `ids.pmcid` is a documented Work field, though OpenAlex rarely sends it today.
+# OpenAlex's Work schema documents `ids.pmcid`, but no recorded or live answer checked on
+# 2026-10-17 carried it.
 def _identifier_from(
     ids: Optional[Dict], kinds: Sequence[str] = ("doi", "pmid", "pmcid")
 ) -> Identifier:
@@ -47,7 +48,11 @@ def _identifier_from(
 
 
 def _identified(works: Optional[Iterable[Dict]]) -> Iterator[Tuple[Dict, Identifier]]:
-    """Each work with its identifier; a work with a malformed id is logged and passed over."""
+    """Each work with its identifier.
+
+    A work with a malformed id is logged and skipped whole, its other ids too; nothing
+    is kept for it, so its article is asked about again on the next run.
+    """
     for work in works or []:
         ids = work.get("ids") or {}
         try:

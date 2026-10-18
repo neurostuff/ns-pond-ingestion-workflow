@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def _paper_identifier(external_ids: Dict, paper_id: Optional[str]) -> Optional[Identifier]:
-    """A paper's DOI, PMID and PMCID; None, logged, when one of them is malformed."""
+    """A paper's DOI, PMID and PMCID, or None when any of them is malformed.
+
+    Such a paper is logged and skipped whole, its other ids too; nothing is kept for
+    it, so its article is asked about again on the next run.
+    """
     pmid, pmcid = external_ids.get("PubMed"), external_ids.get("PubMedCentral")
     try:
         return Identifier(

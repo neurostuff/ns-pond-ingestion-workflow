@@ -277,7 +277,7 @@ def _missing_reason(malformed: List[str], missing: int) -> str:
     if len(malformed) == 1 and missing == 1:
         return f"PMC returned this article under a malformed id ({malformed[0]})"
     return (f"PMC returned no article for this PMCID; this batch's {missing} missing PMCIDs "
-            f"share {len(malformed)} articles under malformed ids ({'; '.join(malformed)})")
+            f"share {len(malformed)} article(s) under malformed ids ({'; '.join(malformed)})")
 
 
 def _pmcid_of(article: etree._Element) -> Optional[str]:

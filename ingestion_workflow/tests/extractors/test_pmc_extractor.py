@@ -222,17 +222,22 @@ def test_a_malformed_article_id_fails_only_its_own_article(settings, caplog):
 
 
 @pytest.mark.vcr
-def test_articles_under_malformed_ids_share_one_reason(settings, caplog):
-    """Recorded as above for three articles, then edited: the `pmcid` article-ids of
-    PMC10002769 and PMC10008056 were changed to `PMC10002769.x` and `PMC10008056.x`."""
+@pytest.mark.parametrize("third,shared", [
+    # PMC10008056's `pmcid` article-id was also changed, to `PMC10008056.x`
+    ("10008056", "2 article(s) under malformed ids (not a PMCID: 'PMC10008056.x'; "
+                 "not a PMCID: 'PMC10002769.x')"),
+    # a PMCID PMC has no article for, left as answered
+    ("99999999", "1 article(s) under malformed ids (not a PMCID: 'PMC10002769.x')"),
+], ids=["both-malformed", "one-malformed-one-absent"])
+def test_articles_under_malformed_ids_share_one_reason(settings, caplog, third, shared):
+    """Recorded as above for three PMCIDs, then edited: PMC10002769's `pmcid` article-id
+    was changed to `PMC10002769.x`, and the third as noted for each case."""
     extractor = PmcExtractor(settings=settings)
-    restricted, *malformed = extractor.download(ids("10002673", "10002769", "10008056"))
+    restricted, *missing = extractor.download(ids("10002673", "10002769", third))
     assert "Cloud Service lookup failed" not in caplog.text
     assert restricted.error_message == RESTRICTED
-    assert [m.error_message for m in malformed] == [
-        "PMC returned no article for this PMCID; this batch's 2 missing PMCIDs share 2 "
-        "articles under malformed ids (not a PMCID: 'PMC10008056.x'; "
-        "not a PMCID: 'PMC10002769.x')"
+    assert [m.error_message for m in missing] == [
+        f"PMC returned no article for this PMCID; this batch's 2 missing PMCIDs share {shared}"
     ] * 2
 
 
