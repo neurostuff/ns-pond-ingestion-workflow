@@ -207,12 +207,23 @@ def test_the_default_order_names_every_source_once_with_pmc_first():
     assert order[:3] == ["pmc", "europepmc", "pubget"]
 
 
+def serial_pmc(settings):
+    """A PmcExtractor that asks the Cloud Service for one article at a time.
+
+    VCR is not thread-safe: replayed concurrently, some requests miss the cassette
+    and reach the network. The pool size does not change what is asked.
+    """
+    extractor = PmcExtractor(settings=settings)
+    extractor.cloud_concurrency = 1
+    return extractor
+
+
 @pytest.mark.vcr
 def test_a_malformed_article_id_fails_only_its_own_article(settings, caplog):
     """Recorded from the Cloud Service and efetch for two articles PMC holds without a body,
     then edited: in the efetch answer, PMC10002769's `article-id pub-id-type="pmcid"` was
     changed to `PMC10002769.x`."""
-    restricted, malformed = PmcExtractor(settings=settings).download(ids("10002673", "10002769"))
+    restricted, malformed = serial_pmc(settings).download(ids("10002673", "10002769"))
     assert "Cloud Service lookup failed" not in caplog.text
     assert restricted.error_message == RESTRICTED
     assert not malformed.success
@@ -232,7 +243,7 @@ def test_a_malformed_article_id_fails_only_its_own_article(settings, caplog):
 def test_articles_under_malformed_ids_share_one_reason(settings, caplog, third, shared):
     """Recorded as above for three PMCIDs, then edited: PMC10002769's `pmcid` article-id
     was changed to `PMC10002769.x`, and the third as noted for each case."""
-    extractor = PmcExtractor(settings=settings)
+    extractor = serial_pmc(settings)
     restricted, *missing = extractor.download(ids("10002673", "10002769", third))
     assert "Cloud Service lookup failed" not in caplog.text
     assert restricted.error_message == RESTRICTED
