@@ -1,0 +1,470 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1016/j.cortex.2017.05.018"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '45'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"message": "Too Many Requests. Please wait and try again or apply
+        for a key for higher rate limits. https://www.semanticscholar.org/product/api#api-key-form",
+        "code": "429"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '174'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:18 GMT
+      Via:
+      - 1.1 2df1276dc9658ab02783b6d628c27154.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - MJhUkokbEZiqV5dHWCycjipJp894sdKUY40zk6PiqMmbCDbB3pp5xQ==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - FdQDuHCwPHcEYcA=
+      x-amzn-ErrorType:
+      - TooManyRequestsException
+      x-amzn-RequestId:
+      - 9f4918ba-39a6-4145-a17b-770dfc87fb7d
+    status:
+      code: 429
+      message: ''
+- request:
+    body: '{"ids": ["DOI:10.1016/j.cortex.2017.05.018"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '45'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "04930cb34061847ed43870d37c5a989e1ef4a6a0", "title": "Human
+        neuroimaging reveals the subcomponents of grasping, reaching and pointing
+        actions.", "venue": "Cortex; a journal devoted to the study of the nervous
+        system and behavior", "year": 2018, "isOpenAccess": true, "openAccessPdf":
+        {"url": "http://dro.dur.ac.uk/21963/", "status": "GREEN", "license": "CCBYNCND",
+        "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.cortex.2017.05.018?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1016/j.cortex.2017.05.018, which is subject to the license
+        by the author or copyright owner provided with this content. Please go to
+        the source to verify the license and copyright information for your use."},
+        "publicationDate": null, "authors": [{"authorId": "1399579848", "name": "C.
+        Cavina-Pratesi"}, {"authorId": "11686285", "name": "J. Connolly"}, {"authorId":
+        "6101580", "name": "S. Monaco"}, {"authorId": "7280327", "name": "Teresa D
+        Figley"}, {"authorId": "153558474", "name": "A. Milner"}, {"authorId": "2512036695",
+        "name": "T. Schenk"}, {"authorId": "3048019", "name": "J. Culham"}], "abstract":
+        "Although the neural underpinnings of visually guided grasping and reaching
+        have been well delineated within lateral and medial fronto-parietal networks
+        (respectively), the contributions of subcomponents of visuomotor actions have
+        not been explored in detail. Using careful subtraction logic, here we investigated
+        which aspects of grasping, reaching, and pointing movements drive activation
+        across key areas within visuomotor networks implicated in hand actions. For
+        grasping tasks, we find activation differences based on the precision required
+        (fine\u00a0>\u00a0coarse grip: anterior intraparietal sulcus, aIPS), the requirement
+        to lift the object (grip\u00a0+\u00a0lift\u00a0>\u00a0grip: aIPS; dorsal premotor
+        cortex, PMd; and supplementary motor area, SMA), and the number of digits
+        employed (3-/5- vs. 2-digit grasps: ventral premotor cortex, PMv; motor cortex,
+        M1, and somatosensory cortex, S1). For reaching/pointing tasks, we find activation
+        differences based on whether the task required arm transport ((reach-to-point
+        with index finger and reach-to-touch with knuckles) vs. point-without-reach;
+        anterior superior parietal lobule, aSPL) and whether it required pointing
+        to the object centre ((point-without-reach and reach-to-point) vs. reach-to-touch:
+        anterior superior parieto-occipital cortex, aSPOC). For point-without-reach,
+        in which the index finger is oriented towards the object centre but from a
+        distance (point-without-reach\u00a0>\u00a0(reach-to-point and reach-to-touch)),
+        we find activation differences that may be related to the communicative nature
+        of the task (temporo-parietal junction, TPJ) and the need to precisely locate
+        the target (lateral occipito-temporal cortex, LOTC). The present findings
+        elucidate the different subcomponents of hand actions and the roles of specific
+        brain regions in their computation."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2988'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:19 GMT
+      Via:
+      - 1.1 59872e8fc350dfe1d2a315c99db8f5aa.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - OVUrGCrSsfGoW-5khaBF8KIbeyuOy7XmmvlQQuaII7Lw8fmIqbpNPA==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQD5FAyPHcEAvA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2988'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:19 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - d68554e7-e8a4-4353-9ead-e555aa982ec4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1016%2Fj.cortex.2017.05.018&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1016\/j.cortex.2017.05.018","license":[{"start":{"date-parts":[[2018,1,1]],"date-time":"2018-01-01T00:00:00Z","timestamp":1514764800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:19 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.cortex.2017.05.018&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 14, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1016/j.cortex.2017.05.018",
+        "x_new_oql": "get works where DOI is 10.1016/j.cortex.2017.05.018", "oqo":
+        {"get_rows": "works", "filter_rows": [{"column_id": "doi", "value": "10.1016/j.cortex.2017.05.018"}]},
+        "url": "/works?filter=doi:10.1016%2Fj.cortex.2017.05.018&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2622983518",
+        "doi": "https://doi.org/10.1016/j.cortex.2017.05.018", "mag": "2622983518",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/28668221"}, "display_name": "Human
+        neuroimaging reveals the subcomponents of grasping, reaching and pointing
+        actions", "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5024798505",
+        "display_name": "Cristiana Cavina\u2010Pratesi", "orcid": null, "observed_orcids":
+        []}, "institutions": [{"id": "https://openalex.org/I190082696", "display_name":
+        "Durham University", "ror": "https://ror.org/01v29qb04", "country_code": "GB",
+        "type": "education", "lineage": ["https://openalex.org/I190082696"]}], "countries":
+        ["GB"], "is_corresponding": false, "raw_author_name": "Cristiana Cavina-Pratesi",
+        "raw_affiliation_strings": ["Department of Psychology, Durham University,
+        Durham, UK"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Psychology, Durham University, Durham, UK", "institution_ids":
+        ["https://openalex.org/I190082696"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5025018038", "display_name": "Jason D. Connolly",
+        "orcid": "https://orcid.org/0000-0003-3622-4578", "observed_orcids": ["https://orcid.org/0000-0003-3622-4578"]},
+        "institutions": [{"id": "https://openalex.org/I190082696", "display_name":
+        "Durham University", "ror": "https://ror.org/01v29qb04", "country_code": "GB",
+        "type": "education", "lineage": ["https://openalex.org/I190082696"]}], "countries":
+        ["GB"], "is_corresponding": false, "raw_author_name": "Jason D. Connolly",
+        "raw_affiliation_strings": ["Department of Psychology, Durham University,
+        Durham, UK. Electronic address: j.d.connolly@durham.ac.uk", "Department of
+        Psychology, Durham University, Durham, UK"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Psychology, Durham University,
+        Durham, UK. Electronic address: j.d.connolly@durham.ac.uk", "institution_ids":
+        ["https://openalex.org/I190082696"]}, {"raw_affiliation_string": "Department
+        of Psychology, Durham University, Durham, UK", "institution_ids": ["https://openalex.org/I190082696"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5015719080",
+        "display_name": "Simona Monaco", "orcid": "https://orcid.org/0000-0002-5806-5961",
+        "observed_orcids": ["https://orcid.org/0000-0002-5806-5961"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}], "countries": ["CA"], "is_corresponding":
+        false, "raw_author_name": "Simona Monaco", "raw_affiliation_strings": ["Brain
+        and Mind Institute, University of Western Ontario, London, Ontario, Canada.
+        Electronic address: simona.monaco@unitn.it", "Brain and Mind Institute, University
+        of Western Ontario, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0002-5806-5961",
+        "affiliations": [{"raw_affiliation_string": "Brain and Mind Institute, University
+        of Western Ontario, London, Ontario, Canada. Electronic address: simona.monaco@unitn.it",
+        "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "Brain and Mind Institute, University of Western Ontario, London, Ontario,
+        Canada", "institution_ids": ["https://openalex.org/I125749732"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5007601143", "display_name":
+        "Teresa D. Figley", "orcid": "https://orcid.org/0000-0002-0077-2962", "observed_orcids":
+        ["https://orcid.org/0000-0002-0077-2962"]}, "institutions": [{"id": "https://openalex.org/I125749732",
+        "display_name": "Western University", "ror": "https://ror.org/02grkyz14",
+        "country_code": "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]}],
+        "countries": ["CA"], "is_corresponding": false, "raw_author_name": "Teresa
+        D. Figley", "raw_affiliation_strings": ["Brain and Mind Institute, University
+        of Western Ontario, London, Ontario, Canada"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Brain and Mind Institute, University of Western
+        Ontario, London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5110241548",
+        "display_name": "A. David Milner", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I190082696", "display_name":
+        "Durham University", "ror": "https://ror.org/01v29qb04", "country_code": "GB",
+        "type": "education", "lineage": ["https://openalex.org/I190082696"]}], "countries":
+        ["GB"], "is_corresponding": false, "raw_author_name": "A. David Milner", "raw_affiliation_strings":
+        ["Department of Psychology, Durham University, Durham, UK. Electronic address:
+        a.d.milner@durham.ac.uk", "Department of Psychology, Durham University, Durham,
+        UK"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychology, Durham University, Durham, UK. Electronic address: a.d.milner@durham.ac.uk",
+        "institution_ids": ["https://openalex.org/I190082696"]}, {"raw_affiliation_string":
+        "Department of Psychology, Durham University, Durham, UK", "institution_ids":
+        ["https://openalex.org/I190082696"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5000741825", "display_name": "Thomas Schenk",
+        "orcid": "https://orcid.org/0000-0002-6986-6916", "observed_orcids": ["https://orcid.org/0000-0002-6986-6916"]},
+        "institutions": [{"id": "https://openalex.org/I8204097", "display_name": "Ludwig-Maximilians-Universit\u00e4t
+        M\u00fcnchen", "ror": "https://ror.org/05591te55", "country_code": "DE", "type":
+        "education", "lineage": ["https://openalex.org/I8204097"]}], "countries":
+        ["DE"], "is_corresponding": false, "raw_author_name": "Thomas Schenk", "raw_affiliation_strings":
+        ["Department Psychology, Ludwig-Maximilians University, Munich, Germany. Electronic
+        address: thomas.schenk@psy.lmu.de", "Department Psychology, Ludwig-Maximilians
+        University, Munich, Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department Psychology, Ludwig-Maximilians University, Munich, Germany. Electronic
+        address: thomas.schenk@psy.lmu.de", "institution_ids": ["https://openalex.org/I8204097"]},
+        {"raw_affiliation_string": "Department Psychology, Ludwig-Maximilians University,
+        Munich, Germany", "institution_ids": ["https://openalex.org/I8204097"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5019440281",
+        "display_name": "Jody C. Culham", "orcid": "https://orcid.org/0000-0003-0754-2999",
+        "observed_orcids": ["https://orcid.org/0000-0003-0754-2999"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}], "countries": ["CA"], "is_corresponding":
+        true, "raw_author_name": "Jody C. Culham", "raw_affiliation_strings": ["Brain
+        and Mind Institute, University of Western Ontario, London, Ontario, Canada;
+        Neuroscience Program, University of Western Ontario, London, Ontario, Canada;
+        Department of Psychology, University of Western Ontario, London, Ontario,
+        Canada. Electronic address: jculham@uwo.ca", "Brain and Mind Institute, University
+        of Western Ontario, London, Ontario, Canada", "Department of Psychology, University
+        of Western Ontario, London, Ontario, Canada", "Neuroscience Program, University
+        of Western Ontario, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0003-0754-2999",
+        "affiliations": [{"raw_affiliation_string": "Brain and Mind Institute, University
+        of Western Ontario, London, Ontario, Canada; Neuroscience Program, University
+        of Western Ontario, London, Ontario, Canada; Department of Psychology, University
+        of Western Ontario, London, Ontario, Canada. Electronic address: jculham@uwo.ca",
+        "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "Brain and Mind Institute, University of Western Ontario, London, Ontario,
+        Canada", "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "Department of Psychology, University of Western Ontario, London, Ontario,
+        Canada", "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "Neuroscience Program, University of Western Ontario, London, Ontario, Canada",
+        "institution_ids": ["https://openalex.org/I125749732"]}]}], "publication_year":
+        2017, "abstract_inverted_index": null, "primary_location": {"id": "doi:10.1016/j.cortex.2017.05.018",
+        "doi": "https://doi.org/10.1016/j.cortex.2017.05.018", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1016/j.cortex.2017.05.018", "pdf_url": null, "source":
+        {"id": "https://openalex.org/S116196263", "display_name": "Cortex", "issn_l":
+        "0010-9452", "issn": ["0010-9452", "1973-8102"], "is_oa": false, "is_in_doaj":
+        false, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320990", "host_organization_name": "Elsevier BV",
+        "host_organization_lineage": ["https://openalex.org/P4310320990"], "host_organization_lineage_names":
+        ["Elsevier BV"], "type": "journal"}, "license": null, "license_id": null,
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Cortex", "raw_type": "journal-article"}, "best_oa_location":
+        {"id": "pmh:oai:dro.dur.ac.uk.OAI2:21963", "doi": null, "is_oa": true, "landing_page_url":
+        "http://dro.dur.ac.uk/21963/", "pdf_url": null, "source": {"id": "https://openalex.org/S4306400188",
+        "display_name": "Durham Research Online (Durham University)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I190082696", "host_organization_name":
+        "Durham University", "host_organization_lineage": ["https://openalex.org/I190082696"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "Cortex, 2018,
+        Vol.98, pp.128-148 [Peer Reviewed Journal]", "raw_type": "Article"}, "locations":
+        [{"id": "doi:10.1016/j.cortex.2017.05.018", "doi": "https://doi.org/10.1016/j.cortex.2017.05.018",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1016/j.cortex.2017.05.018",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S116196263", "display_name":
+        "Cortex", "issn_l": "0010-9452", "issn": ["0010-9452", "1973-8102"], "is_oa":
+        false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "erih-plus", "jufo-2",
+        "ki-jl-2", "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"],
+        "host_organization": "https://openalex.org/P4310320990", "host_organization_name":
+        "Elsevier BV", "host_organization_lineage": ["https://openalex.org/P4310320990"],
+        "host_organization_lineage_names": ["Elsevier BV"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Cortex", "raw_type": "journal-article"},
+        {"id": "pmid:28668221", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/28668221",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Cortex; a journal
+        devoted to the study of the nervous system and behavior", "raw_type": "Journal
+        Article"}, {"id": "pmh:oai:dro.dur.ac.uk.OAI2:21963", "doi": null, "is_oa":
+        true, "landing_page_url": "http://dro.dur.ac.uk/21963/", "pdf_url": null,
+        "source": {"id": "https://openalex.org/S4306400188", "display_name": "Durham
+        Research Online (Durham University)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I190082696", "host_organization_name": "Durham University",
+        "host_organization_lineage": ["https://openalex.org/I190082696"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "acceptedVersion", "is_accepted": true, "is_published": false,
+        "raw_source_name": "Cortex, 2018, Vol.98, pp.128-148 [Peer Reviewed Journal]",
+        "raw_type": "Article"}, {"id": "pmh:oai:durham-repository.worktribe.com:1358722",
+        "doi": null, "is_oa": true, "landing_page_url": "https://durham-repository.worktribe.com/output/1358722",
+        "pdf_url": "https://durham-repository.worktribe.com/output/1358722", "source":
+        {"id": "https://openalex.org/S4306400188", "display_name": "Durham Research
+        Online (Durham University)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I190082696", "host_organization_name": "Durham University",
+        "host_organization_lineage": ["https://openalex.org/I190082696"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": null, "raw_type": "Journal Article"}, {"id": "pmh:oai:iris.unitn.it:11572/190330",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.sciencedirect.com/science/article/pii/S0010945217301739/pdf",
+        "pdf_url": "https://iris.unitn.it/bitstream/11572/190330/1/CavinaPratesiEtAl_Grips_Cortex_2017_PostPrint.pdf",
+        "source": {"id": "https://openalex.org/S4377196320", "display_name": "Iris
+        (University of Trento)", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I193223587",
+        "host_organization_name": "University of Trento", "host_organization_lineage":
+        ["https://openalex.org/I193223587"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": null, "raw_type": "info:eu-repo/semantics/article"}, {"id":
+        "pmh:oai:ir.lib.uwo.ca:brainpub-1135", "doi": null, "is_oa": false, "landing_page_url":
+        "https://ir.lib.uwo.ca/brainpub/143", "pdf_url": null, "source": {"id": "https://openalex.org/S4306400648",
+        "display_name": "Scholarship@Western (Western University)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I125749732", "host_organization_name":
+        "Western University", "host_organization_lineage": ["https://openalex.org/I125749732"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Brain and Mind Institute Researchers'' Publications",
+        "raw_type": "article"}, {"id": "pmh:oai:uwo.scholaris.ca:20.500.14721/13952",
+        "doi": null, "is_oa": false, "landing_page_url": "https://doi.org/10.1016/j.cortex.2017.05.018",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400648", "display_name":
+        "Scholarship@Western (Western University)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I125749732", "host_organization_name": "Western University",
+        "host_organization_lineage": ["https://openalex.org/I125749732"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        null, "raw_type": "journal article"}], "open_access": {"is_oa": true, "oa_status":
+        "green", "oa_url": "http://dro.dur.ac.uk/21963/", "any_repository_has_fulltext":
+        true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52ba681c5bef-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:20 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9920'
+      X-RateLimit-Remaining-USD:
+      - '0.992'
+      X-RateLimit-Reset:
+      - '12340'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=jdmlYv3FYOciVTr7JkOWT9pfvT7SReqYPXMhazILeDU%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355659"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=jdmlYv3FYOciVTr7JkOWT9pfvT7SReqYPXMhazILeDU%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355659"
+    status:
+      code: 200
+      message: OK
+version: 1

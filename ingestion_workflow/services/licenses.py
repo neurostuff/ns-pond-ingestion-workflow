@@ -1,10 +1,11 @@
 """The licence of each copy of a paper, and of the paper, from what every source stated.
 
-A statement is one source's licence for one version of the paper, or for one copy at a
-URL. A copy's licence is the first statement `LICENSE_PRECEDENCE` lists for its version
-that a source made, a named licence before an `other`. When none was made it is all
-rights reserved, assumed, but only if every source the precedence asks answered; while
-one has not, the licence is undecided and the article is asked about again.
+A statement is one source's licence for one version of the paper, or for the one copy at
+a URL. A copy's licence is its own record's, else the first statement
+`LICENSE_PRECEDENCE` lists for its version. When none was made it is all rights reserved,
+assumed. While a source that comes before the deciding statement, or before an assumed
+licence, could not be read or did not answer, the licence is undecided and the article is
+asked about again.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 from lxml import etree
 from study_schema.models.paper_parse import (
+    CopyRoute,
     CopyVersion,
     License,
     LicenseDetermination,
@@ -27,49 +29,66 @@ from study_schema.models.paper_parse import (
 
 #: A held copy's own record: its file, or PMC's cloud record of it.
 OWN = "own"
+#: The own records of the other copies downloads hold.
+HELD = "held"
 
-#: For each version a copy can be, the sources whose statements speak for it, best first,
-#: each with the versions its statement must be about (None: it names no version). A
-#: copy's own statement comes before all of them. Crossref's version-of-record deposit is
-#: the publisher's; OpenAlex and Semantic Scholar infer theirs; Crossref's deposits that
-#: name no version come last. A manuscript's licence is never the version of record's.
+#: For each version a copy can be, the sources whose statements speak for it, best first:
+#: the source, the versions its statement must be about (None: it names no version), and
+#: the routes of the copies it must be about (None: any, or no copy). A copy's own record
+#: comes before all of them.
+#:
+#: - Another held copy of the same version states it in its own record.
+#: - Crossref's deposit is the publisher's; a preprint DOI's deposits are the preprint's.
+#: - OpenAlex speaks for a version only through its location at the publisher, or at the
+#:   preprint server; a repository location, and Semantic Scholar's open-access PDF,
+#:   describe only the copy at their URL.
+#: - A manuscript's licence is never the version of record's.
 LICENSE_PRECEDENCE: Mapping[
-    Optional[CopyVersion], Tuple[Tuple[MetadataSource, frozenset], ...]
+    Optional[CopyVersion], Tuple[Tuple[str, frozenset, Optional[frozenset]], ...]
 ] = {
     CopyVersion.vor: (
-        (MetadataSource.crossref, frozenset({CopyVersion.vor})),
-        (MetadataSource.openalex, frozenset({CopyVersion.vor})),
-        (MetadataSource.semantic_scholar, frozenset({None})),
-        (MetadataSource.crossref, frozenset({None})),
+        (HELD, frozenset({CopyVersion.vor}), None),
+        (MetadataSource.crossref.value, frozenset({CopyVersion.vor}), None),
+        (MetadataSource.openalex.value, frozenset({CopyVersion.vor}),
+         frozenset({CopyRoute.publisher})),
+        (MetadataSource.crossref.value, frozenset({None}), None),
     ),
     CopyVersion.am: (
-        (MetadataSource.crossref, frozenset({CopyVersion.am})),
-        (MetadataSource.openalex, frozenset({CopyVersion.am})),
+        (HELD, frozenset({CopyVersion.am}), None),
+        (MetadataSource.crossref.value, frozenset({CopyVersion.am}), None),
     ),
-    # Crossref's deposits are a preprint's only when the DOI asked is the preprint's.
     CopyVersion.submitted: (
-        (MetadataSource.crossref, frozenset({CopyVersion.submitted})),
-        (MetadataSource.openalex, frozenset({CopyVersion.submitted})),
+        (HELD, frozenset({CopyVersion.submitted}), None),
+        (MetadataSource.crossref.value, frozenset({CopyVersion.submitted}), None),
+        (MetadataSource.openalex.value, frozenset({CopyVersion.submitted}),
+         frozenset({CopyRoute.preprint_server})),
     ),
     None: (),
 }
 
-#: The providers a licence statement can come from, besides a held copy's own record.
+#: The providers a licence statement can come from, besides the held copies' own records.
 LICENSE_PROVIDERS = (MetadataSource.semantic_scholar, MetadataSource.crossref,
                      MetadataSource.openalex)
 
 
 @dataclass(frozen=True)
 class Statement:
-    """A licence one source stated, for one version of the paper or one copy at `url`."""
+    """A licence one source stated, for one version of the paper, or for the copy at `url`
+    on `route`."""
 
     license: License
     version: Optional[CopyVersion] = None
     url: Optional[str] = None
+    route: Optional[CopyRoute] = None
 
 
 class Undecided(Exception):
-    """A licence would be assumed while a source that could state it has not answered."""
+    """A licence cannot be decided while `sources` (`OWN`, or provider names) have not
+    answered."""
+
+    def __init__(self, message: str, sources: Sequence[str] = ()) -> None:
+        super().__init__(message)
+        self.sources = tuple(sources)
 
 
 _CC_URL = re.compile(r"creativecommons\.org/licenses/([a-z-]+)")
@@ -110,8 +129,6 @@ def normalise_license(stated: str) -> LicenseId:
     compact = re.sub(r"[^a-z0-9]", "", text).replace("creativecommons", "cc")
     if compact in _COMPACT:
         return _COMPACT[compact]
-    if re.sub(r"\d+$", "", compact) in _COMPACT:  # "CC BY 4.0"
-        return _COMPACT[re.sub(r"\d+$", "", compact)]
     phrase = _CC_PHRASE.search(text)
     if phrase:
         return _cc_from_parts(phrase.group(1)) or LicenseId.other
@@ -231,13 +248,15 @@ _CROSSREF_VERSIONS = {"vor": CopyVersion.vor, "am": CopyVersion.am, "unspecified
 _EARLIEST = datetime.min.replace(tzinfo=timezone.utc)
 
 
-def crossref_statements(entries: Optional[Sequence[Mapping]],
-                        now: Optional[datetime] = None) -> List[Statement]:
-    """One statement per version Crossref's `license` deposits cover now.
+def crossref_statements(entries: Optional[Sequence[Mapping]], now: Optional[datetime] = None,
+                        preprint: bool = False) -> List[Statement]:
+    """One statement per version Crossref's `license` deposits for one DOI cover now.
 
-    An embargoed deposit, starting in the future, is not yet in force. Among a version's
-    deposits in force the one taken names a licence over an `other`, then starts latest,
-    then has the smaller URL, so the choice never depends on deposit order.
+    An embargoed deposit, starting in the future, is not yet in force; one with no start
+    always is. Among a version's deposits in force the one taken names a licence over an
+    `other`, then starts latest, then has the smaller URL, so the choice never depends on
+    deposit order. A preprint server's DOI is the preprint's, whatever version its
+    deposits name, so with `preprint` each is about the submitted version.
     """
     now = now or datetime.now(timezone.utc)
     best: Dict[Optional[CopyVersion], Tuple] = {}
@@ -254,7 +273,7 @@ def crossref_statements(entries: Optional[Sequence[Mapping]],
             continue
         found = stated(MetadataSource.crossref, str(url))
         key = (found.license_id == LicenseId.other, -started.timestamp(), found.stated_as)
-        version = _CROSSREF_VERSIONS[kind]
+        version = CopyVersion.submitted if preprint else _CROSSREF_VERSIONS[kind]
         if version not in best or key < best[version][0]:
             best[version] = (key, found)
     return [Statement(found, version) for version, (_, found) in best.items()]
@@ -263,31 +282,26 @@ def crossref_statements(entries: Optional[Sequence[Mapping]],
 def license_of(
     version: Optional[CopyVersion],
     own: Optional[License],
-    statements: Mapping[MetadataSource, Sequence[Statement]],
+    statements: Mapping[str, Sequence[Statement]],
     unanswered: Set[str],
 ) -> License:
     """The licence of a copy of `version` whose own record states `own`.
 
-    `statements` holds each provider's statements about the paper's versions, and
-    `unanswered` the sources (`OWN` or a MetadataSource value) that could not be read
-    or did not answer. Raises Undecided rather than assume a licence one of them might
-    have stated.
+    `statements` holds each source's statements (`HELD`, or a provider's name), and
+    `unanswered` the sources (`OWN`, or a provider's name) that could not be read or did
+    not answer. The first source in `LICENSE_PRECEDENCE` that stated one decides.
+    Raises Undecided when a source before it, or before an assumed licence, is unanswered.
     """
-    found: List[Tuple[bool, int, License]] = []
+    if OWN in unanswered:
+        raise Undecided("its own record could not be read", [OWN])
     if own is not None:
-        found.append((own.license_id == LicenseId.other, 0, own))
-    for tier, (source, versions) in enumerate(LICENSE_PRECEDENCE[version], start=1):
+        return own
+    for source, versions, routes in LICENSE_PRECEDENCE[version]:
+        if source in unanswered:
+            raise Undecided(f"{source} did not answer", [source])
         for statement in statements.get(source, ()):
-            if statement.version in versions:
-                lic = statement.license
-                found.append((lic.license_id == LicenseId.other, tier, lic))
-                break
-    if found:
-        return min(found, key=lambda f: f[:2])[2]
-    waited = {OWN} | {source.value for source, _ in LICENSE_PRECEDENCE[version]}
-    missing = sorted(waited & unanswered)
-    if missing:
-        raise Undecided(f"{', '.join(missing)} did not answer")
+            if statement.version in versions and (routes is None or statement.route in routes):
+                return statement.license
     return ASSUMED
 
 
@@ -312,6 +326,7 @@ def own_license(source: str, files: Iterable[Path]) -> Optional[License]:
 
 __all__ = [
     "ASSUMED",
+    "HELD",
     "LICENSE_PRECEDENCE",
     "LICENSE_PROVIDERS",
     "OWN",

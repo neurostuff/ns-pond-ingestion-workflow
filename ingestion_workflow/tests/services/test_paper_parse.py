@@ -436,6 +436,13 @@ def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source):
     _validate(json.loads((summary["dir"] / "parsed_paper.json").read_text()), "parsed-paper")
 
 
+def test_a_merged_abstract_is_credited_to_the_provider_it_came_from(tmp_path):
+    paper, _, _ = _written(tmp_path, source="semantic_scholar", abstract="Faces activate the FFA.",
+                           abstract_provider="pubmed")
+    bib = paper["bibliography"]
+    assert (bib["provider"], bib["abstract_provider"]) == ("semantic_scholar", "pubmed")
+
+
 @pytest.mark.parametrize("source, error", [
     (None, "the metadata record names no provider"),
     ("elsevier_fallback", "'elsevier_fallback' is not a valid MetadataSource"),

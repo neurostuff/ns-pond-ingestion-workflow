@@ -1,0 +1,368 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.21020"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "4452926671dde445590cf3bdb18d2ee88d4bc8af", "title": "A
+        functional dissociation of conflict processing within anterior cingulate cortex",
+        "venue": "Human Brain Mapping", "year": 2008, "isOpenAccess": true, "openAccessPdf":
+        {"url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.21020?download=true",
+        "status": "BRONZE", "license": "CCBY", "disclaimer": "Notice: Paper or abstract
+        available at https://api.unpaywall.org/v2/10.1002/hbm.21020?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1002/hbm.21020, which is subject to the license by the
+        author or copyright owner provided with this content. Please go to the source
+        to verify the license and copyright information for your use."}, "publicationDate":
+        "2008-11-12", "authors": [{"authorId": "2441958", "name": "Chobok Kim"}, {"authorId":
+        "2581629", "name": "James K. Kroger"}, {"authorId": "3141034", "name": "Jeounghoon
+        Kim"}], "abstract": "Goal\u2010directed behavior requires cognitive control
+        to regulate the occurrence of conflict. The dorsal anterior cingulate cortex
+        (dACC) has been suggested in detecting response conflict during various conflict
+        tasks. Recent findings, however, have indicated not only that two distinct
+        subregions of dACC are involved in conflict processing but also that the conflict
+        occurs at both perceptual and response levels. In this study, we sought to
+        examine whether perceptual and response conflicts are functionally dissociated
+        in dACC. Thirteen healthy subjects performed a version of the Stroop task
+        during functional magnetic resonance imaging (fMRI) scanning. We identified
+        a functional dissociation of the caudal dACC (cdACC) and the rostral dACC
+        (rdACC) in their responses to different sources of conflict. The cdACC was
+        selectively engaged in perceptual conflict whereas the rdACC was more active
+        in response conflict. Further, the dorsolateral prefrontal cortex (DLPFC)
+        was coactivated not with cdACC but with rdACC. We suggest that cdACC plays
+        an important role in regulative processing of perceptual conflict whereas
+        rdACC is involved in detecting response conflict. Hum Brain Mapp, 2011. \u00a9
+        2010 Wiley\u2010Liss, Inc."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2152'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:18 GMT
+      Via:
+      - 1.1 61359dfa835b673cc6a15decd857cdfe.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - Yq5vF7Us-2uPYwlrZu7zvROulN2lOPSpNpRIgug28DTg1j0LpkWakg==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQDpEl-PHcEhJw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2152'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:18 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 1a2640a8-ece3-4eee-b358-6a96bff572f4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fhbm.21020&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1002\/hbm.21020","license":[{"start":{"date-parts":[[2010,5,13]],"date-time":"2010-05-13T00:00:00Z","timestamp":1273708800000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:18 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.21020&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 20, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1002/hbm.21020",
+        "x_new_oql": "get works where DOI is 10.1002/hbm.21020", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1002/hbm.21020"}]},
+        "url": "/works?filter=doi:10.1002%2Fhbm.21020&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2169102615",
+        "doi": "https://doi.org/10.1002/hbm.21020", "mag": "2169102615", "pmid": "https://pubmed.ncbi.nlm.nih.gov/21229616"},
+        "display_name": "A functional dissociation of conflict processing within anterior
+        cingulate cortex", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5081290695", "display_name": "Chobok Kim", "orcid":
+        "https://orcid.org/0000-0003-3775-9953", "observed_orcids": ["https://orcid.org/0000-0003-3775-9953"]},
+        "institutions": [{"id": "https://openalex.org/I143302722", "display_name":
+        "University of Kentucky", "ror": "https://ror.org/02k3smh20", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I143302722"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Chobok
+        Kim", "raw_affiliation_strings": ["Department of Anatomy and Neurobiology,
+        University of Kentucky, Kentucky, USA", "Department of Anatomy and Neurobiology,
+        University of Kentucky, Kentucky"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Anatomy and Neurobiology, University of Kentucky, Kentucky,
+        USA", "institution_ids": ["https://openalex.org/I143302722"]}, {"raw_affiliation_string":
+        "Department of Anatomy and Neurobiology, University of Kentucky, Kentucky",
+        "institution_ids": ["https://openalex.org/I143302722"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5058724911", "display_name":
+        "James K. Kroger", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I10052268", "display_name": "New Mexico State
+        University", "ror": "https://ror.org/00hpz7z43", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I10052268"]}, {"id": "https://openalex.org/I1334567473",
+        "display_name": "Mind Research Network", "ror": "https://ror.org/032cjfs80",
+        "country_code": "US", "type": "nonprofit", "lineage": ["https://openalex.org/I1334567473"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "James
+        K. Kroger", "raw_affiliation_strings": ["Department of Psychology , New Mexico
+        State University , New Mexico", "The Mind Research Network , Albuquerque ,
+        New Mexico", "Department of Psychology, New Mexico State University, New Mexico",
+        "The Mind Research Network, Albuquerque, New Mexico"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Department of Psychology , New
+        Mexico State University , New Mexico", "institution_ids": ["https://openalex.org/I10052268"]},
+        {"raw_affiliation_string": "The Mind Research Network , Albuquerque , New
+        Mexico", "institution_ids": ["https://openalex.org/I1334567473"]}, {"raw_affiliation_string":
+        "Department of Psychology, New Mexico State University, New Mexico", "institution_ids":
+        ["https://openalex.org/I10052268"]}, {"raw_affiliation_string": "The Mind
+        Research Network, Albuquerque, New Mexico", "institution_ids": ["https://openalex.org/I1334567473"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5040162996",
+        "display_name": "Jeounghoon Kim", "orcid": "https://orcid.org/0000-0003-1792-4800",
+        "observed_orcids": ["https://orcid.org/0000-0003-1792-4800"]}, "institutions":
+        [{"id": "https://openalex.org/I157485424", "display_name": "Korea Advanced
+        Institute of Science and Technology", "ror": "https://ror.org/05apxxy63",
+        "country_code": "KR", "type": "education", "lineage": ["https://openalex.org/I157485424"]}],
+        "countries": ["KR"], "is_corresponding": false, "raw_author_name": "Jeounghoon
+        Kim", "raw_affiliation_strings": ["School of Humanities and Social Sciences
+        , KAIST , Daejeon , Korea", "School of Humanities and Social Sciences, KAIST,
+        Daejeon, Korea r r"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "School of Humanities and Social Sciences , KAIST , Daejeon , Korea", "institution_ids":
+        ["https://openalex.org/I157485424"]}, {"raw_affiliation_string": "School of
+        Humanities and Social Sciences, KAIST, Daejeon, Korea r r", "institution_ids":
+        ["https://openalex.org/I157485424"]}]}], "publication_year": 2008, "abstract_inverted_index":
+        {"Goal-directed": [0], "behavior": [1], "requires": [2], "cognitive": [3],
+        "control": [4], "to": [5, 63, 110], "regulate": [6], "the": [7, 49, 82, 98,
+        103, 124, 133], "occurrence": [8], "of": [9, 39, 81, 97, 113, 157], "conflict.":
+        [10, 114, 131, 167], "The": [11, 115], "dorsal": [12], "anterior": [13], "cingulate":
+        [14], "cortex": [15, 136], "(dACC)": [16], "has": [17], "been": [18], "suggested":
+        [19], "in": [20, 43, 73, 107, 120, 129, 154, 164], "detecting": [21, 165],
+        "response": [22, 56, 68, 130, 166], "conflict": [23, 26, 44, 50, 122, 159],
+        "during": [24, 85], "various": [25], "tasks.": [27], "Recent": [28], "findings,":
+        [29], "however,": [30], "have": [31], "indicated": [32], "not": [33, 140],
+        "only": [34], "that": [35, 48, 148], "two": [36], "distinct": [37], "subregions":
+        [38], "dACC": [40, 100, 105], "are": [41, 70], "involved": [42, 163], "processing":
+        [45, 156], "but": [46, 143], "also": [47], "occurs": [51], "at": [52], "both":
+        [53], "perceptual": [54, 66, 121, 158], "and": [55, 67, 102], "levels.": [57],
+        "In": [58], "this": [59], "study,": [60], "we": [61], "sought": [62], "examine":
+        [64], "whether": [65], "conflicts": [69], "functionally": [71], "dissociated":
+        [72], "dACC.": [74], "Thirteen": [75], "healthy": [76], "subjects": [77],
+        "performed": [78], "a": [79, 94], "version": [80], "Stroop": [83], "task":
+        [84], "functional": [86, 95], "magnetic": [87], "resonance": [88], "imaging":
+        [89], "(fMRI)": [90], "scanning.": [91], "We": [92, 146], "identified": [93],
+        "dissociation": [96], "caudal": [99], "(cdACC)": [101], "rostral": [104],
+        "(rdACC)": [106], "their": [108], "responses": [109], "different": [111],
+        "sources": [112], "cdACC": [116, 142, 149], "was": [117, 126, 138], "selectively":
+        [118], "engaged": [119], "whereas": [123, 160], "rdACC": [125, 161], "more":
+        [127], "active": [128], "Further,": [132], "dorsolateral": [134], "prefrontal":
+        [135], "(DLPFC)": [137], "coactivated": [139], "with": [141, 144], "rdACC.":
+        [145], "suggest": [147], "plays": [150], "an": [151], "important": [152],
+        "role": [153], "regulative": [155], "is": [162]}, "primary_location": {"id":
+        "doi:10.1002/hbm.21020", "doi": "https://doi.org/10.1002/hbm.21020", "is_oa":
+        true, "landing_page_url": "https://doi.org/10.1002/hbm.21020", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.21020?download=true",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "best_oa_location": {"id": "doi:10.1002/hbm.21020",
+        "doi": "https://doi.org/10.1002/hbm.21020", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1002/hbm.21020", "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.21020?download=true",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "locations": [{"id": "doi:10.1002/hbm.21020",
+        "doi": "https://doi.org/10.1002/hbm.21020", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1002/hbm.21020", "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.21020?download=true",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, {"id": "doi:10.1038/npre.2008.2505.1",
+        "doi": "https://doi.org/10.1038/npre.2008.2505.1", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1038/npre.2008.2505.1", "pdf_url": "https://www.nature.com/articles/npre.2008.2505.1.pdf",
+        "source": {"id": "https://openalex.org/S48744551", "display_name": "Nature
+        Precedings", "issn_l": "1756-0357", "issn": ["1756-0357"], "is_oa": true,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/P4310319908", "host_organization_name": "Nature Portfolio",
+        "host_organization_lineage": ["https://openalex.org/P4310319908", "https://openalex.org/P4310319965"],
+        "host_organization_lineage_names": ["Nature Portfolio", "Springer Nature"],
+        "type": "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Nature Precedings", "raw_type": "journal-article"}, {"id":
+        "pmid:21229616", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/21229616",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human brain
+        mapping", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:6869912",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6869912",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Hum Brain
+        Mapp", "raw_type": "Text"}, {"id": "pmh:oai:nature.com:10101/npre.2008.2505.1",
+        "doi": null, "is_oa": true, "landing_page_url": "http://precedings.nature.com/documents/2505/version/1",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S48744551", "display_name":
+        "Nature Precedings", "issn_l": "1756-0357", "issn": ["1756-0357"], "is_oa":
+        true, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/P4310319908", "host_organization_name": "Nature Portfolio",
+        "host_organization_lineage": ["https://openalex.org/P4310319908", "https://openalex.org/P4310319965"],
+        "host_organization_lineage_names": ["Nature Portfolio", "Springer Nature"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Nature Precedings",
+        "raw_type": "Manuscript"}], "open_access": {"is_oa": true, "oa_status": "bronze",
+        "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.21020?download=true",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52b08b972c9d-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:18 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9921'
+      X-RateLimit-Remaining-USD:
+      - '0.9921'
+      X-RateLimit-Reset:
+      - '12342'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=PhBUVNr03bbRzfjXr%2FBVDdxcTiudNNpgnsVdvv8aQ1I%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355658"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=PhBUVNr03bbRzfjXr%2FBVDdxcTiudNNpgnsVdvv8aQ1I%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355658"
+    status:
+      code: 200
+      message: OK
+version: 1

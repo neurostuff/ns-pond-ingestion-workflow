@@ -1,0 +1,413 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1111/ejn.14701"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "611cb28eb89774a1876482c06ebab2e2f3e720cc", "title": "Selective
+        extinction through cognitive evaluation: Linking emotion regulation and extinction",
+        "venue": "European Journal of Neuroscience", "year": 2020, "isOpenAccess":
+        true, "openAccessPdf": {"url": "https://doi.org/10.31234/osf.io/cdw92", "status":
+        "GOLD", "license": "CCBY", "disclaimer": "Notice: Paper or abstract available
+        at https://api.unpaywall.org/v2/10.1111/ejn.14701?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1111/ejn.14701, which is subject to the license by the
+        author or copyright owner provided with this content. Please go to the source
+        to verify the license and copyright information for your use."}, "publicationDate":
+        "2020-02-11", "authors": [{"authorId": "35702469", "name": "Birthe Macdonald"},
+        {"authorId": "1651710257", "name": "S. Wake"}, {"authorId": "30361732", "name":
+        "T. Johnstone"}], "abstract": "The extinction of a previously conditioned
+        response can be modulated through cognitive processes, including feature\u2010based
+        information, and explicit instruction. Here, we introduce a selective extinction
+        through cognitive evaluation (SECE) task in which information is cognitively
+        evaluated on a trial\u2010by\u2010trial basis to ascertain the extinction
+        contingencies. Participants were conditioned to expect an electric shock during
+        the presentation of one of two letters (CS+/CS\u2212). During the SECE task,
+        the letters were presented within words belonging to two categories, one of
+        which indicated safety (COG\u2212_CS+ trials), while risk of shock was maintained
+        for the other category (COG+_CS+ trials). Skin conductance responses indicated
+        that participants reduced their response to COG\u2212_CS+ trials compared
+        to COG+_CS+ trials. Clusters in bilateral insula and anterior cingulate cortex
+        showed activation for COG+_CS+ trials that was reduced for COG\u2212_CS+ trials.
+        A network of brain regions, including left inferior frontal gyrus, and bilateral
+        temporal and parietal cortices showed greater activation for COG\u2212_CS+
+        versus COG+_CS+ trials. This is consistent with the semantic processing and
+        decision\u2010making necessary to evaluate the trial contingencies. We compared
+        activation in the SECE task to activation in a cognitive reappraisal task
+        in which participants were asked to attend to, or regulate their emotional
+        reactions to affective IAPS images. This task replicated prefrontal activation
+        seen in previous reappraisal studies. A voxelwise conjunction analysis found
+        no overlap between the cognitive reappraisal and the SECE task, but we did
+        find evidence for common activation in follow\u2010up ROI analyses, supporting
+        the idea of common lateral prefrontal mechanisms involved in both processes."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2741'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      Via:
+      - 1.1 c2945f14afe7d3ec6a91f7d92132c7ce.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - cGoXHnulKMP97MPFhJK24wP4OPeWXseZXgiJaKvYj-xV8BmoxWMgpA==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQDNHhjvHcEtfA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2741'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 6a55844c-9559-4fab-beec-bf10c719b44b
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1111%2Fejn.14701&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1111\/ejn.14701","license":[{"start":{"date-parts":[[2020,3,20]],"date-time":"2020-03-20T00:00:00Z","timestamp":1584662400000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fejn.14701&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 31, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1111/ejn.14701",
+        "x_new_oql": "get works where DOI is 10.1111/ejn.14701", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1111/ejn.14701"}]},
+        "url": "/works?filter=doi:10.1111%2Fejn.14701&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3005566621",
+        "doi": "https://doi.org/10.1111/ejn.14701", "mag": "3005566621", "pmid": "https://pubmed.ncbi.nlm.nih.gov/32043646"},
+        "display_name": "Selective extinction through cognitive evaluation: Linking
+        emotion regulation and extinction", "authorships": [{"author_position": "first",
+        "author": {"id": "https://openalex.org/A5014524526", "display_name": "Birthe
+        Macdonald", "orcid": "https://orcid.org/0000-0002-1927-6117", "observed_orcids":
+        ["https://orcid.org/0000-0002-1927-6117"]}, "institutions": [{"id": "https://openalex.org/I202697423",
+        "display_name": "University of Zurich", "ror": "https://ror.org/02crff812",
+        "country_code": "CH", "type": "education", "lineage": ["https://openalex.org/I202697423"]},
+        {"id": "https://openalex.org/I71052956", "display_name": "University of Reading",
+        "ror": "https://ror.org/05v62cm79", "country_code": "GB", "type": "education",
+        "lineage": ["https://openalex.org/I71052956"]}], "countries": ["CH", "GB"],
+        "is_corresponding": true, "raw_author_name": "Birthe Macdonald", "raw_affiliation_strings":
+        ["UFSP Dynamics of Healthy Aging University of Zurich Zurich Switzerland",
+        "University of Reading Reading UK", "UFSP Dynamics of Healthy Aging, University
+        of Zurich, Zurich, Switzerland", "University of Reading, Reading, UK"], "raw_orcid":
+        "https://orcid.org/0000-0002-1927-6117", "affiliations": [{"raw_affiliation_string":
+        "UFSP Dynamics of Healthy Aging University of Zurich Zurich Switzerland",
+        "institution_ids": ["https://openalex.org/I202697423"]}, {"raw_affiliation_string":
+        "University of Reading Reading UK", "institution_ids": ["https://openalex.org/I71052956"]},
+        {"raw_affiliation_string": "UFSP Dynamics of Healthy Aging, University of
+        Zurich, Zurich, Switzerland", "institution_ids": ["https://openalex.org/I202697423"]},
+        {"raw_affiliation_string": "University of Reading, Reading, UK", "institution_ids":
+        ["https://openalex.org/I71052956"]}]}, {"author_position": "middle", "author":
+        {"id": null, "display_name": "Shannon Wake", "orcid": "https://orcid.org/0000-0002-9737-0678",
+        "observed_orcids": ["https://orcid.org/0000-0002-9737-0678"]}, "institutions":
+        [{"id": "https://openalex.org/I71052956", "display_name": "University of Reading",
+        "ror": "https://ror.org/05v62cm79", "country_code": "GB", "type": "education",
+        "lineage": ["https://openalex.org/I71052956"]}], "countries": ["GB"], "is_corresponding":
+        false, "raw_author_name": "Shannon Wake", "raw_affiliation_strings": ["University
+        of Reading Reading UK", "University of Reading, Reading, UK"], "raw_orcid":
+        "https://orcid.org/0000-0002-9737-0678", "affiliations": [{"raw_affiliation_string":
+        "University of Reading Reading UK", "institution_ids": ["https://openalex.org/I71052956"]},
+        {"raw_affiliation_string": "University of Reading, Reading, UK", "institution_ids":
+        ["https://openalex.org/I71052956"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5049130644", "display_name": "Tom Johnstone",
+        "orcid": "https://orcid.org/0000-0001-8635-8158", "observed_orcids": ["https://orcid.org/0000-0001-8635-8158"]},
+        "institutions": [{"id": "https://openalex.org/I57093077", "display_name":
+        "Swinburne University of Technology", "ror": "https://ror.org/031rekg67",
+        "country_code": "AU", "type": "education", "lineage": ["https://openalex.org/I57093077"]},
+        {"id": "https://openalex.org/I71052956", "display_name": "University of Reading",
+        "ror": "https://ror.org/05v62cm79", "country_code": "GB", "type": "education",
+        "lineage": ["https://openalex.org/I71052956"]}], "countries": ["AU", "GB"],
+        "is_corresponding": false, "raw_author_name": "Tom Johnstone", "raw_affiliation_strings":
+        ["Swinburne University of Technology Hawthorn Vic. Australia", "University
+        of Reading Reading UK", "Swinburne University of Technology, Hawthorn, Vic.,
+        Australia", "University of Reading, Reading, UK"], "raw_orcid": "https://orcid.org/0000-0001-8635-8158",
+        "affiliations": [{"raw_affiliation_string": "Swinburne University of Technology
+        Hawthorn Vic. Australia", "institution_ids": ["https://openalex.org/I57093077"]},
+        {"raw_affiliation_string": "University of Reading Reading UK", "institution_ids":
+        ["https://openalex.org/I71052956"]}, {"raw_affiliation_string": "Swinburne
+        University of Technology, Hawthorn, Vic., Australia", "institution_ids": ["https://openalex.org/I57093077"]},
+        {"raw_affiliation_string": "University of Reading, Reading, UK", "institution_ids":
+        ["https://openalex.org/I71052956"]}]}], "publication_year": 2020, "abstract_inverted_index":
+        {"The": [0], "extinction": [1, 24, 43], "of": [2, 56, 58, 77, 85, 132, 240],
+        "a": [3, 22, 37, 179], "previously": [4], "conditioned": [5, 47], "response":
+        [6, 103], "can": [7], "be": [8], "modulated": [9], "through": [10, 25], "cognitive":
+        [11, 26, 180, 219], "processes,": [12], "including": [13, 135], "feature-based":
+        [14], "information,": [15], "and": [16, 115, 140, 143, 161, 221], "explicit":
+        [17], "instruction.": [18], "Here,": [19], "we": [20, 226], "introduce": [21],
+        "selective": [23], "evaluation": [27], "(SECE)": [28], "task": [29, 175, 182,
+        201], "in": [30, 112, 172, 178, 183, 206, 233, 246], "which": [31, 78, 184],
+        "information": [32], "is": [33, 155], "cognitively": [34], "evaluated": [35],
+        "on": [36], "trial-by-trial": [38], "basis": [39], "to": [40, 48, 73, 104,
+        108, 164, 176, 188, 196], "ascertain": [41], "the": [42, 54, 63, 66, 90, 158,
+        166, 173, 218, 222, 238], "contingencies.": [44, 168], "Participants": [45],
+        "were": [46, 68, 186], "expect": [49], "an": [50], "electric": [51], "shock":
+        [52, 86], "during": [53], "presentation": [55], "one": [57, 76], "two": [59,
+        74], "letters": [60, 67], "(CS+/CS-).": [61], "During": [62], "SECE": [64,
+        174, 223], "task,": [65, 224], "presented": [69], "within": [70], "words":
+        [71], "belonging": [72], "categories,": [75], "indicated": [79, 98], "safety":
+        [80], "(COG-_CS+": [81], "trials),": [82], "while": [83], "risk": [84], "was":
+        [87, 125], "maintained": [88], "for": [89, 121, 127, 149, 230], "other": [91],
+        "category": [92], "(COG+_CS+": [93], "trials).": [94], "Skin": [95], "conductance":
+        [96], "responses": [97], "that": [99, 124], "participants": [100, 185], "reduced":
+        [101, 126], "their": [102, 193], "COG-_CS+": [105, 128, 150], "trials": [106,
+        123], "compared": [107, 170], "COG+_CS+": [109, 122, 152], "trials.": [110,
+        129, 153], "Clusters": [111], "bilateral": [113, 141], "insula": [114], "anterior":
+        [116], "cingulate": [117], "cortex": [118], "showed": [119, 146], "activation":
+        [120, 148, 171, 177, 204, 232], "A": [130, 210], "network": [131], "brain":
+        [133], "regions,": [134], "left": [136], "inferior": [137], "frontal": [138],
+        "gyrus,": [139], "temporal": [142], "parietal": [144], "cortices": [145],
+        "greater": [147], "versus": [151], "This": [154, 200], "consistent": [156],
+        "with": [157], "semantic": [159], "processing": [160], "decision-making":
+        [162], "necessary": [163], "evaluate": [165], "trial": [167], "We": [169],
+        "reappraisal": [181, 208, 220], "asked": [187], "attend": [189], "to,": [190],
+        "or": [191], "regulate": [192], "emotional": [194], "reactions": [195], "affective":
+        [197], "IAPS": [198], "images.": [199], "replicated": [202], "prefrontal":
+        [203, 243], "seen": [205], "previous": [207], "studies.": [209], "voxelwise":
+        [211], "conjunction": [212], "analysis": [213], "found": [214], "no": [215],
+        "overlap": [216], "between": [217], "but": [225], "did": [227], "find": [228],
+        "evidence": [229], "common": [231, 241], "follow-up": [234], "ROI": [235],
+        "analyses,": [236], "supporting": [237], "idea": [239], "lateral": [242],
+        "mechanisms": [244], "involved": [245], "both": [247], "processes.": [248]},
+        "primary_location": {"id": "doi:10.1111/ejn.14701", "doi": "https://doi.org/10.1111/ejn.14701",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1111/ejn.14701", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S171130801", "display_name":
+        "European Journal of Neuroscience", "issn_l": "0953-816X", "issn": ["0953-816X",
+        "1460-9568"], "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in":
+        ["anvur-class-a", "anvur-scientific", "cwts-core", "dongbi-c", "doyens", "jufo-2",
+        "ki-jl-1", "medline", "norway-1", "poland-100", "russia-white-list-2", "vabb-shw"],
+        "host_organization": "https://openalex.org/P4310320595", "host_organization_name":
+        "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "European Journal of Neuroscience",
+        "raw_type": "journal-article"}, "best_oa_location": {"id": "doi:10.31234/osf.io/cdw92",
+        "doi": "https://doi.org/10.31234/osf.io/cdw92", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.31234/osf.io/cdw92", "pdf_url": null, "source": null,
+        "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by", "version":
+        "acceptedVersion", "is_accepted": true, "is_published": false, "raw_source_name":
+        null, "raw_type": "posted-content"}, "locations": [{"id": "doi:10.1111/ejn.14701",
+        "doi": "https://doi.org/10.1111/ejn.14701", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1111/ejn.14701", "pdf_url": null, "source": {"id": "https://openalex.org/S171130801",
+        "display_name": "European Journal of Neuroscience", "issn_l": "0953-816X",
+        "issn": ["0953-816X", "1460-9568"], "is_oa": false, "is_in_doaj": false, "is_core":
+        true, "listed_in": ["anvur-class-a", "anvur-scientific", "cwts-core", "dongbi-c",
+        "doyens", "jufo-2", "ki-jl-1", "medline", "norway-1", "poland-100", "russia-white-list-2",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310320595", "host_organization_name":
+        "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "European Journal of Neuroscience",
+        "raw_type": "journal-article"}, {"id": "doi:10.31234/osf.io/cdw92", "doi":
+        "https://doi.org/10.31234/osf.io/cdw92", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.31234/osf.io/cdw92", "pdf_url": null, "source": null,
+        "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by", "version":
+        "acceptedVersion", "is_accepted": true, "is_published": false, "raw_source_name":
+        null, "raw_type": "posted-content"}, {"id": "pmid:32043646", "doi": null,
+        "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/32043646",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "The European
+        journal of neuroscience", "raw_type": "Journal Article"}, {"id": "pmh:oai:researchbank.swinburne.edu.au:73e2b21e-0f9b-4758-b805-f56b47a4467f/1",
+        "doi": null, "is_oa": false, "landing_page_url": "http://hdl.handle.net/1959.3/454827",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401157", "display_name":
+        "Swinburne figshare (Swinburne University of Technology)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I57093077", "host_organization_name":
+        "Swinburne University of Technology", "host_organization_lineage": ["https://openalex.org/I57093077"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "European Journal of Neuroscience, Vol. 52, no.
+        2 (Jul 2020), pp. 2873-2888", "raw_type": null}, {"id": "pmh:oai:share.osf.io:461C0-024-AF8",
+        "doi": null, "is_oa": false, "landing_page_url": "http://doi.org/10.31234/OSF.IO/CDW92",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401687", "display_name":
+        "PsyArXiv (OSF Preprints)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2799848540", "host_organization_name": "Center for
+        Open Science", "host_organization_lineage": ["https://openalex.org/I2799848540"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "", "raw_type": "preprint"}, {"id": "pmh:oai:share.osf.io:f87b7c13-fb03-4f66-aa3a-69e95f230e36",
+        "doi": null, "is_oa": true, "landing_page_url": "https://osf.io/cdw92", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306401687", "display_name":
+        "PsyArXiv (OSF Preprints)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2799848540", "host_organization_name": "Center for
+        Open Science", "host_organization_lineage": ["https://openalex.org/I2799848540"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by",
+        "license_id": "https://openalex.org/licenses/cc-by", "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": null, "raw_type":
+        "Preprint"}, {"id": "pmh:oai:www.zora.uzh.ch:193625", "doi": null, "is_oa":
+        false, "landing_page_url": "https://www.zora.uzh.ch/193625", "pdf_url": null,
+        "source": {"id": "https://openalex.org/S4306401281", "display_name": "Zurich
+        Open Repository and Archive (University of Zurich)", "issn_l": null, "issn":
+        null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I202697423", "host_organization_name":
+        "University of Zurich", "host_organization_lineage": ["https://openalex.org/I202697423"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Macdonald, Birthe; Wake, Shannon; Johnstone, Tom
+        (2020). Selective extinction through cognitive evaluation: Linking emotion
+        regulation and extinction. European Journal of Neuroscience, 52(2):2873-2888.",
+        "raw_type": "info:eu-repo/semantics/article"}, {"id": "pmh:oai:www.zora.uzh.ch:20.500.14742/175328",
+        "doi": null, "is_oa": false, "landing_page_url": "https://www.zora.uzh.ch/handle/20.500.14742/175328",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401281", "display_name":
+        "Zurich Open Repository and Archive (University of Zurich)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I202697423", "host_organization_name":
+        "University of Zurich", "host_organization_lineage": ["https://openalex.org/I202697423"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Macdonald, B., Wake, S., & Johnstone, T. (2020).
+        Selective extinction through cognitive evaluation: Linking emotion regulation
+        and extinction. European Journal of Neuroscience, 52, 2873\u20132888. https://doi.org/10.1111/ejn.14701",
+        "raw_type": "Journal Article"}], "open_access": {"is_oa": true, "oa_status":
+        "gold", "oa_url": "https://doi.org/10.31234/osf.io/cdw92", "any_repository_has_fulltext":
+        true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca529f6c43525d-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9924'
+      X-RateLimit-Remaining-USD:
+      - '0.9924'
+      X-RateLimit-Reset:
+      - '12345'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=qcmCUUKpzCs4h%2BSSvrt44MZoX0fQckqjC%2BP%2BKGuDq%2FY%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355655"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=qcmCUUKpzCs4h%2BSSvrt44MZoX0fQckqjC%2BP%2BKGuDq%2FY%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355655"
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -21,6 +21,7 @@ from typing import Dict, Iterator, List, Sequence
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
+from ingestion_workflow.services.licenses import OWN
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -95,6 +96,10 @@ class MetadataStage:
                 plan.blocked += 1
                 continue
             count, last = attempts.get(ref.id, (0, None))
+            if existing is not None and (existing.summary or {}).get("unanswered"):
+                # A provider's outage is not the article's failure: it waits out the
+                # retry delay but spends none of its tries.
+                count = 0
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
@@ -136,8 +141,14 @@ class MetadataStage:
         downloads = ctx.catalog.artifacts([work.article_id for work in by_slug.values()],
                                           "download")
         held: Dict[str, List[HeldDownload]] = {}
+        dois: Dict[str, List[str]] = {}
+        # In the order the sources are tried, so the first held copy's record speaks first.
+        order = {source: i for i, source in enumerate(self.settings.download_sources)}
         for slug, work in by_slug.items():
-            for source, download in sorted(downloads.get(work.article_id, {}).items()):
+            dois[slug] = ctx.catalog.aliases(work.article_id, "doi")
+            for source, download in sorted(downloads.get(work.article_id, {}).items(),
+                                           key=lambda item: (order.get(item[0], len(order)),
+                                                             item[0])):
                 if download.status is not Status.OK:
                     continue
                 payload = ctx.payload(download)
@@ -147,7 +158,7 @@ class MetadataStage:
                     [ctx.recorded_path(str(f.file_path)) for f in files]))
 
         try:
-            found = self.service.enrich_metadata(contents, held)
+            found = self.service.enrich_metadata(contents, held, dois)
         except Exception as exc:
             logger.warning("metadata batch failed: %s", exc)
             for work in by_slug.values():
@@ -166,9 +177,12 @@ class MetadataStage:
                 )
                 continue
             if slug in self.service.undecided:
+                undecided = self.service.undecided[slug]
+                providers = [s for s in undecided.sources if s != OWN]
                 yield Outcome.failure(
-                    work.article_id, self.name, "", self.service.undecided[slug],
+                    work.article_id, self.name, "", str(undecided),
                     fingerprint=work.fingerprint,
+                    summary={"unanswered": providers} if providers else None,
                 )
                 continue
             yield Outcome(

@@ -46,3 +46,21 @@ def test_two_articles_sharing_a_doi_each_get_its_deposits(vcr):
     assert found[one.slug].raw_metadata["crossref"]["license"]
     assert len(vcr.requests) == 1
     assert "mailto" not in vcr.requests[0].uri
+
+
+#: 51 NeuroImage DOIs from 2003 the catalog holds: one more than a filter query takes.
+NEUROIMAGE_2003 = [f"10.1016/j.neuroimage.2003.{n}" for n in (
+    "05.001", "06.001", "06.002", "06.003", *(f"07.{i:03d}" for i in range(1, 36) if i not in (8, 10)),
+    *(f"08.{i:03d}" for i in range(1, 15)))]
+
+
+@pytest.mark.vcr()
+def test_fifty_dois_go_in_one_query_and_the_fifty_first_in_the_next(vcr):
+    assert len(NEUROIMAGE_2003) == 51
+    identifiers = [Identifier(doi=doi) for doi in NEUROIMAGE_2003]
+    found = CrossrefClient().get_metadata(identifiers)
+
+    assert set(found) == {i.slug for i in identifiers}
+    # Crossref answered the second query 429 once, and the retry is the same query
+    queries = dict.fromkeys(r.uri for r in vcr.requests if "filter=" in r.uri)
+    assert [uri.count("doi%3A") for uri in queries] == [50, 1]

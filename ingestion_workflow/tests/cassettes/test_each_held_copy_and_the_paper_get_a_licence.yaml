@@ -59,27 +59,27 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 18:37:52 GMT
+      - Sun, 18 Oct 2026 20:33:48 GMT
       Via:
-      - 1.1 895116b5366f3f5264f7b6361d3fd564.cloudfront.net (CloudFront)
+      - 1.1 3b82043b044a2364eb12350fc0bedc80.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 8rbzfA6gjPzQMBzXWFobZDtqMNkfjGH3KX0KxaOFXWaAReWuq7alTA==
+      - SOXcoAkIHqAGBoOKm2K7i4CmkFUIzi5PmcmN6nslIxl0EFun60_fEA==
       X-Amz-Cf-Pop:
-      - DFW57-P1
+      - DFW59-P3
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - Fc_AMH9gPHcEhJw=
+      - FdP_EGfoPHcEj3g=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
       - '2275'
       x-amzn-Remapped-Date:
-      - Sun, 18 Oct 2026 18:37:52 GMT
+      - Sun, 18 Oct 2026 20:33:48 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - 6e380a63-50c4-422b-a645-8086e41b8345
+      - 2a9f36bc-5f56-4da9-bdc3-178ec81d9ca0
     status:
       code: 200
       message: OK
@@ -105,7 +105,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 18:37:53 GMT
+      - Sun, 18 Oct 2026 20:33:48 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -147,7 +147,7 @@ interactions:
     uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Falz.12697&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
-      string: '{"meta": {"count": 1, "db_response_time_ms": 16, "page": 1, "per_page":
+      string: '{"meta": {"count": 1, "db_response_time_ms": 14, "page": 1, "per_page":
         100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1002/alz.12697",
         "x_new_oql": "get works where DOI is 10.1002/alz.12697", "oqo": {"get_rows":
         "works", "filter_rows": [{"column_id": "doi", "value": "10.1002/alz.12697"}]},
@@ -600,7 +600,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c9a827b8a84918-DFW
+      - a4ca51f94c1c2c1e-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -608,7 +608,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 18:37:53 GMT
+      - Sun, 18 Oct 2026 20:33:49 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -628,11 +628,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '9996'
+      - '9927'
       X-RateLimit-Remaining-USD:
-      - '0.9996'
+      - '0.9927'
       X-RateLimit-Reset:
-      - '19327'
+      - '12371'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -647,9 +647,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=1c2WYFuqGMfqpjUj8SgbyxuGSF4pmPCVZ3ky7Rq%2F2D0%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792348673"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=1KjwkvVF3jZV2jvc0qaWDMAIino0wrcQaU7%2BTuO3wLc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355629"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=1c2WYFuqGMfqpjUj8SgbyxuGSF4pmPCVZ3ky7Rq%2F2D0%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792348673"
+      - heroku-nel="https://nel.heroku.com/reports?s=1KjwkvVF3jZV2jvc0qaWDMAIino0wrcQaU7%2BTuO3wLc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355629"
     status:
       code: 200
       message: OK

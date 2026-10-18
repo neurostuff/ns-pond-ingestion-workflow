@@ -1,0 +1,1022 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1101/2020.03.25.008318"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '42'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"message": "Too Many Requests. Please wait and try again or apply
+        for a key for higher rate limits. https://www.semanticscholar.org/product/api#api-key-form",
+        "code": "429"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '174'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:20 GMT
+      Via:
+      - 1.1 22190644642e60636c6a7cd22995db6e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 28QmkjelgY1k2ITb_BO5RBRf-FQ4Sx0Q_2j8sLbj23mEGnzhriT_uw==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - FdQD-FpmPHcEdFg=
+      x-amzn-ErrorType:
+      - TooManyRequestsException
+      x-amzn-RequestId:
+      - 4a87a620-d1fc-496e-a00e-619b83b9a22c
+    status:
+      code: 429
+      message: ''
+- request:
+    body: '{"ids": ["DOI:10.1101/2020.03.25.008318"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '42'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "cbcdf6864cc8a7b569775642037d112066d326d5", "title": "Direct
+        visualization and characterization of the human zona incerta and surrounding
+        structures", "venue": "bioRxiv", "year": 2020, "isOpenAccess": true, "openAccessPdf":
+        {"url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137",
+        "status": "GOLD", "license": "CCBY", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC7555067, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2020-03-26", "authors": [{"authorId": "145169034",
+        "name": "Jonathan C. Lau"}, {"authorId": "2605028", "name": "Yiming Xiao"},
+        {"authorId": "3815893", "name": "R. Haast"}, {"authorId": "46569517", "name":
+        "G. Gilmore"}, {"authorId": "2592869", "name": "K. Uluda\u011f"}, {"authorId":
+        "4692856", "name": "K. Macdougall"}, {"authorId": "144637542", "name": "Ravi
+        S. Menon"}, {"authorId": "1692843", "name": "A. Parrent"}, {"authorId": "1698185",
+        "name": "T. Peters"}, {"authorId": "2218490594", "name": "Ali R. Khan"}],
+        "abstract": "The zona incerta (ZI) is a small gray matter region of the deep
+        brain first identified in the 19th century, yet direct in vivo visualization
+        and characterization has remained elusive. Noninvasive detection of the ZI
+        and surrounding region could be critical to further our understanding of this
+        widely connected but poorly understood deep brain region and could contribute
+        to the development and optimization of neuromodulatory therapies. We demonstrate
+        that high resolution (submillimetric) longitudinal (T1) relaxometry measurements
+        at high magnetic field strength (7 Tesla) can be used to delineate the ZI
+        from surrounding white matter structures, specifically the fasciculus cerebellothalamicus,
+        fields of Forel (fasciculus lenticularis, fasciculus thalamicus, field H),
+        and medial lemniscus. Using this approach, we successfully derived in vivo
+        estimates of the size, shape, location, and tissue characteristics of substructures
+        in the ZI region, confirming observations only previously possible through
+        histological evaluation that this region is not just a space between structures
+        but contains distinct morphological entities that should be considered separately.
+        Our findings pave the way for increasingly detailed in vivo study and provide
+        a structural foundation for precise functional and neuromodulatory investigation."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2520'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:21 GMT
+      Via:
+      - 1.1 7ad25e4da7e31b494eaf104b1fe246e8.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 1NBMEJ1sre0uD0waWyjmfQrdJPFWkBIygXRiocUWiDLd31_gwVDNXg==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQEJG6GvHcEKkw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2520'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:21 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 41bb9f2f-d68e-4325-812d-4bd59bc1efe2
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fhbm.25137%2Cdoi%3A10.1101%2F2020.03.25.008318&rows=2&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":2,"items":[{"DOI":"10.1002\/hbm.25137","license":[{"start":{"date-parts":[[2020,7,17]],"date-time":"2020-07-17T00:00:00Z","timestamp":1594944000000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}]},{"DOI":"10.1101\/2020.03.25.008318"}],"items-per-page":2,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:21 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.25137%7C10.1101%2F2020.03.25.008318&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 25, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (10.1002/hbm.25137
+        or 10.1101/2020.03.25.008318)", "x_new_oql": "get works where DOI is (10.1002/hbm.25137
+        or 10.1101/2020.03.25.008318)", "oqo": {"get_rows": "works", "filter_rows":
+        [{"join": "or", "filters": [{"column_id": "doi", "value": "10.1002/hbm.25137"},
+        {"column_id": "doi", "value": "10.1101/2020.03.25.008318"}]}]}, "url": "/works?filter=doi:10.1002%2Fhbm.25137|10.1101%2F2020.03.25.008318&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W3042500539",
+        "doi": "https://doi.org/10.1002/hbm.25137", "mag": "3042500539", "pmid": "https://pubmed.ncbi.nlm.nih.gov/32677751"},
+        "display_name": "Direct visualization and characterization of the human zona
+        incerta and surrounding structures", "authorships": [{"author_position": "first",
+        "author": {"id": "https://openalex.org/A5058281405", "display_name": "Jonathan
+        C. Lau", "orcid": "https://orcid.org/0000-0002-8452-8915", "observed_orcids":
+        ["https://orcid.org/0000-0002-8452-8915"]}, "institutions": [{"id": "https://openalex.org/I125749732",
+        "display_name": "Western University", "ror": "https://ror.org/02grkyz14",
+        "country_code": "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]},
+        {"id": "https://openalex.org/I4405252475", "display_name": "Robarts Research
+        Institute", "ror": "https://ror.org/01psf3m26", "country_code": "CA", "type":
+        "facility", "lineage": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}],
+        "countries": ["CA"], "is_corresponding": true, "raw_author_name": "Jonathan
+        C. Lau", "raw_affiliation_strings": ["Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada",
+        "Department of Clinical Neurological Sciences, Division of Neurosurgery Western
+        University  London Ontario Canada", "Imaging Research Laboratories, Robarts
+        Research Institute Canada Western University  London Ontario Canada", "School
+        of Biomedical Engineering Western University  London Ontario Canada", "Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada", "Department of Clinical Neurological
+        Sciences, Division of Neurosurgery, Western University, London, Ontario, Canada",
+        "Imaging Research Laboratories, Robarts Research Institute Canada, Western
+        University, London, Ontario, Canada", "School of Biomedical Engineering, Western
+        University, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0002-8452-8915",
+        "affiliations": [{"raw_affiliation_string": "Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada",
+        "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "School of Biomedical Engineering Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732",
+        "https://openalex.org/I4405252475"]}, {"raw_affiliation_string": "School of
+        Biomedical Engineering, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5046871364", "display_name": "Yiming Xiao",
+        "orcid": "https://orcid.org/0000-0002-0962-3525", "observed_orcids": ["https://orcid.org/0000-0002-0962-3525"]},
+        "institutions": [{"id": "https://openalex.org/I125749732", "display_name":
+        "Western University", "ror": "https://ror.org/02grkyz14", "country_code":
+        "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]},
+        {"id": "https://openalex.org/I4405252475", "display_name": "Robarts Research
+        Institute", "ror": "https://ror.org/01psf3m26", "country_code": "CA", "type":
+        "facility", "lineage": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}],
+        "countries": ["CA"], "is_corresponding": false, "raw_author_name": "Yiming
+        Xiao", "raw_affiliation_strings": ["Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada", "Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada", "Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute, Western University, London, Ontario, Canada", "Imaging Research
+        Laboratories, Robarts Research Institute Canada, Western University, London,
+        Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0002-0962-3525", "affiliations":
+        [{"raw_affiliation_string": "Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5049711958",
+        "display_name": "Roy A.M. Haast", "orcid": "https://orcid.org/0000-0001-8543-2467",
+        "observed_orcids": ["https://orcid.org/0000-0001-8543-2467"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}, {"id": "https://openalex.org/I4405252475",
+        "display_name": "Robarts Research Institute", "ror": "https://ror.org/01psf3m26",
+        "country_code": "CA", "type": "facility", "lineage": ["https://openalex.org/I125749732",
+        "https://openalex.org/I4405252475"]}], "countries": ["CA"], "is_corresponding":
+        false, "raw_author_name": "Roy A. M. Haast", "raw_affiliation_strings": ["Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada", "Imaging Research Laboratories, Robarts Research Institute
+        Canada Western University  London Ontario Canada", "Centre for Functional
+        and Metabolic Mapping, Robarts Research Institute, Western University, London,
+        Ontario, Canada", "Imaging Research Laboratories, Robarts Research Institute
+        Canada, Western University, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0001-8543-2467",
+        "affiliations": [{"raw_affiliation_string": "Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada",
+        "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5070122328",
+        "display_name": "Greydon Gilmore", "orcid": "https://orcid.org/0000-0001-7523-5734",
+        "observed_orcids": ["https://orcid.org/0000-0001-7523-5734"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}], "countries": ["CA"], "is_corresponding":
+        false, "raw_author_name": "Greydon Gilmore", "raw_affiliation_strings": ["Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada", "School of Biomedical Engineering Western University  London
+        Ontario Canada", "Department of Clinical Neurological Sciences, Division of
+        Neurosurgery, Western University, London, Ontario, Canada", "School of Biomedical
+        Engineering, Western University, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0001-7523-5734",
+        "affiliations": [{"raw_affiliation_string": "Department of Clinical Neurological
+        Sciences, Division of Neurosurgery Western University  London Ontario Canada",
+        "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "School of Biomedical Engineering Western University  London Ontario Canada",
+        "institution_ids": ["https://openalex.org/I125749732"]}, {"raw_affiliation_string":
+        "Department of Clinical Neurological Sciences, Division of Neurosurgery, Western
+        University, London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "School of Biomedical Engineering, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5076496887",
+        "display_name": "K\u00e2mil Uluda\u01e7", "orcid": "https://orcid.org/0000-0002-2813-5930",
+        "observed_orcids": ["https://orcid.org/0000-0002-2813-5930"]}, "institutions":
+        [{"id": "https://openalex.org/I1325899441", "display_name": "University Health
+        Network", "ror": "https://ror.org/042xt5161", "country_code": "CA", "type":
+        "healthcare", "lineage": ["https://openalex.org/I1325899441"]}, {"id": "https://openalex.org/I848706",
+        "display_name": "Sungkyunkwan University", "ror": "https://ror.org/04q78tk20",
+        "country_code": "KR", "type": "education", "lineage": ["https://openalex.org/I848706"]}],
+        "countries": ["CA", "KR"], "is_corresponding": false, "raw_author_name": "K\u00e2mil
+        Uluda\u011f", "raw_affiliation_strings": ["Department of Biomedical Engineering,
+        N Center Sungkyunkwan University  Suwon South Korea", "IBS Center for Neuroscience
+        Imaging Research Sungkyunkwan University  Suwon South Korea", "Techna Institute
+        and Koerner Scientist in MR Imaging University Health Network  Toronto Ontario
+        Canada", "Department of Biomedical Engineering, N Center, Sungkyunkwan University,
+        Suwon, South Korea", "IBS Center for Neuroscience Imaging Research, Sungkyunkwan
+        University, Suwon, South Korea", "Techna Institute and Koerner Scientist in
+        MR Imaging, University Health Network, Toronto, Ontario, Canada"], "raw_orcid":
+        "https://orcid.org/0000-0002-2813-5930", "affiliations": [{"raw_affiliation_string":
+        "Department of Biomedical Engineering, N Center Sungkyunkwan University  Suwon
+        South Korea", "institution_ids": ["https://openalex.org/I848706"]}, {"raw_affiliation_string":
+        "IBS Center for Neuroscience Imaging Research Sungkyunkwan University  Suwon
+        South Korea", "institution_ids": ["https://openalex.org/I848706"]}, {"raw_affiliation_string":
+        "Techna Institute and Koerner Scientist in MR Imaging University Health Network  Toronto
+        Ontario Canada", "institution_ids": ["https://openalex.org/I1325899441"]},
+        {"raw_affiliation_string": "Department of Biomedical Engineering, N Center,
+        Sungkyunkwan University, Suwon, South Korea", "institution_ids": ["https://openalex.org/I848706"]},
+        {"raw_affiliation_string": "IBS Center for Neuroscience Imaging Research,
+        Sungkyunkwan University, Suwon, South Korea", "institution_ids": ["https://openalex.org/I848706"]},
+        {"raw_affiliation_string": "Techna Institute and Koerner Scientist in MR Imaging,
+        University Health Network, Toronto, Ontario, Canada", "institution_ids": ["https://openalex.org/I1325899441"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5058136634",
+        "display_name": "Keith W. MacDougall", "orcid": "https://orcid.org/0000-0001-9374-3089",
+        "observed_orcids": ["https://orcid.org/0000-0001-9374-3089"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}], "countries": ["CA"], "is_corresponding":
+        false, "raw_author_name": "Keith W. MacDougall", "raw_affiliation_strings":
+        ["Department of Clinical Neurological Sciences, Division of Neurosurgery Western
+        University  London Ontario Canada", "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery, Western University, London, Ontario, Canada"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Department of Clinical
+        Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5012883431", "display_name": "Ravi S. Menon",
+        "orcid": "https://orcid.org/0000-0002-7916-0263", "observed_orcids": ["https://orcid.org/0000-0002-7916-0263"]},
+        "institutions": [{"id": "https://openalex.org/I125749732", "display_name":
+        "Western University", "ror": "https://ror.org/02grkyz14", "country_code":
+        "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]},
+        {"id": "https://openalex.org/I4405252475", "display_name": "Robarts Research
+        Institute", "ror": "https://ror.org/01psf3m26", "country_code": "CA", "type":
+        "facility", "lineage": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}],
+        "countries": ["CA"], "is_corresponding": false, "raw_author_name": "Ravi S.
+        Menon", "raw_affiliation_strings": ["Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada", "Department
+        of Medical Biophysics Western University  London Ontario Canada", "Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada", "Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute, Western University, London, Ontario, Canada", "Department of Medical
+        Biophysics, Western University, London, Ontario, Canada", "Imaging Research
+        Laboratories, Robarts Research Institute Canada, Western University, London,
+        Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0002-7916-0263", "affiliations":
+        [{"raw_affiliation_string": "Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Medical Biophysics Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Medical Biophysics, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Imaging Research Laboratories, Robarts Research
+        Institute Canada, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5061811693",
+        "display_name": "Andrew G. Parrent", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I125749732", "display_name":
+        "Western University", "ror": "https://ror.org/02grkyz14", "country_code":
+        "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]}],
+        "countries": ["CA"], "is_corresponding": false, "raw_author_name": "Andrew
+        G. Parrent", "raw_affiliation_strings": ["Department of Clinical Neurological
+        Sciences, Division of Neurosurgery Western University  London Ontario Canada",
+        "Department of Clinical Neurological Sciences, Division of Neurosurgery, Western
+        University, London, Ontario, Canada"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5063193089",
+        "display_name": "Terry M. Peters", "orcid": "https://orcid.org/0000-0003-1440-7488",
+        "observed_orcids": ["https://orcid.org/0000-0003-1440-7488"]}, "institutions":
+        [{"id": "https://openalex.org/I125749732", "display_name": "Western University",
+        "ror": "https://ror.org/02grkyz14", "country_code": "CA", "type": "education",
+        "lineage": ["https://openalex.org/I125749732"]}, {"id": "https://openalex.org/I4405252475",
+        "display_name": "Robarts Research Institute", "ror": "https://ror.org/01psf3m26",
+        "country_code": "CA", "type": "facility", "lineage": ["https://openalex.org/I125749732",
+        "https://openalex.org/I4405252475"]}], "countries": ["CA"], "is_corresponding":
+        false, "raw_author_name": "Terry M. Peters", "raw_affiliation_strings": ["Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada", "Department of Clinical Neurological Sciences, Division of
+        Neurosurgery Western University  London Ontario Canada", "Department of Medical
+        Biophysics Western University  London Ontario Canada", "Imaging Research Laboratories,
+        Robarts Research Institute Canada Western University  London Ontario Canada",
+        "School of Biomedical Engineering Western University  London Ontario Canada",
+        "Centre for Functional and Metabolic Mapping, Robarts Research Institute,
+        Western University, London, Ontario, Canada", "Department of Clinical Neurological
+        Sciences, Division of Neurosurgery, Western University, London, Ontario, Canada",
+        "Department of Medical Biophysics, Western University, London, Ontario, Canada",
+        "Imaging Research Laboratories, Robarts Research Institute Canada, Western
+        University, London, Ontario, Canada", "School of Biomedical Engineering, Western
+        University, London, Ontario, Canada"], "raw_orcid": "https://orcid.org/0000-0003-1440-7488",
+        "affiliations": [{"raw_affiliation_string": "Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada",
+        "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Department
+        of Medical Biophysics Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "School of Biomedical Engineering Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Department
+        of Medical Biophysics, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732",
+        "https://openalex.org/I4405252475"]}, {"raw_affiliation_string": "School of
+        Biomedical Engineering, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5010493622", "display_name": "ALI RAZA KHAN",
+        "orcid": "https://orcid.org/0000-0002-0760-8647", "observed_orcids": ["https://orcid.org/0000-0002-0760-8647"]},
+        "institutions": [{"id": "https://openalex.org/I125749732", "display_name":
+        "Western University", "ror": "https://ror.org/02grkyz14", "country_code":
+        "CA", "type": "education", "lineage": ["https://openalex.org/I125749732"]},
+        {"id": "https://openalex.org/I4405252475", "display_name": "Robarts Research
+        Institute", "ror": "https://ror.org/01psf3m26", "country_code": "CA", "type":
+        "facility", "lineage": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]}],
+        "countries": ["CA"], "is_corresponding": false, "raw_author_name": "Ali R.
+        Khan", "raw_affiliation_strings": ["Brain and Mind Institute Western University  London
+        Ontario Canada", "Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute Western University  London Ontario Canada", "Department of Clinical
+        Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada", "Imaging Research Laboratories, Robarts Research Institute
+        Canada Western University  London Ontario Canada", "School of Biomedical Engineering
+        Western University  London Ontario Canada", "Brain and Mind Institute, Western
+        University, London, Ontario, Canada", "Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute, Western University, London, Ontario,
+        Canada", "Department of Clinical Neurological Sciences, Division of Neurosurgery,
+        Western University, London, Ontario, Canada", "Department of Medical Biophysics,
+        Western University, London, Ontario, Canada", "Imaging Research Laboratories,
+        Robarts Research Institute Canada, Western University, London, Ontario, Canada",
+        "School of Biomedical Engineering, Western University, London, Ontario, Canada"],
+        "raw_orcid": "https://orcid.org/0000-0002-0760-8647", "affiliations": [{"raw_affiliation_string":
+        "Brain and Mind Institute Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Centre for
+        Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery Western University  London Ontario Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "School of Biomedical Engineering Western University  London
+        Ontario Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Brain and Mind Institute, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732"]},
+        {"raw_affiliation_string": "Centre for Functional and Metabolic Mapping, Robarts
+        Research Institute, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732", "https://openalex.org/I4405252475"]},
+        {"raw_affiliation_string": "Department of Clinical Neurological Sciences,
+        Division of Neurosurgery, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Department
+        of Medical Biophysics, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}, {"raw_affiliation_string": "Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada", "institution_ids": ["https://openalex.org/I125749732",
+        "https://openalex.org/I4405252475"]}, {"raw_affiliation_string": "School of
+        Biomedical Engineering, Western University, London, Ontario, Canada", "institution_ids":
+        ["https://openalex.org/I125749732"]}]}], "publication_year": 2020, "abstract_inverted_index":
+        {"The": [0], "zona": [1], "incerta": [2], "(ZI)": [3], "is": [4, 146], "a":
+        [5, 149, 176], "small": [6], "gray": [7], "matter": [8, 93], "region": [9,
+        37, 54, 145], "of": [10, 32, 45, 63, 100, 121, 129], "the": [11, 17, 33, 59,
+        88, 96, 122, 132, 166], "deep": [12, 52], "brain": [13, 53], "first": [14],
+        "identified": [15], "in": [16, 22, 118, 131, 171], "19th": [18], "century,":
+        [19], "yet": [20], "direct": [21], "vivo": [23, 119, 172], "visualization":
+        [24], "and": [25, 35, 55, 61, 106, 109, 126, 174, 182], "characterization":
+        [26], "has": [27], "remained": [28], "elusive.": [29], "Noninvasive": [30],
+        "detection": [31], "ZI": [34, 89, 133], "surrounding": [36, 91], "could":
+        [38, 56], "be": [39, 84, 160], "critical": [40], "to": [41, 58, 86], "further":
+        [42], "our": [43], "understanding": [44], "this": [46, 113, 144], "widely":
+        [47], "connected": [48], "but": [49, 153], "poorly": [50], "understood": [51],
+        "contribute": [57], "development": [60], "optimization": [62], "neuromodulatory":
+        [64, 183], "therapies.": [65], "We": [66], "demonstrate": [67], "that": [68,
+        143, 158], "high": [69, 77], "resolution": [70], "(submillimetric)": [71],
+        "longitudinal": [72], "(T1)": [73], "relaxometry": [74], "measurements": [75],
+        "at": [76], "magnetic": [78], "field": [79, 107], "strength": [80], "(7":
+        [81], "T)": [82], "can": [83], "used": [85], "delineate": [87], "from": [90],
+        "white": [92], "structures,": [94], "specifically": [95], "fasciculus": [97,
+        104], "cerebellothalamicus,": [98], "fields": [99], "Forel": [101], "(fasciculus":
+        [102], "lenticularis,": [103], "thalamicus,": [105], "H),": [108], "medial":
+        [110], "lemniscus.": [111], "Using": [112], "approach,": [114], "we": [115],
+        "successfully": [116], "derived": [117], "estimates": [120], "size,": [123],
+        "shape,": [124], "location,": [125], "tissue": [127], "characteristics": [128],
+        "substructures": [130], "region,": [134], "confirming": [135], "observations":
+        [136], "only": [137], "previously": [138], "possible": [139], "through": [140],
+        "histological": [141], "evaluation": [142], "not": [147], "just": [148], "space":
+        [150], "between": [151], "structures": [152], "contains": [154], "distinct":
+        [155], "morphological": [156], "entities": [157], "should": [159], "considered":
+        [161], "separately.": [162], "Our": [163], "findings": [164], "pave": [165],
+        "way": [167], "for": [168, 179], "increasingly": [169], "detailed": [170],
+        "study": [173], "provide": [175], "structural": [177], "foundation": [178],
+        "precise": [180], "functional": [181], "investigation.": [184]}, "primary_location":
+        {"id": "doi:10.1002/hbm.25137", "doi": "https://doi.org/10.1002/hbm.25137",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.25137", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137", "source":
+        {"id": "https://openalex.org/S121666818", "display_name": "Human Brain Mapping",
+        "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"], "is_oa": true,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "dongbi-b",
+        "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-100",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by", "license_id": "https://openalex.org/licenses/cc-by", "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "best_oa_location": {"id": "doi:10.1002/hbm.25137",
+        "doi": "https://doi.org/10.1002/hbm.25137", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1002/hbm.25137", "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": true, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Human Brain Mapping", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.1002/hbm.25137", "doi": "https://doi.org/10.1002/hbm.25137",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.25137", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137", "source":
+        {"id": "https://openalex.org/S121666818", "display_name": "Human Brain Mapping",
+        "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"], "is_oa": true,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "dongbi-b",
+        "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-100",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by", "license_id": "https://openalex.org/licenses/cc-by", "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, {"id": "doi:10.1101/2020.03.25.008318",
+        "doi": "https://doi.org/10.1101/2020.03.25.008318", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2020.03.25.008318", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2020/06/04/2020.03.25.008318.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, {"id": "pmid:32677751", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/32677751", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human brain
+        mapping", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:7555067",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7555067",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Hum Brain Mapp", "raw_type": "Text"}, {"id": "pmh:oai:ir.lib.uwo.ca:biophysicspub-1305",
+        "doi": null, "is_oa": true, "landing_page_url": "https://ir.lib.uwo.ca/biophysicspub/305",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400648", "display_name":
+        "Scholarship@Western (Western University)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I125749732", "host_organization_name": "Western University",
+        "host_organization_lineage": ["https://openalex.org/I125749732"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Medical Biophysics Publications", "raw_type": "article"},
+        {"id": "pmh:oai:ir.lib.uwo.ca:brainpub-1557", "doi": null, "is_oa": true,
+        "landing_page_url": "https://ir.lib.uwo.ca/brainpub/555", "pdf_url": null,
+        "source": {"id": "https://openalex.org/S4306400648", "display_name": "Scholarship@Western
+        (Western University)", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I125749732",
+        "host_organization_name": "Western University", "host_organization_lineage":
+        ["https://openalex.org/I125749732"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Brain and Mind Institute Researchers'' Publications",
+        "raw_type": "article"}, {"id": "pmh:oai:uwo.scholaris.ca:20.500.14721/9045",
+        "doi": null, "is_oa": false, "landing_page_url": "https://doi.org/10.1002/hbm.25137",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400648", "display_name":
+        "Scholarship@Western (Western University)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I125749732", "host_organization_name": "Western University",
+        "host_organization_lineage": ["https://openalex.org/I125749732"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        null, "raw_type": "journal article"}], "open_access": {"is_oa": true, "oa_status":
+        "gold", "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52c49b76463d-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:21 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9919'
+      X-RateLimit-Remaining-USD:
+      - '0.9919'
+      X-RateLimit-Reset:
+      - '12339'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=hTu8rS3I5Q3ShUfUWnUF7l5Iepkxcemn6IEggRowts8%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355661"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=hTu8rS3I5Q3ShUfUWnUF7l5Iepkxcemn6IEggRowts8%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355661"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works/doi:10.1101/2020.03.25.008318?select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"ids":{"openalex":"https://openalex.org/W3042500539","doi":"https://doi.org/10.1002/hbm.25137","mag":"3042500539","pmid":"https://pubmed.ncbi.nlm.nih.gov/32677751"},"display_name":"Direct
+        visualization and characterization of the human zona incerta and surrounding
+        structures","authorships":[{"author_position":"first","author":{"id":"https://openalex.org/A5058281405","display_name":"Jonathan
+        C. Lau","orcid":"https://orcid.org/0000-0002-8452-8915","observed_orcids":["https://orcid.org/0000-0002-8452-8915"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":true,"raw_author_name":"Jonathan
+        C. Lau","raw_affiliation_strings":["Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada","Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","Imaging Research Laboratories, Robarts Research Institute
+        Canada Western University  London Ontario Canada","School of Biomedical Engineering
+        Western University  London Ontario Canada","Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute, Western University, London, Ontario,
+        Canada","Department of Clinical Neurological Sciences, Division of Neurosurgery,
+        Western University, London, Ontario, Canada","Imaging Research Laboratories,
+        Robarts Research Institute Canada, Western University, London, Ontario, Canada","School
+        of Biomedical Engineering, Western University, London, Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0002-8452-8915","affiliations":[{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5046871364","display_name":"Yiming
+        Xiao","orcid":"https://orcid.org/0000-0002-0962-3525","observed_orcids":["https://orcid.org/0000-0002-0962-3525"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Yiming
+        Xiao","raw_affiliation_strings":["Centre for Functional and Metabolic Mapping,
+        Robarts Research Institute Western University  London Ontario Canada","Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute, Western University, London, Ontario, Canada","Imaging Research
+        Laboratories, Robarts Research Institute Canada, Western University, London,
+        Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0002-0962-3525","affiliations":[{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5049711958","display_name":"Roy
+        A.M. Haast","orcid":"https://orcid.org/0000-0001-8543-2467","observed_orcids":["https://orcid.org/0000-0001-8543-2467"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Roy
+        A. M. Haast","raw_affiliation_strings":["Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada","Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute, Western University, London, Ontario, Canada","Imaging Research
+        Laboratories, Robarts Research Institute Canada, Western University, London,
+        Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0001-8543-2467","affiliations":[{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5070122328","display_name":"Greydon
+        Gilmore","orcid":"https://orcid.org/0000-0001-7523-5734","observed_orcids":["https://orcid.org/0000-0001-7523-5734"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Greydon
+        Gilmore","raw_affiliation_strings":["Department of Clinical Neurological Sciences,
+        Division of Neurosurgery Western University  London Ontario Canada","School
+        of Biomedical Engineering Western University  London Ontario Canada","Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","School of Biomedical Engineering, Western University,
+        London, Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0001-7523-5734","affiliations":[{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5076496887","display_name":"K\u00e2mil
+        Uluda\u01e7","orcid":"https://orcid.org/0000-0002-2813-5930","observed_orcids":["https://orcid.org/0000-0002-2813-5930"]},"institutions":[{"id":"https://openalex.org/I1325899441","display_name":"University
+        Health Network","ror":"https://ror.org/042xt5161","country_code":"CA","type":"healthcare","lineage":["https://openalex.org/I1325899441"]},{"id":"https://openalex.org/I848706","display_name":"Sungkyunkwan
+        University","ror":"https://ror.org/04q78tk20","country_code":"KR","type":"education","lineage":["https://openalex.org/I848706"]}],"countries":["CA","KR"],"is_corresponding":false,"raw_author_name":"K\u00e2mil
+        Uluda\u011f","raw_affiliation_strings":["Department of Biomedical Engineering,
+        N Center Sungkyunkwan University  Suwon South Korea","IBS Center for Neuroscience
+        Imaging Research Sungkyunkwan University  Suwon South Korea","Techna Institute
+        and Koerner Scientist in MR Imaging University Health Network  Toronto Ontario
+        Canada","Department of Biomedical Engineering, N Center, Sungkyunkwan University,
+        Suwon, South Korea","IBS Center for Neuroscience Imaging Research, Sungkyunkwan
+        University, Suwon, South Korea","Techna Institute and Koerner Scientist in
+        MR Imaging, University Health Network, Toronto, Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0002-2813-5930","affiliations":[{"raw_affiliation_string":"Department
+        of Biomedical Engineering, N Center Sungkyunkwan University  Suwon South Korea","institution_ids":["https://openalex.org/I848706"]},{"raw_affiliation_string":"IBS
+        Center for Neuroscience Imaging Research Sungkyunkwan University  Suwon South
+        Korea","institution_ids":["https://openalex.org/I848706"]},{"raw_affiliation_string":"Techna
+        Institute and Koerner Scientist in MR Imaging University Health Network  Toronto
+        Ontario Canada","institution_ids":["https://openalex.org/I1325899441"]},{"raw_affiliation_string":"Department
+        of Biomedical Engineering, N Center, Sungkyunkwan University, Suwon, South
+        Korea","institution_ids":["https://openalex.org/I848706"]},{"raw_affiliation_string":"IBS
+        Center for Neuroscience Imaging Research, Sungkyunkwan University, Suwon,
+        South Korea","institution_ids":["https://openalex.org/I848706"]},{"raw_affiliation_string":"Techna
+        Institute and Koerner Scientist in MR Imaging, University Health Network,
+        Toronto, Ontario, Canada","institution_ids":["https://openalex.org/I1325899441"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5058136634","display_name":"Keith
+        W. MacDougall","orcid":"https://orcid.org/0000-0001-9374-3089","observed_orcids":["https://orcid.org/0000-0001-9374-3089"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Keith
+        W. MacDougall","raw_affiliation_strings":["Department of Clinical Neurological
+        Sciences, Division of Neurosurgery Western University  London Ontario Canada","Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5012883431","display_name":"Ravi
+        S. Menon","orcid":"https://orcid.org/0000-0002-7916-0263","observed_orcids":["https://orcid.org/0000-0002-7916-0263"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Ravi
+        S. Menon","raw_affiliation_strings":["Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada","Department
+        of Medical Biophysics Western University  London Ontario Canada","Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute, Western University, London, Ontario, Canada","Department of Medical
+        Biophysics, Western University, London, Ontario, Canada","Imaging Research
+        Laboratories, Robarts Research Institute Canada, Western University, London,
+        Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0002-7916-0263","affiliations":[{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Medical Biophysics Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Medical Biophysics, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5061811693","display_name":"Andrew
+        G. Parrent","orcid":null,"observed_orcids":[]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Andrew
+        G. Parrent","raw_affiliation_strings":["Department of Clinical Neurological
+        Sciences, Division of Neurosurgery Western University  London Ontario Canada","Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada"],"raw_orcid":null,"affiliations":[{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]},{"author_position":"middle","author":{"id":"https://openalex.org/A5063193089","display_name":"Terry
+        M. Peters","orcid":"https://orcid.org/0000-0003-1440-7488","observed_orcids":["https://orcid.org/0000-0003-1440-7488"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Terry
+        M. Peters","raw_affiliation_strings":["Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute Western University  London Ontario Canada","Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","Department of Medical Biophysics Western University  London
+        Ontario Canada","Imaging Research Laboratories, Robarts Research Institute
+        Canada Western University  London Ontario Canada","School of Biomedical Engineering
+        Western University  London Ontario Canada","Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute, Western University, London, Ontario,
+        Canada","Department of Clinical Neurological Sciences, Division of Neurosurgery,
+        Western University, London, Ontario, Canada","Department of Medical Biophysics,
+        Western University, London, Ontario, Canada","Imaging Research Laboratories,
+        Robarts Research Institute Canada, Western University, London, Ontario, Canada","School
+        of Biomedical Engineering, Western University, London, Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0003-1440-7488","affiliations":[{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Medical Biophysics Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Medical Biophysics, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]},{"author_position":"last","author":{"id":"https://openalex.org/A5010493622","display_name":"ALI
+        RAZA KHAN","orcid":"https://orcid.org/0000-0002-0760-8647","observed_orcids":["https://orcid.org/0000-0002-0760-8647"]},"institutions":[{"id":"https://openalex.org/I125749732","display_name":"Western
+        University","ror":"https://ror.org/02grkyz14","country_code":"CA","type":"education","lineage":["https://openalex.org/I125749732"]},{"id":"https://openalex.org/I4405252475","display_name":"Robarts
+        Research Institute","ror":"https://ror.org/01psf3m26","country_code":"CA","type":"facility","lineage":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]}],"countries":["CA"],"is_corresponding":false,"raw_author_name":"Ali
+        R. Khan","raw_affiliation_strings":["Brain and Mind Institute Western University  London
+        Ontario Canada","Centre for Functional and Metabolic Mapping, Robarts Research
+        Institute Western University  London Ontario Canada","Department of Clinical
+        Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","Imaging Research Laboratories, Robarts Research Institute
+        Canada Western University  London Ontario Canada","School of Biomedical Engineering
+        Western University  London Ontario Canada","Brain and Mind Institute, Western
+        University, London, Ontario, Canada","Centre for Functional and Metabolic
+        Mapping, Robarts Research Institute, Western University, London, Ontario,
+        Canada","Department of Clinical Neurological Sciences, Division of Neurosurgery,
+        Western University, London, Ontario, Canada","Department of Medical Biophysics,
+        Western University, London, Ontario, Canada","Imaging Research Laboratories,
+        Robarts Research Institute Canada, Western University, London, Ontario, Canada","School
+        of Biomedical Engineering, Western University, London, Ontario, Canada"],"raw_orcid":"https://orcid.org/0000-0002-0760-8647","affiliations":[{"raw_affiliation_string":"Brain
+        and Mind Institute Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada Western University  London
+        Ontario Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering Western University  London Ontario Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Brain
+        and Mind Institute, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Centre
+        for Functional and Metabolic Mapping, Robarts Research Institute, Western
+        University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"Department
+        of Clinical Neurological Sciences, Division of Neurosurgery, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Department
+        of Medical Biophysics, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]},{"raw_affiliation_string":"Imaging
+        Research Laboratories, Robarts Research Institute Canada, Western University,
+        London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732","https://openalex.org/I4405252475"]},{"raw_affiliation_string":"School
+        of Biomedical Engineering, Western University, London, Ontario, Canada","institution_ids":["https://openalex.org/I125749732"]}]}],"publication_year":2020,"abstract_inverted_index":{"The":[0],"zona":[1],"incerta":[2],"(ZI)":[3],"is":[4,146],"a":[5,149,176],"small":[6],"gray":[7],"matter":[8,93],"region":[9,37,54,145],"of":[10,32,45,63,100,121,129],"the":[11,17,33,59,88,96,122,132,166],"deep":[12,52],"brain":[13,53],"first":[14],"identified":[15],"in":[16,22,118,131,171],"19th":[18],"century,":[19],"yet":[20],"direct":[21],"vivo":[23,119,172],"visualization":[24],"and":[25,35,55,61,106,109,126,174,182],"characterization":[26],"has":[27],"remained":[28],"elusive.":[29],"Noninvasive":[30],"detection":[31],"ZI":[34,89,133],"surrounding":[36,91],"could":[38,56],"be":[39,84,160],"critical":[40],"to":[41,58,86],"further":[42],"our":[43],"understanding":[44],"this":[46,113,144],"widely":[47],"connected":[48],"but":[49,153],"poorly":[50],"understood":[51],"contribute":[57],"development":[60],"optimization":[62],"neuromodulatory":[64,183],"therapies.":[65],"We":[66],"demonstrate":[67],"that":[68,143,158],"high":[69,77],"resolution":[70],"(submillimetric)":[71],"longitudinal":[72],"(T1)":[73],"relaxometry":[74],"measurements":[75],"at":[76],"magnetic":[78],"field":[79,107],"strength":[80],"(7":[81],"T)":[82],"can":[83],"used":[85],"delineate":[87],"from":[90],"white":[92],"structures,":[94],"specifically":[95],"fasciculus":[97,104],"cerebellothalamicus,":[98],"fields":[99],"Forel":[101],"(fasciculus":[102],"lenticularis,":[103],"thalamicus,":[105],"H),":[108],"medial":[110],"lemniscus.":[111],"Using":[112],"approach,":[114],"we":[115],"successfully":[116],"derived":[117],"estimates":[120],"size,":[123],"shape,":[124],"location,":[125],"tissue":[127],"characteristics":[128],"substructures":[130],"region,":[134],"confirming":[135],"observations":[136],"only":[137],"previously":[138],"possible":[139],"through":[140],"histological":[141],"evaluation":[142],"not":[147],"just":[148],"space":[150],"between":[151],"structures":[152],"contains":[154],"distinct":[155],"morphological":[156],"entities":[157],"should":[159],"considered":[161],"separately.":[162],"Our":[163],"findings":[164],"pave":[165],"way":[167],"for":[168,179],"increasingly":[169],"detailed":[170],"study":[173],"provide":[175],"structural":[177],"foundation":[178],"precise":[180],"functional":[181],"investigation.":[184]},"primary_location":{"id":"doi:10.1002/hbm.25137","doi":"https://doi.org/10.1002/hbm.25137","is_oa":true,"landing_page_url":"https://doi.org/10.1002/hbm.25137","pdf_url":"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137","source":{"id":"https://openalex.org/S121666818","display_name":"Human
+        Brain Mapping","issn_l":"1065-9471","issn":["1065-9471","1097-0193"],"is_oa":true,"is_in_doaj":true,"is_core":true,"listed_in":["cwts-core","doaj","dongbi-b","doyens","erih-plus","jufo-2","ki-jl-2","medline","norway-2","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Human
+        Brain Mapping","raw_type":"journal-article"},"best_oa_location":{"id":"doi:10.1002/hbm.25137","doi":"https://doi.org/10.1002/hbm.25137","is_oa":true,"landing_page_url":"https://doi.org/10.1002/hbm.25137","pdf_url":"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137","source":{"id":"https://openalex.org/S121666818","display_name":"Human
+        Brain Mapping","issn_l":"1065-9471","issn":["1065-9471","1097-0193"],"is_oa":true,"is_in_doaj":true,"is_core":true,"listed_in":["cwts-core","doaj","dongbi-b","doyens","erih-plus","jufo-2","ki-jl-2","medline","norway-2","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Human
+        Brain Mapping","raw_type":"journal-article"},"locations":[{"id":"doi:10.1002/hbm.25137","doi":"https://doi.org/10.1002/hbm.25137","is_oa":true,"landing_page_url":"https://doi.org/10.1002/hbm.25137","pdf_url":"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137","source":{"id":"https://openalex.org/S121666818","display_name":"Human
+        Brain Mapping","issn_l":"1065-9471","issn":["1065-9471","1097-0193"],"is_oa":true,"is_in_doaj":true,"is_core":true,"listed_in":["cwts-core","doaj","dongbi-b","doyens","erih-plus","jufo-2","ki-jl-2","medline","norway-2","poland-100","russia-white-list-1","vabb-shw"],"host_organization":"https://openalex.org/P4310320595","host_organization_name":"Wiley","host_organization_lineage":["https://openalex.org/P4310320595"],"host_organization_lineage_names":["Wiley"],"type":"journal"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Human
+        Brain Mapping","raw_type":"journal-article"},{"id":"doi:10.1101/2020.03.25.008318","doi":"https://doi.org/10.1101/2020.03.25.008318","is_oa":true,"landing_page_url":"https://doi.org/10.1101/2020.03.25.008318","pdf_url":"https://www.biorxiv.org/content/biorxiv/early/2020/06/04/2020.03.25.008318.full.pdf","source":{"id":"https://openalex.org/S4306402567","display_name":"bioRxiv
+        (Cold Spring Harbor Laboratory)","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I2750212522","host_organization_name":"Cold
+        Spring Harbor Laboratory","host_organization_lineage":["https://openalex.org/I2750212522"],"host_organization_lineage_names":[],"type":"repository"},"license":"cc-by-nc-nd","license_id":"https://openalex.org/licenses/cc-by-nc-nd","version":"acceptedVersion","is_accepted":true,"is_published":false,"raw_source_name":"bioRxiv","raw_type":"posted-content"},{"id":"pmid:32677751","doi":null,"is_oa":false,"landing_page_url":"https://pubmed.ncbi.nlm.nih.gov/32677751","pdf_url":null,"source":{"id":"https://openalex.org/S4306525036","display_name":"PubMed","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I1299303238","host_organization_name":"National
+        Institutes of Health","host_organization_lineage":["https://openalex.org/I1299303238"],"host_organization_lineage_names":[],"type":"repository"},"license":null,"license_id":null,"version":"publishedVersion","is_accepted":true,"is_published":true,"raw_source_name":"Human
+        brain mapping","raw_type":"Journal Article"},{"id":"pmh:oai:pubmedcentral.nih.gov:7555067","doi":null,"is_oa":true,"landing_page_url":"https://www.ncbi.nlm.nih.gov/pmc/articles/7555067","pdf_url":null,"source":{"id":"https://openalex.org/S2764455111","display_name":"PubMed
+        Central","issn_l":null,"issn":null,"is_oa":true,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I1299303238","host_organization_name":"National
+        Institutes of Health","host_organization_lineage":["https://openalex.org/I1299303238"],"host_organization_lineage_names":[],"type":"repository"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"submittedVersion","is_accepted":false,"is_published":false,"raw_source_name":"Hum
+        Brain Mapp","raw_type":"Text"},{"id":"pmh:oai:ir.lib.uwo.ca:biophysicspub-1305","doi":null,"is_oa":true,"landing_page_url":"https://ir.lib.uwo.ca/biophysicspub/305","pdf_url":null,"source":{"id":"https://openalex.org/S4306400648","display_name":"Scholarship@Western
+        (Western University)","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I125749732","host_organization_name":"Western
+        University","host_organization_lineage":["https://openalex.org/I125749732"],"host_organization_lineage_names":[],"type":"repository"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"submittedVersion","is_accepted":false,"is_published":false,"raw_source_name":"Medical
+        Biophysics Publications","raw_type":"article"},{"id":"pmh:oai:ir.lib.uwo.ca:brainpub-1557","doi":null,"is_oa":true,"landing_page_url":"https://ir.lib.uwo.ca/brainpub/555","pdf_url":null,"source":{"id":"https://openalex.org/S4306400648","display_name":"Scholarship@Western
+        (Western University)","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I125749732","host_organization_name":"Western
+        University","host_organization_lineage":["https://openalex.org/I125749732"],"host_organization_lineage_names":[],"type":"repository"},"license":"cc-by","license_id":"https://openalex.org/licenses/cc-by","version":"submittedVersion","is_accepted":false,"is_published":false,"raw_source_name":"Brain
+        and Mind Institute Researchers'' Publications","raw_type":"article"},{"id":"pmh:oai:uwo.scholaris.ca:20.500.14721/9045","doi":null,"is_oa":false,"landing_page_url":"https://doi.org/10.1002/hbm.25137","pdf_url":null,"source":{"id":"https://openalex.org/S4306400648","display_name":"Scholarship@Western
+        (Western University)","issn_l":null,"issn":null,"is_oa":false,"is_in_doaj":false,"is_core":false,"listed_in":[],"host_organization":"https://openalex.org/I125749732","host_organization_name":"Western
+        University","host_organization_lineage":["https://openalex.org/I125749732"],"host_organization_lineage_names":[],"type":"repository"},"license":null,"license_id":null,"version":"submittedVersion","is_accepted":false,"is_published":false,"raw_source_name":null,"raw_type":"journal
+        article"}],"open_access":{"is_oa":true,"oa_status":"gold","oa_url":"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.25137","any_repository_has_fulltext":true}}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52c63ba72cbd-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:21 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9919'
+      X-RateLimit-Remaining-USD:
+      - '0.9919'
+      X-RateLimit-Reset:
+      - '12339'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=hTu8rS3I5Q3ShUfUWnUF7l5Iepkxcemn6IEggRowts8%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355661"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=hTu8rS3I5Q3ShUfUWnUF7l5Iepkxcemn6IEggRowts8%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355661"
+    status:
+      code: 200
+      message: OK
+version: 1

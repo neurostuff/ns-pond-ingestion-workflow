@@ -1,0 +1,409 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.24523"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"message": "Too Many Requests. Please wait and try again or apply
+        for a key for higher rate limits. https://www.semanticscholar.org/product/api#api-key-form",
+        "code": "429"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '174'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:16 GMT
+      Via:
+      - 1.1 9d5107308a20de1d2a16dd9305e39b94.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 7ousCZE3cBzVNpm9asDYy5FXbV6M_7gPFoJ03Pakg2gT67ibcgeltQ==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - FdQDYHzoPHcEVsQ=
+      x-amzn-ErrorType:
+      - TooManyRequestsException
+      x-amzn-RequestId:
+      - 1845ac9c-4b2b-4a0e-9053-38c07979bf11
+    status:
+      code: 429
+      message: ''
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.24523"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "14074a7ce78c3a3dc3064ca433dbc6f156239fb1", "title": "Neural
+        networks for sentence comprehension and production: an ALE-based meta-analysis
+        of neuroimaging studies", "venue": "Human Brain Mapping", "year": 2019, "isOpenAccess":
+        true, "openAccessPdf": {"url": "https://doi.org/10.3389/conf.fnhum.2018.228.00076",
+        "status": "GOLD", "license": "CCBY", "disclaimer": "Notice: Paper or abstract
+        available at https://pmc.ncbi.nlm.nih.gov/articles/PMC6597252, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2019-01-28", "authors": [{"authorId": "6128246",
+        "name": "Matthew Walenski"}, {"authorId": "3582653", "name": "Eduardo Europa"},
+        {"authorId": "2071357151", "name": "D. Caplan"}, {"authorId": "144721942",
+        "name": "C. Thompson"}], "abstract": "Comprehending and producing sentences
+        is a complex endeavor requiring the coordinated activity of multiple brain
+        regions. We examined three issues related to the brain networks underlying
+        sentence comprehension and production in healthy individuals: First, which
+        regions are recruited for sentence comprehension and sentence production?
+        Second, are there differences for auditory sentence comprehension vs. visual
+        sentence comprehension? Third, which regions are specifically recruited for
+        the comprehension of syntactically complex sentences? Results from activation
+        likelihood estimation (ALE) analyses (from 45 studies) implicated a sentence
+        comprehension network occupying bilateral frontal and temporal lobe regions.
+        Regions implicated in production (from 15 studies) overlapped with the set
+        of regions associated with sentence comprehension in the left hemisphere,
+        but did not include inferior frontal cortex, and did not extend to the right
+        hemisphere. Modality differences between auditory and visual sentence comprehension
+        were found principally in the temporal lobes. Results from the analysis of
+        complex syntax (from 37 studies) showed engagement of left inferior frontal
+        and posterior temporal regions, as well as the right insula. The involvement
+        of the right hemisphere in the comprehension of these structures has potentially
+        important implications for language treatment and recovery in individuals
+        with agrammatic aphasia following left hemisphere brain damage."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2392'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:17 GMT
+      Via:
+      - 1.1 7ad25e4da7e31b494eaf104b1fe246e8.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - CfQMeQq5__TU3FVaLtoFDnTG91pV9-dMLQzzdF_rYARKUYbNwXWNTQ==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQDkHA5PHcEeeQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2392'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:17 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 9ca644a8-9be2-4627-b000-0b8a775701a7
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fhbm.24523&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1002\/hbm.24523","license":[{"start":{"date-parts":[[2019,1,28]],"date-time":"2019-01-28T00:00:00Z","timestamp":1548633600000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:17 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24523&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 18, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1002/hbm.24523",
+        "x_new_oql": "get works where DOI is 10.1002/hbm.24523", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1002/hbm.24523"}]},
+        "url": "/works?filter=doi:10.1002%2Fhbm.24523&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2914123471",
+        "doi": "https://doi.org/10.1002/hbm.24523", "mag": "2914123471", "pmid": "https://pubmed.ncbi.nlm.nih.gov/30689268"},
+        "display_name": "Neural networks for sentence comprehension and production:
+        An ALE\u2010based meta\u2010analysis of neuroimaging studies", "authorships":
+        [{"author_position": "first", "author": {"id": "https://openalex.org/A5059920668",
+        "display_name": "Matthew Walenski", "orcid": "https://orcid.org/0000-0002-8607-1218",
+        "observed_orcids": ["https://orcid.org/0000-0002-8607-1218"]}, "institutions":
+        [{"id": "https://openalex.org/I111979921", "display_name": "Northwestern University",
+        "ror": "https://ror.org/000e0be47", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I111979921"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Matthew Walenski", "raw_affiliation_strings": ["Center
+        for the Neurobiology of Language Recovery Northwestern University  Evanston
+        Illinois", "Department of Communication Sciences and Disorders School of Communication,
+        Northwestern University  Evanston Illinois"], "raw_orcid": "https://orcid.org/0000-0002-8607-1218",
+        "affiliations": [{"raw_affiliation_string": "Center for the Neurobiology of
+        Language Recovery Northwestern University  Evanston Illinois", "institution_ids":
+        ["https://openalex.org/I111979921"]}, {"raw_affiliation_string": "Department
+        of Communication Sciences and Disorders School of Communication, Northwestern
+        University  Evanston Illinois", "institution_ids": ["https://openalex.org/I111979921"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5068422798",
+        "display_name": "Eduardo Europa", "orcid": "https://orcid.org/0000-0003-1226-3193",
+        "observed_orcids": ["https://orcid.org/0000-0003-1226-3193"]}, "institutions":
+        [{"id": "https://openalex.org/I180670191", "display_name": "University of
+        California, San Francisco", "ror": "https://ror.org/043mz5j54", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I180670191"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Eduardo
+        Europa", "raw_affiliation_strings": ["Department of Neurology University of
+        California  San Francisco"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Neurology University of California  San Francisco", "institution_ids":
+        ["https://openalex.org/I180670191"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5075005317", "display_name": "David N. Caplan",
+        "orcid": "https://orcid.org/0000-0002-1170-1174", "observed_orcids": ["https://orcid.org/0000-0002-1170-1174"]},
+        "institutions": [{"id": "https://openalex.org/I136199984", "display_name":
+        "Harvard University", "ror": "https://ror.org/03vek6s52", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I136199984"]},
+        {"id": "https://openalex.org/I4210087915", "display_name": "Massachusetts
+        General Hospital", "ror": "https://ror.org/002pd6e78", "country_code": "US",
+        "type": "healthcare", "lineage": ["https://openalex.org/I4210087915", "https://openalex.org/I48633490"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "David
+        Caplan", "raw_affiliation_strings": ["Department of Neurology, Harvard Medical
+        School Massachusetts General Hospital  Boston Massachusetts"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Department of Neurology,
+        Harvard Medical School Massachusetts General Hospital  Boston Massachusetts",
+        "institution_ids": ["https://openalex.org/I136199984", "https://openalex.org/I4210087915"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5014953513",
+        "display_name": "Cynthia K. Thompson", "orcid": "https://orcid.org/0000-0003-3197-3457",
+        "observed_orcids": ["https://orcid.org/0000-0003-3197-3457"]}, "institutions":
+        [{"id": "https://openalex.org/I111979921", "display_name": "Northwestern University",
+        "ror": "https://ror.org/000e0be47", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I111979921"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Cynthia K. Thompson", "raw_affiliation_strings":
+        ["Center for the Neurobiology of Language Recovery Northwestern University  Evanston
+        Illinois", "Department of Communication Sciences and Disorders School of Communication,
+        Northwestern University  Evanston Illinois", "Department of Neurology Feinberg
+        School of Medicine, Northwestern University  Evanston Illinois"], "raw_orcid":
+        "https://orcid.org/0000-0003-3197-3457", "affiliations": [{"raw_affiliation_string":
+        "Center for the Neurobiology of Language Recovery Northwestern University  Evanston
+        Illinois", "institution_ids": ["https://openalex.org/I111979921"]}, {"raw_affiliation_string":
+        "Department of Communication Sciences and Disorders School of Communication,
+        Northwestern University  Evanston Illinois", "institution_ids": ["https://openalex.org/I111979921"]},
+        {"raw_affiliation_string": "Department of Neurology Feinberg School of Medicine,
+        Northwestern University  Evanston Illinois", "institution_ids": ["https://openalex.org/I111979921"]}]}],
+        "publication_year": 2019, "abstract_inverted_index": {"Comprehending": [0],
+        "and": [1, 28, 41, 87, 119, 131, 158, 187], "producing": [2], "sentences":
+        [3], "is": [4], "a": [5, 80], "complex": [6, 67, 147], "endeavor": [7], "requiring":
+        [8], "the": [9, 22, 63, 100, 109, 124, 139, 144, 165, 171, 175], "coordinated":
+        [10], "activity": [11], "of": [12, 65, 102, 146, 154, 170, 177], "multiple":
+        [13], "brain": [14, 23, 197], "regions.": [15, 90], "We": [16], "examined":
+        [17], "three": [18], "issues": [19], "related": [20], "to": [21, 123], "networks":
+        [24], "underlying": [25], "sentence": [26, 39, 42, 50, 54, 81, 106, 133],
+        "comprehension": [27, 40, 51, 64, 82, 107, 134, 176], "production": [29, 94],
+        "in": [30, 93, 108, 138, 174, 189], "healthy": [31], "individuals:": [32],
+        "First,": [33], "which": [34, 57], "regions": [35, 58, 103], "are": [36, 45,
+        59], "recruited": [37, 61], "for": [38, 48, 62, 184], "production?": [43],
+        "Second,": [44], "there": [46], "differences": [47, 128], "auditory": [49,
+        130], "vs.": [52], "visual": [53, 132], "comprehension?": [55], "Third,":
+        [56], "specifically": [60], "syntactically": [66], "sentences?": [68], "Results":
+        [69, 142], "from": [70, 143], "activation": [71], "likelihood": [72], "estimation":
+        [73], "(ALE)": [74], "analyses": [75], "(from": [76, 95, 149], "45": [77],
+        "studies)": [78, 97, 151], "implicated": [79, 92], "network": [83], "occupying":
+        [84], "bilateral": [85], "frontal": [86, 117, 157], "temporal": [88, 140,
+        160], "lobe": [89], "Regions": [91], "15": [96], "overlapped": [98], "with":
+        [99, 105, 191], "set": [101], "associated": [104], "left": [110, 155, 195],
+        "hemisphere,": [111], "but": [112], "did": [113, 120], "not": [114, 121],
+        "include": [115], "inferior": [116, 156], "cortex,": [118], "extend": [122],
+        "right": [125, 166, 172], "hemisphere.": [126], "Modality": [127], "between":
+        [129], "were": [135], "found": [136], "principally": [137], "lobes.": [141],
+        "analysis": [145], "syntax": [148], "37": [150], "showed": [152], "engagement":
+        [153], "posterior": [159], "regions,": [161], "as": [162, 164], "well": [163],
+        "insula.": [167], "The": [168], "involvement": [169], "hemisphere": [173,
+        196], "these": [178], "structures": [179], "has": [180], "potentially": [181],
+        "important": [182], "implications": [183], "language": [185], "treatment":
+        [186], "recovery": [188], "individuals": [190], "agrammatic": [192], "aphasia":
+        [193], "following": [194], "damage.": [198]}, "primary_location": {"id": "doi:10.1002/hbm.24523",
+        "doi": "https://doi.org/10.1002/hbm.24523", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1002/hbm.24523", "pdf_url": null, "source": {"id": "https://openalex.org/S121666818",
+        "display_name": "Human Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471",
+        "1097-0193"], "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in":
+        ["cwts-core", "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2",
+        "medline", "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, "best_oa_location": {"id": "pmh:oai:pubmedcentral.nih.gov:6597252",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6597252",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Hum Brain
+        Mapp", "raw_type": "Text"}, "locations": [{"id": "doi:10.1002/hbm.24523",
+        "doi": "https://doi.org/10.1002/hbm.24523", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1002/hbm.24523", "pdf_url": null, "source": {"id": "https://openalex.org/S121666818",
+        "display_name": "Human Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471",
+        "1097-0193"], "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in":
+        ["cwts-core", "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2",
+        "medline", "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human Brain
+        Mapping", "raw_type": "journal-article"}, {"id": "pmid:30689268", "doi": null,
+        "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/30689268",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human brain
+        mapping", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:6597252",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6597252",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Hum Brain
+        Mapp", "raw_type": "Text"}], "open_access": {"is_oa": true, "oa_status": "green",
+        "oa_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6597252", "any_repository_has_fulltext":
+        true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52ad1e3d476d-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:17 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9922'
+      X-RateLimit-Remaining-USD:
+      - '0.9922'
+      X-RateLimit-Reset:
+      - '12343'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=GMPi09iAros6oeptOK9jdsecwnyOQVqIpdVlLPlSGgI%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355657"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=GMPi09iAros6oeptOK9jdsecwnyOQVqIpdVlLPlSGgI%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355657"
+    status:
+      code: 200
+      message: OK
+version: 1

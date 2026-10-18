@@ -1,0 +1,403 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1093/cercor/bhab483"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '39'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "dd621ed5b1a1de3455dcf1bca2a1d1b003fa5589", "title": "Same
+        Action, Different Meaning: Neural Substrates of Action Semantic Meaning.",
+        "venue": "Cerebral Cortex", "year": 2022, "isOpenAccess": true, "openAccessPdf":
+        {"url": "https://www.biorxiv.org/content/biorxiv/early/2021/04/18/2021.04.18.440307.full.pdf",
+        "status": "GREEN", "license": "CCBYNCND", "disclaimer": "Notice: Paper or
+        abstract available at https://api.unpaywall.org/v2/10.1093/cercor/bhab483?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1093/cercor/bhab483, which is subject to the license
+        by the author or copyright owner provided with this content. Please go to
+        the source to verify the license and copyright information for your use."},
+        "publicationDate": "2022-01-13", "authors": [{"authorId": "2197221557", "name":
+        "Shahar Aberbach-Goodman"}, {"authorId": "40960243", "name": "Batel Buaron"},
+        {"authorId": "2106897", "name": "L. Mudrik"}, {"authorId": "3022855", "name":
+        "R. Mukamel"}], "abstract": "Voluntary actions are shaped by desired goals
+        and internal intentions. Multiple factors, including the planning of subsequent
+        actions and the expectation of sensory outcome, were shown to modulate kinetics
+        and neural activity patterns associated with similar goal-directed actions.
+        Notably, in many real-world tasks, actions can also vary across the semantic
+        meaning they convey, although little is known about how semantic meaning modulates
+        associated neurobehavioral measures. Here, we examined how behavioral and
+        functional magnetic resonance imaging measures are modulated when subjects
+        execute similar actions (button presses) for two different semantic meanings-to
+        answer \"yes\" or \"no\" to a binary question. Our findings reveal that, when
+        subjects answer using their right hand, the two semantic meanings are differentiated
+        based on voxel patterns in the frontoparietal cortex and lateral-occipital
+        complex bilaterally. When using their left hand, similar regions were found,
+        albeit only with a more liberal threshold. Although subjects were faster to
+        answer \"yes\" versus \"no\" when using their right hand, the neural differences
+        cannot be explained by these kinetic differences. To the best of our knowledge,
+        this is the first evidence showing that semantic meaning is embedded in the
+        neural representation of actions, independent of alternative modulating factors
+        such as kinetic and sensory features."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2407'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      Via:
+      - 1.1 14fbc181a928493001472ebb3627e27a.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - bk2DL1BSDH0D0Jf1_UQsCmQxFtnzvvrMhFJXMJcgTkPaC9lB4EFcrg==
+      X-Amz-Cf-Pop:
+      - DFW59-P3
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdQDTEDrPHcET_g=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2407'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 20:34:15 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - f394063e-d149-4929-a911-25767765df5f
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1093%2Fcercor%2Fbhab483&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1093\/cercor\/bhab483","license":[{"start":{"date-parts":[[2022,1,13]],"date-time":"2022-01-13T00:00:00Z","timestamp":1642032000000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/academic.oup.com\/journals\/pages\/open_access\/funder_policies\/chorus\/standard_publication_model"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:16 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1093%2Fcercor%2Fbhab483&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 39, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1093/cercor/bhab483",
+        "x_new_oql": "get works where DOI is 10.1093/cercor/bhab483", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1093/cercor/bhab483"}]},
+        "url": "/works?filter=doi:10.1093%2Fcercor%2Fbhab483&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W4206653341",
+        "doi": "https://doi.org/10.1093/cercor/bhab483", "pmid": "https://pubmed.ncbi.nlm.nih.gov/35024783"},
+        "display_name": "Same action, different meaning: neural substrates of action
+        semantic meaning", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5027061207", "display_name": "Shahar Aberbach-Goodman",
+        "orcid": "https://orcid.org/0000-0003-0190-7061", "observed_orcids": ["https://orcid.org/0000-0003-0190-7061"]},
+        "institutions": [{"id": "https://openalex.org/I16391192", "display_name":
+        "Tel Aviv University", "ror": "https://ror.org/04mhzgx49", "country_code":
+        "IL", "type": "education", "lineage": ["https://openalex.org/I16391192"]}],
+        "countries": ["IL"], "is_corresponding": false, "raw_author_name": "Shahar
+        Aberbach-Goodman", "raw_affiliation_strings": ["Sagol School of Neuroscience
+        and School of Psychological Sciences , , Tel-Aviv 6997801, Israel", "Tel Aviv
+        University , , Tel-Aviv 6997801, Israel", "Sagol School of Neuroscience and
+        School of Psychological Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Sagol School
+        of Neuroscience and School of Psychological Sciences , , Tel-Aviv 6997801,
+        Israel", "institution_ids": ["https://openalex.org/I16391192"]}, {"raw_affiliation_string":
+        "Tel Aviv University , , Tel-Aviv 6997801, Israel", "institution_ids": ["https://openalex.org/I16391192"]},
+        {"raw_affiliation_string": "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5000319065", "display_name": "Batel Buaron",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I16391192",
+        "display_name": "Tel Aviv University", "ror": "https://ror.org/04mhzgx49",
+        "country_code": "IL", "type": "education", "lineage": ["https://openalex.org/I16391192"]}],
+        "countries": ["IL"], "is_corresponding": false, "raw_author_name": "Batel
+        Buaron", "raw_affiliation_strings": ["Sagol School of Neuroscience and School
+        of Psychological Sciences , , Tel-Aviv 6997801, Israel", "Tel Aviv University
+        , , Tel-Aviv 6997801, Israel", "Sagol School of Neuroscience and School of
+        Psychological Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Sagol School of Neuroscience
+        and School of Psychological Sciences , , Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}, {"raw_affiliation_string": "Tel Aviv
+        University , , Tel-Aviv 6997801, Israel", "institution_ids": ["https://openalex.org/I16391192"]},
+        {"raw_affiliation_string": "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5051873475", "display_name": "Liad Mudrik",
+        "orcid": "https://orcid.org/0000-0003-3564-6445", "observed_orcids": ["https://orcid.org/0000-0003-3564-6445"]},
+        "institutions": [{"id": "https://openalex.org/I16391192", "display_name":
+        "Tel Aviv University", "ror": "https://ror.org/04mhzgx49", "country_code":
+        "IL", "type": "education", "lineage": ["https://openalex.org/I16391192"]}],
+        "countries": ["IL"], "is_corresponding": false, "raw_author_name": "Liad Mudrik",
+        "raw_affiliation_strings": ["Sagol School of Neuroscience and School of Psychological
+        Sciences , , Tel-Aviv 6997801, Israel", "Tel Aviv University , , Tel-Aviv
+        6997801, Israel", "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Sagol School of Neuroscience
+        and School of Psychological Sciences , , Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}, {"raw_affiliation_string": "Tel Aviv
+        University , , Tel-Aviv 6997801, Israel", "institution_ids": ["https://openalex.org/I16391192"]},
+        {"raw_affiliation_string": "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5077458180", "display_name": "Roy Mukamel",
+        "orcid": "https://orcid.org/0000-0001-9359-8950", "observed_orcids": ["https://orcid.org/0000-0001-9359-8950"]},
+        "institutions": [{"id": "https://openalex.org/I16391192", "display_name":
+        "Tel Aviv University", "ror": "https://ror.org/04mhzgx49", "country_code":
+        "IL", "type": "education", "lineage": ["https://openalex.org/I16391192"]}],
+        "countries": ["IL"], "is_corresponding": true, "raw_author_name": "Roy Mukamel",
+        "raw_affiliation_strings": ["Sagol School of Neuroscience and School of Psychological
+        Sciences , , Tel-Aviv 6997801, Israel", "Tel Aviv University , , Tel-Aviv
+        6997801, Israel", "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Sagol School of Neuroscience
+        and School of Psychological Sciences , , Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}, {"raw_affiliation_string": "Tel Aviv
+        University , , Tel-Aviv 6997801, Israel", "institution_ids": ["https://openalex.org/I16391192"]},
+        {"raw_affiliation_string": "Sagol School of Neuroscience and School of Psychological
+        Sciences, Tel Aviv University, Tel-Aviv 6997801, Israel", "institution_ids":
+        ["https://openalex.org/I16391192"]}]}], "publication_year": 2021, "abstract_inverted_index":
+        {"ABSTRACT": [0], "Accurate": [1], "control": [2], "over": [3], "everyday":
+        [4], "goal-directed": [5], "actions": [6, 55, 83, 126, 147, 218], "is": [7,
+        70, 88, 95, 203, 211, 266], "mediated": [8], "by": [9, 190], "sensory-motor":
+        [10, 51, 99, 271], "predictions": [11], "of": [12, 24, 49, 108, 150, 199,
+        217, 220, 237, 259, 280], "intended": [13], "consequences": [14], "and": [15,
+        27, 63, 120, 171, 224, 311], "their": [16, 260], "comparison": [17], "with":
+        [18, 84, 250], "actual": [19], "outcomes.": [20], "Such": [21], "online":
+        [22], "comparisons": [23], "the": [25, 47, 67, 79, 105, 109, 113, 153, 163,
+        168, 175, 185, 197, 204, 214, 235, 278, 281], "expected": [26], "re-afferent,":
+        [28], "immediate,": [29, 114], "sensory": [30, 68, 155, 222, 312], "feedback":
+        [31], "are": [32, 56, 321], "conceptualized": [33], "as": [34, 194, 297],
+        "internal": [35], "forward": [36], "models.": [37], "Current": [38], "predictive":
+        [39], "coding": [40], "theories": [41], "describing": [42], "such": [43, 193,
+        296], "models": [44], "typically": [45], "address": [46], "processing": [48],
+        "immediate": [50, 154, 221], "goals,": [52], "yet": [53], "voluntary": [54],
+        "also": [57, 101, 253, 273], "oriented": [58], "towards": [59], "long-term":
+        [60], "conceptual": [61, 86, 241], "goals": [62, 87, 166, 320], "intentions,":
+        [64], "for": [65, 134, 283], "which": [66, 284], "consequence": [69], "sometimes":
+        [71], "absent": [72], "or": [73, 129], "cannot": [74, 187], "be": [75, 188,
+        302], "fully": [76], "predicted.": [77], "Thus,": [78], "neural": [80, 215,
+        238, 306], "mechanisms": [81], "underlying": [82], "distal": [85], "far":
+        [89], "from": [90, 112], "being": [91], "clear.": [92], "Specifically,": [93],
+        "it": [94, 265], "still": [96], "unknown": [97], "whether": [98, 269], "circuits":
+        [100, 239, 272], "encode": [102, 254], "information": [103], "regarding":
+        [104, 143], "global": [106], "meaning": [107, 210], "action,": [110], "detached":
+        [111], "movement-related": [115], "goal.": [116], "Therefore,": [117], "using":
+        [118], "fMRI": [119], "behavioral": [121], "measures,": [122], "we": [123],
+        "examined": [124], "identical": [125], "(either": [127], "right": [128], "left-hand":
+        [130], "button": [131], "presses)": [132], "performed": [133], "two": [135,
+        164], "different": [136], "semantic": [137, 165, 209, 299, 319], "intentions":
+        [138], "(\u2018yes\u2019/\u2018no\u2019": [139], "response": [140], "to":
+        [141], "questions": [142], "visual": [144, 172], "stimuli).": [145], "Importantly,":
+        [146], "were": [148], "devoid": [149], "differences": [151, 192], "in": [152,
+        167, 178, 213, 232, 277, 309, 323, 326], "outcome.": [156], "Our": [157, 289],
+        "findings": [158, 316], "revealed": [159], "voxel": [160], "patterns": [161,
+        308], "differentiating": [162], "frontoparietal": [169], "cortex": [170],
+        "pathways": [173], "including": [174], "Lateral-occipital": [176], "complex,":
+        [177], "both": [179], "hemispheres.": [180], "Behavioral": [181], "results":
+        [182, 186, 290], "suggest": [183, 317], "that": [184, 208, 246, 292, 318],
+        "explained": [189], "kinetic": [191, 225], "force.": [195], "To": [196], "best":
+        [198], "our": [200, 315], "knowledge,": [201], "this": [202], "first": [205],
+        "evidence": [206], "showing": [207], "embedded": [212, 322], "representation":
+        [216, 279], "independent": [219], "outcome": [223], "differences.": [226],
+        "Significance": [227], "statement": [228], "A": [229], "standing": [230],
+        "question": [231], "neuroscience": [233], "concerns": [234], "nature": [236],
+        "representing": [240], "information.": [242], "Previous": [243], "studies":
+        [244], "indicate": [245], "regions": [247, 325], "traditionally": [248], "associated":
+        [249], "movement": [251], "kinematics,": [252], "symbolic": [255], "action":
+        [256, 286], "categories": [257], "regardless": [258], "specific": [261], "motor":
+        [262, 310], "scheme.": [263], "However,": [264], "currently": [267], "unclear":
+        [268], "these": [270], "play": [274], "a": [275, 327], "role": [276], "intention,":
+        [282, 295], "an": [285, 293], "was": [287], "initiated.": [288], "demonstrate":
+        [291], "action\u2019s": [294], "its": [298], "goal,": [300], "can": [301],
+        "discriminated": [303], "based": [304], "on": [305], "activity": [307], "regions.":
+        [313], "Moreover,": [314], "sensorimotor": [324], "hand-dependent": [328],
+        "manner.": [329]}, "primary_location": {"id": "doi:10.1093/cercor/bhab483",
+        "doi": "https://doi.org/10.1093/cercor/bhab483", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1093/cercor/bhab483", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S117898428", "display_name": "Cerebral Cortex", "issn_l":
+        "1047-3211", "issn": ["1047-3211", "1460-2199"], "is_oa": false, "is_in_doaj":
+        false, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-2",
+        "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310311648",
+        "host_organization_name": "Oxford University Press", "host_organization_lineage":
+        ["https://openalex.org/P4310311648", "https://openalex.org/P4310311647"],
+        "host_organization_lineage_names": ["Oxford University Press", "University
+        of Oxford"], "type": "journal"}, "license": null, "license_id": null, "version":
+        "publishedVersion", "is_accepted": true, "is_published": true, "raw_source_name":
+        "Cerebral Cortex", "raw_type": "journal-article"}, "best_oa_location": {"id":
+        "doi:10.1101/2021.04.18.440307", "doi": "https://doi.org/10.1101/2021.04.18.440307",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1101/2021.04.18.440307",
+        "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2021/04/18/2021.04.18.440307.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, "locations": [{"id": "doi:10.1093/cercor/bhab483",
+        "doi": "https://doi.org/10.1093/cercor/bhab483", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1093/cercor/bhab483", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S117898428", "display_name": "Cerebral Cortex", "issn_l":
+        "1047-3211", "issn": ["1047-3211", "1460-2199"], "is_oa": false, "is_in_doaj":
+        false, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-2",
+        "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310311648",
+        "host_organization_name": "Oxford University Press", "host_organization_lineage":
+        ["https://openalex.org/P4310311648", "https://openalex.org/P4310311647"],
+        "host_organization_lineage_names": ["Oxford University Press", "University
+        of Oxford"], "type": "journal"}, "license": null, "license_id": null, "version":
+        "publishedVersion", "is_accepted": true, "is_published": true, "raw_source_name":
+        "Cerebral Cortex", "raw_type": "journal-article"}, {"id": "doi:10.1101/2021.04.18.440307",
+        "doi": "https://doi.org/10.1101/2021.04.18.440307", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2021.04.18.440307", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2021/04/18/2021.04.18.440307.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, {"id": "pmid:35024783", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/35024783", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Cerebral cortex
+        (New York, N.Y. : 1991)", "raw_type": "Journal Article"}], "open_access":
+        {"is_oa": true, "oa_status": "green", "oa_url": "https://www.biorxiv.org/content/biorxiv/early/2021/04/18/2021.04.18.440307.full.pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4ca52a2b885475d-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 20:34:16 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9923'
+      X-RateLimit-Remaining-USD:
+      - '0.9923'
+      X-RateLimit-Reset:
+      - '12344'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=csHrfbIjX3P5yYm56wBUpbxPtWbgeYwIPxMI3nfhsFY%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792355656"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=csHrfbIjX3P5yYm56wBUpbxPtWbgeYwIPxMI3nfhsFY%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792355656"
+    status:
+      code: 200
+      message: OK
+version: 1

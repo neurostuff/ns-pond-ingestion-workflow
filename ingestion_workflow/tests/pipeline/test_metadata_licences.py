@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -65,6 +66,8 @@ def _run(stage, ctx, catalog, ref):
 def test_each_held_copy_and_the_paper_get_a_licence(env):
     settings, catalog = env
     ref = _held(catalog, TDM_MANUSCRIPT)
+    # a failed download holds no copy, and gets no licence
+    catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
     assert outcome.status is Status.OK, outcome.error
@@ -92,10 +95,11 @@ def test_a_new_or_changed_download_makes_the_licences_stale(env):
     assert stage.plan(ctx, [ref], catalog.artifacts([ref.id], "metadata"),
                       catalog.artifacts([ref.id], "extract")).fresh == 1
     _held(catalog, TDM_MANUSCRIPT, fingerprint="dl-2")
-    assert planned() != first
+    second = planned()
+    assert second != first
     catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
     # a failed download holds no copy, so it changes nothing
-    assert planned() == stage.fingerprint_for(catalog.artifacts([ref.id], "download")[ref.id])
+    assert planned() == second
 
 
 @pytest.mark.vcr()
@@ -108,5 +112,65 @@ def test_a_licence_a_provider_might_still_state_is_left_undecided_and_retried(en
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
     assert outcome.status is Status.FAILED
-    assert outcome.error == ("the licence of the ace copy is undecided: "
+    assert outcome.error == ("the copies the providers list are unknown: "
                              "semantic_scholar is not configured")
+    assert outcome.summary == {"unanswered": ["semantic_scholar"]}
+
+
+@pytest.mark.vcr()
+def test_a_licence_nobody_states_is_recorded_as_assumed(env):
+    settings, catalog = env
+    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+
+    assert outcome.status is Status.OK, outcome.error
+    assert (outcome.summary["license"], outcome.summary["license_determination"],
+            outcome.summary["copy_licenses"]) == (
+        "all-rights-reserved", "assumed", {"ace": "all-rights-reserved"})
+
+
+@pytest.mark.parametrize("summary, retried", [
+    # Semantic Scholar was down on every try: the article is asked about again
+    ({"unanswered": ["semantic_scholar"]}, True),
+    # its own record could not be read on every try: it is given up on
+    (None, False),
+])
+def test_a_provider_s_outage_spends_none_of_the_article_s_tries(env, summary, retried):
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT)
+    for _ in range(3):
+        catalog.record([Outcome.failure(ref.id, "metadata", "", "the licence ... is undecided",
+                                        fingerprint="old", summary=summary)])
+    ctx = Context(settings, catalog, retry_after=timedelta(0))
+    plan = MetadataStage(settings).plan(ctx, [ref], catalog.artifacts([ref.id], "metadata"),
+                                        catalog.artifacts([ref.id], "extract"))
+    assert (len(plan.pending), plan.permanent) == ((1, 0) if retried else (0, 1))
+
+
+LICENSES = Path(__file__).parents[1] / "data" / "licenses"
+
+
+@pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
+def test_a_copy_with_no_record_takes_the_first_held_record_in_the_order_sources_are_tried(env):
+    """pubget is tried before Elsevier, so ACE's page of the version of record takes the
+    licence pubget's JATS states, not Elsevier's coredata."""
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT, "pubget", "pubget_open_licence")
+    elsevier = LICENSES / "elsevier_cortex_2017_05_018" / "content.xml"
+    download = DownloadResult(identifier=ref.identifier, source=DownloadSource.ELSEVIER,
+                              success=True, files=[DownloadedFile(
+                                  file_path=elsevier, file_type=FileType.XML,
+                                  content_type="application/xml",
+                                  source=DownloadSource.ELSEVIER)])
+    ace = DownloadResult(identifier=ref.identifier, source=DownloadSource.ACE, success=True)
+    catalog.record([
+        Outcome(article_id=ref.id, stage="download", source=d.source.value, fingerprint="dl",
+                payload=d.to_dict(), summary={"copy": copy_of(d).to_dict()})
+        for d in (download, ace)])
+    _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+
+    assert outcome.status is Status.OK, outcome.error
+    stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
+    by = {source: (lic.license_id, lic.stated_by) for source, lic in stored.copy_licenses.items()}
+    assert by == {"pubget": ("other", "jats"), "elsevier": ("all-rights-reserved", "elsevier"),
+                  "ace": ("other", "jats")}

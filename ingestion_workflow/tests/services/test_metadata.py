@@ -521,11 +521,11 @@ class TestLicences:
         # PMC's own copy is the one held, and PubMed's record is no copy
         assert not [c for c in meta.reported_copies if c.route == "pmc"]
         assert not [c for c in meta.reported_copies if "pubmed.ncbi" in c.url]
-        assert meta.raw_metadata["openalex"]["locations"][1]["landing_page_url"] == (
+        assert meta.raw_metadata["openalex"][0]["locations"][1]["landing_page_url"] == (
             "https://pubmed.ncbi.nlm.nih.gov/35820077")
         # what was decided survives the artifact
         assert ArticleMetadata.from_dict(meta.to_dict()).to_dict() == meta.to_dict()
-        assert meta.raw_metadata["crossref"]["license"]
+        assert meta.raw_metadata["crossref"]["10.1002/alz.12697"]["license"]
 
     @pytest.mark.vcr("TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml")
     def test_a_held_pdf_takes_the_licence_its_location_is_listed_with(self, tmp_path):
@@ -609,8 +609,10 @@ class TestLicences:
         found = service.enrich_metadata([extracted])
 
         assert found[extracted.slug].license is None
-        assert service.undecided == {extracted.slug: (
-            "the licence of the paper is undecided: semantic_scholar is not configured")}
+        undecided = service.undecided[extracted.slug]
+        assert str(undecided) == (
+            "the copies the providers list are unknown: semantic_scholar is not configured")
+        assert undecided.sources == ("semantic_scholar",)
 
 
 def test_the_abstract_kept_is_credited_to_the_provider_it_came_from():
@@ -623,33 +625,247 @@ def test_the_abstract_kept_is_credited_to_the_provider_it_came_from():
     assert ArticleMetadata(title="T", source="pubmed").abstract_provider is None
 
 
+def test_a_provider_that_does_not_answer_is_noted_for_each_article_it_left(tmp_path,
+                                                                          unavailable):
+    from ingestion_workflow.clients.crossref import CrossrefClient
+
+    client = CrossrefClient()
+    client.BASE_URL = unavailable + "/works/"
+    service = MetadataService(_licence_settings(tmp_path))
+    identifiers = [Identifier(doi="10.1037/npe0000112"), Identifier(doi="10.1002/alz.12697")]
+    unanswered = {}
+    found = service._cached("crossref", client, identifiers, unanswered)
+    assert found == {}
+    assert unanswered == {i.slug: {"crossref": "did not answer"} for i in identifiers}
+
+
+TDM_CASSETTE = "TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml"
+NOTHING_CASSETTE = "TestLicences.test_nothing_stated_anywhere_is_an_assumed_all_rights_reserved.yaml"
+ALZ = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/alz.12697")
+APA = Identifier(doi="10.1037/npe0000112")
+
+
+def _copy(source, route, version, access="public", url=None, files=()):
+    from ingestion_workflow.models import DownloadCopy
+    from ingestion_workflow.services.metadata import HeldDownload
+
+    return HeldDownload(source, DownloadCopy(route=route, version=version, access=access, url=url),
+                        list(files))
+
+
+def _content(identifier, source=DownloadSource.PDF):
+    return ExtractedContent(slug=identifier.slug, source=source, identifier=identifier)
+
+
+@pytest.mark.vcr(TDM_CASSETTE)
+def test_a_manuscript_and_a_copy_of_no_known_version_never_take_the_vor_s_licence(tmp_path):
+    """10.1002/alz.12697's version of record is CC BY-NC by Crossref's `vor` deposit, and
+    Crossref holds no `am` deposit: a held manuscript, and a copy whose version no source
+    gives, are assumed."""
+    held = [_copy("pdf", "repository", "am", url="https://discovery.ucl.ac.uk/id/eprint/10152210/"),
+            _copy("europepmc", "pmc", None)]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = service.enrich_metadata([_content(ALZ)], {ALZ.slug: held})[ALZ.slug]
+
+    assert service.undecided == {}
+    assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
+    assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
+        "pdf": assumed, "europepmc": assumed}
+    assert meta.license.license_id == "cc-by-nc"
+
+
+@pytest.mark.vcr(TDM_CASSETTE)
+def test_an_unreadable_own_record_leaves_its_copy_undecided(tmp_path):
+    record = tmp_path / "pmc_cloud.json"
+    record.write_text('{"license_code": ', encoding="utf-8")
+    held = [_copy("pmc", "pmc", "am", access="tdm_grant",
+                  files=[COPIES / "pmc_tdm_manuscript" / "article.xml", record])]
+    service = MetadataService(_licence_settings(tmp_path))
+    service.enrich_metadata([_content(ALZ, DownloadSource.PMC)], {ALZ.slug: held})
+
+    undecided = service.undecided[ALZ.slug]
+    assert str(undecided) == ("the licence of the pmc copy is undecided: "
+                              "its own record could not be read")
+    assert undecided.sources == ("own",)
+
+
 class _Unavailable(BaseHTTPRequestHandler):
-    """Crossref while it is down: 503 to everything, with no wait asked for."""
+    """A provider while it is down: 503 to everything, with no wait asked for."""
 
     def do_GET(self):
         self.send_response(503)
         self.send_header("Retry-After", "0")
         self.end_headers()
 
+    do_POST = do_GET
+
     def log_message(self, *args):
         pass
 
 
-def test_a_provider_that_does_not_answer_is_noted_for_each_article_it_left(tmp_path):
-    """Served by a local server, because a recorded outage cannot be had on demand."""
-    from ingestion_workflow.clients.crossref import CrossrefClient
-
+@pytest.fixture()
+def unavailable():
+    """The base URL of a local server that answers 503: a recorded outage cannot be had
+    on demand."""
     server = HTTPServer(("127.0.0.1", 0), _Unavailable)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield f"http://127.0.0.1:{server.server_port}"
+    server.shutdown()
+    server.server_close()
+
+
+@pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
+def test_crossref_down_leaves_a_licence_it_comes_before_undecided(tmp_path, unavailable):
+    """Semantic Scholar and OpenAlex answer as recorded; Crossref does not."""
+    service = MetadataService(_licence_settings(tmp_path))
+    service._crossref_client.BASE_URL = unavailable + "/works/"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded")]
+    found = service.enrich_metadata([_content(APA, DownloadSource.ACE)], {APA.slug: held})
+
+    assert found[APA.slug].license is None
+    undecided = service.undecided[APA.slug]
+    assert str(undecided) == "the licence of the ace copy is undecided: crossref did not answer"
+    assert undecided.sources == ("crossref",)
+
+
+@pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
+def test_openalex_down_leaves_the_listed_copies_unknown(tmp_path, unavailable):
+    service = MetadataService(_licence_settings(tmp_path))
+    service._openalex_client.BASE_URL = unavailable
+    service.enrich_metadata([_content(APA, DownloadSource.ACE)])
+
+    undecided = service.undecided[APA.slug]
+    assert str(undecided) == "the copies the providers list are unknown: openalex did not answer"
+    assert undecided.sources == ("openalex",)
+
+
+class _HalfAnswered(BaseHTTPRequestHandler):
+    """Semantic Scholar answering its first batch, then failing."""
+
+    calls = 0
+
+    def do_POST(self):
+        type(self).calls += 1
+        if type(self).calls > 1:
+            self.send_response(500)
+            self.end_headers()
+            return
+        ids = json.loads(self.rfile.read(int(self.headers["Content-Length"])))["ids"]
+        body = json.dumps([{"paperId": "1", "title": "Answered", "authors": [], "year": 2020}
+                           for _ in ids]).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+def test_a_partial_semantic_scholar_answer_keeps_what_was_answered(tmp_path, monkeypatch):
+    from ingestion_workflow.clients import semantic_scholar as s2
+    from ingestion_workflow.models.notices import PartialAnswer
+
+    monkeypatch.setattr(s2, "SEMANTIC_SCHOLAR_BATCH_SIZE", 1)
+    monkeypatch.setattr(s2.SemanticScholarClient._request_metadata_batch.retry, "wait",
+                        lambda retry_state: 0)
+    server = HTTPServer(("127.0.0.1", 0), _HalfAnswered)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
-        client = CrossrefClient()
-        client.BASE_URL = f"http://127.0.0.1:{server.server_port}/works/"
-        service = MetadataService(_licence_settings(tmp_path))
-        identifiers = [Identifier(doi="10.1037/npe0000112"), Identifier(doi="10.1002/alz.12697")]
+        client = s2.SemanticScholarClient("replay")
+        client.BASE_URL = f"http://127.0.0.1:{server.server_port}/graph/v1/paper/batch"
+        one, two = Identifier(doi="10.1037/npe0000112"), Identifier(doi="10.1002/alz.12697")
+        with pytest.raises(PartialAnswer) as raised:
+            client.get_metadata([one, two])
+        assert set(raised.value.found) == {one.slug}
+        _HalfAnswered.calls = 0
         unanswered = {}
-        found = service._cached("crossref", client, identifiers, unanswered)
+        service = MetadataService(_licence_settings(tmp_path))
+        found = service._cached("semantic_scholar", client, [one, two], unanswered)
     finally:
         server.shutdown()
         server.server_close()
-    assert found == {}
-    assert unanswered == {i.slug: {"crossref": "did not answer"} for i in identifiers}
+    assert found[one.slug].title == "Answered"
+    assert unanswered == {two.slug: {"semantic_scholar": "did not answer"}}
+
+
+@pytest.mark.vcr()
+@pytest.mark.parametrize("doi, stated_as", [
+    ("10.1111/ejn.14701", "http://onlinelibrary.wiley.com/termsAndConditions#vor"),
+    ("10.1093/cercor/bhab483", "https://academic.oup.com/journals/pages/open_access/"
+                               "funder_policies/chorus/standard_publication_model"),
+    ("10.1002/hbm.24523", "http://onlinelibrary.wiley.com/termsAndConditions#vor"),
+    ("10.1002/hbm.21020", "http://onlinelibrary.wiley.com/termsAndConditions#vor"),
+])
+def test_another_copy_s_open_licence_is_not_the_version_of_record_s(tmp_path, doi, stated_as):
+    """Each paper's Crossref `vor` deposit is its publisher's terms; Semantic Scholar's
+    open PDF (a preprint, a manuscript, another work) or a repository location is CC."""
+    identifier = Identifier(doi=doi)
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = service.enrich_metadata([_content(identifier)])[identifier.slug]
+
+    assert service.undecided == {}
+    assert (meta.license.license_id, meta.license.stated_by, meta.license.stated_as) == (
+        "other", "crossref", stated_as)
+    # the open copies keep their own licences
+    assert any(c.license.license_id.startswith("cc") for c in meta.reported_copies)
+
+
+@pytest.mark.vcr()
+def test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record(tmp_path):
+    """wig5qljtu6qy, 10.1016/j.cortex.2017.05.018: Elsevier's coredata says all rights are
+    reserved; an open copy elsewhere does not make the page ACE read open."""
+    identifier = Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018")
+    files = [Path(__file__).parents[1] / "data" / "licenses" / "elsevier_cortex_2017_05_018"
+             / "content.xml"]
+    held = [_copy("elsevier", "publisher", "vor", access="tdm_grant", files=files),
+            _copy("ace", "publisher", "vor", access="unrecorded")]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = service.enrich_metadata([_content(identifier, DownloadSource.ELSEVIER)],
+                                   {identifier.slug: held})[identifier.slug]
+
+    arr = {"license_id": "all-rights-reserved", "determination": "stated",
+           "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
+    assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {"elsevier": arr, "ace": arr}
+    assert _license(meta.license) == arr
+
+
+@pytest.mark.vcr()
+def test_a_paper_presented_by_its_preprint_doi_takes_its_journal_s_licence(tmp_path, vcr):
+    """dpl6phhniqbj holds 10.1002/hbm.25137 and its bioRxiv preprint 10.1101/2020.03.25.008318,
+    and is presented by the preprint's DOI. Crossref holds a CC BY deposit for the journal's
+    DOI and none for the preprint's."""
+    identifier = Identifier(doi="10.1101/2020.03.25.008318")
+    dois = ["10.1002/hbm.25137", "10.1101/2020.03.25.008318"]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = service.enrich_metadata([_content(identifier)], dois={identifier.slug: dois})[
+        identifier.slug]
+
+    assert service.undecided == {}
+    assert sorted(meta.raw_metadata["crossref"]) == dois
+    assert (meta.license.stated_by, meta.license.stated_as) == (
+        "crossref", "http://creativecommons.org/licenses/by/4.0/")
+
+
+def test_a_merged_abstract_s_provider_survives_the_artifact():
+    merged = ArticleMetadata(title="T", abstract="Short.", source="semantic_scholar").merge_from(
+        ArticleMetadata(title="T", abstract="A longer abstract.", source="pubmed"))
+    reloaded = ArticleMetadata.from_dict(json.loads(json.dumps(merged.to_dict())))
+    assert (reloaded.source, reloaded.abstract_provider) == ("semantic_scholar", "pubmed")
+
+
+def test_metadata_version_makes_every_record_from_before_the_licences_stale():
+    from ingestion_workflow.pipeline.stages.metadata import METADATA_VERSION
+
+    assert METADATA_VERSION == 2
+
+
+@pytest.mark.parametrize("oa_status, expected", [("green", "green"), ("unknown", None)])
+def test_oa_status_is_openalex_s_when_it_is_one_of_study_schema_s(oa_status, expected):
+    from ingestion_workflow.services.metadata import _decide_licenses
+    from study_schema.models.paper_parse import ArticleIdentifiers
+
+    meta = ArticleMetadata(title="T")
+    _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None, {},
+                     [{"open_access": {"oa_status": oa_status}}], {}, [], {})
+    assert meta.oa_status == expected

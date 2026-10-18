@@ -220,7 +220,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            _identifiers(content.identifier, inputs.dois, meta),
+            article_identifiers(content.identifier, inputs.dois, meta),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -535,7 +535,7 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def _identifiers(identifier, dois: Sequence[str], meta):
+def article_identifiers(identifier, dois: Sequence[str], meta):
     """The catalog's identifiers, each preprint's apart from the version of record's.
 
     A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
@@ -1309,6 +1309,7 @@ __all__ = [
     "MissingRole",
     "Omitted",
     "ParseInputs",
+    "article_identifiers",
     "held_copy",
     "coordinate_parse",
     "parsed_paper",

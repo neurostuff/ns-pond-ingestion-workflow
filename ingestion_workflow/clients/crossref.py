@@ -86,8 +86,9 @@ class CrossrefClient:
 
         Every DOI asked gets a record, so that the answer is cached: a work with no
         licence deposit, or one Crossref does not know, has an empty list. A filter value
-        cannot hold a comma, so a DOI with one is asked for singly. A failed request
-        raises `PartialAnswer` with the records of the requests that did not fail.
+        cannot hold a comma, so a DOI with one is asked for singly, as is a DOI a filter
+        query did not return. A failed request raises `PartialAnswer` with the records of
+        the requests that did not fail.
         """
         wanted: Dict[str, List[Identifier]] = {}
         for identifier in identifiers:
@@ -96,6 +97,7 @@ class CrossrefClient:
                 wanted.setdefault(doi, []).append(identifier)
         answered: Dict[str, List[Dict]] = {}
         failures: List[str] = []
+        failed: set = set()
         batched = [doi for doi in wanted if "," not in doi]
         for index in range(0, len(batched), CROSSREF_DOI_BATCH_SIZE):
             batch = batched[index : index + CROSSREF_DOI_BATCH_SIZE]
@@ -103,14 +105,16 @@ class CrossrefClient:
                 works = self._licenses(batch)
             except Exception as exc:  # noqa: BLE001 - the batch's articles are retried
                 failures.append(f"{type(exc).__name__}: {exc}")
+                failed.update(batch)
                 continue
-            answered.update({doi: [] for doi in batch})
             for work in works:
                 doi = normalize_doi(work.get("DOI"))
-                if doi in answered:
+                if doi in batch:
                     answered[doi] = list(work.get("license") or [])
+        # A DOI a filter query leaves out is asked for singly: Crossref may know it under
+        # a spelling the filter does not match.
         for doi in wanted:
-            if "," in doi:
+            if doi not in answered and doi not in failed:
                 try:
                     work = self.work(doi)
                 except Exception as exc:  # noqa: BLE001
