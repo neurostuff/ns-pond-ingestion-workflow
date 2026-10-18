@@ -49,7 +49,9 @@ def _osf(name: str, prefix: str, osf_ids: Tuple[str, ...], *domains: str) -> Pre
 #: undated numeric form is the legacy one.
 #: OSF's providers each have a prefix (Crossref member 15934, less Thesis Commons and
 #: Lifecycle Journal, which are not preprint servers) and share one DOI shape; engrXiv
-#: (10.31224) is run by another member on the same platform.
+#: (10.31224) is run by another member on the same platform, and its newer DOIs are a bare
+#: number (10.31224/4330). JMIR Preprints has a host of its own because jmir.org also
+#: serves the journals.
 PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
     PreprintServer("biorxiv", (r"10\.1101/(\d{4}\.\d{2}\.\d{2}\.\d{6}|\d{6})",
                                r"10\.64898/\d{4}\.\d{2}\.\d{2}\.\d{6}"), ("biorxiv.org",)),
@@ -61,7 +63,8 @@ PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
     _osf("osf_preprints", "31219", ("osf",)),
     _osf("arabixiv", "31221", ("arabixiv",), "arabixiv.org"),
     _osf("metaarxiv", "31222", ("metaarxiv",)),
-    _osf("engrxiv", "31224", ("engrxiv",), "engrxiv.org"),
+    PreprintServer("engrxiv", (r"10\.31224/osf\.io/[a-z0-9]{5}(_v\d+)?", r"10\.31224/\d+"),
+                   ("engrxiv.org",), preprints_only=False, osf_ids=("engrxiv",)),
     _osf("focus_archive", "31225", ("focusarchive",)),
     _osf("frenxiv", "31226", ("frenxiv",), "frenxiv.org"),
     _osf("ina_rxiv", "31227", ("inarxiv",)),
@@ -84,10 +87,14 @@ PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
     PreprintServer("ssrn", (r"10\.2139/ssrn\.\d+",), ("ssrn.com",), preprints_only=False),
     PreprintServer("preprints_org", (r"10\.20944/preprints\d{6}\.\d{4}\.v\d+",),
                    ("preprints.org",)),
-    PreprintServer("authorea", (r"10\.22541/au\.\d+\.\d+(/v\d+)?",)),
-    PreprintServer("techrxiv", (r"10\.36227/techrxiv\.\d+(\.v\d+)?",)),
-    PreprintServer("chemrxiv", (r"10\.26434/chemrxiv[.-][a-z0-9.-]+(/v\d+)?",)),
-    PreprintServer("jmir_preprints", (r"10\.2196/preprints\.\d+",)),
+    PreprintServer("authorea", (r"10\.22541/au\.\d+\.\d+(/v\d+)?",),
+                   ("authorea.com",)),
+    PreprintServer("techrxiv", (r"10\.36227/techrxiv\.\d+(\.v\d+)?",),
+                   ("techrxiv.org",)),
+    PreprintServer("chemrxiv", (r"10\.26434/chemrxiv[.-][a-z0-9.-]+(/v\d+)?",),
+                   ("chemrxiv.org",)),
+    PreprintServer("jmir_preprints", (r"10\.2196/preprints\.\d+",),
+                   ("preprints.jmir.org",)),
 )
 
 

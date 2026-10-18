@@ -1,0 +1,83 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.crossref.org/works/10.36227/techrxiv.15010803.v1
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,6,3]],"date-time":"2026-06-03T18:14:00Z","timestamp":1780510440669,"version":"3.54.1"},"posted":{"date-parts":[[2021,7,19]]},"reference-count":0,"publisher":"Institute
+        of Electrical and Electronics Engineers (IEEE)","license":[{"start":{"date-parts":[[2021,7,19]],"date-time":"2021-07-19T00:00:00Z","timestamp":1626652800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-sa\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>Convolutional
+        neural networks are gradually being recognized in the\nneuroimaging community
+        as a powerful tool for image analysis. In the\npresent study, we tested the
+        ability of 3D convolutional neural networks\nto discriminate between whole-brain
+        parametric maps obtained from\ndiffusion-weighted magnetic resonance imaging.
+        Original parametric maps\nwere subjected to intensity-based region-specific
+        alterations, to create\naltered maps. To analyze how position, size and intensity
+        of altered\nregions affected the networks\u2019 learning process, we generated
+        monoregion\nand biregion maps by systematically modifying the size and intensity
+        of\none or two brain regions in each image. We assessed network performance\nover
+        a range of intensity increases and combinations of maps, carrying\nout 10-fold
+        cross-validation and using a hold-out set for testing. We\nthen tested the
+        networks trained with monoregion images on the\ncorresponding biregion images
+        and vice versa. Results showed an\ninversely proportional link between size
+        and intensity for the\nmonoregion networks, in that the larger the region,
+        the smaller the\nincrease in intensity needed to achieve good performances.
+        Accuracy was\nbetter for biregion networks than for their monoregion counterparts,\nshowing
+        that altering more than one region in the brain can improve\ndiscrimination.
+        Monoregion networks correctly detected their target\nregion in biregion maps,
+        whereas biregion networks could only detect one\nof the two target regions
+        at most. Biregion networks therefore learned a\nmore complex pattern that
+        was absent from the monoregion images. This\ndeep learning approach could
+        be tailored to explore the behavior of\nother convolutional neural networks
+        for other regions of interest.<\/jats:p>","DOI":"10.36227\/techrxiv.15010803.v1","type":"posted-content","created":{"date-parts":[[2021,7,19]],"date-time":"2021-07-19T19:17:59Z","timestamp":1626722279000},"source":"Crossref","is-referenced-by-count":0,"title":["Investigating
+        the Discrimination Ability of 3D Convolutional Neural Networks Applied to
+        Altered Brain MRI Parametric Maps"],"prefix":"10.36227","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-6752-367X","authenticated-orcid":false,"given":"Giulia
+        Maria","family":"Mattia","sequence":"first","affiliation":[{"name":"ToNIC"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Federico","family":"Nemmi","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Edouard","family":"Villain","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Marie-V\u00e9ronique
+        Le","family":"Lann","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Xavier","family":"Franceries","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Patrice","family":"P\u00e9ran","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"263","container-title":[],"original-title":[],"link":[{"URL":"https:\/\/www.techrxiv.org\/doi\/pdf\/10.36227\/techrxiv.15010803.v1","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,6,3]],"date-time":"2026-06-03T17:41:02Z","timestamp":1780508462000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.techrxiv.org\/doi\/full\/10.36227\/techrxiv.15010803.v1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2021,7,19]]},"references-count":0,"URL":"https:\/\/doi.org\/10.36227\/techrxiv.15010803.v1","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1016\/j.artmed.2024.102897","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2021,7,19]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1848'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 05:22:44 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

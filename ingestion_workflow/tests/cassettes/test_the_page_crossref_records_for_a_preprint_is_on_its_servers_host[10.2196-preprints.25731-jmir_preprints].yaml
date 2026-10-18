@@ -1,0 +1,99 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.crossref.org/works/10.2196/preprints.25731
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,2,21]],"date-time":"2025-02-21T00:48:14Z","timestamp":1740098894862,"version":"3.37.3"},"posted":{"date-parts":[[2020,11,13]]},"group-title":"JMIR
+        Mental Health","reference-count":2,"publisher":"JMIR Publications Inc.","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<sec>\n                    <title>BACKGROUND<\/title>\n                        <p>Although
+        it has been well demonstrated that the efficacy of virtual reality therapy
+        for social anxiety disorder is comparable to that of traditional cognitive
+        behavioral therapy, little is known about the effect of virtual reality on
+        pathological self-referential processes in individuals with social anxiety
+        disorder.<\/p>\n                <\/sec>\n                                <sec>\n                    <title>OBJECTIVE<\/title>\n                        <p>We
+        aimed to determine changes in self-referential processing and their neural
+        mechanisms following virtual reality treatment.<\/p>\n                <\/sec>\n                                <sec>\n                    <title>METHODS<\/title>\n                        <p>We
+        recruited participants with and without a primary diagnosis of social anxiety
+        disorder to undergo clinical assessments (Social Phobia Scale and Post-Event
+        Rumination Scale) and functional magnetic resonance imaging (fMRI) scans.
+        Participants with social anxiety disorder received virtual reality\u2013based
+        exposure treatment for 6 sessions starting immediately after baseline testing.
+        After the sixth session, participants with social anxiety disorder completed
+        follow-up scans during which they were asked to judge whether a series of
+        words (positive, negative, neutral) was relevant to them.<\/p>\n                <\/sec>\n                                <sec>\n                    <title>RESULTS<\/title>\n                        <p>Of
+        25 individuals with social anxiety disorder who participated in the study,
+        21 completed the sessions and follow-up; 22 control individuals also participated.
+        There were no significant differences in age (&lt;i&gt;P&lt;\/i&gt;=.36),
+        sex (&lt;i&gt;P&lt;\/i&gt;=.71), or handedness (&lt;i&gt;P&lt;\/i&gt;=.51)
+        between the groups. Whole-brain analysis revealed that participants in the
+        social anxiety disorder group had increased neural responses during positive
+        self-referential processing in the medial temporal and frontal cortexes compared
+        with those in the control group. Participants in the social anxiety disorder
+        group also showed increased left insular activation and decreased right middle
+        frontal gyrus activation during negative self-referential processing. After
+        undergoing virtual reality\u2013based therapy, overall symptoms of the participants
+        with social anxiety disorder were reduced, and these participants exhibited
+        greater activity in a brain regions responsible for self-referential and autobiographical
+        memory processes while viewing positive words during postintervention fMRI
+        scans. Interestingly, the greater the blood oxygen level dependent changes
+        related to positive self-referential processing, the lower the tendency to
+        ruminate on the negative events and the lower the social anxiety following
+        the virtual reality session. Compared with that at baseline, higher activation
+        was also found within broad somatosensory areas in individuals with social
+        anxiety disorder during negative self-referential processing following virtual
+        reality therapy.<\/p>\n                <\/sec>\n                                <sec>\n                    <title>CONCLUSIONS<\/title>\n                        <p>These
+        fMRI findings might reflect the enhanced physiological and cognitive processing
+        in individuals with social anxiety disorder in response to self-referential
+        information. They also provide neural evidence of the effect of virtual reality
+        exposure therapy on social anxiety and self-derogation.<\/p>\n                <\/sec>","DOI":"10.2196\/preprints.25731","type":"posted-content","created":{"date-parts":[[2020,11,16]],"date-time":"2020-11-16T20:05:38Z","timestamp":1605557138000},"source":"Crossref","is-referenced-by-count":0,"title":["Virtual
+        Reality\u2013Based Psychotherapy in Social Anxiety Disorder: fMRI Study Using
+        a Self-Referential Task (Preprint)"],"prefix":"10.2196","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-1939-7365","authenticated-orcid":false,"given":"Ji-Won","family":"Hur","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-6808-0188","authenticated-orcid":false,"given":"Hyemin","family":"Shin","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-5381-4847","authenticated-orcid":false,"given":"Dooyoung","family":"Jung","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-9560-2383","authenticated-orcid":false,"given":"Heon-Jeong","family":"Lee","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-0123-9382","authenticated-orcid":false,"given":"Sungkil","family":"Lee","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9880-8021","authenticated-orcid":false,"given":"Gerard
+        J","family":"Kim","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-0879-2535","authenticated-orcid":false,"given":"Chung-Yean","family":"Cho","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-5889-1083","authenticated-orcid":false,"given":"Seungmoon","family":"Choi","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-4958-353X","authenticated-orcid":false,"given":"Seung-Moo","family":"Lee","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-1663-9680","authenticated-orcid":false,"given":"Chul-Hyun","family":"Cho","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"1010","reference":[{"key":"ref2","doi-asserted-by":"publisher","DOI":"10.2174\/1874440001206010078"},{"key":"ref4","doi-asserted-by":"publisher","DOI":"10.2174\/1874440001206010078"}],"container-title":[],"original-title":[],"deposited":{"date-parts":[[2021,4,14]],"date-time":"2021-04-14T21:20:05Z","timestamp":1618435205000},"score":1,"resource":{"primary":{"URL":"http:\/\/preprints.jmir.org\/preprint\/25731"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2020,11,13]]},"references-count":2,"URL":"https:\/\/doi.org\/10.2196\/preprints.25731","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.2196\/25731","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2020,11,13]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2296'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 05:22:45 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

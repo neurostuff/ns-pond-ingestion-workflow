@@ -1,0 +1,90 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.crossref.org/works/10.22541/au.164340169.91748604/v1
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,10]],"date-time":"2026-08-10T21:30:46Z","timestamp":1786397446962,"version":"build-2736575974"},"posted":{"date-parts":[[2022,1,28]]},"reference-count":0,"publisher":"Wiley","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>Background:
+        Mounting evidence demonstrates that meditation can lower\npain and emotional
+        distress in adults, and more recently, in children.\nMeditation may be an
+        effective form of emotion regulation in children\nbecause it is easily accessible
+        and more easily done across a variety of\nsettings in which toys may not be
+        available, for e.g., settings\nrequiring a \u201cclean\u201d environment (e.g.,
+        surgical prep). Further,\nneuroimaging studies in adults suggest that meditation
+        techniques are\nneurobiologically distinct from other forms of emotion regulation,
+        such\nas distraction, that rely on prefrontal control mechanisms, which are\nunderdeveloped
+        in youth. Rather, meditation techniques may not rely on\n\u201ctop-down\u201d
+        prefrontal control and may therefore be utilized across the\nlifespan. Procedure:
+        We examined neural activation in children with\ncancer, who experience significant
+        distress. During neuroimaging,\nchildren viewed distress-inducing video clips
+        while using martial\narts-based meditation (focused attention, mindful acceptance)
+        or\nnon-meditation (distraction) emotion regulation techniques. In a third\ncondition
+        (control), participants passively viewed the video clip.\nResults: We found
+        that meditation techniques were associated with lower\nactivation in default
+        mode network (DMN) regions, including the medial\nfrontal cortex, precuneus,
+        and posterior cingulate cortex, compared to\nthe control condition. Additionally,
+        we found evidence that meditation\ntechniques may be more effective for modulating
+        DMN activity than\ndistraction. There were no differences in self-reported
+        distress ratings\nbetween conditions. Conclusion: Together, these findings
+        suggest that\nmartial arts-based meditation modulates negative self-referential\nprocessing
+        associated with the DMN, and may have implications for the\nmanagement of
+        pediatric pain and negative emotion.<\/jats:p>","DOI":"10.22541\/au.164340169.91748604\/v1","type":"posted-content","created":{"date-parts":[[2022,1,28]],"date-time":"2022-01-28T15:28:16Z","timestamp":1643383696000},"source":"Crossref","is-referenced-by-count":0,"title":["Meditation
+        reduces brain activity in the default mode network in children with cancer"],"prefix":"10.22541","author":[{"given":"Aneesh","family":"Hehr","sequence":"first","affiliation":[{"name":"Wayne
+        State University"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Allesandra","family":"Iadipaolo","sequence":"additional","affiliation":[{"name":"Wayne
+        State University - Eugene Applebaum College of Pharmacy and Health Sciences"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Austin","family":"Morales","sequence":"additional","affiliation":[{"name":"Wayne
+        State University"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Cindy","family":"Cohen","sequence":"additional","affiliation":[{"name":"Kids
+        Kicking Cancer"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-2228-3235","authenticated-orcid":false,"given":"Jeffrey","family":"Taub","sequence":"additional","affiliation":[{"name":"Children''s
+        Hospital of Michigan"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Felicity","family":"Harper","sequence":"additional","affiliation":[{"name":"Karmanos
+        Cancer Institute"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elimelech","family":"Goldberg","sequence":"additional","affiliation":[{"name":"Kids
+        Kicking Cancer"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Martin","family":"Bluth","sequence":"additional","affiliation":[{"name":"Wayne
+        State University"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9810-4024","authenticated-orcid":false,"given":"Christine","family":"Rabinak","sequence":"additional","affiliation":[{"name":"Wayne
+        State University - Eugene Applebaum College of Pharmacy and Health Sciences"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-0771-6795","authenticated-orcid":false,"given":"Hilary","family":"Marusak","sequence":"additional","affiliation":[{"name":"Wayne
+        State University"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"311","container-title":[],"original-title":[],"link":[{"URL":"https:\/\/www.authorea.com\/doi\/pdf\/10.22541\/au.164340169.91748604\/v1","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,8,10]],"date-time":"2026-08-10T21:15:48Z","timestamp":1786396548000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.authorea.com\/doi\/full\/10.22541\/au.164340169.91748604\/v1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2022,1,28]]},"references-count":0,"URL":"https:\/\/doi.org\/10.22541\/au.164340169.91748604\/v1","relation":{},"subject":[],"published":{"date-parts":[[2022,1,28]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1941'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 05:22:45 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1
