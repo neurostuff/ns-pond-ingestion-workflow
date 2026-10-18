@@ -476,7 +476,8 @@ def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(env
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
     assert synced.status is Status.OK, synced.error
 
-    paper = json.loads((settings.ns_pond_root / "BS41" / "parse" / "parsed_paper.json").read_text())
+    paper = json.loads(
+        (settings.ns_pond_root / "BS41" / "parse" / "parsed_paper.json").read_text())
     copy = {k: v for k, v in paper["text_copy"].items() if v is not None}
     assert copy.pop("license") == {"license_id": "all-rights-reserved", "determination": "assumed",
                                    "stated_by": None, "stated_as": None}
@@ -484,15 +485,74 @@ def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(env
     assert copy["version"] == "submitted"
 
 
-def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(env, monkeypatch):
+@pytest.mark.parametrize("status", [Status.FAILED, Status.PERMANENT])
+def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(env, monkeypatch, status):
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "42", "BS42")
-    catalog.record([Outcome.failure(ref.id, "download", "pubget", "no full text")])
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", status=status,
+                            fingerprint="dl-2", error="no full text")])
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
 
     assert synced.status is Status.FAILED
     assert synced.error == "no ok download of the pubget copy the text was read from"
     assert not (settings.ns_pond_root / "BS42").exists()
+
+
+def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeypatch):
+    """dpl6phhniqbj's two DOIs, its journal's and its bioRxiv preprint's."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "45", "BS45", doi="10.1101/2020.03.25.008318")
+    catalog.add_aliases([(ref.id, "doi", "10.1002/hbm.25137")])
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+
+    header = json.loads(
+        (settings.ns_pond_root / "BS45" / "parse" / "parsed_paper.json").read_text())["header"]
+    assert (header["identifiers"]["doi"], header["identifiers"]["preprint_dois"]) == (
+        "10.1002/hbm.25137", [{"doi": "10.1101/2020.03.25.008318", "server": "biorxiv"}])
+
+
+def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
+    """An article pubget holds and whose Wiley PDF is read into its `pdf` text; triage
+    judged the `read` extraction."""
+    from ingestion_workflow.extractors.copies import copy_of
+    from ingestion_workflow.extractors.wiley_extractor import TDM_URL
+    from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
+
+    settings, catalog, path = env
+    ctx, ref = _prose_article(env, monkeypatch, pmid, base)
+    wiley = DownloadResult(
+        identifier=ref.identifier, source=DownloadSource.WILEY, success=True,
+        files=[DownloadedFile(file_path=path, file_type=FileType.PDF,
+                              content_type="application/pdf", source=DownloadSource.WILEY)],
+        url_attempts=[{"url": TDM_URL + "10.1111%2Fj.1440-1614.2006.01765.x",
+                       "provider": "wiley", "status": 200, "outcome": "pdf"}])
+    pubget = catalog.artifact(ref.id, "extract", "pubget")
+    catalog.record([
+        Outcome(article_id=ref.id, stage="download", source="wiley", fingerprint="dl-w",
+                payload=wiley.to_dict(), summary={"copy": copy_of(wiley).to_dict()}),
+        Outcome(article_id=ref.id, stage="extract", source="pdf", fingerprint="ex-pdf",
+                payload={**catalog.payload(pubget), "source": "pdf"},
+                summary={**pubget.summary, "download_source": "wiley"}),
+        Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
+                summary={"source": read, "tables": 0, "passed": 0}),
+    ])
+    return ctx, ref
+
+
+@pytest.mark.parametrize("read, download", [("pdf", "wiley"), ("pubget", "pubget")])
+def test_the_text_copy_is_the_download_the_judged_text_was_read_from(
+        env, monkeypatch, read, download):
+    settings, catalog, _ = env
+    ctx, ref = _held_by_pubget_and_wiley(env, monkeypatch, "44", "BS44", read)
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+
+    paper = json.loads(
+        (settings.ns_pond_root / "BS44" / "parse" / "parsed_paper.json").read_text())
+    assert paper["source"] == read
+    copy = {k: v for k, v in paper["text_copy"].items() if v is not None and k != "license"}
+    assert copy == catalog.artifact(ref.id, "download", download).summary["copy"]
 
 
 def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(env, monkeypatch):

@@ -568,6 +568,14 @@ class Catalog:
                 out[row["article_id"]].append((row["kind"], row["value"]))
         return {aid: _presented(aliases) for aid, aliases in out.items()}
 
+    def aliases(self, article_id: str, kind: str) -> List[str]:
+        """Every `kind` alias of the article, sorted; `identifier` presents only one."""
+        rows = self._conn.execute(
+            "SELECT value FROM aliases WHERE article_id=? AND kind=? ORDER BY value",
+            (article_id, kind),
+        )
+        return [row["value"] for row in rows]
+
     def count_articles(self) -> int:
         row = self._conn.execute(
             "SELECT COUNT(*) AS n FROM articles WHERE merged_into IS NULL"

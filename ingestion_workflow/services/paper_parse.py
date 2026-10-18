@@ -74,6 +74,8 @@ class ParseInputs:
     article_id: str
     #: The copy the text was read from, as its download recorded it.
     text_copy: DownloadCopy
+    #: Every DOI the catalog holds for the article.
+    dois: Sequence[str]
     base_study_id: Optional[str] = None
     #: The triage payload: `is_meta_analysis`, `publication_types`, `tables[]`.
     triage: Optional[Mapping[str, Any]] = None
@@ -218,7 +220,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            _identifiers(content.identifier),
+            _identifiers(content.identifier, inputs.dois, meta),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -252,13 +254,6 @@ _NO_LICENCE_DECIDED = pp.License(
     determination=pp.LicenseDetermination.assumed,
 )
 
-#: The metadata stage's names for its two readers of a held copy's own file.
-_HELD_FILE_PROVIDERS = {
-    "elsevier_fallback": pp.MetadataSource.elsevier,
-    "pubget_fallback": pp.MetadataSource.jats,
-}
-
-
 def _held_copy(copy: DownloadCopy) -> pp.HeldCopy:
     return pp.HeldCopy(
         route=copy.route,
@@ -270,10 +265,10 @@ def _held_copy(copy: DownloadCopy) -> pp.HeldCopy:
     )
 
 
-def _provider(source: Optional[str]) -> Optional[pp.MetadataSource]:
+def _provider(source: Optional[str]) -> pp.MetadataSource:
     if source is None:
-        return None
-    return _HELD_FILE_PROVIDERS.get(source) or pp.MetadataSource(source)
+        raise ValueError("the metadata record names no provider")
+    return pp.MetadataSource(source)
 
 
 def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
@@ -537,23 +532,48 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def _identifiers(identifier):
-    """The catalog's identifiers, a preprint server's DOI moved to `preprint_dois`."""
+def _identifiers(identifier, dois: Sequence[str], meta):
+    """The catalog's identifiers, each preprint's apart from the version of record's.
+
+    A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
+    `Preprint` and the PMCID that record lists. Raises ValueError for an article with two
+    DOIs neither of which is a preprint's, since `doi` holds one.
+    """
+    from ingestion_workflow.pipeline.stages.triage import publication_types
+
     pmid = getattr(identifier, "pmid", None) or None
     pmcid = getattr(identifier, "pmcid", None) or None
-    doi = getattr(identifier, "doi", None) or None
-    server = preprint_server(doi)
-    preprints = [pp.PreprintDoi(doi=doi, server=server)] if server else None
-    if server:
-        doi = None
+    preprint_pmid = preprint_pmcid = None
+    if pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
+        preprint_pmid, pmid = pmid, None
+        if pmcid and pmcid == _pubmed_pmcid(meta):
+            preprint_pmcid, pmcid = pmcid, None
+    preprints = [pp.PreprintDoi(doi=d, server=preprint_server(d))
+                 for d in sorted(dois) if preprint_server(d)]
+    published = sorted(d for d in dois if not preprint_server(d))
+    if len(published) > 1:
+        raise ValueError(f"the article holds two DOIs of a version of record: {published}")
+    doi = published[0] if published else None
+    preprint_only = (preprints or preprint_pmid or preprint_pmcid) and not (doi or pmid or pmcid)
     return pp.ArticleIdentifiers(
         pmid=pmid,
         pmcid=pmcid,
         doi=doi,
-        preprint_dois=preprints,
-        publication_status=(pp.PublicationStatus.preprint if preprints and not (pmid or pmcid)
+        preprint_dois=preprints or None,
+        preprint_pmid=preprint_pmid,
+        preprint_pmcid=preprint_pmcid,
+        publication_status=(pp.PublicationStatus.preprint if preprint_only
                             else pp.PublicationStatus.published),
     )
+
+
+def _pubmed_pmcid(meta) -> Optional[str]:
+    """The PMCID PubMed's record of the article lists."""
+    listed = ((((meta.raw_metadata or {}).get("pubmed") or {}).get("PubmedData") or {})
+              .get("ArticleIdList") or {}).get("ArticleId")
+    listed = listed if isinstance(listed, list) else [listed] if listed else []
+    return next((item.get("#text") for item in listed
+                 if isinstance(item, dict) and item.get("@IdType") == "pmc"), None)
 
 
 def _header(kind: str, inputs: ParseInputs, ids, stage: str, refs):

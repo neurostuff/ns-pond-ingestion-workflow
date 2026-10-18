@@ -28,9 +28,13 @@ triage rejected keeps that reading.
   `all-rights-reserved`, `assumed`. Under it nothing may be passed on.
 - `bibliography.provider` is the metadata record's provider: `pubmed`, `semantic_scholar` or
   `openalex`, or `elsevier` and `jats` for the record read from a held Elsevier or JATS file.
-  An abstract is credited to the same provider (`abstract_provider`).
-- In `header.identifiers`, a DOI that `utils/preprints.py` names a preprint server for is in
-  `preprint_dois` with its server, and `doi` is empty. `publication_status` is `preprint` when
-  that DOI is all there is, and `published` when the paper also has a PMID or PMCID or its DOI is
-  no preprint server's.
+  An abstract is credited to the same provider (`abstract_provider`). A record that names no
+  provider is not parsed.
+- `header.identifiers` holds every DOI the catalog has for the article. A DOI that
+  `utils/preprints.py` names a preprint server for is in `preprint_dois` with its server; the
+  other is `doi`. An article with two DOIs that are neither preprint's is not parsed.
+- A PMID whose PubMed record is typed `Preprint` is `preprint_pmid`, and the PMCID that record
+  lists is `preprint_pmcid`.
+- `publication_status` is `preprint` when only a preprint's identifiers are known, and
+  `published` otherwise.
 - `header.neurostore_base_study_id` is the paper's neurostore base study, once sync knows it.

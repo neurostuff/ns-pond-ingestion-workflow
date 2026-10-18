@@ -366,7 +366,8 @@ def _corrections(cat, ref, ctx):
         "notices")}
     inputs = _parse_inputs(ctx, Work(ref=ref, source="", fingerprint="f"), "BASE1", COPY, {},
                            found, "pubget")
-    bibliography = _bibliography(ArticleMetadata(title="T"), "T", (), inputs.corrections)
+    bibliography = _bibliography(ArticleMetadata(title="T", source="pubmed"), "T", (),
+                                 inputs.corrections)
     return (None if bibliography.corrections is None
             else [c.model_dump(mode="json") for c in bibliography.corrections])
 

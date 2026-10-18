@@ -35,7 +35,7 @@ IDENTIFIERS = pp.ArticleIdentifiers(publication_status="published")
 
 
 def _inputs(**given):
-    return ParseInputs(article_id="a", text_copy=COPY, **given)
+    return ParseInputs(article_id="a", text_copy=COPY, dois=(), **given)
 
 TABLE_1 = """<table>
 <tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th><th>k</th></tr>
@@ -103,10 +103,11 @@ def written(tmp_path):
     return _written(tmp_path)
 
 
-def _written(tmp_path, identifier=None, text_copy=COPY, **metadata):
+def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
     identifier = identifier or Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
+    dois = [identifier.doi] if dois is None and identifier.doi else dois or []
     tables = []
     for name, markup in (("tbl1", TABLE_1), ("tbl2", TABLE_2), ("tbl3", TABLE_3)):
         (tmp_path / f"{name}.html").write_text(markup, encoding="utf-8")
@@ -200,6 +201,7 @@ def _written(tmp_path, identifier=None, text_copy=COPY, **metadata):
     inputs = ParseInputs(
         article_id="art-1",
         text_copy=text_copy,
+        dois=dois,
         base_study_id=BASE,
         triage={
             "is_meta_analysis": False,
@@ -305,35 +307,94 @@ def test_the_text_copy_is_written_as_its_download_recorded_it(tmp_path, copy, ex
     assert paper["text_copy"] == {**expected, "license": UNDECIDED}
 
 
-@pytest.mark.parametrize("identifier, expected", [
+@pytest.mark.parametrize("identifier, dois, expected", [
     # bioRxiv's DOI alone: the paper is known only as a preprint.
-    (Identifier(doi="10.1101/2025.05.13.653896"),
+    (Identifier(doi="10.1101/2025.05.13.653896"), None,
      {"preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
       "publication_status": "preprint"}),
     # A PubMed record beside it: published, the preprint's DOI kept as a preprint's.
-    (Identifier(pmid="40462995", doi="10.1101/2025.05.13.653896"),
+    (Identifier(pmid="40462995", doi="10.1101/2025.05.13.653896"), None,
      {"pmid": "40462995",
       "preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
       "publication_status": "published"}),
+    # A PMC copy alone beside it is published too.
+    (Identifier(pmcid="PMC12132522", doi="10.1101/2025.05.13.653896"), None,
+     {"pmcid": "PMC12132522",
+      "preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
+      "publication_status": "published"}),
     # A Cold Spring Harbor journal shares bioRxiv's prefix and is no preprint.
-    (Identifier(doi="10.1101/gr.112680.110"),
+    (Identifier(doi="10.1101/gr.112680.110"), None,
      {"doi": "10.1101/gr.112680.110", "publication_status": "published"}),
+    # dpl6phhniqbj: its journal DOI and its bioRxiv preprint's, whichever the catalog presents.
+    (Identifier(doi="10.1101/2020.03.25.008318"),
+     ["10.1002/hbm.25137", "10.1101/2020.03.25.008318"],
+     {"doi": "10.1002/hbm.25137",
+      "preprint_dois": [{"doi": "10.1101/2020.03.25.008318", "server": "biorxiv"}],
+      "publication_status": "published"}),
+    # Research Square and medRxiv, one paper's two preprints.
+    (Identifier(doi="10.21203/rs.3.rs-2556690/v2"),
+     ["10.21203/rs.3.rs-2556690/v2", "10.1101/2019.12.17.19014415"],
+     {"preprint_dois": [{"doi": "10.1101/2019.12.17.19014415", "server": "medrxiv"},
+                        {"doi": "10.21203/rs.3.rs-2556690/v2", "server": "researchsquare"}],
+      "publication_status": "preprint"}),
 ])
-def test_a_preprint_server_s_doi_is_a_preprint_s(tmp_path, identifier, expected):
-    paper, _, _ = _written(tmp_path, identifier)
+def test_a_preprint_server_s_doi_is_a_preprint_s(tmp_path, identifier, dois, expected):
+    paper, _, _ = _written(tmp_path, identifier, dois=dois)
     assert paper["header"]["identifiers"] == expected
 
 
-@pytest.mark.parametrize("source, provider", [
-    ("semantic_scholar", "semantic_scholar"),
-    ("elsevier_fallback", "elsevier"),
-    ("pubget_fallback", "jats"),
+def test_two_dois_of_a_version_of_record_are_not_reduced_to_one(tmp_path):
+    with pytest.raises(ValueError, match="two DOIs of a version of record"):
+        _written(tmp_path, Identifier(doi="10.1002/hbm.25137"),
+                 dois=["10.1002/hbm.25137", "10.1371/journal.pone.0041873"])
+
+
+def _pubmed(types, ids):
+    """PubMed's record as the metadata stage stores it, with its types and article ids."""
+    return {"pubmed": {
+        "MedlineCitation": {"Article": {"Language": "eng", "PublicationTypeList": {
+            "PublicationType": [{"#text": t, "@UI": ui} for t, ui in types]}}},
+        "PubmedData": {"ArticleIdList": {
+            "ArticleId": [{"#text": v, "@IdType": k} for k, v in ids]}}}}
+
+
+PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
+
+
+@pytest.mark.parametrize("identifier, ids, expected", [
+    # guzoq7cqzesu: PubMed's and PMC's records of a medRxiv preprint (PMID 34845462).
+    (Identifier(pmid="34845462", pmcid="PMC8629206", doi="10.1101/2021.11.23.21266761"),
+     [("pubmed", "34845462"), ("pmc", "PMC8629206"), ("doi", "10.1101/2021.11.23.21266761")],
+     {"preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
+      "preprint_pmid": "34845462", "preprint_pmcid": "PMC8629206",
+      "publication_status": "preprint"}),
+    # A PMC copy the preprint's PubMed record does not list is the version of record's.
+    (Identifier(pmid="34845462", pmcid="PMC3407125", doi="10.1101/2021.11.23.21266761"),
+     [("pubmed", "34845462"), ("doi", "10.1101/2021.11.23.21266761")],
+     {"pmcid": "PMC3407125", "preprint_pmid": "34845462",
+      "preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
+      "publication_status": "published"}),
 ])
-def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source, provider):
+def test_pubmed_s_record_of_a_preprint_is_a_preprint_s(tmp_path, identifier, ids, expected):
+    paper, _, _ = _written(tmp_path, identifier, raw_metadata=_pubmed(PREPRINT_RECORD, ids))
+    assert paper["header"]["identifiers"] == expected
+
+
+@pytest.mark.parametrize("source", ["semantic_scholar", "openalex", "elsevier", "jats"])
+def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source):
     paper, _, summary = _written(tmp_path, source=source, abstract="Faces activate the FFA.")
     bib = paper["bibliography"]
-    assert (bib["provider"], bib["abstract_provider"]) == (provider, provider)
+    assert (bib["provider"], bib["abstract_provider"]) == (source, source)
     _validate(json.loads((summary["dir"] / "parsed_paper.json").read_text()), "parsed-paper")
+
+
+@pytest.mark.parametrize("source, error", [
+    (None, "the metadata record names no provider"),
+    ("elsevier_fallback", "'elsevier_fallback' is not a valid MetadataSource"),
+])
+def test_a_metadata_record_without_a_study_schema_provider_is_not_parsed(tmp_path, source, error):
+    with pytest.raises(ValueError, match=error):
+        _written(tmp_path, source=source)
 
 
 def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():

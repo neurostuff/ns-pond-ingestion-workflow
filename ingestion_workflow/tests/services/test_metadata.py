@@ -279,6 +279,7 @@ class TestMetadataService:
         assert len(metadata.authors) == 1
         assert metadata.journal == "Elsevier Journal"
         assert metadata.publication_year == 2023
+        assert metadata.source == "elsevier"
 
     def test_get_pubget_fallback(self, metadata_service):
         """Test fallback metadata extraction from Pubget files."""
@@ -334,6 +335,7 @@ class TestMetadataService:
 
         assert metadata is not None
         assert metadata.title == "Pubget Test"
+        assert metadata.source == "jats"
         assert len(metadata.authors) == 1
 
     def test_pubget_fallback_finds_the_article_by_its_pmcid(self, metadata_service, tmp_path):
