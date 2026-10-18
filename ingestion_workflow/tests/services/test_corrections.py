@@ -359,12 +359,13 @@ def _corrections(cat, ref, ctx):
     from ingestion_workflow.models.metadata import ArticleMetadata
     from ingestion_workflow.pipeline.stages.sync import _parse_inputs
     from ingestion_workflow.services.paper_parse import _bibliography
+    from ingestion_workflow.tests.services.test_paper_parse import COPY
 
     found = {s: cat.artifacts([ref.id], s).get(ref.id, {}) for s in (
         "extract", "metadata", "space", "triage", "analyses", "prose", "resolve", "passages",
         "notices")}
-    inputs = _parse_inputs(ctx, Work(ref=ref, source="", fingerprint="f"), "BASE1", {}, found,
-                           "pubget")
+    inputs = _parse_inputs(ctx, Work(ref=ref, source="", fingerprint="f"), "BASE1", COPY, {},
+                           found, "pubget")
     bibliography = _bibliography(ArticleMetadata(title="T"), "T", (), inputs.corrections)
     return (None if bibliography.corrections is None
             else [c.model_dump(mode="json") for c in bibliography.corrections])

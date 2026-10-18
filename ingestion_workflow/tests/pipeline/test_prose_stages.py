@@ -430,7 +430,7 @@ def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
                 payload=download,
                 summary={"copy": copy_of(DownloadResult.from_dict(download)).to_dict()}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
-                payload={"title": "T", "abstract": "A"}, summary={}),
+                payload={"title": "T", "abstract": "A", "source": "pubmed"}, summary={}),
     ]
     if tables:
         rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
@@ -581,7 +581,8 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
 
     _read_prose(ctx, catalog, ref, Recorder())
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
-                            payload={"title": "T", "abstract": "A"}, summary={})])
+                            payload={"title": "T", "abstract": "A", "source": "pubmed"},
+                            summary={})])
     plan, _ = _read_prose(ctx, catalog, ref, Recorder())
     assert len(plan.pending) == 1 and seen == ["", "T"]
     plan, _ = _read_prose(ctx, catalog, ref, Recorder())
@@ -782,9 +783,9 @@ def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
     assemble = sync._assemble
 
     def spy(*args, **kwargs):
-        bundle, per_table, files = assemble(*args, **kwargs)
+        bundle, per_table, files, text_copy = assemble(*args, **kwargs)
         seen.update(per_table)
-        return bundle, per_table, files
+        return bundle, per_table, files, text_copy
 
     sync._assemble = spy
     if parse_write is not None:
@@ -1492,6 +1493,7 @@ def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env):
 
     from ingestion_workflow.pipeline.plan import Work
     from ingestion_workflow.pipeline.stages.sync import _parse_inputs
+    from ingestion_workflow.tests.services.test_paper_parse import COPY
 
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="60"))
@@ -1500,7 +1502,7 @@ def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env):
                                      "omitted": [{"span": [2, 3], "reason": "over the 40-passage cap"}]})])
     found = defaultdict(dict, passages=catalog.artifacts([ref.id], "passages")[ref.id])
     work = Work(ref=ref, source="", fingerprint="s-1", upstream=None)
-    inputs = _parse_inputs(Context(settings, catalog), work, "bs-1", {}, found, "pubget")
+    inputs = _parse_inputs(Context(settings, catalog), work, "bs-1", COPY, {}, found, "pubget")
     assert (inputs.passages_kept, inputs.passages_omitted) == (1, 1)
 
 

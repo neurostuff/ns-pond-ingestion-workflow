@@ -31,7 +31,12 @@ from study_schema import keys, layouts
 from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
-from ingestion_workflow.models import Analysis, AnalysisCollection, ArticleExtractionBundle
+from ingestion_workflow.models import (
+    Analysis,
+    AnalysisCollection,
+    ArticleExtractionBundle,
+    DownloadCopy,
+)
 from ingestion_workflow.services import coordinate_text
 from ingestion_workflow.services.coordinate_flags import PLACEHOLDER_NAME, SPLIT_RULE
 from ingestion_workflow.services.coordinate_space import sectionize
@@ -39,11 +44,12 @@ from ingestion_workflow.services.create_analyses import table_reading
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.set_roles.labels import is_decided
+from ingestion_workflow.utils.preprints import preprint_server
 
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 7
+PAPER_PARSE_VERSION = 8
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -66,6 +72,8 @@ class ParseInputs:
     """What the sync stage holds beside the bundle that the two files need."""
 
     article_id: str
+    #: The copy the text was read from, as its download recorded it.
+    text_copy: DownloadCopy
     base_study_id: Optional[str] = None
     #: The triage payload: `is_meta_analysis`, `publication_types`, `tables[]`.
     triage: Optional[Mapping[str, Any]] = None
@@ -210,7 +218,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            _identifiers(content.identifier, inputs),
+            _identifiers(content.identifier),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -219,6 +227,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
             ],
         ),
         source=source,
+        text_copy=_held_copy(inputs.text_copy),
         text_path=text_file.relative_to(root).as_posix(),
         text_sha256=hashlib.sha256(raw).hexdigest(),
         text_length=len(text.text),
@@ -236,6 +245,37 @@ def _text_file(root: Path, source: str) -> Optional[Path]:
     return found[0] if found else None
 
 
+#: No stage decides a licence yet, so every licence the parse states is the one the
+#: contract allows without a statement: all rights reserved, which lets nothing be passed on.
+_NO_LICENCE_DECIDED = pp.License(
+    license_id=pp.LicenseId.all_rights_reserved,
+    determination=pp.LicenseDetermination.assumed,
+)
+
+#: The metadata stage's names for its two readers of a held copy's own file.
+_HELD_FILE_PROVIDERS = {
+    "elsevier_fallback": pp.MetadataSource.elsevier,
+    "pubget_fallback": pp.MetadataSource.jats,
+}
+
+
+def _held_copy(copy: DownloadCopy) -> pp.HeldCopy:
+    return pp.HeldCopy(
+        route=copy.route,
+        version=copy.version,
+        access=copy.access,
+        url=copy.url,
+        preprint_server=copy.preprint_server,
+        license=_NO_LICENCE_DECIDED,
+    )
+
+
+def _provider(source: Optional[str]) -> Optional[pp.MetadataSource]:
+    if source is None:
+        return None
+    return _HELD_FILE_PROVIDERS.get(source) or pp.MetadataSource(source)
+
+
 def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
     raw = (((meta.raw_metadata or {}).get("pubmed") or {}).get("MedlineCitation") or {}).get(
         "Article"
@@ -246,21 +286,24 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         if isinstance(language, str)
         else [x for x in language or [] if isinstance(x, str)]
     )
+    provider = _provider(meta.source)
     return pp.Bibliography(
         title=title,
         authors=[a.name for a in meta.authors] or None,
         journal=meta.journal,
         publication_year=meta.publication_year,
         abstract=meta.abstract,
+        # The merged record keeps no provider per field, so its abstract is credited to
+        # the record's provider.
+        abstract_provider=provider if meta.abstract else None,
         language=language or None,
         publication_types=list(types) or None,
         keywords=list(meta.keywords) or None,
-        license=meta.license,
-        open_access=meta.open_access,
+        license=_NO_LICENCE_DECIDED,
         corrections=None if corrections is None else [
             pp.Correction(kind=c["kind"], pmid=c.get("pmid"), doi=c.get("doi"))
             for c in corrections],
-        provider=meta.source,
+        provider=provider,
     )
 
 
@@ -494,12 +537,22 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def _identifiers(identifier, inputs: ParseInputs):
+def _identifiers(identifier):
+    """The catalog's identifiers, a preprint server's DOI moved to `preprint_dois`."""
+    pmid = getattr(identifier, "pmid", None) or None
+    pmcid = getattr(identifier, "pmcid", None) or None
+    doi = getattr(identifier, "doi", None) or None
+    server = preprint_server(doi)
+    preprints = [pp.PreprintDoi(doi=doi, server=server)] if server else None
+    if server:
+        doi = None
     return pp.ArticleIdentifiers(
-        pmid=getattr(identifier, "pmid", None) or None,
-        pmcid=getattr(identifier, "pmcid", None) or None,
-        doi=getattr(identifier, "doi", None) or None,
-        neurostore_base_study_id=inputs.base_study_id,
+        pmid=pmid,
+        pmcid=pmcid,
+        doi=doi,
+        preprint_dois=preprints,
+        publication_status=(pp.PublicationStatus.preprint if preprints and not (pmid or pmcid)
+                            else pp.PublicationStatus.published),
     )
 
 
@@ -513,6 +566,7 @@ def _header(kind: str, inputs: ParseInputs, ids, stage: str, refs):
             name=PRODUCER, version=f"paper_parse.{PAPER_PARSE_VERSION}", stage=stage
         ),
         inputs=[pp.InputRef(artifact_kind=k, fingerprint=f) for k, f in refs if f] or None,
+        neurostore_base_study_id=inputs.base_study_id,
     )
 
 

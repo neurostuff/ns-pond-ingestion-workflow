@@ -11,12 +11,10 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 
 from lxml import etree
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 from ingestion_workflow.extractors.pdf_extractor import _is_pmc_copy
 from ingestion_workflow.models import (
-    CopyAccess,
-    CopyRoute,
-    CopyVersion,
     DownloadCopy,
     DownloadResult,
     DownloadSource,
@@ -25,9 +23,9 @@ from ingestion_workflow.utils.preprints import preprint_server_of_url
 
 #: OpenAlex's version labels, which the PDF candidates carry, in study_schema's terms.
 OPENALEX_VERSIONS = {
-    "publishedVersion": CopyVersion.VOR,
-    "acceptedVersion": CopyVersion.AM,
-    "submittedVersion": CopyVersion.SUBMITTED,
+    "publishedVersion": CopyVersion.vor,
+    "acceptedVersion": CopyVersion.am,
+    "submittedVersion": CopyVersion.submitted,
 }
 
 #: The article ids PMC gives an author manuscript: `manuscript` in efetch's JATS,
@@ -40,7 +38,7 @@ _PREPRINT_STATUS = "preprint"
 #: The Cloud Service's licence code for an author manuscript it offers for text mining only.
 _TDM_CODE = "TDM"
 _CREATIVE_COMMONS = b"creativecommons.org"
-_PDF_LOCATIONS = {"repository": CopyRoute.REPOSITORY, "publisher": CopyRoute.PUBLISHER}
+_PDF_LOCATIONS = {"repository": CopyRoute.repository, "publisher": CopyRoute.publisher}
 
 
 def _file(result: DownloadResult, name: str) -> Optional[Path]:
@@ -55,7 +53,7 @@ def _pmc_copy(result: DownloadResult) -> DownloadCopy:
     # Malformed JATS can lose its front matter, and with it what says the version.
     meta = article.find("front/article-meta")
     version = None if meta is None else _pmc_version(meta)
-    return DownloadCopy(route=CopyRoute.PMC, version=version,
+    return DownloadCopy(route=CopyRoute.pmc, version=version,
                         access=_pmc_access(result, meta, version))
 
 
@@ -67,22 +65,22 @@ def _pmc_access(result: DownloadResult, meta: Optional[etree._Element],
     cloud = _file(result, "pmc_cloud.json")
     if cloud is not None:
         code = json.loads(cloud.read_text(encoding="utf-8")).get("license_code")
-        return CopyAccess.TDM_GRANT if code == _TDM_CODE else CopyAccess.PUBLIC
+        return CopyAccess.tdm_grant if code == _TDM_CODE else CopyAccess.public
     if meta is None:
-        return CopyAccess.UNRECORDED
-    if version is not CopyVersion.AM:
-        return CopyAccess.PUBLIC
+        return CopyAccess.unrecorded
+    if version is not CopyVersion.am:
+        return CopyAccess.public
     licences = meta.iterfind("permissions/license")
-    return (CopyAccess.PUBLIC if any(_CREATIVE_COMMONS in etree.tostring(lic) for lic in licences)
-            else CopyAccess.TDM_GRANT)
+    return (CopyAccess.public if any(_CREATIVE_COMMONS in etree.tostring(lic) for lic in licences)
+            else CopyAccess.tdm_grant)
 
 
 def _pmc_version(meta: etree._Element) -> CopyVersion:
     statuses = {v.text for v in meta.iterfind(_STATUS)}
     if _PREPRINT_STATUS in statuses:
-        return CopyVersion.SUBMITTED
+        return CopyVersion.submitted
     ids = {(i.get("pub-id-type") or "").lower() for i in meta.iterfind("article-id")}
-    return CopyVersion.AM if ids & _MANUSCRIPT_IDS else CopyVersion.VOR
+    return CopyVersion.am if ids & _MANUSCRIPT_IDS else CopyVersion.vor
 
 
 def _pdf_copy(result: DownloadResult) -> DownloadCopy:
@@ -90,26 +88,26 @@ def _pdf_copy(result: DownloadResult) -> DownloadCopy:
     hand, or fetched before attempts were kept) is unrecorded."""
     fetched = [a for a in result.url_attempts if a.get("outcome") == "pdf"]
     if not fetched:
-        return DownloadCopy(route=CopyRoute.UNRECORDED, access=CopyAccess.UNRECORDED)
+        return DownloadCopy(route=CopyRoute.unrecorded, access=CopyAccess.unrecorded)
     attempt = fetched[-1]
     url = str(attempt.get("pdf_url") or attempt["url"])
     server = preprint_server_of_url(url, result.identifier.doi)
     version = OPENALEX_VERSIONS.get(str(attempt.get("version")))
     if _is_pmc_copy(url):
-        route = CopyRoute.PMC
+        route = CopyRoute.pmc
     elif server is not None:
-        route = CopyRoute.PREPRINT_SERVER
+        route = CopyRoute.preprint_server
         if server.preprints_only:
-            version = CopyVersion.SUBMITTED
+            version = CopyVersion.submitted
     else:
         # Semantic Scholar does not say what kind of site a PDF is on; the work's other
         # locations on the same site may (`pdf_extractor.site_type`).
         route = _PDF_LOCATIONS.get(str(attempt.get("location_type"))) or _PDF_LOCATIONS.get(
-            str(attempt.get("site_type")), CopyRoute.UNRECORDED)
+            str(attempt.get("site_type")), CopyRoute.unrecorded)
     return DownloadCopy(
         route=route,
         version=version,
-        access=CopyAccess.PUBLIC,
+        access=CopyAccess.public,
         url=url,
         preprint_server=server.name if server is not None else None,
     )
@@ -117,15 +115,15 @@ def _pdf_copy(result: DownloadResult) -> DownloadCopy:
 
 def _wiley_copy(result: DownloadResult) -> DownloadCopy:
     return DownloadCopy(
-        route=CopyRoute.PUBLISHER,
-        version=CopyVersion.VOR,
-        access=CopyAccess.TDM_GRANT,
+        route=CopyRoute.publisher,
+        version=CopyVersion.vor,
+        access=CopyAccess.tdm_grant,
         url=str(result.url_attempts[-1]["url"]),
     )
 
 
 def _fixed(route: CopyRoute, access: CopyAccess) -> Callable[[DownloadResult], DownloadCopy]:
-    copy = DownloadCopy(route=route, version=CopyVersion.VOR, access=access)
+    copy = DownloadCopy(route=route, version=CopyVersion.vor, access=access)
     return lambda result: copy
 
 
@@ -135,13 +133,13 @@ DOWNLOAD_COPY: Dict[DownloadSource, Callable[[DownloadResult], DownloadCopy]] = 
     DownloadSource.PMC: _pmc_copy,
     DownloadSource.EUROPEPMC: _pmc_copy,
     # Through our API key, whatever the article's licence.
-    DownloadSource.ELSEVIER: _fixed(CopyRoute.PUBLISHER, CopyAccess.TDM_GRANT),
+    DownloadSource.ELSEVIER: _fixed(CopyRoute.publisher, CopyAccess.tdm_grant),
     DownloadSource.WILEY: _wiley_copy,
     # The open-access API serves only openly licensed articles.
-    DownloadSource.SPRINGER: _fixed(CopyRoute.PUBLISHER, CopyAccess.PUBLIC),
+    DownloadSource.SPRINGER: _fixed(CopyRoute.publisher, CopyAccess.public),
     # The publisher's page, scraped as our network sees it, often through the
     # university's subscription: not what any reader could fetch.
-    DownloadSource.ACE: _fixed(CopyRoute.PUBLISHER, CopyAccess.UNRECORDED),
+    DownloadSource.ACE: _fixed(CopyRoute.publisher, CopyAccess.unrecorded),
     DownloadSource.PDF: _pdf_copy,
 }
 

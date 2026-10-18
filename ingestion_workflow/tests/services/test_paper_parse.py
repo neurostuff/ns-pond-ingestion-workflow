@@ -12,6 +12,7 @@ from ingestion_workflow.models import (
     ArticleExtractionBundle,
     Coordinate,
     CoordinateSpace,
+    DownloadCopy,
     DownloadSource,
     ExtractedContent,
     ExtractedTable,
@@ -24,8 +25,17 @@ from ingestion_workflow.services.paper_parse import ParseInputs
 from study_schema import keys
 from study_schema.jsonschema import load
 from study_schema.models import paper_parse as pp
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 BASE = "22tHjbNRU8t2"
+#: PMC3407125's copy, as a pubget download records it: PLoS ONE's open-access version of record.
+COPY = DownloadCopy(route=CopyRoute.pmc, version=CopyVersion.vor, access=CopyAccess.public)
+#: The header identifiers of a paper the coordinate-parse tests need nothing else of.
+IDENTIFIERS = pp.ArticleIdentifiers(publication_status="published")
+
+
+def _inputs(**given):
+    return ParseInputs(article_id="a", text_copy=COPY, **given)
 
 TABLE_1 = """<table>
 <tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th><th>k</th></tr>
@@ -93,8 +103,8 @@ def written(tmp_path):
     return _written(tmp_path)
 
 
-def _written(tmp_path):
-    identifier = Identifier(
+def _written(tmp_path, identifier=None, text_copy=COPY, **metadata):
+    identifier = identifier or Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
     tables = []
@@ -117,14 +127,15 @@ def _written(tmp_path):
         tables=tables,
         full_text_path=text,
     )
-    metadata = ArticleMetadata(
-        title="Faces and houses",
-        authors=[Author(name="Jones, S")],
-        journal="PLoS ONE",
-        publication_year=2012,
-        source="pubmed",
-        raw_metadata={"pubmed": {"MedlineCitation": {"Article": {"Language": "eng"}}}},
-    )
+    metadata = ArticleMetadata(**{
+        "title": "Faces and houses",
+        "authors": [Author(name="Jones, S")],
+        "journal": "PLoS ONE",
+        "publication_year": 2012,
+        "source": "pubmed",
+        "raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {"Language": "eng"}}}},
+        **metadata,
+    })
     per_table = {
         "tbl1": _collection(
             [
@@ -188,6 +199,7 @@ def _written(tmp_path):
     )
     inputs = ParseInputs(
         article_id="art-1",
+        text_copy=text_copy,
         base_study_id=BASE,
         triage={
             "is_meta_analysis": False,
@@ -254,8 +266,80 @@ def test_bibliography_and_meta_analysis_come_from_metadata_and_triage(written):
     assert bib["language"] == ["eng"]
     assert bib["publication_types"] == ["Journal Article"]
     assert paper["is_meta_analysis"] is False
-    assert paper["header"]["identifiers"]["doi"] == "10.1371/journal.pone.0041873"
-    assert paper["header"]["identifiers"]["neurostore_base_study_id"] == BASE
+    assert paper["header"]["identifiers"] == {
+        "pmid": "22848644", "pmcid": "PMC3407125", "doi": "10.1371/journal.pone.0041873",
+        "publication_status": "published"}
+    assert paper["header"]["neurostore_base_study_id"] == BASE
+    assert bib["provider"] == "pubmed"
+    assert "abstract" not in bib and "abstract_provider" not in bib
+
+
+#: All rights reserved, assumed: what the contract allows while no stage decides a licence.
+UNDECIDED = {"license_id": "all-rights-reserved", "determination": "assumed"}
+
+
+def test_the_text_copy_is_the_download_s_and_no_licence_is_stated(written):
+    paper, parse, _ = written
+    assert paper["text_copy"] == {"route": "pmc", "version": "vor", "access": "public",
+                                  "license": UNDECIDED}
+    assert paper["bibliography"]["license"] == UNDECIDED
+    assert "open_access" not in paper["bibliography"]
+    assert parse["header"]["neurostore_base_study_id"] == BASE
+    assert "neurostore_base_study_id" not in parse["header"]["identifiers"]
+
+
+@pytest.mark.parametrize("copy, expected", [
+    # bioRxiv's PDF of the preprint.
+    (DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+                  access=CopyAccess.public, preprint_server="biorxiv",
+                  url="https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf"),
+     {"route": "preprint_server", "version": "submitted", "access": "public",
+      "url": "https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf",
+      "preprint_server": "biorxiv"}),
+    # PMC10518222, an NIH manuscript PMC offers for text mining only.
+    (DownloadCopy(route=CopyRoute.pmc, version=CopyVersion.am, access=CopyAccess.tdm_grant),
+     {"route": "pmc", "version": "am", "access": "tdm_grant"}),
+])
+def test_the_text_copy_is_written_as_its_download_recorded_it(tmp_path, copy, expected):
+    paper, _, _ = _written(tmp_path, text_copy=copy)
+    assert paper["text_copy"] == {**expected, "license": UNDECIDED}
+
+
+@pytest.mark.parametrize("identifier, expected", [
+    # bioRxiv's DOI alone: the paper is known only as a preprint.
+    (Identifier(doi="10.1101/2025.05.13.653896"),
+     {"preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
+      "publication_status": "preprint"}),
+    # A PubMed record beside it: published, the preprint's DOI kept as a preprint's.
+    (Identifier(pmid="40462995", doi="10.1101/2025.05.13.653896"),
+     {"pmid": "40462995",
+      "preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
+      "publication_status": "published"}),
+    # A Cold Spring Harbor journal shares bioRxiv's prefix and is no preprint.
+    (Identifier(doi="10.1101/gr.112680.110"),
+     {"doi": "10.1101/gr.112680.110", "publication_status": "published"}),
+])
+def test_a_preprint_server_s_doi_is_a_preprint_s(tmp_path, identifier, expected):
+    paper, _, _ = _written(tmp_path, identifier)
+    assert paper["header"]["identifiers"] == expected
+
+
+@pytest.mark.parametrize("source, provider", [
+    ("semantic_scholar", "semantic_scholar"),
+    ("elsevier_fallback", "elsevier"),
+    ("pubget_fallback", "jats"),
+])
+def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source, provider):
+    paper, _, summary = _written(tmp_path, source=source, abstract="Faces activate the FFA.")
+    bib = paper["bibliography"]
+    assert (bib["provider"], bib["abstract_provider"]) == (provider, provider)
+    _validate(json.loads((summary["dir"] / "parsed_paper.json").read_text()), "parsed-paper")
+
+
+def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():
+    from ingestion_workflow.utils.preprints import PREPRINT_SERVERS
+
+    assert {s.name for s in PREPRINT_SERVERS} == {s.value for s in pp.PreprintServer}
 
 
 def test_tables_carry_body_rows_and_triage(written):
@@ -374,7 +458,7 @@ def test_two_analyses_of_one_passage_get_two_keys(tmp_path):
             for name, (x, y, z) in (("faces", (40, -52, -18)), ("houses", (28, -46, -8)))
         ]
     )
-    inputs = ParseInputs(article_id="a", prose=_prose(text, passage))
+    inputs = _inputs(prose=_prose(text, passage))
     built = [
         paper_parse._prose_analysis(
             a, collection, paper_parse._Text(text), inputs, _roles(text)
@@ -403,7 +487,7 @@ def _one_prose(metadata, passage="The peak is marked in Figure 2 (40, -52, -18).
         ],
     )
     roles = paper_parse._Roles(text, [])
-    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
+    inputs = _inputs(prose=_prose(text.text, passage))
     return paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles), roles
 
 
@@ -442,7 +526,7 @@ def test_a_mirror_printed_outside_the_set_s_passages_is_not_noted():
                  coordinates=[Coordinate(x=40, y=-52, z=-18)])
     ])
     roles = paper_parse._Roles(text, [])
-    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
+    inputs = _inputs(prose=_prose(text.text, passage))
     built = paper_parse._prose_analysis(collection.analyses[0], collection, text, inputs, roles)
     assert built.points[0].text_span is None
     assert not [o for o in roles.omitted if o.kept]
@@ -509,7 +593,7 @@ def _insula(text, prose):
     roles = _roles(text)
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text),
-        ParseInputs(article_id="a", prose=prose), roles,
+        _inputs(prose=prose), roles,
     )
     return built, [o.reason for o in roles.omitted]
 
@@ -542,7 +626,7 @@ def test_a_prose_point_is_placed_in_its_sentence_not_at_a_table_row_printing_it(
             )
         ]
     )
-    inputs = ParseInputs(article_id="a", prose=_prose(text, sentence))
+    inputs = _inputs(prose=_prose(text, sentence))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
@@ -563,7 +647,7 @@ def test_an_analysis_not_in_the_text_is_omitted_with_its_reason():
         ]
     )
     roles = _roles("Results only.")
-    inputs = ParseInputs(article_id="a", prose={"text_sha256": roles.text.sha256, "passages": []})
+    inputs = _inputs(prose={"text_sha256": roles.text.sha256, "passages": []})
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, roles.text, inputs, roles
     )
@@ -598,7 +682,7 @@ def _parse(tmp_path, markup, per_table, text="Results\n", caption=None, footer=N
     (tmp_path / "t.html").write_text(markup, encoding="utf-8")
     grid = _grid(tmp_path / "t.html")
     paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
         text_sha256="0" * 64,
         tables=[_bare_table("tbl1", caption, grid.headings, footer)],
     )
@@ -607,7 +691,7 @@ def _parse(tmp_path, markup, per_table, text="Results\n", caption=None, footer=N
         text,
         {"tbl1": grid},
         per_table,
-        ParseInputs(article_id="a", **inputs),
+        _inputs(**inputs),
     )
 
 
@@ -815,7 +899,7 @@ def _prose_parse(passage, names_and_points):
         ]
     )
     paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
         text_sha256="0" * 64,
         tables=[],
     )
@@ -824,7 +908,7 @@ def _prose_parse(passage, names_and_points):
         text,
         {},
         {"prose": collection},
-        ParseInputs(article_id="a", prose=_prose(text, passage)),
+        _inputs(prose=_prose(text, passage)),
     )
 
 
@@ -878,11 +962,11 @@ def test_the_restated_points_of_a_kept_text_analysis_are_among_the_parse_s_omiss
                  "points": [{"x": -22.0, "y": -4.0, "z": -18.0, "restates": [
                      {"table": "t1", "analysis": "patients > controls"},
                      {"table": "t2", "analysis": "craving"}]}]}]
-    paper = SimpleNamespace(header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+    paper = SimpleNamespace(header=SimpleNamespace(identifiers=IDENTIFIERS),
                             text_sha256="0" * 64, tables=[])
     parse, _ = paper_parse.coordinate_parse(
         paper, text, {}, {"prose": collection},
-        ParseInputs(article_id="a", prose=_prose(text, passage), restatements=restated))
+        _inputs(prose=_prose(text, passage), restatements=restated))
     assert [a.name for a in parse.analyses] == ["negative correlation with craving"]
     (omission,) = parse.omitted_analyses
     assert omission.name == "negative correlation with craving"
@@ -1053,7 +1137,7 @@ def test_a_table_both_rejected_and_excluded_reads_as_excluded():
     paper = SimpleNamespace(
         tables=[SimpleNamespace(table_id="t", triage=pp.TableTriage(passes=False, route="gate"))]
     )
-    inputs = ParseInputs(article_id="a", excluded={"t": {"reason": "not_coordinates"}})
+    inputs = _inputs(excluded={"t": {"reason": "not_coordinates"}})
     (reading,) = paper_parse._readings(paper, {}, inputs)
     assert (reading.reading, reading.reason) == ("excluded_by_hand", "not_coordinates")
 
@@ -1062,9 +1146,9 @@ def test_a_full_passage_list_is_truncated():
     from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
 
     passages = {"passages": [{"text": "p"}] * MAX_PASSAGES}
-    full = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES)
+    full = _inputs(prose=passages, passages_kept=MAX_PASSAGES)
     assert paper_parse._text_sweep(full).truncated is True
-    short = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES - 1)
+    short = _inputs(prose=passages, passages_kept=MAX_PASSAGES - 1)
     assert paper_parse._text_sweep(short).truncated is False
 
 
@@ -1072,10 +1156,10 @@ def test_a_recorded_cut_says_whether_the_passages_were_truncated():
     from ingestion_workflow.pipeline.stages.passages import MAX_PASSAGES
 
     passages = {"passages": [{"text": "p"}] * MAX_PASSAGES}
-    whole = ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=0)
+    whole = _inputs(prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=0)
     assert paper_parse._text_sweep(whole).truncated is False
     cut = paper_parse._text_sweep(
-        ParseInputs(article_id="a", prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=3))
+        _inputs(prose=passages, passages_kept=MAX_PASSAGES, passages_omitted=3))
     assert (cut.truncated, cut.passages_found) == (True, MAX_PASSAGES + 3)
 
 
@@ -1104,7 +1188,7 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
         ],
     )
     text = "Peak at 40, -52, -18."
-    inputs = ParseInputs(article_id="a", prose=_prose(text, text))
+    inputs = _inputs(prose=_prose(text, text))
     built = paper_parse._prose_analysis(
         collection.analyses[0], collection, paper_parse._Text(text), inputs, _roles(text)
     )
@@ -1271,7 +1355,7 @@ def _two_tables(tmp_path, markup, per_table):
 
     (tmp_path / "t.html").write_text(markup, encoding="utf-8")
     paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
         text_sha256="0" * 64,
         tables=[_bare_table(t) for t in per_table],
     )
@@ -1280,7 +1364,7 @@ def _two_tables(tmp_path, markup, per_table):
         "Results\n",
         {t: _grid(tmp_path / "t.html") for t in per_table},
         per_table,
-        ParseInputs(article_id="a", readings={t: "coordinates" for t in per_table}),
+        _inputs(readings={t: "coordinates" for t in per_table}),
     )
 
 
@@ -1359,11 +1443,11 @@ def test_a_kept_analysis_s_note_is_not_among_the_parse_s_omissions():
             coordinates=[Coordinate(x=40, y=-52, z=-18)],
         )
     ])
-    paper = SimpleNamespace(header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+    paper = SimpleNamespace(header=SimpleNamespace(identifiers=IDENTIFIERS),
                             text_sha256="0" * 64, tables=[])
     parse, omitted = paper_parse.coordinate_parse(
         paper, f"Results\n\n{passage}\n", {}, {"prose": collection},
-        ParseInputs(article_id="a", prose=_prose(f"Results\n\n{passage}\n", passage)),
+        _inputs(prose=_prose(f"Results\n\n{passage}\n", passage)),
     )
     assert [a.name for a in parse.analyses] == ["marked peak"]
     assert [o.kept for o in omitted] == [True] and parse.omitted_analyses is None
@@ -1386,7 +1470,7 @@ def test_a_citing_sentence_printed_with_other_spaces_and_minus_signs_is_placed()
 def test_only_a_placeholder_name_is_marked_not_printed():
     passage = "The peak is marked in Figure 2 (40, -52, -18)."
     text = paper_parse._Text(f"Results\n\n{passage}\n")
-    inputs = ParseInputs(article_id="a", prose=_prose(text.text, passage))
+    inputs = _inputs(prose=_prose(text.text, passage))
     printed = []
     for name in ("marked peak", "UNKNOWN"):
         collection = _collection([
@@ -1469,7 +1553,7 @@ def _table_and_text(tmp_path, order):
         )]),
     }
     paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
         text_sha256="0" * 64,
         tables=[_bare_table("1")],
     )
@@ -1478,7 +1562,7 @@ def _table_and_text(tmp_path, order):
         text,
         {"1": _grid(tmp_path / "t.html")},
         {t: read[t] for t in order},
-        ParseInputs(article_id="a", readings={"1": "coordinates"}, prose=_prose(text, passage)),
+        _inputs(readings={"1": "coordinates"}, prose=_prose(text, passage)),
     )
 
 
@@ -1567,9 +1651,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 7
+    assert paper_parse.PAPER_PARSE_VERSION == 8
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.7"
+        "paper_parse.8"
     }
 
 
@@ -1711,12 +1795,12 @@ def _paper_parse(tmp_path, tables, per_table, **inputs):
         (tmp_path / f"{table_id}.html").write_text(markup, encoding="utf-8")
         grids[table_id] = _grid(tmp_path / f"{table_id}.html")
     paper = SimpleNamespace(
-        header=SimpleNamespace(identifiers=pp.ArticleIdentifiers()),
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
         text_sha256="0" * 64,
         tables=[table for _, table in tables.values()],
     )
     return paper_parse.coordinate_parse(
-        paper, "Results\n", grids, per_table, ParseInputs(article_id="a", **inputs)
+        paper, "Results\n", grids, per_table, _inputs(**inputs)
     )
 
 

@@ -8,6 +8,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional
 
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
+
 from .ids import Identifier
 
 
@@ -67,36 +69,6 @@ class DownloadedFile:
             downloaded_at=datetime.fromisoformat(str(payload["downloaded_at"])),
             md5_hash=payload.get("md5_hash") or None,
         )
-
-
-# study_schema's CopyRoute, CopyVersion and CopyAccess (study_schema b314eb3), spelled here
-# until the pin reaches them: that pin also brings the parse changes the parse stage makes.
-class CopyRoute(str, Enum):
-    """Where a copy of a paper is hosted."""
-
-    PMC = "pmc"
-    PUBLISHER = "publisher"
-    REPOSITORY = "repository"
-    PREPRINT_SERVER = "preprint_server"
-    UNRECORDED = "unrecorded"
-
-
-class CopyVersion(str, Enum):
-    """Which version of the paper a copy is, in the NISO Journal Article Versions terms."""
-
-    VOR = "vor"
-    AM = "am"
-    SUBMITTED = "submitted"
-
-
-class CopyAccess(str, Enum):
-    """How we obtained a copy we hold."""
-
-    PUBLIC = "public"
-    #: Under terms that permit text mining only: a publisher's API with our key, or a
-    #: PMC author manuscript offered for text mining.
-    TDM_GRANT = "tdm_grant"
-    UNRECORDED = "unrecorded"
 
 
 @dataclass(frozen=True)
@@ -178,9 +150,6 @@ class DownloadResult:
 
 
 __all__ = [
-    "CopyAccess",
-    "CopyRoute",
-    "CopyVersion",
     "DownloadCopy",
     "DownloadResult",
     "DownloadSource",

@@ -17,3 +17,20 @@ with bregma, "interaural", Paxinos or Franklin, or all three of the AP, ML and D
 "mouse" is not an animal here, and human atlas references ("Mai and Paxinos") do not count.
 Each analysis of such a table is omitted with the same reason; a table a person excluded or
 triage rejected keeps that reading.
+
+# What the parsed paper says about its copy and its identifiers
+
+- `text_copy` is the copy the text was read from, as its download recorded it: `route`,
+  `version`, `access`, and `url` and `preprint_server` where known. Sync fails for an article
+  whose text's download is not ok, and stops when a download records no copy (run
+  `scripts/backfill_download_copies.py` on such a catalog).
+- No stage decides a licence yet, so `text_copy.license` and `bibliography.license` are both
+  `all-rights-reserved`, `assumed`. Under it nothing may be passed on.
+- `bibliography.provider` is the metadata record's provider: `pubmed`, `semantic_scholar` or
+  `openalex`, or `elsevier` and `jats` for the record read from a held Elsevier or JATS file.
+  An abstract is credited to the same provider (`abstract_provider`).
+- In `header.identifiers`, a DOI that `utils/preprints.py` names a preprint server for is in
+  `preprint_dois` with its server, and `doi` is empty. `publication_status` is `preprint` when
+  that DOI is all there is, and `published` when the paper also has a PMID or PMCID or its DOI is
+  no preprint server's.
+- `header.neurostore_base_study_id` is the paper's neurostore base study, once sync knows it.

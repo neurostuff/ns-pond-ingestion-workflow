@@ -490,7 +490,7 @@ class NeurostoreIngester:
                     False)
         if not summary.get("base_study_id"):
             return None, "the summary names no base study", False
-        expected = (parse["header"].get("identifiers") or {}).get("neurostore_base_study_id")
+        expected = parse["header"].get("neurostore_base_study_id")
         if expected and summary["base_study_id"] != expected:
             # Its id would be learned as this article's alias; the same body gets the same
             # answer, so it is the paper's refusal, not a failure to retry.

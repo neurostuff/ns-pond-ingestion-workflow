@@ -15,9 +15,6 @@ from .analysis import (
     PointsValue,
 )
 from .download import (
-    CopyAccess,
-    CopyRoute,
-    CopyVersion,
     DownloadCopy,
     DownloadedFile,
     DownloadResult,
@@ -42,9 +39,6 @@ __all__ = [
     "Coordinate",
     "CoordinatePoint",
     "CoordinateSpace",
-    "CopyAccess",
-    "CopyRoute",
-    "CopyVersion",
     "CreateAnalysesResult",
     "DownloadCopy",
     "DownloadResult",

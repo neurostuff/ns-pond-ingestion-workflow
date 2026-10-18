@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models import CopyAccess, CopyRoute, CopyVersion, DownloadCopy
+from ingestion_workflow.models import DownloadCopy
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.plan import StagePlan, Work
@@ -59,6 +59,7 @@ from ingestion_workflow.tests.services.test_neurostore_ingest import (
     _closed_port,
 )
 from ingestion_workflow.tests.upload_body import without_input_fingerprints
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
 from test_roles_stage import PROSE_MODEL, TABLE_MODEL, served  # noqa: F401 - a fixture
 
@@ -177,7 +178,7 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
     sync.finish()
     assert synced.status is Status.OK, synced.error
     written = settings.ns_pond_root / "BS21" / "parse" / "coordinate_parse.json"
-    assert json.loads(written.read_text())["header"]["identifiers"]["neurostore_base_study_id"] \
+    assert json.loads(written.read_text())["header"]["neurostore_base_study_id"] \
         == "BS21"
     assert (settings.ns_pond_root / "BS21" / "stage1" / "analyses.json").exists()
 
@@ -246,7 +247,7 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
         Status.OK, None, str(new))
     assert first.summary["new_to_neurostore"] is True
     header = json.loads((new / "parse" / "coordinate_parse.json").read_text())["header"]
-    assert header["identifiers"]["neurostore_base_study_id"] is None
+    assert header["neurostore_base_study_id"] is None
     assert header["identifiers"]["pmid"] == "23"
     assert not (settings.ns_pond_root / "pmids.tsv").exists()
     assert not settings.ns_pond_root.exists() or list(settings.ns_pond_root.iterdir()) == []
@@ -265,17 +266,15 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
     assert second.summary["replaces"] == str(new) and not new.exists()
     assert second.summary["parse_id"] == first.summary["parse_id"]
     header = json.loads((target / "parse" / "coordinate_parse.json").read_text())["header"]
-    assert header["identifiers"]["neurostore_base_study_id"] == created
+    assert header["neurostore_base_study_id"] == created
     assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["23", created]
     _, (again,) = _run(upload, ctx, catalog, ref)
     assert again.status is Status.OK and again.summary["base_study_id"] == created
     # An upload's own record is what it sent; the one before it is not carried on.
     assert "last_upload" not in again.summary
     first_sent, second_sent = _sent(vcr)
-    assert first_sent["coordinate_parse"]["header"]["identifiers"][
-        "neurostore_base_study_id"] is None
-    assert second_sent["coordinate_parse"]["header"]["identifiers"][
-        "neurostore_base_study_id"] == created
+    assert first_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] is None
+    assert second_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] == created
     assert second_sent["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
 
 
@@ -421,25 +420,25 @@ def test_a_preprint_server_doi_makes_the_other_article_the_one_that_is_written(
 
 def test_is_preprint_by_a_preprint_servers_doi_or_by_the_copy_of_the_download():
     def held(route, version=None, server=None):
-        return DownloadCopy(route=route, version=version, access=CopyAccess.PUBLIC,
+        return DownloadCopy(route=route, version=version, access=CopyAccess.public,
                             preprint_server=server)
 
-    published = held(CopyRoute.PUBLISHER, CopyVersion.VOR)
+    published = held(CopyRoute.publisher, CopyVersion.vor)
     assert is_preprint("10.1101/2019.12.11.873174", None)
     assert is_preprint("10.1101/2019.12.11.873174".upper(), None)
     assert is_preprint("10.64898/2025.11.28.690060", None)
     assert is_preprint("10.21203/rs.3.rs-2556690/v2", None)
     assert is_preprint("10.48550/arxiv.2111.08743", None)
     assert is_preprint("10.2139/ssrn.3349212", published)
-    assert is_preprint("10.1016/j.x", held(CopyRoute.REPOSITORY, CopyVersion.SUBMITTED))
+    assert is_preprint("10.1016/j.x", held(CopyRoute.repository, CopyVersion.submitted))
     # a journal article whose accepted manuscript arXiv holds is the article
     assert not is_preprint("10.1016/j.x",
-                           held(CopyRoute.PREPRINT_SERVER, CopyVersion.AM, "arxiv"))
-    assert is_preprint(None, held(CopyRoute.PREPRINT_SERVER, CopyVersion.SUBMITTED, "medrxiv"))
+                           held(CopyRoute.preprint_server, CopyVersion.am, "arxiv"))
+    assert is_preprint(None, held(CopyRoute.preprint_server, CopyVersion.submitted, "medrxiv"))
     assert not is_preprint("10.1016/j.x", published)
-    assert not is_preprint("10.1016/j.x", held(CopyRoute.REPOSITORY, CopyVersion.AM))
-    assert not is_preprint("10.1016/j.x", DownloadCopy(route=CopyRoute.UNRECORDED,
-                                                      access=CopyAccess.UNRECORDED))
+    assert not is_preprint("10.1016/j.x", held(CopyRoute.repository, CopyVersion.am))
+    assert not is_preprint("10.1016/j.x", DownloadCopy(route=CopyRoute.unrecorded,
+                                                      access=CopyAccess.unrecorded))
     assert not is_preprint(None, None)
     assert not is_preprint("10.11011/x", None)
     assert not is_preprint("10.1101/gr.112680.110", None)
@@ -468,6 +467,44 @@ def test_a_download_stored_before_copies_were_recorded_names_the_backfill(env, m
 
     with pytest.raises(RuntimeError, match="scripts/backfill_download_copies.py"):
         preprints_among(ctx, [held.id, named.id])
+
+
+def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "41", "BS41")
+    _read_from_a_preprint(catalog, ref)
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+
+    paper = json.loads((settings.ns_pond_root / "BS41" / "parse" / "parsed_paper.json").read_text())
+    copy = {k: v for k, v in paper["text_copy"].items() if v is not None}
+    assert copy.pop("license") == {"license_id": "all-rights-reserved", "determination": "assumed",
+                                   "stated_by": None, "stated_as": None}
+    assert copy == catalog.artifact(ref.id, "download", "pubget").summary["copy"]
+    assert copy["version"] == "submitted"
+
+
+def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "42", "BS42")
+    catalog.record([Outcome.failure(ref.id, "download", "pubget", "no full text")])
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+
+    assert synced.status is Status.FAILED
+    assert synced.error == "no ok download of the pubget copy the text was read from"
+    assert not (settings.ns_pond_root / "BS42").exists()
+
+
+def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(env, monkeypatch):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "43", "BS43")
+    download = catalog.artifact(ref.id, "download", "pubget")
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
+                            fingerprint=download.fingerprint, payload=catalog.payload(download),
+                            summary={k: v for k, v in download.summary.items() if k != "copy"})])
+
+    with pytest.raises(RuntimeError, match="scripts/backfill_download_copies.py"):
+        _run(SyncStage(settings), ctx, catalog, ref)
 
 
 def _never_downloaded(env, monkeypatch, pmid, base):

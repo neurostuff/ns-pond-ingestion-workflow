@@ -32,9 +32,6 @@ from ingestion_workflow.extractors.springer_extractor import (
 )
 from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models import (
-    CopyAccess,
-    CopyRoute,
-    CopyVersion,
     DownloadCopy,
     DownloadSource,
     ExtractedContent,
@@ -49,6 +46,7 @@ from ingestion_workflow.pipeline.stages.triage import TIE_ORDER
 from ingestion_workflow.services.citations import JATS_SOURCES
 from ingestion_workflow.services.metadata import MetadataService
 from lxml import etree
+from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 #: BMC Geriatrics, CC BY: a case report with two tables and three figures.
 CASE_REPORT = "10.1186/s12877-026-07992-9"
@@ -191,7 +189,7 @@ def test_springer_dois_are_asked_twenty_to_a_quoted_query(tmp_path, slept, vcr):
         served = by_doi[doi.lower()]
         assert served.success and served.source is DownloadSource.SPRINGER
         assert copy_of(served) == DownloadCopy(
-            route=CopyRoute.PUBLISHER, version=CopyVersion.VOR, access=CopyAccess.PUBLIC)
+            route=CopyRoute.publisher, version=CopyVersion.vor, access=CopyAccess.public)
         article_dir = tmp_path / "cache" / "springer" / safe_hash_stem(served.identifier.slug)
         names = {f.file_path.relative_to(article_dir).as_posix(): f.file_type
                  for f in served.files}
