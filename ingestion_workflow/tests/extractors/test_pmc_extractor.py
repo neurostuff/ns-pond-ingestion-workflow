@@ -205,3 +205,17 @@ def test_the_default_order_names_every_source_once_with_pmc_first():
     order = Settings().download_sources
     assert sorted(order) == sorted(s.value for s in DownloadSource) and len(order) == len(set(order))
     assert order[:3] == ["pmc", "europepmc", "pubget"]
+
+
+@pytest.mark.vcr
+def test_a_malformed_article_id_fails_only_its_own_article(settings):
+    """Recorded from the Cloud Service and efetch for two articles PMC holds without a body,
+    then edited: in the efetch answer, PMC10002769's `article-id pub-id-type="pmcid"` was
+    changed to `PMC10002769.x`."""
+    restricted, malformed = PmcExtractor(settings=settings).download(ids("10002673", "10002769"))
+    assert restricted.error_message == RESTRICTED
+    assert not malformed.success
+    assert malformed.error_message == (
+        "PMC returned no article for this PMCID; it returned one under a malformed id "
+        "(not a PMCID: 'PMC10002769.x')"
+    )

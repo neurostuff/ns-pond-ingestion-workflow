@@ -197,8 +197,13 @@ class PmcExtractor(_PmcXmlExtractor):
             response = _with_retries(lambda: session.post(self.EFETCH, data=data, timeout=120))
             time.sleep(interval)
             root = etree.fromstring(response.content, etree.XMLParser(recover=True, huge_tree=True))
+            malformed: List[str] = []
             for article in root.iterfind("article"):
-                pmcid = _pmcid_of(article)
+                try:
+                    pmcid = _pmcid_of(article)
+                except ValueError as exc:
+                    malformed.append(str(exc))
+                    continue
                 if pmcid is None:
                     continue
                 if has_body(article):
@@ -206,9 +211,13 @@ class PmcExtractor(_PmcXmlExtractor):
                     articles[pmcid] = article
                 else:
                     reasons[pmcid] = RESTRICTED
+            # An article whose id is malformed cannot be matched to the PMCID it answers.
+            missing = "PMC returned no article for this PMCID"
+            if malformed:
+                missing += f"; it returned one under a malformed id ({'; '.join(malformed)})"
             for pmcid in chunk:
                 if pmcid not in articles:
-                    reasons.setdefault(pmcid, "PMC returned no article for this PMCID")
+                    reasons.setdefault(pmcid, missing)
         return articles, reasons
 
     def _extra_files(self, pmcid: str, article_dir: Path) -> List[DownloadedFile]:

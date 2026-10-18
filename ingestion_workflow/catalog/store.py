@@ -346,10 +346,6 @@ class Catalog:
                     if owner is not None:
                         self._conflict(identifier, f"{kind} {value} belongs to {owner}; left there")
                         continue
-                    if kind in self.SINGULAR and self._held(conn, article_id, kind) - {value}:
-                        self._conflict(identifier, f"{article_id} already has a {kind}; "
-                                       f"{value} not attached")
-                        continue
                     conn.execute(
                         "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?) "
                         "ON CONFLICT(kind, value) DO NOTHING",

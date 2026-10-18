@@ -1,0 +1,66 @@
+# Recorded 2026-10-17, then edited by hand: the id converter's pmcid for 10.1002/hbm.24703 changed from PMC6865431 to PMC6865431.x.
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=10.1002%2Fhbm.24703%2C10.1371%2Fjournal.pone.0041873&idtype=doi&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAACA32RQWvDMAyF/8owNKcmtR03CYHAoLDbYPfRg5e4q9vEyux06Sj575PdUjbW7qin
+        56dP8om4QQ4HR0oCezInVrkejFNxIweFIqc8ixmNWf7AacmKkmXB9XFQbiDliYzSGm3eMeB1PScb
+        sJ1EnewcGDTqZvjqfU4DOpTeRxhNGKV8sX3rEi5ymmLLa2nOFjs4WCPbBClUQqlgRZ4STFad1C0G
+        DTj3UR1l17cqqaHDpwOA7yAF9jSYeAS737Qwxt7s0KHqLaAjZFRenAn6IyM6Y1ceOkLG6gI4409X
+        xBlfXRBRvQUZnXetcNPIE1X/8Hwq67Dhr24Aa7eFUWrdnOvJH7gGG451Cqcrb96s7+rw5uV5lRXZ
+        UqQsOQbZqynjKLLl9bdUEwf336Rp/nPK3V/4NTAVNGd8eR3HeSGKTIib4+5GTuvpG1D+pe6CAgAA
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Sun, 18 Oct 2026 00:18:16 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
