@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
+from ingestion_workflow.models import CopyAccess, CopyRoute, CopyVersion, DownloadCopy
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.plan import StagePlan, Work
@@ -36,6 +37,7 @@ from ingestion_workflow.pipeline.stages.sync import (
     SyncStage,
     is_preprint,
     new_articles_root,
+    preprints_among,
 )
 from ingestion_workflow.pipeline.stages.upload import NO_API_URL, UploadStage
 from ingestion_workflow.pipeline.upstream import (
@@ -51,12 +53,12 @@ from ingestion_workflow.pipeline.upstream import (
 from ingestion_workflow.services import neurostore_ingest
 from ingestion_workflow.services.funnel_report import FILTERED, build_funnel, open_readonly
 from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
-from ingestion_workflow.tests.upload_body import without_input_fingerprints
 from ingestion_workflow.tests.services.test_neurostore_ingest import (
     LOCAL,
     REPLAY_TOKEN,
     _closed_port,
 )
+from ingestion_workflow.tests.upload_body import without_input_fingerprints
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
 from test_roles_stage import PROSE_MODEL, TABLE_MODEL, served  # noqa: F401 - a fixture
 
@@ -324,14 +326,13 @@ def _claimed_twice(env, monkeypatch, dois=(None, None)):
 
 
 def _read_from_a_preprint(catalog, ref):
-    """The download its text came from is a submitted version, as the PDF source labels
-    one from a preprint server."""
-    from ingestion_workflow.extractors.pdf_extractor import PREPRINT_VERSION
-
+    """The download its text came from is a submitted version, as PMC marks a preprint
+    it hosts."""
     download = catalog.artifact(ref.id, "download", "pubget")
+    preprint = {**download.summary["copy"], "version": "submitted"}
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             fingerprint=download.fingerprint, payload=catalog.payload(download),
-                            summary={**download.summary, "article_version": PREPRINT_VERSION})])
+                            summary={**download.summary, "copy": preprint})])
 
 
 @pytest.mark.vcr
@@ -418,19 +419,55 @@ def test_a_preprint_server_doi_makes_the_other_article_the_one_that_is_written(
     assert (settings.ns_pond_root / "5dsFAUgmBz36").exists() == bool(written)
 
 
-def test_is_preprint_by_a_preprint_servers_doi_or_by_the_version_of_the_download():
+def test_is_preprint_by_a_preprint_servers_doi_or_by_the_copy_of_the_download():
+    def held(route, version=None, server=None):
+        return DownloadCopy(route=route, version=version, access=CopyAccess.PUBLIC,
+                            preprint_server=server)
+
+    published = held(CopyRoute.PUBLISHER, CopyVersion.VOR)
     assert is_preprint("10.1101/2019.12.11.873174", None)
     assert is_preprint("10.1101/2019.12.11.873174".upper(), None)
     assert is_preprint("10.64898/2025.11.28.690060", None)
     assert is_preprint("10.21203/rs.3.rs-2556690/v2", None)
     assert is_preprint("10.48550/arxiv.2111.08743", None)
-    assert is_preprint("10.2139/ssrn.3349212", None)
-    assert is_preprint("10.1016/j.x", "submittedVersion")
-    assert not is_preprint("10.1016/j.x", "publishedVersion")
+    assert is_preprint("10.2139/ssrn.3349212", published)
+    assert is_preprint("10.1016/j.x", held(CopyRoute.REPOSITORY, CopyVersion.SUBMITTED))
+    # a journal article whose accepted manuscript arXiv holds is the article
+    assert not is_preprint("10.1016/j.x",
+                           held(CopyRoute.PREPRINT_SERVER, CopyVersion.AM, "arxiv"))
+    assert is_preprint(None, held(CopyRoute.PREPRINT_SERVER, CopyVersion.SUBMITTED, "medrxiv"))
+    assert not is_preprint("10.1016/j.x", published)
+    assert not is_preprint("10.1016/j.x", held(CopyRoute.REPOSITORY, CopyVersion.AM))
+    assert not is_preprint("10.1016/j.x", DownloadCopy(route=CopyRoute.UNRECORDED,
+                                                      access=CopyAccess.UNRECORDED))
     assert not is_preprint(None, None)
     assert not is_preprint("10.11011/x", None)
     assert not is_preprint("10.1101/gr.112680.110", None)
-    assert not is_preprint("10.1101/lm.022889.111", "publishedVersion")
+    assert not is_preprint("10.1101/lm.022889.111", published)
+
+
+def test_a_download_that_failed_since_the_extraction_leaves_the_doi_to_decide(
+        env, monkeypatch):
+    """A refreshed download that failed keeps no copy: the bioRxiv DOI still says which is
+    the preprint, and the other article's copy is read as before."""
+    _, catalog, _ = env
+    ctx, preprint, paper = _claimed_twice(
+        env, monkeypatch, ("10.1101/2020.01.01.123456", "10.1016/j.neuroimage.2020.1"))
+    catalog.record([Outcome.failure(preprint.id, "download", "pubget", "no full text")])
+
+    assert preprints_among(ctx, [preprint.id, paper.id]) == {preprint.id}
+
+
+def test_a_download_stored_before_copies_were_recorded_names_the_backfill(env, monkeypatch):
+    _, catalog, _ = env
+    ctx, held, named = _claimed_twice(env, monkeypatch)
+    download = catalog.artifact(held.id, "download", "pubget")
+    catalog.record([Outcome(article_id=held.id, stage="download", source="pubget",
+                            fingerprint=download.fingerprint, payload=catalog.payload(download),
+                            summary={k: v for k, v in download.summary.items() if k != "copy"})])
+
+    with pytest.raises(RuntimeError, match="scripts/backfill_download_copies.py"):
+        preprints_among(ctx, [held.id, named.id])
 
 
 def _never_downloaded(env, monkeypatch, pmid, base):

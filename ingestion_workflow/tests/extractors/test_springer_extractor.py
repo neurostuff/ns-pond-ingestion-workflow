@@ -19,6 +19,7 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors import springer_extractor
 from ingestion_workflow.extractors.base import SourceExhausted, SourceMisconfigured
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.extractors.pdf_extractor import _HostGate
 from ingestion_workflow.extractors.springer_extractor import (
@@ -31,6 +32,10 @@ from ingestion_workflow.extractors.springer_extractor import (
 )
 from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models import (
+    CopyAccess,
+    CopyRoute,
+    CopyVersion,
+    DownloadCopy,
     DownloadSource,
     ExtractedContent,
     FileType,
@@ -185,7 +190,8 @@ def test_springer_dois_are_asked_twenty_to_a_quoted_query(tmp_path, slept, vcr):
     for doi in (CASE_REPORT, MOLECULAR_PAIN):
         served = by_doi[doi.lower()]
         assert served.success and served.source is DownloadSource.SPRINGER
-        assert served.article_version == "publishedVersion"
+        assert copy_of(served) == DownloadCopy(
+            route=CopyRoute.PUBLISHER, version=CopyVersion.VOR, access=CopyAccess.PUBLIC)
         article_dir = tmp_path / "cache" / "springer" / safe_hash_stem(served.identifier.slug)
         names = {f.file_path.relative_to(article_dir).as_posix(): f.file_type
                  for f in served.files}

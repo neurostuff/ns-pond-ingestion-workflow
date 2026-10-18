@@ -49,8 +49,6 @@ SPRINGER_DOI_PREFIXES = frozenset({
     "10.26778", "10.33283",
 })
 
-#: The API serves the version of record.
-PUBLISHED_VERSION = "publishedVersion"
 
 #: The API's answer to a key it refuses.
 KEY_REFUSED = 401
@@ -282,9 +280,7 @@ class SpringerExtractor(PubgetExtractor):
             etree.tostring(article, encoding="UTF-8", xml_declaration=True)
         )
         _extract_tables(article_dir)
-        result = self._build_success(identifier, article_dir, None)
-        result.article_version = PUBLISHED_VERSION
-        return result
+        return self._build_success(identifier, article_dir, None)
 
 
 def _api_message(response: httpx.Response, key: str) -> str:

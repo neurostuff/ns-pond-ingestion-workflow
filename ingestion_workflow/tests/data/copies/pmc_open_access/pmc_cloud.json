@@ -1,0 +1,28 @@
+{
+  "citation": "Hum Brain Mapp. 2026 Sep 24;47(14):e70650. doi: 10.1002/hbm.70650",
+  "doi": "10.1002/hbm.70650",
+  "is_historical_ocr": false,
+  "is_manuscript": false,
+  "is_pmc_openaccess": true,
+  "is_retracted": false,
+  "license_code": "CC BY",
+  "media_urls": [
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g001.webp?md5=6ecd416c21541a13d0bc778cc2b961c1",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g002.webp?md5=6c7a508b029155a2277c83a71734dcbb",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g003.webp?md5=69548c761a66d63ae6d047757327b2e8",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g004.webp?md5=23ba0cd35dfe9622a7c86e81fdd8f1c3",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g005.webp?md5=c89eef1dc593a0b2b3234647113d7c39",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g006.webp?md5=a51f3d8ee4a332948005bd90138eef32",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g007.webp?md5=6a825f1fd0fc98f212c5fb24487d72d5",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-g008.webp?md5=163a4f770cd20694cb2e4ed8d5d457fc",
+    "s3://pmc-oa-opendata/PMC13612850.1/HBM-47-e70650-s001.pdf?md5=3a216aeac8a9e7bea11407877ff62718"
+  ],
+  "mid": null,
+  "pdf_url": "s3://pmc-oa-opendata/PMC13612850.1/PMC13612850.1.pdf?md5=a99e02eb8069485aabdd2d00f4556e58",
+  "pmcid": "PMC13612850",
+  "pmid": 42786603,
+  "text_url": "s3://pmc-oa-opendata/PMC13612850.1/PMC13612850.1.txt?md5=3f3cffde804b615b4aa78f47c6cb29a4",
+  "title": "The Emotional Experience of Time: Effects of Anxiety and Interoceptive Ability on Temporal Perception",
+  "version": 1,
+  "xml_url": "s3://pmc-oa-opendata/PMC13612850.1/PMC13612850.1.xml?md5=3db1a305bf0564fdc2cee9e93356d5f8"
+}

@@ -9,7 +9,9 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.extractors.figure_captions import captions_digest
+from ingestion_workflow.models import DownloadResult
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.scheduler import run_stages
@@ -422,9 +424,11 @@ def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
     text_file = path.parent / f"{ref.id}.txt"
     text_file.write_text(text, encoding="utf-8")
     _record_extraction(catalog, ref, text_file)
+    download = _download(ref, path)
     rows = [
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
-                payload=_download(ref, path), summary={}),
+                payload=download,
+                summary={"copy": copy_of(DownloadResult.from_dict(download)).to_dict()}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
                 payload={"title": "T", "abstract": "A"}, summary={}),
     ]
@@ -914,7 +918,8 @@ def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
     from ingestion_workflow.pipeline.stages.passages import passage_from
 
     settings, catalog, _ = env
-    xml = tmp_path / "legend.xml"
+    xml = tmp_path / "legend" / "article.xml"  # where pubget files it
+    xml.parent.mkdir()
     xml.write_text(ARTICLE.replace("</p></sec>\n</body>", f"</p><fig><caption><p>{LEGEND}</p></caption></fig></sec>\n</body>"))
     ctx = Context(settings, catalog)
 

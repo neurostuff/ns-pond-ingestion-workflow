@@ -26,11 +26,11 @@ from ingestion_workflow.extractors.pdf_extractor import (
     _version_of,
     citation_pdf_url,
     remembered_dead_urls,
+    site_type,
 )
 from ingestion_workflow.models import (
     DownloadResult,
     DownloadSource,
-    ExtractedContent,
     Identifier,
     Identifiers,
 )
@@ -771,12 +771,43 @@ def test_a_url_both_providers_list_keeps_the_openalex_version(stub, other_host, 
     assert copy["also_listed_by"] == ["semantic_scholar"]
     assert copy["version"] == "submittedVersion"
     assert copy["location_type"] == "repository"
-    assert result.article_version == "submittedVersion"
 
     outcome = _stage_outcome(tmp_path, result)
-    assert outcome.summary["article_version"] == outcome.payload["article_version"]
-    assert outcome.payload["article_version"] == "submittedVersion"
-    assert DownloadResult.from_dict(result.to_dict()).article_version == "submittedVersion"
+    assert outcome.summary["copy"] == {"route": "repository", "version": "submitted",
+                                       "access": "public", "url": preprint}
+
+
+def test_an_untyped_pdf_takes_the_type_of_the_work_s_locations_on_its_site(
+        stub, other_host, tmp_path):
+    """Semantic Scholar's URL is the repository's file, OpenAlex lists the repository's
+    landing page for it; a publisher's copy elsewhere does not type it."""
+    s2 = stub.serve("/bitstream/1/a.pdf", (200, PDF))
+    published = other_host.serve("/journal/a.pdf", (403, b"no"))
+    stub.work("10.1234/a", location(None, "repository", landing=stub.url + "/handle/1"),
+              location(published, "journal"))
+    stub.s2["DOI:10.1234/a"] = s2
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    fetched = result.url_attempts[-1]
+    assert (fetched["provider"], fetched["location_type"], fetched["site_type"]) == (
+        "semantic_scholar", "unknown", "repository")
+    assert _stage_outcome(tmp_path, result).summary["copy"] == {
+        "route": "repository", "access": "public", "url": s2}
+
+
+@pytest.mark.parametrize("listed, expected", [
+    ([PdfCandidate("https://repo.example.edu/handle/1", "openalex", "repository")],
+     "repository"),
+    ([PdfCandidate("https://REPO.example.edu/x/", "openalex", "publisher")], "publisher"),
+    # a site the work's locations disagree about, or none lists, is not typed
+    ([PdfCandidate("https://repo.example.edu/1", "openalex", "repository"),
+      PdfCandidate("https://repo.example.edu/2", "openalex", "publisher")], "unknown"),
+    ([PdfCandidate("https://other.example.edu/1", "openalex", "repository")], "unknown"),
+    ([PdfCandidate("https://repo.example.edu/1", "openalex", "unknown")], "unknown"),
+])
+def test_the_site_type_of_a_url(listed, expected):
+    assert site_type("https://repo.example.edu/bitstream/a.pdf", listed) == expected
 
 
 def test_an_unlabelled_copy_on_a_preprint_server_counts_as_a_preprint():
@@ -796,34 +827,6 @@ def test_a_preprint_label_from_openalex_is_not_overwritten_by_the_host_rule():
                             version="acceptedVersion")
 
     assert _try_order([labelled])[0].version == "acceptedVersion"
-
-
-def test_the_extraction_says_which_version_its_text_came_from(tmp_path, monkeypatch):
-    from ingestion_workflow.extractors import docling_convert
-    from ingestion_workflow.models import DownloadedFile, FileType
-
-    class _Document:
-        tables: list = []
-        pictures: list = []
-
-        def export_to_text(self):
-            return "Results were reported in MNI space."
-
-    monkeypatch.setattr(docling_convert, "convert_pdf", lambda path: _Document())
-    pdf = tmp_path / "a.pdf"
-    pdf.write_bytes(PDF)
-    download = DownloadResult(
-        identifier=Identifier(doi="10.1234/a"),
-        source=DownloadSource.PDF,
-        success=True,
-        files=[DownloadedFile(pdf, FileType.PDF, "application/pdf", DownloadSource.PDF)],
-        article_version="submittedVersion",
-    )
-
-    content = pdf_extractor._extract_pdf_article(download, tmp_path / "out")
-
-    assert content.article_version == "submittedVersion"
-    assert ExtractedContent.from_dict(content.to_dict()).article_version == "submittedVersion"
 
 
 # -- OpenAlex batch failures ----------------------------------------------------------

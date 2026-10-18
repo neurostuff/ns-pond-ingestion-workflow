@@ -310,6 +310,9 @@ def test_an_attached_pdf_is_the_download_and_goes_straight_to_extraction(tmp_pat
 
         ctx = Context(settings, catalog)
         downloads = catalog.artifacts([ref.id], "download")
+        # A PDF supplied by hand says nothing of where it came from.
+        assert downloads[ref.id]["pdf"].summary["copy"] == {"route": "unrecorded",
+                                                            "access": "unrecorded"}
         assert stage.plan(ctx, [ref], downloads, {}).fresh == 1
 
         plan = ExtractStage(settings).plan(ctx, [ref], {}, downloads)

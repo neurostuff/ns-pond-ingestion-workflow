@@ -1,0 +1,25 @@
+{
+  "citation": "Res Sq. 2025 Apr 10:rs.3.rs-5356582. Preprint. [Version 1] doi: 10.21203/rs.3.rs-5356582/v1",
+  "doi": "10.21203/rs.3.rs-5356582/v1",
+  "is_historical_ocr": false,
+  "is_manuscript": false,
+  "is_pmc_openaccess": true,
+  "is_retracted": false,
+  "license_code": "CC BY",
+  "media_urls": [
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0001.jpg?md5=9be2c834f051ccb4fea2194f38fbde91",
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0002.jpg?md5=41d68825b63c3999136dc86786545a87",
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0003.jpg?md5=1f9338d39a8437ba46902dd4c03274b6",
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0004.jpg?md5=4d0acccb5d48ba6488eedb6eec0361e5",
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0005.jpg?md5=4b33417a7be43d2b9e231d1565470604",
+    "s3://pmc-oa-opendata/PMC12036453.1/nihpp-rs5356582v1-f0006.jpg?md5=a21358e230bd53bc9b79120a923cda94"
+  ],
+  "mid": null,
+  "pdf_url": "s3://pmc-oa-opendata/PMC12036453.1/PMC12036453.1.pdf?md5=bdec1fac77c23a6b080d763797706f9d",
+  "pmcid": "PMC12036453",
+  "pmid": 40297679,
+  "text_url": "s3://pmc-oa-opendata/PMC12036453.1/PMC12036453.1.txt?md5=7aec2110525216a27debc0d7ff149bb3",
+  "title": "Morphometric Analysis of Rat and Mouse Musculoskeletal Tissues using High Field MRI",
+  "version": 1,
+  "xml_url": "s3://pmc-oa-opendata/PMC12036453.1/PMC12036453.1.xml?md5=83415e84d7f95b5e1dab855a70a6ccc1"
+}

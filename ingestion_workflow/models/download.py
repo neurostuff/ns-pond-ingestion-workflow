@@ -69,6 +69,69 @@ class DownloadedFile:
         )
 
 
+# study_schema's CopyRoute, CopyVersion and CopyAccess (study_schema b314eb3), spelled here
+# until the pin reaches them: that pin also brings the parse changes the parse stage makes.
+class CopyRoute(str, Enum):
+    """Where a copy of a paper is hosted."""
+
+    PMC = "pmc"
+    PUBLISHER = "publisher"
+    REPOSITORY = "repository"
+    PREPRINT_SERVER = "preprint_server"
+    UNRECORDED = "unrecorded"
+
+
+class CopyVersion(str, Enum):
+    """Which version of the paper a copy is, in the NISO Journal Article Versions terms."""
+
+    VOR = "vor"
+    AM = "am"
+    SUBMITTED = "submitted"
+
+
+class CopyAccess(str, Enum):
+    """How we obtained a copy we hold."""
+
+    PUBLIC = "public"
+    #: Under terms that permit text mining only: a publisher's API with our key, or a
+    #: PMC author manuscript offered for text mining.
+    TDM_GRANT = "tdm_grant"
+    UNRECORDED = "unrecorded"
+
+
+@dataclass(frozen=True)
+class DownloadCopy:
+    """The facts about a held copy that are fixed when its bytes are fetched: study_schema's
+    HeldCopy less its licence, which the metadata stage decides."""
+
+    route: CopyRoute
+    access: CopyAccess
+    version: Optional[CopyVersion] = None
+    url: Optional[str] = None
+    #: The server's name in `utils.preprints`, for a copy on a preprint server.
+    preprint_server: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, str]:
+        out = {"route": self.route.value, "access": self.access.value}
+        if self.version is not None:
+            out["version"] = self.version.value
+        if self.url:
+            out["url"] = self.url
+        if self.preprint_server is not None:
+            out["preprint_server"] = self.preprint_server
+        return out
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, str]) -> "DownloadCopy":
+        return cls(
+            route=CopyRoute(payload["route"]),
+            access=CopyAccess(payload["access"]),
+            version=CopyVersion(payload["version"]) if payload.get("version") else None,
+            url=payload.get("url") or None,
+            preprint_server=payload.get("preprint_server") or None,
+        )
+
+
 @dataclass
 class DownloadResult:
     """Result of attempting to download an article."""
@@ -82,9 +145,6 @@ class DownloadResult:
     moved_aside: Dict[str, str] = field(default_factory=dict)
     #: Each URL tried or passed over for this article, in order, with its outcome.
     url_attempts: List[Dict[str, object]] = field(default_factory=list)
-    #: The downloaded copy's version as OpenAlex labels it ("publishedVersion",
-    #: "acceptedVersion", "submittedVersion"), when the source knows it.
-    article_version: Optional[str] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -98,8 +158,6 @@ class DownloadResult:
             out["moved_aside"] = dict(self.moved_aside)
         if self.url_attempts:
             out["url_attempts"] = [dict(attempt) for attempt in self.url_attempts]
-        if self.article_version:
-            out["article_version"] = self.article_version
         return out
 
     @classmethod
@@ -116,11 +174,14 @@ class DownloadResult:
             error_message=payload.get("error_message") or None,
             moved_aside=dict(payload.get("moved_aside") or {}),  # type: ignore[arg-type]
             url_attempts=[dict(a) for a in payload.get("url_attempts") or []],  # type: ignore[union-attr]
-            article_version=payload.get("article_version") or None,  # type: ignore[arg-type]
         )
 
 
 __all__ = [
+    "CopyAccess",
+    "CopyRoute",
+    "CopyVersion",
+    "DownloadCopy",
     "DownloadResult",
     "DownloadSource",
     "DownloadedFile",

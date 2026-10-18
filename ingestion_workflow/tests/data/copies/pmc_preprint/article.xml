@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article xml:lang="en" article-type="research-article" dtd-version="1.4">
+  <front>
+    <article-meta>
+      <article-id pub-id-type="pmcid">PMC12036453</article-id>
+      <article-id pub-id-type="pmcid-ver">PMC12036453.1</article-id>
+      <article-id pub-id-type="pmcaid">12036453</article-id>
+      <article-id pub-id-type="pmcaiid">12036453</article-id>
+      <article-id pub-id-type="pmid">40297679</article-id>
+      <article-id pub-id-type="doi">10.21203/rs.3.rs-5356582/v1</article-id>
+      <article-id pub-id-type="other">10.21203/rs.3.rs-5356582</article-id>
+      <article-version-alternatives>
+        <article-version article-version-type="pmc-version">1</article-version>
+        <article-version article-version-type="status">preprint</article-version>
+        <article-version article-version-type="number">1</article-version>
+      </article-version-alternatives>
+      <permissions>
+        <license>
+          <ali:license_ref xmlns:ali="http://www.niso.org/schemas/ali/1.0/" specific-use="textmining" content-type="ccbylicense">https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+          <license-p>This work is licensed under a <ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="uri" xlink:href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</ext-link>, which allows reusers to distribute, remix, adapt, and build upon the material in any medium or format, so long as attribution is given to the creator. The license allows for commercial use.</license-p>
+        </license>
+      </permissions>
+    </article-meta>
+  </front>
+</article>

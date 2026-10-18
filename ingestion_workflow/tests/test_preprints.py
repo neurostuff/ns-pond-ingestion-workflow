@@ -1,10 +1,10 @@
 import pytest
-
 from ingestion_workflow.utils.preprints import (
     PREPRINT_SERVERS,
     is_preprint_doi,
     is_preprint_host,
     preprint_server,
+    preprint_server_of_url,
 )
 
 #: Real DOIs from the catalog, each with the server the registry names.
@@ -140,3 +140,43 @@ def test_a_preprint_server_host_and_its_subdomains_are_preprint_hosts(host):
 @pytest.mark.parametrize("host", ["notarxiv.org", "arxiv.org.example.com", "doi.org", "", "www.nature.com"])
 def test_other_hosts_are_not(host):
     assert not is_preprint_host(host)
+
+
+@pytest.mark.parametrize("url, server", [
+    ("https://export.arxiv.org/pdf/2111.08743", "arxiv"),
+    ("https://www.medrxiv.org/content/10.1101/2021.01.01.21249999v1.full.pdf", "medrxiv"),
+    ("https://psyarxiv.com/x2vhs/download", "psyarxiv"),
+    ("https://edarxiv.org/rkzna", "edarxiv"),
+    ("https://osf.io/preprints/socarxiv/kv2qc", "socarxiv"),
+    ("https://osf.io/preprints/lissa/abcde/download", "lis_scholarship_archive"),
+    ("https://osf.io/preprints/osf/ynf42_v1", "osf_preprints"),
+    # a URL with no provider in it is OSF Preprints'
+    ("https://osf.io/x2vhs/download", "osf_preprints"),
+    ("https://www.nature.com/articles/x.pdf", None),
+])
+def test_a_url_names_the_preprint_server_it_is_on(url, server):
+    found = preprint_server_of_url(url)
+    assert (found.name if found else None) == server
+
+
+@pytest.mark.parametrize("doi, server", [
+    ("10.31234/osf.io/47dx2_v1", "psyarxiv"),
+    ("10.31730/osf.io/gub7d", "africarxiv"),
+    # not an OSF provider's: osf.io does not serve arXiv
+    ("10.48550/arxiv.2111.08743", "osf_preprints"),
+    ("10.1093/schbul/sbad113", "osf_preprints"),
+])
+def test_on_osf_io_the_article_s_doi_names_the_provider(doi, server):
+    assert preprint_server_of_url("https://osf.io/47dx2/download", doi).name == server
+
+
+def test_the_path_names_the_provider_over_the_doi():
+    assert preprint_server_of_url("https://osf.io/preprints/psyarxiv/47dx2",
+                                  "10.31235/osf.io/47dx2").name == "psyarxiv"
+
+
+def test_the_servers_that_hold_only_preprints():
+    """arXiv, SSRN and OSF's providers also take authors' accepted manuscripts."""
+    assert {s.name for s in PREPRINT_SERVERS if s.preprints_only} == {
+        "biorxiv", "medrxiv", "researchsquare", "preprints_org", "authorea", "techrxiv",
+        "chemrxiv", "jmir_preprints"}

@@ -14,7 +14,16 @@ from .analysis import (
     ParsedAnalysis,
     PointsValue,
 )
-from .download import DownloadedFile, DownloadResult, DownloadSource, FileType
+from .download import (
+    CopyAccess,
+    CopyRoute,
+    CopyVersion,
+    DownloadCopy,
+    DownloadedFile,
+    DownloadResult,
+    DownloadSource,
+    FileType,
+)
 from .extract import ArticleExtractionBundle, ExtractedContent, ExtractedTable
 from .ids import Identifier, IdentifierExpansion, Identifiers
 from .metadata import ArticleMetadata, Author, is_sufficient, merge_metadata_from_sources
@@ -33,7 +42,11 @@ __all__ = [
     "Coordinate",
     "CoordinatePoint",
     "CoordinateSpace",
+    "CopyAccess",
+    "CopyRoute",
+    "CopyVersion",
     "CreateAnalysesResult",
+    "DownloadCopy",
     "DownloadResult",
     "DownloadSource",
     "DownloadedFile",

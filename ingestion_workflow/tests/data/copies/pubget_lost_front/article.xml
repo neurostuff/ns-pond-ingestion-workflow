@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:m`l="http://www.w3.org/1998/Math/MathML" article-type="research-article">
+  <?properties open_access?>
+  <front>
+    <journal-meta>
+      <journal-id journal-id-type="nlm-ta">PLoS One</journal-id>
+      <journal-id journal-id-type="iso-abbrev">PLoS ONE</journal-id>
+      <journal-id journal-id-type="publisher-id">plos</journal-id>
+      <journal-id journal-id-type="pmc">plosone</journal-id>
+      <journal-title-group>
+        <journal-title>PLoS ONE</journal-title>
+      </journal-title-group>
+      <issn pub-type="epub">1932-6203</issn>
+      <publisher>
+        <publisher-name>Public Library of Science</publisher-name>
+        <publisher-loc>San Francisco, CA USA</publisher-loc>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="pmid">26675422</article-id>
+      <article-id pub-id-type="pmc">4684219</article-id>
+      <article-id pub-id-type="publisher-id">PONE-D-14-56301</article-id>
+      <article-id pub-id-type="doi">10.1371/journal.pone.0144486</article-id>
+      <article-categories>
+        <subj-group subj-group-type="heading">
+          <subject>Research Article</subject>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Co-Occurring Atomic Contacts for the Characterization of Protein Binding Hot Spots</article-title>
+        <alt-title alt-title-type="running-head">Co-Occurring Atomic Contacts for Characterizing Binding Hot Spots</alt-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Liu</surname>
+            <given-names>Qian</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff001">
+<sup>1</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Ren</surname>
+            <given-names>Jing</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff001">
+<sup>1</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Song</surname>
+            <given-names>Jiangning</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff002">
+<sup>2</sup>
+</xref>
+          <xref ref-type="aff" rid="aff003">
+<sup>3</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Li</surname>
+            <given-names>Jinyan</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff004">
+<sup>4</sup>
+</xref>
+          <xref ref-type="corresp" rid="cor001">*</xref>
+        </contrib>
+      </contrib-group>
+      <aff id="aff001">
+<label>1</label>
+<addr-line>Advanced Analytics Institute, University of Technology Sydney, Broadway, NSW 2007, Australia</addr-line>
+</aff>
+      <aff id="aff002">
+<label>2</label>
+<addr-line>Department of Biochemistry and Molecular Biology, Faculty of Medicine, Monash University, Melbourne, VIC 3800, Australia</addr-line>
+</aff>
+      <aff id="aff003">
+<label>3</label>
+<addr-line>Centre for Research in Intelligent Systems, Faculty of Information Technology, Monash University, Melbourne, VIC 3800, Australia</addr-line>
+</aff>
+      <aff id="aff004">
+<label>4</label>
+<addr-line>Advanced Analytics Institute and Centre for Health Technologies, University of Technology Sydney, Broadway, NSW 2007, Australia</addr-line>
+</aff>
+      <contrib-group>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Gursoy</surname>
+            <given-names>Attila</given-names>
+          </name>
+          <role>Editor</role>
+          <xref ref-type="aff" rid="edit1"/>
+        </contrib>
+      </contrib-group>
+      <aff id="edit1">
+<addr-line>Koc University, TURKEY</addr-line>
+</aff>
+      <author-notes>
+        <fn fn-type="COI-statement" id="coi001">
+          <p><bold>Competing Interests: </bold>The authors have declared that no competing interests exist.</p>
+        </fn>
+        <fn fn-type="con" id="contrib001">
+          <p>Conceived and designed the experiments: QL. Performed the experiments: QL JR. Analyzed the data: QL JR JS JL. Contributed reagents/materials/analysis tools: QL JR JS JL. Wrote the paper: QL JR JS JL.</p>
+        </fn>
+        <corresp id="cor001">* E-mail: <email>jinyan.li@uts.edu.au</email></corresp>
+      </author-notes>
+      <pub-date pub-type="collection">
+        <year>2015</year>
+      </pub-date>
+      <pub-date pub-type="epub">
+        <day>16</day>
+        <month>12</month>
+        <year>2015</year>
+      </pub-date>
+      <volume>10</volume>
+      <issue>12</issue>
+      <elocation-id>e0144486</elocation-id>
+      <history>
+        <date date-type="received">
+          <day>15</day>
+          <month>12</month>
+          <year>2014</year>
+        </date>
+        <date date-type="accepted">
+          <day>19</day>
+          <month>11</month>
+          <year>2015</year>
+        </date>
+      </history>
+      <permissions>
+        <copyright-statement>© 2015 Liu et al</copyright-statement>
+        <copyright-year>2015</copyright-year>
+        <copyright-holder>Liu et al</copyright-holder>
+        <license xlink:href="http://creativecommons.org/licenses/by/4.0/">
+          <license-p>This is an open-access article distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are properly credited.</license-p>
+        </license>
+      </permissions>
+      <self-uri content-type="pdf" xlink:type="simple" xlink:href="pone.0144486.pdf"/>
+      <abstract>
+        <p>A binding hot spot is a small area at a protein-protein interface that can make significant contribution to binding free energy. This work investigates the substantial contribution made by some special co-occurring atomic contacts at a binding hot spot. A co-occurring atomic contact is a pair of atomic contacts that are close to each other with no more than three covalent-bond steps. We found that two kinds of co-occurring atomic contacts can play an important part in the accurate prediction of binding hot spot residues. One is the co-occurrence of two nearby hydrogen bonds. For example, mutations of any residue in a hydrogen bond network consisting of multiple co-occurring hydrogen bonds could disrupt the interaction considerably. The other kind of co-occurring atomic contact is the co-occurrence of a hydrophobic carbon contact and a contact between a hydrophobic carbon atom and a <italic>π</italic> ring. In fact, this co-occurrence signifies the collective effect of hydrophobic contacts. We also found that the B-factor measurements of several specific groups of amino acids are useful for the prediction of hot spots. Taking the B-factor, individual atomic contacts and the co-occurring contacts as features, we developed a new prediction method and thoroughly assessed its performance via cross-validation and independent dataset test. The results show that our method achieves higher prediction performance than well-known methods such as Robetta, FoldX and Hotpoint. We conclude that these contact descriptors, in particular the novel co-occurring atomic contacts, can be used to facilitate accurate and interpretable characterization of protein binding hot spots.</p>
+      </abstract>
+      <funding-group>
+        <funding-statement>This work was partly supported by an Australian Research Council Discovery Project grant (ARC DP130102124). The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.</funding-statement>
+      </funding-group>
+      <counts>
+        <fig-count count="5"/>
+        <table-count count="5"/>
+        <page-count count="18"/>
+      </counts>
+      <custom-meta-group>
+        <custom-meta id="data-availability">
+          <meta-name>Data Availability</meta-name>
+          <meta-value>Source code has been uploaded to Sourceforge: <ext-link ext-link-type="uri" xlink:href="http://sourceforge.net/projects/pprf/files/">http://sourceforge.net/projects/pprf/files/</ext-link>.</meta-value>
+        </custom-meta>
+      </custom-meta-group>
+    </article-meta>

@@ -1,0 +1,559 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" article-type="research-article">
+  <?properties open_access?>
+  <front>
+    <journal-meta>
+      <journal-id journal-id-type="nlm-ta">PLoS One</journal-id>
+      <journal-id journal-id-type="iso-abbrev">PLoS ONE</journal-id>
+      <journal-id journal-id-type="publisher-id">plos</journal-id>
+      <journal-id journal-id-type="pmc">plosone</journal-id>
+      <journal-title-group>
+        <journal-title>PLoS ONE</journal-title>
+      </journal-title-group>
+      <issn pub-type="epub">1932-6203</issn>
+      <publisher>
+        <publisher-name>Public Library of Science</publisher-name>
+        <publisher-loc>San Francisco, USA</publisher-loc>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="pmid">19956637</article-id>
+      <article-id pub-id-type="pmc">2778627</article-id>
+      <article-id pub-id-type="publisher-id">09-PONE-RA-11852R1</article-id>
+      <article-id pub-id-type="doi">10.1371/journal.pone.0008016</article-id>
+      <article-categories>
+        <subj-group subj-group-type="heading">
+          <subject>Research Article</subject>
+        </subj-group>
+        <subj-group subj-group-type="Discipline">
+          <subject>Neuroscience</subject>
+          <subject>Radiology and Medical Imaging</subject>
+          <subject>Neuroscience/Sensory Systems</subject>
+          <subject>Anesthesiology and Pain Management/Basic Science of Pain Management</subject>
+          <subject>Anesthesiology and Pain Management/Technology and Monitoring</subject>
+          <subject>Neurological Disorders/Pain Management</subject>
+          <subject>Neuroscience/Psychology</subject>
+        </subj-group>
+      </article-categories>
+      <title-group>
+        <article-title>Diffuse Optical Tomography Activation in the Somatosensory Cortex: Specific Activation by Painful vs. Non-Painful Thermal Stimuli</article-title>
+        <alt-title alt-title-type="running-head">DOT Measures of Pain</alt-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Becerra</surname>
+            <given-names>Lino</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+<sup>1</sup>
+</xref>
+          <xref ref-type="aff" rid="aff3">
+<sup>3</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+          <xref ref-type="aff" rid="aff5">
+<sup>5</sup>
+</xref>
+          <xref ref-type="corresp" rid="cor1">
+<sup>*</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Harris</surname>
+            <given-names>Will</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+<sup>1</sup>
+</xref>
+          <xref ref-type="aff" rid="aff3">
+<sup>3</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+          <xref ref-type="aff" rid="aff5">
+<sup>5</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Grant</surname>
+            <given-names>Margaret</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+<sup>1</sup>
+</xref>
+          <xref ref-type="aff" rid="aff3">
+<sup>3</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+          <xref ref-type="aff" rid="aff5">
+<sup>5</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>George</surname>
+            <given-names>Edward</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+<sup>1</sup>
+</xref>
+          <xref ref-type="aff" rid="aff3">
+<sup>3</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Boas</surname>
+            <given-names>David</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff2">
+<sup>2</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+          <xref ref-type="aff" rid="aff5">
+<sup>5</sup>
+</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Borsook</surname>
+            <given-names>David</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+<sup>1</sup>
+</xref>
+          <xref ref-type="aff" rid="aff3">
+<sup>3</sup>
+</xref>
+          <xref ref-type="aff" rid="aff4">
+<sup>4</sup>
+</xref>
+        </contrib>
+      </contrib-group>
+      <aff id="aff1">
+<label>1</label>
+<addr-line>Pain and Analgesia Imaging Neuroscience (P.A.I.N.) Group, McLean Hospital, Belmont, Massachusetts, United States of America</addr-line>
+</aff>
+      <aff id="aff2">
+<label>2</label>
+<addr-line>Photon Migration Laboratory, McLean Hospital, Belmont, Massachusetts, United States of America</addr-line>
+</aff>
+      <aff id="aff3">
+<label>3</label>
+<addr-line>McLean Hospital, Belmont, Massachusetts, United States of America</addr-line>
+</aff>
+      <aff id="aff4">
+<label>4</label>
+<addr-line>Massachusetts General Hospital, Charlestown, Massachusetts, United States of America</addr-line>
+</aff>
+      <aff id="aff5">
+<label>5</label>
+<addr-line>Athinoula A. Martinos Center for Biomedical Engineering, Harvard Medical School, Charlestown, Massachusetts, United States of America</addr-line>
+</aff>
+      <contrib-group>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Harris</surname>
+            <given-names>Justin</given-names>
+          </name>
+          <role>Editor</role>
+          <xref ref-type="aff" rid="edit1"/>
+        </contrib>
+      </contrib-group>
+      <aff id="edit1">University of Sydney, Australia</aff>
+      <author-notes>
+        <corresp id="cor1">* E-mail: <email>lbecerra@partners.org</email></corresp>
+        <fn fn-type="con">
+          <p>Conceived and designed the experiments: LRB DB DB. Performed the experiments: LRB WH DB DB. Analyzed the data: LRB WH MG. Contributed reagents/materials/analysis tools: LRB DB DB. Wrote the paper: LRB WH MG EG DB DB.</p>
+        </fn>
+      </author-notes>
+      <pub-date pub-type="collection">
+        <year>2009</year>
+      </pub-date>
+      <pub-date pub-type="epub">
+        <day>24</day>
+        <month>11</month>
+        <year>2009</year>
+      </pub-date>
+      <volume>4</volume>
+      <issue>11</issue>
+      <elocation-id>e8016</elocation-id>
+      <history>
+        <date date-type="received">
+          <day>24</day>
+          <month>7</month>
+          <year>2009</year>
+        </date>
+        <date date-type="accepted">
+          <day>2</day>
+          <month>11</month>
+          <year>2009</year>
+        </date>
+      </history>
+      <permissions>
+        <copyright-statement>Becerra et al.</copyright-statement>
+        <copyright-year>2009</copyright-year>
+        <license xlink:href="http://creativecommons.org/licenses/by/4.0/">
+          <license-p>This is an open-access article distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are properly credited.</license-p>
+        </license>
+      </permissions>
+      <abstract>
+        <sec>
+          <title>Background</title>
+          <p>Pain is difficult to assess due to the subjective nature of self-reporting. The lack of objective measures of pain has hampered the development of new treatments as well as the evaluation of current ones. Functional MRI studies of pain have begun to delineate potential brain response signatures that could be used as objective read-outs of pain. Using Diffuse Optical Tomography (DOT), we have shown in the past a distinct DOT signal over the somatosensory cortex to a noxious heat stimulus that could be distinguished from the signal elicited by innocuous mechanical stimuli. Here we further our findings by studying the response to thermal innocuous and noxious stimuli.</p>
+        </sec>
+        <sec>
+          <title>Methodology/Principal Findings</title>
+          <p>Innocuous and noxious thermal stimuli were applied to the skin of the face of the first division (ophthalmic) of the trigeminal nerve in healthy volunteers (N = 6). Stimuli temperatures were adjusted for each subject to evoke warm (equivalent to a 3/10) and painful hot (7/10) sensations in a verbal rating scale (0/10 = no/max pain). A set of 26 stimuli (5 sec each) was applied for each temperature with inter-stimulus intervals varied between 8 and 15 sec using a Peltier thermode. A DOT system was used to capture cortical responses on both sides of the head over the primary somatosensory cortical region (S1). For the innocuous stimuli, group results indicated mainly activation on the contralateral side with a weak ipsilateral response. For the noxious stimuli, bilateral activation was observed with comparable amplitudes on both sides. Furthermore, noxious stimuli produced a temporal biphasic response while innocuous stimuli produced a monophasic response.</p>
+        </sec>
+        <sec>
+          <title>Conclusions/Significance</title>
+          <p>These results are in accordance with fMRI and our other DOT studies of innocuous mechanical and noxious heat stimuli. The data indicate the differentiation of DOT cortical responses for pain vs. innocuous stimuli that may be useful in assessing objectively acute pain.</p>
+        </sec>
+      </abstract>
+      <counts>
+        <page-count count="5"/>
+      </counts>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="s1">
+      <title>Introduction</title>
+      <p>Recent work in the field of neuroimaging (fMRI) of pain has suggested some potentially specific biomarkers for pain and analgesics. By using a non-invasive easily applied system (DOT) to measure cortical brain activity in a similar manner to fMRI we can evaluate specific brain responses in chronic pain conditions, in which evoked pain reflects the patient's symptoms, and make an assessment of pain intensity levels. Furthermore, this approach can be used to study the response to analgesics in an outpatient setting. At this time, measures of pain or response to analgesics are dependent on self-reports. “<italic>Amid the difficulties and uncertainties of investigating drug action in man and attempting to quantify drug effect, visual analogue scales, without the need for complex equipment and difficult experiments, have emerged as a tempting prospect</italic>” <xref rid="pone.0008016-Nicholson1" ref-type="bibr">[1]</xref>. The development of objective measures will allow for a quantifiable measure of pain and analgesia. Currently no objective measure exists.</p>
+      <p>Previously we have used DOT to evaluate painful thermal (heat) and non-painful mechanical stimulation (brush) in healthy volunteers <xref rid="pone.0008016-Becerra1" ref-type="bibr">[2]</xref>. Following stimulation to the dorsum of the hand, we detected biphasic activation in the somatosensory cortex to noxious heat stimuli and monophasic activation to tactile (brush) stimulation. In addition, fMRI studies of similar stimuli <xref rid="pone.0008016-Becerra2" ref-type="bibr">[3]</xref>, <xref rid="pone.0008016-Chen1" ref-type="bibr">[4]</xref> also demonstrated a single response for brush and a biphasic one for noxious heat. However, the previous report had a confounding component that restricted our ability to clearly state the origin of the biphasic response; both stimulus nature (thermal vs. mechanical) and perception (noxious vs. innocuous) were changed.</p>
+      <p>In this report, we wish the define experimentally the nature of the biphasic response by removing one of the confounding variables of our previous experiments, namely, limiting the stimuli nature to thermal and comparing noxious vs. innocuous perceptions.</p>
+    </sec>
+    <sec sec-type="methods" id="s2">
+      <title>Methods</title>
+      <sec id="s2a">
+        <title>Subjects</title>
+        <p>Six healthy volunteers were recruited through local advertisements. All were right-handed males of 18–40 years in age. Subjects with a history of neurological trauma, neurological or psychiatric disorders, or diabetes were excluded. Subjects were also excluded if they were taking any psychoactive medications or were unable to keep their head still for a period of 360 consecutive seconds. Written informed consent was obtained from all subjects according to the guidelines established by the Massachusetts General Hospital Institutional Review Board who reviewed and approved this study. Subjects were compensated for their participation.</p>
+      </sec>
+      <sec id="s2b">
+        <title>Equipment</title>
+        <p>The equipment has been described in detail elsewhere <xref rid="pone.0008016-Franceschini1" ref-type="bibr">[5]</xref>. Briefly, a multichannel continuous wave optical imager (CW5, TechEn Inc., Milford, MA) was used to emit the two wavelengths of light, 690 nm and 830 nm. These two wavelengths are used to measure changes in cortical deoxyhemoglobin (HbR) and oxyhemoglobin (HbO) concentration via differential absorption characteristics of the two wavelengths of light by these two molecules. The head probe used in this study consisted of 26 sources and 26 detectors (see Becerra et al., 2008). Source fibers emitting the 690 nm wavelength were paired off with those emitting the 830 nm wavelength to form an “optode.” The main probe was arranged with one central, anterior-posterior row of 6 optodes per hemisphere. Each row of optodes was flanked on either side by a row of 6 detectors strategically placed 3 cm away from the sources in order to measure activation at cortical depth. Additionally, 2 optodes were placed on the forehead in order obtain prefrontal cortex activation. These two source optodes were similarly flanked on either side by single detectors.</p>
+        <p>Subjects remained sitting in a reclined position for the duration of the experiment. Lights were turned off in the room during data acquisition to minimize signal contamination from ambient light sources.</p>
+      </sec>
+      <sec id="s2c">
+        <title>Thermal Stimuli Thresholds</title>
+        <p>A Peltier-based computer controlled thermal probe (3×3 cm) was used for these experiments (TSA-II, Medoc Haifa, Israel). For each subject, the probe was attached to the face and the temperature of the probe was ramped up at 1.5C/s until the subject declared that the probe had achieved a warm non-painful temperature. They were instructed that in a scale of 0–10 (VAS), that level corresponded to a 3. After repeating the procedure 3 times, the temperatures were averaged and the average was used in the experiments. For the noxious stimuli, the probe's temperature was ramped in a similar fashion but subjects were instructed to stop the ramp once the pain intensity reached a level of 7/10. The procedure was repeated 3 times and the average temperature was used in the experiments.</p>
+      </sec>
+      <sec id="s2d">
+        <title>Paradigm</title>
+        <p>The thermal probe was set at the correct temperature for the experiment (VAS of 3 or 7) and applied to the face of the subject upon prompting and removed at the end of each stimulus. Care was taken to apply the probe to the same site with the same pressure. The paradigm consisted of 26 stimuli of 5 second duration over 6 minutes with a jittered inter-stimulus interval (ISI) 0f 6–13 seconds and average ISI of 8.5 seconds. The paradigm was applied twice for each stimulus type. Prompts to apply stimuli were presented audibly via headphones to the investigator but not to the subject.</p>
+      </sec>
+      <sec id="s2e">
+        <title>Data Analysis</title>
+        <p>Analysis was carried out using the open source software Homer <xref rid="pone.0008016-Huppert1" ref-type="bibr">[6]</xref>, that is implemented in Matlab (Mathworks, Natick, MA). The analysis has been described in detail elsewhere <xref rid="pone.0008016-Franceschini1" ref-type="bibr">[5]</xref>. Briefly, optical data were demodulated to identify source-detector pair signals; signal intensities were normalized to provide a relative change of intensity. Data were then low-pass filtered to eliminate cardiac pulsatile effects. The change in optical density was calculated for each wavelength, and finally, the changes in oxy- and deoxyhemoglobin were calculated using the modified Beer-Lambert Law <xref rid="pone.0008016-Huppert1" ref-type="bibr">[6]</xref>. Source-detector pairs were inspected for gross- signal changes induced by movement; signal changes larger than 20 µM were eliminated. Single trial averages (STA's) were calculated for each source-detector pair for the oxy- (HbO) and deoxyhemoglobin (Hb) concentration changes. This was achieved by deconvoluting the paradigm from the responses and temporally aligning responses for each stimulus delivered before averaging (see Becerra et al. 2008). All the figures in this article display changes in oxyhemoglobin (in µM) from baseline (no stimulation).</p>
+        <p>The resulting data were displayed spatially for each source-detector pair, and the signal corresponding to the somatosensory cortex was identified as adjacent areas of activation around the detectors receiving light from source 4 plus or minus 1 source on the contralateral hemisphere to the stimulated side (see <xref ref-type="fig" rid="pone-0008016-g001">
+<bold>Figure 1A and 1B</bold>
+</xref>). For simplicity, this activation is referred to in the manuscript as S1 activation. The signal corresponding to ipsilateral S1 was identified as the mirroring ipsilateral source-detector pairings corresponding to those considered to be S1 on the contralateral side.</p>
+        <fig id="pone-0008016-g001" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0008016.g001</object-id>
+          <label>Figure 1</label>
+          <caption>
+            <p>(A) Schematic of source-detector arrangement over a subject's head and (B) corresponding photograph. Source-detector pairs inside the polygons were inspected and data were extracted from those displaying a localized response.</p>
+          </caption>
+          <graphic xlink:href="pone.0008016.g001"/>
+        </fig>
+      </sec>
+      <sec id="s2f">
+        <title>Statistical Analysis</title>
+        <p>For each experiment, identified S1 individual STAs were averaged and are shown in <xref ref-type="fig" rid="pone-0008016-g002">Figure 2</xref>. A 2-gamma function was used to non-linearly fit (Matlab) the averages. Fitted parameters were used to determine time-to-peak for each experiment and phase (<xref ref-type="table" rid="pone-0008016-t001">Table 1</xref>). The fit values for the noxious heat response on the contralateral side were used to generate two model phases: early and late as previously described. Early and late phases were used as explanatory variables in a generalized linear model fit of each individual response in S1 to assess each phase contribution to the observed response; these values were used to calculate average amplitudes of early and late phases in both experiments (<xref ref-type="fig" rid="pone-0008016-g003">Figure 3</xref>). T-tests were used to determine statistically significant difference (or the lack thereof) between early and late phase amplitudes.</p>
+        <fig id="pone-0008016-g002" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0008016.g002</object-id>
+          <label>Figure 2</label>
+          <caption>
+            <p>(A) Left Panel: Group average response to innocuous thermal stimuli in the contralateral (blue line) and ipsilateral side (red line). (B) Right Panel: Group average response to noxious stimuli for contralateral and ipsilateral sides. Both graphs display changes in oxyhemoglobin concentration. Error bars represent the SEM. Gray block indicates the duration of the applied stimuli.</p>
+          </caption>
+          <graphic xlink:href="pone.0008016.g002"/>
+        </fig>
+        <fig id="pone-0008016-g003" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0008016.g003</object-id>
+          <label>Figure 3</label>
+          <caption>
+            <title>Average amplitude of the Early and Late phase in the ipsilateral and contralateral sensorimotor area in response to innocuous (VAS = 3) and noxious (VAS = 7) stimuli.</title>
+            <p>Error bars represent the SEM.</p>
+          </caption>
+          <graphic xlink:href="pone.0008016.g003"/>
+        </fig>
+        <table-wrap id="pone-0008016-t001" position="float">
+          <object-id pub-id-type="doi">10.1371/journal.pone.0008016.t001</object-id>
+          <label>Table 1</label>
+          <caption>
+            <title>Time-to-peak determined from a 2 gamma function fit of the average responses contra/ipsi for VAS of 3 and 7 (see text).</title>
+          </caption>
+          <alternatives>
+            <graphic id="pone-0008016-t001-1" xlink:href="pone.0008016.t001"/>
+            <table frame="hsides" rules="groups">
+              <colgroup span="1">
+                <col align="left" span="1"/>
+                <col align="center" span="1"/>
+                <col align="center" span="1"/>
+                <col align="center" span="1"/>
+                <col align="center" span="1"/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1"/>
+                  <td align="left" rowspan="1" colspan="1">VAS-3 contra</td>
+                  <td align="left" rowspan="1" colspan="1">VAS-3 ipsi</td>
+                  <td align="left" rowspan="1" colspan="1">VAS-7 contra</td>
+                  <td align="left" rowspan="1" colspan="1">VAS 7 ipsi</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">EARLY</td>
+                  <td align="left" rowspan="1" colspan="1">3.72</td>
+                  <td align="left" rowspan="1" colspan="1">3.23</td>
+                  <td align="left" rowspan="1" colspan="1">4.34</td>
+                  <td align="left" rowspan="1" colspan="1">7.93</td>
+                </tr>
+                <tr>
+                  <td align="left" rowspan="1" colspan="1">LATE</td>
+                  <td align="left" rowspan="1" colspan="1">–</td>
+                  <td align="left" rowspan="1" colspan="1">12.06</td>
+                  <td align="left" rowspan="1" colspan="1">10.12</td>
+                  <td align="left" rowspan="1" colspan="1">11.68</td>
+                </tr>
+              </tbody>
+            </table>
+          </alternatives>
+        </table-wrap>
+      </sec>
+    </sec>
+    <sec id="s3">
+      <title>Results</title>
+      <sec id="s3a">
+        <title>Subjects</title>
+        <p>Subjects included in the study were 26.5±1.55 years of age. No significant artifacts were observed in their data and none were discarded.</p>
+      </sec>
+      <sec id="s3b">
+        <title>Matching Temperatures and Subjective Pain Ratings</title>
+        <p>Thermal stimulation was applied in order to obtain subjective ratings of 3/10 (non-painful) and 7/10 (moderate pain) for each participant. The average temperatures used for the 3/10 and 7/10 were 41.4±0.76 (mean±SEM) and 45.3±0.66, respectively (mean±SEM).</p>
+      </sec>
+      <sec id="s3c">
+        <title>Innocuous Heat Stimulation</title>
+        <p>The response (<xref ref-type="fig" rid="pone-0008016-g002">Figure 2A</xref>) displays a monophasic response, similar to the mechanical innocuous stimulation using a brush. The ipsilateral side also presents a mono-phasic response but smaller compared to the contralateral side, as previously observed for mechanical stimulation. It seems to have a small late component as determined below.</p>
+      </sec>
+      <sec id="s3d">
+        <title>Noxious Heat Stimulation</title>
+        <p>Our results indicate (<xref ref-type="fig" rid="pone-0008016-g002">
+<bold>Figure 2B</bold>
+</xref>) that noxious heat to the face produced a biphasic response as for stimulation of the hand but with a smaller early phase, as previously detected when applied to the hand <xref rid="pone.0008016-Becerra1" ref-type="bibr">[2]</xref>. The ipsilateral response is similar in size to the contralateral one as observed before. Nonlinear fits to a 2-gamma function resulted in time-to-peak values similar to the ones observed before <xref rid="pone.0008016-Becerra1" ref-type="bibr">[2]</xref> and displayed in <xref ref-type="table" rid="pone-0008016-t001">
+<bold>Table 1</bold>
+</xref>.</p>
+      </sec>
+      <sec id="s3e">
+        <title>Early and Late Phase Amplitudes for Innocuous and Noxious Heat</title>
+        <p>Results from the GLM analysis of phases' amplitudes are depicted in <xref ref-type="fig" rid="pone-0008016-g003">
+<bold>Figure 3</bold>
+</xref>
+<bold>.</bold> For the innocuous results the contralateral early phase amplitude was significant larger that the ipsilateral one (p&lt;0.0005). The early phase amplitudes (contra- and ipsilateral) were larger than the late phase amplitudes, respectively (p&lt;0.0001). For the noxious heat results, the contralateral early phase amplitude was significantly larger than the ipsilateral amplitude (p&lt; 0.0001), similar to what was observed in the innocuous results. However, the contralateral late phase was not significantly different from the ipsilateral one (p = 0.2).</p>
+      </sec>
+    </sec>
+    <sec id="s4">
+      <title>Discussion</title>
+      <sec id="s4a">
+        <title>Summary of Findings</title>
+        <p>Innocuous and noxious heat produced a mono- and bi-phasic response, similar to results to innocuous mechanical and noxious thermal stimuli. Time-to-peak values for the early and late phase are similar to those reported previously, although they seem shorter in these experiments, likely due to differences in conduction distances since the previous experiment's stimuli were applied to the hand and here to the face. Innocuous and noxious stimuli produced a more pronounced contralateral activation in the early phase while noxious heat displayed bilateral activation of similar magnitude in the late phase. Quantification of early and late components revealed that the innocuous experiment produced mainly an early phase response. The noxious displayed a late phase larger in size than the early phase. The hemodynamic responses were similar to those obtained when stimuli were applied to the hand.</p>
+      </sec>
+      <sec id="s4b">
+        <title>Brain Activation Following Painful vs. Non-painful Stimuli</title>
+        <p>Studies of sensorimotor cortical activation following innocuous stimulation have reported both unilateral <xref rid="pone.0008016-Suzuki1" ref-type="bibr">[7]</xref> as well as bilateral S1 activation <xref rid="pone.0008016-Nihashi1" ref-type="bibr">[8]</xref>, <xref rid="pone.0008016-Sutherland1" ref-type="bibr">[9]</xref>. Furthermore, some studies indicate bilateral activation with a prominent component contralateral to the stimulus <xref rid="pone.0008016-Franceschini2" ref-type="bibr">[10]</xref> while others have found inhibition of ipsilateral activation <xref rid="pone.0008016-Hlushchuk1" ref-type="bibr">[11]</xref>. Taken together, these results seem to indicate that bilateral activation to innocuous stimuli is observed, albeit, sometimes the ipsilateral activation is not reported or varies in terms of its relative strength compared to the contralateral side. Several of these were carried out with electrical stimulation of a main nerve <xref rid="pone.0008016-Sutherland1" ref-type="bibr">[9]</xref>. As a result, multiple fiber subtypes (innocuous and noxious specific subtypes) are stimulated and the observed responses may include nociceptive-related activation.</p>
+      </sec>
+      <sec id="s4c">
+        <title>S1 Cortex as a Potential Readout for Pain</title>
+        <p>In this study we detected changes in sensorimotor cortical regions that seem to correspond with the trigeminal representation of the face in the primary sensory cortex. In prior studies using fMRI we have reported specific and somatotopic activation in the S1 region following similar painful thermal stimuli to the three divisions of the face <xref rid="pone.0008016-DaSilva1" ref-type="bibr">[12]</xref>, <xref rid="pone.0008016-Moulton1" ref-type="bibr">[13]</xref> that included the one used here, i.e., the ophthalmic division of the trigeminal nerve also designated as V1 or the first division of the nerve.</p>
+        <p>Painful stimuli elicited bilateral activation in these studies. It potentially could be attributed to activation in S1 and S2 and recorded together, since both are activated by noxious stimuli <xref rid="pone.0008016-Moulton1" ref-type="bibr">[13]</xref>. However, the geometry of the optodes setup and the distance from the closest source-detector pair to S2 (more than 3 cm with no source-detector pair across that area of the cortex) would render that contribution to the signal minimal.</p>
+        <p>A number of methods have been available for measuring pain in clinical practice, clinical trials and research studies. The most common has been the visual analog scale (VAS). However, these ratings may be unreliable because of factors such as study design, expectations and emotional state. The field has been working towards more objective markers including genetic, functional imaging and other formats for pain phenotyping. Here we present one approach that may have applications in evaluating pain because of the specificity of the underlying cortical anatomy (S1 and its subdivisions – see above) and the relative ease of use of DOT to map cortical function. Our results seem to indicate that on the basis of the temporal response in the sensorimotor cortex, it is possible to differentiate thermal noxious from innocuous stimulus (mechanical or thermal). It maybe possible to use that difference to objectively distinguish noxious from innocuous stimulus perception. Having a standardized and more objective measure would allow for a transformational change in measurements of pain in research and in the clinic (e.g., pain reduction from the use of analgesics).</p>
+      </sec>
+      <sec id="s4d">
+        <title>Conclusions</title>
+        <p>DOT is finding widespread application in the study of human brain activation, motivating further application-specific development of the technology. Our results seem to indicate that the bi-phasic response is ubiquitous to pain as demonstrated here and in our previous report while a mono-phasic response is characteristic of an innocuous response either to thermal or mechanical stimulation.</p>
+      </sec>
+    </sec>
+  </body>
+  <back>
+    <fn-group>
+      <fn fn-type="COI-statement">
+        <p><bold>Competing Interests: </bold>The authors have declared that no competing interests exist.</p>
+      </fn>
+      <fn fn-type="financial-disclosure">
+        <p><bold>Funding: </bold>Supported by a grant from the Mayday Foundation and a NINDS Mentor Training Grant to DB (K24 NS064050). The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.</p>
+      </fn>
+    </fn-group>
+    <ref-list>
+      <title>References</title>
+      <ref id="pone.0008016-Nicholson1">
+        <label>1</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Nicholson</surname><given-names>AN</given-names></name></person-group>
+<year>1978</year>
+<article-title>Visual analogue scales and drug effects in man.</article-title>
+<source>Br J Clin Pharmacol</source>
+<volume>6</volume>
+<fpage>3</fpage>
+<lpage>4</lpage>
+<pub-id pub-id-type="pmid">666945</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Becerra1">
+        <label>2</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Becerra</surname><given-names>L</given-names></name><name><surname>Harris</surname><given-names>W</given-names></name><name><surname>Joseph</surname><given-names>D</given-names></name><name><surname>Huppert</surname><given-names>T</given-names></name><name><surname>Boas</surname><given-names>DA</given-names></name><etal/></person-group>
+<year>2008</year>
+<article-title>Diffuse optical tomography of pain and tactile stimulation: activation in cortical sensory and emotional systems.</article-title>
+<source>Neuroimage</source>
+<volume>41</volume>
+<fpage>252</fpage>
+<lpage>259</lpage>
+<pub-id pub-id-type="pmid">18394924</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Becerra2">
+        <label>3</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Becerra</surname><given-names>L</given-names></name><name><surname>Breiter</surname><given-names>HC</given-names></name><name><surname>Wise</surname><given-names>R</given-names></name><name><surname>Gonzalez</surname><given-names>RG</given-names></name><name><surname>Borsook</surname><given-names>D</given-names></name></person-group>
+<year>2001</year>
+<article-title>Reward circuitry activation by noxious thermal stimuli.</article-title>
+<source>Neuron</source>
+<volume>32</volume>
+<fpage>927</fpage>
+<lpage>946</lpage>
+<pub-id pub-id-type="pmid">11738036</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Chen1">
+        <label>4</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Chen</surname><given-names>JI</given-names></name><name><surname>Ha</surname><given-names>B</given-names></name><name><surname>Bushnell</surname><given-names>MC</given-names></name><name><surname>Pike</surname><given-names>B</given-names></name><name><surname>Duncan</surname><given-names>GH</given-names></name></person-group>
+<year>2002</year>
+<article-title>Differentiating noxious- and innocuous-related activation of human somatosensory cortices using temporal analysis of fMRI.</article-title>
+<source>J Neurophysiol</source>
+<volume>88</volume>
+<fpage>464</fpage>
+<lpage>474</lpage>
+<pub-id pub-id-type="pmid">12091568</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Franceschini1">
+        <label>5</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Franceschini</surname><given-names>MA</given-names></name><name><surname>Joseph</surname><given-names>DK</given-names></name><name><surname>Huppert</surname><given-names>TJ</given-names></name><name><surname>Diamond</surname><given-names>SG</given-names></name><name><surname>Boas</surname><given-names>DA</given-names></name></person-group>
+<year>2006</year>
+<article-title>Diffuse optical imaging of the whole head.</article-title>
+<source>J Biomed Opt</source>
+<volume>11</volume>
+<fpage>054007</fpage>
+<pub-id pub-id-type="pmid">17092156</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Huppert1">
+        <label>6</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Huppert</surname><given-names>TJ</given-names></name><name><surname>Diamond</surname><given-names>SG</given-names></name><name><surname>Franceschini</surname><given-names>MA</given-names></name><name><surname>Boas</surname><given-names>DA</given-names></name></person-group>
+<year>2009</year>
+<article-title>HomER: a review of time-series analysis methods for near-infrared spectroscopy of the brain.</article-title>
+<source>Appl Opt</source>
+<volume>48</volume>
+<fpage>D280</fpage>
+<lpage>298</lpage>
+<pub-id pub-id-type="pmid">19340120</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Suzuki1">
+        <label>7</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Suzuki</surname><given-names>T</given-names></name><name><surname>Shibukawa</surname><given-names>Y</given-names></name><name><surname>Kumai</surname><given-names>T</given-names></name><name><surname>Shintani</surname><given-names>M</given-names></name></person-group>
+<year>2004</year>
+<article-title>Face area representation of primary somatosensory cortex in humans identified by whole-head magnetoencephalography.</article-title>
+<source>Jpn J Physiol</source>
+<volume>54</volume>
+<fpage>161</fpage>
+<lpage>169</lpage>
+<pub-id pub-id-type="pmid">15182423</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Nihashi1">
+        <label>8</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Nihashi</surname><given-names>T</given-names></name><name><surname>Naganawa</surname><given-names>S</given-names></name><name><surname>Sato</surname><given-names>C</given-names></name><name><surname>Kawai</surname><given-names>H</given-names></name><name><surname>Nakamura</surname><given-names>T</given-names></name><etal/></person-group>
+<year>2005</year>
+<article-title>Contralateral and ipsilateral responses in primary somatosensory cortex following electrical median nerve stimulation–an fMRI study.</article-title>
+<source>Clin Neurophysiol</source>
+<volume>116</volume>
+<fpage>842</fpage>
+<lpage>848</lpage>
+<pub-id pub-id-type="pmid">15792893</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Sutherland1">
+        <label>9</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Sutherland</surname><given-names>MT</given-names></name><name><surname>Tang</surname><given-names>AC</given-names></name></person-group>
+<year>2006</year>
+<article-title>Reliable detection of bilateral activation in human primary somatosensory cortex by unilateral median nerve stimulation.</article-title>
+<source>Neuroimage</source>
+<volume>33</volume>
+<fpage>1042</fpage>
+<lpage>1054</lpage>
+<pub-id pub-id-type="pmid">16997579</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Franceschini2">
+        <label>10</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Franceschini</surname><given-names>MA</given-names></name><name><surname>Fantini</surname><given-names>S</given-names></name><name><surname>Thompson</surname><given-names>JH</given-names></name><name><surname>Culver</surname><given-names>JP</given-names></name><name><surname>Boas</surname><given-names>DA</given-names></name></person-group>
+<year>2003</year>
+<article-title>Hemodynamic evoked response of the sensorimotor cortex measured noninvasively with near-infrared optical imaging.</article-title>
+<source>Psychophysiology</source>
+<volume>40</volume>
+<fpage>548</fpage>
+<lpage>560</lpage>
+<pub-id pub-id-type="pmid">14570163</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Hlushchuk1">
+        <label>11</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Hlushchuk</surname><given-names>Y</given-names></name><name><surname>Hari</surname><given-names>R</given-names></name></person-group>
+<year>2006</year>
+<article-title>Transient suppression of ipsilateral primary somatosensory cortex during tactile finger stimulation.</article-title>
+<source>J Neurosci</source>
+<volume>26</volume>
+<fpage>5819</fpage>
+<lpage>5824</lpage>
+<pub-id pub-id-type="pmid">16723540</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-DaSilva1">
+        <label>12</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>DaSilva</surname><given-names>AF</given-names></name><name><surname>Becerra</surname><given-names>L</given-names></name><name><surname>Makris</surname><given-names>N</given-names></name><name><surname>Strassman</surname><given-names>AM</given-names></name><name><surname>Gonzalez</surname><given-names>RG</given-names></name><etal/></person-group>
+<year>2002</year>
+<article-title>Somatotopic activation in the human trigeminal pain pathway.</article-title>
+<source>J Neurosci</source>
+<volume>22</volume>
+<fpage>8183</fpage>
+<lpage>8192</lpage>
+<pub-id pub-id-type="pmid">12223572</pub-id></element-citation>
+      </ref>
+      <ref id="pone.0008016-Moulton1">
+        <label>13</label>
+        <element-citation publication-type="journal">
+<person-group person-group-type="author"><name><surname>Moulton</surname><given-names>EA</given-names></name><name><surname>Pendse</surname><given-names>G</given-names></name><name><surname>Morris</surname><given-names>S</given-names></name><name><surname>Aiello-Lammens</surname><given-names>M</given-names></name><name><surname>Becerra</surname><given-names>L</given-names></name><etal/></person-group>
+<year>2009</year>
+<article-title>Segmentally arranged somatotopy within the face representation of human primary somatosensory cortex.</article-title>
+<source>Hum Brain Mapp</source>
+<volume>30</volume>
+<fxage>757</fpage>
+<lpage>765</lpage>
+<pub-id pub-id-type="pmid">18266215</pub-id></element-citation>
+      </ref>
+    </ref-list>
+  </back>
+</article>
