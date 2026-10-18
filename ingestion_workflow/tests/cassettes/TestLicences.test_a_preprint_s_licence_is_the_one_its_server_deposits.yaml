@@ -1,0 +1,520 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1101/2025.05.13.653896"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '42'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "16cbcd88abb68cb55ca887a010c805e087e8f9d5", "title": "Direct
+        interoceptive input to the insular cortex shapes learned feeding behavior",
+        "venue": "bioRxiv", "year": 2025, "isOpenAccess": true, "openAccessPdf": {"url":
+        "https://www.biorxiv.org/content/biorxiv/early/2025/05/17/2025.05.13.653896.full.pdf",
+        "status": "GREEN", "license": "CCBYNCND", "disclaimer": "Notice: Paper or
+        abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC12132522, which
+        is subject to the license by the author or copyright owner provided with this
+        content. Please go to the source to verify the license and copyright information
+        for your use."}, "publicationDate": "2025-05-17", "authors": [{"authorId":
+        "2291774548", "name": "Zhe Zhao"}, {"authorId": "2291394360", "name": "Binbin
+        Xu"}, {"authorId": "2161262597", "name": "Skylar A. Anthony"}, {"authorId":
+        "2284315911", "name": "S. Subramanian"}, {"authorId": "2293070854", "name":
+        "B. Granger"}, {"authorId": "2099828669", "name": "Carolyn Von-Walter"}, {"authorId":
+        "5773772", "name": "E. Mizrachi"}, {"authorId": "2073386726", "name": "M.
+        Kidd"}, {"authorId": "2291130456", "name": "Abhishikta Srigiriraju"}, {"authorId":
+        "2291130040", "name": "Isaac McKie"}, {"authorId": "2109822108", "name": "Zhiying
+        Li"}, {"authorId": "2291130389", "name": "M. Bolton"}, {"authorId": "2294839988",
+        "name": "S. Berto"}, {"authorId": "2277457002", "name": "Sarah A. Stern"}],
+        "abstract": "The insular cortex (insula) is an interoceptive hub, which senses
+        internal states such as hunger, thirst, pain, and emotions. Previous studies
+        suggest that the insula directly senses internal states, but the mechanisms
+        remain elusive. We identified a population of leptin receptor-positive cells
+        with a unique morphology in the insula (INSLepR). Based on leptin\u2019s known
+        role in signaling adiposity, we hypothesized that INSLepR neurons detect internal
+        states to regulate food intake and body weight. Accordingly, we found that
+        intra-insula leptin administration or optogenetic stimulation of INSLepR neurons
+        impacts feeding behavior. Moreover, INSLepR neuron activity encodes feeding
+        bouts in an internal-state dependent manner, and leptin alters insula neural
+        dynamics in response to feeding, while also reshaping the transcriptome. Taken
+        together, our data supports a model for direct interoceptive input to the
+        insula, in which INSLepR cells integrate adiposity level signals to regulate
+        feeding and body weight in a learned manner."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2475'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 18:48:52 GMT
+      Via:
+      - 1.1 60b2b330807c6611e06e3923c8e315cc.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - EgPaG9Sf7JYWtrMc3nwbDjkNfsLIr_ssMUpKCD7mc5uQ3DX4iahniA==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FdAnOHAqPHcEPRg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2475'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 18:48:52 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - df388f14-c250-4d2f-a068-1e19b0cc3eca
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1101%2F2025.05.13.653896&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1101\/2025.05.13.653896","license":[{"start":{"date-parts":[[2025,5,17]],"date-time":"2025-05-17T00:00:00Z","timestamp":1747440000000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 18:48:52 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1101%2F2025.05.13.653896&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 12, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1101/2025.05.13.653896",
+        "x_new_oql": "get works where DOI is 10.1101/2025.05.13.653896", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1101/2025.05.13.653896"}]},
+        "url": "/works?filter=doi:10.1101%2F2025.05.13.653896&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W4410457378",
+        "doi": "https://doi.org/10.1101/2025.05.13.653896", "pmid": "https://pubmed.ncbi.nlm.nih.gov/40462995"},
+        "display_name": "Direct interoceptive input to the insular cortex shapes learned
+        feeding behavior", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5071915294", "display_name": "Zhe Zhao", "orcid":
+        "https://orcid.org/0000-0001-9453-0560", "observed_orcids": ["https://orcid.org/0000-0001-9453-0560"]},
+        "institutions": [{"id": "https://openalex.org/I4210120881", "display_name":
+        "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Zhe Zhao", "raw_affiliation_strings": ["Max Planck
+        Florida Institute for Neuroscience, Jupiter, FL 33458, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Max Planck Florida Institute
+        for Neuroscience, Jupiter, FL 33458, USA", "institution_ids": ["https://openalex.org/I4210120881"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5059488737",
+        "display_name": "Binbin Xu", "orcid": "https://orcid.org/0000-0002-0822-5250",
+        "observed_orcids": ["https://orcid.org/0000-0002-0822-5250", "https://orcid.org/0009-0007-7099-7861"]},
+        "institutions": [{"id": "https://openalex.org/I4210127738", "display_name":
+        "IMT Mines Al\u00e8s", "ror": "https://ror.org/03e8rf594", "country_code":
+        "FR", "type": "education", "lineage": ["https://openalex.org/I205703379",
+        "https://openalex.org/I4210127738"]}, {"id": "https://openalex.org/I4402554207",
+        "display_name": "EuroMov Digital Health in Motion", "ror": "https://ror.org/054b22910",
+        "country_code": null, "type": "facility", "lineage": ["https://openalex.org/I19894307",
+        "https://openalex.org/I205703379", "https://openalex.org/I4210127738", "https://openalex.org/I4402554207"]}],
+        "countries": ["FR"], "is_corresponding": false, "raw_author_name": "Binbin
+        Xu", "raw_affiliation_strings": ["EuroMov Digital Health in Motion, Univ Montpellier,
+        IMT Mines Al\u00e8s, 6 Av. de Clavi\u00e8res, 30100 Al\u00e8s, France"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "EuroMov Digital Health
+        in Motion, Univ Montpellier, IMT Mines Al\u00e8s, 6 Av. de Clavi\u00e8res,
+        30100 Al\u00e8s, France", "institution_ids": ["https://openalex.org/I4210127738",
+        "https://openalex.org/I4402554207"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5069796205", "display_name": "Skylar A. Anthony",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210120881",
+        "display_name": "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Skylar Anthony", "raw_affiliation_strings": ["Max
+        Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Max Planck Florida Institute
+        for Neuroscience, Jupiter, FL 33458, USA", "institution_ids": ["https://openalex.org/I4210120881"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5103019491",
+        "display_name": "Suganya Subramanian", "orcid": "https://orcid.org/0009-0007-2822-9420",
+        "observed_orcids": ["https://orcid.org/0009-0007-2822-9420", "https://orcid.org/0000-0003-3786-3400"]},
+        "institutions": [{"id": "https://openalex.org/I153297377", "display_name":
+        "Medical University of South Carolina", "ror": "https://ror.org/012jban78",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I153297377"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Suganya
+        Subramanian", "raw_affiliation_strings": ["Medical University of South Carolina,
+        Charleston, SC 29425, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Medical University of South Carolina, Charleston, SC 29425, USA", "institution_ids":
+        ["https://openalex.org/I153297377"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5102866861", "display_name": "Bryan Granger",
+        "orcid": "https://orcid.org/0009-0008-6663-3755", "observed_orcids": ["https://orcid.org/0009-0008-6663-3755"]},
+        "institutions": [{"id": "https://openalex.org/I153297377", "display_name":
+        "Medical University of South Carolina", "ror": "https://ror.org/012jban78",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I153297377"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Bryan
+        Granger", "raw_affiliation_strings": ["Medical University of South Carolina,
+        Charleston, SC 29425, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Medical University of South Carolina, Charleston, SC 29425, USA", "institution_ids":
+        ["https://openalex.org/I153297377"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5052289579", "display_name": "Carolyn Von-Walter",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I149899117",
+        "display_name": "Max Planck Society", "ror": "https://ror.org/01hhn8329",
+        "country_code": "DE", "type": "nonprofit", "lineage": ["https://openalex.org/I149899117"]},
+        {"id": "https://openalex.org/I4210120881", "display_name": "Max Planck Florida
+        Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22", "country_code":
+        "US", "type": "facility", "lineage": ["https://openalex.org/I149899117", "https://openalex.org/I4210120881"]},
+        {"id": "https://openalex.org/I63772739", "display_name": "Florida Atlantic
+        University", "ror": "https://ror.org/05p8w6387", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I63772739"]}], "countries":
+        ["DE", "US"], "is_corresponding": false, "raw_author_name": "Carolyn Von-Walter",
+        "raw_affiliation_strings": ["Florida Atlantic University, Boca Raton, FL 33431,
+        USA", "International Max Planck Research School for Synapses and Circuits,
+        Jupiter, FL 33458, USA", "Max Planck Florida Institute for Neuroscience, Jupiter,
+        FL 33458, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Florida Atlantic University, Boca Raton, FL 33431, USA", "institution_ids":
+        ["https://openalex.org/I63772739"]}, {"raw_affiliation_string": "International
+        Max Planck Research School for Synapses and Circuits, Jupiter, FL 33458, USA",
+        "institution_ids": ["https://openalex.org/I149899117"]}, {"raw_affiliation_string":
+        "Max Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5002667401", "display_name": "Elisa Mizrachi",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210120881",
+        "display_name": "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Elisa Mizrachi", "raw_affiliation_strings": ["Max
+        Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Max Planck Florida Institute
+        for Neuroscience, Jupiter, FL 33458, USA", "institution_ids": ["https://openalex.org/I4210120881"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5144105136",
+        "display_name": "Dhruvum Bajpai", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I149899117", "display_name": "Max Planck Society",
+        "ror": "https://ror.org/01hhn8329", "country_code": "DE", "type": "nonprofit",
+        "lineage": ["https://openalex.org/I149899117"]}, {"id": "https://openalex.org/I4210120881",
+        "display_name": "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}, {"id": "https://openalex.org/I63772739",
+        "display_name": "Florida Atlantic University", "ror": "https://ror.org/05p8w6387",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I63772739"]}],
+        "countries": ["DE", "US"], "is_corresponding": false, "raw_author_name": "Dhruvum
+        Bajpai", "raw_affiliation_strings": ["Florida Atlantic University, Boca Raton,
+        FL 33431, USA", "International Max Planck Research School for Synapses and
+        Circuits, Jupiter, FL 33458, USA", "Max Planck Florida Institute for Neuroscience,
+        Jupiter, FL 33458, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Florida Atlantic University, Boca Raton, FL 33431, USA", "institution_ids":
+        ["https://openalex.org/I63772739"]}, {"raw_affiliation_string": "International
+        Max Planck Research School for Synapses and Circuits, Jupiter, FL 33458, USA",
+        "institution_ids": ["https://openalex.org/I149899117"]}, {"raw_affiliation_string":
+        "Max Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5143505781", "display_name": "Paul Tyagi", "orcid":
+        null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I149899117",
+        "display_name": "Max Planck Society", "ror": "https://ror.org/01hhn8329",
+        "country_code": "DE", "type": "nonprofit", "lineage": ["https://openalex.org/I149899117"]},
+        {"id": "https://openalex.org/I4210120881", "display_name": "Max Planck Florida
+        Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22", "country_code":
+        "US", "type": "facility", "lineage": ["https://openalex.org/I149899117", "https://openalex.org/I4210120881"]},
+        {"id": "https://openalex.org/I63772739", "display_name": "Florida Atlantic
+        University", "ror": "https://ror.org/05p8w6387", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I63772739"]}], "countries":
+        ["DE", "US"], "is_corresponding": false, "raw_author_name": "Paul Tyagi",
+        "raw_affiliation_strings": ["Florida Atlantic University, Boca Raton, FL 33431,
+        USA", "International Max Planck Research School for Synapses and Circuits,
+        Jupiter, FL 33458, USA", "Max Planck Florida Institute for Neuroscience, Jupiter,
+        FL 33458, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Florida Atlantic University, Boca Raton, FL 33431, USA", "institution_ids":
+        ["https://openalex.org/I63772739"]}, {"raw_affiliation_string": "International
+        Max Planck Research School for Synapses and Circuits, Jupiter, FL 33458, USA",
+        "institution_ids": ["https://openalex.org/I149899117"]}, {"raw_affiliation_string":
+        "Max Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5144116532", "display_name": "Matthew Kidd",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I33213144",
+        "display_name": "University of Florida", "ror": "https://ror.org/02y3ad647",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I33213144"]},
+        {"id": "https://openalex.org/I4210120881", "display_name": "Max Planck Florida
+        Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22", "country_code":
+        "US", "type": "facility", "lineage": ["https://openalex.org/I149899117", "https://openalex.org/I4210120881"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Matthew
+        Kidd", "raw_affiliation_strings": ["Max Planck Florida Institute for Neuroscience,
+        Jupiter, FL 33458, USA", "University of Florida, Gainesville, FL 32611, USA"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Max Planck
+        Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}, {"raw_affiliation_string": "University
+        of Florida, Gainesville, FL 32611, USA", "institution_ids": ["https://openalex.org/I33213144"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5094126068",
+        "display_name": "Abhishikta Srigiriraju", "orcid": null, "observed_orcids":
+        []}, "institutions": [{"id": "https://openalex.org/I4210120881", "display_name":
+        "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}, {"id": "https://openalex.org/I63772739",
+        "display_name": "Florida Atlantic University", "ror": "https://ror.org/05p8w6387",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I63772739"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Abhishikta
+        Srigiriraju", "raw_affiliation_strings": ["Florida Atlantic University, Boca
+        Raton, FL 33431, USA", "Max Planck Florida Institute for Neuroscience, Jupiter,
+        FL 33458, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Florida Atlantic University, Boca Raton, FL 33431, USA", "institution_ids":
+        ["https://openalex.org/I63772739"]}, {"raw_affiliation_string": "Max Planck
+        Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5094126067", "display_name": "Isaac McKie",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210120881",
+        "display_name": "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Isaac McKie", "raw_affiliation_strings": ["Max
+        Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Max Planck Florida Institute
+        for Neuroscience, Jupiter, FL 33458, USA", "institution_ids": ["https://openalex.org/I4210120881"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5100634229",
+        "display_name": "Zhiying Li", "orcid": "https://orcid.org/0000-0002-5586-7782",
+        "observed_orcids": ["https://orcid.org/0000-0002-5586-7782"]}, "institutions":
+        [{"id": "https://openalex.org/I83399316", "display_name": "Rockefeller University",
+        "ror": "https://ror.org/0420db125", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I83399316"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Zhiying Li", "raw_affiliation_strings": ["The Rockefeller
+        University, New York, NY 10065, USA"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "The Rockefeller University, New York, NY 10065,
+        USA", "institution_ids": ["https://openalex.org/I83399316"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5051437905", "display_name":
+        "M. McLean Bolton", "orcid": "https://orcid.org/0000-0002-7023-2435", "observed_orcids":
+        ["https://orcid.org/0000-0002-7023-2435"]}, "institutions": [{"id": "https://openalex.org/I4210120881",
+        "display_name": "Max Planck Florida Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22",
+        "country_code": "US", "type": "facility", "lineage": ["https://openalex.org/I149899117",
+        "https://openalex.org/I4210120881"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "M. McLean Bolton", "raw_affiliation_strings": ["Max
+        Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Max Planck Florida Institute
+        for Neuroscience, Jupiter, FL 33458, USA", "institution_ids": ["https://openalex.org/I4210120881"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5047800056",
+        "display_name": "Stefano Berto", "orcid": "https://orcid.org/0000-0001-9028-9458",
+        "observed_orcids": ["https://orcid.org/0000-0001-9028-9458"]}, "institutions":
+        [{"id": "https://openalex.org/I153297377", "display_name": "Medical University
+        of South Carolina", "ror": "https://ror.org/012jban78", "country_code": "US",
+        "type": "education", "lineage": ["https://openalex.org/I153297377"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Stefano Berto", "raw_affiliation_strings":
+        ["Medical University of South Carolina, Charleston, SC 29425, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Medical University of South
+        Carolina, Charleston, SC 29425, USA", "institution_ids": ["https://openalex.org/I153297377"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5043116501",
+        "display_name": "Sarah A. Stern", "orcid": "https://orcid.org/0000-0002-3033-8251",
+        "observed_orcids": ["https://orcid.org/0000-0002-3033-8251"]}, "institutions":
+        [{"id": "https://openalex.org/I4210120881", "display_name": "Max Planck Florida
+        Institute for Neuroscience", "ror": "https://ror.org/02rbfnr22", "country_code":
+        "US", "type": "facility", "lineage": ["https://openalex.org/I149899117", "https://openalex.org/I4210120881"]}],
+        "countries": ["US"], "is_corresponding": true, "raw_author_name": "Sarah A.
+        Stern", "raw_affiliation_strings": ["Max Planck Florida Institute for Neuroscience,
+        Jupiter, FL 33458, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Max Planck Florida Institute for Neuroscience, Jupiter, FL 33458, USA", "institution_ids":
+        ["https://openalex.org/I4210120881"]}]}], "publication_year": 2025, "abstract_inverted_index":
+        {"SUMMARY": [0], "The": [1], "insular": [2], "cortex": [3], "(insula)": [4],
+        "is": [5], "an": [6, 103], "interoceptive": [7, 131], "hub,": [8], "which":
+        [9, 137], "senses": [10, 27], "internal": [11, 28, 68], "states": [12, 69],
+        "such": [13], "as": [14], "hunger,": [15], "thirst,": [16], "pain,": [17],
+        "and": [18, 74, 107, 148], "emotions.": [19], "Previous": [20], "studies":
+        [21], "suggest": [22], "that": [23, 63, 80], "the": [24, 31, 48, 120, 134],
+        "insula": [25, 49, 110], "directly": [26], "states,": [29], "but": [30], "mechanisms":
+        [32], "remain": [33], "elusive.": [34], "We": [35], "identified": [36], "a":
+        [37, 44, 127, 152], "population": [38], "of": [39, 87], "leptin": [40, 82,
+        108], "receptor-positive": [41], "cells": [42, 140], "with": [43], "unique":
+        [45], "morphology": [46], "in": [47, 58, 102, 113, 136, 151], "(INS": [50],
+        "LepR": [51, 65, 89, 96, 139], ").": [52], "Based": [53], "on": [54], "leptin\u2019s":
+        [55], "known": [56], "role": [57], "signaling": [59], "adiposity,": [60],
+        "we": [61, 78], "hypothesized": [62], "INS": [64, 88, 95, 138], "neurons":
+        [66, 90], "detect": [67], "to": [70, 115, 133, 145], "regulate": [71, 146],
+        "food": [72], "intake": [73], "body": [75, 149], "weight.": [76], "Accordingly,":
+        [77], "found": [79], "intra-insula": [81], "administration": [83], "or": [84],
+        "optogenetic": [85], "stimulation": [86], "impacts": [91], "feeding": [92,
+        100, 147], "behavior.": [93], "Moreover,": [94], "neuron": [97], "activity":
+        [98], "encodes": [99], "bouts": [101], "internal-state": [104], "dependent":
+        [105], "manner,": [106], "alters": [109], "neural": [111], "dynamics": [112],
+        "response": [114], "feeding,": [116], "while": [117], "also": [118], "reshaping":
+        [119], "transcriptome.": [121], "Taken": [122], "together,": [123], "our":
+        [124], "data": [125], "supports": [126], "model": [128], "for": [129], "direct":
+        [130], "input": [132], "insula,": [135], "integrate": [141], "adiposity":
+        [142], "level": [143], "signals": [144], "weight": [150], "learned": [153],
+        "manner.": [154]}, "primary_location": {"id": "doi:10.1101/2025.05.13.653896",
+        "doi": "https://doi.org/10.1101/2025.05.13.653896", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2025.05.13.653896", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2025/05/17/2025.05.13.653896.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, "best_oa_location": {"id": "doi:10.1101/2025.05.13.653896",
+        "doi": "https://doi.org/10.1101/2025.05.13.653896", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2025.05.13.653896", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2025/05/17/2025.05.13.653896.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, "locations": [{"id": "doi:10.1101/2025.05.13.653896",
+        "doi": "https://doi.org/10.1101/2025.05.13.653896", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2025.05.13.653896", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2025/05/17/2025.05.13.653896.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, {"id": "pmid:40462995", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/40462995", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "bioRxiv : the
+        preprint server for biology", "raw_type": "Journal Article"}, {"id": "pmh:oai:europepmc.org:10946013",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/12132522",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400806", "display_name":
+        "Europe PMC (PubMed Central)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1303153112", "host_organization_name": "European Bioinformatics
+        Institute", "host_organization_lineage": ["https://openalex.org/I1303153112"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": null, "raw_type":
+        "Text"}, {"id": "pmh:oai:pubmedcentral.nih.gov:12132522", "doi": null, "is_oa":
+        true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/12132522",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "bioRxiv", "raw_type": "Text"}], "open_access": {"is_oa":
+        true, "oa_status": "green", "oa_url": "https://www.biorxiv.org/content/biorxiv/early/2025/05/17/2025.05.13.653896.full.pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4c9b83f4fbdd8c0-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 18:48:52 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9993'
+      X-RateLimit-Remaining-USD:
+      - '0.9993'
+      X-RateLimit-Reset:
+      - '18668'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=5IdcsLB1vPH7eorkITZD2Y4jzq06gqwLvK%2BI%2Bq6z8TY%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792349332"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=5IdcsLB1vPH7eorkITZD2Y4jzq06gqwLvK%2BI%2Bq6z8TY%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792349332"
+    status:
+      code: 200
+      message: OK
+version: 1

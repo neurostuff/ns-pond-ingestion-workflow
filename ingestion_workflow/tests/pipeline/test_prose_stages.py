@@ -419,6 +419,10 @@ def _download(ref, path):
                        source=DownloadSource.PUBGET)]).to_dict()
 
 
+#: All rights reserved, assumed: the licence nobody stated.
+ASSUMED_LICENSE = {"license_id": "all-rights-reserved", "determination": "assumed"}
+
+
 def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
     """The download, its extraction's text, and the metadata."""
     text_file = path.parent / f"{ref.id}.txt"
@@ -429,8 +433,11 @@ def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                 payload=download,
                 summary={"copy": copy_of(DownloadResult.from_dict(download)).to_dict()}),
+        # As the metadata stage decides them for an article nobody states a licence for.
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
-                payload={"title": "T", "abstract": "A", "source": "pubmed"}, summary={}),
+                payload={"title": "T", "abstract": "A", "source": "pubmed",
+                         "license": ASSUMED_LICENSE, "copy_licenses": {"pubget": ASSUMED_LICENSE}},
+                summary={}),
     ]
     if tables:
         rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",

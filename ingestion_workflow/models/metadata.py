@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from study_schema.models.paper_parse import License, ReportedCopy
+
 
 @dataclass
 class Author:
@@ -66,14 +68,11 @@ class ArticleMetadata:
     # Keywords or MeSH terms
     keywords: List[str] = field(default_factory=list)
 
-    # License information (e.g., CC-BY)
-    license: Optional[str] = None
-
-    # Primary source of metadata (pubmed, semantic_scholar, etc.)
+    # The provider the record came from, a study_schema MetadataSource value
     source: Optional[str] = None
 
-    # Whether the article is open access
-    open_access: Optional[bool] = None
+    # The provider whose abstract `abstract` is; a record's own source unless merged
+    abstract_provider: Optional[str] = None
 
     # Direct link to an open-access PDF, when a provider reports one
     pdf_url: Optional[str] = None
@@ -81,11 +80,28 @@ class ArticleMetadata:
     # Raw metadata from external sources for reference
     raw_metadata: Dict[str, Any] = field(default_factory=dict)
 
+    # The paper's licence, decided by the metadata service from every provider's answer
+    license: Optional[License] = None
+
+    # Each held copy's licence, by the download source that holds it
+    copy_licenses: Dict[str, License] = field(default_factory=dict)
+
+    # How the paper is open to read, a study_schema OaStatus value
+    oa_status: Optional[str] = None
+
+    # Copies the providers list that no download holds
+    reported_copies: List[ReportedCopy] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.abstract and self.abstract_provider is None:
+            self.abstract_provider = self.source
+
     def merge_from(self, other: ArticleMetadata) -> ArticleMetadata:
         """
         Merge metadata from another source, filling in missing fields.
 
-        Values from `self` take precedence over values from `other`.
+        Values from `self` take precedence over values from `other`. The licence
+        decisions are not merged: the metadata service makes them from every answer.
 
         Parameters
         ----------
@@ -102,10 +118,10 @@ class ArticleMetadata:
         if self.authors and other.authors and len(other.authors) > len(self.authors):
             merged_authors = other.authors
 
-        # Merge abstract: prefer the longer one
-        merged_abstract = self.abstract
+        # Merge abstract: prefer the longer one, and keep whose it is
+        merged_abstract, abstract_provider = self.abstract, self.abstract_provider
         if not merged_abstract or (other.abstract and len(other.abstract) > len(merged_abstract)):
-            merged_abstract = other.abstract
+            merged_abstract, abstract_provider = other.abstract, other.abstract_provider
 
         # Merge keywords: combine unique keywords
         merged_keywords = list(self.keywords)
@@ -116,21 +132,15 @@ class ArticleMetadata:
         # Merge raw_metadata
         merged_raw = {**other.raw_metadata, **self.raw_metadata}
 
-        # Determine open_access value
-        merged_open_access = (
-            self.open_access if self.open_access is not None else other.open_access
-        )
-
         return ArticleMetadata(
             title=self.title or other.title,
             authors=merged_authors,
             abstract=merged_abstract,
+            abstract_provider=abstract_provider if merged_abstract else None,
             journal=self.journal or other.journal,
             publication_year=self.publication_year or other.publication_year,
             keywords=merged_keywords,
-            license=self.license or other.license,
             source=self.source or other.source,
-            open_access=merged_open_access,
             pdf_url=self.pdf_url or other.pdf_url,
             raw_metadata=merged_raw,
         )
@@ -141,14 +151,17 @@ class ArticleMetadata:
             "title": self.title,
             "authors": [author.to_dict() for author in self.authors],
             "abstract": self.abstract,
+            "abstract_provider": self.abstract_provider,
             "journal": self.journal,
             "publication_year": self.publication_year,
             "keywords": self.keywords,
-            "license": self.license,
             "source": self.source,
-            "open_access": self.open_access,
             "pdf_url": self.pdf_url,
             "raw_metadata": self.raw_metadata,
+            "license": _dumped(self.license),
+            "copy_licenses": {name: _dumped(lic) for name, lic in self.copy_licenses.items()},
+            "oa_status": self.oa_status,
+            "reported_copies": [_dumped(copy) for copy in self.reported_copies],
         }
 
     @classmethod
@@ -160,14 +173,19 @@ class ArticleMetadata:
             title=str(data["title"]),
             authors=authors,
             abstract=data.get("abstract"),
+            abstract_provider=data.get("abstract_provider"),
             journal=data.get("journal"),
             publication_year=data.get("publication_year"),
             keywords=data.get("keywords", []),
-            license=data.get("license"),
             source=data.get("source"),
-            open_access=data.get("open_access"),
             pdf_url=data.get("pdf_url"),
             raw_metadata=data.get("raw_metadata", {}),
+            license=License.model_validate(data["license"]) if data.get("license") else None,
+            copy_licenses={name: License.model_validate(lic)
+                           for name, lic in (data.get("copy_licenses") or {}).items()},
+            oa_status=data.get("oa_status"),
+            reported_copies=[ReportedCopy.model_validate(copy)
+                             for copy in data.get("reported_copies") or []],
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:
@@ -180,6 +198,10 @@ class ArticleMetadata:
             Metadata formatted for Neurostore upload
         """
         raise NotImplementedError()
+
+
+def _dumped(model) -> Optional[Dict[str, Any]]:
+    return model.model_dump(mode="json", exclude_none=True) if model is not None else None
 
 
 def merge_metadata_from_sources(
@@ -221,8 +243,8 @@ def merge_metadata_from_sources(
 
 
 #: Fields that make metadata worth keeping. Deliberately not "all of them":
-#: no provider returns keywords, license and open_access together, and treating
-#: their absence as incomplete is what made every run refetch every article.
+#: no provider returns keywords for every article, and treating their absence
+#: as incomplete is what made every run refetch every article.
 ENOUGH = ("title", "abstract", "journal", "publication_year")
 
 

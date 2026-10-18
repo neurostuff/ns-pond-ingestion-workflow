@@ -73,8 +73,8 @@ def test_cited_works_of_a_moved_doi_are_keyed_by_the_doi_that_was_asked(client):
 
 
 @pytest.mark.vcr
-def test_metadata_of_a_moved_doi_is_keyed_by_the_identifier_asked_for(client):
+def test_metadata_of_a_moved_doi_is_keyed_by_the_identifier_asked_for():
     moved = Identifier(doi=MOVED)
     sici = Identifier(doi="https://doi.org/" + SICI)
-    found = client.get_metadata([moved, sici])
+    found = OpenAlexClient().get_metadata([moved, sici])
     assert set(found) == {moved.slug, sici.slug}

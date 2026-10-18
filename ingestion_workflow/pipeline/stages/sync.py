@@ -486,8 +486,8 @@ class SyncStage:
         if download_payload:
             files.append(DownloadResult.from_dict(download_payload))
 
-        return ArticleExtractionBundle(content, article_metadata), per_table, files, _copy_of(
-            download)
+        return ArticleExtractionBundle(content, article_metadata), per_table, files, (
+            paper_parse.held_copy(_copy_of(download), article_metadata, download.source))
 
     def finish(self) -> None:
         """Write the corpus-level manifest once the run is over."""
@@ -526,7 +526,7 @@ def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:
 
 
 def _parse_inputs(
-    ctx: Context, work: Work, base_study_id, text_copy: DownloadCopy, excluded, found, source
+    ctx: Context, work: Work, base_study_id, text_copy, excluded, found, source
 ) -> paper_parse.ParseInputs:
     """What the parse files need from the catalog beyond the bundle."""
     def ok(stage, key=""):

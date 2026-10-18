@@ -28,8 +28,15 @@ from study_schema.models import paper_parse as pp
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 BASE = "22tHjbNRU8t2"
+#: PMC3407125's JATS `<license>`: PLoS ONE's CC BY.
+CC_BY = pp.License(license_id="cc-by", determination="stated", stated_by="jats",
+                   stated_as="http://creativecommons.org/licenses/by/4.0/")
+#: The licence nobody stated. The tests that do not look at licences use it, so the upload
+#: cassettes, which match on the body, hold the bodies they were recorded for.
+UNSTATED = pp.License(license_id="all-rights-reserved", determination="assumed")
 #: PMC3407125's copy, as a pubget download records it: PLoS ONE's open-access version of record.
-COPY = DownloadCopy(route=CopyRoute.pmc, version=CopyVersion.vor, access=CopyAccess.public)
+COPY = pp.HeldCopy(route=CopyRoute.pmc, version=CopyVersion.vor, access=CopyAccess.public,
+                   license=UNSTATED)
 #: The header identifiers of a paper the coordinate-parse tests need nothing else of.
 IDENTIFIERS = pp.ArticleIdentifiers(publication_status="published")
 
@@ -135,6 +142,7 @@ def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
         "publication_year": 2012,
         "source": "pubmed",
         "raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {"Language": "eng"}}}},
+        "license": UNSTATED,
         **metadata,
     })
     per_table = {
@@ -276,35 +284,72 @@ def test_bibliography_and_meta_analysis_come_from_metadata_and_triage(written):
     assert "abstract" not in bib and "abstract_provider" not in bib
 
 
-#: All rights reserved, assumed: what the contract allows while no stage decides a licence.
-UNDECIDED = {"license_id": "all-rights-reserved", "determination": "assumed"}
+#: The licence nobody stated, all rights reserved, as the metadata stage writes it.
+ASSUMED = {"license_id": "all-rights-reserved", "determination": "assumed"}
+#: PMC10518222's TDM manuscript, as PMC's cloud record codes it.
+TDM = pp.License(license_id="all-rights-reserved", determination="stated",
+                 stated_by="pmc_cloud", stated_as="TDM")
 
 
-def test_the_text_copy_is_the_download_s_and_no_licence_is_stated(written):
-    paper, parse, _ = written
+def test_the_text_copy_and_the_paper_carry_the_licences_the_metadata_decided(tmp_path):
+    reported = pp.ReportedCopy(
+        route="repository", version="am", reported_by="openalex",
+        url="https://europepmc.org/articles/pmc3407125?pdf=render",
+        license=pp.License(license_id="cc-by", determination="stated", stated_by="openalex",
+                           stated_as="cc-by"))
+    text_copy = COPY.model_copy(update={"license": CC_BY})
+    paper, _, _ = _written(tmp_path, text_copy=text_copy, oa_status="gold",
+                           reported_copies=[reported])
+    cc_by = CC_BY.model_dump(mode="json", exclude_none=True)
     assert paper["text_copy"] == {"route": "pmc", "version": "vor", "access": "public",
-                                  "license": UNDECIDED}
-    assert paper["bibliography"]["license"] == UNDECIDED
+                                  "license": cc_by}
+    assert {k: v for k, v in paper["bibliography"]["license"].items() if v is not None} \
+        == ASSUMED
+    assert paper["bibliography"]["oa_status"] == "gold"
+    assert paper["reported_copies"] == [reported.model_dump(mode="json", exclude_none=True)]
     assert "open_access" not in paper["bibliography"]
+
+
+def test_a_paper_without_a_decided_licence_is_not_parsed(tmp_path):
+    with pytest.raises(ValueError, match="holds no licence for the paper"):
+        _written(tmp_path, license=None)
+
+
+def test_the_parse_header_names_the_base_study_outside_the_identifiers(written):
+    _, parse, _ = written
     assert parse["header"]["neurostore_base_study_id"] == BASE
     assert "neurostore_base_study_id" not in parse["header"]["identifiers"]
 
 
-@pytest.mark.parametrize("copy, expected", [
-    # bioRxiv's PDF of the preprint.
-    (DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+@pytest.mark.parametrize("source, copy, license, expected", [
+    # bioRxiv's PDF of the preprint, its licence as OpenAlex gives the URL.
+    ("pdf",
+     DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
                   access=CopyAccess.public, preprint_server="biorxiv",
                   url="https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf"),
+     pp.License(license_id="cc-by-nc-nd", determination="stated", stated_by="openalex",
+                stated_as="cc-by-nc-nd"),
      {"route": "preprint_server", "version": "submitted", "access": "public",
       "url": "https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf",
       "preprint_server": "biorxiv"}),
     # PMC10518222, an NIH manuscript PMC offers for text mining only.
-    (DownloadCopy(route=CopyRoute.pmc, version=CopyVersion.am, access=CopyAccess.tdm_grant),
-     {"route": "pmc", "version": "am", "access": "tdm_grant"}),
+    ("pmc", DownloadCopy(route=CopyRoute.pmc, version=CopyVersion.am, access=CopyAccess.tdm_grant),
+     TDM, {"route": "pmc", "version": "am", "access": "tdm_grant"}),
 ])
-def test_the_text_copy_is_written_as_its_download_recorded_it(tmp_path, copy, expected):
-    paper, _, _ = _written(tmp_path, text_copy=copy)
-    assert paper["text_copy"] == {**expected, "license": UNDECIDED}
+def test_the_text_copy_is_written_as_its_download_recorded_it(tmp_path, source, copy, license,
+                                                                expected):
+    meta = ArticleMetadata(title="", copy_licenses={source: license, "pubget": CC_BY})
+    paper, _, _ = _written(tmp_path, text_copy=paper_parse.held_copy(copy, meta, source))
+    assert paper["text_copy"] == {**expected,
+                                  "license": license.model_dump(mode="json", exclude_none=True)}
+
+
+def test_a_copy_the_metadata_holds_no_licence_for_has_no_text_copy():
+    meta = ArticleMetadata(title="", copy_licenses={"pubget": CC_BY})
+    copy = DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
+                        access=CopyAccess.tdm_grant)
+    with pytest.raises(LookupError, match="no licence for the wiley copy"):
+        paper_parse.held_copy(copy, meta, "wiley")
 
 
 @pytest.mark.parametrize("identifier, dois, expected", [

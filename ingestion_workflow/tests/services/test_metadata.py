@@ -4,6 +4,8 @@ import hashlib
 import json
 import os
 import shutil
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
@@ -156,9 +158,9 @@ class TestMetadataService:
         )
         s2 = ArticleMetadata(
             title="An Article", authors=[Author(name="A")], journal="J",
-            publication_year=2020, license="CC-BY",
+            publication_year=2020, source="semantic_scholar",
         )
-        pubmed = ArticleMetadata(title="An Article", abstract="What it found.")
+        pubmed = ArticleMetadata(title="An Article", abstract="What it found.", source="pubmed")
 
         with (
             patch.object(metadata_service, "_get_semantic_scholar_metadata_cached",
@@ -171,7 +173,7 @@ class TestMetadataService:
         asked.assert_called_once()
         merged = result[extracted.slug]
         assert merged.abstract == "What it found."
-        assert merged.license == "CC-BY"
+        assert (merged.source, merged.abstract_provider) == ("semantic_scholar", "pubmed")
         assert merged.journal == "J"
 
     def test_a_filled_record_skips_the_later_providers(self, metadata_service):
@@ -220,10 +222,13 @@ class TestMetadataService:
         ):
             result = service.enrich_metadata([extracted])
 
-        asked.assert_called_once_with([identifier])
+        asked.assert_called_once()
+        assert asked.call_args.args[0] == [identifier]
         assert result[extracted.slug].journal == "bioRxiv"
 
-    def test_openalex_is_not_asked_for_a_filled_record(self, tmp_path):
+    def test_openalex_is_asked_about_a_filled_record_and_fills_nothing(self, tmp_path):
+        """OpenAlex is asked about every article, for the copies it lists and their
+        licences; a record the others filled keeps their fields."""
         service = _with_openalex(tmp_path)
         service._s2_client = SemanticScholarClient("test_s2_key")
         identifier = Identifier(pmid="12345678")
@@ -233,15 +238,23 @@ class TestMetadataService:
         )
         s2 = ArticleMetadata(
             title="An Article", authors=[Author(name="A")], journal="J",
-            publication_year=2020, abstract="What it found.",
+            publication_year=2020, abstract="What it found.", source="semantic_scholar",
+        )
+        openalex = ArticleMetadata(
+            title="An Article", authors=[Author(name="A"), Author(name="B")], journal="K",
+            publication_year=2020, abstract="What it found, at greater length.",
+            source="openalex",
         )
         with (
             patch.object(service, "_get_semantic_scholar_metadata_cached",
                          return_value={identifier.slug: s2}),
-            patch.object(service, "_get_openalex_metadata_cached", return_value={}) as asked,
+            patch.object(service, "_get_openalex_metadata_cached",
+                         return_value={identifier.slug: openalex}) as asked,
         ):
-            service.enrich_metadata([extracted])
-        asked.assert_not_called()
+            merged = service.enrich_metadata([extracted])[extracted.slug]
+        asked.assert_called_once()
+        assert (merged.journal, merged.abstract, merged.abstract_provider, len(merged.authors)) \
+            == ("J", "What it found.", "semantic_scholar", 1)
 
     def test_get_elsevier_fallback(self, metadata_service):
         """Test fallback metadata extraction from Elsevier files."""
@@ -446,3 +459,194 @@ class TestMetadataIntegration:
 
         assert extracted.slug in result
         assert result[extracted.slug].title is not None
+
+
+COPIES = Path(__file__).parents[1] / "data" / "copies"
+
+
+def _licence_settings(tmp_path, **given):
+    """Settings for recorded answers from Semantic Scholar, Crossref and OpenAlex; the
+    keys are dropped from the cassettes, so any value replays. No email is sent."""
+    return Settings(
+        data_root=tmp_path / "data", cache_root=tmp_path / "cache",
+        ns_pond_root=tmp_path / "ns-pond", pubmed_email=None,
+        **{"semantic_scholar_api_key": os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"),
+           "openalex_api_key": os.environ.get("OPENALEX_API_KEY", "replay"), **given},
+    )
+
+
+def _held(source, fixture, identifier):
+    """A download of the copy the fixture holds, as the download stage records it."""
+    from ingestion_workflow.extractors.copies import copy_of
+    from ingestion_workflow.models import DownloadedFile, DownloadResult, FileType
+    from ingestion_workflow.services.metadata import HeldDownload
+
+    files = sorted((COPIES / fixture).iterdir())
+    result = DownloadResult(
+        identifier=identifier, source=DownloadSource(source), success=True,
+        files=[DownloadedFile(file_path=f, file_type=FileType.XML if f.suffix == ".xml"
+                              else FileType.JSON, content_type="application/xml",
+                              source=DownloadSource(source)) for f in files])
+    return HeldDownload(source, copy_of(result), files)
+
+
+def _license(found):
+    return found.model_dump(mode="json", exclude_none=True)
+
+
+class TestLicences:
+    @pytest.mark.vcr()
+    def test_a_tdm_manuscript_of_an_openly_licensed_article(self, tmp_path):
+        """PMC10518222 is the NIH manuscript of 10.1002/alz.12697, which PMC offers for
+        text mining only; the version of record is CC BY-NC at Wiley."""
+        identifier = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/alz.12697")
+        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PMC,
+                                     identifier=identifier)
+        service = MetadataService(_licence_settings(tmp_path))
+        found = service.enrich_metadata(
+            [extracted], {extracted.slug: [_held("pmc", "pmc_tdm_manuscript", identifier)]})
+
+        assert service.undecided == {}
+        meta = found[extracted.slug]
+        assert _license(meta.copy_licenses["pmc"]) == {
+            "license_id": "all-rights-reserved", "determination": "stated",
+            "stated_by": "pmc_cloud", "stated_as": "TDM"}
+        assert _license(meta.license) == {
+            "license_id": "cc-by-nc", "determination": "stated", "stated_by": "crossref",
+            "stated_as": "http://creativecommons.org/licenses/by-nc/4.0/"}
+        assert meta.oa_status == "hybrid"
+        wiley = [c for c in meta.reported_copies if c.route == "publisher"]
+        assert [(c.version, c.reported_by, c.license.license_id) for c in wiley] == [
+            ("vor", "openalex", "cc-by-nc")]
+        # PMC's own copy is the one held
+        assert not [c for c in meta.reported_copies if c.route == "pmc"]
+        # what was decided survives the artifact
+        assert ArticleMetadata.from_dict(meta.to_dict()).to_dict() == meta.to_dict()
+        assert meta.raw_metadata["crossref"]["license"]
+
+    @pytest.mark.vcr("TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml")
+    def test_a_held_pdf_takes_the_licence_its_location_is_listed_with(self, tmp_path):
+        """The same answers, with Wiley's open PDF held instead: its licence is the one
+        OpenAlex lists for that URL, and it is no longer a reported copy."""
+        from ingestion_workflow.models import DownloadCopy
+        from ingestion_workflow.services.metadata import HeldDownload
+        from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
+
+        url = "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/alz.12697"
+        identifier = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/alz.12697")
+        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PDF,
+                                     identifier=identifier)
+        pdf = HeldDownload("pdf", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
+                                               access=CopyAccess.public, url=url))
+        service = MetadataService(_licence_settings(tmp_path))
+        meta = service.enrich_metadata([extracted], {extracted.slug: [pdf]})[extracted.slug]
+
+        assert _license(meta.copy_licenses["pdf"]) == {
+            "license_id": "cc-by-nc", "determination": "stated", "stated_by": "openalex",
+            "stated_as": "cc-by-nc"}
+        assert url not in {c.url for c in meta.reported_copies}
+        # PMC's copy, not held now, is reported with the licence OpenAlex lists for it
+        pmc = [c for c in meta.reported_copies if c.route == "pmc"]
+        assert [(c.version, c.license.license_id, c.license.stated_as) for c in pmc] == [
+            ("submitted", "other", "other-oa")]
+
+    @pytest.mark.vcr()
+    def test_a_preprint_s_licence_is_the_one_its_server_deposits(self, tmp_path):
+        """10.1101/2025.05.13.653896, known only by its bioRxiv DOI: the paper's licence is
+        the preprint's."""
+        identifier = Identifier(doi="10.1101/2025.05.13.653896")
+        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PDF,
+                                     identifier=identifier)
+        service = MetadataService(_licence_settings(tmp_path))
+        meta = service.enrich_metadata([extracted])[extracted.slug]
+
+        assert service.undecided == {}
+        assert (meta.license.determination, meta.license.stated_by) == ("stated", "crossref")
+        assert meta.license.stated_as.startswith("http://creativecommons.org/licenses/")
+
+    @pytest.mark.vcr()
+    def test_nothing_stated_anywhere_is_an_assumed_all_rights_reserved(self, tmp_path):
+        """10.1037/npe0000112: APA deposits no licence, and no provider lists one."""
+        identifier = Identifier(doi="10.1037/npe0000112")
+        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.ACE,
+                                     identifier=identifier)
+        from ingestion_workflow.models import DownloadCopy
+        from ingestion_workflow.services.metadata import HeldDownload
+        from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
+
+        ace = HeldDownload("ace", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
+                                               access=CopyAccess.unrecorded))
+        service = MetadataService(_licence_settings(tmp_path))
+        meta = service.enrich_metadata([extracted], {extracted.slug: [ace]})[extracted.slug]
+
+        assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
+        assert service.undecided == {}
+        assert (_license(meta.license), _license(meta.copy_licenses["ace"])) == (assumed, assumed)
+        # OpenAlex calls it closed, and lists its submitted versions at HAL and Toulouse
+        # with no licence; Semantic Scholar lists HAL's PDF; the publisher's is ACE's.
+        assert meta.oa_status == "closed"
+        assert [(c.reported_by, c.route, c.version, c.url, _license(c.license))
+                for c in meta.reported_copies] == [
+            ("openalex", "unrecorded", "submitted", "https://hal.archives-ouvertes.fr/hal-02586104",
+             assumed),
+            ("openalex", "repository", "submitted", "https://hal.science/hal-03025378", assumed),
+            ("openalex", "repository", "submitted",
+             "https://publications.ut-capitole.fr/id/eprint/34986/", assumed),
+            ("semantic_scholar", "unrecorded", None, "https://hal.archives-ouvertes.fr/hal-03025378"
+             "/file/trust%20%20fmri%20paper%20JNPE%20postprint.pdf", assumed)]
+
+    @pytest.mark.vcr()
+    def test_with_semantic_scholar_not_asked_nothing_is_assumed(self, tmp_path):
+        """The same article, without Semantic Scholar's key: Semantic Scholar might have
+        stated a licence, so none is assumed and the article is asked about again."""
+        identifier = Identifier(doi="10.1037/npe0000112")
+        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.ACE,
+                                     identifier=identifier)
+        service = MetadataService(_licence_settings(tmp_path, semantic_scholar_api_key=None))
+        found = service.enrich_metadata([extracted])
+
+        assert found[extracted.slug].license is None
+        assert service.undecided == {extracted.slug: (
+            "the licence of the paper is undecided: semantic_scholar is not configured")}
+
+
+def test_the_abstract_kept_is_credited_to_the_provider_it_came_from():
+    s2 = ArticleMetadata(title="T", abstract="Short.", source="semantic_scholar")
+    pubmed = ArticleMetadata(title="T", abstract="A longer abstract.", source="pubmed")
+    openalex = ArticleMetadata(title="T", abstract="Tiny", source="openalex")
+    merged = s2.merge_from(pubmed).merge_from(openalex)
+    assert (merged.source, merged.abstract, merged.abstract_provider) == (
+        "semantic_scholar", "A longer abstract.", "pubmed")
+    assert ArticleMetadata(title="T", source="pubmed").abstract_provider is None
+
+
+class _Unavailable(BaseHTTPRequestHandler):
+    """Crossref while it is down: 503 to everything, with no wait asked for."""
+
+    def do_GET(self):
+        self.send_response(503)
+        self.send_header("Retry-After", "0")
+        self.end_headers()
+
+    def log_message(self, *args):
+        pass
+
+
+def test_a_provider_that_does_not_answer_is_noted_for_each_article_it_left(tmp_path):
+    """Served by a local server, because a recorded outage cannot be had on demand."""
+    from ingestion_workflow.clients.crossref import CrossrefClient
+
+    server = HTTPServer(("127.0.0.1", 0), _Unavailable)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        client = CrossrefClient()
+        client.BASE_URL = f"http://127.0.0.1:{server.server_port}/works/"
+        service = MetadataService(_licence_settings(tmp_path))
+        identifiers = [Identifier(doi="10.1037/npe0000112"), Identifier(doi="10.1002/alz.12697")]
+        unanswered = {}
+        found = service._cached("crossref", client, identifiers, unanswered)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert found == {}
+    assert unanswered == {i.slug: {"crossref": "did not answer"} for i in identifiers}

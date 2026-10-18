@@ -32,9 +32,14 @@ WORK = {
 }
 
 
+#: Every DOI the server was asked for, as it was sent.
+ASKED = []
+
+
 class _OpenAlexHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         asked = parse_qs(urlparse(self.path).query).get("filter", [""])[0].removeprefix("doi:").split("|")
+        ASKED.extend(asked)
         known = [WORK] if any(a.lower() == REGISTERED.lower() for a in asked) else []
         body = json.dumps({"results": known}).encode()
         self.send_response(200)
@@ -60,6 +65,14 @@ def client():
 def test_the_answers_are_keyed_by_the_canonical_doi(client):
     assert client.get_retractions([CANONICAL]) == {CANONICAL: True}
     assert set(client.get_cited_works([CANONICAL])) == {CANONICAL}
+
+
+def test_metadata_is_asked_for_and_keyed_by_the_canonical_doi(client):
+    ASKED.clear()
+    identifier = Identifier(doi=REGISTERED)
+    found = client.get_metadata([identifier])
+    assert ASKED == [CANONICAL]
+    assert found[identifier.slug].publication_year == 2011
 
 
 def test_a_retraction_openalex_alone_reports_reaches_the_notice(client):
