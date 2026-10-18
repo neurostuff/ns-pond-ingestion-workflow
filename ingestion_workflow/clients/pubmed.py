@@ -232,12 +232,6 @@ class PubMedClient:
                 continue
 
             identifier = identifiers.lookup(str(requested_id), key=id_type)
-            if identifier is None and id_type == "pmcid":
-                lookup_value = str(requested_id)
-                if not lookup_value.upper().startswith("PMC"):
-                    lookup_value = f"PMC{lookup_value}"
-                identifier = identifiers.lookup(lookup_value, key="pmcid")
-
             if identifier is None:
                 continue
 

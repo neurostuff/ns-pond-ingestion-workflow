@@ -37,10 +37,7 @@ _METADATA_FIELDS = (
 
 def _identifier_from(ids: Optional[Dict]) -> Identifier:
     ids = ids or {}
-    pmcid = re.search(r"(\d+)/?$", ids.get("pmcid") or "")
-    return Identifier(
-        doi=ids.get("doi"), pmid=ids.get("pmid"), pmcid=pmcid.group(1) if pmcid else None
-    )
+    return Identifier(doi=ids.get("doi"), pmid=ids.get("pmid"), pmcid=ids.get("pmcid"))
 
 
 def _metadata_from(work: Dict) -> ArticleMetadata:

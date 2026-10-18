@@ -29,6 +29,7 @@ from pubget._articles import extract_articles
 from ingestion_workflow.extractors.pubget_extractor import PubgetExtractor
 from ingestion_workflow.extractors.utils import build_downloaded_file
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType, Identifiers
+from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class _PmcXmlExtractor(PubgetExtractor):
             return []
         pmcid_map: Dict[str, List[int]] = {}
         for index, identifier in enumerate(identifiers.identifiers):
-            normalized = self._normalize_pmcid(identifier.pmcid)
+            normalized = self._pmcid_number(identifier.pmcid)
             if normalized is not None:
                 pmcid_map.setdefault(normalized, []).append(index)
 
@@ -263,9 +264,8 @@ class EuropePmcExtractor(_PmcXmlExtractor):
 def _pmcid_of(article: etree._Element) -> Optional[str]:
     for tag in article.iter("article-id"):
         kind = (tag.get("pub-id-type") or "").lower()
-        value = (tag.text or "").strip().upper().removeprefix("PMC")
-        if kind in ("pmc", "pmcid") and value.isdigit():
-            return str(int(value))
+        if kind in ("pmc", "pmcid") and tag.text:
+            return normalize_pmcid(tag.text).removeprefix("PMC")
     return None
 
 

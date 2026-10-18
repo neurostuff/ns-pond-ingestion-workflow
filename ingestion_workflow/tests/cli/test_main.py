@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
+import typer
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.cli.main import _parse_identifier, app
 from typer.testing import CliRunner
@@ -49,6 +50,20 @@ def run(*args):
 def test_identifiers_are_recognised_without_being_labelled(token, field):
     identifier = _parse_identifier(token)
     assert getattr(identifier, field)
+
+
+@pytest.mark.parametrize("token", [
+    "pmc10634720",
+    "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10634720/",
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC10634720/",
+])
+def test_a_pmcid_is_recognised_in_any_spelling(token):
+    assert _parse_identifier(token).pmcid == "PMC10634720"
+
+
+def test_a_malformed_pmcid_is_a_bad_parameter():
+    with pytest.raises(typer.BadParameter, match="not a PMCID"):
+        _parse_identifier("pmc-unknown")
 
 
 def test_unrecognisable_identifiers_are_rejected():
