@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +172,7 @@ def _identifier(row: sqlite3.Row, columns: set) -> Optional[Identifier]:
 #: DOI with its punctuation flattened, which cannot be reversed — so only the
 #: two recoverable parts are used, which is enough to name the article.
 _SLUG_PMID = re.compile(r"^(\d{4,9})(?:-|$)")
-_SLUG_PMCID = re.compile(r"(?:^|-)(pmc\d+)$", re.IGNORECASE)
+_SLUG_PMCID = re.compile(r"(?:^|-)(pmc[0-9]+)$", re.IGNORECASE)
 
 
 def _identifier_from_slug(slug: Optional[str]) -> Dict[str, str]:
@@ -185,7 +186,7 @@ def _identifier_from_slug(slug: Optional[str]) -> Dict[str, str]:
         fields["pmid"] = pmid.group(1)
     pmcid = _SLUG_PMCID.search(slug)
     if pmcid:
-        fields["pmcid"] = pmcid.group(1).upper()
+        fields["pmcid"] = normalize_pmcid(pmcid.group(1))
     return fields
 
 

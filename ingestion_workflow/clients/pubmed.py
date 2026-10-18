@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import calendar
+import logging
 import time
 from datetime import datetime
 import json
@@ -16,6 +17,9 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
+from ingestion_workflow.utils.pmcid import normalize_pmcid
+
+logger = logging.getLogger(__name__)
 
 IDCONV_BATCH_SIZE = 200
 PUBMED_REQUEST_LIMIT = 3  # requests per second (polite throttle)
@@ -232,22 +236,21 @@ class PubMedClient:
                 continue
 
             identifier = identifiers.lookup(str(requested_id), key=id_type)
-            if identifier is None and id_type == "pmcid":
-                lookup_value = str(requested_id)
-                if not lookup_value.upper().startswith("PMC"):
-                    lookup_value = f"PMC{lookup_value}"
-                identifier = identifiers.lookup(lookup_value, key="pmcid")
-
             if identifier is None:
+                continue
+            try:
+                pmcid = normalize_pmcid(str(record["pmcid"])) if record.get("pmcid") else None
+            except ValueError as exc:
+                logger.warning("PubMed id converter: %s for %s; its ids not used",
+                               exc, identifier.slug)
                 continue
 
             pmid = record.get("pmid")
             if pmid and identifier.pmid is None:
                 identifier.pmid = str(pmid)
 
-            pmcid = record.get("pmcid")
             if pmcid and identifier.pmcid is None:
-                identifier.pmcid = str(pmcid)
+                identifier.pmcid = pmcid
 
             doi = record.get("doi")
             if doi and identifier.doi is None:

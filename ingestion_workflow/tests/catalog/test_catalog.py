@@ -368,6 +368,41 @@ def test_a_shared_pmcid_does_not_fuse_papers(tmp_path):
         assert catalog.conflicts >= 49   # each stamped record is refused, and says so
 
 
+def _held(catalog, article_id, kind):
+    return {v for k, v in catalog._conn.execute(
+        "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)) if k == kind}
+
+
+@pytest.mark.parametrize("kind,other", [("pmcid", "PMC9406293"), ("pmid", "35990001")])
+def test_an_article_never_takes_a_second_pmid_or_pmcid(catalog, kind, other):
+    first = {"pmid": "35990000", "pmcid": "PMC9406292"}
+    a = catalog.register(Identifier(**first))
+    b = catalog.register(Identifier(**{**first, kind: other}))
+    assert _held(catalog, a.id, kind) == {first[kind]}
+    assert b.id != a.id and _held(catalog, b.id, kind) == {other}
+    # refused as the anchor, refused as a merge, and the shared id left with `a`
+    assert catalog.conflicts == 3
+
+
+@pytest.mark.parametrize("spelling", [
+    "pmc7212345", "7212345", " PMC7212345 ", "https://pmc.ncbi.nlm.nih.gov/articles/PMC7212345/",
+])
+def test_every_spelling_of_a_pmcid_is_one_article(catalog, spelling):
+    first = catalog.register(Identifier(pmcid="PMC7212345"))
+    assert catalog.resolve(Identifier(pmcid=spelling)).id == first.id
+    assert catalog.register(Identifier(pmcid=spelling)).id == first.id
+    assert catalog.count_articles() == 1 and catalog.conflicts == 0
+    assert _held(catalog, first.id, "pmcid") == {"PMC7212345"}
+
+
+def test_a_pmcid_assigned_by_enrichment_finds_its_article(catalog):
+    first = catalog.register(Identifier(pmid="35990000", pmcid="PMC9406292"))
+    enriched = Identifier(pmid="35990000")
+    enriched.pmcid = "9406292"   # Semantic Scholar's bare form, set after construction
+    assert catalog.register(enriched).id == first.id
+    assert catalog.count_articles() == 1 and catalog.conflicts == 0
+
+
 def test_a_known_doi_does_not_claim_a_different_paper(tmp_path):
     with Catalog.open(tmp_path / "cat") as catalog:
         a = catalog.register(Identifier(pmid="1", doi="10.1/a"))

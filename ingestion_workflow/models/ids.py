@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.utils.doi import normalize_doi
+from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 
 
@@ -24,13 +25,6 @@ def _normalize_pmid(value: Optional[str]) -> Optional[str]:
     if value and value.startswith("https://pubmed.ncbi.nlm.nih.gov/"):
         prefix = "https://pubmed.ncbi.nlm.nih.gov/"
         value = value.replace(prefix, "").rstrip("/")
-    return value or None
-
-
-def _normalize_pmcid(value: Optional[str]) -> Optional[str]:
-    value = _normalize_identifier(value)
-    if value and not value.upper().startswith("PMC"):
-        value = "PMC" + value
     return value or None
 
 
@@ -52,10 +46,12 @@ class Identifier(MutableMapping[str, Optional[str]]):
         self.normalize()
 
     def __setattr__(self, name: str, value: Any) -> None:
-        # Enrichment assigns `doi` after construction, as the provider spelled it;
-        # every reader, the catalog included, sees the canonical DOI.
+        # Enrichment assigns `doi` and `pmcid` after construction, as the provider
+        # spelled them; every reader, the catalog included, sees the canonical id.
         if name == "doi":
             value = normalize_doi(value) if value else None
+        elif name == "pmcid":
+            value = normalize_pmcid(value)
         super().__setattr__(name, value)
 
     @property
@@ -82,7 +78,6 @@ class Identifier(MutableMapping[str, Optional[str]]):
     def normalize(self) -> None:
         """Normalize identifier fields."""
         self.pmid = _normalize_pmid(self.pmid) if self.pmid else None
-        self.pmcid = _normalize_pmcid(self.pmcid) if self.pmcid else None
         if self.other_ids is not None:
             normalized = {k: _normalize_identifier(v) for k, v in self.other_ids.items()}
             self.other_ids = {key: value for key, value in normalized.items() if value is not None}
@@ -242,7 +237,7 @@ class Identifiers:
         if key == "pmid":
             return _normalize_pmid(value_str)
         if key == "pmcid":
-            return _normalize_pmcid(value_str)
+            return normalize_pmcid(value_str)
         if key == "doi":
             return normalize_doi(value_str)
         if key == "neurostore":

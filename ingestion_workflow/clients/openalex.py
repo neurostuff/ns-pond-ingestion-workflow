@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote, urljoin
 
 import requests
@@ -15,6 +16,8 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
+
+logger = logging.getLogger(__name__)
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100  # the most a page holds, and the most values one OR filter takes
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
@@ -35,12 +38,28 @@ _METADATA_FIELDS = (
 )
 
 
-def _identifier_from(ids: Optional[Dict]) -> Identifier:
+# OpenAlex's Work schema documents `ids.pmcid`, but no recorded or live answer checked on
+# 2026-10-17 carried it.
+def _identifier_from(
+    ids: Optional[Dict], kinds: Sequence[str] = ("doi", "pmid", "pmcid")
+) -> Identifier:
     ids = ids or {}
-    pmcid = re.search(r"(\d+)/?$", ids.get("pmcid") or "")
-    return Identifier(
-        doi=ids.get("doi"), pmid=ids.get("pmid"), pmcid=pmcid.group(1) if pmcid else None
-    )
+    return Identifier(**{kind: ids.get(kind) for kind in kinds})
+
+
+def _identified(works: Optional[Iterable[Dict]]) -> Iterator[Tuple[Dict, Identifier]]:
+    """Each work with its identifier.
+
+    A work with a malformed id is logged and skipped whole, its other ids too; nothing
+    is kept for it, so its article is asked about again on the next run.
+    """
+    for work in works or []:
+        ids = work.get("ids") or {}
+        try:
+            yield work, _identifier_from({**ids, "doi": ids.get("doi") or work.get("doi")})
+        except ValueError as exc:
+            logger.warning("OpenAlex work %s (doi %s, pmid %s): %s; its ids not used",
+                           ids.get("openalex"), ids.get("doi"), ids.get("pmid"), exc)
 
 
 def _metadata_from(work: Dict) -> ArticleMetadata:
@@ -67,7 +86,7 @@ def _cited_work(work: Dict) -> Dict:
             for a in work.get("authorships", []) or []
         ],
         "year": work.get("publication_year"),
-        "pmid": _identifier_from(work.get("ids")).pmid,
+        "pmid": _identifier_from(work.get("ids"), ["pmid"]).pmid,
     }
 
 
@@ -195,7 +214,7 @@ class OpenAlexClient:
             }
             payload = self._request_openalex(params)
 
-            for work in payload.get("results", []) or []:
+            for work, found in _identified(payload.get("results")):
                 ids_data = work.get("ids", {})
                 key = ids_data.get(id_type)
                 if not key:
@@ -216,7 +235,6 @@ class OpenAlexClient:
                 # outside PMC that Semantic Scholar does not index, it is the
                 # only provider that does: without this, a DOI-only article
                 # never gained the PMID its PubMed metadata is fetched by.
-                found = _identifier_from(ids_data)
                 for kind in ("pmid", "pmcid", "doi"):
                     if not getattr(identifier, kind) and getattr(found, kind):
                         setattr(identifier, kind, getattr(found, kind))
@@ -285,7 +303,7 @@ class OpenAlexClient:
         works = self._request_openalex({**params, "filter": f"title.search:{words}"}).get(
             "results"
         ) or self._request_openalex({**params, "search": words}).get("results")
-        return [(_identifier_from(work.get("ids")), _metadata_from(work)) for work in works or []]
+        return [(identifier, _metadata_from(work)) for work, identifier in _identified(works)]
 
     def search(self, filter: str) -> Identifiers:
         """Every work matching the /works `filter`, by cursor to the last page.
@@ -304,10 +322,8 @@ class OpenAlexClient:
         found: List[Identifier] = []
         while params["cursor"]:
             payload = self._request_openalex(params)
-            for work in payload.get("results", []) or []:
+            for work, identifier in _identified(payload.get("results")):
                 ids = work.get("ids") or {}
-                doi = ids.get("doi") or work.get("doi")
-                identifier = _identifier_from({**ids, "doi": doi})
                 if ids.get("openalex"):
                     identifier["openalex"] = ids["openalex"]
                 found.append(identifier)
@@ -340,7 +356,7 @@ class OpenAlexClient:
                 )
                 answered = set()
                 for work in payload.get("results", []) or []:
-                    value = getattr(_identifier_from(work.get("ids")), id_type)
+                    value = getattr(_identifier_from(work.get("ids"), [id_type]), id_type)
                     identifier = wanted.get(str(value).lower()) if value else None
                     if identifier is not None:
                         answered.add(str(value).lower())
@@ -370,7 +386,7 @@ class OpenAlexClient:
             )
             answered = set()
             for work in payload.get("results", []) or []:
-                ids = _identifier_from(work.get("ids"))
+                ids = _identifier_from(work.get("ids"), ["doi"])
                 if ids.doi in batch:
                     answered.add(ids.doi)
                     found[ids.doi] = _cited_work(work)

@@ -91,11 +91,16 @@ def unprocessed_base_studies(
             # create an article the pipeline can never act on.
             unusable += 1
             continue
-        yield Identifier(neurostore=base_study_id, doi=doi, pmid=pmid, pmcid=pmcid)
+        try:
+            yield Identifier(neurostore=base_study_id, doi=doi, pmid=pmid, pmcid=pmcid)
+        except ValueError as exc:
+            logger.warning("Base study %s: %s; skipped", base_study_id, exc)
+            unusable += 1
 
     if unusable:
         logger.warning(
-            "Skipped %d base studies with no doi, pmid or pmcid to download from", unusable
+            "Skipped %d base studies with no doi, pmid or pmcid to download from, "
+            "or a malformed one", unusable
         )
 
 

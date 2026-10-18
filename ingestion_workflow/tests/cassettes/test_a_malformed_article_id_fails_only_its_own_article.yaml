@@ -1,0 +1,273 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: efetch's article-id pub-id-type="pmcid" of PMC10002769 changed to PMC10002769.x.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://pmc-oa-opendata.s3.amazonaws.com/?list-type=2&prefix=PMC10002673.
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>pmc-oa-opendata</Name><Prefix>PMC10002673.</Prefix><KeyCount>0</KeyCount><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>'
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Sun, 18 Oct 2026 01:09:52 GMT
+      Server:
+      - AmazonS3
+      Transfer-Encoding:
+      - chunked
+      x-amz-bucket-region:
+      - us-east-1
+      x-amz-id-2:
+      - r8wC/8Jb0uJQnuZ/PVkpD6ocqptfx9Scn2vhg2KsFPp888gpGHF41d+ITrrF7O6skB8ktTDGWo4=
+      x-amz-request-id:
+      - E9F1R2VAP3XVPDTA
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://pmc-oa-opendata.s3.amazonaws.com/?list-type=2&prefix=PMC10002769.
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>pmc-oa-opendata</Name><Prefix>PMC10002769.</Prefix><KeyCount>0</KeyCount><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>'
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Sun, 18 Oct 2026 01:09:52 GMT
+      Server:
+      - AmazonS3
+      Transfer-Encoding:
+      - chunked
+      x-amz-bucket-region:
+      - us-east-1
+      x-amz-id-2:
+      - d9MN34evJ3v0zbPhK023luBNjnF0EGdPNDhaMS5jYvvSfyFUZnA3exNPoMTMNhL06cn7sKhSJ8IP2OMRs7lKTrELM+sHyCzo
+      x-amz-request-id:
+      - E9FEF7R1GX4NQPH1
+    status:
+      code: 200
+      message: OK
+- request:
+    body: db=pmc&id=10002673%2C10002769&retmode=xml
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '41'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi
+  response:
+    body:
+      string: "<?xml version=\"1.0\"  ?><!DOCTYPE pmc-articleset PUBLIC \"-//NLM//DTD
+        ARTICLE SET 2.0//EN\" \"https://dtd.nlm.nih.gov/ncbi/pmc/articleset/nlm-articleset-2.0.dtd\"><pmc-articleset><article
+        xml:lang=\"en\" article-type=\"research-article\" dtd-version=\"1.4\"><!--The
+        publisher of this article does not allow downloading of the full text in XML
+        form.--><front><journal-meta><journal-id journal-id-type=\"nlm-ta\">bioRxiv</journal-id><journal-id
+        journal-id-type=\"pmc-domain-id\">3848</journal-id><journal-id journal-id-type=\"pmc-domain\">biorxiv</journal-id><journal-id
+        journal-id-type=\"nlm-id\">101680187</journal-id><journal-id journal-id-type=\"publisher-id\">BIORXIV</journal-id><journal-title-group><journal-title>bioRxiv</journal-title></journal-title-group><issn
+        pub-type=\"epub\">2692-8205</issn><publisher><publisher-name>Cold Spring Harbor
+        Laboratory Preprints</publisher-name></publisher></journal-meta><article-meta><article-id
+        pub-id-type=\"pmcid\">PMC10002673</article-id><article-id pub-id-type=\"pmcid-ver\">PMC10002673.1</article-id><article-id
+        pub-id-type=\"pmcaid\">10002673</article-id><article-id pub-id-type=\"pmcaiid\">10002673</article-id><article-id
+        pub-id-type=\"pmid\">36909465</article-id><article-id pub-id-type=\"doi\">10.1101/2023.02.24.529876</article-id><article-version-alternatives><article-version
+        article-version-type=\"pmc-version\">1</article-version><article-version article-version-type=\"status\">preprint</article-version><article-version
+        article-version-type=\"number\">1</article-version></article-version-alternatives><article-categories><subj-group
+        subj-group-type=\"heading\"><subject>Article</subject></subj-group></article-categories><title-group><article-title>\nTraumatic
+        brain injury-induced fear generalization in mice involves hippocampal memory
+        trace dysfunction and is alleviated by (\n<italic toggle=\"yes\">R,S</italic>\n)-ketamine\n</article-title></title-group><contrib-group><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>McGowan</surname><given-names
+        initials=\"JC\">Josephine C.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0001-5132-3377</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Ladner</surname><given-names
+        initials=\"LR\">Liliana R.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0003-3841-5087</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Shubeck</surname><given-names
+        initials=\"CX\">Claire X.</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Tapia</surname><given-names initials=\"J\">Juliana</given-names></name><contrib-id
+        contrib-id-type=\"orcid\" authenticated=\"false\">http://orcid.org/0000-0002-9468-2094</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>LaGamma</surname><given-names
+        initials=\"CT\">Christina T.</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Anqueira-Gonz\u221A\xB0lez</surname><given-names
+        initials=\"A\">Amanda</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>DeFrancesco</surname><given-names initials=\"A\">Ariana</given-names></name></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Chen</surname><given-names
+        initials=\"BK\">Briana K.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0003-1982-1389</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Hunsberger</surname><given-names
+        initials=\"HC\">Holly C.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0002-4797-9311</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Sydnor</surname><given-names
+        initials=\"EJ\">Ezra J.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0009-0000-3691-1103</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Logan</surname><given-names
+        initials=\"RW\">Ryan W.</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Yu</surname><given-names initials=\"TS\">Tzong-Shiue</given-names></name><contrib-id
+        contrib-id-type=\"orcid\" authenticated=\"false\">http://orcid.org/0000-0003-4277-6213</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Kernie</surname><given-names
+        initials=\"SG\">Steven G.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0003-1371-0549</contrib-id></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Denny</surname><given-names
+        initials=\"CA\">Christine A.</given-names></name><contrib-id contrib-id-type=\"orcid\"
+        authenticated=\"false\">http://orcid.org/0000-0002-6926-2020</contrib-id></contrib></contrib-group><pub-date
+        pub-type=\"epub\"><day>27</day><month>2</month><year>2023</year></pub-date><issue-id
+        pub-id-type=\"pmc-issue-id\">430996</issue-id><elocation-id>2023.02.24.529876</elocation-id><pub-history><event
+        event-type=\"pmc-release\"><date><day>10</day><month>03</month><year>2023</year></date></event><event
+        event-type=\"pmc-live\"><date><day>11</day><month>03</month><year>2023</year></date></event><event
+        event-type=\"pmc-last-change\"><date iso-8601-date=\"2025-01-01 00:26:13.670\"><day>01</day><month>01</month><year>2025</year></date></event></pub-history><self-uri
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://biorxiv.org/lookup/doi/10.1101/2023.02.24.529876\">http://biorxiv.org/lookup/doi/10.1101/2023.02.24.529876</self-uri><self-uri
+        content-type=\"pdf\">nihpp-2023.02.24.529876.pdf</self-uri><related-article
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" related-article-type=\"published-article\"
+        xml:lang=\"en\" xlink:title=\"research-article\" journal-id=\"Biol Psychiatry\"
+        journal-id-type=\"nlm-ta\" ext-link-type=\"pmc\" xlink:href=\"PMC10772211\"><article-title>Traumatic
+        brain injury-induced fear generalization in mice involves hippocampal memory
+        trace dysfunction and is alleviated by (<italic toggle=\"yes\">R,S</italic>)-ketamine</article-title><volume>95</volume><issue>1</issue><date><day>8</day><month>7</month><year>2023</year></date><fpage>15</fpage><lpage>26</lpage><source>Biological
+        psychiatry</source><pub-id pub-id-type=\"doi\">10.1016/j.biopsych.2023.06.030</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC10772211</pub-id><pub-id pub-id-type=\"pmid\">37423591</pub-id></related-article><abstract><title>ABSTRACT</title><sec><title>INTRODUCTION</title><p>Traumatic
+        brain injury (TBI) is a debilitating neurological disorder caused by an impact
+        to the head by an outside force. TBI results in persistent cognitive impairments,
+        including fear generalization, the inability to distinguish between aversive
+        and neutral stimuli. The mechanisms underlying fear generalization have not
+        been fully elucidated, and there are no targeted therapeutics to alleviate
+        this symptom of TBI.</p></sec><sec><title>METHODS</title><p>\nTo identify
+        the neural ensembles mediating fear generalization, we utilized the ArcCreER\n<sup>T2</sup>\nx
+        enhanced yellow fluorescent protein (EYFP) mice, which allow for activity-dependent
+        labeling and quantification of memory traces. Mice were administered a sham
+        surgery or the controlled cortical impact (CCI) model of TBI. Mice were then
+        administered a contextual fear discrimination (CFD) paradigm and memory traces
+        were quantified in numerous brain regions. In a separate group of mice, we
+        tested if (\n<italic toggle=\"yes\">R,S</italic>\n)-ketamine could decrease
+        fear generalization and alter the corresponding memory traces in TBI mice.\n</p></sec><sec><title>RESULTS</title><p>\nTBI
+        mice exhibited increased fear generalization when compared with sham mice.
+        This behavioral phenotype was paralleled by altered memory traces in the DG,
+        CA3, and amygdala, but not by alterations in inflammation or sleep. In TBI
+        mice, (\n<italic toggle=\"yes\">R,S</italic>\n)-ketamine facilitated fear
+        discrimination and this behavioral improvement was reflected in DG memory
+        trace activity.\n</p></sec><sec><title>CONCLUSIONS</title><p>\nThese data
+        show that TBI induces fear generalization by altering fear memory traces,
+        and that this deficit can be improved with a single injection of (\n<italic
+        toggle=\"yes\">R,S</italic>\n)-ketamine. This work enhances our understanding
+        of the neural basis of TBI-induced fear generalization and reveals potential
+        therapeutic avenues for alleviating this symptom.\n</p></sec></abstract><custom-meta-group><custom-meta><meta-name>pmc-status-qastatus</meta-name><meta-value>0</meta-value></custom-meta><custom-meta><meta-name>pmc-status-live</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-status-embargo</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-status-released</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-open-access</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-olf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-manuscript</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-legally-suppressed</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-pdf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-supplement</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-pdf-only</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-suppress-copyright</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-real-version</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-scanned-article</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-preprint</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-in-epmc</meta-name><meta-value>no</meta-value></custom-meta></custom-meta-group></article-meta></front></article><article
+        xml:lang=\"en\" article-type=\"research-article\" dtd-version=\"1.4\"><!--The
+        publisher of this article does not allow downloading of the full text in XML
+        form.--><front><journal-meta><journal-id journal-id-type=\"nlm-ta\">bioRxiv</journal-id><journal-id
+        journal-id-type=\"pmc-domain-id\">3848</journal-id><journal-id journal-id-type=\"pmc-domain\">biorxiv</journal-id><journal-id
+        journal-id-type=\"nlm-id\">101680187</journal-id><journal-id journal-id-type=\"publisher-id\">BIORXIV</journal-id><journal-title-group><journal-title>bioRxiv</journal-title></journal-title-group><issn
+        pub-type=\"epub\">2692-8205</issn><publisher><publisher-name>Cold Spring Harbor
+        Laboratory Preprints</publisher-name></publisher></journal-meta><article-meta><article-id
+        pub-id-type=\"pmcid\">PMC10002769.x</article-id><article-id pub-id-type=\"pmcid-ver\">PMC10002769.1</article-id><article-id
+        pub-id-type=\"pmcaid\">10002769</article-id><article-id pub-id-type=\"pmcaiid\">10002769</article-id><article-id
+        pub-id-type=\"pmid\">36909606</article-id><article-id pub-id-type=\"doi\">10.1101/2023.03.01.530719</article-id><article-version-alternatives><article-version
+        article-version-type=\"pmc-version\">1</article-version><article-version article-version-type=\"status\">preprint</article-version><article-version
+        article-version-type=\"number\">1</article-version></article-version-alternatives><article-categories><subj-group
+        subj-group-type=\"heading\"><subject>Article</subject></subj-group></article-categories><title-group><article-title>\nDissociable
+        neuronal substrates of visual feature attention and working memory\n</article-title></title-group><contrib-group><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Mendoza-Halliday</surname><given-names
+        initials=\"D\">Diego</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Xu</surname><given-names initials=\"H\">Haoran</given-names></name></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Azevedo</surname><given-names
+        initials=\"FAC\">Frederico A.C.</given-names></name></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Desimone</surname><given-names initials=\"R\">Robert</given-names></name></contrib></contrib-group><pub-date
+        pub-type=\"epub\"><day>02</day><month>3</month><year>2023</year></pub-date><issue-id
+        pub-id-type=\"pmc-issue-id\">430996</issue-id><elocation-id>2023.03.01.530719</elocation-id><pub-history><event
+        event-type=\"pmc-release\"><date><day>10</day><month>03</month><year>2023</year></date></event><event
+        event-type=\"pmc-live\"><date><day>11</day><month>03</month><year>2023</year></date></event><event
+        event-type=\"pmc-last-change\"><date iso-8601-date=\"2025-03-06 00:25:39.487\"><day>06</day><month>03</month><year>2025</year></date></event></pub-history><self-uri
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://biorxiv.org/lookup/doi/10.1101/2023.03.01.530719\">http://biorxiv.org/lookup/doi/10.1101/2023.03.01.530719</self-uri><self-uri
+        content-type=\"pdf\">nihpp-2023.03.01.530719.pdf</self-uri><related-article
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" related-article-type=\"published-article\"
+        xml:lang=\"en\" xlink:title=\"research-article\" journal-id=\"Neuron\" journal-id-type=\"nlm-ta\"
+        ext-link-type=\"pmc\" xlink:href=\"PMC10939754\"><article-title>Dissociable
+        neuronal substrates of visual feature attention and working memory</article-title><volume>112</volume><issue>5</issue><date><day>15</day><month>1</month><year>2024</year></date><fpage>850</fpage><lpage>863.e6</lpage><source>Neuron</source><pub-id
+        pub-id-type=\"doi\">10.1016/j.neuron.2023.12.007</pub-id><pub-id pub-id-type=\"pmcid\">PMC10939754</pub-id><pub-id
+        pub-id-type=\"pmid\">38228138</pub-id></related-article><abstract><title>Abstract</title><p>Attention
+        and working memory (WM) are distinct cognitive functions, yet given their
+        close interactions, it has been proposed that they share the same neuronal
+        mechanisms. Here we show that in macaques performing a WM-guided feature attention
+        task, the activity of most neurons in areas middle temporal (MT), medial superior
+        temporal (MST), lateral intraparietal (LIP), and posterior lateral prefrontal
+        cortex (LPFC-p) displays either WM coding or attentional modulation, but not
+        both. One area thought to play a role in both functions is LPFC-p. To test
+        this, we optogenetically inactivated LPFC-p bilaterally during the attention
+        or WM periods of the task. Attention period inactivation reduced attentional
+        modulation in LPFC-p, MST, and LIP neurons, and impaired task performance.
+        WM period inactivation did not affect attentional modulation nor performance,
+        and minimally reduced WM coding. Our results suggest that feature attention
+        and WM have dissociable neuronal substrates, and that LPFC-p plays a critical
+        role in attention but not WM.</p></abstract><custom-meta-group><custom-meta><meta-name>pmc-status-qastatus</meta-name><meta-value>0</meta-value></custom-meta><custom-meta><meta-name>pmc-status-live</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-status-embargo</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-status-released</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-open-access</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-olf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-manuscript</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-legally-suppressed</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-pdf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-supplement</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-pdf-only</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-suppress-copyright</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-real-version</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-scanned-article</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-preprint</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-in-epmc</meta-name><meta-value>no</meta-value></custom-meta></custom-meta-group></article-meta></front></article></pmc-articleset>"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      Alt-Svc:
+      - clear
+      Cache-Control:
+      - private
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - upgrade-insecure-requests
+      Content-Type:
+      - text/xml; charset=UTF-8
+      Date:
+      - Sun, 18 Oct 2026 01:09:50 GMT
+      Ncbi-Phid:
+      - 1D3260FBA43AC4F5000029BAC7D9D910.1.1.m_4
+      Ncbi-Sid:
+      - 2FCADF0413B6B947_46B4SID
+      Referrer-Policy:
+      - origin-when-cross-origin
+      Server:
+      - Finatra
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 1.1 google
+      X-Ratelimit-Limit:
+      - '3'
+      X-Ratelimit-Remaining:
+      - '2'
+      X-Ua-Compatible:
+      - IE=Edge
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

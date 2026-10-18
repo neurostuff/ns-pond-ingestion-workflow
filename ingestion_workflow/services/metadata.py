@@ -392,14 +392,7 @@ class MetadataService:
         candidate_files.append(base_dir / safe_hash_stem(extracted_content.slug) / "article.xml")
 
         if extracted_content.identifier and extracted_content.identifier.pmcid:
-            pmcid_value = extracted_content.identifier.pmcid.strip().upper()
-            if pmcid_value.startswith("PMC"):
-                pmcid_value = pmcid_value[3:]
-
-            # Normalize to the canonical integer format used on disk (removes leading zeros).
-            if pmcid_value.isdigit():
-                pmcid_value = str(int(pmcid_value))
-
+            pmcid_value = extracted_content.identifier.pmcid.removeprefix("PMC")
             bucket = article_bucket_from_pmcid(int(pmcid_value))
             pmcid_dir = f"pmcid_{pmcid_value}"
 

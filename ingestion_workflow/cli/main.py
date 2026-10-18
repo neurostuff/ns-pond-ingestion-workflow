@@ -98,8 +98,13 @@ def _parse_identifier(token: str) -> Identifier:
     if not token:
         raise typer.BadParameter("empty identifier")
     lowered = token.lower()
-    if lowered.startswith("pmc") or lowered.startswith("https://www.ncbi.nlm.nih.gov/pmc"):
-        return Identifier(pmcid=token)
+    if lowered.startswith(
+        ("pmc", "https://www.ncbi.nlm.nih.gov/pmc", "https://pmc.ncbi.nlm.nih.gov/")
+    ):
+        try:
+            return Identifier(pmcid=token)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
     if token.isdigit():
         return Identifier(pmid=token)
     if lowered.startswith("10.") or "doi.org/" in lowered or lowered.startswith("doi:"):

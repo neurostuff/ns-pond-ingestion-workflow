@@ -80,7 +80,7 @@ class PubgetExtractor(BaseExtractor):
         results_by_index: Dict[int, DownloadResult] = {}
 
         for index, identifier in enumerate(identifiers.identifiers):
-            normalized = self._normalize_pmcid(identifier.pmcid)
+            normalized = self._pmcid_number(identifier.pmcid)
             assert normalized is not None, "Identifiers must include PMCIDs"
             pmcid_map.setdefault(normalized, []).append(index)
 
@@ -251,17 +251,10 @@ class PubgetExtractor(BaseExtractor):
             return configured
         return self.settings.get_cache_dir(self.SOURCE.value)
 
-    def _normalize_pmcid(self, pmcid: str | None) -> str | None:
-        if not pmcid:
-            return None
-        value = pmcid.strip().upper()
-        if value.startswith("PMC"):
-            value = value[3:]
-        value = value.strip()
-        if not value.isdigit():
-            return None
-        # Remove leading zeros for consistent lookups.
-        return str(int(value))
+    @staticmethod
+    def _pmcid_number(pmcid: str | None) -> str | None:
+        """The number of a canonical PMCID, as pubget names its directories."""
+        return pmcid.removeprefix("PMC") if pmcid else None
 
     def _index_articles(self, articles_dir: Path) -> Dict[str, Path]:
         index: Dict[str, Path] = {}

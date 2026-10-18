@@ -1,0 +1,61 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: PubMedCentral 3407125 of 10.1371/journal.pone.0041873 changed to 3407125x.
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.24703", "DOI:10.1371/journal.pone.0041873"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '70'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=externalIds
+  response:
+    body:
+      string: '[{"paperId": "185cdce001c430556cfc3721f86a91849d20856d", "externalIds":
+        {"MAG": "2954579665", "DOI": "10.1002/hbm.24703", "CorpusId": 195786675, "PubMed":
+        "31268615"}}, {"paperId": "e3a7ebc930c020532a455cfb1b8737d7e21999f4", "externalIds":
+        {"PubMedCentral": "3407125x", "MAG": "2020818027", "DOI": "10.1371/journal.pone.0041873",
+        "CorpusId": 771402, "PubMed": "22848644"}}]'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '373'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 01:08:56 GMT
+      Via:
+      - 1.1 a65725dd05dc27eea7ae75a2e122228e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - CpolDmCnPQlOfwFzSPO7mR2dqcJ36IgX36f-nS_Jby1y2NvbE5K9ug==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FalWXGFFPHcEBDA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '373'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 01:08:56 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 43431393-7a4d-4d35-a4b8-8fe4b4377396
+    status:
+      code: 200
+      message: OK
+version: 1

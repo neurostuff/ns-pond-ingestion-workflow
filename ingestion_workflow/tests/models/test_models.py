@@ -16,6 +16,53 @@ def test_identifier_normalizes_fields() -> None:
     assert identifier.other_ids == {"arxiv": "2101.00001"}
 
 
+#: One PMCID as providers and people write it: PubMed and Europe PMC prefixed,
+#: Semantic Scholar bare, OpenAlex as an address on PMC's old website.
+PMCID_SPELLINGS = [
+    "PMC7212345",
+    "pmc7212345",
+    "Pmc7212345",
+    "7212345",
+    " 7212345 ",
+    "PMC07212345",
+    "https://www.ncbi.nlm.nih.gov/pmc/articles/7212345",
+    "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7212345/",
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC7212345/",
+]
+
+
+@pytest.mark.parametrize("spelling", PMCID_SPELLINGS)
+def test_every_spelling_of_a_pmcid_is_canonical_however_it_is_set(spelling) -> None:
+    assert Identifier(pmcid=spelling).pmcid == "PMC7212345"
+
+    enriched = Identifier(pmid="1")
+    enriched.pmcid = spelling
+    assert enriched.pmcid == "PMC7212345"
+    assert enriched.slug == Identifier(pmid="1", pmcid="PMC7212345").slug
+
+    mapped = Identifier(pmid="1")
+    mapped["PMCID"] = spelling
+    assert mapped.pmcid == "PMC7212345"
+
+    held = Identifier(pmcid="PMC7212345")
+    assert Identifiers([held]).lookup(spelling, key="pmcid") is held
+
+
+@pytest.mark.parametrize("value", [
+    "PMC", "PMC12a", "PMC 123", "PMID:7212345", "10.1/x", "PMC0", "000", "PMC\u0667\u0662\u0661",
+])
+def test_a_value_that_is_not_a_pmcid_is_refused(value) -> None:
+    with pytest.raises(ValueError, match="not a PMCID"):
+        Identifier(pmcid=value)
+
+
+def test_a_blank_pmcid_is_no_pmcid() -> None:
+    identifier = Identifier(pmcid="   ")
+    assert identifier.pmcid is None
+    identifier.pmcid = ""
+    assert identifier.pmcid is None
+
+
 def test_identifiers_set_index_and_lookup_multiple_keys() -> None:
     id_one = Identifier(pmid="1", doi="10.1234/foo")
     id_two = Identifier(pmid="2", pmcid="PMC123456")

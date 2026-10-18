@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 import time
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -15,6 +16,27 @@ from ingestion_workflow.models.metadata import ArticleMetadata, Author
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
 _MIN_REQUEST_INTERVAL = 1 / SEMANTIC_SCHOLAR_REQUEST_LIMIT
+
+
+logger = logging.getLogger(__name__)
+
+
+def _paper_identifier(external_ids: Dict, paper_id: Optional[str]) -> Optional[Identifier]:
+    """A paper's DOI, PMID and PMCID, or None when any of them is malformed.
+
+    Such a paper is logged and skipped whole, its other ids too; nothing is kept for
+    it, so its article is asked about again on the next run.
+    """
+    pmid, pmcid = external_ids.get("PubMed"), external_ids.get("PubMedCentral")
+    try:
+        return Identifier(
+            doi=external_ids.get("DOI"),
+            pmid=str(pmid) if pmid else None,
+            pmcid=str(pmcid) if pmcid else None,
+        )
+    except ValueError as exc:
+        logger.warning("Semantic Scholar paper %s: %s; its ids not used", paper_id, exc)
+        return None
 
 
 class SemanticScholarClient:
@@ -90,22 +112,15 @@ class SemanticScholarClient:
                 continue
 
             external_ids = record.get("externalIds") or {}
+            found = _paper_identifier(external_ids, record.get("paperId"))
+            if found is None:
+                continue
 
             updated = False
-            doi = external_ids.get("DOI")
-            if doi and not identifier.doi:
-                identifier.doi = str(doi)
-                updated = True
-
-            pmid = external_ids.get("PubMed")
-            if pmid and not identifier.pmid:
-                identifier.pmid = str(pmid)
-                updated = True
-
-            pmcid = external_ids.get("PubMedCentral")
-            if pmcid and not identifier.pmcid:
-                identifier.pmcid = str(pmcid)
-                updated = True
+            for kind in ("doi", "pmid", "pmcid"):
+                if getattr(found, kind) and not getattr(identifier, kind):
+                    setattr(identifier, kind, getattr(found, kind))
+                    updated = True
 
             self._store_additional_ids(identifier, record, external_ids)
 
@@ -177,15 +192,10 @@ class SemanticScholarClient:
                 {**params, "fields": "externalIds", **({"token": token} if token else {})}
             )
             for paper in payload.get("data") or []:
-                ids = paper.get("externalIds") or {}
-                found.append(
-                    Identifier(
-                        doi=ids.get("DOI"),
-                        pmid=str(ids["PubMed"]) if ids.get("PubMed") else None,
-                        pmcid=str(ids["PubMedCentral"]) if ids.get("PubMedCentral") else None,
-                        other_ids={"semantic_scholar": str(paper["paperId"])},
-                    )
-                )
+                identifier = _paper_identifier(paper.get("externalIds") or {}, paper["paperId"])
+                if identifier is not None:
+                    identifier["semantic_scholar"] = str(paper["paperId"])
+                    found.append(identifier)
             token = payload.get("token")
             if not token:
                 return Identifiers(found)
@@ -216,12 +226,9 @@ class SemanticScholarClient:
         response.raise_for_status()
         found = []
         for record in response.json().get("data", []) or []:
-            ids = record.get("externalIds") or {}
-            identifier = Identifier(
-                doi=ids.get("DOI"),
-                pmid=str(ids["PubMed"]) if ids.get("PubMed") else None,
-                pmcid=str(ids["PubMedCentral"]) if ids.get("PubMedCentral") else None,
-            )
+            identifier = _paper_identifier(record.get("externalIds") or {}, record.get("paperId"))
+            if identifier is None:
+                continue
             metadata = ArticleMetadata(
                 title=str(record.get("title") or ""),
                 authors=[

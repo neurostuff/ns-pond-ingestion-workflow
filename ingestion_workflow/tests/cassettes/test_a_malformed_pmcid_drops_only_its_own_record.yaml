@@ -1,0 +1,66 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: the id converter's pmcid for 10.1002/hbm.24703 changed from PMC6865431 to PMC6865431.x.
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?format=json&ids=10.1002%2Fhbm.24703%2C10.1371%2Fjournal.pone.0041873&idtype=doi&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAACA32RUW+CMBSF/wppIk+CbUEgJDyZ7G3J3hcTO6mjCr2sxTFj+O+7rcZsme7xnt6e
+        7/T0TOwghqMlJYEDmRMjbQ/ayqgWg0SRU55FjEYsDzgrGStp7rc+jtIOpDyTURit9DsavBIUzSno
+        hRFdsJGdUO0mUDbolLW4EpP1nOzAdAIvkr0FjU6qHk69A9Wg/OiNGI0ZpXzRvHUxT3Oa4JHTkpwt
+        9nA0WrQxxpQxpSkr8sQ5DwAt+iAIkynQ0QjmsGthjAYULDrIbQO44YNV4SVJ5XKEiK2uzBl/ulFn
+        fHWlonqPG17iVxg+dPzqH/qnNBYPXNMacLYNjEKp+jJPrtQtGP/+s2+jvFtD3239nZfnVVZkyzRh
+        8ZeXnZowjiJb3n5I1pHf/us0zX9SHhb7C5ikNGd8ecNxXqRFlqZ3cQ8tp/X0Da9i58N2AgAA
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Sun, 18 Oct 2026 01:11:07 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -132,3 +132,50 @@ def test_a_client_needs_an_email_or_a_key():
     assert OpenAlexClient.from_settings(SimpleNamespace(openalex_email=None, openalex_api_key=None)) is None
     client = OpenAlexClient.from_settings(SimpleNamespace(openalex_email=None, openalex_api_key="k"))
     assert client is not None and client.api_key == "k"
+
+
+@pytest.mark.vcr()
+def test_a_malformed_pmcid_drops_only_its_own_work(caplog):
+    """Recorded from OpenAlex, then edited: OpenAlex sent neither work an `ids.pmcid`, so
+    the first was given one in the documented form, malformed."""
+    identifiers = Identifiers(
+        [Identifier(doi="10.1002/hbm.24703"), Identifier(doi="10.1371/journal.pone.0041873")]
+    )
+    OpenAlexClient().get_ids("doi", identifiers)
+    malformed, sound = identifiers.identifiers
+    assert (malformed.pmid, malformed.pmcid, malformed.other_ids) == (None, None, None)
+    assert sound.pmid == "22848644"
+    assert sound.other_ids["openalex"].startswith("https://openalex.org/W")
+    assert "not a PMCID: 'https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x'" in caplog.text
+
+
+@pytest.mark.vcr()
+def test_a_malformed_pmcid_costs_no_metadata_or_citation():
+    """Recorded from OpenAlex, then edited: the work in each answer was given a malformed
+    `ids.pmcid`, as above. Neither lookup reads the PMCID."""
+    client = OpenAlexClient()
+    identifier = Identifier(doi="10.1002/hbm.24703")
+    assert client.get_metadata([identifier])[identifier.slug].publication_year == 2019
+    assert client.get_cited_works(["10.1002/hbm.24703"])["10.1002/hbm.24703"]["pmid"] == "31268615"
+
+
+@pytest.mark.vcr()
+def test_a_search_passes_over_a_work_with_a_malformed_pmcid(caplog):
+    """Recorded from OpenAlex with no email, then edited: W2954579665 was given a malformed
+    `ids.pmcid`, and W2020818027's `ids.doi` was removed, leaving its top-level `doi`."""
+    found = OpenAlexClient().search(
+        "doi:10.1002/hbm.24703|10.1371/journal.pone.0041873"
+    ).identifiers
+    assert [(i.doi, i.other_ids["openalex"]) for i in found] == [
+        ("10.1371/journal.pone.0041873", "https://openalex.org/W2020818027")
+    ]
+    assert "OpenAlex work https://openalex.org/W2954579665" in caplog.text
+
+
+@pytest.mark.vcr()
+def test_a_title_search_passes_over_a_work_with_a_malformed_pmcid(caplog):
+    """Recorded from OpenAlex with no email, then edited: the first work was given a
+    malformed `ids.pmcid`."""
+    found = OpenAlexClient().search_title("adolescent marijuana cortical", limit=3)
+    assert len(found) == 2 and all(metadata.title for _, metadata in found)
+    assert "articles/1.x" in caplog.text

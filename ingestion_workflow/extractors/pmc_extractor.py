@@ -29,6 +29,7 @@ from pubget._articles import extract_articles
 from ingestion_workflow.extractors.pubget_extractor import PubgetExtractor
 from ingestion_workflow.extractors.utils import build_downloaded_file
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType, Identifiers
+from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class _PmcXmlExtractor(PubgetExtractor):
             return []
         pmcid_map: Dict[str, List[int]] = {}
         for index, identifier in enumerate(identifiers.identifiers):
-            normalized = self._normalize_pmcid(identifier.pmcid)
+            normalized = self._pmcid_number(identifier.pmcid)
             if normalized is not None:
                 pmcid_map.setdefault(normalized, []).append(index)
 
@@ -196,8 +197,13 @@ class PmcExtractor(_PmcXmlExtractor):
             response = _with_retries(lambda: session.post(self.EFETCH, data=data, timeout=120))
             time.sleep(interval)
             root = etree.fromstring(response.content, etree.XMLParser(recover=True, huge_tree=True))
+            malformed: List[str] = []
             for article in root.iterfind("article"):
-                pmcid = _pmcid_of(article)
+                try:
+                    pmcid = _pmcid_of(article)
+                except ValueError as exc:
+                    malformed.append(str(exc))
+                    continue
                 if pmcid is None:
                     continue
                 if has_body(article):
@@ -205,9 +211,9 @@ class PmcExtractor(_PmcXmlExtractor):
                     articles[pmcid] = article
                 else:
                     reasons[pmcid] = RESTRICTED
-            for pmcid in chunk:
-                if pmcid not in articles:
-                    reasons.setdefault(pmcid, "PMC returned no article for this PMCID")
+            missing = [p for p in chunk if p not in articles and p not in reasons]
+            for pmcid in missing:
+                reasons[pmcid] = _missing_reason(malformed, len(missing))
         return articles, reasons
 
     def _extra_files(self, pmcid: str, article_dir: Path) -> List[DownloadedFile]:
@@ -260,12 +266,25 @@ class EuropePmcExtractor(_PmcXmlExtractor):
         return articles, reasons
 
 
+def _missing_reason(malformed: List[str], missing: int) -> str:
+    """Why efetch left a PMCID without an article.
+
+    An article under a malformed id cannot be matched to the PMCID it answers,
+    except when it is the only one and one PMCID is missing.
+    """
+    if not malformed:
+        return "PMC returned no article for this PMCID"
+    if len(malformed) == 1 and missing == 1:
+        return f"PMC returned this article under a malformed id ({malformed[0]})"
+    return (f"PMC returned no article for this PMCID; this batch's {missing} missing PMCIDs "
+            f"share {len(malformed)} article(s) under malformed ids ({'; '.join(malformed)})")
+
+
 def _pmcid_of(article: etree._Element) -> Optional[str]:
     for tag in article.iter("article-id"):
         kind = (tag.get("pub-id-type") or "").lower()
-        value = (tag.text or "").strip().upper().removeprefix("PMC")
-        if kind in ("pmc", "pmcid") and value.isdigit():
-            return str(int(value))
+        if kind in ("pmc", "pmcid") and tag.text:
+            return normalize_pmcid(tag.text).removeprefix("PMC")
     return None
 
 

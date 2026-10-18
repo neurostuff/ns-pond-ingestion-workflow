@@ -1,0 +1,95 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: OpenAlex sends no ids.pmcid; W2954579665 was given a malformed one in its documented form.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703%7C10.1371%2Fjournal.pone.0041873&per_page=100&select=ids
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. Get a free key
+        with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
+        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
+        with {\"email\": \"<your user''s email>\"}; we email them a link, and the
+        key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+        "count": 2, "db_response_time_ms": 26, "page": 1, "per_page": 100, "groups_count":
+        null, "x_query": {"oql": "get works where DOI is (10.1002/hbm.24703 or 10.1371/journal.pone.0041873)",
+        "x_new_oql": "get works where DOI is (10.1002/hbm.24703 or 10.1371/journal.pone.0041873)",
+        "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
+        "doi", "value": "10.1002/hbm.24703"}, {"column_id": "doi", "value": "10.1371/journal.pone.0041873"}]}]},
+        "url": "/works?filter=doi:10.1002%2Fhbm.24703|10.1371%2Fjournal.pone.0041873&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2954579665",
+        "doi": "https://doi.org/10.1002/hbm.24703", "mag": "2954579665", "pmid": "https://pubmed.ncbi.nlm.nih.gov/31268615",
+        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x"}}, {"ids":
+        {"openalex": "https://openalex.org/W2020818027", "doi": "https://doi.org/10.1371/journal.pone.0041873",
+        "mag": "2020818027", "pmid": "https://pubmed.ncbi.nlm.nih.gov/22848644"}}],
+        "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4c3aad259c66ba1-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 01:11:08 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '985'
+      X-RateLimit-Remaining-USD:
+      - '0.0985'
+      X-RateLimit-Reset:
+      - '82132'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=4uuzpCx75MkhY6fRxOx1llflxraM4SMtYRs91oTbPhI%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792285867"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=4uuzpCx75MkhY6fRxOx1llflxraM4SMtYRs91oTbPhI%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792285867"
+    status:
+      code: 200
+      message: OK
+version: 1
