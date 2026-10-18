@@ -362,9 +362,10 @@ class Catalog:
         logger.warning("catalog: %s -- %s", identifier.slug, why)
 
     @staticmethod
-    def _held(conn: sqlite3.Connection, article_id: str, kind: str) -> set:
-        return {row[0] for row in conn.execute(
-            "SELECT value FROM aliases WHERE article_id=? AND kind=?", (article_id, kind))}
+    def _aliases(conn: sqlite3.Connection, article_id: str, kind: str) -> List[str]:
+        return [row[0] for row in conn.execute(
+            "SELECT value FROM aliases WHERE article_id=? AND kind=? ORDER BY value",
+            (article_id, kind))]
 
     def _compatible(self, conn, article_ids: Sequence[str], incoming: Mapping[str, str]) -> bool:
         """Whether fusing these articles with the record would bring two papers together.
@@ -375,7 +376,8 @@ class Catalog:
         is not made worse by a record that brings nothing new, so it still
         resolves; otherwise every lookup of it would make an empty new article.
         """
-        sides = [{kind: self._held(conn, a, kind) for kind in self.SINGULAR} for a in article_ids]
+        sides = [{kind: set(self._aliases(conn, a, kind)) for kind in self.SINGULAR}
+                 for a in article_ids]
         sides.append({kind: ({incoming[kind]} if incoming.get(kind) else set()) for kind in self.SINGULAR})
         for kind in self.SINGULAR:
             seen: set = set()
@@ -570,11 +572,7 @@ class Catalog:
 
     def aliases(self, article_id: str, kind: str) -> List[str]:
         """Every `kind` alias of the article, sorted; `identifier` presents only one."""
-        rows = self._conn.execute(
-            "SELECT value FROM aliases WHERE article_id=? AND kind=? ORDER BY value",
-            (article_id, kind),
-        )
-        return [row["value"] for row in rows]
+        return self._aliases(self._conn, article_id, kind)
 
     def count_articles(self) -> int:
         row = self._conn.execute(

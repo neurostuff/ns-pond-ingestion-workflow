@@ -368,6 +368,9 @@ PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
      {"preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
       "preprint_pmid": "34845462", "preprint_pmcid": "PMC8629206",
       "publication_status": "preprint"}),
+    # PubMed's record of a preprint, and nothing else known: a preprint.
+    (Identifier(pmid="34845462"), [("pubmed", "34845462")],
+     {"preprint_pmid": "34845462", "publication_status": "preprint"}),
     # A PMC copy the preprint's PubMed record does not list is the version of record's.
     (Identifier(pmid="34845462", pmcid="PMC3407125", doi="10.1101/2021.11.23.21266761"),
      [("pubmed", "34845462"), ("doi", "10.1101/2021.11.23.21266761")],
