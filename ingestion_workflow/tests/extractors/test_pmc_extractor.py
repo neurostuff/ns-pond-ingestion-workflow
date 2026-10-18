@@ -208,14 +208,37 @@ def test_the_default_order_names_every_source_once_with_pmc_first():
 
 
 @pytest.mark.vcr
-def test_a_malformed_article_id_fails_only_its_own_article(settings):
+def test_a_malformed_article_id_fails_only_its_own_article(settings, caplog):
     """Recorded from the Cloud Service and efetch for two articles PMC holds without a body,
     then edited: in the efetch answer, PMC10002769's `article-id pub-id-type="pmcid"` was
     changed to `PMC10002769.x`."""
     restricted, malformed = PmcExtractor(settings=settings).download(ids("10002673", "10002769"))
+    assert "Cloud Service lookup failed" not in caplog.text
     assert restricted.error_message == RESTRICTED
     assert not malformed.success
     assert malformed.error_message == (
-        "PMC returned no article for this PMCID; it returned one under a malformed id "
-        "(not a PMCID: 'PMC10002769.x')"
+        "PMC returned this article under a malformed id (not a PMCID: 'PMC10002769.x')"
     )
+
+
+@pytest.mark.vcr
+def test_articles_under_malformed_ids_share_one_reason(settings, caplog):
+    """Recorded as above for three articles, then edited: the `pmcid` article-ids of
+    PMC10002769 and PMC10008056 were changed to `PMC10002769.x` and `PMC10008056.x`."""
+    extractor = PmcExtractor(settings=settings)
+    restricted, *malformed = extractor.download(ids("10002673", "10002769", "10008056"))
+    assert "Cloud Service lookup failed" not in caplog.text
+    assert restricted.error_message == RESTRICTED
+    assert [m.error_message for m in malformed] == [
+        "PMC returned no article for this PMCID; this batch's 2 missing PMCIDs share 2 "
+        "articles under malformed ids (not a PMCID: 'PMC10008056.x'; "
+        "not a PMCID: 'PMC10002769.x')"
+    ] * 2
+
+
+@pytest.mark.vcr
+def test_europepmc_does_not_read_the_id_of_the_article_it_returns(settings):
+    """Recorded from Europe PMC, then edited: the article's `pmcid` article-id was changed
+    from PMC3407125 to PMC3407125.x. The article is filed under the PMCID asked for."""
+    [result] = EuropePmcExtractor(settings=settings).download(ids("3407125"))
+    assert result.success and result.source is DownloadSource.EUROPEPMC

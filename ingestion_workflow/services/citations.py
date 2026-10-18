@@ -281,6 +281,8 @@ def _jats_references(root) -> List[dict]:
         for pid in el.iter("pub-id"):
             kind, value = (pid.get("pub-id-type") or "").lower(), _text_of(pid)
             key = {"doi": "doi", "pmid": "pmid", "pmcid": "pmcid", "pmc": "pmcid"}.get(kind)
+            if key == "pmcid":
+                value = _reference_pmcid(value)
             if key and not r[key]:
                 r[key] = value
         for ext in el.iter("ext-link"):
@@ -475,9 +477,9 @@ def _html_reference(el, rid: str, position: int) -> dict:
         m = re.search(r"(?:pubmed/|ncbi\.nlm\.nih\.gov/(?:pubmed/)?|access_num=)(\d{6,9})\b", href)
         if m and not r["pmid"] and ("link_type=MED" in href or "access_num" not in href):
             r["pmid"] = m.group(1)
-        m = re.search(r"PMC\d{5,9}", href)
+        m = re.search(r"PMC[0-9]{5,9}", href)
         if m and not r["pmcid"]:
-            r["pmcid"] = normalize_pmcid(m.group(0))
+            r["pmcid"] = _reference_pmcid(m.group(0))
     if not r["doi"]:
         m = re.search(r"\b(10\.\d{4,9}/[^\s\"<>]+[^\s\"<>.,;])", t)
         r["doi"] = m.group(1) if m else None
@@ -490,6 +492,14 @@ class _Letters:
     def __init__(self, text: str):
         self.idx = [i for i, ch in enumerate(text) if not ch.isspace()]
         self.s = "".join(text[i] for i in self.idx)
+
+
+def _reference_pmcid(value: str) -> Optional[str]:
+    """A reference's PMCID, canonical; None for a malformed one, so the paper keeps the rest."""
+    try:
+        return normalize_pmcid(value)
+    except ValueError:
+        return None
 
 
 def read_html(html_path: Path, text: str) -> ReadResult:

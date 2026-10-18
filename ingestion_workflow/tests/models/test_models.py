@@ -48,7 +48,9 @@ def test_every_spelling_of_a_pmcid_is_canonical_however_it_is_set(spelling) -> N
     assert Identifiers([held]).lookup(spelling, key="pmcid") is held
 
 
-@pytest.mark.parametrize("value", ["PMC", "PMC12a", "PMC 123", "PMID:7212345", "10.1/x"])
+@pytest.mark.parametrize("value", [
+    "PMC", "PMC12a", "PMC 123", "PMID:7212345", "10.1/x", "PMC0", "000", "PMC\u0667\u0662\u0661",
+])
 def test_a_value_that_is_not_a_pmcid_is_refused(value) -> None:
     with pytest.raises(ValueError, match="not a PMCID"):
         Identifier(pmcid=value)

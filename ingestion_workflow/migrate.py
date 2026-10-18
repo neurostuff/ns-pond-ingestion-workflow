@@ -172,7 +172,7 @@ def _identifier(row: sqlite3.Row, columns: set) -> Optional[Identifier]:
 #: DOI with its punctuation flattened, which cannot be reversed — so only the
 #: two recoverable parts are used, which is enough to name the article.
 _SLUG_PMID = re.compile(r"^(\d{4,9})(?:-|$)")
-_SLUG_PMCID = re.compile(r"(?:^|-)(pmc\d+)$", re.IGNORECASE)
+_SLUG_PMCID = re.compile(r"(?:^|-)(pmc[0-9]+)$", re.IGNORECASE)
 
 
 def _identifier_from_slug(slug: Optional[str]) -> Dict[str, str]:

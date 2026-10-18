@@ -1,4 +1,4 @@
-# Recorded 2026-10-17, then edited by hand: OpenAlex now sends no ids.pmcid; one in its documented form, malformed, was added to W2954579665 in both answers.
+# Recorded 2026-10-17 with no email sent, then edited by hand: OpenAlex sends no ids.pmcid; W2954579665 was given a malformed one in both answers.
 interactions:
 - request:
     body: null
@@ -12,188 +12,201 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703&mailto=replay%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
   response:
     body:
-      string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
-        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
-        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
-        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
-        \"<your user''s email>\"}; we email them a link, and the key works once they
-        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 1,
-        "db_response_time_ms": 26, "page": 1, "per_page": 100, "groups_count": null,
-        "x_query": {"oql": "get works where DOI is 10.1002/hbm.24703", "x_new_oql":
-        "get works where DOI is 10.1002/hbm.24703", "oqo": {"get_rows": "works", "filter_rows":
-        [{"column_id": "doi", "value": "10.1002/hbm.24703"}]}, "url": "/works?filter=doi:10.1002%2Fhbm.24703&per_page=100"},
-        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2954579665",
-        "doi": "https://doi.org/10.1002/hbm.24703", "mag": "2954579665", "pmid": "https://pubmed.ncbi.nlm.nih.gov/31268615",
-        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x"}, "display_name":
-        "Modulating functional connectivity between medial frontopolar cortex and
-        amygdala by inhibitory and excitatory transcranial magnetic stimulation",
-        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5078801851",
-        "display_name": "Philipp Riedel", "orcid": "https://orcid.org/0000-0001-9298-2125",
-        "observed_orcids": ["https://orcid.org/0000-0001-9298-2125"]}, "institutions":
-        [{"id": "https://openalex.org/I4405270470", "display_name": "Neuroimaging
-        Center", "ror": "https://ror.org/00r302z28", "country_code": "DE", "type":
-        "facility", "lineage": ["https://openalex.org/I4210162051", "https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}, {"id": "https://openalex.org/I78650965",
-        "display_name": "Technische Universit\u00e4t Dresden", "ror": "https://ror.org/042aqky30",
-        "country_code": "DE", "type": "education", "lineage": ["https://openalex.org/I78650965"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Philipp
-        Riedel", "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging
-        Center Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid":
-        null, "affiliations": [{"raw_affiliation_string": "Department of Psychiatry
-        and Neuroimaging Center Technische Universit\u00e4t Dresden  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}]},
-        {"author_position": "middle", "author": {"id": null, "display_name": "Matthias
-        Heil", "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4405270470",
-        "display_name": "Neuroimaging Center", "ror": "https://ror.org/00r302z28",
-        "country_code": "DE", "type": "facility", "lineage": ["https://openalex.org/I4210162051",
-        "https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}, {"id":
-        "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Matthias Heil", "raw_affiliation_strings":
-        ["Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany", "institution_ids": ["https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}]}, {"author_position": "middle", "author":
-        {"id": "https://openalex.org/A5049563818", "display_name": "Stephan Bender",
-        "orcid": "https://orcid.org/0000-0001-8199-3785", "observed_orcids": ["https://orcid.org/0000-0001-8199-3785"]},
-        "institutions": [{"id": "https://openalex.org/I180923762", "display_name":
-        "University of Cologne", "ror": "https://ror.org/00rcxh774", "country_code":
-        "DE", "type": "education", "lineage": ["https://openalex.org/I180923762"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Stephan
-        Bender", "raw_affiliation_strings": ["Medical Faculty, Department of Child
-        and Adolescent Psychiatry, Psychosomatics and Psychotherapy University of
-        Cologne  Cologne Germany", "Medical Faculty, Department of Child and Adolescent
-        Psychiatry, Psychosomatics and Psychotherapy, University of Cologne, Cologne,
-        Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Medical Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics
-        and Psychotherapy University of Cologne  Cologne Germany", "institution_ids":
-        ["https://openalex.org/I180923762"]}, {"raw_affiliation_string": "Medical
+      string: "{\"meta\": {\"notice\": \"No API key, so this request shares one free
+        daily budget ($0.10) with everyone on your network's IP address. Get a free
+        key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
+        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
+        with {\\\"email\\\": \\\"<your user's email>\\\"}; we email them a link, and
+        the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt\",
+        \"count\": 1, \"db_response_time_ms\": 14, \"page\": 1, \"per_page\": 100,
+        \"groups_count\": null, \"x_query\": {\"oql\": \"get works where DOI is 10.1002/hbm.24703\",
+        \"x_new_oql\": \"get works where DOI is 10.1002/hbm.24703\", \"oqo\": {\"get_rows\":
+        \"works\", \"filter_rows\": [{\"column_id\": \"doi\", \"value\": \"10.1002/hbm.24703\"}]},
+        \"url\": \"/works?filter=doi:10.1002%2Fhbm.24703&per_page=100\"}, \"cost_usd\":
+        0.0001}, \"results\": [{\"ids\": {\"openalex\": \"https://openalex.org/W2954579665\",
+        \"doi\": \"https://doi.org/10.1002/hbm.24703\", \"mag\": \"2954579665\", \"pmid\":
+        \"https://pubmed.ncbi.nlm.nih.gov/31268615\", \"pmcid\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x\"},
+        \"display_name\": \"Modulating functional connectivity between medial frontopolar
+        cortex and amygdala by inhibitory and excitatory transcranial magnetic stimulation\",
+        \"authorships\": [{\"author_position\": \"first\", \"author\": {\"id\": \"https://openalex.org/A5078801851\",
+        \"display_name\": \"Philipp Riedel\", \"orcid\": \"https://orcid.org/0000-0001-9298-2125\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-9298-2125\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Philipp Riedel\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"middle\", \"author\": {\"id\": null, \"display_name\":
+        \"Matthias Heil\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Matthias Heil\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"middle\", \"author\": {\"id\": \"https://openalex.org/A5049563818\",
+        \"display_name\": \"Stephan Bender\", \"orcid\": \"https://orcid.org/0000-0001-8199-3785\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-8199-3785\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I180923762\", \"display_name\": \"University
+        of Cologne\", \"ror\": \"https://ror.org/00rcxh774\", \"country_code\": \"DE\",
+        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I180923762\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Stephan Bender\", \"raw_affiliation_strings\": [\"Medical Faculty, Department
+        of Child and Adolescent Psychiatry, Psychosomatics and Psychotherapy University
+        of Cologne  Cologne Germany\", \"Medical Faculty, Department of Child and
+        Adolescent Psychiatry, Psychosomatics and Psychotherapy, University of Cologne,
+        Cologne, Germany\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
+        \"Medical Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics
+        and Psychotherapy University of Cologne  Cologne Germany\", \"institution_ids\":
+        [\"https://openalex.org/I180923762\"]}, {\"raw_affiliation_string\": \"Medical
         Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics and
-        Psychotherapy, University of Cologne, Cologne, Germany", "institution_ids":
-        ["https://openalex.org/I180923762"]}]}, {"author_position": "middle", "author":
-        {"id": "https://openalex.org/A5023240827", "display_name": "Gabriel Dippel",
-        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210162051",
-        "display_name": "University Hospital Carl Gustav Carus", "ror": "https://ror.org/04za5zm41",
-        "country_code": "DE", "type": "healthcare", "lineage": ["https://openalex.org/I4210162051"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Gabriel
-        Dippel", "raw_affiliation_strings": ["Department of Child and Adolescent Psychiatry
-        and Psychotherapy University Hospital Carl Gustav Carus  Dresden Germany",
-        "Department of Child and Adolescent Psychiatry and Psychotherapy, University
-        Hospital Carl Gustav Carus, Dresden, Germany"], "raw_orcid": null, "affiliations":
-        [{"raw_affiliation_string": "Department of Child and Adolescent Psychiatry
-        and Psychotherapy University Hospital Carl Gustav Carus  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4210162051"]}, {"raw_affiliation_string":
-        "Department of Child and Adolescent Psychiatry and Psychotherapy, University
-        Hospital Carl Gustav Carus, Dresden, Germany", "institution_ids": ["https://openalex.org/I4210162051"]}]},
-        {"author_position": "middle", "author": {"id": "https://openalex.org/A5075765224",
-        "display_name": "Franziska M. Korb", "orcid": "https://orcid.org/0000-0002-1005-0090",
-        "observed_orcids": ["https://orcid.org/0000-0002-1005-0090"]}, "institutions":
-        [{"id": "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Franziska M. Korb",
-        "raw_affiliation_strings": ["Department of General Psychology Technische Universit\u00e4t
-        Dresden  Dresden Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Department of General Psychology Technische Universit\u00e4t Dresden  Dresden
-        Germany", "institution_ids": ["https://openalex.org/I78650965"]}]}, {"author_position":
-        "middle", "author": {"id": "https://openalex.org/A5063406820", "display_name":
-        "Michael N. Smolka", "orcid": "https://orcid.org/0000-0001-5398-5569", "observed_orcids":
-        ["https://orcid.org/0000-0001-5398-5569"]}, "institutions": [{"id": "https://openalex.org/I4405270470",
-        "display_name": "Neuroimaging Center", "ror": "https://ror.org/00r302z28",
-        "country_code": "DE", "type": "facility", "lineage": ["https://openalex.org/I4210162051",
-        "https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}, {"id":
-        "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Michael N. Smolka",
-        "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging Center
-        Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid": null,
-        "affiliations": [{"raw_affiliation_string": "Department of Psychiatry and
-        Neuroimaging Center Technische Universit\u00e4t Dresden  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}]},
-        {"author_position": "last", "author": {"id": "https://openalex.org/A5014835191",
-        "display_name": "Michael Marxen", "orcid": "https://orcid.org/0000-0001-8870-0041",
-        "observed_orcids": ["https://orcid.org/0000-0001-8870-0041"]}, "institutions":
-        [{"id": "https://openalex.org/I4405270470", "display_name": "Neuroimaging
-        Center", "ror": "https://ror.org/00r302z28", "country_code": "DE", "type":
-        "facility", "lineage": ["https://openalex.org/I4210162051", "https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}, {"id": "https://openalex.org/I78650965",
-        "display_name": "Technische Universit\u00e4t Dresden", "ror": "https://ror.org/042aqky30",
-        "country_code": "DE", "type": "education", "lineage": ["https://openalex.org/I78650965"]}],
-        "countries": ["DE"], "is_corresponding": true, "raw_author_name": "Michael
-        Marxen", "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging
-        Center Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid":
-        "https://orcid.org/0000-0001-8870-0041", "affiliations": [{"raw_affiliation_string":
-        "Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany", "institution_ids": ["https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}]}], "publication_year": 2019, "abstract_inverted_index":
-        {"The": [0, 19], "prefrontal-limbic": [1], "network": [2, 34, 73], "in": [3,
-        11, 40, 60, 158, 173, 194, 233], "the": [4, 28, 64, 83, 96, 168], "human":
-        [5], "brain": [6], "plays": [7], "a": [8, 153], "major": [9], "role": [10],
-        "social": [12, 223], "cognition,": [13], "especially": [14], "cognitive":
-        [15], "control": [16], "of": [17, 32, 66, 85, 115, 155, 167], "emotion.":
-        [18], "medial": [20], "frontopolar": [21], "cortex": [22], "(mFP;": [23],
-        "Brodmann": [24], "Area": [25], "10)": [26], "and": [27, 35, 58, 88, 104,
-        147, 178, 209, 215, 224], "amygdala": [29, 179], "are": [30], "part": [31],
-        "this": [33, 72], "display": [36], "correlated": [37], "neuronal": [38, 195],
-        "activity": [39, 196], "time,": [41], "as": [42, 106, 199, 227, 229], "measured":
-        [43, 107], "by": [44], "functional": [45, 51, 69, 100, 156, 174, 211], "magnetic":
-        [46, 92], "resonance": [47], "imaging": [48], "(fMRI).": [49], "This": [50,
-        218], "connectivity": [52, 70, 101, 157, 175], "is": [53, 205, 220], "dynamic,":
-        [54], "sensitive": [55], "to": [56, 95, 162, 183], "training,": [57], "affected":
-        [59], "mental": [61], "disorders.": [62], "However,": [63], "effects": [65,
-        84], "neurostimulation": [67], "on": [68, 99], "within": [71], "have": [74],
-        "not": [75], "yet": [76], "been": [77], "systematically": [78], "investigated.":
-        [79], "Here,": [80], "we": [81], "investigate": [82], "both": [86], "low-":
-        [87], "high-frequency": [89, 136], "repetitive": [90], "transcranial": [91],
-        "stimulation": [93, 169, 181, 185], "(rTMS)": [94], "right": [97], "mFP":
-        [98, 103, 177], "between": [102, 176, 213], "amygdala,": [105], "with": [108],
-        "resting": [109], "state": [110], "fMRI": [111], "(rsfMRI).": [112], "Three":
-        [113], "groups": [114], "healthy": [116], "participants": [117], "received":
-        [118], "either": [119], "low-frequency": [120], "rTMS": [121, 137, 204], "(1":
-        [122, 129], "Hz;": [123, 139], "N": [124, 132, 140], "=": [125, 133, 141],
-        "18),": [126], "sham": [127, 163], "TMS": [128, 164], "Hz,": [130], "subthreshold;":
-        [131], "18)": [134], "or": [135, 191], "(20": [138], "19).": [142], "rsfMRI":
-        [143], "was": [144], "acquired": [145], "before": [146, 184], "after": [148,
-        180], "(separate": [149], "days).": [150], "We": [151], "hypothesized": [152],
-        "modulation": [154], "opposite": [159], "directions": [160], "compared": [161,
-        182], "through": [165], "adjustment": [166], "frequency.": [170], "Groups":
-        [171], "differed": [172], "(low-frequency:": [186], "decrease,": [187], "high-frequency:":
-        [188], "increase).": [189], "Motion": [190], "induced": [192], "changes":
-        [193], "were": [197], "excluded": [198], "confounders.": [200], "Results":
-        [201], "show": [202], "that": [203], "effective": [206], "for": [207, 222],
-        "increasing": [208], "decreasing": [210], "coherence": [212], "prefrontal":
-        [214], "limbic": [216], "regions.": [217], "finding": [219], "relevant": [221],
-        "affective": [225], "neuroscience": [226], "well": [228], "novel": [230],
-        "treatment": [231], "approaches": [232], "psychiatry.": [234]}, "primary_location":
-        {"id": "doi:10.1002/hbm.24703", "doi": "https://doi.org/10.1002/hbm.24703",
-        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.24703", "pdf_url":
-        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703", "source":
-        {"id": "https://openalex.org/S121666818", "display_name": "Human Brain Mapping",
-        "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"], "is_oa": false,
-        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "dongbi-b",
-        "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-100",
-        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
-        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
-        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
-        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
-        "is_published": true, "raw_source_name": "Human Brain Mapping", "raw_type":
-        "journal-article"}, "open_access": {"is_oa": true, "oa_status": "bronze",
-        "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703",
-        "any_repository_has_fulltext": true}}], "group_by": []}'
+        Psychotherapy, University of Cologne, Cologne, Germany\", \"institution_ids\":
+        [\"https://openalex.org/I180923762\"]}]}, {\"author_position\": \"middle\",
+        \"author\": {\"id\": \"https://openalex.org/A5023240827\", \"display_name\":
+        \"Gabriel Dippel\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4210162051\", \"display_name\": \"University
+        Hospital Carl Gustav Carus\", \"ror\": \"https://ror.org/04za5zm41\", \"country_code\":
+        \"DE\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I4210162051\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Gabriel Dippel\", \"raw_affiliation_strings\": [\"Department of Child and
+        Adolescent Psychiatry and Psychotherapy University Hospital Carl Gustav Carus
+        \ Dresden Germany\", \"Department of Child and Adolescent Psychiatry and Psychotherapy,
+        University Hospital Carl Gustav Carus, Dresden, Germany\"], \"raw_orcid\":
+        null, \"affiliations\": [{\"raw_affiliation_string\": \"Department of Child
+        and Adolescent Psychiatry and Psychotherapy University Hospital Carl Gustav
+        Carus  Dresden Germany\", \"institution_ids\": [\"https://openalex.org/I4210162051\"]},
+        {\"raw_affiliation_string\": \"Department of Child and Adolescent Psychiatry
+        and Psychotherapy, University Hospital Carl Gustav Carus, Dresden, Germany\",
+        \"institution_ids\": [\"https://openalex.org/I4210162051\"]}]}, {\"author_position\":
+        \"middle\", \"author\": {\"id\": \"https://openalex.org/A5075765224\", \"display_name\":
+        \"Franziska M. Korb\", \"orcid\": \"https://orcid.org/0000-0002-1005-0090\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0002-1005-0090\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Franziska M. Korb\", \"raw_affiliation_strings\": [\"Department of General
+        Psychology Technische Universit\xE4t Dresden  Dresden Germany\"], \"raw_orcid\":
+        null, \"affiliations\": [{\"raw_affiliation_string\": \"Department of General
+        Psychology Technische Universit\xE4t Dresden  Dresden Germany\", \"institution_ids\":
+        [\"https://openalex.org/I78650965\"]}]}, {\"author_position\": \"middle\",
+        \"author\": {\"id\": \"https://openalex.org/A5063406820\", \"display_name\":
+        \"Michael N. Smolka\", \"orcid\": \"https://orcid.org/0000-0001-5398-5569\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-5398-5569\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Michael N. Smolka\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"last\", \"author\": {\"id\": \"https://openalex.org/A5014835191\",
+        \"display_name\": \"Michael Marxen\", \"orcid\": \"https://orcid.org/0000-0001-8870-0041\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-8870-0041\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": true, \"raw_author_name\":
+        \"Michael Marxen\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": \"https://orcid.org/0000-0001-8870-0041\", \"affiliations\":
+        [{\"raw_affiliation_string\": \"Department of Psychiatry and Neuroimaging
+        Center Technische Universit\xE4t Dresden  Dresden Germany\", \"institution_ids\":
+        [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]}],
+        \"publication_year\": 2019, \"abstract_inverted_index\": {\"The\": [0, 19],
+        \"prefrontal-limbic\": [1], \"network\": [2, 34, 73], \"in\": [3, 11, 40,
+        60, 158, 173, 194, 233], \"the\": [4, 28, 64, 83, 96, 168], \"human\": [5],
+        \"brain\": [6], \"plays\": [7], \"a\": [8, 153], \"major\": [9], \"role\":
+        [10], \"social\": [12, 223], \"cognition,\": [13], \"especially\": [14], \"cognitive\":
+        [15], \"control\": [16], \"of\": [17, 32, 66, 85, 115, 155, 167], \"emotion.\":
+        [18], \"medial\": [20], \"frontopolar\": [21], \"cortex\": [22], \"(mFP;\":
+        [23], \"Brodmann\": [24], \"Area\": [25], \"10)\": [26], \"and\": [27, 35,
+        58, 88, 104, 147, 178, 209, 215, 224], \"amygdala\": [29, 179], \"are\": [30],
+        \"part\": [31], \"this\": [33, 72], \"display\": [36], \"correlated\": [37],
+        \"neuronal\": [38, 195], \"activity\": [39, 196], \"time,\": [41], \"as\":
+        [42, 106, 199, 227, 229], \"measured\": [43, 107], \"by\": [44], \"functional\":
+        [45, 51, 69, 100, 156, 174, 211], \"magnetic\": [46, 92], \"resonance\": [47],
+        \"imaging\": [48], \"(fMRI).\": [49], \"This\": [50, 218], \"connectivity\":
+        [52, 70, 101, 157, 175], \"is\": [53, 205, 220], \"dynamic,\": [54], \"sensitive\":
+        [55], \"to\": [56, 95, 162, 183], \"training,\": [57], \"affected\": [59],
+        \"mental\": [61], \"disorders.\": [62], \"However,\": [63], \"effects\": [65,
+        84], \"neurostimulation\": [67], \"on\": [68, 99], \"within\": [71], \"have\":
+        [74], \"not\": [75], \"yet\": [76], \"been\": [77], \"systematically\": [78],
+        \"investigated.\": [79], \"Here,\": [80], \"we\": [81], \"investigate\": [82],
+        \"both\": [86], \"low-\": [87], \"high-frequency\": [89, 136], \"repetitive\":
+        [90], \"transcranial\": [91], \"stimulation\": [93, 169, 181, 185], \"(rTMS)\":
+        [94], \"right\": [97], \"mFP\": [98, 103, 177], \"between\": [102, 176, 213],
+        \"amygdala,\": [105], \"with\": [108], \"resting\": [109], \"state\": [110],
+        \"fMRI\": [111], \"(rsfMRI).\": [112], \"Three\": [113], \"groups\": [114],
+        \"healthy\": [116], \"participants\": [117], \"received\": [118], \"either\":
+        [119], \"low-frequency\": [120], \"rTMS\": [121, 137, 204], \"(1\": [122,
+        129], \"Hz;\": [123, 139], \"N\": [124, 132, 140], \"=\": [125, 133, 141],
+        \"18),\": [126], \"sham\": [127, 163], \"TMS\": [128, 164], \"Hz,\": [130],
+        \"subthreshold;\": [131], \"18)\": [134], \"or\": [135, 191], \"(20\": [138],
+        \"19).\": [142], \"rsfMRI\": [143], \"was\": [144], \"acquired\": [145], \"before\":
+        [146, 184], \"after\": [148, 180], \"(separate\": [149], \"days).\": [150],
+        \"We\": [151], \"hypothesized\": [152], \"modulation\": [154], \"opposite\":
+        [159], \"directions\": [160], \"compared\": [161, 182], \"through\": [165],
+        \"adjustment\": [166], \"frequency.\": [170], \"Groups\": [171], \"differed\":
+        [172], \"(low-frequency:\": [186], \"decrease,\": [187], \"high-frequency:\":
+        [188], \"increase).\": [189], \"Motion\": [190], \"induced\": [192], \"changes\":
+        [193], \"were\": [197], \"excluded\": [198], \"confounders.\": [200], \"Results\":
+        [201], \"show\": [202], \"that\": [203], \"effective\": [206], \"for\": [207,
+        222], \"increasing\": [208], \"decreasing\": [210], \"coherence\": [212],
+        \"prefrontal\": [214], \"limbic\": [216], \"regions.\": [217], \"finding\":
+        [219], \"relevant\": [221], \"affective\": [225], \"neuroscience\": [226],
+        \"well\": [228], \"novel\": [230], \"treatment\": [231], \"approaches\": [232],
+        \"psychiatry.\": [234]}, \"primary_location\": {\"id\": \"doi:10.1002/hbm.24703\",
+        \"doi\": \"https://doi.org/10.1002/hbm.24703\", \"is_oa\": true, \"landing_page_url\":
+        \"https://doi.org/10.1002/hbm.24703\", \"pdf_url\": \"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703\",
+        \"source\": {\"id\": \"https://openalex.org/S121666818\", \"display_name\":
+        \"Human Brain Mapping\", \"issn_l\": \"1065-9471\", \"issn\": [\"1065-9471\",
+        \"1097-0193\"], \"is_oa\": false, \"is_in_doaj\": true, \"is_core\": true,
+        \"listed_in\": [\"cwts-core\", \"doaj\", \"dongbi-b\", \"doyens\", \"erih-plus\",
+        \"jufo-2\", \"ki-jl-2\", \"medline\", \"norway-2\", \"poland-100\", \"russia-white-list-1\",
+        \"vabb-shw\"], \"host_organization\": \"https://openalex.org/P4310320595\",
+        \"host_organization_name\": \"Wiley\", \"host_organization_lineage\": [\"https://openalex.org/P4310320595\"],
+        \"host_organization_lineage_names\": [\"Wiley\"], \"type\": \"journal\"},
+        \"license\": null, \"license_id\": null, \"version\": \"publishedVersion\",
+        \"is_accepted\": true, \"is_published\": true, \"raw_source_name\": \"Human
+        Brain Mapping\", \"raw_type\": \"journal-article\"}, \"open_access\": {\"is_oa\":
+        true, \"oa_status\": \"bronze\", \"oa_url\": \"https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703\",
+        \"any_repository_has_fulltext\": true}}], \"group_by\": []}"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c35fdb8b466b70-DFW
+      - a4c3aad38d1969b9-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -201,7 +214,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 00:19:57 GMT
+      - Sun, 18 Oct 2026 01:11:08 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -221,11 +234,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '998'
+      - '984'
       X-RateLimit-Remaining-USD:
-      - '0.0998'
+      - '0.0984'
       X-RateLimit-Reset:
-      - '85203'
+      - '82132'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -240,9 +253,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2FHtYuhxpRnuemNK7V03ZlHGP%2FM0lXDxZQcKaHAHkcNM%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792282797"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Kv3KF%2FsN2KPX4uhmqvoH0Pyf0G3laVsJc16ondpTuXc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792285868"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2FHtYuhxpRnuemNK7V03ZlHGP%2FM0lXDxZQcKaHAHkcNM%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792282797"
+      - heroku-nel="https://nel.heroku.com/reports?s=Kv3KF%2FsN2KPX4uhmqvoH0Pyf0G3laVsJc16ondpTuXc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792285868"
     status:
       code: 200
       message: OK
@@ -258,132 +271,142 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703&mailto=replay%40example.com&per_page=100&select=ids%2Cpublication_year%2Cauthorships
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703&per_page=100&select=ids%2Cpublication_year%2Cauthorships
   response:
     body:
-      string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
-        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
-        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
-        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
-        \"<your user''s email>\"}; we email them a link, and the key works once they
-        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 1,
-        "db_response_time_ms": 50, "page": 1, "per_page": 100, "groups_count": null,
-        "x_query": {"oql": "get works where DOI is 10.1002/hbm.24703", "x_new_oql":
-        "get works where DOI is 10.1002/hbm.24703", "oqo": {"get_rows": "works", "filter_rows":
-        [{"column_id": "doi", "value": "10.1002/hbm.24703"}]}, "url": "/works?filter=doi:10.1002%2Fhbm.24703&per_page=100"},
-        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2954579665",
-        "doi": "https://doi.org/10.1002/hbm.24703", "mag": "2954579665", "pmid": "https://pubmed.ncbi.nlm.nih.gov/31268615",
-        "pmcid": "https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x"}, "publication_year":
-        2019, "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5078801851",
-        "display_name": "Philipp Riedel", "orcid": "https://orcid.org/0000-0001-9298-2125",
-        "observed_orcids": ["https://orcid.org/0000-0001-9298-2125"]}, "institutions":
-        [{"id": "https://openalex.org/I4405270470", "display_name": "Neuroimaging
-        Center", "ror": "https://ror.org/00r302z28", "country_code": "DE", "type":
-        "facility", "lineage": ["https://openalex.org/I4210162051", "https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}, {"id": "https://openalex.org/I78650965",
-        "display_name": "Technische Universit\u00e4t Dresden", "ror": "https://ror.org/042aqky30",
-        "country_code": "DE", "type": "education", "lineage": ["https://openalex.org/I78650965"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Philipp
-        Riedel", "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging
-        Center Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid":
-        null, "affiliations": [{"raw_affiliation_string": "Department of Psychiatry
-        and Neuroimaging Center Technische Universit\u00e4t Dresden  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}]},
-        {"author_position": "middle", "author": {"id": null, "display_name": "Matthias
-        Heil", "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4405270470",
-        "display_name": "Neuroimaging Center", "ror": "https://ror.org/00r302z28",
-        "country_code": "DE", "type": "facility", "lineage": ["https://openalex.org/I4210162051",
-        "https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}, {"id":
-        "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Matthias Heil", "raw_affiliation_strings":
-        ["Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany", "institution_ids": ["https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}]}, {"author_position": "middle", "author":
-        {"id": "https://openalex.org/A5049563818", "display_name": "Stephan Bender",
-        "orcid": "https://orcid.org/0000-0001-8199-3785", "observed_orcids": ["https://orcid.org/0000-0001-8199-3785"]},
-        "institutions": [{"id": "https://openalex.org/I180923762", "display_name":
-        "University of Cologne", "ror": "https://ror.org/00rcxh774", "country_code":
-        "DE", "type": "education", "lineage": ["https://openalex.org/I180923762"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Stephan
-        Bender", "raw_affiliation_strings": ["Medical Faculty, Department of Child
-        and Adolescent Psychiatry, Psychosomatics and Psychotherapy University of
-        Cologne  Cologne Germany", "Medical Faculty, Department of Child and Adolescent
-        Psychiatry, Psychosomatics and Psychotherapy, University of Cologne, Cologne,
-        Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Medical Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics
-        and Psychotherapy University of Cologne  Cologne Germany", "institution_ids":
-        ["https://openalex.org/I180923762"]}, {"raw_affiliation_string": "Medical
+      string: "{\"meta\": {\"notice\": \"No API key, so this request shares one free
+        daily budget ($0.10) with everyone on your network's IP address. Get a free
+        key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
+        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
+        with {\\\"email\\\": \\\"<your user's email>\\\"}; we email them a link, and
+        the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt\",
+        \"count\": 1, \"db_response_time_ms\": 9, \"page\": 1, \"per_page\": 100,
+        \"groups_count\": null, \"x_query\": {\"oql\": \"get works where DOI is 10.1002/hbm.24703\",
+        \"x_new_oql\": \"get works where DOI is 10.1002/hbm.24703\", \"oqo\": {\"get_rows\":
+        \"works\", \"filter_rows\": [{\"column_id\": \"doi\", \"value\": \"10.1002/hbm.24703\"}]},
+        \"url\": \"/works?filter=doi:10.1002%2Fhbm.24703&per_page=100\"}, \"cost_usd\":
+        0.0001}, \"results\": [{\"ids\": {\"openalex\": \"https://openalex.org/W2954579665\",
+        \"doi\": \"https://doi.org/10.1002/hbm.24703\", \"mag\": \"2954579665\", \"pmid\":
+        \"https://pubmed.ncbi.nlm.nih.gov/31268615\", \"pmcid\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/6865431.x\"},
+        \"publication_year\": 2019, \"authorships\": [{\"author_position\": \"first\",
+        \"author\": {\"id\": \"https://openalex.org/A5078801851\", \"display_name\":
+        \"Philipp Riedel\", \"orcid\": \"https://orcid.org/0000-0001-9298-2125\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-9298-2125\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Philipp Riedel\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"middle\", \"author\": {\"id\": null, \"display_name\":
+        \"Matthias Heil\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Matthias Heil\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"middle\", \"author\": {\"id\": \"https://openalex.org/A5049563818\",
+        \"display_name\": \"Stephan Bender\", \"orcid\": \"https://orcid.org/0000-0001-8199-3785\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-8199-3785\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I180923762\", \"display_name\": \"University
+        of Cologne\", \"ror\": \"https://ror.org/00rcxh774\", \"country_code\": \"DE\",
+        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I180923762\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Stephan Bender\", \"raw_affiliation_strings\": [\"Medical Faculty, Department
+        of Child and Adolescent Psychiatry, Psychosomatics and Psychotherapy University
+        of Cologne  Cologne Germany\", \"Medical Faculty, Department of Child and
+        Adolescent Psychiatry, Psychosomatics and Psychotherapy, University of Cologne,
+        Cologne, Germany\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
+        \"Medical Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics
+        and Psychotherapy University of Cologne  Cologne Germany\", \"institution_ids\":
+        [\"https://openalex.org/I180923762\"]}, {\"raw_affiliation_string\": \"Medical
         Faculty, Department of Child and Adolescent Psychiatry, Psychosomatics and
-        Psychotherapy, University of Cologne, Cologne, Germany", "institution_ids":
-        ["https://openalex.org/I180923762"]}]}, {"author_position": "middle", "author":
-        {"id": "https://openalex.org/A5023240827", "display_name": "Gabriel Dippel",
-        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210162051",
-        "display_name": "University Hospital Carl Gustav Carus", "ror": "https://ror.org/04za5zm41",
-        "country_code": "DE", "type": "healthcare", "lineage": ["https://openalex.org/I4210162051"]}],
-        "countries": ["DE"], "is_corresponding": false, "raw_author_name": "Gabriel
-        Dippel", "raw_affiliation_strings": ["Department of Child and Adolescent Psychiatry
-        and Psychotherapy University Hospital Carl Gustav Carus  Dresden Germany",
-        "Department of Child and Adolescent Psychiatry and Psychotherapy, University
-        Hospital Carl Gustav Carus, Dresden, Germany"], "raw_orcid": null, "affiliations":
-        [{"raw_affiliation_string": "Department of Child and Adolescent Psychiatry
-        and Psychotherapy University Hospital Carl Gustav Carus  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4210162051"]}, {"raw_affiliation_string":
-        "Department of Child and Adolescent Psychiatry and Psychotherapy, University
-        Hospital Carl Gustav Carus, Dresden, Germany", "institution_ids": ["https://openalex.org/I4210162051"]}]},
-        {"author_position": "middle", "author": {"id": "https://openalex.org/A5075765224",
-        "display_name": "Franziska M. Korb", "orcid": "https://orcid.org/0000-0002-1005-0090",
-        "observed_orcids": ["https://orcid.org/0000-0002-1005-0090"]}, "institutions":
-        [{"id": "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Franziska M. Korb",
-        "raw_affiliation_strings": ["Department of General Psychology Technische Universit\u00e4t
-        Dresden  Dresden Germany"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
-        "Department of General Psychology Technische Universit\u00e4t Dresden  Dresden
-        Germany", "institution_ids": ["https://openalex.org/I78650965"]}]}, {"author_position":
-        "middle", "author": {"id": "https://openalex.org/A5063406820", "display_name":
-        "Michael N. Smolka", "orcid": "https://orcid.org/0000-0001-5398-5569", "observed_orcids":
-        ["https://orcid.org/0000-0001-5398-5569"]}, "institutions": [{"id": "https://openalex.org/I4405270470",
-        "display_name": "Neuroimaging Center", "ror": "https://ror.org/00r302z28",
-        "country_code": "DE", "type": "facility", "lineage": ["https://openalex.org/I4210162051",
-        "https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}, {"id":
-        "https://openalex.org/I78650965", "display_name": "Technische Universit\u00e4t
-        Dresden", "ror": "https://ror.org/042aqky30", "country_code": "DE", "type":
-        "education", "lineage": ["https://openalex.org/I78650965"]}], "countries":
-        ["DE"], "is_corresponding": false, "raw_author_name": "Michael N. Smolka",
-        "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging Center
-        Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid": null,
-        "affiliations": [{"raw_affiliation_string": "Department of Psychiatry and
-        Neuroimaging Center Technische Universit\u00e4t Dresden  Dresden Germany",
-        "institution_ids": ["https://openalex.org/I4405270470", "https://openalex.org/I78650965"]}]},
-        {"author_position": "last", "author": {"id": "https://openalex.org/A5014835191",
-        "display_name": "Michael Marxen", "orcid": "https://orcid.org/0000-0001-8870-0041",
-        "observed_orcids": ["https://orcid.org/0000-0001-8870-0041"]}, "institutions":
-        [{"id": "https://openalex.org/I4405270470", "display_name": "Neuroimaging
-        Center", "ror": "https://ror.org/00r302z28", "country_code": "DE", "type":
-        "facility", "lineage": ["https://openalex.org/I4210162051", "https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}, {"id": "https://openalex.org/I78650965",
-        "display_name": "Technische Universit\u00e4t Dresden", "ror": "https://ror.org/042aqky30",
-        "country_code": "DE", "type": "education", "lineage": ["https://openalex.org/I78650965"]}],
-        "countries": ["DE"], "is_corresponding": true, "raw_author_name": "Michael
-        Marxen", "raw_affiliation_strings": ["Department of Psychiatry and Neuroimaging
-        Center Technische Universit\u00e4t Dresden  Dresden Germany"], "raw_orcid":
-        "https://orcid.org/0000-0001-8870-0041", "affiliations": [{"raw_affiliation_string":
-        "Department of Psychiatry and Neuroimaging Center Technische Universit\u00e4t
-        Dresden  Dresden Germany", "institution_ids": ["https://openalex.org/I4405270470",
-        "https://openalex.org/I78650965"]}]}]}], "group_by": []}'
+        Psychotherapy, University of Cologne, Cologne, Germany\", \"institution_ids\":
+        [\"https://openalex.org/I180923762\"]}]}, {\"author_position\": \"middle\",
+        \"author\": {\"id\": \"https://openalex.org/A5023240827\", \"display_name\":
+        \"Gabriel Dippel\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4210162051\", \"display_name\": \"University
+        Hospital Carl Gustav Carus\", \"ror\": \"https://ror.org/04za5zm41\", \"country_code\":
+        \"DE\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I4210162051\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Gabriel Dippel\", \"raw_affiliation_strings\": [\"Department of Child and
+        Adolescent Psychiatry and Psychotherapy University Hospital Carl Gustav Carus
+        \ Dresden Germany\", \"Department of Child and Adolescent Psychiatry and Psychotherapy,
+        University Hospital Carl Gustav Carus, Dresden, Germany\"], \"raw_orcid\":
+        null, \"affiliations\": [{\"raw_affiliation_string\": \"Department of Child
+        and Adolescent Psychiatry and Psychotherapy University Hospital Carl Gustav
+        Carus  Dresden Germany\", \"institution_ids\": [\"https://openalex.org/I4210162051\"]},
+        {\"raw_affiliation_string\": \"Department of Child and Adolescent Psychiatry
+        and Psychotherapy, University Hospital Carl Gustav Carus, Dresden, Germany\",
+        \"institution_ids\": [\"https://openalex.org/I4210162051\"]}]}, {\"author_position\":
+        \"middle\", \"author\": {\"id\": \"https://openalex.org/A5075765224\", \"display_name\":
+        \"Franziska M. Korb\", \"orcid\": \"https://orcid.org/0000-0002-1005-0090\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0002-1005-0090\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Franziska M. Korb\", \"raw_affiliation_strings\": [\"Department of General
+        Psychology Technische Universit\xE4t Dresden  Dresden Germany\"], \"raw_orcid\":
+        null, \"affiliations\": [{\"raw_affiliation_string\": \"Department of General
+        Psychology Technische Universit\xE4t Dresden  Dresden Germany\", \"institution_ids\":
+        [\"https://openalex.org/I78650965\"]}]}, {\"author_position\": \"middle\",
+        \"author\": {\"id\": \"https://openalex.org/A5063406820\", \"display_name\":
+        \"Michael N. Smolka\", \"orcid\": \"https://orcid.org/0000-0001-5398-5569\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-5398-5569\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": false, \"raw_author_name\":
+        \"Michael N. Smolka\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Department
+        of Psychiatry and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden
+        Germany\", \"institution_ids\": [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]},
+        {\"author_position\": \"last\", \"author\": {\"id\": \"https://openalex.org/A5014835191\",
+        \"display_name\": \"Michael Marxen\", \"orcid\": \"https://orcid.org/0000-0001-8870-0041\",
+        \"observed_orcids\": [\"https://orcid.org/0000-0001-8870-0041\"]}, \"institutions\":
+        [{\"id\": \"https://openalex.org/I4405270470\", \"display_name\": \"Neuroimaging
+        Center\", \"ror\": \"https://ror.org/00r302z28\", \"country_code\": \"DE\",
+        \"type\": \"facility\", \"lineage\": [\"https://openalex.org/I4210162051\",
+        \"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]},
+        {\"id\": \"https://openalex.org/I78650965\", \"display_name\": \"Technische
+        Universit\xE4t Dresden\", \"ror\": \"https://ror.org/042aqky30\", \"country_code\":
+        \"DE\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I78650965\"]}],
+        \"countries\": [\"DE\"], \"is_corresponding\": true, \"raw_author_name\":
+        \"Michael Marxen\", \"raw_affiliation_strings\": [\"Department of Psychiatry
+        and Neuroimaging Center Technische Universit\xE4t Dresden  Dresden Germany\"],
+        \"raw_orcid\": \"https://orcid.org/0000-0001-8870-0041\", \"affiliations\":
+        [{\"raw_affiliation_string\": \"Department of Psychiatry and Neuroimaging
+        Center Technische Universit\xE4t Dresden  Dresden Germany\", \"institution_ids\":
+        [\"https://openalex.org/I4405270470\", \"https://openalex.org/I78650965\"]}]}]}],
+        \"group_by\": []}"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c35fdcea36c4f5-DFW
+      - a4c3aad49deac0b3-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -391,7 +414,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 00:19:57 GMT
+      - Sun, 18 Oct 2026 01:11:08 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -411,11 +434,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '997'
+      - '983'
       X-RateLimit-Remaining-USD:
-      - '0.0997'
+      - '0.0983'
       X-RateLimit-Reset:
-      - '85203'
+      - '82132'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -430,9 +453,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2FHtYuhxpRnuemNK7V03ZlHGP%2FM0lXDxZQcKaHAHkcNM%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792282797"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Kv3KF%2FsN2KPX4uhmqvoH0Pyf0G3laVsJc16ondpTuXc%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792285868"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2FHtYuhxpRnuemNK7V03ZlHGP%2FM0lXDxZQcKaHAHkcNM%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792282797"
+      - heroku-nel="https://nel.heroku.com/reports?s=Kv3KF%2FsN2KPX4uhmqvoH0Pyf0G3laVsJc16ondpTuXc%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792285868"
     status:
       code: 200
       message: OK

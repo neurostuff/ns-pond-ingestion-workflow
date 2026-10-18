@@ -3,6 +3,8 @@
 import hashlib
 import json
 import os
+import shutil
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -333,6 +335,28 @@ class TestMetadataService:
         assert metadata is not None
         assert metadata.title == "Pubget Test"
         assert len(metadata.authors) == 1
+
+    def test_pubget_fallback_finds_the_article_by_its_pmcid(self, metadata_service, tmp_path):
+        """pubget files PMC9056519 as `articles/1a4/pmcid_9056519`, as in its test data."""
+        fixture = Path(__file__).resolve().parents[1] / "data" / "test_pubget" / "articles"
+        root = metadata_service.settings.pubget_cache_root or (
+            metadata_service.settings.cache_root / "pubget"
+        )
+        target = root / "articles" / "1a4" / "pmcid_9056519"
+        target.mkdir(parents=True)
+        shutil.copy(fixture / "1a4" / "pmcid_9056519" / "article.xml", target / "article.xml")
+        extracted = ExtractedContent(
+            slug="pubget-by-pmcid",
+            source=DownloadSource.PUBGET,
+            identifier=Identifier(pmcid="PMC9056519"),
+            has_coordinates=False,
+            full_text_path=tmp_path / "elsewhere" / "text.txt",
+        )
+
+        metadata = metadata_service._get_pubget_fallback(extracted)
+
+        assert metadata is not None
+        assert metadata.title.startswith("Preliminary findings demonstrating latent effects")
 
 
 class TestMetadataIntegration:

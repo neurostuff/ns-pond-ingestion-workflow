@@ -211,13 +211,9 @@ class PmcExtractor(_PmcXmlExtractor):
                     articles[pmcid] = article
                 else:
                     reasons[pmcid] = RESTRICTED
-            # An article whose id is malformed cannot be matched to the PMCID it answers.
-            missing = "PMC returned no article for this PMCID"
-            if malformed:
-                missing += f"; it returned one under a malformed id ({'; '.join(malformed)})"
-            for pmcid in chunk:
-                if pmcid not in articles:
-                    reasons.setdefault(pmcid, missing)
+            missing = [p for p in chunk if p not in articles and p not in reasons]
+            for pmcid in missing:
+                reasons[pmcid] = _missing_reason(malformed, len(missing))
         return articles, reasons
 
     def _extra_files(self, pmcid: str, article_dir: Path) -> List[DownloadedFile]:
@@ -268,6 +264,20 @@ class EuropePmcExtractor(_PmcXmlExtractor):
                 else:
                     reasons[pmcid] = reason or "Europe PMC returned no article"
         return articles, reasons
+
+
+def _missing_reason(malformed: List[str], missing: int) -> str:
+    """Why efetch left a PMCID without an article.
+
+    An article under a malformed id cannot be matched to the PMCID it answers,
+    except when it is the only one and one PMCID is missing.
+    """
+    if not malformed:
+        return "PMC returned no article for this PMCID"
+    if len(malformed) == 1 and missing == 1:
+        return f"PMC returned this article under a malformed id ({malformed[0]})"
+    return (f"PMC returned no article for this PMCID; this batch's {missing} missing PMCIDs "
+            f"share {len(malformed)} articles under malformed ids ({'; '.join(malformed)})")
 
 
 def _pmcid_of(article: etree._Element) -> Optional[str]:

@@ -171,6 +171,11 @@ def test_stage_filter_is_honoured(legacy, tmp_path):
             "22645660-10-1098-rsob-120001-pmc3352092::table-1",
             {"pmid": "22645660", "pmcid": "PMC3352092"},
         ),
+        # the slug above with a zero written in front of the PMCID
+        (
+            "22645660-10-1098-rsob-120001-pmc03352092",
+            {"pmid": "22645660", "pmcid": "PMC3352092"},
+        ),
         ("", {}),
     ],
 )

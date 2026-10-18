@@ -1,0 +1,60 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: PubMedCentral 4691364 changed to 4691364x.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/search/match?fields=title%2Cauthors%2Cyear%2CexternalIds&query=Preliminary+findings+demonstrating+latent+effects+of+early+adolescent+marijuana+use+onset+on+cortical+architecture
+  response:
+    body:
+      string: '{"data": [{"paperId": "463d3028779eb83bf43a59e6bc383b3a4ce472d9", "externalIds":
+        {"MAG": "2187858528", "PubMedCentral": "4691364x", "DOI": "10.1016/j.dcn.2015.10.001",
+        "CorpusId": 14501334, "PubMed": "26507433"}, "title": "Preliminary Findings
+        Demonstrating Latent Effects of Early Adolescent Marijuana Use Onset on Cortical
+        Architecture", "year": 2015, "authors": [{"authorId": "145669822", "name":
+        "F. Filbey"}, {"authorId": "5786351", "name": "Tim M. McQueeny"}, {"authorId":
+        "50493617", "name": "Samuel J. DeWitt"}, {"authorId": "2781305", "name": "V.
+        Mishra"}], "matchScore": 306.59418}]}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '593'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 01:08:57 GMT
+      Via:
+      - 1.1 22067fb5d7eb764108747a104222f50a.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - iTIh2lOwPGqeRTXseuj_ji58Jsotzbf1Wd0znvz84EC0U4TCPSLxew==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FalWZGGrvHcEDSg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '593'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 01:08:57 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 93ac3a7c-2421-4a19-90e4-b845747f8c60
+    status:
+      code: 200
+      message: OK
+version: 1

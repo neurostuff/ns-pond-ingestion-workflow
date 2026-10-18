@@ -1,4 +1,4 @@
-# Recorded 2026-10-17, then edited by hand: the id converter's pmcid for 10.1002/hbm.24703 changed from PMC6865431 to PMC6865431.x.
+# Recorded 2026-10-17 with no email sent, then edited by hand: the id converter's pmcid for 10.1002/hbm.24703 changed from PMC6865431 to PMC6865431.x.
 interactions:
 - request:
     body: ''
@@ -14,16 +14,16 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=10.1002%2Fhbm.24703%2C10.1371%2Fjournal.pone.0041873&idtype=doi&tool=ingestion-workflow-tests
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?format=json&ids=10.1002%2Fhbm.24703%2C10.1371%2Fjournal.pone.0041873&idtype=doi&tool=ingestion-workflow-tests
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAACA32RQWvDMAyF/8owNKcmtR03CYHAoLDbYPfRg5e4q9vEyux06Sj575PdUjbW7qin
-        56dP8om4QQ4HR0oCezInVrkejFNxIweFIqc8ixmNWf7AacmKkmXB9XFQbiDliYzSGm3eMeB1PScb
-        sJ1EnewcGDTqZvjqfU4DOpTeRxhNGKV8sX3rEi5ymmLLa2nOFjs4WCPbBClUQqlgRZ4STFad1C0G
-        DTj3UR1l17cqqaHDpwOA7yAF9jSYeAS737Qwxt7s0KHqLaAjZFRenAn6IyM6Y1ceOkLG6gI4409X
-        xBlfXRBRvQUZnXetcNPIE1X/8Hwq67Dhr24Aa7eFUWrdnOvJH7gGG451Cqcrb96s7+rw5uV5lRXZ
-        UqQsOQbZqynjKLLl9bdUEwf336Rp/nPK3V/4NTAVNGd8eR3HeSGKTIib4+5GTuvpG1D+pe6CAgAA
+        H4sIAAAAAAACA32RUW+CMBSF/wppIk+CbUEgJDyZ7G3J3hcTO6mjCr2sxTFj+O+7rcZsme7xnt6e
+        7/T0TOwghqMlJYEDmRMjbQ/ayqgWg0SRU55FjEYsDzgrGStp7rc+jtIOpDyTURit9DsavBIUzSno
+        hRFdsJGdUO0mUDbolLW4EpP1nOzAdAIvkr0FjU6qHk69A9Wg/OiNGI0ZpXzRvHUxT3Oa4JHTkpwt
+        9nA0WrQxxpQxpSkr8sQ5DwAt+iAIkynQ0QjmsGthjAYULDrIbQO44YNV4SVJ5XKEiK2uzBl/ulFn
+        fHWlonqPG17iVxg+dPzqH/qnNBYPXNMacLYNjEKp+jJPrtQtGP/+s2+jvFtD3239nZfnVVZkyzRh
+        8ZeXnZowjiJb3n5I1pHf/us0zX9SHhb7C5ikNGd8ecNxXqRFlqZ3cQ8tp/X0Da9i58N2AgAA
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -36,7 +36,7 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Sun, 18 Oct 2026 00:18:16 GMT
+      - Sun, 18 Oct 2026 01:11:07 GMT
       referrer-policy:
       - same-origin
       server:

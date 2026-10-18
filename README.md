@@ -65,6 +65,11 @@ ingest status                                                   # where everythi
 ingest show PMC10634720                                         # one article in detail
 ```
 
+A PMCID may be written in either case (`pmc10634720`) or as its PMC article
+address (`https://pmc.ncbi.nlm.nih.gov/articles/PMC10634720/`, or the older
+`www.ncbi.nlm.nih.gov/pmc/articles/...`). A token that starts like one but is
+not a PMCID, such as `pmc-x`, is refused with an error naming it.
+
 ## Running it piecemeal
 
 Every stage can run on its own, over any subset, at any time. The cache decides

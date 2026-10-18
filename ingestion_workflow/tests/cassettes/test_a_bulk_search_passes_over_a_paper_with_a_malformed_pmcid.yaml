@@ -1,0 +1,55 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: PubMedCentral 4691364 changed to 4691364x; the two 429 answers before the 200 removed.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.semanticscholar.org/graph/v1/paper/search/bulk?fields=externalIds&query=%22Preliminary+findings+demonstrating+latent+effects+of+early+adolescent+marijuana+use+onset+on+cortical+architecture%22
+  response:
+    body:
+      string: '{"total": 1, "token": null, "data": [{"paperId": "463d3028779eb83bf43a59e6bc383b3a4ce472d9",
+        "externalIds": {"MAG": "2187858528", "PubMedCentral": "4691364x", "DOI": "10.1016/j.dcn.2015.10.001",
+        "CorpusId": 14501334, "PubMed": "26507433"}}]}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '241'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 01:09:00 GMT
+      Via:
+      - 1.1 7d27498ef63e76e5a81975299a76fae4.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - _0R8BHlG9Sp4-3ZiiVez1JZEWsbXl6Jk_WV3x_0TQUDnvmCmgmBzpw==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FalXBGzBvHcEHcA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '241'
+      x-amzn-Remapped-Date:
+      - Sun, 18 Oct 2026 01:09:00 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 9b47ee69-bbcf-40cb-8eb0-2c7f0d549297
+    status:
+      code: 200
+      message: OK
+version: 1

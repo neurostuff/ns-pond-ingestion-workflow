@@ -38,6 +38,7 @@ _METADATA_FIELDS = (
 )
 
 
+# `ids.pmcid` is a documented Work field, though OpenAlex rarely sends it today.
 def _identifier_from(
     ids: Optional[Dict], kinds: Sequence[str] = ("doi", "pmid", "pmcid")
 ) -> Identifier:

@@ -33,7 +33,7 @@ def test_a_malformed_pmcid_drops_only_its_own_record(caplog):
     """Recorded from the id converter, then edited: the first record's pmcid was changed
     from PMC6865431 to PMC6865431.x."""
     identifiers = Identifiers([Identifier(doi=doi) for doi in TWO_DOIS])
-    PubMedClient(email="test@example.com", tool="ingestion-workflow-tests").get_ids(
+    PubMedClient(email="", tool="ingestion-workflow-tests").get_ids(
         "doi", identifiers
     )
     malformed, sound = identifiers.identifiers

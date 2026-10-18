@@ -1,4 +1,4 @@
-# Recorded 2026-10-17, then edited by hand: efetch's article-id pub-id-type="pmcid" of PMC10002769 changed to PMC10002769.x.
+# Recorded 2026-10-17 with no email sent, then edited by hand: efetch's article-id pub-id-type="pmcid" of PMC10002769 changed to PMC10002769.x.
 interactions:
 - request:
     body: null
@@ -22,7 +22,7 @@ interactions:
       Content-Type:
       - application/xml
       Date:
-      - Sun, 18 Oct 2026 00:18:16 GMT
+      - Sun, 18 Oct 2026 01:09:52 GMT
       Server:
       - AmazonS3
       Transfer-Encoding:
@@ -30,9 +30,45 @@ interactions:
       x-amz-bucket-region:
       - us-east-1
       x-amz-id-2:
-      - lEA6c2YRSh1xSjEuWM1TcSFDP6GLpMFAICr9HGtHk9ivJ9dn3w6dxu3s/FndjvzBNQk0+Qj9611UjV8AOxStbuQEhKeOXmgC
+      - r8wC/8Jb0uJQnuZ/PVkpD6ocqptfx9Scn2vhg2KsFPp888gpGHF41d+ITrrF7O6skB8ktTDGWo4=
       x-amz-request-id:
-      - 2ZM27JSM746PR38N
+      - E9F1R2VAP3XVPDTA
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://pmc-oa-opendata.s3.amazonaws.com/?list-type=2&prefix=PMC10002769.
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>pmc-oa-opendata</Name><Prefix>PMC10002769.</Prefix><KeyCount>0</KeyCount><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>'
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Sun, 18 Oct 2026 01:09:52 GMT
+      Server:
+      - AmazonS3
+      Transfer-Encoding:
+      - chunked
+      x-amz-bucket-region:
+      - us-east-1
+      x-amz-id-2:
+      - d9MN34evJ3v0zbPhK023luBNjnF0EGdPNDhaMS5jYvvSfyFUZnA3exNPoMTMNhL06cn7sKhSJ8IP2OMRs7lKTrELM+sHyCzo
+      x-amz-request-id:
+      - E9FEF7R1GX4NQPH1
     status:
       code: 200
       message: OK
@@ -208,11 +244,11 @@ interactions:
       Content-Type:
       - text/xml; charset=UTF-8
       Date:
-      - Sun, 18 Oct 2026 00:18:14 GMT
+      - Sun, 18 Oct 2026 01:09:50 GMT
       Ncbi-Phid:
-      - 1D3387043D3AB615000016B37190D43C.1.1.m_4
+      - 1D3260FBA43AC4F5000029BAC7D9D910.1.1.m_4
       Ncbi-Sid:
-      - F1769EE35E3F11DE_533ASID
+      - 2FCADF0413B6B947_46B4SID
       Referrer-Policy:
       - origin-when-cross-origin
       Server:

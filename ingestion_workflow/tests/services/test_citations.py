@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from lxml import etree
 
 from ingestion_workflow.extractors.pubget_extractor import KEEPS_SUBSCRIPTS, KEEPS_SUPERSCRIPTS, article_text
@@ -203,3 +204,54 @@ def test_subscripts_stay_in_the_text_when_pubget_keeps_them(tmp_path):
     text = article_text(etree.parse(str(_jats(tmp_path))), tmp_path)
 
     assert ("FWE" in text) == KEEPS_SUBSCRIPTS
+
+
+#: Reference 3 of PMC4423152 as published, re-wrapped, except that its publisher had
+#: commented out the bare `pmcid` id; it is uncommented here.
+REAL_REF = """<ref id="b3-cpn-13-68"><label>3</label><element-citation publication-type="journal">
+<person-group person-group-type="author">
+<name><surname>Shenton</surname><given-names>ME</given-names></name>
+<name><surname>Dickey</surname><given-names>CC</given-names></name>
+<name><surname>Frumin</surname><given-names>M</given-names></name>
+<name><surname>McCarley</surname><given-names>RW</given-names></name></person-group>
+<article-title>A review of MRI findings in schizophrenia</article-title>
+<source>Schizophr Res</source>
+<year>2001</year><volume>49</volume><fpage>1</fpage><lpage>52</lpage>
+<pub-id pub-id-type="doi">10.1016/S0920-9964(01)00163-3</pub-id>
+<pub-id pub-id-type="pmcid">{pmcid}</pub-id>
+<pub-id pub-id-type="pmid">11343862</pub-id>
+</element-citation></ref>"""
+
+
+def _one_reference(tmp_path, pmcid):
+    xml = JATS.replace('<ref id="B1">', REAL_REF.format(pmcid=pmcid) + '<ref id="B1">')
+    path = tmp_path / "article.xml"
+    path.write_text(xml)
+    text = article_text(etree.parse(str(path)), tmp_path)
+    return {r["id"]: r for r in C.read_jats(path, text).references}["b3-cpn-13-68"]
+
+
+def test_a_jats_reference_pmcid_is_canonical(tmp_path):
+    ref = _one_reference(tmp_path, "2812015")
+    assert (ref["pmcid"], ref["pmid"]) == ("PMC2812015", "11343862")
+
+
+def test_a_malformed_jats_reference_pmcid_is_dropped_and_the_rest_kept(tmp_path):
+    ref = _one_reference(tmp_path, "2812015x")
+    assert ref["pmcid"] is None
+    assert (ref["pmid"], ref["doi"]) == ("11343862", "10.1016/S0920-9964(01)00163-3")
+
+
+@pytest.mark.parametrize("href,pmcid", [
+    ("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2812015/", "PMC2812015"),
+    ("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC0012345/", "PMC12345"),
+    ("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC00000/", None),
+])
+def test_an_html_reference_pmcid_is_canonical(tmp_path, href, pmcid):
+    path = tmp_path / "page.html"
+    link = f'<a href="{href}">PMC</a>'
+    path.write_text(HTML.replace("Vision Res 9:1-2.", f"Vision Res 9:1-2. {link}"))
+    text = ("Attention shapes perception (Smith et al., 2001), see Table 1.\n"
+            "A second claim rests on older work (Jones, 1999).\n")
+    refs = {r["id"]: r for r in C.read_html(path, text).references}
+    assert refs["bib2"]["pmcid"] == pmcid

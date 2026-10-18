@@ -1,0 +1,1720 @@
+# Recorded 2026-10-17 with no email sent, then edited by hand: the article-id pub-id-type="pmcid" PMC3407125 changed to PMC3407125.x. 2 email address(es) in the bodies replaced by replay@example.com.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3407125/fullTextXML
+  response:
+    body:
+      string: "\n<!DOCTYPE article\n  PUBLIC \"-//NLM//DTD JATS (Z39.96) Journal Archiving
+        and Interchange DTD with MathML3 v1.4 20241031//EN\" \"JATS-archivearticle1-4-mathml3.dtd\">\n<article
+        article-type=\"research-article\" xml:lang=\"en\" dtd-version=\"1.4\"><front><journal-meta><journal-id
+        journal-id-type=\"nlm-ta\">PLoS One</journal-id><journal-id journal-id-type=\"iso-abbrev\">PLoS
+        ONE</journal-id><journal-id journal-id-type=\"pmc-domain-id\">440</journal-id><journal-id
+        journal-id-type=\"pmc-domain\">plosone</journal-id><journal-id journal-id-type=\"nlm-id\">101285081</journal-id><journal-id
+        journal-id-type=\"publisher-id\">plos</journal-id><journal-title-group><journal-title>PLoS
+        ONE</journal-title></journal-title-group><issn pub-type=\"epub\">1932-6203</issn><?publisher_abbrev
+        plos?><publisher><publisher-name>PLOS</publisher-name></publisher></journal-meta><article-meta><article-id
+        pub-id-type=\"pmcid\">PMC3407125.x</article-id><article-id pub-id-type=\"pmcid-ver\">PMC3407125.1</article-id><article-id
+        pub-id-type=\"pmcaid\">3407125</article-id><article-id pub-id-type=\"pmcaiid\">3407125</article-id><article-id
+        pub-id-type=\"pmid\">22848644</article-id><article-id pub-id-type=\"doi\">10.1371/journal.pone.0041873</article-id><article-id
+        pub-id-type=\"publisher-id\">PONE-D-12-09500</article-id><article-version
+        article-version-type=\"pmc-version\">1</article-version><article-categories><subj-group
+        subj-group-type=\"heading\"><subject>Research Article</subject></subj-group><subj-group
+        subj-group-type=\"Discipline-v2\"><subject>Biology</subject><subj-group><subject>Neuroscience</subject><subj-group><subject>Cellular
+        Neuroscience</subject><subj-group><subject>Neuronal Morphology</subject></subj-group></subj-group></subj-group></subj-group><subj-group
+        subj-group-type=\"Discipline-v2\"><subject>Medicine</subject><subj-group><subject>Diagnostic
+        Medicine</subject><subj-group><subject>Pathology</subject><subj-group><subject>General
+        Pathology</subject><subj-group><subject>Biomarkers</subject></subj-group></subj-group></subj-group></subj-group><subj-group><subject>Neurology</subject><subj-group><subject>Movement
+        Disorders</subject><subject>Neurodegenerative Diseases</subject><subject>Neuroimaging</subject><subject>Parkinson
+        Disease</subject></subj-group></subj-group><subj-group><subject>Radiology</subject><subj-group><subject>Diagnostic
+        Radiology</subject><subj-group><subject>Magnetic Resonance Imaging</subject></subj-group></subj-group></subj-group></subj-group></article-categories><title-group><article-title>Longitudinal
+        Deformation-Based Morphometry Reveals Spatio-Temporal Dynamics of Brain Volume
+        Changes in Patients with Corticobasal Syndrome</article-title><alt-title alt-title-type=\"running-head\">Dynamics
+        of Brain Atrophy in CBS</alt-title></title-group><contrib-group><contrib contrib-type=\"author\"
+        equal-contrib=\"yes\"><name name-style=\"western\"><surname>S\xFCdmeyer</surname><given-names
+        initials=\"M\">Martin</given-names></name><xref ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref
+        ref-type=\"aff\" rid=\"aff2\">\n<sup>2</sup>\n</xref><xref ref-type=\"corresp\"
+        rid=\"cor1\">\n<sup>*</sup>\n</xref></contrib><contrib contrib-type=\"author\"
+        equal-contrib=\"yes\"><name name-style=\"western\"><surname>Pieperhoff</surname><given-names
+        initials=\"P\">Peter</given-names></name><xref ref-type=\"aff\" rid=\"aff3\">\n<sup>3</sup>\n</xref></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Ferrea</surname><given-names
+        initials=\"S\">Stefano</given-names></name><xref ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref
+        ref-type=\"aff\" rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Krause</surname><given-names initials=\"H\">Holger</given-names></name><xref
+        ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref ref-type=\"aff\"
+        rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Groiss</surname><given-names initials=\"SJ\">Stefan
+        Jun</given-names></name><xref ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref
+        ref-type=\"aff\" rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Elben</surname><given-names initials=\"S\">Saskia</given-names></name><xref
+        ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref ref-type=\"aff\"
+        rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Wojtecki</surname><given-names initials=\"L\">Lars</given-names></name><xref
+        ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref ref-type=\"aff\"
+        rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Zilles</surname><given-names initials=\"K\">Karl</given-names></name><xref
+        ref-type=\"aff\" rid=\"aff3\">\n<sup>3</sup>\n</xref><xref ref-type=\"aff\"
+        rid=\"aff4\">\n<sup>4</sup>\n</xref></contrib><contrib contrib-type=\"author\"><name
+        name-style=\"western\"><surname>Amunts</surname><given-names initials=\"K\">Katrin</given-names></name><xref
+        ref-type=\"aff\" rid=\"aff3\">\n<sup>3</sup>\n</xref><xref ref-type=\"aff\"
+        rid=\"aff5\">\n<sup>5</sup>\n</xref><xref ref-type=\"aff\" rid=\"aff6\">\n<sup>6</sup>\n</xref></contrib><contrib
+        contrib-type=\"author\"><name name-style=\"western\"><surname>Schnitzler</surname><given-names
+        initials=\"A\">Alfons</given-names></name><xref ref-type=\"aff\" rid=\"aff1\">\n<sup>1</sup>\n</xref><xref
+        ref-type=\"aff\" rid=\"aff2\">\n<sup>2</sup>\n</xref></contrib></contrib-group><aff
+        id=\"aff1\">\n<label>1</label>\n<addr-line>Department of Neurology, Center
+        for Movement Disorders and Neuromodulation, Medical Faculty, Heinrich Heine
+        University, D\xFCsseldorf, Germany</addr-line>\n</aff><aff id=\"aff2\">\n<label>2</label>\n<addr-line>Institute
+        of Clinical Neuroscience and Medical Psychology, Medical Faculty, Heinrich
+        Heine University, D\xFCsseldorf, Germany</addr-line>\n</aff><aff id=\"aff3\">\n<label>3</label>\n<addr-line>Institute
+        of Neuroscience and Medicine (INM-1, INM-2), Research Center J\xFClich, J\xFClich,
+        Germany</addr-line>\n</aff><aff id=\"aff4\">\n<label>4</label>\n<addr-line>C.
+        and O. Vogt Institute for Brain Research, Heinrich Heine University, D\xFCsseldorf,
+        Germany</addr-line>\n</aff><aff id=\"aff5\">\n<label>5</label>\n<addr-line>Department
+        of Psychiatry, Psychotherapy, and Psychosomatics, RWTH Aachen University,
+        Aachen, Germany</addr-line>\n</aff><aff id=\"aff6\">\n<label>6</label>\n<addr-line>JARA
+        \u2013 Translational Brain Medicine, J\xFClich, Germany</addr-line>\n</aff><contrib-group><contrib
+        contrib-type=\"editor\"><name name-style=\"western\"><surname>Oreja-Guevara</surname><given-names
+        initials=\"C\">Celia</given-names></name><role>Editor</role><xref ref-type=\"aff\"
+        rid=\"edit1\"/></contrib></contrib-group><aff id=\"edit1\">\n<addr-line>University
+        Hospital La Paz, Spain</addr-line>\n</aff><author-notes><corresp id=\"cor1\">*
+        E-mail: <email>replay@example.com</email></corresp><fn fn-type=\"con\"><p>Conceived
+        and designed the experiments: MS PP KA AS. Performed the experiments: MS PP
+        SF HK SG SE LW. Analyzed the data: MS PP SF HK KZ KA AS. Contributed reagents/materials/analysis
+        tools: MS PP HK KZ KA AS. Wrote the paper: MS PP.</p></fn><fn fn-type=\"COI-statement\"><p><bold>Competing
+        Interests: </bold>The authors have declared that no competing interests exist.</p></fn></author-notes><pub-date
+        pub-type=\"collection\"><year>2012</year></pub-date><pub-date pub-type=\"epub\"><day>27</day><month>7</month><year>2012</year></pub-date><volume>7</volume><issue>7</issue><issue-id
+        pub-id-type=\"pmc-issue-id\">211745</issue-id><elocation-id>e41873</elocation-id><history><date
+        date-type=\"received\"><day>30</day><month>3</month><year>2012</year></date><date
+        date-type=\"accepted\"><day>26</day><month>6</month><year>2012</year></date></history><pub-history><event
+        event-type=\"pmc-release\"><date><day>27</day><month>07</month><year>2012</year></date></event><event
+        event-type=\"pmc-live\"><date><day>30</day><month>07</month><year>2012</year></date></event><event
+        event-type=\"pmc-last-change\"><date iso-8601-date=\"2024-06-28 18:25:14.643\"><day>28</day><month>06</month><year>2024</year></date></event></pub-history><permissions><copyright-statement>\xA9
+        2012 S\xFCdmeyer et al</copyright-statement><copyright-year>2012</copyright-year><copyright-holder>S\xFCdmeyer
+        et al</copyright-holder><license xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://creativecommons.org/licenses/by/4.0/\"><ali:license_ref
+        xmlns:ali=\"http://www.niso.org/schemas/ali/1.0/\" specific-use=\"textmining\"
+        content-type=\"ccbylicense\">https://creativecommons.org/licenses/by/4.0/</ali:license_ref><license-p>This
+        is an open-access article distributed under the terms of the Creative Commons
+        Attribution License, which permits unrestricted use, distribution, and reproduction
+        in any medium, provided the original author and source are properly credited.</license-p></license></permissions><self-uri
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" content-type=\"pmc-pdf\" xlink:href=\"pone.0041873.pdf\"><?pdf-name
+        pone.0041873.pdf?><?pdf-size 1683498?><?pdf-md5 53d9d314f6ae4d30cc3c446f8346d290?><?pdf-image-server-status
+        NEVER_LOAD?><?pdf-cloudpmc-urn urn:app:e2e8/3407125/53d9d314f6ae/pone.0041873.pdf?></self-uri><abstract><sec><title>Background/Objective</title><p>Corticobasal
+        syndrome (CBS) is a rare neurodegenerative disorder characterized by a progressive
+        and asymmetric manifestation of cortical and basal-ganglia symptoms of different
+        origin. The spatio-temporal dynamics of cerebral atrophy in CBS is barely
+        known. This study aimed to longitudinally quantify the individual dynamics
+        of brain volume changes in patients with CBS as compared to healthy controls.</p></sec><sec><title>Methods</title><p>We
+        used deformation-field-based morphometry (DFM) to study volumetric changes
+        of each individual brain in short intervals of a few months. DFM enabled the
+        quantitative analysis of local volume changes without predefining regions
+        of interest in MR images of 6 patients with CBS and 11 matched healthy controls.
+        A total of 64 whole brain 3D-MR-scans were acquired two to eight times over
+        periods of 14 to 26 months. Based on repeated registrations of MR observations
+        to the initial scan, maps of local volume ratio changes were computed.</p></sec><sec><title>Results</title><p>Compared
+        to controls patients showed significant and increasing volume loss over time
+        in premotor and primary-motor-cortices, somatosensory area 3a, superior parietal
+        areas BA 5/7, and corticospinal tract. Furthermore, significant and asymmetric
+        atrophy was identified in the caudate nucleus head, putamen, pallidum, motor-thalamus
+        and substantia nigra. Temporal lobe was affected in those patients who presented
+        progressive cognitive impairment.</p></sec><sec><title>Conclusions</title><p>The
+        analysis revealed localized, pathological changes in brains of patients with
+        CBS, which differed significantly from those occurring during aging in healthy
+        controls. As compared to age- and sex-matched controls, brains of CBS patients
+        showed a common degenerating neural network comprising the motor circuit with
+        basal ganglia and motor thalamic nuclei as well as the premotor and primary-motor-cortex.</p></sec></abstract><funding-group><funding-statement>The
+        project underlying this report \u201CHelmholtz Alliance for Mental Health
+        in an Ageing Society\u201D (HelMA, HA-215) was supported within the framework
+        of the \u201CHelmholtz Impuls- und Vernetzungsfonds\u201D funded by the German
+        \u201CBundesministerium f\xFCr Bildung und Forschung\u201D (BMBF). Furthermore,
+        this work was supported by the \u201CStiftung f\xFCr Altersforschung\u201D
+        and the \u201CForschungskommission\u201D, Heinrich-Heine-University, D\xFCsseldorf
+        (Germany). The funders had no role in study design, data collection and analysis,
+        decision to publish, or preparation of the manuscript.</funding-statement></funding-group><counts><page-count
+        count=\"14\"/></counts><custom-meta-group><custom-meta><meta-name>pmc-status-qastatus</meta-name><meta-value>0</meta-value></custom-meta><custom-meta><meta-name>pmc-status-live</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-status-embargo</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-status-released</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-open-access</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-olf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-manuscript</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-legally-suppressed</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-pdf</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-has-supplement</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-pdf-only</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-suppress-copyright</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-real-version</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-is-scanned-article</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-preprint</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>pmc-prop-in-epmc</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>pmc-license-ref</meta-name><meta-value>CC
+        BY</meta-value></custom-meta></custom-meta-group></article-meta></front><body><sec
+        id=\"s1\"><title>Introduction</title><p>Although structural changes have been
+        reported in patients with corticobasal syndrome (CBS) using neuroimaging <xref
+        rid=\"pone.0041873-Brooks1\" ref-type=\"bibr\">[1]</xref>, <xref rid=\"pone.0041873-Erbetta1\"
+        ref-type=\"bibr\">[2]</xref>, <xref rid=\"pone.0041873-Josephs1\" ref-type=\"bibr\">[3]</xref>,
+        <xref rid=\"pone.0041873-Whitwell1\" ref-type=\"bibr\">[4]</xref>, the individual
+        dynamics of progression of clinical symptoms in CBS and their relationship
+        to the topography of structural changes that segregate the neurodegenerative
+        effects are not well understood. In particular at the beginning of the disease
+        local structural changes are indiscernible from those observed during normal
+        aging due to considerable intersubject variability. The currently available
+        tools for the analysis of MR images mainly lack the necessary sensitivity
+        for detecting small changes that occur over a relatively short period of time,
+        such as few months. However, in CBS and other neurodegenerative diseases such
+        tools are desperately needed for an early clinical diagnosis and for the identification
+        of treatment strategies that may modify the disease progression <xref rid=\"pone.0041873-Williams1\"
+        ref-type=\"bibr\">[5]</xref>.</p><p>CBS is a rapidly progressing disease,
+        which comprises different entities including corticobasal degeneration (CBS-CBD),
+        Alzheimer disease (CBS-AD), progressive supranuclear palsy (CBS-PSP), frontotemporal
+        lobar degeneration (FTLD), multisystem tauopathy, and parkinsonism linked
+        to chromosome 17, wherefore pathological diagnosis is required as gold standard
+        <xref rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>, <xref rid=\"pone.0041873-Ling1\"
+        ref-type=\"bibr\">[7]</xref>, <xref rid=\"pone.0041873-Litvan1\" ref-type=\"bibr\">[8]</xref>.
+        The nomenclature and included subtypes, however, are still a matter of discussion
+        <xref rid=\"pone.0041873-Boeve2\" ref-type=\"bibr\">[9]</xref>.</p><p>In 24\u201355%
+        of all patients presenting with symptoms of CBS the underlying pathology is
+        CBS-CBD <xref rid=\"pone.0041873-Ling1\" ref-type=\"bibr\">[7]</xref>, <xref
+        rid=\"pone.0041873-Wadia1\" ref-type=\"bibr\">[10]</xref>. CBS-CBD commences
+        between the age of 60\u201380 with typical signs of a progressive, asymmetric,
+        akinetic-rigid syndrome including the clinical hallmarks of an ideomotor limb
+        apraxia, alien limb syndrome and cortical sensory loss that respond poorly
+        to levodopa therapy <xref rid=\"pone.0041873-Mahapatra1\" ref-type=\"bibr\">[11]</xref>.
+        In addition, CBS-CBD can lead to frontotemporal dementia and non-fluent aphasia
+        <xref rid=\"pone.0041873-Wadia1\" ref-type=\"bibr\">[10]</xref>. Due to this
+        clinical heterogeneity, an overlap with other neurodegenerative diseases is
+        common and may lead to clinical misdiagnosis <xref rid=\"pone.0041873-Boeve2\"
+        ref-type=\"bibr\">[9]</xref>. In patients with clinical diagnosis of CBS-CBD,
+        only 50% revealed pathologically proven CBD, and PSP was mainly detected in
+        false positive cases <xref rid=\"pone.0041873-Ling1\" ref-type=\"bibr\">[7]</xref>,
+        <xref rid=\"pone.0041873-Wadia1\" ref-type=\"bibr\">[10]</xref>. Furthermore,
+        unusual types of Alzheimer\u2019s disease with prominent motor features or
+        FTLD may have a similar clinical presentation <xref rid=\"pone.0041873-Ling1\"
+        ref-type=\"bibr\">[7]</xref>, <xref rid=\"pone.0041873-Litvan1\" ref-type=\"bibr\">[8]</xref>,
+        <xref rid=\"pone.0041873-Boeve2\" ref-type=\"bibr\">[9]</xref>, <xref rid=\"pone.0041873-Wadia1\"
+        ref-type=\"bibr\">[10]</xref>.</p><p>The major histopathological feature of
+        CBS-CBD is a widespread accumulation of abnormal phosphorylated tau protein
+        in both glial cells and neurons, astrocytic plaques, and coiled bodies with
+        gliosis of the substantia nigra <xref rid=\"pone.0041873-Mackenzie1\" ref-type=\"bibr\">[12]</xref>.
+        Focal cortical neuronal loss and underlying white matter degeneration is primarily
+        present in sensory and motor areas of the parietal and frontal cortex with
+        relative sparing of temporal as well as occipital regions <xref rid=\"pone.0041873-Mahapatra1\"
+        ref-type=\"bibr\">[11]</xref>. However, the localization of these findings
+        overlaps with other tauopathies that may explain clinical similarity, leading
+        to an ongoing discussion if these diseases in fact reflect separate entities
+        <xref rid=\"pone.0041873-Litvan1\" ref-type=\"bibr\">[8]</xref>, <xref rid=\"pone.0041873-Boeve2\"
+        ref-type=\"bibr\">[9]</xref>.</p><p>During the last years different functional
+        and morphometric in-vivo studies (primarily cross-sectional) focused on the
+        subtype differentiation of CBS <xref rid=\"pone.0041873-Josephs1\" ref-type=\"bibr\">[3]</xref>,
+        <xref rid=\"pone.0041873-Whitwell1\" ref-type=\"bibr\">[4]</xref>, <xref rid=\"pone.0041873-Boxer1\"
+        ref-type=\"bibr\">[13]</xref>. Recently, Whitwell and colleagues published
+        cross-sectional imaging findings of autopsy-proven CBS patients <xref rid=\"pone.0041873-Whitwell1\"
+        ref-type=\"bibr\">[4]</xref>. According to the pathological diagnosis, an
+        increased focal cortical atrophy in the premotor und supplementary motor area
+        was due to CBS-CBD and CBS-PSP pathology, whereas FTLD revealed a stronger
+        frontotemporal and CBS-AD a more prominent temporo-parietal pattern of atrophy.</p><p>We
+        here applied magnetic resonance imaging (MRI) and deformation field morphometry
+        (DFM) in six clinically diagnosed CBS patients and eleven age- and sex-matched
+        healthy controls from an ongoing follow-up study employing a longitudinal
+        design. DFM is capable of detecting even subtle regional volume changes in
+        the entire brain in small samples. The topography of significant volume changes
+        was identified using probabilistic maps of cytoarchitectonic areas <xref rid=\"pone.0041873-Amunts1\"
+        ref-type=\"bibr\">[14]</xref>, <xref rid=\"pone.0041873-Pieperhoff1\" ref-type=\"bibr\">[15]</xref>,
+        <xref rid=\"pone.0041873-Pieperhoff2\" ref-type=\"bibr\">[16]</xref>.</p><table-wrap
+        id=\"pone-0041873-t001\" orientation=\"portrait\" position=\"float\"><object-id
+        pub-id-type=\"doi\">10.1371/journal.pone.0041873.t001</object-id><label>Table
+        1</label><caption><title>Demographics and clinical findings of CBS patients.</title></caption><alternatives><graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" id=\"pone-0041873-t001-1\" position=\"float\"
+        orientation=\"portrait\" xlink:href=\"pone.0041873.t001.jpg\"><?image-name
+        pone.0041873.t001.jpg?><?image-size 110897?><?image-md5 69c6adc6ed54ff0974e4bb6a88466a3a?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 728?><?image-scaled-width 741?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/69c6adc6ed54/pone.0041873.t001.jpg?><?thumb-name
+        pone.0041873.t001.gif?><?thumb-size 3542?><?thumb-md5 1506e9f3e66a0ad4f4fd8f1a3e9ebd74?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 98?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/1506e9f3e66a/pone.0041873.t001.gif?></graphic><table
+        frame=\"hsides\" rules=\"groups\"><colgroup span=\"1\"><col align=\"left\"
+        span=\"1\"/><col align=\"center\" span=\"1\"/><col align=\"center\" span=\"1\"/><col
+        align=\"center\" span=\"1\"/><col align=\"center\" span=\"1\"/><col align=\"center\"
+        span=\"1\"/><col align=\"center\" span=\"1\"/></colgroup><thead><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\"/><td align=\"left\" rowspan=\"1\" colspan=\"1\">Case
+        1</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">Case 2</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Case 3</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">Case
+        4</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">Case 5</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Case 6</td></tr></thead><tbody><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Gender</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">f</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">f</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">f</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">Age,
+        y</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">72</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">69</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">76</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">68</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">62</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">65</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Education, years</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">&lt;12</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">&lt;12</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">&lt;12</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">&gt;12</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">&gt;12</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">&lt;12</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Disease duration, years</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">1</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">2</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">2</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">2</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">3</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">4</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Clinical asymmetry</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ri &gt; le</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">le
+        &gt; ri</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">le &gt; ri</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">le &gt; ri</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">ri &gt; le</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ri &gt; le</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">Diagnostic
+        MRI (T initial)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">normal</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">normal</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">atrophic</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">atrophic</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">normal</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">atrophic</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">MRI
+        acquisition (Tesla)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">1.5</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">3.0</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">3.0</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">3.0</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">3.0</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">1.5</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">Follow-up,
+        months</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">26</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">25</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">24</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">14</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">16</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">19</td></tr><tr><td
+        colspan=\"7\" align=\"left\" rowspan=\"1\">\n<italic toggle=\"yes\">Clinical
+        signs (T initial/final)</italic>\n</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Rigidity</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">Bradykinesia</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Ideomotor apraxia</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">Alien limb syndrome</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Dystonia</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Astereognosia</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">Myoclonus</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Mirror movements</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">+/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/\u2212</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Speech apraxia</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">Supranuclear palsy</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u2212/\u2212</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Babinski sign</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/+</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">+/+</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u2212/\u2212</td></tr><tr><td
+        colspan=\"7\" align=\"left\" rowspan=\"1\">\n<italic toggle=\"yes\">Motor
+        testing</italic>\n</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">UPDRS-III
+        (T initial, Off/On)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">18/18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">22/21</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">35/33</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">45/44</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">21/20</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">25/25</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">UPDRS-III
+        (T final, On)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">33</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">46</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">58</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">64</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">45</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">32</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">FT
+        values (T initial, ri/le)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">3/42</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">49/38</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">32/12</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">57/0</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">18/44</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">1/26</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\">FT
+        values (T final, ri/le)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0/19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0/0</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">12/0</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">35/0</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">8/25</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0/7</td></tr><tr><td colspan=\"7\" align=\"left\" rowspan=\"1\">\n<italic
+        toggle=\"yes\">Florida Apraxia Score</italic>\n</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">T initial (ri/le)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">56/4</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">2/30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0/14</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">5/56</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">37/18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">52/33</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">T final (ri/le)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">60/49</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">38/54</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">8/28</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">13/56</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">42/25</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">54/51</td></tr><tr><td colspan=\"7\"
+        align=\"left\" rowspan=\"1\">\n<italic toggle=\"yes\">Neuropsychological testing</italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">MMSE (T initial)</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">29/30</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">27/30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">22/25</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">29/30</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">30/30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">25/30</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">MMSE (T final)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">29/30</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">19/30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">21/25</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">29/30</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">27/30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">26/30</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">MDRS (T initial)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">n.d.</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">126/144</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">94/103</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">142/144</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">144/144</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">n.d.</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">MDRS (T final)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">133/144</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">96/144</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">90/103</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">143/144</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">131/144</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">107/144</td></tr></tbody></table></alternatives><table-wrap-foot><fn
+        id=\"nt101\"><label/><p>Abbreviations: MMSE \u200A=\u200A Mini Mental State
+        Examination, MDRS \u200A=\u200A Mattis Dementia Rating Scale, MRI \u200A=\u200A
+        Magnetic resonance imaging, n.d. \u200A=\u200A not done, UPDRS-III \u200A=\u200A
+        Unified Parkinson\u2019s Disease Rating Scale part III, FT \u200A=\u200A Finger
+        tapping, le \u200A=\u200A left, ri \u200A=\u200A right, f \u200A=\u200A female,
+        m \u200A=\u200A male, T initial \u200A=\u200A initial examination, T final
+        \u200A=\u200A final examination, \u2212 \u200A=\u200A absent, + \u200A=\u200A
+        present.</p></fn></table-wrap-foot></table-wrap></sec><sec sec-type=\"methods\"
+        id=\"s2\"><title>Methods</title><p>A sample of six patients with the clinical
+        diagnosis of CBS attending the Movement Disorder Centre of the University
+        Hospital D\xFCsseldorf was prospectively recruited. At the time point of study
+        inclusion (T initial) all patients underwent detailed neurological examination
+        (including testing of the autonomic nervous system and formal psychometry
+        using Florida Apraxia Screening Test (FAST) <xref rid=\"pone.0041873-Rothi1\"
+        ref-type=\"bibr\">[17]</xref>, Mattis Dementia Rating Scale (MDRS) <xref rid=\"pone.0041873-Mattis1\"
+        ref-type=\"bibr\">[18]</xref>, Mini Mental State Examination (MMSE) <xref
+        rid=\"pone.0041873-Folstein1\" ref-type=\"bibr\">[19]</xref>), routine laboratory
+        tests, and volumetric as well as diagnostic magnetic resonance brain imaging
+        to exclude symptomatic parkinsonism during hospitalization over a time period
+        of 5\u20138 days. Additionally, the Unified Parkinson Disease Rating Scale
+        part III (UPDRS-III) was determined 12 hours after discontinuation of antiparkinsonian
+        medication and after oral administration of 250 mg L-Dopa <xref rid=\"pone.0041873-Movement1\"
+        ref-type=\"bibr\">[20]</xref>. Furthermore, one minute of finger tapping (FT)
+        was performed with the left and right forefinger; subjects were required to
+        alternatingly press specific counting devices which were fixed on a board
+        as rapidly as possible. In addition, all patients underwent clinical and MRI
+        follow-up examinations performed on the same day during the course of 20.7\xB15
+        months (4\u20138 serial MRIs). In most cases, intervals between consecutive
+        scans were about three to four months. Final diagnosis of CBS was made in
+        a consensus panel arrangement by two movement disorder specialists (A.S.,
+        M.S.), taking into consideration data of carefully assessed longitudinal neurologic
+        follow-up examinations, possible response to dopaminergic treatment, diagnostic
+        MRI and published clinical criteria <xref rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>,
+        <xref rid=\"pone.0041873-Shelley1\" ref-type=\"bibr\">[21]</xref>, <xref rid=\"pone.0041873-Mathew1\"
+        ref-type=\"bibr\">[22]</xref>. No subjects were excluded from the study, but
+        two follow-up scans were discarded from further analysis due to movement artefacts.</p><table-wrap
+        id=\"pone-0041873-t002\" orientation=\"portrait\" position=\"float\"><object-id
+        pub-id-type=\"doi\">10.1371/journal.pone.0041873.t002</object-id><label>Table
+        2</label><caption><title>Local volume ratio (LVR) changes (Median \xB1 SEM)
+        as % for different cortical and subcortical regions of 11 healthy controls
+        and 6 CBS patients at final follow-up examination (T final) as compared to
+        the initial examination (T initial).</title></caption><alternatives><graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" id=\"pone-0041873-t002-2\" position=\"float\"
+        orientation=\"portrait\" xlink:href=\"pone.0041873.t002.jpg\"><?image-name
+        pone.0041873.t002.jpg?><?image-size 238892?><?image-md5 2e7d6e8009151baa1df2d412b2c5d4dd?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 1136?><?image-scaled-width 747?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/2e7d6e800915/pone.0041873.t002.jpg?><?thumb-name
+        pone.0041873.t002.gif?><?thumb-size 14422?><?thumb-md5 e0ef3e31531acb2b4f9b98cb03190bc5?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 152?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/e0ef3e31531a/pone.0041873.t002.gif?></graphic><table
+        frame=\"hsides\" rules=\"groups\"><colgroup span=\"1\"><col align=\"left\"
+        span=\"1\"/><col align=\"center\" span=\"1\"/><col align=\"center\" span=\"1\"/><col
+        align=\"center\" span=\"1\"/><col align=\"center\" span=\"1\"/><col align=\"center\"
+        span=\"1\"/><col align=\"center\" span=\"1\"/><col align=\"center\" span=\"1\"/></colgroup><thead><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\"/><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\"/><td align=\"left\" rowspan=\"1\" colspan=\"1\">Controls</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">CBS</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">P value</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">Controls</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">CBS</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">P value</td></tr><tr><td align=\"left\" rowspan=\"1\" colspan=\"1\"/><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\"/><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">contralateral</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">contralateral</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\"/><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ipsilateral</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">ipsilateral</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\"/></tr></thead><tbody><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\n<italic toggle=\"yes\"><underline>Global Hemisphere</underline></italic>\n</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\"/><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u22120.22\xB10.13</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.25\xB10.38</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.18</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u22120.36\xB10.12</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.09\xB10.37</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.22</td></tr><tr><td colspan=\"8\"
+        align=\"left\" rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Frontal cortex</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">area 4</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.03\xB10.20</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.07\xB11.92</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.0002*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.36\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.36\xB11.04</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.0002*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">area 6</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.25\xB10.22</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22123.69\xB11.94</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0002*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.12\xB10.20</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.53\xB11.29</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.0002*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">superior frontal gyrus</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.21\xB10.22</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.80\xB10.58</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.40</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.41\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.40\xB10.78</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.30</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">medial frontal gyrus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.12\xB10.27</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22120.49\xB10.51</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.40</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.47\xB10.15</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.18\xB10.71</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.03</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">inferior frontal gyrus</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.17\xB10.24</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.59\xB10.36</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.35</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.34\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.82\xB10.63</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.52</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">orbitofrontal cortex (10,11,47)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.16\xB11.32</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">1.85\xB11.79</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.06</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.52\xB10.79</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.55\xB10.91</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.65</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">gyrus rectus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.62\xB10.30</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">1.22\xB10.77</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.05</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.13\xB10.32</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.99\xB10.65</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.08</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Broca\u2019s area (44/45)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.28\xB10.27</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.05\xB10.41</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.73</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.30\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.24\xB10.66</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.22</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Parietal cortex</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">area 3a</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.46\xB10.28</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.21\xB11.10</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.01*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.54\xB10.27</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.79\xB10.80</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.01*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">area 3b</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.03\xB10.18</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22121.96\xB10.98</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.09</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.06\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.46\xB10.74</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.22</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">area 1</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.27\xB10.31</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22121.77\xB10.74</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.05</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.12\xB10.25</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.43\xB10.61</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.08</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">area 2</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.02\xB10.24</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22121.78\xB10.81</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.03</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.02\xB10.24</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.61\xB10.78</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.40</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">superior parietal lobule (5,7)</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.10\xB10.20</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.62\xB10.43</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.001*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.18\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.47\xB10.66</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.007*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Precuneus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.06\xB10.28</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22120.81\xB10.37</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.15</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.21\xB10.31</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.75\xB10.70</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.18</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">inferior parietal lobule</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.26\xB10.20</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.93\xB10.67</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.52</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.19\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.15\xB10.56</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.96</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Occipital cortex</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">primary visual cortex</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.04\xB10.16</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.21\xB10.51</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.59</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.23\xB10.12</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.23\xB10.40</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.22</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">secondary visual cortex</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.29\xB10.17</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.26\xB10.54</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.81</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.17\xB10.14</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.51\xB10.53</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.52</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">lingual gyrus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.19\xB10.19</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.27\xB10.48</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.59</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.08\xB10.13</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.14\xB10.48</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.66</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Cuneus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.23\xB10.18</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.33\xB10.47</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.59</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.31\xB10.20</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.05\xB10.45</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.73</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Temporal cortex</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">superior temporal gyrus</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u22120.36\xB10.14</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.46\xB10.95</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.40</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\u22120.38\xB10.16</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.42\xB10.46</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.18</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">medial temporal gyrus</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.45\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.11\xB10.90</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.66</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.47\xB10.23</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.40\xB10.85</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.73</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">inferior temporal gyrus</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.13\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.12\xB11.17</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">1.00</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.30\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.27\xB10.90</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.88</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Amygdale</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.18\xB10.25</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.46\xB10.95</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.59</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.45\xB10.23</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.42\xB10.46</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.30</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">entorhinal cortex</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.14\xB10.31</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22121.22\xB10.82</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.18</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.14\xB10.32</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.27\xB10.89</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.40</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">fusiform gyrus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.21\xB10.15</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22120.24\xB10.76</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">1.00</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.51\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.79\xB10.66</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.22</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">parahippocampal gyrus</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.15\xB10.34</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.04\xB11.05</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.88</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">0.20\xB10.35</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">1.09\xB11.00</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.26</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">TE3 (Wernicke)</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.14\xB10.26</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.82\xB10.94</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.59</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.73\xB10.39</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.23\xB10.80</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.30</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Basal ganglia</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">caudate nucleus</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.61\xB10.25</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.31\xB10.45</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.96</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.43\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">2.04\xB10.85</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.05</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">head of caudate nucleus</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.47\xB10.21</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.76\xB10.41</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.0006*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.09\xB10.23</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.67\xB10.81</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.30</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Putamen</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.73\xB10.19</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22123.84\xB10.76</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0001*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.56\xB10.23</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.69\xB10.93</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.001*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">Pallidum</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.86\xB10.21</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22123.83\xB10.91</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0006*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.40\xB10.26</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.76\xB11.14</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.01*</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Thalamus</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">central medial nuc.</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.84\xB10.30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.24\xB10.42</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.46</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.95\xB10.41</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.50\xB10.53</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.03</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">dorsomedial nuc.</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.16\xB10.59</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22122.76\xB10.59</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.35</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.72\xB10.38</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.32\xB11.46</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.18</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">lateral posteriordorsal nuc.</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.00\xB10.33</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.85\xB10.42</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.18</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.04\xB10.28</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.76\xB10.25</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.15</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">anterior nuclei</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.69\xB10.46</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.11\xB10.84</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.29</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u20130.71\xB10.35</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.23\xB10.58</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.39</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ventral anterior nuc.</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.79\xB10.22</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22123.06\xB10.68</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0003*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.52\xB10.27</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22124.42\xB10.88</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.003*</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ventral lateral nucl.</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.47\xB10.20</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22123.67\xB10.70</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0001*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.65\xB10.26</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.28\xB10.91</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.05</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">ventral posterior nuc.</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.97\xB10.29</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.55\xB10.87</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.46</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.33\xB10.19</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.69\xB10.80</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.46</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">pulvinar</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">c</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.54\xB10.30</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.17\xB11.55</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.15</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.04\xB10.18</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.39\xB10.90</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.05</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Midbrain</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">nucleus ruber</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">c</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.28\xB10.27</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22121.25\xB10.67</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.03</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.90\xB10.30</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22122.34\xB10.96</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.15</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">substantia nigra</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.44\xB10.25</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22122.58\xB11.15</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.001*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.13\xB10.33</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22124.09\xB11.06</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.007*</td></tr><tr><td colspan=\"8\" align=\"left\"
+        rowspan=\"1\">\n<italic toggle=\"yes\"><underline>Cerebellum</underline></italic>\n</td></tr><tr><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">anterior lobe</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.02\xB10.23</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.64\xB10.68</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.66</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.25\xB10.25</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.82\xB10.72</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.52</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">posterior lobe</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.06\xB10.20</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22120.24\xB10.46</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.81</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.12\xB10.16</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.50\xB10.46</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.88</td></tr><tr><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">\n<italic toggle=\"yes\"><underline>Ventricles</underline></italic>\n</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">m</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">3.39\xB11.43</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">18.75\xB14.84</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.007*</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">1.67\xB10.66</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">17.49\xB14.08</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">0.002*</td></tr><tr><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\n<italic toggle=\"yes\"><underline>Corticospinal
+        tract</underline></italic>\n</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">f</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.57\xB10.19</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">\u22124.30\xB11.21</td><td align=\"left\" rowspan=\"1\"
+        colspan=\"1\">0.0002*</td><td align=\"left\" rowspan=\"1\" colspan=\"1\">\u22120.34\xB10.17</td><td
+        align=\"left\" rowspan=\"1\" colspan=\"1\">\u22123.92\xB10.85</td><td align=\"left\"
+        rowspan=\"1\" colspan=\"1\">0.0003*</td></tr></tbody></table></alternatives><table-wrap-foot><fn
+        id=\"nt102\"><label/><p>P values are given for a two-sided Mann-Whitney-U-test.
+        *indicates significant P values (corrected for multiple comparisons by controlling
+        the false discovery rate at 0.05). F indicates myeloarchitectonically defined
+        maps of fibers, M indicates macroanatomically and C cytoarchitectonically
+        defined areas.</p></fn></table-wrap-foot></table-wrap><p>The control group
+        consisted of eleven age- and sex-matched, right-handed healthy volunteers
+        with no previous history of neurological or medical disorder, who underwent
+        21.4\xB12.7 months of follow-up with 2\u20134 serial MRIs obtained (<xref
+        ref-type=\"supplementary-material\" rid=\"pone.0041873.s001\">Table S1</xref>).</p><fig
+        id=\"pone-0041873-g001\" orientation=\"portrait\" position=\"float\"><object-id
+        pub-id-type=\"doi\">10.1371/journal.pone.0041873.g001</object-id><label>Figure
+        1</label><caption><title>Statistical maps (A: coronal and B: axial sections)
+        of voxel-wise volume differences (upper trace) in comparison to probabilistic
+        maps of cytoarchitectonically defined areas (lower trace) between 6 CBS patients
+        and 11 age- and sex-matched controls (P&lt;0.01).</title><p>The colored bar
+        represents the <italic toggle=\"yes\">T</italic> score of significant voxels
+        (red to yellow indicate volume decline, blue indicate volume increase). Abbreviations:
+        IPL \u200A=\u200A Inferior Parietal Lobule, CN \u200A=\u200A Caudate Nucleus,
+        CST \u200A=\u200A Corticospinal Tract, SPL \u200A=\u200A Superior Parietal
+        Lobule, VP \u200A=\u200A Ventral Posterior Nucleus of the thalamus, VA \u200A=\u200A
+        Ventral Anterior Nucleus of the thalamus, C \u200A=\u200A Contralateral to
+        the clinically most affected side, I \u200A=\u200A Ipsilateral to the clinically
+        most affected side.</p></caption><graphic xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        position=\"float\" orientation=\"portrait\" xlink:href=\"pone.0041873.g001.jpg\"><?image-name
+        pone.0041873.g001.jpg?><?image-size 180665?><?image-md5 f05c410286a1d87a6faf2ca7ef24edac?><?image-image-server-status
+        LOAD_COMPLETED?><?image-original-height 4758?><?image-original-width 6721?><?image-scaled-height
+        559?><?image-scaled-width 790?><?image-cloudpmc-urn urn:cdn:blobs/e2e8/3407125/f05c410286a1/pone.0041873.g001.jpg?><?thumb-name
+        pone.0041873.g001.gif?><?thumb-size 21329?><?thumb-md5 17e1fb55b0817a31054293d4c355b248?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 80?><?thumb-scaled-width 113?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/17e1fb55b081/pone.0041873.g001.gif?></graphic></fig><sec
+        id=\"s2a\"><title>Ethics</title><p>Patients examined in this study were recruited
+        from a large longitudinal study on patients with movement disorders, approved
+        by the local ethics committee (study-no. 2849, \u201CEthikkommission der Medizinischen
+        Fakult\xE4t der Heinrich-Heine-Universit\xE4t D\xFCsseldorf\u201D, <ext-link
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" ext-link-type=\"uri\" xlink:href=\"http://medfak.uni-duesseldorf.de/dekanat/kommissionen/ethikkommission/\">http://medfak.uni-duesseldorf.de/dekanat/kommissionen/ethikkommission/</ext-link>,
+        <email>replay@example.com</email>). The procedure and the reason for this
+        examination in particular were explained to all patients and carers as well
+        as healthy controls in full detail. At study inclusion all patients had adequate
+        capacity/ability to personally give written informed consent as approved by
+        the detailed neurological and neuropsychological testing. The study is in
+        accordance with the Declaration of Helsinki.</p><fig id=\"pone-0041873-g002\"
+        orientation=\"portrait\" position=\"float\"><object-id pub-id-type=\"doi\">10.1371/journal.pone.0041873.g002</object-id><label>Figure
+        2</label><caption><title>Longitudinal local volume ratios (percent, y-axis)
+        during follow-up examination (months, x-axis) of different cortical regions,
+        the corticospinal tract and lateral ventricles that revealed significant group
+        differences between CBS patients (coloured lines) and controls (grey lines).</title><p>Note
+        that the y-axis of the lowermost graph is differently scaled.</p></caption><graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" position=\"float\" orientation=\"portrait\"
+        xlink:href=\"pone.0041873.g002.jpg\"><?image-name pone.0041873.g002.jpg?><?image-size
+        143136?><?image-md5 8f58b682f36eb9f3afc128f00299a6f9?><?image-image-server-status
+        LOAD_COMPLETED?><?image-original-height 2802?><?image-original-width 1866?><?image-scaled-height
+        1120?><?image-scaled-width 746?><?image-cloudpmc-urn urn:cdn:blobs/e2e8/3407125/8f58b682f36e/pone.0041873.g002.jpg?><?thumb-name
+        pone.0041873.g002.gif?><?thumb-size 12195?><?thumb-md5 2e7fc2ee20a7691e84d3c2a414ffa8c0?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 150?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/2e7fc2ee20a7/pone.0041873.g002.gif?></graphic></fig></sec><sec
+        id=\"s2b\"><title>MRI</title><p>Brains of the patients and the healthy controls
+        were scanned in a 1.5 Tesla (Magnetom Vision, Siemens Medical Solutions; Erlangen,
+        Germany) or 3 Tesla (Magnetom Trio Tim System, Siemens Medical Solutions;
+        Erlangen, Germany) MR-tomograph with a standard CP head coil. Pulse sequences
+        were as follows: sagittal 3D gradient echo sequence (repetition time (TR)
+        9.7 ms, echo time (TE) 4 ms, 1 mm slice thickness for 1.5 Tesla and TR 2300
+        ms, TE 2.98 ms, 1 mm slice thickness for 3 Tesla, with one signal acquired),
+        field of view (FOV) 256-mm and 256\xD7256 matrix. All follow-up scans of a
+        single patient or control were acquired by using the same scanner as for the
+        initial scan (<xref ref-type=\"table\" rid=\"pone-0041873-t001\">Table 1</xref>,
+        <xref ref-type=\"supplementary-material\" rid=\"pone.0041873.s001\">Table
+        S1</xref>).</p><fig id=\"pone-0041873-g003\" orientation=\"portrait\" position=\"float\"><object-id
+        pub-id-type=\"doi\">10.1371/journal.pone.0041873.g003</object-id><label>Figure
+        3</label><caption><title>Longitudinal local volume ratios (percent, y-axis)
+        during follow-up examination (months, x-axis) of different subcortical regions
+        that revealed significant group differences between CBS patients (coloured
+        lines) and controls (grey lines).</title></caption><graphic xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        position=\"float\" orientation=\"portrait\" xlink:href=\"pone.0041873.g003.jpg\"><?image-name
+        pone.0041873.g003.jpg?><?image-size 145298?><?image-md5 47a632364a1d367fa9702e207430881f?><?image-image-server-status
+        LOAD_COMPLETED?><?image-original-height 2802?><?image-original-width 1885?><?image-scaled-height
+        1121?><?image-scaled-width 754?><?image-cloudpmc-urn urn:cdn:blobs/e2e8/3407125/47a632364a1d/pone.0041873.g003.jpg?><?thumb-name
+        pone.0041873.g003.gif?><?thumb-size 12187?><?thumb-md5 621a46a0d4600263465291604c14da99?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 149?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/621a46a0d460/pone.0041873.g003.gif?></graphic></fig></sec><sec
+        id=\"s2c\"><title>Deformation Field Morphometry (DFM)</title><p>A detailed
+        description of the applied morphometric technique has been published <xref
+        rid=\"pone.0041873-Pieperhoff2\" ref-type=\"bibr\">[16]</xref>. Hence, we
+        only provide a brief outline here. Serial MR images of each subject were examined
+        for intraindividual differences between each follow-up and the initial MR
+        image (Ti). Therefore, the follow-up images were registered to the initial
+        image using a non-linear registration. As a result of registration, deformation
+        fields were calculated for each subject and each follow-up imaging. The deformation
+        fields were transformed to \u201Clocal volume ratio\u201D (LVR) maps <xref
+        rid=\"pone.0041873-Pieperhoff2\" ref-type=\"bibr\">[16]</xref>. The LVR data
+        indicate voxel-wise volume differences of the brain between the initial and
+        corresponding follow-up MR observations. Therefore, a sequence of each subject\u2019s
+        LVR maps encodes structural changes in each voxel of the brain.</p><fig id=\"pone-0041873-g004\"
+        orientation=\"portrait\" position=\"float\"><object-id pub-id-type=\"doi\">10.1371/journal.pone.0041873.g004</object-id><label>Figure
+        4</label><caption><title>Longitudinal local volume ratios (percent, y-axis)
+        during follow-up examination (months, x-axis) of different cortical and subcortical
+        regions that revealed no significant group differences between CBS patients
+        (coloured lines) and controls (grey lines).</title><p>Note that at individual
+        level in cases 3 and 6 a mild affection of the inferior temporal gyrus is
+        evident.</p></caption><graphic xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        position=\"float\" orientation=\"portrait\" xlink:href=\"pone.0041873.g004.jpg\"><?image-name
+        pone.0041873.g004.jpg?><?image-size 133791?><?image-md5 6418d8be88f35c999006c20b84adf823?><?image-image-server-status
+        LOAD_COMPLETED?><?image-original-height 2802?><?image-original-width 1885?><?image-scaled-height
+        1121?><?image-scaled-width 754?><?image-cloudpmc-urn urn:cdn:blobs/e2e8/3407125/6418d8be88f3/pone.0041873.g004.jpg?><?thumb-name
+        pone.0041873.g004.gif?><?thumb-size 11557?><?thumb-md5 d4ffa4e4d3c793a42607a4b438548402?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 149?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/d4ffa4e4d3c7/pone.0041873.g004.gif?></graphic></fig></sec><sec
+        id=\"s2d\"><title>Analysis of Anatomical Brain Regions</title><p>LVR maps
+        were analysed in two different ways <xref rid=\"pone.0041873-Pieperhoff2\"
+        ref-type=\"bibr\">[16]</xref>: (a) Voxel-wise analyses; maps showing individual
+        changes of brain structure in the native space of each subject were generated,
+        as well as statistical maps showing differences on the group level. The latter
+        analysis required all subjects\u2019 LVR-maps of the last examination to be
+        transformed into the standard space of the MNI single-subject template <xref
+        rid=\"pone.0041873-Holmes1\" ref-type=\"bibr\">[23]</xref>. Differences between
+        the transformed maps were examined by SPM 8 (<ext-link xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        ext-link-type=\"uri\" xlink:href=\"http://www.fil.ion.ucl.ac.uk/spm\">http://www.fil.ion.ucl.ac.uk/spm</ext-link>).
+        Voxel-wise analyses enable to visualize small regional effects. On the other
+        hand, they are also prone to uncertainties due to image registration, which
+        may impact voxel-wise statistical analysis. (b) Volume changes of anatomical
+        regions; such changes were calculated as the weighted sum of the voxel-wise
+        LVR-values (see below) in regions of interest. Hence the impact of registration
+        errors of single voxels is reduced as compared to a), the robustness of the
+        volume measures is higher. In addition, reducing the volume change data of
+        millions of voxels to a much lower number of regional volume data permits
+        a better visualization. For example, representations of individual time-dependent
+        volume changes as charts provide important information about the individual
+        course of the disease as well as inter-individual variability in an intuitive
+        manner, whereas similar representations by statistical parametric maps are
+        hardly possible.</p><fig id=\"pone-0041873-g005\" orientation=\"portrait\"
+        position=\"float\"><object-id pub-id-type=\"doi\">10.1371/journal.pone.0041873.g005</object-id><label>Figure
+        5</label><caption><title>Topography of brain volume changes as detected by
+        DFM analysis in comparison to probabilistic maps of cytoarchitectonically
+        defined areas that were superimposed on each individual MRI-Scan in (A\u2013C)
+        three CBS patients (case 1, 2 and 6) and (D) a healthy control during long-term
+        follow-up examination.</title><p>The color coding of the voxels indicate the
+        time interval since the initial scan, when their volume had declined by 5%
+        relative to the initial time point. Thus these images show the temporal spreading
+        of the atrophy in each subject\u2019s brain (e.g. red or yellow mean, that
+        after 10 or 20 months, respectively, the voxel volume had shrunk by 5%). Note
+        that in (A) patient 1 and (B) patient 2 showed a more prominent volume decline
+        within area 6 and basal ganglia nuclei, whereas (C) patient 6 revealed lesser
+        volume changes with stronger involvement of temporal regions. The control
+        brain (D) showed only minimal brain volume alterations. Abbreviations: CN
+        \u200A=\u200A Caudate Nucleus, CST \u200A=\u200A Corticospinal Tract, IPL
+        \u200A=\u200A Inferior Parietal Lobule, SPL \u200A=\u200A Superior Parietal
+        Lobule, VA \u200A=\u200A Ventral Anterior Nucleus of the thalamus, VL \u200A=\u200A
+        Ventral Lateral Nucleus of the thalamus, VP \u200A=\u200A Ventral Posterior
+        Nucleus of the thalamus, L \u200A=\u200A Left, R \u200A=\u200A Right.</p></caption><graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" position=\"float\" orientation=\"portrait\"
+        xlink:href=\"pone.0041873.g005.jpg\"><?image-name pone.0041873.g005.jpg?><?image-size
+        329915?><?image-md5 0ee142416d92645fa8a1a889cbc08724?><?image-image-server-status
+        LOAD_COMPLETED?><?image-original-height 6899?><?image-original-width 4418?><?image-scaled-height
+        1149?><?image-scaled-width 736?><?image-cloudpmc-urn urn:cdn:blobs/e2e8/3407125/0ee142416d92/pone.0041873.g005.jpg?><?thumb-name
+        pone.0041873.g005.gif?><?thumb-size 24443?><?thumb-md5 3cc337a8cb2e8badacd9581664c0702c?><?thumb-image-server-status
+        NEVER_LOAD?><?thumb-scaled-height 156?><?thumb-scaled-width 100?><?thumb-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/3cc337a8cb2e/pone.0041873.g005.gif?></graphic></fig><p>Probabilistic
+        maps of cytoarchitectonically defined cortical areas and subcortical nuclei,
+        as well as myeloarchitectonically delineated fiber tracts (<ext-link xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        ext-link-type=\"uri\" xlink:href=\"http://www.fz-juelich.de/inm/inm-1\">http://www.fz-juelich.de/inm/inm-1</ext-link>)
+        were used for measurements of localized changes in circumscribed anatomical
+        entities. These structures have been delineated in histological sections of
+        ten post-mortem brains <xref rid=\"pone.0041873-Amunts1\" ref-type=\"bibr\">[14]</xref>,
+        <xref rid=\"pone.0041873-Amunts2\" ref-type=\"bibr\">[24]</xref>, <xref rid=\"pone.0041873-Brgel1\"
+        ref-type=\"bibr\">[25]</xref>, <xref rid=\"pone.0041873-Zilles1\" ref-type=\"bibr\">[26]</xref>.
+        The probabilistic maps were registered to the T1-weighted single-subject template
+        of the Montreal Neurological Institute (MNI) <xref rid=\"pone.0041873-Holmes1\"
+        ref-type=\"bibr\">[23]</xref>. In the present study, cytoarchitectonic maps
+        of somatosensory and motor cortex areas as well as the superior parietal lobule
+        were particularly relevant <xref rid=\"pone.0041873-Geyer1\" ref-type=\"bibr\">[27]</xref>,
+        <xref rid=\"pone.0041873-Geyer2\" ref-type=\"bibr\">[28]</xref>, <xref rid=\"pone.0041873-Grefkes1\"
+        ref-type=\"bibr\">[29]</xref>, <xref rid=\"pone.0041873-Scheperjans1\" ref-type=\"bibr\">[30]</xref>.
+        In addition to the presently available probabilistic cyto- and myeloarchitectonic
+        maps, which do not cover the entire cortex and subcortical nuclei, maps of
+        macroanatomically defined structures of the MNI template (<ext-link xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        ext-link-type=\"uri\" xlink:href=\"http://www.loni.ucla.edu/ICBM/Downloads/Downloads_ICBMtemplate.shtml\">http://www.loni.ucla.edu/ICBM/Downloads/Downloads_ICBMtemplate.shtml</ext-link>)
+        were used whenever necessary. All anatomical maps (macrostructural as well
+        as myelo- and cytoarchitectonic) were warped onto each brain volume <xref
+        rid=\"pone.0041873-Pieperhoff1\" ref-type=\"bibr\">[15]</xref>, <xref rid=\"pone.0041873-Pieperhoff2\"
+        ref-type=\"bibr\">[16]</xref>. For each case, relative volume changes of cyto-
+        and myeloarchitectonically defined regions of interest were calculated as
+        the sum of voxel-wise LVR-values weighted by the voxel-values of probabilistic
+        cyto- or myeloarchitectonical maps:</p><disp-formula id=\"pone.0041873.e001\"><graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" position=\"anchor\" orientation=\"portrait\"
+        xlink:href=\"pone.0041873.e001.jpg\"><?image-name pone.0041873.e001.jpg?><?image-size
+        6594?><?image-md5 1af49e95d146a9572ec367e3f33e0643?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 78?><?image-scaled-width 304?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/1af49e95d146/pone.0041873.e001.jpg?></graphic></disp-formula><p>\u0394<italic
+        toggle=\"yes\">v<sub>RegionI</sub>(t<sub>k</sub>)</italic> \u200A=\u200A relative
+        volume change of the anatomical region under consideration at time point <italic
+        toggle=\"yes\">t<sub>k</sub></italic> relative to the initial measurement,
+        <italic toggle=\"yes\">t<sub>k</sub></italic> \u200A=\u200A time point of
+        a follow-up scan (<italic toggle=\"yes\">k\u2265</italic>1), <italic toggle=\"yes\">\u03A9<sub>Region</sub></italic>
+        \u200A=\u200A set of voxels belonging to the region (at the initial measurement),
+        <inline-formula id=\"pone.0041873.e002\"><inline-graphic xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"pone.0041873.e002.jpg\"><?image-name pone.0041873.e002.jpg?><?image-size
+        1145?><?image-md5 87d8ffa08da877eb93b7d03f17ce7696?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 17?><?image-scaled-width 74?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/87d8ffa08da8/pone.0041873.e002.jpg?></inline-graphic></inline-formula>\u200A=\u200A
+        local volume ratio in voxel <inline-formula id=\"pone.0041873.e003\"><inline-graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"pone.0041873.e003.jpg\"><?image-name
+        pone.0041873.e003.jpg?><?image-size 293?><?image-md5 e8b27aa89679a29dd1ae6bdcbbd80620?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 13?><?image-scaled-width 9?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/e8b27aa89679/pone.0041873.e003.jpg?></inline-graphic></inline-formula>
+        at the follow-up measurement at time point <italic toggle=\"yes\">t<sub>k</sub></italic>,
+        <inline-formula id=\"pone.0041873.e004\"><inline-graphic xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"pone.0041873.e004.jpg\"><?image-name pone.0041873.e004.jpg?><?image-size
+        1136?><?image-md5 a4e5a48333eb9a7166f36769605267eb?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 18?><?image-scaled-width 66?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/a4e5a48333eb/pone.0041873.e004.jpg?></inline-graphic></inline-formula>
+        \u200A=\u200A probabilistic value of the region in voxel <inline-formula id=\"pone.0041873.e005\"><inline-graphic
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"pone.0041873.e005.jpg\"><?image-name
+        pone.0041873.e005.jpg?><?image-size 293?><?image-md5 e8b27aa89679a29dd1ae6bdcbbd80620?><?image-image-server-status
+        NEVER_LOAD?><?image-scaled-height 13?><?image-scaled-width 9?><?image-cloudpmc-urn
+        urn:cdn:blobs/e2e8/3407125/e8b27aa89679/pone.0041873.e005.jpg?></inline-graphic></inline-formula>.</p></sec><sec
+        id=\"s2e\"><title>Statistical Evaluation</title><p>For statistical comparison
+        of the demographic and clinical parameters between CBS patients and control
+        subjects the two-sided t-test was used for normally distributed and the two-sided
+        Mann-Whitney-U-test for non-normally distributed data. Normality of data distribution
+        was assessed using the Kolmogorov-Smirnov test. Differences of <italic toggle=\"yes\">p</italic>&lt;0.05
+        were considered significant.</p><p>Further, we analysed the dynamics of intraindividual
+        volume reduction in myeloarchitectonically defined fiber tracts, cytoarchitectonic
+        areas as well as macroanatomically defined cortical and subcortical areas
+        in CBS patients and controls. Between-group differences of local volume changes
+        at the last follow-up examination were assessed using the two-sided Mann-Whitney-U-test
+        to determine those brain areas, where volume loss was significantly greater
+        in CBS patients than in healthy controls. All controls were right-handed wherefore
+        we defined left-hemispheric data as \u201Ccontralateral\u201D and right-hemispheric
+        data as \u201Cipsilateral\u201D. This explorative analysis was applied to
+        all brain regions. Testing multiple brain regions in parallel increases the
+        risk of false positive findings. However, the commonly used Bonferroni\u2019s
+        method to control the family wise error will become conservative, in particular
+        when correlations between the tests are present. Such correlations are to
+        be expected, because volume changes of the brain which are caused either by
+        normal aging or by neurodegenerative disease, will in general affect systems
+        of anatomical entities in the brain. Moreover, Bonferroni\u2019s method corrects
+        for the occurrence of <italic toggle=\"yes\">any</italic> false positive result.
+        Therefore, we chose to control the \u201CFalse discovery rate\u201D at 0.05
+        in order to correct for multiple comparisons <xref rid=\"pone.0041873-Benjamini1\"
+        ref-type=\"bibr\">[31]</xref>, <xref rid=\"pone.0041873-Genovese1\" ref-type=\"bibr\">[32]</xref>.
+        In addition, the complementary voxel-wise analysis of group differences was
+        calculated in SPM 8.</p><p>The gender of the participants and the MR scanner
+        which was used for the image acquisition are two further factors which could
+        intermingle with differences between both patients and controls. The sample
+        size, however, was too low to consider these factors in a multi-way statistical
+        analysis and both groups were balanced against the factor gender (number of
+        males/females: controls 5/6, patients 3/3). Therefore, a gender-related confounding
+        effect was not expected. The effect of the different MR scanner type was analyzed
+        by calculating a t-test of differences between the 1.5-Tesla- and 3.0-Tesla
+        scans within the control group, which did not reach significance. Therefore,
+        both factors were not further considered in the following analyses. Moreover,
+        it should be stressed, that each participant\u2019s sequence of MR scans was
+        acquired in the same scanner (i.e. there was no mixing of scans from different
+        scanners within the same participant).</p><p>Descriptive statistics and basic
+        comparisons were analyzed using the MedCalC software package (MedCalc 11.1,
+        Belgium).</p></sec><sec id=\"s2f\"><title>Clinical Parameters</title><p>None
+        of the patients had other neurologic diseases or family history for dementia
+        and parkinsonism. Motor symptoms showed no positive response to levodopa during
+        levodopa-test or continuing dopaminergic therapy.</p></sec><sec id=\"s2g\"><title>Case
+        1</title><p>A 72-year-old woman presented with a 1 year history of progressive
+        rigidity, bradykinesia and ideomotor limb apraxia (IMA) of her right arm at
+        the time of initial volumetric MRI. Neuropsychological evaluation and diagnostic
+        MRI scans were normal. During the 26-months follow-up period (examinations
+        after 16, 20, 23, 26 months) the hypokinetic-rigid syndrome (UPDRS-III 18
+        \u2192 33), and ideomotor apraxia worsened significantly and additionally
+        affected the left upper extremity. Furthermore, a right-sided cortical sensory
+        loss in terms of a tactile agnosia, speech apraxia, Babinski sign and alien
+        limb syndrome appeared. There were no clinical features of clonus or muscle
+        atrophy. After 26 months of follow-up, she revealed no cognitive impairments
+        besides mild visuoconstruction and attention deficits (MDRS 133/144).</p></sec><sec
+        id=\"s2h\"><title>Case 2</title><p>A 69-year-old man complained that over
+        the last 2 years his left upper extremity became clumsy and useless. At initial
+        follow-up examination he revealed a moderate left-dominant hypokinetic-rigid
+        syndrome (UPDRS-III 21) as well as myoclonus and ideomotor apraxia of the
+        left hand. Diagnostic brain MRI scans were normal. Neuropsychological testing
+        detected mild deficits in the subitems attention, initiation-perseveration
+        as well as construction of the MDRS (total score 126/144); memory subscales
+        were normal. During the 25-months follow-up period (examinations after 3,
+        6, 10, 13, 18, 22, 26 months) the hypokinetic-rigid syndrome dramatically
+        worsened (UPDRS-III 21 \u2192 46) and a left upper alien limb syndrome appeared.
+        Furthermore, ideomotor apraxia became bilateral and a speech apraxia was evident.
+        He developed a vertical supranuclear palsy and postural instability. His abilities
+        on formal psychometric testing deteriorated and MDRS declined to 96, showing
+        worsening of attention, initiation-perseveration and construction as well
+        as onset of memory deficits.</p></sec><sec id=\"s2i\"><title>Case 3</title><p>A
+        76-year-old man progressively developed a stiffness and uselessness of his
+        left arm and leg over the course of 2 two years. At initial examination he
+        presented with a left-dominant moderate hypokinetic-rigid syndrome (UPDRS-III
+        33). Furthermore, he was affected by a solely left-sided ideomotor apraxia
+        and dystonia. Diagnostic MRI scans demonstrated cortical atrophy pronounced
+        in fronto-parietal regions accompanied by a ventricular widening. The neuropsychological
+        examination was limited since the patient was nearly blind due to a senile
+        macular degeneration. Therefore, only verbal testing was possible and MDRS
+        was reduced to a maximum of 103 and MMSE to a maximum of 25 points. He initially
+        revealed minimal deficits in the domains initiation-perseveration and attention.
+        Memory functions, orientation and conceptualization were normal. During the
+        24-months follow-up (examinations after 11, 14, 20, 24 months), he developed
+        a severe bilateral but left-dominant akinetic-rigid syndrome (UPDRS-III up
+        to 58) and ideomotor apraxia of all limbs. He became chairbound due to the
+        apractic gait dysfunction. Furthermore, he developed an alien limb syndrome
+        and astereognosia of the left arm as well as a supranuclear palsy. Psychometry
+        revealed worsening of initiation-perseveration and onset of mild memory deficits.</p></sec><sec
+        id=\"s2j\"><title>Case 4</title><p>A 68-year-old woman developed a severe
+        akinetic-rigid syndrome (UPDRS-III 44) with dystonic and painful contraction
+        of the left upper and lower extremity over the last 2 years. The left leg
+        became apractic with consecutive gait difficulties. Babinski sign was positive,
+        but there were no clinical findings of weakness, hyperreflexia or fasciculations.
+        Diagnostic MRI scans showed mild to moderate cortical atrophy but detailed
+        neuropsychological testing was normal. After a 14-months follow-up period
+        (examinations after 7, 14 months) she was chairbound due to a gait apraxia.
+        The hypokinetic-rigid syndrome worsened and manifested bilaterally (UPDRS-III
+        44 \u2192 64). Furthermore, a painful left-dominant dystonia affected all
+        limbs, wherefore initiation of botulinum toxin injection was necessary. Moreover,
+        a speech apraxia and astereognosia developed. She still performed normal on
+        psychometric testing. Two months after the last follow-up examination the
+        patient died of a subacute ileus.</p></sec><sec id=\"s2k\"><title>Case 5</title><p>A
+        62-year-old woman presented with a progressive stiffness, slowness and difficulty
+        using the right arm. At initial examination, she had moderate hypokinetic-rigid
+        syndrome (UPDRS-III 20), ideomotor apraxia, alien limb phenomenon and myoclonus
+        of the right upper limb. Diagnostic MRI scans and detailed neuropsychological
+        testing were normal. During a 16-months follow-up period (examinations after
+        4, 7, 10, 12, 16 months) the hypokinetic-rigid syndrome rapidly worsened and
+        became bilateral (UPDRS-III up to 45). The ideomotor apraxia as well as the
+        alien limb syndrome further increased and she developed a painful dystonia
+        of the right hand. At final visit, formal psychometry revealed severe constructional
+        apraxia as well as slight initiation-perseveration impairment; memory functions
+        were normal.</p></sec><sec id=\"s2l\"><title>Case 6</title><p>A 65-year-old
+        man suffered of a 4 year history of progressive right-dominant upper ideomotor
+        apraxia, dystonia, bradykinesia and rigidity as well as right-sided alien
+        limb syndrome. At the time of first scanning neuropsychological examination
+        revealed reduced verbal fluency due to dysphasia, a moderate dyscalculia and
+        slight deficits of additional cognitive functions. Diagnostic brain MRI demonstrated
+        mild left-sided parietal-frontal atrophy. During the 19-months follow-up significant
+        worsening of right-dominant ideomotor apraxia and hypokinetic-rigid syndrome
+        (UPDRS-III 25 \u2192 32) was evident and a right-sided stereoagnosia developed.
+        Furthermore, pronounced memory impairment and onset of visuoconstructive and
+        attention deficits were obvious.</p></sec></sec><sec id=\"s3\"><title>Results</title><sec
+        id=\"s3a\"><title>Clinical Findings</title><p>The clinical data of the CBS
+        patients are summarized in <xref ref-type=\"table\" rid=\"pone-0041873-t001\">Table
+        1</xref>. The mean age (68.7\xB15 years, range 62\u201376 years) and the mean
+        time of follow-up examinations (20.8\xB15.2 months, range 14\u201326 months)
+        were similar to those of the control group (mean age 60.1\xB110.3 years, range
+        45\u201379 years, p\u200A=\u200A0.06, Mann-Whitney-U-Test, two-sided; mean
+        follow-up 21.4\xB12.7, range 18\u201326 months, p\u200A=\u200A0.9, Mann-Whitney-U-Test,
+        two-sided).</p><p>During the follow-up period CBS patients showed rapid worsening
+        of clinical symptoms, reflected by a significant increase of the UPDRS-III
+        score (p\u200A=\u200A0.015, t test), the FAST score (stronger affected limb
+        p\u200A=\u200A0.36, lesser affected limb p\u200A=\u200A0.04, t test) and the
+        FT scores (stronger affected limb p\u200A=\u200A0.04, lesser affected limb
+        p\u200A=\u200A0.004, t test). Asymmetric hypokinetic-rigid syndrome and ideomotor
+        apraxia were present in all CBS patients. The second most frequent clinical
+        findings were limb dystonia and alien limb syndrome in 5/6 patients (83%).
+        Neuropsychological follow-up assessment revealed pathologic findings particularly
+        in the domain of initiation and construction. Mild to moderate memory impairment
+        was present in case 2, 3 and 6.</p><p>Neurological and neuropsychological
+        scores of the control subjects remained in normal range during the course
+        of the entire study period (<xref ref-type=\"supplementary-material\" rid=\"pone.0041873.s001\">Table
+        S1</xref>). They revealed constant UPDRS-III (T initial: 0.9\xB11.4; T final:
+        1.1\xB11.3; p\u200A=\u200A0.68, Mann-Whitney-U-Test) and MMSE (T initial:
+        29.9\xB10.3, T final: 29.9\xB10.3) values.</p></sec><sec id=\"s3b\"><title>Group
+        Comparison of Regional Brain Volume Changes between CBS Patients and Controls</title><p>\n<xref
+        ref-type=\"table\" rid=\"pone-0041873-t002\">Table 2</xref> summarizes the
+        between-group comparison of local volume changes at final follow-up examination
+        (T final) within anatomically defined regions between CBS patients and healthy
+        volunteers. Group comparison identified different cortical and subcortical
+        regions with significant atrophy in CBS patients as compared to controls.
+        Bilaterally, a highly significant volume loss of the premotor area 6 and the
+        primary motor area 4 was detected. Furthermore, the superior parietal lobules
+        of both hemispheres and the somatosensory area 3a demonstrated a significant
+        volume decrease relative to controls. Occipital and temporal regions did not
+        show differences in volume reduction between groups, although in individual
+        patients we found a reduction of volume. With respect to the subcortical regions,
+        significant atrophy was identified in the head of the caudate nucleus, putamen,
+        pallidum and substantia nigra. In addition, highly significant gray matter
+        loss was observed within the motor thalamus comprising the ventral anterior
+        (VA) and ventral lateral (VL) thalamic nuclei. Furthermore, prominent atrophy
+        of the corticospinal tract and widening of the ventricles was found. None
+        of the identified regions revealed significant side-to-side differences.</p><p>The
+        complementary voxel-wise analysis of group differences revealed the same pattern
+        (<xref ref-type=\"fig\" rid=\"pone-0041873-g001\">Figure 1</xref>): Cortex
+        and underlying white matter of the prefrontal and parietal lobes showed strong
+        volume loss, whereas other parts of the neocortex were spared. Moreover, head
+        of caudate nucleus, globus pallidus and thalamus were strongly affected in
+        the patients group.</p></sec><sec id=\"s3c\"><title>Comparison of Individual
+        Atrophy Patterns Across CBS Patients and Healthy Controls</title><p>The individual
+        dynamics of brain volume changes in the regions that revealed significant
+        group differences between CBS patients and healthy controls are demonstrated
+        in <xref ref-type=\"fig\" rid=\"pone-0041873-g002\">Figure 2</xref> and <xref
+        ref-type=\"fig\" rid=\"pone-0041873-g003\">Figure 3</xref>; examples of other
+        cytoarchitectonically defined areas are shown in <xref ref-type=\"fig\" rid=\"pone-0041873-g004\">Figure
+        4</xref>.</p><p>Longitudinal DFM analysis in the control group showed only
+        minimal alterations of the total brain volume. Only ventricles revealed a
+        mild to moderate increase in total volume after the follow-up period of 18\u201326
+        months. In contrast to these minimal brain volume changes, individual CBS
+        patients presented severe and focal atrophy within basal ganglia, thalamus,
+        frontal and parietal areas. Involved regions thereby revealed different degrees
+        of spatio-temporal atrophy contralateral as well as ipsilateral to the clinically
+        most affected side. In all cases, there was a prominent bilateral, progressive
+        volume loss in the premotor and primary motor cortex and the corticospinal
+        tract. Patients with shorter disease durations of 1\u20132 years at study
+        inclusion (cases 1\u20134) showed a more severe volume decline than patients
+        with longer disease durations of 3\u20134 years (case 5\u20136). The contralateral
+        head of the caudate nucleus, putamen and pallidum were affected in all CBS
+        patients. The ventral anterior nuclei of the motor thalamus were most strongly
+        affected and revealed bilateral involvement in all patients. The rates of
+        volume decline in the substantia nigra and the posterior parietal cortical
+        regions were not as prominent and overlapped between CBS patients and normally
+        aging controls. Atrophy of area 3a was only visible in cases 1, 3, 4 and 6.
+        Interestingly, these patients developed an astereognosia during clinical follow-up
+        examination. The superior parietal lobule revealed only mild rates of atrophy.
+        An affection of the temporal lobe, that did not show significant differences
+        at group comparison, was found in cases 3 and 6 who also presented a cognitive
+        impairment. The topography of brain volume changes during longitudinal DFM
+        analysis and the dynamics of progression are shown in <xref ref-type=\"fig\"
+        rid=\"pone-0041873-g005\">Figure 5</xref>.</p></sec></sec><sec id=\"s4\"><title>Discussion</title><p>In
+        this study pathological changes in the individual brains of patients with
+        the clinical diagnosis of CBS were compared to normal aging in healthy controls
+        using longitudinal DFM analysis <xref rid=\"pone.0041873-Pieperhoff2\" ref-type=\"bibr\">[16]</xref>.
+        During two years of follow-up scans, relatively short time intervals of three
+        to four months revealed the spatio-temporal dynamics of cortical and subcortical
+        atrophy. In all CBS patients, a common degeneration within motor circuits,
+        comprising basal ganglia and motor thalamic nuclei as well as the premotor
+        and primary motor cortex was present. Clinical long-term follow-up examination
+        revealed characteristic progressive, asymmetrical cortical and basal-ganglia
+        features that were unresponsive to levodopa and supported the diagnosis of
+        CBS <xref rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>, <xref
+        rid=\"pone.0041873-Shelley1\" ref-type=\"bibr\">[21]</xref>, <xref rid=\"pone.0041873-Mathew1\"
+        ref-type=\"bibr\">[22]</xref>.</p><p>To increase the in vivo diagnostic accuracy
+        in CBS several imaging techniques have been proposed to detect neurodegenerative
+        brain volume changes <xref rid=\"pone.0041873-Brooks1\" ref-type=\"bibr\">[1]</xref>,
+        <xref rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>. One methodological
+        approach for the differentiation of CBS during lifetime is given by the visualization
+        of the underlying neurodegeneration using morphometric MRI analysis <xref
+        rid=\"pone.0041873-Josephs1\" ref-type=\"bibr\">[3]</xref>, <xref rid=\"pone.0041873-Whitwell1\"
+        ref-type=\"bibr\">[4]</xref>, <xref rid=\"pone.0041873-Boxer1\" ref-type=\"bibr\">[13]</xref>,
+        <xref rid=\"pone.0041873-Huey1\" ref-type=\"bibr\">[33]</xref>, <xref rid=\"pone.0041873-Whitwell2\"
+        ref-type=\"bibr\">[34]</xref>. In this respect, Whitwell and colleagues only
+        recently showed imaging of atrophy patterns in autopsy proven subtypes of
+        CBS that were of diagnostic value to discriminate CBS-CBD, CBS-PSP, CBS-AD
+        and frontotemporal lobar degeneration with TDP-43 immunoreactivity (CBS-TDP)
+        <xref rid=\"pone.0041873-Whitwell1\" ref-type=\"bibr\">[4]</xref>. They demonstrated
+        a prominent focal gray matter loss of the premotor cortex and supplementary
+        cortex in CBS-CBD and CBS-PSP with sparing of inferior frontal lobe in CBS-PSP.
+        In CBS-AD and CBS-TDP a more widespread and distinctive pattern of gray matter
+        loss was shown, with pronounced frontotemporal volume degeneration suggesting
+        CBS-TDP and temporoparietal deterioration suggesting CBS-AD. Consistent with
+        histopathological findings, degeneration of the premotor and supplementary
+        motor area was evident in all of these different CBS subtypes reflecting a
+        common pattern of atrophy in these regions. However, the analysis had a cross-sectional
+        design and did not identify topography and dynamics of structural changes
+        in individual patients <xref rid=\"pone.0041873-Whitwell1\" ref-type=\"bibr\">[4]</xref>.</p><p>Therefore,
+        the novel aspect of our study is the use of DFM which allows the robust detection
+        and quantification of individual brain atrophy patterns without predefinition
+        of regions of interest. We were able to show the course of atrophy progression
+        within short time intervals of only a few months. Only one report exists,
+        that used longitudinal voxel-based morphometry analysis in a single, not autopsy
+        proven patient, who initially presented with a nonfluent progressive aphasia
+        and later on developed atypical clinical signs of a CBS <xref rid=\"pone.0041873-GornoTempini1\"
+        ref-type=\"bibr\">[35]</xref>. Interestingly, this patient revealed an akinetic-rigid
+        syndrome, dystonia and alien limb phenomenon accompanied by an atrophy spreading
+        from the posterior inferior frontal gyrus to insular regions, thalamus, caudate
+        nucleus and medial frontal lobe. We also found volume reduction in most of
+        these areas. Our results demonstrate highest atrophy rates of up to 15% after
+        26 months in the premotor region, particularily in the cases with shorter
+        disease duration. This might reflect a phenomenon of slowing neurodegenerative
+        processes in later disease stages which has also been shown by neuropathological
+        and PET studies in Parkinson\u2019s disease <xref rid=\"pone.0041873-Morrish1\"
+        ref-type=\"bibr\">[36]</xref>, <xref rid=\"pone.0041873-Pirker1\" ref-type=\"bibr\">[37]</xref>,
+        <xref rid=\"pone.0041873-Fearnley1\" ref-type=\"bibr\">[38]</xref>. In addition,
+        we found in all CBS patients a distinct and asymmetric volume loss in the
+        substantia nigra, striatum, pallidum, motor thalamic nuclei including anterior
+        ventral and anterior lateral nuclei as well as the primary motor cortex. This
+        affection of a functionally interconnected motor circuit concurs with neuropathological
+        results <xref rid=\"pone.0041873-Mackenzie1\" ref-type=\"bibr\">[12]</xref>
+        and also with a deformation tensor imaging study that revealed structural
+        changes within parts of the same network including the motor thalamus, the
+        caudate head, the supplementary motor area and the pre\u2212/postcentral region
+        in CBS patients <xref rid=\"pone.0041873-Erbetta1\" ref-type=\"bibr\">[2]</xref>.
+        Therefore, it seems very likely that an anatomically specific network undergoes
+        degeneration in CBS, which causes the clinical symptoms.</p><p>In parallel
+        with cortical and subcortical atrophy we detected a widening of the ventricles.
+        This is in agreement with previously described ventricular volume increase
+        in CBS that ranges from 8.3% in CBS-AD to 16.2% per annum in CBS-CBD <xref
+        rid=\"pone.0041873-Whitwell2\" ref-type=\"bibr\">[34]</xref>, and with previous
+        aging studies in healthy subjects <xref rid=\"pone.0041873-Scahill1\" ref-type=\"bibr\">[39]</xref>,
+        <xref rid=\"pone.0041873-Tang1\" ref-type=\"bibr\">[40]</xref>.</p><p>In contrast
+        to these regionally localized volume changes in CBS patients, the DFM analysis
+        of the entire brain with follow-up periods of 18\u201326 months in healthy
+        controls revealed comparatively weak volume alterations, which correspond
+        to reported changes during normal aging as shown in cross-sectional studies
+        <xref rid=\"pone.0041873-Curiati1\" ref-type=\"bibr\">[41]</xref>.</p><p>All
+        of our patients showed major basal ganglia degeneration with affection of
+        nigro-striatal regions. It seems plausible that the akinetic-rigid syndrome,
+        often combined with a limb dystonia, was caused by this damage. Another prominent
+        clinical finding was an ideomotor apraxia of at least one limb in all cases
+        as well as an alien limb phenomenon in 5 out of 6 patients, which previously
+        has been shown to be associated with affection of the premotor area <xref
+        rid=\"pone.0041873-Huey1\" ref-type=\"bibr\">[33]</xref>, <xref rid=\"pone.0041873-Schaefer1\"
+        ref-type=\"bibr\">[42]</xref>. A further distinct clinical feature in 4 out
+        of 6 patients (case 1, 3, 4, 6) was the manifestation of a cortical sensory
+        loss in terms of an astereognosia of the dominantly affected hand. Interestingly,
+        these patients demonstrated distinct bilateral atrophy in the somatosensory
+        area 3a. The volume reduction was more severe on the contralateral side. Tactile
+        object discrimination depends on the conveyance of multiple afferents from
+        cutaneous and deep receptors in joints and muscles of an exploring hand. Hierarchical
+        somatosensory processing of shape is computed by Brodmann\u2019s areas 3,
+        1, 2 and parts of the supramarginal gyrus as well as the intraparietal sulcus
+        <xref rid=\"pone.0041873-Bodegard1\" ref-type=\"bibr\">[43]</xref>, <xref
+        rid=\"pone.0041873-Hmke1\" ref-type=\"bibr\">[44]</xref>. Areas 3a and 3b
+        receive input from muscle stretch receptors and cutaneous mechanoreceptors
+        <xref rid=\"pone.0041873-Hmke1\" ref-type=\"bibr\">[44]</xref>. Therefore,
+        it is plausible that the present results explain the cortical sensory loss
+        in CBS. Communication skills were impaired in 4 patients due to a speech apraxia
+        and dysphasia. However, none of the subjects developed a primary progressive
+        aphasia which correlates with our findings of an unaffected Broca\u2019s area
+        in all of our patients <xref rid=\"pone.0041873-GornoTempini1\" ref-type=\"bibr\">[35]</xref>.
+        From human imaging and lesioning-studies it is known that the superior parietal
+        cortex plays an important role in visuospatial and attentional processing
+        <xref rid=\"pone.0041873-Vandenberghe1\" ref-type=\"bibr\">[45]</xref>. Interestingly,
+        the most common neuropsychological impairments in our patients were visuoconstructive
+        and attention deficits which might be related to the detected atrophy of the
+        area 5 and 7 of the parietal lobe. Three patients further developed mild to
+        moderate memory deficits during clinical follow-up examinations, whereby the
+        cases 3 and 6 displayed commencing temporal lobe atrophy, possibly due to
+        an underlying Alzheimer pathology <xref rid=\"pone.0041873-Whitwell1\" ref-type=\"bibr\">[4]</xref>,
+        <xref rid=\"pone.0041873-Zhang1\" ref-type=\"bibr\">[46]</xref>.</p><p>One
+        limitation of our study is the missing post-mortem confirmed diagnosis making
+        an accurate discrimination of different nosological entities difficult <xref
+        rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>, <xref rid=\"pone.0041873-Ling1\"
+        ref-type=\"bibr\">[7]</xref>, <xref rid=\"pone.0041873-Litvan1\" ref-type=\"bibr\">[8]</xref>,
+        <xref rid=\"pone.0041873-Boeve2\" ref-type=\"bibr\">[9]</xref>, <xref rid=\"pone.0041873-Wadia1\"
+        ref-type=\"bibr\">[10]</xref>. However, this is an ongoing follow-up study
+        with the strength that the clinical features are very accurately documented
+        and the course of the illness in the examined patients clearly fits the diagnosis
+        of CBS <xref rid=\"pone.0041873-Boeve1\" ref-type=\"bibr\">[6]</xref>, <xref
+        rid=\"pone.0041873-Ling1\" ref-type=\"bibr\">[7]</xref>, <xref rid=\"pone.0041873-Wadia1\"
+        ref-type=\"bibr\">[10]</xref>, <xref rid=\"pone.0041873-Mahapatra1\" ref-type=\"bibr\">[11]</xref>,
+        <xref rid=\"pone.0041873-Shelley1\" ref-type=\"bibr\">[21]</xref>, <xref rid=\"pone.0041873-Mathew1\"
+        ref-type=\"bibr\">[22]</xref>, <xref rid=\"pone.0041873-Schneider1\" ref-type=\"bibr\">[47]</xref>.
+        Another limitation is that patients were examined with 1.5 or alternatively
+        3.0 T MR-scanners. However, the two different imaging types were matched between
+        groups. Furthermore, the effect of the different scanners was tested within
+        the control group and no significant influence on the measurement of volume
+        changes was found.</p><p>In summary, this study shows that longitudinal DFM
+        is a powerful image analysis tool that supports the investigation of the course
+        of CBS brain pathology in individual patients during short time intervals
+        of only a few months, helping to distinguish their temporal gradient of brain
+        volume changes from that of healthy aging. DFM may therefore become a sensitive
+        biomarker for a more accurate clinical diagnosis even at an early disease
+        stage. Additionally, longitudinal DFM studies could become a helpful structural
+        imaging method to identify agents that slow, stop, or even reverse the disease
+        pathology in CBS and also other neurodegenerative disorders involving the
+        central nervous system.</p></sec><sec sec-type=\"supplementary-material\"
+        id=\"s5\"><title>Supporting Information</title><supplementary-material content-type=\"local-data\"
+        id=\"pone.0041873.s001\" position=\"float\" orientation=\"portrait\"><label>Table
+        S1</label><caption><p>\n<bold>Demographic data of the healthy controls.</bold>
+        Abbreviations: MMSE \u200A=\u200A Mini Mental State Examination, MRI \u200A=\u200A
+        Magnetic resonance imaging, n.d. \u200A=\u200A not done, UPDRS-III \u200A=\u200A
+        Unified Parkinson\u2019s Disease Rating Scale part III, FT \u200A=\u200A Finger
+        tapping, le \u200A=\u200A left, ri \u200A=\u200A right, f \u200A=\u200A female,
+        m \u200A=\u200A male, T initial \u200A=\u200A initial examination, T final
+        \u200A=\u200A final examination.</p><p>(DOC)</p></caption><media xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"pone.0041873.s001.doc\" position=\"float\" orientation=\"portrait\"><?suppdata-name
+        pone.0041873.s001.doc?><?suppdata-size 50688?><?suppdata-md5 35aac823939727587355906a633738b0?><?suppdata-image-server-status
+        NEVER_LOAD?><?suppdata-mime-type application?><?suppdata-mime-sub-type msword?><?suppdata-cloudpmc-urn
+        urn:app:e2e8/3407125/35aac8239397/pone.0041873.s001.doc?><caption><p>Click
+        here for additional data file.</p></caption></media></supplementary-material></sec></body><back><ack><p>We
+        thank all the participants of this study and E. R\xE4disch for technical support
+        with the MRI scans.</p></ack><ref-list><title>References</title><ref id=\"pone.0041873-Brooks1\"><label>1</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Brooks</surname><given-names>DJ</given-names></name>
+        (<year>2010</year>) <article-title>Imaging approaches to Parkinson disease</article-title>.
+        <source>J Nuc Med</source>\n<volume>51</volume>: <fpage>596</fpage>\u2013<lpage>609</lpage>.<pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.2967/jnumed.108.059998</pub-id><pub-id
+        pub-id-type=\"pmid\">20351351</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Erbetta1\"><label>2</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Erbetta</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Mandelli</surname><given-names>ML</given-names></name>,
+        <name name-style=\"western\"><surname>Savoiardo</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>Grisoli</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>Bizzi</surname><given-names>A</given-names></name>,
+        <etal>et al</etal> (<year>2009</year>) <article-title>Diffusion tensor imaging
+        shows different topographic involvement of the thalamus in progressive supranuclear
+        palsy and corticobasal degeneration</article-title>. <source>Am J Neuroradiol</source>\n<volume>30</volume>:
+        <fpage>1482</fpage>\u2013<lpage>1487</lpage>.<pub-id pub-id-type=\"pmid\">19589886</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.3174/ajnr.A1615</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC7051630</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Josephs1\"><label>3</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Josephs</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>Whitewell</surname><given-names>J</given-names></name>,
+        <name name-style=\"western\"><surname>Dickson</surname><given-names>DW</given-names></name>,
+        <name name-style=\"western\"><surname>Boeve</surname><given-names>BF</given-names></name>,
+        <name name-style=\"western\"><surname>Knopman</surname><given-names>DS</given-names></name>,
+        <etal>et al</etal> (<year>2008</year>) <article-title>Voxel-based morphometry
+        in autopsy proven PSP and CBD</article-title>. <source>Neurobiol Aging</source>\n<volume>29</volume>:
+        <fpage>280</fpage>\u2013<lpage>289</lpage>.<pub-id pub-id-type=\"pmid\">17097770</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/j.neurobiolaging.2006.09.019</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2702857</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Whitwell1\"><label>4</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Whitwell</surname><given-names>JL</given-names></name>,
+        <name name-style=\"western\"><surname>Jack</surname><given-names>CR</given-names></name>,
+        <name name-style=\"western\"><surname>Boeve</surname><given-names>BF</given-names></name>,
+        <name name-style=\"western\"><surname>Parisi</surname><given-names>JE</given-names></name>,
+        <name name-style=\"western\"><surname>Ahlskog</surname><given-names>JE</given-names></name>,
+        <etal>et al</etal> (<year>2010</year>) <article-title>Imaging correlates of
+        pathology in corticobasal syndrome</article-title>. <source>Neurology</source>\n<volume>75</volume>:
+        <fpage>1879</fpage>\u2013<lpage>1887</lpage>.<pub-id pub-id-type=\"pmid\">21098403</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1212/WNL.0b013e3181feb2e8</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2995388</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Williams1\"><label>5</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Williams</surname><given-names>R</given-names></name>
+        (<year>2010</year>) <article-title>Slowing the decline</article-title>. <source>Nature</source>\n<volume>466</volume>:
+        <fpage>13</fpage>\u2013<lpage>14</lpage>.<pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1038/466S13a</pub-id><pub-id
+        pub-id-type=\"pmid\">20739931</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Boeve1\"><label>6</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Boeve</surname><given-names>BF</given-names></name>,
+        <name name-style=\"western\"><surname>Lang</surname><given-names>AE</given-names></name>,
+        <name name-style=\"western\"><surname>Litvan</surname><given-names>I</given-names></name>
+        (<year>2003</year>) <article-title>Corticobasal degeneration and its relationship
+        tp progressive supranuclear palsy and frontotemporal dementia</article-title>.
+        <source>Ann Neurol</source>\n<volume>54</volume> (Suppl. 5)<fpage>15</fpage>\u2013<lpage>19</lpage>.<pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1002/ana.10570</pub-id><pub-id
+        pub-id-type=\"pmid\">12833363</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Ling1\"><label>7</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Ling</surname><given-names>H</given-names></name>,
+        <name name-style=\"western\"><surname>O\u2019Sullivan</surname><given-names>SS</given-names></name>,
+        <name name-style=\"western\"><surname>Holton</surname><given-names>JL</given-names></name>,
+        <name name-style=\"western\"><surname>Revesz</surname><given-names>T</given-names></name>,
+        <name name-style=\"western\"><surname>Massey</surname><given-names>LA</given-names></name>,
+        <etal>et al</etal> (<year>2010</year>) <article-title>Does corticobasal degeneration
+        exist? A clinicopathological re-evaluation</article-title>. <source>Brain</source>\n<volume>133</volume>:
+        <fpage>2045</fpage>\u2013<lpage>2057</lpage>.<pub-id pub-id-type=\"pmid\">20584946</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1093/brain/awq123</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Litvan1\"><label>8</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Litvan</surname><given-names>I</given-names></name>,
+        <name name-style=\"western\"><surname>Agid</surname><given-names>Y</given-names></name>,
+        <name name-style=\"western\"><surname>Goetz</surname><given-names>C</given-names></name>,
+        <name name-style=\"western\"><surname>Jankovic</surname><given-names>J</given-names></name>,
+        <name name-style=\"western\"><surname>Wenning</surname><given-names>GK</given-names></name>,
+        <etal>et al</etal> (<year>1997</year>) <article-title>Accuracy of the clinical
+        diagnosis of corticobasal degeneration: a clinicopathologic study</article-title>.
+        <source>Neurology</source>\n<volume>48</volume>: <fpage>119</fpage>\u2013<lpage>125</lpage>.<pub-id
+        pub-id-type=\"pmid\">9008506</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1212/wnl.48.1.119</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Boeve2\"><label>9</label><mixed-citation publication-type=\"book\">Boeve
+        FB (2005) Corticobasal degeneration. The syndrome and the disease. Current
+        Clinical Neurology: Atypical Parkinsonian Disorders. Clinical and Research
+        Aspects, Humana Press Inc, Totowa, New York, Ed. Litvan I, 309\u2013334 p..</mixed-citation></ref><ref
+        id=\"pone.0041873-Wadia1\"><label>10</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Wadia</surname><given-names>PM</given-names></name>,
+        <name name-style=\"western\"><surname>Lang</surname><given-names>AE</given-names></name>
+        (<year>2007</year>) <article-title>The many faces of corticobasal degeneration</article-title>.
+        <source>Parkinsonism Rel Disord</source>\n<volume>13</volume>: <fpage>336</fpage>\u2013<lpage>340</lpage>.<pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/S1353-8020(08)70027-0</pub-id><pub-id
+        pub-id-type=\"pmid\">18267261</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Mahapatra1\"><label>11</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Mahapatra</surname><given-names>RK</given-names></name>,
+        <name name-style=\"western\"><surname>Edwards</surname><given-names>MJ</given-names></name>,
+        <name name-style=\"western\"><surname>Schott</surname><given-names>JM</given-names></name>,
+        <name name-style=\"western\"><surname>Bhatia</surname><given-names>K</given-names></name>
+        (<year>2004</year>) <article-title>Corticobasal degeneration</article-title>.
+        <source>Lancet Neurol</source>\n<volume>3</volume>: <fpage>736</fpage>\u2013<lpage>743</lpage>.<pub-id
+        pub-id-type=\"pmid\">15556806</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/S1474-4422(04)00936-6</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Mackenzie1\"><label>12</label><mixed-citation publication-type=\"book\">Mackenzie
+        IRA (2005) Neuropathology of atypical Parkinsonian disorder. Current Clinical
+        Neurology: Atypical Parkinsonian Disorders. Clinical and Research Aspects,
+        Humana Press Inc, Totowa, New York, Ed. Litvan I, 33\u201363 p..</mixed-citation></ref><ref
+        id=\"pone.0041873-Boxer1\"><label>13</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Boxer</surname><given-names>AL</given-names></name>,
+        <name name-style=\"western\"><surname>Geschwind</surname><given-names>MD</given-names></name>,
+        <name name-style=\"western\"><surname>Belfor</surname><given-names>N</given-names></name>,
+        <name name-style=\"western\"><surname>Gorno-Tempini</surname><given-names>ML</given-names></name>,
+        <name name-style=\"western\"><surname>Schauer</surname><given-names>GF</given-names></name>,
+        <etal>et al</etal> (<year>2006</year>) <article-title>Patterns of brainb atrophy
+        that differentiate corticobasal degeneration syndrome from progressive supranuclear
+        palsy</article-title>. <source>Arch Neurol</source>\n<volume>63</volume>:
+        <fpage>81</fpage>\u2013<lpage>86</lpage>.<pub-id pub-id-type=\"pmid\">16401739</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1001/archneur.63.1.81</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Amunts1\"><label>14</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Amunts</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>Schleicher</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>
+        (<year>2007</year>) <article-title>Cytoarchitecture of the cerebral cortex
+        \u2013 more than localization</article-title>. <source>Neuroimage</source>\n<volume>37</volume>:
+        <fpage>1061</fpage>\u2013<lpage>1065</lpage>.<pub-id pub-id-type=\"pmid\">17870622</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/j.neuroimage.2007.02.037</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Pieperhoff1\"><label>15</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Pieperhoff</surname><given-names>P</given-names></name>,
+        <name name-style=\"western\"><surname>H\xF6mke</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Schneider</surname><given-names>F</given-names></name>,
+        <name name-style=\"western\"><surname>Habel</surname><given-names>U</given-names></name>,
+        <name name-style=\"western\"><surname>Shah</surname><given-names>NJ</given-names></name>,
+        <etal>et al</etal> (<year>2008</year>) <article-title>Deformation field morphometry
+        reveals age-related structural differences between the brains of adults up
+        to 51 years</article-title>. <source>J Neurosci</source>\n<volume>28</volume>:
+        <fpage>828</fpage>\u2013<lpage>842</lpage>.<pub-id pub-id-type=\"pmid\">18216191</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1523/JNEUROSCI.3732-07.2008</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC6671008</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Pieperhoff2\"><label>16</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Pieperhoff</surname><given-names>P</given-names></name>,
+        <name name-style=\"western\"><surname>S\xFCdmeyer</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>H\xF6mke</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>Schnitzler</surname><given-names>A</given-names></name>,
+        <etal>et al</etal> (<year>2008</year>) <article-title>Detection of structural
+        changes of the human brain in longitudinally acquired MR images by deformation
+        field morphometry: methodological analysis, validation and application</article-title>.
+        <source>Neuroimage</source>\n<volume>43</volume>: <fpage>269</fpage>\u2013<lpage>287</lpage>.<pub-id
+        pub-id-type=\"pmid\">18706506</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/j.neuroimage.2008.07.031</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Rothi1\"><label>17</label><mixed-citation publication-type=\"book\">Rothi
+        LJG, Raymer AM, Heilman KM (1997) Limb praxis assessment. Apraxia: the neuropsychology
+        of action (Brain damage, behaviour, &amp; cognition). Psychology press, Eds.
+        Rothi LJG and Heilman KM, 61\u201374 p.</mixed-citation></ref><ref id=\"pone.0041873-Mattis1\"><label>18</label><mixed-citation
+        publication-type=\"book\">Mattis S (1988) Dementia rating scale (DRS). Odessa,
+        FL; Psychological Assessment Resources.</mixed-citation></ref><ref id=\"pone.0041873-Folstein1\"><label>19</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Folstein</surname><given-names>MF</given-names></name>,
+        <name name-style=\"western\"><surname>Folstein</surname><given-names>SE</given-names></name>,
+        <name name-style=\"western\"><surname>McHugh</surname><given-names>PR</given-names></name>
+        (<year>1975</year>) <article-title>\u201CMini-mental state\u201D</article-title>.
+        A practical method for grading the cognitive state of patients for the clinician.
+        <source>J Psychiatr Res</source>\n<volume>12</volume>: <fpage>189</fpage>\u2013<lpage>198</lpage>.<pub-id
+        pub-id-type=\"pmid\">1202204</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/0022-3956(75)90026-6</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Movement1\"><label>20</label><mixed-citation publication-type=\"journal\">\n<collab>Movement
+        Disorder Society Task Force on Rating Scales for Parkinson\u2019s Disease</collab>
+        (<year>2003</year>) <article-title>The Unified Parkinson\u2019s Disease Rating
+        Scale (UPDRS): status and recommendations</article-title>. <source>Mov Disord</source>\n<volume>18</volume>:
+        <fpage>738</fpage>\u2013<lpage>750</lpage>.<pub-id pub-id-type=\"pmid\">12815652</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1002/mds.10473</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Shelley1\"><label>21</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Shelley</surname><given-names>BP</given-names></name>,
+        <name name-style=\"western\"><surname>Hodges</surname><given-names>JR</given-names></name>,
+        <name name-style=\"western\"><surname>Kipps</surname><given-names>CM</given-names></name>,
+        <name name-style=\"western\"><surname>Xuereb</surname><given-names>JH</given-names></name>,
+        <name name-style=\"western\"><surname>Bak</surname><given-names>TH</given-names></name>
+        (<year>2009</year>) <article-title>Is the pathology of corticobasal syndrome
+        predictable in life?</article-title>\n<source>Mov Disord</source>\n<volume>24</volume>:
+        <fpage>1593</fpage>\u2013<lpage>1599</lpage>.<pub-id pub-id-type=\"pmid\">19533751</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1002/mds.22558</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Mathew1\"><label>22</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Mathew</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Bak</surname><given-names>TH</given-names></name>,
+        <name name-style=\"western\"><surname>Hodges</surname><given-names>JR</given-names></name>
+        (<year>2012</year>) <article-title>Diagnostic criteria for corticobasal syndrome:
+        a comparative study</article-title>. <source>J Neurol Neurosurg Psychiatry</source>\n<volume>83</volume>:
+        <fpage>405</fpage>\u2013<lpage>410</lpage>.<pub-id pub-id-type=\"pmid\">22019546</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1136/jnnp-2011-300875</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Holmes1\"><label>23</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Holmes</surname><given-names>CJ</given-names></name>,
+        <name name-style=\"western\"><surname>Hoge</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Collins</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Woods</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Toga</surname><given-names>AW</given-names></name>,
+        <etal>et al</etal> (<year>1998</year>) <article-title>Enhancement of MR images
+        using registration for signal averaging</article-title>. <source>J Comp Assist
+        Tomogr</source>\n<volume>22</volume>: <fpage>324</fpage>\u2013<lpage>333</lpage>.<pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1097/00004728-199803000-00032</pub-id><pub-id
+        pub-id-type=\"pmid\">9530404</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Amunts2\"><label>24</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Amunts</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>
+        (<year>2001</year>) <article-title>Advances in cytoarchitectonic mapping of
+        the human cerebral cortex</article-title>. <source>Neuroimaging Clin N Am</source>\n<volume>11</volume>:
+        <fpage>151</fpage>\u2013<lpage>169</lpage>.<pub-id pub-id-type=\"pmid\">11489732</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Brgel1\"><label>25</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>B\xFCrgel</surname><given-names>U</given-names></name>,
+        <name name-style=\"western\"><surname>Amunts</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>H\xF6mke</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Mohlberg</surname><given-names>H</given-names></name>,
+        <name name-style=\"western\"><surname>Gilsbach</surname><given-names>JM</given-names></name>,
+        <etal>et al</etal> (<year>2006</year>) <article-title>White matter fibre tracts
+        of the human brain: Three-dimensional mapping at microscopic resolution, topography
+        and intersubject variability</article-title>. <source>Neuroimage</source>\n<volume>29</volume>:
+        <fpage>1092</fpage>\u2013<lpage>1105</lpage>.<pub-id pub-id-type=\"pmid\">16236527</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/j.neuroimage.2005.08.040</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Zilles1\"><label>26</label><mixed-citation publication-type=\"book\">Zilles
+        K, Schleicher A, Palomero-Gallagher N, Amunts K (2002) Quantitative analysis
+        of cyto-and receptorarchitecture of the human brain. In: Bain Mapping: The
+        Methods, San Diego: Academic, Ed Toga AW, Mazziotta JC, 573\u2013602 p.</mixed-citation></ref><ref
+        id=\"pone.0041873-Geyer1\"><label>27</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Geyer</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Ledberg</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Schleicher</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Kinomura</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Schormann</surname><given-names>T</given-names></name>,
+        <etal>et al</etal> (<year>1996</year>) <article-title>Two different areas
+        within the primary motor cortex of man</article-title>. <source>Nature</source>\n<volume>382</volume>:
+        <fpage>805</fpage>\u2013<lpage>807</lpage>.<pub-id pub-id-type=\"pmid\">8752272</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1038/382805a0</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Geyer2\"><label>28</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Geyer</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Schleicher</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>
+        (<year>1999</year>) <article-title>Areas 3a, 3b and 1 of human primary somatosensory
+        cortex</article-title>. <source>Neuroimage</source>\n<volume>10</volume>:
+        <fpage>63</fpage>\u2013<lpage>83</lpage>.<pub-id pub-id-type=\"pmid\">10385582</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1006/nimg.1999.0440</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Grefkes1\"><label>29</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Grefkes</surname><given-names>C</given-names></name>,
+        <name name-style=\"western\"><surname>Geyer</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Schormann</surname><given-names>T</given-names></name>,
+        <name name-style=\"western\"><surname>Roland</surname><given-names>P</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>
+        (<year>2001</year>) <article-title>Human somatosensory area 2: Observer-independent
+        cytoarchitectonic mapping, interindividual variability, and population maps</article-title>.
+        <source>Neuroimage</source>\n<volume>14</volume>: <fpage>617</fpage>\u2013<lpage>631</lpage>.<pub-id
+        pub-id-type=\"pmid\">11506535</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1006/nimg.2001.0858</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Scheperjans1\"><label>30</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Scheperjans</surname><given-names>F</given-names></name>,
+        <name name-style=\"western\"><surname>Eickhoff</surname><given-names>SB</given-names></name>,
+        <name name-style=\"western\"><surname>H\xF6mke</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Mohlberg</surname><given-names>H</given-names></name>,
+        <name name-style=\"western\"><surname>Hermann</surname><given-names>K</given-names></name>,
+        <etal>et al</etal> (<year>2008</year>) <article-title>Probabilistic maps,
+        morphometry, and variability of cytoarchitectonic areas in the human superior
+        parietal cortex</article-title>. <source>Cereb Cortex</source>\n<volume>18</volume>:
+        <fpage>2141</fpage>\u2013<lpage>2157</lpage>.<pub-id pub-id-type=\"pmid\">18245042</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1093/cercor/bhm241</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC3140197</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Benjamini1\"><label>31</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Benjamini</surname><given-names>Y</given-names></name>,
+        <name name-style=\"western\"><surname>Hochberg</surname><given-names>Y</given-names></name>
+        (<year>1995</year>) <article-title>Controlling the false discovery rate: a
+        practical and powerful approach to multiple testing</article-title>. <source>J
+        R Statist Soc B</source>\n<volume>57</volume>: <fpage>289</fpage>\u2013<lpage>300</lpage>.</mixed-citation></ref><ref
+        id=\"pone.0041873-Genovese1\"><label>32</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Genovese</surname><given-names>CR</given-names></name>,
+        <name name-style=\"western\"><surname>Lazar</surname><given-names>NA</given-names></name>,
+        <name name-style=\"western\"><surname>Nichols</surname><given-names>T</given-names></name>
+        (<year>2002</year>) <article-title>Thresholding of statistical maps in functional
+        neuroimaging using the false discovery rate</article-title>. <source>NeuroImage</source>\n<volume>15</volume>:
+        <fpage>870</fpage>\u2013<lpage>878</lpage>.<pub-id pub-id-type=\"pmid\">11906227</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1006/nimg.2001.1037</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Huey1\"><label>33</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Huey</surname><given-names>ED</given-names></name>,
+        <name name-style=\"western\"><surname>Pardini</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>Cavanagh</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Wassermann</surname><given-names>EM</given-names></name>,
+        <name name-style=\"western\"><surname>Kapogiannis</surname><given-names>D</given-names></name>,
+        <etal>et al</etal> (<year>2009</year>) <article-title>Association of ideomotor
+        apraxia with frontal gray matter volume loss in corticobasal syndrome</article-title>.
+        <source>Arch Neurol</source>\n<volume>66</volume>: <fpage>1274</fpage>\u2013<lpage>1280</lpage>.<pub-id
+        pub-id-type=\"pmid\">19822784</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1001/archneurol.2009.218</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2981036</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Whitwell2\"><label>34</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Whitwell</surname><given-names>JL</given-names></name>,
+        <name name-style=\"western\"><surname>Jack</surname><given-names>CR</given-names></name>,
+        <name name-style=\"western\"><surname>Parisi</surname><given-names>JE</given-names></name>,
+        <name name-style=\"western\"><surname>Knopman</surname><given-names>DS</given-names></name>,
+        <name name-style=\"western\"><surname>Boeve</surname><given-names>BF</given-names></name>,
+        <etal>et al</etal> (<year>2007</year>) <article-title>Rates of cerebral atrophy
+        differ in different degenerative pathologies</article-title>. <source>Brain</source>\n<volume>130</volume>:
+        <fpage>1148</fpage>\u2013<lpage>1158</lpage>.<pub-id pub-id-type=\"pmid\">17347250</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1093/brain/awm021</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2752409</pub-id></mixed-citation></ref><ref id=\"pone.0041873-GornoTempini1\"><label>35</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Gorno-Tempini</surname><given-names>ML</given-names></name>,
+        <name name-style=\"western\"><surname>Murray</surname><given-names>RC</given-names></name>,
+        <name name-style=\"western\"><surname>Rankin</surname><given-names>KP</given-names></name>,
+        <name name-style=\"western\"><surname>Weiner</surname><given-names>MW</given-names></name>,
+        <name name-style=\"western\"><surname>Miller</surname><given-names>BL</given-names></name>
+        (<year>2004</year>) <article-title>Clinical, cognitive and anatomical evolution
+        from nonfluent progressive aphasia to corticobasal syndrome: a case report</article-title>.
+        <source>Neurocase</source>\n<volume>10</volume>: <fpage>426</fpage>\u2013<lpage>436</lpage>.<pub-id
+        pub-id-type=\"pmid\">15788282</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1080/13554790490894011</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2365737</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Morrish1\"><label>36</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Morrish</surname><given-names>PK</given-names></name>,
+        <name name-style=\"western\"><surname>Rakshi</surname><given-names>JS</given-names></name>,
+        <name name-style=\"western\"><surname>Bailey</surname><given-names>DL</given-names></name>,
+        <name name-style=\"western\"><surname>Sawle</surname><given-names>GV</given-names></name>,
+        <name name-style=\"western\"><surname>Brooks</surname><given-names>DJ</given-names></name>
+        (<year>1998</year>) <article-title>Measuring the rate of progression and estimating
+        the preclinical period of Parkinson\u2019s disease with [<sup>18</sup>F]dopa
+        PET</article-title>. <source>J Neurol Neurosurg Psychiatry</source>\n<volume>64</volume>:
+        <fpage>314</fpage>\u2013<lpage>319</lpage>.<pub-id pub-id-type=\"pmid\">9527140</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1136/jnnp.64.3.314</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC2170010</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Pirker1\"><label>37</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Pirker</surname><given-names>W</given-names></name>,
+        <name name-style=\"western\"><surname>Djamshidian</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Asenbaum</surname><given-names>S</given-names></name>,
+        <name name-style=\"western\"><surname>Gerschlager</surname><given-names>W</given-names></name>,
+        <name name-style=\"western\"><surname>Tribl</surname><given-names>G</given-names></name>,
+        <etal>et al</etal> (<year>2002</year>) <article-title>Progression of dopaminergic
+        degeneration in Parkinson\u2019s disease and atypical parkinsonism: a longitudinal
+        \xDF-CIT SPECT study</article-title>. <source>Mov Disord</source>\n<volume>17</volume>:
+        <fpage>45</fpage>\u2013<lpage>53</lpage>.<pub-id pub-id-type=\"pmid\">11835438</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1002/mds.1265</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Fearnley1\"><label>38</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Fearnley</surname><given-names>JM</given-names></name>,
+        <name name-style=\"western\"><surname>Lees</surname><given-names>AJ</given-names></name>
+        (<year>1991</year>) <article-title>Ageing and Parkinson\u2019s disease: substantia
+        nigra regional selectivity</article-title>. <source>Brain</source>\n<volume>114</volume>:
+        <fpage>2283</fpage>\u2013<lpage>2301</lpage>.<pub-id pub-id-type=\"pmid\">1933245</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1093/brain/114.5.2283</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Scahill1\"><label>39</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Scahill</surname><given-names>RI</given-names></name>,
+        <name name-style=\"western\"><surname>Frost</surname><given-names>C</given-names></name>,
+        <name name-style=\"western\"><surname>Jenkins</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Whitwell</surname><given-names>JL</given-names></name>,
+        <name name-style=\"western\"><surname>Rossor</surname><given-names>MN</given-names></name>,
+        <etal>et al</etal> (<year>2003</year>) <article-title>A longitudinal study
+        of brain volume changes in normal aging using serial registered magnetic resonance
+        imaging</article-title>. <source>Arch Neurol</source>\n<volume>60</volume>:
+        <fpage>989</fpage>\u2013<lpage>994</lpage>.<pub-id pub-id-type=\"pmid\">12873856</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1001/archneur.60.7.989</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Tang1\"><label>40</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Tang</surname><given-names>Y</given-names></name>,
+        <name name-style=\"western\"><surname>Whitman</surname><given-names>GT</given-names></name>,
+        <name name-style=\"western\"><surname>Lopez</surname><given-names>I</given-names></name>,
+        <name name-style=\"western\"><surname>Baloh</surname><given-names>RW</given-names></name>
+        (<year>2001</year>) <article-title>Brain volume changes on longitudinal magnetic
+        resonance imaging in normal older people</article-title>. <source>J Neuroimag</source>\n<volume>11</volume>:
+        <fpage>393</fpage>\u2013<lpage>400</lpage>.<pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1111/j.1552-6569.2001.tb00068.x</pub-id><pub-id
+        pub-id-type=\"pmid\">11677879</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Curiati1\"><label>41</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Curiati</surname><given-names>PK</given-names></name>,
+        <name name-style=\"western\"><surname>Tamashiro</surname><given-names>JH</given-names></name>,
+        <name name-style=\"western\"><surname>Squarzoni</surname><given-names>P</given-names></name>,
+        <name name-style=\"western\"><surname>Duran</surname><given-names>FL</given-names></name>,
+        <name name-style=\"western\"><surname>Santos</surname><given-names>LC</given-names></name>,
+        <etal>et al</etal> (<year>2009</year>) <article-title>Brain structural variability
+        due to aging and gender in cognitively healthy Elders: results from the Sao
+        Paulo Ageing and Health study</article-title>. <source>AJNR Am J Neuroradiol</source>\n<volume>30</volume>:
+        <fpage>1850</fpage>\u2013<lpage>1856</lpage>.<pub-id pub-id-type=\"pmid\">19661175</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.3174/ajnr.A1727</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC7051289</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Schaefer1\"><label>42</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Schaefer</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>Heinze</surname><given-names>HJ</given-names></name>,
+        <name name-style=\"western\"><surname>Galazky</surname><given-names>I</given-names></name>
+        (<year>2010</year>) <article-title>Alien hand syndrome: neural correlates
+        of movements without conscious will</article-title>. <source>PLoS One</source>\n<volume>5</volume>:
+        <fpage>e15010</fpage>.<pub-id pub-id-type=\"pmid\">21179436</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1371/journal.pone.0015010</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC3001471</pub-id></mixed-citation></ref><ref id=\"pone.0041873-Bodegard1\"><label>43</label><mixed-citation
+        publication-type=\"journal\">\n<name name-style=\"western\"><surname>Bodegard</surname><given-names>A</given-names></name>,
+        <name name-style=\"western\"><surname>Geyer</surname><given-names>St</given-names></name>,
+        <name name-style=\"western\"><surname>Grefkes</surname><given-names>C</given-names></name>,
+        <name name-style=\"western\"><surname>Zilles</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>Roland</surname><given-names>PE</given-names></name>
+        (<year>2001</year>) <article-title>Hierarchical processing of tactile shape
+        in the human brain</article-title>. <source>Neuron</source>\n<volume>31</volume>:
+        <fpage>317</fpage>\u2013<lpage>328</lpage>.<pub-id pub-id-type=\"pmid\">11502261</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/s0896-6273(01)00362-2</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Hmke1\"><label>44</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>H\xF6mke</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Amunts</surname><given-names>K</given-names></name>,
+        <name name-style=\"western\"><surname>B\xF6nig</surname><given-names>L</given-names></name>,
+        <name name-style=\"western\"><surname>Fretz</surname><given-names>C</given-names></name>,
+        <name name-style=\"western\"><surname>Binkofski</surname><given-names>F</given-names></name>,
+        <etal>et al</etal> (<year>2009</year>) <article-title>Analysis of lesions
+        in patients with unilateral tactile agnosia using cytoarchitectonic probabilistic
+        maps</article-title>. <source>Hum Brain Map</source>\n<volume>30</volume>:
+        <fpage>1444</fpage>\u2013<lpage>1456</lpage>.<pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1002/hbm.20617</pub-id><pub-id
+        pub-id-type=\"pmcid\">PMC6870829</pub-id><pub-id pub-id-type=\"pmid\">18636551</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Vandenberghe1\"><label>45</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Vandenberghe</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Gilbert</surname><given-names>CR</given-names></name>
+        (<year>2009</year>) <article-title>Parcellation of parietal cortex: convergence
+        between lesion-symptom mapping and mapping of the intact functioning brain</article-title>.
+        <source>Behavioural Brain Research</source>\n<volume>199</volume>: <fpage>171</fpage>\u2013<lpage>182</lpage>.<pub-id
+        pub-id-type=\"pmid\">19118580</pub-id><pub-id pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1016/j.bbr.2008.12.005</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Zhang1\"><label>46</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Zhang</surname><given-names>W</given-names></name>,
+        <name name-style=\"western\"><surname>Zheng</surname><given-names>R</given-names></name>,
+        <name name-style=\"western\"><surname>Wang</surname><given-names>Z</given-names></name>,
+        <name name-style=\"western\"><surname>Yuan</surname><given-names>Y</given-names></name>
+        (<year>2009</year>) <article-title>The overlap of corticobasal degeneration
+        and Alzheimer changes: an autopsy case</article-title>. <source>Neuropathology</source>\n<volume>29</volume>:
+        <fpage>720</fpage>\u2013<lpage>726</lpage>.<pub-id pub-id-type=\"pmid\">19323789</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1111/j.1440-1789.2009.01012.x</pub-id></mixed-citation></ref><ref
+        id=\"pone.0041873-Schneider1\"><label>47</label><mixed-citation publication-type=\"journal\">\n<name
+        name-style=\"western\"><surname>Schneider</surname><given-names>JA</given-names></name>,
+        <name name-style=\"western\"><surname>Watts</surname><given-names>RL</given-names></name>,
+        <name name-style=\"western\"><surname>Gearing</surname><given-names>M</given-names></name>,
+        <name name-style=\"western\"><surname>Brewer</surname><given-names>RP</given-names></name>,
+        <name name-style=\"western\"><surname>Mirra</surname><given-names>SS</given-names></name>
+        (<year>1997</year>) <article-title>Corticobasal degeneration: neuropathologic
+        and clinical heterogeneity</article-title>. <source>Neurology</source>\n<volume>48</volume>:
+        <fpage>959</fpage>\u2013<lpage>969</lpage>.<pub-id pub-id-type=\"pmid\">9109885</pub-id><pub-id
+        pub-id-type=\"doi\" assigning-authority=\"pmc\">10.1212/wnl.48.4.959</pub-id></mixed-citation></ref></ref-list></back></article>"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/xml
+      Date:
+      - Sun, 18 Oct 2026 01:08:55 GMT
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+    status:
+      code: 200
+      message: ''
+version: 1

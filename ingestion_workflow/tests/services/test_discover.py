@@ -126,3 +126,11 @@ def test_a_discovered_article_is_actionable(session, tmp_path):
         assert plan.skipped == 0
         # and the Neurostore id came along as an alias
         assert catalog.identifier(refs[0].id).neurostore == "rich"
+
+
+def test_skips_one_with_a_malformed_pmcid_and_counts_it(session, caplog):
+    add(session, bs_id="bad", pmcid="PMC12a", studies=["neurosynth"])
+    add(session, bs_id="good", pmcid="PMC12", studies=["neurosynth"])
+    assert found(session) == {"good"}
+    assert "Base study bad: not a PMCID: 'PMC12a'; skipped" in caplog.text
+    assert "Skipped 1 base studies" in caplog.text

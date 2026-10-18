@@ -1,4 +1,4 @@
-# Recorded 2026-10-17, then edited by hand: OpenAlex now sends no ids.pmcid; one in its documented form, malformed, was added to W2954579665.
+# Recorded 2026-10-17 with no email sent, then edited by hand: OpenAlex sends no ids.pmcid; W2954579665 was given a malformed one in its documented form.
 interactions:
 - request:
     body: null
@@ -12,18 +12,17 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703%7C10.1371%2Fjournal.pone.0041873&mailto=replay%40example.com&per_page=100&select=ids
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.24703%7C10.1371%2Fjournal.pone.0041873&per_page=100&select=ids
   response:
     body:
       string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
-        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
-        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
-        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
-        \"<your user''s email>\"}; we email them a link, and the key works once they
-        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 2,
-        "db_response_time_ms": 16, "page": 1, "per_page": 100, "groups_count": null,
-        "x_query": {"oql": "get works where DOI is (10.1002/hbm.24703 or 10.1371/journal.pone.0041873)",
+        budget ($0.10) with everyone on your network''s IP address. Get a free key
+        with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
+        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
+        with {\"email\": \"<your user''s email>\"}; we email them a link, and the
+        key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+        "count": 2, "db_response_time_ms": 26, "page": 1, "per_page": 100, "groups_count":
+        null, "x_query": {"oql": "get works where DOI is (10.1002/hbm.24703 or 10.1371/journal.pone.0041873)",
         "x_new_oql": "get works where DOI is (10.1002/hbm.24703 or 10.1371/journal.pone.0041873)",
         "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
         "doi", "value": "10.1002/hbm.24703"}, {"column_id": "doi", "value": "10.1371/journal.pone.0041873"}]}]},
@@ -40,7 +39,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c35d631861e18c-DFW
+      - a4c3aad259c66ba1-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -48,7 +47,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 00:18:16 GMT
+      - Sun, 18 Oct 2026 01:11:08 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -68,11 +67,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '999'
+      - '985'
       X-RateLimit-Remaining-USD:
-      - '0.0999'
+      - '0.0985'
       X-RateLimit-Reset:
-      - '85304'
+      - '82132'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -87,9 +86,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=A6%2FcgImEvrpG6wUE0bGDQsK5ebqO62KDjCTE1gfFlq4%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792282696"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=4uuzpCx75MkhY6fRxOx1llflxraM4SMtYRs91oTbPhI%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792285867"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=A6%2FcgImEvrpG6wUE0bGDQsK5ebqO62KDjCTE1gfFlq4%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792282696"
+      - heroku-nel="https://nel.heroku.com/reports?s=4uuzpCx75MkhY6fRxOx1llflxraM4SMtYRs91oTbPhI%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792285867"
     status:
       code: 200
       message: OK
