@@ -1,0 +1,83 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.crossref.org/works/10.31224/4330
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,1,30]],"date-time":"2025-01-30T06:08:50Z","timestamp":1738217330686,"version":"3.34.0"},"posted":{"date-parts":[[2025,1,29]]},"reference-count":0,"publisher":"Open
+        Engineering Inc","license":[{"start":{"date-parts":[[2025,1,29]],"date-time":"2025-01-29T00:00:00Z","timestamp":1738108800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>Redundant
+        multi-degree-of-freedom (DoF) manipulators are indispensable in space operations,
+        offering unparalleled dexterity and adaptability in dynamic and resource-constrained
+        environments. This study introduces a novel real-time whole-body obstacle
+        avoidance (RWOA) framework, seamlessly integrating deformable dynamical systems
+        with deep learning algorithms to address the challenges posed by microgravity,
+        computational constraints, and dynamically moving obstacles. The proposed
+        framework leverages a combined modulation matrix to adaptively deform the
+        system''s dynamics, enabling collision-free trajectories across the manipulator''s
+        entire structure, while ensuring precise trajectory tracking for mission-critical
+        tasks. Deep learning is incorporated to predict obstacle motion patterns,
+        facilitating anticipatory and adaptive control strategies that enhance operational
+        efficacy in high-dimensional and unpredictable environments. The efficiency
+        of the proposed method is further demonstrated through the development of
+        a lightweight convolutional neural network architecture capable of achieving
+        real-time obstacle trajectory prediction with minimal computational overhead.
+        Extensive simulations and experimental validations in zero-gravity conditions
+        reveal significant advancements in trajectory optimization, obstacle avoidance,
+        and overall manipulator performance. This framework offers a transformative
+        approach to robotic manipulation in extraterrestrial environments, establishing
+        a robust foundation for future advancements in space robotics and adaptive
+        control.\r\n\u00a0<\/jats:p>","DOI":"10.31224\/4330","type":"posted-content","created":{"date-parts":[[2025,1,29]],"date-time":"2025-01-29T17:28:59Z","timestamp":1738171739000},"source":"Crossref","is-referenced-by-count":0,"title":["Deep
+        Learning-driven Real-time Whole Body Obstacle Avoidance For Multi-DoF Redundant
+        Manipulator In Space"],"prefix":"10.31224","author":[{"given":"Steven","family":"Mark","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"family":"Louis
+        Dupont","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"family":"Luca
+        Bianchi","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"family":"Alessandro
+        Greco","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"family":"Jane
+        Rally","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"33966","container-title":[],"original-title":[],"deposited":{"date-parts":[[2025,1,29]],"date-time":"2025-01-29T17:28:59Z","timestamp":1738171739000},"score":1,"resource":{"primary":{"URL":"https:\/\/engrxiv.org\/preprint\/view\/4330\/version\/5921"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2025,1,29]]},"references-count":0,"URL":"https:\/\/doi.org\/10.31224\/4330","relation":{},"subject":[],"published":{"date-parts":[[2025,1,29]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1560'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 05:22:45 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

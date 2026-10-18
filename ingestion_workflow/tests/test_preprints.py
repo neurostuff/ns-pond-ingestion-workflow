@@ -1,4 +1,5 @@
 import pytest
+import requests
 from ingestion_workflow.utils.preprints import (
     PREPRINT_SERVERS,
     is_preprint_doi,
@@ -25,6 +26,7 @@ PREPRINTS = [
     ("10.31234/osf.io/32nzp", "psyarxiv"),
     ("10.31234/osf.io/mzg9x_v2", "psyarxiv"),
     ("10.31224/osf.io/m4tqn", "engrxiv"),
+    ("10.31224/4330", "engrxiv"),
     ("10.31232/osf.io/3g7h2", "nutrixiv"),
     ("10.21203/rs.3.rs-10020555/v1", "researchsquare"),
     ("10.21203/rs.3.rs-2556690/v2", "researchsquare"),
@@ -56,6 +58,8 @@ NOT_PREPRINTS = [
     # OSF projects and the OSF members that are not preprint servers
     "10.17605/osf.io/35n7e",
     "10.31237/osf.io/3kunr",
+    "10.31224/4330x",
+    "10.31224/",
     # journals of publishers that also run a preprint server
     "10.2196/jmir.1002",
     "10.7554/elife.00425",
@@ -131,13 +135,15 @@ def test_no_doi_belongs_to_two_servers():
     "host",
     ["arxiv.org", "export.arxiv.org", "www.biorxiv.org", "www.medrxiv.org", "osf.io",
      "preprints.osf.io", "psyarxiv.com", "www.preprints.org", "www.researchsquare.com",
-     "papers.ssrn.com"],
+     "papers.ssrn.com", "chemrxiv.org", "www.techrxiv.org", "www.authorea.com",
+     "preprints.jmir.org", "engrxiv.org"],
 )
 def test_a_preprint_server_host_and_its_subdomains_are_preprint_hosts(host):
     assert is_preprint_host(host)
 
 
-@pytest.mark.parametrize("host", ["notarxiv.org", "arxiv.org.example.com", "doi.org", "", "www.nature.com"])
+@pytest.mark.parametrize("host", ["notarxiv.org", "arxiv.org.example.com", "doi.org", "", "www.nature.com",
+                   "jmir.org", "www.jmir.org", "medinform.jmir.org"])
 def test_other_hosts_are_not(host):
     assert not is_preprint_host(host)
 
@@ -147,6 +153,12 @@ def test_other_hosts_are_not(host):
     ("https://www.medrxiv.org/content/10.1101/2021.01.01.21249999v1.full.pdf", "medrxiv"),
     ("https://psyarxiv.com/x2vhs/download", "psyarxiv"),
     ("https://edarxiv.org/rkzna", "edarxiv"),
+    ("https://chemrxiv.org/doi/pdf/10.26434/chemrxiv-2023-5rglc-v2", "chemrxiv"),
+    ("https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.15010803.v1", "techrxiv"),
+    ("https://www.authorea.com/doi/pdf/10.22541/au.164340169.91748604/v1", "authorea"),
+    ("https://preprints.jmir.org/preprint/25731", "jmir_preprints"),
+    ("https://engrxiv.org/preprint/view/4330", "engrxiv"),
+    ("https://www.jmir.org/2021/1/e25731", None),
     ("https://osf.io/preprints/socarxiv/kv2qc", "socarxiv"),
     ("https://osf.io/preprints/lissa/abcde/download", "lis_scholarship_archive"),
     ("https://osf.io/preprints/osf/ynf42_v1", "osf_preprints"),
@@ -173,6 +185,22 @@ def test_on_osf_io_the_article_s_doi_names_the_provider(doi, server):
 def test_the_path_names_the_provider_over_the_doi():
     assert preprint_server_of_url("https://osf.io/preprints/psyarxiv/47dx2",
                                   "10.31235/osf.io/47dx2").name == "psyarxiv"
+
+
+@pytest.mark.vcr
+@pytest.mark.parametrize("doi, server", [
+    ("10.26434/chemrxiv-2023-5rglc-v2", "chemrxiv"),
+    ("10.36227/techrxiv.15010803.v1", "techrxiv"),
+    ("10.22541/au.164340169.91748604/v1", "authorea"),
+    ("10.2196/preprints.25731", "jmir_preprints"),
+    ("10.31224/4330", "engrxiv"),
+])
+def test_the_page_crossref_records_for_a_preprint_is_on_its_servers_host(doi, server):
+    """Crossref's own record of where each DOI resolves, recorded once."""
+    record = requests.get(f"https://api.crossref.org/works/{doi}", timeout=30).json()["message"]
+    page = record["resource"]["primary"]["URL"]
+    assert preprint_server(doi) == server
+    assert preprint_server_of_url(page).name == server
 
 
 def test_the_servers_that_hold_only_preprints():
