@@ -207,3 +207,36 @@ def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
 
     half = (BATCH_SIZE + 2) // 2
     assert report.stages["download"].reasons == {"waits too": half, "waits": half}
+
+
+def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
+    # Triage passed table t9, which the extraction no longer has: the real analyses
+    # stage records SKIPPED "no coordinate tables" without calling the model.
+    from ingestion_workflow.catalog import Status
+    from ingestion_workflow.models import DownloadSource, ExtractedContent
+    from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+
+    gate = tmp_path / "gate.joblib"
+    gate.write_bytes(b"a fitted gate")
+    settings = Settings(
+        data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
+        coordinate_gate_path=gate, llm_api_key="k",
+    )
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(Identifier(pmid="123"))
+        content = ExtractedContent(slug="a", source=DownloadSource.PUBGET, tables=[])
+        catalog.record([
+            Outcome(ref.id, "extract", "pubget", Status.OK, "ex-1", content.to_dict(),
+                    summary={"tables": 0}),
+            Outcome(ref.id, "triage", "", Status.OK, "tr-1",
+                    {"source": "pubget", "tables": [{"table_id": "t9", "passes": True}]},
+                    summary={"passed": 1}),
+        ])
+        report = run_stages(Context(settings, catalog), [AnalysesStage(settings)], [ref])
+        recorded = catalog.artifacts([ref.id], "analyses")[ref.id][""]
+
+    assert recorded.status is Status.SKIPPED
+    analyses = report.stages["analyses"]
+    assert (analyses.ok, analyses.skipped, analyses.failed, analyses.taken_back) == (0, 1, 0, 0)
+    assert "failed" not in analyses.line()
+    assert "1 skipped" in analyses.line()
