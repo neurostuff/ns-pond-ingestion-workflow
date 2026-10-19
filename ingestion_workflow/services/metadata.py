@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
-import requests
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
@@ -67,6 +66,7 @@ from ingestion_workflow.services.licenses import (
     stated,
 )
 from ingestion_workflow.services.paper_parse import article_identifiers
+from ingestion_workflow.utils.http import transient
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
 logger = logging.getLogger(__name__)
@@ -398,7 +398,7 @@ class MetadataService:
                 causes = exc.causes if isinstance(exc, PartialAnswer) else (exc,)
                 missed([i.slug for i in uncached if i.slug not in fresh_results],
                        OUTAGE if causes and all(map(_outage, causes))
-                       else f"refused the request ({_cause(causes[0] if causes else exc)})")
+                       else f"refused the request ({causes[0] if causes else exc})")
             for slug, metadata in fresh_results.items():
                 try:
                     (cache_dir / f"{slug}.json").write_text(
@@ -702,13 +702,8 @@ def _cause(exc: BaseException) -> BaseException:
 
 
 def _outage(exc: BaseException) -> bool:
-    """A provider that was down or busy (a timeout, a dropped connection, 429 or 5xx), not
-    one that refused the request."""
-    exc = _cause(exc)
-    if isinstance(exc, requests.HTTPError):
-        status = getattr(exc.response, "status_code", None)
-        return status == 429 or (status is not None and status >= 500)
-    return isinstance(exc, (requests.ConnectionError, requests.Timeout))
+    """A provider that was down or busy, not one that refused the request."""
+    return transient(_cause(exc))
 _OA_STATUSES = {status.value for status in OaStatus}
 #: OpenAlex lists the paper's PubMed record as a location; it is an index entry, not a copy.
 _PUBMED = "pubmed.ncbi.nlm.nih.gov"

@@ -51,18 +51,22 @@ triage rejected keeps that reading.
   article's own licence that way. Crossref's `tdm` and `stm-asf` deposits grant mining or
   sharing, not a licence, and are not read. Terms that grant only text mining (PMC's
   `TDM`) are `all-rights-reserved`.
-- A publisher's page is read outside its footer (a `footer` tag, or a class or id with the
-  word `footer`, unless it holds the article's title, `article` or `main`), figures,
-  tables, references and research data cards. Its licence marks are a link to a Creative
-  Commons licence (an `href`, or an embedded JATS `xlink:href`), the links in a block
-  classed `license`, a paragraph or copyright line that grants a Creative Commons licence
-  in words, and the `license` of the record the page embeds (Taylor & Francis's JSON-LD).
-  Its copyright lines are its `dc.rights` and `prism.copyright` metadata and what an
-  element classed `copyright` prints; one that names no licence is `all-rights-reserved`,
-  stated. Only an open licence the page marks is its copy's own record. Its other marks
-  and its copyright line credit a holder or name terms, often printed before a licence is
-  granted, so they rank last. A copy from ACE is `access: unrecorded` whatever its page
-  states.
+- A publisher's page is read outside its footer (a `footer` tag, or a class or id that
+  contains `footer`, unless it holds the article's title, `article`, `main` or footnotes),
+  figures, references, research data cards and ScienceDirect's supplementary files.
+  Its licence marks are a link to a Creative Commons licence (an `href`, or an embedded
+  JATS `xlink:href`), the links in a block classed `license`, the `license` of the record
+  the page embeds (Taylor & Francis's JSON-LD), and the paragraphs and copyright lines that
+  grant a Creative Commons licence in words, less their sentences about the article's data
+  (a CC0 waiver for its data). The words are the article's own licence text: a link that
+  names another open licence is not read beside them. When the words, or with none the
+  links, name two different open licences, the page states none. Its copyright lines are
+  its `dc.rights` and `prism.copyright` metadata and what an element classed `copyright`
+  prints; one that names no licence is `all-rights-reserved`, stated. Only an open licence
+  the page marks is its copy's own record. Its other marks and its copyright line credit a
+  holder or name terms, often printed before a licence is granted, so they rank last, the
+  copyright line before an `other` mark. A copy from ACE is `access: unrecorded` whatever
+  its page states; the page of a preprint DOI is the preprint (`submitted`, at its server).
 - When no source states one, the licence is `all-rights-reserved`, `assumed`.
 - A licence is undecided, and the metadata artifact fails with the sources named, while a
   source before the deciding one (or, for an assumed licence, any source in the order) did

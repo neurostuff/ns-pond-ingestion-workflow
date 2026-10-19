@@ -1043,21 +1043,32 @@ class _Refusing(BaseHTTPRequestHandler):
         pass
 
 
-def test_a_retried_refusal_names_the_status_it_was_refused_with(tmp_path):
-    """Semantic Scholar's client retries; the reason is the last answer's, not tenacity's."""
-    server = HTTPServer(("127.0.0.1", 0), _Refusing)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    try:
-        client = SemanticScholarClient("replay")
-        client.BASE_URL = f"http://127.0.0.1:{server.server_port}/graph/v1/paper/batch"
-        unanswered = {}
-        MetadataService(_licence_settings(tmp_path))._cached(
-            "semantic_scholar", client, [APA], unanswered)
-    finally:
-        server.shutdown()
-        server.server_close()
+@pytest.mark.vcr()
+def test_a_batch_semantic_scholar_knows_none_of_is_an_answer(tmp_path):
+    """Asked only for 10.1016/j.neuroimage.2020.116616, which it does not know, Semantic
+    Scholar's batch endpoint answers 400 "No valid paper ids given". That is its answer for
+    the article, as `null` is inside a batch it knows some of: nothing is left unanswered,
+    so a re-run on a warm cache does not leave the article undecided."""
+    unknown = Identifier(doi="10.1016/j.neuroimage.2020.116616")
+    client = SemanticScholarClient(os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"))
+    unanswered = {}
+    found = MetadataService(_licence_settings(tmp_path))._cached(
+        "semantic_scholar", client, [unknown], unanswered)
+
+    assert (found, unanswered) == ({}, {})
+
+
+@pytest.mark.vcr()
+def test_semantic_scholar_is_asked_once_when_it_refuses(tmp_path):
+    """A key it does not accept is refused with 403, which asking again does not change: the
+    cassette holds one request, and replaying a second would fail."""
+    client = SemanticScholarClient("not-a-key")
+    unanswered = {}
+    MetadataService(_licence_settings(tmp_path))._cached(
+        "semantic_scholar", client, [APA], unanswered)
+
     assert unanswered[APA.slug]["semantic_scholar"].startswith(
-        "refused the request (400 Client Error: Bad Request for url: http://127.0.0.1:")
+        "refused the request (403 Client Error: Forbidden")
 
 
 @pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)

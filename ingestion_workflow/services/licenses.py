@@ -152,7 +152,7 @@ def normalise_license(stated: str) -> LicenseId:
         if re.search(r"no[ -]?deriv", text):
             parts += "nd"
         return _cc_from_parts(parts) or LicenseId.other
-    if "cc0" in text or "public domain dedication" in text:
+    if re.search(r"\bcc0\b", text) or "public domain dedication" in text:
         return LicenseId.cc0
     if "public domain" in text:
         return LicenseId.public_domain
@@ -254,17 +254,20 @@ def elsevier_license(content_xml: Path) -> Optional[License]:
 
 
 #: What a publisher's page prints around every article, not about one: its footer, as a
-#: tag or a class or id with the word `footer` (J Neurosci's
-#: `footer-group`, Wiley's `footer-global__copyright`; not ScienceDirect's
-#: `artFooterContent`, which holds the article's footnotes). An element that holds the
-#: article's title or its `article` or `main` is not chrome, whatever it is called: HighWire
-#: classes its whole page `footer-borders`.
-#: Figures, tables, references and research data cards are skipped too: the licences there
-#: are those of the works they credit or cite (a WHO report's CC BY-NC-SA, a dataset's).
-_CHROME_TAGS = {"footer", "figure", "figcaption", "table"}
+#: tag or a class or id that contains `footer` (J Neurosci's `footer-group`, Psychiatria
+#: Polska's `footer2`, Wiley's `footer-global__copyright`). An element that holds the
+#: article's title, its `article` or `main`, or its footnotes is not a footer, whatever it
+#: is called: HighWire classes its whole page `footer-borders`, and ScienceDirect keeps the
+#: article's footnotes in `artFooterContent`. Figures (as tags, or Silverchair's `fig` and
+#: `fig-caption`), references, research data cards and ScienceDirect's
+#: supplementary files (`e-component`) are skipped too: the licences there are those of
+#: what the article credits, cites or attaches.
+_CHROME_TAGS = {"footer", "figure"}
 _CHROME_WORD = re.compile(
-    r"(?:^|[\s_-])(?:footer|references?|bibliography|ref-list|research-data)(?:$|[\s_-])", re.I)
-_HOLDS_ARTICLE = ".//h1 | .//article | .//main"
+    r"footer|(?:^|[\s_-])(?:fig|figure|caption|references?|bibliography|ref-list|research-data"
+    r"|e-component)(?:$|[\s_-])",
+    re.I)
+_HOLDS_ARTICLE = ".//h1 | .//article | .//main | .//*[contains(@class, 'footnote')]"
 
 
 _UPPER, _LOWER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"
@@ -279,10 +282,20 @@ _PAGE_LICENSES = (
     f" or contains({_CLASSES}, ' license ')]"
 )
 #: A paragraph that grants a Creative Commons licence in words, as Springer's older
-#: "Open Access" paragraph and ScienceDirect's older footnote do. It must name Creative
-#: Commons: `normalise_license` also finds "cc0" in "ACC0.5".
+#: "Open Access" paragraph and ScienceDirect's older footnote do. Its sentences that grant
+#: one to something else are not read: the article's data (BioMed Central's CC0 waiver for
+#: "the data made available in this article", Scientific Data's for "the metadata files",
+#: ScienceDirect's "This is open data under the CC BY license") or its accepted manuscript
+#: (a funder's "CC BY public copyright license to any Author Accepted Manuscript").
 _PAGE_PARAGRAPHS = "//*[self::p or (self::div and not(.//div or .//p))]"
-_NAMES_CC = re.compile(r"creative\s*commons|creativecommons\.org|\bcc[\s-]?by\b|\bcc0\b", re.I)
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_ELSEWHERE_SCOPE = re.compile(r"\b(?:meta)?data(?:sets?)?\b|\baccepted manuscript\b", re.I)
+
+
+def _about_the_article(text: str) -> str:
+    """`text` without its sentences about the article's data or accepted manuscript."""
+    return " ".join(sentence for sentence in _SENTENCE_END.split(text)
+                    if not _ELSEWHERE_SCOPE.search(sentence))
 #: Licences in the article records pages embed: Taylor & Francis's JSON-LD `license`,
 #: ScienceDirect's `access.license`.
 _EMBEDDED = re.compile(r'"license"\s*:\s*("https?:(?:[^"\\]|\\.)*")')
@@ -336,12 +349,14 @@ def _copyright_lines(root) -> List[str]:
 
 def page_license(page: bytes) -> Optional[License]:
     """The licence a publisher's page marks for the article it shows, outside its footer,
-    figures, tables, references and research data.
+    figures, tables, references, research data and supplementary files.
 
-    Its marks are its licence links, then paragraphs and copyright lines that grant a
-    Creative Commons licence, then the licence of the article record it embeds. The
-    strongest is taken: an open licence before all rights reserved, and that before an
-    `other`, then the first.
+    Its marks are its licence links and the licence of the article record it embeds, and
+    the paragraphs and copyright lines that grant a Creative Commons licence in words. The
+    words are the article's own licence text: a link that names another open licence is
+    not read beside them (ScienceDirect's hidden `oaUserLicense`). When the words, or with
+    none the links, name two different open licences, the page states none. Otherwise an
+    open licence is taken, then all rights reserved, then an `other`, the first of each.
     """
     root = _page_root(page)
     by = MetadataSource.publisher_page
@@ -351,15 +366,21 @@ def page_license(page: bytes) -> Optional[License]:
         texts += [a.get("href") for a in element.iter("a") if a is not element]
     # A link to Creative Commons that names no licence ("published under a Creative Commons
     # License") is not one.
-    found = [lic for lic in (stated(by, text) for text in texts)
+    links = [lic for lic in (stated(by, text) for text in texts)
              if lic and not (_CC_HOST in lic.stated_as and lic.license_id not in _CREATIVE_COMMONS)]
-    granting = [text for text in ([p.text_content() for p in _article_marks(root, _PAGE_PARAGRAPHS)]
-                                  + _copyright_lines(root)) if _NAMES_CC.search(text)]
-    found += [lic for lic in (stated(by, text) for text in granting)
-              if lic and lic.license_id in _CREATIVE_COMMONS]
-    found += [stated(by, json.loads(value)) for script in root.iter("script")
+    links += [stated(by, json.loads(value)) for script in root.iter("script")
               for value in _EMBEDDED.findall(script.text or "")]
-    return _strongest(found)
+    granting = [p.text_content() for p in _article_marks(root, _PAGE_PARAGRAPHS)]
+    words = [lic for lic in (stated(by, _about_the_article(text))
+                             for text in granting + _copyright_lines(root))
+             if lic and lic.license_id in _CREATIVE_COMMONS]
+    named = {lic.license_id for lic in words} or {
+        lic.license_id for lic in links if lic.license_id in _OPEN}
+    if len(named) > 1:
+        return None
+    if named:
+        return next(lic for lic in links + words if lic.license_id in named)
+    return _strongest(links)
 
 
 def page_copyright(page: bytes) -> Optional[License]:
@@ -500,7 +521,7 @@ def page_statements(source: str, files: Iterable[Path]) -> List[Statement]:
     if page is None:
         return []
     data = page.read_bytes()
-    found = [Statement(page_license(data) or page_copyright(data), CopyVersion.vor),
+    found = [Statement(_strongest([page_license(data), page_copyright(data)]), CopyVersion.vor),
              Statement(page_manuscript_license(data), CopyVersion.am)]
     return [statement for statement in found if statement.license is not None]
 

@@ -17,6 +17,7 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
+from ingestion_workflow.utils.http import transient
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,6 @@ OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
 OPENALEX_SEARCH_PAGE_SIZE = 100  # the most a page holds; 200 is a deprecated legacy maximum
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
-
-
-def _can_be_retried(exc: BaseException) -> bool:
-    """A work OpenAlex does not have answers 404 every time."""
-    response = getattr(exc, "response", None)
-    return getattr(response, "status_code", None) != 404
 
 
 _METADATA_FIELDS = (
@@ -469,7 +464,7 @@ class OpenAlexClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
-        retry=retry_if_exception(_can_be_retried),
+        retry=retry_if_exception(transient),
     )
     def _request_openalex(self, params: Dict[str, str], work: str = "") -> Dict:
         """Issue a GET request to the OpenAlex Works endpoint, or to one `work` of it."""

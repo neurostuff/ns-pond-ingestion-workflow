@@ -1,0 +1,48 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1037/npe0000112"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '35'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"message":"Forbidden"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '23'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 17:08:19 GMT
+      Via:
+      - 1.1 1b7fa09f50c08a88d619f90eef5ee94a.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - Q0P31JUwotjMYDj4oDXpePSwFkZcvueSROqlTaIyvNziM8-UtkZR_w==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - FgE0iFhlPHcEjdQ=
+      x-amzn-ErrorType:
+      - ForbiddenException
+      x-amzn-RequestId:
+      - 02e33d60-9a82-46f8-9c0c-6cec534426f2
+    status:
+      code: 403
+      message: Forbidden
+version: 1

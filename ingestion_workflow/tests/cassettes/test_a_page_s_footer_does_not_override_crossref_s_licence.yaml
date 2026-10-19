@@ -166,11 +166,11 @@ interactions:
         "countries": ["NL"], "is_corresponding": false, "raw_author_name": "Sander
         M. Daselaar", "raw_affiliation_strings": ["Swammerdam Institute for Life Sciences,
         University of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands.
-        s.m.daselaar@uva.nl", "Swammerdam Institute for Life Sciences, University
+        author1@example.org", "Swammerdam Institute for Life Sciences, University
         of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands"], "raw_orcid":
         null, "affiliations": [{"raw_affiliation_string": "Swammerdam Institute for
         Life Sciences, University of Amsterdam, Faculty of Science, 1098 SM Amsterdam,
-        The Netherlands. s.m.daselaar@uva.nl", "institution_ids": ["https://openalex.org/I887064364"]},
+        The Netherlands. author1@example.org", "institution_ids": ["https://openalex.org/I887064364"]},
         {"raw_affiliation_string": "Swammerdam Institute for Life Sciences, University
         of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands", "institution_ids":
         ["https://openalex.org/I887064364"]}]}, {"author_position": "middle", "author":

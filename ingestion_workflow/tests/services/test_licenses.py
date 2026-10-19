@@ -65,6 +65,17 @@ def test_each_way_a_source_states_a_licence_names_one(statement, expected):
     assert normalise_license(statement) == expected
 
 
+@pytest.mark.parametrize("statement", [
+    # 10.1039/D4CC05933F's DOI, as its page prints it
+    "DOI: 10.1039/D4CC05933F",
+    # a table of the Journal of Affective Disorders page ACE read for PMID 31442883
+    "Empty CellHealthy controlsStandard valuetpLI of NAA/CrPWM0.96 ± 0.141.0−1.5570.124ACC0.97 "
+    "± 0.111.0−1.3950.167",
+])
+def test_cc0_is_a_word_not_part_of_one(statement):
+    assert normalise_license(statement) == "other"
+
+
 def _jats(name):
     return etree.parse(str(LICENSES / name)).getroot()
 
@@ -178,6 +189,10 @@ def _page(name):
 
 
 CC = "http://creativecommons.org/licenses/"
+SD_FOOTNOTE = ("This is an open-access article distributed under the terms of the Creative Commons "
+               "Attribution-NonCommercial-No Derivative Works License, which permits "
+               "non-commercial use, distribution, and reproduction in any medium, provided the "
+               "original author and source are credited.")
 
 
 @pytest.mark.parametrize("fixture, license_id, stated_as", [
@@ -244,6 +259,18 @@ CC = "http://creativecommons.org/licenses/"
      "of the Creative Commons Attribution 4.0 International, which permits unrestricted use, "
      "distribution and reproduction in any medium provided that the original work is "
      "properly attributed."),
+    # the article's licence text, not the link beside it that names another
+    ("sciencedirect_neuropsychologia_2013_05_005_two_licences", "cc-by-nc-nd", SD_FOOTNOTE),
+    ("sciencedirect_nicl_2013_12_013_two_licences", "cc-by-nc-nd", SD_FOOTNOTE),
+    # not the licence of the data the article holds or attaches
+    ("sciencedirect_neuroimage_2020_117602_open_data", "cc-by-nc-nd", CC + "by-nc-nd/4.0/"),
+    ("sciencedirect_neuroimage_2023_120266_open_data", "cc-by-nc-nd", CC + "by-nc-nd/4.0/"),
+    # not a figure's credit, nor the dedication of the data and metadata files
+    ("oxford_scan_nsae068_figure_credit", "cc-by-nc-nd",
+     "https://creativecommons.org/licenses/by-nc-nd/4.0/"),
+    ("scientific_data_s41597_022_01173_0", "cc-by", CC + "by/4.0/"),
+    # inside the site footer only its funding note, classed copyright
+    ("psychiatria_polska_192464_footer2", "cc-by", "https://creativecommons.org/licenses/by/4.0/"),
     # a licence block's `other`
     ("oxford_cercor_bhac304", "other",
      "https://academic.oup.com/journals/pages/open_access/funder_policies/chorus/"
@@ -297,6 +324,8 @@ def test_a_copyright_line_is_not_a_licence_mark(fixture):
     "sciencedirect_neubiorev_2018_12_013_research_data",
     # a paragraph that names no Creative Commons licence, though its DOI holds "cc0"
     "rsc_d4cc05933f_doi",
+    # a funder's licence for the accepted manuscript, not the article's
+    "jneurosci_1149_24_2024_funder_manuscript",
 ])
 def test_a_licence_that_is_not_the_article_s_is_no_mark(fixture):
     assert page_license(_page(fixture)) is None
@@ -321,6 +350,8 @@ def test_a_page_that_prints_no_rights_for_its_article_states_none(fixture):
     "ame_qims_24_529",
     # Cambridge's `footer` tag
     "cambridge_bjpsych_open_38073280",
+    # Psychiatria Polska's `footer2`
+    "psychiatria_polska_192464_footer2",
 ])
 def test_the_site_footer_beside_an_article_s_licence_is_not_read(fixture):
     assert page_copyright(_page(fixture)) is None
@@ -357,8 +388,26 @@ def test_only_an_open_licence_the_page_marks_is_its_copy_s_own_record():
     files = [PAGES / "jneurosci_1363_13_2013_open_choice.html"]
     assert page_license(_page("jneurosci_1363_13_2013_open_choice")).license_id == "other"
     assert own_license("ace", files) is None
+    # ranked last, its copyright line comes before that `other`
     assert [(s.version, s.license.license_id) for s in page_statements("ace", files)] == [
-        ("vor", "other")]
+        ("vor", "all-rights-reserved")]
+
+
+def test_marks_that_name_two_open_licences_state_none():
+    """With no licence text to decide between them, a link to CC BY and a record naming CC0
+    are a conflict, and the page states neither."""
+    assert page_license(_page("biomedcentral_s40673_017_0065_7_marks_only")) is None
+
+
+def test_a_page_s_all_rights_reserved_line_outranks_an_other_mark_on_it():
+    """10.1093/cercor/bhac304 links OUP's Standard Publication Model beside "All rights
+    reserved"."""
+    files = [PAGES / "oxford_cercor_bhac304.html"]
+    assert [(s.version, s.license.license_id, s.license.stated_as)
+            for s in page_statements("ace", files)] == [
+        ("vor", "all-rights-reserved", "© The Author(s) 2022. Published by Oxford University "
+         "Press. All rights reserved. For permissions, please e-mail: "
+         "journals.permissions@oup.com")]
 
 
 def test_a_publisher_s_page_is_read_only_for_an_ace_download():

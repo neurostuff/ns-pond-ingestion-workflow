@@ -18,8 +18,9 @@ from ingestion_workflow.models import (
     DownloadCopy,
     DownloadResult,
     DownloadSource,
+    FileType,
 )
-from ingestion_workflow.utils.preprints import preprint_server_of_url
+from ingestion_workflow.utils.preprints import preprint_server, preprint_server_of_url
 
 #: OpenAlex's version labels, which the PDF candidates carry, in study_schema's terms.
 OPENALEX_VERSIONS = {
@@ -130,6 +131,27 @@ def _fixed(route: CopyRoute, access: CopyAccess) -> Callable[[DownloadResult], D
     return lambda result: copy
 
 
+#: The DOI an article's page names for itself.
+_PAGE_DOI = ("//meta[translate(@name, 'CITATONDIENFR', 'citatondienfr') = 'citation_doi'"
+             " or translate(@name, 'CITATONDIENFR', 'citatondienfr') = 'dc.identifier']/@content")
+
+
+def _ace_copy(result: DownloadResult) -> DownloadCopy:
+    """The publisher's page, scraped as our network sees it, often through the university's
+    subscription: not what any reader could fetch. A page that names a preprint DOI as its
+    own is the preprint, at its server; the article's DOIs may be its journal's and its
+    preprint's, and ACE reads either."""
+    page = next((f.file_path for f in result.files if f.file_type is FileType.HTML), None)
+    dois = (etree.parse(str(page), etree.HTMLParser(encoding="utf-8")).xpath(_PAGE_DOI)
+            if page is not None else [])
+    server = next((s for s in map(preprint_server, dois) if s), None)
+    if server is not None:
+        return DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+                            access=CopyAccess.unrecorded, preprint_server=server)
+    return DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
+                        access=CopyAccess.unrecorded)
+
+
 #: One rule per download source.
 DOWNLOAD_COPY: Dict[DownloadSource, Callable[[DownloadResult], DownloadCopy]] = {
     DownloadSource.PUBGET: _pmc_copy,
@@ -140,9 +162,7 @@ DOWNLOAD_COPY: Dict[DownloadSource, Callable[[DownloadResult], DownloadCopy]] = 
     DownloadSource.WILEY: _wiley_copy,
     # The open-access API serves only openly licensed articles.
     DownloadSource.SPRINGER: _fixed(CopyRoute.publisher, CopyAccess.public),
-    # The publisher's page, scraped as our network sees it, often through the
-    # university's subscription: not what any reader could fetch.
-    DownloadSource.ACE: _fixed(CopyRoute.publisher, CopyAccess.unrecorded),
+    DownloadSource.ACE: _ace_copy,
     DownloadSource.PDF: _pdf_copy,
 }
 

@@ -8,16 +8,19 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
 from study_schema.models.paper_parse import MetadataSource
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifiers
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
+from ingestion_workflow.utils.http import transient
 
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
 _MIN_REQUEST_INTERVAL = 1 / SEMANTIC_SCHOLAR_REQUEST_LIMIT
+#: What the batch endpoint answers, with 400, when it knows none of the ids it was asked.
+_NONE_KNOWN = "No valid paper ids given"
 
 
 logger = logging.getLogger(__name__)
@@ -169,15 +172,19 @@ class SemanticScholarClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
+        retry=retry_if_exception(transient),
+        reraise=True,
     )
     def _request_semantic_scholar(self, request_ids: Iterable[str]) -> Iterable[Dict[str, object]]:
+        return self._post_batch({"fields": "externalIds"}, list(request_ids))
+
+    def _post_batch(self, params: Dict[str, str], ids: List[str]) -> List[Optional[Dict]]:
+        """The batch endpoint's record of each id, None for one it does not know. Asked
+        only for ids it knows none of, it answers 400 "No valid paper ids given"."""
         self._rate_limit_sleep()
-        response = self._session.post(
-            self.BASE_URL,
-            params={"fields": "externalIds"},
-            json={"ids": list(request_ids)},
-            timeout=30,
-        )
+        response = self._session.post(self.BASE_URL, params=params, json={"ids": ids}, timeout=30)
+        if response.status_code == 400 and _NONE_KNOWN in response.text:
+            return [None] * len(ids)
         response.raise_for_status()
         return response.json()
 
@@ -205,6 +212,8 @@ class SemanticScholarClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
+        retry=retry_if_exception(transient),
+        reraise=True,
     )
     def _request_bulk_search(self, params: Dict[str, str]) -> Dict[str, object]:
         self._rate_limit_sleep()
@@ -304,10 +313,11 @@ class SemanticScholarClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, max=8),
+        retry=retry_if_exception(transient),
+        reraise=True,
     )
     def _request_metadata_batch(self, request_ids: List[str]) -> List[Dict[str, object]]:
         """Request metadata batch from Semantic Scholar API."""
-        self._rate_limit_sleep()
         fields = [
             "title",
             "authors",
@@ -318,14 +328,7 @@ class SemanticScholarClient:
             "isOpenAccess",
             "openAccessPdf",
         ]
-        response = self._session.post(
-            self.BASE_URL,
-            params={"fields": ",".join(fields)},
-            json={"ids": request_ids},
-            timeout=30,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self._post_batch({"fields": ",".join(fields)}, request_ids)
 
     def _process_metadata_response(
         self,
