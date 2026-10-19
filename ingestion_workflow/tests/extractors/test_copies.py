@@ -228,6 +228,17 @@ def test_a_semantic_scholar_pdf_on_a_site_nothing_types_has_no_recorded_route():
         route=CopyRoute.unrecorded, access=CopyAccess.public, url="https://example.org/a.pdf")
 
 
+def test_a_pdf_copy_carries_the_licence_its_location_was_listed_with():
+    held = _fetched_pdf(url="https://site.example.edu/a.pdf", location_type="repository",
+                        license="cc-by", license_by="openalex")
+
+    copy = copy_of(held)
+
+    assert (copy.license, copy.license_by) == ("cc-by", "openalex")
+    assert DownloadCopy.from_dict(copy.to_dict()) == copy
+    assert copy.to_dict()["license"] == "cc-by"
+
+
 def test_a_pdf_with_no_fetch_recorded_is_unrecorded():
     held = DownloadResult(identifier=Identifier(doi="10.1/x"), source=DownloadSource.PDF,
                           success=True)

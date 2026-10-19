@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import threading
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -34,6 +34,12 @@ def env(tmp_path):
         openalex_api_key=os.environ.get("OPENALEX_API_KEY", "replay"))
     with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog
+
+
+#: 10.1515/cogsem-2026-3005: its publisher deposited a CC BY licence at Crossref that
+#: starts on 2026-10-20, the day after the answers in the cassette were recorded.
+EMBARGOED = Identifier(doi="10.1515/cogsem-2026-3005")
+EMBARGO_ENDS = datetime(2026, 10, 20, tzinfo=timezone.utc)
 
 
 def _held(catalog, identifier, source="pmc", fixture="pmc_tdm_manuscript", fingerprint="dl-1"):
@@ -224,3 +230,38 @@ def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(env, status,
     assert outcome.status is Status.FAILED
     assert outcome.error.startswith("the licence of the ace copy is undecided: crossref ")
     assert (outcome.summary or None) == summary
+
+
+@pytest.mark.vcr()
+def test_an_embargoed_licence_is_decided_again_when_its_embargo_ends(env):
+    settings, catalog = env
+    ref = _held(catalog, EMBARGOED, source="pdf", fixture=None)
+    stage = MetadataStage(settings)
+
+    def at(when):
+        return Context(settings, catalog, now=when)
+
+    def planned(when):
+        return stage.plan(at(when), [ref], catalog.artifacts([ref.id], "metadata"),
+                          catalog.artifacts([ref.id], "extract"))
+
+    plan, (before,) = _run(stage, at(EMBARGO_ENDS - timedelta(days=1)), catalog, ref)
+
+    assert before.status is Status.OK, before.error
+    # CC BY is not in force yet: the paper is all rights reserved, and the artifact says when
+    # that changes
+    assert before.summary["license"] == "all-rights-reserved"
+    assert before.summary["license_embargo_until"] == "2026-10-20T00:00:00+00:00"
+
+    # nothing changes until the embargo ends, then the artifact is stale
+    assert planned(EMBARGO_ENDS - timedelta(seconds=1)).fresh == 1
+    assert planned(EMBARGO_ENDS).fresh == 0
+
+    # a later run is a new process: it reads Crossref's and Semantic Scholar's answers from
+    # the cache the first run filled, and asks OpenAlex, which is not cached, again
+    _, (after,) = _run(MetadataStage(settings), at(EMBARGO_ENDS), catalog, ref)
+
+    assert after.status is Status.OK, after.error
+    assert after.summary["license"] == "cc-by"
+    assert after.summary["license_embargo_until"] is None
+    assert planned(EMBARGO_ENDS + timedelta(days=400)).fresh == 1

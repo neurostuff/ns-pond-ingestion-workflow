@@ -16,7 +16,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from lxml import etree
 from lxml import html as lxml_html
@@ -396,18 +396,37 @@ _SELF_ARCHIVING = re.compile(r'"self-archiving":\{.*?\]\}')
 _SA_FIELD = re.compile(r'"#name":"(sa-user-license|sa-start-date)","_":("(?:[^"\\]|\\.)*")')
 
 
-def page_manuscript_license(page: bytes, now: Optional[datetime] = None) -> Optional[License]:
-    """The licence a publisher's page names for the article's accepted manuscript:
-    ScienceDirect's `sa-user-license`, once its `sa-start-date` has come."""
+def _self_archiving(page: bytes) -> Mapping[str, str]:
+    """The self-archiving fields a ScienceDirect page embeds: `sa-user-license` and
+    `sa-start-date`, whichever it has."""
     terms = _SELF_ARCHIVING.search(page.decode("utf-8", errors="replace"))
     if terms is None:
-        return None
-    fields = {name: json.loads(value) for name, value in _SA_FIELD.findall(terms.group(0))}
+        return {}
+    return {name: json.loads(value) for name, value in _SA_FIELD.findall(terms.group(0))}
+
+
+def _sa_start(fields: Mapping[str, str]) -> Optional[datetime]:
     start = fields.get("sa-start-date")
-    if start and datetime.fromisoformat(start.replace("Z", "+00:00")) > (
-            now or datetime.now(timezone.utc)):
+    return datetime.fromisoformat(start.replace("Z", "+00:00")) if start else None
+
+
+def page_manuscript_license(page: bytes, now: datetime) -> Optional[License]:
+    """The licence a publisher's page names for the article's accepted manuscript:
+    ScienceDirect's `sa-user-license`, once its `sa-start-date` has come."""
+    fields = _self_archiving(page)
+    start = _sa_start(fields)
+    if start is not None and start > now:
         return None
     return stated(MetadataSource.publisher_page, fields.get("sa-user-license"))
+
+
+def page_embargo_end(page: bytes, now: datetime) -> Optional[datetime]:
+    """When the manuscript licence `page_manuscript_license` leaves out at `now`, for its
+    `sa-start-date` being later, starts to apply; None when it leaves out none."""
+    fields = _self_archiving(page)
+    start = _sa_start(fields)
+    named = stated(MetadataSource.publisher_page, fields.get("sa-user-license"))
+    return start if named is not None and start is not None and start > now else None
 
 
 def cloud_license(record: Mapping) -> Optional[License]:
@@ -422,9 +441,26 @@ _CROSSREF_VERSIONS = {"vor": CopyVersion.vor, "am": CopyVersion.am, "unspecified
 _EARLIEST = datetime.min.replace(tzinfo=timezone.utc)
 
 
-def crossref_statements(entries: Optional[Sequence[Mapping]], now: Optional[datetime] = None,
+def _started(entry: Mapping) -> datetime:
+    """When a Crossref deposit starts to apply; a deposit with no readable start always has."""
+    start = (entry.get("start") or {}).get("date-time") or ""
+    try:
+        return datetime.fromisoformat(start.replace("Z", "+00:00"))
+    except ValueError:
+        return _EARLIEST
+
+
+def _read(entries: Optional[Sequence[Mapping]]) -> Iterator[Tuple[Mapping, str, datetime]]:
+    """The deposits that name a licence for a version: each with its URL and its start."""
+    for entry in entries or []:
+        url = entry.get("URL")
+        if url and entry.get("content-version") in _CROSSREF_VERSIONS:
+            yield entry, str(url), _started(entry)
+
+
+def crossref_statements(entries: Optional[Sequence[Mapping]], now: datetime,
                         preprint: bool = False) -> List[Statement]:
-    """One statement per version Crossref's `license` deposits for one DOI cover now.
+    """One statement per version Crossref's `license` deposits for one DOI cover at `now`.
 
     An embargoed deposit, starting in the future, is not yet in force; one with no start
     always is. Among a version's deposits in force the one taken names a licence over an
@@ -432,25 +468,24 @@ def crossref_statements(entries: Optional[Sequence[Mapping]], now: Optional[date
     deposit order. A preprint server's DOI is the preprint's, whatever version its
     deposits name, so with `preprint` each is about the submitted version.
     """
-    now = now or datetime.now(timezone.utc)
     best: Dict[Optional[CopyVersion], Tuple] = {}
-    for entry in entries or []:
-        kind, url = entry.get("content-version"), entry.get("URL")
-        if not url or kind not in _CROSSREF_VERSIONS:
-            continue
-        start = ((entry.get("start") or {}).get("date-time")) or ""
-        try:
-            started = datetime.fromisoformat(start.replace("Z", "+00:00"))
-        except ValueError:
-            started = _EARLIEST
+    for entry, url, started in _read(entries):
         if started > now:
             continue
-        found = stated(MetadataSource.crossref, str(url))
+        found = stated(MetadataSource.crossref, url)
         key = (found.license_id == LicenseId.other, -started.timestamp(), found.stated_as)
-        version = CopyVersion.submitted if preprint else _CROSSREF_VERSIONS[kind]
+        version = CopyVersion.submitted if preprint else _CROSSREF_VERSIONS[entry["content-version"]]
         if version not in best or key < best[version][0]:
             best[version] = (key, found)
     return [Statement(found, version) for version, (_, found) in best.items()]
+
+
+def crossref_embargo_end(entries: Optional[Sequence[Mapping]],
+                         now: datetime) -> Optional[datetime]:
+    """When the first deposit `crossref_statements` leaves out at `now`, for being
+    embargoed, starts to apply; None when there is none."""
+    later = [started for _, _, started in _read(entries) if started > now]
+    return min(later, default=None)
 
 
 def license_of(
@@ -513,7 +548,7 @@ def own_license(source: str, files: Iterable[Path]) -> Optional[License]:
     return None
 
 
-def page_statements(source: str, files: Iterable[Path]) -> List[Statement]:
+def page_statements(source: str, files: Iterable[Path], now: datetime) -> List[Statement]:
     """What the publisher's page ACE read states, for `PAGE` in `LICENSE_PRECEDENCE`: for the
     version of record the licence it marks, else its copyright line, and for the accepted
     manuscript its self-archiving licence."""
@@ -522,8 +557,15 @@ def page_statements(source: str, files: Iterable[Path]) -> List[Statement]:
         return []
     data = page.read_bytes()
     found = [Statement(_strongest([page_license(data), page_copyright(data)]), CopyVersion.vor),
-             Statement(page_manuscript_license(data), CopyVersion.am)]
+             Statement(page_manuscript_license(data, now), CopyVersion.am)]
     return [statement for statement in found if statement.license is not None]
+
+
+def page_embargo(source: str, files: Iterable[Path], now: datetime) -> Optional[datetime]:
+    """When `page_statements` first leaves out, at `now`, a licence the page names for the
+    accepted manuscript, for being embargoed."""
+    page = _page(source, files)
+    return None if page is None else page_embargo_end(page.read_bytes(), now)
 
 
 __all__ = [
@@ -537,6 +579,7 @@ __all__ = [
     "Undecided",
     "cloud_license",
     "copyright_line",
+    "crossref_embargo_end",
     "crossref_statements",
     "elsevier_license",
     "jats_license",
@@ -545,6 +588,8 @@ __all__ = [
     "own_license",
     "page_copyright",
     "page_license",
+    "page_embargo",
+    "page_embargo_end",
     "page_manuscript_license",
     "page_statements",
     "stated",

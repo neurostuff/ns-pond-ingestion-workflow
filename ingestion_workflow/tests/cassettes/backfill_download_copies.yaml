@@ -11,23 +11,77 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1460-9568.2007.05889.x%7C10.1111%2Fepi.14017&mailto=replay%40example.com&per_page=100&select=ids%2Cbest_oa_location%2Clocations
+    uri: https://api.openalex.org/works?filter=doi%3A10.1111%2Fj.1460-9568.2007.05889.x%7C10.1%2Fs2only%7C10.1%2Fpdf%7C10.1002%2Falz.12697%7C10.1111%2Fepi.14017&per_page=100&select=ids%2Cbest_oa_location%2Clocations
   response:
     body:
-      string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
-        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
-        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
-        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
-        \"<your user''s email>\"}; we email them a link, and the key works once they
-        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 2,
-        "db_response_time_ms": 34, "page": 1, "per_page": 100, "groups_count": null,
-        "x_query": {"oql": "get works where DOI is (10.1111/epi.14017 or 10.1111/j.1460-9568.2007.05889.x)",
-        "x_new_oql": "get works where DOI is (10.1111/epi.14017 or 10.1111/j.1460-9568.2007.05889.x)",
-        "oqo": {"get_rows": "works", "filter_rows": [{"join": "or", "filters": [{"column_id":
-        "doi", "value": "10.1111/epi.14017"}, {"column_id": "doi", "value": "10.1111/j.1460-9568.2007.05889.x"}]}]},
-        "url": "/works?filter=doi:10.1111%2Fepi.14017|10.1111%2Fj.1460-9568.2007.05889.x&per_page=100"},
-        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2158398361",
+      string: '{"meta": {"count": 3, "db_response_time_ms": 21, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (\n    10.1/pdf\n    or
+        10.1/s2only\n    or 10.1002/alz.12697\n    or 10.1111/epi.14017\n    or 10.1111/j.1460-9568.2007.05889.x\n  )",
+        "x_new_oql": "get works where DOI is (10.1/pdf or 10.1/s2only or 10.1002/alz.12697
+        or 10.1111/epi.14017 or 10.1111/j.1460-9568.2007.05889.x)", "oqo": {"get_rows":
+        "works", "filter_rows": [{"join": "or", "filters": [{"column_id": "doi", "value":
+        "10.1/pdf"}, {"column_id": "doi", "value": "10.1/s2only"}, {"column_id": "doi",
+        "value": "10.1002/alz.12697"}, {"column_id": "doi", "value": "10.1111/epi.14017"},
+        {"column_id": "doi", "value": "10.1111/j.1460-9568.2007.05889.x"}]}]}, "url":
+        "/works?filter=doi:10.1%2Fpdf|10.1%2Fs2only|10.1002%2Falz.12697|10.1111%2Fepi.14017|10.1111%2Fj.1460-9568.2007.05889.x&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W4285088596",
+        "doi": "https://doi.org/10.1002/alz.12697", "pmid": "https://pubmed.ncbi.nlm.nih.gov/35820077"},
+        "best_oa_location": {"id": "doi:10.1002/alz.12697", "doi": "https://doi.org/10.1002/alz.12697",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/alz.12697", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/alz.12697", "source":
+        {"id": "https://openalex.org/S108427512", "display_name": "Alzheimer s & Dementia",
+        "issn_l": "1552-5260", "issn": ["1552-5260", "1552-5279"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core", "dongbi-c",
+        "doyens", "jufo-3", "ki-jl-3", "medline", "norway-1", "poland-200", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310320595", "host_organization_name":
+        "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by-nc", "license_id": "https://openalex.org/licenses/cc-by-nc", "version":
+        "publishedVersion", "is_accepted": true, "is_published": true, "raw_source_name":
+        "Alzheimer''s &amp; Dementia", "raw_type": "journal-article"}, "locations":
+        [{"id": "doi:10.1002/alz.12697", "doi": "https://doi.org/10.1002/alz.12697",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/alz.12697", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/alz.12697", "source":
+        {"id": "https://openalex.org/S108427512", "display_name": "Alzheimer s & Dementia",
+        "issn_l": "1552-5260", "issn": ["1552-5260", "1552-5279"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core", "dongbi-c",
+        "doyens", "jufo-3", "ki-jl-3", "medline", "norway-1", "poland-200", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310320595", "host_organization_name":
+        "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by-nc", "license_id": "https://openalex.org/licenses/cc-by-nc", "version":
+        "publishedVersion", "is_accepted": true, "is_published": true, "raw_source_name":
+        "Alzheimer''s &amp; Dementia", "raw_type": "journal-article"}, {"id": "pmid:35820077",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/35820077",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Alzheimer''s
+        & dementia : the journal of the Alzheimer''s Association", "raw_type": "Journal
+        Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:10518222", "doi": null, "is_oa":
+        true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/10518222",
+        "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10518222/pdf/nihms-1923559.pdf",
+        "source": {"id": "https://openalex.org/S2764455111", "display_name": "PubMed
+        Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "other-oa", "license_id": "https://openalex.org/licenses/other-oa",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "Alzheimers Dement", "raw_type": "Text"}, {"id": "pmh:oai:eprints.ucl.ac.uk.OAI2:10152210",
+        "doi": null, "is_oa": false, "landing_page_url": "https://discovery.ucl.ac.uk/id/eprint/10152210/",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400024", "display_name":
+        "UCL Discovery (University College London)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I45129253", "host_organization_name": "University College
+        London", "host_organization_lineage": ["https://openalex.org/I45129253"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Alzheimer''s &amp; Dementia (2022) (In press).",
+        "raw_type": "Article"}]}, {"ids": {"openalex": "https://openalex.org/W2158398361",
         "doi": "https://doi.org/10.1111/j.1460-9568.2007.05889.x", "mag": "2158398361",
         "pmid": "https://pubmed.ncbi.nlm.nih.gov/18028117"}, "best_oa_location": null,
         "locations": [{"id": "doi:10.1111/j.1460-9568.2007.05889.x", "doi": "https://doi.org/10.1111/j.1460-9568.2007.05889.x",
@@ -146,7 +200,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c2204dfa474864-DFW
+      - a4d2ccb46c9b6c57-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -154,7 +208,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 17 Oct 2026 20:41:48 GMT
+      - Mon, 19 Oct 2026 21:15:42 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -166,19 +220,19 @@ interactions:
       X-RateLimit-Credits-Used:
       - '1'
       X-RateLimit-Limit:
-      - '1000'
+      - '10000'
       X-RateLimit-Limit-USD:
-      - '0.1'
+      - '1'
       X-RateLimit-Onetime-Remaining:
       - '0'
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '995'
+      - '9753'
       X-RateLimit-Remaining-USD:
-      - '0.0995'
+      - '0.9753'
       X-RateLimit-Reset:
-      - '11892'
+      - '9858'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -193,9 +247,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=RXkukvu5J9deX%2Fso0bIvlxKryZwyJQkm6NFgNx4wdu4%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792269708"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=BWL4c2vHbazabZnP9FmCDHmOXCfA8w%2F7z5NzSEehBoQ%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444542"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=RXkukvu5J9deX%2Fso0bIvlxKryZwyJQkm6NFgNx4wdu4%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792269708"
+      - heroku-nel="https://nel.heroku.com/reports?s=BWL4c2vHbazabZnP9FmCDHmOXCfA8w%2F7z5NzSEehBoQ%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444542"
     status:
       code: 200
       message: OK

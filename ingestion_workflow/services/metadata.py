@@ -23,6 +23,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
@@ -59,9 +60,11 @@ from ingestion_workflow.services.licenses import (
     PAGE,
     Statement,
     Undecided,
+    crossref_embargo_end,
     crossref_statements,
     license_of,
     own_license,
+    page_embargo,
     page_statements,
     stated,
 )
@@ -121,6 +124,7 @@ class MetadataService:
         extracted_contents: List[ExtractedContent],
         held: Mapping[str, Sequence[HeldDownload]],
         dois: Mapping[str, Sequence[str]],
+        now: datetime,
     ) -> Dict[str, ArticleMetadata]:
         """
         Enrich extracted contents with article metadata.
@@ -137,6 +141,9 @@ class MetadataService:
             by each: a journal's DOI for the version of record, a preprint server's for
             the preprint. An article with two journal DOIs is a catalog conflict: it is
             not asked about, and `conflicts` says why.
+        now : datetime
+            The time the licence statements are read at: one starting later is embargoed,
+            and the earliest such start is recorded as `license_embargo_until`.
 
         Returns
         -------
@@ -317,7 +324,7 @@ class MetadataService:
             ids = article_identifiers(item.identifier, [d for d, _ in by_doi[slug]], metadata)
             try:
                 _decide_licenses(metadata, ids, item.identifier.doi, crossref_by_doi, works,
-                                 paper_work, answers.get(slug, {}), held.get(slug, ()), waiting)
+                                 paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
             except Undecided as exc:
                 self.undecided[slug] = exc
         return results
@@ -752,6 +759,7 @@ def _decide_licenses(
     replies: Mapping[str, ArticleMetadata],
     held: Sequence[HeldDownload],
     unanswered: Mapping[str, str],
+    now: datetime,
 ) -> None:
     """Set the licence of each held copy, of the paper and of each reported copy, and
     `oa_status`, from every provider's record.
@@ -784,7 +792,7 @@ def _decide_licenses(
     statements: Dict[str, List[Statement]] = {
         MetadataSource.crossref.value: [
             s for d in sorted(crossref) for s in crossref_statements(
-                (crossref[d] or {}).get("license"), preprint=d in preprint_dois)],
+                (crossref[d] or {}).get("license"), now, preprint=d in preprint_dois)],
         MetadataSource.openalex.value: [
             Statement(c.license, c.version, c.url, c.route) for c in listed
             if c.by == MetadataSource.openalex and c.license is not None],
@@ -792,10 +800,8 @@ def _decide_licenses(
         PAGE: [],
     }
     waiting = set(unanswered)
-
-    def at(url: Optional[str]) -> Optional[License]:
-        """The licence a provider lists for the copy at `url`."""
-        return next((c.license for c in listed if c.url == url and c.license), None)
+    embargoes = [end for d in crossref
+                 if (end := crossref_embargo_end((crossref[d] or {}).get("license"), now))]
 
     def decide(what: str, version, own: Optional[License], waits) -> License:
         try:
@@ -806,12 +812,14 @@ def _decide_licenses(
             raise Undecided(f"the licence of {what} is undecided: {why}", exc.sources,
                             outage(exc.sources)) from exc
 
-    # Each held copy's own record, read once; a copy at a URL is the one listed there.
+    # Each held copy's own record, read once; a copy fetched from a listed URL carries the
+    # licence that listing stated then.
     records: List[Tuple[HeldDownload, Optional[License], bool]] = []
     for download in held:
         try:
             own, unread = own_license(download.source, download.files), False
-            ranked = page_statements(download.source, download.files)
+            ranked = page_statements(download.source, download.files, now)
+            embargoes.append(page_embargo(download.source, download.files, now))
         except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
             own, ranked, unread = None, [], True
@@ -819,9 +827,12 @@ def _decide_licenses(
         if own is not None and own.stated_by != MetadataSource.publisher_page:
             statements[HELD].append(Statement(own, download.copy.version))
         statements[PAGE] += ranked
+    metadata.license_embargo_until = min((end for end in embargoes if end), default=None)
     # Every record is read before any copy is decided, so that each copy can take another's.
     for download, own, unread in records:
-        own = own or at(download.copy.url)
+        listing = download.copy
+        if own is None and listing.license:
+            own = stated(MetadataSource(listing.license_by), listing.license)
         metadata.copy_licenses[download.source] = decide(
             f"the {download.source} copy", download.copy.version, own,
             waiting | ({OWN} if unread else set()))

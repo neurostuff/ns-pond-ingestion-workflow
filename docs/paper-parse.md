@@ -31,8 +31,9 @@ triage rejected keeps that reading.
 - A licence is `stated` by the first source in this order that states one:
   1. the copy's own record: PMC's cloud record (`pmc_cloud`), its JATS `<permissions>`
      (`jats`), Elsevier's `coredata` (`elsevier`) or the open licence the publisher's page
-     ACE read marks (`publisher_page`), or, for a copy at a URL, the licence OpenAlex or
-     Semantic Scholar lists for that URL;
+     ACE read marks (`publisher_page`), or, for a PDF fetched from a URL, the licence
+     OpenAlex or Semantic Scholar listed for that URL when it was fetched (the fetch's
+     `url_attempts` entry and the download's `copy` record it);
   2. the own record of another held copy of the same version, other than a publisher's
      page, the download sources in the order they are tried;
   3. for the version of record, Crossref's `vor` deposit for the journal's DOI, then
@@ -49,7 +50,9 @@ triage rejected keeps that reading.
   list comes before an `other`; across sources, the earlier source decides. A JATS
   `license_ref` with `specific-use="textmining"` is read like any other: PMC tags the
   article's own licence that way. Crossref's `tdm` and `stm-asf` deposits grant mining or
-  sharing, not a licence, and are not read. Terms that grant only text mining (PMC's
+  sharing, not a licence, and are not read. A deposit whose `start` is later is embargoed
+  and not read; the artifact records the earliest such start (`license_embargo_until`) and
+  is stale from then, so the licence is decided again. Terms that grant only text mining (PMC's
   `TDM`) are `all-rights-reserved`.
 - A publisher's page is read outside its footer (a `footer` tag, or a class or id that
   contains `footer`, unless it holds the article's title, `article`, `main` or footnotes),

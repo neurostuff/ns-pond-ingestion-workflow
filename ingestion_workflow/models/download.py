@@ -82,6 +82,10 @@ class DownloadCopy:
     url: Optional[str] = None
     #: The server's name in `utils.preprints`, for a copy on a preprint server.
     preprint_server: Optional[str] = None
+    #: The licence the provider that listed the copy's URL states for it, as it gave it,
+    #: and that provider's name (a study_schema MetadataSource value).
+    license: Optional[str] = None
+    license_by: Optional[str] = None
 
     def to_dict(self) -> Dict[str, str]:
         out = {"route": self.route.value, "access": self.access.value}
@@ -91,6 +95,9 @@ class DownloadCopy:
             out["url"] = self.url
         if self.preprint_server is not None:
             out["preprint_server"] = self.preprint_server
+        if self.license:
+            out["license"] = self.license
+            out["license_by"] = self.license_by
         return out
 
     @classmethod
@@ -101,6 +108,8 @@ class DownloadCopy:
             version=CopyVersion(payload["version"]) if payload.get("version") else None,
             url=payload.get("url") or None,
             preprint_server=payload.get("preprint_server") or None,
+            license=payload.get("license") or None,
+            license_by=payload.get("license_by") or None,
         )
 
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
+import os
 import sqlite3
 import sys
 import threading
@@ -13,6 +15,7 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome
 from ingestion_workflow.clients.openalex import OpenAlexClient
+from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models import (
     DownloadedFile,
     DownloadResult,
@@ -41,7 +44,16 @@ UCL = {"url": "https://discovery.ucl.ac.uk/10062208/1/Adler%20et%20al.%20Topogra
 KOELSCH = {"url": "http://www.stefan-koelsch.de/papers/"
                   "Koelsch+_EuropJNeurosci_ECG_personality_fMRI_amygdala.pdf",
            "provider": "semantic_scholar", "location_type": "unknown", "outcome": "pdf"}
-DOIS = {"ucl": "10.1111/epi.14017", "koelsch": "10.1111/j.1460-9568.2007.05889.x"}
+#: OpenAlex lists 10.1002/alz.12697's PDF at Wiley with a CC BY-NC licence.
+ALZ = {"url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/alz.12697",
+       "provider": "openalex", "location_type": "publisher", "version": "publishedVersion",
+       "outcome": "pdf"}
+#: A PDF only Semantic Scholar lists, with the licence it gave 10.1002/hbm.24703's open-access
+#: PDF (its answer is in the cache below).
+S2_ONLY = {"url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703",
+           "provider": "semantic_scholar", "location_type": "unknown", "outcome": "pdf"}
+DOIS = {"ucl": "10.1111/epi.14017", "koelsch": "10.1111/j.1460-9568.2007.05889.x",
+        "alz": "10.1002/alz.12697", "s2only": "10.1/s2only"}
 
 pytestmark = [pytest.mark.vcr, pytest.mark.default_cassette("backfill_download_copies.yaml")]
 
@@ -54,9 +66,29 @@ def _download(article_id, source, files=(), attempts=()):
     return result.to_dict()
 
 
+#: The key is dropped from the cassette, so any value replays. No email is sent.
+KEY = os.environ.get("OPENALEX_API_KEY", "replay")
+
+
 @pytest.fixture()
 def openalex():
-    return OpenAlexClient(email="test@example.com")
+    return OpenAlexClient(api_key=KEY)
+
+
+@pytest.fixture()
+def s2_cache(tmp_path):
+    """The metadata cache's Semantic Scholar records: one, as the provider answered for
+    10.1002/hbm.24703 (its record's `openAccessPdf` is the real one's)."""
+    cache = tmp_path / "semantic_scholar"
+    cache.mkdir()
+    record = ArticleMetadata(title="", source="semantic_scholar", raw_metadata={
+        "semantic_scholar": {"openAccessPdf": {
+            "url": S2_ONLY["url"], "status": "HYBRID", "license": "CCBYNCSA",
+            "disclaimer": "Notice: Paper or abstract available at "
+                          "https://api.unpaywall.org/v2/10.1002/hbm.24703"}}})
+    (cache / f"{Identifier(doi=DOIS['s2only']).slug}.json").write_text(
+        json.dumps(record.to_dict()), encoding="utf-8")
+    return cache
 
 
 @pytest.fixture()
@@ -70,8 +102,8 @@ def catalog_root(tmp_path):
     lost.write_bytes((COPIES / "pubget_manuscript" / "article.xml").read_bytes())
     with Catalog.open(root) as catalog:
         ids = {name: catalog.register(Identifier(doi=DOIS.get(name, f"10.1/{name}"))).id
-               for name in ("pmc", "elsevier", "pdf", "ucl", "koelsch", "recorded", "failed",
-                            "gone", "lost")}
+               for name in ("pmc", "elsevier", "pdf", "ucl", "koelsch", "alz", "s2only",
+                            "recorded", "failed", "gone", "lost")}
         catalog.record([
             Outcome(ids["pmc"], "download", "pmc", summary={"migrated": True},
                     payload=_download("pmc", DownloadSource.PMC,
@@ -85,7 +117,8 @@ def catalog_root(tmp_path):
                              "article_version": "submittedVersion"}),
             *(Outcome(ids[name], "download", "pdf", summary={"files": 1},
                       payload=_download(name, DownloadSource.PDF, attempts=[attempt]))
-              for name, attempt in (("ucl", UCL), ("koelsch", KOELSCH))),
+              for name, attempt in (("ucl", UCL), ("koelsch", KOELSCH), ("alz", ALZ),
+                                    ("s2only", S2_ONLY))),
             Outcome(ids["recorded"], "download", "ace",
                     summary={"copy": {"route": "publisher", "access": "unrecorded"}},
                     payload=_download("recorded", DownloadSource.ACE)),
@@ -107,7 +140,8 @@ DRY_RUN = {
     "elsevier\tpublisher\tvor\ttdm_grant": 1,
     "pdf\tpreprint_server\tsubmitted\tpublic": 1,
     "pdf\trepository\t-\tpublic": 1,
-    "pdf\tunrecorded\t-\tpublic": 1,
+    "pdf\tunrecorded\t-\tpublic": 2,
+    "pdf\tpublisher\tvor\tpublic": 1,
     "already recorded": 1,
     "left: payload blob missing": 1,
     "left: OSError": 1,
@@ -120,43 +154,46 @@ def _rows(db):
             "SELECT article_id, source, status, fingerprint, summary, updated_at FROM artifacts")}
 
 
-def test_a_dry_run_counts_each_copy_and_writes_nothing(catalog_root, openalex):
+def test_a_dry_run_counts_each_copy_and_writes_nothing(catalog_root, openalex, s2_cache):
     root, ids = catalog_root
     before = _rows(root / "catalog.sqlite")
     out = io.StringIO()
 
-    counts = backfill.run(root, openalex=openalex, out=out)
+    counts = backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, out=out)
 
     assert _rows(root / "catalog.sqlite") == before
     assert counts == DRY_RUN
     assert f"left\t{ids['gone']}\tspringer\tpayload blob missing" in out.getvalue()
     assert f"left\t{ids['lost']}\tpubget\tOSError" in out.getvalue()
     assert "dry run, nothing written" in out.getvalue()
+    # the copies that get a licence back, by who listed it
+    assert "licence listed by openalex\t1\n" in out.getvalue()
+    assert "licence listed by semantic_scholar\t1\n" in out.getvalue()
 
 
-def test_every_row_is_counted_across_chunks(catalog_root, openalex, monkeypatch):
+def test_every_row_is_counted_across_chunks(catalog_root, openalex, monkeypatch, s2_cache):
     root, _ = catalog_root
     monkeypatch.setattr(backfill, "CHUNK", 2)
 
-    assert backfill.run(root, openalex=openalex, out=io.StringIO()) == DRY_RUN
+    assert backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, out=io.StringIO()) == DRY_RUN
 
 
-def test_apply_needs_a_new_backup(catalog_root, openalex, tmp_path):
+def test_apply_needs_a_new_backup(catalog_root, openalex, tmp_path, s2_cache):
     root, _ = catalog_root
     with pytest.raises(SystemExit):
-        backfill.run(root, openalex=openalex, apply=True)
+        backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, apply=True)
     taken = tmp_path / "taken.sqlite"
     taken.write_text("")
     with pytest.raises(SystemExit):
-        backfill.run(root, openalex=openalex, apply=True, backup=taken)
+        backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, apply=True, backup=taken)
 
 
 def test_apply_records_each_copy_in_its_summary_and_nothing_else(catalog_root, openalex,
-                                                                 tmp_path):
+                                                                 tmp_path, s2_cache):
     root, ids = catalog_root
     before = _rows(root / "catalog.sqlite")
 
-    counts = backfill.run(root, openalex=openalex, apply=True, backup=tmp_path / "before.sqlite",
+    counts = backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, apply=True, backup=tmp_path / "before.sqlite",
                           out=io.StringIO())
 
     assert counts == DRY_RUN
@@ -173,21 +210,27 @@ def test_apply_records_each_copy_in_its_summary_and_nothing_else(catalog_root, o
         assert summary("ucl", "pdf") == {"files": 1, "copy": {
             "route": "repository", "access": "public", "url": UCL["url"]}}
         assert summary("koelsch", "pdf")["copy"]["route"] == "unrecorded"
+        assert summary("alz", "pdf")["copy"] == {
+            "route": "publisher", "version": "vor", "access": "public", "url": ALZ["url"],
+            "license": "cc-by-nc", "license_by": "openalex"}
+        assert summary("s2only", "pdf")["copy"] == {
+            "route": "unrecorded", "access": "public", "url": S2_ONLY["url"],
+            "license": "CCBYNCSA", "license_by": "semantic_scholar"}
     written = {(ids[name], source) for name, source in (
         ("pmc", "pmc"), ("elsevier", "elsevier"), ("pdf", "pdf"), ("ucl", "pdf"),
-        ("koelsch", "pdf"))}
+        ("koelsch", "pdf"), ("alz", "pdf"), ("s2only", "pdf"))}
     assert {key for key in before if before[key] != after[key]} == written
     for key in written:  # status, fingerprint and updated_at stay
         status, fp, _, updated = after[key][1:]
         assert (status, fp, updated) == (before[key][1], before[key][2], before[key][4])
     assert _rows(tmp_path / "before.sqlite") == before
 
-    again = backfill.run(root, openalex=openalex, out=io.StringIO())
-    assert again == {"already recorded": 6, "left: payload blob missing": 1, "left: OSError": 1}
+    again = backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, out=io.StringIO())
+    assert again == {"already recorded": 8, "left: payload blob missing": 1, "left: OSError": 1}
 
 
 def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, openalex,
-                                                                monkeypatch, tmp_path):
+                                                                monkeypatch, tmp_path, s2_cache):
     """The pipeline refreshes the pmc download between the read and the write."""
     root, ids = catalog_root
     read = backfill.copies_of
@@ -204,7 +247,7 @@ def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, op
     monkeypatch.setattr(backfill, "copies_of", refreshed_meanwhile)
     out = io.StringIO()
 
-    counts = backfill.run(root, openalex=openalex, apply=True, backup=tmp_path / "b.sqlite",
+    counts = backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, apply=True, backup=tmp_path / "b.sqlite",
                           out=out)
 
     with Catalog.open(root) as catalog:
@@ -224,7 +267,7 @@ class _Down(BaseHTTPRequestHandler):
 
 
 def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalog_root,
-                                                                         tmp_path):
+                                                                         tmp_path, s2_cache):
     root, ids = catalog_root
     server = HTTPServer(("localhost", 0), _Down)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -232,13 +275,13 @@ def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalo
     down.BASE_URL = f"http://localhost:{server.server_port}"
     out = io.StringIO()
     try:
-        counts = backfill.run(root, openalex=down, apply=True, backup=tmp_path / "b.sqlite",
+        counts = backfill.run(root, openalex=down, semantic_scholar=s2_cache, apply=True, backup=tmp_path / "b.sqlite",
                               out=out)
     finally:
         server.shutdown()
         server.server_close()
 
-    assert counts["left: OpenAlex lookup failed"] == 2
+    assert counts["left: OpenAlex lookup failed"] == 5
     assert "pdf\tunrecorded\t-\tpublic" not in counts
     with Catalog.open(root) as catalog:
         for name in ("ucl", "koelsch"):
@@ -246,7 +289,7 @@ def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalo
     assert f"left\t{ids['ucl']}\tpdf\tOpenAlex lookup failed" in out.getvalue()
 
     # with OpenAlex back, a rerun types them
-    again = backfill.run(root, openalex=OpenAlexClient(email="test@example.com"),
+    again = backfill.run(root, openalex=OpenAlexClient(api_key=KEY), semantic_scholar=s2_cache,
                          out=io.StringIO())
     assert again["pdf\trepository\t-\tpublic"] == 1
-    assert again["pdf\tunrecorded\t-\tpublic"] == 1
+    assert again["pdf\tunrecorded\t-\tpublic"] == 2

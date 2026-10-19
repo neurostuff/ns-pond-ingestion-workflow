@@ -1,0 +1,452 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1515/cogsem-2026-3005"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '41'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "89e036e186252b9c59e16ee3a0fcd0dea6b5500d", "title": "Stability
+        and variation in selfhood in Russian-Swedish bilinguals: a cognitive-semiotic
+        approach", "venue": "", "year": 2026, "isOpenAccess": false, "openAccessPdf":
+        {"url": "", "status": null, "license": null, "disclaimer": "Notice: The following
+        paper fields have been elided by the publisher: {''abstract''}. Paper or abstract
+        available at https://api.unpaywall.org/v2/10.1515/cogsem-2026-3005?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1515/cogsem-2026-3005, which is subject to the license
+        by the author or copyright owner provided with this content. Please go to
+        the source to verify the license and copyright information for your use."},
+        "publicationDate": "2026-10-20", "authors": [{"authorId": "84597830", "name":
+        "\u041d\u0430\u0442\u0430\u043b\u044c\u044f \u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440\u043e\u0432\u043d\u0430
+        \u0411\u0430\u0441\u0430\u043b\u0430\u0435\u0432\u0430"}, {"authorId": "8520272",
+        "name": "A. Mouratidou"}, {"authorId": "2651866", "name": "J. Zlatev"}], "abstract":
+        null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1084'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 21:15:49 GMT
+      Via:
+      - 1.1 e665d09233240df4d3172e59222e0ba2.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 13FtLMjXXvF2G3dcij8uFeBSN9M9HBFnH34eqaAXzPvwfKNw_y73bg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FgpE9Hh7vHcEcxA=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1084'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Oct 2026 21:15:49 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 160a3955-8062-4332-a775-17d900621676
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1515%2Fcogsem-2026-3005&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1515\/cogsem-2026-3005","license":[{"start":{"date-parts":[[2026,10,20]],"date-time":"2026-10-20T00:00:00Z","timestamp":1792454400000},"content-version":"unspecified","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 21:15:49 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1515%2Fcogsem-2026-3005&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 0, "db_response_time_ms": 13, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
+        "x_new_oql": "get works where DOI is 10.1515/cogsem-2026-3005", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1515/cogsem-2026-3005"}]},
+        "url": "/works?filter=doi:10.1515%2Fcogsem-2026-3005&per_page=100"}, "cost_usd":
+        0.0001}, "results": [], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d2cce52a264769-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 21:15:50 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9752'
+      X-RateLimit-Remaining-USD:
+      - '0.9752'
+      X-RateLimit-Reset:
+      - '9850'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works/doi:10.1515/cogsem-2026-3005?select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '<!doctype html>
+
+        <html lang=en>
+
+        <title>404 Not Found</title>
+
+        <h1>Not Found</h1>
+
+        <p>The requested URL was not found on the server. If you entered the URL manually
+        please check your spelling and try again.</p>
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d2cce6fe1b6b83-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Mon, 19 Oct 2026 21:15:50 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9752'
+      X-RateLimit-Remaining-USD:
+      - '0.9752'
+      X-RateLimit-Reset:
+      - '9850'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1515%2Fcogsem-2026-3005&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 0, "db_response_time_ms": 11, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
+        "x_new_oql": "get works where DOI is 10.1515/cogsem-2026-3005", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1515/cogsem-2026-3005"}]},
+        "url": "/works?filter=doi:10.1515%2Fcogsem-2026-3005&per_page=100"}, "cost_usd":
+        0.0001}, "results": [], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d2cce83a7ff68c-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 21:15:50 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9751'
+      X-RateLimit-Remaining-USD:
+      - '0.9751'
+      X-RateLimit-Reset:
+      - '9850'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works/doi:10.1515/cogsem-2026-3005?select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '<!doctype html>
+
+        <html lang=en>
+
+        <title>404 Not Found</title>
+
+        <h1>Not Found</h1>
+
+        <p>The requested URL was not found on the server. If you entered the URL manually
+        please check your spelling and try again.</p>
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d2cce93ac79603-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Mon, 19 Oct 2026 21:15:50 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9751'
+      X-RateLimit-Remaining-USD:
+      - '0.9751'
+      X-RateLimit-Reset:
+      - '9850'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
+    status:
+      code: 404
+      message: Not Found
+version: 1

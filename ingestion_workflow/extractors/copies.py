@@ -114,7 +114,8 @@ def _pdf_copy(result: DownloadResult) -> DownloadCopy:
                                      OPENALEX_VERSIONS.get(str(attempt.get("version"))),
                                      location_type)
     return DownloadCopy(route=route, version=version, access=CopyAccess.public, url=url,
-                        preprint_server=server)
+                        preprint_server=server, license=attempt.get("license") or None,
+                        license_by=attempt.get("license_by") or None)
 
 
 def _wiley_copy(result: DownloadResult) -> DownloadCopy:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from study_schema.models.paper_parse import License, ReportedCopy
@@ -92,6 +93,9 @@ class ArticleMetadata:
     # Copies the providers list that no download holds
     reported_copies: List[ReportedCopy] = field(default_factory=list)
 
+    # When the first Crossref licence deposit left out for being embargoed starts to apply
+    license_embargo_until: Optional[datetime] = None
+
     def __post_init__(self) -> None:
         if self.abstract and self.abstract_provider is None:
             self.abstract_provider = self.source
@@ -162,6 +166,8 @@ class ArticleMetadata:
             "copy_licenses": {name: _dumped(lic) for name, lic in self.copy_licenses.items()},
             "oa_status": self.oa_status,
             "reported_copies": [_dumped(copy) for copy in self.reported_copies],
+            "license_embargo_until": (self.license_embargo_until.isoformat()
+                                      if self.license_embargo_until else None),
         }
 
     @classmethod
@@ -186,6 +192,8 @@ class ArticleMetadata:
             oa_status=data.get("oa_status"),
             reported_copies=[ReportedCopy.model_validate(copy)
                              for copy in data.get("reported_copies") or []],
+            license_embargo_until=(datetime.fromisoformat(data["license_embargo_until"])
+                                   if data.get("license_embargo_until") else None),
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:

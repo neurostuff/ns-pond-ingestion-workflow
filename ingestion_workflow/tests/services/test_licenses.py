@@ -14,6 +14,7 @@ from ingestion_workflow.services.licenses import (
     Statement,
     Undecided,
     copyright_line,
+    crossref_embargo_end,
     crossref_statements,
     elsevier_license,
     jats_license,
@@ -22,6 +23,7 @@ from ingestion_workflow.services.licenses import (
     own_license,
     page_copyright,
     page_license,
+    page_embargo_end,
     page_manuscript_license,
     page_statements,
     stated,
@@ -365,19 +367,19 @@ def test_a_page_s_manuscript_licence_is_in_force_from_its_start_date():
     found = page_manuscript_license(page, datetime(2020, 3, 4, tzinfo=timezone.utc))
     assert (found.license_id, found.stated_by, found.stated_as) == (
         "cc-by-nc-nd", "publisher_page", "http://creativecommons.org/licenses/by-nc-nd/4.0/")
-    assert page_manuscript_license(_page("biomedcentral_s40673_017_0065_7")) is None
+    assert page_manuscript_license(_page("biomedcentral_s40673_017_0065_7"), NOW) is None
 
 
 def test_a_page_s_own_record_is_its_licence_mark_and_its_copyright_line_ranks_last():
     marked = [PAGES / "sciencedirect_open_access_jad_2020_05_110.html"]
     assert own_license("ace", marked) == page_license(_page(
         "sciencedirect_open_access_jad_2020_05_110"))
-    assert [(s.version, s.license.license_id) for s in page_statements("ace", marked)] == [
+    assert [(s.version, s.license.license_id) for s in page_statements("ace", marked, NOW)] == [
         ("vor", "cc-by-nc-nd"), ("am", "cc-by-nc-nd")]
     unmarked = [PAGES / "sciencedirect_brainres_2019_02_029.html"]
     assert own_license("ace", unmarked) is None
     assert [(s.version, s.license.license_id, s.license.stated_as)
-            for s in page_statements("ace", unmarked)] == [
+            for s in page_statements("ace", unmarked, NOW)] == [
         ("vor", "all-rights-reserved", "© 2019 Elsevier B.V. All rights reserved."),
         ("am", "cc-by-nc-nd", "http://creativecommons.org/licenses/by-nc-nd/4.0/")]
 
@@ -389,7 +391,7 @@ def test_only_an_open_licence_the_page_marks_is_its_copy_s_own_record():
     assert page_license(_page("jneurosci_1363_13_2013_open_choice")).license_id == "other"
     assert own_license("ace", files) is None
     # ranked last, its copyright line comes before that `other`
-    assert [(s.version, s.license.license_id) for s in page_statements("ace", files)] == [
+    assert [(s.version, s.license.license_id) for s in page_statements("ace", files, NOW)] == [
         ("vor", "all-rights-reserved")]
 
 
@@ -404,7 +406,7 @@ def test_a_page_s_all_rights_reserved_line_outranks_an_other_mark_on_it():
     reserved"."""
     files = [PAGES / "oxford_cercor_bhac304.html"]
     assert [(s.version, s.license.license_id, s.license.stated_as)
-            for s in page_statements("ace", files)] == [
+            for s in page_statements("ace", files, NOW)] == [
         ("vor", "all-rights-reserved", "© The Author(s) 2022. Published by Oxford University "
          "Press. All rights reserved. For permissions, please e-mail: "
          "journals.permissions@oup.com")]
@@ -413,9 +415,9 @@ def test_a_page_s_all_rights_reserved_line_outranks_an_other_mark_on_it():
 def test_a_publisher_s_page_is_read_only_for_an_ace_download():
     files = [PAGES / "sciencedirect_open_access_jad_2020_05_110.html"]
     assert own_license("elsevier", files) is None
-    assert page_statements("elsevier", files) == []
+    assert page_statements("elsevier", files, NOW) == []
     assert page_statements("elsevier", [LICENSES / "elsevier_cortex_2017_05_018" /
-                                        "content.xml"]) == []
+                                        "content.xml"], NOW) == []
 
 
 def _deposit(url, version, start="2020-01-01T00:00:00Z"):
@@ -596,3 +598,38 @@ def test_a_source_that_did_not_answer_before_the_deciding_one_leaves_it_undecide
     # nobody but itself speaks for a copy of no known version
     assert license_of(None, None, {}, {CROSSREF, OPENALEX}) == ASSUMED
     assert license_of(CopyVersion.vor, None, {}, set()) == ASSUMED
+
+
+def test_the_embargo_ends_when_the_first_deposit_not_in_force_starts():
+    """10.1016/j.cogpsych.2025.101768, as Elsevier deposited it on 2026-10-19: manuscript
+    terms from 2026-11-25. Its mining and sharing deposits are never read, so they end
+    nothing."""
+    entries = [
+        _deposit("http://www.elsevier.com/open-access/userlicense/1.0/", "am",
+                 "2026-11-25T00:00:00Z"),
+        _deposit("https://www.elsevier.com/tdm/userlicense/1.0/", "tdm", "2026-12-01T00:00:00Z"),
+        _deposit("https://doi.org/10.15223/policy-017", "stm-asf", "2026-11-01T00:00:00Z"),
+        _deposit("http://creativecommons.org/licenses/by/4.0/", "vor", "2027-03-01T00:00:00Z"),
+    ]
+
+    assert crossref_embargo_end(entries, NOW) == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries[::-1], NOW) == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries, datetime(2026, 11, 25, tzinfo=timezone.utc)) == \
+        datetime(2027, 3, 1, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries, datetime(2027, 3, 1, tzinfo=timezone.utc)) is None
+
+
+def test_deposits_in_force_or_with_no_start_end_no_embargo():
+    assert crossref_embargo_end([{"URL": "https://creativecommons.org/licenses/by/4.0/",
+                                  "content-version": "vor"}], NOW) is None
+    assert crossref_embargo_end([], NOW) is None
+    assert crossref_embargo_end(None, NOW) is None
+
+
+def test_a_page_embargo_ends_at_the_start_of_the_licence_it_names():
+    page = _page("sciencedirect_brainres_2019_02_029")
+
+    assert page_embargo_end(page, datetime(2020, 3, 3, tzinfo=timezone.utc)) == datetime(
+        2020, 3, 4, tzinfo=timezone.utc)
+    assert page_embargo_end(page, datetime(2020, 3, 4, tzinfo=timezone.utc)) is None
+    assert page_embargo_end(_page("biomedcentral_s40673_017_0065_7"), NOW) is None

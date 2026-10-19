@@ -16,7 +16,8 @@ so a new or changed download makes the artifact stale.
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Sequence
+from datetime import datetime
+from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
@@ -81,7 +82,7 @@ class MetadataStage:
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
             fp = self.fingerprint_for(downloads.get(ref.id, {}))
-            if ctx.is_fresh(existing, fp):
+            if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now):
                 plan.fresh += 1
                 continue
             extractions = [a for a in upstream.get(ref.id, {}).values() if a.status is Status.OK]
@@ -159,7 +160,7 @@ class MetadataStage:
         # Outside the batch's own failures: no article can be decided until it is configured.
         self.service.require_licence_providers()
         try:
-            found = self.service.enrich_metadata(contents, held, dois)
+            found = self.service.enrich_metadata(contents, held, dois, ctx.now)
         except Exception as exc:
             logger.warning("metadata batch failed: %s", exc)
             for work in by_slug.values():
@@ -212,4 +213,13 @@ def _licenses(metadata: ArticleMetadata) -> Dict:
         "license_determination": metadata.license.determination,
         "copy_licenses": {source: lic.license_id
                           for source, lic in metadata.copy_licenses.items()},
+        "license_embargo_until": (metadata.license_embargo_until.isoformat()
+                                  if metadata.license_embargo_until else None),
     }
+
+
+def _embargo_lifted(artifact: Optional[Artifact], now: datetime) -> bool:
+    """Whether a deposit the artifact's licences left out, for not yet being in force, is
+    in force now. The inputs the fingerprint holds did not change, but the decision did."""
+    until = ((artifact.summary or {}).get("license_embargo_until") if artifact else None)
+    return bool(until) and datetime.fromisoformat(until) <= now

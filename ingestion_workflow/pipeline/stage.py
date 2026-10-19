@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Protocol, Sequence
 
@@ -90,12 +90,16 @@ class Context:
         refresh: Sequence[str] = (),
         max_attempts: int = 3,
         retry_after: timedelta = timedelta(days=1),
+        now: Optional[datetime] = None,
     ) -> None:
         self.settings = settings
         self.catalog = catalog
         self.refresh = {name.lower() for name in refresh}
         self.max_attempts = max_attempts
         self.retry_after = retry_after
+        #: The time every plan and run made from this context reads licences and
+        #: embargoes at, fixed when it is built.
+        self.now = now if now is not None else datetime.now(timezone.utc)
 
     def refreshing(self, stage: str, source: str = "") -> bool:
         """Whether the operator asked for this work to be redone.
