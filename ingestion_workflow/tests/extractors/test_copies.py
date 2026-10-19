@@ -106,9 +106,14 @@ def _ace(fixture: str, doi: str) -> DownloadResult:
                           success=True, files=files)
 
 
-def test_an_ace_page_that_names_a_preprint_doi_is_the_preprint_at_its_server():
+@pytest.mark.parametrize("fixture", [
+    "ace_biorxiv_2025_01_06_631538",
+    # its DOI in `dc.identifier` only
+    "ace_biorxiv_dc_identifier_only",
+])
+def test_an_ace_page_that_names_a_preprint_doi_is_the_preprint_at_its_server(fixture):
     """2ryj476u7i43's page ACE read is bioRxiv's."""
-    held = _ace("ace_biorxiv_2025_01_06_631538", "10.1101/2025.01.06.631538")
+    held = _ace(fixture, "10.1101/2025.01.06.631538")
 
     assert copy_of(held) == DownloadCopy(
         route=CopyRoute.preprint_server, version=CopyVersion.submitted,

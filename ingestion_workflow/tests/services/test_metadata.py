@@ -1059,6 +1059,21 @@ def test_a_batch_semantic_scholar_knows_none_of_is_an_answer(tmp_path):
 
 
 @pytest.mark.vcr()
+def test_another_400_from_semantic_scholar_is_a_refusal(tmp_path):
+    """The batch endpoint's 400 for another reason than knowing none of the ids is no answer
+    about the article (the cassette is the one above, its error edited)."""
+    unknown = Identifier(doi="10.1016/j.neuroimage.2020.116616")
+    client = SemanticScholarClient(os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"))
+    unanswered = {}
+    found = MetadataService(_licence_settings(tmp_path))._cached(
+        "semantic_scholar", client, [unknown], unanswered)
+
+    assert found == {}
+    assert unanswered[unknown.slug]["semantic_scholar"].startswith(
+        "refused the request (400 Client Error: Bad Request")
+
+
+@pytest.mark.vcr()
 def test_semantic_scholar_is_asked_once_when_it_refuses(tmp_path):
     """A key it does not accept is refused with 403, which asking again does not change: the
     cassette holds one request, and replaying a second would fail."""
