@@ -5,19 +5,7 @@ from __future__ import annotations
 import pytest
 
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
-from ingestion_workflow.pipeline.stages.analyses import _worth_parsing
 from ingestion_workflow.pipeline.stages.triage import TriageStage, _most_tables
-
-
-class _Table:
-    def __init__(self, table_id, path="", caption="", footer="",
-                 coordinates=(), contains_coordinates=False):
-        self.table_id = table_id
-        self.raw_content_path = path
-        self.caption = caption
-        self.footer = footer
-        self.coordinates = list(coordinates)
-        self.contains_coordinates = contains_coordinates
 
 
 def test_triage_runs_after_metadata_and_before_analyses():
@@ -97,22 +85,6 @@ def test_ace_is_read_only_when_nothing_else_found_a_table():
     assert _most_tables({"ace": ace, "pdf": pdf}) is pdf
     assert _most_tables({"ace": ace, "pdf": _Art("pdf", 0)}) is ace
     assert _most_tables({"ace": ace}) is ace
-
-
-def test_analyses_sends_exactly_what_triage_passed():
-    passed = {"t2"}
-    tables = [_Table("t1", contains_coordinates=True), _Table("t2"), _Table("t3")]
-    kept = [t.table_id for t in tables if _worth_parsing(t, passed)]
-    assert kept == ["t2"]
-
-
-def test_an_article_triage_has_not_reached_falls_back_rather_than_dropping():
-    """None and an empty set mean different things: nothing decided yet, and
-    nothing worth a call. Treating the first as the second would silently drop
-    every table of every article triage has not reached."""
-    holds = _Table("t1", contains_coordinates=True)
-    assert _worth_parsing(holds, None) is True
-    assert _worth_parsing(holds, set()) is False
 
 
 # -- the chain: extract -> triage -> analyses -----------------------------

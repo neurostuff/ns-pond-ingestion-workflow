@@ -158,12 +158,3 @@ def _plan_batch(ctx: Context, stage: Stage, batch: List[ArticleRef]) -> StagePla
     artifacts = ctx.catalog.artifacts(ids, stage.name)
     upstream = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
     return stage.plan(ctx, batch, artifacts, upstream)
-
-
-def outcomes_for_exception(
-    works, stage: str, exc: BaseException
-) -> Iterator[Outcome]:
-    """Turn an executor-level blow-up into per-article failures, not a lost batch."""
-    message = f"{type(exc).__name__}: {exc}"
-    for work in works:
-        yield Outcome.failure(work.article_id, stage, work.source, message)

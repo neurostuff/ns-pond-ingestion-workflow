@@ -6,10 +6,9 @@ import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from typing import Dict, Iterator, List, Optional, Sequence, Set
+from typing import Dict, Iterator, List, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.extractors.table_heuristics import looks_like_coordinate_table
 from ingestion_workflow.models import ArticleExtractionBundle, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.prompts.coordinate_parsing import COORDINATE_PARSING_PROMPT_VERSION
@@ -160,7 +159,7 @@ class AnalysesStage:
             content = ExtractedContent.from_dict(payload)
             content.identifier = work.ref.identifier
             content.slug = work.ref.identifier.slug
-            tables = [t for t in content.tables if _worth_parsing(t, passed)]
+            tables = [t for t in content.tables if t.table_id in passed]
             if not tables:
                 # Triage named a table this extraction no longer has.
                 yield Outcome(
@@ -235,23 +234,3 @@ class AnalysesStage:
                 **({"unread": unread} if unread else {}),
             },
         )
-
-
-def _worth_parsing(table, passed: Optional[Set[str]] = None) -> bool:
-    """Whether this table earns a model call.
-
-    `triage` decides it when it has run: it serialises the table, reads what it
-    can, and puts the rest to a gate fitted on hand-adjudicated tables. That is
-    a better answer than anything here, and it is recorded per table, so the
-    set of ids it passed is all this needs.
-
-    The fallback below is what ran before triage existed, kept for a catalog
-    that has no triage artifact yet. It is a word search over the caption and
-    the first forty lines, and it cannot tell an odds ratio beside its interval
-    from a coordinate, which is most of what it lets through.
-    """
-    if passed is not None:
-        return table.table_id in passed
-    if table.contains_coordinates or table.coordinates:
-        return True
-    return looks_like_coordinate_table(table)
