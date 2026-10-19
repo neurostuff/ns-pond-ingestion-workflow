@@ -24,6 +24,7 @@ class OaHosts:
     def __init__(self) -> None:
         self.works: list[dict] = []
         self.s2: dict[str, str] = {}  # "DOI:..." -> openAccessPdf url
+        self.s2_licenses: dict[str, str] = {}  # "DOI:..." -> openAccessPdf license
         self.files: dict[str, list[tuple[int, bytes, dict]]] = {}
         self.openalex_status = 200
         self.openalex_failing_types: set[str] = set()
@@ -68,7 +69,9 @@ class OaHosts:
                 ids = json.loads(self.rfile.read(length))["ids"]
                 hosts.s2_queries.append(ids)
                 records = [
-                    {"title": "t", "openAccessPdf": {"url": hosts.s2[i]}} if i in hosts.s2
+                    {"title": "t", "openAccessPdf": {"url": hosts.s2[i],
+                                                     "license": hosts.s2_licenses.get(i)}}
+                    if i in hosts.s2
                     else None
                     for i in ids
                 ]
@@ -101,9 +104,11 @@ def _id_of(work: dict, id_type: str) -> str | None:
     return value.rsplit("doi.org/" if id_type == "doi" else "/", 1)[1] if value else None
 
 
-def location(pdf_url=None, kind="journal", landing=None, version="publishedVersion", name=None):
+def location(pdf_url=None, kind="journal", landing=None, version="publishedVersion", name=None,
+             license=None):
     """An OpenAlex location as the API returns it."""
     return {
+        "license": license,
         "is_oa": True,
         "pdf_url": pdf_url,
         "landing_page_url": landing,

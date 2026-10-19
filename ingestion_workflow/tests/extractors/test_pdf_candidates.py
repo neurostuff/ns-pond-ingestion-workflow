@@ -1404,3 +1404,57 @@ def test_a_real_refused_landing_page_counts_toward_leaving_its_host(stub, tmp_pa
     assert attempt["dead"] is True
     assert extractor._hosts._refusals["doaj.org"] == 1
     assert vcr.all_played
+
+
+# -- the licence a listing states for the copy --------------------------------------
+
+
+def test_a_fetched_copy_records_the_licence_openalex_listed_for_it(stub, tmp_path):
+    url = stub.serve("/repo/a.pdf", (200, PDF))
+    stub.work("10.1234/a", location(url, "repository", license="cc-by-nc"))
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    (attempt,) = result.url_attempts
+    assert (attempt["license"], attempt["license_by"]) == ("cc-by-nc", "openalex")
+    copy = _stage_outcome(tmp_path, result).summary["copy"]
+    assert (copy["license"], copy["license_by"]) == ("cc-by-nc", "openalex")
+
+
+def test_a_fetched_copy_records_the_licence_semantic_scholar_states_for_it(stub, tmp_path):
+    url = stub.serve("/repo/a.pdf", (200, PDF))
+    stub.s2["DOI:10.1234/a"] = url
+    stub.s2_licenses["DOI:10.1234/a"] = "CCBYNC"
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    (attempt,) = result.url_attempts
+    assert (attempt["license"], attempt["license_by"]) == ("CCBYNC", "semantic_scholar")
+
+
+def test_a_copy_listed_with_no_licence_records_none(stub, tmp_path):
+    url = stub.serve("/repo/a.pdf", (200, PDF))
+    stub.work("10.1234/a", location(url, "repository"))
+    stub.s2["DOI:10.1234/a"] = url
+
+    result = _download(pdf_source(tmp_path), "10.1234/a")[0]
+
+    (attempt,) = result.url_attempts
+    assert "license" not in attempt and "license_by" not in attempt
+    assert "license" not in _stage_outcome(tmp_path, result).summary["copy"]
+
+
+def test_a_url_both_providers_list_keeps_the_licence_either_states_with_its_provider():
+    url = "https://example.org/a.pdf"
+    unlicensed = PdfCandidate(url, "openalex", "repository")
+    licensed = PdfCandidate(url, "semantic_scholar", "unknown", license="CCBY",
+                            license_by="semantic_scholar")
+
+    for listings in ([unlicensed, licensed], [licensed, unlicensed]):
+        (merged,) = _try_order(listings)
+        assert (merged.provider, merged.license, merged.license_by) == (
+            "openalex", "CCBY", "semantic_scholar")
+
+    both = PdfCandidate(url, "openalex", "repository", license="cc-by", license_by="openalex")
+    (merged,) = _try_order([both, licensed])
+    assert (merged.license, merged.license_by) == ("cc-by", "openalex")

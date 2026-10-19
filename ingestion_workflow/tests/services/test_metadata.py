@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import threading
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -543,7 +544,8 @@ class TestLicences:
     @pytest.mark.vcr("TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml")
     def test_a_held_pdf_takes_the_licence_its_location_is_listed_with(self, tmp_path):
         """The same answers, with Wiley's open PDF held instead: its licence is the one
-        OpenAlex lists for that URL, and it is no longer a reported copy."""
+        OpenAlex listed for that URL when the PDF was fetched, which its copy records, and
+        it is no longer a reported copy."""
         from ingestion_workflow.models import DownloadCopy
         from ingestion_workflow.services.metadata import HeldDownload
         from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
@@ -553,7 +555,8 @@ class TestLicences:
         extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PDF,
                                      identifier=identifier)
         pdf = HeldDownload("pdf", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
-                                               access=CopyAccess.public, url=url))
+                                               access=CopyAccess.public, url=url,
+                                               license="cc-by-nc", license_by="openalex"))
         service = MetadataService(_licence_settings(tmp_path))
         meta = _enrich(service, [extracted], {extracted.slug: [pdf]})[extracted.slug]
 
@@ -975,14 +978,14 @@ def test_a_merged_abstract_s_provider_survives_the_artifact():
     assert (reloaded.source, reloaded.abstract_provider) == ("semantic_scholar", "pubmed")
 
 
-def _decided(works, paper_work=None, crossref=None):
+def _decided(works, paper_work=None, crossref=None, now=None):
     """`_decide_licenses` for a paper no download holds, from OpenAlex's `works`."""
     from ingestion_workflow.services.metadata import _decide_licenses
     from study_schema.models.paper_parse import ArticleIdentifiers
 
     meta = ArticleMetadata(title="T")
     _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None,
-                     crossref or {}, works, paper_work, {}, [], {})
+                     crossref or {}, works, paper_work, {}, [], {}, now or datetime.now(timezone.utc))
     return meta
 
 
@@ -1102,3 +1105,20 @@ def test_a_refused_request_is_not_an_outage(tmp_path):
     assert str(undecided).startswith(
         "the licence of the ace copy is undecided: crossref refused the request (400")
     assert (undecided.sources, undecided.outage) == (("crossref",), False)
+
+
+def test_an_article_with_two_dois_is_embargoed_until_the_first_deposit_starts():
+    """Two DOIs' manuscript deposits, as Crossref had them on 2026-10-19, start on
+    2027-04-07 and on 2026-11-25."""
+    meta = _decided([], crossref={
+        "10.1016/j.tics.2025.09.002": {"license": [
+            {"URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
+             "content-version": "am", "start": {"date-time": "2027-04-07T00:00:00Z"}}]},
+        "10.1016/j.cogpsych.2025.101768": {"license": [
+            {"URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
+             "content-version": "am", "start": {"date-time": "2026-11-25T00:00:00Z"}}]},
+    }, now=datetime(2026, 10, 19, tzinfo=timezone.utc))
+
+    assert meta.license_embargo_until == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert ArticleMetadata.from_dict(meta.to_dict()).license_embargo_until == \
+        meta.license_embargo_until

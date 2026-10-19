@@ -16,7 +16,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
 from lxml import etree
 from lxml import html as lxml_html
@@ -422,9 +422,26 @@ _CROSSREF_VERSIONS = {"vor": CopyVersion.vor, "am": CopyVersion.am, "unspecified
 _EARLIEST = datetime.min.replace(tzinfo=timezone.utc)
 
 
+def _started(entry: Mapping) -> datetime:
+    """When a Crossref deposit starts to apply; a deposit with no readable start always has."""
+    start = (entry.get("start") or {}).get("date-time") or ""
+    try:
+        return datetime.fromisoformat(start.replace("Z", "+00:00"))
+    except ValueError:
+        return _EARLIEST
+
+
+def _read(entries: Optional[Sequence[Mapping]]) -> Iterator[Tuple[Mapping, str, datetime]]:
+    """The deposits that name a licence for a version: each with its URL and its start."""
+    for entry in entries or []:
+        url = entry.get("URL")
+        if url and entry.get("content-version") in _CROSSREF_VERSIONS:
+            yield entry, str(url), _started(entry)
+
+
 def crossref_statements(entries: Optional[Sequence[Mapping]], now: Optional[datetime] = None,
                         preprint: bool = False) -> List[Statement]:
-    """One statement per version Crossref's `license` deposits for one DOI cover now.
+    """One statement per version Crossref's `license` deposits for one DOI cover at `now`.
 
     An embargoed deposit, starting in the future, is not yet in force; one with no start
     always is. Among a version's deposits in force the one taken names a licence over an
@@ -434,23 +451,24 @@ def crossref_statements(entries: Optional[Sequence[Mapping]], now: Optional[date
     """
     now = now or datetime.now(timezone.utc)
     best: Dict[Optional[CopyVersion], Tuple] = {}
-    for entry in entries or []:
-        kind, url = entry.get("content-version"), entry.get("URL")
-        if not url or kind not in _CROSSREF_VERSIONS:
-            continue
-        start = ((entry.get("start") or {}).get("date-time")) or ""
-        try:
-            started = datetime.fromisoformat(start.replace("Z", "+00:00"))
-        except ValueError:
-            started = _EARLIEST
+    for entry, url, started in _read(entries):
         if started > now:
             continue
-        found = stated(MetadataSource.crossref, str(url))
+        found = stated(MetadataSource.crossref, url)
         key = (found.license_id == LicenseId.other, -started.timestamp(), found.stated_as)
-        version = CopyVersion.submitted if preprint else _CROSSREF_VERSIONS[kind]
+        version = CopyVersion.submitted if preprint else _CROSSREF_VERSIONS[entry["content-version"]]
         if version not in best or key < best[version][0]:
             best[version] = (key, found)
     return [Statement(found, version) for version, (_, found) in best.items()]
+
+
+def crossref_embargo_end(entries: Optional[Sequence[Mapping]],
+                         now: Optional[datetime] = None) -> Optional[datetime]:
+    """When the first deposit `crossref_statements` leaves out at `now`, for being
+    embargoed, starts to apply; None when there is none."""
+    now = now or datetime.now(timezone.utc)
+    later = [started for _, _, started in _read(entries) if started > now]
+    return min(later, default=None)
 
 
 def license_of(
@@ -537,6 +555,7 @@ __all__ = [
     "Undecided",
     "cloud_license",
     "copyright_line",
+    "crossref_embargo_end",
     "crossref_statements",
     "elsevier_license",
     "jats_license",

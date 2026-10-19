@@ -117,6 +117,10 @@ class PdfCandidate:
     open_access: bool = True
     #: Other providers that listed the same URL.
     also_listed_by: Tuple[str, ...] = ()
+    #: The licence the listing states for the copy at the URL, as the provider gave it,
+    #: and the provider that gave it.
+    license: Optional[str] = None
+    license_by: Optional[str] = None
 
     def describe(self) -> Dict[str, object]:
         out: Dict[str, object] = {
@@ -130,6 +134,9 @@ class PdfCandidate:
             out["source"] = self.source
         if self.version:
             out["version"] = self.version
+        if self.license:
+            out["license"] = self.license
+            out["license_by"] = self.license_by
         return out
 
 
@@ -201,9 +208,17 @@ def _openalex_candidates(
                     version=loc.version,
                     landing_page=not loc.pdf_url,
                     open_access=loc.is_oa,
+                    license=loc.license,
+                    license_by="openalex" if loc.license else None,
                 )
             )
     return out
+
+
+def _s2_license(meta) -> Optional[str]:
+    """The licence Semantic Scholar states for its open-access PDF."""
+    pdf = meta.raw_metadata["semantic_scholar"].get("openAccessPdf")
+    return (pdf.get("license") or None) if isinstance(pdf, dict) else None
 
 
 def _url_key(url: str) -> str:
@@ -220,6 +235,7 @@ def _merge(first: PdfCandidate, other: PdfCandidate) -> PdfCandidate:
     """
     if first.location_type == "unknown" and other.location_type != "unknown":
         first, other = other, first
+    lender = first if first.license else other
     listed_by = first.also_listed_by + tuple(
         p for p in (other.provider, *other.also_listed_by)
         if p != first.provider and p not in first.also_listed_by
@@ -231,6 +247,8 @@ def _merge(first: PdfCandidate, other: PdfCandidate) -> PdfCandidate:
         landing_page=first.landing_page and other.landing_page,
         open_access=first.open_access or other.open_access,
         also_listed_by=listed_by,
+        license=lender.license,
+        license_by=lender.license_by,
     )
 
 
@@ -645,16 +663,14 @@ class PdfExtractor(BaseExtractor):
             return {}
         client = SemanticScholarClient(api_key)
 
+        def candidate(meta):
+            licence = _s2_license(meta)
+            return PdfCandidate(
+                url=meta.pdf_url, provider="semantic_scholar", location_type="unknown",
+                license=licence, license_by="semantic_scholar" if licence else None)
+
         def candidates(metadata):
-            return {
-                slug: [
-                    PdfCandidate(
-                        url=meta.pdf_url, provider="semantic_scholar", location_type="unknown"
-                    )
-                ]
-                for slug, meta in metadata.items()
-                if meta.pdf_url
-            }
+            return {slug: [candidate(meta)] for slug, meta in metadata.items() if meta.pdf_url}
 
         try:
             return candidates(client.get_metadata(list(identifiers)))

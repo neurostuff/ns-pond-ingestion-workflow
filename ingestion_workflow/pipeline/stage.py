@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Protocol, Sequence
+from typing import Callable, Dict, Iterator, List, Optional, Protocol, Sequence
 
 from ingestion_workflow.catalog import (
     ArticleRef,
@@ -90,12 +90,14 @@ class Context:
         refresh: Sequence[str] = (),
         max_attempts: int = 3,
         retry_after: timedelta = timedelta(days=1),
+        now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     ) -> None:
         self.settings = settings
         self.catalog = catalog
         self.refresh = {name.lower() for name in refresh}
         self.max_attempts = max_attempts
         self.retry_after = retry_after
+        self.now = now
 
     def refreshing(self, stage: str, source: str = "") -> bool:
         """Whether the operator asked for this work to be redone.

@@ -14,6 +14,7 @@ from ingestion_workflow.services.licenses import (
     Statement,
     Undecided,
     copyright_line,
+    crossref_embargo_end,
     crossref_statements,
     elsevier_license,
     jats_license,
@@ -596,3 +597,29 @@ def test_a_source_that_did_not_answer_before_the_deciding_one_leaves_it_undecide
     # nobody but itself speaks for a copy of no known version
     assert license_of(None, None, {}, {CROSSREF, OPENALEX}) == ASSUMED
     assert license_of(CopyVersion.vor, None, {}, set()) == ASSUMED
+
+
+def test_the_embargo_ends_when_the_first_deposit_not_in_force_starts():
+    """10.1016/j.cogpsych.2025.101768, as Elsevier deposited it on 2026-10-19: manuscript
+    terms from 2026-11-25. Its mining and sharing deposits are never read, so they end
+    nothing."""
+    entries = [
+        _deposit("http://www.elsevier.com/open-access/userlicense/1.0/", "am",
+                 "2026-11-25T00:00:00Z"),
+        _deposit("https://www.elsevier.com/tdm/userlicense/1.0/", "tdm", "2026-12-01T00:00:00Z"),
+        _deposit("https://doi.org/10.15223/policy-017", "stm-asf", "2026-11-01T00:00:00Z"),
+        _deposit("http://creativecommons.org/licenses/by/4.0/", "vor", "2027-03-01T00:00:00Z"),
+    ]
+
+    assert crossref_embargo_end(entries, NOW) == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries[::-1], NOW) == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries, datetime(2026, 11, 25, tzinfo=timezone.utc)) == \
+        datetime(2027, 3, 1, tzinfo=timezone.utc)
+    assert crossref_embargo_end(entries, datetime(2027, 3, 1, tzinfo=timezone.utc)) is None
+
+
+def test_deposits_in_force_or_with_no_start_end_no_embargo():
+    assert crossref_embargo_end([{"URL": "https://creativecommons.org/licenses/by/4.0/",
+                                  "content-version": "vor"}], NOW) is None
+    assert crossref_embargo_end([], NOW) is None
+    assert crossref_embargo_end(None, NOW) is None
