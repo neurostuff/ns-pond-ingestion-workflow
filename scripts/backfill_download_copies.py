@@ -8,10 +8,13 @@ the same rule (`extractors.copies.copy_of`), reading each download's payload and
     python scripts/backfill_download_copies.py <catalog root> --apply --backup <path>
 
 Run it where the pipeline runs: a download's files may be stored relative to there, and
-its settings give the OpenAlex email or key. A PDF fetched from a URL no provider typed
-is typed by the work's OpenAlex locations on the same site, as the pdf source now
-records when it fetches one (`pdf_extractor.site_type`); this asks OpenAlex for those
-works' locations, in a dry run too.
+its settings give the OpenAlex key (no email is sent) and the metadata cache. A PDF
+download records, as the pdf source now does when it fetches one, the licence its URL was
+listed with (`PdfCandidate.license`): OpenAlex's, from its locations of the work, which
+this asks for in a dry run too (those locations also type a URL no provider typed,
+`pdf_extractor.site_type`), else Semantic Scholar's `openAccessPdf`, read offline from
+the metadata cache. A download's licence is not in the metadata fingerprint, so run this
+before the metadata stage decides the licences.
 
 A dry run opens the catalog read-only and prints what it would record, counted by
 source, route, version and access. --apply first copies the catalog to `--backup`, a
@@ -50,6 +53,7 @@ from ingestion_workflow.config import load_settings  # noqa: E402
 from ingestion_workflow.extractors.copies import copy_of  # noqa: E402
 from ingestion_workflow.extractors.pdf_extractor import (  # noqa: E402
     _openalex_candidates,
+    _url_key,
     site_type,
 )
 from ingestion_workflow.models import (  # noqa: E402
@@ -96,41 +100,66 @@ def copies_of(root: Path, rows: Sequence[Row], workers: int) -> List[Found]:
         return [found for done in pool.map(_chunk, chunks) for found in done]
 
 
+def _semantic_scholar_license(cache: Path, slug: str, url: str) -> Optional[str]:
+    """The licence the cached Semantic Scholar record lists for its open-access PDF at
+    `url`."""
+    path = cache / f"{slug}.json"
+    if not path.exists():
+        return None
+    listed = json.loads(path.read_text(encoding="utf-8"))["raw_metadata"].get(
+        "semantic_scholar", {}).get("openAccessPdf")
+    if isinstance(listed, dict) and listed.get("url") and _url_key(listed["url"]) == _url_key(url):
+        return listed.get("license") or None
+    return None
+
+
 def typed_by_site(root: Path, rows: Sequence[Row], found: List[Found],
-                  openalex: OpenAlexClient, out) -> List[Found]:
-    """`found`, with each untyped PDF's copy typed by its work's OpenAlex locations."""
+                  openalex: OpenAlexClient, semantic_scholar: Path, out) -> List[Found]:
+    """`found`, with each PDF that has a URL recording the licence its URL was listed with
+    (OpenAlex's, else the cached Semantic Scholar's) and an untyped one typed by its work's
+    OpenAlex locations."""
     blobs = BlobStore(Path(root) / "blobs")
-    untyped = {i: DownloadResult.from_dict(blobs.get(rows[i][2]))
-               for i, (_, source, _, copy, _) in enumerate(found)
-               if source == DownloadSource.PDF.value and copy is not None
-               and copy["route"] == CopyRoute.unrecorded.value and "url" in copy}
-    if not untyped:
+    pdfs = {i: (DownloadResult.from_dict(blobs.get(rows[i][2])),
+                copy["route"] == CopyRoute.unrecorded.value)
+            for i, (_, source, _, copy, _) in enumerate(found)
+            if source == DownloadSource.PDF.value and copy is not None and "url" in copy}
+    if not pdfs:
         return found
     failed: Dict[str, str] = {}
     try:
-        listed = openalex.get_locations(Identifiers([r.identifier for r in untyped.values()]))
+        listed = openalex.get_locations(Identifiers([r.identifier for r, _ in pdfs.values()]))
     except LocationLookupFailed as exc:
         failed = exc.failed
         for slug, why in exc.failed.items():
-            print(f"untyped\t{slug}\tOpenAlex lookup failed: {why}", file=out)
+            print(f"listed\t{slug}\tOpenAlex lookup failed: {why}", file=out)
         listed = exc.found
     candidates = _openalex_candidates(listed)
     typed = list(found)
-    for i, result in untyped.items():
-        if result.identifier.slug in failed:
-            # Typed from no locations it would be recorded as unrecorded, and the next
+    for i, (result, untyped) in pdfs.items():
+        slug = result.identifier.slug
+        if slug in failed:
+            # Recorded from no locations the copy would lack its licence, and the next
             # run skips a recorded row; unwritten, a rerun retries the lookup.
             typed[i] = (*found[i][:3], None, "OpenAlex lookup failed")
             continue
         attempt = [a for a in result.url_attempts if a.get("outcome") == "pdf"][-1]
-        attempt["site_type"] = site_type(str(attempt.get("pdf_url") or attempt["url"]),
-                                         candidates.get(result.identifier.slug, []))
+        if untyped:
+            attempt["site_type"] = site_type(str(attempt.get("pdf_url") or attempt["url"]),
+                                             candidates.get(slug, []))
+        # The listing at the attempt's URL, as the fetch matched it.
+        here = [c for c in candidates.get(slug, []) if _url_key(c.url) == _url_key(attempt["url"])]
+        openalex_license = next((c.license for c in here if c.license), None)
+        license = openalex_license or _semantic_scholar_license(
+            semantic_scholar, slug, str(attempt["url"]))
+        if license:
+            attempt["license"] = license
+            attempt["license_by"] = "openalex" if openalex_license else "semantic_scholar"
         article_id, source, summary, _, _ = found[i]
         typed[i] = (article_id, source, summary, copy_of(result).to_dict(), None)
     return typed
 
 
-def run(root: Path, *, openalex: OpenAlexClient, apply: bool = False,
+def run(root: Path, *, openalex: OpenAlexClient, semantic_scholar: Path, apply: bool = False,
         backup: Optional[Path] = None, workers: int = 1, out=sys.stdout) -> Counter:
     path = Path(root) / "catalog.sqlite"
     if not path.exists():
@@ -140,6 +169,7 @@ def run(root: Path, *, openalex: OpenAlexClient, apply: bool = False,
     conn = (sqlite3.connect(path, isolation_level=None) if apply
             else sqlite3.connect(f"file:{path}?mode=ro", uri=True))
     counts: Counter = Counter()
+    licensed: Counter = Counter()
     try:
         rows = conn.execute(
             "SELECT article_id, source, blob, summary FROM artifacts "
@@ -150,7 +180,8 @@ def run(root: Path, *, openalex: OpenAlexClient, apply: bool = False,
             # Not Catalog.open, which would migrate an older catalog first.
             catalog = Catalog(conn, Path(root))
             print(f"catalog backed up to {catalog.backup(backup)}", file=out)
-        found = typed_by_site(root, todo, copies_of(root, todo, workers), openalex, out)
+        found = typed_by_site(root, todo, copies_of(root, todo, workers), openalex,
+                              semantic_scholar, out)
         with catalog._write() if apply else nullcontext(conn):
             for article_id, source, summary, copy, why in found:
                 if copy is None:
@@ -167,11 +198,15 @@ def run(root: Path, *, openalex: OpenAlexClient, apply: bool = False,
                     continue
                 key = (source, copy["route"], copy.get("version", "-"), copy["access"])
                 counts["\t".join(key)] += 1
+                if "license" in copy:
+                    licensed[copy["license_by"]] += 1
     finally:
         conn.close()
     print("source\troute\tversion\taccess\tdownloads", file=out)
     for key, n in sorted(counts.items()):
         print(f"{key}\t{n}", file=out)
+    for by, n in sorted(licensed.items()):
+        print(f"licence listed by {by}\t{n}", file=out)
     print("applied" if apply else "dry run, nothing written", file=out)
     return counts
 
@@ -183,12 +218,15 @@ def main(argv=None) -> int:
     parser.add_argument("--backup", type=Path, help="where --apply copies the catalog first")
     parser.add_argument("--workers", type=int, default=1, help="processes reading downloads")
     args = parser.parse_args(argv)
-    openalex = OpenAlexClient.from_settings(load_settings())
-    if openalex is None:
-        raise SystemExit("set openalex_email or openalex_api_key: untyped PDFs are typed "
-                         "by their works' OpenAlex locations")
-    run(args.catalog, openalex=openalex, apply=args.apply, backup=args.backup,
-        workers=args.workers)
+    settings = load_settings()
+    if not settings.openalex_api_key:
+        raise SystemExit("set openalex_api_key: PDFs are typed and licensed by their works' "
+                         "OpenAlex locations")
+    cache = settings.get_cache_dir("metadata") / "semantic_scholar"
+    if not cache.is_dir():
+        raise SystemExit(f"no Semantic Scholar metadata cache at {cache}")
+    run(args.catalog, openalex=OpenAlexClient(api_key=settings.openalex_api_key),
+        semantic_scholar=cache, apply=args.apply, backup=args.backup, workers=args.workers)
     return 0
 
 

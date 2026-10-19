@@ -18,102 +18,6 @@ interactions:
     uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
   response:
     body:
-      string: '{"message": "Too Many Requests. Please wait and try again or apply
-        for a key for higher rate limits. https://www.semanticscholar.org/product/api#api-key-form",
-        "code": "429"}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '174'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 19 Oct 2026 20:12:12 GMT
-      Via:
-      - 1.1 5538280951642fc71308aa997730220e.cloudfront.net (CloudFront)
-      X-Amz-Cf-Id:
-      - BAPOVOK3YgUwcAvTG5DRyMfFZAfXZQ-XLvNJPNFqGuQ9Xx12IPNYRQ==
-      X-Amz-Cf-Pop:
-      - DFW57-P1
-      X-Cache:
-      - Error from cloudfront
-      x-amz-apigw-id:
-      - FgfwhFZhvHcEvjA=
-      x-amzn-ErrorType:
-      - TooManyRequestsException
-      x-amzn-RequestId:
-      - 0d433520-b6c1-4778-bfe6-cd2b99e40f6a
-    status:
-      code: 429
-      message: ''
-- request:
-    body: '{"ids": ["DOI:10.1515/cogsem-2026-3005"]}'
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '41'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: POST
-    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
-  response:
-    body:
-      string: '{"message": "Too Many Requests. Please wait and try again or apply
-        for a key for higher rate limits. https://www.semanticscholar.org/product/api#api-key-form",
-        "code": "429"}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '174'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 19 Oct 2026 20:12:13 GMT
-      Via:
-      - 1.1 73e04d645babcbb9ee8f20cc865b009c.cloudfront.net (CloudFront)
-      X-Amz-Cf-Id:
-      - s3zcMYZ-QLjji0Jl5eD0GtZ3SmghXeEHSj_KeNRbxDyB-W8MlAbBIA==
-      X-Amz-Cf-Pop:
-      - DFW57-P1
-      X-Cache:
-      - Error from cloudfront
-      x-amz-apigw-id:
-      - FgfwtFJFPHcEVrQ=
-      x-amzn-ErrorType:
-      - TooManyRequestsException
-      x-amzn-RequestId:
-      - 1632ca2a-6597-477a-bbbe-987447111cb3
-    status:
-      code: 429
-      message: ''
-- request:
-    body: '{"ids": ["DOI:10.1515/cogsem-2026-3005"]}'
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '41'
-      Content-Type:
-      - application/json
-      User-Agent:
-      - python-requests/2.34.2
-    method: POST
-    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
-  response:
-    body:
       string: '[{"paperId": "89e036e186252b9c59e16ee3a0fcd0dea6b5500d", "title": "Stability
         and variation in selfhood in Russian-Swedish bilinguals: a cognitive-semiotic
         approach", "venue": "", "year": 2026, "isOpenAccess": false, "openAccessPdf":
@@ -140,27 +44,27 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Oct 2026 20:12:15 GMT
+      - Mon, 19 Oct 2026 21:15:49 GMT
       Via:
-      - 1.1 e9bcf307d6ed54e3e501e39bc538dcfc.cloudfront.net (CloudFront)
+      - 1.1 e665d09233240df4d3172e59222e0ba2.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 5NpS11vHxDqsOOx8THScNP1tWqSpO_JYEiVYwtKLhgj1YcY-StQkRg==
+      - 13FtLMjXXvF2G3dcij8uFeBSN9M9HBFnH34eqaAXzPvwfKNw_y73bg==
       X-Amz-Cf-Pop:
       - DFW57-P1
       X-Cache:
       - Miss from cloudfront
       x-amz-apigw-id:
-      - FgfxCHP4PHcEZxg=
+      - FgpE9Hh7vHcEcxA=
       x-amzn-Remapped-Connection:
       - keep-alive
       x-amzn-Remapped-Content-Length:
       - '1084'
       x-amzn-Remapped-Date:
-      - Mon, 19 Oct 2026 20:12:15 GMT
+      - Mon, 19 Oct 2026 21:15:49 GMT
       x-amzn-Remapped-Server:
       - gunicorn
       x-amzn-RequestId:
-      - 99355eeb-8fbc-4c2c-8063-512244edd2cc
+      - 160a3955-8062-4332-a775-17d900621676
     status:
       code: 200
       message: OK
@@ -186,7 +90,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Oct 2026 20:12:16 GMT
+      - Mon, 19 Oct 2026 21:15:49 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -228,14 +132,8 @@ interactions:
     uri: https://api.openalex.org/works?filter=doi%3A10.1515%2Fcogsem-2026-3005&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
-      string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. Get a free key
-        with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
-        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
-        with {\"email\": \"<your user''s email>\"}; we email them a link, and the
-        key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
-        "count": 0, "db_response_time_ms": 20, "page": 1, "per_page": 100, "groups_count":
-        null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
+      string: '{"meta": {"count": 0, "db_response_time_ms": 13, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
         "x_new_oql": "get works where DOI is 10.1515/cogsem-2026-3005", "oqo": {"get_rows":
         "works", "filter_rows": [{"column_id": "doi", "value": "10.1515/cogsem-2026-3005"}]},
         "url": "/works?filter=doi:10.1515%2Fcogsem-2026-3005&per_page=100"}, "cost_usd":
@@ -246,7 +144,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4d26fc8eff437ee-DFW
+      - a4d2cce52a264769-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -254,7 +152,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Oct 2026 20:12:16 GMT
+      - Mon, 19 Oct 2026 21:15:50 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -266,19 +164,19 @@ interactions:
       X-RateLimit-Credits-Used:
       - '1'
       X-RateLimit-Limit:
-      - '1000'
+      - '10000'
       X-RateLimit-Limit-USD:
-      - '0.1'
+      - '1'
       X-RateLimit-Onetime-Remaining:
       - '0'
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '997'
+      - '9752'
       X-RateLimit-Remaining-USD:
-      - '0.0997'
+      - '0.9752'
       X-RateLimit-Reset:
-      - '13664'
+      - '9850'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -293,9 +191,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792440736"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792440736"
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
     status:
       code: 200
       message: OK
@@ -332,7 +230,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4d26fcaad995db2-DFW
+      - a4d2cce6fe1b6b83-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -340,7 +238,7 @@ interactions:
       Content-Type:
       - text/html; charset=utf-8
       Date:
-      - Mon, 19 Oct 2026 20:12:16 GMT
+      - Mon, 19 Oct 2026 21:15:50 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -352,19 +250,19 @@ interactions:
       X-RateLimit-Credits-Used:
       - '0'
       X-RateLimit-Limit:
-      - '1000'
+      - '10000'
       X-RateLimit-Limit-USD:
-      - '0.1'
+      - '1'
       X-RateLimit-Onetime-Remaining:
       - '0'
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '997'
+      - '9752'
       X-RateLimit-Remaining-USD:
-      - '0.0997'
+      - '0.9752'
       X-RateLimit-Reset:
-      - '13664'
+      - '9850'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -379,9 +277,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792440736"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792440736"
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
     status:
       code: 404
       message: Not Found
@@ -400,14 +298,8 @@ interactions:
     uri: https://api.openalex.org/works?filter=doi%3A10.1515%2Fcogsem-2026-3005&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
-      string: '{"meta": {"notice": "No API key, so this request shares one free daily
-        budget ($0.10) with everyone on your network''s IP address. Get a free key
-        with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
-        to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
-        with {\"email\": \"<your user''s email>\"}; we email them a link, and the
-        key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
-        "count": 0, "db_response_time_ms": 17, "page": 1, "per_page": 100, "groups_count":
-        null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
+      string: '{"meta": {"count": 0, "db_response_time_ms": 11, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1515/cogsem-2026-3005",
         "x_new_oql": "get works where DOI is 10.1515/cogsem-2026-3005", "oqo": {"get_rows":
         "works", "filter_rows": [{"column_id": "doi", "value": "10.1515/cogsem-2026-3005"}]},
         "url": "/works?filter=doi:10.1515%2Fcogsem-2026-3005&per_page=100"}, "cost_usd":
@@ -418,7 +310,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4d26fcbadbaff98-DFW
+      - a4d2cce83a7ff68c-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -426,7 +318,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 19 Oct 2026 20:12:16 GMT
+      - Mon, 19 Oct 2026 21:15:50 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -438,19 +330,19 @@ interactions:
       X-RateLimit-Credits-Used:
       - '1'
       X-RateLimit-Limit:
-      - '1000'
+      - '10000'
       X-RateLimit-Limit-USD:
-      - '0.1'
+      - '1'
       X-RateLimit-Onetime-Remaining:
       - '0'
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '996'
+      - '9751'
       X-RateLimit-Remaining-USD:
-      - '0.0996'
+      - '0.9751'
       X-RateLimit-Reset:
-      - '13664'
+      - '9850'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -465,9 +357,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792440736"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792440736"
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
     status:
       code: 200
       message: OK
@@ -504,7 +396,7 @@ interactions:
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4d26fccbffd2e67-DFW
+      - a4d2cce93ac79603-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -512,7 +404,7 @@ interactions:
       Content-Type:
       - text/html; charset=utf-8
       Date:
-      - Mon, 19 Oct 2026 20:12:16 GMT
+      - Mon, 19 Oct 2026 21:15:50 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -524,19 +416,19 @@ interactions:
       X-RateLimit-Credits-Used:
       - '0'
       X-RateLimit-Limit:
-      - '1000'
+      - '10000'
       X-RateLimit-Limit-USD:
-      - '0.1'
+      - '1'
       X-RateLimit-Onetime-Remaining:
       - '0'
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '996'
+      - '9751'
       X-RateLimit-Remaining-USD:
-      - '0.0996'
+      - '0.9751'
       X-RateLimit-Reset:
-      - '13664'
+      - '9850'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -551,9 +443,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792440736"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792444550"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=%2B%2FCd5r%2FxxOITUUusnBfLJGCqitlT8TZKuscNb%2FoWJ5s%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792440736"
+      - heroku-nel="https://nel.heroku.com/reports?s=k5NxY6qGZkTNO3jkL6hI9VP7ffhLdRcSMikbR4r2UEw%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792444550"
     status:
       code: 404
       message: Not Found

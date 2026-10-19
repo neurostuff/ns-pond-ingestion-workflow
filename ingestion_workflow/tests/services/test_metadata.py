@@ -42,6 +42,9 @@ def metadata_service(test_settings):
     return _offline(MetadataService(test_settings))
 
 
+NOW = datetime(2026, 10, 19, tzinfo=timezone.utc)
+
+
 def _offline(service: MetadataService) -> MetadataService:
     """These tests patch the providers they read; Crossref and OpenAlex, which they do
     not, answer nothing rather than reach the network."""
@@ -54,7 +57,7 @@ def _enrich(service, contents, held=None):
     """`enrich_metadata` with each content's identifier's DOI as the catalog's."""
     dois = {c.slug: [c.identifier.doi] if c.identifier and c.identifier.doi else []
             for c in contents}
-    return service.enrich_metadata(contents, held or {}, dois)
+    return service.enrich_metadata(contents, held or {}, dois, NOW)
 
 
 def _with_openalex(tmp_path) -> MetadataService:
@@ -98,7 +101,7 @@ class TestMetadataService:
 
     def test_enrich_metadata_empty_list(self, metadata_service):
         """Test metadata enrichment with empty list."""
-        result = metadata_service.enrich_metadata([], {}, {})
+        result = metadata_service.enrich_metadata([], {}, {}, NOW)
         assert result == {}
 
     def test_enrich_metadata_with_mocked_s2(self, metadata_service):
@@ -962,7 +965,7 @@ def test_a_paper_presented_by_its_preprint_doi_takes_its_journal_s_licence(tmp_p
     identifier = Identifier(doi="10.1101/2020.03.25.008318")
     dois = ["10.1002/hbm.25137", "10.1101/2020.03.25.008318"]
     service = MetadataService(_licence_settings(tmp_path))
-    meta = service.enrich_metadata([_content(identifier)], {}, {identifier.slug: dois})[
+    meta = service.enrich_metadata([_content(identifier)], {}, {identifier.slug: dois}, NOW)[
         identifier.slug]
 
     assert service.undecided == {}
@@ -985,7 +988,7 @@ def _decided(works, paper_work=None, crossref=None, now=None):
 
     meta = ArticleMetadata(title="T")
     _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None,
-                     crossref or {}, works, paper_work, {}, [], {}, now or datetime.now(timezone.utc))
+                     crossref or {}, works, paper_work, {}, [], {}, now or NOW)
     return meta
 
 
@@ -1026,7 +1029,8 @@ def test_two_journal_dois_are_a_catalog_conflict_and_nothing_is_asked(test_setti
     identifier = Identifier(doi="10.1016/j.biopsych.2010.04.013")
     content = _content(identifier)
     found = service.enrich_metadata(
-        [content], {}, {content.slug: ["10.1016/j.biopsych.2010.04.013", "10.1038/mp.2009.121"]})
+        [content], {}, {content.slug: ["10.1016/j.biopsych.2010.04.013", "10.1038/mp.2009.121"]},
+        NOW)
     assert found == {} and service.undecided == {}
     assert service.conflicts == {content.slug: (
         "catalog conflict: the article holds two DOIs of a version of record, "
@@ -1109,16 +1113,61 @@ def test_a_refused_request_is_not_an_outage(tmp_path):
 
 def test_an_article_with_two_dois_is_embargoed_until_the_first_deposit_starts():
     """Two DOIs' manuscript deposits, as Crossref had them on 2026-10-19, start on
-    2027-04-07 and on 2026-11-25."""
+    2027-06-06 (the DOI that sorts first) and on 2027-04-07 (the one that sorts second)."""
     meta = _decided([], crossref={
+        "10.1016/j.cogsys.2026.101480": {"license": [
+            {"URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
+             "content-version": "am", "start": {"date-time": "2027-06-06T00:00:00Z"}}]},
         "10.1016/j.tics.2025.09.002": {"license": [
             {"URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
              "content-version": "am", "start": {"date-time": "2027-04-07T00:00:00Z"}}]},
-        "10.1016/j.cogpsych.2025.101768": {"license": [
-            {"URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
-             "content-version": "am", "start": {"date-time": "2026-11-25T00:00:00Z"}}]},
-    }, now=datetime(2026, 10, 19, tzinfo=timezone.utc))
+    })
 
-    assert meta.license_embargo_until == datetime(2026, 11, 25, tzinfo=timezone.utc)
+    assert meta.license_embargo_until == datetime(2027, 4, 7, tzinfo=timezone.utc)
     assert ArticleMetadata.from_dict(meta.to_dict()).license_embargo_until == \
         meta.license_embargo_until
+
+
+def _decided_with_held(download, now=NOW):
+    from ingestion_workflow.services.metadata import _decide_licenses
+    from study_schema.models.paper_parse import ArticleIdentifiers
+
+    meta = ArticleMetadata(title="T")
+    _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None, {}, [],
+                     None, {}, [download], {}, now)
+    return meta
+
+
+def test_a_page_s_manuscript_embargo_is_recorded_with_the_crossref_ones():
+    """10.1016/j.brainres.2019.02.029's page shares the accepted manuscript from 2020-03-04."""
+    from ingestion_workflow.models import DownloadCopy
+    from ingestion_workflow.services.metadata import HeldDownload
+    from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
+
+    page = Path(__file__).parents[1] / "data" / "licenses" / "pages" / (
+        "sciencedirect_brainres_2019_02_029.html")
+    held = HeldDownload("ace", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
+                                            access=CopyAccess.unrecorded), [page])
+
+    before = _decided_with_held(held, datetime(2020, 3, 3, tzinfo=timezone.utc))
+    after = _decided_with_held(held, datetime(2020, 3, 4, tzinfo=timezone.utc))
+
+    assert before.license_embargo_until == datetime(2020, 3, 4, tzinfo=timezone.utc)
+    assert after.license_embargo_until is None
+
+
+def test_a_held_copy_takes_the_licence_semantic_scholar_listed_for_it_as_semantic_scholar_s():
+    """10.1002/hbm.24703's open-access PDF as Semantic Scholar lists it: CCBYNCSA."""
+    from ingestion_workflow.models import DownloadCopy
+    from ingestion_workflow.services.metadata import HeldDownload
+    from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
+
+    held = HeldDownload("pdf", DownloadCopy(
+        route=CopyRoute.publisher, version=CopyVersion.vor, access=CopyAccess.public,
+        url="https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24703",
+        license="CCBYNCSA", license_by="semantic_scholar"))
+
+    found = _decided_with_held(held).copy_licenses["pdf"]
+
+    assert (found.license_id, found.stated_by, found.stated_as) == (
+        "cc-by-nc-sa", "semantic_scholar", "CCBYNCSA")

@@ -23,7 +23,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
@@ -64,6 +64,7 @@ from ingestion_workflow.services.licenses import (
     crossref_statements,
     license_of,
     own_license,
+    page_embargo,
     page_statements,
     stated,
 )
@@ -123,7 +124,7 @@ class MetadataService:
         extracted_contents: List[ExtractedContent],
         held: Mapping[str, Sequence[HeldDownload]],
         dois: Mapping[str, Sequence[str]],
-        now: Optional[datetime] = None,
+        now: datetime,
     ) -> Dict[str, ArticleMetadata]:
         """
         Enrich extracted contents with article metadata.
@@ -140,9 +141,9 @@ class MetadataService:
             by each: a journal's DOI for the version of record, a preprint server's for
             the preprint. An article with two journal DOIs is a catalog conflict: it is
             not asked about, and `conflicts` says why.
-        now : datetime, optional
-            The time Crossref's deposits are read at: one starting later is embargoed,
-            and its start is recorded as `license_embargo_until`.
+        now : datetime
+            The time the licence statements are read at: one starting later is embargoed,
+            and the earliest such start is recorded as `license_embargo_until`.
 
         Returns
         -------
@@ -152,7 +153,6 @@ class MetadataService:
             one of its licences did not answer or could not be read.
         """
         self.require_licence_providers()
-        now = now or datetime.now(timezone.utc)
         self.undecided = {}
         self.conflicts = {}
         if not extracted_contents:
@@ -800,10 +800,8 @@ def _decide_licenses(
         PAGE: [],
     }
     waiting = set(unanswered)
-    metadata.license_embargo_until = min(
-        (end for d in crossref
-         if (end := crossref_embargo_end((crossref[d] or {}).get("license"), now))),
-        default=None)
+    embargoes = [end for d in crossref
+                 if (end := crossref_embargo_end((crossref[d] or {}).get("license"), now))]
 
     def decide(what: str, version, own: Optional[License], waits) -> License:
         try:
@@ -820,7 +818,8 @@ def _decide_licenses(
     for download in held:
         try:
             own, unread = own_license(download.source, download.files), False
-            ranked = page_statements(download.source, download.files)
+            ranked = page_statements(download.source, download.files, now)
+            embargoes.append(page_embargo(download.source, download.files, now))
         except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
             own, ranked, unread = None, [], True
@@ -828,6 +827,7 @@ def _decide_licenses(
         if own is not None and own.stated_by != MetadataSource.publisher_page:
             statements[HELD].append(Statement(own, download.copy.version))
         statements[PAGE] += ranked
+    metadata.license_embargo_until = min((end for end in embargoes if end), default=None)
     # Every record is read before any copy is decided, so that each copy can take another's.
     for download, own, unread in records:
         listing = download.copy

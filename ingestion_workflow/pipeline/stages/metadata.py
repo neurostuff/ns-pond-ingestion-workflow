@@ -82,7 +82,7 @@ class MetadataStage:
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
             fp = self.fingerprint_for(downloads.get(ref.id, {}))
-            if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now()):
+            if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now):
                 plan.fresh += 1
                 continue
             extractions = [a for a in upstream.get(ref.id, {}).values() if a.status is Status.OK]
@@ -160,7 +160,7 @@ class MetadataStage:
         # Outside the batch's own failures: no article can be decided until it is configured.
         self.service.require_licence_providers()
         try:
-            found = self.service.enrich_metadata(contents, held, dois, ctx.now())
+            found = self.service.enrich_metadata(contents, held, dois, ctx.now)
         except Exception as exc:
             logger.warning("metadata batch failed: %s", exc)
             for work in by_slug.values():

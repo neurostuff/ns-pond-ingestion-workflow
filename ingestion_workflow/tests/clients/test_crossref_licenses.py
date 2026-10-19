@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from urllib.parse import unquote
 
 import pytest
@@ -9,6 +10,8 @@ from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.services.licenses import crossref_statements
 from study_schema.models.paper_parse import CopyVersion
+
+NOW = datetime(2026, 10, 18, tzinfo=timezone.utc)
 
 #: Each DOI's version-of-record licence as its publisher deposits it, read from Crossref
 #: on 2026-10-18; None where it deposits none for the version of record.
@@ -38,7 +41,7 @@ def test_every_doi_asked_is_answered_with_its_deposits_in_one_query():
     for identifier in identifiers:
         record = found[identifier.slug]
         assert record.source == "crossref"
-        vor = [s for s in crossref_statements(record.raw_metadata["crossref"]["license"])
+        vor = [s for s in crossref_statements(record.raw_metadata["crossref"]["license"], NOW)
                if s.version is CopyVersion.vor]
         assert [s.license.license_id for s in vor] == (
             [DEPOSITS[identifier.doi]] if DEPOSITS[identifier.doi] else []), identifier.doi
