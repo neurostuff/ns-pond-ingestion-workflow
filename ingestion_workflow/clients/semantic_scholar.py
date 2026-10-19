@@ -7,11 +7,13 @@ import time
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
+from study_schema.models.paper_parse import MetadataSource
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifiers
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.notices import PartialAnswer
 
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
@@ -283,14 +285,20 @@ class SemanticScholarClient:
             for i in range(0, len(request_ids), SEMANTIC_SCHOLAR_BATCH_SIZE)
         ]
 
+        failures: List[BaseException] = []
         for batch in batches:
             try:
                 response_data = self._request_metadata_batch(batch)
                 self._process_metadata_response(batch, response_data, request_map, results)
-            except Exception:
-                # Continue with other batches on failure
-                continue
+            except Exception as exc:  # noqa: BLE001
+                # Continue with other batches, and say so: an unanswered article is not
+                # one Semantic Scholar has nothing for.
+                failures.append(exc)
 
+        if failures:
+            first = failures[0]
+            raise PartialAnswer(f"Semantic Scholar: {type(first).__name__}: {first}", results,
+                                failures)
         return results
 
     @retry(
@@ -353,9 +361,8 @@ class SemanticScholarClient:
                 abstract=record.get("abstract"),
                 journal=record.get("venue"),
                 publication_year=record.get("year"),
-                open_access=record.get("isOpenAccess"),
                 pdf_url=pdf_url,
-                source="semantic_scholar",
+                source=MetadataSource.semantic_scholar.value,
                 raw_metadata={"semantic_scholar": record},
             )
 

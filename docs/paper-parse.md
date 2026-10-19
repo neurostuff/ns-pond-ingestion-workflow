@@ -24,11 +24,39 @@ triage rejected keeps that reading.
   `version`, `access`, and `url` and `preprint_server` where known. Sync fails for an article
   whose text's download is not ok, and stops when a download records no copy (run
   `scripts/backfill_download_copies.py` on such a catalog).
-- No stage decides a licence yet, so `text_copy.license` and `bibliography.license` are both
-  `all-rights-reserved`, `assumed`. Under it nothing may be passed on.
+- The licences come from the metadata stage, which decides one for every copy an ok
+  download holds, one for the paper, and one for each copy a provider lists that no
+  download holds (`reported_copies`). Sync fails for an article whose metadata record holds
+  no licence for the text's copy.
+- A licence is `stated` by the first source in this order that states one:
+  1. the copy's own record: PMC's cloud record (`pmc_cloud`), its JATS `<permissions>`
+     (`jats`) or Elsevier's `coredata` (`elsevier`), or, for a copy at a URL, the licence
+     OpenAlex or Semantic Scholar lists for that URL;
+  2. the own record of another held copy of the same version, the download sources in the
+     order they are tried;
+  3. for the version of record, Crossref's `vor` deposit for the journal's DOI, then
+     OpenAlex's location at the publisher, then a Crossref deposit that names no version;
+     for an accepted manuscript, Crossref's `am` deposit; for a preprint, the preprint
+     DOI's Crossref deposits, then OpenAlex's location at the preprint server.
+
+  A repository location and Semantic Scholar's open-access PDF describe only the copy at
+  their URL, never the version of record. Within one record a licence in study_schema's
+  list comes before an `other`; across sources, the earlier source decides. A JATS
+  `license_ref` with `specific-use="textmining"` is read like any other: PMC tags the
+  article's own licence that way. Crossref's `tdm` and `stm-asf` deposits grant mining or
+  sharing, not a licence, and are not read. Terms that grant only text mining (PMC's
+  `TDM`) are `all-rights-reserved`.
+- When no source states one, the licence is `all-rights-reserved`, `assumed`.
+- A licence is undecided, and the metadata artifact fails with the sources named, while a
+  source before the deciding one (or, for an assumed licence, any source in the order) did
+  not answer or could not be read. It fails, too, while OpenAlex or Semantic Scholar has
+  not answered, since the copies they list are then unknown. A provider's outage spends
+  none of the article's tries: it is asked again once the retry delay has passed.
+- `bibliography.license` is the version of record's licence, or the preprint's when
+  `publication_status` is `preprint`. `bibliography.oa_status` is OpenAlex's.
 - `bibliography.provider` is the metadata record's provider: `pubmed`, `semantic_scholar` or
   `openalex`, or `elsevier` and `jats` for the record read from a held Elsevier or JATS file.
-  An abstract is credited to the same provider (`abstract_provider`). A record that names no
+  `abstract_provider` is the provider whose abstract was kept. A record that names no
   provider is not parsed.
 - `header.identifiers` holds every DOI the catalog has for the article. A DOI that
   `utils/preprints.py` names a preprint server for is in `preprint_dois` with its server; the

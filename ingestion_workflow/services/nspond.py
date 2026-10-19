@@ -185,7 +185,6 @@ def _write_metadata(
         "abstract": metadata.abstract,
         "publication_year": metadata.publication_year,
         "coordinate_space": coordinate_space,
-        "license": metadata.license,
         "text": has_text,
     }
     _write_json(metadata_path, payload, overwrite)

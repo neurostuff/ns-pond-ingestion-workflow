@@ -1,4 +1,4 @@
-# Recorded 2026-10-17 with no email sent, then edited by hand: OpenAlex sends no ids.pmcid; W1985552279 was given a malformed one. 4 email address(es) in the bodies replaced by replay@example.com.
+# Recorded 2026-10-18 with no email sent, then edited by hand: OpenAlex sends no ids.pmcid; W1985552279 was given a malformed one. 4 email address(es) in the bodies replaced by replay@example.com.
 interactions:
 - request:
     body: null
@@ -12,448 +12,593 @@ interactions:
       User-Agent:
       - python-requests/2.34.2
     method: GET
-    uri: https://api.openalex.org/works?filter=title.search%3Aadolescent+marijuana+cortical&per_page=3&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Copen_access
+    uri: https://api.openalex.org/works?filter=title.search%3Aadolescent+marijuana+cortical&per_page=3&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
   response:
     body:
-      string: "{\"meta\": {\"notice\": \"No API key, so this request shares one free
-        daily budget ($0.10) with everyone on your network's IP address. Get a free
-        key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. Get a free key
+        with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY
         to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys
-        with {\\\"email\\\": \\\"<your user's email>\\\"}; we email them a link, and
-        the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt\",
-        \"count\": 8, \"db_response_time_ms\": 11, \"page\": 1, \"per_page\": 3, \"groups_count\":
-        null, \"x_query\": {\"oql\": \"get works where title has (adolescent marijuana
-        cortical)\", \"x_new_oql\": \"get works with (adolescent marijuana cortical)
-        in the title\", \"oqo\": {\"get_rows\": \"works\", \"filter_rows\": [{\"column_id\":
-        \"display_name.search\", \"value\": \"adolescent marijuana cortical\", \"operator\":
-        \"has\"}]}, \"url\": \"/works?filter=display_name.search:adolescent marijuana
-        cortical&per_page=3\"}, \"cost_usd\": 0.001}, \"results\": [{\"ids\": {\"openalex\":
-        \"https://openalex.org/W1985552279\", \"doi\": \"https://doi.org/10.1016/j.bbr.2011.02.001\",
-        \"mag\": \"1985552279\", \"pmid\": \"https://pubmed.ncbi.nlm.nih.gov/21310189\",
-        \"pmcid\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/1.x\"}, \"display_name\":
-        \"Altered prefrontal and insular cortical thickness in adolescent marijuana
-        users\", \"authorships\": [{\"author_position\": \"first\", \"author\": {\"id\":
-        \"https://openalex.org/A5073301645\", \"display_name\": \"Melissa Patricia
-        Lopez-Larson\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I223532165\", \"display_name\": \"University
-        of Utah\", \"ror\": \"https://ror.org/03r0ha626\", \"country_code\": \"US\",
-        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I223532165\"]},
-        {\"id\": \"https://openalex.org/I4210113540\", \"display_name\": \"VA Rocky
-        Mountain Network\", \"ror\": \"https://ror.org/01x6zzb23\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210113540\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": true, \"raw_author_name\":
-        \"Melissa P. Lopez-Larson\", \"raw_affiliation_strings\": [\"The Brain Institute,
-        University of Utah, Salt Lake City, UT 84108, USA. replay@example.com\", \"The
-        Brain Institute, University of Utah, Salt Lake City, UT, United States\",
-        \"University of Utah Medical School, Salt Lake City, UT, United States\",
-        \"VISN 19 MIRREC, Salt Lake City, UT, United States\"], \"raw_orcid\": null,
-        \"affiliations\": [{\"raw_affiliation_string\": \"The Brain Institute, University
-        of Utah, Salt Lake City, UT 84108, USA. replay@example.com\", \"institution_ids\":
-        [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\": \"The
-        Brain Institute, University of Utah, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\":
-        \"University of Utah Medical School, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\":
-        \"VISN 19 MIRREC, Salt Lake City, UT, United States\", \"institution_ids\":
-        [\"https://openalex.org/I4210113540\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5012744219\", \"display_name\":
-        \"Piotr Bogorodzki\", \"orcid\": \"https://orcid.org/0000-0001-6596-5274\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0001-6596-5274\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I108403487\", \"display_name\": \"Warsaw
-        University of Technology\", \"ror\": \"https://ror.org/00y0xnp53\", \"country_code\":
-        \"PL\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I108403487\"]}],
-        \"countries\": [\"PL\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Piotr Bogorodzki\", \"raw_affiliation_strings\": [\"Institute of Radioelectronics,
-        Warsaw Technical University, Warsaw, Poland\"], \"raw_orcid\": null, \"affiliations\":
-        [{\"raw_affiliation_string\": \"Institute of Radioelectronics, Warsaw Technical
-        University, Warsaw, Poland\", \"institution_ids\": [\"https://openalex.org/I108403487\"]}]},
-        {\"author_position\": \"middle\", \"author\": {\"id\": \"https://openalex.org/A5113539603\",
-        \"display_name\": \"Jadwiga Rogowska\", \"orcid\": null, \"observed_orcids\":
-        []}, \"institutions\": [{\"id\": \"https://openalex.org/I136199984\", \"display_name\":
-        \"Harvard University\", \"ror\": \"https://ror.org/03vek6s52\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I136199984\"]},
-        {\"id\": \"https://openalex.org/I2801148111\", \"display_name\": \"McLean
-        Hospital\", \"ror\": \"https://ror.org/01kta7d96\", \"country_code\": \"US\",
-        \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I2801148111\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Jadwiga Rogowska\", \"raw_affiliation_strings\": [\"Brain Imaging Center,
-        McLean Hospital/Harvard Medical School, Belmont. MA, United States\"], \"raw_orcid\":
-        null, \"affiliations\": [{\"raw_affiliation_string\": \"Brain Imaging Center,
-        McLean Hospital/Harvard Medical School, Belmont. MA, United States\", \"institution_ids\":
-        [\"https://openalex.org/I136199984\", \"https://openalex.org/I2801148111\"]}]},
-        {\"author_position\": \"middle\", \"author\": {\"id\": \"https://openalex.org/A5045509647\",
-        \"display_name\": \"Erin McGlade\", \"orcid\": \"https://orcid.org/0000-0003-2234-1984\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0003-2234-1984\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I223532165\", \"display_name\": \"University
-        of Utah\", \"ror\": \"https://ror.org/03r0ha626\", \"country_code\": \"US\",
-        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I223532165\"]},
-        {\"id\": \"https://openalex.org/I4210113540\", \"display_name\": \"VA Rocky
-        Mountain Network\", \"ror\": \"https://ror.org/01x6zzb23\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210113540\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Erin McGlade\", \"raw_affiliation_strings\": [\"The Brain Institute, University
-        of Utah, Salt Lake City, UT, United States\", \"VISN 19 MIRREC, Salt Lake
-        City, UT, United States\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"The Brain Institute, University of Utah, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\":
-        \"VISN 19 MIRREC, Salt Lake City, UT, United States\", \"institution_ids\":
-        [\"https://openalex.org/I4210113540\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5076177667\", \"display_name\":
-        \"Jace B. King\", \"orcid\": \"https://orcid.org/0000-0002-0206-0475\", \"observed_orcids\":
-        [\"https://orcid.org/0000-0002-0206-0475\"]}, \"institutions\": [{\"id\":
-        \"https://openalex.org/I223532165\", \"display_name\": \"University of Utah\",
-        \"ror\": \"https://ror.org/03r0ha626\", \"country_code\": \"US\", \"type\":
-        \"education\", \"lineage\": [\"https://openalex.org/I223532165\"]}], \"countries\":
-        [\"US\"], \"is_corresponding\": false, \"raw_author_name\": \"Jace B. King\",
-        \"raw_affiliation_strings\": [\"The Brain Institute, University of Utah, Salt
-        Lake City, UT, United States\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"The Brain Institute, University of Utah, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}]}, {\"author_position\":
-        \"middle\", \"author\": {\"id\": \"https://openalex.org/A5016651245\", \"display_name\":
-        \"Janine E. Terry\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I223532165\", \"display_name\": \"University
-        of Utah\", \"ror\": \"https://ror.org/03r0ha626\", \"country_code\": \"US\",
-        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I223532165\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Janine Terry\", \"raw_affiliation_strings\": [\"The Brain Institute, University
-        of Utah, Salt Lake City, UT, United States\"], \"raw_orcid\": null, \"affiliations\":
-        [{\"raw_affiliation_string\": \"The Brain Institute, University of Utah, Salt
-        Lake City, UT, United States\", \"institution_ids\": [\"https://openalex.org/I223532165\"]}]},
-        {\"author_position\": \"last\", \"author\": {\"id\": \"https://openalex.org/A5000221223\",
-        \"display_name\": \"Deborah A Yurgelun-Todd\", \"orcid\": \"https://orcid.org/0000-0002-7242-4190\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0002-7242-4190\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I223532165\", \"display_name\": \"University
-        of Utah\", \"ror\": \"https://ror.org/03r0ha626\", \"country_code\": \"US\",
-        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I223532165\"]},
-        {\"id\": \"https://openalex.org/I4210113540\", \"display_name\": \"VA Rocky
-        Mountain Network\", \"ror\": \"https://ror.org/01x6zzb23\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210113540\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Deborah Yurgelun-Todd\", \"raw_affiliation_strings\": [\"The Brain Institute,
-        University of Utah, Salt Lake City, UT, United States\", \"University of Utah
-        Medical School, Salt Lake City, UT, United States\", \"VISN 19 MIRREC, Salt
-        Lake City, UT, United States\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"The Brain Institute, University of Utah, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\":
-        \"University of Utah Medical School, Salt Lake City, UT, United States\",
-        \"institution_ids\": [\"https://openalex.org/I223532165\"]}, {\"raw_affiliation_string\":
-        \"VISN 19 MIRREC, Salt Lake City, UT, United States\", \"institution_ids\":
-        [\"https://openalex.org/I4210113540\"]}]}], \"publication_year\": 2011, \"abstract_inverted_index\":
-        null, \"primary_location\": {\"id\": \"doi:10.1016/j.bbr.2011.02.001\", \"doi\":
-        \"https://doi.org/10.1016/j.bbr.2011.02.001\", \"is_oa\": false, \"landing_page_url\":
-        \"https://doi.org/10.1016/j.bbr.2011.02.001\", \"pdf_url\": null, \"source\":
-        {\"id\": \"https://openalex.org/S81474683\", \"display_name\": \"Behavioural
-        Brain Research\", \"issn_l\": \"0166-4328\", \"issn\": [\"0166-4328\", \"1872-7549\"],
-        \"is_oa\": false, \"is_in_doaj\": false, \"is_core\": true, \"listed_in\":
-        [\"anvur-class-a\", \"anvur-scientific\", \"cwts-core\", \"dongbi-d\", \"doyens\",
-        \"erih-plus\", \"jufo-1\", \"ki-jl-1\", \"medline\", \"norway-1\", \"poland-100\",
-        \"russia-white-list-2\", \"vabb-shw\"], \"host_organization\": \"https://openalex.org/P4310320990\",
-        \"host_organization_name\": \"Elsevier BV\", \"host_organization_lineage\":
-        [\"https://openalex.org/P4310320990\"], \"host_organization_lineage_names\":
-        [\"Elsevier BV\"], \"type\": \"journal\"}, \"license\": null, \"license_id\":
-        null, \"version\": \"publishedVersion\", \"is_accepted\": true, \"is_published\":
-        true, \"raw_source_name\": \"Behavioural Brain Research\", \"raw_type\": \"journal-article\"},
-        \"open_access\": {\"is_oa\": true, \"oa_status\": \"green\", \"oa_url\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/3073407\",
-        \"any_repository_has_fulltext\": true}}, {\"ids\": {\"openalex\": \"https://openalex.org/W2526484688\",
-        \"doi\": \"https://doi.org/10.1016/j.ntt.2016.09.005\", \"mag\": \"2526484688\",
-        \"pmid\": \"https://pubmed.ncbi.nlm.nih.gov/27687470\"}, \"display_name\":
-        \"Adolescent cortical thickness pre- and post marijuana and alcohol initiation\",
-        \"authorships\": [{\"author_position\": \"first\", \"author\": {\"id\": \"https://openalex.org/A5040209413\",
-        \"display_name\": \"Joanna Jacobus\", \"orcid\": \"https://orcid.org/0000-0002-8587-3673\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0002-8587-3673\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]},
-        {\"id\": \"https://openalex.org/I4210099595\", \"display_name\": \"VA San
-        Diego Healthcare System\", \"ror\": \"https://ror.org/00znqwq11\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210099595\",
-        \"https://openalex.org/I4210138663\"]}], \"countries\": [\"US\"], \"is_corresponding\":
-        false, \"raw_author_name\": \"Joanna Jacobus\", \"raw_affiliation_strings\":
-        [\"Veterans Affairs San Diego Healthcare System, La Jolla, CA, USA; University
-        of California San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"University
-        of California San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"Veterans
-        Affairs San Diego Healthcare System, La Jolla, CA, USA\"], \"raw_orcid\":
-        null, \"affiliations\": [{\"raw_affiliation_string\": \"Veterans Affairs San
-        Diego Healthcare System, La Jolla, CA, USA; University of California San Diego,
-        Department of Psychiatry, La Jolla, CA, USA\", \"institution_ids\": [\"https://openalex.org/I36258959\",
-        \"https://openalex.org/I4210099595\"]}, {\"raw_affiliation_string\": \"University
-        of California San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"institution_ids\":
-        [\"https://openalex.org/I36258959\"]}, {\"raw_affiliation_string\": \"Veterans
-        Affairs San Diego Healthcare System, La Jolla, CA, USA\", \"institution_ids\":
-        [\"https://openalex.org/I4210099595\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5036907479\", \"display_name\":
-        \"Norma Castro\", \"orcid\": null, \"observed_orcids\": []}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Norma Castro\", \"raw_affiliation_strings\": [\"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA\"], \"raw_orcid\":
-        null, \"affiliations\": [{\"raw_affiliation_string\": \"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"institution_ids\":
-        [\"https://openalex.org/I36258959\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5061714533\", \"display_name\":
-        \"Lindsay M. Squeglia\", \"orcid\": \"https://orcid.org/0000-0001-5994-6894\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0001-5994-6894\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I153297377\", \"display_name\": \"Medical
-        University of South Carolina\", \"ror\": \"https://ror.org/012jban78\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I153297377\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Lindsay M. Squeglia\", \"raw_affiliation_strings\": [\"Medical University
-        of South Carolina, Department of Psychiatry and Behavioral Sciences, Charleston,
-        SC, USA\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"Medical University of South Carolina, Department of Psychiatry and Behavioral
-        Sciences, Charleston, SC, USA\", \"institution_ids\": [\"https://openalex.org/I153297377\"]}]},
-        {\"author_position\": \"middle\", \"author\": {\"id\": \"https://openalex.org/A5113694781\",
-        \"display_name\": \"Mary J. Meloy\", \"orcid\": null, \"observed_orcids\":
-        []}, \"institutions\": [{\"id\": \"https://openalex.org/I36258959\", \"display_name\":
-        \"University of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\",
-        \"country_code\": \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"M.J. Meloy\", \"raw_affiliation_strings\": [\"University of California San
-        Diego, Department of Psychiatry, La Jolla, CA, USA\"], \"raw_orcid\": null,
-        \"affiliations\": [{\"raw_affiliation_string\": \"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"institution_ids\":
-        [\"https://openalex.org/I36258959\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5005462893\", \"display_name\":
-        \"Ty Brumback\", \"orcid\": \"https://orcid.org/0000-0002-1712-2878\", \"observed_orcids\":
-        [\"https://orcid.org/0000-0002-1712-2878\"]}, \"institutions\": [{\"id\":
-        \"https://openalex.org/I36258959\", \"display_name\": \"University of California
-        San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\": \"US\",
-        \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Ty Brumback\", \"raw_affiliation_strings\": [\"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA\"], \"raw_orcid\":
-        null, \"affiliations\": [{\"raw_affiliation_string\": \"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA\", \"institution_ids\":
-        [\"https://openalex.org/I36258959\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5000016116\", \"display_name\":
-        \"Marilyn Ann Huestis\", \"orcid\": \"https://orcid.org/0000-0003-2137-4645\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0003-2137-4645\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I126744593\", \"display_name\": \"University
-        of Maryland, Baltimore\", \"ror\": \"https://ror.org/04rq5mt64\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I126744593\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Marilyn A. Huestis\", \"raw_affiliation_strings\": [\"University of Maryland,
-        School of Medicine, Baltimore, MD, USA\"], \"raw_orcid\": null, \"affiliations\":
-        [{\"raw_affiliation_string\": \"University of Maryland, School of Medicine,
-        Baltimore, MD, USA\", \"institution_ids\": [\"https://openalex.org/I126744593\"]}]},
-        {\"author_position\": \"last\", \"author\": {\"id\": \"https://openalex.org/A5069754212\",
-        \"display_name\": \"Susan Frances Tapert\", \"orcid\": \"https://orcid.org/0000-0001-7259-6112\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0001-7259-6112\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": true, \"raw_author_name\":
-        \"Susan F. Tapert\", \"raw_affiliation_strings\": [\"University of California
-        San Diego, Department of Psychiatry, La Jolla, CA, USA. Electronic address:
-        replay@example.com\", \"University of California San Diego, Department of
-        Psychiatry, La Jolla, CA, USA\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"University of California San Diego, Department of Psychiatry, La Jolla,
-        CA, USA. Electronic address: replay@example.com\", \"institution_ids\": [\"https://openalex.org/I36258959\"]},
-        {\"raw_affiliation_string\": \"University of California San Diego, Department
-        of Psychiatry, La Jolla, CA, USA\", \"institution_ids\": [\"https://openalex.org/I36258959\"]}]}],
-        \"publication_year\": 2016, \"abstract_inverted_index\": null, \"primary_location\":
-        {\"id\": \"doi:10.1016/j.ntt.2016.09.005\", \"doi\": \"https://doi.org/10.1016/j.ntt.2016.09.005\",
-        \"is_oa\": false, \"landing_page_url\": \"https://doi.org/10.1016/j.ntt.2016.09.005\",
-        \"pdf_url\": null, \"source\": {\"id\": \"https://openalex.org/S149459226\",
-        \"display_name\": \"Neurotoxicology and Teratology\", \"issn_l\": \"0892-0362\",
-        \"issn\": [\"0892-0362\", \"1872-9738\"], \"is_oa\": false, \"is_in_doaj\":
-        false, \"is_core\": true, \"listed_in\": [\"cwts-core\", \"dongbi-c\", \"doyens\",
-        \"jufo-1\", \"ki-jl-1\", \"medline\", \"norway-1\", \"poland-70\", \"russia-white-list-2\"],
-        \"host_organization\": \"https://openalex.org/P4310320990\", \"host_organization_name\":
-        \"Elsevier BV\", \"host_organization_lineage\": [\"https://openalex.org/P4310320990\"],
-        \"host_organization_lineage_names\": [\"Elsevier BV\"], \"type\": \"journal\"},
-        \"license\": null, \"license_id\": null, \"version\": \"publishedVersion\",
-        \"is_accepted\": true, \"is_published\": true, \"raw_source_name\": \"Neurotoxicology
-        and Teratology\", \"raw_type\": \"journal-article\"}, \"open_access\": {\"is_oa\":
-        true, \"oa_status\": \"green\", \"oa_url\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/5072451\",
-        \"any_repository_has_fulltext\": true}}, {\"ids\": {\"openalex\": \"https://openalex.org/W2101514929\",
-        \"doi\": \"https://doi.org/10.15288/jsad.2014.75.729\", \"mag\": \"2101514929\",
-        \"pmid\": \"https://pubmed.ncbi.nlm.nih.gov/25208190\"}, \"display_name\":
-        \"Cortical Thickness and Neurocognition in Adolescent Marijuana and Alcohol
-        Users Following 28 Days of Monitored Abstinence\", \"authorships\": [{\"author_position\":
-        \"first\", \"author\": {\"id\": \"https://openalex.org/A5040209413\", \"display_name\":
-        \"Joanna Jacobus\", \"orcid\": \"https://orcid.org/0000-0002-8587-3673\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0002-8587-3673\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]},
-        {\"id\": \"https://openalex.org/I4210099595\", \"display_name\": \"VA San
-        Diego Healthcare System\", \"ror\": \"https://ror.org/00znqwq11\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210099595\",
-        \"https://openalex.org/I4210138663\"]}], \"countries\": [\"US\"], \"is_corresponding\":
-        false, \"raw_author_name\": \"Joanna Jacobus\", \"raw_affiliation_strings\":
-        [\"Department of Psychiatry, University of California San Diego, La Jolla,
-        California\", \"Veterans Affairs (VA) San Diego Healthcare System, La Jolla,
-        California\", \"Veterans Affairs (VA) San Diego Healthcare System, La Jolla,
-        California, Department of Psychiatry, University of California San Diego,
-        La Jolla, California\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"Department of Psychiatry, University of California San Diego, La Jolla,
-        California\", \"institution_ids\": [\"https://openalex.org/I36258959\"]},
-        {\"raw_affiliation_string\": \"Veterans Affairs (VA) San Diego Healthcare
-        System, La Jolla, California\", \"institution_ids\": [\"https://openalex.org/I4210099595\"]},
-        {\"raw_affiliation_string\": \"Veterans Affairs (VA) San Diego Healthcare
-        System, La Jolla, California, Department of Psychiatry, University of California
-        San Diego, La Jolla, California\", \"institution_ids\": [\"https://openalex.org/I36258959\",
-        \"https://openalex.org/I4210099595\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5061714533\", \"display_name\":
-        \"Lindsay M. Squeglia\", \"orcid\": \"https://orcid.org/0000-0001-5994-6894\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0001-5994-6894\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Lindsay M Squeglia\", \"raw_affiliation_strings\": [\"Department of Psychiatry,
-        University of California San Diego, La Jolla, California\"], \"raw_orcid\":
-        null, \"affiliations\": [{\"raw_affiliation_string\": \"Department of Psychiatry,
-        University of California San Diego, La Jolla, California\", \"institution_ids\":
-        [\"https://openalex.org/I36258959\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5068832079\", \"display_name\":
-        \"Scott F. Sorg\", \"orcid\": \"https://orcid.org/0000-0002-9719-0853\", \"observed_orcids\":
-        [\"https://orcid.org/0000-0002-9719-0853\"]}, \"institutions\": [{\"id\":
-        \"https://openalex.org/I4210094549\", \"display_name\": \"VA Puget Sound Health
-        Care System\", \"ror\": \"https://ror.org/00ky3az31\", \"country_code\": \"US\",
-        \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210094549\",
-        \"https://openalex.org/I4210138024\"]}], \"countries\": [\"US\"], \"is_corresponding\":
-        false, \"raw_author_name\": \"Scott F Sorg\", \"raw_affiliation_strings\":
-        [\"Veterans Affairs Puget Sound Healthcare System, Seattle, Washington\"],
-        \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\": \"Veterans
-        Affairs Puget Sound Healthcare System, Seattle, Washington\", \"institution_ids\":
-        [\"https://openalex.org/I4210094549\"]}]}, {\"author_position\": \"middle\",
-        \"author\": {\"id\": \"https://openalex.org/A5081918619\", \"display_name\":
-        \"Tam T. Nguyen\u2010Louie\", \"orcid\": \"https://orcid.org/0000-0003-4475-8326\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0003-4475-8326\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I26538001\", \"display_name\": \"San Diego
-        State University\", \"ror\": \"https://ror.org/0264fdx42\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I26538001\"]},
-        {\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]}],
-        \"countries\": [\"US\"], \"is_corresponding\": false, \"raw_author_name\":
-        \"Tam T Nguyen-Louie\", \"raw_affiliation_strings\": [\"Department of Psychiatry,
-        University of California San Diego, La Jolla, California\", \"San Diego State
-        University/University of California San Diego Joint Doctoral Program in Clinical
-        Psychology, San Diego, California\", \"Department of Psychiatry, University
-        of California San Diego, La Jolla, California, San Diego State University/University
-        of California San Diego Joint Doctoral Program in Clinical Psychology, San
-        Diego, California\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"Department of Psychiatry, University of California San Diego, La Jolla,
-        California\", \"institution_ids\": [\"https://openalex.org/I36258959\"]},
-        {\"raw_affiliation_string\": \"San Diego State University/University of California
-        San Diego Joint Doctoral Program in Clinical Psychology, San Diego, California\",
-        \"institution_ids\": [\"https://openalex.org/I26538001\", \"https://openalex.org/I36258959\"]},
-        {\"raw_affiliation_string\": \"Department of Psychiatry, University of California
-        San Diego, La Jolla, California, San Diego State University/University of
+        with {\"email\": \"<your user''s email>\"}; we email them a link, and the
+        key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+        "count": 8, "db_response_time_ms": 11, "page": 1, "per_page": 3, "groups_count":
+        null, "x_query": {"oql": "get works where title has (adolescent marijuana
+        cortical)", "x_new_oql": "get works with (adolescent marijuana cortical) in
+        the title", "oqo": {"get_rows": "works", "filter_rows": [{"column_id": "display_name.search",
+        "value": "adolescent marijuana cortical", "operator": "has"}]}, "url": "/works?filter=display_name.search:adolescent
+        marijuana cortical&per_page=3"}, "cost_usd": 0.001}, "results": [{"ids": {"openalex":
+        "https://openalex.org/W1985552279", "doi": "https://doi.org/10.1016/j.bbr.2011.02.001",
+        "mag": "1985552279", "pmid": "https://pubmed.ncbi.nlm.nih.gov/21310189", "pmcid":
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/1.x"}, "display_name": "Altered
+        prefrontal and insular cortical thickness in adolescent marijuana users",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5073301645",
+        "display_name": "Melissa Patricia Lopez-Larson", "orcid": null, "observed_orcids":
+        []}, "institutions": [{"id": "https://openalex.org/I223532165", "display_name":
+        "University of Utah", "ror": "https://ror.org/03r0ha626", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I223532165"]},
+        {"id": "https://openalex.org/I4210113540", "display_name": "VA Rocky Mountain
+        Network", "ror": "https://ror.org/01x6zzb23", "country_code": "US", "type":
+        "healthcare", "lineage": ["https://openalex.org/I1322918889", "https://openalex.org/I2799886695",
+        "https://openalex.org/I4210113540"]}], "countries": ["US"], "is_corresponding":
+        true, "raw_author_name": "Melissa P. Lopez-Larson", "raw_affiliation_strings":
+        ["The Brain Institute, University of Utah, Salt Lake City, UT 84108, USA.
+        replay@example.com", "The Brain Institute, University of Utah, Salt
+        Lake City, UT, United States", "University of Utah Medical School, Salt Lake
+        City, UT, United States", "VISN 19 MIRREC, Salt Lake City, UT, United States"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "The Brain
+        Institute, University of Utah, Salt Lake City, UT 84108, USA. replay@example.com",
+        "institution_ids": ["https://openalex.org/I223532165"]}, {"raw_affiliation_string":
+        "The Brain Institute, University of Utah, Salt Lake City, UT, United States",
+        "institution_ids": ["https://openalex.org/I223532165"]}, {"raw_affiliation_string":
+        "University of Utah Medical School, Salt Lake City, UT, United States", "institution_ids":
+        ["https://openalex.org/I223532165"]}, {"raw_affiliation_string": "VISN 19
+        MIRREC, Salt Lake City, UT, United States", "institution_ids": ["https://openalex.org/I4210113540"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5012744219",
+        "display_name": "Piotr Bogorodzki", "orcid": "https://orcid.org/0000-0001-6596-5274",
+        "observed_orcids": ["https://orcid.org/0000-0001-6596-5274"]}, "institutions":
+        [{"id": "https://openalex.org/I108403487", "display_name": "Warsaw University
+        of Technology", "ror": "https://ror.org/00y0xnp53", "country_code": "PL",
+        "type": "education", "lineage": ["https://openalex.org/I108403487"]}], "countries":
+        ["PL"], "is_corresponding": false, "raw_author_name": "Piotr Bogorodzki",
+        "raw_affiliation_strings": ["Institute of Radioelectronics, Warsaw Technical
+        University, Warsaw, Poland"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Institute of Radioelectronics, Warsaw Technical University, Warsaw, Poland",
+        "institution_ids": ["https://openalex.org/I108403487"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5113539603", "display_name":
+        "Jadwiga Rogowska", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I136199984", "display_name": "Harvard University",
+        "ror": "https://ror.org/03vek6s52", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I136199984"]}, {"id": "https://openalex.org/I2801148111",
+        "display_name": "McLean Hospital", "ror": "https://ror.org/01kta7d96", "country_code":
+        "US", "type": "healthcare", "lineage": ["https://openalex.org/I2801148111"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Jadwiga
+        Rogowska", "raw_affiliation_strings": ["Brain Imaging Center, McLean Hospital/Harvard
+        Medical School, Belmont. MA, United States"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Brain Imaging Center, McLean Hospital/Harvard
+        Medical School, Belmont. MA, United States", "institution_ids": ["https://openalex.org/I136199984",
+        "https://openalex.org/I2801148111"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5045509647", "display_name": "Erin McGlade",
+        "orcid": "https://orcid.org/0000-0003-2234-1984", "observed_orcids": ["https://orcid.org/0000-0003-2234-1984"]},
+        "institutions": [{"id": "https://openalex.org/I223532165", "display_name":
+        "University of Utah", "ror": "https://ror.org/03r0ha626", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I223532165"]},
+        {"id": "https://openalex.org/I4210113540", "display_name": "VA Rocky Mountain
+        Network", "ror": "https://ror.org/01x6zzb23", "country_code": "US", "type":
+        "healthcare", "lineage": ["https://openalex.org/I1322918889", "https://openalex.org/I2799886695",
+        "https://openalex.org/I4210113540"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Erin McGlade", "raw_affiliation_strings": ["The
+        Brain Institute, University of Utah, Salt Lake City, UT, United States", "VISN
+        19 MIRREC, Salt Lake City, UT, United States"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "The Brain Institute, University of Utah, Salt
+        Lake City, UT, United States", "institution_ids": ["https://openalex.org/I223532165"]},
+        {"raw_affiliation_string": "VISN 19 MIRREC, Salt Lake City, UT, United States",
+        "institution_ids": ["https://openalex.org/I4210113540"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5076177667", "display_name":
+        "Jace B. King", "orcid": "https://orcid.org/0000-0002-0206-0475", "observed_orcids":
+        ["https://orcid.org/0000-0002-0206-0475"]}, "institutions": [{"id": "https://openalex.org/I223532165",
+        "display_name": "University of Utah", "ror": "https://ror.org/03r0ha626",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I223532165"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Jace B.
+        King", "raw_affiliation_strings": ["The Brain Institute, University of Utah,
+        Salt Lake City, UT, United States"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "The Brain Institute, University of Utah, Salt Lake City, UT, United States",
+        "institution_ids": ["https://openalex.org/I223532165"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5016651245", "display_name":
+        "Janine E. Terry", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I223532165", "display_name": "University of
+        Utah", "ror": "https://ror.org/03r0ha626", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I223532165"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Janine Terry", "raw_affiliation_strings": ["The
+        Brain Institute, University of Utah, Salt Lake City, UT, United States"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "The Brain
+        Institute, University of Utah, Salt Lake City, UT, United States", "institution_ids":
+        ["https://openalex.org/I223532165"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5000221223", "display_name": "Deborah A Yurgelun-Todd",
+        "orcid": "https://orcid.org/0000-0002-7242-4190", "observed_orcids": ["https://orcid.org/0000-0002-7242-4190"]},
+        "institutions": [{"id": "https://openalex.org/I223532165", "display_name":
+        "University of Utah", "ror": "https://ror.org/03r0ha626", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I223532165"]},
+        {"id": "https://openalex.org/I4210113540", "display_name": "VA Rocky Mountain
+        Network", "ror": "https://ror.org/01x6zzb23", "country_code": "US", "type":
+        "healthcare", "lineage": ["https://openalex.org/I1322918889", "https://openalex.org/I2799886695",
+        "https://openalex.org/I4210113540"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Deborah Yurgelun-Todd", "raw_affiliation_strings":
+        ["The Brain Institute, University of Utah, Salt Lake City, UT, United States",
+        "University of Utah Medical School, Salt Lake City, UT, United States", "VISN
+        19 MIRREC, Salt Lake City, UT, United States"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "The Brain Institute, University of Utah, Salt
+        Lake City, UT, United States", "institution_ids": ["https://openalex.org/I223532165"]},
+        {"raw_affiliation_string": "University of Utah Medical School, Salt Lake City,
+        UT, United States", "institution_ids": ["https://openalex.org/I223532165"]},
+        {"raw_affiliation_string": "VISN 19 MIRREC, Salt Lake City, UT, United States",
+        "institution_ids": ["https://openalex.org/I4210113540"]}]}], "publication_year":
+        2011, "abstract_inverted_index": null, "primary_location": {"id": "doi:10.1016/j.bbr.2011.02.001",
+        "doi": "https://doi.org/10.1016/j.bbr.2011.02.001", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1016/j.bbr.2011.02.001", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S81474683", "display_name": "Behavioural Brain Research",
+        "issn_l": "0166-4328", "issn": ["0166-4328", "1872-7549"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "dongbi-d", "doyens", "erih-plus", "jufo-1", "ki-jl-1", "medline",
+        "norway-1", "poland-100", "russia-white-list-2", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320990", "host_organization_name": "Elsevier BV",
+        "host_organization_lineage": ["https://openalex.org/P4310320990"], "host_organization_lineage_names":
+        ["Elsevier BV"], "type": "journal"}, "license": null, "license_id": null,
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Behavioural Brain Research", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "pmh:oai:pubmedcentral.nih.gov:3073407", "doi":
+        null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3073407",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Behav Brain
+        Res", "raw_type": "Text"}, "locations": [{"id": "doi:10.1016/j.bbr.2011.02.001",
+        "doi": "https://doi.org/10.1016/j.bbr.2011.02.001", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1016/j.bbr.2011.02.001", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S81474683", "display_name": "Behavioural Brain Research",
+        "issn_l": "0166-4328", "issn": ["0166-4328", "1872-7549"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a", "anvur-scientific",
+        "cwts-core", "dongbi-d", "doyens", "erih-plus", "jufo-1", "ki-jl-1", "medline",
+        "norway-1", "poland-100", "russia-white-list-2", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320990", "host_organization_name": "Elsevier BV",
+        "host_organization_lineage": ["https://openalex.org/P4310320990"], "host_organization_lineage_names":
+        ["Elsevier BV"], "type": "journal"}, "license": null, "license_id": null,
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Behavioural Brain Research", "raw_type": "journal-article"},
+        {"id": "pmid:21310189", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/21310189",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Behavioural
+        brain research", "raw_type": "Journal Article"}, {"id": "pmh:oai:europepmc.org:2382529",
+        "doi": null, "is_oa": false, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3073407",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400806", "display_name":
+        "Europe PMC (PubMed Central)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1303153112", "host_organization_name": "European Bioinformatics
+        Institute", "host_organization_lineage": ["https://openalex.org/I1303153112"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": null, "raw_type": "Text"}, {"id": "pmh:oai:pubmedcentral.nih.gov:3073407",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3073407",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Behav Brain
+        Res", "raw_type": "Text"}], "open_access": {"is_oa": true, "oa_status": "green",
+        "oa_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/3073407", "any_repository_has_fulltext":
+        true}}, {"ids": {"openalex": "https://openalex.org/W2526484688", "doi": "https://doi.org/10.1016/j.ntt.2016.09.005",
+        "mag": "2526484688", "pmid": "https://pubmed.ncbi.nlm.nih.gov/27687470"},
+        "display_name": "Adolescent cortical thickness pre- and post marijuana and
+        alcohol initiation", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5040209413", "display_name": "Joanna Jacobus",
+        "orcid": "https://orcid.org/0000-0002-8587-3673", "observed_orcids": ["https://orcid.org/0000-0002-8587-3673"]},
+        "institutions": [{"id": "https://openalex.org/I36258959", "display_name":
+        "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]},
+        {"id": "https://openalex.org/I4210099595", "display_name": "VA San Diego Healthcare
+        System", "ror": "https://ror.org/00znqwq11", "country_code": "US", "type":
+        "healthcare", "lineage": ["https://openalex.org/I1322918889", "https://openalex.org/I2799886695",
+        "https://openalex.org/I4210099595", "https://openalex.org/I4210138663"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Joanna
+        Jacobus", "raw_affiliation_strings": ["Veterans Affairs San Diego Healthcare
+        System, La Jolla, CA, USA; University of California San Diego, Department
+        of Psychiatry, La Jolla, CA, USA", "University of California San Diego, Department
+        of Psychiatry, La Jolla, CA, USA", "Veterans Affairs San Diego Healthcare
+        System, La Jolla, CA, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Veterans Affairs San Diego Healthcare System, La Jolla, CA, USA; University
+        of California San Diego, Department of Psychiatry, La Jolla, CA, USA", "institution_ids":
+        ["https://openalex.org/I36258959", "https://openalex.org/I4210099595"]}, {"raw_affiliation_string":
+        "University of California San Diego, Department of Psychiatry, La Jolla, CA,
+        USA", "institution_ids": ["https://openalex.org/I36258959"]}, {"raw_affiliation_string":
+        "Veterans Affairs San Diego Healthcare System, La Jolla, CA, USA", "institution_ids":
+        ["https://openalex.org/I4210099595"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5036907479", "display_name": "Norma Castro",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I36258959",
+        "display_name": "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Norma
+        Castro", "raw_affiliation_strings": ["University of California San Diego,
+        Department of Psychiatry, La Jolla, CA, USA"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "University of California San Diego, Department
+        of Psychiatry, La Jolla, CA, USA", "institution_ids": ["https://openalex.org/I36258959"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5061714533",
+        "display_name": "Lindsay M. Squeglia", "orcid": "https://orcid.org/0000-0001-5994-6894",
+        "observed_orcids": ["https://orcid.org/0000-0001-5994-6894"]}, "institutions":
+        [{"id": "https://openalex.org/I153297377", "display_name": "Medical University
+        of South Carolina", "ror": "https://ror.org/012jban78", "country_code": "US",
+        "type": "education", "lineage": ["https://openalex.org/I153297377"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Lindsay M. Squeglia",
+        "raw_affiliation_strings": ["Medical University of South Carolina, Department
+        of Psychiatry and Behavioral Sciences, Charleston, SC, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Medical University of South
+        Carolina, Department of Psychiatry and Behavioral Sciences, Charleston, SC,
+        USA", "institution_ids": ["https://openalex.org/I153297377"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5113694781", "display_name":
+        "Mary J. Meloy", "orcid": null, "observed_orcids": []}, "institutions": [{"id":
+        "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "M.J. Meloy", "raw_affiliation_strings":
+        ["University of California San Diego, Department of Psychiatry, La Jolla,
+        CA, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "University of California San Diego, Department of Psychiatry, La Jolla, CA,
+        USA", "institution_ids": ["https://openalex.org/I36258959"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5005462893", "display_name":
+        "Ty Brumback", "orcid": "https://orcid.org/0000-0002-1712-2878", "observed_orcids":
+        ["https://orcid.org/0000-0002-1712-2878"]}, "institutions": [{"id": "https://openalex.org/I36258959",
+        "display_name": "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Ty Brumback",
+        "raw_affiliation_strings": ["University of California San Diego, Department
+        of Psychiatry, La Jolla, CA, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "University of California San Diego, Department of Psychiatry, La Jolla, CA,
+        USA", "institution_ids": ["https://openalex.org/I36258959"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5000016116", "display_name":
+        "Marilyn Ann Huestis", "orcid": "https://orcid.org/0000-0003-2137-4645", "observed_orcids":
+        ["https://orcid.org/0000-0003-2137-4645"]}, "institutions": [{"id": "https://openalex.org/I126744593",
+        "display_name": "University of Maryland, Baltimore", "ror": "https://ror.org/04rq5mt64",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I126744593"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Marilyn
+        A. Huestis", "raw_affiliation_strings": ["University of Maryland, School of
+        Medicine, Baltimore, MD, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "University of Maryland, School of Medicine, Baltimore, MD, USA", "institution_ids":
+        ["https://openalex.org/I126744593"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5069754212", "display_name": "Susan Frances
+        Tapert", "orcid": "https://orcid.org/0000-0001-7259-6112", "observed_orcids":
+        ["https://orcid.org/0000-0001-7259-6112"]}, "institutions": [{"id": "https://openalex.org/I36258959",
+        "display_name": "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]}],
+        "countries": ["US"], "is_corresponding": true, "raw_author_name": "Susan F.
+        Tapert", "raw_affiliation_strings": ["University of California San Diego,
+        Department of Psychiatry, La Jolla, CA, USA. Electronic address: replay@example.com",
+        "University of California San Diego, Department of Psychiatry, La Jolla, CA,
+        USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "University
+        of California San Diego, Department of Psychiatry, La Jolla, CA, USA. Electronic
+        address: replay@example.com", "institution_ids": ["https://openalex.org/I36258959"]},
+        {"raw_affiliation_string": "University of California San Diego, Department
+        of Psychiatry, La Jolla, CA, USA", "institution_ids": ["https://openalex.org/I36258959"]}]}],
+        "publication_year": 2016, "abstract_inverted_index": null, "primary_location":
+        {"id": "doi:10.1016/j.ntt.2016.09.005", "doi": "https://doi.org/10.1016/j.ntt.2016.09.005",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1016/j.ntt.2016.09.005",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S149459226", "display_name":
+        "Neurotoxicology and Teratology", "issn_l": "0892-0362", "issn": ["0892-0362",
+        "1872-9738"], "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in":
+        ["cwts-core", "dongbi-c", "doyens", "jufo-1", "ki-jl-1", "medline", "norway-1",
+        "poland-70", "russia-white-list-2"], "host_organization": "https://openalex.org/P4310320990",
+        "host_organization_name": "Elsevier BV", "host_organization_lineage": ["https://openalex.org/P4310320990"],
+        "host_organization_lineage_names": ["Elsevier BV"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Neurotoxicology and Teratology",
+        "raw_type": "journal-article"}, "best_oa_location": {"id": "pmh:oai:pubmedcentral.nih.gov:5072451",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/5072451",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Neurotoxicol
+        Teratol", "raw_type": "Text"}, "locations": [{"id": "doi:10.1016/j.ntt.2016.09.005",
+        "doi": "https://doi.org/10.1016/j.ntt.2016.09.005", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1016/j.ntt.2016.09.005", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S149459226", "display_name": "Neurotoxicology and Teratology",
+        "issn_l": "0892-0362", "issn": ["0892-0362", "1872-9738"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core", "dongbi-c",
+        "doyens", "jufo-1", "ki-jl-1", "medline", "norway-1", "poland-70", "russia-white-list-2"],
+        "host_organization": "https://openalex.org/P4310320990", "host_organization_name":
+        "Elsevier BV", "host_organization_lineage": ["https://openalex.org/P4310320990"],
+        "host_organization_lineage_names": ["Elsevier BV"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Neurotoxicology and Teratology",
+        "raw_type": "journal-article"}, {"id": "pmid:27687470", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/27687470", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Neurotoxicology
+        and teratology", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:5072451",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/5072451",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "Neurotoxicol
+        Teratol", "raw_type": "Text"}, {"id": "pmh:oai:escholarship.org/ark:/13030/qt89q618sh",
+        "doi": null, "is_oa": false, "landing_page_url": "https://escholarship.org/uc/item/89q618sh",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400115", "display_name":
+        "eScholarship (California Digital Library)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2801248553", "host_organization_name": "California
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I2801248553"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "", "raw_type": "article"}, {"id": "pmh:oai:escholarship.org:ark:/13030/qt89q618sh",
+        "doi": null, "is_oa": false, "landing_page_url": "https://escholarship.org/uc/item/89q618sh",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400115", "display_name":
+        "eScholarship (California Digital Library)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2801248553", "host_organization_name": "California
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I2801248553"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Neurotoxicology and Teratology, vol 57", "raw_type":
+        "article"}], "open_access": {"is_oa": true, "oa_status": "green", "oa_url":
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/5072451", "any_repository_has_fulltext":
+        true}}, {"ids": {"openalex": "https://openalex.org/W2101514929", "doi": "https://doi.org/10.15288/jsad.2014.75.729",
+        "mag": "2101514929", "pmid": "https://pubmed.ncbi.nlm.nih.gov/25208190"},
+        "display_name": "Cortical Thickness and Neurocognition in Adolescent Marijuana
+        and Alcohol Users Following 28 Days of Monitored Abstinence", "authorships":
+        [{"author_position": "first", "author": {"id": "https://openalex.org/A5040209413",
+        "display_name": "Joanna Jacobus", "orcid": "https://orcid.org/0000-0002-8587-3673",
+        "observed_orcids": ["https://orcid.org/0000-0002-8587-3673"]}, "institutions":
+        [{"id": "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}, {"id": "https://openalex.org/I4210099595",
+        "display_name": "VA San Diego Healthcare System", "ror": "https://ror.org/00znqwq11",
+        "country_code": "US", "type": "healthcare", "lineage": ["https://openalex.org/I1322918889",
+        "https://openalex.org/I2799886695", "https://openalex.org/I4210099595", "https://openalex.org/I4210138663"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Joanna
+        Jacobus", "raw_affiliation_strings": ["Department of Psychiatry, University
+        of California San Diego, La Jolla, California", "Veterans Affairs (VA) San
+        Diego Healthcare System, La Jolla, California", "Veterans Affairs (VA) San
+        Diego Healthcare System, La Jolla, California, Department of Psychiatry, University
+        of California San Diego, La Jolla, California"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Psychiatry, University of California
+        San Diego, La Jolla, California", "institution_ids": ["https://openalex.org/I36258959"]},
+        {"raw_affiliation_string": "Veterans Affairs (VA) San Diego Healthcare System,
+        La Jolla, California", "institution_ids": ["https://openalex.org/I4210099595"]},
+        {"raw_affiliation_string": "Veterans Affairs (VA) San Diego Healthcare System,
+        La Jolla, California, Department of Psychiatry, University of California San
+        Diego, La Jolla, California", "institution_ids": ["https://openalex.org/I36258959",
+        "https://openalex.org/I4210099595"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5061714533", "display_name": "Lindsay M. Squeglia",
+        "orcid": "https://orcid.org/0000-0001-5994-6894", "observed_orcids": ["https://orcid.org/0000-0001-5994-6894"]},
+        "institutions": [{"id": "https://openalex.org/I36258959", "display_name":
+        "University of California San Diego", "ror": "https://ror.org/0168r3w48",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I36258959"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Lindsay
+        M Squeglia", "raw_affiliation_strings": ["Department of Psychiatry, University
+        of California San Diego, La Jolla, California"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Psychiatry, University of California
+        San Diego, La Jolla, California", "institution_ids": ["https://openalex.org/I36258959"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5068832079",
+        "display_name": "Scott F. Sorg", "orcid": "https://orcid.org/0000-0002-9719-0853",
+        "observed_orcids": ["https://orcid.org/0000-0002-9719-0853"]}, "institutions":
+        [{"id": "https://openalex.org/I4210094549", "display_name": "VA Puget Sound
+        Health Care System", "ror": "https://ror.org/00ky3az31", "country_code": "US",
+        "type": "healthcare", "lineage": ["https://openalex.org/I1322918889", "https://openalex.org/I2799886695",
+        "https://openalex.org/I4210094549", "https://openalex.org/I4210138024"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Scott
+        F Sorg", "raw_affiliation_strings": ["Veterans Affairs Puget Sound Healthcare
+        System, Seattle, Washington"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Veterans Affairs Puget Sound Healthcare System, Seattle, Washington", "institution_ids":
+        ["https://openalex.org/I4210094549"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5081918619", "display_name": "Tam T. Nguyen\u2010Louie",
+        "orcid": "https://orcid.org/0000-0003-4475-8326", "observed_orcids": ["https://orcid.org/0000-0003-4475-8326"]},
+        "institutions": [{"id": "https://openalex.org/I26538001", "display_name":
+        "San Diego State University", "ror": "https://ror.org/0264fdx42", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I26538001"]},
+        {"id": "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Tam T Nguyen-Louie",
+        "raw_affiliation_strings": ["Department of Psychiatry, University of California
+        San Diego, La Jolla, California", "San Diego State University/University of
         California San Diego Joint Doctoral Program in Clinical Psychology, San Diego,
-        California\", \"institution_ids\": [\"https://openalex.org/I26538001\", \"https://openalex.org/I36258959\"]}]},
-        {\"author_position\": \"last\", \"author\": {\"id\": \"https://openalex.org/A5069754212\",
-        \"display_name\": \"Susan Frances Tapert\", \"orcid\": \"https://orcid.org/0000-0001-7259-6112\",
-        \"observed_orcids\": [\"https://orcid.org/0000-0001-7259-6112\"]}, \"institutions\":
-        [{\"id\": \"https://openalex.org/I36258959\", \"display_name\": \"University
-        of California San Diego\", \"ror\": \"https://ror.org/0168r3w48\", \"country_code\":
-        \"US\", \"type\": \"education\", \"lineage\": [\"https://openalex.org/I36258959\"]},
-        {\"id\": \"https://openalex.org/I4210099595\", \"display_name\": \"VA San
-        Diego Healthcare System\", \"ror\": \"https://ror.org/00znqwq11\", \"country_code\":
-        \"US\", \"type\": \"healthcare\", \"lineage\": [\"https://openalex.org/I1322918889\",
-        \"https://openalex.org/I2799886695\", \"https://openalex.org/I4210099595\",
-        \"https://openalex.org/I4210138663\"]}], \"countries\": [\"US\"], \"is_corresponding\":
-        false, \"raw_author_name\": \"Susan F Tapert\", \"raw_affiliation_strings\":
-        [\"Department of Psychiatry, University of California San Diego, La Jolla,
-        California\", \"Veterans Affairs (VA) San Diego Healthcare System, La Jolla,
-        California\", \"Veterans Affairs (VA) San Diego Healthcare System, La Jolla,
-        California, Department of Psychiatry, University of California San Diego,
-        La Jolla, California\"], \"raw_orcid\": null, \"affiliations\": [{\"raw_affiliation_string\":
-        \"Department of Psychiatry, University of California San Diego, La Jolla,
-        California\", \"institution_ids\": [\"https://openalex.org/I36258959\"]},
-        {\"raw_affiliation_string\": \"Veterans Affairs (VA) San Diego Healthcare
-        System, La Jolla, California\", \"institution_ids\": [\"https://openalex.org/I4210099595\"]},
-        {\"raw_affiliation_string\": \"Veterans Affairs (VA) San Diego Healthcare
-        System, La Jolla, California, Department of Psychiatry, University of California
-        San Diego, La Jolla, California\", \"institution_ids\": [\"https://openalex.org/I36258959\",
-        \"https://openalex.org/I4210099595\"]}]}], \"publication_year\": 2014, \"abstract_inverted_index\":
-        {\"OBJECTIVE:\": [0], \"Adolescent\": [1, 227], \"marijuana\": [2, 43, 56,
-        176, 215, 230, 273], \"use\": [3, 64, 102, 142, 177, 192, 216, 231, 289],
-        \"continues\": [4], \"to\": [5, 26, 90, 114, 180, 200, 220, 235, 266, 288],
-        \"increase\": [6], \"in\": [7, 41, 155, 183, 203], \"prevalence\": [8], \"as\":
-        [9], \"harm\": [10], \"perception\": [11], \"declines.\": [12], \"Better\":
-        [13], \"understanding\": [14], \"of\": [15, 38, 86, 110, 120, 211, 213, 272],
-        \"marijuana's\": [16], \"impact\": [17], \"on\": [18, 128], \"neurodevelopment\":
-        [19], \"is\": [20], \"crucial.\": [21], \"This\": [22], \"prospective\": [23],
-        \"study\": [24], \"aimed\": [25], \"investigate\": [27], \"cortical\": [28,
-        129, 139, 221], \"thickness\": [29, 130, 222, 245, 251], \"and\": [30, 34,
-        44, 71, 82, 100, 123, 131, 144, 164, 185, 193, 229, 240, 247, 257, 261], \"neurocognitive\":
-        [31, 132], \"performance\": [32], \"before\": [33, 81, 163, 256], \"after\":
-        [35, 83, 165, 168, 258, 270], \"28\": [36, 268], \"days\": [37, 269], \"monitored\":
-        [39, 166, 259], \"abstinence\": [40, 260], \"adolescent\": [42, 55], \"alcohol\":
-        [45, 63, 172, 191, 228], \"users.\": [46], \"METHOD:\": [47], \"Subjects\":
-        [48], \"(N\": [49], \"=\": [50, 69, 76], \"54;\": [51], \">70%\": [52], \"male)\":
-        [53], \"were\": [54, 79, 253], \"users\": [57, 149], \"(ages\": [58], \"15-18\":
-        [59], \"years)\": [60], \"with\": [61, 250, 280], \"regular\": [62, 214],
-        \"(MJ\": [65], \"+\": [66], \"ALC;\": [67], \"n\": [68, 75], \"24)\": [70],
-        \"non-using\": [72], \"controls\": [73, 154], \"(CON;\": [74], \"30)\": [77],
-        \"who\": [78], \"compared\": [80], \"4\": [84], \"weeks\": [85], \"sequential\":
-        [87], \"urine\": [88], \"toxicology\": [89], \"confirm\": [91], \"abstinence.\":
-        [92], \"Participants\": [93], \"underwent\": [94], \"magnetic\": [95], \"resonance\":
-        [96], \"imaging,\": [97], \"neuropsychological\": [98], \"assessment,\": [99],
-        \"substance\": [101, 141], \"assessment\": [103], \"at\": [104, 116], \"both\":
-        [105, 255], \"time\": [106], \"points.\": [107], \"Repeated-measures\": [108],
-        \"analysis\": [109], \"covariance\": [111], \"was\": [112, 178, 198, 217],
-        \"used\": [113], \"look\": [115], \"the\": [117, 156], \"main\": [118], \"effects\":
-        [119], \"group,\": [121], \"time,\": [122], \"Group\": [124], \"\xD7\": [125],
-        \"Time\": [126], \"interactions\": [127], \"functioning.\": [133], \"Bivariate\":
-        [134], \"correlations\": [135], \"estimated\": [136], \"associations\": [137,
-        249], \"between\": [138], \"thickness,\": [140], \"severity,\": [143], \"cognitive\":
-        [145], \"performance.\": [146], \"RESULTS:\": [147], \"Marijuana\": [148],
-        \"showed\": [150], \"thicker\": [151, 201], \"cortices\": [152, 182, 202],
-        \"than\": [153], \"left\": [157], \"entorhinal\": [158], \"cortex\": [159],
-        \"(ps\": [160, 207, 223], \"<\": [161, 208, 224], \".03)\": [162], \"abstinence,\":
-        [167], \"adjusting\": [169], \"for\": [170, 294], \"lifetime\": [171, 175,
-        190], \"use.\": [173, 274], \"More\": [174], \"linked\": [179, 199, 234],
-        \"thinner\": [181], \"temporal\": [184], \"frontal\": [186], \"regions,\":
-        [187], \"whereas\": [188], \"more\": [189], \"heavy\": [194], \"episodic\":
-        [195], \"drinking\": [196], \"episodes\": [197], \"all\": [204], \"four\":
-        [205], \"lobes\": [206], \".05).\": [209], \"Age\": [210], \"onset\": [212],
-        \"positively\": [218], \"related\": [219, 287], \".03).\": [225], \"CONCLUSIONS:\":
-        [226], \"may\": [232, 277], \"be\": [233, 278], \"altered\": [236], \"longer-term\":
-        [237], \"neurodevelopmental\": [238], \"trajectories\": [239], \"compromised\":
-        [241], \"neural\": [242, 263], \"health.\": [243], \"Cortical\": [244], \"alterations\":
-        [246], \"dose-dependent\": [248], \"estimates\": [252], \"observed\": [254,
-        285], \"suggest\": [262], \"differences\": [264], \"continue\": [265], \"persist\":
-        [267], \"cessation\": [271], \"Neural\": [275], \"recovery\": [276], \"identified\":
-        [279], \"longer\": [281], \"follow-up\": [282], \"periods;\": [283], \"however,\":
-        [284], \"changes\": [286], \"severity\": [290], \"could\": [291], \"have\":
-        [292], \"implications\": [293], \"future\": [295], \"psychosocial\": [296],
-        \"outcomes.\": [297]}, \"primary_location\": {\"id\": \"doi:10.15288/jsad.2014.75.729\",
-        \"doi\": \"https://doi.org/10.15288/jsad.2014.75.729\", \"is_oa\": false,
-        \"landing_page_url\": \"https://doi.org/10.15288/jsad.2014.75.729\", \"pdf_url\":
-        null, \"source\": {\"id\": \"https://openalex.org/S87620869\", \"display_name\":
-        \"Journal of Studies on Alcohol and Drugs\", \"issn_l\": \"1937-1888\", \"issn\":
-        [\"1937-1888\", \"1938-4114\"], \"is_oa\": false, \"is_in_doaj\": false, \"is_core\":
-        true, \"listed_in\": [\"cwts-core\", \"dongbi-b\", \"doyens\", \"jufo-1\",
-        \"ki-jl-1\", \"medline\", \"norway-1\", \"poland-100\", \"russia-white-list-1\",
-        \"vabb-shw\"], \"host_organization\": \"https://openalex.org/P4322698809\",
-        \"host_organization_name\": \"Alcohol Research Documentation\", \"host_organization_lineage\":
-        [\"https://openalex.org/P4322698809\"], \"host_organization_lineage_names\":
-        [\"Alcohol Research Documentation\"], \"type\": \"journal\"}, \"license\":
-        null, \"license_id\": null, \"version\": \"publishedVersion\", \"is_accepted\":
-        true, \"is_published\": true, \"raw_source_name\": \"Journal of Studies on
-        Alcohol and Drugs\", \"raw_type\": \"journal-article\"}, \"open_access\":
-        {\"is_oa\": true, \"oa_status\": \"green\", \"oa_url\": \"https://www.ncbi.nlm.nih.gov/pmc/articles/4161693\",
-        \"any_repository_has_fulltext\": true}}], \"group_by\": []}"
+        California", "Department of Psychiatry, University of California San Diego,
+        La Jolla, California, San Diego State University/University of California
+        San Diego Joint Doctoral Program in Clinical Psychology, San Diego, California"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychiatry, University of California San Diego, La Jolla, California",
+        "institution_ids": ["https://openalex.org/I36258959"]}, {"raw_affiliation_string":
+        "San Diego State University/University of California San Diego Joint Doctoral
+        Program in Clinical Psychology, San Diego, California", "institution_ids":
+        ["https://openalex.org/I26538001", "https://openalex.org/I36258959"]}, {"raw_affiliation_string":
+        "Department of Psychiatry, University of California San Diego, La Jolla, California,
+        San Diego State University/University of California San Diego Joint Doctoral
+        Program in Clinical Psychology, San Diego, California", "institution_ids":
+        ["https://openalex.org/I26538001", "https://openalex.org/I36258959"]}]}, {"author_position":
+        "last", "author": {"id": "https://openalex.org/A5069754212", "display_name":
+        "Susan Frances Tapert", "orcid": "https://orcid.org/0000-0001-7259-6112",
+        "observed_orcids": ["https://orcid.org/0000-0001-7259-6112"]}, "institutions":
+        [{"id": "https://openalex.org/I36258959", "display_name": "University of California
+        San Diego", "ror": "https://ror.org/0168r3w48", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I36258959"]}, {"id": "https://openalex.org/I4210099595",
+        "display_name": "VA San Diego Healthcare System", "ror": "https://ror.org/00znqwq11",
+        "country_code": "US", "type": "healthcare", "lineage": ["https://openalex.org/I1322918889",
+        "https://openalex.org/I2799886695", "https://openalex.org/I4210099595", "https://openalex.org/I4210138663"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Susan
+        F Tapert", "raw_affiliation_strings": ["Department of Psychiatry, University
+        of California San Diego, La Jolla, California", "Veterans Affairs (VA) San
+        Diego Healthcare System, La Jolla, California", "Veterans Affairs (VA) San
+        Diego Healthcare System, La Jolla, California, Department of Psychiatry, University
+        of California San Diego, La Jolla, California"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Psychiatry, University of California
+        San Diego, La Jolla, California", "institution_ids": ["https://openalex.org/I36258959"]},
+        {"raw_affiliation_string": "Veterans Affairs (VA) San Diego Healthcare System,
+        La Jolla, California", "institution_ids": ["https://openalex.org/I4210099595"]},
+        {"raw_affiliation_string": "Veterans Affairs (VA) San Diego Healthcare System,
+        La Jolla, California, Department of Psychiatry, University of California San
+        Diego, La Jolla, California", "institution_ids": ["https://openalex.org/I36258959",
+        "https://openalex.org/I4210099595"]}]}], "publication_year": 2014, "abstract_inverted_index":
+        {"OBJECTIVE:": [0], "Adolescent": [1, 227], "marijuana": [2, 43, 56, 176,
+        215, 230, 273], "use": [3, 64, 102, 142, 177, 192, 216, 231, 289], "continues":
+        [4], "to": [5, 26, 90, 114, 180, 200, 220, 235, 266, 288], "increase": [6],
+        "in": [7, 41, 155, 183, 203], "prevalence": [8], "as": [9], "harm": [10],
+        "perception": [11], "declines.": [12], "Better": [13], "understanding": [14],
+        "of": [15, 38, 86, 110, 120, 211, 213, 272], "marijuana''s": [16], "impact":
+        [17], "on": [18, 128], "neurodevelopment": [19], "is": [20], "crucial.": [21],
+        "This": [22], "prospective": [23], "study": [24], "aimed": [25], "investigate":
+        [27], "cortical": [28, 129, 139, 221], "thickness": [29, 130, 222, 245, 251],
+        "and": [30, 34, 44, 71, 82, 100, 123, 131, 144, 164, 185, 193, 229, 240, 247,
+        257, 261], "neurocognitive": [31, 132], "performance": [32], "before": [33,
+        81, 163, 256], "after": [35, 83, 165, 168, 258, 270], "28": [36, 268], "days":
+        [37, 269], "monitored": [39, 166, 259], "abstinence": [40, 260], "adolescent":
+        [42, 55], "alcohol": [45, 63, 172, 191, 228], "users.": [46], "METHOD:": [47],
+        "Subjects": [48], "(N": [49], "=": [50, 69, 76], "54;": [51], ">70%": [52],
+        "male)": [53], "were": [54, 79, 253], "users": [57, 149], "(ages": [58], "15-18":
+        [59], "years)": [60], "with": [61, 250, 280], "regular": [62, 214], "(MJ":
+        [65], "+": [66], "ALC;": [67], "n": [68, 75], "24)": [70], "non-using": [72],
+        "controls": [73, 154], "(CON;": [74], "30)": [77], "who": [78], "compared":
+        [80], "4": [84], "weeks": [85], "sequential": [87], "urine": [88], "toxicology":
+        [89], "confirm": [91], "abstinence.": [92], "Participants": [93], "underwent":
+        [94], "magnetic": [95], "resonance": [96], "imaging,": [97], "neuropsychological":
+        [98], "assessment,": [99], "substance": [101, 141], "assessment": [103], "at":
+        [104, 116], "both": [105, 255], "time": [106], "points.": [107], "Repeated-measures":
+        [108], "analysis": [109], "covariance": [111], "was": [112, 178, 198, 217],
+        "used": [113], "look": [115], "the": [117, 156], "main": [118], "effects":
+        [119], "group,": [121], "time,": [122], "Group": [124], "\u00d7": [125], "Time":
+        [126], "interactions": [127], "functioning.": [133], "Bivariate": [134], "correlations":
+        [135], "estimated": [136], "associations": [137, 249], "between": [138], "thickness,":
+        [140], "severity,": [143], "cognitive": [145], "performance.": [146], "RESULTS:":
+        [147], "Marijuana": [148], "showed": [150], "thicker": [151, 201], "cortices":
+        [152, 182, 202], "than": [153], "left": [157], "entorhinal": [158], "cortex":
+        [159], "(ps": [160, 207, 223], "<": [161, 208, 224], ".03)": [162], "abstinence,":
+        [167], "adjusting": [169], "for": [170, 294], "lifetime": [171, 175, 190],
+        "use.": [173, 274], "More": [174], "linked": [179, 199, 234], "thinner": [181],
+        "temporal": [184], "frontal": [186], "regions,": [187], "whereas": [188],
+        "more": [189], "heavy": [194], "episodic": [195], "drinking": [196], "episodes":
+        [197], "all": [204], "four": [205], "lobes": [206], ".05).": [209], "Age":
+        [210], "onset": [212], "positively": [218], "related": [219, 287], ".03).":
+        [225], "CONCLUSIONS:": [226], "may": [232, 277], "be": [233, 278], "altered":
+        [236], "longer-term": [237], "neurodevelopmental": [238], "trajectories":
+        [239], "compromised": [241], "neural": [242, 263], "health.": [243], "Cortical":
+        [244], "alterations": [246], "dose-dependent": [248], "estimates": [252],
+        "observed": [254, 285], "suggest": [262], "differences": [264], "continue":
+        [265], "persist": [267], "cessation": [271], "Neural": [275], "recovery":
+        [276], "identified": [279], "longer": [281], "follow-up": [282], "periods;":
+        [283], "however,": [284], "changes": [286], "severity": [290], "could": [291],
+        "have": [292], "implications": [293], "future": [295], "psychosocial": [296],
+        "outcomes.": [297]}, "primary_location": {"id": "doi:10.15288/jsad.2014.75.729",
+        "doi": "https://doi.org/10.15288/jsad.2014.75.729", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.15288/jsad.2014.75.729", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S87620869", "display_name": "Journal of Studies on Alcohol
+        and Drugs", "issn_l": "1937-1888", "issn": ["1937-1888", "1938-4114"], "is_oa":
+        false, "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core", "dongbi-b",
+        "doyens", "jufo-1", "ki-jl-1", "medline", "norway-1", "poland-100", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4322698809", "host_organization_name":
+        "Alcohol Research Documentation", "host_organization_lineage": ["https://openalex.org/P4322698809"],
+        "host_organization_lineage_names": ["Alcohol Research Documentation"], "type":
+        "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Journal of
+        Studies on Alcohol and Drugs", "raw_type": "journal-article"}, "best_oa_location":
+        {"id": "pmh:oai:pubmedcentral.nih.gov:4161693", "doi": null, "is_oa": true,
+        "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4161693", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "J Stud Alcohol
+        Drugs", "raw_type": "Text"}, "locations": [{"id": "doi:10.15288/jsad.2014.75.729",
+        "doi": "https://doi.org/10.15288/jsad.2014.75.729", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.15288/jsad.2014.75.729", "pdf_url": null, "source": {"id":
+        "https://openalex.org/S87620869", "display_name": "Journal of Studies on Alcohol
+        and Drugs", "issn_l": "1937-1888", "issn": ["1937-1888", "1938-4114"], "is_oa":
+        false, "is_in_doaj": false, "is_core": true, "listed_in": ["cwts-core", "dongbi-b",
+        "doyens", "jufo-1", "ki-jl-1", "medline", "norway-1", "poland-100", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4322698809", "host_organization_name":
+        "Alcohol Research Documentation", "host_organization_lineage": ["https://openalex.org/P4322698809"],
+        "host_organization_lineage_names": ["Alcohol Research Documentation"], "type":
+        "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Journal of
+        Studies on Alcohol and Drugs", "raw_type": "journal-article"}, {"id": "pmid:25208190",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/25208190",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Journal of
+        studies on alcohol and drugs", "raw_type": "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:4161693",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4161693",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "J Stud Alcohol
+        Drugs", "raw_type": "Text"}, {"id": "pmh:oai:escholarship.org:ark:/13030/qt37j9p014",
+        "doi": null, "is_oa": false, "landing_page_url": "https://escholarship.org/uc/item/37j9p014",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400115", "display_name":
+        "eScholarship (California Digital Library)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2801248553", "host_organization_name": "California
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I2801248553"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Journal of Studies on Alcohol and Drugs, vol 75,
+        iss 5", "raw_type": "article"}, {"id": "pmh:oai:escholarship.org:ark:/13030/qt3pk485hd",
+        "doi": null, "is_oa": false, "landing_page_url": "https://escholarship.org/uc/item/3pk485hd",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400115", "display_name":
+        "eScholarship (California Digital Library)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2801248553", "host_organization_name": "California
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I2801248553"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Journal of Studies on Alcohol and Drugs, vol 75,
+        iss 5", "raw_type": "article"}, {"id": "pmh:qt37j9p014", "doi": null, "is_oa":
+        false, "landing_page_url": "http://www.escholarship.org/uc/item/37j9p014",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400115", "display_name":
+        "eScholarship (California Digital Library)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2801248553", "host_organization_name": "California
+        Digital Library", "host_organization_lineage": ["https://openalex.org/I2801248553"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Jacobus, Joanna; Squeglia, Lindsay M; Sorg, Scott
+        F; Nguyen-Louie, Tam T; &amp; Tapert, Susan F. (2014). Cortical thickness
+        and neurocognition in adolescent marijuana and alcohol users following 28
+        days of monitored abstinence.. Journal of studies on alcohol and drugs, 75(5),
+        729 - 743. doi: 10.15288/jsad.2014.75.729. UC San Diego: Retrieved from: http://www.escholarship.org/uc/item/37j9p014",
+        "raw_type": "article"}], "open_access": {"is_oa": true, "oa_status": "green",
+        "oa_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4161693", "any_repository_has_fulltext":
+        true}}], "group_by": []}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
       CF-Cache-Status:
       - DYNAMIC
       CF-Ray:
-      - a4c3a7b9a83ef432-DFW
+      - a4c9a393ee953064-DFW
       Connection:
       - keep-alive
       Content-Encoding:
@@ -461,7 +606,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sun, 18 Oct 2026 01:09:01 GMT
+      - Sun, 18 Oct 2026 18:34:45 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -481,11 +626,11 @@ interactions:
       X-RateLimit-Prepaid-Remaining-USD:
       - '0'
       X-RateLimit-Remaining:
-      - '986'
+      - '971'
       X-RateLimit-Remaining-USD:
-      - '0.0986'
+      - '0.0971'
       X-RateLimit-Reset:
-      - '82259'
+      - '19515'
       access-control-allow-headers:
       - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
         X-Impersonate-User
@@ -500,9 +645,9 @@ interactions:
       nel:
       - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
       report-to:
-      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=DYhvpL2%2BFgkxI0%2BSe7DA2UYcehT%2Fe79Q71p4gfsfPxc%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792285741"}],"max_age":3600}'
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=g8efrtImQ%2Bdn2Vnc1hdDHERLnu37OLyJcDkYyifBIvg%3D\u0026sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d\u0026ts=1792348485"}],"max_age":3600}'
       reporting-endpoints:
-      - heroku-nel="https://nel.heroku.com/reports?s=DYhvpL2%2BFgkxI0%2BSe7DA2UYcehT%2Fe79Q71p4gfsfPxc%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792285741"
+      - heroku-nel="https://nel.heroku.com/reports?s=g8efrtImQ%2Bdn2Vnc1hdDHERLnu37OLyJcDkYyifBIvg%3D&sid=e11707d5-02a7-43ef-b45e-2cf4d2036f7d&ts=1792348485"
     status:
       code: 200
       message: OK

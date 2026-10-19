@@ -102,6 +102,8 @@ def test_metadata_survives(written):
     assert processed.metadata["authors"] == "Jones, S; Noppeney, U"
     assert processed.metadata["publication_year"] == 2012
     assert "Naïve café rôle" in processed.metadata["abstract"]
+    # the licences are the parse's; the corpus record carries none
+    assert "license" not in processed.metadata
 
 
 def test_analyses_and_tables_survive(written):

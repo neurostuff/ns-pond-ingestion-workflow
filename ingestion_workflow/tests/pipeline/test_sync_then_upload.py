@@ -536,8 +536,20 @@ def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
                 summary={**pubget.summary, "download_source": "wiley"}),
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
                 summary={"source": read, "tables": 0, "passed": 0}),
+        Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
+                payload={**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
+                         "copy_licenses": COPY_LICENSES}, summary={}),
     ])
     return ctx, ref
+
+
+#: Each held copy's licence, as the metadata stage would decide it: the Wiley copy's
+#: Crossref's version-of-record deposit, the pubget copy's nobody's.
+COPY_LICENSES = {
+    "pubget": {"license_id": "all-rights-reserved", "determination": "assumed"},
+    "wiley": {"license_id": "other", "determination": "stated", "stated_by": "crossref",
+              "stated_as": "http://onlinelibrary.wiley.com/termsAndConditions#vor"},
+}
 
 
 @pytest.mark.parametrize("read, download", [("pdf", "wiley"), ("pubget", "pubget")])
@@ -553,6 +565,8 @@ def test_the_text_copy_is_the_download_the_judged_text_was_read_from(
     assert paper["source"] == read
     copy = {k: v for k, v in paper["text_copy"].items() if v is not None and k != "license"}
     assert copy == catalog.artifact(ref.id, "download", download).summary["copy"]
+    stated = {k: v for k, v in paper["text_copy"]["license"].items() if v is not None}
+    assert stated == COPY_LICENSES[download]
 
 
 def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(env, monkeypatch):

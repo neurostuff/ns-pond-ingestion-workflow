@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.utils.doi import find_doi
 
@@ -21,11 +21,14 @@ Correction = Dict[str, Optional[str]]
 
 
 class PartialAnswer(RuntimeError):
-    """A batched lookup failed part-way; `found` holds what earlier batches returned."""
+    """A batched lookup failed part-way; `found` holds what earlier batches returned, and
+    `causes` the failed requests' errors."""
 
-    def __init__(self, message: str, found: Dict[str, Any]) -> None:
+    def __init__(self, message: str, found: Dict[str, Any],
+                 causes: Sequence[BaseException] = ()) -> None:
         super().__init__(message)
         self.found = found
+        self.causes = tuple(causes)
 
 
 def _as_list(value: Any) -> List[Any]:

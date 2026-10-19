@@ -10,6 +10,7 @@ from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote, urljoin
 
 import requests
+from study_schema.models.paper_parse import MetadataSource
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
@@ -34,8 +35,11 @@ def _can_be_retried(exc: BaseException) -> bool:
 
 _METADATA_FIELDS = (
     "ids,display_name,authorships,publication_year,abstract_inverted_index,"
-    "primary_location,open_access"
+    "primary_location,best_oa_location,locations,open_access"
 )
+#: What a record keeps of the work verbatim: where its copies are, under which licences,
+#: and how it is open.
+_RAW_FIELDS = ("primary_location", "best_oa_location", "locations", "open_access")
 
 
 # OpenAlex's Work schema documents `ids.pmcid`, but no recorded or live answer checked on
@@ -74,8 +78,8 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         abstract=_abstract(work.get("abstract_inverted_index")),
         journal=source.get("display_name"),
         publication_year=work.get("publication_year"),
-        open_access=(work.get("open_access") or {}).get("is_oa"),
-        source="openalex",
+        source=MetadataSource.openalex.value,
+        raw_metadata={"openalex": {name: work.get(name) for name in _RAW_FIELDS}},
     )
 
 
@@ -102,6 +106,8 @@ class OaLocation:
     #: "publishedVersion", "acceptedVersion" or "submittedVersion".
     version: Optional[str]
     is_oa: bool = True
+    #: The location's licence, as OpenAlex gives it ("cc-by", "publisher-specific-oa").
+    license: Optional[str] = None
 
 
 class LocationLookupFailed(PartialAnswer):
@@ -134,6 +140,7 @@ def _locations_from(work: Dict) -> List[OaLocation]:
                 source_name=source.get("display_name"),
                 version=loc.get("version"),
                 is_oa=bool(loc.get("is_oa")),
+                license=loc.get("license") or None,
             )
         )
     return locations
@@ -339,7 +346,7 @@ class OpenAlexClient:
         results: Dict[str, ArticleMetadata] = {}
         for id_type in ("doi", "pmid"):
             wanted = {
-                str(getattr(identifier, id_type)).lower(): identifier
+                str(getattr(identifier, id_type)): identifier
                 for identifier in identifiers
                 if getattr(identifier, id_type) and identifier.slug not in results
             }
@@ -357,9 +364,9 @@ class OpenAlexClient:
                 answered = set()
                 for work in payload.get("results", []) or []:
                     value = getattr(_identifier_from(work.get("ids"), [id_type]), id_type)
-                    identifier = wanted.get(str(value).lower()) if value else None
+                    identifier = wanted.get(str(value)) if value else None
                     if identifier is not None:
-                        answered.add(str(value).lower())
+                        answered.add(str(value))
                         results[identifier.slug] = _metadata_from(work)
                 if id_type == "doi":
                     for doi, work in self._works_asked_singly(batch, answered, _METADATA_FIELDS):

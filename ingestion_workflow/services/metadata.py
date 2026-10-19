@@ -5,9 +5,15 @@ The metadata will be retrieved from the following sources
 in this order:
 1. Semantic Scholar
 2. PubMed
-3. OpenAlex
-4. fallback to processed metadata from extractors
+3. Crossref (licence deposits only)
+4. OpenAlex
+5. fallback to processed metadata from extractors
    (information from the downloaded article)
+
+Every article returned also gets its licences (`services.licenses`): one for each copy a
+download holds, one for the paper, and one for each copy a provider lists that no
+download holds. Semantic Scholar, Crossref and OpenAlex are asked for every article,
+since each can state a licence, and so is each held copy's own record.
 """
 
 from __future__ import annotations
@@ -15,25 +21,62 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
+from urllib.parse import urlsplit
 
+import requests
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
-from study_schema.models.paper_parse import MetadataSource
+from study_schema.models.paper_parse import (
+    CopyRoute,
+    CopyVersion,
+    License,
+    MetadataSource,
+    OaStatus,
+    ReportedCopy,
+)
+from tenacity import RetryError
 
-from ingestion_workflow.clients.openalex import OpenAlexClient
+from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.clients.openalex import OpenAlexClient, _locations_from
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.copies import OPENALEX_VERSIONS, located
+from ingestion_workflow.extractors.pdf_extractor import _type_of
 from ingestion_workflow.extractors.utils import safe_hash_stem
-from ingestion_workflow.models.download import DownloadSource
+from ingestion_workflow.models.download import DownloadCopy, DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services.citations import JATS_SOURCES
+from ingestion_workflow.services.licenses import (
+    HELD,
+    LICENSE_PROVIDERS,
+    OWN,
+    Statement,
+    Undecided,
+    crossref_statements,
+    license_of,
+    own_license,
+    stated,
+)
+from ingestion_workflow.services.paper_parse import article_identifiers
+from ingestion_workflow.utils.preprints import is_preprint_doi
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class HeldDownload:
+    """One ok download of an article: its source, the copy it holds, and its files."""
+
+    source: str
+    copy: DownloadCopy
+    files: Sequence[Path] = ()
 
 
 class MetadataService:
@@ -43,8 +86,9 @@ class MetadataService:
     Coordinates metadata fetching from multiple sources:
     1. Semantic Scholar (if API key available)
     2. PubMed (if email configured)
-    3. OpenAlex (if email configured)
-    4. Fallback to extractor-specific files
+    3. Crossref, for its licence deposits
+    4. OpenAlex (if email or key configured)
+    5. Fallback to extractor-specific files
     """
 
     def __init__(self, settings: Settings) -> None:
@@ -52,6 +96,11 @@ class MetadataService:
         self._s2_client: Optional[SemanticScholarClient] = None
         self._pubmed_client: Optional[PubMedClient] = None
         self._openalex_client: Optional[OpenAlexClient] = None
+        self._crossref_client = CrossrefClient(settings.crossref_email)
+        #: Article slug -> why its licences could not be decided, for the last batch.
+        self.undecided: Dict[str, Undecided] = {}
+        #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
+        self.conflicts: Dict[str, str] = {}
 
         # Initialize clients if credentials available
         if settings.semantic_scholar_api_key:
@@ -66,7 +115,10 @@ class MetadataService:
         self._openalex_client = OpenAlexClient.from_settings(settings)
 
     def enrich_metadata(
-        self, extracted_contents: List[ExtractedContent]
+        self,
+        extracted_contents: List[ExtractedContent],
+        held: Mapping[str, Sequence[HeldDownload]],
+        dois: Mapping[str, Sequence[str]],
     ) -> Dict[str, ArticleMetadata]:
         """
         Enrich extracted contents with article metadata.
@@ -75,38 +127,91 @@ class MetadataService:
         ----------
         extracted_contents : list of ExtractedContent
             Content objects to enrich with metadata
+        held : mapping of slug to HeldDownload
+            Each article's ok downloads, in the order the download sources are tried;
+            each copy gets a licence
+        dois : mapping of slug to DOIs
+            Every DOI the catalog holds for each article. Crossref and OpenAlex are asked
+            by each: a journal's DOI for the version of record, a preprint server's for
+            the preprint. An article with two journal DOIs is a catalog conflict: it is
+            not asked about, and `conflicts` says why.
 
         Returns
         -------
         dict
-            Mapping from slug to ArticleMetadata
+            Mapping from slug to ArticleMetadata, each with its licences decided,
+            except an article `undecided` names, with why: a source that could state
+            one of its licences did not answer or could not be read.
         """
+        self.require_licence_providers()
+        self.undecided = {}
+        self.conflicts = {}
         if not extracted_contents:
             return {}
 
-        identified_items = [item for item in extracted_contents if item.identifier]
+        identified_items = []
+        for item in extracted_contents:
+            if not item.identifier:
+                continue
+            published = sorted(d for d in dois[item.slug] if not is_preprint_doi(d))
+            if len(published) > 1:
+                self.conflicts[item.slug] = (
+                    f"catalog conflict: the article holds two DOIs of a version of record, "
+                    f"{' and '.join(published)}; its aliases need repair")
+                continue
+            identified_items.append(item)
+        extracted_contents = [item for item in extracted_contents
+                              if item.slug not in self.conflicts]
 
         id_to_content = {item.identifier.slug: item for item in identified_items}
 
         results: Dict[str, ArticleMetadata] = {}
-        sources_checked: List[str] = []
+        # Article slug -> each provider's record, for the licences.
+        answers: Dict[str, Dict[str, ArticleMetadata]] = {}
+        # Asked identifier slug -> each licence provider that was not asked or did not
+        # answer for it, and why.
+        unanswered: Dict[str, Dict[str, str]] = {}
+
+        def ask(name: str, fetch, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
+            found = fetch(identifiers, unanswered)
+            for identifier_slug, metadata in found.items():
+                content = id_to_content.get(identifier_slug)
+                if content is not None:
+                    answers.setdefault(content.slug, {})[name] = metadata
+            return found
+
+        # Each article's DOIs, a journal's apart from a preprint server's, and the
+        # identifiers Crossref and OpenAlex are asked by for each.
+        journal: Dict[str, Optional[str]] = {}
+        preprints: Dict[str, List[str]] = {}
+        by_doi: Dict[str, List[Tuple[str, Identifier]]] = {}
+        for item in identified_items:
+            known = sorted({d for d in dois[item.slug] if d})
+            published = [d for d in known if not is_preprint_doi(d)]
+            journal[item.slug] = published[0] if published else None
+            preprints[item.slug] = [d for d in known if is_preprint_doi(d)]
+            by_doi[item.slug] = [(d, Identifier(doi=d)) for d in known]
+
+        def merge(found: Dict[str, ArticleMetadata]) -> None:
+            for identifier_slug, metadata in found.items():
+                content = id_to_content.get(identifier_slug)
+                if content is None or not self._has_useful_metadata(metadata):
+                    continue
+                if content.slug in results:
+                    results[content.slug] = results[content.slug].merge_from(metadata)
+                else:
+                    results[content.slug] = metadata
 
         # Try Semantic Scholar first
-        if self._s2_client and identified_items:
+        if identified_items:
             logger.info(
                 "Fetching metadata from Semantic Scholar for %d articles",
                 len(identified_items),
             )
-            sources_checked.append("semantic_scholar")
-            s2_results = self._get_semantic_scholar_metadata_cached(
-                [item.identifier for item in identified_items]
-            )
-            for identifier_slug, metadata in s2_results.items():
-                content = id_to_content.get(identifier_slug)
-                if content is None:
-                    continue
-                if self._has_useful_metadata(metadata):
-                    results[content.slug] = metadata
+            s2_results = ask(MetadataSource.semantic_scholar.value,
+                             self._get_semantic_scholar_metadata_cached,
+                             [item.identifier for item in identified_items])
+            merge(s2_results)
             logger.info(
                 "Semantic Scholar returned metadata for %d articles",
                 len(s2_results),
@@ -115,7 +220,7 @@ class MetadataService:
         # Each provider fills what the earlier ones left empty, and is skipped
         # only for an article with nothing left to fill. Stopping instead at the
         # first `sufficient` record left 69% of one batch without an abstract
-        # that PubMed had for 98.5% of them.
+        # that PubMed had for 98.5% of them. PubMed states no licence.
         if self._pubmed_client and identified_items:
             identifiers = [
                 item.identifier
@@ -127,47 +232,41 @@ class MetadataService:
                     "Fetching metadata from PubMed for %d articles",
                     len(identifiers),
                 )
-                sources_checked.append("pubmed")
-                pubmed_results = self._get_pubmed_metadata_cached(identifiers)
-                # Merge with existing results
-                for identifier_slug, pubmed_meta in pubmed_results.items():
-                    content = id_to_content.get(identifier_slug)
-                    if content is None:
-                        continue
-                    if not self._has_useful_metadata(pubmed_meta):
-                        continue
-                    article_slug = content.slug
-                    if article_slug in results:
-                        results[article_slug] = results[article_slug].merge_from(pubmed_meta)
-                    else:
-                        results[article_slug] = pubmed_meta
+                pubmed_results = ask(MetadataSource.pubmed.value,
+                                     self._get_pubmed_metadata_cached, identifiers)
+                merge(pubmed_results)
                 logger.info(
                     "PubMed returned metadata for %d articles",
                     len(pubmed_results),
                 )
 
+        # Crossref holds the licences the publisher deposits, by DOI; a work without a
+        # DOI has no Crossref record to state one.
+        asked_dois = [ident for item in identified_items for _, ident in by_doi[item.slug]]
+        crossref: Dict[str, ArticleMetadata] = {}
+        if asked_dois:
+            logger.info("Fetching licences from Crossref for %d DOIs", len(asked_dois))
+            crossref = self._get_crossref_metadata_cached(asked_dois, unanswered)
+
         # OpenAlex indexes what the other two miss: preprints, and articles
         # outside PMC that Semantic Scholar has no record of. Of three PDFs in
         # one shared folder that no provider answered for, it had all three.
-        if self._openalex_client and identified_items:
-            identifiers = [
-                item.identifier
-                for item in identified_items
-                if not _filled(results.get(item.slug))
-            ]
-            if identifiers:
-                logger.info("Fetching metadata from OpenAlex for %d articles", len(identifiers))
-                sources_checked.append("openalex")
-                for identifier_slug, meta in self._get_openalex_metadata_cached(
-                    identifiers
-                ).items():
-                    content = id_to_content.get(identifier_slug)
-                    if content is None or not self._has_useful_metadata(meta):
-                        continue
-                    if content.slug in results:
-                        results[content.slug] = results[content.slug].merge_from(meta)
-                    else:
-                        results[content.slug] = meta
+        # It is asked about every article for the copies it lists and their
+        # licences, and fills only what the others left empty.
+        # An article whose presented DOI is a preprint's is asked by its journal's DOI,
+        # and each preprint DOI beside a journal's is asked by itself, for its locations.
+        openalex: Dict[str, ArticleMetadata] = {}
+        if identified_items:
+            logger.info("Fetching metadata from OpenAlex for %d articles", len(identified_items))
+            main = {item.slug: _by_journal_doi(item.identifier, journal[item.slug])
+                    for item in identified_items}
+            extra = [ident for item in identified_items for d, ident in by_doi[item.slug]
+                     if d != main[item.slug].doi]
+            openalex = self._get_openalex_metadata_cached(
+                list({i.slug: i for i in [*main.values(), *extra]}.values()), unanswered)
+            merge({item.identifier.slug: openalex[main[item.slug].slug]
+                   for item in identified_items
+                   if main[item.slug].slug in openalex and not _filled(results.get(item.slug))})
 
         # The extractor's own metadata last, to fill what the APIs did not.
         unfilled = [item for item in extracted_contents if not _filled(results.get(item.slug))]
@@ -176,7 +275,6 @@ class MetadataService:
                 "Reading extractor metadata for %d articles",
                 len(unfilled),
             )
-            sources_checked.append("fallback")
             for item in unfilled:
                 try:
                     fallback_meta = self._get_fallback_metadata(item)
@@ -192,29 +290,87 @@ class MetadataService:
                         exc,
                     )
 
+        by_slug = {item.slug: item for item in extracted_contents}
+        for slug, metadata in results.items():
+            item = by_slug[slug]
+            if item.identifier is None:
+                continue
+            main_ident = _by_journal_doi(item.identifier, journal[slug])
+            asked = [item.identifier.slug, main_ident.slug,
+                     *(ident.slug for _, ident in by_doi[slug])]
+            waiting = {name: why for a in asked for name, why in unanswered.get(a, {}).items()}
+            crossref_by_doi = {d: (crossref[i.slug].raw_metadata.get("crossref") or {})
+                               for d, i in by_doi[slug] if i.slug in crossref}
+            works = [(openalex[i].raw_metadata.get("openalex") or {})
+                     for i in dict.fromkeys([main_ident.slug, *(ident.slug for d, ident
+                                                                in by_doi[slug])])
+                     if i in openalex]
+            # Read before the record's own raw data is replaced: the record may be OpenAlex's.
+            paper_work = (openalex[main_ident.slug].raw_metadata.get("openalex")
+                          if main_ident.slug in openalex else None)
+            if crossref_by_doi:
+                metadata.raw_metadata["crossref"] = crossref_by_doi
+            if works:
+                metadata.raw_metadata["openalex"] = works
+            ids = article_identifiers(item.identifier, [d for d, _ in by_doi[slug]], metadata)
+            try:
+                _decide_licenses(metadata, ids, item.identifier.doi, crossref_by_doi, works,
+                                 paper_work, answers.get(slug, {}), held.get(slug, ()), waiting)
+            except Undecided as exc:
+                self.undecided[slug] = exc
         return results
 
+    def require_licence_providers(self) -> None:
+        """Raise unless Semantic Scholar and OpenAlex are configured: without either, no
+        licence could be assumed, and no listed copy known."""
+        missing = [name for name, client in ((MetadataSource.semantic_scholar.value,
+                                              self._s2_client),
+                                             (MetadataSource.openalex.value,
+                                              self._openalex_client)) if client is None]
+        if missing:
+            raise RuntimeError(f"metadata needs {' and '.join(missing)} configured to decide "
+                               "licences")
+
     def _get_semantic_scholar_metadata_cached(
-        self, identifiers: List[Identifier]
+        self, identifiers: List[Identifier], unanswered: Optional[Dict[str, Dict[str, str]]] = None
     ) -> Dict[str, ArticleMetadata]:
-        return self._cached("semantic_scholar", self._s2_client, identifiers)
+        return self._cached(MetadataSource.semantic_scholar.value, self._s2_client,
+                            identifiers, unanswered)
 
     def _get_pubmed_metadata_cached(
-        self, identifiers: List[Identifier]
+        self, identifiers: List[Identifier], unanswered: Optional[Dict[str, Dict[str, str]]] = None
     ) -> Dict[str, ArticleMetadata]:
-        return self._cached("pubmed", self._pubmed_client, identifiers)
+        return self._cached(MetadataSource.pubmed.value, self._pubmed_client, identifiers,
+                            unanswered)
+
+    def _get_crossref_metadata_cached(
+        self, identifiers: List[Identifier], unanswered: Optional[Dict[str, Dict[str, str]]] = None
+    ) -> Dict[str, ArticleMetadata]:
+        return self._cached(MetadataSource.crossref.value, self._crossref_client, identifiers,
+                            unanswered)
 
     def _get_openalex_metadata_cached(
-        self, identifiers: List[Identifier]
+        self, identifiers: List[Identifier], unanswered: Optional[Dict[str, Dict[str, str]]] = None
     ) -> Dict[str, ArticleMetadata]:
-        return self._cached("openalex", self._openalex_client, identifiers)
+        return self._cached(MetadataSource.openalex.value, self._openalex_client, identifiers,
+                            unanswered)
 
     def _cached(
-        self, name: str, client, identifiers: List[Identifier]
+        self, name: str, client, identifiers: List[Identifier],
+        unanswered: Optional[Dict[str, Dict[str, str]]] = None,
     ) -> Dict[str, ArticleMetadata]:
-        """A provider's metadata, from `<cache>/metadata/<name>/<slug>.json` when held."""
-        cache_dir = self.settings.get_cache_dir("metadata") / name
+        """A provider's metadata, from `<cache>/metadata/<dir>/<slug>.json` when held.
+
+        A licence provider whose request fails is noted in `unanswered` for each article
+        it did not answer for.
+        """
+        cache_dir = self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS[name]
         cache_dir.mkdir(parents=True, exist_ok=True)
+
+        def missed(slugs, why: str) -> None:
+            if unanswered is not None and name in _LICENSE_PROVIDERS:
+                for slug in slugs:
+                    unanswered.setdefault(slug, {})[name] = why
 
         results: Dict[str, ArticleMetadata] = {}
         uncached: List[Identifier] = []
@@ -231,12 +387,16 @@ class MetadataService:
                                name, identifier.slug, exc)
                 uncached.append(identifier)
 
-        if uncached and client:
+        if uncached and client is not None:
             try:
                 fresh_results = client.get_metadata(uncached)
             except Exception as exc:
                 logger.error("%s metadata request failed: %s", name, exc)
-                return results
+                fresh_results = exc.found if isinstance(exc, PartialAnswer) else {}
+                causes = exc.causes if isinstance(exc, PartialAnswer) else (exc,)
+                missed([i.slug for i in uncached if i.slug not in fresh_results],
+                       OUTAGE if causes and all(map(_outage, causes))
+                       else f"refused the request ({causes[0] if causes else exc})")
             for slug, metadata in fresh_results.items():
                 try:
                     (cache_dir / f"{slug}.json").write_text(
@@ -273,9 +433,7 @@ class MetadataService:
                 bool(metadata.journal),
                 metadata.publication_year is not None,
                 bool(metadata.keywords),
-                bool(metadata.license),
                 metadata.source is not None,
-                metadata.open_access is not None,
             ]
         )
 
@@ -501,9 +659,9 @@ class MetadataService:
             return None
 
 
-#: What a later provider is still asked for. Keywords, license and open
-#: access are left out: no provider fills them reliably, so demanding them
-#: sent every article to every provider.
+#: What a later provider is still asked for. Keywords are left out: no
+#: provider fills them reliably, so demanding them sent every article to
+#: every provider.
 FILLED = ("title", "abstract", "journal", "publication_year", "authors")
 
 
@@ -518,3 +676,167 @@ def _filled(metadata: Optional[ArticleMetadata]) -> bool:
         if isinstance(value, str) and not value.strip():
             return False
     return True
+
+
+#: Each provider's cache under `<cache>/metadata/`. The cache holds parsed records, so a
+#: record that keeps more of the response (OpenAlex's locations) needs a directory of its own.
+PROVIDER_CACHE_DIRS = {
+    MetadataSource.semantic_scholar.value: "semantic_scholar",
+    MetadataSource.pubmed.value: "pubmed",
+    MetadataSource.crossref.value: "crossref-licenses",
+    MetadataSource.openalex.value: "openalex-locations",
+}
+
+_LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
+#: Why a provider that was down, or busy, left an article: asked again on a later run.
+OUTAGE = "did not answer"
+
+
+def _outage(exc: BaseException) -> bool:
+    """A provider that was down or busy (a timeout, a dropped connection, 429 or 5xx), not
+    one that refused the request."""
+    if isinstance(exc, RetryError):
+        exc = exc.last_attempt.exception() or exc
+    if isinstance(exc, requests.HTTPError):
+        status = getattr(exc.response, "status_code", None)
+        return status == 429 or (status is not None and status >= 500)
+    return isinstance(exc, (requests.ConnectionError, requests.Timeout))
+_OA_STATUSES = {status.value for status in OaStatus}
+#: OpenAlex lists the paper's PubMed record as a location; it is an index entry, not a copy.
+_PUBMED = "pubmed.ncbi.nlm.nih.gov"
+#: The providers that list copies at URLs, so may state the licence of a copy at one.
+_LOCATING = {MetadataSource.openalex.value, MetadataSource.semantic_scholar.value}
+
+
+def _s2_pdf(raw: Optional[Dict]) -> Dict:
+    pdf = (raw or {}).get("openAccessPdf")
+    return pdf if isinstance(pdf, dict) else {}
+
+
+def _by_journal_doi(identifier: Identifier, journal: Optional[str]) -> Identifier:
+    """The identifier to ask about the version of record by: the article's, with its
+    journal's DOI in place of a preprint's."""
+    if journal is None or journal == identifier.doi:
+        return identifier
+    return Identifier(pmid=identifier.pmid, pmcid=identifier.pmcid, doi=journal)
+
+
+@dataclass(frozen=True)
+class _Listed:
+    """A copy a provider lists: where it is, which version, and the licence it gives."""
+
+    by: MetadataSource
+    url: str
+    route: CopyRoute
+    version: Optional[CopyVersion]
+    server: Optional[str]
+    license: Optional[License]
+
+
+def _listed(by: MetadataSource, url: str, doi: Optional[str], version: Optional[CopyVersion],
+            location_type: Optional[str], license: Optional[str]) -> _Listed:
+    route, version, server = located(url, doi, version, location_type)
+    return _Listed(by, url, route, version, server, stated(by, license))
+
+
+def _decide_licenses(
+    metadata: ArticleMetadata,
+    ids,
+    doi: Optional[str],
+    crossref: Mapping[str, Mapping],
+    works: Sequence[Mapping],
+    paper_work: Optional[Mapping],
+    replies: Mapping[str, ArticleMetadata],
+    held: Sequence[HeldDownload],
+    unanswered: Mapping[str, str],
+) -> None:
+    """Set the licence of each held copy, of the paper and of each reported copy, and
+    `oa_status`, from every provider's record.
+
+    `ids` are the paper's identifiers (`paper_parse.article_identifiers`), `crossref` each
+    DOI's deposits, `works` OpenAlex's works for the article and `paper_work` the one it
+    is asked about by (by its journal's DOI when it has one), and `held` the downloads in
+    the order their sources are tried. Raises Undecided while a
+    provider that lists copies (OpenAlex, Semantic Scholar) has not answered, or one that
+    comes before a licence's deciding statement has not.
+    """
+    def outage(sources) -> bool:
+        return all(unanswered.get(name) == OUTAGE for name in sources)
+
+    listing = sorted(set(unanswered) & _LOCATING)
+    if listing:
+        raise Undecided("the copies the providers list are unknown: " + "; ".join(
+            f"{name} {unanswered[name]}" for name in listing), listing, outage(listing))
+
+    listed = [_listed(MetadataSource.openalex, loc.pdf_url or loc.landing_page_url, doi,
+                      OPENALEX_VERSIONS.get(str(loc.version)), _type_of(loc.source_type),
+                      loc.license)
+              for work in works for loc in _locations_from(work)]
+    s2 = replies.get(MetadataSource.semantic_scholar.value)
+    s2_pdf = _s2_pdf(s2.raw_metadata.get(MetadataSource.semantic_scholar.value) if s2 else None)
+    if s2_pdf.get("url"):
+        listed.append(_listed(MetadataSource.semantic_scholar, s2_pdf["url"], doi, None, None,
+                              s2_pdf.get("license")))
+    preprint_dois = {p.doi for p in ids.preprint_dois or []}
+    statements: Dict[str, List[Statement]] = {
+        MetadataSource.crossref.value: [
+            s for d in sorted(crossref) for s in crossref_statements(
+                (crossref[d] or {}).get("license"), preprint=d in preprint_dois)],
+        MetadataSource.openalex.value: [
+            Statement(c.license, c.version, c.url, c.route) for c in listed
+            if c.by == MetadataSource.openalex and c.license is not None],
+        HELD: [],
+    }
+    waiting = set(unanswered)
+
+    def at(url: Optional[str]) -> Optional[License]:
+        """The licence a provider lists for the copy at `url`."""
+        return next((c.license for c in listed if c.url == url and c.license), None)
+
+    def decide(what: str, version, own: Optional[License], waits) -> License:
+        try:
+            return license_of(version, own, statements, waits)
+        except Undecided as exc:
+            why = "; ".join(f"{name} {unanswered[name]}" if name in unanswered else
+                            "its own record could not be read" for name in exc.sources)
+            raise Undecided(f"the licence of {what} is undecided: {why}", exc.sources,
+                            outage(exc.sources)) from exc
+
+    # Each held copy's own record, read once; a copy at a URL is the one listed there.
+    records: List[Tuple[HeldDownload, Optional[License], bool]] = []
+    for download in held:
+        try:
+            own, unread = own_license(download.source, download.files), False
+        except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
+            logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
+            own, unread = None, True
+        records.append((download, own, unread))
+        if own is not None:
+            statements[HELD].append(Statement(own, download.copy.version))
+    # Every record is read before any copy is decided, so that each copy can take another's.
+    for download, own, unread in records:
+        own = own or at(download.copy.url)
+        metadata.copy_licenses[download.source] = decide(
+            f"the {download.source} copy", download.copy.version, own,
+            waiting | ({OWN} if unread else set()))
+
+    paper_version = (CopyVersion.submitted if ids.publication_status == "preprint"
+                     else CopyVersion.vor)
+    metadata.license = decide("the paper", paper_version, None, waiting)
+
+    held_urls = {h.copy.url for h in held if h.copy.url}
+    # A copy at PMC or at the publisher is the one a download from there holds.
+    held_hosts = {h.copy.route for h in held} & {CopyRoute.pmc, CopyRoute.publisher}
+    seen: Set[str] = set()
+    for copy in listed:
+        if (copy.url in seen or copy.url in held_urls or copy.route in held_hosts
+                or urlsplit(copy.url).hostname == _PUBMED):
+            continue
+        seen.add(copy.url)
+        metadata.reported_copies.append(ReportedCopy(
+            route=copy.route, version=copy.version, url=copy.url, preprint_server=copy.server,
+            reported_by=copy.by,
+            license=decide(f"the copy at {copy.url}", copy.version, copy.license, waiting)))
+
+    status = ((paper_work or {}).get("open_access") or {}).get("oa_status")
+    metadata.oa_status = status if status in _OA_STATUSES else None

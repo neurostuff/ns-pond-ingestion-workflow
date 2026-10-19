@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Tuple
 
 from lxml import etree
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
@@ -83,6 +83,20 @@ def _pmc_version(meta: etree._Element) -> CopyVersion:
     return CopyVersion.am if ids & _MANUSCRIPT_IDS else CopyVersion.vor
 
 
+def located(
+    url: str, doi: Optional[str], version: Optional[CopyVersion], location_type: Optional[str]
+) -> Tuple[CopyRoute, Optional[CopyVersion], Optional[str]]:
+    """The route, version and preprint server of a copy at `url`, which a location of the
+    work (`location_type`, as `pdf_extractor` types them, and `version`) lists."""
+    server = preprint_server_of_url(url, doi)
+    if _is_pmc_copy(url):
+        return CopyRoute.pmc, version, None
+    if server is not None:
+        return (CopyRoute.preprint_server,
+                CopyVersion.submitted if server.preprints_only else version, server.name)
+    return _PDF_LOCATIONS.get(str(location_type), CopyRoute.unrecorded), version, None
+
+
 def _pdf_copy(result: DownloadResult) -> DownloadCopy:
     """The kind of site the PDF was fetched from; a PDF with no fetch recorded (supplied by
     hand, or fetched before attempts were kept) is unrecorded."""
@@ -91,26 +105,15 @@ def _pdf_copy(result: DownloadResult) -> DownloadCopy:
         return DownloadCopy(route=CopyRoute.unrecorded, access=CopyAccess.unrecorded)
     attempt = fetched[-1]
     url = str(attempt.get("pdf_url") or attempt["url"])
-    server = preprint_server_of_url(url, result.identifier.doi)
-    version = OPENALEX_VERSIONS.get(str(attempt.get("version")))
-    if _is_pmc_copy(url):
-        route = CopyRoute.pmc
-    elif server is not None:
-        route = CopyRoute.preprint_server
-        if server.preprints_only:
-            version = CopyVersion.submitted
-    else:
-        # Semantic Scholar does not say what kind of site a PDF is on; the work's other
-        # locations on the same site may (`pdf_extractor.site_type`).
-        route = _PDF_LOCATIONS.get(str(attempt.get("location_type"))) or _PDF_LOCATIONS.get(
-            str(attempt.get("site_type")), CopyRoute.unrecorded)
-    return DownloadCopy(
-        route=route,
-        version=version,
-        access=CopyAccess.public,
-        url=url,
-        preprint_server=server.name if server is not None else None,
-    )
+    # Semantic Scholar does not say what kind of site a PDF is on; the work's other
+    # locations on the same site may (`pdf_extractor.site_type`).
+    location_type = (attempt.get("location_type") if attempt.get("location_type") in _PDF_LOCATIONS
+                     else attempt.get("site_type"))
+    route, version, server = located(url, result.identifier.doi,
+                                     OPENALEX_VERSIONS.get(str(attempt.get("version"))),
+                                     location_type)
+    return DownloadCopy(route=route, version=version, access=CopyAccess.public, url=url,
+                        preprint_server=server)
 
 
 def _wiley_copy(result: DownloadResult) -> DownloadCopy:
@@ -149,4 +152,4 @@ def copy_of(result: DownloadResult) -> DownloadCopy:
     return DOWNLOAD_COPY[result.source](result)
 
 
-__all__ = ["DOWNLOAD_COPY", "OPENALEX_VERSIONS", "copy_of"]
+__all__ = ["DOWNLOAD_COPY", "OPENALEX_VERSIONS", "copy_of", "located"]

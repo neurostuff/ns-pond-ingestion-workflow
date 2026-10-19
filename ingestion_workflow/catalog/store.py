@@ -363,8 +363,10 @@ class Catalog:
 
     @staticmethod
     def _aliases(conn: sqlite3.Connection, article_id: str, kind: str) -> List[str]:
+        # `+kind` keeps sqlite off the (kind, value) key, which it otherwise picks and then
+        # scans every alias of the kind: 0.9 s a call on the production catalog.
         return [row[0] for row in conn.execute(
-            "SELECT value FROM aliases WHERE article_id=? AND kind=? ORDER BY value",
+            "SELECT value FROM aliases WHERE article_id=? AND +kind=? ORDER BY value",
             (article_id, kind))]
 
     def _compatible(self, conn, article_ids: Sequence[str], incoming: Mapping[str, str]) -> bool:

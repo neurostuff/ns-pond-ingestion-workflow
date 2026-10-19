@@ -72,8 +72,8 @@ class ParseInputs:
     """What the sync stage holds beside the bundle that the two files need."""
 
     article_id: str
-    #: The copy the text was read from, as its download recorded it.
-    text_copy: DownloadCopy
+    #: The copy the text was read from, as its download recorded it, with its licence.
+    text_copy: pp.HeldCopy
     #: Every DOI the catalog holds for the article.
     dois: Sequence[str]
     base_study_id: Optional[str] = None
@@ -220,7 +220,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            _identifiers(content.identifier, inputs.dois, meta),
+            article_identifiers(content.identifier, inputs.dois, meta),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -229,7 +229,8 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
             ],
         ),
         source=source,
-        text_copy=_held_copy(inputs.text_copy),
+        text_copy=inputs.text_copy,
+        reported_copies=list(meta.reported_copies) or None,
         text_path=text_file.relative_to(root).as_posix(),
         text_sha256=hashlib.sha256(raw).hexdigest(),
         text_length=len(text.text),
@@ -247,21 +248,22 @@ def _text_file(root: Path, source: str) -> Optional[Path]:
     return found[0] if found else None
 
 
-#: No stage decides a licence yet, so every licence the parse states is the one the
-#: contract allows without a statement: all rights reserved, which lets nothing be passed on.
-_NO_LICENCE_DECIDED = pp.License(
-    license_id=pp.LicenseId.all_rights_reserved,
-    determination=pp.LicenseDetermination.assumed,
-)
+def held_copy(copy: DownloadCopy, meta, source: str) -> pp.HeldCopy:
+    """The `source` download's copy, with the licence the metadata stage decided for it.
 
-def _held_copy(copy: DownloadCopy) -> pp.HeldCopy:
+    Raises LookupError when the metadata record holds none, which happens only while
+    the metadata artifact is older than the download."""
+    license = meta.copy_licenses.get(source)
+    if license is None:
+        raise LookupError(f"the metadata record holds no licence for the {source} copy the "
+                          "text was read from")
     return pp.HeldCopy(
         route=copy.route,
         version=copy.version,
         access=copy.access,
         url=copy.url,
         preprint_server=copy.preprint_server,
-        license=_NO_LICENCE_DECIDED,
+        license=license,
     )
 
 
@@ -282,19 +284,20 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         else [x for x in language or [] if isinstance(x, str)]
     )
     provider = _provider(meta.source)
+    if meta.license is None:
+        raise ValueError("the metadata record holds no licence for the paper")
     return pp.Bibliography(
         title=title,
         authors=[a.name for a in meta.authors] or None,
         journal=meta.journal,
         publication_year=meta.publication_year,
         abstract=meta.abstract,
-        # The merged record keeps no provider per field, so its abstract is credited to
-        # the record's provider.
-        abstract_provider=provider if meta.abstract else None,
+        abstract_provider=_provider(meta.abstract_provider) if meta.abstract else None,
         language=language or None,
         publication_types=list(types) or None,
         keywords=list(meta.keywords) or None,
-        license=_NO_LICENCE_DECIDED,
+        license=meta.license,
+        oa_status=meta.oa_status,
         corrections=None if corrections is None else [
             pp.Correction(kind=c["kind"], pmid=c.get("pmid"), doi=c.get("doi"))
             for c in corrections],
@@ -532,7 +535,7 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def _identifiers(identifier, dois: Sequence[str], meta):
+def article_identifiers(identifier, dois: Sequence[str], meta):
     """The catalog's identifiers, each preprint's apart from the version of record's.
 
     A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
@@ -1306,6 +1309,8 @@ __all__ = [
     "MissingRole",
     "Omitted",
     "ParseInputs",
+    "article_identifiers",
+    "held_copy",
     "coordinate_parse",
     "parsed_paper",
     "write",

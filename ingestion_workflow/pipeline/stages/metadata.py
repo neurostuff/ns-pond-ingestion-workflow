@@ -8,6 +8,9 @@ Every provider is asked by identifier, so an extraction is not needed: an
 article whose tables never parsed but whose prose holds coordinates gets its
 metadata too, which is why `metadata` runs after `passages` -- and before
 `prose`, whose model reads the title and abstract.
+
+The licences are decided here too, one for each copy the article's ok downloads hold,
+so a new or changed download makes the artifact stale.
 """
 
 from __future__ import annotations
@@ -16,19 +19,20 @@ import logging
 from typing import Dict, Iterator, List, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.models import DownloadSource, ExtractedContent
-from ingestion_workflow.models.metadata import is_sufficient
+from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
+from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
 
 from ..plan import StagePlan, Work
 from ..stage import Context
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
+from .sync import _copy_of
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 1
+METADATA_VERSION = 2
 
 #: Kept in the catalog row for display and for the upload stage.
-SUMMARY_FIELDS = ("title", "journal", "publication_year", "license")
+SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
 
 class MetadataStage:
     name = "metadata"
@@ -46,8 +50,13 @@ class MetadataStage:
             self._service = MetadataService(self.settings)
         return self._service
 
-    def fingerprint_for(self) -> str:
-        return fingerprint("metadata", METADATA_VERSION, tuple(self.settings.metadata_providers))
+    def fingerprint_for(self, downloads: Dict[str, Artifact]) -> str:
+        """The version, the providers, and the article's ok downloads, whose copies
+        each get a licence."""
+        held = sorted((source, artifact.fingerprint) for source, artifact in downloads.items()
+                      if artifact.status is Status.OK)
+        return fingerprint("metadata", METADATA_VERSION, tuple(self.settings.metadata_providers),
+                           tuple(held))
 
     def plan(
         self,
@@ -57,14 +66,12 @@ class MetadataStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        fp = self.fingerprint_for()
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
+        downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
         # With prose on, an article without an extraction is reached through
         # its prose, when that holds a passage for `prose` to read.
         with_passages = {}
-        downloads: Dict[str, Dict[str, Artifact]] = {}
         if getattr(self.settings, "prose_model", None):
-            downloads = ctx.catalog.artifacts([ref.id for ref in refs], "download")
             passages = ctx.catalog.artifacts([ref.id for ref in refs], "passages")
             for article_id, by in passages.items():
                 found = by.get("")
@@ -73,6 +80,7 @@ class MetadataStage:
                     with_passages[article_id] = found
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
+            fp = self.fingerprint_for(downloads.get(ref.id, {}))
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
@@ -87,6 +95,10 @@ class MetadataStage:
                 plan.blocked += 1
                 continue
             count, last = attempts.get(ref.id, (0, None))
+            if existing is not None and (existing.summary or {}).get("unanswered"):
+                # A provider's outage is not the article's failure: it waits out the
+                # retry delay but spends none of its tries.
+                count = 0
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
@@ -123,8 +135,31 @@ class MetadataStage:
         if not contents:
             return
 
+        from ingestion_workflow.services.metadata import HeldDownload
+
+        downloads = ctx.catalog.artifacts([work.article_id for work in by_slug.values()],
+                                          "download")
+        held: Dict[str, List[HeldDownload]] = {}
+        dois: Dict[str, List[str]] = {}
+        # In the order the sources are tried, so the first held copy's record speaks first.
+        order = {source: i for i, source in enumerate(self.settings.download_sources)}
+        for slug, work in by_slug.items():
+            dois[slug] = ctx.catalog.aliases(work.article_id, "doi")
+            for source, download in sorted(downloads.get(work.article_id, {}).items(),
+                                           key=lambda item: (order.get(item[0], len(order)),
+                                                             item[0])):
+                if download.status is not Status.OK:
+                    continue
+                payload = ctx.payload(download)
+                files = DownloadResult.from_dict(payload).files if payload else []
+                held.setdefault(slug, []).append(HeldDownload(
+                    source, _copy_of(download),
+                    [ctx.recorded_path(str(f.file_path)) for f in files]))
+
+        # Outside the batch's own failures: no article can be decided until it is configured.
+        self.service.require_licence_providers()
         try:
-            found = self.service.enrich_metadata(contents)
+            found = self.service.enrich_metadata(contents, held, dois)
         except Exception as exc:
             logger.warning("metadata batch failed: %s", exc)
             for work in by_slug.values():
@@ -136,10 +171,24 @@ class MetadataStage:
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)
+            if slug in self.service.conflicts:
+                yield Outcome.failure(
+                    work.article_id, self.name, "", self.service.conflicts[slug],
+                    fingerprint=work.fingerprint,
+                )
+                continue
             if metadata is None:
                 yield Outcome.failure(
                     work.article_id, self.name, "", "no provider returned metadata",
                     fingerprint=work.fingerprint,
+                )
+                continue
+            if slug in self.service.undecided:
+                undecided = self.service.undecided[slug]
+                yield Outcome.failure(
+                    work.article_id, self.name, "", str(undecided),
+                    fingerprint=work.fingerprint,
+                    summary={"unanswered": list(undecided.sources)} if undecided.outage else None,
                 )
                 continue
             yield Outcome(
@@ -151,5 +200,16 @@ class MetadataStage:
                 payload=metadata.to_dict(),
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
-                } | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
+                } | _licenses(metadata)
+                | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
             )
+
+
+def _licenses(metadata: ArticleMetadata) -> Dict:
+    """The paper's licence and determination, and each held copy's licence, for the report."""
+    return {
+        "license": metadata.license.license_id,
+        "license_determination": metadata.license.determination,
+        "copy_licenses": {source: lic.license_id
+                          for source, lic in metadata.copy_licenses.items()},
+    }
