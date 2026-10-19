@@ -842,9 +842,9 @@ def test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record(tmp_pat
 
 
 @pytest.mark.vcr("test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record.yaml")
-def test_an_ace_copy_s_page_is_its_own_record_and_no_other_copy_s(tmp_path):
-    """wig5qljtu6qy, 10.1016/j.cortex.2017.05.018, as the page ACE read for it states: its
-    own copyright line, and a CC BY-NC-ND licence for the accepted manuscript."""
+def test_a_page_s_bare_copyright_line_ranks_after_another_copy_s_record(tmp_path):
+    """wig5qljtu6qy, 10.1016/j.cortex.2017.05.018: the page ACE read prints only a copyright
+    line, and Elsevier's coredata states all rights reserved."""
     identifier = Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018")
     data = Path(__file__).parents[1] / "data" / "licenses"
     held = [_copy("ace", "publisher", "vor", access="unrecorded",
@@ -855,18 +855,54 @@ def test_an_ace_copy_s_page_is_its_own_record_and_no_other_copy_s(tmp_path):
     content = _content(identifier, DownloadSource.ACE)
     meta = _enrich(service, [content], {identifier.slug: held})[identifier.slug]
 
-    line = "© 2017 Elsevier Ltd. All rights reserved."
-    page = {"license_id": "all-rights-reserved", "determination": "stated",
-            "stated_by": "publisher_page", "stated_as": line}
-    elsevier = {**page, "stated_by": "elsevier"}
+    elsevier = {"license_id": "all-rights-reserved", "determination": "stated",
+                "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
     assert service.undecided == {}
+    # tried first, the ACE copy still takes Elsevier's record before its page's line
     assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
-        "ace": page, "elsevier": elsevier}
-    # tried first, the page still does not speak for the paper before Elsevier's record
+        "ace": elsevier, "elsevier": elsevier}
     assert _license(meta.license) == elsevier
     # the manuscript at Durham keeps the licence OpenAlex lists for it
     assert [(c.version, c.license.stated_by) for c in meta.reported_copies
             if c.version == "am"] == [("am", "openalex")]
+
+
+@pytest.mark.vcr()
+def test_a_page_s_footer_does_not_override_crossref_s_licence(tmp_path):
+    """gyrrynmpuilc, 10.1523/JNEUROSCI.0258-06.2006: the page ACE read prints only the
+    Society for Neuroscience's site copyright, in its footer; Crossref deposits CC BY-NC-SA
+    for the version of record."""
+    identifier = Identifier(pmid="16723542", doi="10.1523/JNEUROSCI.0258-06.2006")
+    page = Path(__file__).parents[1] / "data" / "licenses" / "pages" / \
+        "jneurosci_0258_06_2006_site_footer.html"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded", files=[page])]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
+                   {identifier.slug: held})[identifier.slug]
+
+    assert service.undecided == {}
+    found = _license(meta.copy_licenses["ace"])
+    assert (found["license_id"], found["stated_by"]) == ("cc-by-nc-sa", "crossref")
+    assert _license(meta.license) == found
+
+
+@pytest.mark.vcr()
+def test_a_page_s_licence_mark_is_its_copy_s_own_record(tmp_path):
+    """kwe7n3facvce, 10.1002/hbm.23411: the page ACE read links CC BY-NC-ND, as Crossref's
+    `vor` deposit states."""
+    identifier = Identifier(doi="10.1002/hbm.23411")
+    page = Path(__file__).parents[1] / "data" / "licenses" / "pages" / "wiley_hbm_23411.html"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded", files=[page])]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
+                   {identifier.slug: held})[identifier.slug]
+
+    assert service.undecided == {}
+    assert _license(meta.copy_licenses["ace"]) == {
+        "license_id": "cc-by-nc-nd", "determination": "stated", "stated_by": "publisher_page",
+        "stated_as": "http://creativecommons.org/licenses/by-nc-nd/4.0/"}
+    # the page is the paper's last source
+    assert (meta.license.license_id, meta.license.stated_by) == ("cc-by-nc-nd", "crossref")
 
 
 @pytest.mark.vcr()
@@ -1005,6 +1041,23 @@ class _Refusing(BaseHTTPRequestHandler):
 
     def log_message(self, *args):
         pass
+
+
+def test_a_retried_refusal_names_the_status_it_was_refused_with(tmp_path):
+    """Semantic Scholar's client retries; the reason is the last answer's, not tenacity's."""
+    server = HTTPServer(("127.0.0.1", 0), _Refusing)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        client = SemanticScholarClient("replay")
+        client.BASE_URL = f"http://127.0.0.1:{server.server_port}/graph/v1/paper/batch"
+        unanswered = {}
+        MetadataService(_licence_settings(tmp_path))._cached(
+            "semantic_scholar", client, [APA], unanswered)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert unanswered[APA.slug]["semantic_scholar"].startswith(
+        "refused the request (400 Client Error: Bad Request for url: http://127.0.0.1:")
 
 
 @pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)

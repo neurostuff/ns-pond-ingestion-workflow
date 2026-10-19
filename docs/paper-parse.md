@@ -30,18 +30,19 @@ triage rejected keeps that reading.
   no licence for the text's copy.
 - A licence is `stated` by the first source in this order that states one:
   1. the copy's own record: PMC's cloud record (`pmc_cloud`), its JATS `<permissions>`
-     (`jats`), Elsevier's `coredata` (`elsevier`) or the publisher's page ACE read
-     (`publisher_page`), or, for a copy at a URL, the licence OpenAlex or Semantic Scholar
-     lists for that URL;
+     (`jats`), Elsevier's `coredata` (`elsevier`) or the open licence the publisher's page
+     ACE read marks (`publisher_page`), or, for a copy at a URL, the licence OpenAlex or
+     Semantic Scholar lists for that URL;
   2. the own record of another held copy of the same version, other than a publisher's
      page, the download sources in the order they are tried;
   3. for the version of record, Crossref's `vor` deposit for the journal's DOI, then
      OpenAlex's location at the publisher, then a Crossref deposit that names no version;
      for an accepted manuscript, Crossref's `am` deposit; for a preprint, the preprint
      DOI's Crossref deposits, then OpenAlex's location at the preprint server;
-  4. a held publisher's page: for the version of record, what it states for itself; for an
-     accepted manuscript, ScienceDirect's self-archiving licence (`sa-user-license`) once
-     its start date has come. That licence is never the version of record's.
+  4. a held publisher's page, for every copy including its own: for the version of record,
+     the licence it marks, else its copyright line; for an accepted manuscript,
+     ScienceDirect's self-archiving licence (`sa-user-license`) once its start date has
+     come. That licence is never the version of record's.
 
   A repository location and Semantic Scholar's open-access PDF describe only the copy at
   their URL, never the version of record. Within one record a licence in study_schema's
@@ -50,12 +51,17 @@ triage rejected keeps that reading.
   article's own licence that way. Crossref's `tdm` and `stm-asf` deposits grant mining or
   sharing, not a licence, and are not read. Terms that grant only text mining (PMC's
   `TDM`) are `all-rights-reserved`.
-- A publisher's page states its licence links and blocks (`rel="license"`, the `license`
-  blocks of ScienceDirect, Oxford Academic and PMC) or, with none, the article's copyright
-  lines: its `dc.rights` and `prism.copyright` metadata, ScienceDirect's `copyright-line`,
-  a `copyright-statement`, a `p.copyright` or Springer's `ArticleCopyright`. A copyright
-  line that names no licence is `all-rights-reserved`, stated. The site's own copyright in
-  the page footer is not read. A copy from ACE is `access: unrecorded` whatever its page
+- A publisher's page is read outside its footer (a `footer` tag, or a class or id with the
+  word `footer`, unless it holds the article's title, `article` or `main`), figures,
+  tables, references and research data cards. Its licence marks are a link to a Creative
+  Commons licence (an `href`, or an embedded JATS `xlink:href`), the links in a block
+  classed `license`, a paragraph or copyright line that grants a Creative Commons licence
+  in words, and the `license` of the record the page embeds (Taylor & Francis's JSON-LD).
+  Its copyright lines are its `dc.rights` and `prism.copyright` metadata and what an
+  element classed `copyright` prints; one that names no licence is `all-rights-reserved`,
+  stated. Only an open licence the page marks is its copy's own record. Its other marks
+  and its copyright line credit a holder or name terms, often printed before a licence is
+  granted, so they rank last. A copy from ACE is `access: unrecorded` whatever its page
   states.
 - When no source states one, the licence is `all-rights-reserved`, `assumed`.
 - A licence is undecided, and the metadata artifact fails with the sources named, while a

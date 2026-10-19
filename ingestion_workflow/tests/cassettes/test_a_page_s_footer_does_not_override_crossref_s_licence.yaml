@@ -1,0 +1,423 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1523/jneurosci.0258-06.2006"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '47'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "62ef6768b72bca72f5a33cf7771891f97a81c0f9", "title": "The
+        Medial Temporal Lobe Distinguishes Old from New Independently of Consciousness",
+        "venue": "Journal of Neuroscience", "year": 2006, "isOpenAccess": true, "openAccessPdf":
+        {"url": "https://www.jneurosci.org/content/jneuro/26/21/5835.full.pdf", "status":
+        "HYBRID", "license": "CCBYNCSA", "disclaimer": "Notice: Paper or abstract
+        available at https://api.unpaywall.org/v2/10.1523/JNEUROSCI.0258-06.2006?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1523/JNEUROSCI.0258-06.2006, which is subject to the
+        license by the author or copyright owner provided with this content. Please
+        go to the source to verify the license and copyright information for your
+        use."}, "publicationDate": "2006-05-24", "authors": [{"authorId": "2749675",
+        "name": "S. Daselaar"}, {"authorId": "3395895", "name": "M. Fleck"}, {"authorId":
+        "2175233", "name": "S. E. Prince"}, {"authorId": "145097462", "name": "R.
+        Cabeza"}], "abstract": "Although it is widely accepted that the medial temporal
+        lobes (MTLs) are critical for becoming aware that something happened in the
+        past, there is virtually no evidence whether MTL sensitivity to event oldness
+        also depends on conscious awareness. Using event-related functional magnetic
+        resonance imaging, we show that activity in posterior MTL tracks whether an
+        item is actually old (true oldness), regardless of participants'' awareness
+        of oldness (perceived oldness). Confirming its sensitivity to the objective
+        nature of the stimulus, activity in this region was strongly correlated with
+        individual memory performance (r = 0.74). At the same time, we found that
+        memory errors (misses) were associated with activity in an anterior MTL region,
+        which signaled whether an item was consciously experienced as new (perceived
+        novelty). Logistic regression analyses based on individual trial activity
+        indicated that the two MTL regions showed opposing relationships with behavior,
+        and that memory performance was determined by their joint activity. Furthermore,
+        functional connectivity analyses showed that perceived novelty activity in
+        the posterior MTL inhibited true oldness activity in the anterior MTL. These
+        findings indicate that participants'' behavior reflected the combined effects
+        of multiple MTL regions. More generally, our results show that parts of MTL
+        can distinguish old from new independently of consciousness."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2404'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:05 GMT
+      Via:
+      - 1.1 c7697b9c4955dc41900ab918dddd33e0.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - _N6P6Qz2PQmZvO5ougAuYjMZUzZjA8gWiNjvU5NzrtTdDo-qZVagEg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - Ffzy7F2svHcEf7w=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '2404'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Oct 2026 15:12:05 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - bde98df2-07fe-43da-808c-cd44368326e1
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1523%2Fjneurosci.0258-06.2006&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1523\/jneurosci.0258-06.2006","license":[{"start":{"date-parts":[[2006,11,24]],"date-time":"2006-11-24T00:00:00Z","timestamp":1164326400000},"content-version":"vor","delay-in-days":184,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-sa\/4.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:07 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1523%2Fjneurosci.0258-06.2006&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 12, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1523/jneurosci.0258-06.2006",
+        "x_new_oql": "get works where DOI is 10.1523/jneurosci.0258-06.2006", "oqo":
+        {"get_rows": "works", "filter_rows": [{"column_id": "doi", "value": "10.1523/jneurosci.0258-06.2006"}]},
+        "url": "/works?filter=doi:10.1523%2Fjneurosci.0258-06.2006&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2142574243",
+        "doi": "https://doi.org/10.1523/jneurosci.0258-06.2006", "mag": "2142574243",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/16723542"}, "display_name": "The
+        Medial Temporal Lobe Distinguishes Old from New Independently of Consciousness",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5031298533",
+        "display_name": "Sander M. Daselaar", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I887064364", "display_name":
+        "University of Amsterdam", "ror": "https://ror.org/04dkp9463", "country_code":
+        "NL", "type": "education", "lineage": ["https://openalex.org/I887064364"]}],
+        "countries": ["NL"], "is_corresponding": false, "raw_author_name": "Sander
+        M. Daselaar", "raw_affiliation_strings": ["Swammerdam Institute for Life Sciences,
+        University of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands.
+        s.m.daselaar@uva.nl", "Swammerdam Institute for Life Sciences, University
+        of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Swammerdam Institute for
+        Life Sciences, University of Amsterdam, Faculty of Science, 1098 SM Amsterdam,
+        The Netherlands. s.m.daselaar@uva.nl", "institution_ids": ["https://openalex.org/I887064364"]},
+        {"raw_affiliation_string": "Swammerdam Institute for Life Sciences, University
+        of Amsterdam, Faculty of Science, 1098 SM Amsterdam, The Netherlands", "institution_ids":
+        ["https://openalex.org/I887064364"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5047131963", "display_name": "Mathias S. Fleck",
+        "orcid": "https://orcid.org/0000-0002-6335-6165", "observed_orcids": ["https://orcid.org/0000-0002-6335-6165"]},
+        "institutions": [{"id": "https://openalex.org/I170897317", "display_name":
+        "Duke University", "ror": "https://ror.org/00py81415", "country_code": "US",
+        "type": "education", "lineage": ["https://openalex.org/I170897317"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Mathias S. Fleck",
+        "raw_affiliation_strings": ["Department of Psychological and Brain Sciences,
+        Durham, North Carolina 27708", "Duke University, Center for Cognitive Neuroscience
+        and"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychological and Brain Sciences, Durham, North Carolina 27708", "institution_ids":
+        []}, {"raw_affiliation_string": "Duke University, Center for Cognitive Neuroscience
+        and", "institution_ids": ["https://openalex.org/I170897317"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5080713772", "display_name":
+        "Steven E. Prince", "orcid": "https://orcid.org/0000-0002-6606-7481", "observed_orcids":
+        ["https://orcid.org/0000-0002-6606-7481"]}, "institutions": [{"id": "https://openalex.org/I170897317",
+        "display_name": "Duke University", "ror": "https://ror.org/00py81415", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I170897317"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Steven
+        E. Prince", "raw_affiliation_strings": ["Department of Psychological and Brain
+        Sciences , Durham , North Carolina 27708", "Duke University , Center for Cognitive
+        Neuroscience and", "Department of Psychological and Brain Sciences, Durham,
+        North Carolina 27708", "Duke University, Center for Cognitive Neuroscience
+        and"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychological and Brain Sciences , Durham , North Carolina 27708", "institution_ids":
+        []}, {"raw_affiliation_string": "Duke University , Center for Cognitive Neuroscience
+        and", "institution_ids": ["https://openalex.org/I170897317"]}, {"raw_affiliation_string":
+        "Department of Psychological and Brain Sciences, Durham, North Carolina 27708",
+        "institution_ids": []}, {"raw_affiliation_string": "Duke University, Center
+        for Cognitive Neuroscience and", "institution_ids": ["https://openalex.org/I170897317"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5020138040",
+        "display_name": "Roberto Eduardo Luis Cabeza", "orcid": "https://orcid.org/0000-0001-8053-3912",
+        "observed_orcids": ["https://orcid.org/0000-0001-8053-3912"]}, "institutions":
+        [{"id": "https://openalex.org/I170897317", "display_name": "Duke University",
+        "ror": "https://ror.org/00py81415", "country_code": "US", "type": "education",
+        "lineage": ["https://openalex.org/I170897317"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Roberto Cabeza", "raw_affiliation_strings": ["Department
+        of Psychological and Brain Sciences , Durham , North Carolina 27708", "Duke
+        University , Center for Cognitive Neuroscience and", "Department of Psychological
+        and Brain Sciences, Durham, North Carolina 27708", "Duke University, Center
+        for Cognitive Neuroscience and"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Psychological and Brain Sciences , Durham , North Carolina
+        27708", "institution_ids": []}, {"raw_affiliation_string": "Duke University
+        , Center for Cognitive Neuroscience and", "institution_ids": ["https://openalex.org/I170897317"]},
+        {"raw_affiliation_string": "Department of Psychological and Brain Sciences,
+        Durham, North Carolina 27708", "institution_ids": []}, {"raw_affiliation_string":
+        "Duke University, Center for Cognitive Neuroscience and", "institution_ids":
+        ["https://openalex.org/I170897317"]}]}], "publication_year": 2006, "abstract_inverted_index":
+        {"Although": [0], "it": [1], "is": [2, 23, 55], "widely": [3], "accepted":
+        [4], "that": [5, 16, 46, 98, 132, 143, 157, 178, 194], "the": [6, 20, 72,
+        76, 93, 133, 162, 171, 182], "medial": [7], "temporal": [8], "lobes": [9],
+        "(MTLs)": [10], "are": [11], "critical": [12], "for": [13], "becoming": [14],
+        "aware": [15], "something": [17], "happened": [18], "in": [19, 48, 79, 106,
+        161, 170], "past,": [21], "there": [22], "virtually": [24], "no": [25], "evidence":
+        [26], "whether": [27, 52, 113], "MTL": [28, 50, 109, 135, 165, 187, 197],
+        "sensitivity": [29, 70], "to": [30, 71], "event": [31], "oldness": [32, 65,
+        168], "also": [33], "depends": [34], "on": [35, 127], "conscious": [36], "awareness.":
+        [37], "Using": [38], "event-related": [39], "functional": [40, 153], "magnetic":
+        [41], "resonance": [42], "imaging,": [43], "we": [44, 96], "show": [45, 193],
+        "activity": [47, 78, 105, 130, 160, 169], "posterior": [49], "tracks": [51],
+        "an": [53, 107, 114], "item": [54, 115], "actually": [56], "old": [57, 200],
+        "(true": [58], "oldness),": [59], "regardless": [60], "of": [61, 64, 75, 185,
+        196, 204], "participants''": [62, 179], "awareness": [63], "(perceived": [66,
+        121], "oldness).": [67], "Confirming": [68], "its": [69], "objective": [73],
+        "nature": [74], "stimulus,": [77], "this": [80], "region": [81], "was": [82,
+        116, 146], "strongly": [83], "correlated": [84], "with": [85, 104, 140], "individual":
+        [86, 128], "memory": [87, 99, 144], "performance": [88, 145], "(r": [89],
+        "=": [90], "0.74).": [91], "At": [92], "same": [94], "time,": [95], "found":
+        [97], "errors": [100], "(misses)": [101], "were": [102], "associated": [103],
+        "anterior": [108], "region,": [110], "which": [111], "signaled": [112], "consciously":
+        [117], "experienced": [118], "as": [119], "new": [120, 202], "novelty).":
+        [122], "Logistic": [123], "regression": [124], "analyses": [125, 155], "based":
+        [126], "trial": [129], "indicated": [131], "two": [134], "regions": [136],
+        "showed": [137, 156], "opposing": [138], "relationships": [139], "behavior,":
+        [141], "and": [142], "determined": [147], "by": [148], "their": [149], "joint":
+        [150], "activity.": [151], "Furthermore,": [152], "connectivity": [154], "perceived":
+        [158], "novelty": [159], "ANTERIOR": [163], "[corrected]": [164, 173], "inhibited":
+        [166], "true": [167], "POSTERIOR": [172], "MTL.": [174], "These": [175], "findings":
+        [176], "indicate": [177], "behavior": [180], "reflected": [181], "combined":
+        [183], "effects": [184], "multiple": [186], "regions.": [188], "More": [189],
+        "generally,": [190], "our": [191], "results": [192], "parts": [195], "can":
+        [198], "distinguish": [199], "from": [201], "independently": [203], "consciousness.":
+        [205]}, "primary_location": {"id": "doi:10.1523/jneurosci.0258-06.2006", "doi":
+        "https://doi.org/10.1523/jneurosci.0258-06.2006", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1523/jneurosci.0258-06.2006", "pdf_url": "https://www.jneurosci.org/content/jneuro/26/21/5835.full.pdf",
+        "source": {"id": "https://openalex.org/S5555990", "display_name": "Journal
+        of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "doi:10.1523/jneurosci.0258-06.2006", "doi": "https://doi.org/10.1523/jneurosci.0258-06.2006",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1523/jneurosci.0258-06.2006",
+        "pdf_url": "https://www.jneurosci.org/content/jneuro/26/21/5835.full.pdf",
+        "source": {"id": "https://openalex.org/S5555990", "display_name": "Journal
+        of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.1523/jneurosci.0258-06.2006", "doi": "https://doi.org/10.1523/jneurosci.0258-06.2006",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1523/jneurosci.0258-06.2006",
+        "pdf_url": "https://www.jneurosci.org/content/jneuro/26/21/5835.full.pdf",
+        "source": {"id": "https://openalex.org/S5555990", "display_name": "Journal
+        of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        {"id": "pmid:16723542", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/16723542",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "The Journal
+        of neuroscience : the official journal of the Society for Neuroscience", "raw_type":
+        "Clinical Trial"}, {"id": "pmh:oai:pubmedcentral.nih.gov:6675252", "doi":
+        null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6675252",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "J Neurosci",
+        "raw_type": "Text"}, {"id": "pmh:oai:dare.uva.nl:openaire_cris_publications/88553080-44bb-4942-8b5c-7f5eefeb42c7",
+        "doi": null, "is_oa": false, "landing_page_url": "https://handle.uba.uva.nl/personal/pure/en/publications/the-medial-temporal-lobe-distinguishes-old-from-new-independently-of-consciousness(88553080-44bb-4942-8b5c-7f5eefeb42c7).html",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400088", "display_name":
+        "UvA-DARE (University of Amsterdam)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I887064364", "host_organization_name": "University of
+        Amsterdam", "host_organization_lineage": ["https://openalex.org/I887064364"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Daselaar, S M, Fleck, M S, Prince, S E & Cabeza,
+        R 2006, ''The medial temporal lobe distinguishes old from new independently
+        of consciousness'', The Journal of Neuroscience, vol. 26, no. 21, pp. 5838-5839.",
+        "raw_type": "info:eu-repo/semantics/article"}, {"id": "pmh:oai:repository.ubn.ru.nl:2066/176503",
+        "doi": null, "is_oa": false, "landing_page_url": "http://hdl.handle.net/2066/176503",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401067", "display_name":
+        "Radboud Repository (Radboud University)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I145872427", "host_organization_name": "Radboud University
+        Nijmegen", "host_organization_lineage": ["https://openalex.org/I145872427"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "The Journal of Neuroscience, 26, 21, pp. 5835-5839",
+        "raw_type": "Article / Letter to editor"}, {"id": "pmh:ru:oai:repository.ubn.ru.nl:2066/176503",
+        "doi": null, "is_oa": true, "landing_page_url": "http://hdl.handle.net/2066/176503",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401067", "display_name":
+        "Radboud Repository (Radboud University)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I145872427", "host_organization_name": "Radboud University
+        Nijmegen", "host_organization_lineage": ["https://openalex.org/I145872427"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "other-oa",
+        "license_id": "https://openalex.org/licenses/other-oa", "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "The Journal
+        of Neuroscience, 26, 5835 - 5839", "raw_type": "info:eu-repo/semantics/article"},
+        {"id": "pmh:uvapub:oai:dare.uva.nl:publications/88553080-44bb-4942-8b5c-7f5eefeb42c7",
+        "doi": null, "is_oa": false, "landing_page_url": "https://dare.uva.nl/personal/pure/en/publications/the-medial-temporal-lobe-distinguishes-old-from-new-independently-of-consciousness(88553080-44bb-4942-8b5c-7f5eefeb42c7).html",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401843", "display_name":
+        "Data Archiving and Networked Services (DANS)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1322597698", "host_organization_name": "Royal Netherlands
+        Academy of Arts and Sciences", "host_organization_lineage": ["https://openalex.org/I1322597698"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "The Journal of Neuroscience, 26(21), 5838 - 5839.
+        Society for Neuroscience", "raw_type": "info:eu-repo/semantics/article"}],
+        "open_access": {"is_oa": true, "oa_status": "hybrid", "oa_url": "https://www.jneurosci.org/content/jneuro/26/21/5835.full.pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d0b8206dd069d6-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:07 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9899'
+      X-RateLimit-Remaining-USD:
+      - '0.9899'
+      X-RateLimit-Reset:
+      - '31673'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=Kod1TO28CqIgCMVa4269c8g%2BufJ2vijBraIkW%2BN41oE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792422727"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=Kod1TO28CqIgCMVa4269c8g%2BufJ2vijBraIkW%2BN41oE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792422727"
+    status:
+      code: 200
+      message: OK
+version: 1

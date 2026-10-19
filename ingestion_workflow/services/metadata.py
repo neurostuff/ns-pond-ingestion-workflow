@@ -62,8 +62,8 @@ from ingestion_workflow.services.licenses import (
     Undecided,
     crossref_statements,
     license_of,
-    manuscript_license,
     own_license,
+    page_statements,
     stated,
 )
 from ingestion_workflow.services.paper_parse import article_identifiers
@@ -398,7 +398,7 @@ class MetadataService:
                 causes = exc.causes if isinstance(exc, PartialAnswer) else (exc,)
                 missed([i.slug for i in uncached if i.slug not in fresh_results],
                        OUTAGE if causes and all(map(_outage, causes))
-                       else f"refused the request ({causes[0] if causes else exc})")
+                       else f"refused the request ({_cause(causes[0] if causes else exc)})")
             for slug, metadata in fresh_results.items():
                 try:
                     (cache_dir / f"{slug}.json").write_text(
@@ -694,11 +694,17 @@ _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 OUTAGE = "did not answer"
 
 
+def _cause(exc: BaseException) -> BaseException:
+    """The error a retried request last raised, or `exc`."""
+    if isinstance(exc, RetryError):
+        return exc.last_attempt.exception() or exc
+    return exc
+
+
 def _outage(exc: BaseException) -> bool:
     """A provider that was down or busy (a timeout, a dropped connection, 429 or 5xx), not
     one that refused the request."""
-    if isinstance(exc, RetryError):
-        exc = exc.last_attempt.exception() or exc
+    exc = _cause(exc)
     if isinstance(exc, requests.HTTPError):
         status = getattr(exc.response, "status_code", None)
         return status == 429 or (status is not None and status >= 500)
@@ -810,16 +816,14 @@ def _decide_licenses(
     for download in held:
         try:
             own, unread = own_license(download.source, download.files), False
-            manuscript = manuscript_license(download.source, download.files)
+            ranked = page_statements(download.source, download.files)
         except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
-            own, manuscript, unread = None, None, True
+            own, ranked, unread = None, [], True
         records.append((download, own, unread))
-        if own is not None:
-            by = PAGE if own.stated_by == MetadataSource.publisher_page else HELD
-            statements[by].append(Statement(own, download.copy.version))
-        if manuscript is not None:
-            statements[PAGE].append(Statement(manuscript, CopyVersion.am))
+        if own is not None and own.stated_by != MetadataSource.publisher_page:
+            statements[HELD].append(Statement(own, download.copy.version))
+        statements[PAGE] += ranked
     # Every record is read before any copy is decided, so that each copy can take another's.
     for download, own, unread in records:
         own = own or at(download.copy.url)
