@@ -841,6 +841,80 @@ def test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record(tmp_pat
     assert _license(meta.license) == arr
 
 
+@pytest.mark.vcr("test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record.yaml")
+def test_an_ace_copy_s_page_is_its_own_record_and_no_other_copy_s(tmp_path):
+    """wig5qljtu6qy, 10.1016/j.cortex.2017.05.018, as the page ACE read for it states: its
+    own copyright line, and a CC BY-NC-ND licence for the accepted manuscript."""
+    identifier = Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018")
+    data = Path(__file__).parents[1] / "data" / "licenses"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded",
+                  files=[data / "pages" / "sciencedirect_cortex_2017_05_018.html"]),
+            _copy("elsevier", "publisher", "vor", access="tdm_grant",
+                  files=[data / "elsevier_cortex_2017_05_018" / "content.xml"])]
+    service = MetadataService(_licence_settings(tmp_path))
+    content = _content(identifier, DownloadSource.ACE)
+    meta = _enrich(service, [content], {identifier.slug: held})[identifier.slug]
+
+    line = "© 2017 Elsevier Ltd. All rights reserved."
+    page = {"license_id": "all-rights-reserved", "determination": "stated",
+            "stated_by": "publisher_page", "stated_as": line}
+    elsevier = {**page, "stated_by": "elsevier"}
+    assert service.undecided == {}
+    assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
+        "ace": page, "elsevier": elsevier}
+    # tried first, the page still does not speak for the paper before Elsevier's record
+    assert _license(meta.license) == elsevier
+    # the manuscript at Durham keeps the licence OpenAlex lists for it
+    assert [(c.version, c.license.stated_by) for c in meta.reported_copies
+            if c.version == "am"] == [("am", "openalex")]
+
+
+@pytest.mark.vcr()
+def test_a_reported_manuscript_takes_the_licence_the_page_names_for_it(tmp_path):
+    """10.1016/j.neuropsychologia.2015.12.005: the page ACE read reserves all rights to the
+    article, and lets its accepted manuscript be shared under CC BY-NC-ND from 2017-06-17.
+    OpenAlex lists that manuscript at UEA with no licence; Crossref deposits only a mining
+    grant, and OpenAlex lists no licence at the publisher."""
+    identifier = Identifier(pmid="26683384", doi="10.1016/j.neuropsychologia.2015.12.005")
+    page = Path(__file__).parents[1] / "data" / "licenses" / "pages" / \
+        "sciencedirect_neuropsychologia_2015_12_005.html"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded", files=[page])]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
+                   {identifier.slug: held})[identifier.slug]
+
+    stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
+                      "stated_by": "publisher_page",
+                      "stated_as": "Copyright © 2015 Elsevier Ltd. All rights reserved."}
+    assert service.undecided == {}
+    assert _license(meta.copy_licenses["ace"]) == _license(meta.license) == stated_by_page
+    manuscripts = [(c.url, _license(c.license)) for c in meta.reported_copies
+                   if c.version == "am"]
+    assert manuscripts == [(
+        "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        {"license_id": "cc-by-nc-nd", "determination": "stated", "stated_by": "publisher_page",
+         "stated_as": "http://creativecommons.org/licenses/by-nc-nd/4.0/"})]
+
+
+@pytest.mark.vcr("test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record.yaml")
+def test_the_page_speaks_for_the_paper_when_no_other_source_does(tmp_path):
+    """10.1016/j.cortex.2017.05.018 with only its ACE copy: Crossref deposits only a mining
+    grant, and OpenAlex lists no licence at the publisher."""
+    identifier = Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018")
+    page = Path(__file__).parents[1] / "data" / "licenses" / "pages" / \
+        "sciencedirect_cortex_2017_05_018.html"
+    held = [_copy("ace", "publisher", "vor", access="unrecorded", files=[page])]
+    service = MetadataService(_licence_settings(tmp_path))
+    meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
+                   {identifier.slug: held})[identifier.slug]
+
+    stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
+                      "stated_by": "publisher_page",
+                      "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
+    assert service.undecided == {}
+    assert _license(meta.copy_licenses["ace"]) == _license(meta.license) == stated_by_page
+
+
 @pytest.mark.vcr()
 def test_a_paper_presented_by_its_preprint_doi_takes_its_journal_s_licence(tmp_path, vcr):
     """dpl6phhniqbj holds 10.1002/hbm.25137 and its bioRxiv preprint 10.1101/2020.03.25.008318,

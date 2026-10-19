@@ -10,6 +10,7 @@ from ingestion_workflow.services.licenses import (
     ASSUMED,
     HELD,
     OWN,
+    PAGE,
     Statement,
     Undecided,
     copyright_line,
@@ -17,8 +18,11 @@ from ingestion_workflow.services.licenses import (
     elsevier_license,
     jats_license,
     license_of,
+    manuscript_license,
     normalise_license,
     own_license,
+    page_license,
+    page_manuscript_license,
     stated,
 )
 from lxml import etree
@@ -27,6 +31,7 @@ from study_schema.models.paper_parse import CopyRoute, CopyVersion, MetadataSour
 DATA = Path(__file__).parents[1] / "data"
 LICENSES = DATA / "licenses"
 COPIES = DATA / "copies"
+PAGES = LICENSES / "pages"
 
 
 @pytest.mark.parametrize("statement, expected", [
@@ -167,6 +172,92 @@ def test_an_unreadable_record_is_an_error_not_a_silence(tmp_path):
         own_license("pmc", [cloud])
 
 
+def _page(name):
+    return (PAGES / f"{name}.html").read_bytes()
+
+
+@pytest.mark.parametrize("fixture, license_id, stated_as", [
+    # its CC link, before the text of the block it is in and before its copyright line
+    ("sciencedirect_open_access_jad_2020_05_110", "cc-by-nc-nd",
+     "http://creativecommons.org/licenses/by-nc-nd/4.0/"),
+    ("sciencedirect_brainres_2019_02_029", "all-rights-reserved",
+     "© 2019 Elsevier B.V. All rights reserved."),
+    # the article's copyright, not the site's in the footer
+    ("sciencedirect_2005_with_site_footer", "all-rights-reserved",
+     "Copyright © 2005 Elsevier Inc. All rights reserved."),
+    # the article's licence link before the CC0 waiver for its data
+    ("biomedcentral_s40673_017_0065_7", "cc-by", "http://creativecommons.org/licenses/by/4.0/"),
+    # a copyright line in `dc.rights` that names no licence
+    ("springer_s11682_019_00077_9", "all-rights-reserved",
+     "2019 Springer Science+Business Media, LLC, part of Springer Nature"),
+    ("wiley_jnr_23728", "all-rights-reserved", "© 2016 Wiley Periodicals, Inc."),
+    # a copyright line naming a licence is that licence
+    ("wiley_open_access_brb3_309", "cc-by",
+     "This is an open access article under the terms of the Creative Commons Attribution "
+     "License, which permits use, distribution and reproduction in any medium, provided the "
+     "original work is properly cited."),
+    ("eneuro_0188_16_2016_rights_metadata", "cc-by",
+     "Copyright © 2016 Wan et al.. This is an open-access article distributed under the terms "
+     "of the Creative Commons Attribution 4.0 International, which permits unrestricted use, "
+     "distribution and reproduction in any medium provided that the original work is "
+     "properly attributed."),
+    # Wiley's Creative Commons icon
+    ("wiley_open_access_brb3_3601", "cc-by", "http://creativecommons.org/licenses/by/4.0/"),
+    ("oxford_open_access_cercor_bht287", "cc-by",
+     "This is an Open Access article distributed under the terms of the Creative Commons "
+     "Attribution License (http://creativecommons.org/licenses/by/3.0/), which permits "
+     "unrestricted reuse, distribution, and reproduction in any medium, provided the original "
+     "work is properly cited."),
+    # older ScienceDirect's open-access licence
+    ("sciencedirect_open_access_nicl_2014_02_008", "cc-by",
+     "http://creativecommons.org/licenses/by/3.0/"),
+    ("oxford_cercor_bhr180", "all-rights-reserved",
+     "© The Author 2011. Published by Oxford University Press. All rights reserved. For "
+     "permissions, please e-mail: journals.permissions@oup.com"),
+    ("biomedcentral_1866_1955_6_37_prism_copyright", "all-rights-reserved",
+     "2014 DeRamus et al.; licensee BioMed Central Ltd."),
+    # a licence, even an `other`, before the copyright line beside it
+    ("oxford_cercor_bhac304", "other",
+     "https://academic.oup.com/journals/pages/open_access/funder_policies/chorus/"
+     "standard_publication_model"),
+])
+def test_a_publisher_s_page_states_the_licence_it_prints(fixture, license_id, stated_as):
+    found = page_license(_page(fixture))
+    assert (found.license_id, found.determination, found.stated_by, found.stated_as) == (
+        license_id, "stated", "publisher_page", stated_as)
+
+
+@pytest.mark.parametrize("fixture", [
+    "mit_press_jocn_2010_21483",
+    # the site's copyright is not the article's
+    "wiley_site_footer_only_1468_1331_2006_01173_x",
+])
+def test_a_page_that_prints_no_rights_for_its_article_states_none(fixture):
+    assert page_license(_page(fixture)) is None
+
+
+def test_a_page_s_manuscript_licence_is_in_force_from_its_start_date():
+    """10.1016/j.brainres.2019.02.029's accepted manuscript may be shared under CC BY-NC-ND
+    from 2020-03-04."""
+    page = _page("sciencedirect_brainres_2019_02_029")
+    assert page_manuscript_license(page, datetime(2020, 3, 3, tzinfo=timezone.utc)) is None
+    found = page_manuscript_license(page, datetime(2020, 3, 4, tzinfo=timezone.utc))
+    assert (found.license_id, found.stated_by, found.stated_as) == (
+        "cc-by-nc-nd", "publisher_page", "http://creativecommons.org/licenses/by-nc-nd/4.0/")
+    assert page_manuscript_license(_page("biomedcentral_s40673_017_0065_7")) is None
+
+
+def test_a_publisher_s_page_is_read_only_for_an_ace_download():
+    files = [PAGES / "sciencedirect_brainres_2019_02_029.html"]
+    assert own_license("ace", files) == page_license(_page("sciencedirect_brainres_2019_02_029"))
+    assert manuscript_license("ace", files).license_id == "cc-by-nc-nd"
+    assert own_license("elsevier", files) is None
+    assert manuscript_license("elsevier", files) is None
+    # an Elsevier copy's record names no manuscript licence
+    assert manuscript_license("elsevier", [LICENSES / "elsevier_cortex_2017_05_018" /
+                                           "content.xml"]) is None
+
+
 def _deposit(url, version, start="2020-01-01T00:00:00Z"):
     return {"URL": url, "content-version": version, "start": {"date-time": start}}
 
@@ -254,6 +345,11 @@ PREPRINT = _said(MetadataSource.openalex, "cc-by-nc-nd", CopyVersion.submitted,
 HELD_VOR_ARR = Statement(stated(MetadataSource.elsevier, "© 2017 Elsevier Ltd. All rights reserved.",
                                 "all-rights-reserved"), CopyVersion.vor)
 CROSSREF, OPENALEX = MetadataSource.crossref.value, MetadataSource.openalex.value
+#: What 10.1016/j.brainres.2019.02.029's page states for itself and for its manuscript.
+PAGE_VOR_ARR = Statement(page_license(_page("sciencedirect_brainres_2019_02_029")),
+                         CopyVersion.vor)
+PAGE_AM_CC = Statement(page_manuscript_license(_page("sciencedirect_brainres_2019_02_029"), NOW),
+                       CopyVersion.am)
 
 
 def test_a_copy_s_own_statement_comes_first_even_an_other():
@@ -277,6 +373,10 @@ def test_a_copy_s_own_statement_comes_first_even_an_other():
     # OpenAlex's publisher location before a Crossref deposit that names no version
     ({CROSSREF: [CROSSREF_UNSPECIFIED], OPENALEX: [PUBLISHER_VOR]}, PUBLISHER_VOR),
     ({CROSSREF: [CROSSREF_UNSPECIFIED]}, CROSSREF_UNSPECIFIED),
+    # a publisher's page comes after every other source, held copies' records too
+    ({PAGE: [PAGE_VOR_ARR], CROSSREF: [CROSSREF_UNSPECIFIED]}, CROSSREF_UNSPECIFIED),
+    ({PAGE: [PAGE_VOR_ARR], HELD: [HELD_VOR_ARR]}, HELD_VOR_ARR),
+    ({PAGE: [PAGE_VOR_ARR]}, PAGE_VOR_ARR),
     # a repository's copy, whatever version it is labelled, speaks only for itself
     ({OPENALEX: [REPOSITORY_VOR]}, None),
 ])
@@ -291,6 +391,20 @@ def test_a_manuscript_never_takes_the_version_of_record_s_licence():
     assert license_of(CopyVersion.am, None, statements, set()) is CROSSREF_AM.license
     del statements[CROSSREF][2]
     assert license_of(CopyVersion.am, None, statements, set()) == ASSUMED
+
+
+def test_a_page_s_manuscript_licence_speaks_for_the_manuscript_alone():
+    statements = {PAGE: [PAGE_VOR_ARR, PAGE_AM_CC]}
+    assert license_of(CopyVersion.am, None, statements, set()) is PAGE_AM_CC.license
+    assert license_of(CopyVersion.vor, None, {PAGE: [PAGE_AM_CC]}, set()) == ASSUMED
+    # Crossref's own `am` deposit comes first
+    statements[CROSSREF] = [CROSSREF_AM]
+    assert license_of(CopyVersion.am, None, statements, set()) is CROSSREF_AM.license
+
+
+def test_a_page_does_not_decide_while_a_source_before_it_has_not_answered():
+    with pytest.raises(Undecided, match="crossref"):
+        license_of(CopyVersion.vor, None, {PAGE: [PAGE_VOR_ARR]}, {CROSSREF})
 
 
 def test_a_preprint_takes_its_server_s_location_and_never_the_vor_s():

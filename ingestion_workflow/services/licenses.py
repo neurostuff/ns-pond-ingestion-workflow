@@ -2,10 +2,11 @@
 
 A statement is one source's licence for one version of the paper, or for the one copy at
 a URL. A copy's licence is its own record's, else the first statement
-`LICENSE_PRECEDENCE` lists for its version. When none was made it is all rights reserved,
-assumed. While a source that comes before the deciding statement, or before an assumed
-licence, could not be read or did not answer, the licence is undecided and the article is
-asked about again.
+`LICENSE_PRECEDENCE` lists for its version. A publisher's page held as a copy is that
+copy's own record, and the last source for every other copy and for the paper. When none
+was made it is all rights reserved, assumed. While a source that comes before the deciding
+statement, or before an assumed licence, could not be read or did not answer, the licence
+is undecided and the article is asked about again.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 from lxml import etree
+from lxml import html as lxml_html
 from study_schema.models.paper_parse import (
     CopyRoute,
     CopyVersion,
@@ -29,8 +31,10 @@ from study_schema.models.paper_parse import (
 
 #: A held copy's own record: its file, or PMC's cloud record of it.
 OWN = "own"
-#: The own records of the other copies downloads hold.
+#: The own records of the other copies downloads hold, but for publishers' pages.
 HELD = "held"
+#: What the publisher's pages that downloads hold state.
+PAGE = MetadataSource.publisher_page.value
 
 #: For each version a copy can be, the sources whose statements speak for it, best first:
 #: the source, the versions its statement must be about (None: it names no version), and
@@ -43,6 +47,8 @@ HELD = "held"
 #:   preprint server; a repository location, and Semantic Scholar's open-access PDF,
 #:   describe only the copy at their URL.
 #: - A manuscript's licence is never the version of record's.
+#: - A publisher's page comes after every other source: its rights are read from markup
+#:   that differs by publisher, theirs from records kept to state them.
 LICENSE_PRECEDENCE: Mapping[
     Optional[CopyVersion], Tuple[Tuple[str, frozenset, Optional[frozenset]], ...]
 ] = {
@@ -52,10 +58,12 @@ LICENSE_PRECEDENCE: Mapping[
         (MetadataSource.openalex.value, frozenset({CopyVersion.vor}),
          frozenset({CopyRoute.publisher})),
         (MetadataSource.crossref.value, frozenset({None}), None),
+        (PAGE, frozenset({CopyVersion.vor}), None),
     ),
     CopyVersion.am: (
         (HELD, frozenset({CopyVersion.am}), None),
         (MetadataSource.crossref.value, frozenset({CopyVersion.am}), None),
+        (PAGE, frozenset({CopyVersion.am}), None),
     ),
     CopyVersion.submitted: (
         (HELD, frozenset({CopyVersion.submitted}), None),
@@ -237,6 +245,83 @@ def elsevier_license(content_xml: Path) -> Optional[License]:
             or copyright_line(MetadataSource.elsevier, text("copyright")))
 
 
+def _class_is(*names: str) -> str:
+    """An XPath test for an element with one of the class tokens `names`, in any case."""
+    upper, lower = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"
+    tokens = f"concat(' ', translate(normalize-space(@class), '{upper}', '{lower}'), ' ')"
+    return " or ".join(f"contains({tokens}, ' {name.lower()} ')" for name in names)
+
+
+#: Where a publisher's page names the article's licence: a `rel="license"` link (Springer
+#: Nature, BioMed Central), Wiley's Creative Commons icon, the `license` blocks of
+#: ScienceDirect, Oxford Academic and the PMC pages ACE reads, and older ScienceDirect's
+#: `oaUserLicense`, in page order.
+_PAGE_LICENSES = ("//a[@rel='license' or @aria-label='Creative Commons license information']"
+                  f" | //*[{_class_is('license', 'oaUserLicense')}]")
+#: Where it prints the article's copyright: its `dc.rights` and `prism.copyright` metadata,
+#: ScienceDirect's `copyright-line`, Silverchair's and HighWire's `copyright-statement`,
+#: Wiley's and older ScienceDirect's `p.copyright`, older Springer's `ArticleCopyright`.
+#: The site's own copyright, in a page footer, is in none of them.
+_PAGE_COPYRIGHTS = (
+    "//meta[translate(@name, 'DCRIGHTSPRISMCOPY', 'dcrightsprismcopy')"
+    " = 'dc.rights' or translate(@name, 'DCRIGHTSPRISMCOPY', 'dcrightsprismcopy')"
+    " = 'prism.copyright']"
+    f" | //*[{_class_is('copyright-line', 'copyright-statement', 'ArticleCopyright')}]"
+    f" | //p[{_class_is('copyright')}]"
+)
+
+
+#: ACE saves pages as UTF-8, which libxml2 does not guess for a page that does not say so.
+_UTF8_HTML = lxml_html.HTMLParser(encoding="utf-8")
+
+
+def page_license(page: bytes) -> Optional[License]:
+    """The licence a publisher's page states for the article it shows.
+
+    Its licence links and blocks are taken first: an open licence before all rights
+    reserved, and that before an `other`, then the first in the page. A link is read
+    before its block's text. With none, its copyright lines are read the same way: each
+    is the licence it names, if any, else all rights reserved, stated.
+    """
+    root = lxml_html.document_fromstring(page, parser=_UTF8_HTML)
+    by = MetadataSource.publisher_page
+
+    def strongest(found: Iterable[Optional[License]]) -> Optional[License]:
+        return min((lic for lic in found if lic),
+                   key=lambda lic: _STRENGTH.get(lic.license_id, 0), default=None)
+
+    texts: List[Optional[str]] = []
+    for element in root.xpath(_PAGE_LICENSES):
+        if element.tag == "a":
+            texts.append(element.get("href"))
+        else:
+            texts += [a.get("href") for a in element.iter("a")] + [element.text_content()]
+    return (strongest(stated(by, text) for text in texts)
+            or strongest(copyright_line(by, element.get("content") if element.tag == "meta"
+                                        else element.text_content())
+                         for element in root.xpath(_PAGE_COPYRIGHTS)))
+
+
+#: ScienceDirect's self-archiving terms, in the article record its page embeds: the licence
+#: an accepted manuscript may be shared under, from its start date.
+_SELF_ARCHIVING = re.compile(r'"self-archiving":\{.*?\]\}')
+_SA_FIELD = re.compile(r'"#name":"(sa-user-license|sa-start-date)","_":("(?:[^"\\]|\\.)*")')
+
+
+def page_manuscript_license(page: bytes, now: Optional[datetime] = None) -> Optional[License]:
+    """The licence a publisher's page names for the article's accepted manuscript:
+    ScienceDirect's `sa-user-license`, once its `sa-start-date` has come."""
+    terms = _SELF_ARCHIVING.search(page.decode("utf-8", errors="replace"))
+    if terms is None:
+        return None
+    fields = {name: json.loads(value) for name, value in _SA_FIELD.findall(terms.group(0))}
+    start = fields.get("sa-start-date")
+    if start and datetime.fromisoformat(start.replace("Z", "+00:00")) > (
+            now or datetime.now(timezone.utc)):
+        return None
+    return stated(MetadataSource.publisher_page, fields.get("sa-user-license"))
+
+
 def cloud_license(record: Mapping) -> Optional[License]:
     """The licence PMC's Cloud Service records for its copy, its `license_code`."""
     return stated(MetadataSource.pmc_cloud, record.get("license_code"))
@@ -306,9 +391,19 @@ def license_of(
     return ASSUMED
 
 
+def _page(source: str, files: Iterable[Path]) -> Optional[Path]:
+    """The publisher's page an ACE download holds."""
+    return next((p for p in files if p.suffix == ".html"), None) if source == "ace" else None
+
+
 def own_license(source: str, files: Iterable[Path]) -> Optional[License]:
     """The licence a held copy's own record states: PMC's cloud record of it, else its
-    JATS or Elsevier full text. Raises when a record that is there cannot be read."""
+    JATS or Elsevier full text, or the publisher's page ACE read. Raises when a record that
+    is there cannot be read."""
+    files = list(files)
+    page = _page(source, files)
+    if page is not None:
+        return page_license(page.read_bytes())
     by_name = {path.name: path for path in files}
     cloud = by_name.get("pmc_cloud.json")
     if cloud is not None:
@@ -325,12 +420,20 @@ def own_license(source: str, files: Iterable[Path]) -> Optional[License]:
     return None
 
 
+def manuscript_license(source: str, files: Iterable[Path]) -> Optional[License]:
+    """The licence a held copy's record names for the accepted manuscript, which is not
+    the copy: the self-archiving licence of the publisher's page ACE read."""
+    page = _page(source, files)
+    return page_manuscript_license(page.read_bytes()) if page is not None else None
+
+
 __all__ = [
     "ASSUMED",
     "HELD",
     "LICENSE_PRECEDENCE",
     "LICENSE_PROVIDERS",
     "OWN",
+    "PAGE",
     "Statement",
     "Undecided",
     "cloud_license",
@@ -339,7 +442,10 @@ __all__ = [
     "elsevier_license",
     "jats_license",
     "license_of",
+    "manuscript_license",
     "normalise_license",
     "own_license",
+    "page_license",
+    "page_manuscript_license",
     "stated",
 ]

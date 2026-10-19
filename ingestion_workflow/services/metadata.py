@@ -57,10 +57,12 @@ from ingestion_workflow.services.licenses import (
     HELD,
     LICENSE_PROVIDERS,
     OWN,
+    PAGE,
     Statement,
     Undecided,
     crossref_statements,
     license_of,
+    manuscript_license,
     own_license,
     stated,
 )
@@ -786,6 +788,7 @@ def _decide_licenses(
             Statement(c.license, c.version, c.url, c.route) for c in listed
             if c.by == MetadataSource.openalex and c.license is not None],
         HELD: [],
+        PAGE: [],
     }
     waiting = set(unanswered)
 
@@ -807,12 +810,16 @@ def _decide_licenses(
     for download in held:
         try:
             own, unread = own_license(download.source, download.files), False
+            manuscript = manuscript_license(download.source, download.files)
         except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
-            own, unread = None, True
+            own, manuscript, unread = None, None, True
         records.append((download, own, unread))
         if own is not None:
-            statements[HELD].append(Statement(own, download.copy.version))
+            by = PAGE if own.stated_by == MetadataSource.publisher_page else HELD
+            statements[by].append(Statement(own, download.copy.version))
+        if manuscript is not None:
+            statements[PAGE].append(Statement(manuscript, CopyVersion.am))
     # Every record is read before any copy is decided, so that each copy can take another's.
     for download, own, unread in records:
         own = own or at(download.copy.url)
