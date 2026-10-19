@@ -285,7 +285,7 @@ class SemanticScholarClient:
             for i in range(0, len(request_ids), SEMANTIC_SCHOLAR_BATCH_SIZE)
         ]
 
-        failures: List[str] = []
+        failures: List[BaseException] = []
         for batch in batches:
             try:
                 response_data = self._request_metadata_batch(batch)
@@ -293,10 +293,12 @@ class SemanticScholarClient:
             except Exception as exc:  # noqa: BLE001
                 # Continue with other batches, and say so: an unanswered article is not
                 # one Semantic Scholar has nothing for.
-                failures.append(f"{type(exc).__name__}: {exc}")
+                failures.append(exc)
 
         if failures:
-            raise PartialAnswer(f"Semantic Scholar: {failures[0]}", results)
+            first = failures[0]
+            raise PartialAnswer(f"Semantic Scholar: {type(first).__name__}: {first}", results,
+                                failures)
         return results
 
     @retry(

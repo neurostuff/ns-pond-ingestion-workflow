@@ -84,11 +84,12 @@ class Statement:
 
 class Undecided(Exception):
     """A licence cannot be decided while `sources` (`OWN`, or provider names) have not
-    answered."""
+    answered; `outage` when each of them was only down or busy."""
 
-    def __init__(self, message: str, sources: Sequence[str] = ()) -> None:
+    def __init__(self, message: str, sources: Sequence[str] = (), outage: bool = False) -> None:
         super().__init__(message)
         self.sources = tuple(sources)
+        self.outage = outage
 
 
 _CC_URL = re.compile(r"creativecommons\.org/licenses/([a-z-]+)")

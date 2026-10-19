@@ -96,7 +96,7 @@ class CrossrefClient:
             if doi:
                 wanted.setdefault(doi, []).append(identifier)
         answered: Dict[str, List[Dict]] = {}
-        failures: List[str] = []
+        failures: List[BaseException] = []
         failed: set = set()
         batched = [doi for doi in wanted if "," not in doi]
         for index in range(0, len(batched), CROSSREF_DOI_BATCH_SIZE):
@@ -104,7 +104,7 @@ class CrossrefClient:
             try:
                 works = self._licenses(batch)
             except Exception as exc:  # noqa: BLE001 - the batch's articles are retried
-                failures.append(f"{type(exc).__name__}: {exc}")
+                failures.append(exc)
                 failed.update(batch)
                 continue
             for work in works:
@@ -118,7 +118,7 @@ class CrossrefClient:
                 try:
                     work = self.work(doi)
                 except Exception as exc:  # noqa: BLE001
-                    failures.append(f"{type(exc).__name__}: {exc}")
+                    failures.append(exc)
                     continue
                 answered[doi] = list((work or {}).get("license") or [])
         results = {
@@ -128,5 +128,6 @@ class CrossrefClient:
             for doi, entries in answered.items() for identifier in wanted[doi]
         }
         if failures:
-            raise PartialAnswer(f"Crossref: {failures[0]}", results)
+            first = failures[0]
+            raise PartialAnswer(f"Crossref: {type(first).__name__}: {first}", results, failures)
         return results

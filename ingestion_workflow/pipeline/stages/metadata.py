@@ -21,7 +21,6 @@ from typing import Dict, Iterator, List, Sequence
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
-from ingestion_workflow.services.licenses import OWN
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -157,6 +156,8 @@ class MetadataStage:
                     source, _copy_of(download),
                     [ctx.recorded_path(str(f.file_path)) for f in files]))
 
+        # Outside the batch's own failures: no article can be decided until it is configured.
+        self.service.require_licence_providers()
         try:
             found = self.service.enrich_metadata(contents, held, dois)
         except Exception as exc:
@@ -170,6 +171,12 @@ class MetadataStage:
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)
+            if slug in self.service.conflicts:
+                yield Outcome.failure(
+                    work.article_id, self.name, "", self.service.conflicts[slug],
+                    fingerprint=work.fingerprint,
+                )
+                continue
             if metadata is None:
                 yield Outcome.failure(
                     work.article_id, self.name, "", "no provider returned metadata",
@@ -178,11 +185,10 @@ class MetadataStage:
                 continue
             if slug in self.service.undecided:
                 undecided = self.service.undecided[slug]
-                providers = [s for s in undecided.sources if s != OWN]
                 yield Outcome.failure(
                     work.article_id, self.name, "", str(undecided),
                     fingerprint=work.fingerprint,
-                    summary={"unanswered": providers} if providers else None,
+                    summary={"unanswered": list(undecided.sources)} if undecided.outage else None,
                 )
                 continue
             yield Outcome(

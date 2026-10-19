@@ -1,0 +1,163 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2F%28sici%291097-0150%282000%295%3A1%3C1%3A%3Aaid-igs1%3E3.0.co%3B2-4%2Cdoi%3A10.1093%2Fscan%2Fnsw123&rows=2&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1093\/scan\/nsw123","license":[{"start":{"date-parts":[[2016,11,18]],"date-time":"2016-11-18T00:00:00Z","timestamp":1479427200000},"content-version":"vor","delay-in-days":24,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc\/4.0\/"}]}],"items-per-page":2,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 22:22:52 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.1002/%28sici%291097-0150%282000%295%3A1%3C1%3A%3Aaid-igs1%3E3.0.co%3B2-4
+  response:
+    body:
+      string: ''
+    headers:
+      Connection:
+      - keep-alive
+      Date:
+      - Sun, 18 Oct 2026 22:22:52 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      location:
+      - /works/10.3109/10929080009148866
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 301
+      message: Moved Permanently
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.3109/10929080009148866
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,18]],"date-time":"2026-09-18T14:14:06Z","timestamp":1789740846198,"version":"4.0.1"},"reference-count":18,"publisher":"Informa
+        UK Limited","issue":"1","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Computer
+        Aided Surgery"],"published-print":{"date-parts":[[2000,1]]},"DOI":"10.3109\/10929080009148866","type":"journal-article","created":{"date-parts":[[2008,4,24]],"date-time":"2008-04-24T22:00:21Z","timestamp":1209074421000},"page":"1-10","source":"Crossref","is-referenced-by-count":44,"title":["A
+        Data Fusion Environment for Multimodal and Multi-Informational Neuronavigation"],"prefix":"10.1080","volume":"5","author":[{"given":"P.","family":"Jannin","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"O.
+        J.","family":"Fleig","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"E.","family":"Seigneuret","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"C.","family":"Grova","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"X.","family":"Morandi","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"J.
+        M.","family":"Scarabin","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"301","published-online":{"date-parts":[[2010,1,6]]},"reference":[{"key":"CIT0001","doi-asserted-by":"publisher","DOI":"10.1109\/51.195947"},{"key":"CIT0002","first-page":"105","author":"Bouliou
+        A","year":"1995","journal-title":"Proceedings of Human Brain Mapping"},{"key":"CIT0003","doi-asserted-by":"publisher","DOI":"10.1145\/174462.156635"},{"key":"CIT0004","first-page":"621","volume":"3","author":"Ganslandt
+        O","year":"1997","journal-title":"Neurosurgery"},{"key":"CIT0005","doi-asserted-by":"publisher","DOI":"10.3171\/jns.1999.91.1.0073"},{"key":"CIT0006","doi-asserted-by":"publisher","DOI":"10.3109\/10929089809148138"},{"key":"CIT0008","doi-asserted-by":"publisher","DOI":"10.1117\/12.59413"},{"key":"CIT0009","doi-asserted-by":"publisher","DOI":"10.1142\/S0218001497000603"},{"key":"CIT0010","doi-asserted-by":"publisher","DOI":"10.1117\/12.174032"},{"key":"CIT0011","doi-asserted-by":"publisher","DOI":"10.1109\/42.563664"},{"key":"CIT0012","doi-asserted-by":"publisher","DOI":"10.1097\/00004728-199711000-00013"},{"issue":"3","key":"CIT0013","volume":"17","author":"Poston
+        T","year":"1998","journal-title":"Proceedings of Eurographics"},{"key":"CIT0014","doi-asserted-by":"publisher","DOI":"10.1097\/00006123-199607000-00018"},{"key":"CIT0015","doi-asserted-by":"publisher","DOI":"10.3109\/10929089509106340"},{"key":"CIT0017","doi-asserted-by":"publisher","DOI":"10.1007\/BF01200710"},{"key":"CIT0019","doi-asserted-by":"publisher","DOI":"10.1109\/42.736017"},{"key":"CIT0020","volume-title":"Co-planar
+        stereotactic atlas of the human brain","author":"Talairach J","year":"1988"},{"key":"CIT0022","doi-asserted-by":"publisher","DOI":"10.1016\/S1361-8415(01)80004-9"}],"container-title":["Computer
+        Aided Surgery"],"original-title":[],"language":"en","link":[{"URL":"http:\/\/www.tandfonline.com\/doi\/pdf\/10.3109\/10929080009148866","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2016,12,12]],"date-time":"2016-12-12T23:16:24Z","timestamp":1481584584000},"score":1,"resource":{"primary":{"URL":"http:\/\/www.tandfonline.com\/doi\/full\/10.3109\/10929080009148866"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2000,1]]},"references-count":18,"aliases":["10.1002\/(sici)1097-0150(2000)5:1<1::aid-igs1>3.0.co;2-4"],"journal-issue":{"issue":"1","published-online":{"date-parts":[[2010,1,6]]},"published-print":{"date-parts":[[2000,1]]}},"alternative-id":["10.3109\/10929080009148866"],"URL":"https:\/\/doi.org\/10.3109\/10929080009148866","relation":{},"ISSN":["1092-9088","1097-0150"],"issn-type":[{"value":"1092-9088","type":"print"},{"value":"1097-0150","type":"electronic"}],"subject":[],"published":{"date-parts":[[2000,1]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1452'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 18 Oct 2026 22:22:52 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -29,6 +29,7 @@ def test_settings(tmp_path):
         cache_root=tmp_path / "cache",
         ns_pond_root=tmp_path / "ns-pond",
         semantic_scholar_api_key="test_s2_key",
+        openalex_api_key="test_openalex_key",
         pubmed_email="test@example.com",
         pubmed_api_key="test_pubmed_key",
     )
@@ -37,20 +38,32 @@ def test_settings(tmp_path):
 @pytest.fixture
 def metadata_service(test_settings):
     """Create a metadata service instance."""
-    service = MetadataService(test_settings)
-    # An EMAIL in the environment switches OpenAlex on, and these tests do not
-    # patch it, so it would reach the network.
-    service._openalex_client = None
+    return _offline(MetadataService(test_settings))
+
+
+def _offline(service: MetadataService) -> MetadataService:
+    """These tests patch the providers they read; Crossref and OpenAlex, which they do
+    not, answer nothing rather than reach the network."""
+    service._get_crossref_metadata_cached = lambda identifiers, unanswered=None: {}
+    service._get_openalex_metadata_cached = lambda identifiers, unanswered=None: {}
     return service
+
+
+def _enrich(service, contents, held=None):
+    """`enrich_metadata` with each content's identifier's DOI as the catalog's."""
+    dois = {c.slug: [c.identifier.doi] if c.identifier and c.identifier.doi else []
+            for c in contents}
+    return service.enrich_metadata(contents, held or {}, dois)
 
 
 def _with_openalex(tmp_path) -> MetadataService:
     """`openalex_email` is read through its alias, so it is set on the client."""
     service = MetadataService(Settings(
         data_root=tmp_path / "data", cache_root=tmp_path / "cache",
-        ns_pond_root=tmp_path / "ns-pond",
+        ns_pond_root=tmp_path / "ns-pond", semantic_scholar_api_key="test_s2_key",
     ))
     service._openalex_client = OpenAlexClient("test@example.com")
+    service._get_crossref_metadata_cached = lambda identifiers, unanswered=None: {}
     return service
 
 
@@ -84,7 +97,7 @@ class TestMetadataService:
 
     def test_enrich_metadata_empty_list(self, metadata_service):
         """Test metadata enrichment with empty list."""
-        result = metadata_service.enrich_metadata([])
+        result = metadata_service.enrich_metadata([], {}, {})
         assert result == {}
 
     def test_enrich_metadata_with_mocked_s2(self, metadata_service):
@@ -108,7 +121,7 @@ class TestMetadataService:
             "get_metadata",
             return_value={identifier.slug: mock_metadata},
         ):
-            result = metadata_service.enrich_metadata([extracted])
+            result = _enrich(metadata_service, [extracted])
 
         assert extracted.slug in result
         assert result[extracted.slug].title == "Test Article"
@@ -140,7 +153,7 @@ class TestMetadataService:
                 return_value={identifier.slug: mock_metadata},
             ),
         ):
-            result = metadata_service.enrich_metadata([extracted])
+            result = _enrich(metadata_service, [extracted])
 
         assert extracted.slug in result
         assert result[extracted.slug].title == "PubMed Article"
@@ -168,7 +181,7 @@ class TestMetadataService:
             patch.object(metadata_service, "_get_pubmed_metadata_cached",
                          return_value={identifier.slug: pubmed}) as asked,
         ):
-            result = metadata_service.enrich_metadata([extracted])
+            result = _enrich(metadata_service, [extracted])
 
         asked.assert_called_once()
         merged = result[extracted.slug]
@@ -195,7 +208,7 @@ class TestMetadataService:
                          return_value={}) as asked,
             patch.object(metadata_service, "_get_fallback_metadata") as fallback,
         ):
-            result = metadata_service.enrich_metadata([extracted])
+            result = _enrich(metadata_service, [extracted])
 
         asked.assert_not_called()
         fallback.assert_not_called()
@@ -220,7 +233,7 @@ class TestMetadataService:
             patch.object(service, "_get_openalex_metadata_cached",
                          return_value={identifier.slug: openalex}) as asked,
         ):
-            result = service.enrich_metadata([extracted])
+            result = _enrich(service, [extracted])
 
         asked.assert_called_once()
         assert asked.call_args.args[0] == [identifier]
@@ -251,7 +264,7 @@ class TestMetadataService:
             patch.object(service, "_get_openalex_metadata_cached",
                          return_value={identifier.slug: openalex}) as asked,
         ):
-            merged = service.enrich_metadata([extracted])[extracted.slug]
+            merged = _enrich(service, [extracted])[extracted.slug]
         asked.assert_called_once()
         assert (merged.journal, merged.abstract, merged.abstract_provider, len(merged.authors)) \
             == ("J", "What it found.", "semantic_scholar", 1)
@@ -411,7 +424,7 @@ class TestMetadataIntegration:
             has_coordinates=True,
         )
 
-        result = service.enrich_metadata([extracted])
+        result = _enrich(service, [extracted])
 
         assert extracted.slug in result
         assert result[extracted.slug].title is not None
@@ -435,7 +448,7 @@ class TestMetadataIntegration:
 
         settings = test_settings.model_copy(
             update={
-                "semantic_scholar_api_key": None,
+                "semantic_scholar_api_key": "test_s2_key",
                 "pubmed_email": pubmed_email,
                 "pubmed_api_key": pubmed_api_key,
             }
@@ -455,7 +468,7 @@ class TestMetadataIntegration:
             "_get_semantic_scholar_metadata_cached",
             return_value={},
         ):
-            result = service.enrich_metadata([extracted])
+            result = _enrich(service, [extracted])
 
         assert extracted.slug in result
         assert result[extracted.slug].title is not None
@@ -503,8 +516,8 @@ class TestLicences:
         extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PMC,
                                      identifier=identifier)
         service = MetadataService(_licence_settings(tmp_path))
-        found = service.enrich_metadata(
-            [extracted], {extracted.slug: [_held("pmc", "pmc_tdm_manuscript", identifier)]})
+        held = {extracted.slug: [_held("pmc", "pmc_tdm_manuscript", identifier)]}
+        found = _enrich(service, [extracted], held)
 
         assert service.undecided == {}
         meta = found[extracted.slug]
@@ -542,7 +555,7 @@ class TestLicences:
         pdf = HeldDownload("pdf", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
                                                access=CopyAccess.public, url=url))
         service = MetadataService(_licence_settings(tmp_path))
-        meta = service.enrich_metadata([extracted], {extracted.slug: [pdf]})[extracted.slug]
+        meta = _enrich(service, [extracted], {extracted.slug: [pdf]})[extracted.slug]
 
         assert _license(meta.copy_licenses["pdf"]) == {
             "license_id": "cc-by-nc", "determination": "stated", "stated_by": "openalex",
@@ -561,7 +574,7 @@ class TestLicences:
         extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PDF,
                                      identifier=identifier)
         service = MetadataService(_licence_settings(tmp_path))
-        meta = service.enrich_metadata([extracted])[extracted.slug]
+        meta = _enrich(service, [extracted])[extracted.slug]
 
         assert service.undecided == {}
         assert (meta.license.determination, meta.license.stated_by) == ("stated", "crossref")
@@ -580,7 +593,7 @@ class TestLicences:
         ace = HeldDownload("ace", DownloadCopy(route=CopyRoute.publisher, version=CopyVersion.vor,
                                                access=CopyAccess.unrecorded))
         service = MetadataService(_licence_settings(tmp_path))
-        meta = service.enrich_metadata([extracted], {extracted.slug: [ace]})[extracted.slug]
+        meta = _enrich(service, [extracted], {extracted.slug: [ace]})[extracted.slug]
 
         assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
         assert service.undecided == {}
@@ -598,21 +611,12 @@ class TestLicences:
             ("semantic_scholar", "unrecorded", None, "https://hal.archives-ouvertes.fr/hal-03025378"
              "/file/trust%20%20fmri%20paper%20JNPE%20postprint.pdf", assumed)]
 
-    @pytest.mark.vcr()
-    def test_with_semantic_scholar_not_asked_nothing_is_assumed(self, tmp_path):
-        """The same article, without Semantic Scholar's key: Semantic Scholar might have
-        stated a licence, so none is assumed and the article is asked about again."""
-        identifier = Identifier(doi="10.1037/npe0000112")
-        extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.ACE,
-                                     identifier=identifier)
+    def test_without_semantic_scholar_no_licence_is_decided(self, tmp_path):
+        """Semantic Scholar might have listed a copy and its licence: without its key the
+        service refuses to run rather than assume one."""
         service = MetadataService(_licence_settings(tmp_path, semantic_scholar_api_key=None))
-        found = service.enrich_metadata([extracted])
-
-        assert found[extracted.slug].license is None
-        undecided = service.undecided[extracted.slug]
-        assert str(undecided) == (
-            "the copies the providers list are unknown: semantic_scholar is not configured")
-        assert undecided.sources == ("semantic_scholar",)
+        with pytest.raises(RuntimeError, match="needs semantic_scholar configured"):
+            _enrich(service, [_content(APA, DownloadSource.ACE)])
 
 
 def test_the_abstract_kept_is_credited_to_the_provider_it_came_from():
@@ -634,9 +638,12 @@ def test_a_provider_that_does_not_answer_is_noted_for_each_article_it_left(tmp_p
     service = MetadataService(_licence_settings(tmp_path))
     identifiers = [Identifier(doi="10.1037/npe0000112"), Identifier(doi="10.1002/alz.12697")]
     unanswered = {}
+    _Unavailable.paths.clear()
     found = service._cached("crossref", client, identifiers, unanswered)
     assert found == {}
     assert unanswered == {i.slug: {"crossref": "did not answer"} for i in identifiers}
+    # the failed query's DOIs are not asked for again one at a time
+    assert _Unavailable.paths and all(p.startswith("/works?filter=") for p in _Unavailable.paths)
 
 
 TDM_CASSETTE = "TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml"
@@ -665,7 +672,7 @@ def test_a_manuscript_and_a_copy_of_no_known_version_never_take_the_vor_s_licenc
     held = [_copy("pdf", "repository", "am", url="https://discovery.ucl.ac.uk/id/eprint/10152210/"),
             _copy("europepmc", "pmc", None)]
     service = MetadataService(_licence_settings(tmp_path))
-    meta = service.enrich_metadata([_content(ALZ)], {ALZ.slug: held})[ALZ.slug]
+    meta = _enrich(service, [_content(ALZ)], {ALZ.slug: held})[ALZ.slug]
 
     assert service.undecided == {}
     assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
@@ -681,7 +688,7 @@ def test_an_unreadable_own_record_leaves_its_copy_undecided(tmp_path):
     held = [_copy("pmc", "pmc", "am", access="tdm_grant",
                   files=[COPIES / "pmc_tdm_manuscript" / "article.xml", record])]
     service = MetadataService(_licence_settings(tmp_path))
-    service.enrich_metadata([_content(ALZ, DownloadSource.PMC)], {ALZ.slug: held})
+    _enrich(service, [_content(ALZ, DownloadSource.PMC)], {ALZ.slug: held})
 
     undecided = service.undecided[ALZ.slug]
     assert str(undecided) == ("the licence of the pmc copy is undecided: "
@@ -692,7 +699,11 @@ def test_an_unreadable_own_record_leaves_its_copy_undecided(tmp_path):
 class _Unavailable(BaseHTTPRequestHandler):
     """A provider while it is down: 503 to everything, with no wait asked for."""
 
+    #: The path of every request it was sent.
+    paths = []
+
     def do_GET(self):
+        type(self).paths.append(self.path)
         self.send_response(503)
         self.send_header("Retry-After", "0")
         self.end_headers()
@@ -720,19 +731,19 @@ def test_crossref_down_leaves_a_licence_it_comes_before_undecided(tmp_path, unav
     service = MetadataService(_licence_settings(tmp_path))
     service._crossref_client.BASE_URL = unavailable + "/works/"
     held = [_copy("ace", "publisher", "vor", access="unrecorded")]
-    found = service.enrich_metadata([_content(APA, DownloadSource.ACE)], {APA.slug: held})
+    found = _enrich(service, [_content(APA, DownloadSource.ACE)], {APA.slug: held})
 
     assert found[APA.slug].license is None
     undecided = service.undecided[APA.slug]
     assert str(undecided) == "the licence of the ace copy is undecided: crossref did not answer"
-    assert undecided.sources == ("crossref",)
+    assert (undecided.sources, undecided.outage) == (("crossref",), True)
 
 
 @pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
 def test_openalex_down_leaves_the_listed_copies_unknown(tmp_path, unavailable):
     service = MetadataService(_licence_settings(tmp_path))
     service._openalex_client.BASE_URL = unavailable
-    service.enrich_metadata([_content(APA, DownloadSource.ACE)])
+    _enrich(service, [_content(APA, DownloadSource.ACE)])
 
     undecided = service.undecided[APA.slug]
     assert str(undecided) == "the copies the providers list are unknown: openalex did not answer"
@@ -802,7 +813,7 @@ def test_another_copy_s_open_licence_is_not_the_version_of_record_s(tmp_path, do
     open PDF (a preprint, a manuscript, another work) or a repository location is CC."""
     identifier = Identifier(doi=doi)
     service = MetadataService(_licence_settings(tmp_path))
-    meta = service.enrich_metadata([_content(identifier)])[identifier.slug]
+    meta = _enrich(service, [_content(identifier)])[identifier.slug]
 
     assert service.undecided == {}
     assert (meta.license.license_id, meta.license.stated_by, meta.license.stated_as) == (
@@ -821,8 +832,8 @@ def test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record(tmp_pat
     held = [_copy("elsevier", "publisher", "vor", access="tdm_grant", files=files),
             _copy("ace", "publisher", "vor", access="unrecorded")]
     service = MetadataService(_licence_settings(tmp_path))
-    meta = service.enrich_metadata([_content(identifier, DownloadSource.ELSEVIER)],
-                                   {identifier.slug: held})[identifier.slug]
+    content = _content(identifier, DownloadSource.ELSEVIER)
+    meta = _enrich(service, [content], {identifier.slug: held})[identifier.slug]
 
     arr = {"license_id": "all-rights-reserved", "determination": "stated",
            "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
@@ -838,7 +849,7 @@ def test_a_paper_presented_by_its_preprint_doi_takes_its_journal_s_licence(tmp_p
     identifier = Identifier(doi="10.1101/2020.03.25.008318")
     dois = ["10.1002/hbm.25137", "10.1101/2020.03.25.008318"]
     service = MetadataService(_licence_settings(tmp_path))
-    meta = service.enrich_metadata([_content(identifier)], dois={identifier.slug: dois})[
+    meta = service.enrich_metadata([_content(identifier)], {}, {identifier.slug: dois})[
         identifier.slug]
 
     assert service.undecided == {}
@@ -854,18 +865,87 @@ def test_a_merged_abstract_s_provider_survives_the_artifact():
     assert (reloaded.source, reloaded.abstract_provider) == ("semantic_scholar", "pubmed")
 
 
-def test_metadata_version_makes_every_record_from_before_the_licences_stale():
-    from ingestion_workflow.pipeline.stages.metadata import METADATA_VERSION
-
-    assert METADATA_VERSION == 2
-
-
-@pytest.mark.parametrize("oa_status, expected", [("green", "green"), ("unknown", None)])
-def test_oa_status_is_openalex_s_when_it_is_one_of_study_schema_s(oa_status, expected):
+def _decided(works, paper_work=None, crossref=None):
+    """`_decide_licenses` for a paper no download holds, from OpenAlex's `works`."""
     from ingestion_workflow.services.metadata import _decide_licenses
     from study_schema.models.paper_parse import ArticleIdentifiers
 
     meta = ArticleMetadata(title="T")
-    _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None, {},
-                     [{"open_access": {"oa_status": oa_status}}], {}, [], {})
-    assert meta.oa_status == expected
+    _decide_licenses(meta, ArticleIdentifiers(publication_status="published"), None,
+                     crossref or {}, works, paper_work, {}, [], {})
+    return meta
+
+
+#: 10.1002/alz.12697's OpenAlex work, its Wiley location relabelled as an accepted manuscript,
+#: as OpenAlex lists an early-access manuscript on a publisher's site.
+EARLY_ACCESS = {"open_access": {"oa_status": "hybrid"}, "locations": [{
+    "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/alz.12697",
+    "landing_page_url": "https://doi.org/10.1002/alz.12697", "version": "acceptedVersion",
+    "license": "cc-by-nc", "is_oa": True,
+    "source": {"type": "journal", "display_name": "Alzheimer's & Dementia"}}]}
+
+
+def test_a_publisher_s_manuscript_licence_is_not_the_version_of_record_s():
+    meta = _decided([EARLY_ACCESS], EARLY_ACCESS)
+    assert (meta.license.license_id, meta.license.determination) == (
+        "all-rights-reserved", "assumed")
+    assert [(c.route, c.version, c.license.license_id) for c in meta.reported_copies] == [
+        ("publisher", "am", "cc-by-nc")]
+
+
+@pytest.mark.parametrize("oa_status, expected", [("green", "green"), ("unknown", None)])
+def test_oa_status_is_openalex_s_when_it_is_one_of_study_schema_s(oa_status, expected):
+    work = {"open_access": {"oa_status": oa_status}}
+    assert _decided([work], work).oa_status == expected
+
+
+def test_oa_status_is_the_journal_doi_s_work_s_never_the_preprint_s():
+    """dpl6phhniqbj: OpenAlex knows the journal DOI's work (hybrid) and the bioRxiv one
+    (green); without the journal's, the paper's status is unknown."""
+    journal, preprint = {"open_access": {"oa_status": "hybrid"}}, {"open_access": {"oa_status": "green"}}
+    assert _decided([preprint, journal], journal).oa_status == "hybrid"
+    assert _decided([preprint], None).oa_status is None
+
+
+def test_two_journal_dois_are_a_catalog_conflict_and_nothing_is_asked(test_settings):
+    """d62fs2rhxmro: two different papers merged in the catalog."""
+    service = MetadataService(test_settings)
+    identifier = Identifier(doi="10.1016/j.biopsych.2010.04.013")
+    content = _content(identifier)
+    found = service.enrich_metadata(
+        [content], {}, {content.slug: ["10.1016/j.biopsych.2010.04.013", "10.1038/mp.2009.121"]})
+    assert found == {} and service.undecided == {}
+    assert service.conflicts == {content.slug: (
+        "catalog conflict: the article holds two DOIs of a version of record, "
+        "10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121; its aliases need repair")}
+
+
+class _Refusing(BaseHTTPRequestHandler):
+    """A provider refusing the request: 400 to everything."""
+
+    def do_GET(self):
+        self.send_response(400)
+        self.end_headers()
+
+    do_POST = do_GET
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
+def test_a_refused_request_is_not_an_outage(tmp_path):
+    server = HTTPServer(("127.0.0.1", 0), _Refusing)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        service = MetadataService(_licence_settings(tmp_path))
+        service._crossref_client.BASE_URL = f"http://127.0.0.1:{server.server_port}/works/"
+        held = [_copy("ace", "publisher", "vor", access="unrecorded")]
+        _enrich(service, [_content(APA, DownloadSource.ACE)], {APA.slug: held})
+    finally:
+        server.shutdown()
+        server.server_close()
+    undecided = service.undecided[APA.slug]
+    assert str(undecided).startswith(
+        "the licence of the ace copy is undecided: crossref refused the request (400")
+    assert (undecided.sources, undecided.outage) == (("crossref",), False)

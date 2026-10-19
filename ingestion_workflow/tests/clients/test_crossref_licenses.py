@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib.parse import unquote
+
 import pytest
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.models.ids import Identifier
@@ -20,6 +22,11 @@ DEPOSITS = {
     "10.1080/20445911.2021.1954013": None,
     "10.9999/no-such-work": None,
 }
+
+
+def _played(vcr):
+    """The recorded requests this test made, in the order they were recorded."""
+    return [vcr.requests[i] for i in sorted(vcr.play_counts)]
 
 
 @pytest.mark.vcr()
@@ -44,8 +51,8 @@ def test_two_articles_sharing_a_doi_each_get_its_deposits(vcr):
     found = CrossrefClient().get_metadata([one, other])
     assert found[one.slug].raw_metadata == found[other.slug].raw_metadata
     assert found[one.slug].raw_metadata["crossref"]["license"]
-    assert len(vcr.requests) == 1
-    assert "mailto" not in vcr.requests[0].uri
+    (asked,) = _played(vcr)
+    assert "mailto" not in asked.uri
 
 
 #: 51 NeuroImage DOIs from 2003 the catalog holds: one more than a filter query takes.
@@ -62,5 +69,26 @@ def test_fifty_dois_go_in_one_query_and_the_fifty_first_in_the_next(vcr):
 
     assert set(found) == {i.slug for i in identifiers}
     # Crossref answered the second query 429 once, and the retry is the same query
-    queries = dict.fromkeys(r.uri for r in vcr.requests if "filter=" in r.uri)
+    assert vcr.all_played
+    queries = dict.fromkeys(r.uri for r in _played(vcr) if "filter=" in r.uri)
     assert [uri.count("doi%3A") for uri in queries] == [50, 1]
+
+
+#: A DOI Crossref knows, with no licence deposit, which a filter query for it does not
+#: return.
+SICI = "10.1002/(sici)1097-0150(2000)5:1<1::aid-igs1>3.0.co;2-4"
+
+
+@pytest.mark.vcr()
+def test_a_doi_a_filter_query_leaves_out_is_asked_for_singly(vcr):
+    identifiers = [Identifier(doi=SICI), Identifier(doi="10.1093/scan/nsw123")]
+    found = CrossrefClient().get_metadata(identifiers)
+
+    assert set(found) == {i.slug for i in identifiers}
+    assert vcr.all_played
+    single = [r.uri for r in _played(vcr) if "filter=" not in r.uri]
+    # Crossref answers the SICI DOI with a redirect to the work's DOI
+    assert [unquote(uri) for uri in dict.fromkeys(single)] == [
+        "https://api.crossref.org/works/" + SICI,
+        "https://api.crossref.org/works/10.3109/10929080009148866"]
+    assert found[identifiers[0].slug].raw_metadata == {"crossref": {"license": []}}

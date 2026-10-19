@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+import threading
 from datetime import timedelta
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -102,19 +104,27 @@ def test_a_new_or_changed_download_makes_the_licences_stale(env):
     assert planned() == second
 
 
-@pytest.mark.vcr()
-def test_a_licence_a_provider_might_still_state_is_left_undecided_and_retried(env):
+def test_without_semantic_scholar_the_stage_stops_and_records_nothing(env):
     settings, catalog = env
     settings = settings.model_copy(update={"semantic_scholar_api_key": None})
-    # 10.1037/npe0000112: APA deposits no licence, its page states none, and Crossref and
-    # OpenAlex list none; Semantic Scholar is not asked.
     ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    with pytest.raises(RuntimeError, match="needs semantic_scholar configured"):
+        _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+    assert catalog.artifacts([ref.id], "metadata") == {}
+
+
+def test_two_journal_dois_fail_as_a_catalog_conflict(env):
+    """d62fs2rhxmro holds 10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121."""
+    settings, catalog = env
+    ref = _held(catalog, Identifier(doi="10.1016/j.biopsych.2010.04.013"), "ace", None)
+    catalog.add_aliases([(ref.id, "doi", "10.1038/mp.2009.121")])
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
     assert outcome.status is Status.FAILED
-    assert outcome.error == ("the copies the providers list are unknown: "
-                             "semantic_scholar is not configured")
-    assert outcome.summary == {"unanswered": ["semantic_scholar"]}
+    assert outcome.error == (
+        "catalog conflict: the article holds two DOIs of a version of record, "
+        "10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121; its aliases need repair")
+    assert not outcome.summary
 
 
 @pytest.mark.vcr()
@@ -174,3 +184,43 @@ def test_a_copy_with_no_record_takes_the_first_held_record_in_the_order_sources_
     by = {source: (lic.license_id, lic.stated_by) for source, lic in stored.copy_licenses.items()}
     assert by == {"pubget": ("other", "jats"), "elsevier": ("all-rights-reserved", "elsevier"),
                   "ace": ("other", "jats")}
+
+
+class _Failing(BaseHTTPRequestHandler):
+    """Crossref answering every request with `status`, and no wait asked for."""
+
+    status = 503
+
+    def do_GET(self):
+        self.send_response(type(self).status)
+        self.send_header("Retry-After", "0")
+        self.end_headers()
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.mark.vcr("test_a_licence_nobody_states_is_recorded_as_assumed.yaml", ignore_localhost=True)
+@pytest.mark.parametrize("status, summary", [
+    # down: asked about again without spending a try
+    (503, {"unanswered": ["crossref"]}),
+    # refusing the request: a try spent
+    (400, None),
+])
+def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(env, status, summary):
+    """Semantic Scholar and OpenAlex answer as recorded for 10.1037/npe0000112."""
+    settings, catalog = env
+    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    _Failing.status = status
+    server = HTTPServer(("127.0.0.1", 0), _Failing)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        stage = MetadataStage(settings)
+        stage.service._crossref_client.BASE_URL = f"http://127.0.0.1:{server.server_port}/works/"
+        _, (outcome,) = _run(stage, Context(settings, catalog), catalog, ref)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert outcome.status is Status.FAILED
+    assert outcome.error.startswith("the licence of the ace copy is undecided: crossref ")
+    assert (outcome.summary or None) == summary
