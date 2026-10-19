@@ -1,0 +1,450 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1016/j.neuropsychologia.2015.12.005"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '55'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "6e2e103ccbdaac5f30259a53df1a966808ca5ae3", "title": "Preservation
+        of episodic memory in semantic dementia: The importance of regions beyond
+        the medial temporal lobes.", "venue": "Neuropsychologia", "year": 2016, "isOpenAccess":
+        true, "openAccessPdf": {"url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "status": "GREEN", "license": null, "disclaimer": "Notice: The following paper
+        fields have been elided by the publisher: {''abstract''}. Paper or abstract
+        available at https://api.unpaywall.org/v2/10.1016/j.neuropsychologia.2015.12.005?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1016/j.neuropsychologia.2015.12.005, which is subject
+        to the license by the author or copyright owner provided with this content.
+        Please go to the source to verify the license and copyright information for
+        your use."}, "publicationDate": "2016-01-29", "authors": [{"authorId": "3545446",
+        "name": "M. Irish"}, {"authorId": "34517591", "name": "S. Bunk"}, {"authorId":
+        "2058019506", "name": "Si-Cong Tu"}, {"authorId": "2618702", "name": "J. Kamminga"},
+        {"authorId": "2569756", "name": "J. Hodges"}, {"authorId": "3052566", "name":
+        "M. Hornberger"}, {"authorId": "1830970", "name": "O. Piguet"}], "abstract":
+        null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1250'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 14:18:37 GMT
+      Via:
+      - 1.1 edb5724c2fa0963fde9c6c5089b747ce.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - lw7IttIcsyzVUdsjv5Uxom2ujMoZiJojQl5jyiSEUeyuheOp_56cDA==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - Ffr9pHgtvHcEvog=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1250'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Oct 2026 14:18:37 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 9bf5831a-89a1-469e-b794-6620dd20c904
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1016%2Fj.neuropsychologia.2015.12.005&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1016\/j.neuropsychologia.2015.12.005","license":[{"start":{"date-parts":[[2016,1,1]],"date-time":"2016-01-01T00:00:00Z","timestamp":1451606400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 14:18:38 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.neuropsychologia.2015.12.005&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 30, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1016/j.neuropsychologia.2015.12.005",
+        "x_new_oql": "get works where DOI is 10.1016/j.neuropsychologia.2015.12.005",
+        "oqo": {"get_rows": "works", "filter_rows": [{"column_id": "doi", "value":
+        "10.1016/j.neuropsychologia.2015.12.005"}]}, "url": "/works?filter=doi:10.1016%2Fj.neuropsychologia.2015.12.005&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2190124444",
+        "doi": "https://doi.org/10.1016/j.neuropsychologia.2015.12.005", "mag": "2190124444",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/26683384"}, "display_name": "Preservation
+        of episodic memory in semantic dementia: The importance of regions beyond
+        the medial temporal lobes", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5054871768", "display_name": "Muireann Irish",
+        "orcid": "https://orcid.org/0000-0002-4950-8169", "observed_orcids": ["https://orcid.org/0000-0002-4950-8169"]},
+        "institutions": [{"id": "https://openalex.org/I31746571", "display_name":
+        "UNSW Sydney", "ror": "https://ror.org/03r8z3t63", "country_code": "AU", "type":
+        "education", "lineage": ["https://openalex.org/I31746571"]}, {"id": "https://openalex.org/I4210141709",
+        "display_name": "ARC Centre of Excellence in Cognition and its Disorders",
+        "ror": "https://ror.org/044b7p696", "country_code": "AU", "type": "facility",
+        "lineage": ["https://openalex.org/I1337719021", "https://openalex.org/I2801453606",
+        "https://openalex.org/I4210132349", "https://openalex.org/I4210141709", "https://openalex.org/I99043593"]},
+        {"id": "https://openalex.org/I83657090", "display_name": "Neuroscience Research
+        Australia", "ror": "https://ror.org/01g7s6g79", "country_code": "AU", "type":
+        "facility", "lineage": ["https://openalex.org/I83657090"]}], "countries":
+        ["AU"], "is_corresponding": true, "raw_author_name": "Muireann Irish", "raw_affiliation_strings":
+        ["School of Psychology, The University of New South Wales, Sydney, Australia;
+        Neuroscience Research Australia, Randwick, Sydney, Australia; Australian Research
+        Council Centre of Excellence in Cognition and its Disorders, Sydney, Australia.
+        Electronic address: author12@example.org", "Australian Research Council Centre
+        of Excellence in Cognition and its Disorders, Sydney, Australia", "Neuroscience
+        Research Australia, Randwick, Sydney, Australia", "School of Psychology, The
+        University of New South Wales, Sydney, Australia"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "School of Psychology, The University of New South
+        Wales, Sydney, Australia; Neuroscience Research Australia, Randwick, Sydney,
+        Australia; Australian Research Council Centre of Excellence in Cognition and
+        its Disorders, Sydney, Australia. Electronic address: author12@example.org",
+        "institution_ids": ["https://openalex.org/I31746571", "https://openalex.org/I4210141709",
+        "https://openalex.org/I83657090"]}, {"raw_affiliation_string": "Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia", "institution_ids": ["https://openalex.org/I4210141709"]}, {"raw_affiliation_string":
+        "Neuroscience Research Australia, Randwick, Sydney, Australia", "institution_ids":
+        ["https://openalex.org/I83657090"]}, {"raw_affiliation_string": "School of
+        Psychology, The University of New South Wales, Sydney, Australia", "institution_ids":
+        ["https://openalex.org/I31746571"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5032159414", "display_name": "Steffie Bunk",
+        "orcid": "https://orcid.org/0000-0002-4878-5113", "observed_orcids": ["https://orcid.org/0000-0002-4878-5113"]},
+        "institutions": [{"id": "https://openalex.org/I83657090", "display_name":
+        "Neuroscience Research Australia", "ror": "https://ror.org/01g7s6g79", "country_code":
+        "AU", "type": "facility", "lineage": ["https://openalex.org/I83657090"]}],
+        "countries": ["AU"], "is_corresponding": false, "raw_author_name": "Steffie
+        Bunk", "raw_affiliation_strings": ["Neuroscience Research Australia, Randwick,
+        Sydney, Australia"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Neuroscience Research Australia, Randwick, Sydney, Australia", "institution_ids":
+        ["https://openalex.org/I83657090"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5061059444", "display_name": "Sicong Tu", "orcid":
+        "https://orcid.org/0000-0002-6914-6660", "observed_orcids": ["https://orcid.org/0000-0002-6914-6660"]},
+        "institutions": [{"id": "https://openalex.org/I31746571", "display_name":
+        "UNSW Sydney", "ror": "https://ror.org/03r8z3t63", "country_code": "AU", "type":
+        "education", "lineage": ["https://openalex.org/I31746571"]}, {"id": "https://openalex.org/I4210141709",
+        "display_name": "ARC Centre of Excellence in Cognition and its Disorders",
+        "ror": "https://ror.org/044b7p696", "country_code": "AU", "type": "facility",
+        "lineage": ["https://openalex.org/I1337719021", "https://openalex.org/I2801453606",
+        "https://openalex.org/I4210132349", "https://openalex.org/I4210141709", "https://openalex.org/I99043593"]},
+        {"id": "https://openalex.org/I83657090", "display_name": "Neuroscience Research
+        Australia", "ror": "https://ror.org/01g7s6g79", "country_code": "AU", "type":
+        "facility", "lineage": ["https://openalex.org/I83657090"]}], "countries":
+        ["AU"], "is_corresponding": false, "raw_author_name": "Sicong Tu", "raw_affiliation_strings":
+        ["Neuroscience Research Australia, Randwick, Sydney, Australia; Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia; School of Medical Sciences, The University of New South Wales,
+        Sydney, Australia", "Australian Research Council Centre of Excellence in Cognition
+        and its Disorders, Sydney, Australia", "Neuroscience Research Australia, Randwick,
+        Sydney, Australia", "School of Medical Sciences, The University of New South
+        Wales, Sydney, Australia"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Neuroscience Research Australia, Randwick, Sydney, Australia; Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia; School of Medical Sciences, The University of New South Wales,
+        Sydney, Australia", "institution_ids": ["https://openalex.org/I31746571",
+        "https://openalex.org/I4210141709", "https://openalex.org/I83657090"]}, {"raw_affiliation_string":
+        "Australian Research Council Centre of Excellence in Cognition and its Disorders,
+        Sydney, Australia", "institution_ids": ["https://openalex.org/I4210141709"]},
+        {"raw_affiliation_string": "Neuroscience Research Australia, Randwick, Sydney,
+        Australia", "institution_ids": ["https://openalex.org/I83657090"]}, {"raw_affiliation_string":
+        "School of Medical Sciences, The University of New South Wales, Sydney, Australia",
+        "institution_ids": ["https://openalex.org/I31746571"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5001621609", "display_name":
+        "Jody Kamminga", "orcid": "https://orcid.org/0000-0003-3846-7485", "observed_orcids":
+        ["https://orcid.org/0000-0003-3846-7485"]}, "institutions": [{"id": "https://openalex.org/I83657090",
+        "display_name": "Neuroscience Research Australia", "ror": "https://ror.org/01g7s6g79",
+        "country_code": "AU", "type": "facility", "lineage": ["https://openalex.org/I83657090"]}],
+        "countries": ["AU"], "is_corresponding": false, "raw_author_name": "Jody Kamminga",
+        "raw_affiliation_strings": ["Neuroscience Research Australia, Randwick, Sydney,
+        Australia"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Neuroscience Research Australia, Randwick, Sydney, Australia", "institution_ids":
+        ["https://openalex.org/I83657090"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5069129362", "display_name": "John R. Hodges",
+        "orcid": "https://orcid.org/0000-0002-4748-9945", "observed_orcids": ["https://orcid.org/0000-0002-4748-9945"]},
+        "institutions": [{"id": "https://openalex.org/I31746571", "display_name":
+        "UNSW Sydney", "ror": "https://ror.org/03r8z3t63", "country_code": "AU", "type":
+        "education", "lineage": ["https://openalex.org/I31746571"]}, {"id": "https://openalex.org/I4210141709",
+        "display_name": "ARC Centre of Excellence in Cognition and its Disorders",
+        "ror": "https://ror.org/044b7p696", "country_code": "AU", "type": "facility",
+        "lineage": ["https://openalex.org/I1337719021", "https://openalex.org/I2801453606",
+        "https://openalex.org/I4210132349", "https://openalex.org/I4210141709", "https://openalex.org/I99043593"]},
+        {"id": "https://openalex.org/I83657090", "display_name": "Neuroscience Research
+        Australia", "ror": "https://ror.org/01g7s6g79", "country_code": "AU", "type":
+        "facility", "lineage": ["https://openalex.org/I83657090"]}], "countries":
+        ["AU"], "is_corresponding": false, "raw_author_name": "John R. Hodges", "raw_affiliation_strings":
+        ["Neuroscience Research Australia, Randwick, Sydney, Australia; Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia; School of Medical Sciences, The University of New South Wales,
+        Sydney, Australia", "Australian Research Council Centre of Excellence in Cognition
+        and its Disorders, Sydney, Australia", "Neuroscience Research Australia, Randwick,
+        Sydney, Australia", "School of Medical Sciences, The University of New South
+        Wales, Sydney, Australia"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Neuroscience Research Australia, Randwick, Sydney, Australia; Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia; School of Medical Sciences, The University of New South Wales,
+        Sydney, Australia", "institution_ids": ["https://openalex.org/I31746571",
+        "https://openalex.org/I4210141709", "https://openalex.org/I83657090"]}, {"raw_affiliation_string":
+        "Australian Research Council Centre of Excellence in Cognition and its Disorders,
+        Sydney, Australia", "institution_ids": ["https://openalex.org/I4210141709"]},
+        {"raw_affiliation_string": "Neuroscience Research Australia, Randwick, Sydney,
+        Australia", "institution_ids": ["https://openalex.org/I83657090"]}, {"raw_affiliation_string":
+        "School of Medical Sciences, The University of New South Wales, Sydney, Australia",
+        "institution_ids": ["https://openalex.org/I31746571"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5080229310", "display_name":
+        "Michael Hornberger", "orcid": "https://orcid.org/0000-0002-2214-3788", "observed_orcids":
+        ["https://orcid.org/0000-0002-2214-3788"]}, "institutions": [{"id": "https://openalex.org/I1118541",
+        "display_name": "University of East Anglia", "ror": "https://ror.org/026k5mg93",
+        "country_code": "GB", "type": "education", "lineage": ["https://openalex.org/I1118541"]},
+        {"id": "https://openalex.org/I1337719021", "display_name": "Australian Research
+        Council", "ror": "https://ror.org/05mmh0f86", "country_code": "AU", "type":
+        "government", "lineage": ["https://openalex.org/I1337719021", "https://openalex.org/I2801453606",
+        "https://openalex.org/I4210132349"]}, {"id": "https://openalex.org/I4210141709",
+        "display_name": "ARC Centre of Excellence in Cognition and its Disorders",
+        "ror": "https://ror.org/044b7p696", "country_code": "AU", "type": "facility",
+        "lineage": ["https://openalex.org/I1337719021", "https://openalex.org/I2801453606",
+        "https://openalex.org/I4210132349", "https://openalex.org/I4210141709", "https://openalex.org/I99043593"]}],
+        "countries": ["AU", "GB"], "is_corresponding": false, "raw_author_name": "Michael
+        Hornberger", "raw_affiliation_strings": ["Australian Research Council Centre
+        of Excellence in Cognition and its Disorders, Sydney, Australia; Norwich Medical
+        School, University of East Anglia, Norwich, United Kingdom", "Australian Research
+        Council Centre of Excellence in Cognition and its Disorders, Sydney, Australia",
+        "Norwich Medical School, University of East Anglia, Norwich, United Kingdom"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia; Norwich Medical School, University of East Anglia, Norwich, United
+        Kingdom", "institution_ids": ["https://openalex.org/I1118541", "https://openalex.org/I1337719021",
+        "https://openalex.org/I4210141709"]}, {"raw_affiliation_string": "Australian
+        Research Council Centre of Excellence in Cognition and its Disorders, Sydney,
+        Australia", "institution_ids": ["https://openalex.org/I4210141709"]}, {"raw_affiliation_string":
+        "Norwich Medical School, University of East Anglia, Norwich, United Kingdom",
+        "institution_ids": ["https://openalex.org/I1118541"]}]}, {"author_position":
+        "last", "author": {"id": "https://openalex.org/A5054956123", "display_name":
+        "Olivier Piguet", "orcid": "https://orcid.org/0000-0002-6696-1440", "observed_orcids":
+        ["https://orcid.org/0000-0002-6696-1440"]}, "institutions": [{"id": "https://openalex.org/I31746571",
+        "display_name": "UNSW Sydney", "ror": "https://ror.org/03r8z3t63", "country_code":
+        "AU", "type": "education", "lineage": ["https://openalex.org/I31746571"]},
+        {"id": "https://openalex.org/I4210141709", "display_name": "ARC Centre of
+        Excellence in Cognition and its Disorders", "ror": "https://ror.org/044b7p696",
+        "country_code": "AU", "type": "facility", "lineage": ["https://openalex.org/I1337719021",
+        "https://openalex.org/I2801453606", "https://openalex.org/I4210132349", "https://openalex.org/I4210141709",
+        "https://openalex.org/I99043593"]}, {"id": "https://openalex.org/I83657090",
+        "display_name": "Neuroscience Research Australia", "ror": "https://ror.org/01g7s6g79",
+        "country_code": "AU", "type": "facility", "lineage": ["https://openalex.org/I83657090"]}],
+        "countries": ["AU"], "is_corresponding": false, "raw_author_name": "Olivier
+        Piguet", "raw_affiliation_strings": ["Neuroscience Research Australia, Randwick,
+        Sydney, Australia; Australian Research Council Centre of Excellence in Cognition
+        and its Disorders, Sydney, Australia; School of Medical Sciences, The University
+        of New South Wales, Sydney, Australia", "Australian Research Council Centre
+        of Excellence in Cognition and its Disorders, Sydney, Australia", "Neuroscience
+        Research Australia, Randwick, Sydney, Australia", "School of Medical Sciences,
+        The University of New South Wales, Sydney, Australia"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Neuroscience Research Australia,
+        Randwick, Sydney, Australia; Australian Research Council Centre of Excellence
+        in Cognition and its Disorders, Sydney, Australia; School of Medical Sciences,
+        The University of New South Wales, Sydney, Australia", "institution_ids":
+        ["https://openalex.org/I31746571", "https://openalex.org/I4210141709", "https://openalex.org/I83657090"]},
+        {"raw_affiliation_string": "Australian Research Council Centre of Excellence
+        in Cognition and its Disorders, Sydney, Australia", "institution_ids": ["https://openalex.org/I4210141709"]},
+        {"raw_affiliation_string": "Neuroscience Research Australia, Randwick, Sydney,
+        Australia", "institution_ids": ["https://openalex.org/I83657090"]}, {"raw_affiliation_string":
+        "School of Medical Sciences, The University of New South Wales, Sydney, Australia",
+        "institution_ids": ["https://openalex.org/I31746571"]}]}], "publication_year":
+        2015, "abstract_inverted_index": null, "primary_location": {"id": "doi:10.1016/j.neuropsychologia.2015.12.005",
+        "doi": "https://doi.org/10.1016/j.neuropsychologia.2015.12.005", "is_oa":
+        false, "landing_page_url": "https://doi.org/10.1016/j.neuropsychologia.2015.12.005",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S165368631", "display_name":
+        "Neuropsychologia", "issn_l": "0028-3932", "issn": ["0028-3932", "1873-3514"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "erih-plus", "jufo-2",
+        "ki-jl-2", "medline", "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"],
+        "host_organization": "https://openalex.org/P4310320990", "host_organization_name":
+        "Elsevier BV", "host_organization_lineage": ["https://openalex.org/P4310320990"],
+        "host_organization_lineage_names": ["Elsevier BV"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Neuropsychologia", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "pmh:oai:ueaeprints.uea.ac.uk:56193", "doi": null,
+        "is_oa": true, "landing_page_url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "pdf_url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "source": {"id": "https://openalex.org/S4306400384", "display_name": "UEA
+        Digital Repository (University of East Anglia)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1118541", "host_organization_name": "University of
+        East Anglia", "host_organization_lineage": ["https://openalex.org/I1118541"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "acceptedVersion", "is_accepted": true, "is_published":
+        false, "raw_source_name": null, "raw_type": "Article"}, "locations": [{"id":
+        "doi:10.1016/j.neuropsychologia.2015.12.005", "doi": "https://doi.org/10.1016/j.neuropsychologia.2015.12.005",
+        "is_oa": false, "landing_page_url": "https://doi.org/10.1016/j.neuropsychologia.2015.12.005",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S165368631", "display_name":
+        "Neuropsychologia", "issn_l": "0028-3932", "issn": ["0028-3932", "1873-3514"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "erih-plus", "jufo-2",
+        "ki-jl-2", "medline", "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"],
+        "host_organization": "https://openalex.org/P4310320990", "host_organization_name":
+        "Elsevier BV", "host_organization_lineage": ["https://openalex.org/P4310320990"],
+        "host_organization_lineage_names": ["Elsevier BV"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Neuropsychologia", "raw_type": "journal-article"},
+        {"id": "pmh:oai:pure.atira.dk:publications/c324f131-06f5-4cb2-b998-bd3cd9a0edf5",
+        "doi": null, "is_oa": false, "landing_page_url": "https://admin.research-repository.uwa.edu.au/en/publications/c324f131-06f5-4cb2-b998-bd3cd9a0edf5",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306402492", "display_name":
+        "UWA Profiles and Research Repository (UWA)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I177877127", "host_organization_name": "The University
+        of Western Australia", "host_organization_lineage": ["https://openalex.org/I177877127"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "publishedVersion", "is_accepted": true, "is_published":
+        true, "raw_source_name": "Irish, M, Bunk, S, Tu, S, Kamminga, J, Hodges, J
+        R, Hornberger, M & Piguet, O 2016, ''Preservation of episodic memory in semantic
+        dementia: The importance of regions beyond the medial temporal lobes'', Neuropsychologia,
+        vol. 81, pp. 50-60. https://doi.org/10.1016/j.neuropsychologia.2015.12.005",
+        "raw_type": "info:eu-repo/semantics/article"}, {"id": "pmid:26683384", "doi":
+        null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/26683384",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Neuropsychologia",
+        "raw_type": "Journal Article"}, {"id": "pmh:oai:ueaeprints.uea.ac.uk:56193",
+        "doi": null, "is_oa": true, "landing_page_url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "pdf_url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "source": {"id": "https://openalex.org/S4306400384", "display_name": "UEA
+        Digital Repository (University of East Anglia)", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1118541", "host_organization_name": "University of
+        East Anglia", "host_organization_lineage": ["https://openalex.org/I1118541"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "acceptedVersion", "is_accepted": true, "is_published":
+        false, "raw_source_name": null, "raw_type": "Article"}], "open_access": {"is_oa":
+        true, "oa_status": "green", "oa_url": "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d069c4fea85d25-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 14:18:38 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9900'
+      X-RateLimit-Remaining-USD:
+      - '0.99'
+      X-RateLimit-Reset:
+      - '34882'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=dOcR6u5Gpr8%2Brj6PzB1wJql%2BfYg9GWICyb86QsEVJgM%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792419518"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=dOcR6u5Gpr8%2Brj6PzB1wJql%2BfYg9GWICyb86QsEVJgM%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792419518"
+    status:
+      code: 200
+      message: OK
+version: 1

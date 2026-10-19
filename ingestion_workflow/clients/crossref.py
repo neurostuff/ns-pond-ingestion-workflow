@@ -15,6 +15,7 @@ from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
+from ingestion_workflow.utils.http import transient
 
 #: The polite pool's single-record limit. Sending an email puts a client in it; there is no key.
 CROSSREF_REQUEST_LIMIT = 10
@@ -24,12 +25,6 @@ CROSSREF_LIST_REQUEST_LIMIT = 3
 CROSSREF_DOI_BATCH_SIZE = 50
 #: The longest a Retry-After is waited out before the request counts as failed.
 _MAX_RETRY_AFTER = 120
-
-
-def _retryable(exc: BaseException) -> bool:
-    if isinstance(exc, requests.HTTPError) and exc.response is not None:
-        return exc.response.status_code == 429 or exc.response.status_code >= 500
-    return isinstance(exc, (requests.ConnectionError, requests.Timeout))
 
 
 def _wait(retry_state) -> float:
@@ -57,7 +52,7 @@ class CrossrefClient:
             time.sleep(1 / limit - elapsed)
         self._last_request = time.monotonic()
 
-    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(_retryable),
+    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
            reraise=True)
     def work(self, doi: str) -> Optional[Dict]:
         """The work's `message`, or None when Crossref does not know the DOI."""
@@ -69,7 +64,7 @@ class CrossrefClient:
         response.raise_for_status()
         return response.json().get("message")
 
-    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(_retryable),
+    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
            reraise=True)
     def _licenses(self, dois: List[str]) -> List[Dict]:
         """The `DOI` and `license` of each work Crossref knows among `dois`."""

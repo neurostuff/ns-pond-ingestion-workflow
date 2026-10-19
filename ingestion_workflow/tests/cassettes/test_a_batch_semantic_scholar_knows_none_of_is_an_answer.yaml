@@ -1,0 +1,58 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1016/j.neuroimage.2020.116616"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '49'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"error":"No valid paper ids given"}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '37'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 17:08:18 GMT
+      Via:
+      - 1.1 895116b5366f3f5264f7b6361d3fd564.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - kd0d2VZ6x51OVH8ku2Xy0AsZ4IaXqqCa-stEv6IFGwSEMDxBFC6e1A==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - FgE0gFO9PHcEa7w=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '37'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Oct 2026 17:08:18 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - a4edaa5a-9981-476e-b524-fc0d9fc5f9cb
+    status:
+      code: 400
+      message: Bad Request
+version: 1

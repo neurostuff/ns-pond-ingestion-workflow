@@ -99,6 +99,36 @@ def test_a_publisher_copy_is_its_version_of_record(source, access):
         route=CopyRoute.publisher, version=CopyVersion.vor, access=access)
 
 
+def _ace(fixture: str, doi: str) -> DownloadResult:
+    files = [DownloadedFile(path, FileType.HTML, "text/html", DownloadSource.ACE)
+             for path in sorted((COPIES / fixture).iterdir())]
+    return DownloadResult(identifier=Identifier(doi=doi), source=DownloadSource.ACE,
+                          success=True, files=files)
+
+
+@pytest.mark.parametrize("fixture", [
+    "ace_biorxiv_2025_01_06_631538",
+    # its DOI in `dc.identifier` only
+    "ace_biorxiv_dc_identifier_only",
+])
+def test_an_ace_page_that_names_a_preprint_doi_is_the_preprint_at_its_server(fixture):
+    """2ryj476u7i43's page ACE read is bioRxiv's."""
+    held = _ace(fixture, "10.1101/2025.01.06.631538")
+
+    assert copy_of(held) == DownloadCopy(
+        route=CopyRoute.preprint_server, version=CopyVersion.submitted,
+        access=CopyAccess.unrecorded, preprint_server="biorxiv")
+
+
+def test_an_ace_page_of_the_journal_is_its_version_of_record_whatever_the_article_s_doi():
+    """eztguze7deub has its preprint's DOI as well as its journal's; the page ACE read is the
+    journal's."""
+    held = _ace("ace_schres_2020_03_068", "10.1101/2019.12.16.878827")
+
+    assert copy_of(held) == DownloadCopy(
+        route=CopyRoute.publisher, version=CopyVersion.vor, access=CopyAccess.unrecorded)
+
+
 def _fetched_pdf(**attempt) -> DownloadResult:
     """A PDF download as the pdf source records it: what it passed over, then the fetch."""
     return DownloadResult(

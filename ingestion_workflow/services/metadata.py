@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
-import requests
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
@@ -57,14 +56,17 @@ from ingestion_workflow.services.licenses import (
     HELD,
     LICENSE_PROVIDERS,
     OWN,
+    PAGE,
     Statement,
     Undecided,
     crossref_statements,
     license_of,
     own_license,
+    page_statements,
     stated,
 )
 from ingestion_workflow.services.paper_parse import article_identifiers
+from ingestion_workflow.utils.http import transient
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
 logger = logging.getLogger(__name__)
@@ -692,15 +694,16 @@ _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 OUTAGE = "did not answer"
 
 
-def _outage(exc: BaseException) -> bool:
-    """A provider that was down or busy (a timeout, a dropped connection, 429 or 5xx), not
-    one that refused the request."""
+def _cause(exc: BaseException) -> BaseException:
+    """The error a retried request last raised, or `exc`."""
     if isinstance(exc, RetryError):
-        exc = exc.last_attempt.exception() or exc
-    if isinstance(exc, requests.HTTPError):
-        status = getattr(exc.response, "status_code", None)
-        return status == 429 or (status is not None and status >= 500)
-    return isinstance(exc, (requests.ConnectionError, requests.Timeout))
+        return exc.last_attempt.exception() or exc
+    return exc
+
+
+def _outage(exc: BaseException) -> bool:
+    """A provider that was down or busy, not one that refused the request."""
+    return transient(_cause(exc))
 _OA_STATUSES = {status.value for status in OaStatus}
 #: OpenAlex lists the paper's PubMed record as a location; it is an index entry, not a copy.
 _PUBMED = "pubmed.ncbi.nlm.nih.gov"
@@ -786,6 +789,7 @@ def _decide_licenses(
             Statement(c.license, c.version, c.url, c.route) for c in listed
             if c.by == MetadataSource.openalex and c.license is not None],
         HELD: [],
+        PAGE: [],
     }
     waiting = set(unanswered)
 
@@ -807,12 +811,14 @@ def _decide_licenses(
     for download in held:
         try:
             own, unread = own_license(download.source, download.files), False
+            ranked = page_statements(download.source, download.files)
         except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
-            own, unread = None, True
+            own, ranked, unread = None, [], True
         records.append((download, own, unread))
-        if own is not None:
+        if own is not None and own.stated_by != MetadataSource.publisher_page:
             statements[HELD].append(Statement(own, download.copy.version))
+        statements[PAGE] += ranked
     # Every record is read before any copy is decided, so that each copy can take another's.
     for download, own, unread in records:
         own = own or at(download.copy.url)

@@ -1,0 +1,506 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/hbm.23411"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "a8ebeaf273b0dbcfc2621554ad9a2a3811c8715e", "title": "Neuroticism
+        modulates brain visuo\u2010vestibular and anxiety systems during a virtual
+        rollercoaster task", "venue": "Human Brain Mapping", "year": 2016, "isOpenAccess":
+        true, "openAccessPdf": {"url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.23411",
+        "status": "HYBRID", "license": "CCBYNCND", "disclaimer": "Notice: Paper or
+        abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC6866907, which
+        is subject to the license by the author or copyright owner provided with this
+        content. Please go to the source to verify the license and copyright information
+        for your use."}, "publicationDate": "2016-09-28", "authors": [{"authorId":
+        "2926164", "name": "R. Riccelli"}, {"authorId": "35149192", "name": "I. Indovina"},
+        {"authorId": "4660897", "name": "Jeffrey P. Staab"}, {"authorId": "51375213",
+        "name": "S. Nigro"}, {"authorId": "2914598", "name": "A. Augimeri"}, {"authorId":
+        "145526369", "name": "F. Lacquaniti"}, {"authorId": "2946383", "name": "L.
+        Passamonti"}], "abstract": "Different lines of research suggest that anxiety\u2010related
+        personality traits may influence the visual and vestibular control of balance,
+        although the brain mechanisms underlying this effect remain unclear. To our
+        knowledge, this is the first functional magnetic resonance imaging (fMRI)
+        study that investigates how individual differences in neuroticism and introversion,
+        two key personality traits linked to anxiety, modulate brain regional responses
+        and functional connectivity patterns during a fMRI task simulating self\u2010motion.
+        Twenty\u2010four healthy individuals with variable levels of neuroticism and
+        introversion underwent fMRI while performing a virtual reality rollercoaster
+        task that included two main types of trials: (1) trials simulating downward
+        or upward self\u2010motion (vertical motion), and (2) trials simulating self\u2010motion
+        in horizontal planes (horizontal motion). Regional brain activity and functional
+        connectivity patterns when comparing vertical versus horizontal motion trials
+        were correlated with personality traits of the Five Factor Model (i.e., neuroticism,
+        extraversion\u2010introversion, openness, agreeableness, and conscientiousness).
+        When comparing vertical to horizontal motion trials, we found a positive correlation
+        between neuroticism scores and regional activity in the left parieto\u2010insular
+        vestibular cortex (PIVC). For the same contrast, increased functional connectivity
+        between the left PIVC and right amygdala was also detected as a function of
+        higher neuroticism scores. Together, these findings provide new evidence that
+        individual differences in personality traits linked to anxiety are significantly
+        associated with changes in the activity and functional connectivity patterns
+        within visuo\u2010vestibular and anxiety\u2010related systems during simulated
+        vertical self\u2010motion. Hum Brain Mapp 38:715\u2013726, 2017. \u00a9 2016
+        The Authors Human Brain Mapping Published by Wiley Periodicals, Inc."}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3043'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:08 GMT
+      Via:
+      - 1.1 1b7fa09f50c08a88d619f90eef5ee94a.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - mjEYqD-ydQ2GUZXGXWUHDAfQsck3aDmkFWy3uVoI8Zsp3EeNNCITrA==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - FfzzWH6UPHcEgJQ=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '3043'
+      x-amzn-Remapped-Date:
+      - Mon, 19 Oct 2026 15:12:08 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - d12842c5-9fd3-4f24-9e4d-f4892ffe83d9
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fhbm.23411&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1002\/hbm.23411","license":[{"start":{"date-parts":[[2016,9,28]],"date-time":"2016-09-28T00:00:00Z","timestamp":1475020800000},"content-version":"tdm","delay-in-days":0,"URL":"http:\/\/doi.wiley.com\/10.1002\/tdm_license_1"},{"start":{"date-parts":[[2016,9,28]],"date-time":"2016-09-28T00:00:00Z","timestamp":1475020800000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:08 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fhbm.23411&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 11, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1002/hbm.23411",
+        "x_new_oql": "get works where DOI is 10.1002/hbm.23411", "oqo": {"get_rows":
+        "works", "filter_rows": [{"column_id": "doi", "value": "10.1002/hbm.23411"}]},
+        "url": "/works?filter=doi:10.1002%2Fhbm.23411&per_page=100"}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2527817358",
+        "doi": "https://doi.org/10.1002/hbm.23411", "mag": "2527817358", "pmid": "https://pubmed.ncbi.nlm.nih.gov/27677756"},
+        "display_name": "Neuroticism modulates brain visuo-vestibular and anxiety
+        systems during a virtual rollercoaster task", "authorships": [{"author_position":
+        "first", "author": {"id": "https://openalex.org/A5079850124", "display_name":
+        "Roberta Riccelli", "orcid": null, "observed_orcids": []}, "institutions":
+        [{"id": "https://openalex.org/I36443711", "display_name": "Magna Graecia University",
+        "ror": "https://ror.org/0530bdk91", "country_code": "IT", "type": "education",
+        "lineage": ["https://openalex.org/I36443711"]}], "countries": ["IT"], "is_corresponding":
+        false, "raw_author_name": "Roberta Riccelli", "raw_affiliation_strings": ["Department
+        of Medical and Surgical Sciences; University \u201cMagna Graecia,\u201d; Catanzaro
+        Italy", "Department of Medical and Surgical Sciences, University \"Magna Graecia,\",
+        Catanzaro, Italy", "Roberta Riccelli and Iole Indovina contributed equally
+        to this work"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Medical and Surgical Sciences; University \u201cMagna Graecia,\u201d;
+        Catanzaro Italy", "institution_ids": ["https://openalex.org/I36443711"]},
+        {"raw_affiliation_string": "Department of Medical and Surgical Sciences, University
+        \"Magna Graecia,\", Catanzaro, Italy", "institution_ids": ["https://openalex.org/I36443711"]},
+        {"raw_affiliation_string": "Roberta Riccelli and Iole Indovina contributed
+        equally to this work", "institution_ids": []}]}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5068049660", "display_name": "Iole
+        Indovina", "orcid": "https://orcid.org/0000-0002-1183-0013", "observed_orcids":
+        ["https://orcid.org/0000-0002-1183-0013"]}, "institutions": [{"id": "https://openalex.org/I116067653",
+        "display_name": "University of Rome Tor Vergata", "ror": "https://ror.org/02p77k626",
+        "country_code": "IT", "type": "education", "lineage": ["https://openalex.org/I116067653"]},
+        {"id": "https://openalex.org/I4210150112", "display_name": "Fondazione Santa
+        Lucia", "ror": "https://ror.org/05rcxtd95", "country_code": "IT", "type":
+        "healthcare", "lineage": ["https://openalex.org/I4210150112", "https://openalex.org/I4210153126"]}],
+        "countries": ["IT"], "is_corresponding": false, "raw_author_name": "Iole Indovina",
+        "raw_affiliation_strings": ["Centre of Space BioMedicine, University of Rome
+        Tor Vergata; Rome 00173 Italy", "Laboratory of Neuromotor Physiology; IRCCS
+        Santa Lucia Foundation; Rome 00179 Italy", "Centre of Space BioMedicine, University
+        of Rome Tor Vergata, Rome, 00173 Italy", "Laboratory of Neuromotor Physiology,
+        IRCCS Santa Lucia Foundation, Rome, 00179 Italy"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Centre of Space BioMedicine, University of Rome
+        Tor Vergata; Rome 00173 Italy", "institution_ids": ["https://openalex.org/I116067653"]},
+        {"raw_affiliation_string": "Laboratory of Neuromotor Physiology; IRCCS Santa
+        Lucia Foundation; Rome 00179 Italy", "institution_ids": ["https://openalex.org/I4210150112"]},
+        {"raw_affiliation_string": "Centre of Space BioMedicine, University of Rome
+        Tor Vergata, Rome, 00173 Italy", "institution_ids": ["https://openalex.org/I116067653"]},
+        {"raw_affiliation_string": "Laboratory of Neuromotor Physiology, IRCCS Santa
+        Lucia Foundation, Rome, 00179 Italy", "institution_ids": ["https://openalex.org/I4210150112"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5017341940",
+        "display_name": "Jeffrey P. Staab", "orcid": "https://orcid.org/0000-0002-1516-3131",
+        "observed_orcids": ["https://orcid.org/0000-0002-1516-3131"]}, "institutions":
+        [{"id": "https://openalex.org/I1330342723", "display_name": "Mayo Clinic",
+        "ror": "https://ror.org/02qp3tb03", "country_code": "US", "type": "healthcare",
+        "lineage": ["https://openalex.org/I1330342723"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Jeffrey P. Staab", "raw_affiliation_strings": ["Departments
+        of Psychiatry and Psychology and Otorhinolaryngology - Head and Neck Surgery;
+        Mayo Clinic; Rochester Minnesota USA", "Departments of Psychiatry and Psychology
+        and Otorhinolaryngology - Head and Neck Surgery, Mayo Clinic, Rochester, Minnesota,
+        USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Departments
+        of Psychiatry and Psychology and Otorhinolaryngology - Head and Neck Surgery;
+        Mayo Clinic; Rochester Minnesota USA", "institution_ids": ["https://openalex.org/I1330342723"]},
+        {"raw_affiliation_string": "Departments of Psychiatry and Psychology and Otorhinolaryngology
+        - Head and Neck Surgery, Mayo Clinic, Rochester, Minnesota, USA", "institution_ids":
+        ["https://openalex.org/I1330342723"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5008895276", "display_name": "Salvatore Lo Nigro",
+        "orcid": "https://orcid.org/0000-0001-7566-7983", "observed_orcids": ["https://orcid.org/0000-0001-7566-7983"]},
+        "institutions": [{"id": "https://openalex.org/I4210095629", "display_name":
+        "Institute of Molecular Bioimaging and Physiology", "ror": "https://ror.org/00s2j5046",
+        "country_code": "IT", "type": "facility", "lineage": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}, {"id": "https://openalex.org/I4210155236",
+        "display_name": "National Research Council", "ror": "https://ror.org/04zaypm56",
+        "country_code": "IT", "type": "nonprofit", "lineage": ["https://openalex.org/I4210155236"]}],
+        "countries": ["IT"], "is_corresponding": false, "raw_author_name": "Salvatore
+        Nigro", "raw_affiliation_strings": ["Institute of Bioimaging and Molecular
+        Physiology, National Research Council; Catanzaro 88100 Italy", "Institute
+        of Bioimaging and Molecular Physiology, National Research Council, Catanzaro,
+        88100 Italy"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Institute of Bioimaging and Molecular Physiology, National Research Council;
+        Catanzaro 88100 Italy", "institution_ids": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}, {"raw_affiliation_string": "Institute
+        of Bioimaging and Molecular Physiology, National Research Council, Catanzaro,
+        88100 Italy", "institution_ids": ["https://openalex.org/I4210095629", "https://openalex.org/I4210155236"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5075047433",
+        "display_name": "Antonio Augimeri", "orcid": "https://orcid.org/0000-0002-8683-9610",
+        "observed_orcids": ["https://orcid.org/0000-0002-8683-9610"]}, "institutions":
+        [{"id": "https://openalex.org/I4210095629", "display_name": "Institute of
+        Molecular Bioimaging and Physiology", "ror": "https://ror.org/00s2j5046",
+        "country_code": "IT", "type": "facility", "lineage": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}, {"id": "https://openalex.org/I4210155236",
+        "display_name": "National Research Council", "ror": "https://ror.org/04zaypm56",
+        "country_code": "IT", "type": "nonprofit", "lineage": ["https://openalex.org/I4210155236"]}],
+        "countries": ["IT"], "is_corresponding": false, "raw_author_name": "Antonio
+        Augimeri", "raw_affiliation_strings": ["Institute of Bioimaging and Molecular
+        Physiology, National Research Council; Catanzaro 88100 Italy", "Institute
+        of Bioimaging and Molecular Physiology, National Research Council, Catanzaro,
+        88100 Italy"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Institute of Bioimaging and Molecular Physiology, National Research Council;
+        Catanzaro 88100 Italy", "institution_ids": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}, {"raw_affiliation_string": "Institute
+        of Bioimaging and Molecular Physiology, National Research Council, Catanzaro,
+        88100 Italy", "institution_ids": ["https://openalex.org/I4210095629", "https://openalex.org/I4210155236"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5003464384",
+        "display_name": "Francesco Lacquaniti", "orcid": "https://orcid.org/0000-0003-0896-7315",
+        "observed_orcids": ["https://orcid.org/0000-0003-0896-7315"]}, "institutions":
+        [{"id": "https://openalex.org/I116067653", "display_name": "University of
+        Rome Tor Vergata", "ror": "https://ror.org/02p77k626", "country_code": "IT",
+        "type": "education", "lineage": ["https://openalex.org/I116067653"]}, {"id":
+        "https://openalex.org/I4210150112", "display_name": "Fondazione Santa Lucia",
+        "ror": "https://ror.org/05rcxtd95", "country_code": "IT", "type": "healthcare",
+        "lineage": ["https://openalex.org/I4210150112", "https://openalex.org/I4210153126"]}],
+        "countries": ["IT"], "is_corresponding": false, "raw_author_name": "Francesco
+        Lacquaniti", "raw_affiliation_strings": ["Centre of Space BioMedicine, University
+        of Rome Tor Vergata; Rome 00173 Italy", "Department of Systems Medicine; University
+        of Rome Tor Vergata; Rome 00133 Italy", "Laboratory of Neuromotor Physiology;
+        IRCCS Santa Lucia Foundation; Rome 00179 Italy", "Centre of Space BioMedicine,
+        University of Rome Tor Vergata, Rome, 00173 Italy", "Department of Systems
+        Medicine, University of Rome Tor Vergata, Rome, 00133 Italy", "Laboratory
+        of Neuromotor Physiology, IRCCS Santa Lucia Foundation, Rome, 00179 Italy"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Centre of
+        Space BioMedicine, University of Rome Tor Vergata; Rome 00173 Italy", "institution_ids":
+        ["https://openalex.org/I116067653"]}, {"raw_affiliation_string": "Department
+        of Systems Medicine; University of Rome Tor Vergata; Rome 00133 Italy", "institution_ids":
+        ["https://openalex.org/I116067653"]}, {"raw_affiliation_string": "Laboratory
+        of Neuromotor Physiology; IRCCS Santa Lucia Foundation; Rome 00179 Italy",
+        "institution_ids": ["https://openalex.org/I4210150112"]}, {"raw_affiliation_string":
+        "Centre of Space BioMedicine, University of Rome Tor Vergata, Rome, 00173
+        Italy", "institution_ids": ["https://openalex.org/I116067653"]}, {"raw_affiliation_string":
+        "Department of Systems Medicine, University of Rome Tor Vergata, Rome, 00133
+        Italy", "institution_ids": ["https://openalex.org/I116067653"]}, {"raw_affiliation_string":
+        "Laboratory of Neuromotor Physiology, IRCCS Santa Lucia Foundation, Rome,
+        00179 Italy", "institution_ids": ["https://openalex.org/I4210150112"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5031935895",
+        "display_name": "Luca Passamonti", "orcid": "https://orcid.org/0000-0002-7937-0615",
+        "observed_orcids": ["https://orcid.org/0000-0002-7937-0615"]}, "institutions":
+        [{"id": "https://openalex.org/I241749", "display_name": "University of Cambridge",
+        "ror": "https://ror.org/013meh722", "country_code": "GB", "type": "education",
+        "lineage": ["https://openalex.org/I241749"]}, {"id": "https://openalex.org/I4210095629",
+        "display_name": "Institute of Molecular Bioimaging and Physiology", "ror":
+        "https://ror.org/00s2j5046", "country_code": "IT", "type": "facility", "lineage":
+        ["https://openalex.org/I4210095629", "https://openalex.org/I4210155236"]},
+        {"id": "https://openalex.org/I4210155236", "display_name": "National Research
+        Council", "ror": "https://ror.org/04zaypm56", "country_code": "IT", "type":
+        "nonprofit", "lineage": ["https://openalex.org/I4210155236"]}], "countries":
+        ["GB", "IT"], "is_corresponding": true, "raw_author_name": "Luca Passamonti",
+        "raw_affiliation_strings": ["Department of Clinical Neurosciences; University
+        of Cambridge; Cambridge United Kingdom", "Institute of Bioimaging and Molecular
+        Physiology, National Research Council; Catanzaro 88100 Italy", "Department
+        of Clinical Neurosciences, University of Cambridge, Cambridge, United Kingdom",
+        "Institute of Bioimaging and Molecular Physiology, National Research Council,
+        Catanzaro, 88100 Italy"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Clinical Neurosciences; University of Cambridge; Cambridge
+        United Kingdom", "institution_ids": ["https://openalex.org/I241749"]}, {"raw_affiliation_string":
+        "Institute of Bioimaging and Molecular Physiology, National Research Council;
+        Catanzaro 88100 Italy", "institution_ids": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}, {"raw_affiliation_string": "Department
+        of Clinical Neurosciences, University of Cambridge, Cambridge, United Kingdom",
+        "institution_ids": ["https://openalex.org/I241749"]}, {"raw_affiliation_string":
+        "Institute of Bioimaging and Molecular Physiology, National Research Council,
+        Catanzaro, 88100 Italy", "institution_ids": ["https://openalex.org/I4210095629",
+        "https://openalex.org/I4210155236"]}]}], "publication_year": 2016, "abstract_inverted_index":
+        {"Different": [0], "lines": [1], "of": [2, 16, 76, 94, 134, 191], "research":
+        [3], "suggest": [4], "that": [5, 40, 89, 201], "anxiety-related": [6, 225],
+        "personality": [7, 51, 132, 205], "traits": [8, 52, 133, 206], "may": [9],
+        "influence": [10], "the": [11, 19, 32, 135, 165, 172, 179, 216], "visual":
+        [12], "and": [13, 47, 60, 78, 105, 118, 144, 161, 182, 218, 224], "vestibular":
+        [14, 168], "control": [15], "balance,": [17], "although": [18], "brain": [20,
+        57, 116], "mechanisms": [21], "underlying": [22], "this": [23, 30], "effect":
+        [24], "remain": [25], "unclear.": [26], "To": [27], "our": [28], "knowledge,":
+        [29], "is": [31], "first": [33], "functional": [34, 61, 119, 176, 219], "magnetic":
+        [35], "resonance": [36], "imaging": [37], "(fMRI)": [38], "study": [39], "investigates":
+        [41], "how": [42], "individual": [43, 202], "differences": [44, 203], "in":
+        [45, 110, 164, 204, 215], "neuroticism": [46, 77, 159, 193], "introversion,":
+        [48], "two": [49, 91], "key": [50], "linked": [53, 207], "to": [54, 149, 208],
+        "anxiety,": [55], "modulate": [56], "regional": [58, 162], "responses": [59],
+        "connectivity": [62, 120, 177, 220], "patterns": [63, 121, 221], "during":
+        [64, 227], "a": [65, 84, 155, 189], "fMRI": [66, 81], "task": [67, 88], "simulating":
+        [68, 98, 108], "self-motion.": [69, 230], "Twenty-four": [70], "healthy":
+        [71], "individuals": [72], "with": [73, 131, 213], "variable": [74], "levels":
+        [75], "introversion": [79], "underwent": [80], "while": [82], "performing":
+        [83], "virtual": [85], "reality": [86], "rollercoaster": [87], "included":
+        [90], "main": [92], "types": [93], "trials:": [95], "(1)": [96], "trials":
+        [97, 107, 128], "downward": [99], "or": [100], "upward": [101], "self-motion":
+        [102, 109], "(vertical": [103], "motion),": [104], "(2)": [106], "horizontal":
+        [111, 126, 150], "planes": [112], "(horizontal": [113], "motion).": [114],
+        "Regional": [115], "activity": [117, 163, 217], "when": [122], "comparing":
+        [123, 147], "vertical": [124, 148, 229], "versus": [125], "motion": [127,
+        151], "were": [129], "correlated": [130], "Five": [136], "Factor": [137],
+        "Model": [138], "(i.e.,": [139], "neuroticism,": [140], "extraversion-introversion,":
+        [141], "openness,": [142], "agreeableness,": [143], "conscientiousness).":
+        [145], "When": [146], "trials,": [152], "we": [153], "found": [154], "positive":
+        [156], "correlation": [157], "between": [158, 178], "scores": [160], "left":
+        [166, 180], "parieto-insular": [167], "cortex": [169], "(PIVC).": [170], "For":
+        [171], "same": [173], "contrast,": [174], "increased": [175], "PIVC": [181],
+        "right": [183], "amygdala": [184], "was": [185], "also": [186], "detected":
+        [187], "as": [188], "function": [190], "higher": [192], "scores.": [194],
+        "Together,": [195], "these": [196], "findings": [197], "provide": [198], "new":
+        [199], "evidence": [200], "anxiety": [209], "are": [210], "significantly":
+        [211], "associated": [212], "changes": [214], "within": [222], "visuo-vestibular":
+        [223], "systems": [226], "simulated": [228], "Hum": [231], "Brain": [232,
+        241], "Mapp": [233], "38:715-726,": [234], "2017.": [235], "\u00a9": [236],
+        "2016": [237], "The": [238], "Authors": [239], "Human": [240], "Mapping":
+        [242], "Published": [243], "by": [244], "Wiley": [245], "Periodicals,": [246],
+        "Inc.": [247]}, "primary_location": {"id": "doi:10.1002/hbm.23411", "doi":
+        "https://doi.org/10.1002/hbm.23411", "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.23411",
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.23411",
+        "source": {"id": "https://openalex.org/S121666818", "display_name": "Human
+        Brain Mapping", "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"],
+        "is_oa": false, "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core",
+        "doaj", "dongbi-b", "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline",
+        "norway-2", "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Human Brain Mapping", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "doi:10.1002/hbm.23411", "doi": "https://doi.org/10.1002/hbm.23411",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.23411", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.23411", "source":
+        {"id": "https://openalex.org/S121666818", "display_name": "Human Brain Mapping",
+        "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"], "is_oa": false,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "dongbi-b",
+        "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-100",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Human Brain Mapping", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.1002/hbm.23411", "doi": "https://doi.org/10.1002/hbm.23411",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1002/hbm.23411", "pdf_url":
+        "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.23411", "source":
+        {"id": "https://openalex.org/S121666818", "display_name": "Human Brain Mapping",
+        "issn_l": "1065-9471", "issn": ["1065-9471", "1097-0193"], "is_oa": false,
+        "is_in_doaj": true, "is_core": true, "listed_in": ["cwts-core", "doaj", "dongbi-b",
+        "doyens", "erih-plus", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-100",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Human Brain Mapping", "raw_type": "journal-article"},
+        {"id": "pmh:oai:pubmedcentral.nih.gov:6866907", "doi": null, "is_oa": true,
+        "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6866907", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "Hum Brain Mapp", "raw_type": "Text"}, {"id": "pmid:27677756",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/27677756",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Human brain
+        mapping", "raw_type": "Journal Article"}, {"id": "pmh:oai:art.torvergata.it:2108/165187",
+        "doi": null, "is_oa": false, "landing_page_url": "http://hdl.handle.net/2108/165187",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400993", "display_name":
+        "Cineca Institutional Research Information System (Tor Vergata University)",
+        "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false, "is_core":
+        false, "listed_in": [], "host_organization": "https://openalex.org/I116067653",
+        "host_organization_name": "University of Rome Tor Vergata", "host_organization_lineage":
+        ["https://openalex.org/I116067653"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": null, "raw_type":
+        "info:eu-repo/semantics/article"}, {"id": "pmh:oai:www.repository.cam.ac.uk:1810/261105",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.repository.cam.ac.uk/handle/1810/261105",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401777", "display_name":
+        "Apollo (University of Cambridge)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I241749", "host_organization_name": "University of Cambridge",
+        "host_organization_lineage": ["https://openalex.org/I241749"], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": null, "raw_type": "Article"}, {"id": "doi:10.17863/cam.6274",
+        "doi": "https://doi.org/10.17863/cam.6274", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.17863/cam.6274", "pdf_url": null, "source": {"id": "https://openalex.org/S7407050737",
+        "display_name": "Apollo", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": null, "host_organization_name":
+        null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        null, "is_accepted": false, "is_published": null, "raw_source_name": null,
+        "raw_type": "JournalArticle"}], "open_access": {"is_oa": true, "oa_status":
+        "hybrid", "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.23411",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d0b824bf8683a5-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2026 15:12:08 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9898'
+      X-RateLimit-Remaining-USD:
+      - '0.9898'
+      X-RateLimit-Reset:
+      - '31672'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=elh9pnUA49vM6tojEnDwi0PjA4SaeqtIFtq%2F8C35RxE%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792422728"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=elh9pnUA49vM6tojEnDwi0PjA4SaeqtIFtq%2F8C35RxE%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792422728"
+    status:
+      code: 200
+      message: OK
+version: 1
