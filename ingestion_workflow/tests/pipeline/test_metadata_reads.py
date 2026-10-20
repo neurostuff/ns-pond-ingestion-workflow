@@ -278,3 +278,21 @@ def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env):
     for stage in (triage, prose):
         plan = _plan(stage, ctx, catalog, ref)
         assert (plan.pending, plan.fresh, plan.reasons) == ([], 0, {NO_DIGESTS: 1}), stage.name
+
+
+def test_a_row_missing_the_digest_of_a_field_read_blocks_its_readers(env):
+    """A field added to what stages read is not in the rows written before it."""
+    from ingestion_workflow.pipeline.stage import NO_DIGESTS
+
+    settings, catalog, tmp_path = env
+    ref = _article(catalog, tmp_path, "1", RECORD)
+    _made(settings, catalog, ref)
+    digests = metadata_digests(RECORD)
+    del digests["abstract"]
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint="me-1", payload=RECORD, summary={"digests": digests})])
+    ctx = Context(settings, catalog)
+    triage, _, _, prose = _stages(settings)
+
+    for stage in (triage, prose):
+        assert _plan(stage, ctx, catalog, ref).reasons == {NO_DIGESTS: 1}, stage.name

@@ -269,6 +269,27 @@ def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(en
     assert pending() == {"upload"}
 
 
+def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
+    """Sync holds the metadata's content: a re-fetch that finds the same record is no
+    change."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    catalog._conn.execute("UPDATE artifacts SET updated_at='2000-01-01T00:00:00+00:00' "
+                          "WHERE article_id=? AND stage='metadata'", (ref.id,))
+    (sync,) = build(["sync"], settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    stored = catalog.artifact(ref.id, "metadata", "")
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint=stored.fingerprint, payload=catalog.payload(stored),
+                            summary=stored.summary)])
+    assert catalog.artifact(ref.id, "metadata", "").updated_at != "2000-01-01T00:00:00+00:00"
+
+    plan = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                     catalog.artifacts([ref.id], "space"))
+    assert (plan.fresh, plan.pending) == (1, [])
+
+
 @RECORDS
 def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
                                                                                 vcr):

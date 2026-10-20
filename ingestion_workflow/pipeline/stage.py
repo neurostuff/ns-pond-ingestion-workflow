@@ -58,6 +58,8 @@ def publication_types(metadata: Mapping[str, Any]) -> List[str]:
 #: The fields of an article's metadata a stage may read, each as read from the metadata
 #: stage's payload. The metadata stage records a digest of each in its summary
 #: (`digests`), so a plan fingerprints the fields its stage reads from the catalog row.
+#: A field added here is missing from the rows written before: their readers block
+#: (`NO_DIGESTS`) until the digests are recorded again.
 METADATA_FIELDS: Mapping[str, Callable[[Mapping[str, Any]], Any]] = {
     "title": lambda payload: payload.get("title"),
     "abstract": lambda payload: payload.get("abstract"),
@@ -85,10 +87,10 @@ def metadata_fingerprint(metadata: Optional[Artifact], fields: Sequence[str]) ->
     """The fingerprint of `fields` of `metadata`, from the digests its row records.
 
     A metadata that is not OK holds no payload, so nothing is read of it. None when an
-    OK one records no digests."""
+    OK one records no digest of one of `fields`."""
     digests = (_NOTHING_READ if metadata is None or not metadata.ok
-               else (metadata.summary or {}).get("digests"))
-    if digests is None:
+               else (metadata.summary or {}).get("digests") or {})
+    if any(name not in digests for name in fields):
         return None
     return fingerprint("metadata read", *[(name, digests[name]) for name in fields])
 
