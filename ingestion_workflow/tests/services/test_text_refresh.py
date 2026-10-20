@@ -427,5 +427,5 @@ def test_workers_fork_from_a_frozen_parent(tmp_path):
     assert gc.get_freeze_count() >= before + len(held)
     rest = list(results)
 
-    assert gc.get_freeze_count() == before
+    assert gc.get_freeze_count() == 0
     assert [r.status for r in [first, *rest]] == ["would_rewrite"] * 2
