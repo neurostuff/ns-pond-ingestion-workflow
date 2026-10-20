@@ -226,28 +226,16 @@ class MetadataService:
                 len(s2_results),
             )
 
-        # Each provider fills what the earlier ones left empty, and is skipped
-        # only for an article with nothing left to fill. Stopping instead at the
-        # first `sufficient` record left 69% of one batch without an abstract
-        # that PubMed had for 98.5% of them. PubMed states no licence.
+        # PubMed is asked about every article, however much Semantic Scholar filled:
+        # only its record holds the MeSH publication types, which triage reads to drop
+        # meta-analyses and sync to tell a preprint, and the language. It fills the
+        # fields as any later provider does. PubMed states no licence.
         if self._pubmed_client and identified_items:
-            identifiers = [
-                item.identifier
-                for item in identified_items
-                if not _filled(results.get(item.slug))
-            ]
-            if identifiers:
-                logger.info(
-                    "Fetching metadata from PubMed for %d articles",
-                    len(identifiers),
-                )
-                pubmed_results = ask(MetadataSource.pubmed.value,
-                                     self._get_pubmed_metadata_cached, identifiers)
-                merge(pubmed_results)
-                logger.info(
-                    "PubMed returned metadata for %d articles",
-                    len(pubmed_results),
-                )
+            logger.info("Fetching metadata from PubMed for %d articles", len(identified_items))
+            pubmed_results = ask(MetadataSource.pubmed.value, self._get_pubmed_metadata_cached,
+                                 [item.identifier for item in identified_items])
+            merge(pubmed_results)
+            logger.info("PubMed returned metadata for %d articles", len(pubmed_results))
 
         # Crossref holds the licences the publisher deposits, by DOI; a work without a
         # DOI has no Crossref record to state one.

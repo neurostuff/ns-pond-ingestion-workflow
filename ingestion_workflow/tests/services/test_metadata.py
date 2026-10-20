@@ -18,7 +18,7 @@ from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
-from ingestion_workflow.services.metadata import MetadataService
+from ingestion_workflow.services.metadata import MetadataService, _filled
 from ingestion_workflow.tests import cassette_secrets
 
 
@@ -193,7 +193,8 @@ class TestMetadataService:
         assert (merged.source, merged.abstract_provider) == ("semantic_scholar", "pubmed")
         assert merged.journal == "J"
 
-    def test_a_filled_record_skips_the_later_providers(self, metadata_service):
+    def test_a_filled_record_is_still_asked_of_pubmed_but_not_of_the_extractor(
+            self, metadata_service):
         identifier = Identifier(pmid="12345678")
         extracted = ExtractedContent(
             slug=identifier.slug,
@@ -214,7 +215,7 @@ class TestMetadataService:
         ):
             result = _enrich(metadata_service, [extracted])
 
-        asked.assert_not_called()
+        asked.assert_called_once()
         fallback.assert_not_called()
         assert result[extracted.slug].abstract == "What it found."
 
@@ -480,14 +481,18 @@ class TestMetadataIntegration:
 
 COPIES = Path(__file__).parents[1] / "data" / "copies"
 
+#: Semantic Scholar's and PubMed's records of each article, as the metadata cache holds them.
+RECORDED = Path(__file__).parents[1] / "data" / "metadata_cache"
+
 
 def _licence_settings(tmp_path, **given):
     """Settings for recorded answers from Semantic Scholar, Crossref and OpenAlex; the
     keys are dropped from the cassettes, so any value replays. No email is sent."""
     return Settings(
         data_root=tmp_path / "data", cache_root=tmp_path / "cache",
-        ns_pond_root=tmp_path / "ns-pond", pubmed_email=None,
-        **{"semantic_scholar_api_key": os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"),
+        ns_pond_root=tmp_path / "ns-pond",
+        **{"pubmed_email": None,
+           "semantic_scholar_api_key": os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"),
            "openalex_api_key": os.environ.get("OPENALEX_API_KEY", "replay"), **given},
     )
 
@@ -1171,3 +1176,32 @@ def test_a_held_copy_takes_the_licence_semantic_scholar_listed_for_it_as_semanti
 
     assert (found.license_id, found.stated_by, found.stated_as) == (
         "cc-by-nc-sa", "semantic_scholar", "CCBYNCSA")
+
+
+@pytest.mark.vcr()
+def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_record(tmp_path):
+    """Neta et al. 2015 is a meta-analysis that its title does not call one. Semantic
+    Scholar's record has every field, and only PubMed's lists the type; triage drops
+    meta-analyses by it. The records are the cache's; Crossref and OpenAlex are recorded."""
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis, publication_types
+
+    identifier = Identifier(pmid="25568119", pmcid="PMC4287146",
+                            doi="10.1523/JNEUROSCI.1313-14.2015")
+    extracted = ExtractedContent(slug=identifier.slug, source=DownloadSource.PMC,
+                                 identifier=identifier)
+    shutil.copytree(RECORDED, tmp_path / "cache" / "metadata")
+    s2 = RECORDED / "semantic_scholar" / f"{identifier.slug}.json"
+    assert _filled(ArticleMetadata.from_dict(json.loads(s2.read_text())))
+    service = MetadataService(_licence_settings(tmp_path,
+                                                pubmed_email=cassette_secrets.REPLAY_EMAIL))
+    meta = _enrich(service, [extracted])[extracted.slug]
+
+    types = publication_types(meta.to_dict())
+    assert types == ["Journal Article", "Meta-Analysis", "Research Support, N.I.H., Extramural",
+                     "Research Support, Non-U.S. Gov't"]
+    assert is_a_meta_analysis(meta.title, types)
+    assert not is_a_meta_analysis(meta.title, [])
+    assert meta.title == ("Spatial and Temporal Characteristics of Error-Related Activity in "
+                          "the Human Brain")
+    assert "meta-analysis" in meta.keywords
+    assert meta.raw_metadata["pubmed"]["MedlineCitation"]["Article"]["Language"] == "eng"

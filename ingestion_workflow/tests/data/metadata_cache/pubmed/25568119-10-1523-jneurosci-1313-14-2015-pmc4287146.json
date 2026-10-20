@@ -1,0 +1,1652 @@
+{
+  "title": "Spatial and temporal characteristics of error-related activity in the human brain.",
+  "authors": [
+    {
+      "name": "Maital Neta",
+      "affiliation": "Department of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska 68588, maitalneta@unl.edu.",
+      "orcid": null
+    },
+    {
+      "name": "Francis M Miezin",
+      "affiliation": "Departments of Neurology, Radiology, Departments of Psychology and.",
+      "orcid": null
+    },
+    {
+      "name": "Steven M Nelson",
+      "affiliation": "VISN 17 Center of Excellence for Research on Returning War Veterans, Waco, Texas 76711.",
+      "orcid": null
+    },
+    {
+      "name": "Joseph W Dubis",
+      "affiliation": "Departments of Neurology.",
+      "orcid": null
+    },
+    {
+      "name": "Nico U F Dosenbach",
+      "affiliation": "Departments of Neurology.",
+      "orcid": null
+    },
+    {
+      "name": "Bradley L Schlaggar",
+      "affiliation": "Departments of Neurology, Radiology, Pediatrics, Anatomy and Neurobiology, and.",
+      "orcid": null
+    },
+    {
+      "name": "Steven E Petersen",
+      "affiliation": "Departments of Neurology, Radiology, Anatomy and Neurobiology, and Neurosurgery, Washington University School of Medicine, Departments of Psychology and Biomedical Engineering, Washington University, St Louis, Missouri 63110, and.",
+      "orcid": null
+    }
+  ],
+  "abstract": "A number of studies have focused on the role of specific brain regions, such as the dorsal anterior cingulate cortex during trials on which participants make errors, whereas others have implicated a host of more widely distributed regions in the human brain. Previous work has proposed that there are multiple cognitive control networks, raising the question of whether error-related activity can be found in each of these networks. Thus, to examine error-related activity broadly, we conducted a meta-analysis consisting of 12 tasks that included both error and correct trials. These tasks varied by stimulus input (visual, auditory), response output (button press, speech), stimulus category (words, pictures), and task type (e.g., recognition memory, mental rotation). We identified 41 brain regions that showed a differential fMRI BOLD response to error and correct trials across a majority of tasks. These regions displayed three unique response profiles: (1) fast, (2) prolonged, and (3) a delayed response to errors, as well as a more canonical response to correct trials. These regions were found mostly in several control networks, each network predominantly displaying one response profile. The one exception to this \"one network, one response profile\" observation is the frontoparietal network, which showed prolonged response profiles (all in the right hemisphere), and fast profiles (all but one in the left hemisphere). We suggest that, in the place of a single localized error mechanism, these findings point to a large-scale set of error-related regions across multiple systems that likely subserve different functions.",
+  "journal": "The Journal of neuroscience : the official journal of the Society for Neuroscience",
+  "publication_year": 2015,
+  "keywords": [
+    "error",
+    "functional networks",
+    "meta-analysis",
+    "resting state",
+    "task control"
+  ],
+  "license": null,
+  "source": "pubmed",
+  "open_access": null,
+  "raw_metadata": {
+    "pubmed": {
+      "MedlineCitation": {
+        "@Status": "MEDLINE",
+        "@Owner": "NLM",
+        "@IndexingMethod": "Manual",
+        "PMID": {
+          "@Version": "1",
+          "#text": "25568119"
+        },
+        "DateCompleted": {
+          "Year": "2015",
+          "Month": "03",
+          "Day": "20"
+        },
+        "DateRevised": {
+          "Year": "2019",
+          "Month": "09",
+          "Day": "10"
+        },
+        "Article": {
+          "@PubModel": "Print",
+          "Journal": {
+            "ISSN": {
+              "@IssnType": "Electronic",
+              "#text": "1529-2401"
+            },
+            "JournalIssue": {
+              "@CitedMedium": "Internet",
+              "Volume": "35",
+              "Issue": "1",
+              "PubDate": {
+                "Year": "2015",
+                "Month": "Jan",
+                "Day": "07"
+              }
+            },
+            "Title": "The Journal of neuroscience : the official journal of the Society for Neuroscience",
+            "ISOAbbreviation": "J Neurosci"
+          },
+          "ArticleTitle": "Spatial and temporal characteristics of error-related activity in the human brain.",
+          "Pagination": {
+            "StartPage": "253",
+            "EndPage": "266",
+            "MedlinePgn": "253-66"
+          },
+          "ELocationID": {
+            "@EIdType": "doi",
+            "@ValidYN": "Y",
+            "#text": "10.1523/JNEUROSCI.1313-14.2015"
+          },
+          "Abstract": {
+            "AbstractText": "A number of studies have focused on the role of specific brain regions, such as the dorsal anterior cingulate cortex during trials on which participants make errors, whereas others have implicated a host of more widely distributed regions in the human brain. Previous work has proposed that there are multiple cognitive control networks, raising the question of whether error-related activity can be found in each of these networks. Thus, to examine error-related activity broadly, we conducted a meta-analysis consisting of 12 tasks that included both error and correct trials. These tasks varied by stimulus input (visual, auditory), response output (button press, speech), stimulus category (words, pictures), and task type (e.g., recognition memory, mental rotation). We identified 41 brain regions that showed a differential fMRI BOLD response to error and correct trials across a majority of tasks. These regions displayed three unique response profiles: (1) fast, (2) prolonged, and (3) a delayed response to errors, as well as a more canonical response to correct trials. These regions were found mostly in several control networks, each network predominantly displaying one response profile. The one exception to this \"one network, one response profile\" observation is the frontoparietal network, which showed prolonged response profiles (all in the right hemisphere), and fast profiles (all but one in the left hemisphere). We suggest that, in the place of a single localized error mechanism, these findings point to a large-scale set of error-related regions across multiple systems that likely subserve different functions.",
+            "CopyrightInformation": "Copyright \u00a9 2015 the authors 0270-6474/15/350253-14$15.00/0."
+          },
+          "AuthorList": {
+            "@CompleteYN": "Y",
+            "Author": [
+              {
+                "@ValidYN": "Y",
+                "LastName": "Neta",
+                "ForeName": "Maital",
+                "Initials": "M",
+                "AffiliationInfo": {
+                  "Affiliation": "Department of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska 68588, maitalneta@unl.edu."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Miezin",
+                "ForeName": "Francis M",
+                "Initials": "FM",
+                "Identifier": {
+                  "@Source": "ORCID",
+                  "#text": "0000-0002-3806-2130"
+                },
+                "AffiliationInfo": {
+                  "Affiliation": "Departments of Neurology, Radiology, Departments of Psychology and."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Nelson",
+                "ForeName": "Steven M",
+                "Initials": "SM",
+                "AffiliationInfo": {
+                  "Affiliation": "VISN 17 Center of Excellence for Research on Returning War Veterans, Waco, Texas 76711."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Dubis",
+                "ForeName": "Joseph W",
+                "Initials": "JW",
+                "AffiliationInfo": {
+                  "Affiliation": "Departments of Neurology."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Dosenbach",
+                "ForeName": "Nico U F",
+                "Initials": "NU",
+                "AffiliationInfo": {
+                  "Affiliation": "Departments of Neurology."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Schlaggar",
+                "ForeName": "Bradley L",
+                "Initials": "BL",
+                "AffiliationInfo": {
+                  "Affiliation": "Departments of Neurology, Radiology, Pediatrics, Anatomy and Neurobiology, and."
+                }
+              },
+              {
+                "@ValidYN": "Y",
+                "LastName": "Petersen",
+                "ForeName": "Steven E",
+                "Initials": "SE",
+                "AffiliationInfo": {
+                  "Affiliation": "Departments of Neurology, Radiology, Anatomy and Neurobiology, and Neurosurgery, Washington University School of Medicine, Departments of Psychology and Biomedical Engineering, Washington University, St Louis, Missouri 63110, and."
+                }
+              }
+            ]
+          },
+          "Language": "eng",
+          "GrantList": {
+            "@CompleteYN": "Y",
+            "Grant": [
+              {
+                "GrantID": "R01 HD057076",
+                "Acronym": "HD",
+                "Agency": "NICHD NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "R21 NS061144",
+                "Acronym": "NS",
+                "Agency": "NINDS NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "NIH R21 NS61144",
+                "Acronym": "NS",
+                "Agency": "NINDS NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "K12-HD076224",
+                "Acronym": "HD",
+                "Agency": "NICHD NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "U54 MH091657",
+                "Acronym": "MH",
+                "Agency": "NIMH NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "NIH R01 HD057076",
+                "Acronym": "HD",
+                "Agency": "NICHD NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "NIH U54MH091657",
+                "Acronym": "MH",
+                "Agency": "NIMH NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "NIH R01 NS26424",
+                "Acronym": "NS",
+                "Agency": "NINDS NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "P30 HD062171",
+                "Acronym": "HD",
+                "Agency": "NICHD NIH HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "NIH/NICHD P30 HD062171",
+                "Agency": "PHS HHS",
+                "Country": "United States"
+              },
+              {
+                "GrantID": "K12 HD076224",
+                "Acronym": "HD",
+                "Agency": "NICHD NIH HHS",
+                "Country": "United States"
+              }
+            ]
+          },
+          "PublicationTypeList": {
+            "PublicationType": [
+              {
+                "@UI": "D016428",
+                "#text": "Journal Article"
+              },
+              {
+                "@UI": "D017418",
+                "#text": "Meta-Analysis"
+              },
+              {
+                "@UI": "D052061",
+                "#text": "Research Support, N.I.H., Extramural"
+              },
+              {
+                "@UI": "D013485",
+                "#text": "Research Support, Non-U.S. Gov't"
+              }
+            ]
+          }
+        },
+        "MedlineJournalInfo": {
+          "Country": "United States",
+          "MedlineTA": "J Neurosci",
+          "NlmUniqueID": "8102140",
+          "ISSNLinking": "0270-6474"
+        },
+        "CitationSubset": "IM",
+        "MeshHeadingList": {
+          "MeshHeading": [
+            {
+              "DescriptorName": {
+                "@UI": "D000161",
+                "@MajorTopicYN": "N",
+                "#text": "Acoustic Stimulation"
+              },
+              "QualifierName": {
+                "@UI": "Q000379",
+                "@MajorTopicYN": "N",
+                "#text": "methods"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D000293",
+                "@MajorTopicYN": "N",
+                "#text": "Adolescent"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D000328",
+                "@MajorTopicYN": "N",
+                "#text": "Adult"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D001921",
+                "@MajorTopicYN": "N",
+                "#text": "Brain"
+              },
+              "QualifierName": {
+                "@UI": "Q000502",
+                "@MajorTopicYN": "Y",
+                "#text": "physiology"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D001931",
+                "@MajorTopicYN": "N",
+                "#text": "Brain Mapping"
+              },
+              "QualifierName": {
+                "@UI": "Q000379",
+                "@MajorTopicYN": "Y",
+                "#text": "methods"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D003430",
+                "@MajorTopicYN": "N",
+                "#text": "Cross-Sectional Studies"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D005260",
+                "@MajorTopicYN": "N",
+                "#text": "Female"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D006801",
+                "@MajorTopicYN": "N",
+                "#text": "Humans"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D008297",
+                "@MajorTopicYN": "N",
+                "#text": "Male"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D009415",
+                "@MajorTopicYN": "N",
+                "#text": "Nerve Net"
+              },
+              "QualifierName": {
+                "@UI": "Q000502",
+                "@MajorTopicYN": "Y",
+                "#text": "physiology"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D010775",
+                "@MajorTopicYN": "N",
+                "#text": "Photic Stimulation"
+              },
+              "QualifierName": {
+                "@UI": "Q000379",
+                "@MajorTopicYN": "N",
+                "#text": "methods"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D011597",
+                "@MajorTopicYN": "N",
+                "#text": "Psychomotor Performance"
+              },
+              "QualifierName": {
+                "@UI": "Q000502",
+                "@MajorTopicYN": "Y",
+                "#text": "physiology"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D013997",
+                "@MajorTopicYN": "N",
+                "#text": "Time Factors"
+              }
+            },
+            {
+              "DescriptorName": {
+                "@UI": "D055815",
+                "@MajorTopicYN": "N",
+                "#text": "Young Adult"
+              }
+            }
+          ]
+        },
+        "KeywordList": {
+          "@Owner": "NOTNLM",
+          "Keyword": [
+            {
+              "@MajorTopicYN": "N",
+              "#text": "error"
+            },
+            {
+              "@MajorTopicYN": "N",
+              "#text": "functional networks"
+            },
+            {
+              "@MajorTopicYN": "N",
+              "#text": "meta-analysis"
+            },
+            {
+              "@MajorTopicYN": "N",
+              "#text": "resting state"
+            },
+            {
+              "@MajorTopicYN": "N",
+              "#text": "task control"
+            }
+          ]
+        }
+      },
+      "PubmedData": {
+        "History": {
+          "PubMedPubDate": [
+            {
+              "@PubStatus": "entrez",
+              "Year": "2015",
+              "Month": "1",
+              "Day": "9",
+              "Hour": "6",
+              "Minute": "0"
+            },
+            {
+              "@PubStatus": "pubmed",
+              "Year": "2015",
+              "Month": "1",
+              "Day": "9",
+              "Hour": "6",
+              "Minute": "0"
+            },
+            {
+              "@PubStatus": "medline",
+              "Year": "2015",
+              "Month": "3",
+              "Day": "21",
+              "Hour": "6",
+              "Minute": "0"
+            },
+            {
+              "@PubStatus": "pmc-release",
+              "Year": "2015",
+              "Month": "7",
+              "Day": "7"
+            }
+          ]
+        },
+        "PublicationStatus": "ppublish",
+        "ArticleIdList": {
+          "ArticleId": [
+            {
+              "@IdType": "pubmed",
+              "#text": "25568119"
+            },
+            {
+              "@IdType": "pmc",
+              "#text": "PMC4287146"
+            },
+            {
+              "@IdType": "doi",
+              "#text": "10.1523/JNEUROSCI.1313-14.2015"
+            },
+            {
+              "@IdType": "pii",
+              "#text": "35/1/253"
+            }
+          ]
+        },
+        "ReferenceList": {
+          "Reference": [
+            {
+              "Citation": "Bender-deMoll S, McFarland DA. The art and science of dynamic network visualization. J Soc Struct. 2006:7."
+            },
+            {
+              "Citation": "Biswal B, Yetkin FZ, Haughton VM, Hyde JS. Functional connectivity in the motor cortex of resting human brain using echo-planar MRI. Magn Reson Med. 1995;34:537\u2013541. doi: 10.1002/mrm.1910340409.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1002/mrm.1910340409"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "8524021"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Bush G, Luu P, Posner MI. Cognitive and emotional influences in anterior cingulate cortex. Trends Cogn Sci. 2000;4:215\u2013222. doi: 10.1016/S1364-6613(00)01483-2.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S1364-6613(00)01483-2"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "10827444"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Cannestra AF, Bookheimer SY, Pouratian N, O'Farrell A, Sicotte N, Martin NA, Becker D, Rubino G, Toga AW. Temporal and topographical characterization of language cortices using intraoperative optical intrinsic signals. Neuroimage. 2000;12:41\u201354. doi: 10.1006/nimg.2000.0597.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1006/nimg.2000.0597"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "10875901"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Carp J, Kim K, Taylor SF, Fitzgerald KD, Weissman DH. Conditional differences in mean reaction time explain effects of response congruency, but not accuracy, on posterior medial frontal cortex activity. Front Hum Neurosci. 2010;4:231. doi: 10.3389/fnhum.2010.00231.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.3389/fnhum.2010.00231"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3014651"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21212836"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Cassidy B, Solo V. fMRI model diagnostics for the double gamma and temporal derivative. Biomedical Imaging (ISBI); 2012 9th IEEE International Symposium; 2012. pp. 30\u201333."
+            },
+            {
+              "Citation": "Chein JM, Fissell K, Jacobs S, Fiez JA. Functional heterogeneity within Broca's area during verbal working memory. Physiol Behav. 2002;77:635\u2013639. doi: 10.1016/S0031-9384(02)00899-5.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S0031-9384(02)00899-5"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12527011"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Church JA, Wenger KK, Dosenbach NU, Miezin FM, Petersen SE, Schlaggar BL. Task control signals in pediatric Tourette syndrome show evidence of immature and anomalous functional activity. Front Hum Neurosci. 2009;3:38. doi: 10.3389/neuro.09.038.2009.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.3389/neuro.09.038.2009"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2784679"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "19949483"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Cordes D, Haughton V, Carew JD, Arfanakis K, Maravilla K. Hierarchical clustering to measure connectivity in fMRI resting-state data. Magn Reson Imaging. 2002;20:305\u2013317. doi: 10.1016/S0730-725X(02)00503-9.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S0730-725X(02)00503-9"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12165349"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Danielmeier C, Ullsperger M. Post-error adjustments. Front Psychol. 2011;2:233. doi: 10.3389/fpsyg.2011.00233.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.3389/fpsyg.2011.00233"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3173829"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21954390"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Danielmeier C, Eichele T, Forstmann BU, Tittgemeyer M, Ullsperger M. Posterior medial frontal cortex activity predicts post-error adaptations in task-related visual and motor areas. J Neurosci. 2011;31:1780\u20131789. doi: 10.1523/JNEUROSCI.4299-10.2011.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.4299-10.2011"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6623722"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21289188"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Dehaene S, Posner MI, Tucker DM. Localization of a neural system for error detection and compensation. Psychol Sci. 1994;5:303\u2013305. doi: 10.1111/j.1467-9280.1994.tb00630.x.",
+              "ArticleIdList": {
+                "ArticleId": {
+                  "@IdType": "doi",
+                  "#text": "10.1111/j.1467-9280.1994.tb00630.x"
+                }
+              }
+            },
+            {
+              "Citation": "Donaldson DI, Wheeler ME, Petersen SE. Remember the source: dissociating frontal and parietal contributions to episodic memory. J Cogn Neurosci. 2010;22:377\u2013391. doi: 10.1162/jocn.2009.21242.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1162/jocn.2009.21242"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "19400677"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Dosenbach NU, Visscher KM, Palmer ED, Miezin FM, Wenger KK, Kang HC, Burgund ED, Grimes AL, Schlaggar BL, Petersen SE. A core system for the implementation of task sets. Neuron. 2006;50:799\u2013812. doi: 10.1016/j.neuron.2006.04.031.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuron.2006.04.031"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3621133"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16731517"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Dosenbach NU, Fair DA, Miezin FM, Cohen AL, Wenger KK, Dosenbach RA, Fox MD, Snyder AZ, Vincent JL, Raichle ME, Schlaggar BL, Petersen SE. Distinct brain networks for adaptive and stable task control in humans. Proc Natl Acad Sci U S A. 2007;104:11073\u201311078. doi: 10.1073/pnas.0704320104.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1073/pnas.0704320104"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC1904171"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "17576922"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Dosenbach NU, Fair DA, Cohen AL, Schlaggar BL, Petersen SE. A dual-networks architecture of top-down control. Trends Cogn Sci. 2008;12:99\u2013105. doi: 10.1016/j.tics.2008.01.001.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.tics.2008.01.001"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3632449"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "18262825"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Dubis JW, Siegel JS, Neta M, Visscher KM, Petersen SE. Tasks driven by perceptual information do not recruit sustained BOLD activity in cingulo-opercular regions. Cereb Cortex. 2014 doi: 10.1093/cercor/bhu187. doi: 10.1093/cercor/bhu187. Advance online publication.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhu187"
+                  },
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhu187"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC4677973"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "25150283"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Fox MD, Snyder AZ, Barch DM, Gusnard DA, Raichle ME. Transient BOLD responses at block transitions. Neuroimage. 2005;28:956\u2013966. doi: 10.1016/j.neuroimage.2005.06.025.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2005.06.025"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16043368"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Gonzalez-Castillo J, Saad ZS, Handwerker DA, Inati SJ, Brenowitz N, Bandettini PA. Whole-brain, time-locked activation with simple tasks revealed using massive averaging and model-free analysis. Proc Natl Acad Sci U S A. 2012;109:5487\u20135492. doi: 10.1073/pnas.1121049109.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1073/pnas.1121049109"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3325687"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22431587"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Greicius MD, Supekar K, Menon V, Dougherty RF. Resting-state functional connectivity reflects structural connectivity in the default mode network. Cereb Cortex. 2009;19:72\u201378. doi: 10.1093/cercor/bhn059.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhn059"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2605172"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "18403396"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Handl J, Knowles J, Kell DB. Computational cluster validation in post-genomic data analysis. Bioinformatics. 2005;21:3201\u20133212. doi: 10.1093/bioinformatics/bti517.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/bioinformatics/bti517"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15914541"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Hester R, Fassbender C, Garavan H. Individual differences in error processing: a review and reanalysis of three event-related fMRI studies using the GO/NOGO task. Cereb Cortex. 2004;14:986\u2013994. doi: 10.1093/cercor/bhh059.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhh059"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15115734"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Hester R, Nandam LS, O'Connell RG, Wagner J, Strudwick M, Nathan PJ, Mattingley JB, Bellgrove MA. Neurochemical enhancement of conscious error awareness. J Neurosci. 2012;32:2619\u20132627. doi: 10.1523/JNEUROSCI.4052-11.2012.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.4052-11.2012"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6621889"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22357846"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Holroyd CB, Coles MG. The neural basis of human error processing: reinforcement learning, dopamine, and the error-related negativity. Psychol Rev. 2002;109:679\u2013709. doi: 10.1037/0033-295X.109.4.679.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1037/0033-295X.109.4.679"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12374324"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Holroyd CB, Dien J, Coles MG. Error-related scalp potentials elicited by hand and foot movements: evidence for an output-independent error-processing system in humans. Neurosci Lett. 1998;242:65\u201368. doi: 10.1016/S0304-3940(98)00035-4.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S0304-3940(98)00035-4"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "9533395"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Holroyd CB, Nieuwenhuis S, Yeung N, Nystrom L, Mars RB, Coles MG, Cohen JD. Dorsal anterior cingulate cortex shows fMRI response to internal and external error signals. Nat Neurosci. 2004;7:497\u2013498. doi: 10.1038/nn1238.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1038/nn1238"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15097995"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Kiehl KA, Liddle PF, Hopfinger JB. Error processing and the rostral anterior cingulate: an event-related fMRI study. Psychophysiology. 2000;37:216\u2013223. doi: 10.1111/1469-8986.3720216.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1111/1469-8986.3720216"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "10731771"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "King JA, Korb FM, von Cramon DY, Ullsperger M. Post-error behavioral adjustments are facilitated by activation and suppression of task-relevant and task-irrelevant information processing. J Neurosci. 2010;30:12759\u201312769. doi: 10.1523/JNEUROSCI.3274-10.2010.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.3274-10.2010"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6633589"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "20861380"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Lancaster JL, Glass TG, Lankipalli BR, Downs H, Mayberg H, Fox PT. A modality-independent approach to spatial normalization of tomographic images of the human brain. Hum Brain Mapp. 1995;3:209\u2013223. doi: 10.1002/hbm.460030305.",
+              "ArticleIdList": {
+                "ArticleId": {
+                  "@IdType": "doi",
+                  "#text": "10.1002/hbm.460030305"
+                }
+              }
+            },
+            {
+              "Citation": "Logan GD, Gordon RD. Executive control of visual attention in dual-task situations. Psychol Rev. 2001;108:393\u2013434. doi: 10.1037/0033-295X.108.2.393.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1037/0033-295X.108.2.393"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "11381835"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Mars RB, Coles MG, Grol MJ, Holroyd CB, Nieuwenhuis S, Hulstijn W, Toni I. Neural dynamics of error processing in medial frontal cortex. Neuroimage. 2005;28:1007\u20131013. doi: 10.1016/j.neuroimage.2005.06.041.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2005.06.041"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16055352"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Martin TA, Keating JG, Goodkin HP, Bastian AJ, Thach WT. Throwing while looking through prisms: I. Focal olivocerebellar lesions impair adaptation. Brain. 1996a;119:1183\u20131198. doi: 10.1093/brain/119.4.1183.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/brain/119.4.1183"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "8813282"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Martin TA, Keating JG, Goodkin HP, Bastian AJ, Thach WT. Throwing while looking through prisms: II. Specificity and storage of multiple gaze-throw calibrations. Brain. 1996b;119:1199\u20131211. doi: 10.1093/brain/119.4.1199.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/brain/119.4.1199"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "8813283"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Mathalon DH, Whitfield SL, Ford JM. Anatomy of an error: ERP and fMRI. Biol Psychol. 2003;64:119\u2013141. doi: 10.1016/S0301-0511(03)00105-4.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S0301-0511(03)00105-4"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "14602358"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Michelon P, Snyder AZ, Buckner RL, McAvoy M, Zacks JM. Neural correlates of incongruous visual information: an event-related fMRI study. Neuroimage. 2003;19:1612\u20131626. doi: 10.1016/S1053-8119(03)00111-3.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S1053-8119(03)00111-3"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12948716"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Miezin FM, Maccotta L, Ollinger JM, Petersen SE, Buckner RL. Characterizing the hemodynamic response: effects of presentation rate, sampling procedure, and the possibility of ordering brain activity based on relative timing. Neuroimage. 2000;11:735\u2013759. doi: 10.1006/nimg.2000.0568.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1006/nimg.2000.0568"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "10860799"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Mugler JP, 3rd, Brookeman JR. Three-dimensional magnetization-prepared rapid gradient-echo imaging (3D MP RAGE) Magn Reson Med. 1990;15:152\u2013157. doi: 10.1002/mrm.1910150117.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1002/mrm.1910150117"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "2374495"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Nachev P, Rees G, Parton A, Kennard C, Husain M. Volition and conflict in human medial frontal cortex. Curr Biol. 2005;15:122\u2013128. doi: 10.1016/j.cub.2005.01.006.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.cub.2005.01.006"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2648721"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15668167"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Nelson SM, Dosenbach NU, Cohen AL, Wheeler ME, Schlaggar BL, Petersen SE. Role of the anterior insula in task-level control and focal attention. Brain Struct Funct. 2010;214:669\u2013680. doi: 10.1007/s00429-010-0260-2.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1007/s00429-010-0260-2"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2886908"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "20512372"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Neta M, Schlaggar BL, Petersen SE. Separable responses to error, ambiguity, and reaction time in cingulo-opercular task control regions. Neuroimage. 2014;99:59\u201368. doi: 10.1016/j.neuroimage.2014.05.053.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2014.05.053"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC4148211"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "24887509"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Newman ME. Modularity and community structure in networks. Proc Natl Acad Sci U S A. 2006;103:8577\u20138582. doi: 10.1073/pnas.0601602103.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1073/pnas.0601602103"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC1482622"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16723398"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Norris SA, Hathaway EN, Taylor JA, Thach WT. Cerebellar inactivation impairs memory of learned prism gaze-reach calibrations. J Neurophysiol. 2011;105:2248\u20132259. doi: 10.1152/jn.01009.2010.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1152/jn.01009.2010"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3094188"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21389311"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Ojemann JG, Akbudak E, Snyder AZ, McKinstry RC, Raichle ME, Conturo TE. Anatomic localization and quantitative analysis of gradient refocused echo-planar fMRI susceptibility artifacts. Neuroimage. 1997;6:156\u2013167. doi: 10.1006/nimg.1997.0289.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1006/nimg.1997.0289"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "9344820"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Orr JM, Weissman DH. Anterior cingulate cortex makes 2 contributions to minimizing distraction. Cereb Cortex. 2009;19:703\u2013711. doi: 10.1093/cercor/bhn119.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhn119"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2637305"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "18653665"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Paulesu E, Goldacre B, Scifo P, Cappa SF, Gilardi MC, Castiglioni I, Perani D, Fazio F. Functional heterogeneity of left inferior frontal cortex as revealed by fMRI. Neuroreport. 1997;8:2011\u20132017. doi: 10.1097/00001756-199705260-00042.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1097/00001756-199705260-00042"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "9223094"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Petersen SE, Posner MI. The attention system of the human brain: 20 years after. Annu Rev Neurosci. 2012;35:73\u201389. doi: 10.1146/annurev-neuro-062111-150525.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1146/annurev-neuro-062111-150525"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3413263"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22524787"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Picard N, Strick PL. Imaging the premotor areas. Curr Opin Neurobiol. 2001;11:663\u2013672. doi: 10.1016/S0959-4388(01)00266-5.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/S0959-4388(01)00266-5"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "11741015"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Posner MI, Petersen SE. The attention system of the human brain. Annu Rev Neurosci. 1990;13:25\u201342. doi: 10.1146/annurev.ne.13.030190.000325.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1146/annurev.ne.13.030190.000325"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "2183676"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Power JD, Petersen SE. Control-related systems in the human brain. Curr Opin Neurobiol. 2013;23:223\u2013228. doi: 10.1016/j.conb.2012.12.009.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.conb.2012.12.009"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3632325"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "23347645"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Power JD, Cohen AL, Nelson SM, Vogel AC, Church JA, Barnes KA, Wig GS, Laumann TO, Miezin FM, Schlaggar BL, Petersen SE. Functional network organization in the human brain. Neuron. 2011;72:665\u2013678. doi: 10.1016/j.neuron.2011.09.006.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuron.2011.09.006"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3222858"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22099467"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Power JD, Barnes KA, Snyder AZ, Schlaggar BL, Petersen SE. Spurious but systematic correlations in functional connectivity MRI networks arise from subject motion. Neuroimage. 2012;59:2142\u20132154. doi: 10.1016/j.neuroimage.2011.10.018.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2011.10.018"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3254728"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22019881"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Power JD, Barnes KA, Snyder AZ, Schlaggar BL, Petersen SE. Steps toward optimizing motion artifact removal in functional connectivity MRI; a reply to carp. Neuroimage. 2013;76:439\u2013441. doi: 10.1016/j.neuroimage.2012.03.017.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2012.03.017"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3834590"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22440651"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Rabbitt PM. Errors and error correction in choice-response tasks. J Exp Psychol. 1966;71:264\u2013272. doi: 10.1037/h0022853.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1037/h0022853"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "5948188"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Ridderinkhof KR, Ullsperger M, Crone EA, Nieuwenhuis S. The role of the medial frontal cortex in cognitive control. Science. 2004;306:443\u2013447. doi: 10.1126/science.1100301.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1126/science.1100301"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15486290"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Rushworth MF, Walton ME, Kennerley SW, Bannerman DM. Action sets and decisions in the medial frontal cortex. Trends Cogn Sci. 2004;8:410\u2013417. doi: 10.1016/j.tics.2004.07.009.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.tics.2004.07.009"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15350242"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Salvador R, Suckling J, Coleman MR, Pickard JD, Menon D, Bullmore E. Neurophysiological architecture of functional magnetic resonance images of human brain. Cereb Cortex. 2005;15:1332\u20131342. doi: 10.1093/cercor/bhi016.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhi016"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15635061"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Seeley WW, Menon V, Schatzberg AF, Keller J, Glover GH, Kenna H, Reiss AL, Greicius MD. Dissociable intrinsic connectivity networks for salience processing and executive control. J Neurosci. 2007;27:2349\u20132356. doi: 10.1523/JNEUROSCI.5587-06.2007.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.5587-06.2007"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2680293"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "17329432"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Shmuel A, Leopold DA. Neuronal correlates of spontaneous fluctuations in fMRI signals in monkey visual cortex: implications for functional connectivity at rest. Hum Brain Mapp. 2008;29:751\u2013761. doi: 10.1002/hbm.20580.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1002/hbm.20580"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6870786"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "18465799"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Snyder AZ. Difference image vs ratio image error function forms in PET-PET realignment. In: Myer R, et al., editors. Quantification of brain function using PET. San Diego: Academic; 1996. pp. 131\u2013137."
+            },
+            {
+              "Citation": "Stuss DT. Functions of the frontal lobes: relation to executive functions. J Int Neuropsychol Soc. 2011;17:759\u2013765. doi: 10.1017/S1355617711000695.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1017/S1355617711000695"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21729406"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Swick D, Turken AU. Dissociation between conflict detection and error monitoring in the human anterior cingulate cortex. Proc Natl Acad Sci U S A. 2002;99:16354\u201316359. doi: 10.1073/pnas.252521499.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1073/pnas.252521499"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC138615"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12456882"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Talairach J, Tournoux P. Co-planar stereotaxic atlas of the human brain. New York: Thieme Medical; 1988."
+            },
+            {
+              "Citation": "Tunik E, Frey SH, Grafton ST. Virtual lesions of the anterior intraparietal area disrupt goal-dependent on-line adjustments of grasp. Nat Neurosci. 2005;8:505\u2013511. doi: 10.1038/nn1430.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1038/nn1430"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC10719865"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "15778711"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Ullsperger M, von Cramon DY. Subprocesses of performance monitoring: a dissociation of error processing and response competition revealed by event-related fMRI and ERPs. Neuroimage. 2001;14:1387\u20131401. doi: 10.1006/nimg.2001.0935.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1006/nimg.2001.0935"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "11707094"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Ullsperger M, von Cramon DY, M\u00fcller NG. Interactions of focal cortical lesions with error processing: evidence from event-related brain potentials. Neuropsychology. 2002;16:548\u2013561. doi: 10.1037/0894-4105.16.4.548.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1037/0894-4105.16.4.548"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "12382993"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Ullsperger M, Harsay HA, Wessel JR, Ridderinkhof KR. Conscious perception of errors and its relation to the anterior insula. Brain Struct Funct. 2010;214:629\u2013643. doi: 10.1007/s00429-010-0261-1.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1007/s00429-010-0261-1"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC2886909"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "20512371"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "van Driel J, Ridderinkhof KR, Cohen MX. Not all errors are alike: theta and alpha EEG dynamics relate to differences in error-processing dynamics. J Neurosci. 2012;32:16795\u201316806. doi: 10.1523/JNEUROSCI.0802-12.2012.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.0802-12.2012"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6621791"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "23175833"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Van Essen DC. A population-average, landmark- and surface-based (PALS) atlas of human cerebral cortex. Neuroimage. 2005;28:635\u2013662. doi: 10.1016/j.neuroimage.2005.06.058.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1016/j.neuroimage.2005.06.058"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16172003"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Van Essen DC, Drury HA, Dickson J, Harwell J, Hanlon D, Anderson CH. An integrated software suite for surface-based analyses of cerebral cortex. J Am Med Inform Assoc. 2001;8:443\u2013459. doi: 10.1136/jamia.2001.0080443.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1136/jamia.2001.0080443"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC131042"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "11522765"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Wessel JR, Danielmeier C, Morton JB, Ullsperger M. Surprise and error: common neuronal architecture for the processing of errors and novelty. J Neurosci. 2012;32:7528\u20137537. doi: 10.1523/JNEUROSCI.6352-11.2012.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1523/JNEUROSCI.6352-11.2012"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC6703591"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "22649231"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Wheeler ME, Shulman GL, Buckner RL, Miezin FM, Velanova K, Petersen SE. Evidence for separate perceptual reactivation and search processes during remembering. Cereb Cortex. 2006;16:949\u2013959. doi: 10.1093/cercor/bhj037.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1093/cercor/bhj037"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "16162854"
+                  }
+                ]
+              }
+            },
+            {
+              "Citation": "Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M, Roffman JL, Smoller JW, Z\u00f6llei L, Polimeni JR, Fischl B, Liu H, Buckner RL. The organization of the human cerebral cortex estimated by intrinsic functional connectivity. J Neurophysiol. 2011;106:1125\u20131165. doi: 10.1152/jn.00338.2011.",
+              "ArticleIdList": {
+                "ArticleId": [
+                  {
+                    "@IdType": "doi",
+                    "#text": "10.1152/jn.00338.2011"
+                  },
+                  {
+                    "@IdType": "pmc",
+                    "#text": "PMC3174820"
+                  },
+                  {
+                    "@IdType": "pubmed",
+                    "#text": "21653723"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

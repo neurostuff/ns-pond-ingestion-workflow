@@ -1,0 +1,353 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1523%2Fjneurosci.1313-14.2015&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1523\/jneurosci.1313-14.2015","license":[{"start":{"date-parts":[[2015,7,7]],"date-time":"2015-07-07T00:00:00Z","timestamp":1436227200000},"content-version":"vor","delay-in-days":181,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-sa\/4.0\/"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 20 Oct 2026 04:52:19 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1523%2Fjneurosci.1313-14.2015&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 1, "db_response_time_ms": 11, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is 10.1523/jneurosci.1313-14.2015",
+        "x_new_oql": "get works where DOI is 10.1523/jneurosci.1313-14.2015", "oqo":
+        {"get_rows": "works", "filter_rows": [{"column_id": "doi", "value": "10.1523/jneurosci.1313-14.2015"}]},
+        "url": "/works?filter=doi:10.1523%2Fjneurosci.1313-14.2015&per_page=100"},
+        "cost_usd": 0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2058660851",
+        "doi": "https://doi.org/10.1523/jneurosci.1313-14.2015", "mag": "2058660851",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/25568119"}, "display_name": "Spatial
+        and Temporal Characteristics of Error-Related Activity in the Human Brain",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5014176601",
+        "display_name": "Maital Neta", "orcid": "https://orcid.org/0000-0001-8586-0963",
+        "observed_orcids": ["https://orcid.org/0000-0001-8586-0963"]}, "institutions":
+        [{"id": "https://openalex.org/I114395901", "display_name": "University of
+        Nebraska\u2013Lincoln", "ror": "https://ror.org/043mer456", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I114395901"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Maital
+        Neta", "raw_affiliation_strings": ["Department of Psychology, University of
+        Nebraska-Lincoln, Lincoln, Nebraska 68588, maitalneta@unl.edu", "1Department
+        of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska 68588,"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska 68588, maitalneta@unl.edu",
+        "institution_ids": ["https://openalex.org/I114395901"]}, {"raw_affiliation_string":
+        "1Department of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska
+        68588,", "institution_ids": ["https://openalex.org/I114395901"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5091103994", "display_name":
+        "Francis M. Miezin", "orcid": "https://orcid.org/0000-0002-3806-2130", "observed_orcids":
+        ["https://orcid.org/0000-0002-3806-2130"]}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Francis M. Miezin", "raw_affiliation_strings":
+        ["Departments of Neurology, Radiology, Departments of Psychology and", "2Departments
+        of Neurology,", "3Radiology,", "7Departments of Psychology and"], "raw_orcid":
+        "https://orcid.org/0000-0002-3806-2130", "affiliations": [{"raw_affiliation_string":
+        "Departments of Neurology, Radiology, Departments of Psychology and", "institution_ids":
+        []}, {"raw_affiliation_string": "2Departments of Neurology,", "institution_ids":
+        []}, {"raw_affiliation_string": "3Radiology,", "institution_ids": []}, {"raw_affiliation_string":
+        "7Departments of Psychology and", "institution_ids": []}]}, {"author_position":
+        "middle", "author": {"id": null, "display_name": "Steven M. Nelson", "orcid":
+        null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I4210144023",
+        "display_name": "VA Heart of Texas Health Care Network", "ror": "https://ror.org/0527v1v90",
+        "country_code": "US", "type": "healthcare", "lineage": ["https://openalex.org/I1322918889",
+        "https://openalex.org/I2799886695", "https://openalex.org/I4210144023"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Steven
+        M. Nelson", "raw_affiliation_strings": ["VISN 17 Center of Excellence for
+        Research on Returning War Veterans, Waco, Texas 76711", "9VISN 17 Center of
+        Excellence for Research on Returning War Veterans, Waco, Texas 76711"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "VISN 17 Center of Excellence
+        for Research on Returning War Veterans, Waco, Texas 76711", "institution_ids":
+        ["https://openalex.org/I4210144023"]}, {"raw_affiliation_string": "9VISN 17
+        Center of Excellence for Research on Returning War Veterans, Waco, Texas 76711",
+        "institution_ids": []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5041046195",
+        "display_name": "Joseph W. Dubis", "orcid": null, "observed_orcids": []},
+        "institutions": [], "countries": [], "is_corresponding": false, "raw_author_name":
+        "Joseph W. Dubis", "raw_affiliation_strings": ["Departments of Neurology",
+        "2Departments of Neurology,"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Departments of Neurology", "institution_ids": []}, {"raw_affiliation_string":
+        "2Departments of Neurology,", "institution_ids": []}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5024114285", "display_name":
+        "Nico U.F. Dosenbach", "orcid": "https://orcid.org/0000-0002-6876-7078", "observed_orcids":
+        ["https://orcid.org/0000-0002-6876-7078"]}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Nico U.F. Dosenbach", "raw_affiliation_strings":
+        ["Departments of Neurology", "2Departments of Neurology,"], "raw_orcid": null,
+        "affiliations": [{"raw_affiliation_string": "Departments of Neurology", "institution_ids":
+        []}, {"raw_affiliation_string": "2Departments of Neurology,", "institution_ids":
+        []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5082557392",
+        "display_name": "Bradley L. Schlaggar", "orcid": "https://orcid.org/0000-0002-9246-2469",
+        "observed_orcids": ["https://orcid.org/0000-0002-9246-2469"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Bradley
+        L. Schlaggar", "raw_affiliation_strings": ["Departments of Neurology, Radiology,
+        Pediatrics, Anatomy and Neurobiology, and", "2Departments of Neurology,",
+        "3Radiology,", "4Pediatrics,", "5Anatomy and Neurobiology, and"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Departments of Neurology,
+        Radiology, Pediatrics, Anatomy and Neurobiology, and", "institution_ids":
+        []}, {"raw_affiliation_string": "2Departments of Neurology,", "institution_ids":
+        []}, {"raw_affiliation_string": "3Radiology,", "institution_ids": []}, {"raw_affiliation_string":
+        "4Pediatrics,", "institution_ids": []}, {"raw_affiliation_string": "5Anatomy
+        and Neurobiology, and", "institution_ids": []}]}, {"author_position": "last",
+        "author": {"id": "https://openalex.org/A5035206215", "display_name": "Steven
+        E. Petersen", "orcid": "https://orcid.org/0000-0002-8911-3639", "observed_orcids":
+        ["https://orcid.org/0000-0002-8911-3639"]}, "institutions": [{"id": "https://openalex.org/I204465549",
+        "display_name": "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Steven
+        E. Petersen", "raw_affiliation_strings": ["Departments of Neurology, Radiology,
+        Anatomy and Neurobiology, and Neurosurgery, Washington University School of
+        Medicine, Departments of Psychology and Biomedical Engineering, Washington
+        University, St Louis, Missouri 63110, and", "2Departments of Neurology,",
+        "3Radiology,", "5Anatomy and Neurobiology, and", "6Neurosurgery, Washington
+        University School of Medicine,", "7Departments of Psychology and", "8Biomedical
+        Engineering, Washington University, St Louis, Missouri 63110, and"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Departments of Neurology,
+        Radiology, Anatomy and Neurobiology, and Neurosurgery, Washington University
+        School of Medicine, Departments of Psychology and Biomedical Engineering,
+        Washington University, St Louis, Missouri 63110, and", "institution_ids":
+        ["https://openalex.org/I204465549"]}, {"raw_affiliation_string": "2Departments
+        of Neurology,", "institution_ids": []}, {"raw_affiliation_string": "3Radiology,",
+        "institution_ids": []}, {"raw_affiliation_string": "5Anatomy and Neurobiology,
+        and", "institution_ids": []}, {"raw_affiliation_string": "6Neurosurgery, Washington
+        University School of Medicine,", "institution_ids": []}, {"raw_affiliation_string":
+        "7Departments of Psychology and", "institution_ids": []}, {"raw_affiliation_string":
+        "8Biomedical Engineering, Washington University, St Louis, Missouri 63110,
+        and", "institution_ids": ["https://openalex.org/I204465549"]}]}], "publication_year":
+        2015, "abstract_inverted_index": {"A": [0], "number": [1], "of": [2, 9, 33,
+        56, 65, 79, 134, 221, 234], "studies": [3], "have": [4, 29], "focused": [5],
+        "on": [6, 22], "the": [7, 15, 39, 54, 192, 202, 212, 219], "role": [8], "specific":
+        [10], "brain": [11, 117], "regions,": [12], "such": [13], "as": [14, 154,
+        156], "dorsal": [16], "anterior": [17], "cingulate": [18], "cortex": [19],
+        "during": [20], "trials": [21, 130], "which": [23, 195], "participants": [24],
+        "make": [25], "errors,": [26, 153], "whereas": [27], "others": [28], "implicated":
+        [30], "a": [31, 76, 121, 132, 149, 157, 222, 231], "host": [32], "more": [34,
+        158], "widely": [35], "distributed": [36], "regions": [37, 118, 137, 165,
+        236], "in": [38, 63, 169, 201, 211, 218], "human": [40], "brain.": [41], "Previous":
+        [42], "work": [43], "has": [44], "proposed": [45], "that": [46, 82, 119, 240],
+        "there": [47], "are": [48], "multiple": [49, 238], "cognitive": [50], "control":
+        [51, 171], "networks,": [52, 172], "raising": [53], "question": [55], "whether":
+        [57], "error-related": [58, 71, 235], "activity": [59, 72], "can": [60], "be":
+        [61], "found": [62, 167], "each": [64, 173], "these": [66, 227], "networks.":
+        [67], "Thus,": [68], "to": [69, 126, 152, 161, 183, 230], "examine": [70],
+        "broadly,": [73], "we": [74], "conducted": [75], "meta-analysis": [77], "consisting":
+        [78], "12": [80], "tasks": [81, 90], "included": [83], "both": [84], "error":
+        [85, 127, 225], "and": [86, 106, 128, 147, 205], "correct": [87, 129, 162],
+        "trials.": [88, 163], "These": [89, 136, 164], "varied": [91], "by": [92],
+        "stimulus": [93, 102], "input": [94], "(visual,": [95], "auditory),": [96],
+        "response": [97, 125, 141, 151, 160, 178, 188, 198], "output": [98], "(button":
+        [99], "press,": [100], "speech),": [101], "category": [103], "(words,": [104],
+        "pictures),": [105], "task": [107], "type": [108], "(e.g.,": [109], "recognition":
+        [110], "memory,": [111], "mental": [112], "rotation).": [113], "We": [114,
+        215], "identified": [115], "41": [116], "showed": [120, 196], "differential":
+        [122], "fMRI": [123], "BOLD": [124], "across": [131, 237], "majority": [133],
+        "tasks.": [135], "displayed": [138], "three": [139], "unique": [140], "profiles:":
+        [142], "(1)": [143], "fast,": [144], "(2)": [145], "prolonged,": [146], "(3)":
+        [148], "delayed": [150], "well": [155], "canonical": [159], "were": [166],
+        "mostly": [168], "several": [170], "network": [174], "predominantly": [175],
+        "displaying": [176], "one": [177, 181, 187, 210], "profile.": [179], "The":
+        [180], "exception": [182], "this": [184], "\"one": [185], "network,": [186,
+        194], "profile\"": [189], "observation": [190], "is": [191], "frontoparietal":
+        [193], "prolonged": [197], "profiles": [199, 207], "(all": [200, 208], "right":
+        [203], "hemisphere),": [204], "fast": [206], "but": [209], "left": [213],
+        "hemisphere).": [214], "suggest": [216], "that,": [217], "place": [220], "single":
+        [223], "localized": [224], "mechanism,": [226], "findings": [228], "point":
+        [229], "large-scale": [232], "set": [233], "systems": [239], "likely": [241],
+        "subserve": [242], "different": [243], "functions.": [244]}, "primary_location":
+        {"id": "doi:10.1523/jneurosci.1313-14.2015", "doi": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S5555990", "display_name":
+        "Journal of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        "best_oa_location": {"id": "doi:10.1523/jneurosci.1313-14.2015", "doi": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S5555990", "display_name":
+        "Journal of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        "locations": [{"id": "doi:10.1523/jneurosci.1313-14.2015", "doi": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S5555990", "display_name":
+        "Journal of Neuroscience", "issn_l": "0270-6474", "issn": ["0270-6474", "1529-2401"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-class-a",
+        "anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-2", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310319739", "host_organization_name": "Society for
+        Neuroscience", "host_organization_lineage": ["https://openalex.org/P4310319739"],
+        "host_organization_lineage_names": ["Society for Neuroscience"], "type": "journal"},
+        "license": "cc-by-nc-sa", "license_id": "https://openalex.org/licenses/cc-by-nc-sa",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "The Journal of Neuroscience", "raw_type": "journal-article"},
+        {"id": "pmid:25568119", "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/25568119",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "The Journal
+        of neuroscience : the official journal of the Society for Neuroscience", "raw_type":
+        "Journal Article"}, {"id": "pmh:oai:europepmc.org:3456409", "doi": null, "is_oa":
+        false, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4287146",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400806", "display_name":
+        "Europe PMC (PubMed Central)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I1303153112", "host_organization_name": "European Bioinformatics
+        Institute", "host_organization_lineage": ["https://openalex.org/I1303153112"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": null, "raw_type": "Text"}, {"id": "pmh:oai:pubmedcentral.nih.gov:4287146",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4287146",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "J Neurosci",
+        "raw_type": "Text"}, {"id": "pmh:oai:digitalcommons.unl.edu:cbbbpapers-1017",
+        "doi": null, "is_oa": false, "landing_page_url": "http://digitalcommons.unl.edu/cbbbpapers/16",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400577", "display_name":
+        "Lincoln (University of Nebraska)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I114395901", "host_organization_name": "University of
+        Nebraska\u2013Lincoln", "host_organization_lineage": ["https://openalex.org/I114395901"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Center for Brain, Biology, and Behavior: Faculty
+        and Staff Publications", "raw_type": "text"}, {"id": "pmh:oai:digitalcommons.wustl.edu:open_access_pubs-4656",
+        "doi": null, "is_oa": false, "landing_page_url": "https://digitalcommons.wustl.edu/open_access_pubs/3653",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400764", "display_name":
+        "Digital Commons@Becker (Washington University School of Medicine)", "issn_l":
+        null, "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false,
+        "listed_in": [], "host_organization": "https://openalex.org/I204465549", "host_organization_name":
+        "Washington University in St. Louis", "host_organization_lineage": ["https://openalex.org/I204465549"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Open Access Publications", "raw_type": "text"}],
+        "open_access": {"is_oa": true, "oa_status": "hybrid", "oa_url": "https://doi.org/10.1523/jneurosci.1313-14.2015",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4d56994fd2cc514-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 20 Oct 2026 04:52:19 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9837'
+      X-RateLimit-Remaining-USD:
+      - '0.9837'
+      X-RateLimit-Reset:
+      - '68861'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=IdiRD65TIcG7RZ0SrsPhB3v3O37bLrPtmWFJZEs9ZM4%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792471939"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=IdiRD65TIcG7RZ0SrsPhB3v3O37bLrPtmWFJZEs9ZM4%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792471939"
+    status:
+      code: 200
+      message: OK
+version: 1
