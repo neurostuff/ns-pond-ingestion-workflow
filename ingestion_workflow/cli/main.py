@@ -896,22 +896,32 @@ def refresh_text(
     with _catalog(settings) as catalog:
         jobs = list(text_refresh.jobs(catalog, sources))
     typer.echo(f"{len(jobs):,} extractions to check ({', '.join(sources)})")
-    rewritten = []
+    carried: Counter = Counter()
+    pending: list = []
+
+    def carry() -> None:
+        # What the catalog stores against each text moves with it, a batch of texts per
+        # write. The catalog is open only while a batch is carried: the pool forks its
+        # workers between batches, and none may inherit a connection.
+        with _catalog(settings) as catalog:
+            carried.update(text_refresh.carry_all(catalog, pending, write=not dry_run))
+        pending.clear()
+
     for result in text_refresh.run(jobs, write=not dry_run, workers=settings.max_workers):
         counts[result.status.split(":")[0]] += 1
         if result.status in ("rewritten", "would_rewrite"):
             new_of.setdefault(result.old_sha256, set()).add((result.new_sha256, result.text_path))
-            rewritten.append(result)
+            pending.append(result)
         elif result.old_sha256 and not dry_run:
-            rewritten.append(result)  # its text stays: to record its hash
+            pending.append(result)  # its text stays: to record its hash
+        if len(pending) == text_refresh.BATCH:
+            carry()
         if out:
             row = {k: v for k, v in result.__dict__.items() if k != "edits"}
             out.write(json.dumps(row) + "\n")
+    if pending:
+        carry()
     typer.echo(", ".join(f"{k} {v:,}" for k, v in sorted(counts.items())))
-    # What the catalog stores against each rewritten text moves with it, a batch of texts
-    # per write.
-    with _catalog(settings) as catalog:
-        carried = text_refresh.carry_all(catalog, rewritten, write=not dry_run)
     typer.echo(f"passages: {'would remap' if dry_run else 'remapped'} {carried['remapped']:,}; "
                f"{carried['stale']:,} left for the passages stage to read again, "
                f"{carried['read_again']:,} remapped and read again for the coordinates their "
@@ -921,16 +931,20 @@ def refresh_text(
         replaced = {old: next(iter(news))[1] for old, news in new_of.items()
                     if len({sha for sha, _ in news}) == 1}
         ambiguous = len(new_of) - len(replaced)
-        n = 0
-        for target, _ in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources,
-                                                     write=not dry_run):
-            n += 1
+        n = failed = 0
+        for target, status in text_refresh.refresh_corpus(settings.ns_pond_root, replaced, sources,
+                                                          write=not dry_run):
+            if status.startswith("failed"):
+                failed += 1
+                typer.echo(f"corpus: {target} left as it is, {status}")
+            else:
+                n += 1
             if out:
-                status = "would_replace" if dry_run else "replaced"
                 out.write(json.dumps({"corpus_text": str(target), "status": status}) + "\n")
         verb = "would replace" if dry_run else "replaced"
         typer.echo(f"corpus: {verb} {n:,} text.txt files under {settings.ns_pond_root}"
-                   + (f"; {ambiguous:,} old texts skipped as ambiguous" if ambiguous else ""))
+                   + (f"; {ambiguous:,} old texts skipped as ambiguous" if ambiguous else "")
+                   + (f"; {failed:,} could not be read" if failed else ""))
     if out:
         out.close()
 
