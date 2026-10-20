@@ -93,11 +93,17 @@ class Rekey:
     #: {stage: {count: n}}, the counts named in `COUNTS`.
     stages: Dict[str, Dict[str, int]] = field(default_factory=dict)
     plan: RunReport = field(default_factory=RunReport)
+    #: The stages blocked for want of a model that is not served.
+    unserved: Set[str] = field(default_factory=set)
 
     def rerun(self) -> Dict[str, int]:
-        """By stage, what is fresh now and would not be once this is stored."""
-        return {stage: n["lost"] + n["unasked"] for stage, n in self.stages.items()
-                if n["lost"] + n["unasked"]}
+        """By stage, what would be made again only because this is stored: what was fresh
+        and is not, and what a stage whose model is not served could not be asked about.
+        What any other stage blocks waits on its own inputs, and is made again when they
+        change, rekeyed or not."""
+        out = {stage: n["lost"] + (n["unasked"] if stage in self.unserved else 0)
+               for stage, n in self.stages.items()}
+        return {stage: n for stage, n in out.items() if n}
 
 
 def _relabel(payload: dict, old: str, new: str) -> bool:
@@ -181,7 +187,9 @@ def rekey(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleRef]) -> 
                         n["unasked"] += 1  # its stage blocked: it would go stale
                     else:
                         n["no_upstream"] += 1
-    return Rekey(rewrites, counts, plan)
+    unserved = {stage.name for stage in stages if hasattr(stage, "model_state")
+                and any(stage.model_state(o)[0] is None for o in stage.origins())}
+    return Rekey(rewrites, counts, plan, unserved)
 
 
 def render(found: Rekey) -> str:

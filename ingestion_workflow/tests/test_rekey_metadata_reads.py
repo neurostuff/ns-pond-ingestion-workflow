@@ -263,3 +263,16 @@ def test_apply_backs_up_first_and_needs_a_new_path(made):
     for backup in (None, taken):
         with pytest.raises(SystemExit):
             rekey.run(settings, apply=True, backup=backup, out=io.StringIO())
+
+
+def test_what_a_stage_without_its_model_cannot_be_asked_about_stops_the_apply(made):
+    """Roles blocks while its models are not served, so it asks about nothing, and the
+    roles made from the rekeyed resolve would go stale."""
+    (settings, catalog, stages, *_), kept, _ = made
+    unserved = [RolesStage(settings) if s.name == "roles" else s for s in stages]
+
+    found = rekey.rekey(Context(settings, catalog), unserved, [kept])
+
+    assert found.stages["resolve"]["carried"] == 1
+    assert found.stages["roles"]["unasked"] == 1
+    assert found.rerun() == {"roles": 1}
