@@ -1183,7 +1183,8 @@ def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_re
     """Neta et al. 2015 is a meta-analysis that its title does not call one. Semantic
     Scholar's record has every field, and only PubMed's lists the type; triage drops
     meta-analyses by it. The records are the cache's; Crossref and OpenAlex are recorded."""
-    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis, publication_types
+    from ingestion_workflow.pipeline.stage import metadata_digests, publication_types
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
     identifier = Identifier(pmid="25568119", pmcid="PMC4287146",
                             doi="10.1523/JNEUROSCI.1313-14.2015")
@@ -1201,6 +1202,9 @@ def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_re
                      "Research Support, Non-U.S. Gov't"]
     assert is_a_meta_analysis(meta.title, types)
     assert not is_a_meta_analysis(meta.title, [])
+    # the digest triage fingerprints is of these types, not of none
+    assert metadata_digests(meta.to_dict())["publication_types"] != \
+        metadata_digests({})["publication_types"]
     assert meta.title == ("Spatial and Temporal Characteristics of Error-Related Activity in "
                           "the Human Brain")
     assert "meta-analysis" in meta.keywords
