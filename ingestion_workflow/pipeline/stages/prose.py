@@ -18,7 +18,14 @@ from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
-from ..stage import Context, metadata_read_fingerprint, take_back_or_block, taking_back
+from ..stage import (
+    NO_DIGESTS,
+    Context,
+    metadata_fingerprint,
+    take_back_or_block,
+    taking_back,
+)
+from ..stage import metadata_read as read_fields
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 
@@ -44,14 +51,14 @@ OTHER_MODEL = "earlier model not interchangeable"
 METADATA_CHANGED = "title and abstract changed"
 
 
-def metadata_read(payload: Optional[dict]) -> dict:
-    """What the prose model reads of the article's metadata, beside each passage.
+#: What the prose model reads of the article's metadata, beside each passage. The stage
+#: reads the metadata only through `metadata_read`, and its fingerprint holds these
+#: fields' digests, so a field the model does not read changes nothing here.
+METADATA_READ = ("title", "abstract")
 
-    The stage reads the metadata only through this, and its fingerprint holds it, so a
-    field the model does not read changes nothing here.
-    """
-    payload = payload or {}
-    return {"title": payload.get("title"), "abstract": payload.get("abstract")}
+
+def metadata_read(payload: Optional[dict]) -> dict:
+    return read_fields(payload, METADATA_READ)
 
 
 def earlier_answers(payload: Optional[dict]) -> Dict[str, dict]:
@@ -129,10 +136,9 @@ class ProseStage:
                     self._client = ProseCoordinateClient(self.settings)
         return self._client
 
-    def metadata_fingerprint(self, ctx: Context, metadata: Optional[Artifact]) -> Optional[str]:
-        """The fingerprint of what the model reads of `metadata`, an OK one; None without."""
-        return (metadata_read_fingerprint(metadata_read(ctx.payload(metadata)))
-                if metadata is not None else None)
+    def metadata_fingerprint(self, metadata: Artifact) -> Optional[str]:
+        """The fingerprint of what the model reads of `metadata`, an OK one."""
+        return metadata_fingerprint(metadata, METADATA_READ)
 
     def read_fingerprint(self, passages: Artifact, metadata: Optional[str]) -> str:
         """What the model's answers depend on; `metadata` is `metadata_fingerprint`'s."""
@@ -174,8 +180,12 @@ class ProseStage:
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
             # No passage, no call: the empty result costs nothing and lets
             # resolve pass the tables through.
-            read = (self.metadata_fingerprint(ctx, metadata)
-                    if passages.summary.get("passages") else None)
+            read = None
+            if metadata is not None and passages.summary.get("passages"):
+                read = self.metadata_fingerprint(metadata)
+                if read is None:
+                    plan.block(NO_DIGESTS)
+                    continue
             fp = self.fingerprint_for(passages, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
@@ -204,7 +214,8 @@ class ProseStage:
             if meta_artifact is not None and not meta_artifact.ok:
                 meta_artifact = None
             meta = metadata_read(ctx.payload(meta_artifact)) if meta_artifact is not None else {}
-            meta_fp = metadata_read_fingerprint(meta) if meta_artifact is not None else None
+            meta_fp = (self.metadata_fingerprint(meta_artifact)
+                       if meta_artifact is not None else None)
             read_fps[work.article_id] = self.read_fingerprint(work.upstream, meta_fp)
             try:
                 text = read_text(ctx, payload) if payload.get("passages") else ""

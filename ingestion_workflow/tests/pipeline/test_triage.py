@@ -6,6 +6,7 @@ import pytest
 
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.pipeline.stages.triage import TriageStage, _most_tables
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 
 def test_triage_runs_after_metadata_and_before_analyses():
@@ -210,8 +211,8 @@ def test_a_meta_analysis_is_marked_and_its_tables_still_judged():
 def test_a_meta_analysis_is_recognised_by_its_mesh_type():
     """PubMed indexes it, and it is on 99.9% of articles with a PubMed record,
     so it catches papers whose title never says so."""
-    from ingestion_workflow.pipeline.stages.triage import (
-        is_a_meta_analysis, publication_types)
+    from ingestion_workflow.pipeline.stage import publication_types
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
     md = {"raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {
         "PublicationTypeList": {"PublicationType": [
@@ -224,7 +225,7 @@ def test_a_meta_analysis_is_recognised_by_its_mesh_type():
 def test_one_publication_type_arrives_as_a_dict_not_a_list():
     """xmltodict gives a single element bare, and unwrapping only lists would
     miss every article that carries exactly one type."""
-    from ingestion_workflow.pipeline.stages.triage import publication_types
+    from ingestion_workflow.pipeline.stage import publication_types
 
     md = {"raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {
         "PublicationTypeList": {"PublicationType": {
@@ -246,7 +247,8 @@ def test_the_title_catches_what_mesh_does_not():
 def test_an_article_with_no_metadata_is_not_taken_for_a_meta_analysis():
     """Attempted is the bar, so triage runs on articles with no metadata at
     all. Those must not be dropped for lacking a title."""
-    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis, publication_types
+    from ingestion_workflow.pipeline.stage import publication_types
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
     assert publication_types({}) == []
     assert not is_a_meta_analysis("", [])
@@ -361,7 +363,8 @@ def _catalog_with(tmp_path, extractions):
                                 fingerprint=fp, payload={"tables": []},
                                 summary={"tables": tables})])
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                            fingerprint="meta", payload={})])
+                            fingerprint="meta", payload={},
+                            summary={"digests": metadata_digests({})})])
     return settings, catalog, ref
 
 

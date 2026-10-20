@@ -39,7 +39,8 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.models import ExtractedContent
 
 from ..plan import StagePlan, Work
-from ..stage import Context, metadata_read_fingerprint
+from ..stage import NO_DIGESTS, Context, metadata_fingerprint
+from ..stage import metadata_read as read_fields
 from .extract import current_extractions, without_bad_pages
 
 logger = logging.getLogger(__name__)
@@ -66,38 +67,17 @@ META_ANALYSIS_TITLE = re.compile(
     r"meta[-\s]?analy[sz]|\bALE\b|activation\s+likelihood\s+estimation", re.I)
 
 
-def publication_types(metadata: Dict) -> List[str]:
-    """MeSH publication types, from wherever PubMed's raw record put them.
-
-    `xmltodict` gives a single type as a dict and several as a list, and each
-    is `{"#text": ..., "@UI": ...}`, so both shapes have to be unwrapped.
-    """
-    article = (((metadata.get("raw_metadata") or {}).get("pubmed") or {})
-               .get("MedlineCitation") or {}).get("Article") or {}
-    listed = (article.get("PublicationTypeList") or {}).get("PublicationType")
-    if listed is None:
-        return []
-    if not isinstance(listed, list):
-        listed = [listed]
-    out = []
-    for item in listed:
-        text = item.get("#text") if isinstance(item, dict) else item
-        if isinstance(text, str):
-            out.append(text)
-    return out
+#: What triage, and `analyses` after it, read of the article's metadata. Triage reads
+#: the title and the publication types, to mark a meta-analysis, and the abstract, where
+#: `read.extract` finds the space a table does not name; analyses sends the title and
+#: abstract to the model. Both read the metadata only through `metadata_read`, and
+#: triage's fingerprint holds these fields' digests, so a field neither reads changes
+#: neither.
+METADATA_READ = ("title", "abstract", "publication_types")
 
 
 def metadata_read(payload: Optional[Dict]) -> Dict:
-    """What triage, and `analyses` after it, read of the article's metadata.
-
-    Triage reads the title and the publication types, to mark a meta-analysis, and the
-    abstract, where `read.extract` finds the space a table does not name; analyses sends
-    the title and abstract to the model. Both stages read the metadata only through this,
-    and triage's fingerprint holds it, so a field neither reads changes neither.
-    """
-    payload = payload or {}
-    return {"title": payload.get("title"), "abstract": payload.get("abstract"),
-            "publication_types": publication_types(payload)}
+    return read_fields(payload, METADATA_READ)
 
 
 def is_a_meta_analysis(title: str, types: Sequence[str]) -> bool:
@@ -155,9 +135,9 @@ class TriageStage:
             self._gate_id = digest.hexdigest()
         return self._gate_id
 
-    def metadata_fingerprint(self, ctx: Context, metadata: Artifact) -> str:
+    def metadata_fingerprint(self, metadata: Artifact) -> Optional[str]:
         """The fingerprint of what this stage and `analyses` read of `metadata`."""
-        return metadata_read_fingerprint(metadata_read(ctx.payload(metadata)))
+        return metadata_fingerprint(metadata, METADATA_READ)
 
     def fingerprint_for(self, metadata: str, extraction: Artifact) -> str:
         """What was read of the metadata (`metadata_fingerprint`), the extraction, and the gate.
@@ -198,8 +178,12 @@ class TriageStage:
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
-            self.gate_id()  # a missing gate fails the plan before the metadata is read
-            fp = self.fingerprint_for(self.metadata_fingerprint(ctx, meta), extraction)
+            self.gate_id()  # a missing gate fails the plan before anything else is judged
+            read = self.metadata_fingerprint(meta)
+            if read is None:
+                plan.block(NO_DIGESTS)
+                continue
+            fp = self.fingerprint_for(read, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1

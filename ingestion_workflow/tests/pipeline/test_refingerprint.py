@@ -28,6 +28,7 @@ from ingestion_workflow.pipeline.stages import (
     TriageStage,
 )
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint, file_sha256
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 TEXT = (
     "# T\n\n## Methods\n\nCoordinates are reported in MNI space.\n\n"
@@ -134,7 +135,9 @@ def migrated(env):
         download = _download(catalog, ref, tmp_path)
         _extraction(catalog, ref, tmp_path, extraction_fingerprint("pubget", download))
         catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                                payload={"title": "T", "abstract": "A"})])
+                                payload={"title": "T", "abstract": "A"},
+                                summary={"digests": metadata_digests({"title": "T",
+                                                                      "abstract": "A"})})])
     made = [tables, prose_only]
     by = {s.name: s for s in stages}
     _ran(by["triage"], ctx, catalog, made, lambda _: {"source": "pubget", "tables": {}})

@@ -23,6 +23,7 @@ from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.triage import TriageStage
 from ingestion_workflow.tests.oa_hosts import PDF, OaHosts, location, pdf_source
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
 
@@ -64,7 +65,8 @@ def env(tmp_path, monkeypatch):
         catalog.record([Outcome(ref.id, "download", "ace", Status.OK,
                                 stage.fingerprint_for(DownloadSource.ACE), ace.to_dict())])
         extracted(catalog, ref, "ace")
-        catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"})])
+        catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"},
+                                {"digests": metadata_digests({"title": "t"})})])
         # the real PDF source, which OpenAlex points at a repository PDF of the article
         stage._extractors[DownloadSource.PDF] = pdf_source(tmp_path, semantic_scholar_api_key=None)
         yield settings, catalog, ref, stage

@@ -26,6 +26,7 @@ from ingestion_workflow.pipeline.stage import NO_TEXT
 from ingestion_workflow.pipeline.stages import ExtractStage, PassagesStage, TriageStage
 from ingestion_workflow.pipeline.stages.extract import SYMBOLS_AS_DIGITS, extraction_fingerprint
 from ingestion_workflow.services.funnel_report import build_funnel, open_readonly
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 #: `=` as 5, its minus as 2: P values, coordinates, a matrix size.
 HBM_2FBRUX6YPMWB = (
@@ -234,7 +235,7 @@ def _downloaded(catalog, ref, *sources):
         for source in sources
     ])
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="meta",
-                            payload={})])
+                            payload={}, summary={"digests": metadata_digests({})})])
 
 
 def _table():

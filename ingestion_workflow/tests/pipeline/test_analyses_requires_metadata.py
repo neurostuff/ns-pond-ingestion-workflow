@@ -19,6 +19,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+from ingestion_workflow.pipeline.stage import metadata_digests
 from ingestion_workflow.pipeline.stages.triage import TriageStage
 
 
@@ -62,7 +63,8 @@ def _metadata(catalog, ref, *, status: Status = Status.OK) -> None:
             source="",
             fingerprint="md-1",
             payload={"title": "A title", "abstract": "Coordinates are in MNI space."},
-            summary={},
+            summary={"digests": metadata_digests({"title": "A title",
+                                                  "abstract": "Coordinates are in MNI space."})},
         )
     else:
         outcome = Outcome.failure(ref.id, "metadata", "", "nothing found", fingerprint="md-1")

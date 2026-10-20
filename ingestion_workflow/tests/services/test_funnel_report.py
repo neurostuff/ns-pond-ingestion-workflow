@@ -564,6 +564,22 @@ def test_trace_plans_each_stage_to_say_whether_it_is_fresh(stored, tmp_path, mon
     assert set(unknown) == {"triage"} and "coordinate_gate_path" in unknown["triage"]
 
 
+def test_trace_judges_triage_from_the_rows_with_a_gate(stored, tmp_path, monkeypatch):
+    """Triage fingerprints the digests the metadata's row records, so the trace, which
+    never reads payloads, can say whether it is fresh."""
+    from nspond_tables.classify.model import Gate, RoutedGate
+
+    root, a, _ = stored
+    gate = tmp_path / "gate.json"
+    RoutedGate(candidates=Gate(names=[]), residual=Gate(names=[])).save(gate)
+    monkeypatch.setattr(BlobStore, "get", lambda self, d: (_ for _ in ()).throw(
+        AssertionError("a payload was read")))
+    settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
+                        data_root=str(tmp_path / "data"), coordinate_gate_path=gate)
+    stages = {s["stage"]: s for s in trace_article(root, a, settings=settings)["stages"]}
+    assert not stages["triage"]["plan"].startswith("not known"), stages["triage"]["plan"]
+
+
 def test_cli_trace_and_serve(stored, tmp_path):
     root, a, _ = stored
     result = CliRunner().invoke(cli.app, ["report", "trace", a, "--catalog", str(root)])

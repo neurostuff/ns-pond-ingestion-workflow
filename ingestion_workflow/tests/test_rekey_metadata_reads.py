@@ -16,11 +16,15 @@ from pathlib import Path
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
+from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.refingerprint import refingerprint
+from ingestion_workflow.pipeline.stage import NO_DIGESTS, metadata_digests
 from ingestion_workflow.pipeline.stages import (
+    MetadataStage,
     AnalysesStage,
     PassagesStage,
     ProseStage,
@@ -111,10 +115,13 @@ def env(tmp_path, monkeypatch):
         yield settings, catalog, stages, reader, config, tmp_path
 
 
-def _article(catalog, tmp_path, pmid):
-    """Downloaded and extracted, with one coordinate table, and its metadata as `me-1`."""
+def _article(catalog, tmp_path, pmid, metadata_fingerprint="me-1"):
+    """Downloaded and extracted, with one coordinate table, and its metadata as main wrote
+    it: with no digests."""
     ref = catalog.register(Identifier(pmid=pmid))
-    xml, text, table = (tmp_path / f"{pmid}{ext}" for ext in (".xml", ".txt", ".html"))
+    text, table = (tmp_path / f"{pmid}{ext}" for ext in (".txt", ".html"))
+    xml = tmp_path / pmid / "article.xml"
+    xml.parent.mkdir()
     xml.write_text("<article/>")
     text.write_text(TEXT, encoding="utf-8")
     table.write_text(TABLE, encoding="utf-8")
@@ -123,7 +130,8 @@ def _article(catalog, tmp_path, pmid):
         files=[DownloadedFile(file_path=xml, file_type=FileType.XML,
                               content_type="application/xml", source=DownloadSource.PUBGET)])
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
-                            fingerprint="dl-1", payload=download.to_dict())])
+                            fingerprint="dl-1", payload=download.to_dict(),
+                            summary={"copy": copy_of(download).to_dict()})])
     catalog.record([Outcome(
         article_id=ref.id, stage="extract", source="pubget",
         fingerprint=extraction_fingerprint("pubget", catalog.artifact(ref.id, "download",
@@ -136,7 +144,7 @@ def _article(catalog, tmp_path, pmid):
         summary={"tables": 1, "has_text": True, "captions_sha256": captions_digest(()),
                  "text_sha256": file_sha256(text)})])
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                            fingerprint="me-1", payload=METADATA)])
+                            fingerprint=metadata_fingerprint, payload=METADATA)])
     return ref
 
 
@@ -146,26 +154,18 @@ def _plan(stage, ctx, catalog, ref):
 
 
 def _as_main_made_it(settings, catalog, stages, ref):
-    """The chain as main made it: triage and prose under the former formula, and each
-    prose answer recording the metadata artifact's fingerprint."""
+    """The chain as main made it: triage and prose fingerprinted, and prose recorded with
+    each answer, the metadata artifact's fingerprint."""
     ctx = Context(settings, catalog)
     for stage in stages:
-        made = rekey.former(stage) if stage.name in rekey.READERS else stage
+        made = rekey.former(stage, rekey._as_stored) if stage.name in rekey.READERS else stage
         works = _plan(made, ctx, catalog, ref).pending
         if stage.name == "analyses":
             outcomes = [Outcome(article_id=w.article_id, stage="analyses", source="",
                                 fingerprint=w.fingerprint, payload=ANALYSES,
                                 summary={"tables": 1}) for w in works]
         else:
-            outcomes = list(stage.execute(ctx, works))
-        for outcome, work in zip(outcomes, works):
-            if stage.name == "prose":
-                outcome.summary["read_fingerprint"] = made.read_fingerprint(work.upstream,
-                                                                            "me-1")
-                for passage in outcome.payload["passages"]:
-                    for recorded in passage["inputs"]:
-                        if recorded["artifact_kind"] == "metadata":
-                            recorded["fingerprint"] = "me-1"
+            outcomes = list(made.execute(ctx, works))
         assert [o.status for o in outcomes] == [Status.OK], stage.name
         catalog.record(outcomes)
 
@@ -173,6 +173,12 @@ def _as_main_made_it(settings, catalog, stages, ref):
 def _pending(settings, catalog, stages, ref):
     ctx = Context(settings, catalog)
     return {stage.name for stage in stages if _plan(stage, ctx, catalog, ref).pending}
+
+
+def _later(catalog, ref, stage):
+    """Mark `ref`'s `stage` artifact written after everything else."""
+    catalog._conn.execute("UPDATE artifacts SET updated_at='2999-01-01T00:00:00+00:00' "
+                          "WHERE article_id=? AND stage=?", (ref.id, stage))
 
 
 @pytest.fixture()
@@ -193,9 +199,14 @@ def test_the_former_formula_is_the_one_main_used(made):
     assert catalog.artifact(kept.id, "prose").fingerprint == MAIN_PROSE
 
 
-def test_what_main_made_is_stale_under_the_new_formula(made):
+def test_until_it_is_rekeyed_what_main_made_waits_rather_than_runs(made):
+    """Main's metadata records no digests, so triage and prose block, and nothing is made."""
     (settings, catalog, stages, *_), kept, stale = made
-    assert _pending(settings, catalog, stages, kept) == {"triage", "prose"}
+    ctx = Context(settings, catalog)
+    assert _pending(settings, catalog, stages, kept) == set()
+    for stage in stages:
+        if stage.name in rekey.READERS:
+            assert _plan(stage, ctx, catalog, kept).reasons == {NO_DIGESTS: 1}, stage.name
 
 
 def test_the_rekeyed_chain_is_fresh_and_the_stale_one_is_left(made):
@@ -209,11 +220,15 @@ def test_the_rekeyed_chain_is_fresh_and_the_stale_one_is_left(made):
     for stage in ("analyses", "resolve", "roles", "space"):
         assert counts[stage] == (0, 1, 0), stage
     assert found.stages["passages"]["fresh"] == 2
+    assert found.stages["metadata"]["digests"] == 2
     assert found.rerun() == {}
     before = {s.name: catalog.artifact(stale.id, s.name) for s in stages}
 
     catalog.store_fingerprints(list(found.rewrites.values()))
 
+    for ref in (kept, stale):
+        stored = catalog.artifact(ref.id, "metadata")
+        assert stored.summary["digests"] == metadata_digests(catalog.payload(stored))
     assert _pending(settings, catalog, stages, kept) == set()
     assert {s.name: catalog.artifact(stale.id, s.name) for s in stages} == before
     assert {"triage", "prose"} <= _pending(settings, catalog, stages, stale)
@@ -239,30 +254,91 @@ def test_a_rekeyed_prose_keeps_its_answers_and_names_what_it_read(made):
     assert again.summary["read_fingerprint"] == stored.summary["read_fingerprint"]
 
 
-def test_the_dry_run_writes_nothing(made):
-    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+def test_what_was_made_before_its_metadata_was_written_again_is_left(made):
+    """A metadata written again under the same fingerprint may hold another title: what
+    was made before it never read that."""
+    (settings, catalog, stages, *_), kept, _ = made
+    _later(catalog, kept, "metadata")
 
-    def state():
-        with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as conn:
-            rows = sorted(conn.execute("SELECT * FROM artifacts"))
-        return rows, sorted(p.name for p in (settings.catalog_root / "blobs").rglob("*"))
+    found = rekey.rekey(Context(settings, catalog), stages, [kept])
 
-    before = state()
-    out = io.StringIO()
-    rekey.run(settings, out=out)
-
-    assert "dry run, nothing written" in out.getvalue()
-    assert out.getvalue().splitlines()[0].split("\t") == ["stage", *rekey.COUNTS]
-    assert state() == before
+    assert found.stages["triage"]["metadata_newer"] == 1
+    assert found.stages["prose"]["metadata_newer"] == 1
+    assert (found.stages["triage"]["rekeyed"], found.stages["prose"]["relabelled"]) == (0, 0)
+    assert found.rerun() == {}
 
 
-def test_apply_backs_up_first_and_needs_a_new_path(made):
-    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
-    taken = tmp_path / "taken.sqlite"
-    taken.write_text("x")
-    for backup in (None, taken):
-        with pytest.raises(SystemExit):
-            rekey.run(settings, apply=True, backup=backup, out=io.StringIO())
+def test_answers_read_with_a_metadata_that_since_failed_are_not_relabelled(made):
+    (settings, catalog, stages, *_), kept, _ = made
+    catalog.record([Outcome.failure(kept.id, "metadata", "", "no provider returned metadata",
+                                    fingerprint="me-1")])
+    catalog._conn.execute("UPDATE artifacts SET updated_at='2000-01-01T00:00:00+00:00' "
+                          "WHERE article_id=? AND stage='metadata'", (kept.id,))
+
+    found = rekey.rekey(Context(settings, catalog), stages, [kept])
+
+    assert found.stages["prose"]["relabelled"] == 0
+
+
+def test_an_empty_fingerprint_made_from_is_left_for_repair(made):
+    (settings, catalog, stages, *_), kept, _ = made
+    catalog._conn.execute("UPDATE artifacts SET fingerprint='' WHERE article_id=? "
+                          "AND stage='analyses'", (kept.id,))
+
+    found = rekey.rekey(Context(settings, catalog), stages, [kept])
+
+    assert (kept.id, "analyses", "") not in found.rewrites
+    assert found.stages["triage"]["rekeyed"] == 1
+
+
+@pytest.fixture()
+def migrated(env):
+    """`kept` made as main made it from metadata imported with no fingerprint."""
+    settings, catalog, stages, reader, config, tmp_path = env
+    kept = _article(catalog, tmp_path, "1", metadata_fingerprint="")
+    _as_main_made_it(settings, catalog, stages, kept)
+    return env, kept
+
+
+def _repaired(settings, catalog, stages, refs):
+    """`ingest repair` over the metadata stage alone: it fills the metadata's fingerprint."""
+    found = refingerprint(Context(settings, catalog), [MetadataStage(settings)], refs,
+                          catalog.empty_fingerprints())
+    assert {key[1] for key in found.rewrites} == {"metadata"}
+    catalog.store_fingerprints(list(found.rewrites.values()))
+
+
+@pytest.mark.parametrize("repair_first", [False, True], ids=["rekey first", "repair first"])
+def test_repair_filling_the_metadata_s_fingerprint_before_or_after_changes_nothing(
+        migrated, repair_first):
+    (settings, catalog, stages, reader, *_), kept = migrated
+    if repair_first:
+        _repaired(settings, catalog, stages, [kept])
+        assert catalog.artifact(kept.id, "metadata").fingerprint
+
+    found = rekey.rekey(Context(settings, catalog), stages, [kept])
+    assert (found.stages["triage"]["rekeyed"], found.stages["prose"]["rekeyed"],
+            found.stages["prose"]["relabelled"]) == (1, 1, 1)
+    catalog.store_fingerprints(list(found.rewrites.values()))
+    if not repair_first:
+        _repaired(settings, catalog, stages, [kept])
+
+    assert catalog.artifact(kept.id, "metadata").fingerprint
+    assert _pending(settings, catalog, stages, kept) == set()
+    prose = next(s for s in stages if s.name == "prose")
+    ctx = Context(settings, catalog, refresh=["prose"])
+    calls = reader.calls
+    (again,) = prose.execute(ctx, _plan(prose, ctx, catalog, kept).pending)
+    assert (reader.calls, again.summary["read_again"]) == (calls, {})
+
+
+def test_a_full_repair_before_the_rekey_refuses(migrated):
+    """Triage waits for the digests, so a repair filling its metadata's fingerprint cannot
+    ask about it, and would leave it to go stale."""
+    (settings, catalog, stages, *_), kept = migrated
+    found = refingerprint(Context(settings, catalog), [MetadataStage(settings), *stages], [kept],
+                          catalog.empty_fingerprints())
+    assert "triage" in found.rerun()
 
 
 def test_what_a_stage_without_its_model_cannot_be_asked_about_stops_the_apply(made):
@@ -276,3 +352,87 @@ def test_what_a_stage_without_its_model_cannot_be_asked_about_stops_the_apply(ma
     assert found.stages["resolve"]["carried"] == 1
     assert found.stages["roles"]["unasked"] == 1
     assert found.rerun() == {"roles": 1}
+
+
+def _state(settings):
+    with closing(sqlite3.connect(settings.catalog_root / "catalog.sqlite")) as conn:
+        rows = sorted(conn.execute("SELECT * FROM artifacts"))
+    return rows, sorted(p.name for p in (settings.catalog_root / "blobs").rglob("*"))
+
+
+@pytest.fixture()
+def served(monkeypatch):
+    """The role models served to every RolesStage `run` builds, while `up` holds."""
+    up = {"served": True}
+    monkeypatch.setattr(RolesStage, "classifier", lambda self, origin: _Results())
+    monkeypatch.setattr(RolesStage, "model_state", lambda self, origin: (
+        (f"fake-{origin}@1", None) if up["served"] else (None, "the role model is not served")))
+    return up
+
+
+def test_the_dry_run_writes_nothing(made, served):
+    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+    before = _state(settings)
+    out = io.StringIO()
+    rekey.run(settings, out=out)
+
+    assert "dry run, nothing written" in out.getvalue()
+    assert out.getvalue().splitlines()[0].split("\t") == ["stage", *rekey.COUNTS]
+    assert _state(settings) == before
+
+
+def test_apply_backs_up_then_stores_and_a_second_run_finds_nothing(made, served):
+    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+    backup = tmp_path / "before.sqlite"
+    old = catalog.artifact(kept.id, "triage").fingerprint
+
+    found = rekey.run(settings, apply=True, backup=backup, out=io.StringIO())
+
+    with closing(sqlite3.connect(backup)) as copied:
+        assert copied.execute("SELECT fingerprint FROM artifacts WHERE article_id=? AND "
+                              "stage='triage'", (kept.id,)).fetchone()[0] == old
+    assert catalog.artifact(kept.id, "triage").fingerprint == \
+        found.rewrites[(kept.id, "triage", "")].new.fingerprint != old
+    assert _pending(settings, catalog, stages, kept) == set()
+    assert rekey.run(settings, out=io.StringIO()).rewrites == {}
+
+
+def test_apply_refuses_without_the_role_models_and_writes_nothing(made, served):
+    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+    served["served"] = False
+    before, backup = _state(settings), tmp_path / "before.sqlite"
+
+    with pytest.raises(SystemExit, match="refusing to write"):
+        rekey.run(settings, apply=True, backup=backup, out=io.StringIO())
+
+    assert _state(settings) == before and not backup.exists()
+
+
+def test_apply_refuses_when_what_is_fresh_would_not_be(made, served, monkeypatch):
+    """The role models stop between the first plan and the last: the roles fresh in the
+    first are not in the last."""
+    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+    planned = RolesStage.plan
+
+    def plan(self, *args, **kwargs):
+        try:
+            return planned(self, *args, **kwargs)
+        finally:
+            served["served"] = False
+
+    monkeypatch.setattr(RolesStage, "plan", plan)
+    before, backup = _state(settings), tmp_path / "before.sqlite"
+
+    with pytest.raises(SystemExit, match="refusing to write: 2 roles"):
+        rekey.run(settings, apply=True, backup=backup, out=io.StringIO())
+
+    assert _state(settings) == before and not backup.exists()
+
+
+def test_apply_needs_a_new_backup_path(made):
+    (settings, catalog, stages, reader, config, tmp_path), kept, stale = made
+    taken = tmp_path / "taken.sqlite"
+    taken.write_text("x")
+    for backup in (None, taken):
+        with pytest.raises(SystemExit):
+            rekey.run(settings, apply=True, backup=backup, out=io.StringIO())

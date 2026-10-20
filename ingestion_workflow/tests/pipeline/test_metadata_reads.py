@@ -18,6 +18,7 @@ from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.stage import metadata_digests
 from ingestion_workflow.pipeline.stages import (
     AnalysesStage,
     PassagesStage,
@@ -107,8 +108,10 @@ def _article(catalog, tmp_path, pmid, record):
 
 
 def _metadata(catalog, ref, record, fingerprint):
+    """`record`, as the metadata stage writes it."""
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                            fingerprint=fingerprint, payload=record)])
+                            fingerprint=fingerprint, payload=record,
+                            summary={"digests": metadata_digests(record)})])
 
 
 def _plan(stage, ctx, catalog, ref):
@@ -150,7 +153,7 @@ def _stale(settings, catalog, ref):
 
 def _licensed(record):
     """The record as the metadata stage now writes it: licences decided, the rest as it was."""
-    lic = {"license_id": "cc-by-4.0", "determination": "stated", "source": "europepmc"}
+    lic = {"license_id": "cc-by", "determination": "stated"}
     return {**record, "license": lic, "copy_licenses": {"pubget": lic}, "oa_status": "gold",
             "license_embargo_until": None, "open_access": True,
             "pdf_url": "https://example.org/a.pdf"}
@@ -210,17 +213,33 @@ def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stal
     assert "analyses" in _stale(settings, catalog, ref), "analyses chains on triage"
 
 
-def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env):
+def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env, monkeypatch):
     """Two articles alike but for every metadata field triage and prose do not read: each
-    stage makes the same of both, and gives each model the same."""
+    stage makes the same of both, and gives each model, the table reader and the
+    meta-analysis test the same."""
+    from nspond_tables import read as reader
+
+    from ingestion_workflow.pipeline.stages import triage
+
     settings, catalog, tmp_path = env
+    given = []
+    extract, marks = reader.extract, triage.is_a_meta_analysis
+    monkeypatch.setattr(reader, "extract", lambda *a, **k: given.append(("read", a, k))
+                        or extract(*a, **k))
+    monkeypatch.setattr(triage, "is_a_meta_analysis", lambda *a: given.append(("marks", a))
+                        or marks(*a))
     changed = _everything_else_changed(RECORD)
     assert changed["raw_metadata"]["pubmed"] != RECORD["raw_metadata"]["pubmed"]
     one = _article(catalog, tmp_path, "1", RECORD)
     other = _article(catalog, tmp_path, "2", changed)
 
     (_, analysed, _, read), made = _made(settings, catalog, one)
+    given_one = given[:]
+    given.clear()
     (_, analysed_other, _, read_other), made_other = _made(settings, catalog, other)
+
+    assert {g[0] for g in given_one} == {"marks", "read"}
+    assert given == given_one
 
     for this, that in zip(made, made_other):
         if this.stage == "passages":
@@ -231,3 +250,31 @@ def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env):
     assert analysed._shared_service.given[0].title == RECORD["title"]
     assert read.client().given == read_other.client().given == [
         (RECORD["title"], RECORD["abstract"])]
+
+
+def test_the_plans_read_the_digests_not_the_payload(env, monkeypatch):
+    """What each reads is judged from the metadata's row, so planning reads no payload."""
+    from ingestion_workflow.catalog.blobs import BlobStore
+
+    settings, catalog, tmp_path = env
+    ref = _article(catalog, tmp_path, "1", RECORD)
+    _made(settings, catalog, ref)
+    monkeypatch.setattr(BlobStore, "get", lambda self, digest: pytest.fail("a payload was read"))
+
+    assert _stale(settings, catalog, ref) == set()
+
+
+def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env):
+    from ingestion_workflow.pipeline.stage import NO_DIGESTS
+
+    settings, catalog, tmp_path = env
+    ref = _article(catalog, tmp_path, "1", RECORD)
+    _made(settings, catalog, ref)
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint="me-1", payload=RECORD)])
+    ctx = Context(settings, catalog)
+    triage, _, _, prose = _stages(settings)
+
+    for stage in (triage, prose):
+        plan = _plan(stage, ctx, catalog, ref)
+        assert (plan.pending, plan.fresh, plan.reasons) == ([], 0, {NO_DIGESTS: 1}), stage.name

@@ -22,6 +22,7 @@ from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage, resolve
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 TEXT = (
     "## Methods\nCoordinates are reported in MNI space.\n\n"
@@ -421,6 +422,9 @@ def _download(ref, path):
 
 #: All rights reserved, assumed: the licence nobody stated.
 ASSUMED_LICENSE = {"license_id": "all-rights-reserved", "determination": "assumed"}
+#: The metadata as the metadata stage decides it for an article nobody states a licence for.
+METADATA = {"title": "T", "abstract": "A", "source": "pubmed", "license": ASSUMED_LICENSE,
+            "copy_licenses": {"pubget": ASSUMED_LICENSE}}
 
 
 def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
@@ -433,11 +437,8 @@ def _record_upstream(catalog, ref, path, *, tables=None, text=EXTRACTED):
         Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                 payload=download,
                 summary={"copy": copy_of(DownloadResult.from_dict(download)).to_dict()}),
-        # As the metadata stage decides them for an article nobody states a licence for.
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
-                payload={"title": "T", "abstract": "A", "source": "pubmed",
-                         "license": ASSUMED_LICENSE, "copy_licenses": {"pubget": ASSUMED_LICENSE}},
-                summary={}),
+                payload=METADATA, summary={"digests": metadata_digests(METADATA)}),
     ]
     if tables:
         rows.append(Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
@@ -589,7 +590,7 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
     _read_prose(ctx, catalog, ref, Recorder())
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-1",
                             payload={"title": "T", "abstract": "A", "source": "pubmed"},
-                            summary={})])
+                            summary={"digests": metadata_digests({"title": "T", "abstract": "A"})})])
     plan, _ = _read_prose(ctx, catalog, ref, Recorder())
     assert len(plan.pending) == 1 and seen == ["", "T"]
     plan, _ = _read_prose(ctx, catalog, ref, Recorder())
@@ -1828,7 +1829,8 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     assert again.payload["passages"] == read.payload["passages"]
     # a new title and abstract: read again
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
-                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+                            payload={"title": "T2", "abstract": "A2"},
+                            summary={"digests": metadata_digests({"title": "T2", "abstract": "A2"})})])
     reader = _Counting()
     _, (third,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
@@ -1992,7 +1994,8 @@ def _read_before(env):
         _, (first,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
         assert first.status is Status.OK
     catalog.record([Outcome(article_id=read.id, stage="metadata", source="", fingerprint="me-2",
-                            payload={"title": "T2", "abstract": "A2"}, summary={})])
+                            payload={"title": "T2", "abstract": "A2"},
+                            summary={"digests": metadata_digests({"title": "T2", "abstract": "A2"})})])
     found = catalog.payload(catalog.artifacts([same.id], "passages")[same.id][""])
     catalog.record([Outcome(article_id=same.id, stage="passages", source="", fingerprint="newer",
                             payload=found, summary={"passages": 2})])
