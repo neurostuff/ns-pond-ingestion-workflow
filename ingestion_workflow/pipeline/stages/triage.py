@@ -184,7 +184,6 @@ class TriageStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        self.gate_id()  # a missing gate fails the plan before any metadata is read
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         extractions = ctx.catalog.artifacts(ids, "extract")
@@ -199,6 +198,7 @@ class TriageStage:
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
+            self.gate_id()  # a missing gate fails the plan before the metadata is read
             fp = self.fingerprint_for(self.metadata_fingerprint(ctx, meta), extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
