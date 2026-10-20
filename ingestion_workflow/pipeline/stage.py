@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Protocol, Sequence
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Protocol, Sequence
 
 from ingestion_workflow.catalog import (
     ArticleRef,
@@ -12,6 +13,7 @@ from ingestion_workflow.catalog import (
     Catalog,
     Outcome,
     Status,
+    fingerprint,
     is_retryable,
 )
 from ingestion_workflow.config import Settings
@@ -30,6 +32,14 @@ NO_ANALYSES = "no analyses after re-read"
 #: Why an artifact may be taken back. A take-back keeps NO_TEXT as its fingerprint, and
 #: records its reason as its error.
 TAKE_BACK_REASONS = (NO_TEXT, NO_ANALYSES)
+
+
+def metadata_read_fingerprint(read: Mapping[str, Any]) -> str:
+    """The fingerprint of what a stage reads of an article's metadata, its `metadata_read`.
+
+    A stage fingerprints this in place of the metadata artifact's own fingerprint, so a
+    change to a field it does not read (a licence, say) leaves it fresh."""
+    return fingerprint("metadata read", json.dumps(read, sort_keys=True))
 
 
 def taken_back(artifact: Optional[Artifact]) -> bool:

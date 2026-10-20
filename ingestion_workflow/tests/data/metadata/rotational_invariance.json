@@ -1,0 +1,360 @@
+{
+ "abstract": "Canonical correlation analysis (CCA) has previously been shown to work well for detecting neural activity in fMRI data. The reason is that CCA enables simultaneous temporal modeling and adaptive spatial filtering of the data. This article introduces a novel method for adaptive anisotropic filtering using the CCA framework and compares it to a previously proposed method. Isotropic adaptive filtering, which is only able to form isotropic filters of different sizes, is also presented and evaluated. It is shown that a new feature of the proposed method is invariance to the orientation of activated regions, and that the detection performance is superior to both that of the previous method and to isotropic filtering.",
+ "authors": [
+  {
+   "affiliation": null,
+   "name": "J. Rydell",
+   "orcid": null
+  },
+  {
+   "affiliation": null,
+   "name": "H. Knutsson",
+   "orcid": null
+  },
+  {
+   "affiliation": null,
+   "name": "M. Borga",
+   "orcid": null
+  }
+ ],
+ "journal": "NeuroImage",
+ "keywords": [],
+ "license": null,
+ "open_access": false,
+ "pdf_url": null,
+ "publication_year": 2006,
+ "raw_metadata": {
+  "pubmed": {
+   "MedlineCitation": {
+    "@IndexingMethod": "Manual",
+    "@Owner": "NLM",
+    "@Status": "MEDLINE",
+    "Article": {
+     "@PubModel": "Print-Electronic",
+     "Abstract": {
+      "AbstractText": "Canonical correlation analysis (CCA) has previously been shown to work well for detecting neural activity in fMRI data. The reason is that CCA enables simultaneous temporal modeling and adaptive spatial filtering of the data. This article introduces a novel method for adaptive anisotropic filtering using the CCA framework and compares it to a previously proposed method. Isotropic adaptive filtering, which is only able to form isotropic filters of different sizes, is also presented and evaluated. It is shown that a new feature of the proposed method is invariance to the orientation of activated regions, and that the detection performance is superior to both that of the previous method and to isotropic filtering."
+     },
+     "ArticleDate": {
+      "@DateType": "Electronic",
+      "Day": "27",
+      "Month": "10",
+      "Year": "2005"
+     },
+     "ArticleTitle": "On rotational invariance in adaptive spatial filtering of fMRI data.",
+     "AuthorList": {
+      "@CompleteYN": "Y",
+      "Author": [
+       {
+        "@ValidYN": "Y",
+        "AffiliationInfo": {
+         "Affiliation": "Medical Informatics, Department of Biomedical Engineering and Center for Medical Image Science and Visualization (CMIV), Linköping University, Sweden. joary@imt.liu.se"
+        },
+        "ForeName": "Joakim",
+        "Initials": "J",
+        "LastName": "Rydell"
+       },
+       {
+        "@ValidYN": "Y",
+        "ForeName": "Hans",
+        "Initials": "H",
+        "LastName": "Knutsson"
+       },
+       {
+        "@ValidYN": "Y",
+        "ForeName": "Magnus",
+        "Initials": "M",
+        "LastName": "Borga"
+       }
+      ]
+     },
+     "Journal": {
+      "ISOAbbreviation": "Neuroimage",
+      "ISSN": {
+       "#text": "1053-8119",
+       "@IssnType": "Print"
+      },
+      "JournalIssue": {
+       "@CitedMedium": "Print",
+       "Issue": "1",
+       "PubDate": {
+        "Month": "Mar",
+        "Year": "2006"
+       },
+       "Volume": "30"
+      },
+      "Title": "NeuroImage"
+     },
+     "Language": "eng",
+     "Pagination": {
+      "EndPage": "150",
+      "MedlinePgn": "144-50",
+      "StartPage": "144"
+     },
+     "PublicationTypeList": {
+      "PublicationType": [
+       {
+        "#text": "Journal Article",
+        "@UI": "D016428"
+       },
+       {
+        "#text": "Research Support, Non-U.S. Gov't",
+        "@UI": "D013485"
+       }
+      ]
+     }
+    },
+    "ChemicalList": {
+     "Chemical": {
+      "NameOfSubstance": {
+       "#text": "Oxygen",
+       "@UI": "D010100"
+      },
+      "RegistryNumber": "S88TT14065"
+     }
+    },
+    "CitationSubset": "IM",
+    "DateCompleted": {
+     "Day": "26",
+     "Month": "05",
+     "Year": "2006"
+    },
+    "DateRevised": {
+     "Day": "21",
+     "Month": "11",
+     "Year": "2013"
+    },
+    "MedlineJournalInfo": {
+     "Country": "United States",
+     "ISSNLinking": "1053-8119",
+     "MedlineTA": "Neuroimage",
+     "NlmUniqueID": "9215515"
+    },
+    "MeshHeadingList": {
+     "MeshHeading": [
+      {
+       "DescriptorName": {
+        "#text": "Artifacts",
+        "@MajorTopicYN": "Y",
+        "@UI": "D016477"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Brain",
+        "@MajorTopicYN": "N",
+        "@UI": "D001921"
+       },
+       "QualifierName": {
+        "#text": "physiology",
+        "@MajorTopicYN": "Y",
+        "@UI": "Q000502"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Brain Mapping",
+        "@MajorTopicYN": "N",
+        "@UI": "D001931"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Computer Simulation",
+        "@MajorTopicYN": "N",
+        "@UI": "D003198"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Filtration",
+        "@MajorTopicYN": "N",
+        "@UI": "D005374"
+       },
+       "QualifierName": {
+        "#text": "statistics & numerical data",
+        "@MajorTopicYN": "Y",
+        "@UI": "Q000706"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Humans",
+        "@MajorTopicYN": "N",
+        "@UI": "D006801"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Image Enhancement",
+        "@MajorTopicYN": "N",
+        "@UI": "D007089"
+       },
+       "QualifierName": {
+        "#text": "methods",
+        "@MajorTopicYN": "Y",
+        "@UI": "Q000379"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Image Processing, Computer-Assisted",
+        "@MajorTopicYN": "N",
+        "@UI": "D007091"
+       },
+       "QualifierName": {
+        "#text": "statistics & numerical data",
+        "@MajorTopicYN": "Y",
+        "@UI": "Q000706"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Magnetic Resonance Imaging",
+        "@MajorTopicYN": "N",
+        "@UI": "D008279"
+       },
+       "QualifierName": {
+        "#text": "statistics & numerical data",
+        "@MajorTopicYN": "Y",
+        "@UI": "Q000706"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Mathematical Computing",
+        "@MajorTopicYN": "N",
+        "@UI": "D008432"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Oxygen",
+        "@MajorTopicYN": "N",
+        "@UI": "D010100"
+       },
+       "QualifierName": {
+        "#text": "blood",
+        "@MajorTopicYN": "N",
+        "@UI": "Q000097"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Phantoms, Imaging",
+        "@MajorTopicYN": "N",
+        "@UI": "D019047"
+       }
+      },
+      {
+       "DescriptorName": {
+        "#text": "Statistics as Topic",
+        "@MajorTopicYN": "N",
+        "@UI": "D013223"
+       }
+      }
+     ]
+    },
+    "PMID": {
+     "#text": "16257235",
+     "@Version": "1"
+    }
+   },
+   "PubmedData": {
+    "ArticleIdList": {
+     "ArticleId": [
+      {
+       "#text": "16257235",
+       "@IdType": "pubmed"
+      },
+      {
+       "#text": "10.1016/j.neuroimage.2005.09.002",
+       "@IdType": "doi"
+      },
+      {
+       "#text": "S1053-8119(05)00695-6",
+       "@IdType": "pii"
+      }
+     ]
+    },
+    "History": {
+     "PubMedPubDate": [
+      {
+       "@PubStatus": "received",
+       "Day": "18",
+       "Month": "4",
+       "Year": "2005"
+      },
+      {
+       "@PubStatus": "revised",
+       "Day": "29",
+       "Month": "8",
+       "Year": "2005"
+      },
+      {
+       "@PubStatus": "accepted",
+       "Day": "5",
+       "Month": "9",
+       "Year": "2005"
+      },
+      {
+       "@PubStatus": "pubmed",
+       "Day": "1",
+       "Hour": "9",
+       "Minute": "0",
+       "Month": "11",
+       "Year": "2005"
+      },
+      {
+       "@PubStatus": "medline",
+       "Day": "27",
+       "Hour": "9",
+       "Minute": "0",
+       "Month": "5",
+       "Year": "2006"
+      },
+      {
+       "@PubStatus": "entrez",
+       "Day": "1",
+       "Hour": "9",
+       "Minute": "0",
+       "Month": "11",
+       "Year": "2005"
+      }
+     ]
+    },
+    "PublicationStatus": "ppublish"
+   }
+  },
+  "semantic_scholar": {
+   "abstract": null,
+   "authors": [
+    {
+     "authorId": "2596029",
+     "name": "J. Rydell"
+    },
+    {
+     "authorId": "3117916",
+     "name": "H. Knutsson"
+    },
+    {
+     "authorId": "145290346",
+     "name": "M. Borga"
+    }
+   ],
+   "isOpenAccess": false,
+   "openAccessPdf": {
+    "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.neuroimage.2005.09.002?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.neuroimage.2005.09.002, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use.",
+    "license": null,
+    "status": "CLOSED",
+    "url": ""
+   },
+   "paperId": "10684d8427a8e4032aa276fc279f416731d97209",
+   "publicationDate": "2006-03-01",
+   "title": "On rotational invariance in adaptive spatial filtering of fMRI data",
+   "venue": "NeuroImage",
+   "year": 2006
+  }
+ },
+ "source": "semantic_scholar",
+ "title": "On rotational invariance in adaptive spatial filtering of fMRI data"
+}

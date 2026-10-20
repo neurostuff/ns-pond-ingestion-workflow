@@ -845,14 +845,14 @@ def repair(
 
 def _render_refingerprint(found) -> str:
     lines = ["fingerprints:",
-             f"  {'stage':<11}{'filled':>10}{'carried':>10}{'relabelled':>12}"
+             f"  {'stage':<11}{'filled':>10}{'carried':>10}"
              f"{'empty, runs again':>19}{'empty, unplanned':>18}{'fresh, runs again':>19}"
              f"{'not asked, stale':>18}"]
     for stage in STAGE_ORDER:
         n = found.stages.get(stage)
         if n is None:
             continue
-        lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}{n.relabelled:>12,}"
+        lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}"
                      f"{n.empty_rerun:>19,}{n.empty_unplanned:>18,}{n.lost:>19,}"
                      f"{n.unasked:>18,}")
     return "\n".join(lines)

@@ -120,7 +120,7 @@ def test_the_default_counts_the_fingerprints_it_would_fill(migrated):
     out = _repair(config)
 
     row = next(line.split() for line in out.splitlines() if line.split()[:1] == ["download"])
-    assert row[1:] == ["1", "0", "0", "0", "0", "0", "0"]
+    assert row[1:] == ["1", "0", "0", "0", "0", "0"]
     assert "dry run" in out
     assert _fingerprint(tmp_path, article_id) == ""
 

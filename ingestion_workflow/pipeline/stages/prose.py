@@ -18,7 +18,7 @@ from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 
 from ..plan import StagePlan, Work
-from ..stage import Context, take_back_or_block, taking_back
+from ..stage import Context, metadata_read_fingerprint, take_back_or_block, taking_back
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 
@@ -42,6 +42,16 @@ TEXT_CHANGED = "passage text changed"
 OTHER_PROMPT = "earlier prompt not interchangeable"
 OTHER_MODEL = "earlier model not interchangeable"
 METADATA_CHANGED = "title and abstract changed"
+
+
+def metadata_read(payload: Optional[dict]) -> dict:
+    """What the prose model reads of the article's metadata, beside each passage.
+
+    The stage reads the metadata only through this, and its fingerprint holds it, so a
+    field the model does not read changes nothing here.
+    """
+    payload = payload or {}
+    return {"title": payload.get("title"), "abstract": payload.get("abstract")}
 
 
 def earlier_answers(payload: Optional[dict]) -> Dict[str, dict]:
@@ -119,17 +129,22 @@ class ProseStage:
                     self._client = ProseCoordinateClient(self.settings)
         return self._client
 
-    def read_fingerprint(self, passages: Artifact, metadata: Optional[Artifact]) -> str:
-        """What the model's answers depend on."""
+    def metadata_fingerprint(self, ctx: Context, metadata: Optional[Artifact]) -> Optional[str]:
+        """The fingerprint of what the model reads of `metadata`, an OK one; None without."""
+        return (metadata_read_fingerprint(metadata_read(ctx.payload(metadata)))
+                if metadata is not None else None)
+
+    def read_fingerprint(self, passages: Artifact, metadata: Optional[str]) -> str:
+        """What the model's answers depend on; `metadata` is `metadata_fingerprint`'s."""
         # The metadata read with it: an article read before its title and
         # abstract were fetched is read again once they are. No passage, no
         # call, so then the metadata is not waited on.
         metadata = metadata if passages.summary.get("passages") else None
         return fingerprint("prose", PROSE_PROMPT_VERSION, self.settings.prose_model,
-                           metadata.fingerprint if metadata is not None else "no metadata",
+                           metadata if metadata is not None else "no metadata",
                            upstream=passages.fingerprint)
 
-    def fingerprint_for(self, passages: Artifact, metadata: Optional[Artifact]) -> str:
+    def fingerprint_for(self, passages: Artifact, metadata: Optional[str]) -> str:
         return fingerprint("prose clean", CLEAN_VERSION,
                            upstream=self.read_fingerprint(passages, metadata))
 
@@ -159,7 +174,9 @@ class ProseStage:
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
             # No passage, no call: the empty result costs nothing and lets
             # resolve pass the tables through.
-            fp = self.fingerprint_for(passages, metadata)
+            read = (self.metadata_fingerprint(ctx, metadata)
+                    if passages.summary.get("passages") else None)
+            fp = self.fingerprint_for(passages, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -186,8 +203,9 @@ class ProseStage:
             meta_artifact = metadata.get(work.article_id, {}).get("")
             if meta_artifact is not None and not meta_artifact.ok:
                 meta_artifact = None
-            read_fp = self.read_fingerprint(work.upstream, meta_artifact)
-            read_fps[work.article_id] = read_fp
+            meta = metadata_read(ctx.payload(meta_artifact)) if meta_artifact is not None else {}
+            meta_fp = metadata_read_fingerprint(meta) if meta_artifact is not None else None
+            read_fps[work.article_id] = self.read_fingerprint(work.upstream, meta_fp)
             try:
                 text = read_text(ctx, payload) if payload.get("passages") else ""
             except LookupError as exc:
@@ -201,10 +219,9 @@ class ProseStage:
             before = stored.get(work.article_id, {}).get("")
             earlier = (earlier_answers(ctx.payload(before))
                        if before is not None and before.ok else {})
-            meta = (ctx.payload(meta_artifact) or {}) if meta_artifact is not None else {}
             plans[work.article_id] = []
             for passage in read[work.article_id]:
-                inputs = self._inputs(passage.text, meta_artifact)
+                inputs = self._inputs(passage.text, meta_fp)
                 taken, reason = reuse(earlier, passage.text, PROSE_PROMPT_VERSION,
                                       self.settings.prose_model, inputs)
                 plans[work.article_id].append((taken, reason, inputs))
@@ -278,15 +295,16 @@ class ProseStage:
                          "passages_read": work.upstream.fingerprint},
             )
 
-    def _inputs(self, passage_text: str, meta_artifact: Optional[Artifact]) -> list:
-        """What a passage's answer is read from, as study_schema InputRefs: its text first."""
+    def _inputs(self, passage_text: str, metadata: Optional[str]) -> list:
+        """What a passage's answer is read from, as study_schema InputRefs: its text first,
+        then the fingerprint of what was read of the metadata, if any was."""
         from study_schema.models.paper_parse import InputRef
 
         from ingestion_workflow.services.offsets import sha256
 
         refs = [InputRef(artifact_kind="passage_text", fingerprint=sha256(passage_text))]
-        if meta_artifact is not None:
-            refs.append(InputRef(artifact_kind="metadata", fingerprint=meta_artifact.fingerprint))
+        if metadata is not None:
+            refs.append(InputRef(artifact_kind="metadata", fingerprint=metadata))
         return [r.model_dump(mode="json") for r in refs]
 
     def _read(self, passage, title, abstract):
