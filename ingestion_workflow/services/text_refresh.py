@@ -20,14 +20,16 @@ references stage reads the new text again (a kept superscript, or a caption, can
 citation marker), its citations' offsets moved meanwhile; and the parse files' spans are
 written again from the text.
 
-The texts are all rewritten before the catalog is: a run stopped in between leaves the
-new texts against the old hashes, which every reader of a span checks and refuses, and
-the next run, seeing the texts unchanged, records their hashes and the passages are
-read again rather than remapped.
+Each batch of texts is rewritten before its catalog rows are recorded, batch by batch as
+the run goes: a run stopped in between leaves the batch's new texts against the old
+hashes, which every reader of a span checks and refuses, and the next run, seeing the
+texts unchanged, records their hashes and the passages are read again rather than
+remapped.
 """
 
 from __future__ import annotations
 
+import gc
 import hashlib
 import logging
 import multiprocessing
@@ -234,9 +236,15 @@ def run(all_jobs: Iterable[Job], *, write: bool, workers: int = 1) -> Iterator[R
         if workers <= 1:
             yield from (worker(job) for job in batch)
             return
-        # fork: nothing here touches CUDA; spawn would re-import the package per worker
-        with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
-            yield from pool.map(worker, batch, chunksize=32)
+        # fork: nothing here touches CUDA; spawn would re-import the package per worker.
+        # Frozen, the objects the parent holds (the job list) are left out of the workers'
+        # collections, which would otherwise copy each page holding one into every worker.
+        gc.freeze()
+        try:
+            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
+                yield from pool.map(worker, batch, chunksize=32)
+        finally:
+            gc.unfreeze()
 
     for job in all_jobs:
         batch.append(job)
@@ -391,16 +399,22 @@ def refresh_corpus(ns_pond_root: Path, replaced: Dict[str, str], sources: Sequen
     """Replace each corpus `text.txt` that is a copy of a rewritten extraction text.
 
     `replaced` maps the old text's sha256 to the path of the rebuilt one. A corpus file
-    whose bytes are not one of those old texts is not touched, whatever its source.
+    whose bytes are not one of those old texts is not touched, whatever its source. Each
+    file replaced (or, not `write`, that would be) is yielded with its status, and so is
+    each one that cannot be read, left as it is with the reason.
     """
     for record in sorted(p for p in Path(ns_pond_root).iterdir() if p.is_dir()):
         for source in sources:
             target = record / "processed" / source / "text.txt"
             if not target.is_file():
                 continue
-            old_sha = sha256(_read(target))
+            try:
+                old_sha = sha256(_read(target))
+            except UnicodeDecodeError as exc:
+                yield target, f"failed: {type(exc).__name__}: {exc}"[:300]
+                continue
             if old_sha not in replaced:
                 continue
             if write:
                 _write_atomically(target, _read(Path(replaced[old_sha])))
-            yield target, old_sha
+            yield target, "replaced" if write else "would_replace"

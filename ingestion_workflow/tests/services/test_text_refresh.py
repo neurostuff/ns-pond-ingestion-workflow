@@ -407,3 +407,25 @@ def test_an_ace_rebuild_gives_ace_the_extraction_s_pmid(tmp_path, monkeypatch):
     text, captions, _ = R.build("ace", page, tmp_path / "article.txt", "14597300")
     assert text and isinstance(captions, list)
     assert seen == ["14597300"]
+
+
+def test_workers_fork_from_a_frozen_parent(tmp_path):
+    """What the parent holds stays out of its workers' collections, which would copy every
+    page holding it into each worker; once the pool is gone the parent collects it again."""
+    import gc
+
+    xml = _article(tmp_path)
+    text = tmp_path / "article.txt"
+    text.write_text("an older rendering", encoding="utf-8")
+    held = [R.Result(f"a{i}", "pubget", "would_rewrite", edits=[[i, i, i, i]])
+            for i in range(1000)]
+    before = gc.get_freeze_count()
+    job = R.Job("a1", "pubget", str(text), str(xml))
+    results = R.run([job, job], write=False, workers=2)
+
+    first = next(results)
+    assert gc.get_freeze_count() >= before + len(held)
+    rest = list(results)
+
+    assert gc.get_freeze_count() == 0
+    assert [r.status for r in [first, *rest]] == ["would_rewrite"] * 2
