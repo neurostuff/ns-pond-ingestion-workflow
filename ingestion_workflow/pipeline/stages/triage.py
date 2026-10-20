@@ -39,7 +39,8 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ingestion_workflow.models import ExtractedContent
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import NO_DIGESTS, Context, metadata_fingerprint
+from ..stage import metadata_read as read_fields
 from .extract import current_extractions, without_bad_pages
 
 logger = logging.getLogger(__name__)
@@ -66,25 +67,17 @@ META_ANALYSIS_TITLE = re.compile(
     r"meta[-\s]?analy[sz]|\bALE\b|activation\s+likelihood\s+estimation", re.I)
 
 
-def publication_types(metadata: Dict) -> List[str]:
-    """MeSH publication types, from wherever PubMed's raw record put them.
+#: What triage, and `analyses` after it, read of the article's metadata. Triage reads
+#: the title and the publication types, to mark a meta-analysis, and the abstract, where
+#: `read.extract` finds the space a table does not name; analyses sends the title and
+#: abstract to the model. Both read the metadata only through `metadata_read`, and
+#: triage's fingerprint holds these fields' digests, so a field neither reads changes
+#: neither.
+METADATA_READ = ("title", "abstract", "publication_types")
 
-    `xmltodict` gives a single type as a dict and several as a list, and each
-    is `{"#text": ..., "@UI": ...}`, so both shapes have to be unwrapped.
-    """
-    article = (((metadata.get("raw_metadata") or {}).get("pubmed") or {})
-               .get("MedlineCitation") or {}).get("Article") or {}
-    listed = (article.get("PublicationTypeList") or {}).get("PublicationType")
-    if listed is None:
-        return []
-    if not isinstance(listed, list):
-        listed = [listed]
-    out = []
-    for item in listed:
-        text = item.get("#text") if isinstance(item, dict) else item
-        if isinstance(text, str):
-            out.append(text)
-    return out
+
+def metadata_read(payload: Optional[Dict]) -> Dict:
+    return read_fields(payload, METADATA_READ)
 
 
 def is_a_meta_analysis(title: str, types: Sequence[str]) -> bool:
@@ -142,14 +135,16 @@ class TriageStage:
             self._gate_id = digest.hexdigest()
         return self._gate_id
 
-    def fingerprint_for(self, metadata: Artifact, extraction: Artifact) -> str:
-        """Both parents, because `requires` only names one -- and the gate.
+    def metadata_fingerprint(self, metadata: Artifact) -> Optional[str]:
+        """The fingerprint of what this stage and `analyses` read of `metadata`."""
+        return metadata_fingerprint(metadata, METADATA_READ)
 
-        `metadata`'s own fingerprint does not run through `extract` -- it is
-        the provider list and a version, nothing more -- so fingerprinting from
-        it alone would leave triage looking fresh after a re-extraction, with
-        verdicts about tables that no longer exist. The extraction's
-        fingerprint therefore goes in as a part.
+    def fingerprint_for(self, metadata: str, extraction: Artifact) -> str:
+        """What was read of the metadata (`metadata_fingerprint`), the extraction, and the gate.
+
+        The extraction goes in because `requires` names only the metadata: without it a
+        re-extraction would leave triage fresh, with verdicts about tables that no
+        longer exist.
 
         **So does the gate.** It is the stage's other input: change it and
         every verdict changes, while both parents sit still. Without it,
@@ -159,7 +154,7 @@ class TriageStage:
         off `extract`.
         """
         return fingerprint("triage", TRIAGE_VERSION, extraction.fingerprint,
-                           self.gate_id(), upstream=metadata.fingerprint)
+                           self.gate_id(), upstream=metadata)
 
     def plan(
         self,
@@ -183,7 +178,12 @@ class TriageStage:
             if meta is None or extraction is None:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(meta, extraction)
+            self.gate_id()  # a missing gate fails the plan before anything else is judged
+            read = self.metadata_fingerprint(meta)
+            if read is None:
+                plan.block(NO_DIGESTS)
+                continue
+            fp = self.fingerprint_for(read, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -256,9 +256,9 @@ class TriageStage:
         deciding whether the article is a meta-analysis.
         """
         found = ctx.catalog.artifacts([article_id], "metadata").get(article_id, {})
-        payload = ctx.payload(found.get("")) or {}
+        payload = metadata_read(ctx.payload(found.get("")))
         return (payload.get("abstract") or "", payload.get("title") or "",
-                publication_types(payload))
+                payload["publication_types"])
 
     def _judge_all(self, jobs):
         """Every article's tables, across a pool when the batch earns one.

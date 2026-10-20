@@ -15,7 +15,7 @@ from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
-from ingestion_workflow.pipeline.stage import Context
+from ingestion_workflow.pipeline.stage import Context, metadata_digests
 from ingestion_workflow.pipeline.stages.metadata import MetadataStage
 
 COPIES = Path(__file__).parents[1] / "data" / "copies"
@@ -86,6 +86,19 @@ def test_each_held_copy_and_the_paper_get_a_licence(env):
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
     assert (stored.copy_licenses["pmc"].stated_by, stored.copy_licenses["pmc"].stated_as) == (
         "pmc_cloud", "TDM")
+
+
+@pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
+def test_the_digests_recorded_are_those_of_the_payload(env):
+    """Triage and prose judge what they read from these, so they must be the payload's."""
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT)
+    catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
+    _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+
+    stored = catalog.artifact(ref.id, "metadata", "")
+    assert stored.ok and catalog.payload(stored)["title"]
+    assert stored.summary["digests"] == metadata_digests(catalog.payload(stored))
 
 
 def test_a_new_or_changed_download_makes_the_licences_stale(env):

@@ -24,7 +24,7 @@ from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedC
 from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, metadata_digests
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .sync import _copy_of
 
@@ -192,17 +192,19 @@ class MetadataStage:
                     summary={"unanswered": list(undecided.sources)} if undecided.outage else None,
                 )
                 continue
+            payload = metadata.to_dict()
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
                 status=Status.OK,
                 fingerprint=work.fingerprint,
-                payload=metadata.to_dict(),
+                payload=payload,
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
                 } | _licenses(metadata)
-                | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata)},
+                | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata),
+                   "digests": metadata_digests(payload)},
             )
 
 

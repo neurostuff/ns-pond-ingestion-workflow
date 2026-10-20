@@ -27,6 +27,7 @@ from ingestion_workflow.pipeline.plan import StagePlan, Work
 from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, build
 from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
@@ -59,6 +60,7 @@ from ingestion_workflow.tests.services.test_neurostore_ingest import (
     _closed_port,
 )
 from ingestion_workflow.tests.upload_body import without_input_fingerprints
+from ingestion_workflow.pipeline.stage import metadata_digests
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
 from test_roles_stage import PROSE_MODEL, TABLE_MODEL, served  # noqa: F401 - a fixture
@@ -230,6 +232,62 @@ def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fi
     assert (plan.fresh, done.status, len(_sent(vcr))) == (0, Status.OK, 1)
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.fresh, outcomes) == (1, [])
+
+
+def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(env, monkeypatch):
+    """The parse carries the metadata's licences, which the stages before sync do not read."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    sync, upload = build(["sync", "upload"], settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert synced.status is Status.OK, synced.error
+    (work,) = upload.plan(ctx, [ref], {}, catalog.artifacts([ref.id], "sync")).pending
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="",
+                            fingerprint=work.fingerprint,
+                            summary={"base_study_id": "BS21", "backend": "ingester"})])
+    before = ("prose", "resolve", "roles", "space")
+    by_name = {"prose": ProseStage(settings), "resolve": ResolveStage(settings),
+               "roles": _roles(settings, monkeypatch, _ByName()), "space": SpaceStage(settings),
+               "sync": sync, "upload": upload}
+
+    def pending():
+        return {name for name, stage in by_name.items()
+                if stage.plan(ctx, [ref], catalog.artifacts([ref.id], name),
+                              catalog.artifacts([ref.id], stage.requires)).pending}
+
+    assert pending() == set()
+    licensed = {**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
+                "license": {"license_id": "cc-by", "determination": "stated"}}
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-3",
+                            payload=licensed, summary={"digests": metadata_digests(licensed)})])
+
+    assert pending() == {"sync"}
+    assert not pending() & set(before)
+    _run(sync, ctx, catalog, ref)
+    sync.finish()
+    assert pending() == {"upload"}
+
+
+def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
+    """Sync holds the metadata's content: a re-fetch that finds the same record is no
+    change."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    catalog._conn.execute("UPDATE artifacts SET updated_at='2000-01-01T00:00:00+00:00' "
+                          "WHERE article_id=? AND stage='metadata'", (ref.id,))
+    (sync,) = build(["sync"], settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+    stored = catalog.artifact(ref.id, "metadata", "")
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint=stored.fingerprint, payload=catalog.payload(stored),
+                            summary=stored.summary)])
+    assert catalog.artifact(ref.id, "metadata", "").updated_at != "2000-01-01T00:00:00+00:00"
+
+    plan = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                     catalog.artifacts([ref.id], "space"))
+    assert (plan.fresh, plan.pending) == (1, [])
 
 
 @RECORDS
@@ -537,8 +595,9 @@ def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
                 summary={"source": read, "tables": 0, "passed": 0}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
-                payload={**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
-                         "copy_licenses": COPY_LICENSES}, summary={}),
+                payload=(licensed := {**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
+                                      "copy_licenses": COPY_LICENSES}),
+                summary={"digests": metadata_digests(licensed)}),
     ])
     return ctx, ref
 

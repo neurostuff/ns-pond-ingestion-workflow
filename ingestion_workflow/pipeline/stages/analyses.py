@@ -32,6 +32,7 @@ PROMPT_RULES_VERSION = "2026-10-09.no-placeholder+no-deactivation-seed"
 
 from ..plan import StagePlan, Work
 from ..stage import Context
+from .triage import metadata_read
 
 logger = logging.getLogger(__name__)
 
@@ -187,12 +188,16 @@ class AnalysesStage:
                 yield future.result()
 
     def _metadata_for(self, ctx: Context, works: Sequence[Work]) -> Dict[str, ArticleMetadata]:
+        """The title and abstract, read through triage's `metadata_read`: triage's
+        fingerprint holds what that reads, and this stage's chains on triage's."""
         found: Dict[str, ArticleMetadata] = {}
         artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         for work in works:
             payload = ctx.payload(artifacts.get(work.article_id, {}).get(""))
             if payload:
-                found[work.article_id] = ArticleMetadata.from_dict(payload)
+                read = metadata_read(payload)
+                found[work.article_id] = ArticleMetadata(title=str(read["title"]),
+                                                         abstract=read["abstract"])
         return found
 
     def _run_one(self, work: Work, content: ExtractedContent, metadata) -> Outcome:

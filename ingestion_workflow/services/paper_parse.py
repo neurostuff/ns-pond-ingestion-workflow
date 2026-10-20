@@ -191,7 +191,8 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
     raw = text_file.read_bytes()
     text = _Text(raw.decode("utf-8", errors="replace"))
 
-    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis, publication_types
+    from ingestion_workflow.pipeline.stage import publication_types
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
     triage = inputs.triage or {}
     title = meta.title or content.slug
@@ -542,7 +543,7 @@ def article_identifiers(identifier, dois: Sequence[str], meta):
     `Preprint` and the PMCID that record lists. Raises ValueError for an article with two
     DOIs neither of which is a preprint's, since `doi` holds one.
     """
-    from ingestion_workflow.pipeline.stages.triage import publication_types
+    from ingestion_workflow.pipeline.stage import publication_types
 
     pmid = getattr(identifier, "pmid", None) or None
     pmcid = getattr(identifier, "pmcid", None) or None

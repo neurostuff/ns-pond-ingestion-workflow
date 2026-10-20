@@ -17,6 +17,7 @@ from ingestion_workflow.pipeline.stages import DownloadStage
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 from ingestion_workflow.pipeline.stages.triage import TriageStage
 from ingestion_workflow.services import download_revalidate as revalidate
+from ingestion_workflow.pipeline.stage import metadata_digests
 from typer.testing import CliRunner
 
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
@@ -72,7 +73,8 @@ def article(catalog, settings, tmp_path, pmid, name, *, pubget=False, pubget_tex
         xml.write_text("<article/>")
         pubget = downloaded(catalog, settings, ref, "pubget", xml, FileType.XML)
         extracted(catalog, ref, pubget, tables=0, has_text=pubget_text)
-    catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"})])
+    catalog.record([Outcome(ref.id, "metadata", "", Status.OK, "md-1", {"title": "t"},
+                            {"digests": metadata_digests({"title": "t"})})])
     return ref
 
 

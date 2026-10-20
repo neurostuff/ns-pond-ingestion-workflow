@@ -28,6 +28,7 @@ from ingestion_workflow.pipeline.stages import (
     TriageStage,
 )
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint, file_sha256
+from ingestion_workflow.pipeline.stage import metadata_digests
 
 TEXT = (
     "# T\n\n## Methods\n\nCoordinates are reported in MNI space.\n\n"
@@ -134,7 +135,9 @@ def migrated(env):
         download = _download(catalog, ref, tmp_path)
         _extraction(catalog, ref, tmp_path, extraction_fingerprint("pubget", download))
         catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                                payload={"title": "T", "abstract": "A"})])
+                                payload={"title": "T", "abstract": "A"},
+                                summary={"digests": metadata_digests({"title": "T",
+                                                                      "abstract": "A"})})])
     made = [tables, prose_only]
     by = {s.name: s for s in stages}
     _ran(by["triage"], ctx, catalog, made, lambda _: {"source": "pubget", "tables": {}})
@@ -303,12 +306,12 @@ class _Counting(_Reader):
 
 
 def test_prose_read_before_the_metadata_had_a_fingerprint_reuses_its_answers(migrated):
-    """Prose takes an earlier answer only while the metadata it was read with is the
-    metadata's fingerprint, so the fingerprint recorded with each answer is relabelled."""
+    """Prose takes an earlier answer only while what it read of the metadata is unchanged,
+    which filling the metadata's fingerprint does not change."""
     settings, catalog, stages, (tables, prose_only, lost, stale) = migrated
     refs = [tables, prose_only]
     found = refingerprint(Context(settings, catalog), stages, refs, catalog.empty_fingerprints())
-    assert found.stages["prose"].relabelled == 2
+    assert found.stages["metadata"].filled == 2
     catalog.store_fingerprints(list(found.rewrites.values()))
 
     prose = ProseStage(settings)
@@ -393,35 +396,3 @@ def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again
 
     assert found.stages["roles"].lost == 2
     assert found.rerun() == {"roles": 2}
-
-
-def test_only_the_metadata_a_passage_was_read_with_while_it_had_no_fingerprint_is_relabelled(
-        env):
-    settings, catalog, stages, tmp_path = env
-    read, failed = (catalog.register(Identifier(pmid=str(n), pmcid=f"PMC{n}")) for n in (11, 12))
-
-    def passage(metadata):
-        return {"inputs": [{"artifact_kind": "passage_text", "fingerprint": ""},
-                           {"artifact_kind": "metadata", "fingerprint": metadata}]}
-
-    passages = [passage(""), passage("an older metadata's"), passage("")]
-    for ref in (read, failed):
-        catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
-                                payload={"title": "T", "abstract": "A"})])
-    catalog.record([
-        Outcome(article_id=read.id, stage="prose", source="", fingerprint="p",
-                payload={"passages": passages}),
-        Outcome(article_id=failed.id, stage="prose", source="", fingerprint="p",
-                status=Status.FAILED, payload={"passages": passages}, error="down"),
-    ])
-
-    found = refingerprint(Context(settings, catalog), [MetadataStage(settings)],
-                          [read, failed], catalog.empty_fingerprints())
-
-    filled = found.rewrites[(read.id, "metadata", "")].new.fingerprint
-    relabelled = found.rewrites[(read.id, "prose", "")].payload["passages"]
-    assert [p["inputs"] for p in relabelled] == [
-        passage(filled)["inputs"], passage("an older metadata's")["inputs"],
-        passage(filled)["inputs"]]
-    assert (failed.id, "prose", "") not in found.rewrites
-    assert found.stages["prose"].relabelled == 1

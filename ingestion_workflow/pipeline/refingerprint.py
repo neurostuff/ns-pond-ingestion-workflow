@@ -4,7 +4,7 @@ An artifact with no fingerprint is not fresh. Most of them were imported from th
 pre-catalog caches and were made from the inputs a run would use now; what each
 stage's plan expects of them is stored instead. The artifacts made from them chain
 on their empty fingerprint, so those carry over to the new one too, and so does a
-fingerprint another artifact recorded of them. Every stage is
+fingerprint another artifact copied of them. Every stage is
 planned twice, as `ingest run --dry-run` plans it: once against the catalog as it
 stands, to learn what was fresh, and once with the new fingerprints, to learn what
 each plan expects now.
@@ -29,12 +29,6 @@ COPIED_FINGERPRINTS: Mapping[str, Mapping[str, str]] = {
     "prose": {"passages_read": "passages"},
     "resolve": {"prose_read": "prose", "basis": "analyses"},
 }
-
-#: Payloads recording, in each passage's `inputs`, the fingerprint of another of the
-#: article's artifacts, by the stage writing them, naming that artifact's kind. Prose
-#: takes an earlier answer only while the metadata it was read with is the metadata's
-#: fingerprint, so the recorded one is relabelled with it.
-RECORDED_INPUTS: Mapping[str, str] = {"prose": "metadata"}
 
 
 class Rewrite(NamedTuple):
@@ -142,8 +136,6 @@ class StageCounts:
     filled: int = 0
     #: Fingerprints rewritten because the artifact they were made from was.
     carried: int = 0
-    #: Payloads whose recorded input fingerprints were relabelled.
-    relabelled: int = 0
     #: Empty fingerprints a plan asked about and could not fill, their blob being gone:
     #: these run again, as they would have without this change.
     empty_rerun: int = 0
@@ -171,17 +163,6 @@ class Refingerprint:
                 if n.empty_rerun + n.lost + n.unasked}
 
 
-def _relabel(payload: dict, kind: str, old: str, new: str) -> bool:
-    """Relabel the `kind` inputs recorded as `old` in `payload` as `new`; whether any was."""
-    changed = False
-    for passage in payload.get("passages") or []:
-        for recorded in passage.get("inputs") or []:
-            if recorded.get("artifact_kind") == kind and recorded.get("fingerprint") == old:
-                recorded["fingerprint"] = new
-                changed = True
-    return changed
-
-
 def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleRef],
                   empty: Mapping[str, int]) -> Refingerprint:
     """What storing the fingerprints `stages` expect of the artifacts of `refs` would do.
@@ -201,20 +182,6 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
             found.carried += 1
         else:
             found.filled += 1
-    for stage, kind in RECORDED_INPUTS.items():
-        relabelled = {article_id: done for (article_id, of, _), done in rewrites.items()
-                      if of == kind and done.old.fingerprint != done.new.fingerprint}
-        for by_source in ctx.catalog.artifacts(sorted(relabelled), stage).values():
-            for artifact in by_source.values():
-                # only an OK one is read for its earlier answers
-                payload = ctx.catalog.payload(artifact) if artifact.ok else None
-                done = relabelled[artifact.article_id]
-                if payload and _relabel(payload, kind, done.old.fingerprint,
-                                        done.new.fingerprint):
-                    key = _key(artifact)
-                    now = rewrites[key].new if key in rewrites else artifact
-                    rewrites[key] = Rewrite(artifact, now, payload)
-                    counts.setdefault(stage, StageCounts()).relabelled += 1
     for _, stage, _ in after.empty_asked - rewrites.keys():
         counts.setdefault(stage, StageCounts()).empty_rerun += 1
     for _, stage, _ in fresh_before - after.still_fresh - rewrites.keys():

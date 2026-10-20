@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Protocol, Sequence
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Protocol, Sequence
 
 from ingestion_workflow.catalog import (
     ArticleRef,
@@ -12,6 +13,7 @@ from ingestion_workflow.catalog import (
     Catalog,
     Outcome,
     Status,
+    fingerprint,
     is_retryable,
 )
 from ingestion_workflow.config import Settings
@@ -30,6 +32,67 @@ NO_ANALYSES = "no analyses after re-read"
 #: Why an artifact may be taken back. A take-back keeps NO_TEXT as its fingerprint, and
 #: records its reason as its error.
 TAKE_BACK_REASONS = (NO_TEXT, NO_ANALYSES)
+
+
+def publication_types(metadata: Mapping[str, Any]) -> List[str]:
+    """MeSH publication types, from wherever PubMed's raw record put them.
+
+    `xmltodict` gives a single type as a dict and several as a list, and each
+    is `{"#text": ..., "@UI": ...}`, so both shapes have to be unwrapped.
+    """
+    article = (((metadata.get("raw_metadata") or {}).get("pubmed") or {})
+               .get("MedlineCitation") or {}).get("Article") or {}
+    listed = (article.get("PublicationTypeList") or {}).get("PublicationType")
+    if listed is None:
+        return []
+    if not isinstance(listed, list):
+        listed = [listed]
+    out = []
+    for item in listed:
+        text = item.get("#text") if isinstance(item, dict) else item
+        if isinstance(text, str):
+            out.append(text)
+    return out
+
+
+#: The fields of an article's metadata a stage may read, each as read from the metadata
+#: stage's payload. The metadata stage records a digest of each in its summary
+#: (`digests`), so a plan fingerprints the fields its stage reads from the catalog row.
+#: A field added here is missing from the rows written before: their readers block
+#: (`NO_DIGESTS`) until the digests are recorded again.
+METADATA_FIELDS: Mapping[str, Callable[[Mapping[str, Any]], Any]] = {
+    "title": lambda payload: payload.get("title"),
+    "abstract": lambda payload: payload.get("abstract"),
+    "publication_types": publication_types,
+}
+#: Why a plan blocks an article whose OK metadata records no digests.
+NO_DIGESTS = "metadata records no field digests: run scripts/rekey_metadata_reads.py"
+
+
+def metadata_read(payload: Optional[Mapping[str, Any]], fields: Sequence[str]) -> Dict[str, Any]:
+    """`fields` of the metadata stage's `payload`, as a stage reads them."""
+    return {name: METADATA_FIELDS[name](payload or {}) for name in fields}
+
+
+def metadata_digests(payload: Optional[Mapping[str, Any]]) -> Dict[str, str]:
+    """A digest of each of `METADATA_FIELDS` of `payload`, as the metadata stage records."""
+    return {name: fingerprint("metadata field", json.dumps(value, sort_keys=True))
+            for name, value in metadata_read(payload, list(METADATA_FIELDS)).items()}
+
+
+_NOTHING_READ = metadata_digests(None)
+
+
+def metadata_fingerprint(metadata: Optional[Artifact], fields: Sequence[str]) -> Optional[str]:
+    """The fingerprint of `fields` of `metadata`, from the digests its row records.
+
+    A metadata that is not OK holds no payload, so nothing is read of it. None when an
+    OK one records no digest of one of `fields`."""
+    digests = (_NOTHING_READ if metadata is None or not metadata.ok
+               else (metadata.summary or {}).get("digests") or {})
+    if any(name not in digests for name in fields):
+        return None
+    return fingerprint("metadata read", *[(name, digests[name]) for name in fields])
 
 
 def taken_back(artifact: Optional[Artifact]) -> bool:
