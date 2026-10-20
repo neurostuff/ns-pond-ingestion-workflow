@@ -411,7 +411,7 @@ def test_an_ace_rebuild_gives_ace_the_extraction_s_pmid(tmp_path, monkeypatch):
 
 def test_workers_fork_from_a_frozen_parent(tmp_path):
     """What the parent holds stays out of its workers' collections, which would copy every
-    page holding it into each worker."""
+    page holding it into each worker; once the pool is gone the parent collects it again."""
     import gc
 
     xml = _article(tmp_path)
@@ -420,10 +420,12 @@ def test_workers_fork_from_a_frozen_parent(tmp_path):
     held = [R.Result(f"a{i}", "pubget", "would_rewrite", edits=[[i, i, i, i]])
             for i in range(1000)]
     before = gc.get_freeze_count()
-    try:
-        job = R.Job("a1", "pubget", str(text), str(xml))
-        results = list(R.run([job, job], write=False, workers=2))
-        assert gc.get_freeze_count() >= before + len(held)
-    finally:
-        gc.unfreeze()
-    assert [r.status for r in results] == ["would_rewrite"] * 2
+    job = R.Job("a1", "pubget", str(text), str(xml))
+    results = R.run([job, job], write=False, workers=2)
+
+    first = next(results)
+    assert gc.get_freeze_count() >= before + len(held)
+    rest = list(results)
+
+    assert gc.get_freeze_count() == before
+    assert [r.status for r in [first, *rest]] == ["would_rewrite"] * 2

@@ -102,3 +102,93 @@ def test_a_corpus_text_that_is_not_utf8_is_named_and_the_others_are_still_replac
     assert "would replace 1 text.txt files" in result.output
     assert "1 could not be read" in result.output
     assert bad.read_bytes() == b"Results\xc1\xb1 x"
+
+
+def _texts_with_passages(root, n):
+    """`n` pubget extractions whose rebuilt text loses the first character of the one their
+    passages were read on."""
+    from ingestion_workflow.services.prose_passages import passages
+    from ingestion_workflow.tests.services.test_text_refresh import CAPTIONED
+
+    with Catalog.open(root / "catalog") as catalog:
+        for i in range(n):
+            xml = root / "downloads" / f"pmcid_{i}" / "article.xml"
+            xml.parent.mkdir(parents=True)
+            xml.write_text(CAPTIONED)
+            old = "Z" + article_text(etree.parse(str(xml)), xml.parent)
+            text = root / "texts" / f"{i}.txt"
+            text.parent.mkdir(exist_ok=True)
+            text.write_text(old, encoding="utf-8")
+            found = [{"span": list(p.span), "before": None, "after": None, "heading": None,
+                      "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
+                               for h in p.hits]}
+                     for p in passages(old)]
+            ref = catalog.register(Identifier(pmid=str(100 + i))).id
+            catalog.record([
+                Outcome(article_id=ref, stage="download", source="pubget",
+                        payload={"files": [{"file_path": str(xml), "file_type": "xml"}]}),
+                Outcome(article_id=ref, stage="extract", source="pubget", fingerprint="ex-1",
+                        payload={"full_text_path": str(text)},
+                        summary={"text_sha256": text_refresh.sha256(old)}),
+                Outcome(article_id=ref, stage="passages", source="", fingerprint="pa-1",
+                        payload={"full_text_path": str(text), "passages": found,
+                                 "text_sha256": text_refresh.sha256(old)}),
+            ])
+
+
+def _end_state(root):
+    """{text file: (its bytes, the extraction's text_sha256, the passages payload)}, the
+    payload's path by its file name."""
+    with Catalog.open(root / "catalog") as catalog:
+        ids = list(catalog.all_article_ids())
+        extracts, passages = catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "passages")
+        out = {}
+        for article in ids:
+            extract = extracts[article]["pubget"]
+            path = catalog.payload(extract)["full_text_path"]
+            name = path.rsplit("/", 1)[1]
+            moved = {**catalog.payload(passages[article][""]), "full_text_path": name}
+            out[name] = (open(path, "rb").read(), extract.summary["text_sha256"], moved)
+    return out
+
+
+def test_a_run_stopped_partway_and_run_again_ends_where_one_run_would(tmp_path, monkeypatch):
+    """Texts and their hashes end as one run leaves them. A batch the stop caught after its
+    texts were written keeps its passages on the old hash, which every reader of a span
+    refuses, for the passages stage to read again."""
+    monkeypatch.setattr(text_refresh, "BATCH", 2)
+    whole, stopped = tmp_path / "whole", tmp_path / "stopped"
+    for root in (whole, stopped):
+        root.mkdir()
+        _texts_with_passages(root, 5)
+    args = ["refresh-text", "--source", "pubget", "--no-corpus", "--config"]
+
+    result = CliRunner().invoke(app, [*args, str(_config(whole))])
+    assert result.exit_code == 0, result.output
+
+    run, order = text_refresh.run, []
+
+    def stopping(jobs, **kwargs):
+        for result in run(jobs, **kwargs):
+            order.append(result.text_path.rsplit("/", 1)[1])
+            if len(order) == 4:  # its text is written; the batch of the third is not recorded
+                raise RuntimeError("stopped")
+            yield result
+
+    monkeypatch.setattr(text_refresh, "run", stopping)
+    config = _config(stopped)
+    assert CliRunner().invoke(app, [*args, str(config)]).exit_code != 0
+    monkeypatch.setattr(text_refresh, "run", run)
+    result = CliRunner().invoke(app, [*args, str(config)])
+    assert result.exit_code == 0, result.output
+
+    expected, got = _end_state(whole), _end_state(stopped)
+    assert {k: v[:2] for k, v in got.items()} == {k: v[:2] for k, v in expected.items()}
+    caught = order[2:4]
+    for name in expected:
+        if name in caught:
+            old_sha = text_refresh.sha256("Z" + got[name][0].decode("utf-8"))
+            assert got[name][2]["text_sha256"] == old_sha != got[name][1]
+        else:
+            assert got[name][2] == expected[name][2]
+    assert all(v[2]["text_sha256"] == v[1] for v in expected.values())

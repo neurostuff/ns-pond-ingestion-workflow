@@ -240,8 +240,11 @@ def run(all_jobs: Iterable[Job], *, write: bool, workers: int = 1) -> Iterator[R
         # Frozen, the objects the parent holds (the job list) are left out of the workers'
         # collections, which would otherwise copy each page holding one into every worker.
         gc.freeze()
-        with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
-            yield from pool.map(worker, batch, chunksize=32)
+        try:
+            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
+                yield from pool.map(worker, batch, chunksize=32)
+        finally:
+            gc.unfreeze()
 
     for job in all_jobs:
         batch.append(job)
