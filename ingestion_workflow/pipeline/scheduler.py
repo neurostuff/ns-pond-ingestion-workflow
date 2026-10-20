@@ -148,7 +148,11 @@ def _execute_batch(ctx: Context, stage: Stage, plan: StagePlan, report: StageRep
     finally:
         ctx.catalog.record(outcomes)
         report.ok += sum(1 for o in outcomes if o.status is Status.OK)
-        report.failed += sum(1 for o in outcomes if o.status is not Status.OK)
+        # A skip is a decision about the article, not a failure: it is counted with the
+        # plans' skips, and is not retried.
+        report.skipped += sum(1 for o in outcomes if o.status is Status.SKIPPED)
+        report.failed += sum(1 for o in outcomes
+                             if o.status not in (Status.OK, Status.SKIPPED))
         report.taken_back += sum(1 for o in outcomes if o.error in TAKE_BACK_REASONS
                                  or (o.status is Status.OK and o.fingerprint == NO_TEXT))
 
