@@ -1,0 +1,94 @@
+{
+  "title": "Spatial and Temporal Characteristics of Error-Related Activity in the Human Brain",
+  "authors": [
+    {
+      "name": "M. Neta",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "F. Miezin",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "S. M. Nelson",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "Joseph W. Dubis",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "N. Dosenbach",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "B. Schlaggar",
+      "affiliation": null,
+      "orcid": null
+    },
+    {
+      "name": "S. Petersen",
+      "affiliation": null,
+      "orcid": null
+    }
+  ],
+  "abstract": "A number of studies have focused on the role of specific brain regions, such as the dorsal anterior cingulate cortex during trials on which participants make errors, whereas others have implicated a host of more widely distributed regions in the human brain. Previous work has proposed that there are multiple cognitive control networks, raising the question of whether error-related activity can be found in each of these networks. Thus, to examine error-related activity broadly, we conducted a meta-analysis consisting of 12 tasks that included both error and correct trials. These tasks varied by stimulus input (visual, auditory), response output (button press, speech), stimulus category (words, pictures), and task type (e.g., recognition memory, mental rotation). We identified 41 brain regions that showed a differential fMRI BOLD response to error and correct trials across a majority of tasks. These regions displayed three unique response profiles: (1) fast, (2) prolonged, and (3) a delayed response to errors, as well as a more canonical response to correct trials. These regions were found mostly in several control networks, each network predominantly displaying one response profile. The one exception to this \u201cone network, one response profile\u201d observation is the frontoparietal network, which showed prolonged response profiles (all in the right hemisphere), and fast profiles (all but one in the left hemisphere). We suggest that, in the place of a single localized error mechanism, these findings point to a large-scale set of error-related regions across multiple systems that likely subserve different functions.",
+  "journal": "Journal of Neuroscience",
+  "publication_year": 2015,
+  "keywords": [],
+  "license": null,
+  "source": "semantic_scholar",
+  "open_access": true,
+  "raw_metadata": {
+    "semantic_scholar": {
+      "paperId": "c7f49181ce61de577df282df6fa785624f769253",
+      "title": "Spatial and Temporal Characteristics of Error-Related Activity in the Human Brain",
+      "venue": "Journal of Neuroscience",
+      "year": 2015,
+      "isOpenAccess": true,
+      "openAccessPdf": {
+        "url": "https://www.jneurosci.org/content/jneuro/35/1/253.full.pdf",
+        "status": "HYBRID",
+        "license": "CCBYNCSA",
+        "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1523/JNEUROSCI.1313-14.2015?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1523/JNEUROSCI.1313-14.2015, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+      },
+      "publicationDate": "2015-01-07",
+      "authors": [
+        {
+          "authorId": "144448112",
+          "name": "M. Neta"
+        },
+        {
+          "authorId": "38249791",
+          "name": "F. Miezin"
+        },
+        {
+          "authorId": "144332223",
+          "name": "S. M. Nelson"
+        },
+        {
+          "authorId": "3240268",
+          "name": "Joseph W. Dubis"
+        },
+        {
+          "authorId": "3133713",
+          "name": "N. Dosenbach"
+        },
+        {
+          "authorId": "2963284",
+          "name": "B. Schlaggar"
+        },
+        {
+          "authorId": "1878109",
+          "name": "S. Petersen"
+        }
+      ],
+      "abstract": "A number of studies have focused on the role of specific brain regions, such as the dorsal anterior cingulate cortex during trials on which participants make errors, whereas others have implicated a host of more widely distributed regions in the human brain. Previous work has proposed that there are multiple cognitive control networks, raising the question of whether error-related activity can be found in each of these networks. Thus, to examine error-related activity broadly, we conducted a meta-analysis consisting of 12 tasks that included both error and correct trials. These tasks varied by stimulus input (visual, auditory), response output (button press, speech), stimulus category (words, pictures), and task type (e.g., recognition memory, mental rotation). We identified 41 brain regions that showed a differential fMRI BOLD response to error and correct trials across a majority of tasks. These regions displayed three unique response profiles: (1) fast, (2) prolonged, and (3) a delayed response to errors, as well as a more canonical response to correct trials. These regions were found mostly in several control networks, each network predominantly displaying one response profile. The one exception to this \u201cone network, one response profile\u201d observation is the frontoparietal network, which showed prolonged response profiles (all in the right hemisphere), and fast profiles (all but one in the left hemisphere). We suggest that, in the place of a single localized error mechanism, these findings point to a large-scale set of error-related regions across multiple systems that likely subserve different functions."
+    }
+  }
+}
