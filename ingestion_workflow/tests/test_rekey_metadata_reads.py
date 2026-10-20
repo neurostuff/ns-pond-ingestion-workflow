@@ -158,13 +158,14 @@ def _as_main_made_it(settings, catalog, stages, ref):
                                 summary={"tables": 1}) for w in works]
         else:
             outcomes = list(stage.execute(ctx, works))
-        for outcome in outcomes:
+        for outcome, work in zip(outcomes, works):
             if stage.name == "prose":
+                outcome.summary["read_fingerprint"] = made.read_fingerprint(work.upstream,
+                                                                            "me-1")
                 for passage in outcome.payload["passages"]:
                     for recorded in passage["inputs"]:
                         if recorded["artifact_kind"] == "metadata":
                             recorded["fingerprint"] = "me-1"
-                outcome.fingerprint = works[0].fingerprint
         assert [o.status for o in outcomes] == [Status.OK], stage.name
         catalog.record(outcomes)
 
@@ -194,9 +195,7 @@ def test_the_former_formula_is_the_one_main_used(made):
 
 def test_what_main_made_is_stale_under_the_new_formula(made):
     (settings, catalog, stages, *_), kept, stale = made
-    assert _pending(settings, catalog, stages, kept) == {
-        "triage", "analyses", "prose", "resolve", "roles", "space"} - {"analyses", "resolve",
-                                                                     "roles", "space"}
+    assert _pending(settings, catalog, stages, kept) == {"triage", "prose"}
 
 
 def test_the_rekeyed_chain_is_fresh_and_the_stale_one_is_left(made):
