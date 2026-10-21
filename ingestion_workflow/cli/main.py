@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Sequence
 
 import typer
 
-from ingestion_workflow.catalog import WHOLE_ARTICLE, ArticleRef, Catalog, Status
+from ingestion_workflow.catalog import WHOLE_ARTICLE, ArticleRef, Catalog, Status, identity_plan
 from ingestion_workflow.cli.options import (
     BackupOption,
     CatalogOption,
@@ -26,6 +26,7 @@ from ingestion_workflow.cli.options import (
     manifest_option,
     require_new_backup,
 )
+from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.pipeline import (
@@ -79,7 +80,11 @@ def _configure_logging(settings: Settings) -> None:
 
 
 def _catalog(settings: Settings) -> Catalog:
-    return Catalog.open(settings.catalog_root)
+    # With PubMed configured, registration checks each PMID against its record's DOI.
+    pubmed = (PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
+                           tool=settings.pubmed_tool or "ingestion-workflow")
+              if settings.pubmed_email else None)
+    return Catalog.open(settings.catalog_root, pubmed_dois=pubmed.dois if pubmed else None)
 
 
 def _context(settings: Settings, catalog: Catalog, refresh: List[str]) -> Context:
@@ -841,6 +846,65 @@ def repair(
         stored = catalog.store_fingerprints(list(found.rewrites.values()))
         typer.echo(f"stored {stored:,} fingerprints; "
                    f"{len(found.rewrites) - stored:,} artifacts were written meanwhile")
+
+
+#: What an identity change leaves stale without changing a fingerprint: metadata
+#: hashes no identifier, and triage and prose hash metadata's fingerprint.
+IDENTITY_REFRESH = ("metadata", "triage", "prose")
+
+
+@app.command("repair-identity")
+def repair_identity(
+    plan: Path = typer.Argument(..., exists=True, dir_okay=False,
+                                help="Reviewed plan: JSON lines, one operation each."),
+    apply: bool = apply_option("Write the plan (default: run it and roll it back)."),
+    backup: Optional[Path] = BackupOption,
+    manifest: Optional[Path] = typer.Option(
+        None, "--manifest",
+        help="Where --apply writes the touched articles' identifiers, for `ingest run "
+             "--manifest`."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Repair article identities: move, remove or add aliases, split, merge, and move or
+    forget artifacts, as a reviewed plan says.
+
+    The plan runs as one transaction. Each operation is checked against the catalog
+    as the ones before it left it, and refused when the catalog is not as the plan
+    says (an alias no longer where the plan puts it, an artifact gone). A dry run
+    lists every refusal; --apply writes nothing unless there is none. Stop the
+    pipeline first: the plan holds the write lock while it runs.
+    """
+    require_new_backup(apply, backup)
+    if apply and manifest is None:
+        raise typer.BadParameter("--apply needs --manifest <path>", param_hint="--manifest")
+    try:
+        operations = identity_plan.load(plan)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="PLAN") from exc
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        outcome = identity_plan.apply(catalog, operations, backup=backup if apply else None)
+    for op, n in sorted(outcome.applied.items()):
+        typer.echo(f"  {n:6,}  {op}")
+    typer.echo(f"{sum(outcome.applied.values()):,} of {len(operations):,} operations "
+               f"{'applied' if outcome.committed else 'would apply'}; "
+               f"{len(outcome.new_articles):,} new articles; "
+               f"{len(outcome.touched):,} articles touched")
+    for number, operation, why in outcome.refused:
+        typer.echo(f"refused line {number} ({operation['op']}): {why}")
+    if outcome.refused:
+        typer.echo(f"{len(outcome.refused):,} refused: the catalog is not as the plan says. "
+                   "Nothing was written; plan again from the catalog as it is.")
+        raise typer.Exit(1)
+    if not outcome.committed:
+        typer.echo("dry run: nothing written; --apply --backup <path> --manifest <path> "
+                   "writes it")
+        return
+    typer.echo(f"catalog copied to {backup}")
+    Identifiers(outcome.touched).save(manifest)
+    stages = " ".join(f"-s {stage} --refresh {stage}" for stage in IDENTITY_REFRESH)
+    typer.echo(f"touched articles in {manifest}; refresh what identity feeds: "
+               f"ingest run {stages} --manifest {manifest}")
 
 
 def _render_refingerprint(found) -> str:

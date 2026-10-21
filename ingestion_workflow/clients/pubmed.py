@@ -33,6 +33,7 @@ class PubMedClient:
     """Client for the PubMed/PMC API."""
 
     ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+    ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
     BASE_URL = "https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/"
     _SUPPORTED_ID_TYPES = {"pmid", "pmcid", "doi"}
@@ -481,6 +482,27 @@ class PubMedClient:
                 continue
 
         return results
+
+    def dois(self, pmids: Sequence[str]) -> Dict[str, Optional[str]]:
+        """The DOI each PMID's PubMed record gives, None where it gives none.
+
+        A PMID PubMed has no record of is left out.
+        """
+        found: Dict[str, Optional[str]] = {}
+        pmids = list(dict.fromkeys(str(p) for p in pmids if p))
+        for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
+            params = [("db", "pubmed"), ("id", ",".join(pmids[i : i + IDCONV_BATCH_SIZE])),
+                      ("retmode", "json"), ("email", self.email), ("tool", self.tool)]
+            if self.api_key:
+                params.append(("api_key", self.api_key))
+            result = self._request_json(self.ESUMMARY_URL, params).get("result") or {}
+            for pmid in result.get("uids") or []:
+                record = result.get(pmid) or {}
+                if record.get("error"):
+                    continue
+                found[pmid] = next((a.get("value") for a in record.get("articleids") or []
+                                    if a.get("idtype") == "doi" and a.get("value")), None)
+        return found
 
     def get_notices(self, pmids: Sequence[str]) -> Dict[str, Tuple[List[Correction], bool]]:
         """`(corrections, is_retraction_notice)` for each PMID PubMed returned.
