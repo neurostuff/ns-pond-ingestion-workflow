@@ -277,6 +277,91 @@ def test_merge_needs_two_live_articles(catalog):
         catalog.merge([a, "aaaaaaaaaaaa"])
 
 
+# -- a preprint's PubMed record held as its own article ----------------------------
+
+def _preprint_duplicate(catalog):
+    # btk5tlwqap5k held only PMID 37808793, PubMed's Preprint record of vrr7x2ygtjdt's
+    # eLife paper, and a PDF of it.
+    paper = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852",
+                                        pmcid="PMC10942577")).id
+    _hold(catalog, paper, "doi", "10.1101/2023.09.27.559792")
+    preprint = catalog.register(Identifier(pmid="37808793")).id
+    _download(catalog, preprint, "pdf")
+    return paper, preprint
+
+
+def test_a_preprint_s_record_marked_as_such_merges_into_its_paper(catalog):
+    paper, preprint = _preprint_duplicate(catalog)
+
+    with catalog.transaction():
+        catalog.mark_preprint_pmids([("37808793", preprint)])
+        survivor = catalog.merge([paper, preprint])
+
+    assert catalog.aliases(survivor, "pmid") == ["38345852"]
+    assert catalog.aliases(survivor, "preprint_pmid") == ["37808793"]
+    identifier = catalog.identifier(survivor)
+    assert identifier.pmid == "38345852"
+    assert identifier.other_ids == {"preprint_pmid": "37808793"}
+    assert _artifacts(catalog, survivor) == [("download", "pdf"), ("extract", "pdf")]
+
+
+def test_the_preprint_s_pmid_still_finds_its_paper(catalog):
+    paper, preprint = _preprint_duplicate(catalog)
+    catalog.mark_preprint_pmids([("37808793", preprint)])
+    survivor = catalog.merge([paper, preprint])
+    articles = catalog.count_articles()
+
+    assert catalog.resolve(Identifier(pmid="37808793")).id == survivor
+    assert catalog.register(Identifier(pmid="37808793")).id == survivor
+    preprint_doi = "10.1101/2023.09.27.559792"
+    assert catalog.register(Identifier(pmid="37808793", doi=preprint_doi)).id == survivor
+    assert catalog.count_articles() == articles and catalog.conflicts == 0
+    other = catalog.register(Identifier(doi="10.1016/j.neuroimage.2024.120001")).id
+    held = f"pmid 37808793 is held by {survivor} as preprint_pmid"
+    with pytest.raises(IdentityError, match=held):
+        catalog.reassign_aliases([("pmid", "37808793", survivor, other)])
+
+
+def test_merging_the_preprint_s_record_unmarked_is_refused(catalog):
+    paper, preprint = _preprint_duplicate(catalog)
+    with pytest.raises(IdentityError, match="would hold two"):
+        catalog.merge([paper, preprint])
+
+
+def test_only_an_article_s_pmid_is_marked(catalog):
+    paper, preprint = _preprint_duplicate(catalog)
+    with pytest.raises(IdentityError, match="pmid 37808793 is held by .*, not"):
+        catalog.mark_preprint_pmids([("37808793", paper)])
+    assert catalog.aliases(preprint, "pmid") == ["37808793"]
+
+
+def test_a_merge_drops_a_second_pubmed_record_of_the_paper(catalog):
+    # 5qxpg3twr524 held only 37401785, PubMed's second record of w5rawsklx347's paper
+    # (35770780, both 10.1684/epd.2022.1433); the contract has no place for it.
+    paper = catalog.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id
+    duplicate = catalog.register(Identifier(pmid="37401785")).id
+    _download(catalog, duplicate, "pubget")
+    with pytest.raises(IdentityError, match="would hold two"):
+        catalog.merge([paper, duplicate])
+
+    survivor = catalog.merge([paper, duplicate], drop=[("pmid", "37401785")])
+
+    assert catalog.aliases(survivor, "pmid") == ["35770780"]
+    assert catalog.resolve(Identifier(pmid="37401785")) is None
+    assert _artifacts(catalog, survivor) == [("download", "pubget"), ("extract", "pubget")]
+
+
+def test_a_merge_drops_only_the_merged_articles_aliases(catalog):
+    paper = catalog.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id
+    duplicate = catalog.register(Identifier(pmid="37401785")).id
+    other = catalog.register(Identifier(pmid="21524925")).id
+    before = _snapshot(catalog)
+    held = f"pmid 21524925 is held by {other}, not by the merged"
+    with pytest.raises(IdentityError, match=held):
+        catalog.merge([paper, duplicate], drop=[("pmid", "37401785"), ("pmid", "21524925")])
+    assert _snapshot(catalog) == before
+
+
 # -- transaction ------------------------------------------------------------------
 
 def test_a_transaction_commits_its_writes_together_or_not_at_all(catalog):

@@ -32,6 +32,10 @@ def _normalize_pmid(value: Optional[str]) -> Optional[str]:
 #: records of the same paper; `pmid` is the lowest of them all.
 DUPLICATE_PUBMED_RECORDS = "duplicate_pubmed_records"
 
+#: The `other_ids` key holding the PMID of a preprint's PubMed record, on an article
+#: whose `pmid` is its version of record's.
+PREPRINT_PMID = "preprint_pmid"
+
 
 @dataclass
 class Identifier(MutableMapping[str, Optional[str]]):

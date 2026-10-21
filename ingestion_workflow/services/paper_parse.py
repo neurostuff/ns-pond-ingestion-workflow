@@ -31,6 +31,7 @@ from study_schema import keys, layouts
 from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
+from ingestion_workflow.models.ids import PREPRINT_PMID
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -540,14 +541,16 @@ def article_identifiers(identifier, dois: Sequence[str], meta):
     """The catalog's identifiers, each preprint's apart from the version of record's.
 
     A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
-    `Preprint` and the PMCID that record lists. Raises ValueError for an article with two
+    `Preprint` and the PMCID that record lists, and the PMID the catalog holds as the
+    preprint's beside the version of record's. Raises ValueError for an article with two
     DOIs neither of which is a preprint's, since `doi` holds one.
     """
     from ingestion_workflow.pipeline.stage import publication_types
 
     pmid = getattr(identifier, "pmid", None) or None
     pmcid = getattr(identifier, "pmcid", None) or None
-    preprint_pmid = preprint_pmcid = None
+    preprint_pmid = (getattr(identifier, "other_ids", None) or {}).get(PREPRINT_PMID)
+    preprint_pmcid = None
     if pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
         preprint_pmid, pmid = pmid, None
         if pmcid and pmcid == _pubmed_pmcid(meta):

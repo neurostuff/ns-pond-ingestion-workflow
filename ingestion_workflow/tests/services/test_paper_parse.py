@@ -18,6 +18,7 @@ from ingestion_workflow.models import (
     ExtractedTable,
     Identifier,
 )
+from ingestion_workflow.models.ids import PREPRINT_PMID
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.services import nspond, paper_parse
 from ingestion_workflow.models.statistics import point_values, schema_kind
@@ -426,6 +427,18 @@ PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
 def test_pubmed_s_record_of_a_preprint_is_a_preprint_s(tmp_path, identifier, ids, expected):
     paper, _, _ = _written(tmp_path, identifier, raw_metadata=_pubmed(PREPRINT_RECORD, ids))
     assert paper["header"]["identifiers"] == expected
+
+
+def test_the_preprint_s_pmid_the_catalog_holds_beside_the_paper_s_is_the_preprint_s(tmp_path):
+    # vrr7x2ygtjdt once btk5tlwqap5k, the bioRxiv preprint's PubMed record, was merged in.
+    identifier = Identifier(pmid="38345852", pmcid="PMC10942577", doi="10.7554/elife.92563",
+                            other_ids={PREPRINT_PMID: "37808793"})
+    paper, _, _ = _written(tmp_path, identifier,
+                           dois=["10.7554/elife.92563", "10.1101/2023.09.27.559792"])
+    assert paper["header"]["identifiers"] == {
+        "pmid": "38345852", "pmcid": "PMC10942577", "doi": "10.7554/elife.92563",
+        "preprint_dois": [{"doi": "10.1101/2023.09.27.559792", "server": "biorxiv"}],
+        "preprint_pmid": "37808793", "publication_status": "published"}
 
 
 @pytest.mark.parametrize("source", ["semantic_scholar", "openalex", "elsevier", "jats"])

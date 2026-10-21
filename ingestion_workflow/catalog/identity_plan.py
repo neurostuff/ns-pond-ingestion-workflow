@@ -10,7 +10,8 @@ method it calls; any other key (`why`, the evidence) is carried for the reader.
      "artifacts": [["download", "elsevier"]], "add": [["pmid", "456"]]}
     {"op": "move_artifacts", "from": A, "to": B, "artifacts": [["download", "pubget"]]}
     {"op": "forget_artifacts", "article": A, "artifacts": [["extract", "pubget"]]}
-    {"op": "merge", "articles": [A, B]}
+    {"op": "merge", "articles": [A, B], "drop": [["pmid", "37401785"]]}
+    {"op": "mark_preprint_pmid", "article": A, "value": "37808793"}
 
 `add` takes only an identifier no article holds; `split`'s `add` attaches more
 such identifiers to the new article.
@@ -40,6 +41,7 @@ _FIELDS = {
     "move_artifacts": ("from", "to", "artifacts"),
     "forget_artifacts": ("article", "artifacts"),
     "merge": ("articles",),
+    "mark_preprint_pmid": ("article", "value"),
 }
 
 
@@ -176,7 +178,12 @@ def _run_forget_artifacts(catalog, op, outcome):
 
 
 def _run_merge(catalog, op, outcome):
-    return [catalog.merge(op["articles"])]
+    return [catalog.merge(op["articles"], _pairs(op.get("drop", ())))]
+
+
+def _run_mark_preprint_pmid(catalog, op, outcome):
+    catalog.mark_preprint_pmids([(str(op["value"]), op["article"])])
+    return [op["article"]]
 
 
 _RUN: Dict[str, Callable[[Catalog, Operation, Outcome], List[str]]] = {
@@ -187,4 +194,5 @@ _RUN: Dict[str, Callable[[Catalog, Operation, Outcome], List[str]]] = {
     "move_artifacts": _run_move_artifacts,
     "forget_artifacts": _run_forget_artifacts,
     "merge": _run_merge,
+    "mark_preprint_pmid": _run_mark_preprint_pmid,
 }

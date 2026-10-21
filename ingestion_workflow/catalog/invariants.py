@@ -1,10 +1,12 @@
 """What a consistent catalog holds: each article is one paper, by every id it holds.
 
 * `journal-dois`: no article holds two DOIs that are not a preprint server's;
-* `pmids`, `pmcids`: no article holds two PMIDs, or two PMCIDs;
+* `pmids`, `pmcids`: no article holds two PMIDs, or two PMCIDs (a preprint's PMID
+  beside its paper's is not a second);
 * `pmid-doi`: where PubMed gives a PMID's record a DOI, no other article holds it, and
   the article holding the PMID holds it if it holds any DOI and the DOI is registered:
-  a few PubMed records carry a DOI with a typo, which no paper has;
+  a few PubMed records carry a DOI with a typo, which no paper has. A preprint's
+  PMID is held to the same rule;
 * `download`: no ok download names, by its files, a paper another article holds and
   this one does not. A file names a paper by an ACE `<pmid>.html` name, a
   `pmcid_<n>/` directory, or the DOI in Elsevier or JATS XML.
@@ -17,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Collection, Dict, Iterator, List, Optional, Set, Tuple
 
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import PREPRINT_PMID, Identifier
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
@@ -65,7 +67,7 @@ def violations(
         raise ValueError("checking PMIDs needs the catalog opened with pubmed_dois")
     live = sorted({a for a in article_ids if catalog.live(a)})
     held = {a: _held(catalog, a) for a in live}
-    pmids = sorted({p for h in held.values() for p in h["pmid"]})
+    pmids = sorted({p for h in held.values() for p in h["pmid"] + h[PREPRINT_PMID]})
     answers = catalog.pubmed_dois(pmids) if pmids else {}
     pubmed = {p: normalize_doi(d) for p, d in answers.items() if d}
     found: List[Violation] = []
@@ -76,7 +78,7 @@ def violations(
         for rule, values in singular:
             if len(values) > 1:
                 found.append(Violation(article_id, rule, f"holds {', '.join(values)}"))
-        for pmid in h["pmid"]:
+        for pmid in h["pmid"] + h[PREPRINT_PMID]:
             doi = pubmed.get(pmid)
             if doi is None:
                 continue
@@ -98,7 +100,7 @@ def violations(
 
 
 def _held(catalog: Catalog, article_id: str) -> Dict[str, List[str]]:
-    held: Dict[str, List[str]] = {"pmid": [], "pmcid": [], "doi": []}
+    held: Dict[str, List[str]] = {"pmid": [], "pmcid": [], "doi": [], PREPRINT_PMID: []}
     for kind in held:
         values = catalog.aliases(article_id, kind)
         held[kind] = sorted({normalize_doi(v) or v for v in values} if kind == "doi" else values)

@@ -104,6 +104,20 @@ def test_the_pmid_of_the_articles_own_doi_is_no_violation(catalog, registered):
     assert violations(catalog, [a], registered) == []
 
 
+@pytest.mark.vcr()
+def test_a_preprint_s_pmid_is_held_to_its_pubmed_doi(catalog, registered):
+    # vrr7x2ygtjdt holds its eLife paper's PMID and, as its preprint's, 37808793.
+    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
+    _hold(catalog, a, "preprint_pmid", "37808793")
+
+    found = violations(catalog, [a], registered)
+    assert [(v.rule, v.detail) for v in found] == [("pmid-doi", (
+        "pmid 37808793 is 10.1101/2023.09.27.559792 in PubMed, not 10.7554/elife.92563"))]
+
+    _hold(catalog, a, "doi", "10.1101/2023.09.27.559792")
+    assert violations(catalog, [a], registered) == []
+
+
 def _download(catalog, article_id, source, tmp_path, name, text):
     path = tmp_path / source / name
     path.parent.mkdir(parents=True, exist_ok=True)
