@@ -90,26 +90,30 @@ def test_ace_is_read_only_when_nothing_else_found_a_table():
 
 # -- the chain: extract -> triage -> analyses -----------------------------
 
-def test_analyses_hangs_off_triage_so_a_refitted_gate_makes_it_stale():
-    """If analyses fingerprinted from extract, changing the gate would leave
-    every existing analysis looking fresh while the set of tables it was built
-    from had changed underneath it."""
+def test_analyses_is_stale_when_triage_passes_other_tables_and_only_then():
+    """If analyses fingerprinted from extract, a refitted gate passing other tables
+    would leave every existing analysis looking fresh while the set of tables it was
+    built from had changed underneath it. A triage that ran again and passed the same
+    tables, as one does when only the publication types it reads changed, leaves it
+    fresh."""
     from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 
     assert AnalysesStage.requires == "triage"
 
-    class _Art:
-        def __init__(self, fp):
+    class _Triage:
+        def __init__(self, fp, source, passed):
             self.fingerprint = fp
+            self.summary = {"source": source, "passed_tables": passed}
 
     class _S:
         llm_model = "m"
 
     stage = AnalysesStage(settings=_S())
-    before = stage.fingerprint_for(_Art("triage-v1"))
-    after = stage.fingerprint_for(_Art("triage-v2"))
-    assert before != after
-
+    before = stage.fingerprint_for(_Triage("triage-v1", "ace", ["t1"]), None, "meta-1")
+    assert stage.fingerprint_for(_Triage("triage-v2", "ace", ["t1"]), None, "meta-1") == before
+    for other in (_Triage("triage-v2", "ace", ["t1", "t2"]), _Triage("triage-v2", "ace", []),
+                  _Triage("triage-v2", "pubget", ["t1"])):
+        assert stage.fingerprint_for(other, None, "meta-1") != before
 
 
 def test_a_tie_on_tables_goes_by_source_not_by_catalog_order():
@@ -141,20 +145,15 @@ def test_analyses_reads_the_extraction_triage_named_not_the_richest_one():
     from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 
     class _Art:
-        def __init__(self, name):
+        def __init__(self, name, source=None):
             self.status = Status.OK
             self.name = name
+            self.summary = {"source": source}
 
-    class _Cat:
-        def artifacts(self, ids, stage):
-            return {"a1": {"ace": _Art("ace"), "pubget": _Art("pubget")}}
-
-    class _Ctx:
-        catalog = _Cat()
-
-    got = AnalysesStage._extraction_for(_Ctx(), "a1", "pubget")
+    found = {"ace": _Art("ace"), "pubget": _Art("pubget")}
+    got = AnalysesStage._extraction_for(found, _Art("triage", "pubget"))
     assert got.name == "pubget"
-    assert AnalysesStage._extraction_for(_Ctx(), "a1", "elsevier") is None
+    assert AnalysesStage._extraction_for(found, _Art("triage", "elsevier")) is None
 
 
 def test_triage_requires_metadata_but_still_goes_stale_on_re_extraction(tmp_path):

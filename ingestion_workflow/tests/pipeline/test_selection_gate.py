@@ -27,7 +27,8 @@ def catalog(tmp_path):
         cat.record([Outcome(
             article_id=ref.id, stage="triage", source="", status=Status.OK,
             fingerprint=f"fp-{n}",
-            summary={"source": "ace", "tables": 3, "passed": passed})])
+            summary={"source": "ace", "tables": 3, "passed": passed,
+                     "passed_tables": [f"t{i}" for i in range(passed)]})])
     return cat, refs
 
 

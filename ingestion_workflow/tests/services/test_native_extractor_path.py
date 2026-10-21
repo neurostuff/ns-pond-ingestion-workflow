@@ -101,12 +101,12 @@ def test_flipping_the_prompt_shape_makes_analyses_stale():
     from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 
     class _Art:
-        fingerprint = "triage-1"
+        summary = {"source": "pubget", "passed_tables": ["t1"]}
 
     def fp(native):
         return AnalysesStage(
             settings=SimpleNamespace(llm_model="nu-v19", llm_native_schema=native)
-        ).fingerprint_for(_Art())
+        ).fingerprint_for(_Art(), None, "meta-1")
 
     assert fp(True) != fp(False)
     assert fp(True) == fp(True)
@@ -353,18 +353,18 @@ def test_changing_what_reaches_the_model_makes_the_corpus_stale():
     assert mod.EXTRACTION_VERSION
 
     class _Art:
-        fingerprint = "triage-1"
+        summary = {"source": "pubget", "passed_tables": ["t1"]}
 
     stage = mod.AnalysesStage(
         settings=SimpleNamespace(llm_model="nu-v19", llm_native_schema=True))
-    before = stage.fingerprint_for(_Art())
+    before = stage.fingerprint_for(_Art(), None, "meta-1")
     original = mod.EXTRACTION_VERSION
     try:
         mod.EXTRACTION_VERSION = original + ".next"
-        assert stage.fingerprint_for(_Art()) != before
+        assert stage.fingerprint_for(_Art(), None, "meta-1") != before
     finally:
         mod.EXTRACTION_VERSION = original
-    assert stage.fingerprint_for(_Art()) == before
+    assert stage.fingerprint_for(_Art(), None, "meta-1") == before
 
 
 def test_the_statistic_priority_is_one_rule_in_one_place():

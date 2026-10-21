@@ -67,12 +67,10 @@ META_ANALYSIS_TITLE = re.compile(
     r"meta[-\s]?analy[sz]|\bALE\b|activation\s+likelihood\s+estimation", re.I)
 
 
-#: What triage, and `analyses` after it, read of the article's metadata. Triage reads
-#: the title and the publication types, to mark a meta-analysis, and the abstract, where
-#: `read.extract` finds the space a table does not name; analyses sends the title and
-#: abstract to the model. Both read the metadata only through `metadata_read`, and
-#: triage's fingerprint holds these fields' digests, so a field neither reads changes
-#: neither.
+#: What triage reads of the article's metadata: the title and the publication types, to
+#: mark a meta-analysis, and the abstract, where `read.extract` finds the space a table
+#: does not name. It reads the metadata only through `metadata_read`, and its fingerprint
+#: holds these fields' digests, so a field it does not read changes nothing here.
 METADATA_READ = ("title", "abstract", "publication_types")
 
 
@@ -136,7 +134,7 @@ class TriageStage:
         return self._gate_id
 
     def metadata_fingerprint(self, metadata: Artifact) -> Optional[str]:
-        """The fingerprint of what this stage and `analyses` read of `metadata`."""
+        """The fingerprint of what this stage reads of `metadata`."""
         return metadata_fingerprint(metadata, METADATA_READ)
 
     def fingerprint_for(self, metadata: str, extraction: Artifact) -> str:
@@ -241,6 +239,9 @@ class TriageStage:
                     "source": work.upstream.source,
                     "tables": len(verdicts),
                     "passed": len(kept),
+                    # `analyses` reads the verdict from here, so a change to anything
+                    # else in the payload (the publication types) leaves it fresh.
+                    "passed_tables": [v["table_id"] for v in kept],
                     "read_outright": sum(1 for v in verdicts if v["points"] >= 3),
                     "is_meta_analysis": meta,
                     **({"skipped_no_text": skipped_of[work.article_id]}

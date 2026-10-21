@@ -230,7 +230,7 @@ def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
                     summary={"tables": 0}),
             Outcome(ref.id, "triage", "", Status.OK, "tr-1",
                     {"source": "pubget", "tables": [{"table_id": "t9", "passes": True}]},
-                    summary={"passed": 1}),
+                    summary={"source": "pubget", "passed": 1, "passed_tables": ["t9"]}),
         ])
         report = run_stages(Context(settings, catalog), [AnalysesStage(settings)], [ref])
         recorded = catalog.artifacts([ref.id], "analyses")[ref.id][""]

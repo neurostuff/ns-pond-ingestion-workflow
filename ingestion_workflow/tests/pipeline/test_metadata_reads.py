@@ -196,8 +196,9 @@ def test_a_licence_change_leaves_triage_analyses_and_prose_fresh(env):
 
 
 @pytest.mark.parametrize("path, value, stale", [
-    (("title",), "A meta-analysis of adaptive spatial filtering", {"triage", "prose"}),
-    (("abstract",), "Coordinates are in Talairach space.", {"triage", "prose"}),
+    (("title",), "A meta-analysis of adaptive spatial filtering",
+     {"triage", "analyses", "prose"}),
+    (("abstract",), "Coordinates are in Talairach space.", {"triage", "analyses", "prose"}),
     (TYPES, {"PublicationType": {"#text": "Meta-Analysis", "@UI": "D017418"}}, {"triage"}),
 ])
 def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stale):
@@ -209,8 +210,48 @@ def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stal
     assert _stale(settings, catalog, ref) == stale
 
     triage = TriageStage(settings)
-    _run(triage, Context(settings, catalog), catalog, ref)
-    assert "analyses" in _stale(settings, catalog, ref), "analyses chains on triage"
+    (judged,) = _run(triage, Context(settings, catalog), catalog, ref)
+    assert judged.summary["passed_tables"] == ["t1"]
+    # Triage judged again and passed the same table: analyses follows its verdict, not
+    # its fingerprint, so only a title or abstract it reads leaves it stale.
+    assert _stale(settings, catalog, ref) == stale - {"triage"}
+
+
+def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch):
+    """Two articles alike but for every metadata field but the title and abstract, the
+    publication types included, so triage marks one a meta-analysis and its payload
+    differs: analyses makes the same of both, gives its model the same, and reads no
+    part of triage's payload."""
+    from ingestion_workflow.catalog.blobs import BlobStore
+
+    settings, catalog, tmp_path = env
+    changed = _everything_else_changed(_at(RECORD, TYPES, {
+        "PublicationType": {"#text": "Meta-Analysis", "@UI": "D017418"}}))
+    one = _article(catalog, tmp_path, "1", RECORD)
+    other = _article(catalog, tmp_path, "2", changed)
+    read, get = [], BlobStore.get
+    monkeypatch.setattr(BlobStore, "get", lambda self, digest: read.append(digest)
+                        or get(self, digest))
+
+    (_, analysed, _, _), made = _made(settings, catalog, one)
+    (_, analysed_other, _, _), made_other = _made(settings, catalog, other)
+
+    by_stage = {o.stage: o for o in made}
+    by_stage_other = {o.stage: o for o in made_other}
+    assert by_stage["triage"].payload["is_meta_analysis"] is False
+    assert by_stage_other["triage"].payload["is_meta_analysis"] is True
+    this, that = by_stage["analyses"], by_stage_other["analyses"]
+    assert (this.fingerprint, this.payload, this.summary) == (
+        that.fingerprint, that.payload, that.summary)
+    assert analysed._shared_service.given == analysed_other._shared_service.given
+    triaged = {catalog.artifact(ref.id, "triage").blob for ref in (one, other)}
+    read.clear()
+    ctx = Context(settings, catalog, refresh=["analyses"])
+    analyses = _stages(settings)[1]
+    for ref in (one, other):
+        (again,) = _run(analyses, ctx, catalog, ref)
+        assert again.fingerprint == this.fingerprint
+    assert read and not triaged & set(read)
 
 
 def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env, monkeypatch):
@@ -273,9 +314,9 @@ def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env):
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
                             fingerprint="me-1", payload=RECORD)])
     ctx = Context(settings, catalog)
-    triage, _, _, prose = _stages(settings)
+    triage, analyses, _, prose = _stages(settings)
 
-    for stage in (triage, prose):
+    for stage in (triage, analyses, prose):
         plan = _plan(stage, ctx, catalog, ref)
         assert (plan.pending, plan.fresh, plan.reasons) == ([], 0, {NO_DIGESTS: 1}), stage.name
 
@@ -292,7 +333,7 @@ def test_a_row_missing_the_digest_of_a_field_read_blocks_its_readers(env):
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
                             fingerprint="me-1", payload=RECORD, summary={"digests": digests})])
     ctx = Context(settings, catalog)
-    triage, _, _, prose = _stages(settings)
+    triage, analyses, _, prose = _stages(settings)
 
-    for stage in (triage, prose):
+    for stage in (triage, analyses, prose):
         assert _plan(stage, ctx, catalog, ref).reasons == {NO_DIGESTS: 1}, stage.name
