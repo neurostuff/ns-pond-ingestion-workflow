@@ -185,12 +185,15 @@ class SyncStage:
 
     def fingerprint_for(self, upstream: Artifact, base_study_id: Optional[str] = None,
                         excluded=None, notices: Optional[Artifact] = None,
-                        metadata: Optional[Artifact] = None) -> str:
+                        metadata: Optional[Artifact] = None,
+                        triage: Optional[Artifact] = None) -> str:
         # The base study is in the parse's header, and the notices are the parsed paper's
         # corrections. A person's exclusions change what is written, so marking a table
         # re-syncs and upload then sends the parse without it. The parse carries the
         # metadata whole, licences included, so its content (the blob's address) goes in:
         # a re-fetch that keeps the metadata's fingerprint can still change its licences.
+        # The parse holds triage's meta-analysis mark, publication types and each table's
+        # verdict, score and route, so triage's fingerprint goes in.
         marked = excl.digest(excluded or {})
         return fingerprint(
             "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION,
@@ -198,6 +201,7 @@ class SyncStage:
             _answered(notices).fingerprint if _answered(notices) else None,
             *([marked] if marked else []),
             *([metadata.blob] if metadata is not None and metadata.ok else []),
+            triage.fingerprint if triage is not None and triage.ok else None,
             upstream=upstream.fingerprint,
         )
 
@@ -245,6 +249,7 @@ class SyncStage:
         excluded = ctx.catalog.exclusions(ids)
         noticed = ctx.catalog.artifacts(ids, "notices")
         metadata = ctx.catalog.artifacts(ids, "metadata")
+        triaged = ctx.catalog.artifacts(ids, "triage")
         bases = known_base_study_ids(ctx, refs)
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
@@ -275,7 +280,8 @@ class SyncStage:
                 plan.block(f"prose {READ_FROM_BAD_PAGE}")
                 continue
             fp = self.fingerprint_for(spaced, base_study_id, excluded.get(ref.id), notices,
-                                      metadata.get(ref.id, {}).get(""))
+                                      metadata.get(ref.id, {}).get(""),
+                                      triaged.get(ref.id, {}).get(""))
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue

@@ -292,6 +292,33 @@ def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
     assert (plan.fresh, plan.pending) == (1, [])
 
 
+def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(env, monkeypatch):
+    """The parse holds triage's meta-analysis mark, publication types and each table's
+    score and route. A triage judged again (a refitted gate, a new meta-analysis rule)
+    re-syncs, though analyses follows only the tables it passed and the metadata stands;
+    the same triage recorded again does not."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    (sync,) = build(["sync"], settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+
+    def plan():
+        found = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                          catalog.artifacts([ref.id], "space"))
+        return found.fresh, len(found.pending)
+
+    triaged = catalog.artifact(ref.id, "triage", "")
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint=triaged.fingerprint, summary=triaged.summary)])
+    assert plan() == (1, 0)
+
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-refit",
+                            summary={**triaged.summary, "is_meta_analysis": True})])
+    assert plan() == (0, 1)
+
+
 @RECORDS
 def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
                                                                                 vcr):
@@ -1063,9 +1090,11 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
     ])
     upload = UploadStage(settings)
     _, (held,) = _run(upload, ctx, catalog, ref)
+    # The parse was synced from the triage before, which passed no table: sync is stale too.
     assert held.error == (
         f"{GATED}: analyses failed: UnreadableAnswer: Expecting ',' delimiter: line 1 column "
-        "1481 (char 1480); the parse holds 1 analyses, and nothing was uploaded before")
+        "1481 (char 1480); sync stale; the parse holds 1 analyses, and nothing was uploaded "
+        "before")
 
 
 @pytest.mark.parametrize("plan, existing, expected", [

@@ -171,7 +171,7 @@ _READS_TEXT = {"prose": "passages", "sync": "prose"}
 #: (`fingerprint_for` in each stage), for the trace's "built from".
 _SIDE_INPUTS = {"triage": ("extract",), "analyses": ("extract", "metadata"),
                 "prose": ("metadata",), "resolve": ("analyses",),
-                "sync": ("metadata",)}
+                "sync": ("metadata", "triage")}
 
 #: Which part of a reason joined from several sources ("x + y") names the
 #: article's loss, first match wins: our own errors, which a fix here clears;

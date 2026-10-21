@@ -17,7 +17,9 @@ extraction, and the title and abstract (`METADATA_READ`). This, once:
   One whose triage was stale in `--earlier` is left: what it read is not what
   `--earlier` holds;
 * carries what was made from those over to the fingerprint expected of it now, as
-  `ingest repair` carries what was made from an artifact it fills. An artifact with no
+  `ingest repair` carries what was made from an artifact it fills. Sync now also
+  fingerprints the triage it reads: a sync is carried only where the triage stands as it
+  did in `--earlier`, and is stale where triage has run again since. An artifact with no
   fingerprint is never given one: that is `ingest repair`'s.
 
 An analyses artifact the former formula does not match was stale already and is left as
@@ -40,6 +42,7 @@ meanwhile is left alone. A second run finds nothing left to do.
 from __future__ import annotations
 
 import argparse
+import copy
 import sqlite3
 import sys
 from dataclasses import dataclass, field, replace
@@ -60,9 +63,11 @@ from ingestion_workflow.pipeline.selection import everything  # noqa: E402
 from ingestion_workflow.pipeline.stage import NO_TEXT, Stage, metadata_fingerprint  # noqa: E402
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build  # noqa: E402
 from ingestion_workflow.pipeline.stages import analyses as analyses_module  # noqa: E402
+from ingestion_workflow.pipeline.stages import sync as sync_module  # noqa: E402
 
 COUNTS = ("verdicts", "rekeyed", "rekeyed_stale", "carried", "fresh", "stale", "unmatched",
-          "triage_stale_then", "no_digests", "no_upstream", "unasked", "lost")
+          "triage_stale_then", "triage_changed", "no_digests", "no_upstream", "unasked",
+          "lost")
 #: Why a rekeyed analyses artifact is stale: what it read that has changed since.
 CHANGED = ("verdict", "extraction", "title_or_abstract")
 
@@ -79,6 +84,27 @@ def former_fingerprint(stage: Stage, triage_fingerprint: str) -> str:
         *(() if native else (analyses_module.PROMPT_RULES_VERSION,)),
         upstream=triage_fingerprint,
     )
+
+
+def former_sync(stage: Stage) -> Stage:
+    """`stage`, sync, as it fingerprinted before: without the triage it reads."""
+    old = copy.copy(stage)
+
+    def fingerprint_for(upstream, base_study_id=None, excluded=None, notices=None,
+                        metadata=None, triage=None):
+        marked = sync_module.excl.digest(excluded or {})
+        answered = sync_module._answered(notices)
+        return fingerprint(
+            "sync", sync_module.SYNC_VERSION, sync_module.paper_parse.PAPER_PARSE_VERSION,
+            (upstream.summary or {}).get("role_records"), "before upload", base_study_id,
+            answered.fingerprint if answered else None,
+            *([marked] if marked else []),
+            *([metadata.blob] if metadata is not None and metadata.ok else []),
+            upstream=upstream.fingerprint,
+        )
+
+    old.fingerprint_for = fingerprint_for
+    return old
 
 
 def verdict(payload: Optional[dict]) -> dict:
@@ -120,17 +146,27 @@ class _Verdicts:
 
 class _Rekeying(_After):
     """Plans with the rekeyed analyses, noting which of them are fresh. An artifact with no
-    fingerprint is planned as `_Before` plans it, and is never given one."""
+    fingerprint is planned as `_Before` plans it, and is never given one; a sync whose
+    triage has changed since `--earlier` is not carried."""
 
-    def __init__(self, base: Context, fresh_before: Set[Key], rekeyed: Dict[Key, Rewrite]):
+    def __init__(self, base: Context, fresh_before: Set[Key], rekeyed: Dict[Key, Rewrite],
+                 triage_changed: Set[str]):
         super().__init__(base, fresh_before)
         self.rewrites.update(rekeyed)
         self.rekeyed = set(rekeyed)
         self.rekeyed_fresh: Set[Key] = set()
+        self.triage_changed = triage_changed
+        self.left: Set[Key] = set()
 
     def is_fresh(self, artifact: Optional[Artifact], expected: str) -> bool:
         if artifact is not None and not artifact.fingerprint:
             return Context.is_fresh(self, replace(artifact, fingerprint=expected), expected)
+        if (artifact is not None and artifact.stage == "sync"
+                and artifact.article_id in self.triage_changed
+                and _key(artifact) in self.fresh_before and _key(artifact) not in self.rewrites):
+            self.asked.add(_key(artifact))
+            self.left.add(_key(artifact))
+            return False
         fresh = super().is_fresh(artifact, expected)
         if fresh and _key(artifact) in self.rekeyed:
             self.rekeyed_fresh.add(_key(artifact))
@@ -168,6 +204,20 @@ def _verdicts(ctx: Context, refs: Sequence[ArticleRef]) -> Dict[str, dict]:
                 payload = ctx.catalog.payload(artifact)
                 if payload is not None:
                     out[article_id] = verdict(payload)
+    return out
+
+
+def _triage_changed(ctx: Context, earlier: Catalog, refs: Sequence[ArticleRef]) -> Set[str]:
+    """The articles with a sync whose triage is not the one `earlier` holds."""
+    out: Set[str] = set()
+    for batch in batched(refs):
+        ids = [r.id for r in batch]
+        now, then = ctx.catalog.artifacts(ids, "triage"), earlier.artifacts(ids, "triage")
+        for article_id in ctx.catalog.artifacts(ids, "sync"):
+            a, b = (found.get(article_id, {}).get("") for found in (now, then))
+            if (a.fingerprint if a is not None and a.ok else None) != (
+                    b.fingerprint if b is not None and b.ok else None):
+                out.add(article_id)
     return out
 
 
@@ -240,13 +290,14 @@ def rekey(ctx: Context, earlier: Catalog, stages: Sequence[Stage],
     ctx = Context(ctx.settings, _Verdicts(stored, verdicts), max_attempts=ctx.max_attempts,
                   retry_after=ctx.retry_after)
     fresh: Set[Key] = set()
-    run_stages(_Before(ctx, fresh), stages, refs, dry_run=True)
+    run_stages(_Before(ctx, fresh), [former_sync(s) if s.name == "sync" else s for s in stages],
+               refs, dry_run=True)
     counts = {stage.name: dict.fromkeys(COUNTS, 0) for stage in stages}
     analyses, triage = (next(stage for stage in stages if stage.name == name)
                         for name in ("analyses", "triage"))
     rekeyed, changed = _rekeyed(ctx, earlier, analyses, triage, refs, fresh,
                                 counts["analyses"])
-    after = _Rekeying(ctx, fresh, rekeyed)
+    after = _Rekeying(ctx, fresh, rekeyed, _triage_changed(ctx, earlier, refs))
     plan = run_stages(after, stages, refs, dry_run=True)
     rewrites = after.rewrites
 
@@ -285,6 +336,8 @@ def rekey(ctx: Context, earlier: Catalog, stages: Sequence[Stage],
                         n["carried"] += 1
                     elif key in after.still_fresh:
                         n["fresh"] += 1
+                    elif key in after.left:
+                        n["triage_changed"] += 1
                     elif key in fresh:
                         n["lost"] += 1  # fresh before, and not once rekeyed
                     elif key in after.asked:
