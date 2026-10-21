@@ -103,9 +103,9 @@ def _extraction(catalog, ref, tmp_path, fingerprint):
                  "text_sha256": file_sha256(text)})])
 
 
-def _ran(stage, ctx, catalog, refs, payload=None):
-    """What a run of `stage` left: its outcome for every work, or `payload` in place of
-    a model's answer."""
+def _ran(stage, ctx, catalog, refs, payload=None, summary=None):
+    """What a run of `stage` left: its outcome for every work, or `payload` and `summary`
+    in place of a model's answer."""
     ids = [r.id for r in refs]
     plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name),
                       catalog.artifacts(ids, stage.requires) if stage.requires else {})
@@ -113,7 +113,8 @@ def _ran(stage, ctx, catalog, refs, payload=None):
         catalog.record(list(stage.execute(ctx, plan.pending)))
     else:
         catalog.record([Outcome(article_id=w.article_id, stage=stage.name, source=w.source,
-                                fingerprint=w.fingerprint, payload=payload(w.article_id))
+                                fingerprint=w.fingerprint, payload=payload(w.article_id),
+                                summary=summary)
                         for w in plan.pending])
 
 
@@ -140,7 +141,8 @@ def migrated(env):
                                                                       "abstract": "A"})})])
     made = [tables, prose_only]
     by = {s.name: s for s in stages}
-    _ran(by["triage"], ctx, catalog, made, lambda _: {"source": "pubget", "tables": {}})
+    _ran(by["triage"], ctx, catalog, made, lambda _: {"source": "pubget", "tables": []},
+         {"source": "pubget", "tables": 0, "passed": 0, "passed_tables": []})
     _ran(by["analyses"], ctx, catalog, made, lambda a: _table() if a == tables.id else {})
     for name in ("passages", "prose", "resolve", "roles", "space"):
         _ran(by[name], ctx, catalog, made)

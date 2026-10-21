@@ -81,7 +81,8 @@ def _triaged(catalog, ref, *, passes: bool = True) -> None:
                 fingerprint="tr-1",
                 payload={"source": "pubget",
                          "tables": [{"table_id": "t1", "passes": passes}]},
-                summary={"tables": 1, "passed": int(passes)},
+                summary={"source": "pubget", "tables": 1, "passed": int(passes),
+                         "passed_tables": ["t1"] if passes else []},
             )
         ]
     )

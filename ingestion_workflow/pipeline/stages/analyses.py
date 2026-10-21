@@ -6,7 +6,7 @@ import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from typing import Dict, Iterator, List, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import ArticleExtractionBundle, ExtractedContent
@@ -31,8 +31,21 @@ EXTRACTION_VERSION = "2026-10-01.serialised+minus+dedupe+thinspace+selfclosing+b
 PROMPT_RULES_VERSION = "2026-10-09.no-placeholder+no-deactivation-seed"
 
 from ..plan import StagePlan, Work
-from ..stage import Context
-from .triage import metadata_read
+from ..stage import NO_DIGESTS, Context, metadata_fingerprint
+from ..stage import metadata_read as read_fields
+
+#: What this stage reads of the article's metadata: the title and abstract it sends to
+#: the model. It reads the metadata only through `metadata_read`, and its fingerprint
+#: holds these fields' digests, so a field it does not read changes nothing here.
+METADATA_READ = ("title", "abstract")
+
+#: Why a plan blocks an article whose triage records no `passed_tables`.
+NO_VERDICT = "triage records no passed tables: run scripts/rekey_analyses_reads.py"
+
+
+def metadata_read(payload: Optional[Dict]) -> Dict:
+    return read_fields(payload, METADATA_READ)
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +53,8 @@ logger = logging.getLogger(__name__)
 class AnalysesStage:
     name = "analyses"
     #: triage, not extract. Which tables are worth a call is triage's answer,
-    #: so a refitted gate or a new reader has to make these analyses stale --
-    #: and it only does if the fingerprint runs through triage.
+    #: so a refitted gate or a new reader that passes other tables has to make
+    #: these analyses stale -- and it only does if the fingerprint holds the verdict.
     requires = "triage"
 
     #: Triage records how many tables it passed. An article it passed none for
@@ -79,11 +92,14 @@ class AnalysesStage:
                     self._shared_service = CreateAnalysesService(self.settings)
         return self._shared_service
 
-    def fingerprint_for(self, upstream: Artifact) -> str:
-        """`upstream` is the triage artifact, whose own fingerprint runs
-        through the extraction it judged. So the chain is extract -> triage ->
-        analyses, and a change anywhere along it lands here."""
+    def fingerprint_for(self, triage: Artifact, extraction: Optional[Artifact],
+                        metadata: str) -> str:
+        """What this stage reads: triage's verdict (the extraction it judged and the
+        tables it passed, from its summary), that extraction, and the title and abstract
+        (`metadata`, their digests' fingerprint). Not triage's whole fingerprint, which
+        holds the publication types this stage never reads."""
         native = bool(getattr(self.settings, "llm_native_schema", False))
+        summary = triage.summary or {}
         return fingerprint(
             "analyses",
             COORDINATE_PARSING_PROMPT_VERSION,
@@ -96,7 +112,10 @@ class AnalysesStage:
             # would leave the whole corpus looking fresh.
             str(native),
             *(() if native else (PROMPT_RULES_VERSION,)),
-            upstream=upstream.fingerprint,
+            summary["source"],
+            tuple(summary["passed_tables"]),
+            extraction.fingerprint if extraction is not None else None,
+            upstream=metadata,
         )
 
     def plan(
@@ -109,6 +128,8 @@ class AnalysesStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
+        extractions = ctx.catalog.artifacts(ids, "extract")
+        metadata = ctx.catalog.artifacts(ids, "metadata")
         # Waiting for metadata to have been attempted moved into `triage`,
         # which now requires it and is required in turn. The reason is
         # unchanged: the prompt carries the title and abstract, and an article
@@ -118,7 +139,15 @@ class AnalysesStage:
             if triaged is None or triaged.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            fp = self.fingerprint_for(triaged)
+            if "passed_tables" not in (triaged.summary or {}):
+                plan.block(NO_VERDICT)
+                continue
+            read = metadata_fingerprint(metadata.get(ref.id, {}).get(""), METADATA_READ)
+            if read is None:
+                plan.block(NO_DIGESTS)
+                continue
+            extraction = self._extraction_for(extractions.get(ref.id, {}), triaged)
+            fp = self.fingerprint_for(triaged, extraction, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -131,24 +160,24 @@ class AnalysesStage:
         return plan
 
     @staticmethod
-    def _extraction_for(ctx: Context, article_id: str, source: str) -> Artifact | None:
-        """The extraction triage judged, named in its payload.
+    def _extraction_for(found: Dict[str, Artifact], triage: Artifact) -> Artifact | None:
+        """The extraction triage judged, named in its summary.
 
         Not the one with the most coordinates, which is what this used to pick.
         Table ids are unique only within an extraction, so reading a different
         one would apply triage's verdicts to different tables.
         """
-        found = ctx.catalog.artifacts([article_id], "extract").get(article_id, {})
-        artifact = found.get(source)
+        artifact = found.get((triage.summary or {}).get("source", ""))
         return artifact if artifact and artifact.status is Status.OK else None
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         jobs = []
+        extractions = ctx.catalog.artifacts([work.article_id for work in works], "extract")
         for work in works:
-            verdicts = ctx.payload(work.upstream) or {}
-            passed = {v["table_id"] for v in verdicts.get("tables", []) if v.get("passes")}
-            extraction = self._extraction_for(
-                ctx, work.article_id, verdicts.get("source", ""))
+            # From triage's summary, as the fingerprint reads it, not its payload.
+            passed = set(work.upstream.summary["passed_tables"])
+            extraction = self._extraction_for(extractions.get(work.article_id, {}),
+                                              work.upstream)
             payload = ctx.payload(extraction)
             if payload is None:
                 yield Outcome.failure(
@@ -188,8 +217,8 @@ class AnalysesStage:
                 yield future.result()
 
     def _metadata_for(self, ctx: Context, works: Sequence[Work]) -> Dict[str, ArticleMetadata]:
-        """The title and abstract, read through triage's `metadata_read`: triage's
-        fingerprint holds what that reads, and this stage's chains on triage's."""
+        """The title and abstract, read through `metadata_read`, whose fields the
+        fingerprint holds."""
         found: Dict[str, ArticleMetadata] = {}
         artifacts = ctx.catalog.artifacts([w.article_id for w in works], "metadata")
         for work in works:

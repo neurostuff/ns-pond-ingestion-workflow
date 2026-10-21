@@ -24,8 +24,9 @@ from ingestion_workflow.models import DownloadCopy
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.plan import StagePlan, Work
-from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
+from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT, metadata_fingerprint
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, build
+from ingestion_workflow.pipeline.stages.analyses import METADATA_READ as ANALYSES_READ
 from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage
@@ -147,7 +148,8 @@ def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None):
     ref = catalog.register(Identifier(pmid=pmid, neurostore=neurostore, doi=doi))
     _record_upstream(catalog, ref, path)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
-                            summary={"source": "pubget", "tables": 0, "passed": 0})])
+                            summary={"source": "pubget", "tables": 0, "passed": 0,
+                                     "passed_tables": []})])
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
     _run(ResolveStage(settings), ctx, catalog, ref)
@@ -288,6 +290,33 @@ def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
     plan = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
                      catalog.artifacts([ref.id], "space"))
     assert (plan.fresh, plan.pending) == (1, [])
+
+
+def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(env, monkeypatch):
+    """The parse holds triage's meta-analysis mark, publication types and each table's
+    score and route. A triage judged again (a refitted gate, a new meta-analysis rule)
+    re-syncs, though analyses follows only the tables it passed and the metadata stands;
+    the same triage recorded again does not."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    (sync,) = build(["sync"], settings)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    sync.finish()
+
+    def plan():
+        found = sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                          catalog.artifacts([ref.id], "space"))
+        return found.fresh, len(found.pending)
+
+    triaged = catalog.artifact(ref.id, "triage", "")
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint=triaged.fingerprint, summary=triaged.summary)])
+    assert plan() == (1, 0)
+
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-refit",
+                            summary={**triaged.summary, "is_meta_analysis": True})])
+    assert plan() == (0, 1)
 
 
 @RECORDS
@@ -593,7 +622,7 @@ def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
                 payload={**catalog.payload(pubget), "source": "pdf"},
                 summary={**pubget.summary, "download_source": "wiley"}),
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
-                summary={"source": read, "tables": 0, "passed": 0}),
+                summary={"source": read, "tables": 0, "passed": 0, "passed_tables": []}),
         Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-2",
                 payload=(licensed := {**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
                                       "copy_licenses": COPY_LICENSES}),
@@ -882,6 +911,17 @@ def _icafz5_payload():
             for table_id, names in ICAFZ5_TABLES.items()}
 
 
+def _analysed_from(settings, catalog, triage):
+    """The fingerprint of analyses read from `triage`, and from the extraction and
+    metadata the catalog holds."""
+    stage = AnalysesStage(settings)
+    extraction = stage._extraction_for(
+        catalog.artifacts([triage.article_id], "extract").get(triage.article_id, {}), triage)
+    metadata = catalog.artifact(triage.article_id, "metadata", "")
+    return stage.fingerprint_for(triage, extraction,
+                                 metadata_fingerprint(metadata, ANALYSES_READ))
+
+
 def _icafz5(tmp_path, monkeypatch, catalog, *, analyses_fresh=False, unread=None,
             uploaded=True):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
@@ -889,12 +929,15 @@ def _icafz5(tmp_path, monkeypatch, catalog, *, analyses_fresh=False, unread=None
                         role_model_table=TABLE_MODEL, neurostore_api_url=LOCAL)
     ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"))
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1005",
-                            summary={"source": "ace", "tables": 3, "passed": 2})])
+                            summary={"source": "ace", "tables": 3, "passed": 2,
+                                     "passed_tables": list(ICAFZ5_TABLES)})])
+    # The triage of 2026-10-02 passed one of the two tables today's passes.
     read_from = catalog.artifact(ref.id, "triage", "") if analyses_fresh else Artifact(
-        ref.id, "triage", fingerprint="tr-1002")
+        ref.id, "triage", fingerprint="tr-1002",
+        summary={"source": "ace", "tables": 3, "passed": 1, "passed_tables": ["2"]})
     catalog.record([
         Outcome(article_id=ref.id, stage="analyses", source="",
-                fingerprint=AnalysesStage(settings).fingerprint_for(read_from),
+                fingerprint=_analysed_from(settings, catalog, read_from),
                 payload=_icafz5_payload(),
                 summary={"tables": 2, "coordinates": 24,
                          **({"unread": unread} if unread else {})}),
@@ -979,7 +1022,7 @@ def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch,
         # The analyses read again from today's triage; everything after them follows.
         triage = catalog.artifact(ref.id, "triage", "")
         catalog.record([Outcome(article_id=ref.id, stage="analyses", source="",
-                                fingerprint=AnalysesStage(settings).fingerprint_for(triage),
+                                fingerprint=_analysed_from(settings, catalog, triage),
                                 payload=_icafz5_payload(), summary={"tables": 2})])
         _run(_roles(settings, monkeypatch, _ByName(["Source"])), ctx, catalog, ref)
         _run(SpaceStage(settings), ctx, catalog, ref)
@@ -1038,17 +1081,20 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
     _run(SyncStage(settings), ctx, catalog, ref)
     catalog.record([
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-2",
-                summary={"source": "pubget", "tables": 1, "passed": 1}),
+                summary={"source": "pubget", "tables": 1, "passed": 1, "passed_tables": ["t1"]}),
         Outcome.failure(ref.id, "analyses", "", "UnreadableAnswer: Expecting ',' delimiter: "
                         "line 1 column 1481 (char 1480)",
-                        fingerprint=AnalysesStage(settings).fingerprint_for(
-                            Artifact(ref.id, "triage", fingerprint="tr-2"))),
+                        fingerprint=_analysed_from(settings, catalog, Artifact(
+                            ref.id, "triage", fingerprint="tr-2",
+                            summary={"source": "pubget", "passed_tables": ["t1"]}))),
     ])
     upload = UploadStage(settings)
     _, (held,) = _run(upload, ctx, catalog, ref)
+    # The parse was synced from the triage before, which passed no table: sync is stale too.
     assert held.error == (
         f"{GATED}: analyses failed: UnreadableAnswer: Expecting ',' delimiter: line 1 column "
-        "1481 (char 1480); the parse holds 1 analyses, and nothing was uploaded before")
+        "1481 (char 1480); sync stale; the parse holds 1 analyses, and nothing was uploaded "
+        "before")
 
 
 @pytest.mark.parametrize("plan, existing, expected", [

@@ -83,7 +83,9 @@ def _run(env, tmp_path, tables, verdicts):
         Outcome(ref.id, "extract", "pubget", Status.OK, "ex-1", content.to_dict(),
                 summary={"tables": len(tables)}),
         Outcome(ref.id, "triage", "", Status.OK, "tr-1",
-                {"source": "pubget", "tables": verdicts}, summary={"passed": 1}),
+                {"source": "pubget", "tables": verdicts},
+                summary={"source": "pubget", "passed": 1,
+                         "passed_tables": [v["table_id"] for v in verdicts if v["passes"]]}),
     ])
     stage = AnalysesStage(settings)
     ctx = Context(settings, catalog)

@@ -35,11 +35,18 @@ from ingestion_workflow.pipeline.stages import (
 )
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint, file_sha256
 
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "rekey_metadata_reads.py"
-spec = importlib.util.spec_from_file_location("rekey_metadata_reads", SCRIPT)
-rekey = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = rekey
-spec.loader.exec_module(rekey)
+def _script(name):
+    spec = importlib.util.spec_from_file_location(
+        name, Path(__file__).resolve().parents[2] / "scripts" / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+rekey = _script("rekey_metadata_reads")
+#: Where main's analyses formula, which chained on triage's fingerprint, is kept.
+analyses_rekey = _script("rekey_analyses_reads")
 
 #: What main at 22cee5b gave the article below: triage and prose, from the metadata
 #: artifact's fingerprint `me-1`.
@@ -155,16 +162,18 @@ def _plan(stage, ctx, catalog, ref):
 
 def _as_main_made_it(settings, catalog, stages, ref):
     """The chain as main made it: triage and prose fingerprinted, and prose recorded with
-    each answer, the metadata artifact's fingerprint."""
+    each answer, the metadata artifact's fingerprint; analyses fingerprinted triage's."""
     ctx = Context(settings, catalog)
     for stage in stages:
         made = rekey.former(stage, rekey._as_stored) if stage.name in rekey.READERS else stage
-        works = _plan(made, ctx, catalog, ref).pending
         if stage.name == "analyses":
-            outcomes = [Outcome(article_id=w.article_id, stage="analyses", source="",
-                                fingerprint=w.fingerprint, payload=ANALYSES,
-                                summary={"tables": 1}) for w in works]
+            triaged = catalog.artifact(ref.id, "triage")
+            outcomes = [Outcome(article_id=ref.id, stage="analyses", source="",
+                                fingerprint=analyses_rekey.former_fingerprint(
+                                    stage, triaged.fingerprint),
+                                payload=ANALYSES, summary={"tables": 1})]
         else:
+            works = _plan(made, ctx, catalog, ref).pending
             outcomes = list(made.execute(ctx, works))
         assert [o.status for o in outcomes] == [Status.OK], stage.name
         catalog.record(outcomes)
@@ -217,8 +226,12 @@ def test_the_rekeyed_chain_is_fresh_and_the_stale_one_is_left(made):
     assert counts["triage"] == (1, 0, 1)
     assert counts["prose"] == (1, 0, 1)
     assert counts["passages"] == (0, 0, 0)
-    for stage in ("analyses", "resolve", "roles", "space"):
-        assert counts[stage] == (0, 1, 0), stage
+    # Analyses no longer chains on triage; its own rekey, rekey_analyses_reads, rekeys it.
+    # Roles and space follow the analyses here (resolve's basis), so they stand.
+    assert counts["analyses"] == (0, 0, 2)
+    assert counts["resolve"] == (0, 1, 0)
+    for stage in ("roles", "space"):
+        assert (counts[stage], found.stages[stage]["fresh"]) == ((0, 0, 0), 2), stage
     assert found.stages["passages"]["fresh"] == 2
     assert found.stages["metadata"]["digests"] == 2
     assert found.rerun() == {}
@@ -229,7 +242,7 @@ def test_the_rekeyed_chain_is_fresh_and_the_stale_one_is_left(made):
     for ref in (kept, stale):
         stored = catalog.artifact(ref.id, "metadata")
         assert stored.summary["digests"] == metadata_digests(catalog.payload(stored))
-    assert _pending(settings, catalog, stages, kept) == set()
+    assert _pending(settings, catalog, stages, kept) == {"analyses"}  # rekey_analyses_reads
     assert {s.name: catalog.artifact(stale.id, s.name) for s in stages} == before
     assert {"triage", "prose"} <= _pending(settings, catalog, stages, stale)
     assert rekey.rekey(Context(settings, catalog), stages, [kept]).rewrites == {}
@@ -324,7 +337,7 @@ def test_repair_filling_the_metadata_s_fingerprint_before_or_after_changes_nothi
         _repaired(settings, catalog, stages, [kept])
 
     assert catalog.artifact(kept.id, "metadata").fingerprint
-    assert _pending(settings, catalog, stages, kept) == set()
+    assert _pending(settings, catalog, stages, kept) == {"analyses"}  # rekey_analyses_reads
     prose = next(s for s in stages if s.name == "prose")
     ctx = Context(settings, catalog, refresh=["prose"])
     calls = reader.calls
@@ -393,7 +406,7 @@ def test_apply_backs_up_then_stores_and_a_second_run_finds_nothing(made, served)
                               "stage='triage'", (kept.id,)).fetchone()[0] == old
     assert catalog.artifact(kept.id, "triage").fingerprint == \
         found.rewrites[(kept.id, "triage", "")].new.fingerprint != old
-    assert _pending(settings, catalog, stages, kept) == set()
+    assert _pending(settings, catalog, stages, kept) == {"analyses"}  # rekey_analyses_reads
     assert rekey.run(settings, out=io.StringIO()).rewrites == {}
 
 

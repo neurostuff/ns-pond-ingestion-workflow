@@ -169,8 +169,9 @@ _READS_TEXT = {"prose": "passages", "sync": "prose"}
 
 #: Inputs a stage's fingerprint reads besides its declared parent
 #: (`fingerprint_for` in each stage), for the trace's "built from".
-_SIDE_INPUTS = {"triage": ("extract",), "prose": ("metadata",), "resolve": ("analyses",),
-                "sync": ("metadata",)}
+_SIDE_INPUTS = {"triage": ("extract",), "analyses": ("extract", "metadata"),
+                "prose": ("metadata",), "resolve": ("analyses",),
+                "sync": ("metadata", "triage")}
 
 #: Which part of a reason joined from several sources ("x + y") names the
 #: article's loss, first match wins: our own errors, which a fix here clears;

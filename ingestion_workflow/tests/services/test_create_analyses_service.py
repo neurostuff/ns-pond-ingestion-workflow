@@ -158,11 +158,11 @@ def test_the_prompt_rules_version_reaches_only_the_prompted_fingerprint(monkeypa
     from ingestion_workflow.pipeline.stages import analyses as mod
 
     class _Art:
-        fingerprint = "triage-1"
+        summary = {"source": "pubget", "passed_tables": ["t1"]}
 
     def fp(native):
         settings = SimpleNamespace(llm_model="m", llm_native_schema=native)
-        return mod.AnalysesStage(settings=settings).fingerprint_for(_Art())
+        return mod.AnalysesStage(settings=settings).fingerprint_for(_Art(), None, "meta-1")
 
     before = {native: fp(native) for native in (True, False)}
     monkeypatch.setattr(mod, "PROMPT_RULES_VERSION", "bumped")
