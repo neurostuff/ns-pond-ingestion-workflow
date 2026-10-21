@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import calendar
+import html
 import logging
 import time
 from datetime import datetime
@@ -486,7 +487,8 @@ class PubMedClient:
     def dois(self, pmids: Sequence[str]) -> Dict[str, Optional[str]]:
         """The DOI each PMID's PubMed record gives, None where it gives none.
 
-        A PMID PubMed has no record of is left out.
+        A PMID PubMed has no record of is left out. Some records hold their DOI with
+        its XML entities escaped (`&#x0003c;` for `<`); they are unescaped.
         """
         found: Dict[str, Optional[str]] = {}
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
@@ -500,8 +502,9 @@ class PubMedClient:
                 record = result.get(pmid) or {}
                 if record.get("error"):
                     continue
-                found[pmid] = next((a.get("value") for a in record.get("articleids") or []
-                                    if a.get("idtype") == "doi" and a.get("value")), None)
+                doi = next((a.get("value") for a in record.get("articleids") or []
+                            if a.get("idtype") == "doi" and a.get("value")), None)
+                found[pmid] = html.unescape(doi) if doi else None
         return found
 
     def get_notices(self, pmids: Sequence[str]) -> Dict[str, Tuple[List[Correction], bool]]:

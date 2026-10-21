@@ -26,6 +26,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from ingestion_workflow.models.ids import Identifier
 
+from .invariants import Violation, violations
 from .models import ALIAS_KINDS
 from .store import Catalog, IdentityError
 
@@ -72,6 +73,8 @@ class Outcome:
     new_articles: List[str] = field(default_factory=list)
     #: The identifiers of every live article an operation touched, as they are afterwards.
     touched: List[Identifier] = field(default_factory=list)
+    #: How the touched articles break the catalog's invariants once the plan has run.
+    violations: List[Violation] = field(default_factory=list)
     committed: bool = False
 
 
@@ -80,14 +83,20 @@ class _Discard(Exception):
 
 
 def apply(
-    catalog: Catalog, operations: List[Tuple[int, Operation]], *, backup: Optional[Path] = None
+    catalog: Catalog,
+    operations: List[Tuple[int, Operation]],
+    *,
+    registered: Callable[[str], Optional[bool]],
+    backup: Optional[Path] = None,
 ) -> Outcome:
-    """Run every operation inside one transaction; commit only with `backup` and no refusal.
+    """Run every operation inside one transaction; commit only with `backup`, no
+    refusal, and no touched article breaking the invariants afterwards.
 
     Each operation is checked against the catalog as the ones before it left
     it, and a refused one writes nothing, so a dry run reports every refusal. A
     plan is committed whole or not at all. The backup is taken under the write
-    lock, so nothing is written between the copy and the plan.
+    lock, so nothing is written between the copy and the plan. `registered` is
+    for the invariants' check of PubMed's DOIs.
     """
     outcome = Outcome()
     try:
@@ -104,7 +113,8 @@ def apply(
                 outcome.applied[operation["op"]] += 1
             live = sorted({catalog.current_id(article_id) for article_id in touched})
             outcome.touched = [catalog.identifier(article_id) for article_id in live]
-            if backup is None or outcome.refused:
+            outcome.violations = violations(catalog, live, registered)
+            if backup is None or outcome.refused or outcome.violations:
                 raise _Discard
     except _Discard:
         return outcome

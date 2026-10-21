@@ -11,6 +11,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.pipeline.selection import resolve_manifest
+from ingestion_workflow.tests import cassette_secrets
 from typer.testing import CliRunner
 
 
@@ -24,13 +25,14 @@ def setup(tmp_path):
         "ns_pond_root": str(tmp_path / "pond"),
         "log_to_file": False,
         "show_progress": False,
+        "pubmed_email": cassette_secrets.REPLAY_EMAIL,
     }), encoding="utf-8")
     with Catalog.open(tmp_path / "catalog") as cat:
         # Two articles with each other's PMIDs; one holding a companion abstract's DOI and
         # its download; one holding a repository copy's DOI.
         ids = {
             "a": cat.register(Identifier(doi="10.1016/j.ajog.2011.02.050", pmid="21529779")).id,
-            "b": cat.register(Identifier(doi="10.1016/j.jse.2011.01.043", pmid="21529758")).id,
+            "b": cat.register(Identifier(doi="10.1016/j.apmr.2010.12.021", pmid="21529758")).id,
             "c": cat.register(Identifier(doi="10.1016/j.bpsc.2021.12.008", pmid="34954395")).id,
             "d": cat.register(Identifier(doi="10.1176/ajp.2006.163.4.735", pmid="16585452")).id,
         }
@@ -39,8 +41,8 @@ def setup(tmp_path):
             ("10.1016/j.biopsych.2021.02.423", ids["c"]),
             ("10.1176/appi.ajp.163.4.735", ids["d"]),
         ])
-        cat.record([Outcome(ids["c"], "download", "elsevier", Status.OK, payload="abstract"),
-                    Outcome(ids["c"], "download", "pubget", Status.OK, payload="paper")])
+        cat.record([Outcome(ids["c"], "download", "elsevier", Status.OK, payload={"files": []}),
+                    Outcome(ids["c"], "download", "pubget", Status.OK, payload={"files": []})])
     return config, tmp_path, ids
 
 
@@ -72,6 +74,7 @@ def _db(tmp_path):
                 for t in ("articles", "aliases", "artifacts")]
 
 
+@pytest.mark.vcr()
 def test_the_default_runs_the_plan_and_writes_nothing(setup):
     config, tmp_path, ids = setup
     before = _db(tmp_path)
@@ -94,6 +97,7 @@ def test_apply_needs_a_new_backup_and_a_manifest(setup):
                    "--manifest", tmp_path / "m.jsonl").exit_code == 2
 
 
+@pytest.mark.vcr()
 def test_apply_writes_the_plan_backs_up_first_and_lists_the_touched_articles(setup):
     config, tmp_path, ids = setup
     before = _db(tmp_path)
@@ -127,6 +131,7 @@ def test_apply_writes_the_plan_backs_up_first_and_lists_the_touched_articles(set
         assert cat.count_articles() == articles and cat.conflicts == 0
 
 
+@pytest.mark.vcr()
 def test_a_plan_the_catalog_no_longer_matches_is_refused_whole(setup):
     config, tmp_path, ids = setup
     plan = _plan(tmp_path, ids)
@@ -146,6 +151,7 @@ def test_a_plan_the_catalog_no_longer_matches_is_refused_whole(setup):
     assert not (tmp_path / "m.jsonl").exists()
 
 
+@pytest.mark.vcr()
 def test_a_plan_adding_an_identifier_another_article_holds_is_refused(setup):
     config, tmp_path, ids = setup
     plan = tmp_path / "plan.jsonl"
@@ -154,6 +160,37 @@ def test_a_plan_adding_an_identifier_another_article_holds_is_refused(setup):
     result = _invoke(config, plan)
     assert result.exit_code == 1
     assert f"pmid 34954395 is held by {ids['c']}" in result.output
+
+
+@pytest.mark.vcr()
+def test_a_plan_whose_result_breaks_an_invariant_is_not_committed(setup):
+    config, tmp_path, ids = setup
+    plan = _plan(tmp_path, ids)
+    # a repository copy's DOI beside the paper's own, once the rest is repaired
+    with plan.open("a", encoding="utf-8") as f:
+        f.write(json.dumps({"op": "add", "article": ids["d"], "kind": "doi",
+                            "value": "10.17169/refubium-31155"}) + "\n")
+    before = _db(tmp_path)
+
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+
+    assert result.exit_code == 1
+    assert (f"violation {ids['d']} journal-dois: holds 10.1176/ajp.2006.163.4.735, "
+            "10.17169/refubium-31155") in result.output
+    assert "0 refused, 1 violations after the plan. Nothing was written" in result.output
+    assert _db(tmp_path) == before
+    assert not (tmp_path / "m.jsonl").exists()
+
+
+def test_the_pmids_are_checked_against_pubmed_so_pubmed_is_required(setup):
+    config, tmp_path, ids = setup
+    settings = json.loads(config.read_text())
+    del settings["pubmed_email"]
+    config.write_text(json.dumps(settings))
+    result = _invoke(config, _plan(tmp_path, ids))
+    assert result.exit_code == 2
+    assert "pubmed_email" in result.output
 
 
 @pytest.mark.parametrize("line, why", [

@@ -870,20 +870,31 @@ def repair_identity(
 
     The plan runs as one transaction. Each operation is checked against the catalog
     as the ones before it left it, and refused when the catalog is not as the plan
-    says (an alias no longer where the plan puts it, an artifact gone). A dry run
-    lists every refusal; --apply writes nothing unless there is none. Stop the
-    pipeline first: the plan holds the write lock while it runs.
+    says (an alias no longer where the plan puts it, an artifact gone). Then every
+    article it touched is checked against the catalog's invariants: one journal DOI,
+    one PMID and one PMCID each, each PMID with its PubMed record's registered DOI,
+    and no download of another article's paper. A dry run lists every refusal and violation;
+    --apply writes nothing unless there is none. Stop the pipeline first: the plan
+    holds the write lock while it runs, and PubMed is asked about the PMIDs.
     """
     require_new_backup(apply, backup)
     if apply and manifest is None:
         raise typer.BadParameter("--apply needs --manifest <path>", param_hint="--manifest")
+    settings = _settings(config)
+    if not settings.pubmed_email:
+        raise typer.BadParameter("repair-identity checks PMIDs against PubMed: set pubmed_email",
+                                 param_hint="--config")
     try:
         operations = identity_plan.load(plan)
     except ValueError as exc:
         raise typer.BadParameter(str(exc), param_hint="PLAN") from exc
-    settings = _settings(config)
-    with _catalog(settings) as catalog:
-        outcome = identity_plan.apply(catalog, operations, backup=backup if apply else None)
+    import requests
+
+    from ingestion_workflow.services.local_pdfs import doi_registered
+
+    with _catalog(settings) as catalog, requests.Session() as session:
+        outcome = identity_plan.apply(catalog, operations, registered=doi_registered(session),
+                                      backup=backup if apply else None)
     for op, n in sorted(outcome.applied.items()):
         typer.echo(f"  {n:6,}  {op}")
     typer.echo(f"{sum(outcome.applied.values()):,} of {len(operations):,} operations "
@@ -892,9 +903,11 @@ def repair_identity(
                f"{len(outcome.touched):,} articles touched")
     for number, operation, why in outcome.refused:
         typer.echo(f"refused line {number} ({operation['op']}): {why}")
-    if outcome.refused:
-        typer.echo(f"{len(outcome.refused):,} refused: the catalog is not as the plan says. "
-                   "Nothing was written; plan again from the catalog as it is.")
+    for violation in outcome.violations:
+        typer.echo(f"violation {violation.article_id} {violation.rule}: {violation.detail}")
+    if outcome.refused or outcome.violations:
+        typer.echo(f"{len(outcome.refused):,} refused, {len(outcome.violations):,} violations "
+                   "after the plan. Nothing was written; plan again from the catalog as it is.")
         raise typer.Exit(1)
     if not outcome.committed:
         typer.echo("dry run: nothing written; --apply --backup <path> --manifest <path> "

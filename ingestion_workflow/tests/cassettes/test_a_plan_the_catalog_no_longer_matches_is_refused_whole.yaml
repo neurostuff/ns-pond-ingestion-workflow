@@ -1,0 +1,98 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=16585452%2C21529758%2C21529779%2C34954395&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 07:11:13 GMT
+      ncbi-phid:
+      - 1D341760D82B92E5000041536F106373.1.1.m_1
+      ncbi-sid:
+      - F6AB9957550F9176_FF74SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

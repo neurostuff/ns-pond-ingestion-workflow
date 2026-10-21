@@ -83,6 +83,17 @@ def test_a_move_may_not_leave_an_article_without_a_paper_id(catalog):
     assert _snapshot(catalog) == before
 
 
+def test_a_move_that_would_leave_two_pmids_on_an_article_is_refused(catalog):
+    # 2dv6myl5baiq kept 28283997 while the plan moved 28284050 to it.
+    a = catalog.register(Identifier(doi="10.1016/j.eplepsyres.2017.02.019", pmid="28284050")).id
+    b = catalog.register(Identifier(doi="10.1016/j.eplepsyres.2017.02.017", pmid="28283997")).id
+    before = _snapshot(catalog)
+
+    with pytest.raises(IdentityError, match=f"{b} would hold two pmids: 28283997, 28284050"):
+        catalog.reassign_aliases([("pmid", "28284050", a, b)])
+    assert _snapshot(catalog) == before
+
+
 def test_a_move_into_an_article_merged_away_is_refused(catalog):
     a = catalog.register(Identifier(doi="10.1/a", pmid="11")).id
     b = catalog.register(Identifier(doi="10.1/b")).id

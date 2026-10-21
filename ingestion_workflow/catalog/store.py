@@ -167,6 +167,11 @@ class Catalog:
             )
         return catalog
 
+    @property
+    def pubmed_dois(self) -> Optional[PubMedDois]:
+        """The PubMed lookup this catalog was opened with, if any."""
+        return self._pubmed_dois
+
     def backup(self, target: Path | str) -> Path:
         """Copy this catalog's database to `target`, a path not yet taken.
 
@@ -594,7 +599,8 @@ class Catalog:
         All moves are one write and each is checked against the catalog before
         any is made, so a chain or a swap of PMIDs is one call. Refused when an
         alias is not held by its `from`, is named twice, an article is not live,
-        or a `from` would be left with no pmid, pmcid or doi.
+        a `from` would be left with no pmid, pmcid or doi, or a `to` with two
+        PMIDs or two PMCIDs.
         """
         named = [(kind, value) for kind, value, _, _ in moves]
         if len(set(named)) != len(named):
@@ -611,6 +617,11 @@ class Catalog:
                 logger.warning("catalog: %s %s moved from %s to %s", kind, value, src, dst)
             for src in dict.fromkeys(src for _, _, src, _ in moves):
                 self._require_named(conn, src)
+            for dst in dict.fromkeys(dst for _, _, _, dst in moves):
+                for kind in self.SINGULAR:
+                    if len(self._aliases(conn, dst, kind)) > 1:
+                        raise IdentityError(f"{dst} would hold two {kind}s: "
+                                            f"{', '.join(self._aliases(conn, dst, kind))}")
 
     def remove_aliases(self, rows: Sequence[Tuple[str, str, str]]) -> List[Tuple[str, str, str]]:
         """Detach each alias, given as (kind, value, article), from its article.
