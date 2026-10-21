@@ -112,7 +112,7 @@ class AnalysesStage:
             # would leave the whole corpus looking fresh.
             str(native),
             *(() if native else (PROMPT_RULES_VERSION,)),
-            summary.get("source", ""),
+            summary["source"],
             tuple(summary["passed_tables"]),
             extraction.fingerprint if extraction is not None else None,
             upstream=metadata,

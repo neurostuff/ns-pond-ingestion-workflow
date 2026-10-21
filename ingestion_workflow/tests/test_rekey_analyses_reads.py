@@ -31,7 +31,6 @@ from ingestion_workflow.pipeline.stages import (
     ResolveStage,
     RolesStage,
     SpaceStage,
-    SyncStage,
     TriageStage,
 )
 from ingestion_workflow.pipeline.stages.analyses import NO_VERDICT
@@ -55,11 +54,8 @@ TEXT = (
 TABLE = ("<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th></tr>"
          "<tr><td>Left amygdala</td><td>-22</td><td>-4</td><td>-18</td><td>4.1</td></tr>"
          "</table>")
-LICENCE = {"license_id": "cc-by", "determination": "stated"}
 METADATA = {"title": "Amygdala responses to faces", "abstract": "We scanned 20 patients.",
-            "journal": "NeuroImage", "source": "pubmed", "license": LICENCE,
-            "copy_licenses": {"pubget": LICENCE},
-            "open_access": True, "authors": [], "keywords": [],
+            "journal": "NeuroImage", "license": None, "authors": [], "keywords": [],
             "raw_metadata": {"pubmed": {"MedlineCitation": {"Article": {}}}}}
 TYPES = ("raw_metadata", "pubmed", "MedlineCitation", "Article", "PublicationTypeList")
 ANALYSES = {"t1": {"slug": "a::t1", "coordinate_space": "MNI", "identifier": None, "analyses": [{
@@ -109,12 +105,11 @@ def env(tmp_path, served):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x",
                         coordinate_gate_path=gate, download_sources=["pubget"],
-                        ns_pond_root=tmp_path / "pond", log_to_file=False, show_progress=False)
+                        log_to_file=False, show_progress=False)
     prose = ProseStage(settings)
     prose.client = lambda: _Reader()
     stages = [TriageStage(settings), AnalysesStage(settings), PassagesStage(settings), prose,
-              ResolveStage(settings), RolesStage(settings), SpaceStage(settings),
-              SyncStage(settings)]
+              ResolveStage(settings), RolesStage(settings), SpaceStage(settings)]
     with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, stages, tmp_path
 
@@ -139,7 +134,7 @@ def _metadata(catalog, ref, record, fingerprint):
 
 def _article(catalog, tmp_path, pmid):
     """Downloaded and extracted, with one coordinate table, and its metadata."""
-    ref = catalog.register(Identifier(pmid=pmid, neurostore=f"BS{pmid}"))
+    ref = catalog.register(Identifier(pmid=pmid))
     text, table = (tmp_path / f"{pmid}{ext}" for ext in (".txt", ".html"))
     xml = tmp_path / pmid / "article.xml"
     xml.parent.mkdir()
@@ -173,9 +168,9 @@ def _plan(stage, ctx, catalog, ref):
                       catalog.artifacts([ref.id], stage.requires) if stage.requires else {})
 
 
-def _triaged_as_main(settings, catalog, ref, passes=None, fingerprint=None):
+def _triaged_as_main(settings, catalog, ref, passes=None):
     """Triage run as main ran it, which recorded no `passed_tables`; `passes` overrides
-    the gate's verdict on the table, and `fingerprint` the gate's part in its own."""
+    the gate's verdict on the table."""
     triage, ctx = TriageStage(settings), Context(settings, catalog, refresh=["triage"])
     (outcome,) = triage.execute(ctx, _plan(triage, ctx, catalog, ref).pending)
     assert outcome.status is Status.OK
@@ -185,13 +180,11 @@ def _triaged_as_main(settings, catalog, ref, passes=None, fingerprint=None):
         payload = {**payload, "tables": [{**v, "passes": passes} for v in payload["tables"]]}
         summary["passed"] = int(passes)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
-                            fingerprint=fingerprint or outcome.fingerprint, payload=payload,
-                            summary=summary)])
+                            fingerprint=outcome.fingerprint, payload=payload, summary=summary)])
 
 
 def _as_main_made_it(settings, catalog, stages, ref):
-    """The chain as main made it: analyses fingerprinted triage's fingerprint, and sync
-    did not."""
+    """The chain as main made it: analyses fingerprinted triage's fingerprint."""
     _triaged_as_main(settings, catalog, ref)
     ctx = Context(settings, catalog)
     analyses = next(s for s in stages if s.name == "analyses")
@@ -200,8 +193,7 @@ def _as_main_made_it(settings, catalog, stages, ref):
                             fingerprint=rekey.former_fingerprint(analyses, triaged.fingerprint),
                             payload=ANALYSES, summary={"tables": 1, "coordinates": 1})])
     for stage in stages[2:]:
-        made = rekey.former_sync(stage) if stage.name == "sync" else stage
-        outcomes = list(stage.execute(ctx, _plan(made, ctx, catalog, ref).pending))
+        outcomes = list(stage.execute(ctx, _plan(stage, ctx, catalog, ref).pending))
         assert [o.status for o in outcomes] == [Status.OK], stage.name
         catalog.record(outcomes)
 
@@ -212,7 +204,7 @@ def _pending(settings, catalog, stages, ref):
 
 
 #: What changed after the earlier copy was taken, by article.
-CHANGES = ("untouched", "types", "abstract", "verdict")
+CHANGES = ("untouched", "types", "abstract", "verdict", "extraction")
 
 
 @pytest.fixture()
@@ -231,8 +223,14 @@ def made(env):
               "me-2")
     for name in ("types", "abstract"):
         _triaged_as_main(settings, catalog, refs[name])
-    # Judged again by a refitted gate, the table fails.
-    _triaged_as_main(settings, catalog, refs["verdict"], passes=False, fingerprint="tr-refit")
+    # Judged again, the table fails, as it might under a refitted gate.
+    _triaged_as_main(settings, catalog, refs["verdict"], passes=False)
+    # Extracted again by a newer extractor, and judged again: the same table passes.
+    extracted = catalog.artifact(refs["extraction"].id, "extract", "pubget")
+    catalog.record([Outcome(article_id=refs["extraction"].id, stage="extract", source="pubget",
+                            fingerprint="a newer extractor's", summary=extracted.summary,
+                            payload=catalog.payload(extracted))])
+    _triaged_as_main(settings, catalog, refs["extraction"])
     return settings, catalog, stages, tmp_path, earlier, refs
 
 
@@ -261,23 +259,21 @@ def test_a_change_to_the_types_alone_leaves_analyses_fresh_and_one_to_what_it_re
     found = rekey.rekey(Context(settings, catalog), then, stages, list(refs.values()))
 
     n = found.stages
-    assert (n["analyses"]["rekeyed"], n["analyses"]["rekeyed_stale"]) == (2, 2)
-    assert found.changed == {"verdict": 1, "extraction": 0, "title_or_abstract": 1}
-    assert n["triage"]["verdicts"] == 4
+    assert (n["analyses"]["rekeyed"], n["analyses"]["rekeyed_stale"]) == (2, 3)
+    assert found.changed == {"verdict": 1, "extraction": 1, "title_or_abstract": 1}
+    assert n["triage"]["verdicts"] == 5
     for stage in ("resolve", "roles", "space"):
-        assert n[stage]["carried"] == 4, stage
-    # Sync holds the metadata, whose blob changed for two, and the triage, judged again
-    # for the third.
-    assert (n["sync"]["carried"], n["sync"]["triage_changed"], n["sync"]["stale"]) == (1, 1, 2)
+        assert n[stage]["carried"] == 5, stage
     assert found.rerun() == {}
     before = {name: catalog.artifact(refs[name].id, "analyses") for name in CHANGES}
 
     catalog.store_fingerprints(list(found.rewrites.values()))
 
     assert _pending(settings, catalog, stages, refs["untouched"]) == set()
-    assert _pending(settings, catalog, stages, refs["types"]) == {"sync"}
-    assert _pending(settings, catalog, stages, refs["abstract"]) == {"analyses", "prose", "sync"}
-    assert _pending(settings, catalog, stages, refs["verdict"]) == {"triage", "analyses", "sync"}
+    assert _pending(settings, catalog, stages, refs["types"]) == set()
+    assert _pending(settings, catalog, stages, refs["abstract"]) == {"analyses", "prose"}
+    assert _pending(settings, catalog, stages, refs["verdict"]) == {"analyses"}
+    assert _pending(settings, catalog, stages, refs["extraction"]) == {"analyses", "passages"}
     for name in CHANGES:
         stored = catalog.artifact(refs[name].id, "analyses")
         assert (stored.blob, stored.updated_at) == (before[name].blob, before[name].updated_at)
@@ -360,7 +356,7 @@ def test_apply_backs_up_then_stores_and_a_second_run_finds_nothing(made):
                               "stage='analyses'", (refs["types"].id,)).fetchone()[0] == old
     assert catalog.artifact(refs["types"].id, "analyses").fingerprint == \
         found.rewrites[(refs["types"].id, "analyses", "")].new.fingerprint != old
-    assert "analyses" not in _pending(settings, catalog, stages, refs["types"])
+    assert _pending(settings, catalog, stages, refs["types"]) == set()
     assert rekey.run(settings, earlier, out=io.StringIO()).rewrites == {}
 
 
