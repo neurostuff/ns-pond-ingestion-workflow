@@ -344,6 +344,24 @@ def test_an_article_whose_pmc_record_a_plan_gives_away_is_checked(tmp_path):
 
 
 @pytest.mark.vcr()
+def test_an_article_holding_two_of_a_kind_anywhere_blocks_the_apply(tmp_path):
+    # B is linked to nothing the plan touches; it holds two PMCIDs, as the catalog took
+    # them before registration refused a second paper's.
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+        b = cat.register(Identifier(pmcid="PMC3189437")).id
+        cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "add", "article": a, "kind": "doi",
+                                "value": "10.1017/s0033291717000265"}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 1
+    assert f"violation {b} pmcids:" in result.output
+
+
+@pytest.mark.vcr()
 def test_an_article_keeping_an_extraction_has_nothing_taken_back(tmp_path):
     config = _config(tmp_path)
     with Catalog.open(tmp_path / "catalog") as cat:
