@@ -517,3 +517,27 @@ def test_a_violation_naming_an_article_the_plan_merges_away_is_still_the_one_bef
     assert result.exit_code == 0, result.output
     assert (f"pre-existing, not caused by this plan: {x} pmid-doi: pmid 21704176 is "
             f"10.1016/j.nlm.2011.06.006 in PubMed, which {s} holds") in result.output
+
+
+@pytest.mark.vcr()
+def test_an_accepted_version_pair_is_listed_and_does_not_block(tmp_path):
+    # bdarfou5chmg and nj52vmozfa3k, each with a base study; the plan forgets the paper's
+    # unreadable ACE copy
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        paper = cat.register(Identifier(pmid="42230985", pmcid="PMC13387087",
+                                        doi="10.1038/s41366-026-02114-2",
+                                        neurostore="vY5mktCMTn9P")).id
+        cat.register(Identifier(pmid="41674811", pmcid="PMC12889832",
+                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"))
+        cat.record([Outcome(paper, "download", "ace", Status.OK, payload={"files": []})])
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "forget_artifacts", "article": paper,
+                                "artifacts": [["download", "ace"]]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert "accepted, kept apart until neurostore makes one base study a version" in result.output
+    assert "violation " not in result.output
+    assert not [line for line in result.output.splitlines()
+                if line.startswith("pre-existing") and "two-versions" in line]

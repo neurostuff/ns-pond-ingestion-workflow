@@ -928,6 +928,9 @@ def repair_identity(
         typer.echo(f"refused line {number} ({operation['op']}): {why}")
     for violation in outcome.violations:
         typer.echo(f"violation {violation.article_id} {violation.rule}: {violation.detail}")
+    for violation in outcome.accepted:
+        typer.echo(f"accepted, kept apart until neurostore makes one base study a version of "
+                   f"the other: {violation.article_id} {violation.rule}: {violation.detail}")
     for violation in outcome.preexisting:
         typer.echo(f"pre-existing, not caused by this plan: {violation.article_id} "
                    f"{violation.rule}: {violation.detail}")

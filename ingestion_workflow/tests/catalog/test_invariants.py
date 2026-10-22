@@ -431,3 +431,33 @@ def test_a_pmc_record_of_the_article_s_pubmed_record_may_give_its_other_doi(chec
                                     doi="10.1073/pnas.97.7.3573")).id
     _hold(checked, a, "alternate_doi", "10.1073/pnas.050583797")
     assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_preprint_and_its_paper_each_with_a_base_study_are_accepted_not_violations(checked):
+    # bdarfou5chmg (Int J Obes, base study vY5mktCMTn9P) and nj52vmozfa3k (Research Square,
+    # JAJmM4dhUPuZ): apart until neurostore can make one base study a version of the other.
+    # The paper's PMC download is the preprint's copy.
+    paper = checked.register(Identifier(pmid="42230985", pmcid="PMC13387087",
+                                        doi="10.1038/s41366-026-02114-2",
+                                        neurostore="vY5mktCMTn9P")).id
+    preprint = checked.register(Identifier(pmid="41674811", pmcid="PMC12889832",
+                                           doi="10.21203/rs.3.rs-8694593/v1",
+                                           neurostore="JAJmM4dhUPuZ")).id
+    checked.record([Outcome(paper, "download", "pubget", Status.OK, payload={"files": [
+        {"file_path": "/pubget/articles/pmcid_12889832/tables.xml"}]})])
+    found = violations(checked, [paper, preprint])
+    assert sorted((v.article_id, v.rule) for v in found) == sorted(
+        [(paper, "download")] + [(preprint, "two-versions")] * sum(
+            v.rule == "two-versions" for v in found))
+    assert found and all(v.accepted for v in found)
+    checked._conn.execute("DELETE FROM aliases WHERE kind='neurostore' AND article_id=?", (paper,))
+    assert not any(v.accepted for v in violations(checked, [paper, preprint]))
+
+
+@pytest.mark.vcr()
+def test_an_article_holding_only_its_pmid_asks_no_registry_of_pubmed_s_doi(checked):
+    # 7i57itl5rdoi: PubMed gives 16059980 a DOI whose agency serves a bad certificate; no
+    # article holds it, and the article holds no DOI, so no rule has anything to judge
+    a = checked.register(Identifier(pmid="16059980")).id
+    assert violations(checked, [a]) == []

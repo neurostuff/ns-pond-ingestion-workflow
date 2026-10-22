@@ -26,6 +26,18 @@ TWO_PUBMED_WORKS = [
     ("16790551", "9482945"),
 ]
 
+@pytest.mark.vcr()
+def test_an_early_release_with_one_word_fewer_in_its_title_is_the_paper(evidence):
+    # PLoS Comput Biol's early online release: "...trapping in the ribosome" (2005), and the
+    # paper: "...trapping in the ribosome tunnel" (2006)
+    assert evidence.same_dois("10.1371/journal.pcbi.0020098", "10.1371/journal.pcbi.0020098.eor")
+
+
+def test_a_short_title_gaining_a_word_is_another_title():
+    assert not same_work(_as(title="Neural correlates of auditory attention"),
+                         _as(title="Neural correlates of auditory attention shifts"))
+
+
 #: Pairs of DOIs the registries give two works, though PubMed's titles are alike.
 TWO_REGISTERED_WORKS = [
     # an erratum and the paper it corrects
@@ -40,9 +52,12 @@ TWO_REGISTERED_WORKS = [
 #: PubMed's record of 11209064, and what the registry says of its DOI, 10.1073/pnas.98.2.676.
 RAICHLE = PubMedSummary(doi="10.1073/pnas.98.2.676", title="A default mode of brain function.",
                         pubtypes=("Journal Article",), first_author="Raichle ME", year=2001,
-                        issns=("0027-8424", "1091-6490"))
+                        issns=("0027-8424", "1091-6490"),
+                        journal="Proceedings of the National Academy of Sciences of the United "
+                                "States of America")
 REGISTERED = RegisteredWork(title="A default mode of brain function", first_author="Raichle",
-                            year=2001, type="article-journal", issns=("0027-8424", "1091-6490"))
+                            year=2001, type="article-journal", issns=("0027-8424", "1091-6490"),
+                            journal="Proceedings of the National Academy of Sciences")
 
 
 def _as(**changed):
@@ -56,7 +71,9 @@ def _as(**changed):
     (_as(first_author="Gusnard"), False),
     (_as(year=2004), False),
     (_as(year=2002), True),
-    (_as(issns=("1053-8119",)), False),
+    (_as(issns=("1053-8119",), journal="NeuroImage"), False),
+    # one journal by name, by its electronic ISSN alone
+    (_as(issns=("1091-6491",)), True),
     (_as(issns=()), True),
     (_as(type="chapter"), False),
     # a main title of fewer than five words is not enough
@@ -106,6 +123,8 @@ def test_alike_registered_works_are_two_works(evidence, first, second):
 @pytest.mark.parametrize("pmid, doi", [
     # PubMed's and Crossref's titles differ in case and the full stop
     ("22015111", "10.1016/j.biopsych.2011.09.005"),
+    # Crossref gives Brain's electronic ISSN, PubMed its print one
+    ("11335702", "10.1093/brain/124.5.1003"),
     # the journal's earlier mEDRA DOI and PubMed's Springer one
     ("20885123", "10.3275/7271"),
     ("20885123", "10.1007/bf03337758"),

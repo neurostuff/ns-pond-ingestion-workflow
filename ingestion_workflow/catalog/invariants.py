@@ -20,10 +20,13 @@
   server's the work of the article's journal DOI;
 * `two-versions`: no two articles hold a preprint and its version of record, as
   Crossref relates them or as PubMed's records are one work by title, first author
-  and year (`evidence.same_work`);
+  and year (`evidence.same_work`). Two that each hold a neurostore base study are
+  accepted (`Violation.accepted`): they stay apart until neurostore can make one
+  base study a version of the other;
 * `download`: no ok download names, by its files, a paper another article holds and
   this one does not. A file names a paper by an ACE `<pmid>.html` name, a
-  `pmcid_<n>/` directory, or the DOI in Elsevier or JATS XML;
+  `pmcid_<n>/` directory, or the DOI in Elsevier or JATS XML. A download naming the
+  other version of an accepted pair is accepted too;
 * `download-unreadable`: an ok download's record and the XML it names can be read;
 * `evidence-unreadable`: the registry can be read for every DOI a rule asks about.
 """
@@ -61,6 +64,10 @@ class Violation:
     article_id: str
     rule: str
     detail: str
+    #: A preprint and its paper on two articles, each with a neurostore base study: kept
+    #: apart until neurostore can make one base study a version of the other. Reported,
+    #: not a violation.
+    accepted: bool = False
 
 
 class Unreadable(Exception):
@@ -198,8 +205,31 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
         def elsewhere(kind: str, value: str) -> bool:
             return catalog.holder(kind, value) not in (None, article_id)
 
-        def add(rule: str, detail: str) -> None:
-            found.append(Violation(article_id, rule, detail))
+        def judged(doi: str) -> bool:
+            """Whether a rule has something to judge of a DOI the article does not hold as its
+            DOI; the registry is asked only then."""
+            return doi in alternates or bool(h["doi"]) or elsewhere("doi", doi)
+
+        def add(rule: str, detail: str, accepted: bool = False) -> None:
+            found.append(Violation(article_id, rule, detail, accepted))
+
+        versions_of: List[Set[str]] = []
+
+        def partners() -> Set[str]:
+            """The articles holding the other version of this one's work."""
+            if not versions_of:
+                held = set()
+                for doi in h["doi"]:
+                    held |= {catalog.holder("doi", v)
+                             for v in asking(lambda: evidence.versions(doi)) or ()}
+                for pmid in h["pmid"] + h[PREPRINT_PMID]:
+                    held |= {catalog.holder("pmid", p) for p in evidence.title_versions(pmid)}
+                versions_of.append(held - {None, article_id})
+            return versions_of[0]
+
+        def based(other: str) -> bool:
+            """Both articles hold a base study."""
+            return bool(h["neurostore"]) and bool(catalog.aliases(other, "neurostore"))
 
         def asking(check: Callable[[], bool]) -> bool:
             # A registry that cannot be read for a DOI is reported, and the rule asking
@@ -221,7 +251,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
         for pmid in h["pmid"] + h[PREPRINT_PMID]:
             summary = summaries.get(pmid)
             doi = normalize_doi(summary.doi) if summary else None
-            if not doi or doi in dois:
+            if not doi or doi in dois or not judged(doi):
                 continue
             if not asking(lambda: evidence.same_paper(doi, summary)):
                 continue
@@ -245,7 +275,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                 holder = catalog.holder("pmid", record.pmid) or "no article"
                 add("pmcid", f"{pmcid} is PubMed {record.pmid} in PMC, which {holder} holds")
             doi = normalize_doi(record.doi) if record.doi else None
-            if not doi or doi in dois:
+            if not doi or doi in dois or not judged(doi):
                 continue
             source = pmc_records.get(record.pmid) if record.pmid else None
             evident = asking(lambda: evidence.same_paper(doi, source) if record.pmid
@@ -272,14 +302,16 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
         for doi in dict.fromkeys(d for d in preprints if d):
             for version in asking(lambda: evidence.versions(doi)) or ():
                 if elsewhere("doi", version):
-                    add("two-versions", f"preprint {doi} is {version}'s, which "
-                        f"{catalog.holder('doi', version)} holds")
+                    holder = catalog.holder("doi", version)
+                    add("two-versions", f"preprint {doi} is {version}'s, which {holder} holds",
+                        accepted=based(holder))
         for pmid in h["pmid"]:
             if (summary := summaries.get(pmid)) and summary.preprint:
                 for other in evidence.title_versions(pmid):
                     if elsewhere("pmid", other):
+                        holder = catalog.holder("pmid", other)
                         add("two-versions", f"preprint PubMed {pmid} is PubMed {other}'s work, "
-                            f"which {catalog.holder('pmid', other)} holds")
+                            f"which {holder} holds", accepted=based(holder))
         try:
             for source, named in _downloads_name(catalog, article_id):
                 holders = {catalog.holder(k, v) for k, v in named}
@@ -287,7 +319,8 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                 if article_id not in holders and others:
                     ids = ", ".join(f"{k} {v}" for k, v in named)
                     add("download",
-                        f"download/{source} names {ids}, which {', '.join(others)} holds")
+                        f"download/{source} names {ids}, which {', '.join(others)} holds",
+                        accepted=all(based(o) and o in partners() for o in others))
         except Unreadable as exc:
             add("download-unreadable", str(exc))
     return found

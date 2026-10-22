@@ -92,6 +92,8 @@ class Outcome:
     violations: List[Violation] = field(default_factory=list)
     #: The violations among the same articles that were there before the plan.
     preexisting: List[Violation] = field(default_factory=list)
+    #: Preprint and paper pairs kept apart, each with a base study (`Violation.accepted`).
+    accepted: List[Violation] = field(default_factory=list)
     #: Articles whose passages were taken back: the plan left them no extraction.
     taken_back: List[str] = field(default_factory=list)
     committed: bool = False
@@ -134,6 +136,8 @@ def apply(
             after = violations(catalog, neighbourhood(catalog, live) | suspects(catalog)
                                | {catalog.current_id(a) for a in scope})
             was = {_key(catalog, v) for v in before}
+            outcome.accepted = [v for v in after if v.accepted]
+            after = [v for v in after if not v.accepted]
             outcome.violations = [v for v in after if _key(catalog, v) not in was]
             outcome.preexisting = [v for v in after if _key(catalog, v) in was]
             if backup is None or outcome.refused or outcome.violations:

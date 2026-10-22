@@ -61,8 +61,9 @@ class PubMedSummary:
     #: The first author as PubMed writes the name ("Raichle ME"), or a collective name.
     first_author: Optional[str] = None
     year: Optional[int] = None
-    #: The journal's print and electronic ISSNs.
+    #: The journal's print and electronic ISSNs, and its name.
     issns: Tuple[str, ...] = ()
+    journal: Optional[str] = None
 
     @property
     def preprint(self) -> bool:
@@ -583,6 +584,7 @@ class PubMedClient:
                                    if a.get("name")), None),
                 year=_year(record.get("pubdate")),
                 issns=tuple(i for i in (record.get("issn"), record.get("essn")) if i),
+                journal=record.get("fulljournalname") or None,
             )
         return found
 

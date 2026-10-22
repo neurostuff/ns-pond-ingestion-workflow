@@ -50,8 +50,15 @@ class RegisteredWork:
     year: Optional[int]
     #: The CSL type: article-journal, chapter, posted-content, ...
     type: Optional[str]
-    #: The journal's ISSNs.
+    #: The journal's ISSNs, and its name.
     issns: Tuple[str, ...] = ()
+    journal: Optional[str] = None
+
+
+def _first(value) -> Optional[str]:
+    if isinstance(value, list):
+        value = value[0] if value else None
+    return value or None
 
 
 def _registered(csl: Dict) -> RegisteredWork:
@@ -69,7 +76,8 @@ def _registered(csl: Dict) -> RegisteredWork:
             break
     issns = csl.get("ISSN") or ()
     return RegisteredWork(title=title or "", first_author=first, year=year, type=csl.get("type"),
-                          issns=tuple([issns] if isinstance(issns, str) else issns))
+                          issns=tuple([issns] if isinstance(issns, str) else issns),
+                          journal=_first(csl.get("container-title")))
 
 
 class DoiRegistry:

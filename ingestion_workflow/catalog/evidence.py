@@ -34,6 +34,9 @@ WORD_LIKENESS = 0.75
 #: subtitle: "A default mode of brain function" is not enough on its own.
 MAIN_TITLE_WORDS = 5
 
+#: The fewest words a title may have and gain one more word, still the same title.
+LONG_TITLE_WORDS = 8
+
 #: Crossref relations joining a preprint and its version of record.
 _VERSION_OF = ("is-preprint-of", "has-preprint")
 #: The version number a publisher appends to a version's DOI.
@@ -63,6 +66,8 @@ class _Work:
     article: bool
     preprint: bool
     issns: frozenset
+    #: The journal's name before any subtitle ("Brain : a journal of neurology" is "brain").
+    journal: str
 
 
 def _text(title: Optional[str]) -> str:
@@ -75,13 +80,16 @@ def _fold(text: str) -> str:
 
 
 def _work(title: Optional[str], author: Optional[str], year: Optional[int],
-          notice: bool, article: bool, preprint: bool, issns: Sequence[str]) -> _Work:
+          notice: bool, article: bool, preprint: bool, issns: Sequence[str],
+          journal: Optional[str]) -> _Work:
     text = _text(title)
     return _Work(words=tuple(re.findall(r"[^\W_]+", text)),
                  tokens=tuple(re.findall(r"[^\W_]+|[:.?!;]", text)),
                  author=_fold(author) if author else None, year=year,
                  notice=notice or bool(_NOTICE.match(text)), article=article, preprint=preprint,
-                 issns=frozenset(re.sub(r"[^0-9X]", "", i.upper()) for i in issns))
+                 issns=frozenset(re.sub(r"[^0-9X]", "", i.upper()) for i in issns),
+                 journal=" ".join(re.findall(r"[^\W_]+", re.sub(
+                     r"^the\s+|\s*:.*$", "", _text(journal).replace("&", " and ")))))
 
 
 def _from_pubmed(summary: PubMedSummary) -> _Work:
@@ -93,13 +101,20 @@ def _from_pubmed(summary: PubMedSummary) -> _Work:
             author = " ".join(parts[:-1])
     return _work(summary.title, author, summary.year,
                  bool(_NOTICE_TYPES & set(summary.pubtypes)), article=True,
-                 preprint=summary.preprint, issns=summary.issns)
+                 preprint=summary.preprint, issns=summary.issns, journal=summary.journal)
 
 
 def _from_registry(work: RegisteredWork) -> _Work:
     return _work(work.title, work.first_author, work.year, False,
                  article=work.type not in _NOT_ARTICLES, preprint=work.type == "posted-content",
-                 issns=work.issns)
+                 issns=work.issns, journal=work.journal)
+
+
+def _same_journal(a: _Work, b: _Work) -> bool:
+    """One journal by name, though one record gives its print ISSN and the other its
+    electronic one (Brain: 0006-8950 in PubMed, 1460-2156 at Crossref)."""
+    short, long = sorted((a.journal, b.journal), key=len)
+    return bool(short) and long.startswith(short)
 
 
 def _same_author(a: str, b: str) -> bool:
@@ -109,11 +124,18 @@ def _same_author(a: str, b: str) -> bool:
 
 
 def _alike_words(a: Sequence[str], b: Sequence[str]) -> bool:
+    """Whether each word of one title not in the other is a spelling of one there. A long
+    title may also gain one word (an early release's "...in the ribosome" is the
+    paper's "...in the ribosome tunnel"); a word in place of another (yes, no) is
+    another title."""
+    def spelled(x, others):
+        return any(difflib.SequenceMatcher(None, x, y).ratio() >= WORD_LIKENESS for y in others)
     only_a, only_b = set(a) - set(b), set(b) - set(a)
-    return all(any(difflib.SequenceMatcher(None, x, y).ratio() >= WORD_LIKENESS for y in only_b)
-               for x in only_a) and all(
-        any(difflib.SequenceMatcher(None, y, x).ratio() >= WORD_LIKENESS for x in only_a)
-        for y in only_b)
+    lone_a = [x for x in only_a if not spelled(x, only_b)]
+    lone_b = [y for y in only_b if not spelled(y, only_a)]
+    extra = lone_a or lone_b
+    return not (lone_a and lone_b) and (not extra or (
+        len(extra) == 1 and min(len(a), len(b)) >= LONG_TITLE_WORDS))
 
 
 def _main_title(short: _Work, long: _Work) -> bool:
@@ -149,8 +171,8 @@ def same_work(first: Record, second: Record, *, versions: bool = False) -> bool:
     other its paper.
 
     Alike titles are not enough: the first authors must agree when both records give
-    one, and one paper's records must be a year apart at most, in one journal when both
-    give ISSNs (a meeting abstract in a journal's supplement has its paper's title,
+    one, and one paper's records must be a year apart at most, in one journal by ISSN or
+    name (a meeting abstract in a journal's supplement has its paper's title,
     authors and year); a preprint and its paper may be years and journals apart, and
     their authors reordered when the title is word for word the same. A
     notice (an erratum, a reply, a retraction) takes its work's title, so it is one
@@ -168,7 +190,7 @@ def same_work(first: Record, second: Record, *, versions: bool = False) -> bool:
         return a.preprint != b.preprint and (not authors_differ or a.words == b.words)
     if authors_differ:
         return False
-    if a.issns and b.issns and not a.issns & b.issns:
+    if a.issns and b.issns and not a.issns & b.issns and not _same_journal(a, b):
         return False
     return a.year is None or b.year is None or abs(a.year - b.year) <= 1
 
