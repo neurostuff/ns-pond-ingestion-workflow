@@ -330,6 +330,28 @@ def test_a_run_stopped_after_writing_a_text_leaves_its_references_and_sync_to_be
         assert catalog.artifacts([ref_id], "sync")[ref_id][""].fingerprint == R.STALE
 
 
+def test_an_extraction_with_no_recorded_hash_has_it_recorded_and_its_references_and_sync_kept(tmp_path):
+    """No hash was ever recorded, so nothing says the text changed since they were made."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.models.ids import Identifier
+
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(pmid="2")).id
+        catalog.record([
+            Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
+                    payload={"full_text_path": "t"}, summary={"has_text": True}),
+            Outcome(article_id=ref_id, stage="references", source="pubget", fingerprint="re-1",
+                    payload={"citations": []}, summary={}),
+            Outcome(article_id=ref_id, stage="sync", source="", fingerprint="sy-1", payload={}, summary={}),
+        ])
+        result = R.Result(ref_id, "pubget", "unchanged", "t", R.sha256("same"), R.sha256("same"))
+        R.carry_all(catalog, [result], write=True)
+        extraction = catalog.artifacts([ref_id], "extract")[ref_id]["pubget"]
+        assert extraction.summary["text_sha256"] == R.sha256("same")
+        assert catalog.artifacts([ref_id], "references")[ref_id]["pubget"].fingerprint == "re-1"
+        assert catalog.artifacts([ref_id], "sync")[ref_id][""].fingerprint == "sy-1"
+
+
 def test_carried_passages_are_fresh_for_the_extraction_that_now_records_the_captions(tmp_path):
     """Captions with no coordinate leave the passages carried, not read again; the fingerprint
     they are carried under is the one the plan computes from the extraction as rewritten."""
