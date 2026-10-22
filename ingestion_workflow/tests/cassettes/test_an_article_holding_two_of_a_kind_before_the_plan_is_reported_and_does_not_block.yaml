@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 08:57:25 GMT
+      - Thu, 22 Oct 2026 10:15:47 GMT
       ncbi-phid:
-      - 1D348A0161E733550000547E67AC650D.1.1.m_1
+      - 1D3238309BD9AC7500006B8FB3BDCFB1.1.1.m_1
       ncbi-sid:
-      - 73A077A3A7E1EC20_0F6ASID
+      - D5A0FCC5F16F6339_8A4FSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -56,7 +56,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -128,7 +128,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 08:57:26 GMT
+      - Thu, 22 Oct 2026 10:15:47 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -221,7 +221,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 08:57:26 GMT
+      - Thu, 22 Oct 2026 10:15:47 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -268,12 +268,12 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA21Ry26DMBD8lcpSOAHxg1eQkCrlXKn3KgcLnIYEeykmJVHEv3cNyquKbzs7OzO7
-        vhDby/5oSU7gQHzSKduCsSqoZK8Q5JQnAaMB5280yuM058nE+jkq25P8QgbZmdp8o8DXxidb6LRE
-        nOwtGCTWVX9unU6ry7qaAMcknx9rwbJVJFLEsIhFxnmSEpRQWtYNTnSqbeT5XZ2kbhsVlqCR2gO4
-        HhqifQ0mGKA7bBsYsKfKHWBvmi/m6UVEH+a9OV3hsnkYpLinWPD1PYU3py6mzJ6zLF4a/qrOIuRu
-        ZwBru4NB1rjmVI/uTCV008IXUkGNOKMhw7fchyyNWMBFnIWcMhZSGlMenlBlvlT+fKJWO4yzlGUi
-        Wt0+QFXBf+7oP3pRkS0Nrq4ti1IRP8tfj36Tz0SS4cQr+St33Ix/pIFr7TMCAAA=
+        H4sIAAAAAAAAA21Ry26DMBD8lcpSOAHxg4eDhFQp50q9VzlY4DQkmKWYlEQR/941KK8qvu3s7Mzs
+        +kJsr/qjJRmBA/FJp20LjdVBqXqNIKc8CRgNOH+jScbiLEon1s9R255kFzKorqmabxT42vhkC51R
+        iJO9hQaJVdmfW6fTmqIqJ8AxyefHWjC5ioRTwyIWkvMkJSihjapqnOh0W6vzuz4p09Y6LMAgtQdw
+        PTRE+wqaYIDusK1hwJ4udoC9aT6fpxcRfZj35nS5y+ZhkPyeYsHX9xTenDqfMnvOMn9p+Ks7i5C7
+        XQNY2x0MqsI1p3p0Zyqgmxa+kBIqxBkNGb7lPmRpxAIuYhlyylhIaUx5eEKV+VLZ84la4zDOUiZF
+        tLp9gC6D/9zRf/SiQi4bXN1YFqUifpa/Hv0mL0UiceKV/JU7bsY/O2TCYjMCAAA=
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -286,7 +286,7 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Thu, 22 Oct 2026 08:57:26 GMT
+      - Thu, 22 Oct 2026 10:15:47 GMT
       referrer-policy:
       - same-origin
       server:
@@ -331,31 +331,30 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
-        AAA=
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -372,11 +371,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 08:57:26 GMT
+      - Thu, 22 Oct 2026 10:15:47 GMT
       ncbi-phid:
-      - 1D348A0161E733550000507E6B2E717E.1.1.m_1
+      - 1D3238309BD9AC750000458FB5413DF1.1.1.m_1
       ncbi-sid:
-      - 73A077A3A7E1EC20_0F6ASID
+      - D5A0FCC5F16F6339_8A4FSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -424,15 +423,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e74b6859c1c872-DFW
+      - a4e7be2eb8964857-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 08:57:27 GMT
+      - Thu, 22 Oct 2026 10:15:48 GMT
       expires:
-      - Thu, 22 Oct 2026 09:09:20 GMT
+      - Thu, 22 Oct 2026 10:42:05 GMT
       location:
       - https://api.crossref.org/v1/works/10.1111%2Fj.1741-2358.2011.00502.x/transform
       nel:
@@ -440,7 +439,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=45%2BjIKA0DlsFlel8MMlZqO9Z8LyKjIxnSXwOGIz2f%2Fzbk8GOlhxGa66bsGjnTl9DpUznRpWKzFJs9setMnUR4i%2Bdo8jxO4FxaQzCk2lsMcXEbjfMl3sIvWc%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Zf0LT3vjflYgtJwiQkVaDSkiRE13yJZcdw5bnLyUZLc7cl9gRIPa%2BwhxJvCa2g3JNazk%2FfNr0MxBXjj8HJpUodrkJA%2B7R1Os%2FCgsCcp1CM05ThG2Y7e8eqE%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -545,7 +544,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 08:57:27 GMT
+      - Thu, 22 Oct 2026 10:15:48 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -591,15 +590,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e74b697afcc872-DFW
+      - a4e7be2fd9604857-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 08:57:27 GMT
+      - Thu, 22 Oct 2026 10:15:48 GMT
       expires:
-      - Thu, 22 Oct 2026 09:27:30 GMT
+      - Thu, 22 Oct 2026 11:14:14 GMT
       location:
       - https://api.crossref.org/v1/works/10.1038%2Fncomms14735/transform
       nel:
@@ -607,7 +606,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=ihUkhPPmFii8mou0aAVHy1hdtBAWBUaJ1hGhmVF%2BryPcF2qIkxZsht19ZjJpcfC3yRF6GgOLkh%2B44vumK2bOQ5hrn47RzPC%2BDvEXYJJGFjn3I7x4m4ebx3M%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=TUaU1GTz%2Bcw0quiGyieN20M10gj2ocQFH%2BoJBTZA%2FfgKZgMWmQaxMbkgRE%2F8QEjc436yQH3ywXWd%2F3s91iJGn7xRZARnUAYseGrSJ9qrAdccc4uvojhkJ5s%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -819,7 +818,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 08:57:27 GMT
+      - Thu, 22 Oct 2026 10:15:48 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -836,6 +835,71 @@ interactions:
       - 1s
       x-rate-limit-limit:
       - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1017%2Fs0033291717000265%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAEyQMVPDMAyFd36FT3MuOMlBSGcWNo61zWBikbiX2kGyC71c/jtKaA886emz35M8
+        w4DGIsFuhniZEHaAjIa6ATI4I7ELXno6r2DJboiQ0xjXJ11IXgoo5DZhPJnvP8HR0Mq0SGdHxyL2
+        UD6VjS4fH6DNIJLxPJooGYwrld5nQrr8A2JwgELnhS7qe9a6qsqmqIta69XlAPvX9C7eA5J6eW4l
+        6suQd77/zZthGsgwsut9ILS3jBDRXokP8UO2uKKQ4pTiCZlNj7wO/IYcyXXbkMp0g8Mz2lxt2ynj
+        rdr+QBl7TCyuKgalM9XIgXZZlrsfAAAA//8DALXc3NZiAQAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 10:15:48 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F985000043A09DC64751.1.1.m_1
+      ncbi-sid:
+      - D5A0FCC5F16F6339_8A4FSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

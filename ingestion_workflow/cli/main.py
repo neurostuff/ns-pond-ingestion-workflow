@@ -891,16 +891,19 @@ def repair_identity(
              "--manifest`."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Repair article identities: move, remove or add aliases, split, merge, and move or
-    forget artifacts, as a reviewed plan says.
+    """Repair article identities: move, remove, rekind or add aliases, split, merge, and
+    move, swap or forget artifacts, as a reviewed plan says.
 
     The plan runs as one transaction. Each operation is checked against the catalog
     as the ones before it left it, and refused when the catalog is not as the plan
     says (an alias no longer where the plan puts it, an artifact gone). Then every
-    article it touched, every article NCBI or Crossref links to one of those, and every
-    article holding two of a kind, is checked against the catalog's invariants
-    (`catalog/invariants.py`). A dry run lists every refusal and violation; --apply
-    writes nothing unless there is none. An article the plan leaves with no extraction
+    article it touched, every article NCBI, Crossref or a download links to one of
+    those, and every article holding two of a kind, is checked against the catalog's
+    invariants (`catalog/invariants.py`), before the plan and after it. A dry run lists
+    every refusal, every violation the plan makes, and those that were there before;
+    --apply writes nothing while there is a refusal or a violation the plan makes. The
+    first run reads the ids every download names into the catalog, once. An article
+    the plan leaves with no extraction
     has its passages taken back, and the next `ingest run` takes back what was made
     from them. Stop the pipeline first: the plan holds the write lock while it runs,
     and NCBI and the DOI registries are asked about the ids.
@@ -925,9 +928,12 @@ def repair_identity(
         typer.echo(f"refused line {number} ({operation['op']}): {why}")
     for violation in outcome.violations:
         typer.echo(f"violation {violation.article_id} {violation.rule}: {violation.detail}")
+    for violation in outcome.preexisting:
+        typer.echo(f"pre-existing, not caused by this plan: {violation.article_id} "
+                   f"{violation.rule}: {violation.detail}")
     if outcome.refused or outcome.violations:
         typer.echo(f"{len(outcome.refused):,} refused, {len(outcome.violations):,} violations "
-                   "after the plan. Nothing was written; plan again from the catalog as it is.")
+                   "the plan makes. Nothing was written; plan again from the catalog as it is.")
         raise typer.Exit(1)
     if not outcome.committed:
         typer.echo("dry run: nothing written; --apply --backup <path> --manifest <path> "

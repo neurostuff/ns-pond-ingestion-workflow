@@ -17,10 +17,16 @@ ALIAS_KINDS = ("pmcid", "pmid", "doi", "neurostore")
 #: spelling, a repository copy. It finds the article and is not its DOI.
 ALTERNATE_DOI = "alternate_doi"
 
+#: A second PubMed or PMC record of the paper, which a merge dropped: it finds the
+#: article and is not its PMID or PMCID.
+DUPLICATE_PMID = "duplicate_pmid"
+DUPLICATE_PMCID = "duplicate_pmcid"
+
 #: Kinds an article holds beside an identifier of the kind each maps to: a preprint's
-#: PMID and PMCID next to its version of record's, and an alternate DOI. A lookup by
-#: the kind on the right finds them too.
-SECOND_KINDS = {PREPRINT_PMID: "pmid", PREPRINT_PMCID: "pmcid", ALTERNATE_DOI: "doi"}
+#: PMID and PMCID next to its version of record's, an alternate DOI, and the duplicate
+#: records. A lookup by the kind on the right finds them too.
+SECOND_KINDS = {PREPRINT_PMID: "pmid", PREPRINT_PMCID: "pmcid", ALTERNATE_DOI: "doi",
+                DUPLICATE_PMID: "pmid", DUPLICATE_PMCID: "pmcid"}
 
 NO_SOURCE = ""
 

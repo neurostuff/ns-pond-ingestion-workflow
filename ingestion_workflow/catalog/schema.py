@@ -82,14 +82,31 @@ CREATE INDEX IF NOT EXISTS search_hits_article_idx ON search_hits(article_id);
 
 -- An identifier registration did not add, and why: a second journal DOI that the
 -- registries give another paper, or a PMID whose PubMed record is another article's.
--- Kept so a refusal is on record, not only in a log.
+-- Kept so a refusal is on record, not only in a log; refused again, it is refused_at
+-- the latest time.
 CREATE TABLE IF NOT EXISTS refusals (
     kind       TEXT NOT NULL,
     value      TEXT NOT NULL,
     article_id TEXT,
     reason     TEXT NOT NULL,
-    refused_at TEXT NOT NULL
-);
+    refused_at TEXT NOT NULL,
+    PRIMARY KEY (kind, value, reason)
+) WITHOUT ROWID;
+
+-- The ids a download's files name (an ACE `<pmid>.html`, a `pmcid_<n>/` directory,
+-- the DOI in its XML), by the blob of its record, which fixes the files. An identity
+-- repair finds by it every article whose download names an id the repair hands out.
+-- Each blob read is in download_names_read, whether it names an id or not.
+CREATE TABLE IF NOT EXISTS download_names (
+    blob  TEXT NOT NULL,
+    kind  TEXT NOT NULL,
+    value TEXT NOT NULL,
+    PRIMARY KEY (blob, kind, value)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS download_names_value_idx ON download_names(value, kind);
+CREATE TABLE IF NOT EXISTS download_names_read (
+    blob TEXT PRIMARY KEY
+) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,

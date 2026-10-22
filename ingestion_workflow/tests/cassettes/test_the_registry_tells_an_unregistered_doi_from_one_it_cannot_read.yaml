@@ -79,7 +79,7 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e07bd83e73ddb1-DFW
+      - a4e7ae6f1cfd6bb9-DFW
       connection:
       - keep-alive
       content-encoding:
@@ -87,11 +87,11 @@ interactions:
       content-type:
       - text/html;charset=utf-8
       date:
-      - Wed, 21 Oct 2026 13:07:10 GMT
+      - Thu, 22 Oct 2026 10:05:03 GMT
       nel:
       - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=uUdlUwofRyOC8p%2B2tS2IdvhlUbxFscHtTC5q00SYTissyswP4Ip%2BsYk9196vjVDVABqN7Cp7rVPqUA6GaUxlltmGSYpMyJLC78er9Va7ck02wrkeQsFhjqA%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sS7XIpFwV%2B47HSsS1KIQl%2F4cVi2%2BL1Kx%2FPZq%2FBoC6wkszhj2i0LDySEJ3IPW7yZCOKvww1ZI6IF9JgAfYulHKB5SwJVmjvcQEVjqgD51rbttQQHbvk2uYnY%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -130,15 +130,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e07bd8bfa4ddb1-DFW
+      - a4e7ae6fad4c6bb9-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Wed, 21 Oct 2026 13:07:10 GMT
+      - Thu, 22 Oct 2026 10:05:03 GMT
       expires:
-      - Wed, 21 Oct 2026 13:52:03 GMT
+      - Thu, 22 Oct 2026 10:34:57 GMT
       location:
       - https://data.medra.org/10.14670%2Fhh-25-014
       nel:
@@ -146,7 +146,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RGzLBBPwfOPIbRiYr60od4%2F3PFl3vxp9iGX05eEtZ7%2ByrMAZgZEdECiurDANbuJKdZYfqKMq9zSWjJaryx82%2F3e9AxXQN0LJi%2B%2F8Rsw1%2FlRfVtB5mIOL7TY%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=kUGoBzYn8iZGICS2d13QiOa8s%2F0A8iHpHAH3yU4pQeUd8DWaDTJoCoPOrWuLLIQKASX%2BTrv2%2F%2ByGWWtOmvqUCd%2FO7bi2iIlKvX4ZFxrqQriKaVGY%2FUH2b5g%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -194,7 +194,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json;charset=UTF-8
       date:
-      - Wed, 21 Oct 2026 13:07:11 GMT
+      - Thu, 22 Oct 2026 10:05:03 GMT
       server:
       - Apache/2.4.59 (Debian)
       vary:
@@ -202,4 +202,91 @@ interactions:
     status:
       code: 200
       message: ''
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.7507/1001-5515.201511032
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032">http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae73bfd46bb9-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:04 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:16:41 GMT
+      location:
+      - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Kv4fwnigfuIrWpAuR%2B%2FgStlOni7je8cYxOA0fJhA5yWlgKTrqNAQoj4ByYHQ99SeYPDfYWw3P2TlGpwg%2FXbo2W8hpwHZri48qbnXyFa7KDYU4%2BVGecYrfq8%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - 122.115.55.36:8000
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+  response:
+    body:
+      string: "{\"status\": \"error\", \"message\": \"\u672A\u67E5\u8BE2\u5230 DOI
+        \u5BF9\u5E94\u7684\u5143\u6570\u636E\u6216\u89E3\u6790\u5931\u8D25\uFF08DOI\uFF1A10.7507/1001-5515.201511032\uFF09\"}"
+    headers:
+      connection:
+      - close
+      content-length:
+      - '123'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:04 GMT
+      server:
+      - Werkzeug/3.1.6 Python/3.13.5
+    status:
+      code: 404
+      message: NOT FOUND
 version: 1

@@ -1,0 +1,165 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=29745568&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALSTPW8bMQyG/wrB2Ql8ts+OvRlN0KJoOjSDUxsZFJ1iCZUlV6JSGEb/e0ld0mTs
+        Dd1EUo/4Ib5ntEZ1JuHqjHQ6GlyhyeVwUOmEI3w2KbsY2Dm+nOLvESYOepLLxXUZVzucLBeztp1f
+        4cPo7dzHGfvrGeGxPHaKJMFk3CxgfUwwadlv3gJs5ViSlvOdNWEPmwLfHdwXAx8jmx+qU8ytgq11
+        DKhCNiYp5YxBHQTdWhXh/iX20tS6XmOf9iWTSbU67ug9JE8PpDYCbQZCXxx3NZC5swpuBzIyrcGJ
+        vjr4NBC5dTyE63+CeEm8ytR/2nuUHHnhdt9MNippCzEAWQPaqqS0vJDJ6Qzxqbq7Eyd3Gp5K0MQr
+        qjzoGIJh49nRCYKhXzH9gGQ871YHFEHtOdnDZV2yRK8J0//NJyKKvtQ5TWdsuZxLFYFIQu0Nby42
+        8+aimS9QhsMIq0rzbvOsgj+U4H4WU8e3nE3m0+VV/4iIshmPm4u2baqMelcvtP4TdngT9t5lC+vH
+        TNIVRz+zwKT6dSL3BwAA//+MVU1z2yAQvfdXMD63EdiR7TiTUy+9ZCb3Tg8I4YYECQ+GtHXH/71v
+        QRJyPe3kJlb79ot9D4UJfCNSK+db3EqIVM1TbB51mwNNRipdZkgm/u+FaYe7hl+XANmCMgS6ljb3
+        OSoALUyBdGruvy3+T4+f7+5W9a1YXyHMRY66YPDvk2l3rGDvL8GtM3PoqkAFv9nUfFNNo7yBOtVC
+        8NUybesz1sBBC6nh+Tx0H7w+IWjRtG3F60oIxtc7zlP+OWAa0nsB8Lam1/9EiOsUGAP2T8vjJWpT
+        8VW13DLOU55043vtda9o+77iLEPwpokhnRdf5LFsDP4iLgDKxR7KL9YfF/to7Uveo0meSJh/RPbL
+        sJ+Q5++k1ioZ6XiS7PRs2AMbtw+saoxDi0bhBDd0CsrB/YGlWCnUGCkFynFOSfS1dUoSDRMvcLs7
+        9r+LxDCcGlZBmZCQJANegcPUOUgS8iQa515HaYALVRi7/I3PkB/DzA1ilvZjJX+Zh7nkLOV58/oA
+        7elj19CTSxb5Jo2VjdV777robbaOUfFHDya0cFUtbCU2lV7SQscOYUxCgnf5/lb8tlrWw0pkh73x
+        M2WeHtE3akZFS+wf5nI+nz/8AQAA//8DAA2yhs05CAAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 10:14:41 GMT
+      ncbi-phid:
+      - 1D348A0161E73355000047A43EF9700C.1.1.m_1
+      ncbi-sid:
+      - 80E7F17F4037F6E3_3D64SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.7507/1001-5515.201511032
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032">http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7bc933be2b421-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:14:42 GMT
+      expires:
+      - Thu, 22 Oct 2026 11:03:44 GMT
+      location:
+      - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=NoUovqok5gCDw9uJSubh%2FblC5mFTIMgfDegyjZaeYEpMvePmC3EqEshgJBhdW8uX7DKqdj0OLhfZsNnbQ74g6OkO%2FdqpPQtTj5heDx%2F%2FzS4uQPNzYF5xY6w%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - 122.115.55.36:8000
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+  response:
+    body:
+      string: "{\"status\": \"error\", \"message\": \"\u672A\u67E5\u8BE2\u5230 DOI
+        \u5BF9\u5E94\u7684\u5143\u6570\u636E\u6216\u89E3\u6790\u5931\u8D25\uFF08DOI\uFF1A10.7507/1001-5515.201511032\uFF09\"}"
+    headers:
+      connection:
+      - close
+      content-length:
+      - '123'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:14:43 GMT
+      server:
+      - Werkzeug/3.1.6 Python/3.13.5
+    status:
+      code: 404
+      message: NOT FOUND
+version: 1

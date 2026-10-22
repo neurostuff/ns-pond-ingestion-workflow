@@ -175,30 +175,51 @@ be moved back from `-retracted/`.
 
 An article is one paper. Registration (`ingest add`, `ingest run --manifest`,
 `ingest migrate`) checks what it adds against PubMed and the DOI registries, so
-these commands need `pubmed_email`:
+these commands need `pubmed_email`. Two records are one work when their titles are
+alike and their first authors, years and journals agree; an erratum, a reply or a
+retraction is never the work it is about, and a book chapter is never an article
+(`catalog/evidence.py`, `same_work`).
 
-- a PMID that arrives with other ids is not added when its PubMed record gives a DOI
-  another article holds, and the registry gives that DOI the record's title;
-- a second journal DOI is kept as an alternate DOI when the registry gives both DOIs
-  the same title (a publisher's new DOI, an alias spelling), and refused otherwise.
+- A PMID that arrives with other ids is not added in two cases. One is when its
+  PubMed record gives a DOI another article holds, and the registry gives that DOI
+  the record's work. The other is when the registry cannot be read for the DOI.
+- A second journal DOI is kept as an alternate DOI when the registry gives both DOIs
+  one work (a publisher's new DOI, an alias spelling). Otherwise it is refused.
 
-Each refused id is printed at the end of the command and kept in the catalog's
-`refusals` table.
+Each refused id is printed at the end of the command and kept, once, in the
+catalog's `refusals` table.
+
+An article holds one of each id kind. Beside them it may hold:
+
+- a preprint's PMID and PMCID (`preprint_pmid`, `preprint_pmcid`);
+- other DOIs of the paper (`alternate_doi`);
+- the PMIDs and PMCIDs of duplicate PubMed and PMC records (`duplicate_pmid`,
+  `duplicate_pmcid`).
+
+Each of these finds the article. An article presents its journal DOI, not an
+alternate or a preprint's.
 
 `ingest repair-identity PLAN` repairs articles that already hold another paper's ids.
 `PLAN` is a reviewed plan: JSON lines, one operation each (add, reassign, remove,
-rekind, split, merge, move or forget artifacts). The file format is in
+rekind, split, merge, move, swap or forget artifacts). The file format is in
 `catalog/identity_plan.py`.
 
 - The whole plan runs in one transaction. Each operation is checked against the
   catalog as the ones before it left it.
-- Every article the plan touched, every article NCBI or Crossref links to one of
-  those, and every article holding two of a kind is then checked against the
-  catalog's invariants (`catalog/invariants.py`).
-- The default is a dry run that lists every refusal and violation and writes
-  nothing.
+- The plan's scope is then checked against the catalog's invariants
+  (`catalog/invariants.py`), before the plan and after it. The scope is:
+  - every article the plan touched;
+  - every article NCBI, Crossref or a download links to one of those;
+  - every article holding two of a kind.
+
+  The first run reads the ids every download names into the catalog. This takes a
+  while once.
+- The default is a dry run that lists every refusal, every violation the plan makes,
+  and the violations that were there before. It writes nothing.
 - `--apply --backup <path> --manifest <path>` commits only if there is no refusal
-  and no violation, and backs the catalog up first.
+  and the plan makes no violation, and backs the catalog up first. A violation that
+  was there before, such as an article holding two base studies, which neurostore
+  must decide, is listed and does not block.
 - An article left with no extraction has its passages taken back. Then run, as the
   command prints:
 

@@ -7,33 +7,46 @@ question in the pipeline is answered here and nowhere else.
 from __future__ import annotations
 
 import base64
-import logging
 import hashlib
 import json
+import logging
 import sqlite3
 from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import (
-    Any, Callable, Dict, Iterator, List, Mapping, NamedTuple, Optional, Sequence, Set, Tuple,
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
 )
 
 from ingestion_workflow.models.ids import (
-    DUPLICATE_PUBMED_RECORDS, PREPRINT_PMCID, PREPRINT_PMID, Identifier,
+    DUPLICATE_PUBMED_RECORDS,
+    PREPRINT_PMCID,
+    PREPRINT_PMID,
+    Identifier,
 )
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
 from .backup import backup
 from .blobs import BlobStore
-from .evidence import Evidence, same_title
+from .evidence import Evidence, Unreadable
 from .merges import Merges, follow
 from .models import (
     ALIAS_KINDS,
     ALTERNATE_DOI,
+    DUPLICATE_PMCID,
+    DUPLICATE_PMID,
     NO_SOURCE,
     SECOND_KINDS,
-    WHOLE_ARTICLE,
     ArticleRef,
     Artifact,
     Outcome,
@@ -90,31 +103,29 @@ def _article_id(seed: str) -> str:
 def _presented(aliases: Sequence[Tuple[str, str]]) -> Identifier:
     """The Identifier an article presents, from its alias rows.
 
-    An article holds several PMIDs when two PubMed records of one paper were
-    merged on purpose, or from before the registration guard. It presents the
-    lowest, PubMed's earlier record, as `pmid`, so every stage asks about the
-    same one, and the rest under `other_ids[DUPLICATE_PUBMED_RECORDS]`. A
-    preprint's PMID and PMCID held beside the version of record's are
-    `other_ids[PREPRINT_PMID]` and `[PREPRINT_PMCID]`. An alternate DOI is not
-    presented. For other kinds the last row read wins.
+    The PMIDs of the paper's duplicate PubMed records are presented under
+    `other_ids[DUPLICATE_PUBMED_RECORDS]`, so a stage asking PubMed of the paper asks
+    of every record. A preprint's PMID and PMCID held beside the version of record's
+    are `other_ids[PREPRINT_PMID]` and `[PREPRINT_PMCID]`. An article holding a
+    journal DOI and a preprint server's presents the journal's. An alternate DOI and
+    a duplicate PMCID are not presented. Of two of a kind, which the invariants
+    report, the lowest is presented.
     """
-    fields: Dict[str, str] = {}
-    pmids: List[str] = []
+    held: Dict[str, List[str]] = {}
     for kind, value in aliases:
-        if kind == "pmid":
-            pmids.append(value)
-        else:
-            fields[kind] = value
-    pmids.sort(key=lambda p: (len(p), p))
+        held.setdefault(kind, []).append(value)
+    for values in held.values():
+        values.sort(key=lambda v: (len(v), v))
+    dois = held.get("doi") or []
+    held["doi"] = sorted(dois, key=is_preprint_doi)
     other_ids = {}
-    if len(pmids) > 1:
-        other_ids[DUPLICATE_PUBMED_RECORDS] = ",".join(pmids[1:])
+    if held.get(DUPLICATE_PMID):
+        other_ids[DUPLICATE_PUBMED_RECORDS] = ",".join(held[DUPLICATE_PMID])
     for kind in (PREPRINT_PMID, PREPRINT_PMCID):
-        if fields.get(kind):
-            other_ids[kind] = fields[kind]
+        if held.get(kind):
+            other_ids[kind] = held[kind][0]
     return Identifier(
-        **{kind: fields.get(kind) for kind in ALIAS_KINDS if kind != "pmid"},
-        pmid=pmids[0] if pmids else None,
+        **{kind: (held.get(kind) or [None])[0] for kind in ALIAS_KINDS},
         other_ids=other_ids or None,
     )
 
@@ -367,10 +378,10 @@ class Catalog:
           hold at most one of each of `ONE_EACH` and one journal DOI;
         * an id another article owns is never taken from it;
         * a second journal DOI is added only as an alternate DOI, when the
-          registries give both DOIs the same title;
+          registries give both DOIs one work (`evidence.same_work`);
         * a PMID that arrives with other ids is not added when its PubMed record
           gives a DOI another article holds, one the record's other ids do not
-          name, and the registries give that DOI the record's title.
+          name, and the registries give that DOI the record's paper, or cannot say.
 
         Each refused identifier is written to the `refusals` table, logged, and
         kept on `self.refused`.
@@ -395,12 +406,11 @@ class Catalog:
                         owners[(kind, value)] = self._follow_merge(row["article_id"])
                         if row["kind"] in SECOND_KINDS:
                             held_second.add((kind, value))
-                pubmed_doi = identifier.pmid and pubmed.get(str(identifier.pmid))
+                pubmed_doi, why = pubmed.get(str(identifier.pmid), (None, None))
                 if pubmed_doi:
                     holder = self._holder(conn, "doi", pubmed_doi)
                     if holder is not None and holder not in owners.values():
-                        self._refuse(conn, "pmid", str(identifier.pmid), None,
-                                     f"PubMed gives it {pubmed_doi}, which {holder} holds")
+                        self._refuse(conn, "pmid", str(identifier.pmid), None, why)
                         pairs = [p for p in pairs if p[0] != "pmid"]
                 # A preprint's PMID or PMCID is not the one its holder is judged by.
                 incoming = {k: v for k, v in pairs
@@ -428,7 +438,8 @@ class Catalog:
                         group.append(other)
                     else:
                         self._conflict(identifier, f"not merging {other} into {anchor}: they "
-                                       "would hold two of a PMID, PMCID, journal DOI or base study")
+                                       "would hold two of a PMID, PMCID, journal DOI or "
+                                       "base study")
                 article_id = self._merge(conn, group) if len(group) > 1 else anchor
 
                 for kind, value in pairs:
@@ -440,7 +451,8 @@ class Catalog:
                         self._conflict(identifier, f"{kind} {value} belongs to {owner}; left there")
                         continue
                     if kind == "doi" and not is_preprint_doi(value):
-                        held = sorted(self._journal_dois(conn, article_id) - {normalize_doi(value)})
+                        held = sorted(self._journal_dois(conn, article_id)
+                                      - {normalize_doi(value)})
                         if held:
                             second_dois.append((article_id, value, held))
                             continue
@@ -466,21 +478,27 @@ class Catalog:
         self.conflicts += 1
         self.refused.append((kind, value, article_id, why))
         conn.execute("INSERT INTO refusals(kind, value, article_id, reason, refused_at) "
-                     "VALUES(?, ?, ?, ?, ?)", (kind, value, article_id, why, utcnow()))
+                     "VALUES(?, ?, ?, ?, ?) ON CONFLICT(kind, value, reason) DO UPDATE SET "
+                     "article_id=excluded.article_id, refused_at=excluded.refused_at",
+                     (kind, value, article_id, why, utcnow()))
         logger.warning("catalog: %s %s not added -- %s", kind, value, why)
 
     def _settle_second_dois(self, rows: Sequence[Tuple[str, str, List[str]]]) -> None:
         """A journal DOI for an article holding another: an alternate DOI when the
-        registries give both one title (a publisher's move, an alias spelling),
-        else refused."""
+        registries give both one work (a publisher's move, an alias spelling), else
+        refused, with why."""
         decided = []
         for article_id, doi, held in rows:
-            title = self._evidence.title(doi) if self._evidence else None
-            same = title is not None and any(
-                same_title(title, self._evidence.title(h)) for h in held)
-            decided.append((article_id, doi, held, same))
+            try:
+                same = self._evidence is not None and any(
+                    self._evidence.same_dois(doi, h) for h in held)
+                why = "which the registries do not give the same work"
+            except Unreadable as exc:
+                same = False
+                why = f"and the registry cannot say whether it is the same work: {exc}"
+            decided.append((article_id, doi, held, same, why))
         with self._write() as conn:
-            for article_id, doi, held, same in decided:
+            for article_id, doi, held, same, why in decided:
                 if self._holder(conn, "doi", doi) is not None:
                     continue
                 if same:
@@ -488,13 +506,13 @@ class Catalog:
                                  (ALTERNATE_DOI, doi, article_id))
                 else:
                     self._refuse(conn, "doi", doi, article_id,
-                                 f"{article_id} holds the journal DOI {', '.join(held)}, "
-                                 "which the registries do not give the same title")
+                                 f"{article_id} holds the journal DOI {', '.join(held)}, {why}")
 
-    def _pubmed_evidence(self, identifiers: Sequence[Identifier]) -> Dict[str, str]:
-        """For each PMID a record would add beside its other ids, the DOI its PubMed
-        record gives, when another article holds it and the registries give it that
-        record's title.
+    def _pubmed_evidence(self, identifiers: Sequence[Identifier]) -> Dict[str, Tuple[str, str]]:
+        """For each PMID a record would add beside its other ids, (the DOI, why) it is
+        refused unless the record also names that DOI's article: the
+        DOI its PubMed record gives is held by another article and the registries give
+        it that record's paper, or the registry cannot say whether they do.
 
         A PMID already held is not added, and a PMID alone cannot attach to another
         paper's article, so neither is asked about.
@@ -509,9 +527,15 @@ class Catalog:
         found = {}
         for pmid, summary in self._evidence.summaries(asked).items():
             doi = normalize_doi(summary.doi)
-            if (doi and self._holder(self._conn, "doi", doi)
-                    and self._evidence.same_paper(doi, summary.title)):
-                found[pmid] = doi
+            holder = self._holder(self._conn, "doi", doi) if doi else None
+            if holder is None:
+                continue
+            try:
+                if self._evidence.same_paper(doi, summary):
+                    found[pmid] = (doi, f"PubMed gives it {doi}, which {holder} holds")
+            except Unreadable as exc:
+                found[pmid] = (doi, f"PubMed gives it {doi}, which {holder} holds, and the "
+                               f"registry cannot say whether that is its paper: {exc}")
         return found
 
     def _journal_dois(self, conn: sqlite3.Connection, article_id: str) -> Set[str]:
@@ -675,8 +699,9 @@ class Catalog:
         All moves are one write and each is checked against the catalog before
         any is made, so a chain or a swap of PMIDs is one call. Refused when an
         alias is not held by its `from`, is named twice, an article is not live,
-        a `from` would be left with no pmid, pmcid or doi, or a `to` with two of
-        a PMID, PMCID, preprint PMID or preprint PMCID.
+        a `from` would be left with no pmid, pmcid or doi, a `to` with two of
+        a PMID, PMCID, preprint PMID or preprint PMCID, or either with a journal
+        DOI only as an alternate.
         """
         named = [(kind, value) for kind, value, _, _ in moves]
         if len(set(named)) != len(named):
@@ -693,6 +718,8 @@ class Catalog:
                 logger.warning("catalog: %s %s moved from %s to %s", kind, value, src, dst)
             for src in dict.fromkeys(src for _, _, src, _ in moves):
                 self._require_named(conn, src)
+            for article_id in dict.fromkeys(a for _, _, src, dst in moves for a in (src, dst)):
+                self._require_journal_doi(conn, article_id)
             for dst in dict.fromkeys(dst for _, _, _, dst in moves):
                 for kind in self.SINGULAR + (PREPRINT_PMID, PREPRINT_PMCID):
                     if len(self._aliases(conn, dst, kind)) > 1:
@@ -705,7 +732,8 @@ class Catalog:
         Returns each removed alias as (article, kind, value), the shape
         `add_aliases` takes to put it back. Refused when an
         alias is not held by that article, is named twice, the article is not
-        live, or it would be left with no pmid, pmcid or doi.
+        live, or it would be left with no pmid, pmcid or doi, or with a journal DOI
+        only as an alternate.
         """
         named = [(kind, value) for kind, value, _ in rows]
         if len(set(named)) != len(named):
@@ -719,19 +747,23 @@ class Catalog:
                 logger.warning("catalog: %s %s removed from %s", kind, value, article_id)
             for article_id in dict.fromkeys(article_id for _, _, article_id in rows):
                 self._require_named(conn, article_id)
+                self._require_journal_doi(conn, article_id)
         return [(article_id, kind, value) for kind, value, article_id in rows]
 
     #: The kind each kind may be held as instead: a Preprint-typed PubMed record's
     #: PMID and PMC's PMCID of it beside the version of record's, a DOI as an
     #: alternate DOI of the paper.
     REKIND = {"pmid": PREPRINT_PMID, "pmcid": PREPRINT_PMCID, "doi": ALTERNATE_DOI}
+    #: The kind a merge holds a duplicate record's id as.
+    DROP = {"pmid": DUPLICATE_PMID, "pmcid": DUPLICATE_PMCID}
 
     def rekind_aliases(self, rows: Sequence[Tuple[str, str, str]]) -> None:
         """Hold each alias, given as (kind, value, article), as the kind `REKIND` gives.
 
         Refused when an alias is not the article's, the kind has no other, the
-        article is not live, or it would be left with no pmid, pmcid or doi, or
-        with two preprint PMIDs or PMCIDs.
+        article is not live, or it would be left with no pmid, pmcid or doi, with
+        two preprint PMIDs or PMCIDs, or with a journal DOI only as an alternate:
+        the version of record's DOI is the one an article presents.
         """
         with self._write() as conn:
             for kind, value, article_id in rows:
@@ -739,6 +771,7 @@ class Catalog:
             for article_id in dict.fromkeys(a for _, _, a in rows):
                 self._require_named(conn, article_id)
                 self._require_one_each(conn, article_id)
+                self._require_journal_doi(conn, article_id)
 
     def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str) -> None:
         if kind not in self.REKIND:
@@ -747,7 +780,15 @@ class Catalog:
         self._require_held(conn, kind, value, article_id)
         conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?",
                      (self.REKIND[kind], kind, value))
-        logger.warning("catalog: %s %s of %s held as %s", kind, value, article_id, self.REKIND[kind])
+        logger.warning("catalog: %s %s of %s held as %s",
+                       kind, value, article_id, self.REKIND[kind])
+
+    def _require_journal_doi(self, conn: sqlite3.Connection, article_id: str) -> None:
+        alternates = [d for d in self._aliases(conn, article_id, ALTERNATE_DOI)
+                      if not is_preprint_doi(d)]
+        if alternates and not self._journal_dois(conn, article_id):
+            raise IdentityError(f"{article_id} would hold its journal DOI {', '.join(alternates)} "
+                                "only as an alternate")
 
     def _require_one_each(self, conn: sqlite3.Connection, article_id: str) -> None:
         for kind in (PREPRINT_PMID, PREPRINT_PMCID):
@@ -766,7 +807,8 @@ class Catalog:
         The new article takes `aliases`, as (kind, value), and the artifacts
         named by (stage, source), with their attempts. Everything else stays.
         Refused when an alias or artifact is not the article's, the new article
-        would hold no pmid, pmcid or doi, or the old one would be left with none.
+        would hold no pmid, pmcid or doi, the old one would be left with none, or
+        either would hold a journal DOI only as an alternate.
         """
         if len(set(aliases)) != len(aliases):
             raise IdentityError("an alias is named twice")
@@ -791,6 +833,8 @@ class Catalog:
                 if seeded not in (article_id, new_id) and self._follow_merge(seeded) == article_id:
                     conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (new_id, seeded))
             self._require_named(conn, article_id)
+            for held in (article_id, new_id):
+                self._require_journal_doi(conn, held)
         logger.warning("catalog: %s split from %s with %s and artifacts %s",
                        new_id, article_id, list(aliases), list(artifact_keys))
         return new_id
@@ -814,6 +858,23 @@ class Catalog:
                     raise IdentityError(f"{dst} already holds a {stage}/{source} artifact")
             self._hand_over(conn, src, dst, keys)
         logger.warning("catalog: artifacts %s moved from %s to %s", list(keys), src, dst)
+
+    def swap_artifacts(self, first: str, second: str, keys: Sequence[Tuple[str, str]]) -> None:
+        """Exchange the artifacts named by (stage, source), and their attempts, between
+        two articles: each holds the other's copy, as two ACE downloads fetched for each
+        other's PMIDs. Refused when either lacks one."""
+        if first == second:
+            raise IdentityError(f"both articles are {first}")
+        with self._write() as conn:
+            self._require_live(first, second)
+            self._require_artifacts(conn, first, keys)
+            self._require_artifacts(conn, second, keys)
+            held = f"swap:{first}"
+            self._hand_over(conn, first, held, keys)
+            self._hand_over(conn, second, first, keys)
+            self._hand_over(conn, held, second, keys)
+        logger.warning("catalog: artifacts %s swapped between %s and %s",
+                       list(keys), first, second)
 
     def forget_artifacts(self, article_id: str, keys: Sequence[Tuple[str, str]]) -> List[Artifact]:
         """Delete the artifacts named by (stage, source), and their attempts.
@@ -845,14 +906,16 @@ class Catalog:
     ) -> str:
         """Merge articles that are one paper into the oldest; return its id.
 
-        Before the merge, each alias in `drop`, as (kind, value), is removed, and
-        each in `rekind` is held as the kind `REKIND` gives; each must be held by
-        one of the articles. `drop` is for what the contract has no place for: the
-        PMID of a second PubMed record of the paper. `rekind` is for what it holds
-        as a preprint's: an article that is only a preprint's PubMed record. Refused
-        when an article is not live, fewer than two are named, an alias is not
-        theirs, or the result would hold two of a PMID, PMCID, preprint PMID,
-        preprint PMCID, base study or journal DOI.
+        Before the merge, each PMID or PMCID in `drop`, as (kind, value), is held as
+        a duplicate record's, and each alias in `rekind` as the kind `REKIND` gives;
+        each must be held by one of the articles. `drop` is for a second PubMed or
+        PMC record of the paper, or of its preprint beside the one kept: it still
+        finds the paper, so registering it again does not make another article.
+        `rekind` is for what it holds as a preprint's: an article that is only a
+        preprint's PubMed record. Refused when an article is not live, fewer than two
+        are named, an alias is not theirs, or the result would hold two of a PMID,
+        PMCID, preprint PMID, preprint PMCID, base study or journal DOI, or a journal
+        DOI only as an alternate.
         """
         article_ids = list(dict.fromkeys(article_ids))
         if len(article_ids) < 2:
@@ -866,8 +929,12 @@ class Catalog:
                     holder = row["article_id"] if row else "no article"
                     raise IdentityError(f"{kind} {value} is held by {holder}, not by the merged")
             for kind, value in drop:
-                conn.execute("DELETE FROM aliases WHERE kind=? AND value=?", (kind, value))
-                logger.warning("catalog: %s %s dropped in merging %s", kind, value, article_ids)
+                if kind not in self.DROP:
+                    raise IdentityError(f"a {kind} is no duplicate record's")
+                conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?",
+                             (self.DROP[kind], kind, value))
+                logger.warning("catalog: %s %s held as %s in merging %s", kind, value,
+                               self.DROP[kind], article_ids)
             for kind, value in rekind:
                 holder = conn.execute("SELECT article_id FROM aliases WHERE kind=? AND value=?",
                                       (kind, value)).fetchone()["article_id"]
@@ -876,6 +943,7 @@ class Catalog:
                 raise IdentityError(f"{', '.join(article_ids)} would hold two of a PMID, PMCID, "
                                     "preprint PMID or PMCID, base study or journal DOI")
             survivor = self._merge(conn, article_ids)
+            self._require_journal_doi(conn, survivor)
         logger.warning("catalog: %s merged into %s", article_ids, survivor)
         return survivor
 

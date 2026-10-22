@@ -9,6 +9,7 @@ method it calls; any other key (`why`, the evidence) is carried for the reader.
     {"op": "split", "article": A, "aliases": [["doi", "10.1/y"]],
      "artifacts": [["download", "elsevier"]], "add": [["pmid", "456"]]}
     {"op": "move_artifacts", "from": A, "to": B, "artifacts": [["download", "pubget"]]}
+    {"op": "swap_artifacts", "articles": [A, B], "artifacts": [["download", "ace"]]}
     {"op": "forget_artifacts", "article": A, "artifacts": [["extract", "pubget"]]}
     {"op": "merge", "articles": [A, B], "drop": [["pmid", "37401785"]],
      "rekind": [["pmid", "37808793"]]}
@@ -26,6 +27,7 @@ extractor finds text: every stage built from that text then takes back its own.
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -34,8 +36,9 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import NO_TEXT
 
-from .invariants import Violation, neighbourhood, suspects, violations
-from .models import ALIAS_KINDS, SECOND_KINDS, Outcome as StageOutcome
+from .invariants import Violation, index_downloads, neighbourhood, suspects, violations
+from .models import ALIAS_KINDS, SECOND_KINDS
+from .models import Outcome as StageOutcome
 from .store import Catalog, IdentityError
 
 Operation = Dict[str, Any]
@@ -46,6 +49,7 @@ _FIELDS = {
     "remove": ("article", "kind", "value"),
     "split": ("article", "aliases"),
     "move_artifacts": ("from", "to", "artifacts"),
+    "swap_artifacts": ("articles", "artifacts"),
     "forget_artifacts": ("article", "artifacts"),
     "merge": ("articles",),
     "rekind": ("article", "kind", "value"),
@@ -82,9 +86,12 @@ class Outcome:
     new_articles: List[str] = field(default_factory=list)
     #: The identifiers of every live article an operation touched, as they are afterwards.
     touched: List[Identifier] = field(default_factory=list)
-    #: How the articles the plan touched, those linked to them, and every article
-    #: holding two of a kind break the catalog's invariants once the plan has run.
+    #: The violations the plan makes: how the articles it touched, those linked to
+    #: them, and every article holding two of a kind break the catalog's invariants
+    #: once it has run and did not before.
     violations: List[Violation] = field(default_factory=list)
+    #: The violations among the same articles that were there before the plan.
+    preexisting: List[Violation] = field(default_factory=list)
     #: Articles whose passages were taken back: the plan left them no extraction.
     taken_back: List[str] = field(default_factory=list)
     committed: bool = False
@@ -98,38 +105,92 @@ def apply(
     catalog: Catalog, operations: List[Tuple[int, Operation]], *, backup: Optional[Path] = None
 ) -> Outcome:
     """Run every operation inside one transaction; commit only with `backup`, no
-    refusal, and no touched article breaking the invariants afterwards.
+    refusal, and no violation the plan makes.
 
     Each operation is checked against the catalog as the ones before it left
     it, and a refused one writes nothing, so a dry run reports every refusal. A
     plan is committed whole or not at all. The backup is taken under the write
     lock, so nothing is written between the copy and the plan.
+
+    The articles checked are the plan's scope: those it touches, their neighbourhood
+    and every article holding two of a kind, as they are after the plan, with every
+    article it names. They are checked before the plan and after it; a violation only
+    the after has is the plan's, and one both have is reported as there before. So a
+    plan can be committed around a case left for a person, and cannot make the catalog
+    worse.
     """
+    index_downloads(catalog)
     outcome = Outcome()
     try:
         with catalog.transaction():
             if backup is not None:
                 catalog.backup(backup)
-            touched: Set[str] = set()
-            lost_text: Set[str] = set()
-            for number, operation in operations:
-                try:
-                    touched.update(_RUN[operation["op"]](catalog, operation, outcome))
-                except IdentityError as exc:
-                    outcome.refused.append((number, operation, str(exc)))
-                    continue
-                outcome.applied[operation["op"]] += 1
-                lost_text.update(_text_from(operation))
+            scope = _scope(catalog, operations)
+            before = violations(catalog, scope)
+            touched, lost_text = _run(catalog, operations, outcome)
             outcome.taken_back = _take_back(catalog, lost_text)
             live = sorted({catalog.current_id(article_id) for article_id in touched})
             outcome.touched = [catalog.identifier(article_id) for article_id in live]
-            outcome.violations = violations(catalog, neighbourhood(catalog, live) | suspects(catalog))
+            after = violations(catalog, neighbourhood(catalog, live) | suspects(catalog)
+                               | {catalog.current_id(a) for a in scope})
+            was = {_key(catalog, v) for v in before}
+            outcome.violations = [v for v in after if _key(catalog, v) not in was]
+            outcome.preexisting = [v for v in after if _key(catalog, v) in was]
             if backup is None or outcome.refused or outcome.violations:
                 raise _Discard
     except _Discard:
         return outcome
     outcome.committed = True
     return outcome
+
+
+def _run(catalog: Catalog, operations: List[Tuple[int, Operation]],
+         outcome: Outcome) -> Tuple[Set[str], Set[str]]:
+    """Run the operations; return the articles they touched and those they took an
+    extraction from."""
+    touched: Set[str] = set()
+    lost_text: Set[str] = set()
+    for number, operation in operations:
+        try:
+            touched.update(_RUN[operation["op"]](catalog, operation, outcome))
+        except IdentityError as exc:
+            outcome.refused.append((number, operation, str(exc)))
+            continue
+        outcome.applied[operation["op"]] += 1
+        lost_text.update(_text_from(operation))
+    return touched, lost_text
+
+
+def _scope(catalog: Catalog, operations: List[Tuple[int, Operation]]) -> Set[str]:
+    """The articles the plan's result is checked over, found by running it and rolling
+    it back, with every article it names (each one merged away is live before it)."""
+    found: Set[str] = set()
+    try:
+        with catalog.transaction():
+            touched, _ = _run(catalog, operations, Outcome())
+            live = {catalog.current_id(article_id) for article_id in touched}
+            found = neighbourhood(catalog, live) | suspects(catalog)
+            raise _Discard
+    except _Discard:
+        pass
+    return found | {a for _, operation in operations for a in _named(operation)}
+
+
+def _named(operation: Operation) -> List[str]:
+    named = [operation.get(k) for k in ("article", "from", "to")]
+    named += list(operation.get("articles") or ())
+    named += [m.get(k) for m in operation.get("moves") or () for k in ("from", "to")]
+    return [str(a) for a in named if a]
+
+
+_ARTICLE_ID = re.compile(r"\b[a-z2-7]{12}\b")
+
+
+def _key(catalog: Catalog, violation: Violation) -> Tuple[str, str, str]:
+    """A violation by the articles as they are after the plan: one it merged an article
+    of into another is the same violation."""
+    detail = _ARTICLE_ID.sub(lambda m: catalog.current_id(m.group(0)), violation.detail)
+    return catalog.current_id(violation.article_id), violation.rule, detail
 
 
 def _pairs(rows) -> List[Tuple[str, str]]:
@@ -139,7 +200,7 @@ def _pairs(rows) -> List[Tuple[str, str]]:
 def _text_from(operation: Operation) -> List[str]:
     """The articles an operation took an extraction from."""
     keys = operation.get("artifacts") or ()
-    if not any(stage == "extract" for stage, _ in keys):
+    if operation["op"] == "swap_artifacts" or not any(stage == "extract" for stage, _ in keys):
         return []
     return [operation.get("from") or operation["article"]]
 
@@ -203,13 +264,20 @@ def _run_move_artifacts(catalog, op, outcome):
     return [op["from"], op["to"]]
 
 
+def _run_swap_artifacts(catalog, op, outcome):
+    first, second = op["articles"]
+    catalog.swap_artifacts(first, second, _pairs(op["artifacts"]))
+    return [first, second]
+
+
 def _run_forget_artifacts(catalog, op, outcome):
     catalog.forget_artifacts(op["article"], _pairs(op["artifacts"]))
     return [op["article"]]
 
 
 def _run_merge(catalog, op, outcome):
-    return [catalog.merge(op["articles"], _pairs(op.get("drop", ())), _pairs(op.get("rekind", ())))]
+    return [catalog.merge(op["articles"], _pairs(op.get("drop", ())),
+                          _pairs(op.get("rekind", ())))]
 
 
 def _run_rekind(catalog, op, outcome):
@@ -223,6 +291,7 @@ _RUN: Dict[str, Callable[[Catalog, Operation, Outcome], List[str]]] = {
     "remove": _run_remove,
     "split": _run_split,
     "move_artifacts": _run_move_artifacts,
+    "swap_artifacts": _run_swap_artifacts,
     "forget_artifacts": _run_forget_artifacts,
     "merge": _run_merge,
     "rekind": _run_rekind,

@@ -199,7 +199,7 @@ def test_a_plan_whose_result_breaks_an_invariant_is_not_committed(setup):
     assert result.exit_code == 1
     assert (f"violation {ids['d']} journal-dois: holds 10.1176/ajp.2006.163.4.735, "
             "10.17169/refubium-31155") in result.output
-    assert "0 refused, 1 violations after the plan. Nothing was written" in result.output
+    assert "0 refused, 1 violations the plan makes. Nothing was written" in result.output
     assert _db(tmp_path) == before
     assert not (tmp_path / "m.jsonl").exists()
 
@@ -242,15 +242,16 @@ def cases(tmp_path):
             "holder": cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id,
             "owner": cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id,
             # og3a4u5wsy26 holding a Neurobiol Learn Mem paper beside its own
-            "fused": cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005", pmid="22015111")).id,
-            # mxp7s3fbegzb holding PubMed's DOI and the publisher's alias spelling of it
-            "alias": cat.register(Identifier(doi="10.1176/jnp.2009.21.3.307")).id,
+            "fused": cat.register(
+                Identifier(doi="10.1016/j.biopsych.2011.09.005", pmid="22015111")).id,
+            # ki7akud6c347 holding PubMed's Springer DOI and the journal's earlier mEDRA DOI
+            "alias": cat.register(Identifier(doi="10.1007/bf03337758", pmid="20885123")).id,
         }
         conn = cat._conn
         conn.executemany("INSERT INTO aliases VALUES (?, ?, ?)", [
             ("doi", "10.1101/2023.09.27.559792", ids["elife"]),
             ("doi", "10.1016/j.nlm.2011.06.006", ids["fused"]),
-            ("doi", "10.1176/appi.neuropsych.21.3.307", ids["alias"]),
+            ("doi", "10.3275/7271", ids["alias"]),
         ])
         copy = files / "elsevier" / "content.xml"
         copy.parent.mkdir(parents=True)
@@ -264,15 +265,16 @@ def cases(tmp_path):
             Outcome(ids["fused"], "download", "ace", Status.OK, payload={"files": []}),
         ])
     lines = [
-        {"op": "merge", "articles": [ids["paper"], ids["duplicate"]], "drop": [["pmid", "37401785"]]},
-        {"op": "merge", "articles": [ids["elife"], ids["preprint"]], "rekind": [["pmid", "37808793"]]},
+        {"op": "merge", "articles": [ids["paper"], ids["duplicate"]],
+         "drop": [["pmid", "37401785"]]},
+        {"op": "merge", "articles": [ids["elife"], ids["preprint"]],
+         "rekind": [["pmid", "37808793"]]},
         {"op": "move_artifacts", "from": ids["holder"], "to": ids["owner"],
          "artifacts": [["download", "elsevier"], ["extract", "elsevier"]]},
         {"op": "split", "article": ids["fused"], "aliases": [["doi", "10.1016/j.nlm.2011.06.006"]],
          "add": [["pmid", "21704176"]]},
         {"op": "forget_artifacts", "article": ids["fused"], "artifacts": [["download", "ace"]]},
-        {"op": "rekind", "article": ids["alias"], "kind": "doi",
-         "value": "10.1176/appi.neuropsych.21.3.307"},
+        {"op": "rekind", "article": ids["alias"], "kind": "doi", "value": "10.3275/7271"},
     ]
     plan = tmp_path / "every-op.jsonl"
     plan.write_text("".join(json.dumps(line) + "\n" for line in lines), encoding="utf-8")
@@ -293,17 +295,17 @@ def test_every_operation_applies_and_its_articles_are_listed(cases):
     with Catalog.open(tmp_path / "catalog") as cat:
         paper = cat.current_id(ids["paper"])
         assert cat.aliases(paper, "pmid") == ["35770780"]
-        assert cat.holder("pmid", "37401785") is None
+        assert cat.holder("pmid", "37401785") == paper
         elife = cat.current_id(ids["elife"])
         assert cat.aliases(elife, "preprint_pmid") == ["37808793"]
         assert cat.artifact(ids["owner"], "download", "elsevier") is not None
         taken = cat.artifact(ids["holder"], "passages", "")
-        assert (taken.status, taken.error, taken.fingerprint) == (Status.FAILED, "no extraction text",
-                                                                  "no extraction text")
+        assert (taken.status, taken.error, taken.fingerprint) == (
+            Status.FAILED, "no extraction text", "no extraction text")
         nlm = cat.holder("doi", "10.1016/j.nlm.2011.06.006")
         assert nlm != ids["fused"] and cat.aliases(nlm, "pmid") == ["21704176"]
         assert cat.artifact(ids["fused"], "download", "ace") is None
-        assert cat.aliases(ids["alias"], "alternate_doi") == ["10.1176/appi.neuropsych.21.3.307"]
+        assert cat.aliases(ids["alias"], "alternate_doi") == ["10.3275/7271"]
         listed = {cat.resolve(i).id for i in Identifiers.load(manifest).identifiers}
         assert listed == {paper, elife, ids["holder"], ids["owner"], ids["fused"], nlm,
                           ids["alias"]}
@@ -322,7 +324,8 @@ def test_an_article_a_plan_does_not_touch_is_checked_when_the_plan_breaks_it(tmp
     result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
                      "--manifest", tmp_path / "m.jsonl")
     assert result.exit_code == 1
-    assert f"violation {b} pmid-doi: pmid 21704176 is 10.1016/j.nlm.2011.06.006 in PubMed" in result.output
+    assert (f"violation {b} pmid-doi: pmid 21704176 is 10.1016/j.nlm.2011.06.006 in PubMed"
+            in result.output)
 
 
 @pytest.mark.vcr()
@@ -344,9 +347,9 @@ def test_an_article_whose_pmc_record_a_plan_gives_away_is_checked(tmp_path):
 
 
 @pytest.mark.vcr()
-def test_an_article_holding_two_of_a_kind_anywhere_blocks_the_apply(tmp_path):
+def test_an_article_holding_two_of_a_kind_before_the_plan_is_reported_and_does_not_block(tmp_path):
     # B is linked to nothing the plan touches; it holds two PMCIDs, as the catalog took
-    # them before registration refused a second paper's.
+    # them before registration refused a second paper's, and waits for a person.
     config = _config(tmp_path)
     with Catalog.open(tmp_path / "catalog") as cat:
         a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
@@ -357,8 +360,50 @@ def test_an_article_holding_two_of_a_kind_anywhere_blocks_the_apply(tmp_path):
                                 "value": "10.1017/s0033291717000265"}) + "\n", encoding="utf-8")
     result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
                      "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert f"pre-existing, not caused by this plan: {b} pmcids:" in result.output
+    with Catalog.open(tmp_path / "catalog") as cat:
+        assert cat.holder("doi", "10.1017/s0033291717000265") == a
+
+
+@pytest.mark.vcr()
+def test_a_plan_giving_an_article_a_second_of_a_kind_is_not_committed(tmp_path):
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        b = cat.register(Identifier(pmcid="PMC3189437")).id
+        cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "add", "article": b, "kind": "neurostore",
+                                "value": "3Rob7cK8y6gY"}) + "\n", encoding="utf-8")
+    with Catalog.open(tmp_path / "catalog") as cat:
+        cat._conn.execute("INSERT INTO aliases VALUES ('neurostore', 'AkYZauDLLAS5', ?)", (b,))
+    before = _db(tmp_path)
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
     assert result.exit_code == 1
-    assert f"violation {b} pmcids:" in result.output
+    assert f"violation {b} base-studies:" in result.output
+    assert f"pre-existing, not caused by this plan: {b} pmcids:" in result.output
+    assert _db(tmp_path) == before
+
+
+@pytest.mark.vcr()
+def test_an_alternate_doi_the_registry_cannot_describe_is_not_committed(tmp_path):
+    # mxp7s3fbegzb: doi.org has the publisher's alias spelling of PubMed's DOI, and
+    # sends it to Crossref, which has no record of it.
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1176/jnp.2009.21.3.307")).id
+        cat._conn.execute(
+            "INSERT INTO aliases VALUES ('doi', '10.1176/appi.neuropsych.21.3.307', ?)", (a,))
+    plan = tmp_path / "plan.jsonl"
+    line = {"op": "rekind", "article": a, "kind": "doi",
+            "value": "10.1176/appi.neuropsych.21.3.307"}
+    plan.write_text(json.dumps(line) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 1
+    assert (f"violation {a} evidence-unreadable: 10.1176/appi.neuropsych.21.3.307: doi.org sends "
+            "it to api.crossref.org, which has no record") in result.output
 
 
 @pytest.mark.vcr()
@@ -393,3 +438,82 @@ def test_a_malformed_plan_is_a_usage_error(setup, line, why):
     result = _invoke(config, plan)
     assert result.exit_code == 2
     assert why in result.output
+
+
+@pytest.mark.vcr()
+def test_an_article_whose_download_names_an_id_the_plan_hands_out_is_checked(tmp_path):
+    # X's ACE copy is 22015111.html, the Biol Psychiatry paper's, though X holds the
+    # Neurobiol Learn Mem PMID; the plan gives Y, which holds the Biol Psychiatry DOI, its PMID.
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        x = cat.register(Identifier(pmid="21704176")).id
+        y = cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005")).id
+        cat.record([Outcome(x, "download", "ace", Status.OK, payload={"files": [
+            {"file_path": str(tmp_path / "ace" / "22015111.html")}]})])
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "add", "article": y, "kind": "pmid", "value": "22015111"})
+                    + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 1
+    assert (f"violation {x} download: download/ace names pmid 22015111, which {y} holds"
+            in result.output)
+
+
+@pytest.mark.vcr()
+def test_an_article_already_taken_back_is_not_taken_back_again(tmp_path):
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+        b = cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+        cat.record([Outcome(a, stage, "elsevier", Status.OK, payload={"files": []})
+                    for stage in ("download", "extract")]
+                   + [Outcome.failure(a, "passages", "", "no extraction text",
+                                      fingerprint="no extraction text")])
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "move_artifacts", "from": a, "to": b, "artifacts": [
+        ["download", "elsevier"], ["extract", "elsevier"]]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert "taken back" not in result.output
+
+
+@pytest.mark.vcr()
+def test_a_plan_swaps_two_crossed_downloads(tmp_path):
+    # ml7z5xc7cvgo and su74e7qsacoi: each article's ACE copy is the other's paper
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(pmid="15658005")).id
+        b = cat.register(Identifier(pmid="15465288")).id
+        cat.record([Outcome(x, "download", "ace", Status.OK,
+                            payload={"files": [{"file_path": f"/ace/{p}.html"}]})
+                    for x, p in ((a, "15465288"), (b, "15658005"))])
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "swap_artifacts", "articles": [a, b],
+                                "artifacts": [["download", "ace"]]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert "1 of 1 operations applied" in result.output and "violation" not in result.output
+    with Catalog.open(tmp_path / "catalog") as cat:
+        assert cat.payload(cat.artifact(a, "download", "ace"))["files"][0]["file_path"] == \
+            "/ace/15658005.html"
+
+
+@pytest.mark.vcr()
+def test_a_violation_naming_an_article_the_plan_merges_away_is_still_the_one_before(tmp_path):
+    # X holds the Neurobiol Learn Mem PMID; its DOI is L's. The plan merges L into S, its other
+    # record, so the violation then names S.
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        s = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+        x = cat.register(Identifier(pmid="21704176")).id
+        lone = cat.register(Identifier(doi="10.1016/j.nlm.2011.06.006")).id
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "merge", "articles": [s, lone]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert (f"pre-existing, not caused by this plan: {x} pmid-doi: pmid 21704176 is "
+            f"10.1016/j.nlm.2011.06.006 in PubMed, which {s} holds") in result.output

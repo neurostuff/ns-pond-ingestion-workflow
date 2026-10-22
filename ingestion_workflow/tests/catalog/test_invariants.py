@@ -7,7 +7,12 @@ from __future__ import annotations
 
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
-from ingestion_workflow.catalog.invariants import neighbourhood, suspects, violations
+from ingestion_workflow.catalog.invariants import (
+    index_downloads,
+    neighbourhood,
+    suspects,
+    violations,
+)
 from ingestion_workflow.models.ids import Identifier
 
 BIOPSYCH = ("22015111", "10.1016/j.biopsych.2011.09.005")
@@ -143,7 +148,8 @@ def test_a_pmid_its_own_pmc_record_agrees_with_is_not_another_edition_s(checked)
     # Spanish edition's DOI, which pbig65ccs2nv holds; its PMC record gives the English DOI.
     english = checked.register(Identifier(pmid="32962948", pmcid="PMC10068027",
                                           doi="10.1016/j.rpsmen.2020.07.005")).id
-    checked.register(Identifier(pmid="38620670", pmcid="PMC7456305", doi="10.1016/j.rpsm.2020.07.003"))
+    checked.register(
+        Identifier(pmid="38620670", pmcid="PMC7456305", doi="10.1016/j.rpsm.2020.07.003"))
     assert [v for v in violations(checked, [english]) if v.rule == "pmid-doi"] == []
 
 
@@ -158,7 +164,8 @@ def test_a_pmcid_whose_pmc_record_is_another_pmid(checked):
     found = violations(checked, [a])
     assert [(v.rule, v.detail) for v in found] == [
         ("pmcid", "PMC5582689 is PubMed 28290265 in PMC, which no article holds"),
-        ("pmcid", "PMC5582689 is 10.1017/s0033291717000265 in PMC, not 10.1016/j.foodres.2016.11.043")]
+        ("pmcid",
+         "PMC5582689 is 10.1017/s0033291717000265 in PMC, not 10.1016/j.foodres.2016.11.043")]
 
 
 @pytest.mark.vcr()
@@ -215,7 +222,8 @@ def test_an_article_holding_the_pmid_of_a_doi_is_its_holder_s_neighbour(checked)
     ([("doi", "10.1101/2023.09.27.559792")], [("doi", "10.7554/elife.92563")]),
     # a preprint's PubMed record and its paper's, by title alone: btk5tlwqap5k and vrr7x2ygtjdt
     ([("pmid", "37808793")], [("pmid", "38345852")]),
-], ids=["shared-id", "pubmed-doi", "pubmed-pmc", "pmc-pmid", "pmc-doi", "crossref-version", "pubmed-title"])
+], ids=["shared-id", "pubmed-doi", "pubmed-pmc", "pmc-pmid", "pmc-doi", "crossref-version",
+        "pubmed-title"])
 @pytest.mark.vcr()
 def test_each_link_reaches_the_neighbour(checked, held, neighbour):
     a = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
@@ -263,7 +271,8 @@ def test_a_download_whose_xml_is_another_article_s_paper(checked, tmp_path):
     a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
     b = checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
     _download(checked, a, "elsevier", tmp_path / "a", "content.xml",
-              "<full-text-retrieval-response><prism:doi>10.1016/j.neuroimage.2004.05.015</prism:doi>")
+              "<full-text-retrieval-response>"
+              "<prism:doi>10.1016/j.neuroimage.2004.05.015</prism:doi>")
     _download(checked, b, "pubget", tmp_path / "b", "pmcid_1234567/article.xml",
               '<article-id pub-id-type="doi">10.1016/J.NEUROIMAGE.2004.05.015</article-id>')
 
@@ -280,7 +289,8 @@ def test_a_jats_file_naming_another_article_s_doi(checked, tmp_path):
     _download(checked, a, "pmc", tmp_path, "pmcid_1234567/article.xml",
               '<article-id pub-id-type="doi">10.1016/j.neuroimage.2004.05.015</article-id>')
     assert [v.detail for v in violations(checked, [a])] == [
-        f"download/pmc names pmcid PMC1234567, doi 10.1016/j.neuroimage.2004.05.015, which {b} holds"]
+        f"download/pmc names pmcid PMC1234567, doi 10.1016/j.neuroimage.2004.05.015, "
+        f"which {b} holds"]
 
 
 @pytest.mark.vcr()
@@ -328,15 +338,21 @@ def test_a_download_whose_record_or_file_is_gone_is_a_violation(checked, tmp_pat
     for found in checked.root.glob(f"blobs/**/{blob}*"):
         found.unlink()
 
-    assert sorted((v.article_id, v.rule, v.detail.split(":")[0]) for v in violations(checked, [a, b])) == sorted(
-        [(a, "download-unreadable", "download/elsevier"), (b, "download-unreadable", "download/pubget")])
+    found = sorted((v.article_id, v.rule, v.detail.split(":")[0])
+                   for v in violations(checked, [a, b]))
+    assert found == sorted([(a, "download-unreadable", "download/elsevier"),
+                            (b, "download-unreadable", "download/pubget")])
 
 
 @pytest.mark.vcr()
-def test_a_pubmed_doi_held_as_an_alternate_is_the_article_s(checked):
-    # ki7akud6c347 once repaired: the mEDRA DOI, and PubMed's Springer DOI as an alternate
+def test_a_journal_record_s_doi_is_the_article_s_doi_not_an_alternate(checked):
+    # ki7akud6c347: the journal's earlier mEDRA DOI, and PubMed's Springer DOI
     a = checked.register(Identifier(doi="10.3275/7271", pmid="20885123")).id
     _hold(checked, a, "alternate_doi", "10.1007/bf03337758")
+    assert _rules(violations(checked, [a])) == [(a, "vor-doi")]
+    checked._conn.execute("UPDATE aliases SET kind=CASE kind WHEN 'doi' THEN 'alternate_doi' "
+                          "ELSE 'doi' END WHERE article_id=? AND kind IN ('doi', 'alternate_doi')",
+                          (a,))
     assert violations(checked, [a]) == []
 
 
@@ -355,3 +371,63 @@ def test_a_preprint_s_pubmed_record_and_its_paper_on_two_articles(checked):
     preprint = checked.register(Identifier(pmid="37808793")).id
     found = [v for v in violations(checked, [preprint]) if v.rule == "two-versions"]
     assert [v.article_id for v in found] == [preprint] and paper in found[0].detail
+
+
+@pytest.mark.vcr()
+def test_a_meeting_abstract_s_pmc_record_beside_the_paper_breaks_the_pmcid_rule(checked):
+    # x5xhvjd45lqm: the MRM paper's PMID and DOI, and PMC4043787, the JCMR supplement's
+    # abstract (no PMID in PMC), whose DOI the plan had made an alternate.
+    a = checked.register(Identifier(pmid="24532480", doi="10.1002/mrm.25133")).id
+    _hold(checked, a, "pmcid", "PMC4043787")
+    _hold(checked, a, "alternate_doi", "10.1186/1532-429x-16-s1-o7")
+    found = violations(checked, [a])
+    assert (a, "pmcid") in _rules(found) and (a, "alternate-doi") in _rules(found)
+    assert any("only as an alternate DOI" in v.detail for v in found if v.rule == "pmcid")
+
+
+@pytest.mark.vcr()
+def test_an_erratum_kept_as_an_alternate_doi_is_another_work(checked):
+    # rg5bc6o7gs7m: the paper, and "Erratum to 'A quantitative comparison...'"
+    a = checked.register(Identifier(pmid="11595367", doi="10.1016/s0730-725x(01)00418-0")).id
+    _hold(checked, a, "alternate_doi", "10.1016/s0730-725x(03)00069-9")
+    assert _rules(violations(checked, [a])) == [(a, "alternate-doi")]
+
+
+@pytest.mark.vcr()
+def test_a_preprint_s_pubmed_record_with_its_paper_s_title_is_its_other_version(checked):
+    # wlvovj2lmdff, the bioRxiv preprint's PubMed record, and xxv5qzt4dg7u, the Sci Rep
+    # paper: "Neural effects of TMS trains on the human prefrontal cortex."
+    preprint = checked.register(Identifier(pmid="36778457", doi="10.1101/2023.01.30.526374")).id
+    paper = checked.register(Identifier(pmid="38123591", doi="10.1038/s41598-023-49250-7")).id
+    found = [v for v in violations(checked, [preprint]) if v.rule == "two-versions"]
+    assert any(f"PubMed 38123591's work, which {paper} holds" in v.detail for v in found)
+    assert preprint in neighbourhood(checked, [paper])
+
+
+def test_a_scope_over_downloads_not_indexed_is_refused(checked, tmp_path):
+    a = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    checked.record([Outcome(a, "download", "ace", Status.OK,
+                            payload={"files": [{"file_path": "/ace/22015111.html"}]})])
+    with pytest.raises(ValueError, match="1 downloads are not indexed"):
+        neighbourhood(checked, [a])
+    assert index_downloads(checked) == 1
+    assert neighbourhood(checked, [a]) == {a}
+
+
+def test_an_unreadable_download_is_indexed_as_naming_nothing(checked, tmp_path):
+    a = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    gone = tmp_path / "elsevier" / "content.xml"
+    checked.record([Outcome(a, "download", "elsevier", Status.OK,
+                            payload={"files": [{"file_path": str(gone)}]})])
+    assert index_downloads(checked) == 1
+    assert neighbourhood(checked, [a]) == {a}
+    assert [v.rule for v in violations(checked, [a])] == ["download-unreadable"]
+
+
+@pytest.mark.vcr()
+def test_a_pmc_record_of_the_article_s_pubmed_record_may_give_its_other_doi(checked):
+    # aucqqxrbcno2: PubMed gives PNAS's issue DOI, PMC its early edition's
+    a = checked.register(Identifier(pmid="10725372", pmcid="PMC16281",
+                                    doi="10.1073/pnas.97.7.3573")).id
+    _hold(checked, a, "alternate_doi", "10.1073/pnas.050583797")
+    assert violations(checked, [a]) == []

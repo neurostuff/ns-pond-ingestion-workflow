@@ -35,7 +35,8 @@ DOI_SEARCH_BATCH_SIZE = 50
 
 
 class _Pace:
-    """One pace for every client in the process: NCBI counts a caller's requests, not a client's."""
+    """One pace for every client in the process: NCBI counts a caller's requests, not a
+    client's."""
 
     lock = threading.Lock()
     last = 0.0
@@ -57,6 +58,11 @@ class PubMedSummary:
     pubtypes: Tuple[str, ...]
     #: The PMCID of the record's PMC copy, when PubMed lists one.
     pmcid: Optional[str] = None
+    #: The first author as PubMed writes the name ("Raichle ME"), or a collective name.
+    first_author: Optional[str] = None
+    year: Optional[int] = None
+    #: The journal's print and electronic ISSNs.
+    issns: Tuple[str, ...] = ()
 
     @property
     def preprint(self) -> bool:
@@ -69,6 +75,11 @@ class PmcRecord:
 
     pmid: Optional[str]
     doi: Optional[str]
+
+
+def _year(date: Optional[str]) -> Optional[int]:
+    match = re.match(r"\s*(\d{4})", date or "")
+    return int(match.group(1)) if match else None
 
 
 class PubMedClient:
@@ -568,6 +579,10 @@ class PubMedClient:
                 title=html.unescape(record.get("title") or ""),
                 pubtypes=tuple(record.get("pubtype") or ()),
                 pmcid=normalize_pmcid(pmc) if pmc and pmc.upper().startswith("PMC") else None,
+                first_author=next((a.get("name") for a in record.get("authors") or []
+                                   if a.get("name")), None),
+                year=_year(record.get("pubdate")),
+                issns=tuple(i for i in (record.get("issn"), record.get("essn")) if i),
             )
         return found
 
@@ -576,9 +591,11 @@ class PubMedClient:
         found: Dict[str, PmcRecord] = {}
         pmcids = list(dict.fromkeys(str(p) for p in pmcids if p))
         for i in range(0, len(pmcids), IDCONV_BATCH_SIZE):
-            payload = self._request_idconv(self._build_params("pmcid", pmcids[i : i + IDCONV_BATCH_SIZE]))
+            batch = pmcids[i : i + IDCONV_BATCH_SIZE]
+            payload = self._request_idconv(self._build_params("pmcid", batch))
             for record in payload.get("records") or []:
-                if not isinstance(record, dict) or record.get("status") == "error" or not record.get("pmcid"):
+                if (not isinstance(record, dict) or record.get("status") == "error"
+                        or not record.get("pmcid")):
                     continue
                 found[normalize_pmcid(str(record["pmcid"]))] = PmcRecord(
                     pmid=str(record["pmid"]) if record.get("pmid") else None,
@@ -600,11 +617,13 @@ class PubMedClient:
             if not words:
                 return []
             params = [("db", "pubmed"), ("term", " AND ".join(f"{w}[ti]" for w in words)),
-                      ("retmode", "json"), ("retmax", "20"), ("email", self.email), ("tool", self.tool)]
+                      ("retmode", "json"), ("retmax", "20"), ("email", self.email),
+                      ("tool", self.tool)]
             if self.api_key:
                 params.append(("api_key", self.api_key))
             result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
-            unindexed = {w.lower() for w in (result.get("errorlist") or {}).get("phrasesnotfound") or []}
+            missing = (result.get("errorlist") or {}).get("phrasesnotfound") or []
+            unindexed = {w.lower() for w in missing}
             if not unindexed:
                 break
             words = [w for w in words if w.lower() not in unindexed]
@@ -617,7 +636,8 @@ class PubMedClient:
         for i in range(0, len(dois), DOI_SEARCH_BATCH_SIZE):
             term = " OR ".join(f'"{d}"[doi]' for d in dois[i : i + DOI_SEARCH_BATCH_SIZE])
             params = [("db", "pubmed"), ("term", term), ("retmode", "json"),
-                      ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email), ("tool", self.tool)]
+                      ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email),
+                      ("tool", self.tool)]
             if self.api_key:
                 params.append(("api_key", self.api_key))
             result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}

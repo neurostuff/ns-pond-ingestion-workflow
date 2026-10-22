@@ -1,0 +1,282 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/s0730-725x%2803%2900069-9
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2803%2900069-9/transform">https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2803%2900069-9/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae4d4991c133-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:04:57 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:08:07 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2803%2900069-9/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=jKyWBmBADrJb6Hq%2BwXkiBzZ%2FaKlqwYlYVWIS2dlF77kmCFnMSk%2BQdF1D%2B%2B8r%2BbFaTOo0XLiUW8wSRGjxBWyh%2Bo7AqRMnyhXzy8tTSLeD%2BR4a%2BSql7I4E3gA%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2803%2900069-9/transform
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/7VWbY/iNhD+K1E+tVIMTgKERKqq3Xalo+pdT7u0qrpBlUkG8G3i5GyHhaL97x07
+        AbLsbq+qeogPSWzPyzPPPOODy0UOO8jd5ODmTAOpmdTKTe7vAxoE3sgLFwuvXdG8BDdxzXdCR4SG
+        8yBMwiih8R+u55pVpVlZu4k/GcU0MH+fjp88V8IKJIgMSFY1QuMGz62bZcHVBiRavCkUbDlI5/o3
+        NMSVaoyfMT4XPAOh8O3+4KJxqV8Lk4bexPNfhklDQieE+nNKE/u/DJOOR6NgPKHmh2FmldAgNNmC
+        VLwSaEPnJR7JoWB7wgXJ2R5dUs/99fZnXN1oXaskHabDx8fHAXRJDLKqTId4Mh02CmSXQTr0BzQd
+        uk+Ls5+8KhkXNqPu6d6sykqpkskHIjFQyTNtY1kxtP90xi0nteTiTTwWC9z74y8zDNOnA5/6k3So
+        aBRSEgXj3Tc0/BZznsQkNpDsawPYp6qRghUEDfGsANeEAmj6VWqgj8gLgtdBj0gQzIMgCfxkFL4E
+        fRr7wZiGLeg1W9tiRyHuUxhCZl5/MCAgbSwdyIk/OVnujxyixqwuzO4bKZluSkdXTtoE1M+Y87lh
+        ApeZ5ltwsCIYOleVcKqVU1YGUScHDRZbhxXrSnK9KZXDhbN6fzuzVnJ0XqNrvjuDiJ+2VdG0ufr4
+        xhq9qaTl5xpdGdJcsyV7cK4GuLpiJS/2+O1K5vDABDc5wufG5IJfV1wqbYysVrzgrC204YCsipbz
+        7cPRi3GesWVTMGmMZkeQnrDYZ/9XxRbTePfM/zXLNiUTz92zPOfGJyv+9xh+qhTUmwsQ3kFRg/zK
+        QeChEsql1ZVo6vbEx9p5gH2/Je6OLfF7ryX+vJ5dm9rmFSdMYQ9rS7y+I6+tHenYG0Ruv9t8GqfD
+        aTiYjOl0ZGLoWoocCXvl1HuJsOQOq2tZYXEMd1WzJDXfQeFIWHPsfQuEs2QKcgcfuJENxfW+z8Ko
+        R0J3vkkbSiHGIrC/cGEPzHz249hEcWzwYxSzm5sbZy6ZUM6sxEScj7LKTgqFggTytPc9WwvAJJxb
+        wDZiCKc9w8UaDWP34NPZsqlcwcS6adEBYZVcPNgKXGonq/mFdnb6iEstbOnw42yW2FKZSlnlmMTx
+        98bGVZZBrb/TsMP9u9KQ6Civnay9tnRW+K1lk0U2xypjOVCwOwLao6TkwmRp2P0VQ68LMwDeCP5y
+        8b+Eb4Qa6grp87qg+7Hne0H0UtD9GEcoCaI5HSfhKKHTS0Efj6bjSRSMpq2gq6ySYEc8zq9Ozw8o
+        pLy0zfoSRcMMDHHTLC/AlIDjD7YIYs1516t9FN0n465Z9linsA90n4b2MvHWBGun5EkgVO96cuyV
+        7jJyeHYr+fczGM2zQqPo2UFEOEZy775MZNG/UlhQ8t0A5WdQyTXeHL40wCVeUNqaH9Dh7O7ug3Fz
+        kjZjHmH6hOOuu2I8b29iUftSk5+S/qd0/wYbCtvjTwoAAA==
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '1117'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 10:04:57 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/s0730-725x%2801%2900418-0
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2801%2900418-0/transform">https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2801%2900418-0/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae4e7b37c133-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:04:58 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:27:30 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2801%2900418-0/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=1P0u3TpJQUw5YoWyyy6fxj3O9FswNplT2tps%2Blm2fOVPlzU23Ikvsk8gnAAOzLkBb7sdOFnLtVYcH4Iba61chBBByQafUIouzAGB%2F4d03DFRqTom3czZFRw%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fs0730-725x%2801%2900418-0/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        FgAA
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '1998'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 10:04:58 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -24,7 +24,7 @@ def catalog(tmp_path):
 
 def _refusals(catalog):
     return [tuple(r) for r in catalog._conn.execute(
-        "SELECT kind, value, article_id FROM refusals ORDER BY rowid")]
+        "SELECT kind, value, article_id FROM refusals ORDER BY refused_at, kind, value")]
 
 
 # -- one journal DOI per article ----------------------------------------------------
@@ -69,7 +69,8 @@ def test_two_articles_with_different_journal_dois_are_not_merged(catalog):
 
 def test_two_base_studies_are_not_merged(catalog):
     # bqb4eprbjxw7 was made of two articles, each one of neurostore's base studies.
-    a = catalog.register(Identifier(neurostore="8YJSSriJx23a", doi="10.1016/j.pnpbp.2026.111696")).id
+    a = catalog.register(
+        Identifier(neurostore="8YJSSriJx23a", doi="10.1016/j.pnpbp.2026.111696")).id
     b = catalog.register(Identifier(neurostore="AkYZauDLLAS5", pmid="41962621")).id
     catalog.register(Identifier(doi="10.1016/j.pnpbp.2026.111696", pmid="41962621"))
     assert catalog.live(a) and catalog.live(b)
@@ -179,3 +180,31 @@ def test_a_pmid_alone_or_already_held_is_not_asked_about(checked):
 @pytest.mark.vcr()
 def test_pubmed_summaries_give_the_record_s_pmc_copy(pubmed):
     assert pubmed.summaries(["17134483"])["17134483"].pmcid == "PMC1769396"
+
+
+def test_a_refusal_made_again_is_on_record_once(catalog):
+    a = catalog.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
+    for _ in range(2):
+        catalog.register(Identifier(pmid=BIOPSYCH[0], doi=NLM[1]))
+    assert _refusals(catalog) == [("doi", NLM[1], a)]
+
+
+@pytest.mark.vcr()
+def test_a_pmid_whose_pubmed_doi_the_registry_cannot_read_is_refused_with_why(checked):
+    # PubMed gives 29745568 10.7507/1001-5515.201511032, which doi.org sends to chinadoi,
+    # which has no record of it: nothing says whether it is the holder's paper.
+    holder = checked.register(Identifier(doi="10.7507/1001-5515.201511032")).id
+    checked.register(Identifier(pmid="29745568", neurostore="3Rob7cK8y6gY"))
+    [(kind, value, _, why)] = checked.refused
+    assert (kind, value) == ("pmid", "29745568")
+    assert f"which {holder} holds, and the registry cannot say" in why
+    assert checked.holder("pmid", "29745568") is None
+
+
+@pytest.mark.vcr()
+def test_a_second_journal_doi_the_registry_cannot_read_is_refused_with_why(checked):
+    a = checked.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
+    checked.register(Identifier(pmid=BIOPSYCH[0], doi="10.7507/1001-5515.201511032"))
+    [(kind, value, article, why)] = checked.refused
+    assert (kind, value, article) == ("doi", "10.7507/1001-5515.201511032", a)
+    assert "the registry cannot say whether it is the same work" in why

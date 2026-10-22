@@ -542,8 +542,8 @@ def article_identifiers(identifier, dois: Sequence[str], meta):
 
     A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
     `Preprint` and the PMCID that record lists, and the PMID and PMCID the catalog
-    holds as the preprint's beside the version of record's. Raises ValueError for an article with two
-    DOIs neither of which is a preprint's, since `doi` holds one.
+    holds as the preprint's beside the version of record's. Raises ValueError for an article
+    with two DOIs neither of which is a preprint's, since `doi` holds one.
     """
     from ingestion_workflow.pipeline.stage import publication_types
 

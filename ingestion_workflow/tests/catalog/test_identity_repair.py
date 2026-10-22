@@ -397,7 +397,8 @@ def test_a_removed_preprint_pmid_is_put_back(catalog):
 
 def test_merge_refuses_two_base_studies_or_two_preprint_pmids(catalog):
     # bqb4eprbjxw7 came of two articles holding one base study each.
-    a = catalog.register(Identifier(doi="10.1016/j.pnpbp.2026.111696", neurostore="8YJSSriJx23a")).id
+    a = catalog.register(
+        Identifier(doi="10.1016/j.pnpbp.2026.111696", neurostore="8YJSSriJx23a")).id
     b = catalog.register(Identifier(pmid="41962621", neurostore="AkYZauDLLAS5")).id
     with pytest.raises(IdentityError, match="would hold two"):
         catalog.merge([a, b])
@@ -442,7 +443,8 @@ def test_a_split_takes_the_articles_once_merged_under_its_ids(catalog):
 
 def test_a_merge_drops_a_second_pubmed_record_of_the_paper(catalog):
     # 5qxpg3twr524 held only 37401785, PubMed's second record of w5rawsklx347's paper
-    # (35770780, both 10.1684/epd.2022.1433); the contract has no place for it.
+    # (35770780, both 10.1684/epd.2022.1433). A PubMed search finds both records, so
+    # the second must still find the paper.
     paper = catalog.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id
     duplicate = catalog.register(Identifier(pmid="37401785")).id
     _download(catalog, duplicate, "pubget")
@@ -452,7 +454,9 @@ def test_a_merge_drops_a_second_pubmed_record_of_the_paper(catalog):
     survivor = catalog.merge([paper, duplicate], drop=[("pmid", "37401785")])
 
     assert catalog.aliases(survivor, "pmid") == ["35770780"]
-    assert catalog.resolve(Identifier(pmid="37401785")) is None
+    assert catalog.aliases(survivor, "duplicate_pmid") == ["37401785"]
+    assert catalog.register(Identifier(pmid="37401785")).id == survivor
+    assert catalog.identifier(survivor).pmids == ["35770780", "37401785"]
     assert _artifacts(catalog, survivor) == [("download", "pubget"), ("extract", "pubget")]
 
 
@@ -487,3 +491,65 @@ def test_a_transaction_commits_its_writes_together_or_not_at_all(catalog):
     assert catalog.identifier(b).pmid == "11"
     assert catalog.identifier(a).doi == "10.1/a"
     assert not catalog._conn.in_transaction
+
+
+def test_a_rekind_may_not_hide_the_journal_doi_behind_a_preprint_s(catalog):
+    # 7tsawnkwprg4: PubMed 35462035 is the NeuroImage paper; its medRxiv preprint's DOI
+    # beside it must not become the DOI the article presents.
+    a = catalog.register(Identifier(pmid="35462035", doi="10.1016/j.neuroimage.2022.119210")).id
+    catalog.add_aliases([(a, "doi", "10.1101/2021.10.29.21265645")])
+    before = _snapshot(catalog)
+    with pytest.raises(IdentityError, match="only as an alternate"):
+        catalog.rekind_aliases([("doi", "10.1016/j.neuroimage.2022.119210", a)])
+    assert _snapshot(catalog) == before
+    assert catalog.identifier(a).doi == "10.1016/j.neuroimage.2022.119210"
+
+
+def test_a_merge_may_not_hide_the_journal_doi_behind_a_preprint_s(catalog):
+    # 4zfbz7lcpfjz and f46p2xjhcx6a: the Epilepsia record's article and the bioRxiv one's
+    paper = catalog.register(Identifier(pmid="42080316", doi="10.1002/epi.70276")).id
+    preprint = catalog.register(Identifier(doi="10.64898/2025.12.17.694941")).id
+    before = _snapshot(catalog)
+    with pytest.raises(IdentityError, match="only as an alternate"):
+        catalog.merge([paper, preprint], rekind=[("doi", "10.1002/epi.70276")])
+    assert _snapshot(catalog) == before
+
+
+def test_a_merge_drops_only_a_record_s_pmid_or_pmcid(catalog):
+    paper = catalog.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id
+    duplicate = catalog.register(Identifier(pmid="37401785", doi="10.1684/epd.2022.1434")).id
+    with pytest.raises(IdentityError, match="a doi is no duplicate record's"):
+        catalog.merge([paper, duplicate],
+                      drop=[("pmid", "37401785"), ("doi", "10.1684/epd.2022.1434")])
+
+
+def test_two_articles_holding_each_other_s_download_swap_them(catalog):
+    # ml7z5xc7cvgo's ACE copy is 15465288.html, su74e7qsacoi's paper, and su74e7qsacoi's
+    # is 15658005.html, ml7z5xc7cvgo's: each keeps a copy, the right one.
+    a = catalog.register(Identifier(pmid="15658005")).id
+    b = catalog.register(Identifier(pmid="15465288")).id
+    _download(catalog, a, "ace", payload={"files": [{"file_path": "/ace/15465288.html"}]})
+    _download(catalog, b, "ace", payload={"files": [{"file_path": "/ace/15658005.html"}]})
+    catalog.swap_artifacts(a, b, [("download", "ace"), ("extract", "ace")])
+    assert catalog.payload(catalog.artifact(a, "download", "ace"))["files"][0]["file_path"] == \
+        "/ace/15658005.html"
+    assert catalog.payload(catalog.artifact(b, "extract", "ace"))["files"][0]["file_path"] == \
+        "/ace/15465288.html"
+    before = _snapshot(catalog)
+    with pytest.raises(IdentityError, match="holds no download/pubget"):
+        catalog.swap_artifacts(a, b, [("download", "pubget")])
+    assert _snapshot(catalog) == before
+
+
+def test_a_split_may_not_leave_the_journal_doi_only_as_an_alternate(catalog):
+    # ssohepivf7zd: Circ Cardiovasc Imaging's paper fused with an HTLV-1 paper whose DOI a
+    # round had made an alternate; splitting the cardiology paper off left it no journal DOI
+    a = catalog.register(Identifier(pmid="28292861", doi="10.1161/circimaging.116.005695")).id
+    catalog.add_aliases([(a, "pmcid", "PMC5329009"),
+                         (a, "alternate_doi", "10.3389/fnmol.2017.00052")])
+    before = _snapshot(catalog)
+    with pytest.raises(IdentityError, match="only as an alternate"):
+        catalog.split(a, [("pmid", "28292861"), ("doi", "10.1161/circimaging.116.005695")])
+    with pytest.raises(IdentityError, match="only as an alternate"):
+        catalog.remove_aliases([("doi", "10.1161/circimaging.116.005695", a)])
+    assert _snapshot(catalog) == before
