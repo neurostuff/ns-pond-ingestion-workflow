@@ -23,8 +23,8 @@ written again from the text.
 Each batch of texts is rewritten before its catalog rows are recorded, batch by batch as
 the run goes: a run stopped in between leaves the batch's new texts against the old
 hashes, which every reader of a span checks and refuses, and the next run, seeing the
-texts unchanged, records their hashes and the passages are read again rather than
-remapped.
+texts unchanged, records their hashes, the passages are read again rather than
+remapped, and the references and the sync are marked stale as for a rewrite.
 """
 
 from __future__ import annotations
@@ -314,6 +314,23 @@ def _found(catalog, results: Sequence[Result]) -> Dict[Tuple[str, str], Dict[str
     return out
 
 
+def _stale_rows(catalog, found: Dict[str, object], offset_map=None) -> list:
+    """The references and sync rows marked stale, the citations moved by `offset_map` when given."""
+    from ingestion_workflow.catalog import Outcome, Status
+
+    rows = []
+    for stage in ("references", "sync"):
+        stale = found.get(stage)
+        if stale is not None and stale.status is Status.OK:
+            payload = catalog.payload(stale)
+            if stage == "references" and payload and offset_map is not None:
+                payload = _remap_citations(payload, offset_map)
+            rows.append(Outcome(article_id=stale.article_id, stage=stage, source=stale.source,
+                                status=stale.status, fingerprint=STALE, payload=payload,
+                                summary=stale.summary))
+    return rows
+
+
 def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) -> Tuple[list, str]:
     """The catalog rows a rewritten (or unchanged) text changes, and what became of its passages:
     `remapped`, `stale` (a span the map could not carry), or `none` (no passages of it).
@@ -330,12 +347,18 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
         return [], "none"
     if result.status not in ("rewritten", "would_rewrite"):
         # The text stays; its hash is recorded where passages looks for it, once.
-        if extraction.summary.get("text_sha256") == result.old_sha256 or not result.old_sha256:
+        recorded = extraction.summary.get("text_sha256")
+        if recorded == result.old_sha256 or not result.old_sha256:
             return [], "none"
-        return [Outcome(article_id=result.article_id, stage="extract", source=result.source,
+        rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source,
                         status=extraction.status, fingerprint=extraction.fingerprint,
                         payload=catalog.payload(extraction),
-                        summary={**extraction.summary, "text_sha256": result.old_sha256})], "none"
+                        summary={**extraction.summary, "text_sha256": result.old_sha256})]
+        if recorded:
+            # A run stopped after writing this text: the references' spans (and the sync's
+            # parse files) were made from the text it replaced, and no edit map is left to carry them.
+            rows += _stale_rows(catalog, found)
+        return rows, "none"
     offset_map = OffsetMap(tuple(e) for e in result.edits or ())
     extract_payload = dict(catalog.payload(extraction) or {})
     summary = {**extraction.summary, "text_sha256": result.new_sha256}
@@ -350,14 +373,7 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
         summary["text_from"] = text_from(result.text_source)
     rows = [Outcome(article_id=result.article_id, stage="extract", source=result.source, status=extraction.status,
                     fingerprint=extraction.fingerprint, payload=extract_payload, summary=summary)]
-    for stage in ("references", "sync"):
-        stale = found.get(stage)
-        if stale is not None and stale.status is Status.OK:
-            payload = catalog.payload(stale)
-            if stage == "references" and payload:
-                payload = _remap_citations(payload, offset_map)
-            rows.append(Outcome(article_id=result.article_id, stage=stage, source=stale.source, status=stale.status,
-                                fingerprint=STALE, payload=payload, summary=stale.summary))
+    rows += _stale_rows(catalog, found, offset_map)
     passages = found.get("passages")
     payload = catalog.payload(passages) if passages is not None and passages.status is Status.OK else None
     if (not payload or not payload.get("passages") or payload.get("text_sha256") != result.old_sha256
