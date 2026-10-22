@@ -171,6 +171,43 @@ To undo a take-back: once the article has text again, the next run makes
 everything again from it and uploads the new parse; a moved corpus directory can
 be moved back from `-retracted/`.
 
+## When an article holds another paper's identifiers
+
+An article is one paper. Registration (`ingest add`, `ingest run --manifest`,
+`ingest migrate`) checks what it adds against PubMed and the DOI registries, so
+these commands need `pubmed_email`:
+
+- a PMID that arrives with other ids is not added when its PubMed record gives a DOI
+  another article holds, and the registry gives that DOI the record's title;
+- a second journal DOI is kept as an alternate DOI when the registry gives both DOIs
+  the same title (a publisher's new DOI, an alias spelling), and refused otherwise.
+
+Each refused id is printed at the end of the command and kept in the catalog's
+`refusals` table.
+
+`ingest repair-identity PLAN` repairs articles that already hold another paper's ids.
+`PLAN` is a reviewed plan: JSON lines, one operation each (add, reassign, remove,
+rekind, split, merge, move or forget artifacts). The file format is in
+`catalog/identity_plan.py`.
+
+- The whole plan runs in one transaction. Each operation is checked against the
+  catalog as the ones before it left it.
+- Every article the plan touched, every article NCBI or Crossref links to one of
+  those, and every article holding two of a kind is then checked against the
+  catalog's invariants (`catalog/invariants.py`).
+- The default is a dry run that lists every refusal and violation and writes
+  nothing.
+- `--apply --backup <path> --manifest <path>` commits only if there is no refusal
+  and no violation, and backs the catalog up first.
+- An article left with no extraction has its passages taken back. Then run, as the
+  command prints:
+
+  ```bash
+  ingest run -s metadata --refresh metadata -s triage --refresh triage \
+    -s prose --refresh prose --manifest touched.jsonl
+  ingest run --manifest touched.jsonl   # takes back what was made from the old text
+  ```
+
 ## Wiley's PDFs
 
 The `wiley` download source fetches an article's PDF from Wiley's Text and Data

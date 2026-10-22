@@ -1,0 +1,549 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1017%2Fs0033291717000265%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAEyQMVPDMAyFd36FT3MuOMlBSGcWNo61zWBikbiX2kGyC71c/jtKaA886emz35M8
+        w4DGIsFuhniZEHaAjIa6ATI4I7ELXno6r2DJboiQ0xjXJ11IXgoo5DZhPJnvP8HR0Mq0SGdHxyL2
+        UD6VjS4fH6DNIJLxPJooGYwrld5nQrr8A2JwgELnhS7qe9a6qsqmqIta69XlAPvX9C7eA5J6eW4l
+        6suQd77/zZthGsgwsut9ILS3jBDRXokP8UO2uKKQ4pTiCZlNj7wO/IYcyXXbkMp0g8Mz2lxt2ynj
+        rdr+QBl7TCyuKgalM9XIgXZZlrsfAAAA//8DALXc3NZiAQAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 04:50:46 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500002E11C3454E88.1.1.m_1
+      ncbi-sid:
+      - C5E960734A620FD7_EB13SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.1017/s0033291717000265
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T20:45:05Z","timestamp":1786999505514,"version":"build-2736575974"},"reference-count":32,"publisher":"Cambridge
+        University Press (CUP)","issue":"10","license":[{"start":{"date-parts":[[2017,3,14]],"date-time":"2017-03-14T00:00:00Z","timestamp":1489449600000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/www.cambridge.org\/core\/terms"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Psychol.
+        Med."],"published-print":{"date-parts":[[2017,7]]},"abstract":"<jats:sec id=\"S0033291717000265_sec_a1\">\n                    <jats:title>Background<\/jats:title>\n                    <jats:p>Generalized
+        anxiety disorder (GAD) and social anxiety disorder (SAD) are co-morbid and
+        associated with similar neural disruptions during emotion regulation. In contrast,
+        the lack of optimism examined here may be specific to GAD and could prove
+        an important biomarker for that disorder.<\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a2\" sec-type=\"methods\">\n                    <jats:title>Method<\/jats:title>\n                    <jats:p>\n                      Unmedicated
+        individuals with GAD (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        and age-, intelligence quotient- and gender-matched SAD (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        and healthy (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        comparison individuals were scanned while contemplating likelihoods of high-
+        and low-impact negative (e.g. heart attack; heartburn) or positive (e.g. winning
+        lottery; hug) events occurring to themselves in the future.\n                    <\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a3\" sec-type=\"results\">\n                    <jats:title>Results<\/jats:title>\n                    <jats:p>\n                      As
+        expected, healthy subjects showed significant optimistic bias (OB); they considered
+        themselves significantly less likely to experience future negative but significantly
+        more likely to experience future positive events relative to others (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001).
+        This was also seen in SAD, albeit at trend level for positive events (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001
+        and\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.10,
+        respectively). However, GAD patients showed no OB for positive events (\n                      <jats:italic>t<\/jats:italic>\n                      <jats:sub>17<\/jats:sub>\n                      \u00a0=\u00a00.82,\n                      <jats:sc>n.s<\/jats:sc>\n                      .)
+        and showed significantly reduced neural modulation relative to the two other
+        groups of regions including the medial prefrontal cortex (mPFC) and caudate
+        to these events (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001
+        for all). The GAD group further differed from the other groups by showing
+        increased neural responses to low-impact events in regions including the rostral
+        mPFC (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.05
+        for both).\n                    <\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a4\" sec-type=\"conclusion\">\n                    <jats:title>Conclusions<\/jats:title>\n                    <jats:p>The
+        neural dysfunction identified here may represent a unique feature associated
+        with reduced optimism and increased worry about everyday events in GAD. Consistent
+        with this possibility, patients with SAD did not show such dysfunction. Future
+        studies should consider if this dysfunction represents a biomarker for GAD.<\/jats:p>\n                  <\/jats:sec>","DOI":"10.1017\/s0033291717000265","type":"journal-article","created":{"date-parts":[[2017,3,14]],"date-time":"2017-03-14T05:10:54Z","timestamp":1489468254000},"page":"1806-1815","source":"Crossref","is-referenced-by-count":22,"title":["Reduced
+        optimism and a heightened neural response to everyday worries are specific
+        to generalized anxiety disorder, and not seen in social anxiety"],"prefix":"10.1017","volume":"47","author":[{"given":"K.
+        S.","family":"Blair","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Otero","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"C.","family":"Teng","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Geraci","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Ernst","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"R.
+        J. R.","family":"Blair","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"D.
+        S.","family":"Pine","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"C.","family":"Grillon","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"56","published-online":{"date-parts":[[2017,3,14]]},"reference":[{"key":"S0033291717000265_ref15","volume-title":"Structured
+        Clinical Interview for DSM-IV","author":"First","year":"1997"},{"key":"S0033291717000265_ref30","doi-asserted-by":"publisher","DOI":"10.1037\/0022-3514.39.5.806"},{"key":"S0033291717000265_ref13","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2009.09070931"},{"key":"S0033291717000265_ref14","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2011.10091290"},{"key":"S0033291717000265_ref7","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1640-06.2006"},{"key":"S0033291717000265_ref32","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2016.15111410"},{"key":"S0033291717000265_ref22","doi-asserted-by":"publisher","DOI":"10.1176\/ajp.2006.163.6.1091"},{"key":"S0033291717000265_ref12","doi-asserted-by":"publisher","DOI":"10.1002\/da.20633"},{"key":"S0033291717000265_ref10","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.07.041"},{"key":"S0033291717000265_ref16","doi-asserted-by":"publisher","DOI":"10.1207\/S15327957PSPR0501_5"},{"key":"S0033291717000265_ref11","doi-asserted-by":"publisher","DOI":"10.1006\/cbmr.1996.0014"},{"key":"S0033291717000265_ref26","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2949"},{"key":"S0033291717000265_ref8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.03.063"},{"key":"S0033291717000265_ref23","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2008.07101682"},{"key":"S0033291717000265_ref20","doi-asserted-by":"publisher","DOI":"10.1016\/j.cll.2010.07.006"},{"key":"S0033291717000265_ref18","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.06.011"},{"key":"S0033291717000265_ref4","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2010.09121797"},{"key":"S0033291717000265_ref24","doi-asserted-by":"publisher","DOI":"10.1017\/S0033291709005649"},{"key":"S0033291717000265_ref9","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2013.12050651"},{"key":"S0033291717000265_ref1","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2921"},{"key":"S0033291717000265_ref3","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2012.04.013"},{"key":"S0033291717000265_ref31","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.08.019"},{"key":"S0033291717000265_ref19","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2218-11.2011"},{"key":"S0033291717000265_ref21","doi-asserted-by":"publisher","DOI":"10.1001\/archpsyc.64.1.97"},{"key":"S0033291717000265_ref28","doi-asserted-by":"publisher","DOI":"10.1016\/j.brat.2005.07.001"},{"key":"S0033291717000265_ref2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2008.11.004"},{"key":"S0033291717000265_ref17","doi-asserted-by":"publisher","DOI":"10.1126\/science.1089910"},{"key":"S0033291717000265_ref6","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2012.04.013"},{"key":"S0033291717000265_ref29","volume-title":"Co-planar
+        Stereotaxic Atlas of the Human Brain","author":"Talairach","year":"1988"},{"key":"S0033291717000265_ref25","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1205828109"},{"key":"S0033291717000265_ref27","doi-asserted-by":"publisher","DOI":"10.1038\/nature06280"},{"key":"S0033291717000265_ref5","doi-asserted-by":"publisher","DOI":"10.1016\/j.pscychresns.2010.12.016"}],"container-title":["Psychological
+        Medicine"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/www.cambridge.org\/core\/services\/aop-cambridge-core\/content\/view\/S0033291717000265","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2019,4,17]],"date-time":"2019-04-17T17:01:19Z","timestamp":1555520479000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.cambridge.org\/core\/product\/identifier\/S0033291717000265\/type\/journal_article"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2017,3,14]]},"references-count":32,"journal-issue":{"issue":"10","published-print":{"date-parts":[[2017,7]]}},"alternative-id":["S0033291717000265"],"URL":"https:\/\/doi.org\/10.1017\/s0033291717000265","relation":{},"ISSN":["0033-2917","1469-8978"],"issn-type":[{"value":"0033-2917","type":"print"},{"value":"1469-8978","type":"electronic"}],"subject":[],"published":{"date-parts":[[2017,3,14]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2731'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Oct 2026 04:50:46 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.1017/s0033291717000265
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T20:45:05Z","timestamp":1786999505514,"version":"build-2736575974"},"reference-count":32,"publisher":"Cambridge
+        University Press (CUP)","issue":"10","license":[{"start":{"date-parts":[[2017,3,14]],"date-time":"2017-03-14T00:00:00Z","timestamp":1489449600000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/www.cambridge.org\/core\/terms"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Psychol.
+        Med."],"published-print":{"date-parts":[[2017,7]]},"abstract":"<jats:sec id=\"S0033291717000265_sec_a1\">\n                    <jats:title>Background<\/jats:title>\n                    <jats:p>Generalized
+        anxiety disorder (GAD) and social anxiety disorder (SAD) are co-morbid and
+        associated with similar neural disruptions during emotion regulation. In contrast,
+        the lack of optimism examined here may be specific to GAD and could prove
+        an important biomarker for that disorder.<\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a2\" sec-type=\"methods\">\n                    <jats:title>Method<\/jats:title>\n                    <jats:p>\n                      Unmedicated
+        individuals with GAD (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        and age-, intelligence quotient- and gender-matched SAD (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        and healthy (\n                      <jats:italic>n<\/jats:italic>\n                      \u00a0=\u00a018)
+        comparison individuals were scanned while contemplating likelihoods of high-
+        and low-impact negative (e.g. heart attack; heartburn) or positive (e.g. winning
+        lottery; hug) events occurring to themselves in the future.\n                    <\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a3\" sec-type=\"results\">\n                    <jats:title>Results<\/jats:title>\n                    <jats:p>\n                      As
+        expected, healthy subjects showed significant optimistic bias (OB); they considered
+        themselves significantly less likely to experience future negative but significantly
+        more likely to experience future positive events relative to others (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001).
+        This was also seen in SAD, albeit at trend level for positive events (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001
+        and\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.10,
+        respectively). However, GAD patients showed no OB for positive events (\n                      <jats:italic>t<\/jats:italic>\n                      <jats:sub>17<\/jats:sub>\n                      \u00a0=\u00a00.82,\n                      <jats:sc>n.s<\/jats:sc>\n                      .)
+        and showed significantly reduced neural modulation relative to the two other
+        groups of regions including the medial prefrontal cortex (mPFC) and caudate
+        to these events (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.001
+        for all). The GAD group further differed from the other groups by showing
+        increased neural responses to low-impact events in regions including the rostral
+        mPFC (\n                      <jats:italic>p<\/jats:italic>\n                      \u00a0&lt;\u00a00.05
+        for both).\n                    <\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec
+        id=\"S0033291717000265_sec_a4\" sec-type=\"conclusion\">\n                    <jats:title>Conclusions<\/jats:title>\n                    <jats:p>The
+        neural dysfunction identified here may represent a unique feature associated
+        with reduced optimism and increased worry about everyday events in GAD. Consistent
+        with this possibility, patients with SAD did not show such dysfunction. Future
+        studies should consider if this dysfunction represents a biomarker for GAD.<\/jats:p>\n                  <\/jats:sec>","DOI":"10.1017\/s0033291717000265","type":"journal-article","created":{"date-parts":[[2017,3,14]],"date-time":"2017-03-14T05:10:54Z","timestamp":1489468254000},"page":"1806-1815","source":"Crossref","is-referenced-by-count":22,"title":["Reduced
+        optimism and a heightened neural response to everyday worries are specific
+        to generalized anxiety disorder, and not seen in social anxiety"],"prefix":"10.1017","volume":"47","author":[{"given":"K.
+        S.","family":"Blair","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Otero","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"C.","family":"Teng","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Geraci","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"M.","family":"Ernst","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"R.
+        J. R.","family":"Blair","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"D.
+        S.","family":"Pine","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"C.","family":"Grillon","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"56","published-online":{"date-parts":[[2017,3,14]]},"reference":[{"key":"S0033291717000265_ref15","volume-title":"Structured
+        Clinical Interview for DSM-IV","author":"First","year":"1997"},{"key":"S0033291717000265_ref30","doi-asserted-by":"publisher","DOI":"10.1037\/0022-3514.39.5.806"},{"key":"S0033291717000265_ref13","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2009.09070931"},{"key":"S0033291717000265_ref14","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2011.10091290"},{"key":"S0033291717000265_ref7","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1640-06.2006"},{"key":"S0033291717000265_ref32","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2016.15111410"},{"key":"S0033291717000265_ref22","doi-asserted-by":"publisher","DOI":"10.1176\/ajp.2006.163.6.1091"},{"key":"S0033291717000265_ref12","doi-asserted-by":"publisher","DOI":"10.1002\/da.20633"},{"key":"S0033291717000265_ref10","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.07.041"},{"key":"S0033291717000265_ref16","doi-asserted-by":"publisher","DOI":"10.1207\/S15327957PSPR0501_5"},{"key":"S0033291717000265_ref11","doi-asserted-by":"publisher","DOI":"10.1006\/cbmr.1996.0014"},{"key":"S0033291717000265_ref26","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2949"},{"key":"S0033291717000265_ref8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.03.063"},{"key":"S0033291717000265_ref23","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2008.07101682"},{"key":"S0033291717000265_ref20","doi-asserted-by":"publisher","DOI":"10.1016\/j.cll.2010.07.006"},{"key":"S0033291717000265_ref18","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.06.011"},{"key":"S0033291717000265_ref4","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2010.09121797"},{"key":"S0033291717000265_ref24","doi-asserted-by":"publisher","DOI":"10.1017\/S0033291709005649"},{"key":"S0033291717000265_ref9","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2013.12050651"},{"key":"S0033291717000265_ref1","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2921"},{"key":"S0033291717000265_ref3","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2012.04.013"},{"key":"S0033291717000265_ref31","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.08.019"},{"key":"S0033291717000265_ref19","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2218-11.2011"},{"key":"S0033291717000265_ref21","doi-asserted-by":"publisher","DOI":"10.1001\/archpsyc.64.1.97"},{"key":"S0033291717000265_ref28","doi-asserted-by":"publisher","DOI":"10.1016\/j.brat.2005.07.001"},{"key":"S0033291717000265_ref2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2008.11.004"},{"key":"S0033291717000265_ref17","doi-asserted-by":"publisher","DOI":"10.1126\/science.1089910"},{"key":"S0033291717000265_ref6","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2012.04.013"},{"key":"S0033291717000265_ref29","volume-title":"Co-planar
+        Stereotaxic Atlas of the Human Brain","author":"Talairach","year":"1988"},{"key":"S0033291717000265_ref25","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1205828109"},{"key":"S0033291717000265_ref27","doi-asserted-by":"publisher","DOI":"10.1038\/nature06280"},{"key":"S0033291717000265_ref5","doi-asserted-by":"publisher","DOI":"10.1016\/j.pscychresns.2010.12.016"}],"container-title":["Psychological
+        Medicine"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/www.cambridge.org\/core\/services\/aop-cambridge-core\/content\/view\/S0033291717000265","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2019,4,17]],"date-time":"2019-04-17T17:01:19Z","timestamp":1555520479000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.cambridge.org\/core\/product\/identifier\/S0033291717000265\/type\/journal_article"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2017,3,14]]},"references-count":32,"journal-issue":{"issue":"10","published-print":{"date-parts":[[2017,7]]}},"alternative-id":["S0033291717000265"],"URL":"https:\/\/doi.org\/10.1017\/s0033291717000265","relation":{},"ISSN":["0033-2917","1469-8978"],"issn-type":[{"value":"0033-2917","type":"print"},{"value":"1469-8978","type":"electronic"}],"subject":[],"published":{"date-parts":[[2017,3,14]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2731'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Oct 2026 04:50:46 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=28290265&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALxVS1PbMBD+KxqdE7CcxLHDiQJDoQ3NhN4YDsJekp2RJVePljTT/96VneYB7bS5
+        9GZ9u9++d73mS5AVWD5Zc79qgE84uFDX0q54j38F69BoApOTAf/R45aEykflgJXjkwee5mmRpNmI
+        P/Z2352caFukx5vwVEkfHaSJGLPboAiEV+hUWiaGJHAm2DLCM7cql0axKVQEy+CXxkbHa65lHRXe
+        KYmWfbjfSDdJnLeKhJUqOA+2jYYy2NI+EWjY9EjWZ9ALdnEk6RqsLPFoX1dWO380qyvH/HZ+JG+G
+        GtjlsVW8tqiU0f9YEhoRJZ3vmviK7dGrSJ1DFUqomGk81uhqJnXFJFsCLpYeNEk0BCsVo1FsjHbA
+        vGFAg7qq5Ip9M9YiOCYtMNdAic9YRoUFMYmE34kv9QuCX7EKnbE0+r3WhTaeOQDNUDNnSiQPG8WT
+        dhyt/xWh/e8R/iXAuKhGhbYhwzG90LkQHyKJeycX4OIjT7K+yEXcRSX1Ii4vTXPcW63qoPFLgLZP
+        Ih0NxTDt7LS7nwwG/bQQ0TR0kBhmRT8vxnm32F3bH/gtba2mwM6tx5KK9RgvRkk5UNN9iFHMwhNt
+        MutTFhW80NezsWx6dfnx5u6qs7VVTUdZnKrOVHdt1hyrzYiRZt2ehA6hoASVQao28e3ZiaO6pdR4
+        oJ/v9O9u3k/v8yIdFOkhpanLP1Bm04vRKE+zvHjDOHQz2nFI1sdqwnbcs1rq4EqLjW8le4GcHdqt
+        DO5bHeysiuRE0O08vY99im0S4yR5m32DBwaGOwO/IVLjlui8ob9ArPp+W7aF37vbp8ngVGQsySZJ
+        Ql5/AgAA//90Vj1PAzEM3fkV1c0MoAqB2Nj4D0w5y0cDvqRKkw5I9995jhO1R7ktcfL8neesAbgt
+        IJcV4kUR+8cNBIec+OcfE08bAE1sYmF3ujEDIMw8VFRtx4kTB9In8YG9yzn5seS6H97dafcGteDr
+        rM0LvQBQLAEzb/98P0xF5MuavPOmzaf46QmNj1g9WbAskVzG9KyPCuV73W1XCk5HaoUinytOaScR
+        xaAeCqphHo8xfncqwhW1WGZbY5ltXNtTAujAqfvxR9z8NystZYMm6AiuC2Ue9VOgEnd2XtwoPKU4
+        lyQm7Vpxwk2EEG68heyiW12/mKWDO+ZuRAl2/RdYlc4uTD5dTY+rwX/WcKiIkkXLzLIsd78AAAD/
+        /wMAecmo8d0IAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 04:50:46 GMT
+      ncbi-phid:
+      - 1D348A0161E7335500004E12BC79FBC9.1.1.m_1
+      ncbi-sid:
+      - C5E960734A620FD7_EB13SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC5582689&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA21Qy2rDMBD8lSKoT3G6UuL4AYZCz4VCjyUHYSuJGlvrSkrdYPzvXcnQhtLjzs7s
+        zM7EnJf+4ljF8MxWzCo3oHEqbaVXBAoQu5RDKsQdQJVBtc0j6+OinGfVxEZpjTZHOvC2X7ED2l4S
+        zt4dGiLq1l+HcGfoG91GIDDZy/NTlhViV5SMVKqXuiOSVUMnr4/qS/ZDp9YN9qTwiGFHHuSo0aQj
+        2vOhw5F2qjkh7aK+XtT3W7jRJ0ugOsRJyLv+NU6WbHVMlgSX+l+PT2UdQaEhgzS7E45S0zNxnkMZ
+        Ddr41sRa1IRzWHPg+cMrwGYjSp7zHICKzEi+FFHdNhDAgIlClIH1069q07/ceT9/A2QfJ7CzAQAA
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Thu, 22 Oct 2026 04:50:47 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1017/s0033291717000265
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1017%2Fs0033291717000265/transform">https://api.crossref.org/v1/works/10.1017%2Fs0033291717000265/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e5e214697a0cf3-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 04:50:47 GMT
+      expires:
+      - Thu, 22 Oct 2026 05:34:32 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1017%2Fs0033291717000265/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=17p%2FKWLWF4UeNcvyB6b9FyWjMB6gfGaGZ44kCR0Pq146ZEGU3BGbSQIvzcgjv5WL2WlN2OWNrg%2FmrqLRvPiI0pGK59GwQId4Ca6n012HFM8Ooa0pldI1hqs%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1017%2Fs0033291717000265/transform
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '2668'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 04:50:47 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

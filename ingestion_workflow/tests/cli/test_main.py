@@ -25,6 +25,7 @@ def config(tmp_path):
                 "ns_pond_root": str(tmp_path / "pond"),
                 "log_to_file": False,
                 "show_progress": False,
+                "pubmed_email": "replay@example.com",
             }
         ),
         encoding="utf-8",
@@ -167,6 +168,19 @@ def test_a_neurostore_only_article_has_nothing_to_download(config):
     assert "1 skipped" in download
 
 
+@pytest.mark.vcr()
+def test_add_reports_an_identifier_it_refused(config, tmp_path):
+    # og3a4u5wsy26: a Biol Psychiatry paper's PMID with a Neurobiol Learn Mem paper's DOI
+    manifest = tmp_path / "records.jsonl"
+    manifest.write_text(
+        '{"pmid": "22015111", "doi": "10.1016/j.biopsych.2011.09.005"}\n'
+        '{"pmid": "22015111", "doi": "10.1016/j.nlm.2011.06.006"}\n', encoding="utf-8")
+    out = run("add", "--manifest", str(manifest), "--no-enrich", "--config", str(config))
+    assert "1 identifiers not added (kept in the catalog's refusals table):" in out
+    assert "doi 10.1016/j.nlm.2011.06.006" in out
+
+
+@pytest.mark.vcr()
 def test_add_from_neurostore_registers_what_discovery_returns(config, tmp_path, monkeypatch):
     """The database is mocked; what is under test is that `add` registers the
     identifiers discovery hands back, aliases and all."""

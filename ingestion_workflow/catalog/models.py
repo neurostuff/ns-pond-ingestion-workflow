@@ -7,11 +7,20 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.models.ids import PREPRINT_PMCID, PREPRINT_PMID, Identifier
 
 #: Identifier kinds that can name an article, strongest first. A new article
 #: takes its id from the first kind it has, which is why the order is fixed.
 ALIAS_KINDS = ("pmcid", "pmid", "doi", "neurostore")
+
+#: Another DOI the registries give the same paper: a publisher's earlier DOI, an alias
+#: spelling, a repository copy. It finds the article and is not its DOI.
+ALTERNATE_DOI = "alternate_doi"
+
+#: Kinds an article holds beside an identifier of the kind each maps to: a preprint's
+#: PMID and PMCID next to its version of record's, and an alternate DOI. A lookup by
+#: the kind on the right finds them too.
+SECOND_KINDS = {PREPRINT_PMID: "pmid", PREPRINT_PMCID: "pmcid", ALTERNATE_DOI: "doi"}
 
 NO_SOURCE = ""
 

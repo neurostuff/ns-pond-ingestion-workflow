@@ -10,11 +10,17 @@ method it calls; any other key (`why`, the evidence) is carried for the reader.
      "artifacts": [["download", "elsevier"]], "add": [["pmid", "456"]]}
     {"op": "move_artifacts", "from": A, "to": B, "artifacts": [["download", "pubget"]]}
     {"op": "forget_artifacts", "article": A, "artifacts": [["extract", "pubget"]]}
-    {"op": "merge", "articles": [A, B], "drop": [["pmid", "37401785"]]}
-    {"op": "mark_preprint_pmid", "article": A, "value": "37808793"}
+    {"op": "merge", "articles": [A, B], "drop": [["pmid", "37401785"]],
+     "rekind": [["pmid", "37808793"]]}
+    {"op": "rekind", "article": A, "kind": "pmid", "value": "37808793"}
 
 `add` takes only an identifier no article holds; `split`'s `add` attaches more
-such identifiers to the new article.
+such identifiers to the new article. `rekind` holds a PMID or PMCID as the
+preprint's, or a DOI as an alternate DOI.
+
+An article whose extractions a plan forgets, moves or splits off, and which is left
+with none, has its passages taken back as `ingest run` takes them back when no
+extractor finds text: every stage built from that text then takes back its own.
 """
 
 from __future__ import annotations
@@ -26,9 +32,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.pipeline.stage import NO_TEXT
 
-from .invariants import Violation, violations
-from .models import ALIAS_KINDS
+from .invariants import Violation, neighbourhood, suspects, violations
+from .models import ALIAS_KINDS, SECOND_KINDS, Outcome as StageOutcome
 from .store import Catalog, IdentityError
 
 Operation = Dict[str, Any]
@@ -41,7 +48,7 @@ _FIELDS = {
     "move_artifacts": ("from", "to", "artifacts"),
     "forget_artifacts": ("article", "artifacts"),
     "merge": ("articles",),
-    "mark_preprint_pmid": ("article", "value"),
+    "rekind": ("article", "kind", "value"),
 }
 
 
@@ -75,8 +82,11 @@ class Outcome:
     new_articles: List[str] = field(default_factory=list)
     #: The identifiers of every live article an operation touched, as they are afterwards.
     touched: List[Identifier] = field(default_factory=list)
-    #: How the touched articles break the catalog's invariants once the plan has run.
+    #: How the articles the plan touched, those linked to them, and every article
+    #: holding two of a kind break the catalog's invariants once the plan has run.
     violations: List[Violation] = field(default_factory=list)
+    #: Articles whose passages were taken back: the plan left them no extraction.
+    taken_back: List[str] = field(default_factory=list)
     committed: bool = False
 
 
@@ -85,11 +95,7 @@ class _Discard(Exception):
 
 
 def apply(
-    catalog: Catalog,
-    operations: List[Tuple[int, Operation]],
-    *,
-    registered: Callable[[str], Optional[bool]],
-    backup: Optional[Path] = None,
+    catalog: Catalog, operations: List[Tuple[int, Operation]], *, backup: Optional[Path] = None
 ) -> Outcome:
     """Run every operation inside one transaction; commit only with `backup`, no
     refusal, and no touched article breaking the invariants afterwards.
@@ -97,8 +103,7 @@ def apply(
     Each operation is checked against the catalog as the ones before it left
     it, and a refused one writes nothing, so a dry run reports every refusal. A
     plan is committed whole or not at all. The backup is taken under the write
-    lock, so nothing is written between the copy and the plan. `registered` is
-    for the invariants' check of PubMed's DOIs.
+    lock, so nothing is written between the copy and the plan.
     """
     outcome = Outcome()
     try:
@@ -106,6 +111,7 @@ def apply(
             if backup is not None:
                 catalog.backup(backup)
             touched: Set[str] = set()
+            lost_text: Set[str] = set()
             for number, operation in operations:
                 try:
                     touched.update(_RUN[operation["op"]](catalog, operation, outcome))
@@ -113,9 +119,11 @@ def apply(
                     outcome.refused.append((number, operation, str(exc)))
                     continue
                 outcome.applied[operation["op"]] += 1
+                lost_text.update(_text_from(operation))
+            outcome.taken_back = _take_back(catalog, lost_text)
             live = sorted({catalog.current_id(article_id) for article_id in touched})
             outcome.touched = [catalog.identifier(article_id) for article_id in live]
-            outcome.violations = violations(catalog, live, registered)
+            outcome.violations = violations(catalog, neighbourhood(catalog, live) | suspects(catalog))
             if backup is None or outcome.refused or outcome.violations:
                 raise _Discard
     except _Discard:
@@ -128,14 +136,37 @@ def _pairs(rows) -> List[Tuple[str, str]]:
     return [(str(a), str(b)) for a, b in rows]
 
 
+def _text_from(operation: Operation) -> List[str]:
+    """The articles an operation took an extraction from."""
+    keys = operation.get("artifacts") or ()
+    if not any(stage == "extract" for stage, _ in keys):
+        return []
+    return [operation.get("from") or operation["article"]]
+
+
+def _take_back(catalog: Catalog, article_ids: Set[str]) -> List[str]:
+    """Take back the passages of each article left with no ok extraction."""
+    back = []
+    for article_id in sorted(catalog.current_id(a) for a in article_ids):
+        extracts = catalog.artifacts([article_id], "extract").get(article_id, {})
+        passages = catalog.artifact(article_id, "passages", "")
+        if any(a.ok for a in extracts.values()) or passages is None or (
+                passages.fingerprint == NO_TEXT and not passages.ok):
+            continue
+        back.append(article_id)
+    catalog.record([StageOutcome.failure(a, "passages", "", NO_TEXT, fingerprint=NO_TEXT)
+                    for a in back])
+    return back
+
+
 def _add(catalog: Catalog, article_id: str, kind: str, value: str) -> None:
-    if kind not in ALIAS_KINDS:
+    if kind not in ALIAS_KINDS and kind not in SECOND_KINDS:
         raise IdentityError(f"{kind} is not an alias kind")
     if not catalog.live(article_id):
         raise IdentityError(f"{article_id} is not a live article")
-    holder = catalog.resolve(Identifier(**{kind: value}))
+    holder = catalog.holder(SECOND_KINDS.get(kind, kind), value)
     if holder is not None:
-        raise IdentityError(f"{kind} {value} is held by {holder.id}, not by no article")
+        raise IdentityError(f"{kind} {value} is held by {holder}, not by no article")
     catalog.add_aliases([(article_id, kind, value)])
 
 
@@ -178,11 +209,11 @@ def _run_forget_artifacts(catalog, op, outcome):
 
 
 def _run_merge(catalog, op, outcome):
-    return [catalog.merge(op["articles"], _pairs(op.get("drop", ())))]
+    return [catalog.merge(op["articles"], _pairs(op.get("drop", ())), _pairs(op.get("rekind", ())))]
 
 
-def _run_mark_preprint_pmid(catalog, op, outcome):
-    catalog.mark_preprint_pmids([(str(op["value"]), op["article"])])
+def _run_rekind(catalog, op, outcome):
+    catalog.rekind_aliases([(op["kind"], str(op["value"]), op["article"])])
     return [op["article"]]
 
 
@@ -194,5 +225,5 @@ _RUN: Dict[str, Callable[[Catalog, Operation, Outcome], List[str]]] = {
     "move_artifacts": _run_move_artifacts,
     "forget_artifacts": _run_forget_artifacts,
     "merge": _run_merge,
-    "mark_preprint_pmid": _run_mark_preprint_pmid,
+    "rekind": _run_rekind,
 }

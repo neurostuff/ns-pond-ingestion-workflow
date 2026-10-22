@@ -1,0 +1,252 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=41178409&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJxUS27bMBC9CsG1FYuSLH92BhLASRu3QLIpgizGEm2xoUiVn6Cx0Uv1ID1ThpLr
+        yGgXUQDDIofz5v/mQCsOJTd0caDupeF0Qbn1dQ3mhY7oMzdWaIXC+CKlv0bU4KN0QdmL0tLFA80Y
+        m86yeE4fR2/n7h1hJ8mINn5TggsOkjjJyY1XKORn0glZ62eSotxqb4ogXQnrtCTtpwFXaYmv4PFg
+        gvsDVVAHvXs0UgL5dnw9prJsFVFWSG8dN21MmMcJduf3/kmQ+6EwcHow6HrvKzBAPg3FWT4Yc1eJ
+        GrAeq4G4W2/gCWox2OGHgesAQ/Dg1n2pHJD1u0A4mhKs68amD3XCybbEde2VrsKQFRWvRQGSSI3/
+        Yg8OCUD0llxGf35HYBswThQEClESUCVp0Iu2TiiCvw1XYqcI6miH7zsZNJyvcVgv2qk27q9L8Q6X
+        6OHD/gJ7tfRtqTKGN2GtD5c8cBF2HOlDWczmEUPi0VAhtQuE5vjBgimJ8Ykfnrc1nOXxPJ1MOzPt
+        PkhYGqVzFizzTsTy+TyazLJZR/auJQ/0BqmsMLllyANTfwxbpNCmxIY4H6L46je3vCQRZlTyn3ja
+        akNury4/X6+vOlsn1WQSwofOVLeBDlSUx/ajZs3LEGQrwaAYVgGk5/1VFGboBCm16Ounb/osvmBZ
+        Po3Hq1WUTKKYpefIRpwhszdkD4DJti3GbRoi7aeCkUqhONrorcVxPBnHU8KSRZq37vqIU3q9jTlm
+        bBynJM4XyfQfAFfO8P3/Adki7uIzfMsNV0UYiAe8g3NGbLxr73QFlizRooHChdY1dYGAQnvlArVG
+        dOul/N61+EjMlXgFAAD//2xVSQ7DIBC79xVRP1B6zW8AkQaVhAhBpB7y99osIl0kDsjAjLE8M2zZ
+        /vHKfp175wZEt9DldHg2FvQfhz9Sg7PXVWltY37ACgpa+5UEHeIWwsr7Z6sqXIFENi1lj20s86v4
+        CI9mExqBL7jSL1mqYlfqs6Fs17QoTkkicpfWSeXMFDxalytoi4oTUyF84YctsB6b1HtaPcsttiTs
+        FZ8j8yaw7oMQoxD1wmTDqa2dZuDO7+jkWClVmeM4Lm8AAAD//wMA4ba+Yu4HAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 12:29:55 GMT
+      ncbi-phid:
+      - 1D32D4D41D5E708500002DD2E36C65BE.1.1.m_1
+      ncbi-sid:
+      - 4B088EDC6C7EC24D_2C8ESID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=41221578&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRSy0oDQRD8laHPiySrUclNNyYKRoIRL+KhsztsGmanl3ksxOAf+Rf+mDMxKB48
+        9Gmaqi6qq6f3sNXYaAfTPYRdr2EK2seuQ7eDAgbtPLFN4OjkFN4LcIk0ITdHajxMX+BsXJbjycUl
+        vBa/9TefZD9IAX3cNBiyQTkqz9USs4H+g07UAw9qXCbCc3R1hm/JBzbq8PQYtmwSizEVLvvvwWKX
+        ++YcSK2ej+QxytWhL2G1iT5od5gp5fhRrWsc2GpVCXVzdGRRPQpld/bzQ+z1RA4N25bVXKis0Adq
+        DeWEM6mWvbaBrNz1ntXC6ZrVUpp0haaLdU1qLf3GdBlsULzaGQ7UqBuh6tpx25JaSIdE84Zpn9Jw
+        FZqAG8pS6b1V2MfA/076BQAA//+0Vk1z0zAQvfMrNDmTWkrspMktDJ0pDAWGKydF3iQCWTKylLYw
+        /e/sSk7iUDpDDpxibfbtvl3th16CrTolrb6c6ZfYdY6tLu4lYzSVy8V1Rj1xqbc3stMG/hGGM81g
+        D+Vxcw4OOhhCflLRSM9kbeFBGmYem3bnGtkt2Yop17QedmA7vQfmYa/hnt3rsGOAWmirY86y3Wm0
+        ua1WTNqaNXJrIeABB66z0ipgGmXabplsW5CeRFdpTvpwoOJeoMLk/2ZCq8KZmBJcCjzprot0qGjw
+        yy3gqB7NZ9V4viCJkXZLuwPwB1Nsseut/hEhZf16xhfTap6NpNUzEdPxdCHILmSRmC0W4+q67PdK
+        vsSvo/e4NCxGvvJI2BCrLylSckITydd4lyESmc9xfQc1GzNta3jAr43z7O7m7Yd3H2+y0aPqpJpR
+        sWSbeev9Gum6rxzUbKAmtkmC7AQmQ5oIw/VHBXiE1E4P9acnfcGvRDmb8+L2djypxlxMz5GtPkOW
+        J+QAgMGmi8QNTkyHoSBToy0lZrCKC14WfMH4bDnN7oaIY3iDLV0IUYhJAohnAFwaHn7+HVAuqzLx
+        87ABD1g4lEw8yxC8XseQzqNbLNkVWvRSBbq6tlEIUC7aQF35erSJxnzLd913dX4luO1jqtmzOk7P
+        DOOUDLgHc18jOaf6lCod0j/US14pZ4mJQQOZ2dq574f+QhXMhY5N/sbPkB9HuWAQtAN/8PSHuOeZ
+        vfSpGVEiWmxgG5s1PcFIIvdSG7k2sPGuid5k6cEq/gPmGMIztig72SbqJ7dqJ9twcEJT4/w9VvCq
+        4IJxvuS8V9hoPxh9p/fVnqJJo+aYmKenp1e/AQAA//8DAN2bkldKCgAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 12:29:55 GMT
+      ncbi-phid:
+      - 1D33E73F2DDD1E7500002AE7AF76BE97.1.1.m_1
+      ncbi-sid:
+      - 4B088EDC6C7EC24D_2C8ESID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.14670/hh-25-013
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://data.medra.org/10.14670%2Fhh-25-013">https://data.medra.org/10.14670%2Fhh-25-013</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e0454ae9bde55e-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Wed, 21 Oct 2026 12:29:56 GMT
+      expires:
+      - Wed, 21 Oct 2026 13:17:01 GMT
+      location:
+      - https://data.medra.org/10.14670%2Fhh-25-013
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=D4%2Bljz%2BDR%2FIFKBFphMknWMuUFregqBKcWdQvxM3YLhRQK5%2BUvOcuzg3U30uvopYe2JHWbX59T9TNAEx4Zwhw%2FlkMBmPdeV06XDVyB4paK6aDHW5KlXZXDi0%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.medra.org
+      user-agent:
+      - ingestion-workflow
+    method: GET
+    uri: https://data.medra.org/10.14670%2Fhh-25-013
+  response:
+    body:
+      string: "{\"type\":\"article-journal\",\"language\":\"eng\",\"issued\":{\"date-parts\":[[2025]]},\"container-title\":\"Histology
+        and Histopathology\",\"DOI\":\"10.14670\\/HH-25-013\",\"ISSN\":\"0213-3911,
+        1699-5848\",\"issue\":\"06\",\"medium\":\"JB\",\"page\":\"1019\u20131025\",\"publisher\":\"Sercrisma
+        International S.L\",\"publisher-place\":\"ES\",\"title\":\"Immunohistochemical
+        localization of D-\u03B2-aspartic acid and periostin in benign parotid gland
+        tumors\",\"URL\":\"https:\\/\\/doi.org\\/10.14670\\/HH-25-013\",\"volume\":\"41\"}"
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - no-transform, max-age=60
+      connection:
+      - keep-alive
+      content-length:
+      - '467'
+      content-type:
+      - application/vnd.citationstyles.csl+json;charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 12:29:56 GMT
+      server:
+      - Apache/2.4.59 (Debian)
+      vary:
+      - Accept
+    status:
+      code: 200
+      message: ''
+version: 1

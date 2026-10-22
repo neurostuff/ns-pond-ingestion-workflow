@@ -235,6 +235,7 @@ def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path):
         assert len(plan.pending) == len(refs)
 
 
+@pytest.mark.vcr()
 def test_the_migrate_command_says_to_run_repair(legacy, tmp_path):
     import ingestion_workflow.cli.main as cli
     from typer.testing import CliRunner
@@ -243,6 +244,8 @@ def test_the_migrate_command_says_to_run_repair(legacy, tmp_path):
     config.write_text(json.dumps({
         "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
         "catalog_root": str(tmp_path / "cat"), "log_to_file": False, "show_progress": False,
+        # registration checks what it adds against PubMed; nothing here is asked about
+        "pubmed_email": "replay@example.com",
     }), encoding="utf-8")
     result = CliRunner().invoke(cli.app, ["migrate", str(legacy), "-s", "download",
                                           "--config", str(config)])

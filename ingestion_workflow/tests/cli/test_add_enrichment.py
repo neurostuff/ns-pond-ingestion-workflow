@@ -29,6 +29,7 @@ def config(tmp_path):
                 "ns_pond_root": str(tmp_path / "pond"),
                 "log_to_file": False,
                 "show_progress": False,
+                "pubmed_email": "replay@example.com",
                 "metadata_providers": ["pubmed"],
             }
         ),

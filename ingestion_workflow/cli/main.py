@@ -26,6 +26,9 @@ from ingestion_workflow.cli.options import (
     manifest_option,
     require_new_backup,
 )
+from ingestion_workflow.catalog.evidence import Evidence
+from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.clients.doi_registry import DoiRegistry
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier, Identifiers
@@ -80,11 +83,31 @@ def _configure_logging(settings: Settings) -> None:
 
 
 def _catalog(settings: Settings) -> Catalog:
-    # With PubMed configured, registration checks each PMID against its record's DOI.
-    pubmed = (PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
-                           tool=settings.pubmed_tool or "ingestion-workflow")
-              if settings.pubmed_email else None)
-    return Catalog.open(settings.catalog_root, pubmed_dois=pubmed.dois if pubmed else None)
+    return Catalog.open(settings.catalog_root)
+
+
+def _registering_catalog(settings: Settings) -> Catalog:
+    """The catalog, opened to check the identifiers it registers or repairs against
+    PubMed and the DOI registries, for the commands that do."""
+    if not settings.pubmed_email:
+        raise typer.BadParameter("the catalog checks identifiers against PubMed: set pubmed_email",
+                                 param_hint="--config")
+    pubmed = PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
+                          tool=settings.pubmed_tool or "ingestion-workflow")
+    registry = DoiRegistry(CrossrefClient(settings.crossref_email))
+    return Catalog.open(settings.catalog_root, evidence=Evidence(pubmed, registry))
+
+
+def _report_refusals(catalog: Catalog) -> None:
+    """Print what registration refused to add this run; the `refusals` table keeps it."""
+    if not catalog.refused:
+        return
+    typer.echo(f"{len(catalog.refused):,} identifiers not added (kept in the catalog's "
+               "refusals table):")
+    for kind, value, article_id, why in catalog.refused[:20]:
+        typer.echo(f"  {kind} {value}" + (f" ({article_id})" if article_id else "") + f": {why}")
+    if len(catalog.refused) > 20:
+        typer.echo(f"  ... and {len(catalog.refused) - 20:,} more")
 
 
 def _context(settings: Settings, catalog: Catalog, refresh: List[str]) -> Context:
@@ -239,7 +262,7 @@ def add(
             "give identifiers, --file, --manifest, --search, --pdfs or --neurostore"
         )
 
-    with _catalog(settings) as catalog:
+    with _registering_catalog(settings) as catalog:
         before = catalog.count_articles()
         held = set(catalog.all_article_ids()) if searched else set()
         refs = catalog.register_many(found)
@@ -247,6 +270,7 @@ def add(
             refs = _enrich(settings, catalog, refs)
         # Several providers find one article, and enrichment joins records of one.
         refs = list({ref.id: ref for ref in refs}.values())
+        _report_refusals(catalog)
         after = catalog.count_articles()
         if searched:
             resolved = resolve_hits(catalog, searched)
@@ -522,7 +546,8 @@ def run(
             raise typer.BadParameter(str(exc)) from exc
     stages = build(stage, settings)
 
-    with _catalog(settings) as catalog:
+    # A manifest's identifiers are registered.
+    with (_registering_catalog if manifest else _catalog)(settings) as catalog:
         selection = _select(catalog, manifest, select, stage, refresh or [], settings)
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
@@ -533,6 +558,7 @@ def run(
 
         ctx = _context(settings, catalog, refresh or [])
         report = run_stages(ctx, stages, selection.refs, dry_run=dry_run)
+        _report_refusals(catalog)
 
     typer.echo(_render(report, dry_run=dry_run))
 
@@ -871,30 +897,24 @@ def repair_identity(
     The plan runs as one transaction. Each operation is checked against the catalog
     as the ones before it left it, and refused when the catalog is not as the plan
     says (an alias no longer where the plan puts it, an artifact gone). Then every
-    article it touched is checked against the catalog's invariants: one journal DOI,
-    one PMID and one PMCID each, each PMID with its PubMed record's registered DOI,
-    and no download of another article's paper. A dry run lists every refusal and violation;
-    --apply writes nothing unless there is none. Stop the pipeline first: the plan
-    holds the write lock while it runs, and PubMed is asked about the PMIDs.
+    article it touched, every article NCBI or Crossref links to one of those, and every
+    article holding two of a kind, is checked against the catalog's invariants
+    (`catalog/invariants.py`). A dry run lists every refusal and violation; --apply
+    writes nothing unless there is none. An article the plan leaves with no extraction
+    has its passages taken back, and the next `ingest run` takes back what was made
+    from them. Stop the pipeline first: the plan holds the write lock while it runs,
+    and NCBI and the DOI registries are asked about the ids.
     """
     require_new_backup(apply, backup)
     if apply and manifest is None:
         raise typer.BadParameter("--apply needs --manifest <path>", param_hint="--manifest")
     settings = _settings(config)
-    if not settings.pubmed_email:
-        raise typer.BadParameter("repair-identity checks PMIDs against PubMed: set pubmed_email",
-                                 param_hint="--config")
     try:
         operations = identity_plan.load(plan)
     except ValueError as exc:
         raise typer.BadParameter(str(exc), param_hint="PLAN") from exc
-    import requests
-
-    from ingestion_workflow.services.local_pdfs import doi_registered
-
-    with _catalog(settings) as catalog, requests.Session() as session:
-        outcome = identity_plan.apply(catalog, operations, registered=doi_registered(session),
-                                      backup=backup if apply else None)
+    with _registering_catalog(settings) as catalog:
+        outcome = identity_plan.apply(catalog, operations, backup=backup if apply else None)
     for op, n in sorted(outcome.applied.items()):
         typer.echo(f"  {n:6,}  {op}")
     typer.echo(f"{sum(outcome.applied.values()):,} of {len(operations):,} operations "
@@ -918,6 +938,10 @@ def repair_identity(
     stages = " ".join(f"-s {stage} --refresh {stage}" for stage in IDENTITY_REFRESH)
     typer.echo(f"touched articles in {manifest}; refresh what identity feeds: "
                f"ingest run {stages} --manifest {manifest}")
+    if outcome.taken_back:
+        typer.echo(f"{len(outcome.taken_back):,} articles were left with no extraction and their "
+                   f"passages taken back; `ingest run --manifest {manifest}` takes back what "
+                   "was made from them, through upload")
 
 
 def _render_refingerprint(found) -> str:
@@ -1106,7 +1130,7 @@ def migrate(
     from ingestion_workflow.migrate import migrate_caches
 
     settings = _settings(config)
-    with _catalog(settings) as catalog:
+    with _registering_catalog(settings) as catalog:
         report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
     typer.echo(report.render())
     if not dry_run:

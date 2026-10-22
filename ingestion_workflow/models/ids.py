@@ -36,6 +36,10 @@ DUPLICATE_PUBMED_RECORDS = "duplicate_pubmed_records"
 #: whose `pmid` is its version of record's.
 PREPRINT_PMID = "preprint_pmid"
 
+#: The `other_ids` key holding the PMCID of a preprint's PMC record, on an article
+#: whose `pmcid` is its version of record's.
+PREPRINT_PMCID = "preprint_pmcid"
+
 
 @dataclass
 class Identifier(MutableMapping[str, Optional[str]]):

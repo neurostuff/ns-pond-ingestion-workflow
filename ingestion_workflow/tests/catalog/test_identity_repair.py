@@ -40,6 +40,11 @@ def _download(catalog, article_id, source, payload="x"):
                     Outcome(article_id, "extract", source, Status.OK, payload=payload)])
 
 
+def _older(catalog, article_id):
+    """Make the article the oldest, so a merge keeps it."""
+    catalog._conn.execute("UPDATE articles SET created_at='2000-01-01' WHERE id=?", (article_id,))
+
+
 def _snapshot(catalog):
     conn = catalog._conn
     return [sorted(tuple(r) for r in conn.execute(f"SELECT * FROM {table}"))
@@ -290,12 +295,10 @@ def _preprint_duplicate(catalog):
     return paper, preprint
 
 
-def test_a_preprint_s_record_marked_as_such_merges_into_its_paper(catalog):
+def test_a_preprint_s_record_merges_into_its_paper_as_the_preprint_s(catalog):
     paper, preprint = _preprint_duplicate(catalog)
 
-    with catalog.transaction():
-        catalog.mark_preprint_pmids([("37808793", preprint)])
-        survivor = catalog.merge([paper, preprint])
+    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793")])
 
     assert catalog.aliases(survivor, "pmid") == ["38345852"]
     assert catalog.aliases(survivor, "preprint_pmid") == ["37808793"]
@@ -307,8 +310,7 @@ def test_a_preprint_s_record_marked_as_such_merges_into_its_paper(catalog):
 
 def test_the_preprint_s_pmid_still_finds_its_paper(catalog):
     paper, preprint = _preprint_duplicate(catalog)
-    catalog.mark_preprint_pmids([("37808793", preprint)])
-    survivor = catalog.merge([paper, preprint])
+    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793")])
     articles = catalog.count_articles()
 
     assert catalog.resolve(Identifier(pmid="37808793")).id == survivor
@@ -328,11 +330,114 @@ def test_merging_the_preprint_s_record_unmarked_is_refused(catalog):
         catalog.merge([paper, preprint])
 
 
-def test_only_an_article_s_pmid_is_marked(catalog):
+def test_a_pmid_and_a_pmcid_are_held_as_the_preprint_s(catalog):
+    # a PMC copy of the preprint beside the version of record's, as in hxgigfhowfuh
+    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852",
+                                    pmcid="PMC10942577")).id
+    _hold(catalog, a, "pmid", "37808793")
+    _hold(catalog, a, "pmcid", "PMC10592780")
+
+    catalog.rekind_aliases([("pmid", "37808793", a), ("pmcid", "PMC10592780", a)])
+
+    assert catalog.identifier(a).other_ids == {"preprint_pmid": "37808793",
+                                               "preprint_pmcid": "PMC10592780"}
+    assert catalog.resolve(Identifier(pmcid="PMC10592780")).id == a
+
+
+def test_a_move_may_not_give_an_article_two_preprint_pmids(catalog):
+    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
+    _hold(catalog, a, "preprint_pmid", "37808794")
+    b = catalog.register(Identifier(doi="10.1101/2023.09.27.559792")).id
+    _hold(catalog, b, "preprint_pmid", "37808793")
+    with pytest.raises(IdentityError, match="two preprint_pmids"):
+        catalog.reassign_aliases([("preprint_pmid", "37808793", b, a)])
+
+
+def test_a_rekind_may_not_leave_an_article_without_a_paper_id(catalog):
+    a = catalog.register(Identifier(pmid="37808793")).id
+    with pytest.raises(IdentityError, match="no pmcid, pmid, doi"):
+        catalog.rekind_aliases([("pmid", "37808793", a)])
+    assert catalog.aliases(a, "pmid") == ["37808793"]
+
+
+def test_a_rekind_may_not_give_an_article_two_preprint_pmids(catalog):
+    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
+    _hold(catalog, a, "preprint_pmid", "37808794")
+    _hold(catalog, a, "pmid", "37808793")
+    with pytest.raises(IdentityError, match="two preprint_pmids"):
+        catalog.rekind_aliases([("pmid", "37808793", a)])
+
+
+def test_only_the_article_s_alias_is_rekinded(catalog):
     paper, preprint = _preprint_duplicate(catalog)
     with pytest.raises(IdentityError, match="pmid 37808793 is held by .*, not"):
-        catalog.mark_preprint_pmids([("37808793", paper)])
+        catalog.rekind_aliases([("pmid", "37808793", paper)])
+    with pytest.raises(IdentityError, match="a neurostore is held as no other kind"):
+        catalog.rekind_aliases([("neurostore", "x", paper)])
     assert catalog.aliases(preprint, "pmid") == ["37808793"]
+
+
+def test_a_doi_held_as_an_alternate_still_finds_its_article(catalog):
+    # mxp7s3fbegzb: PubMed's DOI for the paper, and the publisher's alias spelling
+    a = catalog.register(Identifier(doi="10.1176/appi.neuropsych.21.3.307")).id
+    _hold(catalog, a, "doi", "10.1176/jnp.2009.21.3.307")
+    catalog.rekind_aliases([("doi", "10.1176/appi.neuropsych.21.3.307", a)])
+    assert catalog.aliases(a, "doi") == ["10.1176/jnp.2009.21.3.307"]
+    assert catalog.resolve(Identifier(doi="10.1176/appi.neuropsych.21.3.307")).id == a
+    assert catalog.identifier(a).doi == "10.1176/jnp.2009.21.3.307"
+
+
+def test_a_removed_preprint_pmid_is_put_back(catalog):
+    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
+    _hold(catalog, a, "preprint_pmid", "37808793")
+    undo = catalog.remove_aliases([("preprint_pmid", "37808793", a)])
+    catalog.add_aliases(undo)
+    assert catalog.aliases(a, "preprint_pmid") == ["37808793"]
+
+
+def test_merge_refuses_two_base_studies_or_two_preprint_pmids(catalog):
+    # bqb4eprbjxw7 came of two articles holding one base study each.
+    a = catalog.register(Identifier(doi="10.1016/j.pnpbp.2026.111696", neurostore="8YJSSriJx23a")).id
+    b = catalog.register(Identifier(pmid="41962621", neurostore="AkYZauDLLAS5")).id
+    with pytest.raises(IdentityError, match="would hold two"):
+        catalog.merge([a, b])
+    c = catalog.register(Identifier(doi="10.7554/elife.92563")).id
+    _hold(catalog, c, "preprint_pmid", "37808793")
+    d = catalog.register(Identifier(pmcid="PMC10942577")).id
+    _hold(catalog, d, "preprint_pmid", "37808794")
+    with pytest.raises(IdentityError, match="would hold two"):
+        catalog.merge([c, d])
+
+
+def test_merge_carries_exclusions_and_attempts(catalog):
+    a = catalog.register(Identifier(doi="10.1016/j.jse.2011.01.043")).id
+    b = catalog.register(Identifier(pmid="21524925")).id
+    catalog.record([Outcome(b, "download", "pubget", Status.FAILED, error="timeout")])
+    catalog.exclude([(a, "t1", "kept", ""), (b, "t1", "same table", ""), (b, "t2", "own", "")])
+    _older(catalog, a)
+
+    survivor = catalog.merge([a, b])
+
+    assert survivor == a
+    assert _attempts(catalog, a) == [("download", "pubget")]
+    assert _attempts(catalog, b) == []
+    tables = sorted(tuple(r) for r in catalog._conn.execute(
+        "SELECT article_id, table_id FROM exclusions"))
+    assert tables == [(survivor, "t1"), (survivor, "t2")]
+
+
+def test_a_split_takes_the_articles_once_merged_under_its_ids(catalog):
+    # nyyxvhbyrkyn was registered by doi:10.1167/5.8.648 and merged into i3gw3nwrz4en.
+    a = catalog.register(Identifier(doi="10.1016/j.visres.2005.01.001", pmid="15721630")).id
+    seeded = catalog.register(Identifier(doi="10.1167/5.8.648")).id
+    # merged as the catalog merged before it refused a second journal DOI
+    catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (a, seeded))
+    catalog._conn.execute("UPDATE aliases SET article_id=? WHERE article_id=?", (a, seeded))
+
+    new = catalog.split(a, [("doi", "10.1167/5.8.648")])
+
+    assert catalog.current_id(seeded) == new
+    assert catalog.current_id(a) == a
 
 
 def test_a_merge_drops_a_second_pubmed_record_of_the_paper(catalog):

@@ -1,39 +1,17 @@
 """The catalog's invariants, on the cases the production catalog's repair met.
 
-PubMed and doi.org answers are recorded; the requests carry the placeholder email.
+NCBI, doi.org and Crossref answers are recorded; requests carry the placeholder email.
 """
 
 from __future__ import annotations
 
 import pytest
-import requests
 from ingestion_workflow.catalog import Catalog, Outcome, Status
-from ingestion_workflow.catalog.invariants import suspects, violations
-from ingestion_workflow.clients.pubmed import PubMedClient
+from ingestion_workflow.catalog.invariants import neighbourhood, suspects, violations
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.services.local_pdfs import doi_registered
-from ingestion_workflow.tests import cassette_secrets
 
 BIOPSYCH = ("22015111", "10.1016/j.biopsych.2011.09.005")
 NLM = ("21704176", "10.1016/j.nlm.2011.06.006")
-
-
-@pytest.fixture()
-def pubmed():
-    with PubMedClient(email=cassette_secrets.REPLAY_EMAIL) as client:
-        yield client
-
-
-@pytest.fixture()
-def catalog(tmp_path, pubmed):
-    with Catalog.open(tmp_path / "cat", pubmed_dois=pubmed.dois) as cat:
-        yield cat
-
-
-@pytest.fixture()
-def registered():
-    with requests.Session() as session:
-        yield doi_registered(session)
 
 
 def _hold(catalog, article_id, kind, value):
@@ -45,123 +23,335 @@ def _rules(found):
     return sorted((v.article_id, v.rule) for v in found)
 
 
-def test_two_journal_dois_pmids_or_pmcids_are_violations_and_suspects(catalog, registered):
-    a = catalog.register(Identifier(doi=BIOPSYCH[1])).id
-    _hold(catalog, a, "doi", NLM[1])
-    b = catalog.register(Identifier(pmcid="PMC3189437")).id
-    _hold(catalog, b, "pmcid", "PMC5382267")
-    c = catalog.register(Identifier(doi="10.1101/2023.10.21.563317")).id
-    _hold(catalog, c, "doi", "10.1016/j.neuroimage.2023.120450")  # a preprint beside its paper
+# -- one of a kind -----------------------------------------------------------------------
 
-    assert _rules(violations(catalog, [a, b, c], registered)) == sorted(
-        [(a, "journal-dois"), (b, "pmcids")])
-    assert suspects(catalog) == {a, b, c}
+@pytest.mark.vcr()
+def test_two_of_a_kind_are_violations_and_suspects(checked):
+    a = checked.register(Identifier(doi=BIOPSYCH[1])).id
+    _hold(checked, a, "doi", NLM[1])
+    b = checked.register(Identifier(pmcid="PMC3189437")).id
+    _hold(checked, b, "pmcid", "PMC5382267")
+    c = checked.register(Identifier(neurostore="8YJSSriJx23a")).id
+    _hold(checked, c, "neurostore", "AkYZauDLLAS5")
+    d = checked.register(Identifier(doi="10.7554/elife.92563")).id
+    _hold(checked, d, "preprint_pmid", "37808793")
+    _hold(checked, d, "preprint_pmid", "37808794")
+
+    one_each = {"journal-dois", "pmids", "pmcids", "preprint-pmids", "base-studies"}
+    found = [v for v in violations(checked, [a, b, c, d]) if v.rule in one_each]
+    assert _rules(found) == sorted(
+        [(a, "journal-dois"), (b, "pmcids"), (c, "base-studies"), (d, "preprint-pmids")])
+    assert suspects(checked) == {a, b, c, d}
 
 
 @pytest.mark.vcr()
-def test_two_pubmed_records_of_one_paper_on_one_article(catalog, registered):
+def test_what_is_not_a_second_of_a_kind(checked):
+    # a preprint beside its paper; an alternate DOI; one DOI in two spellings
+    a = checked.register(Identifier(doi="10.1101/2023.10.21.563317")).id
+    _hold(checked, a, "doi", "10.1016/j.neuroimage.2023.120450")
+    b = checked.register(Identifier(doi="10.3275/7271")).id
+    _hold(checked, b, "alternate_doi", "10.1007/bf03337758")
+    c = checked.register(Identifier(doi="10.1100/tsw.2011.147")).id
+    _hold(checked, c, "doi", "10.1100/TSW.2011.147")
+    assert violations(checked, [a, b, c]) == []
+    assert suspects(checked) == {a, c}
+
+
+def test_merged_articles_are_not_checked_or_suspected(checked):
+    a = checked.register(Identifier(doi=BIOPSYCH[1])).id
+    b = checked.register(Identifier(pmcid="PMC3189437")).id
+    survivor = checked.merge([a, b])
+    retired = b if survivor == a else a
+    _hold(checked, retired, "doi", NLM[1])
+    _hold(checked, retired, "doi", "10.1016/j.jse.2011.01.043")
+    assert violations(checked, [retired]) == []
+    assert suspects(checked) == set()
+
+
+def test_violations_need_evidence(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        with pytest.raises(ValueError, match="evidence"):
+            violations(catalog, [])
+
+
+# -- PMIDs and their PubMed DOIs ------------------------------------------------------------
+
+@pytest.mark.vcr()
+def test_two_pubmed_records_of_one_paper_on_one_article(checked):
     # 7s73slufuvhk: PubMed indexes 10.1155/2017/2634389 twice.
-    a = catalog.register(Identifier(doi="10.1155/2017/2634389", pmid="29065582")).id
-    _hold(catalog, a, "pmid", "29076331")
-    found = violations(catalog, [a], registered)
+    a = checked.register(Identifier(doi="10.1155/2017/2634389", pmid="29065582")).id
+    _hold(checked, a, "pmid", "29076331")
+    found = violations(checked, [a])
     assert [(v.rule, v.detail) for v in found] == [("pmids", "holds 29065582, 29076331")]
 
 
 @pytest.mark.vcr()
-def test_a_pmid_whose_pubmed_doi_another_article_holds(catalog, registered):
-    nlm = catalog.register(Identifier(doi=NLM[1])).id
+def test_a_pmid_whose_pubmed_doi_another_article_holds(checked):
+    nlm = checked.register(Identifier(doi=NLM[1])).id
     # a PMID-only article: it holds no DOI to disagree with, yet the PMID is nlm's paper
-    lone = catalog.register(Identifier(pmid=NLM[0])).id
+    lone = checked.register(Identifier(pmid=NLM[0])).id
 
-    found = violations(catalog, [nlm, lone], registered)
+    found = violations(checked, [nlm, lone])
 
     assert _rules(found) == [(lone, "pmid-doi")]
     assert found[0].detail == f"pmid {NLM[0]} is {NLM[1]} in PubMed, which {nlm} holds"
 
 
 @pytest.mark.vcr()
-def test_a_pmid_beside_another_papers_doi(catalog, registered):
-    a = catalog.register(Identifier(doi="10.1016/j.jse.2011.01.043", pmid=BIOPSYCH[0])).id
-    assert _rules(violations(catalog, [a], registered)) == [(a, "pmid-doi")]
+def test_a_pmid_beside_another_paper_s_doi(checked):
+    a = checked.register(Identifier(doi="10.1016/j.jse.2011.01.043", pmid=BIOPSYCH[0])).id
+    assert _rules(violations(checked, [a])) == [(a, "pmid-doi")]
 
 
 @pytest.mark.vcr()
-def test_a_pubmed_doi_no_registry_knows_is_not_held_against_the_article(catalog, registered):
+def test_the_pmid_of_the_article_s_own_doi_is_no_violation(checked):
+    a = checked.register(Identifier(doi=BIOPSYCH[1], pmid=BIOPSYCH[0])).id
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_pubmed_doi_no_registry_knows_is_no_evidence(checked):
     # PubMed 23840428 gives 10.137/journal.pone.0066241, a typo of the paper's DOI.
-    a = catalog.register(Identifier(doi="10.1371/journal.pone.0066241", pmid="23840428")).id
-    assert violations(catalog, [a], registered) == []
+    a = checked.register(Identifier(doi="10.1371/journal.pone.0066241", pmid="23840428")).id
+    assert violations(checked, [a]) == []
 
 
 @pytest.mark.vcr()
-def test_pubmed_dois_are_unescaped(pubmed):
-    assert pubmed.dois(["10912589"]) == {
-        "10912589": "10.1002/1097-0193(200007)10:3<99::AID-HBM10>3.0.CO;2-Q"}
+def test_a_pubmed_doi_the_registry_gives_another_paper_is_no_evidence(checked):
+    # 2imk3jt7rl7a: PubMed gives 41221578 (an ocular lymphoma review) 10.14670/HH-25-013,
+    # which doi.org gives a parotid tumour study; the article's -014 is the review's.
+    a = checked.register(Identifier(doi="10.14670/hh-25-014", pmid="41221578")).id
+    assert violations(checked, [a]) == []
 
 
 @pytest.mark.vcr()
-def test_the_pmid_of_the_articles_own_doi_is_no_violation(catalog, registered):
-    a = catalog.register(Identifier(doi=BIOPSYCH[1], pmid=BIOPSYCH[0])).id
-    assert violations(catalog, [a], registered) == []
-
-
-@pytest.mark.vcr()
-def test_a_preprint_s_pmid_is_held_to_its_pubmed_doi(catalog, registered):
+def test_a_preprint_s_pmid_is_held_to_its_pubmed_doi(checked):
     # vrr7x2ygtjdt holds its eLife paper's PMID and, as its preprint's, 37808793.
-    a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
-    _hold(catalog, a, "preprint_pmid", "37808793")
+    a = checked.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
+    _hold(checked, a, "preprint_pmid", "37808793")
 
-    found = violations(catalog, [a], registered)
-    assert [(v.rule, v.detail) for v in found] == [("pmid-doi", (
+    assert [(v.rule, v.detail) for v in violations(checked, [a])] == [("pmid-doi", (
         "pmid 37808793 is 10.1101/2023.09.27.559792 in PubMed, not 10.7554/elife.92563"))]
 
-    _hold(catalog, a, "doi", "10.1101/2023.09.27.559792")
-    assert violations(catalog, [a], registered) == []
+    _hold(checked, a, "doi", "10.1101/2023.09.27.559792")
+    assert violations(checked, [a]) == []
 
 
-def _download(catalog, article_id, source, tmp_path, name, text):
-    path = tmp_path / source / name
+@pytest.mark.vcr()
+def test_a_pmid_its_own_pmc_record_agrees_with_is_not_another_edition_s(checked):
+    # nwlokmfhhxwb, Rev Psiquiatr Salud Ment's English edition: PubMed gives its record the
+    # Spanish edition's DOI, which pbig65ccs2nv holds; its PMC record gives the English DOI.
+    english = checked.register(Identifier(pmid="32962948", pmcid="PMC10068027",
+                                          doi="10.1016/j.rpsmen.2020.07.005")).id
+    checked.register(Identifier(pmid="38620670", pmcid="PMC7456305", doi="10.1016/j.rpsm.2020.07.003"))
+    assert [v for v in violations(checked, [english]) if v.rule == "pmid-doi"] == []
+
+
+# -- PMCIDs and their PMC records ------------------------------------------------------------
+
+@pytest.mark.vcr()
+def test_a_pmcid_whose_pmc_record_is_another_pmid(checked):
+    # lg6selcsnr7f: PMC5582689 is PubMed 28290265 (Psychol Med); the article holds the
+    # craft beer paper's PMID and DOI beside it.
+    a = checked.register(Identifier(pmid="28290323", doi="10.1016/j.foodres.2016.11.043")).id
+    _hold(checked, a, "pmcid", "PMC5582689")
+    found = violations(checked, [a])
+    assert [(v.rule, v.detail) for v in found] == [
+        ("pmcid", "PMC5582689 is PubMed 28290265 in PMC, which no article holds"),
+        ("pmcid", "PMC5582689 is 10.1017/s0033291717000265 in PMC, not 10.1016/j.foodres.2016.11.043")]
+
+
+@pytest.mark.vcr()
+def test_a_pmcid_whose_pmc_record_is_another_doi(checked):
+    # x5xhvjd45lqm: PMC4043787 is a JCMR meeting abstract, beside a Magn Reson Med paper.
+    a = checked.register(Identifier(doi="10.1002/mrm.25078")).id
+    _hold(checked, a, "pmcid", "PMC4043787")
+    found = violations(checked, [a])
+    assert [v.rule for v in found] == ["pmcid"]
+    assert found[0].detail.startswith("PMC4043787 is 10.1186/1532-429x-16-s1-o7 in PMC, not ")
+
+
+@pytest.mark.vcr()
+def test_a_pmcid_agreeing_with_the_article_is_no_violation(checked):
+    # 2hauw7ec2exh once repaired: its PMCID, PMID and DOI are one PubMed record's.
+    a = checked.register(Identifier(pmid="17134483", doi="10.1186/1747-5333-1-13",
+                                    pmcid="PMC1769396")).id
+    assert violations(checked, [a]) == []
+
+
+# -- a preprint and its version of record -----------------------------------------------------
+
+@pytest.mark.vcr()
+def test_a_preprint_and_its_version_of_record_on_two_articles(checked):
+    # btk5tlwqap5k held bioRxiv's preprint of vrr7x2ygtjdt's eLife paper.
+    paper = checked.register(Identifier(doi="10.7554/elife.92563")).id
+    preprint = checked.register(Identifier(doi="10.1101/2023.09.27.559792")).id
+    found = violations(checked, [preprint])
+    assert [(v.article_id, v.rule) for v in found] == [(preprint, "two-versions")]
+    assert paper in found[0].detail
+
+
+# -- the articles a change can reach -----------------------------------------------------------
+
+@pytest.mark.vcr()
+def test_an_article_holding_the_pmid_of_a_doi_is_its_holder_s_neighbour(checked):
+    # The reviewer's probe: a plan adds d to A, and B holds the PMID PubMed gives d.
+    a = checked.register(Identifier(doi=NLM[1])).id
+    b = checked.register(Identifier(pmid=NLM[0])).id
+    assert neighbourhood(checked, [a]) == {a, b}
+
+
+@pytest.mark.parametrize("held, neighbour", [
+    # holding one id: a PMID beside another article's preprint PMID of the same value
+    ([("pmid", "37808793")], [("preprint_pmid", "37808793"), ("doi", "10.7554/elife.92563")]),
+    # PubMed's DOI for a PMID
+    ([("pmid", NLM[0])], [("doi", NLM[1])]),
+    # PubMed's PMC copy of a PMID
+    ([("pmid", "17134483")], [("pmcid", "PMC1769396")]),
+    # a PMC record's PMID, and its DOI
+    ([("pmcid", "PMC1769396")], [("pmid", "17134483")]),
+    ([("pmcid", "PMC5582689")], [("doi", "10.1017/s0033291717000265")]),
+    # a preprint's version of record, by Crossref
+    ([("doi", "10.1101/2023.09.27.559792")], [("doi", "10.7554/elife.92563")]),
+    # a preprint's PubMed record and its paper's, by title alone: btk5tlwqap5k and vrr7x2ygtjdt
+    ([("pmid", "37808793")], [("pmid", "38345852")]),
+], ids=["shared-id", "pubmed-doi", "pubmed-pmc", "pmc-pmid", "pmc-doi", "crossref-version", "pubmed-title"])
+@pytest.mark.vcr()
+def test_each_link_reaches_the_neighbour(checked, held, neighbour):
+    a = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    b = checked.register(Identifier(neurostore="26SP7hw2qb8u")).id
+    for kind, value in held:
+        _hold(checked, a, kind, value)
+    for kind, value in neighbour:
+        _hold(checked, b, kind, value)
+    assert neighbourhood(checked, [a]) == {a, b}
+
+
+@pytest.mark.vcr()
+def test_the_neighbourhood_check_is_the_full_check_restricted_to_it(checked, tmp_path):
+    # A catalog of the repair's cases, some consistent, some not.
+    ids = [
+        checked.register(Identifier(doi=NLM[1])).id,
+        checked.register(Identifier(pmid=NLM[0])).id,                    # NLM's PMID, alone
+        checked.register(Identifier(doi=BIOPSYCH[1], pmid=BIOPSYCH[0])).id,
+        checked.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id,
+        checked.register(Identifier(doi="10.1101/2023.09.27.559792")).id,  # its preprint, apart
+        checked.register(Identifier(pmid="17134483", doi="10.1186/1747-5333-1-13",
+                                    pmcid="PMC1769396")).id,
+        checked.register(Identifier(doi="10.1016/j.jse.2011.01.043", pmid="22015112")).id,
+    ]
+    full = violations(checked, ids)
+    for start in ids:
+        around = neighbourhood(checked, [start])
+        assert violations(checked, around) == [v for v in full if v.article_id in around]
+    assert {v.rule for v in full} >= {"pmid-doi", "two-versions"}
+
+
+# -- downloads --------------------------------------------------------------------------------
+
+def _download(catalog, article_id, source, root, name, text, status=Status.OK):
+    path = root / source / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
-    catalog.record([Outcome(article_id, "download", source, Status.OK,
+    catalog.record([Outcome(article_id, "download", source, status,
                             payload={"files": [{"file_path": str(path)}]})])
+    return path
 
 
-def test_a_download_whose_xml_is_another_articles_paper(catalog, registered, tmp_path):
+def test_a_download_whose_xml_is_another_article_s_paper(checked, tmp_path):
     # mwni3etc4i7l held an Elsevier copy of 54xpppoekzpj's paper.
-    a = catalog.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
-    b = catalog.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
-    _download(catalog, a, "elsevier", tmp_path / "a", "content.xml",
+    a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+    b = checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+    _download(checked, a, "elsevier", tmp_path / "a", "content.xml",
               "<full-text-retrieval-response><prism:doi>10.1016/j.neuroimage.2004.05.015</prism:doi>")
-    _download(catalog, b, "pubget", tmp_path / "b", "pmcid_1234567/article.xml",
+    _download(checked, b, "pubget", tmp_path / "b", "pmcid_1234567/article.xml",
               '<article-id pub-id-type="doi">10.1016/J.NEUROIMAGE.2004.05.015</article-id>')
 
-    found = violations(catalog, [a, b], registered)
+    found = violations(checked, [a, b])
 
     assert _rules(found) == [(a, "download")]
     assert found[0].detail == (f"download/elsevier names doi 10.1016/j.neuroimage.2004.05.015, "
                                f"which {b} holds")
 
 
-def test_a_download_naming_one_of_the_articles_own_ids_is_its_own(catalog, registered, tmp_path):
-    # 2dd6hgs4ymiv's PMC copy sits under its own PMCID; its XML names the preprint's DOI.
-    a = catalog.register(Identifier(doi="10.1016/j.ebiom.2026.106400", pmcid="PMC13370491")).id
-    catalog.register(Identifier(doi="10.64898/2026.01.29.26344990"))
-    _download(catalog, a, "pmc", tmp_path, "pmcid_13370491/article.xml",
-              '<article-id pub-id-type="doi">10.64898/2026.01.29.26344990</article-id>')
-    assert violations(catalog, [a], registered) == []
+def test_a_jats_file_naming_another_article_s_doi(checked, tmp_path):
+    a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+    b = checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+    _download(checked, a, "pmc", tmp_path, "pmcid_1234567/article.xml",
+              '<article-id pub-id-type="doi">10.1016/j.neuroimage.2004.05.015</article-id>')
+    assert [v.detail for v in violations(checked, [a])] == [
+        f"download/pmc names pmcid PMC1234567, doi 10.1016/j.neuroimage.2004.05.015, which {b} holds"]
 
 
 @pytest.mark.vcr()
-def test_an_ace_file_names_its_paper_by_pmid(catalog, registered, tmp_path):
+def test_a_download_naming_one_of_the_article_s_own_ids_is_its_own(checked, tmp_path):
+    # 2dd6hgs4ymiv's PMC copy sits under its own PMCID; its XML names the preprint's DOI.
+    a = checked.register(Identifier(doi="10.1016/j.ebiom.2026.106400", pmcid="PMC13370491")).id
+    checked.register(Identifier(doi="10.64898/2026.01.29.26344990"))
+    _download(checked, a, "pmc", tmp_path, "pmcid_13370491/article.xml",
+              '<article-id pub-id-type="doi">10.64898/2026.01.29.26344990</article-id>')
+    assert [v for v in violations(checked, [a]) if v.rule.startswith("download")] == []
+
+
+def test_only_ace_names_its_paper_by_file_name(checked, tmp_path):
+    a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+    checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015", pmcid="PMC100"))
+    _download(checked, a, "pdf", tmp_path, "15465288.html", "<html/>")
+    assert violations(checked, [a]) == []
+
+
+def test_a_failed_download_names_nothing(checked, tmp_path):
+    a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+    checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015"))
+    _download(checked, a, "elsevier", tmp_path, "content.xml",
+              "<prism:doi>10.1016/j.neuroimage.2004.05.015</prism:doi>", status=Status.FAILED)
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_an_ace_file_names_its_paper_by_pmid(checked, tmp_path):
     # ml7z5xc7cvgo and su74e7qsacoi each held the other's ACE page.
-    a = catalog.register(Identifier(pmid="15658005")).id
-    b = catalog.register(Identifier(pmid="15465288")).id
-    _download(catalog, a, "ace", tmp_path / "a", "15465288.html", "<html/>")
-    _download(catalog, b, "ace", tmp_path / "b", "15465288.html", "<html/>")
-    assert _rules(violations(catalog, [a, b], registered)) == [(a, "download")]
+    a = checked.register(Identifier(pmid="15658005")).id
+    b = checked.register(Identifier(pmid="15465288")).id
+    _download(checked, a, "ace", tmp_path / "a", "15465288.html", "<html/>")
+    _download(checked, b, "ace", tmp_path / "b", "15465288.html", "<html/>")
+    assert _rules(violations(checked, [a, b])) == [(a, "download")]
 
 
-def test_violations_need_pubmed(tmp_path, registered):
-    with Catalog.open(tmp_path / "cat") as catalog:
-        with pytest.raises(ValueError, match="pubmed_dois"):
-            violations(catalog, [], registered)
+def test_a_download_whose_record_or_file_is_gone_is_a_violation(checked, tmp_path):
+    a = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
+    path = _download(checked, a, "elsevier", tmp_path, "content.xml", "<prism:doi>x</prism:doi>")
+    path.unlink()
+    b = checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+    _download(checked, b, "pubget", tmp_path, "pmcid_1/article.xml", "<article/>")
+    blob = checked.artifact(b, "download", "pubget").blob
+    for found in checked.root.glob(f"blobs/**/{blob}*"):
+        found.unlink()
+
+    assert sorted((v.article_id, v.rule, v.detail.split(":")[0]) for v in violations(checked, [a, b])) == sorted(
+        [(a, "download-unreadable", "download/elsevier"), (b, "download-unreadable", "download/pubget")])
+
+
+@pytest.mark.vcr()
+def test_a_pubmed_doi_held_as_an_alternate_is_the_article_s(checked):
+    # ki7akud6c347 once repaired: the mEDRA DOI, and PubMed's Springer DOI as an alternate
+    a = checked.register(Identifier(doi="10.3275/7271", pmid="20885123")).id
+    _hold(checked, a, "alternate_doi", "10.1007/bf03337758")
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_pmc_record_without_a_pmid_names_its_paper_only_by_a_registered_doi(checked):
+    # PMC10411397, a European Psychiatry abstract, gives 10.1192/j.eurpsy.2023.1163, which
+    # no registry has; the article's own DOI is another such abstract's.
+    a = checked.register(Identifier(pmcid="PMC10411397", doi="10.1192/j.eurpsy.2023.662")).id
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_preprint_s_pubmed_record_and_its_paper_on_two_articles(checked):
+    # btk5tlwqap5k held only 37808793, the Preprint-typed record of vrr7x2ygtjdt's paper.
+    paper = checked.register(Identifier(doi="10.7554/elife.92563")).id
+    preprint = checked.register(Identifier(pmid="37808793")).id
+    found = [v for v in violations(checked, [preprint]) if v.rule == "two-versions"]
+    assert [v.article_id for v in found] == [preprint] and paper in found[0].detail

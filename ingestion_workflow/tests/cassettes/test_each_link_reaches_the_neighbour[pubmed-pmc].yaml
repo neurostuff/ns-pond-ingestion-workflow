@@ -1,0 +1,206 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=17134483&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRVO3MaMRD+KxrVYCTekMpxCo8zzrhL4XEhdItPtk4iepAhjP97VtIBh7ELN4e0
+        2m+/fbOnNYgKHF3uadhtgC4p+Ng0wu1oj27BeWUNCtnViL71qMNHHZJyVJWny0fKZ3w0Hs9H9Kl3
+        Opd3hB0lPbqJq0qERDBkbEp+2S0ZLlAOnz14G51M4jvyXdkGKvJDeYmvN1ZrsUINEUNtXXJjT41o
+        ku6DUysnGvLztn1vg7rOqiiTOvoALntH39BpLXwoht7Dgwo6YX/XIpBGvILHryF1xO+ShFq5sOsb
+        ZUJN7pDdk2sX6uiIBhmiA2INKgGBrdUxYBqJXWdBNkCQR5ke4YsZu8rRunAg/PsBYctHCt9L5hNf
+        5st0qbCokvPF8aK8j+mciiSewSdxqpgW5jmVGPAHE2V0E436E6FUlvHhZM4m42LAFDyUE5+NZ/3J
+        aNTWvdTgkd5hRY3QKU9KYqRPqaGkdRVWIMTE+xBX91AV1FGYrIgCKU23p6pq64p6TQYUCZJzjE7o
+        HNCx+956XUgju/rzk/7D/Q2fTRejxfQCoc44JicMvvVVtSQn7LdzcGVVFzrquMeuOJ9PB8ds9Xmf
+        v3dWnaHH3eDOUZjMWvlgcXBThroJxCSD2uY0dSZtwOYDtiCMLRnLpF2IkBI24QLC+WD4GeRYijPA
+        cMA4YYuPAKitlYFPEfwCASY4+PcFilQdBxqEv6DpRpIbcQ0OjEzt/4h3EQLughjynd4KnG4064QM
+        qW3RLgKkjQaX4Wzao+uo9Utp73YTHZodh3CV15eSeKvyCgO3I8JUROZNZp1I45rGR1uZz2U9ocdW
+        to0gVThoeSelNck9jQUv7q6sfT2sD1RJdLFpZ7JSoSzxMlcIqsEdmN6JW+cLS5svmrKzwf1kYrNK
+        fxVJIrZCoe8a1s420ekiLVb/AwAA///KzwPKpObAvYDhWqAYwmyQ0xHWJmckAtMd1BJQoYhaPaDE
+        G0RBWmYRrhK8DOSh5NIcUOkBDZva2louAAAAAP//AwDul0Ly9QYAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:04:35 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500004C170B2052DD.1.1.m_1
+      ncbi-sid:
+      - AED12EC828A85F68_CCEFSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=What%5Bti%5D+AND+makes%5Bti%5D+AND+man%5Bti%5D+AND+human%5Bti%5D+AND+thirty%5Bti%5D+AND+ninth%5Bti%5D+AND+James%5Bti%5D+AND+Arthur%5Bti%5D+AND+lecture%5Bti%5D+AND+on%5Bti%5D+AND+the%5Bti%5D+AND+evolution%5Bti%5D+AND+of%5Bti%5D+AND+the%5Bti%5D+AND+human%5Bti%5D+AND+brain%5Bti%5D+AND+1970%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGyRPU/EMAyGd35Flbk6HWJA3HYSE8OtDKcOpnWbiDYptnNQVf3vOAf94GPLY79x
+        kiejsQgVkjmMRoYezcEgI1BpTW4uSOyC19p+d2emfG4RcmwlbSlD9JL6miaUDj5WYAGae65qHSuc
+        i9wIgecWRCczftfeItKwaei2ZwtyFldkx9Nj1sEr8ob8srZxS2IdybCgd17sQk/QbYYcSWykBVss
+        JRIuHLZD1zJeQhvTDddg/W/w571eCNxKtw/3+wQqBokCfbkZTW8JGNkHqdVrpWquFjSmRlScxbSs
+        jQqrHbbVNlno97wD6YubX+Nc4wNhNYsOgtXfg7QVovRRVBFDg5wOP4XMCXacXVM7U0zTdPMJAAD/
+        /wMA53OaXjICAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:32:12 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC750000630E2743C2EA.1.1.m_1
+      ncbi-sid:
+      - DF1B1E4CBEDDEE19_67CDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=makes%5Bti%5D+AND+man%5Bti%5D+AND+human%5Bti%5D+AND+thirty%5Bti%5D+AND+ninth%5Bti%5D+AND+James%5Bti%5D+AND+Arthur%5Bti%5D+AND+lecture%5Bti%5D+AND+evolution%5Bti%5D+AND+human%5Bti%5D+AND+brain%5Bti%5D+AND+1970%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAIzOPQvCMBAG4N1fITcXaangxyY4OTi5qcPZHiSYpnq5iEX6300GP0gd3PI+b5K7
+        ByjCmhiWD5DuQrAEcoRcKcjgRux0a4PlkxL67FUxOW8kPqlab8MBinCbSRq8f4IT5NjlIeraaBfC
+        HopZUU6n8xKOGQijdQYlzHAU22BXT9x9FeGDAzR4JneA/U6LoeN4tV2PI9qUlP+BojRLl6rVVlSK
+        G2yGc1YsynOqhirxTCnTrTU+7v3XaidGPcBiMcvfBn0/egIAAP//AwDdpaPQpAEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:32:12 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500003421E86B7160.1.1.m_1
+      ncbi-sid:
+      - DF1B1E4CBEDDEE19_67CDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

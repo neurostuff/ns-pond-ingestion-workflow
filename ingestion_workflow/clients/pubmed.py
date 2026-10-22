@@ -5,7 +5,9 @@ from __future__ import annotations
 import calendar
 import html
 import logging
+import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime
 import json
 import re
@@ -13,7 +15,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import httpx
 import xmltodict
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
@@ -28,6 +30,45 @@ PUBMED_KEYED_REQUEST_LIMIT = 10  # what NCBI allows a request carrying an API ke
 PUBMED_LAST_YEAR = 9999  # the latest maxdate ESearch takes
 ESEARCH_MAX_RESULTS = 10_000
 ESEARCH_CHUNK_SIZE = 1_000
+#: DOIs asked in one esearch, as `"<doi>"[doi] OR ...`; well within its URL length.
+DOI_SEARCH_BATCH_SIZE = 50
+
+
+class _Pace:
+    """One pace for every client in the process: NCBI counts a caller's requests, not a client's."""
+
+    lock = threading.Lock()
+    last = 0.0
+
+
+def _retryable(exc: BaseException) -> bool:
+    """A refusal to come back later (429) or a server or connection failure."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        return exc.response.status_code == 429 or exc.response.status_code >= 500
+    return isinstance(exc, httpx.TransportError)
+
+
+@dataclass(frozen=True)
+class PubMedSummary:
+    """What PubMed's summary of a record says of its identity."""
+
+    doi: Optional[str]
+    title: str
+    pubtypes: Tuple[str, ...]
+    #: The PMCID of the record's PMC copy, when PubMed lists one.
+    pmcid: Optional[str] = None
+
+    @property
+    def preprint(self) -> bool:
+        return "Preprint" in self.pubtypes
+
+
+@dataclass(frozen=True)
+class PmcRecord:
+    """The PubMed record and DOI NCBI's ID converter gives a PMC record."""
+
+    pmid: Optional[str]
+    doi: Optional[str]
 
 
 class PubMedClient:
@@ -44,7 +85,6 @@ class PubMedClient:
         self.api_key = api_key
         self.tool = tool
         self._client = httpx.Client(timeout=30, follow_redirects=True)
-        self._last_request = 0.0
         self._min_interval = 1 / (PUBMED_KEYED_REQUEST_LIMIT if api_key else PUBMED_REQUEST_LIMIT)
 
     def close(self) -> None:
@@ -275,11 +315,11 @@ class PubMedClient:
             identifier.other_ids.setdefault(field, str(value))
 
     def _rate_limit_sleep(self) -> None:
-        now = time.monotonic()
-        elapsed = now - self._last_request
-        if elapsed < self._min_interval:
-            time.sleep(self._min_interval - elapsed)
-        self._last_request = time.monotonic()
+        with _Pace.lock:
+            wait = _Pace.last + self._min_interval - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            _Pace.last = time.monotonic()
 
     def _collect_esearch_ids(
         self,
@@ -376,16 +416,18 @@ class PubMedClient:
     def _current_year(self) -> int:
         return datetime.utcnow().year
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, max=8),
-    )
     def _request_idconv(
         self,
         params: Sequence[Tuple[str, str]],
     ) -> Dict[str, object]:
         return self._request_json(self.BASE_URL, params)
 
+    @retry(
+        retry=retry_if_exception(_retryable),
+        stop=stop_after_attempt(6),
+        wait=wait_exponential(multiplier=1, max=30),
+        reraise=True,
+    )
     def _request_json(
         self,
         url: str,
@@ -484,28 +526,103 @@ class PubMedClient:
 
         return results
 
-    def dois(self, pmids: Sequence[str]) -> Dict[str, Optional[str]]:
-        """The DOI each PMID's PubMed record gives, None where it gives none.
+    def summaries(self, pmids: Sequence[str]) -> Dict[str, PubMedSummary]:
+        """PubMed's summary of each PMID's record: its DOI, title and publication types.
 
         A PMID PubMed has no record of is left out. Some records hold their DOI with
         its XML entities escaped (`&#x0003c;` for `<`); they are unescaped.
         """
-        found: Dict[str, Optional[str]] = {}
+        found: Dict[str, PubMedSummary] = {}
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
         for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
-            params = [("db", "pubmed"), ("id", ",".join(pmids[i : i + IDCONV_BATCH_SIZE])),
-                      ("retmode", "json"), ("email", self.email), ("tool", self.tool)]
+            found.update(self._summary_batch(pmids[i : i + IDCONV_BATCH_SIZE]))
+        return found
+
+    def _summary_batch(self, pmids: List[str]) -> Dict[str, PubMedSummary]:
+        """One esummary request, or, when esummary keeps failing on the batch whole, its
+        halves: it answers 200 PMIDs from 28256615 on with a 500 every time, and each
+        100 of them."""
+        params = [("db", "pubmed"), ("id", ",".join(pmids)), ("retmode", "json"),
+                  ("email", self.email), ("tool", self.tool)]
+        if self.api_key:
+            params.append(("api_key", self.api_key))
+        try:
+            result = self._request_json(self.ESUMMARY_URL, params).get("result") or {}
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code < 500 or len(pmids) == 1:
+                raise
+            half = len(pmids) // 2
+            logger.warning("PubMed esummary fails on %d PMIDs from %s; asking in halves",
+                           len(pmids), pmids[0])
+            return {**self._summary_batch(pmids[:half]), **self._summary_batch(pmids[half:])}
+        found: Dict[str, PubMedSummary] = {}
+        for pmid in result.get("uids") or []:
+            record = result.get(pmid) or {}
+            if record.get("error"):
+                continue
+            ids = {a.get("idtype"): a.get("value") for a in record.get("articleids") or []
+                   if a.get("value")}
+            pmc = ids.get("pmc")
+            found[pmid] = PubMedSummary(
+                doi=html.unescape(ids["doi"]) if ids.get("doi") else None,
+                title=html.unescape(record.get("title") or ""),
+                pubtypes=tuple(record.get("pubtype") or ()),
+                pmcid=normalize_pmcid(pmc) if pmc and pmc.upper().startswith("PMC") else None,
+            )
+        return found
+
+    def pmc_records(self, pmcids: Sequence[str]) -> Dict[str, PmcRecord]:
+        """The PMID and DOI NCBI's ID converter gives each PMC record it knows."""
+        found: Dict[str, PmcRecord] = {}
+        pmcids = list(dict.fromkeys(str(p) for p in pmcids if p))
+        for i in range(0, len(pmcids), IDCONV_BATCH_SIZE):
+            payload = self._request_idconv(self._build_params("pmcid", pmcids[i : i + IDCONV_BATCH_SIZE]))
+            for record in payload.get("records") or []:
+                if not isinstance(record, dict) or record.get("status") == "error" or not record.get("pmcid"):
+                    continue
+                found[normalize_pmcid(str(record["pmcid"]))] = PmcRecord(
+                    pmid=str(record["pmid"]) if record.get("pmid") else None,
+                    doi=str(record["doi"]) if record.get("doi") else None,
+                )
+        return found
+
+    def pmids_for_title(self, title: str) -> List[str]:
+        """The PMIDs of the records whose title holds every word of `title`.
+
+        Every word, not the phrase: PubMed finds a quoted phrase only when it is in its
+        phrase index, which a whole title seldom is. A word it does not index (a stopword
+        such as "the") makes it find nothing, and it names the word; the search is asked
+        again without it.
+        """
+        words = re.sub(r"[^\w\s]", " ", title or "").split()
+        result: Dict[str, Any] = {}
+        for _ in range(2):
+            if not words:
+                return []
+            params = [("db", "pubmed"), ("term", " AND ".join(f"{w}[ti]" for w in words)),
+                      ("retmode", "json"), ("retmax", "20"), ("email", self.email), ("tool", self.tool)]
             if self.api_key:
                 params.append(("api_key", self.api_key))
-            result = self._request_json(self.ESUMMARY_URL, params).get("result") or {}
-            for pmid in result.get("uids") or []:
-                record = result.get(pmid) or {}
-                if record.get("error"):
-                    continue
-                doi = next((a.get("value") for a in record.get("articleids") or []
-                            if a.get("idtype") == "doi" and a.get("value")), None)
-                found[pmid] = html.unescape(doi) if doi else None
-        return found
+            result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
+            unindexed = {w.lower() for w in (result.get("errorlist") or {}).get("phrasesnotfound") or []}
+            if not unindexed:
+                break
+            words = [w for w in words if w.lower() not in unindexed]
+        return [str(p) for p in result.get("idlist") or []]
+
+    def pmids_for_dois(self, dois: Sequence[str]) -> List[str]:
+        """Every PMID whose PubMed record gives one of `dois`."""
+        found: List[str] = []
+        dois = list(dict.fromkeys(d for d in dois if d))
+        for i in range(0, len(dois), DOI_SEARCH_BATCH_SIZE):
+            term = " OR ".join(f'"{d}"[doi]' for d in dois[i : i + DOI_SEARCH_BATCH_SIZE])
+            params = [("db", "pubmed"), ("term", term), ("retmode", "json"),
+                      ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email), ("tool", self.tool)]
+            if self.api_key:
+                params.append(("api_key", self.api_key))
+            result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
+            found += [str(p) for p in result.get("idlist") or []]
+        return list(dict.fromkeys(found))
 
     def get_notices(self, pmids: Sequence[str]) -> Dict[str, Tuple[List[Correction], bool]]:
         """`(corrections, is_retraction_notice)` for each PMID PubMed returned.

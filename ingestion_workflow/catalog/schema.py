@@ -80,6 +80,17 @@ CREATE TABLE IF NOT EXISTS search_hits (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS search_hits_article_idx ON search_hits(article_id);
 
+-- An identifier registration did not add, and why: a second journal DOI that the
+-- registries give another paper, or a PMID whose PubMed record is another article's.
+-- Kept so a refusal is on record, not only in a log.
+CREATE TABLE IF NOT EXISTS refusals (
+    kind       TEXT NOT NULL,
+    value      TEXT NOT NULL,
+    article_id TEXT,
+    reason     TEXT NOT NULL,
+    refused_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
