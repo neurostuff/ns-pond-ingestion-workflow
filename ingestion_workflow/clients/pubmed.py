@@ -80,7 +80,7 @@ class PmcRecord:
     doi: Optional[str]
 
 
-_SUPPLEMENT_ISSUE = re.compile(r"suppl|^s\d|^s$|\ds(\b|_)", re.IGNORECASE)
+_SUPPLEMENT_ISSUE = re.compile(r"suppl|^s\d|\ds(\b|_)", re.IGNORECASE)
 _SUPPLEMENT_PAGE = re.compile(r"^s-?\d", re.IGNORECASE)
 
 

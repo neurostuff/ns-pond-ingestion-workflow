@@ -81,27 +81,37 @@ def load(path: Path) -> List[Tuple[int, Operation]]:
 
 def _refuse_returns(operations: List[Tuple[int, Operation]]) -> None:
     """Raise ValueError when an identifier comes back to a holder and kind it left: an
-    operation undoing an earlier one, which a reviewed plan does not hold."""
+    operation undoing an earlier one, which a reviewed plan does not hold. Each value's
+    history starts at the holder and kind its first operation takes it from."""
     states: Dict[str, List[Tuple[Optional[Tuple[str, str]], int]]] = {}
 
-    def to(value, state, number):
-        seen = states.setdefault(str(value), [])
-        if seen and seen[-1][0] != state and any(s == state for s, _ in seen[:-1]):
+    def move(value, left, state, number):
+        seen = states.setdefault(str(value), [(left, number)])
+        if seen[-1][0] == state:
+            return
+        if any(s == state for s, _ in seen):
             first = next(n for s, n in seen if s == state)
             where = f"{state[1]} of {state[0]}" if state else "no article"
-            raise ValueError(f"line {number}: {value} comes back to {where} it left after line {first}")
+            raise ValueError(
+                f"line {number}: {value} comes back to {where} it left after line {first}")
         seen.append((state, number))
 
     for number, o in operations:
         if o["op"] == "add":
-            to(o["value"], (o["article"], o["kind"]), number)
+            move(o["value"], None, (o["article"], o["kind"]), number)
         elif o["op"] == "remove":
-            to(o["value"], None, number)
+            move(o["value"], (o["article"], o["kind"]), None, number)
         elif o["op"] == "rekind" and o["kind"] in Catalog.REKIND:
-            to(o["value"], (o["article"], Catalog.REKIND[o["kind"]]), number)
+            move(o["value"], (o["article"], o["kind"]),
+                 (o["article"], Catalog.REKIND[o["kind"]]), number)
         elif o["op"] == "reassign":
             for m in o["moves"]:
-                to(m["value"], (m["to"], m["kind"]), number)
+                move(m["value"], (m["from"], m["kind"]), (m["to"], m["kind"]), number)
+        elif o["op"] == "split":
+            # the new article has no id until the split runs
+            for kind, value in o["aliases"]:
+                move(value, (o["article"], kind), (f"the article split from {o['article']}", kind),
+                     number)
 
 
 @dataclass
@@ -139,8 +149,10 @@ def apply(
 
     Each operation is checked against the catalog as the ones before it left
     it, and a refused one writes nothing, so a dry run reports every refusal. A
-    plan is committed whole or not at all. The backup is taken under the write
-    lock, so nothing is written between the copy and the plan.
+    plan is committed whole or not at all. With `backup`, the plan is first run as
+    a dry run, and only one that would commit is run again behind the backup: the
+    backup is taken under the write lock, so nothing is written between the copy
+    and the plan.
 
     The articles checked are the plan's scope: those it touches, their neighbourhood
     and every article holding two of a kind, as they are after the plan, with every
@@ -150,6 +162,14 @@ def apply(
     worse.
     """
     index_downloads(catalog)
+    outcome = _attempt(catalog, operations, None)
+    if backup is None or outcome.refused or outcome.violations:
+        return outcome
+    return _attempt(catalog, operations, backup)
+
+
+def _attempt(catalog: Catalog, operations: List[Tuple[int, Operation]],
+             backup: Optional[Path]) -> Outcome:
     outcome = Outcome()
     try:
         with catalog.transaction():

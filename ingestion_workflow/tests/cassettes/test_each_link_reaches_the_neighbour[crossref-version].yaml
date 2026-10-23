@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:38:14 GMT
+      - Fri, 23 Oct 2026 03:44:07 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500004FB0FA1906FC.1.1.m_1
+      - 1D348A0161E7335500003D598B2185E5.1.1.m_1
       ncbi-sid:
-      - C418A3427505D57A_6B66SID
+      - 95868B49ACEFAF0A_31BESID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -160,7 +160,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
+      - Fri, 23 Oct 2026 03:44:08 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -190,32 +190,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.09.27.559792&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.09.27.559792%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAA/82WUW+CMBDHv0ufaS1FZvR5L0uW7ANMH6qcsxOB9YrOEL77isO4uAirNmZvpFd+
-        /R/933EVQSNNiWRC8jUJyAYQ5RtQsy/Aru1yvaapQvMjtAWNKs9sNGSc8VOETCqylAswllbVATG5
-        kSnVgGXaLA0Dogxs7NNrRR5fnhoAZ6M4Hk4HkKolsLGIHyIWWqKGVJrDIRVReDyS5svDyyo56kty
-        ZXer5JsVhjycDgQXEeNjJkYsjsejsbA7JCJoAwmd7+1WLOfvsDCkngVkJfGUUQe71fl80vmbm7fY
-        wAUTXcS06jRsFewcxYUMZehHYIPi/lCX83VGXb6BWd3QOkwm7mcyt7R6zXqVHYQ/Owh/dhD+7CA6
-        7eCMGvYV5XUto7PWrQULDYVWmenzoBO5pxTOCqFJ7ijDe7O1KaLcAJV4c3pn2D8Wr1PBubmmQ2Ff
-        M7r3Hfzrj3VDl4v8NYHIX2uKOvuJM8pT7406/wjWsrN2XKMFaFocxruQ84B8lKD3jUvt4KgNVVkC
-        n2RiAwhSL1bUgG5mvKxM07quvwALvhZWYAoAAA==
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcwNzczNTk0MzAwMCwxMC43NTU0JTJGZWxpZmUuOTI1NjMuMw==","total-results":3,"items":[{"DOI":"10.7554\/elife.92563","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-same-as":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}]}},{"DOI":"10.7554\/elife.92563.2","relation":{"is-version-of":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa4","asserted-by":"object"}],"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]}},{"DOI":"10.7554\/elife.92563.3","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa4","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa1","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '465'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 03:44:08 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -223,16 +221,8 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
       content-encoding:
       - gzip
-      content-length:
-      - '427'
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -278,15 +268,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4dfa2eb669fe-DFW
+      - a4edbdd55fc8f071-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
+      - Fri, 23 Oct 2026 03:44:08 GMT
       expires:
-      - Thu, 22 Oct 2026 21:27:30 GMT
+      - Fri, 23 Oct 2026 04:03:26 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563/transform
       nel:
@@ -294,7 +284,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=FbqPNXc10MPPbeyU4JlckRMCclf0i5oEKUUiT85yqEJNUU45wtHlAdqm%2F91%2FnoC0XsnStkNeRoR0DjCQ6KD%2F%2FnpCbmxDTebxvrJlc5GLp8zplkZZCxripn8%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=L0WCUq0Q1qmG04uXdqyaN1RGvSbHyO64zJXOcziDNi%2FpyS7JTDmK8vtly6mA0MqIFayIBTim33oxZcAF86dDGVb62UjEZuSZUWO1v1lPNzXEmc8GYcnmTJ4%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -498,7 +488,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
+      - Fri, 23 Oct 2026 03:44:08 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -544,15 +534,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4dfad87669fe-DFW
+      - a4edbdd68b06f071-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
+      - Fri, 23 Oct 2026 03:44:08 GMT
       expires:
-      - Thu, 22 Oct 2026 21:08:07 GMT
+      - Fri, 23 Oct 2026 04:08:08 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563.3/transform
       nel:
@@ -560,7 +550,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=wOgT0PjYMbVbhh%2FCcAs%2Brrf48miOJ27fvtDGLjTN0YUmf1pTJCq7s928leCAXCEs1ieSOashZ3LNa9zqegLI6VWPP0KV8z8qlR0myWNIoFxYOfd1tOOr9mE%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HXZOndrIwfda6OusQsOg%2FEcqz6pVQntptbWfqrpp2Y%2BOj1lCClDA%2BAiA8ui8R%2FNKHctMpfEO9OzxwSYbDAYQYfRK5mvPoK8WvlVGkkz7gCdWMYSLyour7Ng%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -764,7 +754,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:38:15 GMT
+      - Fri, 23 Oct 2026 03:44:08 GMT
       permissions-policy:
       - interest-cohort=()
       server:

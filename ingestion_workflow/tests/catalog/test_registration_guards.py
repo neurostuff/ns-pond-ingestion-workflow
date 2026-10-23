@@ -113,6 +113,19 @@ def test_pubmed_summaries_give_the_doi_title_and_types(pubmed):
 
 
 @pytest.mark.vcr()
+@pytest.mark.parametrize("pmid, supplement", [
+    ("21811190", True),  # issue "1 Suppl Operative"
+    ("31149901", True),  # issue "S1"
+    ("38085977", True),  # issue "4S"
+    ("11506650", True),  # volume "12 Suppl 2"
+    ("11373141", True),  # issue "1 Pt 2", pages "S110-7"
+    ("22015111", False),
+])
+def test_pubmed_summaries_say_whether_the_issue_is_a_supplement(pubmed, pmid, supplement):
+    assert pubmed.summaries([pmid])[pmid].supplement is supplement
+
+
+@pytest.mark.vcr()
 def test_pubmed_summaries_ask_each_pmid_once(pubmed):
     assert set(pubmed.summaries([BIOPSYCH[0], BIOPSYCH[0], "", NLM[0]])) == {BIOPSYCH[0], NLM[0]}
 

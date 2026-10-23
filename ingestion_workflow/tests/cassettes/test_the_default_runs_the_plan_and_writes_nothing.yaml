@@ -40,11 +40,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:22 GMT
+      - Fri, 23 Oct 2026 07:29:52 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000070A05C9480D5.1.1.m_1
+      - 1D32B8BB86A02F1500003F3CD1455AE5.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -58,7 +58,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -136,11 +136,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:22 GMT
+      - Fri, 23 Oct 2026 07:29:52 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000074A05D07FD57.1.1.m_1
+      - 1D33ABE4FCD277E500004B52CD809845.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -154,7 +154,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -299,7 +299,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
+      - Fri, 23 Oct 2026 07:29:53 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -329,24 +329,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.ajog.2011.02.050&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.ajog.2011.02.050%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 07:29:53 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -354,20 +360,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -508,7 +506,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
+      - Fri, 23 Oct 2026 07:29:54 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -538,24 +536,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.apmr.2010.12.021&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.apmr.2010.12.021%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 07:29:54 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -563,20 +567,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -623,7 +619,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
+      - Fri, 23 Oct 2026 07:29:54 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -653,52 +649,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.biopsych.2021.02.423&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2021.02.423%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: ''
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      connection:
+      Connection:
       - keep-alive
-      content-length:
-      - '0'
-      date:
-      - Thu, 22 Oct 2026 20:37:23 GMT
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.biopsych.2021.02.423&rows=100&select=DOI%2Crelation
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
-    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 07:29:55 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -706,20 +680,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:24 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -959,7 +925,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:24 GMT
+      - Fri, 23 Oct 2026 07:29:55 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -989,24 +955,56 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.bpsc.2021.12.008&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.bpsc.2021.12.008%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+      string: ''
     headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Date:
+      - Fri, 23 Oct 2026 07:29:55 GMT
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.bpsc.2021.12.008%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 07:29:56 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1014,20 +1012,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:25 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -1072,7 +1062,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:25 GMT
+      - Fri, 23 Oct 2026 07:29:56 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1102,24 +1092,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1176%2Fajp.2006.163.4.735&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1176%2Fajp.2006.163.4.735%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 07:29:57 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1127,20 +1123,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:25 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -1192,11 +1180,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:24 GMT
+      - Fri, 23 Oct 2026 07:29:56 GMT
       ncbi-phid:
-      - 1D348A0161E73355000033BA31BFC552.1.1.m_1
+      - 1D33ABE4FCD277E500002E52D999A657.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1256,11 +1244,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:24 GMT
+      - Fri, 23 Oct 2026 07:29:57 GMT
       ncbi-phid:
-      - 1D348A0161E73355000051BA32837509.1.1.m_1
+      - 1D33ABE4FCD277E500005F52DAED38F5.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1322,11 +1310,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:25 GMT
+      - Fri, 23 Oct 2026 07:29:57 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000033B0AC0FD51F.1.1.m_1
+      - 1D33ABE4FCD277E500003A52DBE40841.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1386,11 +1374,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:26 GMT
+      - Fri, 23 Oct 2026 07:29:57 GMT
       ncbi-phid:
-      - 1D348A0161E73355000034BA3406FBA5.1.1.m_1
+      - 1D3460167182AD9500003053D1CBBFAE.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1452,11 +1440,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:27 GMT
+      - Fri, 23 Oct 2026 07:29:58 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000036A0634A1B35.1.1.m_1
+      - 1D33ABE4FCD277E500005352DE4FC5FC.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1496,6 +1484,62 @@ interactions:
   response:
     body:
       string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Fri, 23 Oct 2026 07:29:58 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=altered%5Bti%5D+AND+activity%5Bti%5D+AND+extensor%5Bti%5D+AND+muscles%5Bti%5D+AND+chronic%5Bti%5D+AND+mechanical%5Bti%5D+AND+neck%5Bti%5D+AND+pain%5Bti%5D+AND+functional%5Bti%5D+AND+magnetic%5Bti%5D+AND+resonance%5Bti%5D+AND+imaging%5Bti%5D+AND+study%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
         H4sIAAAAAAAAAGSQMW/CQAyF9/4K5DmqgKpCsFXq3KkbMFgXl1g9HGr7EBHKf68zVFSX7d73nm29
         u0NH2JLC7g4+XAh2QEaoqYMGrqTGvQRbPr/A2PxZSlayTyOpLxIPWEVayc94ewhz1MlbhuQ2s4XY
         w3r1ut5uNls4NuCKYhk9bhhNbrCfQjr8M2LBATA7KbUH2H+yZzou3j7eF4GT85V9qDndnMR6rfm5
@@ -1517,11 +1561,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:26 GMT
+      - Fri, 23 Oct 2026 07:29:59 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000031B0AD90967F.1.1.m_1
+      - 1D33ABE4FCD277E500003E52E3447F1E.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1535,7 +1579,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -1583,11 +1627,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:27 GMT
+      - Fri, 23 Oct 2026 07:29:59 GMT
       ncbi-phid:
-      - 1D348A0161E7335500002BBA3729C978.1.1.m_1
+      - 1D33ABE4FCD277E500005B52E47CF465.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1648,11 +1692,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:27 GMT
+      - Fri, 23 Oct 2026 07:30:00 GMT
       ncbi-phid:
-      - 1D348A0161E73355000043BA37E5B8B0.1.1.m_1
+      - 1D3460167182AD9500002C53D4654B41.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1700,15 +1744,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4cd4af876b06-DFW
+      - a4ef08b3da8569d9-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:37:28 GMT
+      - Fri, 23 Oct 2026 07:30:00 GMT
       expires:
-      - Thu, 22 Oct 2026 21:08:07 GMT
+      - Fri, 23 Oct 2026 07:34:32 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
@@ -1719,7 +1763,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=u8k4J1qSq1Y0D%2BXE6q3glzbFAyzdDhMLptaI%2B50fKkf6dekboqLuYYXY4PkFP2kqRf7OImtQ087BH%2FiP%2FVHsmA3ueQZBEuMm4PQy7AXa1glMZz%2FGWsWDRf0%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=8h89oJc82OPhoRdmIX5EPC7tG1YqYFG1FJvG8TrmaLlngCW1IHs6bxX%2BD5c%2F4dsHPYqnY6xIHiaWCf79RCyVA1bZUaG8DW0LJvk8rx4c5n48QUoKBvuPuWQ%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -1837,7 +1881,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:37:28 GMT
+      - Fri, 23 Oct 2026 07:30:01 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -1883,15 +1927,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4cd558646b06-DFW
+      - a4ef08b51c2869d9-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:37:28 GMT
+      - Fri, 23 Oct 2026 07:30:01 GMT
       expires:
-      - Thu, 22 Oct 2026 21:27:30 GMT
+      - Fri, 23 Oct 2026 07:53:09 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       location:
@@ -1901,7 +1945,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lMKsYsaUVEIo5OQHsk67%2F3NVOq1sj3IM%2FSHsD8Xc6dGnLgTQi0lKMXjbfiU3eRVjY48%2FiCSWTp06RCcW0qrY5bbXwHuzbrYEE7ZOltZzpGutW6KVt%2F%2FIIHU%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=k5s76gTxzMy6w6ZGkhb0ywCTV4E8wf%2BUKoasuzFv06kGX3iV0a7dUw%2BdKQFm7jNn061vCSy4iuL6inkl9ctkqtAmmVyho8xtV1PHDhAANxqY%2Fdr2z3tIquc%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -2024,7 +2068,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:37:28 GMT
+      - Fri, 23 Oct 2026 07:30:01 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -2085,11 +2129,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:28 GMT
+      - Fri, 23 Oct 2026 07:30:01 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005FBA389E3FCD.1.1.m_1
+      - 1D33ABE4FCD277E500003152E79501B7.1.1.m_1
       ncbi-sid:
-      - A83952F83D1AC0C2_7D11SID
+      - 09D90559BE67D779_0705SID
       referrer-policy:
       - origin-when-cross-origin
       server:

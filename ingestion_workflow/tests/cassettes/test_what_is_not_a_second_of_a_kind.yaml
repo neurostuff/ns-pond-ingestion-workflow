@@ -25,15 +25,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4c26befbf096-DFW
+      - a4edbe0f789bf069-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:37:00 GMT
+      - Fri, 23 Oct 2026 03:44:17 GMT
       expires:
-      - Thu, 22 Oct 2026 21:27:30 GMT
+      - Fri, 23 Oct 2026 04:27:30 GMT
       location:
       - https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
       nel:
@@ -41,7 +41,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=QgMZGTENGAWIHC7T%2BX8YNRNJoK7CZl3FVzS8HtTWNe9hyXJSNpH3wd7jv44O7dZxblU%2Bn0vN0K73waKn0NKrGImwtP5Ooo9C7KztIa%2B1F%2F787og3ErVTHx0%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=aQL7XonW9e9REz1nceS1Se4g3aKk8QyhjnOJX4zqgBfsXgIi3CTUhGM3JWrXCiFLcbqYdM%2F4KQb2vmXEd0u9H7N%2FIf4JpwCisjgZULLH6LuhqVDqbu2C7oo%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -122,7 +122,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:37:00 GMT
+      - Fri, 23 Oct 2026 03:44:18 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -168,15 +168,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4c27db50f096-DFW
+      - a4edbe10abf5f069-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:37:00 GMT
+      - Fri, 23 Oct 2026 03:44:18 GMT
       expires:
-      - Thu, 22 Oct 2026 21:20:40 GMT
+      - Fri, 23 Oct 2026 04:03:53 GMT
       location:
       - https://data.medra.org/10.3275%2F7271
       nel:
@@ -184,7 +184,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=37cgQNKN4PPtwwojpU9IAxtYS5Vs%2BDpGm3oepjDqGMXqRbPT8HwekYN2Z9ExGjidaZhVL%2Fd1QJZWYcnMkKl9KY%2Fbz7M4km9VYooD4NjtM7uO3H85fVmb1QY%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=R4vXqtAeXaMAkPQWayiTSOSKTyuawD3hE7WUbZfnIato0lCbhl7lx9JViLFpihqxa7NTIXPGh0j2xPT7YxHzcAkMPrgRvVdW%2Bv6bDmH1xZGj1UYhDIEMYRk%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -244,7 +244,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json;charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:01 GMT
+      - Fri, 23 Oct 2026 03:44:18 GMT
       server:
       - Apache/2.4.59 (Debian)
       vary:
@@ -321,7 +321,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:01 GMT
+      - Fri, 23 Oct 2026 03:44:18 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -351,30 +351,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.10.21.563317&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.10.21.563317%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAA/7WTwU7DMAyG38XnpE1awdDO7AAHeADKIWsNy9a1JXE7qirvjtMJsQuahEqkSIkd
-        f7Gd/BN4MtR7WEN7AAFH9N68o6SxQ7adWneQtfV04RrQeds27NWJStSPB9YTvJkSiWlTEEAtmVo6
-        9H0dTVqAJTzy6mWC++eHCFCJ5lGkuG+SlVJ3mmkOa0PzBRPsjGfAYPE0R9nqO7GqtXzUVpeQzePT
-        GVKkA89zXMbHjPfoCCu5HWOd2z2WBEH8iaeX4eVFWmFpYyMXImbLZ8hP17WNx+UyXLhm/T9dvFb1
-        q5g/Zuewc7ahK19TMTdTWZ7wLtPJzW2e69Xv7BDxs1Bkh052s7C0UgI+enRjVAVL1pG0TYWfsGaH
-        R+PKnSR0UV1NX9chhC8Kul+I2gMAAA==
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc0Mjg1NzAyOTAwMCwxMC4xMTExJTJGZWpuLjcwMDgx","total-results":1,"items":[{"DOI":"10.1111\/ejn.70081","relation":{"has-review":[{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/review2","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/review1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v3\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/review1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v3\/response1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/response1","asserted-by":"object"}],"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.10.21.563317","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '362'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 03:44:19 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -382,16 +382,8 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
       content-encoding:
       - gzip
-      content-length:
-      - '307'
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:01 GMT
       permissions-policy:
       - interest-cohort=()
       server:

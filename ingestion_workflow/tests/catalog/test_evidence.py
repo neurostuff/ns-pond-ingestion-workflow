@@ -61,6 +61,14 @@ def test_versions_are_read_from_both_sides_of_crossref_s_relation(evidence):
 
 
 @pytest.mark.vcr()
+def test_the_other_side_of_a_relation_is_found_by_the_doi_as_pubmed_spells_it(evidence):
+    # bioRxiv's 10.1101/2025.04.29.651293 is-preprint-of 10.1523/JNEUROSCI.0839-25.2025, in
+    # that case; the J Neurosci paper's record (PubMed 41330636) does not say so back
+    evidence.summaries(["41330636"])
+    assert "10.1101/2025.04.29.651293" in evidence.versions("10.1523/jneurosci.0839-25.2025")
+
+
+@pytest.mark.vcr()
 def test_a_reviewed_version_s_concept_doi_is_a_version_only_when_the_registry_says_so(evidence):
     # eLife's reviewed version 10.7554/elife.92563.N stands for 10.7554/elife.92563; JOV's
     # 10.1167/jov.24.6.11 is no version of a "10.1167/jov.24.6"
@@ -134,6 +142,18 @@ def test_one_part_of_a_record_apart_is_another_work(other, same):
     assert same_work(RAICHLE, other) is same
 
 
+@pytest.mark.parametrize("author, same", [("Marcus E. Raichle", True), ("Gusnard", False)])
+def test_a_notice_is_its_notice_by_the_same_author(author, same):
+    # one reply, PubMed's record and the registry's, whose author is the whole name
+    reply = "Reply: A default mode of brain function"
+    assert same_work(_pm(reply), _as(title=reply, first_author=author)) is same
+
+
+@pytest.mark.parametrize("other", [_as(supplement=True), _as(type="proceedings-article")])
+def test_a_supplement_or_proceedings_record_of_the_pubmed_record_s_own_doi_is_its_paper(other):
+    assert same_work(RAICHLE, RegisteredWork(**{**other.__dict__, "doi": RAICHLE.doi}))
+
+
 def _pm(title, doi=RAICHLE.doi):
     return PubMedSummary(**{**RAICHLE.__dict__, "title": title, "doi": doi})
 
@@ -188,6 +208,30 @@ def test_alike_registered_works_are_two_works(evidence, first, second):
 ])
 def test_a_doi_registered_to_a_pubmed_record_s_work_is_its_paper(pubmed, evidence, pmid, doi):
     assert evidence.same_paper(doi, pubmed.summaries([pmid])[pmid])
+
+
+@pytest.mark.vcr()
+@pytest.mark.parametrize("pmid", [
+    # "Jack CR Jr", "Byrd TF 4th", "Murty DVPS" (wjoo3yyhy5io's paper), "Schaper FLWVJ", and
+    # "Grubb RL Jr" beside the registry's "Grubb, Jr"
+    "22409939", "37486632", "32276055", "37399040", "9757852",
+    # the registry's "Ulu?" for "Uluğ", "Soon" for "Soong", "Gomez M.", and PubMed's
+    # "Rajesh-Khanna D-S" and "Frederick B deB"
+    "10373028", "9124801", "10580535", "41055359", "9888405",
+    # a supplement issue to PubMed, not to Crossref
+    "15228754", "18813171", "34628088",
+    # IEEE EMBC and SMC papers: Journal Articles to PubMed, proceedings-articles to Crossref
+    "17271546", "40039850", "37333993",
+    # the series' part in PubMed's title alone: "...mood disorders. I. Comparison..."
+    "2294857", "3492982", "8527465",
+    # "sigma" and "sigma1", "p17gag" and "pl7gag", "encoding" and "coding", "18Fluoro"
+    "12885582", "1458053", "37070082", "9760998",
+    # a reply: 2009 in PubMed, 2008 at Crossref
+    "19382289",
+])
+def test_a_pubmed_record_and_its_own_doi_s_record_are_one_paper(pubmed, evidence, pmid):
+    record = pubmed.summaries([pmid])[pmid]
+    assert evidence.same_paper(record.doi, record)
 
 
 @pytest.mark.vcr()
@@ -294,6 +338,17 @@ def test_initials_in_any_script_are_not_the_family_name():
     # PubMed 37249071's first author is "Özdemir İ"; Crossref's, of 10.1002/mrm.29706, "Özdemir"
     pubmed = PubMedSummary(**{**RAICHLE.__dict__, "first_author": "Özdemir İ"})
     assert same_work(pubmed, _as(first_author="Özdemir"))
+
+
+def test_initials_in_any_script_are_dropped_before_a_registry_s_whole_name():
+    pubmed = PubMedSummary(**{**RAICHLE.__dict__, "first_author": "Özdemir İ"})
+    assert same_work(pubmed, _as(first_author="İlkay Özdemir"))
+
+
+def test_titles_of_the_same_letters_are_one_title_across_two_dois():
+    # "5-HT1A" and "5-HT(1A)", the registry's record of a DOI the PubMed record does not give
+    assert same_work(_pm("Agonist binding at 5-HT1A autoreceptors in the raphe"),
+                     _as(title="Agonist binding at 5-HT(1A) autoreceptors in the raphe"))
 
 
 def test_a_two_letter_family_name_ending_another_is_another_author():

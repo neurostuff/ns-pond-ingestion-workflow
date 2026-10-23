@@ -155,6 +155,7 @@ def test_a_plan_the_catalog_no_longer_matches_is_refused_whole(setup):
     assert "3 of 4 operations would apply" in result.output
     assert _db(tmp_path) == before
     assert not (tmp_path / "m.jsonl").exists()
+    assert not (tmp_path / "b.sqlite").exists()
 
 
 @pytest.mark.vcr()
@@ -202,6 +203,7 @@ def test_a_plan_whose_result_breaks_an_invariant_is_not_committed(setup):
     assert "0 refused, 1 violations the plan makes. Nothing was written" in result.output
     assert _db(tmp_path) == before
     assert not (tmp_path / "m.jsonl").exists()
+    assert not (tmp_path / "b.sqlite").exists()
 
 
 def test_the_pmids_are_checked_against_pubmed_so_pubmed_is_required(setup):

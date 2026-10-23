@@ -39,11 +39,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:16 GMT
+      - Fri, 23 Oct 2026 03:49:48 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006CA0525B3AEA.1.1.m_1
+      - 1D348A0161E733550000435BC1BDD985.1.1.m_1
       ncbi-sid:
-      - ECF51DD2548F8C83_F100SID
+      - 739BC68ECD3E52F6_9569SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -274,7 +274,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:17 GMT
+      - Fri, 23 Oct 2026 03:49:49 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -304,24 +304,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuroimage.2004.05.015&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.neuroimage.2004.05.015%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 03:49:49 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -329,20 +335,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:17 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -468,7 +466,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:37:17 GMT
+      - Fri, 23 Oct 2026 03:49:49 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -498,80 +496,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: ''
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      connection:
+      Connection:
       - keep-alive
-      content-length:
-      - '0'
-      date:
-      - Thu, 22 Oct 2026 20:37:17 GMT
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
-  response:
-    body:
-      string: ''
-    headers:
-      connection:
-      - keep-alive
-      content-length:
-      - '0'
-      date:
-      - Thu, 22 Oct 2026 20:37:18 GMT
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
-    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 03:49:51 GMT
+      Transfer-Encoding:
+      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -579,20 +527,12 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:37:20 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      transfer-encoding:
-      - chunked
       x-api-pool:
       - public-array
       x-concurrency-limit:
@@ -644,11 +584,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:37:20 GMT
+      - Fri, 23 Oct 2026 03:49:51 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005EBA27004F32.1.1.m_1
+      - 1D348A0161E733550000305BC7CA673E.1.1.m_1
       ncbi-sid:
-      - ECF51DD2548F8C83_F100SID
+      - 739BC68ECD3E52F6_9569SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -663,6 +603,138 @@ interactions:
       - '3'
       x-ratelimit-remaining:
       - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.neuroimage.2004.05.015%22%5Bdoi%5D+OR+%2210.1016%2Fj.neuropsychologia.2011.03.007%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQwU7DMAy98xWRz1VImhXEzlw4gXbddgiNaTN1SYmTwTT133HHJhDkFL/nZz+/
+        E/RoHSZYniAfR4QlIKFNbQ8VHDCRj4ExJQ1M1ZVKSGXIs6SNJfAHau5OmPf286egbNPMKS69Gzxx
+        sYZaL/TCGMOgbkzdmMbAtoKcbKDBZl5HODcy9l4wHX8RPGsDWkmt9N3tTgYsKfq97VDWSi2kaqTS
+        zQbWL+WVt/WYxNPjVjyvxD/VSMe2j0PsvGWt1lIZqdT9Xy17/LAp+NB9uz/B2CdLSL4LMaG72owZ
+        3YUJMb9xJhcqljyWvEcidknz+SuknHx7vlPYtvd4QCfFOSthgxPnRIV1u0I8VeQoVCUe+MF2mqab
+        LwAAAP//AwBhQBuesAEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 03:49:51 GMT
+      ncbi-phid:
+      - 1D348A0161E733550000615BC8D8CBFE.1.1.m_1
+      ncbi-sid:
+      - 739BC68ECD3E52F6_9569SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.neuroimage.2004.05.015%22%5Bdoi%5D+OR+%2210.1016%2Fj.neuropsychologia.2011.03.007%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQwU7DMAy98xWRz1VImhXEzlw4gXbddgiNaTN1SYmTwTT133HHJhDkFL/nZz+/
+        E/RoHSZYniAfR4QlIKFNbQ8VHDCRj4ExJQ1M1ZVKSGXIs6SNJfAHau5OmPf286egbNPMKS69Gzxx
+        sYZaL/TCGMOgbkzdmMbAtoKcbKDBZl5HODcy9l4wHX8RPGsDWkmt9N3tTgYsKfq97VDWSi2kaqTS
+        zQbWL+WVt/WYxNPjVjyvxD/VSMe2j0PsvGWt1lIZqdT9Xy17/LAp+NB9uz/B2CdLSL4LMaG72owZ
+        3YUJMb9xJhcqljyWvEcidknz+SuknHx7vlPYtvd4QCfFOSthgxPnRIV1u0I8VeQoVCUe+MF2mqab
+        LwAAAP//AwBhQBuesAEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 03:49:51 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC7500006044F7C83B02.1.1.m_1
+      ncbi-sid:
+      - 739BC68ECD3E52F6_9569SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

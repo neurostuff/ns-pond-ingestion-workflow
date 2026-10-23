@@ -17,22 +17,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:38:27 GMT
+      - Fri, 23 Oct 2026 03:47:51 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000043B110B78F8B.1.1.m_1
+      - 1D348A0161E7335500003D5AE3AB7EEB.1.1.m_1
       ncbi-sid:
-      - 907DDF59A0A13A64_3F30SID
+      - 6876EE43DC999A9E_A065SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -67,7 +67,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -171,7 +171,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:52 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -201,32 +201,30 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
+      Accept:
       - '*/*'
-      accept-encoding:
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.09.27.559792&rows=100&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.09.27.559792%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAA/82WUW+CMBDHv0ufaS1FZvR5L0uW7ANMH6qcsxOB9YrOEL77isO4uAirNmZvpFd+
-        /R/933EVQSNNiWRC8jUJyAYQ5RtQsy/Aru1yvaapQvMjtAWNKs9sNGSc8VOETCqylAswllbVATG5
-        kSnVgGXaLA0Dogxs7NNrRR5fnhoAZ6M4Hk4HkKolsLGIHyIWWqKGVJrDIRVReDyS5svDyyo56kty
-        ZXer5JsVhjycDgQXEeNjJkYsjsejsbA7JCJoAwmd7+1WLOfvsDCkngVkJfGUUQe71fl80vmbm7fY
-        wAUTXcS06jRsFewcxYUMZehHYIPi/lCX83VGXb6BWd3QOkwm7mcyt7R6zXqVHYQ/Owh/dhD+7CA6
-        7eCMGvYV5XUto7PWrQULDYVWmenzoBO5pxTOCqFJ7ijDe7O1KaLcAJV4c3pn2D8Wr1PBubmmQ2Ff
-        M7r3Hfzrj3VDl4v8NYHIX2uKOvuJM8pT7406/wjWsrN2XKMFaFocxruQ84B8lKD3jUvt4KgNVVkC
-        n2RiAwhSL1bUgG5mvKxM07quvwALvhZWYAoAAA==
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcwNzczNTk0MzAwMCwxMC43NTU0JTJGZWxpZmUuOTI1NjMuMw==","total-results":3,"items":[{"DOI":"10.7554\/elife.92563","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-same-as":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}]}},{"DOI":"10.7554\/elife.92563.2","relation":{"is-version-of":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa4","asserted-by":"object"}],"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]}},{"DOI":"10.7554\/elife.92563.3","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa4","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa1","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
     headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '465'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 03:47:52 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -234,16 +232,8 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      connection:
-      - keep-alive
       content-encoding:
       - gzip
-      content-length:
-      - '427'
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -289,15 +279,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4e4ad99b29cd-DFW
+      - a4edc34f1bf2ee9e-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:52 GMT
       expires:
-      - Thu, 22 Oct 2026 20:53:09 GMT
+      - Fri, 23 Oct 2026 04:08:08 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563/transform
       nel:
@@ -305,7 +295,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=98nucRIbtlAb77U3fFIPlBMQnvbXWh2xQpf4IJfiJ4RE1nME%2FYXcf1rd915G2ceKA%2FDU1qkGRiRatNbRpB%2FfoOzXLv4XILeScWRR9%2BTY5SW6JLjlzA%2FPps8%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sZ5y5JS2r67EUqxtqMqu7wYqVlPDJ5H6LDeWkE3MWp8NS7JEs2%2B0OZIzIUMs48xI4ukAhrg5p7VHO53FUslZg2srk0f5x1p%2FiU2SftVZIlbK1je0udxinxc%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -509,7 +499,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:52 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -555,15 +545,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4eb4e4b7bfa29cd-DFW
+      - a4edc3504f58ee9e-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:53 GMT
       expires:
-      - Thu, 22 Oct 2026 21:27:30 GMT
+      - Fri, 23 Oct 2026 04:03:26 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563.3/transform
       nel:
@@ -571,7 +561,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=ir4MDXTjYlm2m8YEe2CCBvUhRqhjV27HAByyg190qXhGxaj5Nlcm27JRy7yjR%2FlaOml3P1cWslB0jKLxAJl1cXdDepKdFOyj5w4hkV0fB%2BWtcSNKUxvEhnQ%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=t3ynYVCqEP6uSiZ3tKVMbw3SWxwEygZ%2FHEdZetVT2mxcODyVUOE3bjlJPBXGXDHBMWrOUcarn%2FvTMHK2bp4HPLQFTwQCqnB9yzPckCQyb%2BLiEnDIXkwz3iY%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -775,7 +765,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:53 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -835,11 +825,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:38:27 GMT
+      - Fri, 23 Oct 2026 03:47:52 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005CBA933DECFB.1.1.m_1
+      - 1D3238309BD9AC750000664412E5535D.1.1.m_1
       ncbi-sid:
-      - 907DDF59A0A13A64_3F30SID
+      - 6876EE43DC999A9E_A065SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -900,11 +890,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:53 GMT
       ncbi-phid:
-      - 1D348A0161E73355000046BA940F0D1D.1.1.m_1
+      - 1D348A0161E7335500004C5AE5B9854E.1.1.m_1
       ncbi-sid:
-      - 907DDF59A0A13A64_3F30SID
+      - 6876EE43DC999A9E_A065SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -976,11 +966,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 20:38:28 GMT
+      - Fri, 23 Oct 2026 03:47:53 GMT
       ncbi-phid:
-      - 1D348A0161E7335500004FBA9520C081.1.1.m_1
+      - 1D33C9B11FD1F9850000565136E6782A.1.1.m_1
       ncbi-sid:
-      - 907DDF59A0A13A64_3F30SID
+      - 6876EE43DC999A9E_A065SID
       referrer-policy:
       - origin-when-cross-origin
       server:

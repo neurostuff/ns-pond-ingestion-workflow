@@ -11,13 +11,13 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 from urllib.parse import quote
 
 import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .crossref import CROSSREF_LIST_REQUEST_LIMIT, CROSSREF_REQUEST_LIMIT, CrossrefClient
+from .crossref import CROSSREF_REQUEST_LIMIT, CrossrefClient
 from .pubmed import in_supplement
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,7 @@ class RegisteredWork:
     journal: Optional[str] = None
     #: Published in a supplement issue: a meeting's abstracts.
     supplement: bool = False
+    doi: Optional[str] = None
 
 
 def _first(value) -> Optional[str]:
@@ -82,12 +83,12 @@ def _registered(csl: Dict) -> RegisteredWork:
                           issns=tuple([issns] if isinstance(issns, str) else issns),
                           journal=_first(csl.get("container-title")),
                           supplement=in_supplement(csl.get("issue"), csl.get("volume"),
-                                                   csl.get("page")))
+                                                   csl.get("page")),
+                          doi=csl.get("DOI"))
 
 
 #: The most redirects doi.org and an agency may send one request through.
 MAX_REDIRECTS = 5
-_CROSSREF_WORKS = "https://api.crossref.org/works"
 
 
 class DoiRegistry:
@@ -100,11 +101,10 @@ class DoiRegistry:
         self._lock = threading.Lock()
         self._last = 0.0
 
-    def _pace(self, limit: int = CROSSREF_REQUEST_LIMIT) -> None:
-        # doi.org hands a Crossref DOI's record to Crossref, which limits a caller's rate,
-        # and its list queries' more.
+    def _pace(self) -> None:
+        # doi.org hands a Crossref DOI's record to Crossref, which limits a caller's rate.
         with self._lock:
-            wait = self._last + 1 / limit - time.monotonic()
+            wait = self._last + 1 / CROSSREF_REQUEST_LIMIT - time.monotonic()
             if wait > 0:
                 time.sleep(wait)
             self._last = time.monotonic()
@@ -145,22 +145,9 @@ class DoiRegistry:
         response.raise_for_status()
         return _registered(response.json())
 
-    @retry(retry=retry_if_exception(_retryable), stop=stop_after_attempt(6),
-           wait=wait_exponential(multiplier=1, max=30), reraise=True)
-    def relating(self, doi: str) -> Dict[str, List[str]]:
-        """The DOIs whose Crossref records relate them to this one, by relation type: the
-        other side of a relation the DOI's own record may not give back (a preprint's
-        is-preprint-of its paper without the paper's has-preprint)."""
-        self._pace(CROSSREF_LIST_REQUEST_LIMIT)
-        response = self._client.get(_CROSSREF_WORKS, params={
-            "filter": f"relation.object:{doi}", "select": "DOI,relation", "rows": "100"})
-        response.raise_for_status()
-        found: Dict[str, List[str]] = {}
-        for item in response.json()["message"]["items"]:
-            for kind, related in (item.get("relation") or {}).items():
-                if any((r.get("id") or "").lower() == doi.lower() for r in related):
-                    found.setdefault(kind, []).append(item["DOI"].lower())
-        return found
+    def relating(self, doi: str, kinds: Sequence[str]) -> Dict[str, List[str]]:
+        """The DOIs Crossref relates to this one by one of `kinds`, from their side."""
+        return self._crossref.relating(doi, kinds)
 
     def relations(self, doi: str) -> Dict[str, List[str]]:
         """The DOIs Crossref relates this one to, by relation type; {} for a DOI it lacks."""

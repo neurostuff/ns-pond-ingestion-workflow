@@ -4,7 +4,7 @@ and the licences publishers deposit, for many works at once."""
 from __future__ import annotations
 
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 from urllib.parse import quote
 
 import requests
@@ -23,6 +23,8 @@ CROSSREF_REQUEST_LIMIT = 10
 CROSSREF_LIST_REQUEST_LIMIT = 3
 #: DOIs per `filter=doi:...` list query: one page, and a URL well under any server's limit.
 CROSSREF_DOI_BATCH_SIZE = 50
+#: Records per page of a cursor-paged list query.
+CROSSREF_PAGE_ROWS = 1000
 #: The longest a Retry-After is waited out before the request counts as failed.
 _MAX_RETRY_AFTER = 120
 
@@ -74,6 +76,35 @@ class CrossrefClient:
         response = self._session.get(self.BASE_URL.rstrip("/"), params=params, timeout=60)
         response.raise_for_status()
         return response.json()["message"]["items"]
+
+    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
+           reraise=True)
+    def _page(self, params: Dict) -> Dict:
+        self._rate_limit_sleep(CROSSREF_LIST_REQUEST_LIMIT)
+        response = self._session.get(self.BASE_URL.rstrip("/"), params=params, timeout=60)
+        response.raise_for_status()
+        return response.json()["message"]
+
+    def relating(self, doi: str, kinds: Sequence[str]) -> Dict[str, List[str]]:
+        """The DOIs whose records relate them to this one by one of `kinds`, by kind: the
+        other side of a relation the DOI's own record may not give back (a preprint's
+        is-preprint-of its paper without the paper's has-preprint)."""
+        params = {"filter": ",".join([f"relation.object:{doi}",
+                                      *(f"relation.type:{kind}" for kind in kinds)]),
+                  "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
+        if self.email:
+            params["mailto"] = self.email
+        found: Dict[str, List[str]] = {}
+        while True:
+            message = self._page(params)
+            for item in message["items"]:
+                for kind, related in (item.get("relation") or {}).items():
+                    if kind in kinds and any((r.get("id") or "").lower() == doi.lower()
+                                             for r in related):
+                        found.setdefault(kind, []).append(item["DOI"].lower())
+            if len(message["items"]) < CROSSREF_PAGE_ROWS:
+                return found
+            params["cursor"] = message["next-cursor"]
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """Each asked work's licence deposits, verbatim in `raw_metadata["crossref"]`,
