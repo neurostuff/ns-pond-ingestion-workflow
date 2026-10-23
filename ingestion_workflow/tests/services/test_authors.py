@@ -88,6 +88,41 @@ def test_an_openalex_text_without_its_tie_takes_the_institutions_only_when_alone
     assert two.affiliations == [Affiliation(text="UT Austin"), Affiliation(text="Elsewhere")]
 
 
+def _person(display, raw, openalex_id="A5000000001", orcid=None, affiliation=None):
+    return {"author": {"id": openalex_id and "https://openalex.org/" + openalex_id,
+                       "display_name": display, "orcid": orcid},
+            "raw_author_name": raw, "institutions": [],
+            "raw_affiliation_strings": [affiliation] if affiliation else []}
+
+
+def test_openalex_s_list_is_the_printed_names_with_ids_only_for_the_same_person():
+    listed = _authors_from({"authorships": [
+        _person("Jerry Tang", "Tang, Jerry", orcid="https://orcid.org/" + ORCID),
+        _person("Mike Brügger", "Mike BrÃ¼gger", "A2"),
+        _person("T. de Broucker", "Thomas Debroucker", "A3"),
+        # OpenAlex gave this printed name another author's identity.
+        _person("Someone Else", "Ada Lovelace", "A4", orcid="https://orcid.org/" + ORCID),
+    ]})
+    assert [(a.name, a.openalex_id, a.orcid) for a in listed] == [
+        ("Jerry Tang", "A5000000001", ORCID), ("Mike Brügger", "A2", None),
+        ("Thomas Debroucker", "A3", None), ("Ada Lovelace", None, None)]
+
+
+def test_a_repeated_openalex_authorship_is_merged_into_the_first():
+    listed = _authors_from({"authorships": [
+        _person("Ada Lovelace", "Ada Lovelace", "A1", affiliation="Lab A"),
+        _person("Charles Babbage", "Charles Babbage", "A2"),
+        _person("Ada Lovelace", "Ada Lovelace", "A1", affiliation="Lab B"),
+        _person("Mary Somerville", "Mary Somerville", None),
+        _person("Mary Somerville", "Mary Somerville", "A3"),
+        # Two people of one name, each with their own id, stay two.
+        _person("Wei Wang", "Wei Wang", "A4"), _person("Wei Wang", "Wei Wang", "A5"),
+    ]})
+    assert [(a.name, a.openalex_id, [f.text for f in a.affiliations]) for a in listed] == [
+        ("Ada Lovelace", "A1", ["Lab A", "Lab B"]), ("Charles Babbage", "A2", []),
+        ("Mary Somerville", "A3", []), ("Wei Wang", "A4", []), ("Wei Wang", "A5", [])]
+
+
 def test_pubmed_gives_every_affiliation_and_the_orcid_without_the_address():
     authors = PubMedClient(email="x@example.org")._parse_authors({"Author": [{
         "LastName": "Lovelace", "ForeName": "Ada",
@@ -154,3 +189,25 @@ def test_without_openalex_the_list_is_pubmed_s():
     _decide_authors(metadata, {"pubmed": pubmed}, None, [_said("Ada Lovelace")])
     assert (metadata.authors_provider, [(a.name, a.corresponding) for a in metadata.authors]) \
         == ("pubmed", [("Ada Lovelace", True)])
+
+
+@pytest.mark.parametrize("said, email, marked", [
+    ("Clara Rodríguez Sabaté", None, "Clara Rodriguez‐Sabate"),   # glyphs and hyphens
+    ("Shinsuke Shimojo A", None, "Shinsuke Shimojo"),               # a trailing initial
+    ("Manuel Rodr\x13ıguez D\x13ıaz", None, "Manuel Rodriguez"),     # a double surname
+    ("Wang Zheng", None, "Zheng Wang"),                             # either way round
+    (None, "fumiko@example.org", "Fumiko Hoeft"),                   # the given name
+    (None, "zwang@example.org", "Zheng Wang"),                      # initials and surname
+])
+def test_a_decided_author_is_found_however_the_list_spells_them(said, email, marked):
+    listed = [Author(name=n) for n in (
+        "Clara Rodriguez‐Sabate", "Shinsuke Shimojo", "Manuel Rodriguez", "Zheng Wang",
+        "Fumiko Hoeft")]
+    marked_list, unpaired = mark_corresponding(listed, [_said(said, email)])
+    assert ([a.name for a in marked_list if a.corresponding], unpaired) == ([marked], [])
+
+
+def test_a_named_author_not_on_the_list_leaves_the_others_unknown():
+    marked, _ = mark_corresponding([Author(name="Ada Lovelace"), Author(name="Mary Somerville")],
+                                   [_said("Ada Lovelace"), _said("Charles Babbage")])
+    assert [a.corresponding for a in marked] == [True, None]
