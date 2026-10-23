@@ -59,7 +59,8 @@ _SPLIT_DIACRITIC = re.compile(r"(?<=[A-Za-z])[¨´`ˆ˜]\s?(?=[a-z])")
 
 def from_text(text: str) -> List[Found]:
     """Every (name, email) the correspondence notes in `text` give, each address once."""
-    # A PDF's text can break an address over a line: "c.gerloff@ uni-tuebingen.example", "c. hyatt@".
+    # A PDF's text can break an address over a line: "c.gerloff@ uni-tuebingen.example",
+    # "c. hyatt@".
     text = re.sub(r"\b([a-z][\w-]*\.)\s+(?=[\w.+'-]+@)", r"\1", re.sub(r"@\s+", "@", text))
     found: List[Found] = []
     taken = set()
