@@ -15,10 +15,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any, Dict, Mapping, NamedTuple, Optional, Sequence, Set, Tuple
 
-from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog
+from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog, Status
 
 from .scheduler import RunReport, run_stages
 from .stage import NO_TEXT, Context, Stage
+from .stages.extract import extraction_inputs
 
 Key = Tuple[str, str, str]
 
@@ -128,6 +129,16 @@ class _After(Context):
         return fresh
 
 
+def _read_source(artifact: Artifact) -> Optional[str]:
+    """The extraction source `artifact` is, or was read from; None for a stage whose
+    artifacts are not tied to one."""
+    if artifact.stage == "extract":
+        return artifact.source
+    if artifact.stage in ("passages", "triage"):
+        return (artifact.summary or {}).get("source") or None
+    return None
+
+
 @dataclass
 class StageCounts:
     """One stage's artifacts, by what storing the fingerprints does to them."""
@@ -146,6 +157,10 @@ class StageCounts:
     #: Made from an artifact that is rewritten, and not asked about, so left to go
     #: stale. A stage whose model is not served blocks, and asks about nothing.
     unasked: int = 0
+    #: Left stale, and no plan can ask about them: an extraction whose source the article
+    #: has no download for, and the passages and triage verdicts read from one. Reported;
+    #: a run never reads them, so they are no reason to refuse.
+    unreachable: int = 0
 
 
 @dataclass
@@ -190,13 +205,21 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
     for article_id, stage, _ in rewrites:
         made.setdefault(stage, set()).add(article_id)
     for stage in stages:
-        for by_source in ctx.catalog.artifacts(sorted(made.get(stage.requires, ())),
-                                               stage.name).values():
+        stale = ctx.catalog.artifacts(sorted(made.get(stage.requires, ())), stage.name)
+        downloads = ctx.catalog.artifacts(sorted(stale), "download")
+        for article_id, by_source in stale.items():
+            readable = extraction_inputs({s: d for s, d in downloads.get(article_id, {}).items()
+                                          if d.status is Status.OK})
             for artifact in by_source.values():
                 key = _key(artifact)
                 if (artifact.ok and artifact.fingerprint not in ("", NO_TEXT)
                         and key not in after.asked and key not in fresh_before):
-                    counts.setdefault(stage.name, StageCounts()).unasked += 1
+                    found = counts.setdefault(stage.name, StageCounts())
+                    source = _read_source(artifact)
+                    if source and source not in readable:
+                        found.unreachable += 1
+                    else:
+                        found.unasked += 1
     for stage, n in empty.items():
         found = counts.setdefault(stage, StageCounts())
         found.empty_unplanned = n - found.filled - found.empty_rerun
