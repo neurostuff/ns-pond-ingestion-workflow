@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from study_schema.models.paper_parse import License, ReportedCopy
+from study_schema.models.paper_parse import CorrespondingAuthor, License, ReportedCopy
 
 
 @dataclass
@@ -96,6 +96,10 @@ class ArticleMetadata:
     # When the first Crossref licence deposit left out for being embargoed starts to apply
     license_embargo_until: Optional[datetime] = None
 
+    # Whom the paper names to correspond with: a provider's own list, until the metadata
+    # service decides the paper's from every source
+    corresponding_authors: List[CorrespondingAuthor] = field(default_factory=list)
+
     def __post_init__(self) -> None:
         if self.abstract and self.abstract_provider is None:
             self.abstract_provider = self.source
@@ -105,7 +109,8 @@ class ArticleMetadata:
         Merge metadata from another source, filling in missing fields.
 
         Values from `self` take precedence over values from `other`. The licence
-        decisions are not merged: the metadata service makes them from every answer.
+        decisions and the corresponding authors are not merged: the metadata service makes
+        them from every answer.
 
         Parameters
         ----------
@@ -168,6 +173,7 @@ class ArticleMetadata:
             "reported_copies": [_dumped(copy) for copy in self.reported_copies],
             "license_embargo_until": (self.license_embargo_until.isoformat()
                                       if self.license_embargo_until else None),
+            "corresponding_authors": [_dumped(author) for author in self.corresponding_authors],
         }
 
     @classmethod
@@ -194,6 +200,8 @@ class ArticleMetadata:
                              for copy in data.get("reported_copies") or []],
             license_embargo_until=(datetime.fromisoformat(data["license_embargo_until"])
                                    if data.get("license_embargo_until") else None),
+            corresponding_authors=[CorrespondingAuthor.model_validate(author)
+                                   for author in data.get("corresponding_authors") or []],
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:

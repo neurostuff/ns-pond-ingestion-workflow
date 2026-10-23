@@ -32,6 +32,7 @@ from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
     CopyRoute,
     CopyVersion,
+    CorrespondingAuthor,
     License,
     MetadataSource,
     OaStatus,
@@ -52,6 +53,7 @@ from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
+from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.services.citations import JATS_SOURCES
 from ingestion_workflow.services.licenses import (
     HELD,
@@ -77,11 +79,13 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class HeldDownload:
-    """One ok download of an article: its source, the copy it holds, and its files."""
+    """One ok download of an article: its source, the copy it holds, its files, and the
+    text its extraction gave."""
 
     source: str
     copy: DownloadCopy
     files: Sequence[Path] = ()
+    text: Optional[Path] = None
 
 
 class MetadataService:
@@ -315,6 +319,8 @@ class MetadataService:
                                  paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
             except Undecided as exc:
                 self.undecided[slug] = exc
+            metadata.corresponding_authors = _decide_corresponding(
+                metadata, held.get(slug, ()), openalex.get(main_ident.slug))
         return results
 
     def require_licence_providers(self) -> None:
@@ -735,6 +741,31 @@ def _listed(by: MetadataSource, url: str, doi: Optional[str], version: Optional[
             location_type: Optional[str], license: Optional[str]) -> _Listed:
     route, version, server = located(url, doi, version, location_type)
     return _Listed(by, url, route, version, server, stated(by, license))
+
+
+def _decide_corresponding(
+    metadata: ArticleMetadata,
+    held: Sequence[HeldDownload],
+    openalex: Optional[ArticleMetadata],
+) -> List[CorrespondingAuthor]:
+    """The paper's corresponding authors: what the held copies' full text marks, in the
+    order their sources are tried, then PubMed's, then OpenAlex's.
+
+    PubMed's are read from its raw record, which its cache has always kept; OpenAlex's
+    record keeps only its list, so one cached before the list was kept has none."""
+    stated = []
+    for download in held:
+        try:
+            stated.append(corresponding_authors.from_held(download.source, download.files,
+                                                          download.text))
+        except Exception as exc:  # noqa: BLE001 - a copy that cannot be read names no one
+            logger.warning("Failed to read the %s copy's corresponding authors: %s",
+                           download.source, exc)
+    stated.append(corresponding_authors.from_pubmed(
+        metadata.raw_metadata.get(MetadataSource.pubmed.value) or {}))
+    if openalex is not None:
+        stated.append(openalex.corresponding_authors)
+    return corresponding_authors.decide(stated, [a.name for a in metadata.authors])
 
 
 def _decide_licenses(

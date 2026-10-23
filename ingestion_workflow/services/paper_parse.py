@@ -295,6 +295,7 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
     return pp.Bibliography(
         title=title,
         authors=[a.name for a in meta.authors] or None,
+        corresponding_authors=list(meta.corresponding_authors) or None,
         journal=meta.journal,
         publication_year=meta.publication_year,
         abstract=meta.abstract,

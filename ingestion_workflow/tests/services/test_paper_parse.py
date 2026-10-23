@@ -260,6 +260,16 @@ def test_both_files_validate_against_the_json_schema(written):
     assert "parse_omitted" not in summary
 
 
+def test_the_bibliography_carries_the_corresponding_authors_and_validates(tmp_path):
+    authors = [pp.CorrespondingAuthor(name="Jones, S", stated_by="openalex"),
+               pp.CorrespondingAuthor(email="jones@example.org", stated_by="jats")]
+    _, _, summary = _written(tmp_path, corresponding_authors=authors)
+    paper = json.loads((summary["dir"] / "parsed_paper.json").read_text())
+    _validate(paper, "parsed-paper")
+    assert [pp.CorrespondingAuthor.model_validate(a)
+            for a in paper["bibliography"]["corresponding_authors"]] == authors
+
+
 def test_the_parsed_paper_points_at_the_synced_text(written):
     paper, parse, _ = written
     assert paper["text_path"] == "processed/pubget/text.txt"
@@ -450,6 +460,17 @@ def test_the_preprint_s_pmid_the_catalog_holds_beside_the_paper_s_is_the_preprin
         "publication_status": "published"}
 
 
+def test_a_preprint_pmid_held_beside_a_preprint_record_keeps_both(tmp_path):
+    """A work indexed on two preprint servers: the catalog holds one server's PubMed record
+    beside the article, and the article's own PMID is the other's, typed Preprint. The
+    pairing is assembled from the two real records above."""
+    identifier = Identifier(pmid="34845462", preprint_pmids=["37808793"])
+    paper, _, _ = _written(tmp_path, identifier,
+                           raw_metadata=_pubmed(PREPRINT_RECORD, [("pubmed", "34845462")]))
+    assert paper["header"]["identifiers"] == {
+        "preprint_pmids": ["34845462", "37808793"], "publication_status": "preprint"}
+
+
 @pytest.mark.parametrize("source", ["semantic_scholar", "openalex", "elsevier", "jats"])
 def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source):
     paper, _, summary = _written(tmp_path, source=source, abstract="Faces activate the FFA.")
@@ -474,12 +495,18 @@ def test_a_metadata_record_without_a_study_schema_provider_is_not_parsed(tmp_pat
         _written(tmp_path, source=source)
 
 
-def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():
-    from ingestion_workflow.utils.preprints import PREPRINT_SERVERS
+#: Servers study_schema names by a record's type, never by a DOI prefix: an eLife reviewed
+#: preprint shares 10.7554 with the published articles, so `preprint_server` must not
+#: claim it.
+NOT_BY_PREFIX = {"elife"}
 
-    # eLife's reviewed preprints share their DOI prefix with its journal, so no pattern
-    # names them; a DOI is eLife's only once filed as a preprint's.
-    assert {s.name for s in PREPRINT_SERVERS} | {"elife"} == {s.value for s in pp.PreprintServer}
+
+def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():
+    from ingestion_workflow.utils.preprints import PREPRINT_SERVERS, preprint_server
+
+    assert {s.name for s in PREPRINT_SERVERS} == {
+        s.value for s in pp.PreprintServer} - NOT_BY_PREFIX
+    assert preprint_server("10.7554/elife.92563") is None
 
 
 def test_tables_carry_body_rows_and_triage(written):

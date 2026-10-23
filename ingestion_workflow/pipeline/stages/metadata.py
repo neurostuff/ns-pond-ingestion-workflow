@@ -22,6 +22,7 @@ from typing import Dict, Iterator, List, Optional, Sequence
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
 from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
+from ingestion_workflow.services.corresponding_authors import PDF_SOURCES
 
 from ..plan import StagePlan, Work
 from ..stage import Context, metadata_digests
@@ -30,7 +31,7 @@ from .sync import _copy_of
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 3
+METADATA_VERSION = 4
 
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
@@ -57,13 +58,18 @@ class MetadataStage:
             self._service = MetadataService(self.settings)
         return self._service
 
-    def fingerprint_for(self, downloads: Dict[str, Artifact]) -> str:
-        """The version, the providers, and the article's ok downloads, whose copies
-        each get a licence."""
+    def fingerprint_for(self, downloads: Dict[str, Artifact],
+                        extractions: Optional[Dict[str, Artifact]] = None) -> str:
+        """The version, the providers, the article's ok downloads, whose copies each get a
+        licence, and the extractions of its PDFs, whose text names the corresponding
+        authors."""
         held = sorted((source, artifact.fingerprint) for source, artifact in downloads.items()
                       if artifact.status is Status.OK)
+        texts = sorted((source, artifact.fingerprint)
+                       for source, artifact in (extractions or {}).items()
+                       if source in PDF_SOURCES and artifact.status is Status.OK)
         return fingerprint("metadata", METADATA_VERSION, tuple(self.settings.metadata_providers),
-                           tuple(held))
+                           tuple(held), *([tuple(texts)] if texts else []))
 
     def plan(
         self,
@@ -87,7 +93,7 @@ class MetadataStage:
                     with_passages[article_id] = found
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
-            fp = self.fingerprint_for(downloads.get(ref.id, {}))
+            fp = self.fingerprint_for(downloads.get(ref.id, {}), upstream.get(ref.id, {}))
             if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now):
                 plan.fresh += 1
                 continue
@@ -146,6 +152,8 @@ class MetadataStage:
 
         downloads = ctx.catalog.artifacts([work.article_id for work in by_slug.values()],
                                           "download")
+        extracted = ctx.catalog.artifacts([work.article_id for work in by_slug.values()],
+                                          "extract")
         held: Dict[str, List[HeldDownload]] = {}
         dois: Dict[str, List[str]] = {}
         # In the order the sources are tried, so the first held copy's record speaks first.
@@ -161,7 +169,8 @@ class MetadataStage:
                 files = DownloadResult.from_dict(payload).files if payload else []
                 held.setdefault(slug, []).append(HeldDownload(
                     source, _copy_of(download),
-                    [ctx.recorded_path(str(f.file_path)) for f in files]))
+                    [ctx.recorded_path(str(f.file_path)) for f in files],
+                    _text_of(ctx, extracted.get(work.article_id, {}).get(source))))
 
         # Outside the batch's own failures: no article can be decided until it is configured.
         self.service.require_licence_providers()
@@ -209,9 +218,19 @@ class MetadataStage:
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
                 } | _licenses(metadata)
-                | {"authors": len(metadata.authors), "sufficient": is_sufficient(metadata),
+                | {"authors": len(metadata.authors),
+                   "corresponding_authors": len(metadata.corresponding_authors),
+                   "sufficient": is_sufficient(metadata),
                    "digests": metadata_digests(payload)},
             )
+
+
+def _text_of(ctx: Context, extraction: Optional[Artifact]):
+    """The text a PDF copy's extraction gave, which its corresponding authors are read from."""
+    if extraction is None or extraction.status is not Status.OK:
+        return None
+    path = (ctx.payload(extraction) or {}).get("full_text_path")
+    return ctx.recorded_path(str(path)) if path else None
 
 
 def _licenses(metadata: ArticleMetadata) -> Dict:

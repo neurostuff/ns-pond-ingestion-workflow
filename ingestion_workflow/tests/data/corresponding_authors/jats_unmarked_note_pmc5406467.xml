@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article article-type="research-article"><front xmlns:xlink="http://www.w3.org/1999/xlink">
+    <article-meta>
+      <article-id pub-id-type="pmid">28496404</article-id>
+      <article-id pub-id-type="pmc">5406467</article-id>
+      <article-id pub-id-type="doi">10.3389/fnhum.2017.00202</article-id>
+      <title-group>
+        <article-title>GABA Concentrations in the Anterior Cingulate Cortex Are Associated with Fear Network Function and Fear Recovery in Humans</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Levar</surname>
+            <given-names>Nina</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+            <sup>1</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff2">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff3">
+            <sup>3</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff4">
+            <sup>4</sup>
+          </xref>
+          <xref ref-type="author-notes" rid="fn001">
+            <sup>*</sup>
+          </xref>
+          <uri xlink:type="simple" xlink:href="http://loop.frontiersin.org/people/375831/overview"/>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>van Leeuwen</surname>
+            <given-names>Judith M. C.</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+            <sup>1</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff5">
+            <sup>5</sup>
+          </xref>
+          <uri xlink:type="simple" xlink:href="http://loop.frontiersin.org/people/432343/overview"/>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Puts</surname>
+            <given-names>Nicolaas A. J.</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff6">
+            <sup>6</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff7">
+            <sup>7</sup>
+          </xref>
+          <uri xlink:type="simple" xlink:href="http://loop.frontiersin.org/people/420631/overview"/>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Denys</surname>
+            <given-names>Damiaan</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+            <sup>1</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff2">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff3">
+            <sup>3</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff4">
+            <sup>4</sup>
+          </xref>
+          <uri xlink:type="simple" xlink:href="http://loop.frontiersin.org/people/45392/overview"/>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>van Wingen</surname>
+            <given-names>Guido A.</given-names>
+          </name>
+          <xref ref-type="aff" rid="aff1">
+            <sup>1</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff2">
+            <sup>2</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff3">
+            <sup>3</sup>
+          </xref>
+          <xref ref-type="aff" rid="aff4">
+            <sup>4</sup>
+          </xref>
+          <uri xlink:type="simple" xlink:href="http://loop.frontiersin.org/people/52852/overview"/>
+        </contrib>
+      </contrib-group>
+      <aff id="aff1">
+        <sup>1</sup>
+        <institution>Department of Psychiatry, Academic Medical Center</institution>
+        <country>Amsterdam, Netherlands</country>
+      </aff>
+      <aff id="aff2">
+        <sup>2</sup>
+        <institution>Brain Imaging Center, Academic Medical Center</institution>
+        <country>Amsterdam, Netherlands</country>
+      </aff>
+      <aff id="aff3">
+        <sup>3</sup>
+        <institution>Amsterdam Brain and Cognition, University of Amsterdam</institution>
+        <country>Amsterdam, Netherlands</country>
+      </aff>
+      <aff id="aff4">
+        <sup>4</sup>
+        <institution>Spinoza Center for Neuroimaging</institution>
+        <country>Amsterdam, Netherlands</country>
+      </aff>
+      <aff id="aff5">
+        <sup>5</sup>
+        <institution>Department of Psychiatry, University Medical Center Utrecht</institution>
+        <country>Utrecht, Netherlands</country>
+      </aff>
+      <aff id="aff6">
+        <sup>6</sup>
+        <institution>Russell H. Morgan Department of Radiology and Radiological Science, Johns Hopkins University</institution>
+        <country>Baltimore, MD, USA</country>
+      </aff>
+      <aff id="aff7">
+        <sup>7</sup>
+        <institution>FM Kirby Center for Functional Brain Imaging, Kennedy Krieger Institute</institution>
+        <country>Baltimore, MD, USA</country>
+      </aff>
+      <author-notes>
+        <fn fn-type="edited-by">
+          <p>Edited by: Joshua Oon Soo Goh, National Taiwan University, Taiwan</p>
+        </fn>
+        <fn fn-type="edited-by">
+          <p>Reviewed by: Shih-Wei Wu, National Yang-Ming University, Taiwan; Stefano Delli Pizzi, University of Chieti-Pescara, Italy; Ming-Tsung Tseng, National Taiwan University, Taiwan</p>
+        </fn>
+        <corresp id="fn001">*Correspondence: Nina Levar <email xlink:type="simple">levar.n@mail.example</email></corresp>
+      </author-notes>
+      </article-meta>
+  </front>
+  </article>
