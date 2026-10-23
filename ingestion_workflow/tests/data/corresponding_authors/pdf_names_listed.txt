@@ -8,7 +8,7 @@ ina
 
 6 Nathan S. Kline Institute for Psychiatric Research, Orangeburg, NY 10962, USA
 
-Corresponding authors: Yi-Zhuang Zou, Shu-Ping Tan. E-mail: yzouy@263.net, shupingtan@126.com
+Corresponding authors: Yi-Zhuang Zou, Shu-Ping Tan. E-mail: zou.y@mail263.example, tan.s@mail126.example
 
 - © Shanghai Institutes for Biological Sciences, CAS and Springer-Verlag Berlin Heidelberg 2013
 

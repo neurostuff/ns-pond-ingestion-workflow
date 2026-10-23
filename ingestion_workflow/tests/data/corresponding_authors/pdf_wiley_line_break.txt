@@ -6,7 +6,7 @@ Key words: corticospinal; pyramidal tract; plasticity; somatosensory cortex; mot
 
 ◆
 
-Contract grant sponsor: Deutsche Forschungsgemeinschaft (DFG). *Correspondence to: Dr. Christian Gerloff, Cortical Physiology Research Group, Department of General Neurology, Hertie Institute for Clinical Brain Research, Eberhard-Karls University, Hoppe-Seyler-Str. 3, D-72076 Tuebingen, Germany. E-mail: christian.gerloff@ uni-tuebingen.de; or Christoph Braun, MEG Center, Eberhard-Karls University, Otfried-Mueller Str. 47, D-72076 Tuebingen, Germany. E-mail: christoph.braun@uni-tuebingen.de
+Contract grant sponsor: Deutsche Forschungsgemeinschaft (DFG). *Correspondence to: Dr. Christian Gerloff, Cortical Physiology Research Group, Department of General Neurology, Hertie Institute for Clinical Brain Research, Eberhard-Karls University, Hoppe-Seyler-Str. 3, D-72076 Tuebingen, Germany. E-mail: c.gerloff@ uni-tuebingen.example; or Christoph Braun, MEG Center, Eberhard-Karls University, Otfried-Mueller Str. 47, D-72076 Tuebingen, Germany. E-mail: c.braun@uni-tuebingen.example
 
 Received for publication 7 May 2005; Accepted 6 September 2005 DOI: 10.1002/hbm.20220
 

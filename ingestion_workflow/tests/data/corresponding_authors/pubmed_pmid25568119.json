@@ -1,0 +1,82 @@
+{
+  "MedlineCitation": {
+    "PMID": {
+      "@Version": "1",
+      "#text": "25568119"
+    },
+    "Article": {
+      "AuthorList": {
+        "@CompleteYN": "Y",
+        "Author": [
+          {
+            "@ValidYN": "Y",
+            "LastName": "Neta",
+            "ForeName": "Maital",
+            "Initials": "M",
+            "AffiliationInfo": {
+              "Affiliation": "Department of Psychology, University of Nebraska-Lincoln, Lincoln, Nebraska 68588, neta.m@unl.example."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Miezin",
+            "ForeName": "Francis M",
+            "Initials": "FM",
+            "Identifier": {
+              "@Source": "ORCID",
+              "#text": "0000-0002-3806-2130"
+            },
+            "AffiliationInfo": {
+              "Affiliation": "Departments of Neurology, Radiology, Departments of Psychology and."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Nelson",
+            "ForeName": "Steven M",
+            "Initials": "SM",
+            "AffiliationInfo": {
+              "Affiliation": "VISN 17 Center of Excellence for Research on Returning War Veterans, Waco, Texas 76711."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Dubis",
+            "ForeName": "Joseph W",
+            "Initials": "JW",
+            "AffiliationInfo": {
+              "Affiliation": "Departments of Neurology."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Dosenbach",
+            "ForeName": "Nico U F",
+            "Initials": "NU",
+            "AffiliationInfo": {
+              "Affiliation": "Departments of Neurology."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Schlaggar",
+            "ForeName": "Bradley L",
+            "Initials": "BL",
+            "AffiliationInfo": {
+              "Affiliation": "Departments of Neurology, Radiology, Pediatrics, Anatomy and Neurobiology, and."
+            }
+          },
+          {
+            "@ValidYN": "Y",
+            "LastName": "Petersen",
+            "ForeName": "Steven E",
+            "Initials": "SE",
+            "AffiliationInfo": {
+              "Affiliation": "Departments of Neurology, Radiology, Anatomy and Neurobiology, and Neurosurgery, Washington University School of Medicine, Departments of Psychology and Biomedical Engineering, Washington University, St Louis, Missouri 63110, and."
+            }
+          }
+        ]
+      }
+    }
+  }
+}

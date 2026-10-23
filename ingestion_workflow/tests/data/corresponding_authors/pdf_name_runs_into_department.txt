@@ -10,7 +10,7 @@ Department of Neuroscience, University of Sheffield, Beech Hill Road, Sheffield,
 
 Yorkshire, S10 2RX, UK
 
-Email: a.venneri@sheffield.ac.uk
+Email: a.venneri@sheffield.example
 
 Tel: +44 114 271 3430
 

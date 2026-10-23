@@ -17,7 +17,7 @@ def from_jats(root: etree._Element) -> List[CorrespondingAuthor]:
     A marked author is one with `@corresp="yes"` or an `xref` to a `<corresp>` note. Their
     email is their own `<email>`, else the one in that note that is theirs (`_from_note`).
     An email in a note that no marked author takes belongs to the one author whose surname
-    the note prints before it, as Frontiers' "Correspondence: Nina Levar levar.nina@..."
+    the note prints before it, as Frontiers' "Correspondence: Nina Levar levar.n@..."
     does without marking anyone; else it is kept without a name.
     """
     meta = root.find(".//article-meta")
@@ -84,7 +84,7 @@ def _from_note(note, name: Optional[str], others: set, taken: set,
     holds their surname; else the one the note follows their surname with, and no other
     author's (`others`) since the email before it -- "Correspondence to: Ding Ding; email:
     ...", not "Zhuo or Wang or Tu, e-mail: a or b or c"; else the one followed by their
-    initials, as in "x@ncu.edu.cn (L.X.)"; else, when they point at it and it holds one
+    initials, as in "x@ncu.example (L.X.)"; else, when they point at it and it holds one
     email for each of them, the one in their place."""
     if note is None:
         return None

@@ -5,10 +5,10 @@ to", "Address for correspondence:", "Reprint requests should be sent to", "Autho
 correspondence:" -- and its emails follow within a few lines. Each email belongs to the
 name that opens the stretch of text since the cue or the email before it:
 
-    Correspondence to: Dr. Gui Xue, National Key Laboratory ... E-mail: guixue@gmail.com
-    ... addressed to Vanessa Scholz at scholz_v@ukw.de or Lorenz Deserno at deserno_l@...
+    Correspondence to: Dr. Gui Xue, National Key Laboratory ... E-mail: xue.g@mail.example
+    ... addressed to Vanessa Scholz at scholz.v@ukw.example or Lorenz Deserno at deserno.l@...
     Authors for correspondence: Yuping Ning, E-mail: a@...; Xiaomei Zhong, E-mail: b@...
-    Correspondence: M. Peciña (pecinam@upmc.edu)
+    Correspondence: M. Peciña (pecina.m@upmc.example)
 
 Names that open one stretch together ("Feliberto de la Cruz and Karl-Jürgen Bär, ...
 Email: a and b") are paired with its emails in order when they are as many. Elsevier's
@@ -16,8 +16,8 @@ Email: a and b") are paired with its emails in order when they are as many. Else
 read this way is kept without one, never given a guess.
 
 Springer's PDFs print no cue. Its current layout stars the author above their address,
-"* Christine Lochner cl2@sun.ac.za"; its older one marks them "(*)" in the author list,
-"R. R. Wetherill (*) : A. R. Childress ... e-mail: rweth@...", with the address after
+"* Christine Lochner xq1002@sun.example"; its older one marks them "(*)" in the author list,
+"R. R. Wetherill (*) : A. R. Childress ... e-mail: xq1008@...", with the address after
 their affiliation. Each shape has its reader below, and all of them are read.
 """
 
@@ -59,7 +59,7 @@ _SPLIT_DIACRITIC = re.compile(r"(?<=[A-Za-z])[¨´`ˆ˜]\s?(?=[a-z])")
 
 def from_text(text: str) -> List[Found]:
     """Every (name, email) the correspondence notes in `text` give, each address once."""
-    # A PDF's text can break an address over a line: "gerloff@ uni-tuebingen.de", "chris. hyatt@".
+    # A PDF's text can break an address over a line: "c.gerloff@ uni-tuebingen.example", "c. hyatt@".
     text = re.sub(r"\b([a-z][\w-]*\.)\s+(?=[\w.+'-]+@)", r"\1", re.sub(r"@\s+", "@", text))
     found: List[Found] = []
     taken = set()
@@ -80,14 +80,14 @@ _ADDRESS = r"([\w.+'-]+@[\w-]+(?:\.[\w-]+)+)"
 
 
 def _starred(text: str) -> List[Found]:
-    """Springer's "* Christine Lochner cl2@sun.ac.za"."""
+    """Springer's "* Christine Lochner xq1002@sun.example"."""
     return [(_name(m.group(1)), email)
             for m in re.finditer(rf"(?:^|\s)[*⁎]\s*{_PERSON}\s+{_ADDRESS}", text)
             for email in emails(m.group(2))]
 
 
 def _marked(text: str) -> List[Found]:
-    """Springer's "R. R. Wetherill (*) : ... e-mail: rweth@...": the address that follows."""
+    """Springer's "R. R. Wetherill (*) : ... e-mail: xq1008@...": the address that follows."""
     found = []
     for m in re.finditer(rf"{_PERSON}\s*\(\*\)", text):
         after = re.search(rf"e-?mail:?\s*{_ADDRESS}", text[m.end():m.end() + _REACH], re.I)

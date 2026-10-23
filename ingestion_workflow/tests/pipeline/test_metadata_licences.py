@@ -136,7 +136,7 @@ def test_a_pdf_s_corresponding_authors_are_read_from_its_extracted_text(env, tmp
         CorrespondingAuthor(name="Christine Lochner", stated_by="openalex")])
     found = _decide_corresponding(ArticleMetadata(title=""), [pdf], openalex)
     assert [(a.name, a.email, a.stated_by) for a in found] == [
-        ("Christine Lochner", "cl2@sun.ac.za", "pdf")]
+        ("Christine Lochner", "xq1002@sun.example", "pdf")]
 
 
 def test_a_re_extracted_pdf_makes_the_metadata_stale(env):

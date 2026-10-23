@@ -25,7 +25,7 @@ def from_cards(root) -> List[Found]:
 def _theirs(name, note):
     """The address in a card's note that is the card's author's: the only one, the one
     spelling their surname, or the one the note pairs with their name. A note can be
-    shared: "Foxe or Molholm, ... foxe@... or molholm@..." sits in both cards."""
+    shared: "Foxe or Molholm, ... foxe.j@... or molholm.s@..." sits in both cards."""
     found = emails(note.text_content())
     if len(found) <= 1:
         return found[0] if found else None
