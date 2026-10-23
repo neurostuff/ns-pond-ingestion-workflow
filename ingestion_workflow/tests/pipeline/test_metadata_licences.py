@@ -12,7 +12,13 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.copies import copy_of
-from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
+from ingestion_workflow.models import (
+    DownloadCopy,
+    DownloadedFile,
+    DownloadResult,
+    DownloadSource,
+    FileType,
+)
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.pipeline.stage import Context, metadata_digests
@@ -100,6 +106,52 @@ def test_the_digests_recorded_are_those_of_the_payload(env):
     assert stored.ok and catalog.payload(stored)["title"]
     assert stored.summary["digests"] == metadata_digests(catalog.payload(stored))
 
+
+
+@pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
+def test_the_corresponding_authors_are_decided_from_every_source(env):
+    """The held manuscript's front matter marks no one, so OpenAlex's mark speaks."""
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT)
+    catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
+    _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+
+    assert outcome.summary["corresponding_authors"] == 1
+    stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
+    assert [(a.name, a.email, a.stated_by) for a in stored.corresponding_authors] == [
+        ("Stephen Zicha", None, "openalex")]
+
+
+def test_a_pdf_s_corresponding_authors_are_read_from_its_extracted_text(env, tmp_path):
+    """The PDF's own record names the author with an address; OpenAlex only names one."""
+    from ingestion_workflow.services.metadata import HeldDownload, _decide_corresponding
+    from study_schema.models.paper_parse import CopyAccess, CopyRoute, CorrespondingAuthor
+
+    text = tmp_path / "text.txt"
+    text.write_text((Path(__file__).parents[1] / "data" / "corresponding_authors" /
+                     "pdf_springer_starred.txt").read_text())
+    copy = DownloadCopy(route=CopyRoute.unrecorded, access=CopyAccess.unrecorded)
+    pdf = HeldDownload("pdf", copy, [tmp_path / "paper.pdf"], text)
+    openalex = ArticleMetadata(title="", corresponding_authors=[
+        CorrespondingAuthor(name="Christine Lochner", stated_by="openalex")])
+    found = _decide_corresponding(ArticleMetadata(title=""), [pdf], openalex)
+    assert [(a.name, a.email, a.stated_by) for a in found] == [
+        ("Christine Lochner", "cl2@sun.ac.za", "pdf")]
+
+
+def test_a_re_extracted_pdf_makes_the_metadata_stale(env):
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT, source="pdf", fixture=None)
+    stage = MetadataStage(settings)
+    downloads = catalog.artifacts([ref.id], "download")[ref.id]
+    first = stage.fingerprint_for(downloads, catalog.artifacts([ref.id], "extract")[ref.id])
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pdf", fingerprint="ex-2",
+                            payload={"slug": ref.identifier.slug, "source": "pdf", "tables": [],
+                                     "identifier": ref.identifier.to_dict(),
+                                     "extracted_at": "2026-10-23T00:00:00"},
+                            summary={"tables": 0})])
+    second = stage.fingerprint_for(downloads, catalog.artifacts([ref.id], "extract")[ref.id])
+    assert second != first
 
 def test_a_new_or_changed_download_makes_the_licences_stale(env):
     settings, catalog = env

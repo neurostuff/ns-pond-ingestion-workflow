@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd" xmlns:bk="http://www.elsevier.com/xml/bk/dtd" xmlns:cals="http://www.elsevier.com/xml/common/cals/dtd" xmlns:ce="http://www.elsevier.com/xml/common/dtd" xmlns:ja="http://www.elsevier.com/xml/ja/dtd" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:sa="http://www.elsevier.com/xml/common/struct-aff/dtd" xmlns:sb="http://www.elsevier.com/xml/common/struct-bib/dtd" xmlns:tb="http://www.elsevier.com/xml/common/table/dtd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xocs="http://www.elsevier.com/xml/xocs/dtd" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:prism="http://prismstandard.org/namespaces/basic/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><coredata><prism:doi>10.1016/j.cub.2009.03.065</prism:doi><dc:title>Immobilization Impairs Tactile Perception and Shrinks Somatosensory Cortical Maps </dc:title></coredata><ce:author-group>
+               <ce:author>
+                  <ce:given-name>Silke</ce:given-name>
+                  <ce:surname>Lissek</ce:surname>
+                  <ce:cross-ref refid="aff1">
+                     <ce:sup loc="post">1</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="fn1">
+                     <ce:sup loc="post">7</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Claudia</ce:given-name>
+                  <ce:surname>Wilimzig</ce:surname>
+                  <ce:cross-ref refid="aff2">
+                     <ce:sup loc="post">2</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="aff5">
+                     <ce:sup loc="post">5</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="fn1">
+                     <ce:sup loc="post">7</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Philipp</ce:given-name>
+                  <ce:surname>Stude</ce:surname>
+                  <ce:cross-ref refid="aff1">
+                     <ce:sup loc="post">1</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Burkhard</ce:given-name>
+                  <ce:surname>Pleger</ce:surname>
+                  <ce:cross-ref refid="aff1">
+                     <ce:sup loc="post">1</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="aff6">
+                     <ce:sup loc="post">6</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Tobias</ce:given-name>
+                  <ce:surname>Kalisch</ce:surname>
+                  <ce:cross-ref refid="aff2">
+                     <ce:sup loc="post">2</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Christoph</ce:given-name>
+                  <ce:surname>Maier</ce:surname>
+                  <ce:cross-ref refid="aff3">
+                     <ce:sup loc="post">3</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Sören A.</ce:given-name>
+                  <ce:surname>Peters</ce:surname>
+                  <ce:cross-ref refid="aff4">
+                     <ce:sup loc="post">4</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Volkmar</ce:given-name>
+                  <ce:surname>Nicolas</ce:surname>
+                  <ce:cross-ref refid="aff4">
+                     <ce:sup loc="post">4</ce:sup>
+                  </ce:cross-ref>
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Martin</ce:given-name>
+                  <ce:surname>Tegenthoff</ce:surname>
+                  <ce:cross-ref refid="aff1">
+                     <ce:sup loc="post">1</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="cor1">
+                     <ce:sup loc="post">∗</ce:sup>
+                  </ce:cross-ref>
+                  
+               </ce:author>
+               <ce:author>
+                  <ce:given-name>Hubert R.</ce:given-name>
+                  <ce:surname>Dinse</ce:surname>
+                  <ce:cross-ref refid="aff2">
+                     <ce:sup loc="post">2</ce:sup>
+                  </ce:cross-ref>
+                  <ce:cross-ref refid="cor2">
+                     <ce:sup loc="post">∗∗</ce:sup>
+                  </ce:cross-ref>
+                  
+               </ce:author>
+               <ce:correspondence id="cor1">
+                  <ce:label>∗</ce:label>
+                  <ce:text>Corresponding author</ce:text>
+               </ce:correspondence>
+               <ce:correspondence id="cor2">
+                  <ce:label>∗∗</ce:label>
+                  <ce:text>Corresponding author</ce:text>
+               </ce:correspondence>
+               <ce:footnote id="fn1">
+                  <ce:label>7</ce:label>
+                  <ce:note-para>These authors contributed equally to this manuscript</ce:note-para>
+               </ce:footnote>
+            </ce:author-group>
+            </full-text-retrieval-response>

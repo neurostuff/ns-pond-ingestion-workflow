@@ -262,6 +262,16 @@ def test_both_files_validate_against_the_json_schema(written):
     assert "parse_omitted" not in summary
 
 
+def test_the_bibliography_carries_the_corresponding_authors_and_validates(tmp_path):
+    authors = [pp.CorrespondingAuthor(name="Jones, S", stated_by="openalex"),
+               pp.CorrespondingAuthor(email="jones@example.org", stated_by="jats")]
+    _, _, summary = _written(tmp_path, corresponding_authors=authors)
+    paper = json.loads((summary["dir"] / "parsed_paper.json").read_text())
+    _validate(paper, "parsed-paper")
+    assert [pp.CorrespondingAuthor.model_validate(a)
+            for a in paper["bibliography"]["corresponding_authors"]] == authors
+
+
 def test_the_parsed_paper_points_at_the_synced_text(written):
     paper, parse, _ = written
     assert paper["text_path"] == "processed/pubget/text.txt"

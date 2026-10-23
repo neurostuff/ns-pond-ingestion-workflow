@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article dtd-version="1.3" article-type="research-article"><front xmlns:xlink="http://www.w3.org/1999/xlink">
+    <article-meta>
+      <article-id pub-id-type="pmid">36497558</article-id>
+      <article-id pub-id-type="pmc">9738657</article-id>
+      <article-id pub-id-type="doi">10.3390/ijerph192315482</article-id>
+      <article-id pub-id-type="publisher-id">ijerph-19-15482</article-id>
+      <title-group>
+        <article-title>Abnormal Regional Spontaneous Neural Activity and Functional Connectivity in Unmedicated Patients with Narcolepsy Type 1: A Resting-State fMRI Study</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Wu</surname>
+            <given-names>Lanxiang</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Writing – original draft" vocab-term-identifier="https://credit.niso.org/contributor-roles/writing-original-draft/">Writing – original draft</role>
+          <xref rid="af1-ijerph-19-15482" ref-type="aff">1</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Zhan</surname>
+            <given-names>Qingqing</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Data curation" vocab-term-identifier="https://credit.niso.org/contributor-roles/data-curation/">Data curation</role>
+          <xref rid="af1-ijerph-19-15482" ref-type="aff">1</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Liu</surname>
+            <given-names>Qian</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Formal analysis" vocab-term-identifier="https://credit.niso.org/contributor-roles/formal-analysis/">Formal analysis</role>
+          <xref rid="af2-ijerph-19-15482" ref-type="aff">2</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Xie</surname>
+            <given-names>Suheng</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Visualization" vocab-term-identifier="https://credit.niso.org/contributor-roles/visualization/">Visualization</role>
+          <xref rid="af2-ijerph-19-15482" ref-type="aff">2</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Tian</surname>
+            <given-names>Sheng</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Visualization" vocab-term-identifier="https://credit.niso.org/contributor-roles/visualization/">Visualization</role>
+          <xref rid="af1-ijerph-19-15482" ref-type="aff">1</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Xie</surname>
+            <given-names>Liang</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Writing – review &amp; editing" vocab-term-identifier="https://credit.niso.org/contributor-roles/writing-review-editing/">Writing – review &amp; editing</role>
+          <xref rid="af1-ijerph-19-15482" ref-type="aff">1</xref>
+          <xref rid="c1-ijerph-19-15482" ref-type="corresp">*</xref>
+          <xref rid="fn1-ijerph-19-15482" ref-type="author-notes">†</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <name>
+            <surname>Wu</surname>
+            <given-names>Wei</given-names>
+          </name>
+          <role vocab="credit" vocab-identifier="https://credit.niso.org/" vocab-term="Writing – review &amp; editing" vocab-term-identifier="https://credit.niso.org/contributor-roles/writing-review-editing/">Writing – review &amp; editing</role>
+          <xref rid="af1-ijerph-19-15482" ref-type="aff">1</xref>
+          <xref rid="c1-ijerph-19-15482" ref-type="corresp">*</xref>
+          <xref rid="fn1-ijerph-19-15482" ref-type="author-notes">†</xref>
+        </contrib>
+      </contrib-group>
+      <contrib-group>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Berrigan</surname>
+            <given-names>David</given-names>
+          </name>
+          <role>Academic Editor</role>
+        </contrib>
+        <contrib contrib-type="editor">
+          <name>
+            <surname>Tempesta</surname>
+            <given-names>Daniela</given-names>
+          </name>
+          <role>Academic Editor</role>
+        </contrib>
+      </contrib-group>
+      <aff id="af1-ijerph-19-15482"><label>1</label>Department of Neurology, The Second Affiliated Hospital of Nanchang University, Nanchang 330006, China</aff>
+      <aff id="af2-ijerph-19-15482"><label>2</label>Imaging Department, The Second Affiliated Hospital of Nanchang University, Nanchang 330006, China</aff>
+      <author-notes>
+        <corresp id="c1-ijerph-19-15482"><label>*</label>Correspondence: <email>ndefy14067@ncu.edu.cn</email> (L.X.); <email>ndefy02019@ncu.edu.cn</email> (W.W.)</corresp>
+        <fn id="fn1-ijerph-19-15482">
+          <label>†</label>
+          <p>These authors contributed equally to this work.</p>
+        </fn>
+      </author-notes>
+      </article-meta>
+  </front>
+  </article>
