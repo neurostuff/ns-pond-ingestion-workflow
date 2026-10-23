@@ -50,8 +50,9 @@ dependencies = [
   # which resolve compares prose analysis names by, and keys.analysis_key, the
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
   # CopyAccess, the facts each download records about its copy, and CorrespondingAuthor.
-  # Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@8fe87a17226e154a31b52ad2fcef8d9ac9cfa732",
+  # Pinned to study_schema#52's head: main after it also holds #51, whose multivalued
+  # preprint identifiers this does not write yet.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@b09c3de50371983d7e833fb8152d72217b957a1a",
 ]
 
 [project.optional-dependencies]
