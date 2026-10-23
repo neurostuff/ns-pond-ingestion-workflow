@@ -4,13 +4,16 @@ its authors corresponds."""
 from __future__ import annotations
 
 import pytest
+import requests
 from study_schema.models.paper_parse import Affiliation, Institution
 
 from ingestion_workflow.clients.openalex import _authors_from
+from ingestion_workflow.clients.orcid import OrcidClient
 from ingestion_workflow.clients.pubmed import PubMedClient
+from ingestion_workflow.config import Settings
 from ingestion_workflow.models.metadata import ArticleMetadata, Author, CorrespondingAuthor
 from ingestion_workflow.services.corresponding_authors import mark_corresponding
-from ingestion_workflow.services.metadata import _decide_authors
+from ingestion_workflow.services.metadata import MetadataService, _decide_authors
 from ingestion_workflow.utils import authors as author_ids
 
 # ORCID's own documentation iD (a fictional researcher), so no real person is named.
@@ -211,3 +214,60 @@ def test_a_named_author_not_on_the_list_leaves_the_others_unknown():
     marked, _ = mark_corresponding([Author(name="Ada Lovelace"), Author(name="Mary Somerville")],
                                    [_said("Ada Lovelace"), _said("Charles Babbage")])
     assert [a.corresponding for a in marked] == [True, None]
+
+
+class _Answer:
+    def __init__(self, status, body=None):
+        self.status_code, self._body = status, body
+
+    def json(self):
+        return self._body
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise requests.HTTPError(response=self)
+
+
+def test_orcid_gives_a_record_s_verified_addresses_primary_first(monkeypatch):
+    client = OrcidClient()
+    monkeypatch.setattr(client._session, "get", lambda url, timeout: _Answer(200, {"email": [
+        {"email": "old@example.org", "verified": True, "primary": False},
+        {"email": "unverified@example.org", "verified": False, "primary": False},
+        {"email": "ada@example.org", "verified": True, "primary": True}]}))
+    assert client.emails(ORCID) == ["ada@example.org", "old@example.org"]
+    monkeypatch.setattr(client._session, "get", lambda url, timeout: _Answer(404))
+    assert client.emails(ORCID) == []
+
+
+class _Orcid:
+    def __init__(self, answers):
+        self.answers, self.asked = answers, []
+
+    def emails(self, orcid):
+        self.asked.append(orcid)
+        answer = self.answers[orcid]
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
+
+
+def test_a_corresponding_author_without_an_address_takes_their_orcid_record_s(tmp_path):
+    service = MetadataService(Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c"))
+    service._orcid_client = _Orcid({ORCID: ["ada@example.org"],
+                                    "0000-0001-5109-3700": requests.ConnectionError()})
+    record = _record("openalex",
+                     Author(name="Ada Lovelace", orcid=ORCID, corresponding=True),
+                     Author(name="Mary Somerville", orcid="0000-0001-5109-3700",
+                            corresponding=True),
+                     Author(name="Charles Babbage", orcid="0000-0002-0000-0001",
+                            corresponding=False),
+                     Author(name="Caroline Herschel", orcid="0000-0002-0000-0002",
+                            corresponding=True, emails=["caroline@example.org"]))
+
+    service._add_orcid_emails([record])
+    service._add_orcid_emails([record])
+
+    # Asked once each, of corresponding authors with no address only; a failure is asked again.
+    assert service._orcid_client.asked == [ORCID, "0000-0001-5109-3700", "0000-0001-5109-3700"]
+    assert [a.emails for a in record.authors] == [
+        ["ada@example.org"], [], [], ["caroline@example.org"]]

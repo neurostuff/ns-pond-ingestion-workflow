@@ -24,9 +24,10 @@ import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
+import requests
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
@@ -41,6 +42,7 @@ from tenacity import RetryError
 
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.openalex import OpenAlexClient, _locations_from
+from ingestion_workflow.clients.orcid import OrcidClient
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
@@ -106,6 +108,7 @@ class MetadataService:
         self._pubmed_client: Optional[PubMedClient] = None
         self._openalex_client: Optional[OpenAlexClient] = None
         self._crossref_client = CrossrefClient(settings.crossref_email)
+        self._orcid_client = OrcidClient()
         #: Article slug -> why its licences could not be decided, for the last batch.
         self.undecided: Dict[str, Undecided] = {}
         #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
@@ -322,7 +325,29 @@ class MetadataService:
             _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
                             _decide_corresponding(metadata, held.get(slug, ()),
                                                   openalex.get(main_ident.slug)))
+        self._add_orcid_emails(results.values())
         return results
+
+    def _add_orcid_emails(self, records: Iterable[ArticleMetadata]) -> None:
+        """Give each corresponding author no source gave an address the public ones on
+        their ORCID record, each iD asked once and cached. A record that cannot be read
+        leaves its author without, and is asked again on a later run."""
+        cache_dir = self.settings.get_cache_dir("metadata") / ORCID_CACHE_DIR
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        for record in records:
+            for author in record.authors:
+                if not (author.corresponding and author.orcid and not author.emails):
+                    continue
+                cache_file = cache_dir / f"{author.orcid}.json"
+                if cache_file.exists():
+                    author.emails = json.loads(cache_file.read_text())
+                    continue
+                try:
+                    author.emails = self._orcid_client.emails(author.orcid)
+                except (requests.RequestException, RetryError) as exc:
+                    logger.warning("ORCID did not give %s's addresses: %s", author.orcid, exc)
+                    continue
+                cache_file.write_text(json.dumps(author.emails))
 
     def require_licence_providers(self) -> None:
         """Raise unless Semantic Scholar and OpenAlex are configured: without either, no
@@ -693,6 +718,8 @@ PROVIDER_CACHE_DIRS = {
     MetadataSource.crossref.value: "crossref-licenses",
     MetadataSource.openalex.value: "openalex-authorships",
 }
+#: The public addresses on each ORCID record asked about, by iD.
+ORCID_CACHE_DIR = "orcid-emails"
 
 _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 #: Why a provider that was down, or busy, left an article: asked again on a later run.
