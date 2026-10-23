@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
@@ -42,7 +44,6 @@ def test_a_malformed_pmcid_drops_only_its_own_record(caplog):
     assert "not a PMCID: 'PMC6865431.x'" in caplog.text
 
 
-
 @pytest.mark.vcr()
 def test_a_configured_email_and_tool_are_sent():
     identifiers = Identifiers([Identifier(doi=TWO_DOIS[1])])
@@ -52,9 +53,18 @@ def test_a_configured_email_and_tool_are_sent():
     assert identifiers.identifiers[0].pmid == "22848644"
 
 
-@pytest.mark.vcr()
+def _show_an_empty_email(request):
+    """VCR's query matcher drops a parameter with no value, so a bare `email=` would
+    match a request without one; naming it keeps it in what is matched."""
+    request.uri = re.sub(r"([?&]email=)(?=&|$)", r"\1EMPTY", request.uri)
+    return request
+
+
+# No query filter: it would reparse the query, drop the empty parameter and apply the
+# shared config's email placeholder, so the request would not be seen as sent.
+@pytest.mark.vcr(filter_query_parameters=[], before_record_request=_show_an_empty_email)
 def test_an_unset_email_is_not_sent_as_an_empty_parameter():
-    """Recorded with no email parameter: a request carrying a bare \ does not
+    """Recorded with no email parameter: a request carrying a bare email= does not
     match it."""
     identifiers = Identifiers([Identifier(doi=TWO_DOIS[1])])
     PubMedClient(email="", tool="ingestion-workflow-tests").get_ids("doi", identifiers)
