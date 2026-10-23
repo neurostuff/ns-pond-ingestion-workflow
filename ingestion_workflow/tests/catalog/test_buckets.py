@@ -49,6 +49,8 @@ V3 = [
     # eLife: the base DOI and its versions share one prefix with the preprint's
     ("elife", "pmid", "42663321"), ("elife", "doi", "10.7554/elife.106070"),
     ("elife", "alternate_doi", "10.7554/elife.106070.1"),
+    # a rekind in #141's plan made a preprint's DOI the paper's other DOI
+    ("rekinded", "pmid", "40462995"), ("rekinded", "alternate_doi", "10.1101/2019.12.17.19014415"),
     ("elife", "doi", "10.1101/2025.02.05.636581"),
     # PubMed holds two records of one paper, and PMC one of them
     ("twice", "pmid", "32341955"), ("twice", "duplicate_pmid", "32341954"),
@@ -74,6 +76,8 @@ def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog):
         ("journal", "doi", "10.1101/lm.022889.111"),
         ("elife", "pmid", "42663321"), ("elife", "doi", "10.7554/elife.106070"),
         ("elife", "alternative_doi", "10.7554/elife.106070.1"),
+        ("rekinded", "pmid", "40462995"),
+        ("rekinded", "preprint_doi", "10.1101/2019.12.17.19014415"),
         ("elife", "preprint_doi", "10.1101/2025.02.05.636581"),
         ("twice", "pmid", "32341955"), ("twice", "alternative_pmid", "32341954"),
         ("twice", "pmcid", "PMC7181890"), ("twice", "alternative_pmcid", "PMC7181891"),
@@ -81,7 +85,7 @@ def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog):
         ("rs", "preprint_doi", "10.21203/rs.3.rs-2556690/v2"),
         ("arxiv", "preprint_doi", "10.48550/arxiv.2111.08743"),
     }
-    assert "6 as preprint_doi" in caplog.text
+    assert "7 as preprint_doi" in caplog.text
     assert "biorxiv 2, ssrn" not in caplog.text and "researchsquare 2" in caplog.text
 
 
@@ -135,6 +139,9 @@ def test_what_each_article_presents_is_what_it_presented_before(tmp_path):
     assert (twice.pmid, twice.alternative_pmids, twice.alternative_pmcids) == (
         "32341955", ("32341954",), ("PMC7181891",))
     assert twice.pmids == ["32341955", "32341954"]
+    # a preprint's DOI #141 held as the paper's other DOI is the preprint's, not an alternative
+    assert (presented["rekinded"].alternative_dois, presented["rekinded"].preprint_dois) == (
+        (), ("10.1101/2019.12.17.19014415",))
     assert presented["journal"].doi == "10.1101/lm.022889.111"
     assert presented["journal"].preprint_dois == ()
     assert presented["rs"].preprint_dois == (
@@ -211,6 +218,24 @@ def test_the_preprint_s_id_anchors_before_the_base_study(catalog):
     # two PMIDs would be fused if both joined, so the record stays with the one it anchored on
     assert ref.id == preprint.id != based.id
     assert catalog.aliases(based.id, "neurostore") == ["8YJSSriJx23a"]
+
+
+def test_a_record_mixing_two_preprint_papers_ids_fuses_neither(catalog):
+    """36993482 and 37292981 are PubMed's records of two bioRxiv preprints. A record giving
+    the first's DOI with the second's PMID is a fault in the record, not one paper."""
+    a = catalog.register(Identifier(preprint_pmids=["36993482"],
+                                    preprint_dois=["10.1101/2023.02.15.528738"]))
+    b = catalog.register(Identifier(preprint_pmids=["37292981"],
+                                    preprint_dois=["10.1101/2023.05.01.538938"]))
+
+    ref = catalog.register(Identifier(preprint_pmids=["37292981"],
+                                      preprint_dois=["10.1101/2023.02.15.528738"]))
+
+    assert a.id != b.id and catalog.count_articles() == 2
+    assert ref.id in (a.id, b.id)
+    assert catalog.aliases(a.id, "preprint_pmid") == ["36993482"]
+    assert catalog.aliases(b.id, "preprint_pmid") == ["37292981"]
+    assert catalog.conflicts >= 1
 
 
 def test_several_preprint_records_of_one_paper_are_held_together(catalog):
@@ -293,7 +318,7 @@ def _header_identifiers(identifier):
     from ingestion_workflow.models import ArticleMetadata
     from ingestion_workflow.services.paper_parse import article_identifiers
 
-    return article_identifiers(identifier, [], ArticleMetadata(title="T"))
+    return article_identifiers(identifier, ArticleMetadata(title="T"))
 
 
 def test_an_elife_doi_the_catalog_holds_as_a_preprint_s_is_never_the_version_of_record_s(catalog):

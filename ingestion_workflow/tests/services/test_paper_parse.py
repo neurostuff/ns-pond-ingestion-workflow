@@ -385,7 +385,7 @@ def test_a_preprint_server_s_doi_is_a_preprint_s(tmp_path, identifier, expected)
     assert paper["header"]["identifiers"] == expected
 
 
-def test_two_doi_rows_of_a_version_of_record_are_not_reduced_to_one(tmp_path):
+def test_two_doi_rows_of_a_version_of_record_are_not_written(tmp_path):
     """The catalog holds two `doi` rows for 298 articles, most of them two works fused; only
     a repair says one is the other's alternative."""
     with pytest.raises(ValueError, match="two DOIs of a version of record"):

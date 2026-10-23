@@ -309,8 +309,7 @@ class MetadataService:
                 metadata.raw_metadata["crossref"] = crossref_by_doi
             if works:
                 metadata.raw_metadata["openalex"] = works
-            ids = article_identifiers(item.identifier, [journal[slug]] if journal[slug] else [],
-                                      metadata)
+            ids = article_identifiers(item.identifier, metadata)
             try:
                 _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi, works,
                                  paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)

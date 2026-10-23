@@ -238,6 +238,14 @@ def test_a_title_match_is_kept_when_its_first_author_is_on_the_page():
     assert pdf.found_by == "title match (openalex)"
 
 
+def test_a_title_match_with_only_a_preprint_s_doi_is_kept_by_that_doi():
+    pdf = _unprinted()
+    match_titles([pdf], [("openalex", lambda t: [
+        _candidate(TITLE, ["Frank Schneider"], doi="10.1101/2025.05.13.653896")])])
+    assert pdf.doi == "10.1101/2025.05.13.653896"
+    assert pdf.found_by == "title match (openalex)"
+
+
 def test_a_title_match_by_someone_else_is_rejected_and_the_next_provider_asked():
     pdf = _unprinted()
     wrong = [_candidate(TITLE, ["Pat Nobody"], doi="10.1/wrong")]

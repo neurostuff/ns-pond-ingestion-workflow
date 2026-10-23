@@ -74,7 +74,7 @@ class ParseInputs:
     article_id: str
     #: The copy the text was read from, as its download recorded it, with its licence.
     text_copy: pp.HeldCopy
-    #: Every version-of-record DOI row the catalog holds for the article.
+    #: Every version-of-record DOI row the catalog holds for the article, of which one is allowed.
     dois: Sequence[str]
     base_study_id: Optional[str] = None
     #: The triage payload: `is_meta_analysis`, `publication_types`, `tables[]`.
@@ -188,6 +188,11 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
     text_file = _text_file(root, source)
     if text_file is None:
         return None, None, {}
+    # Two `doi` rows are two papers, or one the catalog has not been told is one: only an
+    # identity repair says which is an alternative, so the article is not written until then.
+    if len(set(inputs.dois)) > 1:
+        raise ValueError(
+            f"the article holds two DOIs of a version of record: {sorted(set(inputs.dois))}")
     raw = text_file.read_bytes()
     text = _Text(raw.decode("utf-8", errors="replace"))
 
@@ -221,7 +226,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            article_identifiers(content.identifier, inputs.dois, meta),
+            article_identifiers(content.identifier, meta),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -536,20 +541,16 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def article_identifiers(identifier, dois: Sequence[str], meta):
+def article_identifiers(identifier, meta):
     """The identifiers of the article, each in the bucket the catalog holds it in: the
     version of record's (`doi`, `pmid`, `pmcid`), a preprint's, and every other id of the
     paper's, which only the catalog says (`alternative_*`).
 
-    `dois` are the catalog's `doi` aliases. Two of them are two papers, or one the catalog
-    has not been told is one: ValueError, until a repair settles which is an alternative.
     The PMID of a PubMed record typed `Preprint`, and the PMCID that record lists, are a
     preprint's even where the catalog holds them as the version of record's.
     """
     from ingestion_workflow.pipeline.stage import publication_types
 
-    if len(set(dois)) > 1:
-        raise ValueError(f"the article holds two DOIs of a version of record: {sorted(dois)}")
     if identifier.pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
         filed = {"pmid": None, "preprint_pmids": (*identifier.preprint_pmids, identifier.pmid)}
         if identifier.pmcid and identifier.pmcid == _pubmed_pmcid(meta):

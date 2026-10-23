@@ -228,7 +228,8 @@ class Catalog:
         or an alternative.
 
         A DOI alias of a preprint server was a `doi` beside the journal's, and the one a
-        later row presented; it is a `preprint_doi` now. The kinds that held a paper's other
+        later row presented; it is a `preprint_doi` now, and so is one held as the paper's other
+        DOI, which a preprint's is not. The kinds that held a paper's other
         DOI and its duplicate PubMed and PMC records are the alternative kinds. No merge is
         needed: the new kinds start empty, so no (kind, value) is taken, and no article is
         given or loses an id, only a kind of it.
@@ -237,11 +238,12 @@ class Catalog:
                                     (new, old)).rowcount
                   for old, new in RENAMED_KINDS.items()}
         servers: Dict[str, int] = {}
-        for row in conn.execute("SELECT value FROM aliases WHERE kind='doi'").fetchall():
+        for row in conn.execute("SELECT kind, value FROM aliases "
+                                "WHERE kind IN ('doi', 'alternative_doi')").fetchall():
             server = preprint_server(row["value"])
             if server:
-                conn.execute("UPDATE aliases SET kind='preprint_doi' WHERE kind='doi' AND value=?",
-                             (row["value"],))
+                conn.execute("UPDATE aliases SET kind='preprint_doi' WHERE kind=? AND value=?",
+                             (row["kind"], row["value"]))
                 servers[server] = servers.get(server, 0) + 1
         counts["preprint_doi"] = sum(servers.values())
         logger.warning("catalog: aliases held by bucket: %s; preprint DOIs by server: %s",
@@ -371,9 +373,11 @@ class Catalog:
     #: paper has a preprint's DOI beside its journal's. It has one journal DOI,
     #: though, which `_journal_dois` guards.
     SINGULAR = ("pmid", "pmcid")
-    #: Kinds two articles may not both hold a value of and be merged: each is one
-    #: paper's, and two neurostore ids are two base studies.
-    ONE_EACH = SINGULAR + ("neurostore",)
+    #: Kinds two articles may not both hold different values of and be merged: each is one
+    #: paper's, and two neurostore ids are two base studies. One article may hold several
+    #: preprint PMIDs and PMCIDs, one for each server that indexes the paper, but two
+    #: articles holding different ones are two papers, whatever else joins them.
+    ONE_EACH = SINGULAR + ("preprint_pmid", "preprint_pmcid", "neurostore")
 
     def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
         """Register articles, adding aliases to existing ones. Idempotent.

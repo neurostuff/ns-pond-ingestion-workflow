@@ -389,9 +389,9 @@ class OpenAlexClient:
             answered = set()
             for work in payload.get("results", []) or []:
                 ids = _identifier_from(work.get("ids"), ["doi"])
-                if ids.doi in batch:
-                    answered.add(ids.doi)
-                    found[ids.doi] = _cited_work(work)
+                if ids.asking_doi in batch:
+                    answered.add(ids.asking_doi)
+                    found[ids.asking_doi] = _cited_work(work)
             for doi, work in self._works_asked_singly(batch, answered, "ids,publication_year,authorships"):
                 found[doi] = _cited_work(work)
         return found

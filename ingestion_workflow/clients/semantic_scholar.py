@@ -44,6 +44,14 @@ def _paper_identifier(external_ids: Dict, paper_id: Optional[str]) -> Optional[I
         return None
 
 
+def request_id(identifier: Identifier) -> Optional[str]:
+    """The id a batch request names the paper by: its DOI (a preprint's when it has no other),
+    else its PMID."""
+    if identifier.asking_doi:
+        return f"DOI:{identifier.asking_doi}"
+    return f"PMID:{identifier.pmid}" if identifier.pmid else None
+
+
 class SemanticScholarClient:
     """Client for Semantic Scholar paper identifier enrichment."""
 
@@ -275,12 +283,8 @@ class SemanticScholarClient:
         request_ids: List[str] = []
 
         for identifier in identifiers:
-            if identifier.asking_doi:
-                req_id = f"DOI:{identifier.asking_doi}"
-                request_map[req_id] = identifier
-                request_ids.append(req_id)
-            elif identifier.pmid:
-                req_id = f"PMID:{identifier.pmid}"
+            req_id = request_id(identifier)
+            if req_id:
                 request_map[req_id] = identifier
                 request_ids.append(req_id)
 

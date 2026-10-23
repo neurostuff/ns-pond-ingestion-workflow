@@ -210,6 +210,9 @@ def test_an_id_is_in_one_slot_only() -> None:
         alternative_dois=["10.3934/neuroscience.2018.2.97"],
         preprint_pmcids=["PMC7181890"], alternative_pmcids=["PMC7181890"])
     assert identifier.alternative_pmids == ("32341954",)
+    # an eLife DOI the catalog holds as a preprint's is the version of record's when `doi` says so
+    both = Identifier(doi="10.7554/elife.106070", preprint_dois=["10.7554/elife.106070"])
+    assert (both.doi, both.preprint_dois) == ("10.7554/elife.106070", ())
     assert identifier.alternative_dois == ()
     assert (identifier.preprint_pmcids, identifier.alternative_pmcids) == (("PMC7181890",), ())
 
