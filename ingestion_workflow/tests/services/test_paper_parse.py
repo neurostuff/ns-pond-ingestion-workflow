@@ -422,15 +422,15 @@ PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
     (Identifier(pmid="34845462", pmcid="PMC8629206", doi="10.1101/2021.11.23.21266761"),
      [("pubmed", "34845462"), ("pmc", "PMC8629206"), ("doi", "10.1101/2021.11.23.21266761")],
      {"preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
-      "preprint_pmid": "34845462", "preprint_pmcid": "PMC8629206",
+      "preprint_pmids": ["34845462"], "preprint_pmcids": ["PMC8629206"],
       "publication_status": "preprint"}),
     # PubMed's record of a preprint, and nothing else known: a preprint.
     (Identifier(pmid="34845462"), [("pubmed", "34845462")],
-     {"preprint_pmid": "34845462", "publication_status": "preprint"}),
+     {"preprint_pmids": ["34845462"], "publication_status": "preprint"}),
     # A PMC copy the preprint's PubMed record does not list is the version of record's.
     (Identifier(pmid="34845462", pmcid="PMC3407125", doi="10.1101/2021.11.23.21266761"),
      [("pubmed", "34845462"), ("doi", "10.1101/2021.11.23.21266761")],
-     {"pmcid": "PMC3407125", "preprint_pmid": "34845462",
+     {"pmcid": "PMC3407125", "preprint_pmids": ["34845462"],
       "preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
       "publication_status": "published"}),
 ])
@@ -448,9 +448,20 @@ def test_the_preprint_s_pmid_the_catalog_holds_beside_the_paper_s_is_the_preprin
     assert paper["header"]["identifiers"] == {
         "pmid": "38345852", "pmcid": "PMC10942577", "doi": "10.7554/elife.92563",
         "preprint_dois": [{"doi": "10.1101/2023.09.27.559792", "server": "biorxiv"}],
-        "preprint_pmid": "37808793", "preprint_pmcid": "PMC10592780",
+        "preprint_pmids": ["37808793"], "preprint_pmcids": ["PMC10592780"],
         "publication_status": "published"}
 
+
+
+def test_a_preprint_pmid_held_beside_a_preprint_record_keeps_both(tmp_path):
+    """A work indexed on two preprint servers: the catalog holds one server's PubMed record
+    beside the article, and the article's own PMID is the other's, typed Preprint. The
+    pairing is assembled from the two real records above."""
+    identifier = Identifier(pmid="34845462", other_ids={PREPRINT_PMID: "37808793"})
+    paper, _, _ = _written(tmp_path, identifier,
+                           raw_metadata=_pubmed(PREPRINT_RECORD, [("pubmed", "34845462")]))
+    assert paper["header"]["identifiers"] == {
+        "preprint_pmids": ["37808793", "34845462"], "publication_status": "preprint"}
 
 @pytest.mark.parametrize("source", ["semantic_scholar", "openalex", "elsevier", "jats"])
 def test_the_abstract_is_credited_to_the_metadata_s_provider(tmp_path, source):
@@ -476,10 +487,18 @@ def test_a_metadata_record_without_a_study_schema_provider_is_not_parsed(tmp_pat
         _written(tmp_path, source=source)
 
 
-def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():
-    from ingestion_workflow.utils.preprints import PREPRINT_SERVERS
+#: Servers study_schema names by a record's type, never by a DOI prefix: an eLife reviewed
+#: preprint shares 10.7554 with the published articles, so `preprint_server` must not
+#: claim it.
+NOT_BY_PREFIX = {"elife"}
 
-    assert {s.name for s in PREPRINT_SERVERS} == {s.value for s in pp.PreprintServer}
+
+def test_every_preprint_server_ingestion_knows_is_one_study_schema_names():
+    from ingestion_workflow.utils.preprints import PREPRINT_SERVERS, preprint_server
+
+    assert {s.name for s in PREPRINT_SERVERS} == {
+        s.value for s in pp.PreprintServer} - NOT_BY_PREFIX
+    assert preprint_server("10.7554/elife.92563") is None
 
 
 def test_tables_carry_body_rows_and_triage(written):
