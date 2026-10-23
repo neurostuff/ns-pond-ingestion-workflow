@@ -39,11 +39,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:31 GMT
+      - Fri, 23 Oct 2026 08:07:19 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500005444CAE10FD4.1.1.m_1
+      - 1D3460167182AD9500006163C2CC9E5F.1.1.m_1
       ncbi-sid:
-      - EB2B611EEB5C3F14_4846SID
+      - 58C4EC9507B7ACCE_3902SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -57,7 +57,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -75,9 +75,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005
+    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T16:47:41Z","timestamp":1786985261991,"version":"build-2736575974"},"reference-count":117,"publisher":"Elsevier
@@ -362,7 +363,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:32 GMT
+      - Fri, 23 Oct 2026 08:07:19 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -381,13 +382,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -401,9 +402,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -413,7 +415,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:33 GMT
+      - Fri, 23 Oct 2026 08:07:20 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -430,13 +432,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -450,9 +452,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.nlm.2011.06.006
+    uri: https://api.crossref.org/works/10.1016/j.nlm.2011.06.006?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,10,21]],"date-time":"2026-10-21T20:58:54Z","timestamp":1792616334892,"version":"4.5.0"},"reference-count":175,"publisher":"Elsevier
@@ -885,7 +888,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:33 GMT
+      - Fri, 23 Oct 2026 08:07:20 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -904,13 +907,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -924,9 +927,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.nlm.2011.06.006%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.nlm.2011.06.006%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -936,7 +940,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:33 GMT
+      - Fri, 23 Oct 2026 08:07:21 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -953,13 +957,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -1013,11 +1017,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:33 GMT
+      - Fri, 23 Oct 2026 08:07:21 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500007144CF0DD506.1.1.m_1
+      - 1D32B8BB86A02F150000374C6DBCD79A.1.1.m_1
       ncbi-sid:
-      - EB2B611EEB5C3F14_4846SID
+      - 58C4EC9507B7ACCE_3902SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1079,11 +1083,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:33 GMT
+      - Fri, 23 Oct 2026 08:07:21 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500008144D00DDCE9.1.1.m_1
+      - 1D3460167182AD9500003E63C8E19997.1.1.m_1
       ncbi-sid:
-      - EB2B611EEB5C3F14_4846SID
+      - 58C4EC9507B7ACCE_3902SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1131,15 +1135,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edc5c77de769b9-DFW
+      - a4ef3f6b4aa569d3-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:49:34 GMT
+      - Fri, 23 Oct 2026 08:07:22 GMT
       expires:
-      - Fri, 23 Oct 2026 03:53:09 GMT
+      - Fri, 23 Oct 2026 08:15:27 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       location:
@@ -1149,7 +1153,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=FXp4iJLU0z5yQzyxtU7N9rsn8KOc%2B6usGNb87tIi1lUfd%2FNmDMzNKmx5BxCv1i5t4GRXBu6zqGZowotmcxNeTRL7MMuyMHXq6JPEfp0DZTepgjdJo3TWu%2BU%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2FpC%2BcKSo7Cvn9TFXGi9Q5UPiwa1HRPSGCuoSKXthbooO8a46bgKtfScQw5o3rbS2o%2FTn8BFY52msm%2FOrkvDVOLCvF9bx%2BwzyzBXU3X9qp27GMxHfh1AXjKE%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -1432,7 +1436,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 03:49:34 GMT
+      - Fri, 23 Oct 2026 08:07:22 GMT
       permissions-policy:
       - interest-cohort=()
       server:

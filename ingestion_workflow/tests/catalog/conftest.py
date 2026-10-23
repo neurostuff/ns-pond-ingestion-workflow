@@ -16,7 +16,7 @@ def pubmed():
 @pytest.fixture()
 def evidence(pubmed):
     """NCBI and the registries, asked with the placeholder email and recorded."""
-    registry = DoiRegistry(CrossrefClient())
+    registry = DoiRegistry(CrossrefClient(cassette_secrets.REPLAY_EMAIL))
     yield Evidence(pubmed, registry)
     registry.close()
 

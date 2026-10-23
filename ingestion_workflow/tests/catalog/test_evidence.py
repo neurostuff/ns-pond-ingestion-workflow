@@ -69,6 +69,14 @@ def test_the_other_side_of_a_relation_is_found_by_the_doi_as_pubmed_spells_it(ev
 
 
 @pytest.mark.vcr()
+def test_the_other_side_of_a_relation_is_found_by_the_doi_as_pmc_spells_it(evidence):
+    # bioRxiv's 10.1101/2025.06.13.659501 is-preprint-of 10.1162/IMAG.a.1007, the spelling of
+    # PMC12612100's record; the Imaging Neuroscience paper's own record relates nothing
+    evidence.pmc(["PMC12612100"])
+    assert "10.1101/2025.06.13.659501" in evidence.versions("10.1162/imag.a.1007")
+
+
+@pytest.mark.vcr()
 def test_a_reviewed_version_s_concept_doi_is_a_version_only_when_the_registry_says_so(evidence):
     # eLife's reviewed version 10.7554/elife.92563.N stands for 10.7554/elife.92563; JOV's
     # 10.1167/jov.24.6.11 is no version of a "10.1167/jov.24.6"

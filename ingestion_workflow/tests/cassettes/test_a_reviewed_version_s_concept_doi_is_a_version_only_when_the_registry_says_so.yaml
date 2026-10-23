@@ -9,9 +9,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1101/2023.09.27.559792
+    uri: https://api.crossref.org/works/10.1101/2023.09.27.559792?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,2,27]],"date-time":"2026-02-27T01:39:30Z","timestamp":1772156370917,"version":"3.50.1"},"posted":{"date-parts":[[2023,9,27]]},"group-title":"Neuroscience","reference-count":88,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,13]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>\n                  Abnormal
@@ -95,7 +96,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:44:05 GMT
+      - Fri, 23 Oct 2026 08:03:16 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -114,13 +115,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -134,9 +135,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.09.27.559792%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.09.27.559792%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcwNzczNTk0MzAwMCwxMC43NTU0JTJGZWxpZmUuOTI1NjMuMw==","total-results":3,"items":[{"DOI":"10.7554\/elife.92563","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-same-as":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}]}},{"DOI":"10.7554\/elife.92563.2","relation":{"is-version-of":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2.sa4","asserted-by":"object"}],"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]}},{"DOI":"10.7554\/elife.92563.3","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.09.27.559792","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa3","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa4","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.3.sa1","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -148,7 +150,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -167,13 +169,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -203,15 +205,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edbdc5dac61376-DFW
+      - a4ef39779aeb9bcf-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       expires:
-      - Fri, 23 Oct 2026 04:34:32 GMT
+      - Fri, 23 Oct 2026 08:15:27 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563/transform
       nel:
@@ -219,7 +221,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=x9rt2JpN3xIAlLjl%2FYVvM3NrRpKOzwYsq53p%2Bo2frP3NrAvJBs3zsKBmKoInlQA4t1USYEiPgtnApVbkuiCmzaxwu3LqIrOFzF6%2F7j4pR0h2bU6NkncgzXU%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=oKuEoiQOs7buKGzkfNbrUSHmTDH%2BmPshhRnk3z%2BBInBRLvqOxVZ64WPCvxedPojZisPD0kA9Yh%2F5U8sIC3kxNFAv3regTQlpcdaw6ppU%2F3Sa2GkxvG8SmZs%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -423,7 +425,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -469,15 +471,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edbdc70d2a1376-DFW
+      - a4ef39793d409bcf-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       expires:
-      - Fri, 23 Oct 2026 04:27:30 GMT
+      - Fri, 23 Oct 2026 08:15:27 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563.3/transform
       nel:
@@ -485,7 +487,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Os%2FX05Rhs9l3bGGSScHoZXGItHvjRP0AZNVCEwSThCIiIaU9Jy0aQLLTszwcuH81%2BH%2FH0w5JwFFuL2klX1Vtc1C0xyyugou8phUo4c53q%2FYgmhq7I6LTN1s%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=SMcgz68%2Fcq4bq0tWtZq4U%2BJiTLMrmqcuONaIsZ7GdGMnOovgTHXRJGtzEoxLwXeW4Rs5adLaStFF2bv9aaOezZm0tBi99oRY5qNzWJD9nJFb6xfQqwQ0AHk%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -689,7 +691,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -719,9 +721,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1101/2024.01.11.575288
+    uri: https://api.crossref.org/works/10.1101/2024.01.11.575288?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,17]],"date-time":"2026-01-17T20:32:55Z","timestamp":1768681975469,"version":"3.49.0"},"posted":{"date-parts":[[2024,1,12]]},"group-title":"Neuroscience","reference-count":116,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2024,1,12]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>Microsaccades\u2013tiny
@@ -760,7 +763,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:18 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -779,13 +782,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -799,9 +802,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2024.01.11.575288%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2024.01.11.575288%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcxODI3MjA3NTAwMCwxMC4xMTY3JTJGam92LjI0LjYuMTE=","total-results":1,"items":[{"DOI":"10.1167\/jov.24.6.11","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2024.01.11.575288","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -811,7 +815,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:20 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -828,13 +832,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -918,7 +922,7 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edbdcb3e5d1376-DFW
+      - a4ef39867f119bcf-DFW
       connection:
       - keep-alive
       content-encoding:
@@ -926,11 +930,11 @@ interactions:
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:44:06 GMT
+      - Fri, 23 Oct 2026 08:03:20 GMT
       nel:
       - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=DnC6XoMXE9il6YrzZE27BPX5kmnXqO1e7%2FJUY%2BjLLwq40AQ0hDTCBmtdNFxintBMsS34XNKMHfknzBLxFhTDk4bPUCcsPV0WkY%2BUBmItmwynJw6G5C11SBE%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2B03X4NMYQyeszgUmx%2FQuI13qHIDTohE6jODyaG7WnAiodj6%2FqcNGNR6ltl3L%2F18npLWJy%2F9Tn%2BBTlelHAbmVDnJQH1UhL4lrIoj0mgmCzqgkHdZo2q2XDMQ%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -969,15 +973,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edbdcbdfbe1376-DFW
+      - a4ef3987181d9bcf-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:44:07 GMT
+      - Fri, 23 Oct 2026 08:03:20 GMT
       expires:
-      - Fri, 23 Oct 2026 03:53:09 GMT
+      - Fri, 23 Oct 2026 08:27:31 GMT
       location:
       - https://api.crossref.org/v1/works/10.1167%2Fjov.24.6.11/transform
       nel:
@@ -985,7 +989,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=1MHZgm8dq4O%2Bg%2BUF5hc90zvr799l4wdKIXn9OR5O99HVz%2B9KsS33Yod0paXF83V9sgsh7y3sdimd62TZnK0mmGeucZJmvlYWHKUM67AjSjB4rL9xfnqJ0vM%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=IZz7bWGbW5DTpt7czrGCdaBoFu5opM5gp3y88Bb1ejDL0dFnml1Xrmj4OyT%2Byezn14efK9WUEsIQjXKlnF2OnVUqOfMKzFD%2FhkjB9hmkFBQt7iauNgoX41Q%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -1166,7 +1170,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 03:44:07 GMT
+      - Fri, 23 Oct 2026 08:03:20 GMT
       permissions-policy:
       - interest-cohort=()
       server:

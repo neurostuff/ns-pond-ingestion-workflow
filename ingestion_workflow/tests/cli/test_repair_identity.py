@@ -26,6 +26,7 @@ def _config(root):
         "log_to_file": False,
         "show_progress": False,
         "pubmed_email": cassette_secrets.REPLAY_EMAIL,
+        "crossref_email": cassette_secrets.REPLAY_EMAIL,
     }), encoding="utf-8")
     return config
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from ingestion_workflow.clients import crossref
 from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.tests import cassette_secrets
 
 VERSIONS = ("is-preprint-of", "has-preprint")
 
@@ -14,10 +15,12 @@ def test_every_page_of_the_relating_records_is_read(monkeypatch):
     # eLife's reviewed preprint 10.7554/eLife.91263.1: its concept DOI and its next version
     # both say has-preprint of it
     monkeypatch.setattr(crossref, "CROSSREF_PAGE_ROWS", 1)
-    found = CrossrefClient().relating("10.7554/eLife.91263.1", VERSIONS)
+    client = CrossrefClient(cassette_secrets.REPLAY_EMAIL)
+    found = client.relating("10.7554/eLife.91263.1", VERSIONS)
     assert sorted(found["has-preprint"]) == ["10.7554/elife.91263", "10.7554/elife.91263.2"]
 
 
 @pytest.mark.vcr()
 def test_only_the_relations_asked_for_are_read():
-    assert CrossrefClient().relating("10.7554/eLife.91263.1", ("is-preprint-of",)) == {}
+    client = CrossrefClient(cassette_secrets.REPLAY_EMAIL)
+    assert client.relating("10.7554/eLife.91263.1", ("is-preprint-of",)) == {}

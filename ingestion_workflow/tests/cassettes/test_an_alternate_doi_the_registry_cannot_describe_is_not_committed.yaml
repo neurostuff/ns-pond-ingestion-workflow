@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:40 GMT
+      - Fri, 23 Oct 2026 08:06:59 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005E5BB3A755D0.1.1.m_1
+      - 1D3460167182AD95000047638E582E70.1.1.m_1
       ncbi-sid:
-      - 4D5088C1612EAF42_05A8SID
+      - DD834B7FC2E932B6_B0B4SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -74,9 +74,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1176/appi.neuropsych.21.3.307
+    uri: https://api.crossref.org/works/10.1176/appi.neuropsych.21.3.307?mailto=replay%40example.com
   response:
     body:
       string: Resource not found.
@@ -86,7 +87,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Fri, 23 Oct 2026 03:49:40 GMT
+      - Fri, 23 Oct 2026 08:06:59 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -103,13 +104,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 404
       message: Not Found
@@ -123,9 +124,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1176%2Fappi.neuropsych.21.3.307%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1176%2Fappi.neuropsych.21.3.307%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -135,7 +137,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:41 GMT
+      - Fri, 23 Oct 2026 08:07:00 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -152,13 +154,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -172,9 +174,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1176/jnp.2009.21.3.307
+    uri: https://api.crossref.org/works/10.1176/jnp.2009.21.3.307?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2024,7,24]],"date-time":"2024-07-24T16:40:11Z","timestamp":1721839211631},"reference-count":42,"publisher":"American
@@ -200,7 +203,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:41 GMT
+      - Fri, 23 Oct 2026 08:07:00 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -219,13 +222,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -239,9 +242,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1176%2Fjnp.2009.21.3.307%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1176%2Fjnp.2009.21.3.307%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -251,7 +255,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:49:41 GMT
+      - Fri, 23 Oct 2026 08:07:00 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -268,13 +272,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -317,11 +321,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:41 GMT
+      - Fri, 23 Oct 2026 08:07:00 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006144E43B790F.1.1.m_1
+      - 1D3460167182AD9500003863928CD9BB.1.1.m_1
       ncbi-sid:
-      - 4D5088C1612EAF42_05A8SID
+      - DD834B7FC2E932B6_B0B4SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -369,15 +373,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4edc5f85fe110c5-DFW
+      - a4ef3ee75b26d7d9-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 03:49:41 GMT
+      - Fri, 23 Oct 2026 08:07:01 GMT
       expires:
-      - Fri, 23 Oct 2026 04:03:26 GMT
+      - Fri, 23 Oct 2026 08:27:31 GMT
       location:
       - https://api.crossref.org/v1/works/10.1176%2Fappi.neuropsych.21.3.307/transform
       nel:
@@ -385,7 +389,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=o5WjsxsT6V25gpNABjkTkH4pFDL%2Ftev%2BmWkCBdnYDSvtU0mEpS8SAR7UGuDfD5BHJnRsT2i54CIwrSSWyArcJMtf8coKggOc0ErjLcGIJku6z2pfZiBrDVU%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=T5jfaRdAAyaCypz8%2FJ5A2WL3Vik4HFkXoQD0S%2BhgKNGgBAp34318vf8%2FOrtmx9jxslPxbDJUGH30NiMBDIKXCjIDO7Vqq84qRSqPFqwllWFV42%2Bz9tYbuGY%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -429,7 +433,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json;charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:49:42 GMT
+      - Fri, 23 Oct 2026 08:07:01 GMT
       permissions-policy:
       - interest-cohort=()
       server:

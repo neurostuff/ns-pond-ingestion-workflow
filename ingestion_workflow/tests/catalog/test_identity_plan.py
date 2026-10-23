@@ -34,7 +34,7 @@ def _reassign(value, kind, source, target):
       _reassign(DOI, "alternate_doi", A, B), _reassign(DOI, "alternate_doi", B, A)],
      f"alternate_doi of {A}"),
     ([{"op": "split", "article": A, "aliases": [["pmid", PMID]]},
-      _reassign(PMID, "pmid", f"the article split from {A}", A)], f"pmid of {A}"),
+      _reassign(PMID, "pmid", "xe43l42ckkyk", A)], f"pmid of {A}"),
 ], ids=["reassign-and-back", "remove-then-add", "add-then-remove", "rekind-then-back",
         "reassign-of-a-rekind-and-back", "split-then-back"])
 def test_an_identifier_coming_back_where_it_was_is_refused(tmp_path, lines, back_to):

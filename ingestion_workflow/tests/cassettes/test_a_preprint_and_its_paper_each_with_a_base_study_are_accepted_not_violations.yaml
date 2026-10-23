@@ -52,11 +52,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:47:59 GMT
+      - Fri, 23 Oct 2026 08:04:06 GMT
       ncbi-phid:
-      - 1D348A0161E733550000405AF34A3D87.1.1.m_1
+      - 1D3460167182AD950000316269105EA5.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -96,23 +96,23 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -129,11 +129,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:47:59 GMT
+      - Fri, 23 Oct 2026 08:04:07 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000049514136862E.1.1.m_1
+      - 1D33ABE4FCD277E500004261EB53BA0F.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -173,12 +173,12 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA21RTW+CQBD9K80mcnJxPxAXEpImnpv03njYwKpUYOguSo3hv3cWoiHW47x5M+/N
-        mxtxne7OjqQETmRJrHEtNM7QQncGQcFETDmjQrwJmUYqZWxk/ZyN60h6I722TdkccMHXbkn2YGuN
-        OPl20CCxLLpr6/e0dV4WI+CZ5PNjy4VSiZICQV9JqTZMbQguMbUuK5yxpq309d386rqtTJhDjdwO
-        wPdQEg2U0NAe7GlfQY89kx8Be+N8Nk0vIjabDyZ/mXcXoJVs5mMhtjMfweQ8G30HXjR7KXkx1iHk
-        82sAa3eEXpd46lgPPqoc7Hj0jRRQIs5ZKLhgcmVdKEPrqIqTaJ3I1YXjgimo9CmhtvZgxONNpDh/
-        PMAU9B95WM6EOJNq5SIu45j6TzLBeUTFk849+4eOEJIlav1S504edsMflCwolj0CAAA=
+        H4sIAAAAAAAAA21RTWuDQBD9K2UhnrJmP4yuglDIudB7yWHRTWOjjt01sSH43zurNEga2Mu8eTPv
+        zdsbcb3uz45kBE5kTaxxHbTO0FL3BkHBREw5o0K+sCjzL5lY32fjepLdyKBtW7WfuOBjvyYHsI1G
+        nHw5aJFYlf2183u6pqjKCfBM8v6240KpVEmBoK+kVAlTCcElptFVjTPWdLW+vpof3XS1CQtokNsD
+        +B5KooEKWjqAPR1qGLBniiNgb5rP5+lVxBbzwewv9+4CtJIvfKzEbuEjmJ3nk+/Ai+ZPJS/GOoR8
+        fi1g7Y4w6ApPnerRR1WAnY6+kRIqxDkLBRdMbqwLZWgdVXEabVO5uXBcMAeVPSTUNR6MeJxEivP7
+        B5iS/iOP64UQZ1JtXMRlHFP/k0xwHlHxoPOX/V1HCMlStX2q80ce9+MvFGIm9j0CAAA=
     headers:
       allow:
       - GET, HEAD, OPTIONS
@@ -191,7 +191,7 @@ interactions:
       cross-origin-opener-policy:
       - same-origin
       date:
-      - Fri, 23 Oct 2026 03:48:00 GMT
+      - Fri, 23 Oct 2026 08:04:07 GMT
       referrer-policy:
       - same-origin
       server:
@@ -208,7 +208,7 @@ interactions:
       - nosniff
       - nosniff
       x-envoy-upstream-service-time:
-      - '6'
+      - '7'
       x-frame-options:
       - DENY
       x-ua-compatible:
@@ -228,9 +228,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.21203/rs.3.rs-8694593/v1
+    uri: https://api.crossref.org/works/10.21203/rs.3.rs-8694593/v1?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"Research
@@ -579,7 +580,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:48:00 GMT
+      - Fri, 23 Oct 2026 08:04:08 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -598,13 +599,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -618,9 +619,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.21203%2Frs.3.rs-8694593%2Fv1%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.21203%2Frs.3.rs-8694593%2Fv1%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc4MDQxMDM4NzAwMCwxMC4xMDM4JTJGczQxMzY2LTAyNi0wMjExNC0y","total-results":1,"items":[{"DOI":"10.1038\/s41366-026-02114-2","relation":{"has-preprint":[{"id-type":"doi","id":"10.21203\/rs.3.rs-8694593\/v1","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -630,7 +632,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:48:01 GMT
+      - Fri, 23 Oct 2026 08:04:08 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -647,13 +649,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -696,11 +698,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:48:01 GMT
+      - Fri, 23 Oct 2026 08:04:08 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F9850000455143241294.1.1.m_1
+      - 1D33ABE4FCD277E500004D61EDF2C8BC.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -760,11 +762,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:48:01 GMT
+      - Fri, 23 Oct 2026 08:04:08 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F9850000465143A5439B.1.1.m_1
+      - 1D33ABE4FCD277E500002361EEA4BA06.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -796,9 +798,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1038/s41366-026-02114-2
+    uri: https://api.crossref.org/works/10.1038/s41366-026-02114-2?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,11]],"date-time":"2026-08-11T18:39:01Z","timestamp":1786473541980,"version":"build-2736575974"},"reference-count":71,"publisher":"Springer
@@ -1082,7 +1085,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:48:01 GMT
+      - Fri, 23 Oct 2026 08:04:09 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1101,13 +1104,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -1121,9 +1124,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1038%2Fs41366-026-02114-2%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1038%2Fs41366-026-02114-2%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc3MDAyODkwMzAwMCwxMC4yMTIwMyUyRnJzLjMucnMtODY5NDU5MyUyRnYx","total-results":1,"items":[{"DOI":"10.21203\/rs.3.rs-8694593\/v1","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41366-026-02114-2","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -1133,7 +1137,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:48:02 GMT
+      - Fri, 23 Oct 2026 08:04:10 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -1150,13 +1154,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -1199,11 +1203,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:48:02 GMT
+      - Fri, 23 Oct 2026 08:04:10 GMT
       ncbi-phid:
-      - 1D348A0161E733550000645AFBA1408B.1.1.m_1
+      - 1D32B8BB86A02F150000174ACDE027D6.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1217,7 +1221,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -1263,11 +1267,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:48:02 GMT
+      - Fri, 23 Oct 2026 08:04:10 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500002A5145AFCC44.1.1.m_1
+      - 1D33ABE4FCD277E500005E61F1DD8FF8.1.1.m_1
       ncbi-sid:
-      - D5FC638F122F1764_D42CSID
+      - 869BFEB08D56D89D_793BSID
       referrer-policy:
       - origin-when-cross-origin
       server:

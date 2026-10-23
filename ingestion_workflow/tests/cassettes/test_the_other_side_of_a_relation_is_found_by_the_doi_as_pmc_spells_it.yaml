@@ -1,0 +1,382 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC12612100&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA21QwUrEMBD9FRmwp21Nst2KgYLiQTwseJc9hDbrxm0zNclal9J/d5KCrOhx3rw3
+        782bwAcVTh4k4BFW4LQf0HqdtypoAgUTVc5ZLtZXrJSMyc1tYn2ctA8gJxiVs8a+0YHX3Qr26HpF
+        OLx7tEQ0bTgP8c7QN6ZNQGTCy/aRi4oLzhiQTPfKdMRyeujU+V5/qX7odNFgT5KAGHdkQpYGbT6i
+        O+47HGmnmwPSLunrRX1dsgt9tiSqY56MzOsL52xJV6dsWbSp/zX51M4TFDuySLM/4KgMvZPmOdbR
+        oEuPTdCiIZyzgvNK3DxvH54KVZBZrG0pQf76PqIRLLkoN+vq7qdc3eZ/yPNu/gYXfOGssQEAAA==
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 23 Oct 2026 08:00:57 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '7'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1162/imag.a.1007?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,6,4]],"date-time":"2026-06-04T02:25:46Z","timestamp":1780539946399,"version":"3.54.1"},"reference-count":56,"publisher":"MIT
+        Press","license":[{"start":{"date-parts":[[2025,10,24]],"date-time":"2025-10-24T00:00:00Z","timestamp":1761264000000},"content-version":"vor","delay-in-days":296,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":["direct.mit.edu"],"crossmark-restriction":true},"short-container-title":[],"published-print":{"date-parts":[[2025,11,12]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>The
+        thalamus, traditionally viewed as a sensory relay station, is now recognized
+        for its critical role in higher-order cognitive functions, including memory.
+        While most research has focused on its distinct nuclei, the thalamus also
+        contains crucial white matter tracts, such as the mammillothalamic tract (MTT),
+        part of the Papez circuit. Despite its established role in memory, the MTT
+        remains underappreciated in studies on the cognitive role of the thalamus,
+        increasing the risk of misattributing memory functions to nearby thalamic
+        nuclei. This study investigates the memory impact of thalamic strokes by considering
+        disruption to the MTT. We examined 40 patients with chronic ischemic thalamic
+        lesions and 45 healthy controls using neuropsychological assessments, focusing
+        on the Free and Cued Selective Reminding Test (FCSRT) and high-resolution
+        structural neuroimaging. Advanced imaging techniques, such as symptom mapping
+        and disconnectome analyses, were employed to analyze the relationships between
+        lesion sites, tract disconnections, and cognitive outcomes. Additionally,
+        the expression of calbindin-rich matrix cells and parvalbumin-rich core cells
+        was examined to assess how the connectivity property of thalamic cells, and
+        its disruption, can relate to cognitive deficits following a thalamic stroke.
+        Patients with left-sided thalamic lesions, especially those involving the
+        MTT, showed significant memory impairments. Symptom mapping identified a specific
+        cluster of lesioned voxels in the left anterior-lateral thalamus, including
+        the MTT, as being strongly associated with poorer memory performance. Disconnectome
+        analysis confirmed that verbal memory deficits were associated with disruption
+        of the MTT. Furthermore, a striking overlap was observed between the critical
+        regions linked to memory deficits and calbindin-rich thalamic areas. However,
+        this calbindin-rich region was also disrupted in patients without memory impairment,
+        revealing that MTT disruption, and not lesions to this region, induced memory
+        deficits in these patients. The identified FCSRT deficit cluster overlapped
+        with brain regions consistently linked to memory processes following fMRI
+        meta-analytic mapping of memory-related keywords. These findings challenge
+        the traditional focus on thalamic nuclei and connector hubs, indicating a
+        need to reappraise the importance of the MTT in memory impairment after a
+        thalamic stroke. This study advocates for a shift in thalamic research, emphasizing
+        the need to investigate tract-specific contributions and disruptions of the
+        MTT but also of other tracts such as the interthalamic adhesion or amygdalofugal
+        pathway, rather than holding only to a \u201cnuclei-centric\u201d view of
+        the thalamus.<\/jats:p>","DOI":"10.1162\/imag.a.1007","type":"journal-article","created":{"date-parts":[[2025,10,24]],"date-time":"2025-10-24T20:02:19Z","timestamp":1761336139000},"update-policy":"https:\/\/doi.org\/10.1162\/mitpressjournals.corrections.policy","source":"Crossref","is-referenced-by-count":1,"title":["A
+        reappraisal of the role of the mammillothalamic tract in memory deficits following
+        stroke in the thalamus"],"prefix":"10.1162","volume":"3","author":[{"ORCID":"https:\/\/orcid.org\/0009-0006-7711-3080","authenticated-orcid":false,"given":"Julie
+        P.","family":"Vidal","sequence":"first","affiliation":[{"name":"Brain and
+        Cognition Research Center (UMR 5549), CNRS, University of Toulouse, Toulouse,
+        France"},{"name":"Toulouse Neuroimaging Center (UMR 825), Inserm, University
+        of Toulouse, Toulouse, France"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Lola","family":"Danet","sequence":"additional","affiliation":[{"name":"Toulouse
+        Neuroimaging Center (UMR 825), Inserm, University of Toulouse, Toulouse, France"},{"name":"Neurology
+        Department, Toulouse University Hospital Purpan, Toulouse, France"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"J\u00e9r\u00e9mie","family":"Pariente","sequence":"additional","affiliation":[{"name":"Toulouse
+        Neuroimaging Center (UMR 825), Inserm, University of Toulouse, Toulouse, France"},{"name":"Neurology
+        Department, Toulouse University Hospital Purpan, Toulouse, France"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jean-Fran\u00e7ois","family":"Albucher","sequence":"additional","affiliation":[{"name":"Toulouse
+        Neuroimaging Center (UMR 825), Inserm, University of Toulouse, Toulouse, France"},{"name":"Neurology
+        Department, Toulouse University Hospital Purpan, Toulouse, France"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Patrice","family":"P\u00e9ran","sequence":"additional","affiliation":[{"name":"Toulouse
+        Neuroimaging Center (UMR 825), Inserm, University of Toulouse, Toulouse, France"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Emmanuel
+        J.","family":"Barbeau","sequence":"additional","affiliation":[{"name":"Brain
+        and Cognition Research Center (UMR 5549), CNRS, University of Toulouse, Toulouse,
+        France"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"281","published-online":{"date-parts":[[2025,11,12]]},"reference":[{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b1","doi-asserted-by":"crossref","first-page":"425","DOI":"10.1017\/S0140525X99002034","article-title":"Episodic
+        memory, amnesia, and the hippocampal\u2013anterior thalamic axis","volume":"22","author":"Aggleton","year":"1999","journal-title":"Behavioral
+        and Brain Sciences"},{"issue":"10","key":"2025111214555118100_IMAG.a.1007-b2","doi-asserted-by":"crossref","first-page":"455","DOI":"10.1016\/j.tics.2006.08.003","article-title":"Interleaving
+        brain systems for episodic and recognition memory","volume":"10","author":"Aggleton","year":"2006","journal-title":"Trends
+        in Cognitive Sciences"},{"key":"2025111214555118100_IMAG.a.1007-b3","doi-asserted-by":"crossref","first-page":"108728","DOI":"10.1016\/j.neuropsychologia.2023.108728","article-title":"Converging
+        diencephalic and hippocampal supports for episodic memory","volume":"191","author":"Aggleton","year":"2023","journal-title":"Neuropsychologia"},{"key":"2025111214555118100_IMAG.a.1007-b4","article-title":"Batterie
+        d\u2019examen des troubles de la d\u00e9nomination (ExaD\u00e9)","author":"Bachy-Langedock","year":"1989","journal-title":"Brussels:
+        Editions du Centre de Psychologie Appliqu\u00e9e"},{"issue":"2","key":"2025111214555118100_IMAG.a.1007-b5","doi-asserted-by":"crossref","first-page":"471","DOI":"10.1007\/s00429-020-02193-5","article-title":"Prevalence
+        and anatomical characteristics of the human massa intermedia","volume":"226","author":"Borghei","year":"2021","journal-title":"Brain
+        Structure and Function"},{"issue":"11","key":"2025111214555118100_IMAG.a.1007-b6","doi-asserted-by":"crossref","first-page":"2467","DOI":"10.1016\/j.neuropsychologia.2007.03.025","article-title":"Bilateral
+        damage to the mammillo-thalamic tract impairs recollection but not familiarity
+        in the recognition process: A single case investigation","volume":"45","author":"Carlesimo","year":"2007","journal-title":"Neuropsychologia"},{"issue":"11","key":"2025111214555118100_IMAG.a.1007-b7","doi-asserted-by":"crossref","first-page":"2745","DOI":"10.1016\/j.neuropsychologia.2008.05.009","article-title":"The
+        role of the thalamus in amnesia: A tractography, high-resolution MRI and neuropsychological
+        study","volume":"46","author":"Cipolotti","year":"2008","journal-title":"Neuropsychologia"},{"issue":"2","key":"2025111214555118100_IMAG.a.1007-b8","doi-asserted-by":"crossref","first-page":"257","DOI":"10.1016\/0093-934X(85)90085-9","article-title":"Subcortical
+        functions in language: A working model","volume":"25","author":"Crosson","year":"1985","journal-title":"Brain
+        and Language"},{"issue":"1","key":"2025111214555118100_IMAG.a.1007-b9","doi-asserted-by":"crossref","first-page":"73","DOI":"10.1016\/j.bandl.2012.06.011","article-title":"Thalamic
+        mechanisms in language: A reconsideration based on recent findings and concepts","volume":"126","author":"Crosson","year":"2013","journal-title":"Brain
+        and Language"},{"issue":"4","key":"2025111214555118100_IMAG.a.1007-b10","doi-asserted-by":"crossref","first-page":"582","DOI":"10.1017\/S1355617707070737","article-title":"Treatment
+        of naming in nonfluent aphasia through manipulation of intention and attention:
+        A phase 1 comparison of two novel treatments","volume":"13","author":"Crosson","year":"2007","journal-title":"Journal
+        of the International Neuropsychological Society"},{"issue":"24","key":"2025111214555118100_IMAG.a.1007-b11","doi-asserted-by":"crossref","first-page":"2107","DOI":"10.1212\/WNL.0000000000002226","article-title":"Thalamic
+        amnesia after infarct","volume":"85","author":"Danet","year":"2015","journal-title":"Neurology"},{"issue":"12","key":"2025111214555118100_IMAG.a.1007-b12","doi-asserted-by":"crossref","first-page":"3277","DOI":"10.1093\/brain\/awn278","article-title":"Strongly
+        reduced volumes of putamen and thalamus in Alzheimer\u2019s disease: An MRI
+        study","volume":"131","author":"de Jong","year":"2008","journal-title":"Brain"},{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b13","doi-asserted-by":"crossref","first-page":"273","DOI":"10.1016\/j.cortex.2010.09.002","article-title":"Cognitive,
+        affective and behavioural disturbances following vascular thalamic lesions:
+        A review","volume":"47","author":"De Witte","year":"2011","journal-title":"Cortex"},{"key":"2025111214555118100_IMAG.a.1007-b14","doi-asserted-by":"crossref","first-page":"108","DOI":"10.1016\/j.neubiorev.2014.07.025","article-title":"How
+        do mammillary body inputs contribute to anterior thalamic function?","volume":"54","author":"Dillingham","year":"2015","journal-title":"Neuroscience
+        & Biobehavioral Reviews"},{"key":"2025111214555118100_IMAG.a.1007-b15","doi-asserted-by":"crossref","first-page":"60","DOI":"10.1016\/j.neubiorev.2020.11.031","article-title":"Time
+        to put the mammillothalamic pathway into context","volume":"121","author":"Dillingham","year":"2021","journal-title":"Neuroscience
+        & Biobehavioral Reviews"},{"issue":"2","key":"2025111214555118100_IMAG.a.1007-b16","doi-asserted-by":"crossref","first-page":"540","DOI":"10.3171\/2024.1.JNS231541","article-title":"Ventral
+        amygdalofugal pathway as an integrated surgically important network: Microsurgical
+        anatomy and segmentation based on fiber dissection","volume":"141","author":"Erkan","year":"2024","journal-title":"Journal
+        of Neurosurgery"},{"key":"2025111214555118100_IMAG.a.1007-b17","doi-asserted-by":"crossref","first-page":"73","DOI":"10.1016\/j.cortex.2012.09.005","article-title":"The
+        anatomy of fronto-occipital connections from early blunt dissections to contemporary
+        tractography","volume":"56","author":"Forkel","year":"2014","journal-title":"Cortex"},{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b18","doi-asserted-by":"crossref","first-page":"giy004","DOI":"10.1093\/gigascience\/giy004","article-title":"Advanced
+        lesion symptom mapping analyses and implementation as BCBtoolkit","volume":"7","author":"Foulon","year":"2018","journal-title":"Gigascience"},{"key":"2025111214555118100_IMAG.a.1007-b19","author":"Godefroy","year":"2008","journal-title":"Fonctions
+        ex\u00e9cutives et pathologies neurologiques et psychiatriques"},{"issue":"1","key":"2025111214555118100_IMAG.a.1007-b20","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1093\/brain\/113.1.1","article-title":"Diencephalic
+        amnesia","volume":"113","author":"Graff-Radford","year":"1990","journal-title":"Brain"},{"issue":"6","key":"2025111214555118100_IMAG.a.1007-b21","doi-asserted-by":"crossref","first-page":"1275","DOI":"10.1162\/jocn_a_00222","article-title":"Focal
+        brain lesions to critical locations cause widespread disruption of the modular
+        organization of the brain","volume":"24","author":"Gratton","year":"2012","journal-title":"Journal
+        of Cognitive Neuroscience"},{"issue":"6","key":"2025111214555118100_IMAG.a.1007-b22","doi-asserted-by":"crossref","first-page":"900","DOI":"10.1212\/WNL.38.6.900","article-title":"Screening
+        for dementia by memory testing","volume":"38","author":"Grober","year":"1988","journal-title":"Neurology"},{"issue":"4","key":"2025111214555118100_IMAG.a.1007-b23","doi-asserted-by":"crossref","first-page":"827","DOI":"10.1212\/WNL.54.4.827","article-title":"Memory
+        impairment on free and cued selective reminding predicts dementia","volume":"54","author":"Grober","year":"2000","journal-title":"Neurology"},{"key":"2025111214555118100_IMAG.a.1007-b24","doi-asserted-by":"crossref","first-page":"259","DOI":"10.1016\/j.neuroimage.2018.04.068","article-title":"Spatial
+        analysis and high-resolution mapping of the human whole-brain transcriptome
+        for integrative analysis in neuroimaging","volume":"176","author":"Gryglewski","year":"2018","journal-title":"Neuroimage"},{"issue":"23","key":"2025111214555118100_IMAG.a.1007-b25","doi-asserted-by":"crossref","first-page":"5594","DOI":"10.1523\/JNEUROSCI.0067-17.2017","article-title":"The
+        human thalamus is an integrative hub for functional brain networks","volume":"37","author":"Hwang","year":"2017","journal-title":"Journal
+        of Neuroscience"},{"key":"2025111214555118100_IMAG.a.1007-b26","doi-asserted-by":"crossref","first-page":"e69480","DOI":"10.7554\/eLife.69480","article-title":"Neuropsychological
+        evidence of multi-domain network hubs in the human thalamus","volume":"10","author":"Hwang","year":"2021","journal-title":"Elife"},{"issue":"10","key":"2025111214555118100_IMAG.a.1007-b27","doi-asserted-by":"crossref","first-page":"595","DOI":"10.1016\/S0166-2236(00)01922-6","article-title":"The
+        thalamic matrix and thalamocortical synchrony","volume":"24","author":"Jones","year":"2001","journal-title":"Trends
+        in Neurosciences"},{"issue":"9","key":"2025111214555118100_IMAG.a.1007-b28","doi-asserted-by":"crossref","first-page":"1953","DOI":"10.1093\/cercor\/bhp088","article-title":"The
+        origins of cortical interneurons: Mouse versus monkey and human","volume":"19","author":"Jones","year":"2009","journal-title":"Cerebral
+        Cortex"},{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b29","doi-asserted-by":"crossref","first-page":"2053","DOI":"10.1016\/j.neuroimage.2009.10.042","article-title":"A
+        mean three-dimensional atlas of the human thalamus: Generation from multiple
+        histological data","volume":"49","author":"Krauth","year":"2010","journal-title":"Neuroimage"},{"issue":"1","key":"2025111214555118100_IMAG.a.1007-b30","doi-asserted-by":"crossref","first-page":"51","DOI":"10.1016\/j.neulet.2010.06.052","article-title":"Mammillothalamic
+        tract in human brain: Diffusion tensor tractography study","volume":"481","author":"Kwon","year":"2010","journal-title":"Neuroscience
+        Letters"},{"key":"2025111214555118100_IMAG.a.1007-b31","first-page":"690","article-title":"Asymmetrical
+        atrophy of thalamic subnuclei in Alzheimer\u2019s disease and amyloid-positive
+        mild cognitive impairment is associated with key clinical features","volume":"11","author":"Low","year":"2019","journal-title":"Alzheimer\u2019s
+        & Dementia: Diagnosis, Assessment & Disease Monitoring"},{"key":"2025111214555118100_IMAG.a.1007-b32","article-title":"Stereotactic
+        atlas of the human thalamus and basal ganglia","author":"Morel","year":"2007","journal-title":"CRC
+        Press"},{"key":"2025111214555118100_IMAG.a.1007-b33","doi-asserted-by":"crossref","first-page":"117224","DOI":"10.1016\/j.neuroimage.2020.117224","article-title":"Core
+        and matrix thalamic sub-populations relate to spatio-temporal cortical connectivity
+        gradients","volume":"222","author":"M\u00fcller","year":"2020","journal-title":"NeuroImage"},{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b34","doi-asserted-by":"crossref","first-page":"355","DOI":"10.1006\/brln.1997.1707","article-title":"Subcortical
+        aphasia","volume":"58","author":"Nadeau","year":"1997","journal-title":"Brain
+        and Language"},{"key":"2025111214555118100_IMAG.a.1007-b35","doi-asserted-by":"crossref","first-page":"264","DOI":"10.1016\/j.neuropsychologia.2013.11.025","article-title":"Multiple
+        thalamo-cortical disconnections in anterior thalamic infarction: Implications
+        for thalamic mechanisms of memory and language","volume":"53","author":"Nishio","year":"2014","journal-title":"Neuropsychologia"},{"key":"2025111214555118100_IMAG.a.1007-b36","first-page":"1","article-title":"The
+        anatomy of the arterial supply of the human thalamus and its use for the interpretation
+        of the thalamic vascular pathology","volume":"205","author":"Percheron","year":"1973","journal-title":"Zeitschrift
+        f\u00fcr Neurologie"},{"issue":"6","key":"2025111214555118100_IMAG.a.1007-b37","doi-asserted-by":"crossref","first-page":"872","DOI":"10.1162\/jocn_a_00364","article-title":"The
+        involvement of the thalamus in semantic retrieval: A clinical group study","volume":"25","author":"Pergola","year":"2013","journal-title":"Journal
+        of Cognitive Neuroscience"},{"issue":"4","key":"2025111214555118100_IMAG.a.1007-b38","doi-asserted-by":"crossref","first-page":"191","DOI":"10.1155\/2000\/421719","article-title":"Stereotaxic
+        display of brain lesions","volume":"12","author":"Rorden","year":"2000","journal-title":"Behavioural
+        Neurology"},{"key":"2025111214555118100_IMAG.a.1007-b39","doi-asserted-by":"crossref","first-page":"370","DOI":"10.1016\/j.neuroimage.2017.04.046","article-title":"High-resolution
+        magnetic resonance imaging reveals nuclei of the human amygdala: Manual segmentation
+        to automatic atlas","volume":"155","author":"Saygin","year":"2017","journal-title":"Neuroimage"},{"issue":"6","key":"2025111214555118100_IMAG.a.1007-b40","doi-asserted-by":"crossref","first-page":"1904","DOI":"10.1161\/STROKEAHA.121.037750","article-title":"Evolution
+        of neuropsychological deficits in first-ever isolated ischemic thalamic stroke
+        and their association with stroke topography: A case-control study","volume":"53","author":"Scharf","year":"2022","journal-title":"Stroke"},{"issue":"9","key":"2025111214555118100_IMAG.a.1007-b41","doi-asserted-by":"crossref","first-page":"2264","DOI":"10.1161\/01.STR.0000087786.38997.9E","article-title":"Vascular
+        syndromes of the thalamus","volume":"34","author":"Schmahmann","year":"2003","journal-title":"Stroke"},{"issue":"12","key":"2025111214555118100_IMAG.a.1007-b42","doi-asserted-by":"crossref","first-page":"792","DOI":"10.1038\/s41583-024-00867-1","article-title":"A
+        roadmap towards standardized neuroimaging approaches for human thalamic nuclei","volume":"25","author":"Segobin","year":"2024","journal-title":"Nature
+        Reviews Neuroscience"},{"issue":"4","key":"2025111214555118100_IMAG.a.1007-b43","doi-asserted-by":"crossref","first-page":"533","DOI":"10.1038\/nn.4269","article-title":"Thalamus
+        plays a central role in ongoing cortical functioning","volume":"19","author":"Sherman","year":"2016","journal-title":"Nature
+        Neuroscience"},{"issue":"9","key":"2025111214555118100_IMAG.a.1007-b44","doi-asserted-by":"crossref","first-page":"3043","DOI":"10.1007\/s00429-022-02526-6","article-title":"Mapping
+        lesion, structural disconnection, and functional disconnection to symptoms
+        in semantic aphasia","volume":"227","author":"Souter","year":"2022","journal-title":"Brain
+        Structure and Function"},{"key":"2025111214555118100_IMAG.a.1007-b45","doi-asserted-by":"crossref","first-page":"272","DOI":"10.1016\/j.neuroimage.2019.03.021","article-title":"Thalamus
+        optimized multi atlas segmentation (THOMAS): Fast, fully automated segmentation
+        of thalamic nuclei from structural MRI","volume":"194","author":"Su","year":"2019","journal-title":"Neuroimage"},{"issue":"3","key":"2025111214555118100_IMAG.a.1007-b46","doi-asserted-by":"crossref","first-page":"849","DOI":"10.1007\/s11682-015-9461-x","article-title":"Adhesio
+        interthalamica and cavum septum pellucidum in mesial temporal lobe epilepsy","volume":"10","author":"Trzesniak","year":"2016","journal-title":"Brain
+        Imaging and Behavior"},{"key":"2025111214555118100_IMAG.a.1007-b47","first-page":"11","volume-title":"L\u2019\u00e9valuation
+        des troubles de la m\u00e9moire \u00e9pisodique: Fondements th\u00e9oriques
+        et m\u00e9thodologiques","author":"Van der Linden","year":"2004"},{"issue":"10","key":"2025111214555118100_IMAG.a.1007-b48","doi-asserted-by":"crossref","first-page":"1330","DOI":"10.1016\/S0028-3932(03)00059-9","article-title":"Deficits
+        of memory, executive functioning and attention following infarction in the
+        thalamus; a study of 22 cases with localised lesions","volume":"41","author":"Van
+        der Werf","year":"2003","journal-title":"Neuropsychologia"},{"issue":"5","key":"2025111214555118100_IMAG.a.1007-b49","doi-asserted-by":"crossref","first-page":"613","DOI":"10.1016\/S0028-3932(99)00104-9","article-title":"Neuropsychology
+        of infarctions in the thalamus: A review","volume":"38","author":"Van der
+        Werf","year":"2000","journal-title":"Neuropsychologia"},{"issue":"1","key":"2025111214555118100_IMAG.a.1007-b200","doi-asserted-by":"crossref","first-page":"98","DOI":"10.1007\/s00415-024-12777-4","article-title":"Factors
+        behind poor cognitive outcome following a thalamic stroke","volume":"272","author":"Vidal","year":"2025","journal-title":"Journal
+        of Neurology"},{"issue":"5","key":"2025111214555118100_IMAG.a.1007-b50","doi-asserted-by":"crossref","first-page":"1087","DOI":"10.1007\/s00429-024-02777-5","article-title":"Robust
+        thalamic nuclei segmentation from T1-weighted MRI using polynomial intensity
+        transformation","volume":"229","author":"Vidal","year":"2024","journal-title":"Brain
+        Structure and Function"},{"issue":"9","key":"2025111214555118100_IMAG.a.1007-b51","doi-asserted-by":"crossref","first-page":"5985","DOI":"10.1007\/s00415-024-12566-z","article-title":"Exploring
+        the impact of the interthalamic adhesion on human cognition: Insights from
+        healthy subjects and thalamic stroke patients","volume":"271","author":"Vidal","year":"2024","journal-title":"Journal
+        of Neurology"},{"key":"2025111214555118100_IMAG.a.1007-b52","doi-asserted-by":"crossref","first-page":"381","DOI":"10.1016\/j.neuroimage.2014.01.060","article-title":"Permutation
+        inference for the general linear model","volume":"92","author":"Winkler","year":"2014","journal-title":"Neuroimage"},{"key":"2025111214555118100_IMAG.a.1007-b53","doi-asserted-by":"crossref","first-page":"2481","DOI":"10.1007\/s00429-021-02287-8","article-title":"Prevalence
+        of the interthalamic adhesion in the human brain: A review of literature","volume":"226","author":"Wong","year":"2021","journal-title":"Brain
+        Structure and Function"},{"issue":"8","key":"2025111214555118100_IMAG.a.1007-b54","doi-asserted-by":"crossref","first-page":"665","DOI":"10.1038\/nmeth.1635","article-title":"Large-scale
+        automated synthesis of human functional neuroimaging data","volume":"8","author":"Yarkoni","year":"2011","journal-title":"Nature
+        Methods"},{"issue":"6","key":"2025111214555118100_IMAG.a.1007-b55","first-page":"964","article-title":"Acute
+        Korsakoff syndrome following mammillothalamic tract infarction","volume":"25","author":"Yoneoka","year":"2004","journal-title":"American
+        Journal of Neuroradiology"}],"container-title":["Imaging Neuroscience"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1007\/2560321\/imag.a.1007.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"syndication"},{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1007\/2560321\/imag.a.1007.pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2025,11,12]],"date-time":"2025-11-12T19:56:01Z","timestamp":1762977361000},"score":1,"resource":{"primary":{"URL":"https:\/\/direct.mit.edu\/imag\/article\/doi\/10.1162\/IMAG.a.1007\/133684\/A-reappraisal-of-the-role-of-the-mammillothalamic"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2025]]},"references-count":56,"URL":"https:\/\/doi.org\/10.1162\/imag.a.1007","relation":{},"ISSN":["2837-6056"],"issn-type":[{"value":"2837-6056","type":"electronic"}],"subject":[],"published-other":{"date-parts":[[2025]]},"published":{"date-parts":[[2025]]},"article-number":"IMAG.a.1007"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '6843'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:00:58 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2FIMAG.a.1007%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc1MDAzMDUxNDAwMCwxMC4xMTAxJTJGMjAyNS4wNi4xMy42NTk1MDE=","total-results":1,"items":[{"DOI":"10.1101\/2025.06.13.659501","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1162\/IMAG.a.1007","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:01:01 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2Fimag.a.1007%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:01:02 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

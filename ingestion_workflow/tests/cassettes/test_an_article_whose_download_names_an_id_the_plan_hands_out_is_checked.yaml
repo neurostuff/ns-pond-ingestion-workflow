@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:06 GMT
+      - Fri, 23 Oct 2026 08:07:51 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006E45CF838609.1.1.m_1
+      - 1D32B8BB86A02F150000564CAC4B70BD.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -114,11 +114,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:07 GMT
+      - Fri, 23 Oct 2026 08:07:51 GMT
       ncbi-phid:
-      - 1D348A0161E733550000615CC9A9E395.1.1.m_1
+      - 1D32B8BB86A02F1500005F4CACFF01C0.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -150,9 +150,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005
+    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005?mailto=replay%40example.com
   response:
     body:
       string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T16:47:41Z","timestamp":1786985261991,"version":"build-2736575974"},"reference-count":117,"publisher":"Elsevier
@@ -437,7 +438,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:52:08 GMT
+      - Fri, 23 Oct 2026 08:07:52 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -456,13 +457,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - polite-single
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '10'
     status:
       code: 200
       message: OK
@@ -476,9 +477,10 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -488,7 +490,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 03:52:08 GMT
+      - Fri, 23 Oct 2026 08:07:52 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -505,13 +507,13 @@ interactions:
       strict-transport-security:
       - max-age=31536000;
       x-api-pool:
-      - public-array
+      - polite-array
       x-concurrency-limit:
-      - '1'
+      - '3'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '1'
+      - '3'
     status:
       code: 200
       message: OK
@@ -555,11 +557,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:08 GMT
+      - Fri, 23 Oct 2026 08:07:52 GMT
       ncbi-phid:
-      - 1D348A0161E733550000305CCB909537.1.1.m_1
+      - 1D3460167182AD9500005E641C71F998.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -573,7 +575,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -619,11 +621,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:08 GMT
+      - Fri, 23 Oct 2026 08:07:52 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006A45D31C716C.1.1.m_1
+      - 1D32B8BB86A02F150000534CAFFB1414.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -637,7 +639,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -695,11 +697,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:09 GMT
+      - Fri, 23 Oct 2026 08:07:53 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500007945D3FC5CBB.1.1.m_1
+      - 1D32B8BB86A02F150000474CB0E0D6E9.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -739,6 +741,62 @@ interactions:
   response:
     body:
       string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Fri, 23 Oct 2026 08:07:53 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.biopsych.2011.09.005%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
         H4sIAAAAAAAAAEyQQU/DMAyF7/yKyOcqJEND2s5cuCGuWw9ZY9pMXVLsZFBV/e+4ZRPk5Ocvec/O
         BB06jwT7CfI4IOwBGR01HVRwReKQovSMfoK5uiNCLn1enjSpRCnAym3CfHHff4Kzo4UZkcH3gUUc
         YLMxdmuthbqCTC5y77JkMC5Uep8FafwHxOAI1mhr7PPjWZ9CGnhsOi02VpudNmZ7hMNbOUlAh6Re
@@ -760,11 +818,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 03:52:09 GMT
+      - Fri, 23 Oct 2026 08:07:54 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500005345D4DD7328.1.1.m_1
+      - 1D32B8BB86A02F150000504CB44B8497.1.1.m_1
       ncbi-sid:
-      - AAC7BC75105147E5_69C7SID
+      - F1E744DA9D7C6D4B_D9DDSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -778,7 +836,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
