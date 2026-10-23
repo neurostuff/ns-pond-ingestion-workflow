@@ -110,16 +110,26 @@ def _joined_text(el) -> str:
     return "".join(parts)
 
 
+#: What precedes a figure's alt-text in its legend, so a reader can tell the journal's
+#: description of the image from the authors' caption.
+ALT_TEXT_MARK = "Image description:"
+
+
 def _xml_caption(fig) -> str:
-    return squash(" ".join(_joined_text(c) for c in fig if _local(c) in ("label", "caption")))
+    kept = ("label", "caption", "statement")
+    caption = " ".join(_joined_text(c) for c in fig if _local(c) in kept)
+    alt = " ".join(_joined_text(c) for c in fig if _local(c) == "alt-text")
+    return squash(f"{caption} {ALT_TEXT_MARK} {alt}" if squash(alt) else caption)
 
 
 def take_xml_figures(root, figure_tag: str) -> List[Caption]:
     """Remove every `figure_tag` element (JATS `fig`, Elsevier `figure`) from the tree, and
-    return their captions. A figure inside another is the outer one's panel and goes with it."""
+    return their captions in document order. A figure inside another with a caption of its own
+    is a figure too (PMC's eLife JATS nests each figure supplement in its parent); one without
+    is the outer one's panel, and its empty caption is dropped."""
     figs = [el for el in root.iter() if _local(el) == figure_tag]
     outer = [f for f in figs if not any(_local(a) == figure_tag for a in f.iterancestors())]
-    captions = [(f.get("id"), _xml_caption(f)) for f in outer]
+    captions = [(f.get("id"), _xml_caption(f)) for f in figs]
     for f in outer:
         _remove_keeping_tail(f)
     return dedupe(captions)

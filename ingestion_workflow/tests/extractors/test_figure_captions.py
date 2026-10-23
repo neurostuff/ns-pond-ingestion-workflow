@@ -204,3 +204,69 @@ def test_a_table_set_in_a_figure_keeps_its_caption_for_ace():
         page, pmid="1", skip_metadata=True, keep_tables=True)
     (table,) = article.tables
     assert table.label == "Table 1" and table.caption == "Peaks"
+
+
+ELIFE = """<article><body><sec><title>Results</title><p>Overlapping activations (Figure 2).</p>
+<fig id="fig2" position="float"><label>Figure 2.</label><caption><title>Control sub-networks.</title>
+<p>Activations for temporal control (red).</p></caption><graphic href="elife-fig2.jpg"/>
+<p content-type="supplemental-figure"><fig id="fig2s1" specific-use="child-fig" position="anchor">
+<label>Figure 2—figure supplement 1.</label><caption><title>Contrasts using reduced, 4 mm smoothing.</title></caption>
+<graphic href="elife-fig2-figsupp1.jpg"/></fig></p>
+<p content-type="supplemental-figure"><fig id="fig2s2" specific-use="child-fig" position="anchor">
+<label>Figure 2—figure supplement 2.</label><caption><title>Contrasts using surface-based processing.</title></caption>
+<graphic href="elife-fig2-figsupp2.jpg"/></fig></p></fig>
+<p>After the figure.</p></sec></body></article>"""
+
+
+def test_pubget_writes_an_elife_figure_supplement_s_caption_after_its_parent_s(tmp_path):
+    """PMC's eLife JATS nests each figure supplement, a figure with its own label and caption,
+    inside its parent figure: the supplement is a figure of its own, not a panel."""
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+
+    xml = tmp_path / "article.xml"
+    xml.write_text(ELIFE)
+    text, spans = article_text_and_captions(etree.parse(str(xml)), tmp_path)
+    assert [text[slice(*c["span"])] for c in spans] == [
+        "Figure 2. Control sub-networks. Activations for temporal control (red).",
+        "Figure 2—figure supplement 1. Contrasts using reduced, 4 mm smoothing.",
+        "Figure 2—figure supplement 2. Contrasts using surface-based processing.",
+    ]
+    assert [c["ids"] for c in spans] == [["fig2"], ["fig2s1"], ["fig2s2"]]
+    assert "After the figure." in text[: text.index(HEADING)]
+
+
+STATEMENT = """<article><body><sec><title>Methods</title><p>Each participant viewed five clips (Fig. 1).</p>
+<fig id="F1" position="float"><label>Fig. 1</label><graphic href="bi-8-295-g001"/>
+<statement><p>Example of a complete scan session for the participants.</p></statement></fig>
+</sec></body></article>"""
+
+
+def test_pubget_writes_a_caption_the_figure_holds_in_a_statement(tmp_path):
+    """Some JATS put a figure's words in <statement>, with no <caption>: the legend is those words,
+    not the bare label."""
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+
+    xml = tmp_path / "article.xml"
+    xml.write_text(STATEMENT)
+    text, spans = article_text_and_captions(etree.parse(str(xml)), tmp_path)
+    assert [text[slice(*c["span"])] for c in spans] == [
+        "Fig. 1 Example of a complete scan session for the participants."]
+
+
+ALT_TEXT = """<article><body><sec><title>Methods</title><p>The device (Fig. 1).</p>
+<fig id="f1" position="float"><label>Fig. 1.</label><caption><p>(Left) Exploded view of the StretchWrist.</p></caption>
+<alt-text>A labeled 3D rendering of a mechanical device beside a photo of a person inside an MRI scanner.</alt-text>
+<graphic href="fig1.webp"/></fig></sec></body></article>"""
+
+
+def test_pubget_writes_a_figure_s_alt_text_into_its_legend_marked_as_an_image_description(tmp_path):
+    """A journal's description of the image is the source's words about the figure: it follows the
+    caption in the same legend, marked so a reader can tell it from the authors' caption."""
+    from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
+
+    xml = tmp_path / "article.xml"
+    xml.write_text(ALT_TEXT)
+    text, spans = article_text_and_captions(etree.parse(str(xml)), tmp_path)
+    assert [text[slice(*c["span"])] for c in spans] == [
+        "Fig. 1. (Left) Exploded view of the StretchWrist. Image description: A labeled 3D rendering of a "
+        "mechanical device beside a photo of a person inside an MRI scanner."]
