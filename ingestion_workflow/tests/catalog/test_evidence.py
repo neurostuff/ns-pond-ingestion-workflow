@@ -24,6 +24,20 @@ TWO_PUBMED_WORKS = [
     ("17907799", "16261197"),
     # a retraction notice and the retracted paper
     ("16790551", "9482945"),
+    # "...in Homosexual Men" and "...in Homosexual Women"
+    ("28145518", "29330483"),
+    # tau PET with T807 and with T808
+    ("23234879", "23948934"),
+    # Part I and Part II of one series
+    ("33907337", "33935294"),
+    ("20851196", "21497658"),
+    ("10385582", "10860796"),
+    # a review's protocol and the review
+    ("35025895", "36156089"),
+    # "Reply: X" and X; 'On "X"' and X
+    ("24993959", "25398234"),
+    ("39155793", "39803924"),
+    ("30415448", "31267308"),
 ]
 
 @pytest.mark.vcr()
@@ -31,6 +45,27 @@ def test_an_early_release_with_one_word_fewer_in_its_title_is_the_paper(evidence
     # PLoS Comput Biol's early online release: "...trapping in the ribosome" (2005), and the
     # paper: "...trapping in the ribosome tunnel" (2006)
     assert evidence.same_dois("10.1371/journal.pcbi.0020098", "10.1371/journal.pcbi.0020098.eor")
+
+
+@pytest.mark.vcr()
+def test_an_osf_dataset_is_not_its_paper(pubmed, evidence):
+    # 7yzditxbiw6f: "Dataset: Prediction Errors..." typed a journal article, and PubMed 34911768
+    record = pubmed.summaries(["34911768"])["34911768"]
+    assert not evidence.same_paper("10.17605/osf.io/xb7sq", record)
+
+
+@pytest.mark.vcr()
+def test_versions_are_read_from_both_sides_of_crossref_s_relation(evidence):
+    # bioRxiv's preprint is-preprint-of the PLoS paper; the paper's record does not say so back
+    assert "10.1101/2022.04.28.489908" in evidence.versions("10.1371/journal.pcbi.1013995")
+
+
+@pytest.mark.vcr()
+def test_a_reviewed_version_s_concept_doi_is_a_version_only_when_the_registry_says_so(evidence):
+    # eLife's reviewed version 10.7554/elife.92563.N stands for 10.7554/elife.92563; JOV's
+    # 10.1167/jov.24.6.11 is no version of a "10.1167/jov.24.6"
+    assert "10.7554/elife.92563" in evidence.versions("10.1101/2023.09.27.559792")
+    assert "10.1167/jov.24.6" not in evidence.versions("10.1101/2024.01.11.575288")
 
 
 def test_a_short_title_gaining_a_word_is_another_title():
@@ -46,6 +81,15 @@ TWO_REGISTERED_WORKS = [
     ("10.1016/b978-0-443-21710-4.00015-x", "10.1038/s43586-021-00047-w"),
     # a JCMR supplement's abstract and the MRM paper
     ("10.1186/1532-429x-16-s1-o7", "10.1002/mrm.25133"),
+    # a Corrigendum, its title ending in the word, and the paper
+    ("10.1107/s1744309113029321", "10.1107/s1744309113016709"),
+    # HBM's abstract in a NeuroImage supplement and the NeuroImage paper
+    ("10.1016/s1053-8119(00)91391-0", "10.1006/nimg.2000.0687"),
+    # OARSI abstracts in Osteoarthritis Cartilage's supplement and the papers
+    ("10.1016/j.joca.2022.02.507", "10.1016/j.joca.2022.06.004"),
+    ("10.1016/j.joca.2023.01.269", "10.1016/j.joca.2023.07.007"),
+    # an IEEE conference paper and the MRI paper
+    ("10.1109/bhi.2012.6211720", "10.1016/j.mri.2012.05.009"),
 ]
 
 
@@ -70,8 +114,12 @@ def _as(**changed):
     (_as(title="Erratum: A default mode of brain function"), False),
     (_as(first_author="Gusnard"), False),
     (_as(year=2004), False),
+    (_as(year=2003), False),
     (_as(year=2002), True),
     (_as(issns=("1053-8119",), journal="NeuroImage"), False),
+    (_as(issns=("1053-8119",), journal=None), False),
+    (_as(supplement=True), False),
+    (_as(type="proceedings-article"), False),
     # one journal by name, by its electronic ISSN alone
     (_as(issns=("1091-6491",)), True),
     (_as(issns=()), True),
@@ -86,10 +134,17 @@ def test_one_part_of_a_record_apart_is_another_work(other, same):
     assert same_work(RAICHLE, other) is same
 
 
+def _pm(title, doi=RAICHLE.doi):
+    return PubMedSummary(**{**RAICHLE.__dict__, "title": title, "doi": doi})
+
+
 def test_a_main_title_needs_five_words_to_stand_for_the_whole():
-    assert not same_work(_as(title="Default mode"), _as(title="Default mode: a brief history"))
-    assert same_work(_as(title="A default mode of brain"),
+    assert not same_work(_pm("Default mode"), _as(title="Default mode: a brief history"))
+    assert same_work(_pm("A default mode of brain"),
                      _as(title="A default mode of brain: a history"))
+    # two PubMed records of two DOIs: two papers of one series
+    assert not same_work(_pm("A default mode of brain"),
+                         _pm("A default mode of brain: a history", doi="10.1073/pnas.98.2.677"))
 
 
 def test_alike_letters_are_one_title_only_when_the_words_are_spellings_of_each_other():
@@ -125,6 +180,8 @@ def test_alike_registered_works_are_two_works(evidence, first, second):
     ("22015111", "10.1016/j.biopsych.2011.09.005"),
     # Crossref gives Brain's electronic ISSN, PubMed its print one
     ("11335702", "10.1093/brain/124.5.1003"),
+    # "...5-HT1A autoreceptors" at Crossref, "...5-HT(1A) autoreceptors." in PubMed
+    ("39396089", "10.1038/s41386-024-01999-9"),
     # the journal's earlier mEDRA DOI and PubMed's Springer one
     ("20885123", "10.3275/7271"),
     ("20885123", "10.1007/bf03337758"),
@@ -151,8 +208,8 @@ def test_the_registry_tells_an_unregistered_doi_from_one_it_cannot_read():
     registry = DoiRegistry(CrossrefClient())
     assert registry.work("10.137/journal.pone.0066241") is None
     assert registry.work("10.14670/hh-25-014").title.startswith("Ocular adnexal lymphomas")
-    # doi.org sends it to chinadoi, which answers 404
-    with pytest.raises(Unreadable, match="10.7507/1001-5515.201511032"):
+    # doi.org sends it to chinadoi over plain HTTP: not followed
+    with pytest.raises(Unreadable, match="10.7507/1001-5515.201511032: .* over plain HTTP"):
         registry.work("10.7507/1001-5515.201511032")
 
 
@@ -169,7 +226,7 @@ def test_an_agency_serving_another_host_s_certificate_cannot_be_read(monkeypatch
         asked.append(doi)
         raise bad
 
-    client = type("Client", (), {"get": lambda self, url: refuse(url)})()
+    client = type("Client", (), {"get": lambda self, url, **_: refuse(url)})()
     monkeypatch.setattr(registry, "_client", client)
     with pytest.raises(Unreadable, match="bad certificate"):
         registry.work("10.3969/j.issn.1671-7104.2017.02.005")
@@ -196,3 +253,61 @@ def test_a_preprint_by_another_first_author_is_its_paper_s_only_word_for_word():
                      versions=True)
     assert same_work(PubMedSummary(**{**preprint.__dict__, "first_author": "Raichle ME"}), paper,
                      versions=True)
+
+
+@pytest.mark.parametrize("first, second, same", [
+    # an 8-word title may gain a word, a 7-word one may not, nor may one gain two
+    ("Neural coding of reward in the human striatum",
+     "Neural coding of reward in the human ventral striatum", True),
+    ("Neural coding of reward in human striatum",
+     "Neural coding of reward in human ventral striatum", False),
+    ("Neural coding of reward in the human striatum",
+     "Neural coding of monetary reward in the human ventral striatum", False),
+    # a four-word main title is not enough, a five-word one is
+    ("Default mode network connectivity",
+     "Default mode network connectivity: a brief history", False),
+    ("Default mode network connectivity changes",
+     "Default mode network connectivity changes: a history", True),
+    # alike letters, but one word in place of another of half its letters
+    ("Neural correlates of the default mode network in older adults with depression",
+     "Neural correlates of the default mode network in older adults with deprivation", False),
+    # a series' years, and a journal's editors' best
+    ("Endogenous opiates and behavior: 2020", "Endogenous opiates and behavior: 2021", False),
+    ("Editors' Best of 2021", "Editors' Best of 2022", False),
+    # one record a notice by its title alone
+    ("Reprint of: Default mode network connectivity changes",
+     "Default mode network connectivity changes", False),
+    ("Dataset: Prediction errors in the default mode network",
+     "Prediction errors in the default mode network", False),
+    ("Reprint of: Neural coding of reward in the human ventral striatum",
+     "Neural coding of reward in the human ventral striatum", False),
+    # a one-letter British prefix is a spelling
+    ("Oestrogen receptors in the human brain", "Estrogen receptors in the human brain", True),
+    # a main title, then a series' part
+    ("Early time points perfusion imaging", "Early time points perfusion imaging: Part II", False),
+])
+def test_where_one_title_ends_and_another_begins(first, second, same):
+    assert same_work(_pm(first), _as(title=second)) is same
+
+
+def test_initials_in_any_script_are_not_the_family_name():
+    # PubMed 37249071's first author is "Özdemir İ"; Crossref's, of 10.1002/mrm.29706, "Özdemir"
+    pubmed = PubMedSummary(**{**RAICHLE.__dict__, "first_author": "Özdemir İ"})
+    assert same_work(pubmed, _as(first_author="Özdemir"))
+
+
+def test_a_two_letter_family_name_ending_another_is_another_author():
+    assert not same_work(_as(first_author="Ng"), _as(first_author="Wang"))
+    assert same_work(_as(first_author="Raichle"), _as(first_author="Marcus E. Raichle"))
+
+
+def test_the_registry_sends_no_contact_email():
+    registry = DoiRegistry(CrossrefClient(email="someone@example.org"))
+    assert "someone@example.org" not in str(registry._client.headers)
+
+
+@pytest.mark.vcr()
+def test_two_pubmed_records_of_one_doi_are_one_paper_though_one_has_a_subtitle(pubmed):
+    # 5qxpg3twr524's 37401785 and w5rawsklx347's 35770780, both 10.1684/epd.2022.1433
+    records = pubmed.summaries(["35770780", "37401785"])
+    assert same_work(records["35770780"], records["37401785"])

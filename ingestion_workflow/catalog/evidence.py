@@ -42,17 +42,25 @@ _VERSION_OF = ("is-preprint-of", "has-preprint")
 #: The version number a publisher appends to a version's DOI.
 _VERSIONED = re.compile(r"\.\d{1,2}$")
 
-#: A notice about another work: it takes that work's title into its own.
+#: A notice about another work, or another kind of work under its name: it takes that
+#: work's title into its own.
 _NOTICE = re.compile(
     r"^\W*(errat(um|a)|corrigend(um|a)|corrections?\b\W*($|to\b|of\b|:)|retract(ion|ed)\b"
-    r"|notice of retraction|withdrawn\b|expression of concern|addendum\b"
-    r"|(authors?'?s?\W+)?(reply|response)\W+(to|on)\b|in reply\b|comments? on\b|commentary on\b)")
+    r"|notice of retraction|withdrawn\b|expression of concern|addendum\b|reprint of\b"
+    r"|(authors?'?s?\W+)?(reply|response)(\W+(to|on)\b|\W*:)|in reply\b|comments? on\b"
+    r"|commentary on\b|on\s+[\"“'‘]|dataset\W*:)"
+    r"|\b(corrigend(um|a)|errat(um|a))\W*$")
+#: A word a title gains that makes it another work: a review's protocol.
+_OTHER_WORK_WORDS = {"protocol"}
+#: What makes a title after a main title another work's: "...: Part II".
+_PART = re.compile(r"part$|[ivx]+$|\d+$")
 _NOTICE_TYPES = {"Published Erratum", "Retraction of Publication", "Retraction Notice",
                  "Expression of Concern"}
 #: CSL types of works that are not a journal article or its preprint.
 _NOT_ARTICLES = {"book", "chapter", "book-chapter", "book-section", "edited-book", "monograph",
                  "entry", "entry-dictionary", "entry-encyclopedia", "reference-entry",
-                 "reference-book", "dataset", "component", "peer-review", "standard"}
+                 "reference-book", "dataset", "component", "peer-review", "standard",
+                 "proceedings-article", "paper-conference", "proceedings"}
 
 
 @dataclass(frozen=True)
@@ -65,6 +73,11 @@ class _Work:
     notice: bool
     article: bool
     preprint: bool
+    supplement: bool
+    #: Which kind of record: a registry's title may lack the subtitle PubMed's has.
+    registered: bool
+    #: The DOI a PubMed record gives.
+    doi: Optional[str]
     issns: frozenset
     #: The journal's name before any subtitle ("Brain : a journal of neurology" is "brain").
     journal: str
@@ -81,12 +94,15 @@ def _fold(text: str) -> str:
 
 def _work(title: Optional[str], author: Optional[str], year: Optional[int],
           notice: bool, article: bool, preprint: bool, issns: Sequence[str],
-          journal: Optional[str]) -> _Work:
+          journal: Optional[str], supplement: bool, registered: bool,
+          doi: Optional[str] = None) -> _Work:
     text = _text(title)
     return _Work(words=tuple(re.findall(r"[^\W_]+", text)),
                  tokens=tuple(re.findall(r"[^\W_]+|[:.?!;]", text)),
                  author=_fold(author) if author else None, year=year,
-                 notice=notice or bool(_NOTICE.match(text)), article=article, preprint=preprint,
+                 notice=notice or bool(_NOTICE.search(text)), article=article, preprint=preprint,
+                 supplement=supplement, registered=registered,
+                 doi=normalize_doi(doi) if doi else None,
                  issns=frozenset(re.sub(r"[^0-9X]", "", i.upper()) for i in issns),
                  journal=" ".join(re.findall(r"[^\W_]+", re.sub(
                      r"^the\s+|\s*:.*$", "", _text(journal).replace("&", " and ")))))
@@ -97,17 +113,20 @@ def _from_pubmed(summary: PubMedSummary) -> _Work:
     if author:
         # "Raichle ME": the family name before the initials.
         parts = author.split()
-        if len(parts) > 1 and re.fullmatch(r"[A-Z]{1,3}", parts[-1]):
+        # initials in any script: "Özdemir İ"
+        if len(parts) > 1 and len(parts[-1]) <= 3 and parts[-1].isalpha() and parts[-1].isupper():
             author = " ".join(parts[:-1])
     return _work(summary.title, author, summary.year,
                  bool(_NOTICE_TYPES & set(summary.pubtypes)), article=True,
-                 preprint=summary.preprint, issns=summary.issns, journal=summary.journal)
+                 preprint=summary.preprint, issns=summary.issns, journal=summary.journal,
+                 supplement=summary.supplement, registered=False, doi=summary.doi)
 
 
 def _from_registry(work: RegisteredWork) -> _Work:
     return _work(work.title, work.first_author, work.year, False,
                  article=work.type not in _NOT_ARTICLES, preprint=work.type == "posted-content",
-                 issns=work.issns, journal=work.journal)
+                 issns=work.issns, journal=work.journal, supplement=work.supplement,
+                 registered=True)
 
 
 def _same_journal(a: _Work, b: _Work) -> bool:
@@ -120,7 +139,7 @@ def _same_journal(a: _Work, b: _Work) -> bool:
 def _same_author(a: str, b: str) -> bool:
     """One family name, though a registry may give the whole name ("Malcolm Wells")."""
     short, long = sorted((a, b), key=len)
-    return short == long or (len(short) >= 3 and (long.endswith(short) or long.startswith(short)))
+    return short == long or (len(short) >= 3 and long.endswith(short))
 
 
 def _alike_words(a: Sequence[str], b: Sequence[str]) -> bool:
@@ -128,14 +147,24 @@ def _alike_words(a: Sequence[str], b: Sequence[str]) -> bool:
     title may also gain one word (an early release's "...in the ribosome" is the
     paper's "...in the ribosome tunnel"); a word in place of another (yes, no) is
     another title."""
+    def spelling(x, y):
+        # "women" is "men" with a word before it ("oestrogen" is a spelling of
+        # "estrogen"), "T808" is "T807" by another number
+        short, long = sorted((x, y), key=len)
+        if (long.endswith(short) and len(long) - len(short) > 1
+                or re.findall(r"\d+", x) != re.findall(r"\d+", y)):
+            return False
+        return difflib.SequenceMatcher(None, x, y).ratio() >= WORD_LIKENESS
+
     def spelled(x, others):
-        return any(difflib.SequenceMatcher(None, x, y).ratio() >= WORD_LIKENESS for y in others)
+        return any(spelling(x, y) for y in others)
     only_a, only_b = set(a) - set(b), set(b) - set(a)
     lone_a = [x for x in only_a if not spelled(x, only_b)]
     lone_b = [y for y in only_b if not spelled(y, only_a)]
     extra = lone_a or lone_b
     return not (lone_a and lone_b) and (not extra or (
-        len(extra) == 1 and min(len(a), len(b)) >= LONG_TITLE_WORDS))
+        len(extra) == 1 and min(len(a), len(b)) >= LONG_TITLE_WORDS
+        and extra[0] not in _OTHER_WORK_WORDS))
 
 
 def _main_title(short: _Work, long: _Work) -> bool:
@@ -143,17 +172,22 @@ def _main_title(short: _Work, long: _Work) -> bool:
     head = list(short.tokens)
     while head and not re.match(r"\w", head[-1]):
         head.pop()
+    rest = [t for t in long.tokens[len(head) + 1:] if re.match(r"\w", t)]
     return (len(short.words) >= MAIN_TITLE_WORDS and len(long.tokens) > len(head)
-            and list(long.tokens[:len(head)]) == head and long.tokens[len(head)] in ":.?!;")
+            and list(long.tokens[:len(head)]) == head and long.tokens[len(head)] in ":.?!;"
+            and not (rest and _PART.match(rest[0])))
 
 
 def _same_title(a: _Work, b: _Work) -> bool:
     if not a.words or not b.words:
         return False
-    if a.words == b.words:
+    # the same letters, however punctuated: "5-HT1A" and "5-HT(1A)"
+    if a.words == b.words or "".join(a.words) == "".join(b.words):
         return True
     short, long = sorted((a, b), key=lambda w: len(w.words))
-    if _main_title(short, long):
+    # two records of one kind have no reason to differ in a subtitle, unless they are two
+    # PubMed records of one DOI (35770780 and 37401785)
+    if (a.registered != b.registered or a.doi and a.doi == b.doi) and _main_title(short, long):
         return True
     return (difflib.SequenceMatcher(None, " ".join(a.words), " ".join(b.words)).ratio()
             >= TITLE_LIKENESS and _alike_words(a.words, b.words))
@@ -177,9 +211,11 @@ def same_work(first: Record, second: Record, *, versions: bool = False) -> bool:
     their authors reordered when the title is word for word the same. A
     notice (an erratum, a reply, a retraction) takes its work's title, so it is one
     work only with a notice of the same title, author and year; a book chapter is
-    never a journal article.
+    never a journal article, nor a meeting abstract in a supplement issue its paper.
     """
     a, b = _of(first), _of(second)
+    if a.supplement != b.supplement:
+        return False
     if a.notice or b.notice:
         return (a.notice and b.notice and a.words == b.words and a.author is not None
                 and a.author == b.author and a.year == b.year)
@@ -267,14 +303,16 @@ class Evidence:
         return first is not None and second is not None and same_work(first, second)
 
     def versions(self, doi: str) -> List[str]:
-        """The DOIs Crossref records as this DOI's preprint or version of record, with
+        """The DOIs Crossref records as this DOI's preprint or version of record, on either
+        side of the relation, with
         each one's DOI without its version number when the registry gives both one work
         (eLife's reviewed version 10.7554/eLife.92563.3 is 10.7554/eLife.92563, which
         Crossref does not relate to the preprint). Raises Unreadable when the registry
         cannot be read for one of them."""
         if doi not in self._versions:
-            relations = self._registry.relations(doi)
-            related = [r for kind in _VERSION_OF for r in relations.get(kind, ())]
+            relations, relating = self._registry.relations(doi), self._registry.relating(doi)
+            related = [r for kind in _VERSION_OF
+                       for r in [*relations.get(kind, ()), *relating.get(kind, ())]]
             concepts = [base for r in related if (base := _VERSIONED.sub("", r)) != r
                         and self.same_dois(base, r)]
             self._versions[doi] = list(dict.fromkeys(

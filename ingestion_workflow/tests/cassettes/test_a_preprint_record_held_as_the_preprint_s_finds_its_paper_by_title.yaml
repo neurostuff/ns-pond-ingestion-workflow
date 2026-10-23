@@ -1,0 +1,426 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=38123591&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTTW/bMAz9K4LObmHLzZrlVrg9LG2KIsmt2EG16ESYPlxKGtoF+++j7CzZWhRo
+        TpYe+chH6nnHtyAVIJ/teHztgc84hGStxFde8J+AQXtHYHle898FRwqamJOTVoHPHnk9rUQ9+Vrx
+        78XxPMaJdkAK3qcnJWNuIEpRs2tomSgJh48CwSdsM7xqNVtCT5BMcesx991xJ20OLn0IbL7YB/cj
+        XA15hLUmhQg4aCH9B1ZjtAPWNCfSVhJ/SGSndltj8m7D5ifSbsEYQNZ8jkf7NzLEcUVv2FFHk6n3
+        kFAaBl0HbQzMd2y9WLGIUju6ORa3wLbJSsd6hA69i5Tdeozwcj68CMa/pdy7UtGGz5XKxvImDTNW
+        Nd10CGm4ZJvIDYTsBXFZZhcY6TbZZ0AfGtEZm5x+TjBMXZXV5EstptOxSDZqdtR4EuXF5EzUQozm
+        G7f3yOdkK0darjDqlkYp+FI65a3+BYo1pBM9LU6xNWppcksEkq1oszFlYQ/paUHhM6adghc6dZ4c
+        cXN99+3+Zux0SM2zybHN+LfsuFb7V6Q8CyrrHhASXNFapBkWcfhtshuOFNv+mz895j8smqq8rOs8
+        7FuK/q/J5Ejq7R8AAAD//4xVTW+DMAy971dEuxdCgELZabeddpi0HxDSVPUWmioENE3qf58doKWl
+        lXYDw7Ofv57VCrYVm4FfrtFbC3NsesEmPEp4WsZtluSbcoV7u8o2Iuer4iY+XHnI/ucBi76H1lvU
+        IKrZvKTYDA19KNxMNGKex0nJOK9wZojAHCKV0ke/gCQi5usHEOwMCcQSIQTj6yoTC8S5nbeAhEJk
+        yQKgcdD07x0AZyKtRLqMgO1y2mjZ3uPFp0zCwO600welh5HD17OU1mA/fqCPWJDad9szISp6jngS
+        pTzKxTotsohh5ytGLcINi5ffn0OQscefRyKDCkDT39BepuuiKLO8wHW1gWagJb13UHc+0Hp+ky17
+        xeycVJ62DNNDl8p2BzwvJc72rjPma9jVSX0VYNVgB4o5fUQpaWnZjVXS45EKgnDm/WC0sHBWjbwV
+        +AAkYXNK0eZDbXDukB4Sqq39nsQOf8HuQteMArMFP5zFYeERtNduInJjHskPUca2hfpRBoeuqen4
+        kkX2EoysDall0zkzWCev+EWPJkxhwRZtF99E/RJW7SWO/xiEJPz64F6Nz/DDDtzskFwubE/ZqM6Q
+        po2FOZ1OT38AAAD//wMAoHX9TkQIAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 22:11:00 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F985000032D3C9B18441.1.1.m_1
+      ncbi-sid:
+      - 2068B4826565EA6B_935DSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=36778457&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRVy27bMBD8FYKnFrBlSrIsWTkF7qFI4SBI0lOQAy2tbbYUqfIRpA36711Sru3E
+        CZCcTC939jGcXT3RLfAWDK2fqPvdA60pWN913PymI/oAxgqt0MiSnP4dUYOX0gVnL1pL6zuaz8qy
+        mhYlvR8dzsM9wvaWEe39quUuJMhYlpNL/UCyDO3w1oXV3jTBvBL6+lE8oIl7t9Um5H2iinfh8lpb
+        Sy6Wu8tdC+fRD22N9NaBibVg/XvUQgoFZLH4IOyGm5/ckI9muzVeqw25+CDsG0gJhizeh0P+Jbdu
+        oOgF2gknA/QSvOGSwHoNjbNEr8nt8oY4w4XCf4q4LZCt77givYG10cqhd6ONg8ckvohx/0Opk1Cu
+        s+8LFYSlpY894llY63fHnm/ADkfJ1SboC/AHW1Oy80r88hC7TVk6q1halQNcDRAYTtlsno2rjBWD
+        6AbW7uiVgd4I5dB6gcpSWM65caLBbu6DsLG2FulzPhRw5VdLaIcAe2Me3mGADOJ/oqLdPQr6dREw
+        WLCOFLvkMna2n4LwuAdI1xz7Vwf/q+ViPk+LWTo9QYhnOYoDBu/Goq3JAXv2HNxqcQzND9CUJSky
+        Ognjl7A0yVlSZLO8fJldPAswPQR4BYiUboV1GtdI4OmYxj1VR1M/YdkknRI2qxmLWY8B6B3G9U1E
+        eoIA5Qz8eQWQE5bX0/IEENgzIIHbl2lS5KUkjMXColDWYEA1MAgA/+731E0jyDX0CYl77As0eDhL
+        80/p5zrLSsYSgm9Qk0A3y6uJnabFvBqj73g6zwo2LsOMYcAd39/7UAcRKsiwC7rPqzTLizkqS+lY
+        YayIO2fEyrtYEf3KLTnHxgxvXBA2doYhG+1R+XU1H9G1l/LHMAC7PbPbr6SOQ9vv5oRYMLj/yVob
+        gh5Sb8IXAaRuuMNvQpxDlERNTl4/+QcAAP//bJVBEsMgCEX3PU5vpCSdMMWacTQ7796P4tgm2RIF
+        Pvk+ps57W2HCkUwlcW75FC+JCJyAGIF1IAbt+xjfAzk4AitwCfbcF859OfV3ikvbmkZ/p7BJ7VXs
+        /7Zp70DSpwSvK1Aj7nAszosyK5QkRiPLii+rhSDh0i1iM7e2PsvS5vY8iihI/9de89nTfNYPvDj9
+        4HzuuUPVUBFFkQ2m1vr4AgAA//8DAPW6A8vKBwAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 22:11:00 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC75000064C2098143A2.1.1.m_1
+      ncbi-sid:
+      - 2068B4826565EA6B_935DSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2023.01.30.526374
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T19:37:06Z","timestamp":1768505826069,"version":"3.49.0"},"posted":{"date-parts":[[2023,2,2]]},"group-title":"Neuroscience","reference-count":89,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,22]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>How
+        does a train of TMS pulses modify neural activity in humans? Despite adoption
+        of repetitive TMS (rTMS) for the treatment of neuropsychiatric disorders,
+        we still do not understand how rTMS changes the human brain. This limited
+        understanding stems in part from a lack of methods for noninvasively measuring
+        the neural effects of a single TMS train \u2014 a fundamental building block
+        of treatment \u2014 as well as the cumulative effects of consecutive TMS trains.
+        Gaining this understanding would provide foundational knowledge to guide the
+        next generation of treatments. Here, to overcome this limitation, we developed
+        methods to noninvasively measure causal and acute changes in cortical excitability
+        and evaluated this neural response to single and sequential TMS trains. In
+        16 healthy adults, standard 10 Hz trains were applied to the dorsolateral
+        prefrontal cortex (dlPFC) in a randomized, sham-controlled, event-related
+        design and changes were assessed based on the TMS-evoked potential (TEP),
+        a measure of cortical excitability. We hypothesized that single TMS trains
+        would induce changes in the local TEP amplitude and that those changes would
+        accumulate across sequential trains, but primary analyses did not indicate
+        evidence in support of either of these hypotheses. Exploratory analyses demonstrated
+        non-local neural changes in sensor and source space and local neural changes
+        in phase and source space. Together these results suggest that single and
+        sequential TMS trains may not be sufficient to modulate local cortical excitability
+        indexed by typical TEP amplitude metrics but may cause neural changes that
+        can be detected outside the stimulation area or using phase or source space
+        metrics. This work should be contextualized as methods development for the
+        monitoring of transient noninvasive neural changes during rTMS and contributes
+        to a growing understanding of the neural effects of rTMS.<\/jats:p>","DOI":"10.1101\/2023.01.30.526374","type":"posted-content","created":{"date-parts":[[2023,2,2]],"date-time":"2023-02-02T15:10:23Z","timestamp":1675350623000},"source":"Crossref","is-referenced-by-count":3,"title":["Neural
+        effects of TMS trains on the human prefrontal cortex"],"prefix":"10.64898","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-7487-8946","authenticated-orcid":false,"given":"Jessica
+        M.","family":"Ross","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Christopher
+        C.","family":"Cline","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Manjima","family":"Sarkar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jade","family":"Truong","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-0529-3490","authenticated-orcid":false,"given":"Corey
+        J.","family":"Keller","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023112505200642000_2023.01.30.526374v4.1","doi-asserted-by":"publisher","DOI":"10.4103\/ipj.ipj_88_18"},{"key":"2023112505200642000_2023.01.30.526374v4.2","doi-asserted-by":"publisher","DOI":"10.1016\/S0140-6736(18)30295-2"},{"key":"2023112505200642000_2023.01.30.526374v4.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.eclinm.2020.100349"},{"key":"2023112505200642000_2023.01.30.526374v4.4","doi-asserted-by":"publisher","DOI":"10.3791\/59711"},{"key":"2023112505200642000_2023.01.30.526374v4.5","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2019.10.007"},{"key":"2023112505200642000_2023.01.30.526374v4.6","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2017.11.016"},{"key":"2023112505200642000_2023.01.30.526374v4.7","doi-asserted-by":"publisher","DOI":"10.1038\/s41386-020-0633-z"},{"key":"2023112505200642000_2023.01.30.526374v4.8","doi-asserted-by":"publisher","DOI":"10.1097\/00001756-199711100-00024"},{"key":"2023112505200642000_2023.01.30.526374v4.9","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-009-0123-4"},{"key":"2023112505200642000_2023.01.30.526374v4.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2021.02.005"},{"key":"2023112505200642000_2023.01.30.526374v4.11","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.22016"},{"key":"2023112505200642000_2023.01.30.526374v4.12","doi-asserted-by":"publisher","DOI":"10.1016\/j.brainresbull.2005.11.003"},{"key":"2023112505200642000_2023.01.30.526374v4.13","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2009.04.001"},{"key":"2023112505200642000_2023.01.30.526374v4.14","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00172.2010"},{"key":"2023112505200642000_2023.01.30.526374v4.15","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2019.01.001"},{"key":"2023112505200642000_2023.01.30.526374v4.16","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2004.09.048"},{"key":"2023112505200642000_2023.01.30.526374v4.17","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.20608"},{"key":"2023112505200642000_2023.01.30.526374v4.18","unstructured":"Lucas
+        MV , Cline CC , Sun Y , Yan M , Hogoboom N , Etkin A . Characterization of
+        rTMS acute response profiles for systematic design of neuromodulation interventions.
+        In revision."},{"key":"2023112505200642000_2023.01.30.526374v4.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.bbr.2009.03.004"},{"key":"2023112505200642000_2023.01.30.526374v4.20","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2021.05.008"},{"key":"2023112505200642000_2023.01.30.526374v4.21","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2018.09.032"},{"key":"2023112505200642000_2023.01.30.526374v4.22","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1088-17.2018"},{"key":"2023112505200642000_2023.01.30.526374v4.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2019.07.009"},{"key":"2023112505200642000_2023.01.30.526374v4.24","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0216185"},{"key":"2023112505200642000_2023.01.30.526374v4.25","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2020.10.011"},{"key":"2023112505200642000_2023.01.30.526374v4.26","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-022-05397-3"},{"key":"2023112505200642000_2023.01.30.526374v4.27","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25990"},{"key":"2023112505200642000_2023.01.30.526374v4.28","unstructured":"Richardson
+        M , Paxton, Alexandra, Kuznetsov, Nikita. Nonlinear methods for understanding
+        complex dynamical phenomena in psychological science. APA Psychological Science
+        Agenda, 2017."},{"key":"2023112505200642000_2023.01.30.526374v4.29","doi-asserted-by":"publisher","DOI":"10.1007\/s00422-006-0104-6"},{"key":"2023112505200642000_2023.01.30.526374v4.30","doi-asserted-by":"publisher","DOI":"10.1140\/epjst\/e2008-00829-1"},{"key":"2023112505200642000_2023.01.30.526374v4.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2010.12.037"},{"key":"2023112505200642000_2023.01.30.526374v4.32","doi-asserted-by":"publisher","DOI":"10.1097\/NMD.0b013e318261413d"},{"key":"2023112505200642000_2023.01.30.526374v4.33","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(02)01866-8"},{"key":"2023112505200642000_2023.01.30.526374v4.34","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-009-0123-4"},{"key":"2023112505200642000_2023.01.30.526374v4.35","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2018.10.052"},{"key":"2023112505200642000_2023.01.30.526374v4.36","doi-asserted-by":"publisher","DOI":"10.1016\/S1388-2457(99)00070-X"},{"key":"2023112505200642000_2023.01.30.526374v4.37","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2018.08.003"},{"key":"2023112505200642000_2023.01.30.526374v4.38","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2009.08.016"},{"key":"2023112505200642000_2023.01.30.526374v4.39","doi-asserted-by":"publisher","DOI":"10.1016\/0013-4694(94)90029-9"},{"key":"2023112505200642000_2023.01.30.526374v4.40","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2015.02.001"},{"key":"2023112505200642000_2023.01.30.526374v4.41","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00067.2005"},{"key":"2023112505200642000_2023.01.30.526374v4.42","doi-asserted-by":"publisher","DOI":"10.1097\/00124509-199803000-00004"},{"key":"2023112505200642000_2023.01.30.526374v4.43","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1311772110"},{"key":"2023112505200642000_2023.01.30.526374v4.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2018.03.001"},{"key":"2023112505200642000_2023.01.30.526374v4.45","doi-asserted-by":"publisher","DOI":"10.1109\/EMBC.2015.7318340"},{"key":"2023112505200642000_2023.01.30.526374v4.46","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2013.01.003"},{"key":"2023112505200642000_2023.01.30.526374v4.47","doi-asserted-by":"publisher","DOI":"10.1016\/j.drugalcdep.2017.02.002"},{"key":"2023112505200642000_2023.01.30.526374v4.48","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyt.2022.842947"},{"key":"2023112505200642000_2023.01.30.526374v4.49","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2016.02.006"},{"key":"2023112505200642000_2023.01.30.526374v4.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2021.118708"},{"key":"2023112505200642000_2023.01.30.526374v4.51","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2009.04.023"},{"key":"2023112505200642000_2023.01.30.526374v4.52","doi-asserted-by":"publisher","DOI":"10.1016\/j.jneumeth.2003.10.009"},{"key":"2023112505200642000_2023.01.30.526374v4.53","doi-asserted-by":"publisher","DOI":"10.1109\/NER49283.2021.9441147"},{"key":"2023112505200642000_2023.01.30.526374v4.54","doi-asserted-by":"publisher","DOI":"10.1016\/j.jneumeth.2022.109494"},{"key":"2023112505200642000_2023.01.30.526374v4.55","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.05.026"},{"key":"2023112505200642000_2023.01.30.526374v4.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2017.10.021"},{"key":"2023112505200642000_2023.01.30.526374v4.57","doi-asserted-by":"publisher","DOI":"10.20982\/tqmp.01.1.p018"},{"key":"2023112505200642000_2023.01.30.526374v4.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpsc.2015.11.007"},{"key":"2023112505200642000_2023.01.30.526374v4.59","doi-asserted-by":"publisher","DOI":"10.1101\/2023.01.20.524867"},{"key":"2023112505200642000_2023.01.30.526374v4.60","doi-asserted-by":"publisher","DOI":"10.1155\/2011\/831409"},{"key":"2023112505200642000_2023.01.30.526374v4.61","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-021-04463-6"},{"key":"2023112505200642000_2023.01.30.526374v4.62","doi-asserted-by":"publisher","DOI":"10.1007\/978-3-319-07155-8_1"},{"key":"2023112505200642000_2023.01.30.526374v4.63","unstructured":"Scheurich
+        R , Demos AP , Zamm A , Mathias B , Palmer C . Capturing Intra-and Inter-Brain
+        Dynamics with Recurrence Quantification Analysis. 41st Annual Meeting of the
+        Cognitive Science Society 2019:2748\u201354."},{"key":"2023112505200642000_2023.01.30.526374v4.64","doi-asserted-by":"publisher","DOI":"10.1007\/s00221-015-4304-y"},{"key":"2023112505200642000_2023.01.30.526374v4.65","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyg.2014.00771"},{"key":"2023112505200642000_2023.01.30.526374v4.66","doi-asserted-by":"publisher","DOI":"10.1098\/rstb.2011.0351"},{"key":"2023112505200642000_2023.01.30.526374v4.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.12.039"},{"key":"2023112505200642000_2023.01.30.526374v4.68","doi-asserted-by":"publisher","DOI":"10.1186\/1475-925X-9-45"},{"key":"2023112505200642000_2023.01.30.526374v4.69","doi-asserted-by":"publisher","DOI":"10.1109\/TMI.2004.837363"},{"key":"2023112505200642000_2023.01.30.526374v4.70","doi-asserted-by":"publisher","DOI":"10.1155\/2011\/879716"},{"key":"2023112505200642000_2023.01.30.526374v4.71","doi-asserted-by":"publisher","DOI":"10.1109\/NER.2013.6695906"},{"key":"2023112505200642000_2023.01.30.526374v4.72","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0008876"},{"key":"2023112505200642000_2023.01.30.526374v4.73","doi-asserted-by":"publisher","DOI":"10.1097\/YCT.0b013e3181ce1a8c"},{"key":"2023112505200642000_2023.01.30.526374v4.74","doi-asserted-by":"publisher","DOI":"10.4088\/JCP.v69n0315"},{"key":"2023112505200642000_2023.01.30.526374v4.75","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2017.02.013"},{"key":"2023112505200642000_2023.01.30.526374v4.76","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2007.09.124"},{"key":"2023112505200642000_2023.01.30.526374v4.77","doi-asserted-by":"publisher","DOI":"10.3389\/fnins.2023.1157080"},{"key":"2023112505200642000_2023.01.30.526374v4.78","doi-asserted-by":"publisher","DOI":"10.1007\/s00221-004-2052-5"},{"key":"2023112505200642000_2023.01.30.526374v4.79","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2004.02.005"},{"key":"2023112505200642000_2023.01.30.526374v4.80","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhab493"},{"key":"2023112505200642000_2023.01.30.526374v4.81","doi-asserted-by":"publisher","DOI":"10.1007\/s12311-018-0945-2"},{"key":"2023112505200642000_2023.01.30.526374v4.82","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0913008107"},{"key":"2023112505200642000_2023.01.30.526374v4.83","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.5089-13.2014"},{"key":"2023112505200642000_2023.01.30.526374v4.84","doi-asserted-by":"publisher","DOI":"10.1186\/s12916-018-1086-7"},{"key":"2023112505200642000_2023.01.30.526374v4.85","doi-asserted-by":"publisher","DOI":"10.1515\/revneuro-2014-0036"},{"key":"2023112505200642000_2023.01.30.526374v4.86","doi-asserted-by":"publisher","DOI":"10.1142\/S0129065711002808"},{"key":"2023112505200642000_2023.01.30.526374v4.87","doi-asserted-by":"publisher","DOI":"10.1016\/j.neulet.2004.05.025"},{"key":"2023112505200642000_2023.01.30.526374v4.88","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2022.04.022"},{"key":"2023112505200642000_2023.01.30.526374v4.89","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpsc.2022.12.005"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.01.30.526374","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T04:13:00Z","timestamp":1768450380000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.01.30.526374"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,2,2]]},"references-count":89,"URL":"https:\/\/doi.org\/10.1101\/2023.01.30.526374","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41598-023-49250-7","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,2,2]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3622'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Oct 2026 22:11:00 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.01.30.526374&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1038\/s41598-023-49250-7","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.01.30.526374","asserted-by":"object"}]}}],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 22:11:01 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Neural%5Bti%5D+AND+effects%5Bti%5D+AND+of%5Bti%5D+AND+TMS%5Bti%5D+AND+trains%5Bti%5D+AND+on%5Bti%5D+AND+the%5Bti%5D+AND+human%5Bti%5D+AND+prefrontal%5Bti%5D+AND+cortex%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQsU7DQAzd+YrIc1QhsXVDYqULbFWGU/Iud1JyF2xfaVXl33GAphFsfn7Pfs++
+        UoDrwLS/kl4m0J4gcNwGqukElpiT9R53TzTXN4ohZdBlpM0l6cKbmqGjO9+BqOMbF7shioFjU5Oy
+        SzI4tc2C395HAV82hI0dUNgNR41N9Xx4qeA9WpUVZ7+W769va207Ytqo0p0JWOtQRndnJobnnHTj
+        1mZWnBdo4cGc+Sf/labATiApq7fbO4tP2ZvIMttpAWTX+Iih20oa+92n4xRT/2dP7FNmdLcvZEX3
+        38GoXHQqOkLE9ZDF9ZCrqBil+lbtqJnn+eELAAD//wMAsy9d7c8BAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 22:11:00 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500003AD3CACF704E.1.1.m_1
+      ncbi-sid:
+      - 2068B4826565EA6B_935DSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Neural%5Bti%5D+AND+effects%5Bti%5D+AND+TMS%5Bti%5D+AND+trains%5Bti%5D+AND+human%5Bti%5D+AND+prefrontal%5Bti%5D+AND+cortex%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGSNvQ7CMAyEd56i8lwhaIACGxIrXWCjDFFw1UghLY6DQKjvjjvwo7L5vjvfPaFG
+        fUaC9RP40SKsAQNqMjWkcEMKtvHCJmMFXfq2CEN03L+YJno5IJM0IV/0/SsCa+q9iUh7djaIOIJa
+        TjM1X00FqkWeL2fzHE4pMGkfnGaZC9gHhV0j0uPHkK4SCoykXQnHg2WHp2RTbJMSsKrQcBjiw24/
+        RNJn/V+wjhfth7AlrKjx/D9nGmK8fyh03egFAAD//wMAf97vKEkBAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 22:11:01 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC75000050C20BC703C6.1.1.m_1
+      ncbi-sid:
+      - 2068B4826565EA6B_935DSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

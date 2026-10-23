@@ -36,7 +36,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Collection, Dict, Iterator, List, Set, Tuple
+from typing import Callable, Collection, Dict, Iterator, List, Set, Tuple, Union
 
 from ingestion_workflow.models.ids import PREPRINT_PMCID, PREPRINT_PMID
 from ingestion_workflow.utils.doi import normalize_doi
@@ -305,24 +305,24 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                     holder = catalog.holder("doi", version)
                     add("two-versions", f"preprint {doi} is {version}'s, which {holder} holds",
                         accepted=based(holder))
-        for pmid in h["pmid"]:
+        for pmid in h["pmid"] + h[PREPRINT_PMID]:
             if (summary := summaries.get(pmid)) and summary.preprint:
                 for other in evidence.title_versions(pmid):
                     if elsewhere("pmid", other):
                         holder = catalog.holder("pmid", other)
                         add("two-versions", f"preprint PubMed {pmid} is PubMed {other}'s work, "
                             f"which {holder} holds", accepted=based(holder))
-        try:
-            for source, named in _downloads_name(catalog, article_id):
-                holders = {catalog.holder(k, v) for k, v in named}
-                others = sorted(a for a in holders if a not in (None, article_id))
-                if article_id not in holders and others:
-                    ids = ", ".join(f"{k} {v}" for k, v in named)
-                    add("download",
-                        f"download/{source} names {ids}, which {', '.join(others)} holds",
-                        accepted=all(based(o) and o in partners() for o in others))
-        except Unreadable as exc:
-            add("download-unreadable", str(exc))
+        for source, named in _downloads_name(catalog, article_id):
+            if isinstance(named, Unreadable):
+                add("download-unreadable", str(named))
+                continue
+            holders = {catalog.holder(k, v) for k, v in named}
+            others = sorted(a for a in holders if a not in (None, article_id))
+            if article_id not in holders and others:
+                ids = ", ".join(f"{k} {v}" for k, v in named)
+                add("download",
+                    f"download/{source} names {ids}, which {', '.join(others)} holds",
+                    accepted=all(based(o) and o in partners() for o in others))
     return found
 
 
@@ -365,14 +365,17 @@ def _held(catalog: Catalog, article_id: str) -> Dict[str, List[str]]:
 
 def _downloads_name(
     catalog: Catalog, article_id: str
-) -> Iterator[Tuple[str, List[Tuple[str, str]]]]:
-    """(source, the ids its files name) for each ok download whose files name any.
-
-    Raises Unreadable for an ok download whose record or named XML is gone.
-    """
+) -> Iterator[Tuple[str, Union[List[Tuple[str, str]], Unreadable]]]:
+    """(source, the ids its files name) for each ok download whose files name any, and
+    (source, Unreadable) for one whose record or named XML is gone: each download is
+    judged on its own."""
     for artifact in catalog.artifacts_for_article(article_id):
         if artifact.stage == "download" and artifact.ok:
-            named = _named(catalog, artifact)
+            try:
+                named = _named(catalog, artifact)
+            except Unreadable as exc:
+                yield artifact.source, exc
+                continue
             if named:
                 yield artifact.source, named
 

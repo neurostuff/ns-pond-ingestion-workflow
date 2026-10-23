@@ -476,10 +476,12 @@ class Catalog:
     def _refuse(self, conn: sqlite3.Connection, kind: str, value: str,
                 article_id: Optional[str], why: str) -> None:
         self.conflicts += 1
-        self.refused.append((kind, value, article_id, why))
+        if (kind, value, article_id, why) not in self.refused:
+            self.refused.append((kind, value, article_id, why))
+        # The reason names the article, so a refusal made again differs only in its time.
         conn.execute("INSERT INTO refusals(kind, value, article_id, reason, refused_at) "
                      "VALUES(?, ?, ?, ?, ?) ON CONFLICT(kind, value, reason) DO UPDATE SET "
-                     "article_id=excluded.article_id, refused_at=excluded.refused_at",
+                     "refused_at=excluded.refused_at",
                      (kind, value, article_id, why, utcnow()))
         logger.warning("catalog: %s %s not added -- %s", kind, value, why)
 

@@ -553,3 +553,35 @@ def test_a_split_may_not_leave_the_journal_doi_only_as_an_alternate(catalog):
     with pytest.raises(IdentityError, match="only as an alternate"):
         catalog.remove_aliases([("doi", "10.1161/circimaging.116.005695", a)])
     assert _snapshot(catalog) == before
+
+
+def test_a_split_of_the_id_that_made_the_article_leaves_the_article_where_it_is(catalog):
+    # og3a4u5wsy26's shape: registered by the Neurobiol Learn Mem DOI, holding Biol Psychiatry's
+    a = catalog.register(Identifier(doi="10.1016/j.nlm.2011.06.006")).id
+    catalog._conn.executemany("INSERT INTO aliases VALUES (?, ?, ?)", [
+        ("pmid", "22015111", a), ("doi", "10.1016/j.biopsych.2011.09.005", a)])
+    new = catalog.split(a, [("doi", "10.1016/j.nlm.2011.06.006")])
+    assert catalog.live(a) and catalog.current_id(a) == a
+    assert catalog.holder("doi", "10.1016/j.biopsych.2011.09.005") == a
+    assert catalog.holder("doi", "10.1016/j.nlm.2011.06.006") == new
+
+
+def test_a_split_leaves_an_article_merged_elsewhere_where_it_is(catalog):
+    third = catalog.register(Identifier(pmid="21704176")).id
+    seeded = catalog.register(Identifier(doi="10.1016/j.nlm.2011.06.006")).id
+    _older(catalog, third)
+    assert catalog.merge([third, seeded]) == third
+    a = catalog.register(Identifier(pmid="22015111", doi="10.1016/j.biopsych.2011.09.005")).id
+    catalog.reassign_aliases([("doi", "10.1016/j.nlm.2011.06.006", third, a)])
+    catalog.split(a, [("doi", "10.1016/j.nlm.2011.06.006")])
+    assert catalog.current_id(seeded) == third
+
+
+def test_a_merge_drops_a_second_pmc_record_of_the_paper(catalog):
+    paper = catalog.register(
+        Identifier(doi="10.1684/epd.2022.1433", pmid="35770780", pmcid="PMC100")).id
+    duplicate = catalog.register(Identifier(pmcid="PMC200")).id
+    survivor = catalog.merge([paper, duplicate], drop=[("pmcid", "PMC200")])
+    assert catalog.aliases(survivor, "duplicate_pmcid") == ["PMC200"]
+    assert catalog.register(Identifier(pmcid="PMC200")).id == survivor
+    assert not (catalog.identifier(survivor).other_ids or {}).get("duplicate_pubmed_records")

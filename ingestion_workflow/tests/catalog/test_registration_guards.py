@@ -208,3 +208,18 @@ def test_a_second_journal_doi_the_registry_cannot_read_is_refused_with_why(check
     [(kind, value, article, why)] = checked.refused
     assert (kind, value, article) == ("doi", "10.7507/1001-5515.201511032", a)
     assert "the registry cannot say whether it is the same work" in why
+
+
+def test_a_refusal_is_on_record_once_for_each_reason_with_its_latest_time(catalog):
+    import time
+    a = catalog.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
+    b = catalog.register(Identifier(pmid=NLM[0], doi="10.1016/j.biopsych.2021.02.423")).id
+    catalog.register(Identifier(pmid=BIOPSYCH[0], doi=NLM[1]))
+    first = catalog._conn.execute("SELECT refused_at FROM refusals").fetchone()[0]
+    time.sleep(1.1)
+    catalog.register(Identifier(pmid=BIOPSYCH[0], doi=NLM[1]))
+    catalog.register(Identifier(pmid=NLM[0], doi=NLM[1]))
+    assert sorted(_refusals(catalog)) == sorted([("doi", NLM[1], a), ("doi", NLM[1], b)])
+    assert catalog._conn.execute(
+        "SELECT refused_at FROM refusals WHERE article_id=?", (a,)).fetchone()[0] > first
+    assert len(catalog.refused) == 2

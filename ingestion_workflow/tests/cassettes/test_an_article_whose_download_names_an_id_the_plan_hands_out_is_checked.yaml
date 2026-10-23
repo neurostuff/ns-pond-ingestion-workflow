@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
+      - Thu, 22 Oct 2026 20:37:13 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000568FBD87CC4C.1.1.m_1
+      - 1D348A0161E7335500005FBA14CBB8A0.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -82,22 +82,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -114,11 +114,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:51 GMT
+      - Thu, 22 Oct 2026 20:37:13 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000528FBEB7B21B.1.1.m_1
+      - 1D3238309BD9AC75000067A04BDF93FF.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -437,7 +437,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:15:52 GMT
+      - Thu, 22 Oct 2026 20:37:14 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -467,303 +467,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T16:47:41Z","timestamp":1786985261991,"version":"build-2736575974"},"reference-count":117,"publisher":"Elsevier
-        BV","issue":"1","license":[{"start":{"date-parts":[[2012,1,1]],"date-time":"2012-01-01T00:00:00Z","timestamp":1325376000000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"funder":[{"name":"PPP
-        Foundation","award":["1206\/1140"],"award-info":[{"award-number":["1206\/1140"]}]},{"name":"Eli
-        Lilly"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Biological
-        Psychiatry"],"published-print":{"date-parts":[[2012,1]]},"DOI":"10.1016\/j.biopsych.2011.09.005","type":"journal-article","created":{"date-parts":[[2011,10,22]],"date-time":"2011-10-22T04:42:48Z","timestamp":1319258568000},"page":"59-67","source":"Crossref","is-referenced-by-count":87,"title":["Fronto-Striato-Cerebellar
-        Dysregulation in Adolescents with Depression During Motivated Attention"],"prefix":"10.1016","volume":"71","author":[{"given":"Kaylita","family":"Chantiluke","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Rozmin","family":"Halari","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Mima","family":"Simic","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Carmine
-        M.","family":"Pariante","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Andrew","family":"Papadopoulos","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Vincent","family":"Giampietro","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Katya","family":"Rubia","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"key":"10.1016\/j.biopsych.2011.09.005_bib1","series-title":"Diagnostic
-        and Statistical Manual of Mental Disorders","year":"1994"},{"key":"10.1016\/j.biopsych.2011.09.005_bib2","doi-asserted-by":"crossref","first-page":"45","DOI":"10.31887\/DCNS.2009.11.1\/urao","article-title":"Characteristics,
-        correlates, and outcomes of childhood and adolescent depressive disorders","volume":"11","author":"Rao","year":"2009","journal-title":"Dialogues
-        Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib3","doi-asserted-by":"crossref","first-page":"588","DOI":"10.1176\/ajp.142.5.588","article-title":"Depressive
-        symptoms and suicidal behavior in adolescents","volume":"142","author":"Robbins","year":"1985","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib4","doi-asserted-by":"crossref","first-page":"854","DOI":"10.1001\/archpsyc.1987.01800220016003","article-title":"The
-        clinical picture of major depression in children and adolescents","volume":"44","author":"Ryan","year":"1987","journal-title":"Arch
-        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib5","doi-asserted-by":"crossref","first-page":"735","DOI":"10.1097\/00005053-200111000-00001","article-title":"Anhedonia
-        in depression and schizophrenia: A reexamination","volume":"189","author":"Romney","year":"2001","journal-title":"J
-        Nerv Ment Dis"},{"key":"10.1016\/j.biopsych.2011.09.005_bib6","doi-asserted-by":"crossref","first-page":"843","DOI":"10.1016\/j.biopsych.2005.05.019","article-title":"The
-        neural correlates of anhedonia in major depressive disorder","volume":"58","author":"Keedwell","year":"2005","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib7","doi-asserted-by":"crossref","first-page":"633","DOI":"10.1016\/j.biopsych.2006.05.026","article-title":"Alterations
-        in reward-related decision making in boys with recent and future depression","volume":"61","author":"Forbes","year":"2007","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib8","doi-asserted-by":"crossref","first-page":"209","DOI":"10.1016\/j.jad.2005.12.005","article-title":"Sensitivity
-        to reward and punishment and the prefrontal cortex in major depression","volume":"90","author":"Must","year":"2006","journal-title":"J
-        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib9","doi-asserted-by":"crossref","first-page":"76","DOI":"10.1016\/j.jpsychires.2008.03.001","article-title":"Reduced
-        hedonic capacity in major depressive disorder: Evidence from a probabilistic
-        reward task","volume":"43","author":"Pizzagalli","year":"2008","journal-title":"J
-        Psychiatr Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib10","doi-asserted-by":"crossref","first-page":"711","DOI":"10.1080\/02699930050117684","article-title":"Decreased
-        responsiveness to reward in depression","volume":"14","author":"Henriques","year":"2000","journal-title":"Cogn
-        Emot"},{"key":"10.1016\/j.biopsych.2011.09.005_bib11","doi-asserted-by":"crossref","first-page":"187","DOI":"10.2307\/1423272","article-title":"Effects
-        of memory demand and motivation on sustained attention in young and older
-        adults","volume":"109","author":"Tomporowski","year":"1996","journal-title":"Am
-        J Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib12","doi-asserted-by":"crossref","first-page":"1009","DOI":"10.1017\/S0033291700035339","article-title":"Impaired
-        attention in depressive states: A non-specific deficit?","volume":"26","author":"Mialet","year":"1996","journal-title":"Psychol
-        Med"},{"key":"10.1016\/j.biopsych.2011.09.005_bib13","doi-asserted-by":"crossref","first-page":"391","DOI":"10.1016\/S0022-3956(02)00026-2","article-title":"CPT
-        performance in major depressive disorder before and after treatment with imipramine
-        or fluvoxamine","volume":"36","author":"Koetsier","year":"2002","journal-title":"J
-        Psychiatr Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib14","doi-asserted-by":"crossref","first-page":"123","DOI":"10.1016\/j.psychres.2004.12.012","article-title":"Impulsivity
-        in depressed children and adolescents: A comparison between behavioral and
-        neuropsychological data","volume":"136","author":"Cataldo","year":"2005","journal-title":"Psychiatry
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib15","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/0165-0327(92)90089-O","article-title":"Cognitive
-        function in major depression","volume":"25","author":"Austin","year":"1992","journal-title":"J
-        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib16","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1016\/0165-1781(89)90188-1","article-title":"The
-        continuous performance test, identical pairs version: II","volume":"29","author":"Cornblatt","year":"1989","journal-title":"Psychiatry
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib17","doi-asserted-by":"crossref","first-page":"1095","DOI":"10.1176\/appi.ajp.157.7.1095","article-title":"Neuropsychological
-        deficits in psychotic versus nonpsychotic major depression and no mental illness","volume":"157","author":"Schatzberg","year":"2000","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib18","doi-asserted-by":"crossref","first-page":"396","DOI":"10.1037\/0022-006X.57.3.396","article-title":"Motivational
-        effects on neuropsychological functioning: Comparison of depressed versus
-        nondepressed individuals","volume":"57","author":"Richards","year":"1989","journal-title":"J
-        Consult Clin Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib19","doi-asserted-by":"crossref","first-page":"214","DOI":"10.1192\/bjp.182.3.214","article-title":"Neurocognitive
-        impairment in drug-free patients with major depressive disorder","volume":"182","author":"Porter","year":"2003","journal-title":"Br
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib20","doi-asserted-by":"crossref","first-page":"217","DOI":"10.1176\/jnp.2006.18.2.217","article-title":"Neurocognition
-        in depression: Patients on and off medication versus healthy comparison subjects","volume":"18","author":"Gualtieri","year":"2006","journal-title":"J
-        Neuropsychiatry Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib21","doi-asserted-by":"crossref","first-page":"200","DOI":"10.1192\/bjp.178.3.200","article-title":"Cognitive
-        deficits in depression: Possible implications for functional neuropathology","volume":"178","author":"Austin","year":"2001","journal-title":"Br
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib22","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1111\/j.1469-7610.2006.01722.x","article-title":"Incentive-related
-        modulation of cognitive control in healthy, anxious, and depressed adolescents:
-        Development and psychopathology related differences","volume":"48","author":"Hardin","year":"2007","journal-title":"J
-        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib23","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1007\/s10608-006-9115-9","article-title":"Neurophysiology
-        of motivated learning: Adaptive mechanisms underlying cognitive bias in depression","volume":"31","author":"Tucker","year":"2007","journal-title":"Cognit
-        Ther Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib24","doi-asserted-by":"crossref","DOI":"10.1016\/j.nlm.2011.06.006","article-title":"Cognitive
-        dysfunction in depression: Neurocircuitry and new therapeutic strategies [published
-        online ahead of print June 16]","author":"Murrough","year":"2011","journal-title":"Neurobiol
-        Learn Mem"},{"key":"10.1016\/j.biopsych.2011.09.005_bib25","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1001\/archpsyc.59.2.173","article-title":"Prefrontal
-        cortical volume in childhood-onset major depression: Preliminary findings","volume":"59","author":"Nolan","year":"2002","journal-title":"Arch
-        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib26","doi-asserted-by":"crossref","first-page":"121","DOI":"10.1089\/cap.2007.0026","article-title":"Striatal
-        volume abnormalities in treatment-na\u00efve patients diagnosed with pediatric
-        major depressive disorder","volume":"18","author":"Matsuo","year":"2008","journal-title":"J
-        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib27","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.biopsych.2004.10.027","article-title":"Amygdala
-        and hippocampus volumes in pediatric major depression","volume":"57","author":"Rosso","year":"2005","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib28","doi-asserted-by":"crossref","first-page":"385","DOI":"10.1016\/j.biopsych.2007.05.005","article-title":"Amygdala
-        and hippocampal volumes in familial early onset major depressive disorder","volume":"63","author":"MacMaster","year":"2008","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib29","doi-asserted-by":"crossref","first-page":"142","DOI":"10.1016\/j.neulet.2007.06.014","article-title":"Medial
-        temporal lobe abnormalities in pediatric unipolar depression","volume":"427","author":"Caetano","year":"2007","journal-title":"Neurosci
-        Lett"},{"key":"10.1016\/j.biopsych.2011.09.005_bib30","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1089\/104454603321666207","article-title":"Increased
-        amygdala: Hippocampal volume ratios associated with severity of anxiety in
-        pediatric major depression","volume":"13","author":"MacMillan","year":"2003","journal-title":"J
-        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib31","doi-asserted-by":"crossref","first-page":"862","DOI":"10.1016\/j.biopsych.2006.04.013","article-title":"Pituitary
-        volume in treatment-na\u00efve pediatric major depressive disorder","volume":"60","author":"MacMaster","year":"2006","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib32","doi-asserted-by":"crossref","first-page":"1031","DOI":"10.1111\/j.1469-7610.2006.01673.x","article-title":"Reward-related
-        decision-making in pediatric major depressive disorder: An fMRI study","volume":"47","author":"Forbes","year":"2006","journal-title":"J
-        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib33","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1176\/appi.ajp.2008.07081336","article-title":"Altered
-        striatal activation predicting real-world positive affect in adolescent major
-        depressive disorder","volume":"166","author":"Forbes","year":"2009","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib34","doi-asserted-by":"crossref","first-page":"307","DOI":"10.1111\/j.1469-7610.2008.01972.x","article-title":"Reduced
-        activation in lateral prefrontal cortex and anterior cingulate during attention
-        and cognitive control functions in medication-naive adolescents with depression
-        compared to controls","volume":"50","author":"Halari","year":"2009","journal-title":"J
-        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib35","doi-asserted-by":"crossref","first-page":"702","DOI":"10.1176\/appi.ajp.2008.08081201","article-title":"Reduced
-        caudate and nucleus accumbens response to rewards in unmedicated individuals
-        with major depressive disorder","volume":"166","author":"Pizzagalli","year":"2009","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib36","doi-asserted-by":"crossref","first-page":"651","DOI":"10.1016\/S0006-3223(01)01263-X","article-title":"Increased
-        amygdala response to masked emotional faces in depressed subjects resolves
-        with antidepressant treatment: An fMRI study","volume":"50","author":"Sheline","year":"2001","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib37","doi-asserted-by":"crossref","first-page":"877","DOI":"10.1001\/archpsyc.61.9.877","article-title":"Attenuation
-        of the neural response to sad faces in major depression by antidepressant
-        treatment: A prospective, event-related functional magnetic resonance imaging
-        study","volume":"61","author":"Fu","year":"2004","journal-title":"Arch Gen
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib38","doi-asserted-by":"crossref","first-page":"206","DOI":"10.1016\/j.jad.2008.04.027","article-title":"Antidepressant
-        treatment normalizes hypoactivity in dorsolateral prefrontal cortex during
-        emotional interference processing in major depression","volume":"112","author":"Fales","year":"2009","journal-title":"J
-        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib39","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1176\/appi.ajp.160.1.64","article-title":"The
-        neural substrates of affective processing in depressed patients treated with
-        venlafaxine","volume":"160","author":"Davidson","year":"2003","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib40","doi-asserted-by":"crossref","first-page":"788","DOI":"10.1038\/nrn2345","article-title":"Cognitive
-        therapy versus medication for depression: Treatment outcomes and neural mechanisms","volume":"9","author":"DeRubeis","year":"2008","journal-title":"Nat
-        Rev Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib41","doi-asserted-by":"crossref","first-page":"1990","DOI":"10.2174\/138161210791293051","article-title":"Using
-        functional neuroimaging to investigate the mechanisms of action of selective
-        serotonin reuptake inhibitors (SSRIs)","volume":"16","author":"Murphy","year":"2010","journal-title":"Curr
-        Pharm Des"},{"key":"10.1016\/j.biopsych.2011.09.005_bib42","doi-asserted-by":"crossref","first-page":"1057","DOI":"10.1001\/archpsyc.58.11.1057","article-title":"Amygdala
-        response to fearful faces in anxious and depressed children","volume":"58","author":"Thomas","year":"2001","journal-title":"Arch
-        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib43","doi-asserted-by":"crossref","first-page":"1476","DOI":"10.1176\/appi.ajp.2007.07030504","article-title":"Functional
-        neuroimaging of anxiety: A meta-analysis of emotional processing in PTSD,
-        social anxiety disorder, and specific phobia","volume":"164","author":"Etkin","year":"2007","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib44","doi-asserted-by":"crossref","first-page":"1855","DOI":"10.1093\/cercor\/bhi063","article-title":"Monetary
-        incentives enhance processing in brain regions mediating top-down control
-        of attention","volume":"15","author":"Small","year":"2005","journal-title":"Cereb
-        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib45","doi-asserted-by":"crossref","first-page":"668","DOI":"10.1037\/1528-3542.7.3.668","article-title":"Motivation
-        sharpens exogenous spatial attention","volume":"7","author":"Engelmann","year":"2007","journal-title":"Emotion"},{"key":"10.1016\/j.biopsych.2011.09.005_bib46","doi-asserted-by":"crossref","first-page":"5669","DOI":"10.1073\/pnas.082111099","article-title":"The
-        neural system that bridges reward and cognition in humans: An fMRI study","volume":"99","author":"Pochon","year":"2002","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.biopsych.2011.09.005_bib47","doi-asserted-by":"crossref","first-page":"2604","DOI":"10.1093\/cercor\/bhn021","article-title":"The
-        spatial attention network interacts with limbic and monoaminergic systems
-        to modulate motivation-induced attention shifts","volume":"18","author":"Mohanty","year":"2008","journal-title":"Cereb
-        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib48","doi-asserted-by":"crossref","first-page":"168","DOI":"10.1016\/j.brainres.2007.01.052","article-title":"Reward
-        modulation of prefrontal and visual association cortex during an incentive
-        working memory task","volume":"1141","author":"Krawczyk","year":"2007","journal-title":"Brain
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib49","doi-asserted-by":"crossref","first-page":"640","DOI":"10.1016\/j.neuropharm.2009.08.013","article-title":"Methylphenidate
-        normalises activation and functional connectivity deficits in attention and
-        motivation networks in medication-na\u00efve children with ADHD during a rewarded
-        continuous performance task","volume":"57","author":"Rubia","year":"2009","journal-title":"Neuropharmacology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib50","doi-asserted-by":"crossref","first-page":"83","DOI":"10.1176\/appi.ajp.2008.08020212","article-title":"Disorder-specific
-        dissociation of orbitofrontal dysfunction in boys with pure conduct disorder
-        during reward and ventrolateral prefrontal dysfunction in boys with pure ADHD
-        during sustained attention","volume":"166","author":"Rubia","year":"2009","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib51","doi-asserted-by":"crossref","first-page":"287","DOI":"10.1002\/hbm.20975","article-title":"Disorder-specific
-        dysfunction in right inferior prefrontal cortex during two inhibition tasks
-        in boys with attention-deficit hyperactivity disorder compared to boys with
-        obsessive-compulsive disorder","volume":"31","author":"Rubia","year":"2010","journal-title":"Hum
-        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib52","doi-asserted-by":"crossref","first-page":"1693","DOI":"10.1016\/j.neuroimage.2011.01.072","article-title":"Developmental
-        effects of reward on sustained attention networks","volume":"56","author":"Smith","year":"2011","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib53","doi-asserted-by":"crossref","first-page":"118","DOI":"10.1016\/j.ijpsycho.2010.09.009","article-title":"The
-        scanner as a stressor: Evidence from subjective and neuroendocrine stress
-        parameters in the time course of a functional magnetic resonance imaging session","volume":"79","author":"Muehlhan","year":"2011","journal-title":"Int
-        J Psychophysiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib54","doi-asserted-by":"crossref","first-page":"1248","DOI":"10.1001\/archpsyc.60.12.1248","article-title":"Alterations
-        in stress cortisol reactivity in depressed preschoolers relative to psychiatric
-        and no-disorder comparison groups","volume":"60","author":"Luby","year":"2003","journal-title":"Arch
-        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib55","doi-asserted-by":"crossref","first-page":"313","DOI":"10.1016\/0306-4530(94)90013-2","article-title":"Salivary
-        cortisol in psychoneuroendocrine research: Recent developments and applications","volume":"19","author":"Kirschbaum","year":"1994","journal-title":"Psychoneuroendocrinology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib56","doi-asserted-by":"crossref","first-page":"97","DOI":"10.1016\/0028-3932(71)90067-4","article-title":"The
-        assessment and analysis of handedness: The Edinburgh Inventory","volume":"9","author":"Oldfield","year":"1971","journal-title":"Neuropsychologia"},{"key":"10.1016\/j.biopsych.2011.09.005_bib57","doi-asserted-by":"crossref","first-page":"1208","DOI":"10.1097\/00004583-200010000-00002","article-title":"K-SADS-PL","volume":"39","author":"Kaufman","year":"2000","journal-title":"J
-        Am Acad Child Adolesc Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib58","series-title":"Manual
-        for the Beck Depression Inventory","author":"Beck","year":"1996"},{"key":"10.1016\/j.biopsych.2011.09.005_bib59","series-title":"Integrative
-        Guide to the 1991 CBCL\/4-18, YSR and TRF Profiles","author":"Achenbach","year":"1991"},{"key":"10.1016\/j.biopsych.2011.09.005_bib60","series-title":"Society
-        and the Adolescent Self-Image","author":"Rosenberg","year":"1989"},{"key":"10.1016\/j.biopsych.2011.09.005_bib61","doi-asserted-by":"crossref","first-page":"571","DOI":"10.1089\/cap.2005.15.571","article-title":"Stressful
-        life events in anxious and depressed children","volume":"15","author":"Williamson","year":"2005","journal-title":"J
-        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib62","series-title":"Guide
-        to the Standard Progressive Matrices","author":"Raven","year":"1960"},{"key":"10.1016\/j.biopsych.2011.09.005_bib63","doi-asserted-by":"crossref","first-page":"922","DOI":"10.1016\/S0006-3223(01)01314-2","article-title":"A
-        novel prednisolone suppression test for the hypothalamic-pituitary-adrenal
-        axis","volume":"51","author":"Pariante","year":"2002","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib64","series-title":"The
-        Conners Continuous Performance Test","author":"Conners","year":"1993"},{"key":"10.1016\/j.biopsych.2011.09.005_bib65","doi-asserted-by":"crossref","first-page":"19","DOI":"10.1192\/bjp.bp.107.036921","article-title":"Neural
-        correlates of reward in autism","volume":"192","author":"Schmitz","year":"2008","journal-title":"Br
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib66","doi-asserted-by":"crossref","first-page":"207","DOI":"10.1080\/87565649109540488","article-title":"Subtype
-        analysis of commission errors on the continuous performance-test in children","volume":"7","author":"Halperin","year":"1991","journal-title":"Dev
-        Neuropsychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib67","doi-asserted-by":"crossref","first-page":"326","DOI":"10.1097\/00004583-198805000-00010","article-title":"Differential
-        assessment of attention and impulsivity in children","volume":"27","author":"Halperin","year":"1988","journal-title":"J
-        Am Acad Child Adolesc Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib68","doi-asserted-by":"crossref","first-page":"487","DOI":"10.1007\/BF00917077","article-title":"The
-        computerized continuous performance task: A new measure of inattention","volume":"11","author":"Klee","year":"1983","journal-title":"J
-        Abnorm Child Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib69","doi-asserted-by":"crossref","first-page":"543","DOI":"10.1023\/A:1025405216339","article-title":"Relations
-        between Continuous Performance Test performance measures and ADHD behaviors","volume":"31","author":"Epstein","year":"2003","journal-title":"J
-        Abnorm Child Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib70","doi-asserted-by":"crossref","first-page":"763","DOI":"10.1016\/S0730-725X(97)00135-5","article-title":"Generic
-        brain activation mapping in functional magnetic resonance imaging: A nonparametric
-        approach","volume":"15","author":"Brammer","year":"1997","journal-title":"Magn
-        Reson Imaging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib71","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1016\/j.neuroimage.2006.11.054","article-title":"Analysis
-        of a large fMRI cohort: Statistical and methodological issues for group analyses","volume":"35","author":"Thirion","year":"2007","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib72","doi-asserted-by":"crossref","first-page":"38","DOI":"10.1002\/(SICI)1097-0193(1999)7:1<38::AID-HBM4>3.0.CO;2-Q","article-title":"Methods
-        for diagnosis and treatment of stimulus-correlated motion in generic brain
-        activation studies using fMRI","volume":"7","author":"Bullmore","year":"1999","journal-title":"Hum
-        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib73","doi-asserted-by":"crossref","first-page":"32","DOI":"10.1109\/42.750253","article-title":"Global,
-        voxel, and cluster tests, by theory and permutation, for a difference between
-        two groups of structural MR images of the brain","volume":"18","author":"Bullmore","year":"1999","journal-title":"IEEE
-        Trans Med Imaging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib74","doi-asserted-by":"crossref","first-page":"1119","DOI":"10.1176\/appi.ajp.159.7.1119","article-title":"Executive
-        dysfunction in geriatric depression","volume":"159","author":"Lockwood","year":"2002","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib75","doi-asserted-by":"crossref","first-page":"842","DOI":"10.1016\/j.neuroimage.2006.04.177","article-title":"Neuroanatomical
-        dissociation between bottom-up and top-down processes of visuospatial selective
-        attention","volume":"32","author":"Hahn","year":"2006","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib76","doi-asserted-by":"crossref","first-page":"142","DOI":"10.1016\/j.brainres.2006.12.031","article-title":"Neural
-        correlates of covert orienting of visual spatial attention along vertical
-        and horizontal dimensions","volume":"1136","author":"Mao","year":"2007","journal-title":"Brain
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib77","doi-asserted-by":"crossref","first-page":"108","DOI":"10.1162\/jocn.2008.20008","article-title":"Dissociable
-        roles of the superior temporal sulcus and the intraparietal sulcus in joint
-        attention: A functional magnetic resonance imaging study","volume":"20","author":"Materna","year":"2008","journal-title":"J
-        Cogn Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib78","doi-asserted-by":"crossref","first-page":"1535","DOI":"10.1152\/jn.1998.79.3.1535","article-title":"4
-        T-fMRI study of nonspatial shifting of selective attention: Cerebellar and
-        parietal contributions","volume":"79","author":"Le","year":"1998","journal-title":"J
-        Neurophysiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib79","doi-asserted-by":"crossref","first-page":"1028","DOI":"10.1162\/089892903770007416","article-title":"Multiple
-        neuronal networks mediate sustained attention","volume":"15","author":"Lawrence","year":"2003","journal-title":"J
-        Cogn Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib80","doi-asserted-by":"crossref","first-page":"329213","DOI":"10.1155\/2010\/329213","article-title":"Exploring
-        cortical attentional system by using fMRI during a Continuous Performance
-        Test","volume":"2010","author":"Tana","year":"2010","journal-title":"Comput
-        Intell Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib81","doi-asserted-by":"crossref","first-page":"273","DOI":"10.1523\/JNEUROSCI.2967-05.2006","article-title":"Listening
-        in silence activates auditory areas: A functional magnetic resonance imaging
-        study","volume":"26","author":"Voisin","year":"2006","journal-title":"J Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib82","doi-asserted-by":"crossref","first-page":"440","DOI":"10.1097\/WNR.0b013e3283262e10","article-title":"Depressed
-        adolescents demonstrate greater subgenual anterior cingulate activity","volume":"20","author":"Yang","year":"2009","journal-title":"Neuroreport"},{"key":"10.1016\/j.biopsych.2011.09.005_bib83","doi-asserted-by":"crossref","first-page":"69","DOI":"10.1016\/j.jad.2009.01.034","article-title":"fMRI
-        of alterations in reward selection, anticipation, and feedback in major depressive
-        disorder","volume":"118","author":"Smoski","year":"2009","journal-title":"J
-        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib84","doi-asserted-by":"crossref","first-page":"683","DOI":"10.1002\/hbm.20426","article-title":"A
-        meta-analytic study of changes in brain activation in depression","volume":"29","author":"Fitzgerald","year":"2008","journal-title":"Hum
-        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib85","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1016\/j.pscychresns.2006.04.006","article-title":"An
-        analysis of functional neuroimaging studies of dorsolateral prefrontal cortical
-        activity in depression","volume":"148","author":"Fitzgerald","year":"2006","journal-title":"Psychiatry
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib86","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1016\/j.neuroimage.2009.06.070","article-title":"Sex-dependent
-        age modulation of frontostriatal and temporo-parietal activation during cognitive
-        control","volume":"48","author":"Christakou","year":"2009","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib87","doi-asserted-by":"crossref","first-page":"817","DOI":"10.1016\/j.neuroimage.2010.02.058","article-title":"Effects
-        of age and sex on developmental neural networks of visual-spatial attention
-        allocation","volume":"51","author":"Rubia","year":"2010","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib88","doi-asserted-by":"crossref","first-page":"1344","DOI":"10.1016\/j.neuroimage.2010.08.067","article-title":"Maturation
-        of limbic corticostriatal activation and connectivity associated with developmental
-        changes in temporal discounting","volume":"54","author":"Christakou","year":"2011","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib89","doi-asserted-by":"crossref","first-page":"3276","DOI":"10.1016\/j.neuroimage.2009.10.089","article-title":"Dissociation
-        of neural networks for anticipation and consumption of monetary and social
-        rewards","volume":"49","author":"Rademacher","year":"2010","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib90","doi-asserted-by":"crossref","first-page":"8650","DOI":"10.1523\/JNEUROSCI.2431-05.2005","article-title":"The
-        role of ventral frontostriatal circuitry in reward-based learning in humans","volume":"25","author":"Galvan","year":"2005","journal-title":"J
-        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib91","doi-asserted-by":"crossref","first-page":"69","DOI":"10.1016\/j.brainresbull.2008.09.013","article-title":"The
-        cortico-basal ganglia integrative network: The role of the thalamus","volume":"78","author":"Haber","year":"2009","journal-title":"Brain
-        Res Bull"},{"key":"10.1016\/j.biopsych.2011.09.005_bib92","doi-asserted-by":"crossref","first-page":"6159","DOI":"10.1523\/JNEUROSCI.20-16-06159.2000","article-title":"Dissociable
-        neural responses in human reward systems","volume":"20","author":"Elliott","year":"2000","journal-title":"J
-        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib93","doi-asserted-by":"crossref","first-page":"141","DOI":"10.1016\/j.pneurobio.2008.09.004","article-title":"The
-        cognitive functions of the caudate nucleus","volume":"86","author":"Grahn","year":"2008","journal-title":"Prog
-        Neurobiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib94","doi-asserted-by":"crossref","first-page":"1022","DOI":"10.1093\/cercor\/bhh062","article-title":"Motivation-dependent
-        responses in the human caudate nucleus","volume":"14","author":"Delgado","year":"2004","journal-title":"Cereb
-        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib95","doi-asserted-by":"crossref","first-page":"1041","DOI":"10.1176\/appi.ajp.160.6.1041","article-title":"Developmental
-        neurocircuitry of motivation in adolescence: A critical period of addiction
-        vulnerability","volume":"160","author":"Chambers","year":"2003","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib96","doi-asserted-by":"crossref","first-page":"194","DOI":"10.1016\/j.neuroimage.2007.06.038","article-title":"Anticipation
-        of novelty recruits reward system and hippocampus while promoting recollection","volume":"38","author":"Wittmann","year":"2007","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib97","doi-asserted-by":"crossref","first-page":"14311","DOI":"10.1523\/JNEUROSCI.2058-08.2008","article-title":"Mesolimbic
-        functional magnetic resonance imaging activations during reward anticipation
-        correlate with reward-related ventral striatal dopamine release","volume":"28","author":"Schott","year":"2008","journal-title":"J
-        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib98","doi-asserted-by":"crossref","first-page":"72","DOI":"10.1016\/j.neures.2010.01.003","article-title":"Effects
-        of emotion and reward motivation on neural correlates of episodic memory encoding:
-        A PET study","volume":"67","author":"Shigemune","year":"2010","journal-title":"Neurosci
-        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib99","doi-asserted-by":"crossref","first-page":"471","DOI":"10.1176\/jnp.9.3.471","article-title":"Limbic-cortical
-        dysregulation: A proposed model of depression","volume":"9","author":"Mayberg","year":"1997","journal-title":"J
-        Neuropsychiatry Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib100","doi-asserted-by":"crossref","first-page":"13","DOI":"10.1016\/S0896-6273(02)00653-0","article-title":"Neurobiology
-        of depression","volume":"34","author":"Nestler","year":"2002","journal-title":"Neuron"},{"key":"10.1016\/j.biopsych.2011.09.005_bib101","doi-asserted-by":"crossref","first-page":"205","DOI":"10.1007\/s004220050518","article-title":"Selective
-        visual attention in a neurocomputational model of phase oscillators","volume":"80","author":"Wu","year":"1999","journal-title":"Biological
-        Cybernetics"},{"key":"10.1016\/j.biopsych.2011.09.005_bib102","doi-asserted-by":"crossref","first-page":"523","DOI":"10.1073\/pnas.012470999","article-title":"Dorsal
-        anterior cingulate cortex: A role in reward-based decision making","volume":"99","author":"Bush","year":"2002","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.biopsych.2011.09.005_bib103","doi-asserted-by":"crossref","first-page":"215","DOI":"10.1016\/S1364-6613(00)01483-2","article-title":"Cognitive
-        and emotional influences in anterior cingulate cortex","volume":"4","author":"Bush","year":"2000","journal-title":"Trends
-        Cogn Sci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib104","doi-asserted-by":"crossref","first-page":"129","DOI":"10.1016\/j.bandc.2004.09.016","article-title":"Neurocognitive
-        mechanisms of cognitive control: The role of prefrontal cortex in action selection,
-        response inhibition, performance monitoring, and reward-based learning","volume":"56","author":"Ridderinkhof","year":"2004","journal-title":"Brain
-        Cogn"},{"key":"10.1016\/j.biopsych.2011.09.005_bib105","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1016\/j.neubiorev.2007.04.016","article-title":"The
-        emergence of depression in adolescence: Development of the prefrontal cortex
-        and the representation of reward","volume":"32","author":"Davey","year":"2008","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.biopsych.2011.09.005_bib106","doi-asserted-by":"crossref","first-page":"827","DOI":"10.1017\/S095457940505039X","article-title":"Neural
-        systems of positive affect: Relevance to understanding child and adolescent
-        depression?","volume":"17","author":"Forbes","year":"2005","journal-title":"Dev
-        Psychopathol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib107","author":"Cubillo","year":"2011","journal-title":"Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib108","doi-asserted-by":"crossref","first-page":"791","DOI":"10.1007\/s00213-004-2116-z","article-title":"Tryptophan
-        depletion reduces right inferior prefrontal activation during response inhibition
-        in fast, event-related fMRI","volume":"179","author":"Rubia","year":"2005","journal-title":"Psychopharmacology
-        (Berl)"},{"key":"10.1016\/j.biopsych.2011.09.005_bib109","doi-asserted-by":"crossref","first-page":"1135","DOI":"10.1016\/j.neurobiolaging.2007.09.013","article-title":"5-HT,
-        prefrontal function and aging: fMRI of inhibition and acute tryptophan depletion","volume":"30","author":"Lamar","year":"2009","journal-title":"Neurobiol
-        Aging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib110","unstructured":"Arnsten
-        A, Rubia K (in press): Neurobiological circuits regulating attention, movement
-        and emotion and their disruptions in pediatric neuropsychiatric disorders.
-        J Am Acad Child Adolesc Psychiatry."},{"key":"10.1016\/j.biopsych.2011.09.005_bib111","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1080\/14734220701344507","article-title":"The
-        cerebellum in cognitive processes: Supporting studies in children","volume":"6","author":"Steinlin","year":"2007","journal-title":"Cerebellum"},{"key":"10.1016\/j.biopsych.2011.09.005_bib112","doi-asserted-by":"crossref","first-page":"39","DOI":"10.1016\/j.neuroimage.2005.06.013","article-title":"Magnetic
-        resonance imaging of cerebellar-prefrontal and cerebellar-parietal functional
-        connectivity","volume":"28","author":"Allen","year":"2005","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib113","doi-asserted-by":"crossref","first-page":"1133","DOI":"10.1002\/hbm.20575","article-title":"Differential
-        cerebellar and cortical involvement according to various attentional load:
-        Role of educational level","volume":"30","author":"Bonnet","year":"2009","journal-title":"Hum
-        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib114","doi-asserted-by":"crossref","first-page":"e69","DOI":"10.1016\/j.biopsych.2010.09.023","article-title":"\u201cCool\u201d
-        inferior frontostriatal dysfunction in attention-deficit\/hyperactivity disorder
-        versus \u201chot\u201d ventromedial orbitofrontal-limbic dysfunction in conduct
-        disorder: A review","volume":"69","author":"Rubia","year":"2011","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib115","doi-asserted-by":"crossref","first-page":"276","DOI":"10.1080\/09297040600770761","article-title":"Performance
-        of children with attention deficit hyperactivity disorder (ADHD) on a test
-        battery of impulsiveness","volume":"13","author":"Rubia","year":"2007","journal-title":"Child
-        Neuropsychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib116","doi-asserted-by":"crossref","first-page":"737","DOI":"10.1016\/j.psyneuen.2010.10.009","article-title":"Cortisol
-        responses to serial MRI scans in healthy adults and in depression","volume":"36","author":"Peters","year":"2011","journal-title":"Psychoneuroendocrinology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib117","series-title":"The
-        Wechsler Intelligence Scale for Children","author":"Wechsler","year":"2004"}],"container-title":["Biological
-        Psychiatry"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322311008948?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322311008948?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2021,12,12]],"date-time":"2021-12-12T02:33:24Z","timestamp":1639276404000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0006322311008948"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2012,1]]},"references-count":117,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2012,1]]}},"alternative-id":["S0006322311008948"],"URL":"https:\/\/doi.org\/10.1016\/j.biopsych.2011.09.005","relation":{},"ISSN":["0006-3223"],"issn-type":[{"value":"0006-3223","type":"print"}],"subject":[],"published":{"date-parts":[[2012,1]]}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '9520'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:15:52 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -771,24 +492,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:14 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -832,11 +557,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:51 GMT
+      - Thu, 22 Oct 2026 20:37:13 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006B8FC051C0A0.1.1.m_1
+      - 1D3238309BD9AC75000067A04D1DD39C.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -896,11 +621,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:52 GMT
+      - Thu, 22 Oct 2026 20:37:14 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000608FC20581A6.1.1.m_1
+      - 1D3238309BD9AC75000049A04DAF30ED.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -940,22 +665,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAJRU224aMRD9FctPrcTFXm6BN9pEaqIQVY3UPkR9MN4BHHlt6rVpKeq/d8ZLIJdG
-        DRIS6/GcuZ7jHV+BKiHwyY7H7Rr4hEOdqkqFLW/xDYTaeIdG0enxPy0e8NJGck6mrPnkjhdyJPpy
-        NOTfW8fv5h5hB0uLr9O8VJESFEJKduM3aIRn1qvkmCTv2qegyXwDKfi58ZZdgwqOzaDCa5Xiygcq
-        YMedqshxlkLwabliV9/2Dvt+ptkXbdqmOkLIhWEzB+Sl0n5jwFrPPpwIxeoqMHTFpidCP66wHdiy
-        89tTy/W1WUCtEzv/+iYobsaqOjYzexkgmmhzQX7pTDQbYOW2XiSnI66eGcdKWOPeiQgT5mgd2gSd
-        TAxbplyJpp8sriCoNaRoNKtjwI0uDdSdvMgQHzLo/2c4LQFR1NuUxzIm2pi6TnToE+HUEj0mfDDo
-        tYc9TkNwS6Is4B/OxNkqOfMjQR7TeCDO5HAfgxgvxajfHvWLEdH0wTQetMeDYb+hczP1O36FXHXK
-        smnA6rDRFv8CyKeflCSA9qHE4cdEtXxO8xmUrI1Nl/ALvxY+sNnF+fXlzUUT9OBaDKgY1cRsxLbj
-        ptyvGj0rKKnabMHqJM5C2dz9QXXEmgOk9Oaxf+/oL0VHCjns3ndwJh0SYkcMO0I8C7A2TwL0jwFu
-        D8N6J+V7gQFGbZmJt0JxeHxLqPjH3eFcAIlAHRz1L7qy6PYEE2IiRM79FLIx9TOE7IpBVxSvIJTW
-        sI4vIUP8vQIBFwP8fgkozpgY/gtwWMRbAehtjYMniKIrRt1CPCAybxYQwGli8B2eVYzBzFPMZ/5J
-        1Ww6Jx3oSCxbVxoB2icXSfEtvkjW3je0PL5UzTvql1vmF8zSa2rcMiusgsrnBx+s14pUmTWBjJmw
-        18mBHXi954Y2MeNI8eEvAAAA//9kVUkOwyAMvPcZ/UCVJwFKFFQTKhS48ffMyEY07c0ajD3eQ8gH
-        6QqKr/R9zu+xBaCCHMSaVIZ46o3RAcAnzPrg8QNbMOrF8vdktj5YM0dNnpeMiGsuivOybiWnWkTR
-        YRUvq0EI4Y8tsGmb1KfbsDt0lDnhbrsfsBeLv1hvqcIWy9fuvV+pxohCFU65Jaf3/rgAAAD//wMA
-        2eajuJUHAAA=
+        H4sIAAAAAAAAAJRTTW/bMAz9K4LOTmEndrz4li09NGiCYQO2Q7GDYjG2AFnK9JHOCPbfR9qpO6yH
+        LifLT4/kI/l04S0ICY5XFx76E/CKg49dJ1zPE34G55U1CKZ3C/474Q4vdSByVNLz6onPszLNs3LJ
+        fySv5/EewyYk4ad4kCJQgXmaZWxvzwjCP+g2GpYR29voaoL3EJ09KKvZIwhn2A46vBYxtNaRgAs3
+        oiPiLjpnY9Oy7fcr4drPeuAiVuvoA7hBGDYzRT6I2p4VaG3ZxxtDUV0Hiq7Y+sbQTy22Az3bfL1V
+        rvXqCL6ObPPtv0JxM1r4MM7sbYKggh4E2caooM7AZO+P0dQBV8+UYRJOuHcyQsUMraNWro4quJ4J
+        IxF6ZqEFJ04Qg6qZDw432ijwd8MiXXipUL9f4bYCZFGr4zCWFdlGeR/pJyfDiQYZFS+KxWy54DQE
+        05BlAT84E6O7aNTPCMOYVkX6IVtec5Djs7TMZ2U+L8mmL9CqmK2KZT7aeZz6E9+iV43QbO1QHTaa
+        8C+AfnqmIg5q6yQOP0TS8jkediDZDJuW8AtPR+vY7n7z+LC/H5NO1HlBYsSYc3xsF67kddXI7ECS
+        2gFBdRnOQuih++nVkWumEGnV3/xFwv8AAAD//4xVsU7DMBDd+YqoE0gQnwOkqBsbOyOTYzmtW8eO
+        XLsSSP137uykaVoqIWVILn7nu/N7z+N6DiUHXrNtiTMpSYgl1CXARYJezxK8TAk+T8O65/wBMMHy
+        iSfibVAcDr2Eij/vDueikAjUwaR/YLxiz1AArADS3nPIQe8vEJzBK4PqBkJIqfpwDanxuQFRNnj1
+        cw2o3gqo/wKcDuK/AFxttFUzRMVgySoYEYk3rfLKSmLwF36LELxuYkjfiw+xL94b0oEMxLK+kwiQ
+        LtpAin9ctNGYbabl5FTZR936u3BtYchNtV0nhXWqc8nwlXFSkCqTJpAxq+I2ObADJwduSB0SjhTv
+        pXSWyjV4+Ln8xrnd6AK4BGegY5ff8TXkOyYLAEGo9bGOi/DQTN5lmN+CptWjzdjYNXSTUUQchDai
+        Mar1rove5OiYFf+oIYQtXFWLsSk3lT5tKzcCGTVsQt42v8AYHT4fuJUXtNqfee/8ljpQRzIaUvkw
+        nOPxePcLAAD//wMA2eajuJUHAAA=
     headers:
       access-control-allow-origin:
       - '*'
@@ -972,11 +697,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:52 GMT
+      - Thu, 22 Oct 2026 20:37:14 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500005F8FC3062862.1.1.m_1
+      - 1D348A0161E7335500004BBA17661EDA.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1002,349 +727,58 @@ interactions:
     body: ''
     headers:
       accept:
-      - application/vnd.citationstyles.csl+json
+      - '*/*'
       accept-encoding:
       - gzip, deflate
       connection:
       - keep-alive
       host:
-      - doi.org
+      - eutils.ncbi.nlm.nih.gov
       user-agent:
-      - ns-pond-ingestion-workflow
+      - python-httpx/0.28.1
     method: GET
-    uri: https://doi.org/10.1016/j.nlm.2011.06.006
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.biopsych.2011.09.005%22%5Bdoi%5D&tool=ingestion-workflow
   response:
     body:
-      string: '<html><head><title>Handle Redirect</title></head>
-
-        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform">https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform</a></body></html>'
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
     headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
       alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      cf-ray:
-      - a4e7be4e1ba84796-DFW
-      connection:
-      - keep-alive
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
       content-type:
-      - text/html;charset=utf-8
+      - application/json
       date:
-      - Thu, 22 Oct 2026 10:15:53 GMT
-      expires:
-      - Thu, 22 Oct 2026 11:09:20 GMT
-      link:
-      - <https://dul.usage.elsevier.com/doi/>; rel=dul
-      location:
-      - https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform
-      nel:
-      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
-      permissions-policy:
-      - interest-cohort=(),browsing-topics=()
-      report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=g0IwWTzOcIyr24cjGh3cnCPkWnNpb%2F3wjl0ljdWK%2FoF7HrbQ%2BRjAODNsvXl3L2TX%2B64rhFAHSLimMGDm4SbQEDn77P6Y3mF3exQQZ8csQ6JGsr2yZC9LRNE%3D"}]}'
+      - Thu, 22 Oct 2026 20:37:14 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
       server:
-      - cloudflare
+      - Finatra
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
       - chunked
-      vary:
-      - Origin
-      - Accept
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
     status:
-      code: 302
-      message: Found
-- request:
-    body: ''
-    headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform
-  response:
-    body:
-      string: !!binary |
-        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
-    headers:
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      connection:
-      - keep-alive
-      content-encoding:
-      - gzip
-      content-length:
-      - '13394'
-      content-type:
-      - application/vnd.citationstyles.csl+json
-      date:
-      - Thu, 22 Oct 2026 10:15:53 GMT
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept, Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
+      code: 429
+      message: Too Many Requests
 - request:
     body: ''
     headers:
@@ -1384,11 +818,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:53 GMT
+      - Thu, 22 Oct 2026 20:37:16 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000618FC5075ABD.1.1.m_1
+      - 1D3238309BD9AC75000079A0517919C6.1.1.m_1
       ncbi-sid:
-      - F55F15155D0BDF50_74CFSID
+      - 44162EC47C30FA11_DD51SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1402,7 +836,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

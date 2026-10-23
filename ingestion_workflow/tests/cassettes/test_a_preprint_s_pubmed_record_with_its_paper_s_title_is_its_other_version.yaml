@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:38 GMT
+      - Thu, 22 Oct 2026 20:38:29 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500002FA10A2FFBB4.1.1.m_1
+      - 1D348A0161E73355000051BA95A380C4.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -67,7 +67,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -93,23 +93,79 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAJRUS1MiMRD+K6mcYciDAZw9Wehh3cWy0D1Ze4gzjaR2JmHzoFRq//t2ZhAQtEpP
-        Sbr76+eX3tAlqAocLTY0PK+AFhR8bBrlnmmPrsF5bQ0KWSbpvx51qKxDMo668rS4p3LChczPOP3d
-        2987PcJ2kh5dxYdKhRRAMCHJBZREMJTDRwpvoyuT+LbUZA4rFKkYltaluBtqVJOUc+s9uZptldsS
-        zls7lJV19AFcmwvmv0NNa22ATKdfhN0q90c58tVody5a80iuvgj7AXUNjkw/h8P+18qHrkVH6KBD
-        naDXEJ2qCSwWUAZP7ILczW5JcEobfBkSlkCWsVGGrBwsnDUBrUvrAjxl7URceHVlTlyFxn/OVSKW
-        rWNbI5f40t7H9pFooh7BJy6IMUssqJV5TDwDPLBEUzfR6L8R2qo54/lIismkc5KImhjV3QQb5n0h
-        hejI13Xvnl4hrQzmcu6CLrGUHp0rU9lGv0BFppins9i4itw5reoU0gGmXWFnQ0yJ3cSHGar7RJsK
-        nvC2sMiIy4uf368vu0g701Sb6sJ0v2VDdbWdIto1UKW8WwkmzLEtqm4bsfs2iQ17SFMe2k/29jez
-        KWdjKVOxxxD9Jki+B6Gur6uCHIC/vUVXVh9i5R7LWcaZnAz8kOdnkz7+2/7wTOSsPz6Kr994GH7O
-        AzZ9qX2wuINSzw5bisMAvW4bd7A0Biwf8AlhrEDOpAQOIaosYRVOIFwM2OgDCE4mLYhThBCEjYqh
-        OEHsxnkM4CnEkJ8AAIkGL+8AGBGyEPI0Ao7LQQ3Kv5cXe62kJewCHJgSOsrhc7dKH7SdP+l1RtpV
-        e23XRIgi3TPGM8myXIzkeJgRnHxB0ojwhw1O9bQNsp3xr1VKBjdAYn+T/uV/AAAA//90VUsWgjAM
-        3HsKnlfwA1t3XqON8IgW6istO+7upB8RfW7TNpmkmZnDua6b46kGXW2EGWEp7x3r4COs/VVN1QXd
-        OUVeWIb2kJJsGGEvDXa7C8bcE1eL+hJjatwxVa59QkomIbuxpDxMKgrCG/ef1cLgLGXcxD4+FGFz
-        RMJ81gZ7B3gApK19FLHDFfwuhyELzI19ssVEeDzqW1eAfIUz+FQlf1ucn3QwhkGL+UpEzYqN0kbU
-        cgjOpGjJipM2h9DCD1rE1twCfS1LvcL65yIi4VvD3axPutCx+zCS1WFn6YaCEU3Lg1mWZfcCAAD/
-        /wMAoHX9TkQIAAA=
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:38:29 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=38123591&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTTW/bMAz9K4LObmHLzZrlVrg9LG2KIsmt2EG16ESYPlxKGtoF+++j7CzZWhRo
+        TpYe+chH6nnHtyAVIJ/teHztgc84hGStxFde8J+AQXtHYHle898FRwqamJOTVoHPHnk9rUQ9+Vrx
+        78XxPMaJdkAK3qcnJWNuIEpRs2tomSgJh48CwSdsM7xqNVtCT5BMcesx991xJ20OLn0IbL7YB/cj
+        XA15hLUmhQg4aCH9B1ZjtAPWNCfSVhJ/SGSndltj8m7D5ifSbsEYQNZ8jkf7NzLEcUVv2FFHk6n3
+        kFAaBl0HbQzMd2y9WLGIUju6ORa3wLbJSsd6hA69i5Tdeozwcj68CMa/pdy7UtGGz5XKxvImDTNW
+        Nd10CGm4ZJvIDYTsBXFZZhcY6TbZZ0AfGtEZm5x+TjBMXZXV5EstptOxSDZqdtR4EuXF5EzUQozm
+        G7f3yOdkK0darjDqlkYp+FI65a3+BYo1pBM9LU6xNWppcksEkq1oszFlYQ/paUHhM6adghc6dZ4c
+        cXN99+3+Zux0SM2zybHN+LfsuFb7V6Q8CyrrHhASXNFapBkWcfhtshuOFNv+mz895j8smqq8rOs8
+        7FuK/q/J5Ejq7R8AAAD//4xVTW+DMAy971dEuxdCgELZabeddpi0HxDSVPUWmioENE3qf58doKWl
+        lXYDw7Ofv57VCrYVm4FfrtFbC3NsesEmPEp4WsZtluSbcoV7u8o2Iuer4iY+XHnI/ucBi76H1lvU
+        IKrZvKTYDA19KNxMNGKex0nJOK9wZojAHCKV0ke/gCQi5usHEOwMCcQSIQTj6yoTC8S5nbeAhEJk
+        yQKgcdD07x0AZyKtRLqMgO1y2mjZ3uPFp0zCwO600welh5HD17OU1mA/fqCPWJDad9szISp6jngS
+        pTzKxTotsohh5ytGLcINi5ffn0OQscefRyKDCkDT39BepuuiKLO8wHW1gWagJb13UHc+0Hp+ky17
+        xeycVJ62DNNDl8p2BzwvJc72rjPma9jVSX0VYNVgB4o5fUQpaWnZjVXS45EKgnDm/WC0sHBWjbwV
+        +AAkYXNK0eZDbXDukB4Sqq39nsQOf8HuQteMArMFP5zFYeERtNduInJjHskPUca2hfpRBoeuqen4
+        kkX2EoysDall0zkzWCev+EWPJkxhwRZtF99E/RJW7SWO/xiEJPz64F6Nz/DDDtzskFwubE/ZqM6Q
+        po2FOZ1OT38AAAD//wMAoHX9TkQIAAA=
     headers:
       access-control-allow-origin:
       - '*'
@@ -126,11 +182,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:39 GMT
+      - Thu, 22 Oct 2026 20:38:30 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005AA4BC1637F4.1.1.m_1
+      - 1D33C9B11FD1F98500002FB115FAC826.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -144,7 +200,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -214,7 +270,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:16:39 GMT
+      - Thu, 22 Oct 2026 20:38:31 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -244,68 +300,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1101/2023.01.30.526374
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.01.30.526374&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T19:37:06Z","timestamp":1768505826069,"version":"3.49.0"},"posted":{"date-parts":[[2023,2,2]]},"group-title":"Neuroscience","reference-count":89,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,22]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>How
-        does a train of TMS pulses modify neural activity in humans? Despite adoption
-        of repetitive TMS (rTMS) for the treatment of neuropsychiatric disorders,
-        we still do not understand how rTMS changes the human brain. This limited
-        understanding stems in part from a lack of methods for noninvasively measuring
-        the neural effects of a single TMS train \u2014 a fundamental building block
-        of treatment \u2014 as well as the cumulative effects of consecutive TMS trains.
-        Gaining this understanding would provide foundational knowledge to guide the
-        next generation of treatments. Here, to overcome this limitation, we developed
-        methods to noninvasively measure causal and acute changes in cortical excitability
-        and evaluated this neural response to single and sequential TMS trains. In
-        16 healthy adults, standard 10 Hz trains were applied to the dorsolateral
-        prefrontal cortex (dlPFC) in a randomized, sham-controlled, event-related
-        design and changes were assessed based on the TMS-evoked potential (TEP),
-        a measure of cortical excitability. We hypothesized that single TMS trains
-        would induce changes in the local TEP amplitude and that those changes would
-        accumulate across sequential trains, but primary analyses did not indicate
-        evidence in support of either of these hypotheses. Exploratory analyses demonstrated
-        non-local neural changes in sensor and source space and local neural changes
-        in phase and source space. Together these results suggest that single and
-        sequential TMS trains may not be sufficient to modulate local cortical excitability
-        indexed by typical TEP amplitude metrics but may cause neural changes that
-        can be detected outside the stimulation area or using phase or source space
-        metrics. This work should be contextualized as methods development for the
-        monitoring of transient noninvasive neural changes during rTMS and contributes
-        to a growing understanding of the neural effects of rTMS.<\/jats:p>","DOI":"10.1101\/2023.01.30.526374","type":"posted-content","created":{"date-parts":[[2023,2,2]],"date-time":"2023-02-02T15:10:23Z","timestamp":1675350623000},"source":"Crossref","is-referenced-by-count":3,"title":["Neural
-        effects of TMS trains on the human prefrontal cortex"],"prefix":"10.64898","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-7487-8946","authenticated-orcid":false,"given":"Jessica
-        M.","family":"Ross","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Christopher
-        C.","family":"Cline","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Manjima","family":"Sarkar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jade","family":"Truong","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-0529-3490","authenticated-orcid":false,"given":"Corey
-        J.","family":"Keller","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023112505200642000_2023.01.30.526374v4.1","doi-asserted-by":"publisher","DOI":"10.4103\/ipj.ipj_88_18"},{"key":"2023112505200642000_2023.01.30.526374v4.2","doi-asserted-by":"publisher","DOI":"10.1016\/S0140-6736(18)30295-2"},{"key":"2023112505200642000_2023.01.30.526374v4.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.eclinm.2020.100349"},{"key":"2023112505200642000_2023.01.30.526374v4.4","doi-asserted-by":"publisher","DOI":"10.3791\/59711"},{"key":"2023112505200642000_2023.01.30.526374v4.5","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2019.10.007"},{"key":"2023112505200642000_2023.01.30.526374v4.6","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2017.11.016"},{"key":"2023112505200642000_2023.01.30.526374v4.7","doi-asserted-by":"publisher","DOI":"10.1038\/s41386-020-0633-z"},{"key":"2023112505200642000_2023.01.30.526374v4.8","doi-asserted-by":"publisher","DOI":"10.1097\/00001756-199711100-00024"},{"key":"2023112505200642000_2023.01.30.526374v4.9","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-009-0123-4"},{"key":"2023112505200642000_2023.01.30.526374v4.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2021.02.005"},{"key":"2023112505200642000_2023.01.30.526374v4.11","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.22016"},{"key":"2023112505200642000_2023.01.30.526374v4.12","doi-asserted-by":"publisher","DOI":"10.1016\/j.brainresbull.2005.11.003"},{"key":"2023112505200642000_2023.01.30.526374v4.13","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2009.04.001"},{"key":"2023112505200642000_2023.01.30.526374v4.14","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00172.2010"},{"key":"2023112505200642000_2023.01.30.526374v4.15","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2019.01.001"},{"key":"2023112505200642000_2023.01.30.526374v4.16","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2004.09.048"},{"key":"2023112505200642000_2023.01.30.526374v4.17","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.20608"},{"key":"2023112505200642000_2023.01.30.526374v4.18","unstructured":"Lucas
-        MV , Cline CC , Sun Y , Yan M , Hogoboom N , Etkin A . Characterization of
-        rTMS acute response profiles for systematic design of neuromodulation interventions.
-        In revision."},{"key":"2023112505200642000_2023.01.30.526374v4.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.bbr.2009.03.004"},{"key":"2023112505200642000_2023.01.30.526374v4.20","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2021.05.008"},{"key":"2023112505200642000_2023.01.30.526374v4.21","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2018.09.032"},{"key":"2023112505200642000_2023.01.30.526374v4.22","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1088-17.2018"},{"key":"2023112505200642000_2023.01.30.526374v4.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2019.07.009"},{"key":"2023112505200642000_2023.01.30.526374v4.24","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0216185"},{"key":"2023112505200642000_2023.01.30.526374v4.25","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2020.10.011"},{"key":"2023112505200642000_2023.01.30.526374v4.26","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-022-05397-3"},{"key":"2023112505200642000_2023.01.30.526374v4.27","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25990"},{"key":"2023112505200642000_2023.01.30.526374v4.28","unstructured":"Richardson
-        M , Paxton, Alexandra, Kuznetsov, Nikita. Nonlinear methods for understanding
-        complex dynamical phenomena in psychological science. APA Psychological Science
-        Agenda, 2017."},{"key":"2023112505200642000_2023.01.30.526374v4.29","doi-asserted-by":"publisher","DOI":"10.1007\/s00422-006-0104-6"},{"key":"2023112505200642000_2023.01.30.526374v4.30","doi-asserted-by":"publisher","DOI":"10.1140\/epjst\/e2008-00829-1"},{"key":"2023112505200642000_2023.01.30.526374v4.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2010.12.037"},{"key":"2023112505200642000_2023.01.30.526374v4.32","doi-asserted-by":"publisher","DOI":"10.1097\/NMD.0b013e318261413d"},{"key":"2023112505200642000_2023.01.30.526374v4.33","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(02)01866-8"},{"key":"2023112505200642000_2023.01.30.526374v4.34","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-009-0123-4"},{"key":"2023112505200642000_2023.01.30.526374v4.35","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2018.10.052"},{"key":"2023112505200642000_2023.01.30.526374v4.36","doi-asserted-by":"publisher","DOI":"10.1016\/S1388-2457(99)00070-X"},{"key":"2023112505200642000_2023.01.30.526374v4.37","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2018.08.003"},{"key":"2023112505200642000_2023.01.30.526374v4.38","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2009.08.016"},{"key":"2023112505200642000_2023.01.30.526374v4.39","doi-asserted-by":"publisher","DOI":"10.1016\/0013-4694(94)90029-9"},{"key":"2023112505200642000_2023.01.30.526374v4.40","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2015.02.001"},{"key":"2023112505200642000_2023.01.30.526374v4.41","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00067.2005"},{"key":"2023112505200642000_2023.01.30.526374v4.42","doi-asserted-by":"publisher","DOI":"10.1097\/00124509-199803000-00004"},{"key":"2023112505200642000_2023.01.30.526374v4.43","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1311772110"},{"key":"2023112505200642000_2023.01.30.526374v4.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2018.03.001"},{"key":"2023112505200642000_2023.01.30.526374v4.45","doi-asserted-by":"publisher","DOI":"10.1109\/EMBC.2015.7318340"},{"key":"2023112505200642000_2023.01.30.526374v4.46","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2013.01.003"},{"key":"2023112505200642000_2023.01.30.526374v4.47","doi-asserted-by":"publisher","DOI":"10.1016\/j.drugalcdep.2017.02.002"},{"key":"2023112505200642000_2023.01.30.526374v4.48","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyt.2022.842947"},{"key":"2023112505200642000_2023.01.30.526374v4.49","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2016.02.006"},{"key":"2023112505200642000_2023.01.30.526374v4.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2021.118708"},{"key":"2023112505200642000_2023.01.30.526374v4.51","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2009.04.023"},{"key":"2023112505200642000_2023.01.30.526374v4.52","doi-asserted-by":"publisher","DOI":"10.1016\/j.jneumeth.2003.10.009"},{"key":"2023112505200642000_2023.01.30.526374v4.53","doi-asserted-by":"publisher","DOI":"10.1109\/NER49283.2021.9441147"},{"key":"2023112505200642000_2023.01.30.526374v4.54","doi-asserted-by":"publisher","DOI":"10.1016\/j.jneumeth.2022.109494"},{"key":"2023112505200642000_2023.01.30.526374v4.55","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.05.026"},{"key":"2023112505200642000_2023.01.30.526374v4.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2017.10.021"},{"key":"2023112505200642000_2023.01.30.526374v4.57","doi-asserted-by":"publisher","DOI":"10.20982\/tqmp.01.1.p018"},{"key":"2023112505200642000_2023.01.30.526374v4.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpsc.2015.11.007"},{"key":"2023112505200642000_2023.01.30.526374v4.59","doi-asserted-by":"publisher","DOI":"10.1101\/2023.01.20.524867"},{"key":"2023112505200642000_2023.01.30.526374v4.60","doi-asserted-by":"publisher","DOI":"10.1155\/2011\/831409"},{"key":"2023112505200642000_2023.01.30.526374v4.61","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-021-04463-6"},{"key":"2023112505200642000_2023.01.30.526374v4.62","doi-asserted-by":"publisher","DOI":"10.1007\/978-3-319-07155-8_1"},{"key":"2023112505200642000_2023.01.30.526374v4.63","unstructured":"Scheurich
-        R , Demos AP , Zamm A , Mathias B , Palmer C . Capturing Intra-and Inter-Brain
-        Dynamics with Recurrence Quantification Analysis. 41st Annual Meeting of the
-        Cognitive Science Society 2019:2748\u201354."},{"key":"2023112505200642000_2023.01.30.526374v4.64","doi-asserted-by":"publisher","DOI":"10.1007\/s00221-015-4304-y"},{"key":"2023112505200642000_2023.01.30.526374v4.65","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyg.2014.00771"},{"key":"2023112505200642000_2023.01.30.526374v4.66","doi-asserted-by":"publisher","DOI":"10.1098\/rstb.2011.0351"},{"key":"2023112505200642000_2023.01.30.526374v4.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.12.039"},{"key":"2023112505200642000_2023.01.30.526374v4.68","doi-asserted-by":"publisher","DOI":"10.1186\/1475-925X-9-45"},{"key":"2023112505200642000_2023.01.30.526374v4.69","doi-asserted-by":"publisher","DOI":"10.1109\/TMI.2004.837363"},{"key":"2023112505200642000_2023.01.30.526374v4.70","doi-asserted-by":"publisher","DOI":"10.1155\/2011\/879716"},{"key":"2023112505200642000_2023.01.30.526374v4.71","doi-asserted-by":"publisher","DOI":"10.1109\/NER.2013.6695906"},{"key":"2023112505200642000_2023.01.30.526374v4.72","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0008876"},{"key":"2023112505200642000_2023.01.30.526374v4.73","doi-asserted-by":"publisher","DOI":"10.1097\/YCT.0b013e3181ce1a8c"},{"key":"2023112505200642000_2023.01.30.526374v4.74","doi-asserted-by":"publisher","DOI":"10.4088\/JCP.v69n0315"},{"key":"2023112505200642000_2023.01.30.526374v4.75","doi-asserted-by":"publisher","DOI":"10.1016\/j.brs.2017.02.013"},{"key":"2023112505200642000_2023.01.30.526374v4.76","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2007.09.124"},{"key":"2023112505200642000_2023.01.30.526374v4.77","doi-asserted-by":"publisher","DOI":"10.3389\/fnins.2023.1157080"},{"key":"2023112505200642000_2023.01.30.526374v4.78","doi-asserted-by":"publisher","DOI":"10.1007\/s00221-004-2052-5"},{"key":"2023112505200642000_2023.01.30.526374v4.79","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2004.02.005"},{"key":"2023112505200642000_2023.01.30.526374v4.80","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhab493"},{"key":"2023112505200642000_2023.01.30.526374v4.81","doi-asserted-by":"publisher","DOI":"10.1007\/s12311-018-0945-2"},{"key":"2023112505200642000_2023.01.30.526374v4.82","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0913008107"},{"key":"2023112505200642000_2023.01.30.526374v4.83","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.5089-13.2014"},{"key":"2023112505200642000_2023.01.30.526374v4.84","doi-asserted-by":"publisher","DOI":"10.1186\/s12916-018-1086-7"},{"key":"2023112505200642000_2023.01.30.526374v4.85","doi-asserted-by":"publisher","DOI":"10.1515\/revneuro-2014-0036"},{"key":"2023112505200642000_2023.01.30.526374v4.86","doi-asserted-by":"publisher","DOI":"10.1142\/S0129065711002808"},{"key":"2023112505200642000_2023.01.30.526374v4.87","doi-asserted-by":"publisher","DOI":"10.1016\/j.neulet.2004.05.025"},{"key":"2023112505200642000_2023.01.30.526374v4.88","doi-asserted-by":"publisher","DOI":"10.1016\/j.clinph.2022.04.022"},{"key":"2023112505200642000_2023.01.30.526374v4.89","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpsc.2022.12.005"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.01.30.526374","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T04:13:00Z","timestamp":1768450380000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.01.30.526374"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,2,2]]},"references-count":89,"URL":"https:\/\/doi.org\/10.1101\/2023.01.30.526374","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41598-023-49250-7","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,2,2]]},"subtype":"preprint"}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1038\/s41598-023-49250-7","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.01.30.526374","asserted-by":"object"}]}}],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '3622'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:16:39 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -313,24 +325,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:38:31 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -373,11 +389,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:39 GMT
+      - Thu, 22 Oct 2026 20:38:31 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500003EA10C1A484A.1.1.m_1
+      - 1D348A0161E73355000060BA995A9112.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -391,7 +407,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -399,62 +415,6 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Neural%5Bti%5D+AND+effects%5Bti%5D+AND+TMS%5Bti%5D+AND+trains%5Bti%5D+AND+human%5Bti%5D+AND+prefrontal%5Bti%5D+AND+cortex%5Bti%5D&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 10:16:39 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
 - request:
     body: ''
     headers:
@@ -493,11 +453,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:41 GMT
+      - Thu, 22 Oct 2026 20:38:31 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500002FA10FDF4EA4.1.1.m_1
+      - 1D33C9B11FD1F98500002BB117A37338.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -511,7 +471,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -558,11 +518,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:40 GMT
+      - Thu, 22 Oct 2026 20:38:31 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F98500003EA11074BF51.1.1.m_1
+      - 1D348A0161E73355000062BA9AB268D8.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -576,7 +536,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -1014,7 +974,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:16:41 GMT
+      - Thu, 22 Oct 2026 20:38:32 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1044,436 +1004,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1038/s41598-023-49250-7
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1038%2Fs41598-023-49250-7&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,17]],"date-time":"2026-09-17T19:59:11Z","timestamp":1789675151569,"version":"4.0.1"},"reference-count":88,"publisher":"Springer
-        Science and Business Media LLC","issue":"1","license":[{"start":{"date-parts":[[2023,12,20]],"date-time":"2023-12-20T00:00:00Z","timestamp":1703030400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"},{"start":{"date-parts":[[2023,12,20]],"date-time":"2023-12-20T00:00:00Z","timestamp":1703030400000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"}],"funder":[{"name":"Veterans
-        Affairs Palo Alto Healthcare System"},{"DOI":"10.13039\/100000025","name":"National
-        Institute of Mental Health","doi-asserted-by":"crossref","award":["R01MH129018"],"award-info":[{"award-number":["R01MH129018"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"crossref"}]},{"name":"Burroughs
-        Wellcome Fund Career Award for Medical Scientists"}],"content-domain":{"domain":["link.springer.com"],"crossmark-restriction":false},"short-container-title":["Sci
-        Rep"],"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>How
-        does a train of TMS pulses modify neural activity in humans? Despite adoption
-        of repetitive TMS (rTMS) for the treatment of neuropsychiatric disorders,
-        we still do not understand how rTMS changes the human brain. This limited
-        understanding stems in part from a lack of methods for noninvasively measuring
-        the neural effects of a single TMS train\u2014a fundamental building block
-        of treatment\u2014as well as the cumulative effects of consecutive TMS trains.
-        Gaining this understanding would provide foundational knowledge to guide the
-        next generation of treatments. Here, to overcome this limitation, we developed
-        methods to noninvasively measure causal and acute changes in cortical excitability
-        and evaluated this neural response to single and sequential TMS trains. In
-        16 healthy adults, standard 10\u00a0Hz trains were applied to the dorsolateral
-        prefrontal cortex in a randomized, sham-controlled, event-related design and
-        changes were assessed based on the TMS-evoked potential (TEP), a measure of
-        cortical excitability. We hypothesized that single TMS trains would induce
-        changes in the local TEP amplitude and that those changes would accumulate
-        across sequential trains, but primary analyses did not indicate evidence in
-        support of either of these hypotheses. Exploratory analyses demonstrated non-local
-        neural changes in sensor and source space and local neural changes in phase
-        and source space. Together these results suggest that single and sequential
-        TMS trains may not be sufficient to modulate local cortical excitability indexed
-        by typical TEP amplitude metrics but may cause neural changes that can be
-        detected outside the stimulation area or using phase or source space metrics.
-        This work should be contextualized as methods development for the monitoring
-        of transient noninvasive neural changes during rTMS and contributes to a growing
-        understanding of the neural effects of rTMS.<\/jats:p>","DOI":"10.1038\/s41598-023-49250-7","type":"journal-article","created":{"date-parts":[[2023,12,20]],"date-time":"2023-12-20T02:02:26Z","timestamp":1703037746000},"update-policy":"https:\/\/doi.org\/10.1007\/springer_crossmark_policy","source":"Crossref","is-referenced-by-count":15,"title":["Neural
-        effects of TMS trains on the human prefrontal cortex"],"prefix":"10.1038","volume":"13","author":[{"given":"Jessica
-        M.","family":"Ross","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Christopher
-        C.","family":"Cline","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Manjima","family":"Sarkar","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jade","family":"Truong","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Corey
-        J.","family":"Keller","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"297","published-online":{"date-parts":[[2023,12,20]]},"reference":[{"key":"49250_CR1","doi-asserted-by":"publisher","first-page":"172","DOI":"10.4103\/ipj.ipj_88_18","volume":"27","author":"A
-        Chail","year":"2018","unstructured":"Chail, A., Saini, R. K., Bhat, P. S.,
-        Srivastava, K. & Chauhan, V. Transcranial magnetic stimulation: A review of
-        its evolution and current applications. Ind. Psychiatry J. 27, 172\u2013180.
-        https:\/\/doi.org\/10.4103\/ipj.ipj_88_18 (2018).","journal-title":"Ind. Psychiatry
-        J."},{"key":"49250_CR2","doi-asserted-by":"publisher","first-page":"1683","DOI":"10.1016\/S0140-6736(18)30295-2","volume":"391","author":"DM
-        Blumberger","year":"2018","unstructured":"Blumberger, D. M. et al. Effectiveness
-        of theta burst versus high-frequency repetitive transcranial magnetic stimulation
-        in patients with depression (THREE-D): A randomised non-inferiority trial.
-        Lancet 391, 1683\u20131692. https:\/\/doi.org\/10.1016\/S0140-6736(18)30295-2
-        (2018).","journal-title":"Lancet"},{"key":"49250_CR3","doi-asserted-by":"publisher","DOI":"10.1016\/j.eclinm.2020.100349","volume":"22","author":"AP
-        Trevizol","year":"2020","unstructured":"Trevizol, A. P. et al. Predictors
-        of remission after repetitive transcranial magnetic stimulation for the treatment
-        of major depressive disorder: An analysis from the randomised non-inferiority
-        THREE-D trial. EClinicalMedicine 22, 100349. https:\/\/doi.org\/10.1016\/j.eclinm.2020.100349
-        (2020).","journal-title":"EClinicalMedicine"},{"key":"49250_CR4","doi-asserted-by":"publisher","first-page":"59711","DOI":"10.3791\/59711","volume":"2019","author":"M-I
-        Stefanou","year":"2019","unstructured":"Stefanou, M.-I. et al. Brain state-dependent
-        brain stimulation with real-time electroencephalography-triggered transcranial
-        magnetic stimulation. JoVE 2019, 59711. https:\/\/doi.org\/10.3791\/59711
-        (2019).","journal-title":"JoVE"},{"key":"49250_CR5","doi-asserted-by":"publisher","first-page":"197","DOI":"10.1016\/j.brs.2019.10.007","volume":"13","author":"B
-        Zrenner","year":"2020","unstructured":"Zrenner, B. et al. Brain oscillation-synchronized
-        stimulation of the left dorsolateral prefrontal cortex in depression using
-        real-time EEG-triggered TMS. Brain Stimul. 13, 197\u2013205. https:\/\/doi.org\/10.1016\/j.brs.2019.10.007
-        (2020).","journal-title":"Brain Stimul."},{"key":"49250_CR6","doi-asserted-by":"publisher","first-page":"374","DOI":"10.1016\/j.brs.2017.11.016","volume":"11","author":"C
-        Zrenner","year":"2018","unstructured":"Zrenner, C., Desideri, D., Belardinelli,
-        P. & Ziemann, U. Real-time EEG-defined excitability states determine efficacy
-        of TMS-induced plasticity in human motor cortex. Brain Stimul. 11, 374\u2013389.
-        https:\/\/doi.org\/10.1016\/j.brs.2017.11.016 (2018).","journal-title":"Brain
-        Stimul."},{"key":"49250_CR7","doi-asserted-by":"publisher","first-page":"1018","DOI":"10.1038\/s41386-020-0633-z","volume":"45","author":"N
-        Eshel","year":"2020","unstructured":"Eshel, N. et al. Global connectivity
-        and local excitability changes underlie antidepressant effects of repetitive
-        transcranial magnetic stimulation. Neuropsychopharmacol 45, 1018\u20131025.
-        https:\/\/doi.org\/10.1038\/s41386-020-0633-z (2020).","journal-title":"Neuropsychopharmacol"},{"key":"49250_CR8","doi-asserted-by":"publisher","first-page":"3537","DOI":"10.1097\/00001756-199711100-00024","volume":"8","author":"RJ
-        Ilmoniemi","year":"1997","unstructured":"Ilmoniemi, R. J. et al. Neuronal
-        responses to magnetic stimulation reveal cortical reactivity and connectivity.
-        NeuroReport 8, 3537\u20133540. https:\/\/doi.org\/10.1097\/00001756-199711100-00024
-        (1997).","journal-title":"NeuroReport"},{"key":"49250_CR9","doi-asserted-by":"publisher","first-page":"233","DOI":"10.1007\/s10548-009-0123-4","volume":"22","author":"RJ
-        Ilmoniemi","year":"2010","unstructured":"Ilmoniemi, R. J. & Ki\u010di\u0107,
-        D. Methodology for Combined TMS and EEG. Brain Topogr. 22, 233\u2013248. https:\/\/doi.org\/10.1007\/s10548-009-0123-4
-        (2010).","journal-title":"Brain Topogr."},{"key":"49250_CR10","doi-asserted-by":"publisher","first-page":"391","DOI":"10.1016\/j.brs.2021.02.005","volume":"14","author":"RA
-        Ozdemir","year":"2021","unstructured":"Ozdemir, R. A. et al. Cortical responses
-        to noninvasive perturbations enable individual brain fingerprinting. Brain
-        Stimul. 14, 391\u2013403. https:\/\/doi.org\/10.1016\/j.brs.2021.02.005 (2021).","journal-title":"Brain
-        Stimul."},{"key":"49250_CR11","doi-asserted-by":"publisher","first-page":"1652","DOI":"10.1002\/hbm.22016","volume":"34","author":"NC
-        Rogasch","year":"2013","unstructured":"Rogasch, N. C. & Fitzgerald, P. B.
-        Assessing cortical network properties using TMS-EEG. Hum. Brain Mapp. 34,
-        1652\u20131669. https:\/\/doi.org\/10.1002\/hbm.22016 (2013).","journal-title":"Hum.
-        Brain Mapp."},{"key":"49250_CR12","doi-asserted-by":"publisher","first-page":"86","DOI":"10.1016\/j.brainresbull.2005.11.003","volume":"69","author":"SK
-        Esser","year":"2006","unstructured":"Esser, S. K. et al. A direct demonstration
-        of cortical LTP in humans: A combined TMS\/EEG study. Brain Res. Bull. 69,
-        86\u201394. https:\/\/doi.org\/10.1016\/j.brainresbull.2005.11.003 (2006).","journal-title":"Brain
-        Res. Bull."},{"key":"49250_CR13","doi-asserted-by":"publisher","first-page":"2","DOI":"10.1016\/j.brs.2009.04.001","volume":"3","author":"M
-        Hamidi","year":"2010","unstructured":"Hamidi, M., Slagter, H. A., Tononi,
-        G. & Postle, B. R. Brain responses evoked by high-frequency repetitive transcranial
-        magnetic stimulation: An event-related potential study. Brain Stimul. 3, 2\u201314.
-        https:\/\/doi.org\/10.1016\/j.brs.2009.04.001 (2010).","journal-title":"Brain
-        Stimul."},{"key":"49250_CR14","doi-asserted-by":"publisher","first-page":"1578","DOI":"10.1152\/jn.00172.2010","volume":"104","author":"D
-        Veniero","year":"2010","unstructured":"Veniero, D., Maioli, C. & Miniussi,
-        C. Potentiation of short-latency cortical responses by high-frequency repetitive
-        transcranial magnetic stimulation. J Neurophysiol 104, 1578\u20131588. https:\/\/doi.org\/10.1152\/jn.00172.2010
-        (2010).","journal-title":"J Neurophysiol"},{"key":"49250_CR15","doi-asserted-by":"publisher","first-page":"802","DOI":"10.1016\/j.clinph.2019.01.001","volume":"130","author":"S
-        Tremblay","year":"2019","unstructured":"Tremblay, S. et al. Clinical utility
-        and prospective of TMS-EEG. Clin. Neurophysiol. 130, 802\u2013844. https:\/\/doi.org\/10.1016\/j.clinph.2019.01.001
-        (2019).","journal-title":"Clin. Neurophysiol."},{"key":"49250_CR16","doi-asserted-by":"publisher","first-page":"955","DOI":"10.1016\/j.neuroimage.2004.09.048","volume":"24","author":"S
-        K\u00e4hk\u00f6nen","year":"2005","unstructured":"K\u00e4hk\u00f6nen, S.,
-        Komssi, S., Wilenius, J. & Ilmoniemi, R. J. Prefrontal transcranial magnetic
-        stimulation produces intensity-dependent EEG responses in humans. NeuroImage
-        24, 955\u2013960. https:\/\/doi.org\/10.1016\/j.neuroimage.2004.09.048 (2005).","journal-title":"NeuroImage"},{"key":"49250_CR17","doi-asserted-by":"publisher","first-page":"1387","DOI":"10.1002\/hbm.20608","volume":"30","author":"P
-        Lioumis","year":"2009","unstructured":"Lioumis, P., Ki\u010di\u0107, D., Savolainen,
-        P., M\u00e4kel\u00e4, J. P. & K\u00e4hk\u00f6nen, S. Reproducibility of TMS-Evoked
-        EEG responses. Hum. Brain Mapp. 30, 1387\u20131396. https:\/\/doi.org\/10.1002\/hbm.20608
-        (2009).","journal-title":"Hum. Brain Mapp."},{"key":"49250_CR18","unstructured":"Lucas,
-        M. V., Cline, C. C., Sun, Y., Yan, M., Hogoboom, N., & Etkin, A. Characterization
-        of rTMS acute response profiles for systematic design of neuromodulation interventions.
-        In revision."},{"key":"49250_CR19","doi-asserted-by":"publisher","first-page":"239","DOI":"10.1016\/j.bbr.2009.03.004","volume":"201","author":"M
-        Koenigs","year":"2009","unstructured":"Koenigs, M. & Grafman, J. The functional
-        neuroanatomy of depression: Distinct roles for ventromedial and dorsolateral
-        prefrontal cortex. Behav. Brain Res. 201, 239\u2013243. https:\/\/doi.org\/10.1016\/j.bbr.2009.03.004
-        (2009).","journal-title":"Behav. Brain Res."},{"key":"49250_CR20","doi-asserted-by":"publisher","first-page":"2306","DOI":"10.1016\/j.clinph.2021.05.008","volume":"132","author":"D
-        Voineskos","year":"2021","unstructured":"Voineskos, D. et al. Neurophysiological
-        effects of repetitive transcranial magnetic stimulation (rTMS) in treatment
-        resistant depression. Clin. Neurophysiol. 132, 2306\u20132316. https:\/\/doi.org\/10.1016\/j.clinph.2021.05.008
-        (2021).","journal-title":"Clin. Neurophysiol."},{"key":"49250_CR21","doi-asserted-by":"publisher","first-page":"477","DOI":"10.1016\/j.biopsych.2018.09.032","volume":"85","author":"D
-        Voineskos","year":"2019","unstructured":"Voineskos, D. et al. Altered transcranial
-        magnetic stimulation-electroencephalographic markers of inhibition and excitation
-        in the dorsolateral prefrontal cortex in major depressive disorder. Biol.
-        Psychiatry 85, 477\u2013486. https:\/\/doi.org\/10.1016\/j.biopsych.2018.09.032
-        (2019).","journal-title":"Biol. Psychiatry"},{"key":"49250_CR22","doi-asserted-by":"publisher","first-page":"5384","DOI":"10.1523\/JNEUROSCI.1088-17.2018","volume":"38","author":"CJ
-        Keller","year":"2018","unstructured":"Keller, C. J. et al. Induction and quantification
-        of excitability changes in human cortical networks. J Neurosci 38, 5384\u20135398.
-        https:\/\/doi.org\/10.1523\/JNEUROSCI.1088-17.2018 (2018).","journal-title":"J
-        Neurosci"},{"key":"49250_CR23","doi-asserted-by":"publisher","first-page":"1537","DOI":"10.1016\/j.brs.2019.07.009","volume":"12","author":"M
-        Biabani","year":"2019","unstructured":"Biabani, M., Fornito, A., Mutanen,
-        T. P., Morrow, J. & Rogasch, N. C. Characterizing and minimizing the contribution
-        of sensory inputs to TMS-evoked potentials. Brain Stimul 12, 1537\u20131552.
-        https:\/\/doi.org\/10.1016\/j.brs.2019.07.009 (2019).","journal-title":"Brain
-        Stimul"},{"key":"49250_CR24","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0216185","volume":"15","author":"M
-        Freedberg","year":"2020","unstructured":"Freedberg, M., Reeves, J. A., Hussain,
-        S. J., Zaghloul, K. A. & Wassermann, E. M. Identifying site- and stimulation-specific
-        TMS-evoked EEG potentials using a quantitative cosine similarity metric. PLoS
-        ONE 15, e0216185. https:\/\/doi.org\/10.1371\/journal.pone.0216185 (2020).","journal-title":"PLoS
-        ONE"},{"key":"49250_CR25","doi-asserted-by":"publisher","first-page":"4","DOI":"10.1016\/j.brs.2020.10.011","volume":"14","author":"L
-        Rocchi","year":"2021","unstructured":"Rocchi, L. et al. Disentangling EEG
-        responses to TMS due to cortical and peripheral activations. Brain Stimul
-        14, 4\u201318. https:\/\/doi.org\/10.1016\/j.brs.2020.10.011 (2021).","journal-title":"Brain
-        Stimul"},{"key":"49250_CR26","doi-asserted-by":"publisher","first-page":"1391","DOI":"10.1038\/s41598-022-05397-3","volume":"12","author":"JM
-        Ross","year":"2022","unstructured":"Ross, J. M. et al. A structured ICA-based
-        process for removing auditory evoked potentials. Sci Rep 12, 1391. https:\/\/doi.org\/10.1038\/s41598-022-05397-3
-        (2022).","journal-title":"Sci Rep"},{"key":"49250_CR27","doi-asserted-by":"publisher","first-page":"5141","DOI":"10.1002\/hbm.25990","volume":"43","author":"JM
-        Ross","year":"2022","unstructured":"Ross, J. M., Sarkar, M. & Keller, C. J.
-        Experimental suppression of transcranial magnetic stimulation-electroencephalography
-        sensory potentials. Hum. Brain Mapp. 43, 5141\u20135153. https:\/\/doi.org\/10.1002\/hbm.25990
-        (2022).","journal-title":"Hum. Brain Mapp."},{"key":"49250_CR28","unstructured":"Richardson,
-        M., Paxton, A., & Kuznetsov, N. Nonlinear Methods for Understanding Complex
-        Dynamical Phenomena in Psychological Science (APA Psychological Science Agenda,
-        2017)."},{"key":"49250_CR29","doi-asserted-by":"publisher","first-page":"59","DOI":"10.1007\/s00422-006-0104-6","volume":"96","author":"MJ
-        Richardson","year":"2007","unstructured":"Richardson, M. J., Schmidt, R. C.
-        & Kay, B. A. Distinguishing the noise and attractor strength of coordinated
-        limb movements using recurrence analysis. Biol. Cybern. 96, 59\u201378. https:\/\/doi.org\/10.1007\/s00422-006-0104-6
-        (2007).","journal-title":"Biol. Cybern."},{"key":"49250_CR30","doi-asserted-by":"publisher","first-page":"3","DOI":"10.1140\/epjst\/e2008-00829-1","volume":"164","author":"N
-        Marwan","year":"2008","unstructured":"Marwan, N. A historical review of recurrence
-        plots. Eur. Phys. J. Spec. Top. 164, 3\u201312. https:\/\/doi.org\/10.1140\/epjst\/e2008-00829-1
-        (2008).","journal-title":"Eur. Phys. J. Spec. Top."},{"key":"49250_CR31","doi-asserted-by":"publisher","first-page":"1686","DOI":"10.1016\/j.clinph.2010.12.037","volume":"122","author":"S
-        Rossi","year":"2011","unstructured":"Rossi, S., Hallett, M., Rossini, P. M.
-        & Pascual-Leone, A. Screening questionnaire before TMS: An update. Clin. Neurophysiol.
-        122, 1686. https:\/\/doi.org\/10.1016\/j.clinph.2010.12.037 (2011).","journal-title":"Clin.
-        Neurophysiol."},{"key":"49250_CR32","doi-asserted-by":"publisher","first-page":"712","DOI":"10.1097\/NMD.0b013e318261413d","volume":"200","author":"A
-        Yeung","year":"2012","unstructured":"Yeung, A. et al. The Quick inventory
-        of depressive symptomatology, clinician rated and self-report: A psychometric
-        assessment in Chinese Americans with major depressive disorder. J. Nerv. Ment.
-        Dis. 200, 712\u2013715. https:\/\/doi.org\/10.1097\/NMD.0b013e318261413d (2012).","journal-title":"J.
-        Nerv. Ment. Dis."},{"key":"49250_CR33","doi-asserted-by":"publisher","first-page":"573","DOI":"10.1016\/s0006-3223(02)01866-8","volume":"54","author":"AJ
-        Rush","year":"2003","unstructured":"Rush, A. J. et al. The 16-item quick inventory
-        of depressive symptomatology (QIDS), clinician rating (QIDS-C), and self-report
-        (QIDS-SR): A psychometric evaluation in patients with chronic major depression.
-        Biol. Psychiatry 54, 573\u2013583. https:\/\/doi.org\/10.1016\/s0006-3223(02)01866-8
-        (2003).","journal-title":"Biol. Psychiatry"},{"key":"49250_CR34","doi-asserted-by":"publisher","first-page":"300","DOI":"10.1016\/j.neuroimage.2018.10.052","volume":"185","author":"V
-        Conde","year":"2019","unstructured":"Conde, V. et al. The non-transcranial
-        TMS-evoked potential is an inherent source of ambiguity in TMS-EEG studies.
-        NeuroImage 185, 300\u2013312. https:\/\/doi.org\/10.1016\/j.neuroimage.2018.10.052
-        (2019).","journal-title":"NeuroImage"},{"key":"49250_CR35","doi-asserted-by":"publisher","first-page":"1325","DOI":"10.1016\/S1388-2457(99)00070-X","volume":"110","author":"V
-        Nikouline","year":"1999","unstructured":"Nikouline, V., Ruohonen, J. & Ilmoniemi,
-        R. J. The role of the coil click in TMS assessed with simultaneous EEG. Clin.
-        Neurophysiol. 110, 1325\u20131328. https:\/\/doi.org\/10.1016\/S1388-2457(99)00070-X
-        (1999).","journal-title":"Clin. Neurophysiol."},{"key":"49250_CR36","doi-asserted-by":"publisher","first-page":"1322","DOI":"10.1016\/j.brs.2018.08.003","volume":"11","author":"PC
-        Gordon","year":"2018","unstructured":"Gordon, P. C., Desideri, D., Belardinelli,
-        P., Zrenner, C. & Ziemann, U. Comparison of cortical EEG responses to realistic
-        sham versus real TMS of human motor cortex. Brain Stimul. 11, 1322\u20131330.
-        https:\/\/doi.org\/10.1016\/j.brs.2018.08.003 (2018).","journal-title":"Brain
-        Stimul."},{"key":"49250_CR37","doi-asserted-by":"publisher","first-page":"2008","DOI":"10.1016\/j.clinph.2009.08.016","volume":"120","author":"S
-        Rossi","year":"2009","unstructured":"Rossi, S., Hallett, M., Rossini, P. M.
-        & Pascual-Leone, A. Safety of TMS Consensus Group. Safety, ethical considerations,
-        and application guidelines for the use of transcranial magnetic stimulation
-        in clinical practice and research. Clin. Neurophysiol. 120, 2008\u20132039.
-        https:\/\/doi.org\/10.1016\/j.clinph.2009.08.016 (2009).","journal-title":"Clin.
-        Neurophysiol."},{"key":"49250_CR38","doi-asserted-by":"publisher","first-page":"79","DOI":"10.1016\/0013-4694(94)90029-9","volume":"91","author":"PM
-        Rossini","year":"1994","unstructured":"Rossini, P. M. et al. Non-invasive
-        electrical and magnetic stimulation of the brain, spinal cord and roots: basic
-        principles and procedures for routine clinical application. Report of an IFCN
-        committee. Electroencephalogr. Clin. Neurophysiol. 91, 79\u201392. https:\/\/doi.org\/10.1016\/0013-4694(94)90029-9
-        (1994).","journal-title":"Electroencephalogr. Clin. Neurophysiol."},{"key":"49250_CR39","doi-asserted-by":"publisher","first-page":"1071","DOI":"10.1016\/j.clinph.2015.02.001","volume":"126","author":"PM
-        Rossini","year":"2015","unstructured":"Rossini, P. M. et al. Non-invasive
-        electrical and magnetic stimulation of the brain, spinal cord, roots and peripheral
-        nerves: Basic principles and procedures for routine clinical and research
-        application. An updated report from an I.F.C.N. Committee. Clin. Neurophysiol.
-        126, 1071\u20131107. https:\/\/doi.org\/10.1016\/j.clinph.2015.02.001 (2015).","journal-title":"Clin.
-        Neurophysiol."},{"key":"49250_CR40","doi-asserted-by":"publisher","first-page":"4520","DOI":"10.1152\/jn.00067.2005","volume":"94","author":"MG
-        Stokes","year":"2005","unstructured":"Stokes, M. G. et al. Simple metric for
-        scaling motor threshold based on scalp-cortex distance: Application to studies
-        using transcranial magnetic stimulation. J. Neurophysiol. 94, 4520\u20134527.
-        https:\/\/doi.org\/10.1152\/jn.00067.2005 (2005).","journal-title":"J. Neurophysiol."},{"key":"49250_CR41","doi-asserted-by":"publisher","first-page":"25","DOI":"10.1097\/00124509-199803000-00004","volume":"14","author":"S
-        Pridmore","year":"1998","unstructured":"Pridmore, S., Fernandes Filho, J.
-        A., Nahas, Z., Liberatos, C. & George, M. S. Motor threshold in transcranial
-        magnetic stimulation: A comparison of a neurophysiological method and a visualization
-        of movement method. J. ECT 14, 25\u201327 (1998).","journal-title":"J. ECT"},{"key":"49250_CR42","doi-asserted-by":"publisher","first-page":"19944","DOI":"10.1073\/pnas.1311772110","volume":"110","author":"AC
-        Chen","year":"2013","unstructured":"Chen, A. C. et al. Causal interactions
-        between fronto-parietal central executive and default-mode networks in humans.
-        Proc. Natl. Acad. Sci. 110, 19944\u201319949. https:\/\/doi.org\/10.1073\/pnas.1311772110
-        (2013).","journal-title":"Proc. Natl. Acad. Sci."},{"key":"49250_CR43","doi-asserted-by":"publisher","first-page":"587","DOI":"10.1016\/j.neuroimage.2018.03.001","volume":"174","author":"JD
-        Nielsen","year":"2018","unstructured":"Nielsen, J. D. et al. Automatic skull
-        segmentation from MR images for realistic volume conductor models of the head:
-        Assessment of the state-of-the-art. Neuroimage 174, 587\u2013598. https:\/\/doi.org\/10.1016\/j.neuroimage.2018.03.001
-        (2018).","journal-title":"Neuroimage"},{"key":"49250_CR44","doi-asserted-by":"publisher","unstructured":"Thielscher,
-        A., Antunes, A., & Saturnino, G.B. Field modeling for transcranial magnetic
-        stimulation: A useful tool to understand the physiological effects of TMS?
-        In 2015 37th Annual International Conference of the IEEE Engineering in Medicine
-        and Biology Society (EMBC) 222\u2013225 (IEEE, Milan, 2015). https:\/\/doi.org\/10.1109\/EMBC.2015.7318340.","DOI":"10.1109\/EMBC.2015.7318340"},{"key":"49250_CR45","doi-asserted-by":"publisher","first-page":"714","DOI":"10.1016\/j.biopsych.2013.01.003","volume":"73","author":"X
-        Li","year":"2013","unstructured":"Li, X. et al. Repetitive transcranial magnetic
-        stimulation of the dorsolateral prefrontal cortex reduces nicotine cue craving.
-        Biol. Psychiatry 73, 714\u2013720. https:\/\/doi.org\/10.1016\/j.biopsych.2013.01.003
-        (2013).","journal-title":"Biol. Psychiatry"},{"key":"49250_CR46","doi-asserted-by":"publisher","first-page":"98","DOI":"10.1016\/j.drugalcdep.2017.02.002","volume":"174","author":"X
-        Li","year":"2017","unstructured":"Li, X. et al. Repetitive transcranial magnetic
-        stimulation (rTMS) of the dorsolateral prefrontal cortex reduces resting-state
-        insula activity and modulates functional connectivity of the orbitofrontal
-        cortex in cigarette smokers. Drug Alcohol Depend 174, 98\u2013105. https:\/\/doi.org\/10.1016\/j.drugalcdep.2017.02.002
-        (2017).","journal-title":"Drug Alcohol Depend"},{"key":"49250_CR47","doi-asserted-by":"publisher","first-page":"8447","DOI":"10.3389\/fpsyt.2022.842947","volume":"13","author":"Q
-        Liu","year":"2022","unstructured":"Liu, Q. et al. Intermittent theta burst
-        stimulation vs. high-frequency repetitive transcranial magnetic stimulation
-        in the treatment of methamphetamine patients. Front. Psychiatry 13, 8447.
-        https:\/\/doi.org\/10.3389\/fpsyt.2022.842947 (2022).","journal-title":"Front.
-        Psychiatry"},{"key":"49250_CR48","doi-asserted-by":"publisher","first-page":"e13","DOI":"10.1016\/j.biopsych.2016.02.006","volume":"80","author":"Y
-        Shen","year":"2016","unstructured":"Shen, Y. et al. 10-Hz repetitive transcranial
-        magnetic stimulation of the left dorsolateral prefrontal cortex reduces heroin
-        cue craving in long-term addicts. Biol Psychiatry 80, e13-14. https:\/\/doi.org\/10.1016\/j.biopsych.2016.02.006
-        (2016).","journal-title":"Biol Psychiatry"},{"key":"49250_CR49","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2021.118708","volume":"245","author":"PC
-        Gordon","year":"2021","unstructured":"Gordon, P. C. et al. Recording brain
-        responses to TMS of primary motor cortex by EEG - utility of an optimized
-        sham procedure. Neuroimage 245, 118708. https:\/\/doi.org\/10.1016\/j.neuroimage.2021.118708
-        (2021).","journal-title":"Neuroimage"},{"key":"49250_CR50","doi-asserted-by":"publisher","first-page":"1392","DOI":"10.1016\/j.clinph.2009.04.023","volume":"120","author":"D
-        Veniero","year":"2009","unstructured":"Veniero, D., Bortoletto, M. & Miniussi,
-        C. TMS-EEG co-registration: On TMS-induced artifact. Clin. Neurophysiol. 120,
-        1392\u20131399. https:\/\/doi.org\/10.1016\/j.clinph.2009.04.023 (2009).","journal-title":"Clin.
-        Neurophysiol."},{"key":"49250_CR51","doi-asserted-by":"publisher","first-page":"9","DOI":"10.1016\/j.jneumeth.2003.10.009","volume":"134","author":"A
-        Delorme","year":"2004","unstructured":"Delorme, A. & Makeig, S. EEGLAB: An
-        open source toolbox for analysis of single-trial EEG dynamics including independent
-        component analysis. J. Neurosci. Methods 134, 9\u201321. https:\/\/doi.org\/10.1016\/j.jneumeth.2003.10.009
-        (2004).","journal-title":"J. Neurosci. Methods"},{"key":"49250_CR52","doi-asserted-by":"publisher","unstructured":"Cline,
-        C. C., Lucas, M. V., Sun, Y., Menezes, M., & Etkin, A. Advanced Artifact Removal
-        for Automated TMS-EEG Data Processing. In 2021 10th International IEEE\/EMBS
-        Conference on Neural Engineering (NER) 1039\u20131042 (IEEE, Italy, 2021).
-        https:\/\/doi.org\/10.1109\/NER49283.2021.9441147.","DOI":"10.1109\/NER49283.2021.9441147"},{"key":"49250_CR53","doi-asserted-by":"publisher","DOI":"10.1016\/j.jneumeth.2022.109494","volume":"371","author":"NC
-        Rogasch","year":"2022","unstructured":"Rogasch, N. C., Biabani, M. & Mutanen,
-        T. P. Designing and comparing cleaning pipelines for TMS-EEG data: A theoretical
-        overview and practical example. J. Neurosci. Methods 371, 109494. https:\/\/doi.org\/10.1016\/j.jneumeth.2022.109494
-        (2022).","journal-title":"J. Neurosci. Methods"},{"key":"49250_CR54","doi-asserted-by":"publisher","first-page":"181","DOI":"10.1016\/j.neuroimage.2019.05.026","volume":"198","author":"L
-        Pion-Tonachini","year":"2019","unstructured":"Pion-Tonachini, L., Kreutz-Delgado,
-        K. & Makeig, S. ICLabel: An automated electroencephalographic independent
-        component classifier, dataset, and website. Neuroimage 198, 181\u2013197.
-        https:\/\/doi.org\/10.1016\/j.neuroimage.2019.05.026 (2019).","journal-title":"Neuroimage"},{"key":"49250_CR55","doi-asserted-by":"publisher","first-page":"135","DOI":"10.1016\/j.neuroimage.2017.10.021","volume":"166","author":"TP
-        Mutanen","year":"2018","unstructured":"Mutanen, T. P., Metsomaa, J., Liljander,
-        S. & Ilmoniemi, R. J. Automatic and robust noise suppression in EEG and MEG:
-        The SOUND algorithm. NeuroImage 166, 135\u2013151. https:\/\/doi.org\/10.1016\/j.neuroimage.2017.10.021
-        (2018).","journal-title":"NeuroImage"},{"key":"49250_CR56","doi-asserted-by":"publisher","first-page":"18","DOI":"10.20982\/tqmp.01.1.p018","volume":"1","author":"M
-        Beauchemin","year":"2005","unstructured":"Beauchemin, M. & De Beaumont, L.
-        Statistical analysis of the mismatch negativity: To a dilemma, an answer.
-        TQMP 1, 18\u201324. https:\/\/doi.org\/10.20982\/tqmp.01.1.p018 (2005).","journal-title":"TQMP"},{"key":"49250_CR57","doi-asserted-by":"publisher","first-page":"110","DOI":"10.1016\/j.bpsc.2015.11.007","volume":"1","author":"ES
-        Kappenman","year":"2016","unstructured":"Kappenman, E. S. & Luck, S. J. Best
-        practices for event-related potential research in clinical populations. Biol.
-        Psychiatry Cogn. Neurosci. Neuroimag. 1, 110\u2013115. https:\/\/doi.org\/10.1016\/j.bpsc.2015.11.007
-        (2016).","journal-title":"Biol. Psychiatry Cogn. Neurosci. Neuroimag."},{"key":"49250_CR58","doi-asserted-by":"publisher","unstructured":"Gogulski
-        J, Cline CC, Ross JM, Truong J, Sarkar M, Parmigiani S, et al. (2023) Mapping
-        cortical excitability in the human dorsolateral prefrontal cortex. bioRxiv.
-        https:\/\/doi.org\/10.1101\/2023.01.20.524867.","DOI":"10.1101\/2023.01.20.524867"},{"key":"49250_CR59","doi-asserted-by":"publisher","DOI":"10.1155\/2011\/831409","volume":"2011","author":"CR
-        Pernet","year":"2011","unstructured":"Pernet, C. R., Chauveau, N., Gaspar,
-        C. & Rousselet, G. A. LIMO EEG: A toolbox for hierarchical LInear MOdeling
-        of ElectroEncephaloGraphic data. Comput. Intell. Neurosci. 2011, 831409. https:\/\/doi.org\/10.1155\/2011\/831409
-        (2011).","journal-title":"Comput. Intell. Neurosci."},{"key":"49250_CR60","doi-asserted-by":"publisher","first-page":"421","DOI":"10.1038\/s41598-021-04463-6","volume":"12","author":"S
-        Proksch","year":"2022","unstructured":"Proksch, S., Reeves, M., Spivey, M.
-        & Balasubramaniam, R. Coordination dynamics of multi-agent interaction in
-        a musical ensemble. Sci. Rep. 12, 421. https:\/\/doi.org\/10.1038\/s41598-021-04463-6
-        (2022).","journal-title":"Sci. Rep."},{"key":"49250_CR61","doi-asserted-by":"publisher","unstructured":"Marwan,
-        N., & Webber, C. L. Mathematical and Computational Foundations of Recurrence
-        Quantifications. In: Webber, C. L., Marwan, N. (eds.) Recurrence Quantification
-        Analysis 3\u201343 (Springer, 2015). https:\/\/doi.org\/10.1007\/978-3-319-07155-8_1.","DOI":"10.1007\/978-3-319-07155-8_1"},{"key":"49250_CR62","unstructured":"Scheurich,
-        R., Demos, A. P., Zamm, A., Mathias, B., Palmer, C. Capturing intra-and inter-brain
-        dynamics with recurrence quantification analysis. In 41st Annual Meeting of
-        the Cognitive Science Society (pp. 2748\u20132754)."},{"key":"49250_CR63","doi-asserted-by":"publisher","first-page":"2357","DOI":"10.1007\/s00221-015-4304-y","volume":"233","author":"JM
-        Ross","year":"2015","unstructured":"Ross, J. M. & Balasubramaniam, R. Auditory
-        white noise reduces postural fluctuations even in the absence of vision. Exp.
-        Brain Res. 233, 2357\u20132363. https:\/\/doi.org\/10.1007\/s00221-015-4304-y
-        (2015).","journal-title":"Exp. Brain Res."},{"key":"49250_CR64","doi-asserted-by":"publisher","first-page":"771","DOI":"10.3389\/fpsyg.2014.00771","volume":"5","author":"DH
-        Abney","year":"2014","unstructured":"Abney, D. H., Warlaumont, A. S., Haussman,
-        A., Ross, J. M. & Wallot, S. Using nonlinear methods to quantify changes in
-        infant limb movements and vocalizations. Front. Psychol. 5, 771. https:\/\/doi.org\/10.3389\/fpsyg.2014.00771
-        (2014).","journal-title":"Front. Psychol."},{"key":"49250_CR65","doi-asserted-by":"publisher","first-page":"906","DOI":"10.1098\/rstb.2011.0351","volume":"367","author":"JAS
-        Kelso","year":"2012","unstructured":"Kelso, J. A. S. Multistability and metastability:
-        understanding dynamic coordination in the brain. Philos. Trans. R Soc. Lond.
-        B Biol. Sci. 367, 906\u2013918. https:\/\/doi.org\/10.1098\/rstb.2011.0351
-        (2012).","journal-title":"Philos. Trans. R Soc. Lond. B Biol. Sci."},{"key":"49250_CR66","doi-asserted-by":"publisher","first-page":"371","DOI":"10.1016\/j.neuroimage.2011.12.039","volume":"61","author":"CM
-        Michel","year":"2012","unstructured":"Michel, C. M. & Murray, M. M. Towards
-        the utilization of EEG as a brain imaging tool. NeuroImage 61, 371\u2013385.
-        https:\/\/doi.org\/10.1016\/j.neuroimage.2011.12.039 (2012).","journal-title":"NeuroImage"},{"key":"49250_CR67","doi-asserted-by":"publisher","first-page":"45","DOI":"10.1186\/1475-925X-9-45","volume":"9","author":"A
-        Gramfort","year":"2010","unstructured":"Gramfort, A., Papadopoulo, T., Olivi,
-        E. & Clerc, M. OpenMEEG: Opensource software for quasistatic bioelectromagnetics.
-        BioMed Eng. OnLine 9, 45. https:\/\/doi.org\/10.1186\/1475-925X-9-45 (2010).","journal-title":"BioMed
-        Eng. OnLine"},{"key":"49250_CR68","doi-asserted-by":"publisher","first-page":"12","DOI":"10.1109\/TMI.2004.837363","volume":"24","author":"J
-        Kybic","year":"2005","unstructured":"Kybic, J. et al. A common formalism for
-        the Integral formulations of the forward EEG problem. IEEE Trans. Med. Imaging
-        24, 12\u201328. https:\/\/doi.org\/10.1109\/TMI.2004.837363 (2005).","journal-title":"IEEE
-        Trans. Med. Imaging"},{"key":"49250_CR69","doi-asserted-by":"publisher","first-page":"1","DOI":"10.1155\/2011\/879716","volume":"2011","author":"F
-        Tadel","year":"2011","unstructured":"Tadel, F., Baillet, S., Mosher, J. C.,
-        Pantazis, D. & Leahy, R. M. Brainstorm: A user-friendly application for MEG\/EEG
-        analysis. Comput. Intell. Neurosci. 2011, 1\u201313. https:\/\/doi.org\/10.1155\/2011\/879716
-        (2011).","journal-title":"Comput. Intell. Neurosci."},{"key":"49250_CR70","doi-asserted-by":"publisher","unstructured":"Pistorius,
-        T., Aldrich, C., Auret, L., & Pineda, J. Early detection of risk of autism
-        spectrum disorder based on recurrence quantification analysis of electroencephalographic
-        signals. In 2013 6th International IEEE\/EMBS Conference on Neural Engineering
-        (NER), San Diego, CA, USA 198\u2013201 (IEEE, 2013). https:\/\/doi.org\/10.1109\/NER.2013.6695906.","DOI":"10.1109\/NER.2013.6695906"},{"key":"49250_CR71","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0008876","volume":"5","author":"K
-        Becker","year":"2010","unstructured":"Becker, K. et al. Anaesthesia monitoring
-        by recurrence quantification analysis of EEG Data. PLoS ONE 5, e8876. https:\/\/doi.org\/10.1371\/journal.pone.0008876
-        (2010).","journal-title":"PLoS ONE"},{"key":"49250_CR72","doi-asserted-by":"publisher","first-page":"18","DOI":"10.1097\/YCT.0b013e3181ce1a8c","volume":"27","author":"D
-        Hadley","year":"2011","unstructured":"Hadley, D. et al. Safety, tolerability,
-        and effectiveness of high doses of adjunctive daily left prefrontal repetitive
-        transcranial magnetic stimulation for treatment-resistant depression in a
-        clinical setting. J. ECT 27, 18\u201325. https:\/\/doi.org\/10.1097\/YCT.0b013e3181ce1a8c
-        (2011).","journal-title":"J. ECT"},{"key":"49250_CR73","doi-asserted-by":"publisher","first-page":"441","DOI":"10.4088\/jcp.v69n0315","volume":"69","author":"DH
-        Avery","year":"2008","unstructured":"Avery, D. H. et al. Transcranial magnetic
-        stimulation in the acute treatment of major depressive disorder: Clinical
-        response in an open-label extension trial. J. Clin. Psychiatry 69, 441\u2013451.
-        https:\/\/doi.org\/10.4088\/jcp.v69n0315 (2008).","journal-title":"J. Clin.
-        Psychiatry"},{"key":"49250_CR74","doi-asserted-by":"publisher","first-page":"847","DOI":"10.1016\/j.brs.2017.02.013","volume":"10","author":"AG
-        Yip","year":"2017","unstructured":"Yip, A. G. et al. 61% of unmedicated treatment
-        resistant depression patients who did not respond to acute TMS treatment responded
-        after four weeks of twice weekly deep TMS in the Brainsway pivotal trial.
-        Brain Stimul. 10, 847\u2013849. https:\/\/doi.org\/10.1016\/j.brs.2017.02.013
-        (2017).","journal-title":"Brain Stimul."},{"key":"49250_CR75","doi-asserted-by":"publisher","first-page":"71","DOI":"10.1016\/j.clinph.2007.09.124","volume":"119","author":"SH
-        Jung","year":"2008","unstructured":"Jung, S. H., Shin, J. E., Jeong, Y.-S.
-        & Shin, H.-I. Changes in motor cortical excitability induced by high-frequency
-        repetitive transcranial magnetic stimulation of different stimulation durations.
-        Clin. Neurophysiol. 119, 71\u201379. https:\/\/doi.org\/10.1016\/j.clinph.2007.09.124
-        (2008).","journal-title":"Clin. Neurophysiol."},{"key":"49250_CR76","doi-asserted-by":"publisher","first-page":"1157080","DOI":"10.3389\/fnins.2023.1157080","volume":"17","author":"J
-        Jin","year":"2023","unstructured":"Jin, J. et al. Train duration and inter-train
-        interval determine the direction and intensity of high-frequency rTMS after-effects.
-        Front. Neurosci. 17, 1157080. https:\/\/doi.org\/10.3389\/fnins.2023.1157080
-        (2023).","journal-title":"Front. Neurosci."},{"key":"49250_CR77","doi-asserted-by":"publisher","first-page":"114","DOI":"10.1007\/s00221-004-2052-5","volume":"161","author":"A
-        Quartarone","year":"2005","unstructured":"Quartarone, A. et al. Distinct changes
-        in cortical and spinal excitability following high-frequency repetitive TMS
-        to the human motor cortex. Exp. Brain Res. 161, 114\u2013124. https:\/\/doi.org\/10.1007\/s00221-004-2052-5
-        (2005).","journal-title":"Exp. Brain Res."},{"key":"49250_CR78","doi-asserted-by":"publisher","first-page":"1519","DOI":"10.1016\/j.clinph.2004.02.005","volume":"115","author":"A
-        Peinemann","year":"2004","unstructured":"Peinemann, A. et al. Long-lasting
-        increase in corticospinal excitability after 1800 pulses of subthreshold 5
-        Hz repetitive TMS to the primary motor cortex. Clin. Neurophysiol. 115, 1519\u20131526.
-        https:\/\/doi.org\/10.1016\/j.clinph.2004.02.005 (2004).","journal-title":"Clin.
-        Neurophysiol."},{"key":"49250_CR79","doi-asserted-by":"publisher","first-page":"4436","DOI":"10.1093\/cercor\/bhab493","volume":"32","author":"Y
-        Ye","year":"2022","unstructured":"Ye, Y., Wang, J. & Che, X. Concurrent TMS-EEG
-        to reveal the neuroplastic changes in the prefrontal and insular cortices
-        in the analgesic effects of DLPFC-rTMS. Cereb. Cortex 32, 4436\u20134446.
-        https:\/\/doi.org\/10.1093\/cercor\/bhab493 (2022).","journal-title":"Cereb.
-        Cortex"},{"key":"49250_CR80","doi-asserted-by":"publisher","first-page":"550","DOI":"10.1007\/s12311-018-0945-2","volume":"17","author":"X
-        Du","year":"2018","unstructured":"Du, X. et al. Cerebellar-stimulation evoked
-        prefrontal electrical synchrony is modulated by GABA. Cerebellum 17, 550\u2013563.
-        https:\/\/doi.org\/10.1007\/s12311-018-0945-2 (2018).","journal-title":"Cerebellum"},{"key":"49250_CR81","doi-asserted-by":"publisher","first-page":"2681","DOI":"10.1073\/pnas.0913008107","volume":"107","author":"F
-        Ferrarelli","year":"2010","unstructured":"Ferrarelli, F. et al. Breakdown
-        in cortical effective connectivity during midazolam-induced loss of consciousness.
-        Proc. Natl. Acad. Sci. 107, 2681\u20132686. https:\/\/doi.org\/10.1073\/pnas.0913008107
-        (2010).","journal-title":"Proc. Natl. Acad. Sci."},{"key":"49250_CR82","doi-asserted-by":"publisher","first-page":"5603","DOI":"10.1523\/JNEUROSCI.5089-13.2014","volume":"34","author":"I
-        Premoli","year":"2014","unstructured":"Premoli, I. et al. TMS-EEG signatures
-        of GABAergic neurotransmission in the human cortex. J. Neurosci. 34, 5603\u20135612.
-        https:\/\/doi.org\/10.1523\/JNEUROSCI.5089-13.2014 (2014).","journal-title":"J.
-        Neurosci."},{"key":"49250_CR83","doi-asserted-by":"publisher","first-page":"101","DOI":"10.1186\/s12916-018-1086-7","volume":"16","author":"T
-        Heunis","year":"2018","unstructured":"Heunis, T. et al. Recurrence quantification
-        analysis of resting state EEG signals in autism spectrum disorder\u2014A systematic
-        methodological exploration of technical and demographic confounders in the
-        search for biomarkers. BMC Med. 16, 101. https:\/\/doi.org\/10.1186\/s12916-018-1086-7
-        (2018).","journal-title":"BMC Med."},{"key":"49250_CR84","doi-asserted-by":"publisher","first-page":"1","DOI":"10.1515\/revneuro-2014-0036","volume":"25","author":"S
-        Bhat","year":"2014","unstructured":"Bhat, S., Acharya, U. R., Adeli, H., Bairy,
-        G. M. & Adeli, A. Automated diagnosis of autism: in search of a mathematical
-        marker. Rev. Neurosci. 25, 1. https:\/\/doi.org\/10.1515\/revneuro-2014-0036
-        (2014).","journal-title":"Rev. Neurosci."},{"key":"49250_CR85","doi-asserted-by":"publisher","first-page":"199","DOI":"10.1142\/S0129065711002808","volume":"21","author":"UR
-        Acharya","year":"2011","unstructured":"Acharya, U. R., Sree, S. V., Chattopadhyay,
-        S., Yu, W. & Ang, P. C. A. Application of recurrence quantification analysis
-        for the automated identification of epileptic EEG signals. Int. J. Neur. Syst.
-        21, 199\u2013211. https:\/\/doi.org\/10.1142\/S0129065711002808 (2011).","journal-title":"Int.
-        J. Neur. Syst."},{"key":"49250_CR86","doi-asserted-by":"publisher","first-page":"148","DOI":"10.1016\/j.neulet.2004.05.025","volume":"366","author":"I-H
-        Song","year":"2004","unstructured":"Song, I.-H., Lee, D.-S. & Kim, S. I. Recurrence
-        quantification analysis of sleep electoencephalogram in sleep apnea syndrome
-        in humans. Neurosci. Lett. 366, 148\u2013153. https:\/\/doi.org\/10.1016\/j.neulet.2004.05.025
-        (2004).","journal-title":"Neurosci. Lett."},{"key":"49250_CR87","doi-asserted-by":"publisher","first-page":"59","DOI":"10.1016\/j.clinph.2022.04.022","volume":"140","author":"HR
-        Siebner","year":"2022","unstructured":"Siebner, H. R. et al. Transcranial
-        magnetic stimulation of the brain: What is stimulated?\u2014A consensus and
-        critical position paper. Clin. Neurophysiol. 140, 59\u201397. https:\/\/doi.org\/10.1016\/j.clinph.2022.04.022
-        (2022).","journal-title":"Clin. Neurophysiol."},{"key":"49250_CR88","doi-asserted-by":"publisher","first-page":"S24519022220034","DOI":"10.1016\/j.bpsc.2022.12.005","volume":"1","author":"S
-        Parmigiani","year":"2022","unstructured":"Parmigiani, S. et al. Reliability
-        and validity of TMS-EEG biomarkers. Biol. Psychiatry Cogn. Neurosci. 1, S2451902222003408.
-        https:\/\/doi.org\/10.1016\/j.bpsc.2022.12.005 (2022).","journal-title":"Biol.
-        Psychiatry Cogn. Neurosci."}],"container-title":["Scientific Reports"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/www.nature.com\/articles\/s41598-023-49250-7.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/www.nature.com\/articles\/s41598-023-49250-7","content-type":"text\/html","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/www.nature.com\/articles\/s41598-023-49250-7.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2023,12,23]],"date-time":"2023-12-23T06:02:13Z","timestamp":1703311333000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.nature.com\/articles\/s41598-023-49250-7"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,12,20]]},"references-count":88,"journal-issue":{"issue":"1","published-online":{"date-parts":[[2023,12]]}},"alternative-id":["49250"],"URL":"https:\/\/doi.org\/10.1038\/s41598-023-49250-7","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.01.30.526374","asserted-by":"object"}]},"ISSN":["2045-2322"],"issn-type":[{"value":"2045-2322","type":"electronic"}],"subject":[],"published":{"date-parts":[[2023,12,20]]},"assertion":[{"value":"18
-        May 2023","order":1,"name":"received","label":"Received","group":{"name":"ArticleHistory","label":"Article
-        History"}},{"value":"6 December 2023","order":2,"name":"accepted","label":"Accepted","group":{"name":"ArticleHistory","label":"Article
-        History"}},{"value":"20 December 2023","order":3,"name":"first_online","label":"First
-        Online","group":{"name":"ArticleHistory","label":"Article History"}},{"value":"CJK
-        holds equity in Alto Neuroscience, Inc. No other conflicts of interest, financial
-        or otherwise, are declared by the authors.","order":1,"name":"Ethics","group":{"name":"EthicsHeading","label":"Competing
-        interests"}}],"article-number":"22700"}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1101\/2023.01.30.526374","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41598-023-49250-7","asserted-by":"subject"}]}}],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '12356'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:16:41 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1481,24 +1029,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:38:32 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -1541,11 +1093,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:41 GMT
+      - Thu, 22 Oct 2026 20:38:31 GMT
       ncbi-phid:
-      - 1D348A0161E7335500003AA4C0D3F0BE.1.1.m_1
+      - 1D33C9B11FD1F985000052B11925B87E.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1605,11 +1157,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:16:41 GMT
+      - Thu, 22 Oct 2026 20:38:32 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000759053501A54.1.1.m_1
+      - 1D348A0161E73355000028BA9BE4DCDA.1.1.m_1
       ncbi-sid:
-      - 6206669585B6A961_ED98SID
+      - 57B69C00D49DAB92_2C53SID
       referrer-policy:
       - origin-when-cross-origin
       server:

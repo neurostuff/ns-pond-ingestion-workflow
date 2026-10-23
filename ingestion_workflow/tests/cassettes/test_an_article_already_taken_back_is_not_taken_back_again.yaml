@@ -39,11 +39,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:53 GMT
+      - Thu, 22 Oct 2026 20:37:16 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500005D8FC66CC94D.1.1.m_1
+      - 1D3238309BD9AC7500006CA0525B3AEA.1.1.m_1
       ncbi-sid:
-      - C668B581E206E6EB_F369SID
+      - ECF51DD2548F8C83_F100SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -57,7 +57,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -274,7 +274,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:15:54 GMT
+      - Thu, 22 Oct 2026 20:37:17 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -304,215 +304,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.neuroimage.2004.05.015
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuroimage.2004.05.015&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,10,21]],"date-time":"2026-10-21T08:30:06Z","timestamp":1792571406053,"version":"4.5.0"},"reference-count":90,"publisher":"Elsevier
-        BV","issue":"1","license":[{"start":{"date-parts":[[2004,9,1]],"date-time":"2004-09-01T00:00:00Z","timestamp":1093996800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["NeuroImage"],"published-print":{"date-parts":[[2004,9]]},"DOI":"10.1016\/j.neuroimage.2004.05.015","type":"journal-article","created":{"date-parts":[[2004,8,5]],"date-time":"2004-08-05T08:22:06Z","timestamp":1091694126000},"page":"64-74","source":"Crossref","is-referenced-by-count":351,"title":["Dissociable
-        effects of arousal and valence on prefrontal activity indexing emotional evaluation
-        and subsequent memory: an event-related fMRI study"],"prefix":"10.1016","volume":"23","author":[{"given":"Florin","family":"Dolcos","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Kevin
-        S.","family":"LaBar","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Roberto","family":"Cabeza","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"issue":"3\u20134","key":"10.1016\/j.neuroimage.2004.05.015_BIB1","doi-asserted-by":"crossref","first-page":"197","DOI":"10.3109\/00207450108986547","article-title":"Event-related
-        synchronization and desynchronization during affective processing: emergence
-        of valence-related time-dependent hemispheric asymmetries in theta and upper
-        alpha band","volume":"110","author":"Aftanas","year":"2001","journal-title":"Int.
-        J. Neurosci."},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB2","doi-asserted-by":"crossref","first-page":"217","DOI":"10.1006\/nimg.2000.0531","article-title":"The
-        role of the right anterior prefrontal cortex in episodic retrieval","volume":"11","author":"Allan","year":"2000","journal-title":"NeuroImage"},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB3","doi-asserted-by":"crossref","first-page":"775","DOI":"10.1162\/089892900562598","article-title":"The
-        effects of divided attention on encoding- and retrieval-related brain activity:
-        a PET study of younger and older adults","volume":"12","author":"Anderson","year":"2000","journal-title":"J.
-        Cogn. Neurosci."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB4","doi-asserted-by":"crossref","first-page":"196","DOI":"10.1038\/nn1001","article-title":"Dissociated
-        neural representations of intensity and valence in human olfaction","volume":"6","author":"Anderson","year":"2003","journal-title":"Nat.
-        Neurosci."},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB5","doi-asserted-by":"crossref","first-page":"565","DOI":"10.1017\/S0033291797004856","article-title":"The
-        interaction between mood and cognitive function studied with PET","volume":"27","author":"Baker","year":"1997","journal-title":"Psychol.
-        Med."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB6","doi-asserted-by":"crossref","first-page":"339","DOI":"10.1037\/0022-006X.60.3.339","article-title":"Interhemispheric
-        and intrahemispheric control of emotion: a focus on unilateral brain damage","volume":"60","author":"Borod","year":"1992","journal-title":"J.
-        Consult. Clin. Psychol."},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB7","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1037\/0894-4105.12.3.446","article-title":"Right
-        hemisphere emotional perception: evidence across multiple channels","volume":"12","author":"Borod","year":"1998","journal-title":"Neuropsychology"},{"issue":"1","key":"10.1016\/j.neuroimage.2004.05.015_BIB8","doi-asserted-by":"crossref","first-page":"49","DOI":"10.1016\/0005-7916(94)90063-9","article-title":"Measuring
-        emotion: the self-assessment manikin and the semantic differential","volume":"25","author":"Bradley","year":"1994","journal-title":"J.
-        Behav. Ther. Exp. Psychiatry"},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB9","doi-asserted-by":"crossref","first-page":"379","DOI":"10.1037\/0278-7393.18.2.379","article-title":"Remembering
-        pictures: pleasure and arousal in memory","volume":"18","author":"Bradley","year":"1992","journal-title":"J.
-        Exp. Psychol., Learn, Mem. Cogn."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB10","doi-asserted-by":"crossref","first-page":"1185","DOI":"10.1126\/science.281.5380.1185","article-title":"Making
-        memories: brain activity that predicts how well visual experience will be
-        remembered","volume":"281","author":"Brewer","year":"1998","journal-title":"Science"},{"issue":"1","key":"10.1016\/j.neuroimage.2004.05.015_BIB11","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1162\/08989290051137585","article-title":"Imaging
-        cognition: II. An empirical review of 275 PET and fMRI studies","volume":"12","author":"Cabeza","year":"2000","journal-title":"J.
-        Cogn. Neurosci."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB12","doi-asserted-by":"crossref","first-page":"317","DOI":"10.1006\/nimg.2002.1063","article-title":"Similarities
-        and differences in the neural correlates of episodic memory retrieval and
-        working memory","volume":"16","author":"Cabeza","year":"2002","journal-title":"NeuroImage"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB13","doi-asserted-by":"crossref","DOI":"10.1162\/0898929042568578","article-title":"Brain
-        activity during episodic retrieval of autobiographical and laboratory events:
-        an fMRI study using a novel photo paradigm","author":"Cabeza","year":"2004","journal-title":"J.
-        Cogn. Neurosci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB14","doi-asserted-by":"crossref","first-page":"8016","DOI":"10.1073\/pnas.93.15.8016","article-title":"Amygdala
-        activity at encoding correlated with long-term, free recall of emotional information","volume":"93","author":"Cahill","year":"1996","journal-title":"Proc.
-        Natl. Acad. Sci. U. S. A."},{"issue":"14","key":"10.1016\/j.neuroimage.2004.05.015_BIB15","doi-asserted-by":"crossref","first-page":"3233","DOI":"10.1097\/00001756-199810050-00019","article-title":"Hemispheric
-        asymmetry for emotional stimuli detected with fMRI","volume":"9","author":"Canli","year":"1998","journal-title":"NeuroReport"},{"issue":"RC99","key":"10.1016\/j.neuroimage.2004.05.015_BIB16","first-page":"1","article-title":"Event-related
-        activation in the human amygdala associated with later memory for individual
-        emotional experience","volume":"20","author":"Canli","year":"2000","journal-title":"J.
-        Neurosci."},{"issue":"16","key":"10.1016\/j.neuroimage.2004.05.015_BIB17","doi-asserted-by":"crossref","first-page":"10789","DOI":"10.1073\/pnas.162356599","article-title":"Sex
-        differences in the neural basis of emotional memories","volume":"99","author":"Canli","year":"2002","journal-title":"Proc.
-        Natl. Acad. Sci. U. S. A."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB18","series-title":"The
-        Handbook of Emotion and Memory: Research and Theory","author":"Christianson","year":"1992"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB19","doi-asserted-by":"crossref","first-page":"95","DOI":"10.1016\/S0301-0511(99)00044-7","article-title":"Brain
-        potentials in affective picture processing: covariation with autonomic arousal
-        and affective report","volume":"52","author":"Cuthbert","year":"2000","journal-title":"Biol.
-        Psychol."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB20","series-title":"Brain
-        Asymmetry","first-page":"361","article-title":"Cerebral asymmetry, emotion
-        and affective style","author":"Davidson","year":"1995"},{"issue":"1","key":"10.1016\/j.neuroimage.2004.05.015_BIB21","doi-asserted-by":"crossref","first-page":"11","DOI":"10.1016\/S1364-6613(98)01265-0","article-title":"The
-        functional neuroanatomy of emotion and affective style","volume":"3","author":"Davidson","year":"1999","journal-title":"Trends
-        Cogn. Sci."},{"issue":"3\u201311","key":"10.1016\/j.neuroimage.2004.05.015_BIB22","article-title":"Prefrontal
-        cortical contributions to working memory: evidence from event-related fMRI
-        studies","volume":"133","author":"D''Esposito","year":"2000","journal-title":"Exp.
-        Brain Res."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB90","unstructured":"Dillon,
-        D.G., Cooper, J.J., Grent-t-Jong, T., Woldorff, M.G., LaBar, K.S. Dissociation
-        of event-related potentials indexing arousal, valence, and semantic cohesion
-        during emotional stimulus encoding, submitted."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB23","doi-asserted-by":"crossref","first-page":"203","DOI":"10.1006\/nimg.2000.0538","article-title":"Dissociable
-        temporal lobe activations during emotional episodic memory retrieval","volume":"11","author":"Dolan","year":"2000","journal-title":"NeuroImage"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB24","doi-asserted-by":"crossref","first-page":"252","DOI":"10.3758\/CABN.2.3.252","article-title":"Event-related
-        potentials of emotional memory: encoding pleasant, unpleasant, and neutral
-        Pictures","volume":"2","author":"Dolcos","year":"2002","journal-title":"Cogn.
-        Affect Behav. Neurosci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB91","first-page":"221","article-title":"Coactivation
-        of the amygdala and hippocampus predicts better recall for emotional than
-        for neutral pictures","volume":"51","author":"Dolcos","year":"2003","journal-title":"Brain
-        and Cognition"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB25","doi-asserted-by":"crossref","first-page":"855","DOI":"10.1016\/S0896-6273(04)00289-2","article-title":"Interaction
-        between the amygdala and the medial temporal lobe memory system predicts better
-        memory for emotional events","volume":"42","author":"Dolcos","year":"2004","journal-title":"Neuron"},{"issue":"1\u20132","key":"10.1016\/j.neuroimage.2004.05.015_BIB26","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1016\/S0304-3940(01)02573-3","article-title":"Asymmetries
-        of prefrontal cortex in human episodic memory: effects of transcranial magnetic
-        stimulation on learning abstract patterns","volume":"320","author":"Epstein","year":"2002","journal-title":"Neurosci.
-        Lett."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB27","doi-asserted-by":"crossref","first-page":"1239","DOI":"10.1093\/brain\/121.7.1239","article-title":"The
-        functional roles of prefrontal cortex in episodic memory: I. Encoding","volume":"121","author":"Fletcher","year":"1998","journal-title":"Brain"},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB28","doi-asserted-by":"crossref","first-page":"349","DOI":"10.1037\/0003-066X.43.5.349","article-title":"The
-        laws of emotion","volume":"43","author":"Frijda","year":"1988","journal-title":"Am.
-        Psychol."},{"issue":"5445","key":"10.1016\/j.neuroimage.2004.05.015_BIB29","doi-asserted-by":"crossref","first-page":"1692","DOI":"10.1126\/science.286.5445.1692","article-title":"Interacting
-        minds\u2014A biological basis","volume":"286","author":"Frith","year":"1999","journal-title":"Science"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB30","doi-asserted-by":"crossref","first-page":"341","DOI":"10.1176\/ajp.152.3.341","article-title":"Brain
-        activity during transient sadness and happiness in healthy women","volume":"152","author":"George","year":"1995","journal-title":"Am.
-        J. Psychiatry"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB31","doi-asserted-by":"crossref","first-page":"71","DOI":"10.1111\/j.1749-6632.1995.tb38132.x","article-title":"Architecture
-        of the prefrontal cortex and the central executive","volume":"769","author":"Goldman-Rakic","year":"1995","journal-title":"Ann.
-        N. Y. Acad. Sci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB32","doi-asserted-by":"crossref","first-page":"159","DOI":"10.1016\/S0028-3932(98)00090-6","article-title":"Transcranial
-        magnetic stimulation can measure and modulate learning and memory","volume":"37","author":"Grafman","year":"1999","journal-title":"Neuropsychologia"},{"issue":"7","key":"10.1016\/j.neuroimage.2004.05.015_BIB33","doi-asserted-by":"crossref","first-page":"4259","DOI":"10.1073\/pnas.071043098","article-title":"Medial
-        prefrontal cortex and self-referential mental activity: relation to a default
-        mode of brain function","volume":"98","author":"Gusnard","year":"2001","journal-title":"Proc.
-        Natl. Acad. Sci. U. S. A."},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB34","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1111\/1469-8986.3540372","article-title":"Frontal
-        brain asymmetry and affective style: a conceptual replication","volume":"35","author":"Hagemann","year":"1998","journal-title":"Psychophysiology"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB35","doi-asserted-by":"crossref","first-page":"289","DOI":"10.1038\/6404","article-title":"Amygdala
-        activity related to enhanced memory for pleasant and aversive stimuli","volume":"2","author":"Hamann","year":"1999","journal-title":"Nat.
-        Neurosci."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB36","doi-asserted-by":"crossref","first-page":"135","DOI":"10.1111\/1467-9280.00425","article-title":"Ecstasy
-        and agony: activation of the human amygdala in positive and negative emotion","volume":"13","author":"Hamann","year":"2002","journal-title":"Psychol.
-        Sci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB37","doi-asserted-by":"crossref","first-page":"243","DOI":"10.1016\/S0926-6410(96)00058-4","article-title":"The
-        neural correlates of intentional learning of verbal materials: a PET study
-        in humans","volume":"4","author":"Kapur","year":"1996","journal-title":"Conit.
-        Brain Res."},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB38","doi-asserted-by":"crossref","first-page":"785","DOI":"10.1162\/08989290260138672","article-title":"Finding
-        the self? An event-related fMRI study","volume":"14","author":"Kelley","year":"2002","journal-title":"J.
-        Cogn. Neurosci."},{"issue":"6","key":"10.1016\/j.neuroimage.2004.05.015_BIB39","doi-asserted-by":"crossref","first-page":"2407","DOI":"10.1523\/JNEUROSCI.23-06-02407.2003","article-title":"What
-        neural correlates underlie successful encoding and retrieval? A functional
-        magnetic resonance imaging study using a divided attention paradigm","volume":"23","author":"Kensinger","year":"2003","journal-title":"J.
-        Neurosci."},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB92","doi-asserted-by":"crossref","first-page":"2091","DOI":"10.1016\/j.neuroimage.2003.08.006","article-title":"Amygdala
-        modulation of parahippocampal and frontal regions during emotionally influenced
-        memory storage","volume":"20","author":"Kilpatrick","year":"2003","journal-title":"NeuroImage"},{"issue":"16","key":"10.1016\/j.neuroimage.2004.05.015_BIB40","doi-asserted-by":"crossref","first-page":"6173","DOI":"10.1523\/JNEUROSCI.20-16-06173.2000","article-title":"Prefrontal\u2013temporal
-        circuitry for episodic encoding and subsequent memory","volume":"20","author":"Kirchhoff","year":"2000","journal-title":"J.
-        Neurosci."},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB41","first-page":"895","article-title":"Functional
-        magnetic resonance imaging of macaque monkeys performing visually guided saccade
-        tasks: comparison of cortical eye field with humans","volume":"41","author":"Koyoma","year":"2004","journal-title":"Neuron"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB42","series-title":"Cognitive
-        Neuroscience of Emotion","author":"Lane","year":"2000"},{"issue":"18","key":"10.1016\/j.neuroimage.2004.05.015_BIB43","doi-asserted-by":"crossref","first-page":"3969","DOI":"10.1097\/00001756-199712220-00024","article-title":"Neural
-        activation during selective attention to subjective emotional responses","volume":"8","author":"Lane","year":"1997","journal-title":"NeuroReport"},{"issue":"7","key":"10.1016\/j.neuroimage.2004.05.015_BIB44","doi-asserted-by":"crossref","first-page":"926","DOI":"10.1176\/ajp.154.7.926","article-title":"Neuroanatomical
-        correlates of happiness, sadness, and disgust","volume":"154","author":"Lane","year":"1997","journal-title":"Am.
-        J. Psychiatry"},{"issue":"11","key":"10.1016\/j.neuroimage.2004.05.015_BIB45","doi-asserted-by":"crossref","first-page":"1437","DOI":"10.1016\/S0028-3932(97)00070-5","article-title":"Neuroanatomical
-        correlates of pleasant and unpleasant emotion","volume":"35","author":"Lane","year":"1997","journal-title":"Neuropsychologia"},{"issue":"9","key":"10.1016\/j.neuroimage.2004.05.015_BIB46","doi-asserted-by":"crossref","first-page":"989","DOI":"10.1016\/S0028-3932(99)00017-2","article-title":"Common
-        effects of emotional valence, arousal and attention on neural activation during
-        visual processing of pictures","volume":"37","author":"Lane","year":"1999","journal-title":"Neuropsychologia"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB47","doi-asserted-by":"crossref","first-page":"261","DOI":"10.1111\/j.1469-8986.1993.tb03352.x","article-title":"Looking
-        at pictures: affective, facial, visceral, and behavioral reactions","volume":"30","author":"Lang","year":"1993","journal-title":"Psychophysiology"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB48","series-title":"International
-        Affective Picture System [Pictures]","author":"Lang","year":"1997"},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB49","doi-asserted-by":"crossref","first-page":"508","DOI":"10.1016\/S0893-133X(00)00157-3","article-title":"Limbic
-        activation and psychophysiologic responses to aversive visual stimuli. Interaction
-        with cognitive task","volume":"23","author":"Liberzon","year":"2000","journal-title":"Neuropsychopharmacology"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB52","doi-asserted-by":"crossref","first-page":"539","DOI":"10.1006\/nlme.2002.4082","article-title":"Amygdala
-        modulation of memory consolidation: interaction with other brain systems","volume":"78","author":"McGaugh","year":"2002","journal-title":"Neurobiol.
-        Learn. Mem."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB53","doi-asserted-by":"crossref","first-page":"67","DOI":"10.1146\/annurev.neuro.24.1.167","article-title":"An
-        integrative theory of prefrontal cortex function","volume":"24","author":"Miller","year":"2001","journal-title":"Annu.
-        Rev. Neurosci."},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB54","doi-asserted-by":"crossref","first-page":"399","DOI":"10.1176\/jnp.8.4.399","article-title":"Lesion
-        location and poststroke depression","volume":"8","author":"Morris","year":"1996","journal-title":"J.
-        Neuropsychiatry Clin. Neurosci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB55","doi-asserted-by":"crossref","first-page":"257","DOI":"10.1162\/jocn.1992.4.3.257","article-title":"Memory
-        and working-with-memory: a component process model based on modules and central
-        systems","volume":"4","author":"Moscovitch","year":"1992","journal-title":"J.
-        Cogn. Neurosci."},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB56","doi-asserted-by":"crossref","first-page":"753","DOI":"10.1097\/00001756-199803090-00035","article-title":"Neuroanatomical
-        correlates of the assessment of facial attractiveness","volume":"9","author":"Nakamura","year":"1998","journal-title":"NeuroReport"},{"issue":"1","key":"10.1016\/j.neuroimage.2004.05.015_BIB57","doi-asserted-by":"crossref","first-page":"95","DOI":"10.1038\/82959","article-title":"Abstract
-        reward and punishment representations in the human orbitofrontal cortex","volume":"4","author":"O''Doherty","year":"2001","journal-title":"Nat.
-        Neurosci."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB58","doi-asserted-by":"crossref","first-page":"567","DOI":"10.1046\/j.1460-9568.1999.00449.x","article-title":"Redefining
-        the functional organization of working memory processes within human lateral
-        prefrontal cortex","volume":"11","author":"Owen","year":"1999","journal-title":"Eur.
-        J. Neurosci."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB59","doi-asserted-by":"crossref","first-page":"93","DOI":"10.1016\/S1364-6613(00)01845-3","article-title":"Observing
-        the transformation of experience into memory","volume":"6","author":"Paller","year":"2002","journal-title":"Trends
-        Cogn. Sci."},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB60","doi-asserted-by":"crossref","first-page":"664","DOI":"10.1136\/jnnp.67.5.664","article-title":"Frontal
-        lobe syndrome reassessed: comparison of patients with lateral or medial frontal
-        brain damage","volume":"67","author":"Paradiso","year":"1999","journal-title":"J.
-        Neurol., Neurosurg. Psychiatry"},{"issue":"10","key":"10.1016\/j.neuroimage.2004.05.015_BIB61","doi-asserted-by":"crossref","first-page":"1618","DOI":"10.1176\/ajp.156.10.1618","article-title":"Cerebral
-        blood flow changes associated with attribution of emotional valence to pleasant,
-        unpleasant, and neutral visual stimuli in a PET study of normal subjects","volume":"156","author":"Paradiso","year":"1999","journal-title":"Am.
-        J. Psychiatry"},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB62","doi-asserted-by":"crossref","first-page":"713","DOI":"10.1176\/ajp.150.5.713","article-title":"Neural
-        correlates of self-induced dysphoria","volume":"150","author":"Pardo","year":"1993","journal-title":"Am.
-        J. Psychiatry"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB63","doi-asserted-by":"crossref","first-page":"85","DOI":"10.1111\/j.1749-6632.1995.tb38133.x","article-title":"Functional
-        organization of the human frontal cortex for mnemonic processing. Evidence
-        from neuroimaging studies","volume":"769","author":"Petrides","year":"1995","journal-title":"Ann.
-        N. Y. Acad. Sci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB64","doi-asserted-by":"crossref","first-page":"1737","DOI":"10.1126\/science.1067176","article-title":"Placebo
-        and opioid analgesia\u2014Imaging a shared neuronal network","volume":"295","author":"Petrovic","year":"2002","journal-title":"Science"},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB65","doi-asserted-by":"crossref","first-page":"331","DOI":"10.1006\/nimg.2002.1087","article-title":"Functional
-        neuroanatomy of emotion: a meta-analysis of emotion activation studies in
-        PET and fMRI","volume":"16","author":"Phan","year":"2002","journal-title":"NeuroImage"},{"issue":"5","key":"10.1016\/j.neuroimage.2004.05.015_BIB66","doi-asserted-by":"crossref","first-page":"R311","DOI":"10.1016\/S0960-9822(06)00146-1","article-title":"Emotional
-        memory: what does the amygdala do?","volume":"7","author":"Phelps","year":"1997","journal-title":"Curr.
-        Biol."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB67","doi-asserted-by":"crossref","first-page":"527","DOI":"10.1080\/13554799808410645","article-title":"Specifying
-        the contributions of the human amygdala to emotional memory: a case study","volume":"4","author":"Phelps","year":"1998","journal-title":"Neurocase"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB68","doi-asserted-by":"crossref","first-page":"15","DOI":"10.1006\/nimg.1999.0441","article-title":"Functional
-        specialization for semantic and phonological processing in the left inferior
-        prefrontal cortex","volume":"10","author":"Poldrack","year":"1999","journal-title":"NeuroImage"},{"issue":"16","key":"10.1016\/j.neuroimage.2004.05.015_BIB69","first-page":"4","article-title":"The
-        application of positron emission tomography to the study of normal and pathologic
-        emotions","volume":"58","author":"Reiman","year":"1997","journal-title":"J.
-        Clin. Psychiatry"},{"issue":"7","key":"10.1016\/j.neuroimage.2004.05.015_BIB70","doi-asserted-by":"crossref","first-page":"918","DOI":"10.1176\/ajp.154.7.918","article-title":"Neuroanatomical
-        correlates of externally and internally generated human emotion","volume":"154","author":"Reiman","year":"1997","journal-title":"Am.
-        J. Psychiatry"},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB71","doi-asserted-by":"crossref","first-page":"284","DOI":"10.1093\/cercor\/10.3.284","article-title":"The
-        orbitofrontal cortex and reward","volume":"10","author":"Rolls","year":"2000","journal-title":"Cereb.
-        Cortex"},{"issue":"9","key":"10.1016\/j.neuroimage.2004.05.015_BIB72","doi-asserted-by":"crossref","first-page":"948","DOI":"10.1038\/nn0901-948","article-title":"Prefrontal
-        [correction of Prefontal] cortex in long-term memory: an \u201cinterference\u201d
-        approach using magnetic stimulation","volume":"4","author":"Rossi","year":"2001","journal-title":"Nat.
-        Neurosci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB73","doi-asserted-by":"crossref","first-page":"1161","DOI":"10.1037\/h0077714","article-title":"A
-        circumplex model of affect","volume":"39","author":"Russell","year":"1980","journal-title":"J.
-        Pers. Soc. Psychol."},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB74","doi-asserted-by":"crossref","first-page":"265","DOI":"10.1016\/0925-4927(95)02678-Q","article-title":"Mood
-        effects on limbic blood flow correlate with emotional self-rating: a PET study
-        with oxygen-15 labeled water","volume":"61","author":"Schneider","year":"1995","journal-title":"Psychiatry
-        Res."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB75","doi-asserted-by":"crossref","first-page":"633","DOI":"10.1038\/368633a0","article-title":"Brain
-        regions associated with acquisition and retrieval of verbal episodic memory","volume":"368","author":"Shallice","year":"1994","journal-title":"Nature"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB76","series-title":"International
-        Review of Studies on Emotion","first-page":"227","article-title":"Gender in
-        the psychology of emotion: a selective research review","author":"Shields","year":"1991"},{"issue":"8","key":"10.1016\/j.neuroimage.2004.05.015_BIB77","doi-asserted-by":"crossref","first-page":"637","DOI":"10.1038\/nrn1178","article-title":"Prefrontal
-        and medial temporal lobe interactions in long-term memory","volume":"4","author":"Simons","year":"2003","journal-title":"Nat.
-        Rev., Neurosci."},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB78","doi-asserted-by":"crossref","first-page":"657","DOI":"10.1126\/science.283.5408.1657","article-title":"Storage
-        and executive processes in the frontal lobes","volume":"283","author":"Smith","year":"1999","journal-title":"Science"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB79","doi-asserted-by":"crossref","first-page":"79","DOI":"10.1192\/bjp.155.1.79","article-title":"Mood
-        changes after right-hemisphere lesions","volume":"155","author":"Starkstein","year":"1989","journal-title":"Br.
-        J. Psychiatry"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB80","series-title":"A
-        Co-Planar Stereotactic Atlas of the Human Brain","author":"Talairach","year":"1988"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB81","doi-asserted-by":"crossref","DOI":"10.3758\/BF03196886","article-title":"Emotional
-        intensity predicts autobiographical memory experience","author":"Talarico","year":"2004","journal-title":"Mem.
-        Cogn."},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB82","doi-asserted-by":"crossref","first-page":"188","DOI":"10.1006\/nimg.1998.0356","article-title":"The
-        effect of emotional content on visual recognition memory: a PET activation
-        study","volume":"8","author":"Taylor","year":"1998","journal-title":"NeuroImage"},{"issue":"10","key":"10.1016\/j.neuroimage.2004.05.015_BIB83","doi-asserted-by":"crossref","first-page":"1415","DOI":"10.1016\/S0028-3932(00)00032-4","article-title":"The
-        effect of graded aversive stimuli on limbic and visual activation","volume":"38","author":"Taylor","year":"2000","journal-title":"Neuropsychologia"},{"issue":"2","key":"10.1016\/j.neuroimage.2004.05.015_BIB84","doi-asserted-by":"crossref","first-page":"209","DOI":"10.1176\/ajp.156.2.209","article-title":"Functional
-        MRI study of the cognitive generation of affect","volume":"156","author":"Teasdale","year":"1999","journal-title":"Am.
-        J. Psychiatry"},{"issue":"4","key":"10.1016\/j.neuroimage.2004.05.015_BIB85","doi-asserted-by":"crossref","first-page":"676","DOI":"10.1037\/0022-3514.62.4.676","article-title":"Individual
-        differences in anterior brain asymmetry and fundamental dimensions of emotion","volume":"62","author":"Tomarken","year":"1992","journal-title":"J.
-        Pers. Soc. Psychol."},{"issue":"3","key":"10.1016\/j.neuroimage.2004.05.015_BIB86","doi-asserted-by":"crossref","first-page":"513","DOI":"10.1016\/S1053-8119(03)00078-8","article-title":"Valence,
-        gender, and lateralization of functional brain anatomy in emotion: a meta-analysis
-        of findings from neuroimaging","volume":"19","author":"Wager","year":"2003","journal-title":"NeuroImage"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB87","doi-asserted-by":"crossref","first-page":"1188","DOI":"10.1126\/science.281.5380.1188","article-title":"Building
-        memories: remembering and forgetting of verbal experiences as predicted by
-        brain activity","volume":"281","author":"Wagner","year":"1998","journal-title":"Science"},{"key":"10.1016\/j.neuroimage.2004.05.015_BIB88","doi-asserted-by":"crossref","first-page":"82","DOI":"10.1111\/j.1469-8986.1993.tb03207.x","article-title":"Frontal
-        brain asymmetry and emotional reactivity: a biological substrate of affective
-        style","volume":"30","author":"Wheeler","year":"1993","journal-title":"Psychophysiology"},{"issue":"17","key":"10.1016\/j.neuroimage.2004.05.015_BIB89","doi-asserted-by":"crossref","first-page":"11447","DOI":"10.1073\/pnas.182176499","article-title":"Dissociable
-        prefrontal brain systems for attention and emotion","volume":"99","author":"Yamasaki","year":"2002","journal-title":"Proc.
-        Natl. Acad. Sci. U. S. A."}],"container-title":["NeuroImage"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S1053811904002940?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S1053811904002940?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2023,4,29]],"date-time":"2023-04-29T04:25:11Z","timestamp":1682742311000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S1053811904002940"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2004,9]]},"references-count":90,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2004,9]]}},"alternative-id":["S1053811904002940"],"URL":"https:\/\/doi.org\/10.1016\/j.neuroimage.2004.05.015","relation":{},"ISSN":["1053-8119"],"issn-type":[{"value":"1053-8119","type":"print"}],"subject":[],"published":{"date-parts":[[2004,9]]}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '7264'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:15:54 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -520,24 +329,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:17 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -655,7 +468,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:15:54 GMT
+      - Thu, 22 Oct 2026 20:37:17 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -685,120 +498,80 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.neuropsychologia.2011.03.007
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,27]],"date-time":"2026-09-27T08:41:22Z","timestamp":1790498482861,"version":"4.1.0"},"reference-count":44,"publisher":"Elsevier
-        BV","issue":"7","license":[{"start":{"date-parts":[[2011,6,1]],"date-time":"2011-06-01T00:00:00Z","timestamp":1306886400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"funder":[{"name":"National
-        Science Foundation","award":["BCS 0542694"],"award-info":[{"award-number":["BCS
-        0542694"]}]},{"DOI":"10.13039\/100000025","name":"National Institute of Mental
-        Health","doi-asserted-by":"crossref","award":["MH080833"],"award-info":[{"award-number":["MH080833"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"crossref"}]}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Neuropsychologia"],"published-print":{"date-parts":[[2011,6]]},"DOI":"10.1016\/j.neuropsychologia.2011.03.007","type":"journal-article","created":{"date-parts":[[2011,3,16]],"date-time":"2011-03-16T08:16:52Z","timestamp":1300263412000},"page":"1831-1842","source":"Crossref","is-referenced-by-count":54,"title":["How
-        emotion leads to selective memory: Neuroimaging evidence"],"prefix":"10.1016","volume":"49","author":[{"given":"Jill
-        D.","family":"Waring","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elizabeth
-        A.","family":"Kensinger","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0005","doi-asserted-by":"crossref","first-page":"983","DOI":"10.1037\/0735-7044.115.5.983","article-title":"The
-        amygdala''s role in long-term declarative memory for gist and detail","volume":"115","author":"Adolphs","year":"2001","journal-title":"Behavioral
-        Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0010","doi-asserted-by":"crossref","first-page":"512","DOI":"10.1038\/nn1413","article-title":"Amygdala
-        damage impairs emotional memory for gist but not details of complex stimuli","volume":"8","author":"Adolphs","year":"2005","journal-title":"Nature
-        Neuroscience"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0015","doi-asserted-by":"crossref","first-page":"893","DOI":"10.1037\/0022-006X.56.6.893","article-title":"An
-        inventory for measuring clinical anxiety: Psychometric properties","volume":"56","author":"Beck","year":"1988","journal-title":"Journal
-        of Consulting and Clinical Psychology"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0020","series-title":"Manual
-        for the Beck Depression Inventory","author":"Beck","year":"1993"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0025","series-title":"Region
-        of interest analysis using an SPM toolbox [Abstract] (Vol. 16). Presented
-        at the 8th International Conference on Functional Mapping of the Human Brain,
-        Sendai, Japan","author":"Brett","year":"2002"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0030","doi-asserted-by":"crossref","first-page":"73","DOI":"10.1016\/0010-0277(77)90018-X","article-title":"Flashbulb
-        memories","volume":"5","author":"Brown","year":"1977","journal-title":"Cognition"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0035","doi-asserted-by":"crossref","first-page":"277","DOI":"10.3758\/BF03199665","article-title":"Remembering
-        emotional events","volume":"20","author":"Burke","year":"1992","journal-title":"Memory
-        and Cognition"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0040","doi-asserted-by":"crossref","first-page":"693","DOI":"10.1037\/0278-7393.17.4.693","article-title":"Eye
-        fixations and memory for emotional events","volume":"17","author":"Christianson","year":"1991","journal-title":"Journal
-        of Experimental Psychology. Learning, Memory, and Cognition"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0045","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1037\/1528-3542.4.2.173","article-title":"Influence
-        of affective meaning on memory for contextual information","volume":"4","author":"D\u2019Argembeau","year":"2004","journal-title":"Emotion"},{"issue":"2\u20133","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0050","doi-asserted-by":"crossref","first-page":"109","DOI":"10.1002\/(SICI)1097-0193(1999)8:2\/3<109::AID-HBM7>3.0.CO;2-W","article-title":"Optimal
-        experimental design for event-related fMRI","volume":"8","author":"Dale","year":"1999","journal-title":"Human
-        Brain Mapping"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0055","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1037\/1528-3542.1.1.5","article-title":"Source
-        memory enhancement for emotional words","volume":"1","author":"Doerksen","year":"2001","journal-title":"Emotion"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0060","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1016\/j.neuroimage.2004.05.015","article-title":"Dissociable
-        effects of arousal and valence on prefrontal activity indexing emotional evaluation
-        and subsequent memory: An event-related fMRI study","volume":"23","author":"Dolcos","year":"2004","journal-title":"NeuroImage"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0065","doi-asserted-by":"crossref","first-page":"190","DOI":"10.1016\/j.tics.2007.01.007","article-title":"The
-        role of the amygdala in visual awareness","volume":"11","author":"Duncan","year":"2007","journal-title":"Trends
-        in Cognitive Sciences"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0070","doi-asserted-by":"crossref","first-page":"183","DOI":"10.1037\/h0047707","article-title":"The
-        effect of emotion on cue utilization and the organization of behavior","volume":"66","author":"Easterbrook","year":"1959","journal-title":"Psychological
-        Review"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0075","doi-asserted-by":"crossref","first-page":"847","DOI":"10.1016\/j.neuropsychologia.2004.09.014","article-title":"The
-        neural origins of specific and general memory: The role of the fusiform cortex","volume":"43","author":"Garoff","year":"2005","journal-title":"Neuropsychologia"},{"issue":"9","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0080","doi-asserted-by":"crossref","first-page":"394","DOI":"10.1016\/S1364-6613(00)01707-1","article-title":"Cognitive
-        and neural mechanisms of emotional memory","volume":"5","author":"Hamann","year":"2001","journal-title":"Trends
-        in Cognitive Sciences"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0085","doi-asserted-by":"crossref","first-page":"289","DOI":"10.1038\/6404","article-title":"Amygdala
-        activity related to enhanced memory for pleasant and aversive stimuli","volume":"2","author":"Hamann","year":"1999","journal-title":"Nature
-        Neuroscience"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0090","doi-asserted-by":"crossref","first-page":"496","DOI":"10.3758\/BF03198482","article-title":"Vivid
-        memories of emotional events: The accuracy of remembered minutiae","volume":"18","author":"Heuer","year":"1990","journal-title":"Memory
-        and Cognition"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0095","doi-asserted-by":"crossref","first-page":"241","DOI":"10.1515\/REVNEURO.2004.15.4.241","article-title":"Remembering
-        emotional experiences: The contribution of valence and arousal","volume":"15","author":"Kensinger","year":"2004","journal-title":"Reviews
-        in the Neurosciences"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0100","doi-asserted-by":"crossref","first-page":"99","DOI":"10.1016\/j.jml.2005.05.005","article-title":"Memory
-        for specific visual details can be enhanced by negative arousing content","volume":"54","author":"Kensinger","year":"2006","journal-title":"Journal
-        of Memory and Language"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0105","doi-asserted-by":"crossref","first-page":"575","DOI":"10.1016\/j.jml.2006.05.004","article-title":"Effects
-        of emotion on memory specificity: Memory trade-offs elicited by negative visually
-        arousing stimuli","volume":"56","author":"Kensinger","year":"2007","journal-title":"Journal
-        of Memory and Language"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0110","doi-asserted-by":"crossref","first-page":"208","DOI":"10.1093\/geronb\/62.4.P208","article-title":"Effects
-        of emotion on memory specificity in young and older adults","volume":"62","author":"Kensinger","year":"2007","journal-title":"Journals
-        of Gerontology Series B"},{"issue":"11","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0115","doi-asserted-by":"crossref","first-page":"1872","DOI":"10.1162\/jocn.2007.19.11.1872","article-title":"How
-        negative emotion enhances the visual specificity of a memory","volume":"19","author":"Kensinger","year":"2007","journal-title":"Journal
-        of Cognitive Neuroscience"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0125","doi-asserted-by":"crossref","first-page":"241","DOI":"10.1037\/0882-7974.20.2.241","article-title":"Memory
-        for contextual details: Effects of emotion and aging","volume":"20","author":"Kensinger","year":"2005","journal-title":"Psychology
-        and Aging"},{"issue":"9","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0130","doi-asserted-by":"crossref","first-page":"2564","DOI":"10.1523\/JNEUROSCI.5241-05.2006","article-title":"Amygdala
-        activity is associated with the successful encoding of item, but not source,
-        information for positive and negative stimuli","volume":"26","author":"Kensinger","year":"2006","journal-title":"Journal
-        of Neuroscience"},{"issue":"7","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0140","doi-asserted-by":"crossref","first-page":"1161","DOI":"10.1162\/jocn.2008.20080","article-title":"Neural
-        processes supporting young and older adults\u2019 emotional memories","volume":"20","author":"Kensinger","year":"2008","journal-title":"Journal
-        of Cognitive Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0145","series-title":"International
-        affective picture system (IAPS): Technical manual and affective ratings","author":"Lang","year":"1997"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0150","doi-asserted-by":"crossref","first-page":"559","DOI":"10.1080\/02699930341000446","article-title":"Painting
-        with broad strokes: Happiness and the malleability of event memory","volume":"18","author":"Levine","year":"2004","journal-title":"Cognition
-        and Emotion"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0155","doi-asserted-by":"crossref","first-page":"833","DOI":"10.1080\/02699930902738863","article-title":"Emotion
-        and memory narrowing: A review and goal-relevance approach","volume":"23","author":"Levine","year":"2009","journal-title":"Cognition
-        and Emotion"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0160","doi-asserted-by":"crossref","first-page":"166","DOI":"10.3758\/BF03201222","article-title":"Source
-        of arousal and memory for detail","volume":"27","author":"Libkuman","year":"1999","journal-title":"Memory
-        and Cognition"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0165","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1080\/09658210244000630","article-title":"Arousal,
-        valence, and memory for detail","volume":"12","author":"Libkuman","year":"2004","journal-title":"Memory"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0170","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1111\/j.1745-6916.2007.00028.x","article-title":"Emotional
-        arousal and memory binding: An object-based framework","volume":"2","author":"Mather","year":"2007","journal-title":"Perspectives
-        on Psychological Science"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0175","doi-asserted-by":"crossref","first-page":"349","DOI":"10.2307\/27784408","article-title":"The
-        limits of arousal''s memory-impairing effects on nearby information","volume":"122","author":"Mather","year":"2009","journal-title":"American
-        Journal of Psychology"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0180","doi-asserted-by":"crossref","first-page":"614","DOI":"10.1162\/jocn.2006.18.4.614","article-title":"Emotional
-        arousal can impair feature binding in working memory","volume":"18","author":"Mather","year":"2006","journal-title":"Journal
-        of Cognitive Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0185","doi-asserted-by":"crossref","first-page":"1190","DOI":"10.1111\/j.1469-8986.2009.00868.x","article-title":"The
-        effects of valence and arousal on the neural activity leading to subsequent
-        memory","volume":"46","author":"Mickley","year":"2009","journal-title":"Psychophysiology"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0190","doi-asserted-by":"crossref","first-page":"31","DOI":"10.1016\/S0926-6410(02)00214-8","article-title":"Attentional
-        control of the processing of neural and emotional stimuli","volume":"15","author":"Pessoa","year":"2002","journal-title":"Cognitive
-        Brain Research"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0195","series-title":"Memory
-        and emotion","first-page":"3","article-title":"Memory for emotional events","author":"Reisberg","year":"2004"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0200","doi-asserted-by":"crossref","first-page":"1161","DOI":"10.1037\/h0077714","article-title":"A
-        circumplex model of affect","volume":"39","author":"Russell","year":"1980","journal-title":"Journal
-        of Personality and Social Psychology"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0205","doi-asserted-by":"crossref","first-page":"75","DOI":"10.1016\/S0926-6410(03)00082-X","article-title":"Distinct
-        prefrontal cortex activity associated with item memory and source memory for
-        visual shapes","volume":"17","author":"Slotnick","year":"2003","journal-title":"Cognitive
-        Brain Research"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0210","doi-asserted-by":"crossref","first-page":"172","DOI":"10.1101\/lm.722908","article-title":"Immediate
-        memory consequences of the effect of emotion on attention to pictures","volume":"15","author":"Talmi","year":"2008","journal-title":"Learning
-        and Memory"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0215","doi-asserted-by":"crossref","first-page":"742","DOI":"10.3758\/BF03195864","article-title":"Can
-        semantic relatedness explain the enhancement of memory for emotional words?","volume":"32","author":"Talmi","year":"2004","journal-title":"Memory
-        and Cognition"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0220","series-title":"Co-planar
-        stereotaxic atlas of the human brain","author":"Talairach","year":"1988"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0225","doi-asserted-by":"crossref","first-page":"829","DOI":"10.1016\/S0896-6273(01)00328-2","article-title":"Effects
-        of attention and emotion on face processing in the human brain: An event-related
-        fMRI study","volume":"30","author":"Vuilleumier","year":"2001","journal-title":"Neuron"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0230","doi-asserted-by":"crossref","first-page":"412","DOI":"10.1037\/a0015526","article-title":"Effects
-        of emotional valence and arousal upon memory trade-offs with aging","volume":"24","author":"Waring","year":"2009","journal-title":"Psychology
-        and Aging"}],"container-title":["Neuropsychologia"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0028393211001369?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0028393211001369?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2023,6,5]],"date-time":"2023-06-05T19:29:55Z","timestamp":1685993395000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0028393211001369"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2011,6]]},"references-count":44,"journal-issue":{"issue":"7","published-print":{"date-parts":[[2011,6]]}},"alternative-id":["S0028393211001369"],"URL":"https:\/\/doi.org\/10.1016\/j.neuropsychologia.2011.03.007","relation":{},"ISSN":["0028-3932"],"issn-type":[{"value":"0028-3932","type":"print"}],"subject":[],"published":{"date-parts":[[2011,6]]}}}'
+      string: ''
     headers:
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '4252'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:15:54 GMT
+      content-length:
+      - '0'
+      date:
+      - Thu, 22 Oct 2026 20:37:17 GMT
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: ''
+    headers:
+      connection:
+      - keep-alive
+      content-length:
+      - '0'
+      date:
+      - Thu, 22 Oct 2026 20:37:18 GMT
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -806,24 +579,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:20 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -867,11 +644,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:54 GMT
+      - Thu, 22 Oct 2026 20:37:20 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000458FC90DEBDA.1.1.m_1
+      - 1D348A0161E7335500005EBA27004F32.1.1.m_1
       ncbi-sid:
-      - C668B581E206E6EB_F369SID
+      - ECF51DD2548F8C83_F100SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -885,7 +662,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

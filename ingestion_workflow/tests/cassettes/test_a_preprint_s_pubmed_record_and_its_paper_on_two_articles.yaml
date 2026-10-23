@@ -17,22 +17,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:26:40 GMT
+      - Thu, 22 Oct 2026 20:38:27 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000060A5BF8C6AFB.1.1.m_1
+      - 1D33C9B11FD1F985000043B110B78F8B.1.1.m_1
       ncbi-sid:
-      - 5C18DD1C7D75F604_2720SID
+      - 907DDF59A0A13A64_3F30SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -76,65 +76,135 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: ''
+    body: null
     headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
       - gzip, deflate
-      connection:
+      Connection:
       - keep-alive
-      host:
-      - doi.org
-      user-agent:
-      - ns-pond-ingestion-workflow
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://doi.org/10.1101/2023.09.27.559792
+    uri: https://api.crossref.org/works/10.1101/2023.09.27.559792
   response:
     body:
-      string: '<html><head><title>Handle Redirect</title></head>
-
-        <body><a href="https://api.crossref.org/v1/works/10.1101%2F2023.09.27.559792/transform">https://api.crossref.org/v1/works/10.1101%2F2023.09.27.559792/transform</a></body></html>'
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,2,27]],"date-time":"2026-02-27T01:39:30Z","timestamp":1772156370917,"version":"3.50.1"},"posted":{"date-parts":[[2023,9,27]]},"group-title":"Neuroscience","reference-count":88,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,13]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>\n                  Abnormal
+        cellular and circuit excitability is believed to drive many core phenotypes
+        in fragile X syndrome (FXS). The dentate gyrus is a brain area performing
+        critical computations essential for learning and memory. However, little is
+        known about dentate circuit defects and their mechanisms in FXS. Understanding
+        dentate circuit dysfunction in FXS has been complicated by the presence of
+        two types of excitatory neurons, the granule cells and mossy cells. Here we
+        report that loss of FMRP markedly decreased excitability of dentate mossy
+        cells, a change opposite to all other known excitability defects in excitatory
+        neurons in FXS. This mossy cell hypo-excitability is caused by increased Kv7
+        function in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
+        mice. By reducing the excitatory drive onto local hilar interneurons, hypo-excitability
+        of mossy cells results in increased excitation\/inhibition ratio in granule
+        cells and thus paradoxically leads to excessive dentate output. Circuit-wide
+        inhibition of Kv7 channels in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
+        mice increases inhibitory drive onto granule cells and normalizes the dentate
+        output in response to physiologically relevant theta-gamma coupling stimulation.
+        Our study suggests that circuit-based interventions may provide a promising
+        strategy in this disorder to bypass irreconcilable excitability defects in
+        different cell types and restore their pathophysiological consequences at
+        the circuit level.\n                <\/jats:p>","DOI":"10.1101\/2023.09.27.559792","type":"posted-content","created":{"date-parts":[[2023,9,27]],"date-time":"2023-09-27T21:15:27Z","timestamp":1695849327000},"source":"Crossref","is-referenced-by-count":0,"title":["Circuit-based
+        intervention corrects excessive dentate gyrus output in the Fragile X mouse
+        model"],"prefix":"10.64898","author":[{"given":"Pan-Yue","family":"Deng","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ajeet","family":"Kumar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9978-050X","authenticated-orcid":false,"given":"Valeria","family":"Cavalli","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-3449-243X","authenticated-orcid":false,"given":"Vitaly
+        A.","family":"Klyachko","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023111603200647000_2023.09.27.559792v2.1","doi-asserted-by":"publisher","DOI":"10.1016\/S0079-6123(07)63001-5"},{"key":"2023111603200647000_2023.09.27.559792v2.2","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEURON.2018.12.026"},{"key":"2023111603200647000_2023.09.27.559792v2.3","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.568667"},{"key":"2023111603200647000_2023.09.27.559792v2.4","doi-asserted-by":"publisher","DOI":"10.1111\/ejn.12898"},{"key":"2023111603200647000_2023.09.27.559792v2.5","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0518-16.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.6","doi-asserted-by":"crossref","unstructured":"Bhatia
+        A , Moza S , Bhalla US . 2021. Precise excitation-inhibition balance controls
+        gain and timing in the hippocampus. Elife 8","DOI":"10.7554\/eLife.71338"},{"key":"2023111603200647000_2023.09.27.559792v2.7","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-11891-6"},{"key":"2023111603200647000_2023.09.27.559792v2.8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2016.06.033"},{"key":"2023111603200647000_2023.09.27.559792v2.9","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhv177"},{"key":"2023111603200647000_2023.09.27.559792v2.10","doi-asserted-by":"crossref","first-page":"522","DOI":"10.1002\/hipo.23314","article-title":"Dorsal
+        and ventral mossy cells differ in their axonal projections throughout the
+        dentate gyrus of the mouse hippocampus","volume":"31","year":"2021","journal-title":"Hippocampus"},{"key":"2023111603200647000_2023.09.27.559792v2.11","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1724-20.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.12","doi-asserted-by":"publisher","DOI":"10.1111\/j.1476-5381.2009.00111.x"},{"key":"2023111603200647000_2023.09.27.559792v2.13","doi-asserted-by":"publisher","DOI":"10.1126\/science.aan4074"},{"key":"2023111603200647000_2023.09.27.559792v2.14","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1008-21.2022"},{"key":"2023111603200647000_2023.09.27.559792v2.15","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3620-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.16","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropharm.2007.06.026"},{"key":"2023111603200647000_2023.09.27.559792v2.17","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2015.06.017"},{"key":"2023111603200647000_2023.09.27.559792v2.18","doi-asserted-by":"publisher","DOI":"10.1016\/S0896-6273(02)01169-8"},{"key":"2023111603200647000_2023.09.27.559792v2.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.cell.2011.06.013"},{"key":"2023111603200647000_2023.09.27.559792v2.20","doi-asserted-by":"publisher","DOI":"10.1038\/nrn1785"},{"key":"2023111603200647000_2023.09.27.559792v2.21","doi-asserted-by":"crossref","first-page":"796053","DOI":"10.3389\/fnmol.2021.796053","article-title":"Hyperexcitability
+        of Sensory Neurons in Fragile X Mouse Model","volume":"14","year":"2021","journal-title":"Front
+        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.22","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1593-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2016.08.046"},{"key":"2023111603200647000_2023.09.27.559792v2.24","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-021-00445-9"},{"key":"2023111603200647000_2023.09.27.559792v2.25","doi-asserted-by":"crossref","first-page":"110820","DOI":"10.1016\/j.celrep.2022.110820","article-title":"FMRP
+        regulates GABAA receptor channel activity to control signal integration in
+        hippocampal granule cells","volume":"39","year":"2022","journal-title":"Cell
+        Rep"},{"key":"2023111603200647000_2023.09.27.559792v2.26","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.12.018"},{"key":"2023111603200647000_2023.09.27.559792v2.27","doi-asserted-by":"publisher","DOI":"10.3389\/fncel.2014.00030"},{"key":"2023111603200647000_2023.09.27.559792v2.28","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-12736-y"},{"key":"2023111603200647000_2023.09.27.559792v2.29","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20890"},{"key":"2023111603200647000_2023.09.27.559792v2.30","doi-asserted-by":"publisher","DOI":"10.1016\/j.nlm.2021.107486"},{"key":"2023111603200647000_2023.09.27.559792v2.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2015.01.008"},{"key":"2023111603200647000_2023.09.27.559792v2.32","doi-asserted-by":"publisher","DOI":"10.1152\/jn.90752.2008"},{"key":"2023111603200647000_2023.09.27.559792v2.33","first-page":"54","article-title":"Dysfunction
+        of the Heteromeric KV7.3\/KV7.5 Potassium Channel is Associated with Autism
+        Spectrum Disorders","volume":"4","year":"2013","journal-title":"Front Genet"},{"key":"2023111603200647000_2023.09.27.559792v2.34","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.0030156"},{"key":"2023111603200647000_2023.09.27.559792v2.35","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3270-17.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.36","doi-asserted-by":"crossref","first-page":"495","DOI":"10.1007\/s00018-016-2359-y","article-title":"Modulation
+        of Kv7 channels and excitability in the brain","volume":"74","year":"2017","journal-title":"Cell
+        Mol Life Sci"},{"key":"2023111603200647000_2023.09.27.559792v2.37","doi-asserted-by":"publisher","DOI":"10.1113\/jphysiol.2005.086835"},{"key":"2023111603200647000_2023.09.27.559792v2.38","doi-asserted-by":"publisher","DOI":"10.1152\/ajplung.00567.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.39","doi-asserted-by":"crossref","first-page":"928","DOI":"10.1016\/j.neuron.2017.07.028","article-title":"LTP
+        at Hilar Mossy Cell-Dentate Granule Cell Synapses Modulates Dentate Gyrus
+        Output by Increasing Excitation\/Inhibition Balance","volume":"95","year":"2017","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.40","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20374"},{"key":"2023111603200647000_2023.09.27.559792v2.41","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2455-20.2020"},{"key":"2023111603200647000_2023.09.27.559792v2.42","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1279-21.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.43","doi-asserted-by":"publisher","DOI":"10.1038\/35036198"},{"key":"2023111603200647000_2023.09.27.559792v2.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.10.036"},{"key":"2023111603200647000_2023.09.27.559792v2.45","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2013.00014"},{"key":"2023111603200647000_2023.09.27.559792v2.46","doi-asserted-by":"crossref","first-page":"185","DOI":"10.1007\/164_2021_457","article-title":"Kv7
+        Channels and Excitability Disorders","volume":"267","year":"2021","journal-title":"Handb
+        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.47","doi-asserted-by":"publisher","DOI":"10.1186\/s12915-020-00817-0"},{"key":"2023111603200647000_2023.09.27.559792v2.48","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1016\/j.stemcr.2020.07.001","article-title":"Primary
+        Ciliary Deficits in the Dentate Gyrus of Fragile X Syndrome","volume":"15","year":"2020","journal-title":"Stem
+        Cell Reports"},{"key":"2023111603200647000_2023.09.27.559792v2.49","doi-asserted-by":"publisher","DOI":"10.1126\/science.1135801"},{"key":"2023111603200647000_2023.09.27.559792v2.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.03.007"},{"key":"2023111603200647000_2023.09.27.559792v2.51","doi-asserted-by":"crossref","first-page":"231","DOI":"10.1007\/164_2021_458","article-title":"Pharmacological
+        Activation of Neuronal Voltage-Gated Kv7\/KCNQ\/M-Channels for Potential Therapy
+        of Epilepsy and Pain","volume":"267","year":"2021","journal-title":"Handb
+        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.52","doi-asserted-by":"publisher","DOI":"10.1152\/jn.1998.79.3.1518"},{"key":"2023111603200647000_2023.09.27.559792v2.53","doi-asserted-by":"crossref","first-page":"166048","DOI":"10.1016\/j.bbadis.2020.166048","article-title":"PKC
+        epsilon as a neonatal target to correct FXS-linked AMPA receptor translocation
+        in the hippocampus, boost PVN oxytocin expression, and normalize adult behavior
+        in Fmr1 knockout mice","volume":"1867","year":"2021","journal-title":"Biochim
+        Biophys Acta Mol Basis Dis"},{"key":"2023111603200647000_2023.09.27.559792v2.54","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2014.12.030"},{"key":"2023111603200647000_2023.09.27.559792v2.55","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.4423-14.2015"},{"key":"2023111603200647000_2023.09.27.559792v2.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.coph.2007.10.003"},{"key":"2023111603200647000_2023.09.27.559792v2.57","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2976-18.2019"},{"key":"2023111603200647000_2023.09.27.559792v2.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2009.08.037"},{"key":"2023111603200647000_2023.09.27.559792v2.59","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2019.00015"},{"key":"2023111603200647000_2023.09.27.559792v2.60","doi-asserted-by":"crossref","first-page":"2588","DOI":"10.1016\/j.neuron.2022.05.024","article-title":"Presynaptic
+        FMRP and local protein synthesis support structural and functional plasticity
+        of glutamatergic axon terminals","volume":"110","year":"2022","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.61","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-11-03990.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.62","doi-asserted-by":"publisher","DOI":"10.1007\/s00424-020-02404-2"},{"key":"2023111603200647000_2023.09.27.559792v2.63","doi-asserted-by":"crossref","first-page":"970083","DOI":"10.3389\/fnbeh.2022.970083","article-title":"Theta
+        and gamma oscillations in the rat hippocampus support the discrimination of
+        object displacement in a recognition memory task","volume":"16","year":"2022","journal-title":"Front
+        Behav Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.64","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2447-12.2013"},{"key":"2023111603200647000_2023.09.27.559792v2.65","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2921-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.66","doi-asserted-by":"publisher","DOI":"10.1152\/physrev.00007.2017"},{"key":"2023111603200647000_2023.09.27.559792v2.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.09.046"},{"key":"2023111603200647000_2023.09.27.559792v2.68","doi-asserted-by":"publisher","DOI":"10.1038\/nn1375"},{"key":"2023111603200647000_2023.09.27.559792v2.69","doi-asserted-by":"crossref","unstructured":"Remmers
+        CL , Contractor A . 2018. Development of GABAergic Inputs Is Not Altered in
+        Early Maturation of Adult Born Dentate Granule Neurons in Fragile X Mice.
+        eNeuro 5","DOI":"10.1523\/ENEURO.0137-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.70","first-page":"60","article-title":"Fragile
+        X syndrome: clinical presentation, pathology and treatment","volume":"156","year":"2020","journal-title":"Gac
+        Med Mex"},{"key":"2023111603200647000_2023.09.27.559792v2.71","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2109448119"},{"key":"2023111603200647000_2023.09.27.559792v2.72","doi-asserted-by":"publisher","DOI":"10.1038\/nrn.2016.87"},{"key":"2023111603200647000_2023.09.27.559792v2.73","doi-asserted-by":"publisher","DOI":"10.1007\/s00441-017-2750-5"},{"key":"2023111603200647000_2023.09.27.559792v2.74","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2012.00106"},{"key":"2023111603200647000_2023.09.27.559792v2.75","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2017.00440"},{"key":"2023111603200647000_2023.09.27.559792v2.76","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-19-07503.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.77","doi-asserted-by":"crossref","unstructured":"Sloviter
+        RS , Bumanglag AV , Schwarcz R , Frotscher M. 2012. Abnormal dentate gyrus
+        network circuitry in temporal lobe epilepsy.","DOI":"10.1093\/med\/9780199746545.003.0034"},{"key":"2023111603200647000_2023.09.27.559792v2.78","doi-asserted-by":"crossref","first-page":"191","DOI":"10.1159\/000515495","article-title":"Flexible
+        Stoichiometry: Implications for KCNQ2-and KCNQ3-Associated Neurodevelopmental
+        Disorders","volume":"43","year":"2021","journal-title":"Dev Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.79","doi-asserted-by":"publisher","DOI":"10.3389\/neuro.02.008.2009"},{"key":"2023111603200647000_2023.09.27.559792v2.80","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1004644107"},{"key":"2023111603200647000_2023.09.27.559792v2.81","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.00727"},{"key":"2023111603200647000_2023.09.27.559792v2.82","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2021.109702"},{"key":"2023111603200647000_2023.09.27.559792v2.83","unstructured":"Willemsen
+        R , Kooy RF. 2017. Fragile X Syndrome: From Genetics to Targeted Treatment.
+        Elsevier. 498 pp."},{"key":"2023111603200647000_2023.09.27.559792v2.84","doi-asserted-by":"crossref","first-page":"495","DOI":"10.3389\/fnmol.2018.00495","article-title":"Fragile-X
+        Syndrome Is Associated With NMDA Receptor Hypofunction and Reduced Dendritic
+        Complexity in Mature Dentate Granule Cells","volume":"11","year":"2019","journal-title":"Front
+        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.85","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2016.09.012"},{"key":"2023111603200647000_2023.09.27.559792v2.86","doi-asserted-by":"crossref","first-page":"493","DOI":"10.1016\/j.neuron.2018.07.010","article-title":"Mossy
+        Cells Control Adult Neural Stem Cell Quiescence and Maintenance through a
+        Dynamic Balance between Direct and Indirect Pathways","volume":"99","year":"2018","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.87","doi-asserted-by":"publisher","DOI":"10.1002\/jnr.22546"},{"key":"2023111603200647000_2023.09.27.559792v2.88","doi-asserted-by":"crossref","first-page":"46","DOI":"10.3389\/fnins.2018.00046","article-title":"Synaptic
+        E-I Balance Underlies Efficient Neural Coding","volume":"12","year":"2018","journal-title":"Front
+        Neurosci"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.09.27.559792","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T05:17:19Z","timestamp":1768454239000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.09.27.559792"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,9,27]]},"references-count":88,"URL":"https:\/\/doi.org\/10.1101\/2023.09.27.559792","relation":{"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]},"subject":[],"published":{"date-parts":[[2023,9,27]]},"subtype":"preprint"}}'
     headers:
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      cf-ray:
-      - a4e7ce215ed06c19-DFW
-      connection:
+      Connection:
       - keep-alive
-      content-type:
-      - text/html;charset=utf-8
-      date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
-      expires:
-      - Thu, 22 Oct 2026 11:09:20 GMT
-      location:
-      - https://api.crossref.org/v1/works/10.1101%2F2023.09.27.559792/transform
-      nel:
-      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Content-Length:
+      - '4609'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Oct 2026 20:38:28 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
       permissions-policy:
-      - interest-cohort=(),browsing-topics=()
-      report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=KcZMNm%2Bg0iy47w1urjkBeJTHy0MBBQenuvGyKwIGE17aw5t3VO8nMsZQJ2TkgzOn7Pp0tx703IYgWLuSwGDZM%2BK5W56cHQ2hiqzBykTJUH7hXOD5jGwmHlU%3D"}]}'
+      - interest-cohort=()
       server:
-      - cloudflare
+      - Jetty(9.4.40.v20210413)
       strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
+      - max-age=31536000;
       vary:
-      - Origin
-      - Accept
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
     status:
-      code: 302
-      message: Found
+      code: 200
+      message: OK
 - request:
     body: ''
     headers:
       accept:
-      - application/vnd.citationstyles.csl+json
+      - '*/*'
       accept-encoding:
       - gzip, deflate
       connection:
@@ -144,91 +214,18 @@ interactions:
       user-agent:
       - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/v1/works/10.1101%2F2023.09.27.559792/transform
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1101%2F2023.09.27.559792&rows=100&select=DOI%2Crelation
   response:
     body:
       string: !!binary |
-        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
-        HD+sa/LH/wLVZzrVNEcAAA==
+        H4sIAAAAAAAA/82WUW+CMBDHv0ufaS1FZvR5L0uW7ANMH6qcsxOB9YrOEL77isO4uAirNmZvpFd+
+        /R/933EVQSNNiWRC8jUJyAYQ5RtQsy/Aru1yvaapQvMjtAWNKs9sNGSc8VOETCqylAswllbVATG5
+        kSnVgGXaLA0Dogxs7NNrRR5fnhoAZ6M4Hk4HkKolsLGIHyIWWqKGVJrDIRVReDyS5svDyyo56kty
+        ZXer5JsVhjycDgQXEeNjJkYsjsejsbA7JCJoAwmd7+1WLOfvsDCkngVkJfGUUQe71fl80vmbm7fY
+        wAUTXcS06jRsFewcxYUMZehHYIPi/lCX83VGXb6BWd3QOkwm7mcyt7R6zXqVHYQ/Owh/dhD+7CA6
+        7eCMGvYV5XUto7PWrQULDYVWmenzoBO5pxTOCqFJ7ijDe7O1KaLcAJV4c3pn2D8Wr1PBubmmQ2Ff
+        M7r3Hfzrj3VDl4v8NYHIX2uKOvuJM8pT7406/wjWsrN2XKMFaFocxruQ84B8lKD3jUvt4KgNVVkC
+        n2RiAwhSL1bUgG5mvKxM07quvwALvhZWYAoAAA==
     headers:
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
@@ -242,136 +239,11 @@ interactions:
       content-encoding:
       - gzip
       content-length:
-      - '4576'
+      - '427'
       content-type:
-      - application/vnd.citationstyles.csl+json
+      - application/json
       date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept, Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1101/2023.09.27.559792
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,2,27]],"date-time":"2026-02-27T01:39:30Z","timestamp":1772156370917,"version":"3.50.1"},"posted":{"date-parts":[[2023,9,27]]},"group-title":"Neuroscience","reference-count":88,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,13]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>\n                  Abnormal
-        cellular and circuit excitability is believed to drive many core phenotypes
-        in fragile X syndrome (FXS). The dentate gyrus is a brain area performing
-        critical computations essential for learning and memory. However, little is
-        known about dentate circuit defects and their mechanisms in FXS. Understanding
-        dentate circuit dysfunction in FXS has been complicated by the presence of
-        two types of excitatory neurons, the granule cells and mossy cells. Here we
-        report that loss of FMRP markedly decreased excitability of dentate mossy
-        cells, a change opposite to all other known excitability defects in excitatory
-        neurons in FXS. This mossy cell hypo-excitability is caused by increased Kv7
-        function in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
-        mice. By reducing the excitatory drive onto local hilar interneurons, hypo-excitability
-        of mossy cells results in increased excitation\/inhibition ratio in granule
-        cells and thus paradoxically leads to excessive dentate output. Circuit-wide
-        inhibition of Kv7 channels in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
-        mice increases inhibitory drive onto granule cells and normalizes the dentate
-        output in response to physiologically relevant theta-gamma coupling stimulation.
-        Our study suggests that circuit-based interventions may provide a promising
-        strategy in this disorder to bypass irreconcilable excitability defects in
-        different cell types and restore their pathophysiological consequences at
-        the circuit level.\n                <\/jats:p>","DOI":"10.1101\/2023.09.27.559792","type":"posted-content","created":{"date-parts":[[2023,9,27]],"date-time":"2023-09-27T21:15:27Z","timestamp":1695849327000},"source":"Crossref","is-referenced-by-count":0,"title":["Circuit-based
-        intervention corrects excessive dentate gyrus output in the Fragile X mouse
-        model"],"prefix":"10.64898","author":[{"given":"Pan-Yue","family":"Deng","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ajeet","family":"Kumar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9978-050X","authenticated-orcid":false,"given":"Valeria","family":"Cavalli","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-3449-243X","authenticated-orcid":false,"given":"Vitaly
-        A.","family":"Klyachko","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023111603200647000_2023.09.27.559792v2.1","doi-asserted-by":"publisher","DOI":"10.1016\/S0079-6123(07)63001-5"},{"key":"2023111603200647000_2023.09.27.559792v2.2","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEURON.2018.12.026"},{"key":"2023111603200647000_2023.09.27.559792v2.3","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.568667"},{"key":"2023111603200647000_2023.09.27.559792v2.4","doi-asserted-by":"publisher","DOI":"10.1111\/ejn.12898"},{"key":"2023111603200647000_2023.09.27.559792v2.5","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0518-16.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.6","doi-asserted-by":"crossref","unstructured":"Bhatia
-        A , Moza S , Bhalla US . 2021. Precise excitation-inhibition balance controls
-        gain and timing in the hippocampus. Elife 8","DOI":"10.7554\/eLife.71338"},{"key":"2023111603200647000_2023.09.27.559792v2.7","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-11891-6"},{"key":"2023111603200647000_2023.09.27.559792v2.8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2016.06.033"},{"key":"2023111603200647000_2023.09.27.559792v2.9","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhv177"},{"key":"2023111603200647000_2023.09.27.559792v2.10","doi-asserted-by":"crossref","first-page":"522","DOI":"10.1002\/hipo.23314","article-title":"Dorsal
-        and ventral mossy cells differ in their axonal projections throughout the
-        dentate gyrus of the mouse hippocampus","volume":"31","year":"2021","journal-title":"Hippocampus"},{"key":"2023111603200647000_2023.09.27.559792v2.11","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1724-20.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.12","doi-asserted-by":"publisher","DOI":"10.1111\/j.1476-5381.2009.00111.x"},{"key":"2023111603200647000_2023.09.27.559792v2.13","doi-asserted-by":"publisher","DOI":"10.1126\/science.aan4074"},{"key":"2023111603200647000_2023.09.27.559792v2.14","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1008-21.2022"},{"key":"2023111603200647000_2023.09.27.559792v2.15","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3620-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.16","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropharm.2007.06.026"},{"key":"2023111603200647000_2023.09.27.559792v2.17","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2015.06.017"},{"key":"2023111603200647000_2023.09.27.559792v2.18","doi-asserted-by":"publisher","DOI":"10.1016\/S0896-6273(02)01169-8"},{"key":"2023111603200647000_2023.09.27.559792v2.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.cell.2011.06.013"},{"key":"2023111603200647000_2023.09.27.559792v2.20","doi-asserted-by":"publisher","DOI":"10.1038\/nrn1785"},{"key":"2023111603200647000_2023.09.27.559792v2.21","doi-asserted-by":"crossref","first-page":"796053","DOI":"10.3389\/fnmol.2021.796053","article-title":"Hyperexcitability
-        of Sensory Neurons in Fragile X Mouse Model","volume":"14","year":"2021","journal-title":"Front
-        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.22","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1593-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2016.08.046"},{"key":"2023111603200647000_2023.09.27.559792v2.24","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-021-00445-9"},{"key":"2023111603200647000_2023.09.27.559792v2.25","doi-asserted-by":"crossref","first-page":"110820","DOI":"10.1016\/j.celrep.2022.110820","article-title":"FMRP
-        regulates GABAA receptor channel activity to control signal integration in
-        hippocampal granule cells","volume":"39","year":"2022","journal-title":"Cell
-        Rep"},{"key":"2023111603200647000_2023.09.27.559792v2.26","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.12.018"},{"key":"2023111603200647000_2023.09.27.559792v2.27","doi-asserted-by":"publisher","DOI":"10.3389\/fncel.2014.00030"},{"key":"2023111603200647000_2023.09.27.559792v2.28","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-12736-y"},{"key":"2023111603200647000_2023.09.27.559792v2.29","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20890"},{"key":"2023111603200647000_2023.09.27.559792v2.30","doi-asserted-by":"publisher","DOI":"10.1016\/j.nlm.2021.107486"},{"key":"2023111603200647000_2023.09.27.559792v2.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2015.01.008"},{"key":"2023111603200647000_2023.09.27.559792v2.32","doi-asserted-by":"publisher","DOI":"10.1152\/jn.90752.2008"},{"key":"2023111603200647000_2023.09.27.559792v2.33","first-page":"54","article-title":"Dysfunction
-        of the Heteromeric KV7.3\/KV7.5 Potassium Channel is Associated with Autism
-        Spectrum Disorders","volume":"4","year":"2013","journal-title":"Front Genet"},{"key":"2023111603200647000_2023.09.27.559792v2.34","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.0030156"},{"key":"2023111603200647000_2023.09.27.559792v2.35","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3270-17.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.36","doi-asserted-by":"crossref","first-page":"495","DOI":"10.1007\/s00018-016-2359-y","article-title":"Modulation
-        of Kv7 channels and excitability in the brain","volume":"74","year":"2017","journal-title":"Cell
-        Mol Life Sci"},{"key":"2023111603200647000_2023.09.27.559792v2.37","doi-asserted-by":"publisher","DOI":"10.1113\/jphysiol.2005.086835"},{"key":"2023111603200647000_2023.09.27.559792v2.38","doi-asserted-by":"publisher","DOI":"10.1152\/ajplung.00567.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.39","doi-asserted-by":"crossref","first-page":"928","DOI":"10.1016\/j.neuron.2017.07.028","article-title":"LTP
-        at Hilar Mossy Cell-Dentate Granule Cell Synapses Modulates Dentate Gyrus
-        Output by Increasing Excitation\/Inhibition Balance","volume":"95","year":"2017","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.40","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20374"},{"key":"2023111603200647000_2023.09.27.559792v2.41","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2455-20.2020"},{"key":"2023111603200647000_2023.09.27.559792v2.42","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1279-21.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.43","doi-asserted-by":"publisher","DOI":"10.1038\/35036198"},{"key":"2023111603200647000_2023.09.27.559792v2.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.10.036"},{"key":"2023111603200647000_2023.09.27.559792v2.45","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2013.00014"},{"key":"2023111603200647000_2023.09.27.559792v2.46","doi-asserted-by":"crossref","first-page":"185","DOI":"10.1007\/164_2021_457","article-title":"Kv7
-        Channels and Excitability Disorders","volume":"267","year":"2021","journal-title":"Handb
-        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.47","doi-asserted-by":"publisher","DOI":"10.1186\/s12915-020-00817-0"},{"key":"2023111603200647000_2023.09.27.559792v2.48","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1016\/j.stemcr.2020.07.001","article-title":"Primary
-        Ciliary Deficits in the Dentate Gyrus of Fragile X Syndrome","volume":"15","year":"2020","journal-title":"Stem
-        Cell Reports"},{"key":"2023111603200647000_2023.09.27.559792v2.49","doi-asserted-by":"publisher","DOI":"10.1126\/science.1135801"},{"key":"2023111603200647000_2023.09.27.559792v2.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.03.007"},{"key":"2023111603200647000_2023.09.27.559792v2.51","doi-asserted-by":"crossref","first-page":"231","DOI":"10.1007\/164_2021_458","article-title":"Pharmacological
-        Activation of Neuronal Voltage-Gated Kv7\/KCNQ\/M-Channels for Potential Therapy
-        of Epilepsy and Pain","volume":"267","year":"2021","journal-title":"Handb
-        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.52","doi-asserted-by":"publisher","DOI":"10.1152\/jn.1998.79.3.1518"},{"key":"2023111603200647000_2023.09.27.559792v2.53","doi-asserted-by":"crossref","first-page":"166048","DOI":"10.1016\/j.bbadis.2020.166048","article-title":"PKC
-        epsilon as a neonatal target to correct FXS-linked AMPA receptor translocation
-        in the hippocampus, boost PVN oxytocin expression, and normalize adult behavior
-        in Fmr1 knockout mice","volume":"1867","year":"2021","journal-title":"Biochim
-        Biophys Acta Mol Basis Dis"},{"key":"2023111603200647000_2023.09.27.559792v2.54","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2014.12.030"},{"key":"2023111603200647000_2023.09.27.559792v2.55","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.4423-14.2015"},{"key":"2023111603200647000_2023.09.27.559792v2.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.coph.2007.10.003"},{"key":"2023111603200647000_2023.09.27.559792v2.57","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2976-18.2019"},{"key":"2023111603200647000_2023.09.27.559792v2.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2009.08.037"},{"key":"2023111603200647000_2023.09.27.559792v2.59","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2019.00015"},{"key":"2023111603200647000_2023.09.27.559792v2.60","doi-asserted-by":"crossref","first-page":"2588","DOI":"10.1016\/j.neuron.2022.05.024","article-title":"Presynaptic
-        FMRP and local protein synthesis support structural and functional plasticity
-        of glutamatergic axon terminals","volume":"110","year":"2022","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.61","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-11-03990.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.62","doi-asserted-by":"publisher","DOI":"10.1007\/s00424-020-02404-2"},{"key":"2023111603200647000_2023.09.27.559792v2.63","doi-asserted-by":"crossref","first-page":"970083","DOI":"10.3389\/fnbeh.2022.970083","article-title":"Theta
-        and gamma oscillations in the rat hippocampus support the discrimination of
-        object displacement in a recognition memory task","volume":"16","year":"2022","journal-title":"Front
-        Behav Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.64","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2447-12.2013"},{"key":"2023111603200647000_2023.09.27.559792v2.65","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2921-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.66","doi-asserted-by":"publisher","DOI":"10.1152\/physrev.00007.2017"},{"key":"2023111603200647000_2023.09.27.559792v2.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.09.046"},{"key":"2023111603200647000_2023.09.27.559792v2.68","doi-asserted-by":"publisher","DOI":"10.1038\/nn1375"},{"key":"2023111603200647000_2023.09.27.559792v2.69","doi-asserted-by":"crossref","unstructured":"Remmers
-        CL , Contractor A . 2018. Development of GABAergic Inputs Is Not Altered in
-        Early Maturation of Adult Born Dentate Granule Neurons in Fragile X Mice.
-        eNeuro 5","DOI":"10.1523\/ENEURO.0137-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.70","first-page":"60","article-title":"Fragile
-        X syndrome: clinical presentation, pathology and treatment","volume":"156","year":"2020","journal-title":"Gac
-        Med Mex"},{"key":"2023111603200647000_2023.09.27.559792v2.71","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2109448119"},{"key":"2023111603200647000_2023.09.27.559792v2.72","doi-asserted-by":"publisher","DOI":"10.1038\/nrn.2016.87"},{"key":"2023111603200647000_2023.09.27.559792v2.73","doi-asserted-by":"publisher","DOI":"10.1007\/s00441-017-2750-5"},{"key":"2023111603200647000_2023.09.27.559792v2.74","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2012.00106"},{"key":"2023111603200647000_2023.09.27.559792v2.75","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2017.00440"},{"key":"2023111603200647000_2023.09.27.559792v2.76","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-19-07503.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.77","doi-asserted-by":"crossref","unstructured":"Sloviter
-        RS , Bumanglag AV , Schwarcz R , Frotscher M. 2012. Abnormal dentate gyrus
-        network circuitry in temporal lobe epilepsy.","DOI":"10.1093\/med\/9780199746545.003.0034"},{"key":"2023111603200647000_2023.09.27.559792v2.78","doi-asserted-by":"crossref","first-page":"191","DOI":"10.1159\/000515495","article-title":"Flexible
-        Stoichiometry: Implications for KCNQ2-and KCNQ3-Associated Neurodevelopmental
-        Disorders","volume":"43","year":"2021","journal-title":"Dev Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.79","doi-asserted-by":"publisher","DOI":"10.3389\/neuro.02.008.2009"},{"key":"2023111603200647000_2023.09.27.559792v2.80","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1004644107"},{"key":"2023111603200647000_2023.09.27.559792v2.81","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.00727"},{"key":"2023111603200647000_2023.09.27.559792v2.82","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2021.109702"},{"key":"2023111603200647000_2023.09.27.559792v2.83","unstructured":"Willemsen
-        R , Kooy RF. 2017. Fragile X Syndrome: From Genetics to Targeted Treatment.
-        Elsevier. 498 pp."},{"key":"2023111603200647000_2023.09.27.559792v2.84","doi-asserted-by":"crossref","first-page":"495","DOI":"10.3389\/fnmol.2018.00495","article-title":"Fragile-X
-        Syndrome Is Associated With NMDA Receptor Hypofunction and Reduced Dendritic
-        Complexity in Mature Dentate Granule Cells","volume":"11","year":"2019","journal-title":"Front
-        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.85","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2016.09.012"},{"key":"2023111603200647000_2023.09.27.559792v2.86","doi-asserted-by":"crossref","first-page":"493","DOI":"10.1016\/j.neuron.2018.07.010","article-title":"Mossy
-        Cells Control Adult Neural Stem Cell Quiescence and Maintenance through a
-        Dynamic Balance between Direct and Indirect Pathways","volume":"99","year":"2018","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.87","doi-asserted-by":"publisher","DOI":"10.1002\/jnr.22546"},{"key":"2023111603200647000_2023.09.27.559792v2.88","doi-asserted-by":"crossref","first-page":"46","DOI":"10.3389\/fnins.2018.00046","article-title":"Synaptic
-        E-I Balance Underlies Efficient Neural Coding","volume":"12","year":"2018","journal-title":"Front
-        Neurosci"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.09.27.559792","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T05:17:19Z","timestamp":1768454239000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.09.27.559792"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,9,27]]},"references-count":88,"URL":"https:\/\/doi.org\/10.1101\/2023.09.27.559792","relation":{"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]},"subject":[],"published":{"date-parts":[[2023,9,27]]},"subtype":"preprint"}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '4609'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
+      - Thu, 22 Oct 2026 20:38:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -381,138 +253,13 @@ interactions:
       vary:
       - Accept-Encoding
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1101/2023.09.27.559792
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,2,27]],"date-time":"2026-02-27T01:39:30Z","timestamp":1772156370917,"version":"3.50.1"},"posted":{"date-parts":[[2023,9,27]]},"group-title":"Neuroscience","reference-count":88,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,13]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>\n                  Abnormal
-        cellular and circuit excitability is believed to drive many core phenotypes
-        in fragile X syndrome (FXS). The dentate gyrus is a brain area performing
-        critical computations essential for learning and memory. However, little is
-        known about dentate circuit defects and their mechanisms in FXS. Understanding
-        dentate circuit dysfunction in FXS has been complicated by the presence of
-        two types of excitatory neurons, the granule cells and mossy cells. Here we
-        report that loss of FMRP markedly decreased excitability of dentate mossy
-        cells, a change opposite to all other known excitability defects in excitatory
-        neurons in FXS. This mossy cell hypo-excitability is caused by increased Kv7
-        function in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
-        mice. By reducing the excitatory drive onto local hilar interneurons, hypo-excitability
-        of mossy cells results in increased excitation\/inhibition ratio in granule
-        cells and thus paradoxically leads to excessive dentate output. Circuit-wide
-        inhibition of Kv7 channels in\n                  <jats:italic>Fmr1<\/jats:italic>\n                  KO
-        mice increases inhibitory drive onto granule cells and normalizes the dentate
-        output in response to physiologically relevant theta-gamma coupling stimulation.
-        Our study suggests that circuit-based interventions may provide a promising
-        strategy in this disorder to bypass irreconcilable excitability defects in
-        different cell types and restore their pathophysiological consequences at
-        the circuit level.\n                <\/jats:p>","DOI":"10.1101\/2023.09.27.559792","type":"posted-content","created":{"date-parts":[[2023,9,27]],"date-time":"2023-09-27T21:15:27Z","timestamp":1695849327000},"source":"Crossref","is-referenced-by-count":0,"title":["Circuit-based
-        intervention corrects excessive dentate gyrus output in the Fragile X mouse
-        model"],"prefix":"10.64898","author":[{"given":"Pan-Yue","family":"Deng","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ajeet","family":"Kumar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9978-050X","authenticated-orcid":false,"given":"Valeria","family":"Cavalli","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-3449-243X","authenticated-orcid":false,"given":"Vitaly
-        A.","family":"Klyachko","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023111603200647000_2023.09.27.559792v2.1","doi-asserted-by":"publisher","DOI":"10.1016\/S0079-6123(07)63001-5"},{"key":"2023111603200647000_2023.09.27.559792v2.2","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEURON.2018.12.026"},{"key":"2023111603200647000_2023.09.27.559792v2.3","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.568667"},{"key":"2023111603200647000_2023.09.27.559792v2.4","doi-asserted-by":"publisher","DOI":"10.1111\/ejn.12898"},{"key":"2023111603200647000_2023.09.27.559792v2.5","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0518-16.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.6","doi-asserted-by":"crossref","unstructured":"Bhatia
-        A , Moza S , Bhalla US . 2021. Precise excitation-inhibition balance controls
-        gain and timing in the hippocampus. Elife 8","DOI":"10.7554\/eLife.71338"},{"key":"2023111603200647000_2023.09.27.559792v2.7","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-11891-6"},{"key":"2023111603200647000_2023.09.27.559792v2.8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2016.06.033"},{"key":"2023111603200647000_2023.09.27.559792v2.9","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhv177"},{"key":"2023111603200647000_2023.09.27.559792v2.10","doi-asserted-by":"crossref","first-page":"522","DOI":"10.1002\/hipo.23314","article-title":"Dorsal
-        and ventral mossy cells differ in their axonal projections throughout the
-        dentate gyrus of the mouse hippocampus","volume":"31","year":"2021","journal-title":"Hippocampus"},{"key":"2023111603200647000_2023.09.27.559792v2.11","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1724-20.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.12","doi-asserted-by":"publisher","DOI":"10.1111\/j.1476-5381.2009.00111.x"},{"key":"2023111603200647000_2023.09.27.559792v2.13","doi-asserted-by":"publisher","DOI":"10.1126\/science.aan4074"},{"key":"2023111603200647000_2023.09.27.559792v2.14","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1008-21.2022"},{"key":"2023111603200647000_2023.09.27.559792v2.15","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3620-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.16","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropharm.2007.06.026"},{"key":"2023111603200647000_2023.09.27.559792v2.17","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2015.06.017"},{"key":"2023111603200647000_2023.09.27.559792v2.18","doi-asserted-by":"publisher","DOI":"10.1016\/S0896-6273(02)01169-8"},{"key":"2023111603200647000_2023.09.27.559792v2.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.cell.2011.06.013"},{"key":"2023111603200647000_2023.09.27.559792v2.20","doi-asserted-by":"publisher","DOI":"10.1038\/nrn1785"},{"key":"2023111603200647000_2023.09.27.559792v2.21","doi-asserted-by":"crossref","first-page":"796053","DOI":"10.3389\/fnmol.2021.796053","article-title":"Hyperexcitability
-        of Sensory Neurons in Fragile X Mouse Model","volume":"14","year":"2021","journal-title":"Front
-        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.22","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1593-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2016.08.046"},{"key":"2023111603200647000_2023.09.27.559792v2.24","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-021-00445-9"},{"key":"2023111603200647000_2023.09.27.559792v2.25","doi-asserted-by":"crossref","first-page":"110820","DOI":"10.1016\/j.celrep.2022.110820","article-title":"FMRP
-        regulates GABAA receptor channel activity to control signal integration in
-        hippocampal granule cells","volume":"39","year":"2022","journal-title":"Cell
-        Rep"},{"key":"2023111603200647000_2023.09.27.559792v2.26","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.12.018"},{"key":"2023111603200647000_2023.09.27.559792v2.27","doi-asserted-by":"publisher","DOI":"10.3389\/fncel.2014.00030"},{"key":"2023111603200647000_2023.09.27.559792v2.28","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-019-12736-y"},{"key":"2023111603200647000_2023.09.27.559792v2.29","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20890"},{"key":"2023111603200647000_2023.09.27.559792v2.30","doi-asserted-by":"publisher","DOI":"10.1016\/j.nlm.2021.107486"},{"key":"2023111603200647000_2023.09.27.559792v2.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2015.01.008"},{"key":"2023111603200647000_2023.09.27.559792v2.32","doi-asserted-by":"publisher","DOI":"10.1152\/jn.90752.2008"},{"key":"2023111603200647000_2023.09.27.559792v2.33","first-page":"54","article-title":"Dysfunction
-        of the Heteromeric KV7.3\/KV7.5 Potassium Channel is Associated with Autism
-        Spectrum Disorders","volume":"4","year":"2013","journal-title":"Front Genet"},{"key":"2023111603200647000_2023.09.27.559792v2.34","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.0030156"},{"key":"2023111603200647000_2023.09.27.559792v2.35","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3270-17.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.36","doi-asserted-by":"crossref","first-page":"495","DOI":"10.1007\/s00018-016-2359-y","article-title":"Modulation
-        of Kv7 channels and excitability in the brain","volume":"74","year":"2017","journal-title":"Cell
-        Mol Life Sci"},{"key":"2023111603200647000_2023.09.27.559792v2.37","doi-asserted-by":"publisher","DOI":"10.1113\/jphysiol.2005.086835"},{"key":"2023111603200647000_2023.09.27.559792v2.38","doi-asserted-by":"publisher","DOI":"10.1152\/ajplung.00567.2016"},{"key":"2023111603200647000_2023.09.27.559792v2.39","doi-asserted-by":"crossref","first-page":"928","DOI":"10.1016\/j.neuron.2017.07.028","article-title":"LTP
-        at Hilar Mossy Cell-Dentate Granule Cell Synapses Modulates Dentate Gyrus
-        Output by Increasing Excitation\/Inhibition Balance","volume":"95","year":"2017","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.40","doi-asserted-by":"publisher","DOI":"10.1002\/hipo.20374"},{"key":"2023111603200647000_2023.09.27.559792v2.41","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2455-20.2020"},{"key":"2023111603200647000_2023.09.27.559792v2.42","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1279-21.2021"},{"key":"2023111603200647000_2023.09.27.559792v2.43","doi-asserted-by":"publisher","DOI":"10.1038\/35036198"},{"key":"2023111603200647000_2023.09.27.559792v2.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2012.10.036"},{"key":"2023111603200647000_2023.09.27.559792v2.45","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2013.00014"},{"key":"2023111603200647000_2023.09.27.559792v2.46","doi-asserted-by":"crossref","first-page":"185","DOI":"10.1007\/164_2021_457","article-title":"Kv7
-        Channels and Excitability Disorders","volume":"267","year":"2021","journal-title":"Handb
-        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.47","doi-asserted-by":"publisher","DOI":"10.1186\/s12915-020-00817-0"},{"key":"2023111603200647000_2023.09.27.559792v2.48","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1016\/j.stemcr.2020.07.001","article-title":"Primary
-        Ciliary Deficits in the Dentate Gyrus of Fragile X Syndrome","volume":"15","year":"2020","journal-title":"Stem
-        Cell Reports"},{"key":"2023111603200647000_2023.09.27.559792v2.49","doi-asserted-by":"publisher","DOI":"10.1126\/science.1135801"},{"key":"2023111603200647000_2023.09.27.559792v2.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.03.007"},{"key":"2023111603200647000_2023.09.27.559792v2.51","doi-asserted-by":"crossref","first-page":"231","DOI":"10.1007\/164_2021_458","article-title":"Pharmacological
-        Activation of Neuronal Voltage-Gated Kv7\/KCNQ\/M-Channels for Potential Therapy
-        of Epilepsy and Pain","volume":"267","year":"2021","journal-title":"Handb
-        Exp Pharmacol"},{"key":"2023111603200647000_2023.09.27.559792v2.52","doi-asserted-by":"publisher","DOI":"10.1152\/jn.1998.79.3.1518"},{"key":"2023111603200647000_2023.09.27.559792v2.53","doi-asserted-by":"crossref","first-page":"166048","DOI":"10.1016\/j.bbadis.2020.166048","article-title":"PKC
-        epsilon as a neonatal target to correct FXS-linked AMPA receptor translocation
-        in the hippocampus, boost PVN oxytocin expression, and normalize adult behavior
-        in Fmr1 knockout mice","volume":"1867","year":"2021","journal-title":"Biochim
-        Biophys Acta Mol Basis Dis"},{"key":"2023111603200647000_2023.09.27.559792v2.54","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2014.12.030"},{"key":"2023111603200647000_2023.09.27.559792v2.55","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.4423-14.2015"},{"key":"2023111603200647000_2023.09.27.559792v2.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.coph.2007.10.003"},{"key":"2023111603200647000_2023.09.27.559792v2.57","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2976-18.2019"},{"key":"2023111603200647000_2023.09.27.559792v2.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2009.08.037"},{"key":"2023111603200647000_2023.09.27.559792v2.59","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2019.00015"},{"key":"2023111603200647000_2023.09.27.559792v2.60","doi-asserted-by":"crossref","first-page":"2588","DOI":"10.1016\/j.neuron.2022.05.024","article-title":"Presynaptic
-        FMRP and local protein synthesis support structural and functional plasticity
-        of glutamatergic axon terminals","volume":"110","year":"2022","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.61","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-11-03990.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.62","doi-asserted-by":"publisher","DOI":"10.1007\/s00424-020-02404-2"},{"key":"2023111603200647000_2023.09.27.559792v2.63","doi-asserted-by":"crossref","first-page":"970083","DOI":"10.3389\/fnbeh.2022.970083","article-title":"Theta
-        and gamma oscillations in the rat hippocampus support the discrimination of
-        object displacement in a recognition memory task","volume":"16","year":"2022","journal-title":"Front
-        Behav Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.64","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2447-12.2013"},{"key":"2023111603200647000_2023.09.27.559792v2.65","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2921-13.2014"},{"key":"2023111603200647000_2023.09.27.559792v2.66","doi-asserted-by":"publisher","DOI":"10.1152\/physrev.00007.2017"},{"key":"2023111603200647000_2023.09.27.559792v2.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.09.046"},{"key":"2023111603200647000_2023.09.27.559792v2.68","doi-asserted-by":"publisher","DOI":"10.1038\/nn1375"},{"key":"2023111603200647000_2023.09.27.559792v2.69","doi-asserted-by":"crossref","unstructured":"Remmers
-        CL , Contractor A . 2018. Development of GABAergic Inputs Is Not Altered in
-        Early Maturation of Adult Born Dentate Granule Neurons in Fragile X Mice.
-        eNeuro 5","DOI":"10.1523\/ENEURO.0137-18.2018"},{"key":"2023111603200647000_2023.09.27.559792v2.70","first-page":"60","article-title":"Fragile
-        X syndrome: clinical presentation, pathology and treatment","volume":"156","year":"2020","journal-title":"Gac
-        Med Mex"},{"key":"2023111603200647000_2023.09.27.559792v2.71","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2109448119"},{"key":"2023111603200647000_2023.09.27.559792v2.72","doi-asserted-by":"publisher","DOI":"10.1038\/nrn.2016.87"},{"key":"2023111603200647000_2023.09.27.559792v2.73","doi-asserted-by":"publisher","DOI":"10.1007\/s00441-017-2750-5"},{"key":"2023111603200647000_2023.09.27.559792v2.74","doi-asserted-by":"publisher","DOI":"10.3389\/fncir.2012.00106"},{"key":"2023111603200647000_2023.09.27.559792v2.75","doi-asserted-by":"publisher","DOI":"10.3389\/fnmol.2017.00440"},{"key":"2023111603200647000_2023.09.27.559792v2.76","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.17-19-07503.1997"},{"key":"2023111603200647000_2023.09.27.559792v2.77","doi-asserted-by":"crossref","unstructured":"Sloviter
-        RS , Bumanglag AV , Schwarcz R , Frotscher M. 2012. Abnormal dentate gyrus
-        network circuitry in temporal lobe epilepsy.","DOI":"10.1093\/med\/9780199746545.003.0034"},{"key":"2023111603200647000_2023.09.27.559792v2.78","doi-asserted-by":"crossref","first-page":"191","DOI":"10.1159\/000515495","article-title":"Flexible
-        Stoichiometry: Implications for KCNQ2-and KCNQ3-Associated Neurodevelopmental
-        Disorders","volume":"43","year":"2021","journal-title":"Dev Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.79","doi-asserted-by":"publisher","DOI":"10.3389\/neuro.02.008.2009"},{"key":"2023111603200647000_2023.09.27.559792v2.80","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1004644107"},{"key":"2023111603200647000_2023.09.27.559792v2.81","doi-asserted-by":"publisher","DOI":"10.3389\/fphys.2020.00727"},{"key":"2023111603200647000_2023.09.27.559792v2.82","doi-asserted-by":"publisher","DOI":"10.1016\/j.celrep.2021.109702"},{"key":"2023111603200647000_2023.09.27.559792v2.83","unstructured":"Willemsen
-        R , Kooy RF. 2017. Fragile X Syndrome: From Genetics to Targeted Treatment.
-        Elsevier. 498 pp."},{"key":"2023111603200647000_2023.09.27.559792v2.84","doi-asserted-by":"crossref","first-page":"495","DOI":"10.3389\/fnmol.2018.00495","article-title":"Fragile-X
-        Syndrome Is Associated With NMDA Receptor Hypofunction and Reduced Dendritic
-        Complexity in Mature Dentate Granule Cells","volume":"11","year":"2019","journal-title":"Front
-        Mol Neurosci"},{"key":"2023111603200647000_2023.09.27.559792v2.85","doi-asserted-by":"publisher","DOI":"10.1016\/j.nbd.2016.09.012"},{"key":"2023111603200647000_2023.09.27.559792v2.86","doi-asserted-by":"crossref","first-page":"493","DOI":"10.1016\/j.neuron.2018.07.010","article-title":"Mossy
-        Cells Control Adult Neural Stem Cell Quiescence and Maintenance through a
-        Dynamic Balance between Direct and Indirect Pathways","volume":"99","year":"2018","journal-title":"Neuron"},{"key":"2023111603200647000_2023.09.27.559792v2.87","doi-asserted-by":"publisher","DOI":"10.1002\/jnr.22546"},{"key":"2023111603200647000_2023.09.27.559792v2.88","doi-asserted-by":"crossref","first-page":"46","DOI":"10.3389\/fnins.2018.00046","article-title":"Synaptic
-        E-I Balance Underlies Efficient Neural Coding","volume":"12","year":"2018","journal-title":"Front
-        Neurosci"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.09.27.559792","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T05:17:19Z","timestamp":1768454239000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.09.27.559792"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,9,27]]},"references-count":88,"URL":"https:\/\/doi.org\/10.1101\/2023.09.27.559792","relation":{"has-version":[{"id-type":"doi","id":"10.7554\/eLife.92563.1","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.92563.2","asserted-by":"object"}],"is-preprint-of":[{"id-type":"doi","id":"10.7554\/eLife.92563.3","asserted-by":"object"}]},"subject":[],"published":{"date-parts":[[2023,9,27]]},"subtype":"preprint"}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '4609'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
       - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
     status:
       code: 200
       message: OK
@@ -542,15 +289,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7ce24289c6c19-DFW
+      - a4eb4e4ad99b29cd-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:26:42 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       expires:
-      - Thu, 22 Oct 2026 10:34:32 GMT
+      - Thu, 22 Oct 2026 20:53:09 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563/transform
       nel:
@@ -558,7 +305,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=F7VcVsvSKvw2rLZV%2BMcKNpNBGeEQZKMqonIq%2BPimGDPI7yN7BwBn5OcnxuU5tofbhwKydIkHzXXDN91GYKrWrU%2B7xQq2tBcHgsAqcXfb7WHYK4577s6kYcI%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=98nucRIbtlAb77U3fFIPlBMQnvbXWh2xQpf4IJfiJ4RE1nME%2FYXcf1rd915G2ceKA%2FDU1qkGRiRatNbRpB%2FfoOzXLv4XILeScWRR9%2BTY5SW6JLjlzA%2FPps8%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -762,7 +509,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 10:26:42 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -808,15 +555,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7ce2549466c19-DFW
+      - a4eb4e4b7bfa29cd-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:26:42 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       expires:
-      - Thu, 22 Oct 2026 10:53:09 GMT
+      - Thu, 22 Oct 2026 21:27:30 GMT
       location:
       - https://api.crossref.org/v1/works/10.7554%2Felife.92563.3/transform
       nel:
@@ -824,7 +571,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=yrXjJgqamcqPANC7RrpHgB50QCOAO0CFIT0Szqw5siQXjAWwPYPP4bOTc6qBt2rmS0sabV0qkW551j0plsTkrekw%2Fqb6KKMyzNe829gCRe3w8szPo9wmRt0%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=ir4MDXTjYlm2m8YEe2CCBvUhRqhjV27HAByyg190qXhGxaj5Nlcm27JRy7yjR%2FlaOml3P1cWslB0jKLxAJl1cXdDepKdFOyj5w4hkV0fB%2BWtcSNKUxvEhnQ%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -1028,7 +775,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 10:26:42 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -1088,11 +835,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
+      - Thu, 22 Oct 2026 20:38:27 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500007795C181BE81.1.1.m_1
+      - 1D348A0161E7335500005CBA933DECFB.1.1.m_1
       ncbi-sid:
-      - 5C18DD1C7D75F604_2720SID
+      - 907DDF59A0A13A64_3F30SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1153,11 +900,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:26:41 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       ncbi-phid:
-      - 1D348A0161E73355000058A8C1677A44.1.1.m_1
+      - 1D348A0161E73355000046BA940F0D1D.1.1.m_1
       ncbi-sid:
-      - 5C18DD1C7D75F604_2720SID
+      - 907DDF59A0A13A64_3F30SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1229,11 +976,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:26:42 GMT
+      - Thu, 22 Oct 2026 20:38:28 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000060A5C3016975.1.1.m_1
+      - 1D348A0161E7335500004FBA9520C081.1.1.m_1
       ncbi-sid:
-      - 5C18DD1C7D75F604_2720SID
+      - 907DDF59A0A13A64_3F30SID
       referrer-policy:
       - origin-when-cross-origin
       server:

@@ -15,7 +15,9 @@ method it calls; any other key (`why`, the evidence) is carried for the reader.
      "rekind": [["pmid", "37808793"]]}
     {"op": "rekind", "article": A, "kind": "pmid", "value": "37808793"}
 
-`add` takes only an identifier no article holds; `split`'s `add` attaches more
+A plan in which an identifier comes back to an article and kind it left is refused
+whole: no operation of a reviewed plan undoes another. `add` takes only an identifier
+no article holds; `split`'s `add` attaches more
 such identifiers to the new article. `rekind` holds a PMID or PMCID as the
 preprint's, or a DOI as an alternate DOI.
 
@@ -73,7 +75,33 @@ def load(path: Path) -> List[Tuple[int, Operation]]:
         if missing:
             raise ValueError(f"line {number}: {operation['op']} needs {', '.join(missing)}")
         operations.append((number, operation))
+    _refuse_returns(operations)
     return operations
+
+
+def _refuse_returns(operations: List[Tuple[int, Operation]]) -> None:
+    """Raise ValueError when an identifier comes back to a holder and kind it left: an
+    operation undoing an earlier one, which a reviewed plan does not hold."""
+    states: Dict[str, List[Tuple[Optional[Tuple[str, str]], int]]] = {}
+
+    def to(value, state, number):
+        seen = states.setdefault(str(value), [])
+        if seen and seen[-1][0] != state and any(s == state for s, _ in seen[:-1]):
+            first = next(n for s, n in seen if s == state)
+            where = f"{state[1]} of {state[0]}" if state else "no article"
+            raise ValueError(f"line {number}: {value} comes back to {where} it left after line {first}")
+        seen.append((state, number))
+
+    for number, o in operations:
+        if o["op"] == "add":
+            to(o["value"], (o["article"], o["kind"]), number)
+        elif o["op"] == "remove":
+            to(o["value"], None, number)
+        elif o["op"] == "rekind" and o["kind"] in Catalog.REKIND:
+            to(o["value"], (o["article"], Catalog.REKIND[o["kind"]]), number)
+        elif o["op"] == "reassign":
+            for m in o["moves"]:
+                to(m["value"], (m["to"], m["kind"]), number)
 
 
 @dataclass
@@ -135,7 +163,8 @@ def apply(
             outcome.touched = [catalog.identifier(article_id) for article_id in live]
             after = violations(catalog, neighbourhood(catalog, live) | suspects(catalog)
                                | {catalog.current_id(a) for a in scope})
-            was = {_key(catalog, v) for v in before}
+            # an accepted pair the plan breaks is a violation the plan makes
+            was = {_key(catalog, v) for v in before if not v.accepted}
             outcome.accepted = [v for v in after if v.accepted]
             after = [v for v in after if not v.accepted]
             outcome.violations = [v for v in after if _key(catalog, v) not in was]

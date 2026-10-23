@@ -28,8 +28,8 @@ def _normalize_pmid(value: Optional[str]) -> Optional[str]:
     return value or None
 
 
-#: The `other_ids` key holding, comma-joined, the PMIDs of the other PubMed
-#: records of the same paper; `pmid` is the lowest of them all.
+#: The `other_ids` key holding, comma-joined, the PMIDs of the paper's duplicate
+#: PubMed records, which a merge kept beside its `pmid`.
 DUPLICATE_PUBMED_RECORDS = "duplicate_pubmed_records"
 
 #: The `other_ids` key holding the PMID of a preprint's PubMed record, on an article

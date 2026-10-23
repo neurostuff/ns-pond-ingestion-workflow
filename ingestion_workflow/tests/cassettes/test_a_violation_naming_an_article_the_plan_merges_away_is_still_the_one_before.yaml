@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:55:27 GMT
+      - Thu, 22 Oct 2026 20:38:00 GMT
       ncbi-phid:
-      - 1D348A0161E73355000060B67C8450C0.1.1.m_1
+      - 1D348A0161E73355000041BA67CDF243.1.1.m_1
       ncbi-sid:
-      - 0765CD584CA87A7B_2FEASID
+      - 724248956D8452EB_687BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -56,7 +56,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -509,7 +509,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:55:28 GMT
+      - Thu, 22 Oct 2026 20:38:00 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -535,6 +535,57 @@ interactions:
       - 1s
       x-rate-limit-limit:
       - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.nlm.2011.06.006&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:38:00 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
     status:
       code: 200
       message: OK
@@ -588,11 +639,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:55:28 GMT
+      - Thu, 22 Oct 2026 20:38:00 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000046A1FE233630.1.1.m_1
+      - 1D3238309BD9AC75000054A09DB2837A.1.1.m_1
       ncbi-sid:
-      - 0765CD584CA87A7B_2FEASID
+      - 724248956D8452EB_687BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -606,7 +657,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -640,15 +691,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7f84d2923d0c2-DFW
+      - a4eb4da11cd7f061-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:55:28 GMT
+      - Thu, 22 Oct 2026 20:38:01 GMT
       expires:
-      - Thu, 22 Oct 2026 11:34:32 GMT
+      - Thu, 22 Oct 2026 21:34:32 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       location:
@@ -658,92 +709,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=qV9vu5q7LBSJJlaDfW%2FdBylQElzmNQbHxw1ahnTE0u%2B2j7n%2BRhi511EV8XPGCfs233iyh76vgCIeWmMTIjHbI45UcP%2Fbq3RhcTl%2FtCKBhlLOUFIYgYPU34Q%3D"}]}'
-      server:
-      - cloudflare
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      vary:
-      - Origin
-      - Accept
-    status:
-      code: 302
-      message: Found
-- request:
-    body: ''
-    headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - api.crossref.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform
-  response:
-    body:
-      string: ''
-    headers:
-      connection:
-      - keep-alive
-      content-length:
-      - '0'
-      date:
-      - Thu, 22 Oct 2026 10:55:28 GMT
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - doi.org
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: https://doi.org/10.1016/j.nlm.2011.06.006
-  response:
-    body:
-      string: '<html><head><title>Handle Redirect</title></head>
-
-        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform">https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform</a></body></html>'
-    headers:
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      cf-ray:
-      - a4e7f8545844d0c2-DFW
-      connection:
-      - keep-alive
-      content-type:
-      - text/html;charset=utf-8
-      date:
-      - Thu, 22 Oct 2026 10:55:30 GMT
-      expires:
-      - Thu, 22 Oct 2026 11:34:32 GMT
-      link:
-      - <https://dul.usage.elsevier.com/doi/>; rel=dul
-      location:
-      - https://api.crossref.org/v1/works/10.1016%2Fj.nlm.2011.06.006/transform
-      nel:
-      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
-      permissions-policy:
-      - interest-cohort=(),browsing-topics=()
-      report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=SFsxtdbR2K5OgdCZu%2BjMvyJSa4hSOFUINS7KZIGsm9akod8%2BrRcObQqcvzj546XmXkLXYFW4%2BTh289yQmeIXYZMnI3b9WVgmDY57Lrxsmxu9ehTZp7%2BTVPw%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=UqI6Vd455wohbGhOhatTAK3m3yOjQDdP%2BaYmBT0NJghTUV%2F5hm%2BwDPx6yOVD6yXbz1CtPK8dkRGNugc8b3Avmepg%2BfK7MnHQ%2FTs%2B6EUoX8Zh9qF7uN8fzsw%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -1026,7 +992,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 10:55:30 GMT
+      - Thu, 22 Oct 2026 20:38:01 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -1085,11 +1051,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:55:29 GMT
+      - Thu, 22 Oct 2026 20:38:00 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500004AA2005211F7.1.1.m_1
+      - 1D3238309BD9AC75000059A09E2644F2.1.1.m_1
       ncbi-sid:
-      - 0765CD584CA87A7B_2FEASID
+      - 724248956D8452EB_687BSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1103,7 +1069,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

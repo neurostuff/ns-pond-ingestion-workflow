@@ -177,8 +177,10 @@ An article is one paper. Registration (`ingest add`, `ingest run --manifest`,
 `ingest migrate`) checks what it adds against PubMed and the DOI registries, so
 these commands need `pubmed_email`. Two records are one work when their titles are
 alike and their first authors, years and journals agree; an erratum, a reply or a
-retraction is never the work it is about, and a book chapter is never an article
-(`catalog/evidence.py`, `same_work`).
+retraction is never the work it is about, a meeting abstract in a supplement issue
+is never its paper, and a book chapter or a conference paper is never an article
+(`catalog/evidence.py`, `same_work`). doi.org is asked with no contact email, and a
+DOI it sends to an agency over plain HTTP is one the registry cannot be read for.
 
 - A PMID that arrives with other ids is not added in two cases. One is when its
   PubMed record gives a DOI another article holds, and the registry gives that DOI
@@ -219,7 +221,12 @@ rekind, split, merge, move, swap or forget artifacts). The file format is in
 - `--apply --backup <path> --manifest <path>` commits only if there is no refusal
   and the plan makes no violation, and backs the catalog up first. A violation that
   was there before, such as an article holding two base studies, which neurostore
-  must decide, is listed and does not block.
+  must decide, is listed and does not block. A preprint and its paper whose articles
+  each hold a base study are listed as accepted: they stay apart until neurostore can
+  make one base study a version of the other. A plan that breaks such a pair makes a
+  violation.
+- A plan in which an identifier comes back to an article and kind it left is refused
+  whole.
 - An article left with no extraction has its passages taken back. Then run, as the
   command prints:
 

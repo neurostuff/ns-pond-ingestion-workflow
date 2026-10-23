@@ -38,11 +38,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:49 GMT
+      - Thu, 22 Oct 2026 20:37:08 GMT
       ncbi-phid:
-      - 1D33C9B11FD1F985000041A0A24049DA.1.1.m_1
+      - 1D3238309BD9AC7500004FA03E4F5FC8.1.1.m_1
       ncbi-sid:
-      - F0413229F12A7667_2719SID
+      - 6CAFF367853907F3_84B3SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -56,7 +56,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -86,7 +86,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
+      - Thu, 22 Oct 2026 20:37:09 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -114,30 +114,24 @@ interactions:
       code: 404
       message: Not Found
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1176/appi.neuropsych.21.3.307
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1176%2Fappi.neuropsych.21.3.307&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: Resource not found.
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
-      Transfer-Encoding:
-      - chunked
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -145,87 +139,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 404
-      message: Not Found
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1176/jnp.2009.21.3.307
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2024,7,24]],"date-time":"2024-07-24T16:40:11Z","timestamp":1721839211631},"reference-count":42,"publisher":"American
-        Psychiatric Association Publishing","issue":"3","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["JNP"],"published-print":{"date-parts":[[2009,7]]},"DOI":"10.1176\/jnp.2009.21.3.307","type":"journal-article","created":{"date-parts":[[2014,12,17]],"date-time":"2014-12-17T21:42:34Z","timestamp":1418852554000},"page":"307-313","source":"Crossref","is-referenced-by-count":0,"title":["Association
-        Between Preoperative Anxiety in Spinal Stenosis Patients and Abnormal Cerebral
-        Glucose Metabolism: Voxel-Based Statistical Analysis of F-18 FDG Brain PET"],"prefix":"10.1176","volume":"21","author":[{"suffix":"M.D.,
-        Ph.D","given":"Seong-Jang","family":"Kim","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"suffix":"M.D.,
-        Ph.D","given":"Kuen Tak","family":"Suh","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"suffix":"M.D.","given":"He
-        Myung","family":"Cho","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"suffix":"M.D.,
-        Ph.D","given":"In-Ju","family":"Kim","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"suffix":"M.D.,
-        Ph.D","given":"Jung Sub","family":"Lee","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"230","reference":[{"key":"p_1","doi-asserted-by":"publisher","DOI":"10.1111\/j.1365-2648.2005.03563.x"},{"key":"p_2","doi-asserted-by":"publisher","DOI":"10.1016\/S0304-3959(96)03228-9"},{"key":"p_3","doi-asserted-by":"publisher","DOI":"10.1097\/01.brs.0000206362.03950.5b"},{"key":"p_4","doi-asserted-by":"publisher","DOI":"10.5435\/00124635-200607000-00002"},{"key":"p_5","doi-asserted-by":"publisher","DOI":"10.1111\/j.2044-8341.1988.tb02765.x"},{"key":"p_6","volume-title":"Psycho-oncology","author":"Musselman
-        DL","year":"1998"},{"key":"p_7","volume-title":"Relationship between trait
-        anxiety, brain activity and natural killer cell activity in cancer patients:
-        a preliminary PET study. Psycho-oncology 2001","author":"Tashiro M"},{"key":"p_8","doi-asserted-by":"publisher","DOI":"10.1016\/0140-6736(90)90173-3"},{"key":"p_9","first-page":"R119","volume":"9","author":"Tashiro
-        M","year":"2003","journal-title":"Med Sci Monit"},{"key":"p_10","doi-asserted-by":"publisher","DOI":"10.1016\/S0140-6736(98)11392-2"},{"key":"p_11","doi-asserted-by":"publisher","DOI":"10.1016\/0304-3959(91)90053-Z"},{"key":"p_12","doi-asserted-by":"publisher","DOI":"10.1097\/00007632-200010150-00012"},{"key":"p_13","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2007.07030504"},{"key":"p_14","doi-asserted-by":"publisher","DOI":"10.1146\/annurev.neuro.23.1.155"},{"key":"p_15","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2004.08.042"},{"key":"p_16","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.04.032"},{"key":"p_17","doi-asserted-by":"publisher","DOI":"10.1097\/00005053-198708000-00005"},{"key":"p_18","doi-asserted-by":"publisher","DOI":"10.1016\/S0033-3182(71)71479-0"},{"key":"p_19","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(01)01328-2"},{"key":"p_20","doi-asserted-by":"publisher","DOI":"10.1080\/02699930126048"},{"key":"p_21","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsycho.2006.06.005"},{"key":"p_22","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(02)01458-0"},{"key":"p_23","doi-asserted-by":"publisher","DOI":"10.1016\/S0079-6123(00)26027-5"},{"key":"p_24","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.04.004"},{"key":"p_25","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.06.068"},{"key":"p_26","doi-asserted-by":"publisher","DOI":"10.1038\/nn1176"},{"key":"p_27","first-page":"2701","volume":"15","author":"Lorberbaum
-        JP","year":"2004","journal-title":"Neuroreport"},{"key":"p_28","doi-asserted-by":"publisher","DOI":"10.1097\/00001756-200410050-00024"},{"key":"p_29","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2006.04.038"},{"key":"p_30","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(03)00036-3"},{"key":"p_31","doi-asserted-by":"publisher","DOI":"10.1016\/S0925-4927(00)00055-X"},{"key":"p_32","doi-asserted-by":"publisher","DOI":"10.1176\/jnp.1.4.404"},{"key":"p_33","doi-asserted-by":"publisher","DOI":"10.1176\/ajp.155.9.1178"},{"key":"p_34","doi-asserted-by":"publisher","DOI":"10.1016\/j.jpsychires.2005.08.012"},{"key":"p_35","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(98)00300-X"},{"key":"p_36","doi-asserted-by":"publisher","DOI":"10.1016\/0166-4328(96)82984-6"},{"key":"p_37","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.112660399"},{"key":"p_38","doi-asserted-by":"publisher","DOI":"10.1097\/00001756-200506210-00010"},{"key":"p_39","doi-asserted-by":"publisher","DOI":"10.1136\/jnnp.2003.016485"},{"key":"p_40","doi-asserted-by":"publisher","DOI":"10.1093\/brain\/awh411"},{"key":"p_41","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropsychologia.2004.10.006"},{"key":"p_42","doi-asserted-by":"publisher","DOI":"10.1136\/jnnp.2005.069906"}],"container-title":["The
-        Journal of Neuropsychiatry and Clinical Neurosciences"],"original-title":[],"language":"en","link":[{"URL":"http:\/\/psychiatryonline.org\/doi\/10.1176\/jnp.2009.21.3.307","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,7,24]],"date-time":"2024-07-24T16:23:41Z","timestamp":1721838221000},"score":1,"resource":{"primary":{"URL":"https:\/\/psychiatryonline.org\/doi\/10.1176\/jnp.2009.21.3.307"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2009,7]]},"references-count":42,"journal-issue":{"issue":"3","published-print":{"date-parts":[[2009,7]]}},"alternative-id":["10.1176\/jnp.2009.21.3.307"],"URL":"https:\/\/doi.org\/10.1176\/jnp.2009.21.3.307","relation":{},"ISSN":["0895-0172","1545-7222"],"issn-type":[{"value":"0895-0172","type":"print"},{"value":"1545-7222","type":"electronic"}],"subject":[],"published":{"date-parts":[[2009,7]]}}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '1928'
-      Content-Type:
+      content-type:
       - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
+      date:
+      - Thu, 22 Oct 2026 20:37:10 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -267,7 +202,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
+      - Thu, 22 Oct 2026 20:37:10 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -293,6 +228,57 @@ interactions:
       - 1s
       x-rate-limit-limit:
       - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1176%2Fjnp.2009.21.3.307&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:10 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
     status:
       code: 200
       message: OK
@@ -335,11 +321,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:49 GMT
+      - Thu, 22 Oct 2026 20:37:10 GMT
       ncbi-phid:
-      - 1D3238309BD9AC7500006D8FBA953948.1.1.m_1
+      - 1D3238309BD9AC75000073A04378792B.1.1.m_1
       ncbi-sid:
-      - F0413229F12A7667_2719SID
+      - 6CAFF367853907F3_84B3SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -353,7 +339,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -387,15 +373,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7be3d49a3e976-DFW
+      - a4eb4c6889b966bf-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
+      - Thu, 22 Oct 2026 20:37:11 GMT
       expires:
-      - Thu, 22 Oct 2026 11:03:11 GMT
+      - Thu, 22 Oct 2026 21:27:30 GMT
       location:
       - https://api.crossref.org/v1/works/10.1176%2Fappi.neuropsych.21.3.307/transform
       nel:
@@ -403,7 +389,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=xUlbOLtls35zIp34yXrtvBPWqlfE4sVlOER4kEJyxIRZ2AxoYT1wQwVykLC1KoyRPA%2FNrjA9Db0j2po2wzS6fC2zAhK94ROHzomzGJPLxlyPZxlWLtMXqHE%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=8I7P8PldJHtI3bRo6JslP6inViNL%2FXHIy1AwcVh8rU%2FPGKT4a15iWk9hpHuRBRwcKwuamTuBuc7P7cSDmfAN6c6bDo%2BtSEjAzPTlWKW23cpVIEdBJI4xD2s%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -447,7 +433,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json;charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:15:50 GMT
+      - Thu, 22 Oct 2026 20:37:11 GMT
       permissions-policy:
       - interest-cohort=()
       server:

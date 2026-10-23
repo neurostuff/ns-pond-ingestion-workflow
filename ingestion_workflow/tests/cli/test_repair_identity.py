@@ -541,3 +541,78 @@ def test_an_accepted_version_pair_is_listed_and_does_not_block(tmp_path):
     assert "violation " not in result.output
     assert not [line for line in result.output.splitlines()
                 if line.startswith("pre-existing") and "two-versions" in line]
+
+
+@pytest.mark.vcr()
+def test_a_plan_breaking_an_accepted_pair_is_not_committed(tmp_path):
+    # bdarfou5chmg and nj52vmozfa3k, accepted while each holds a base study; the plan takes
+    # the paper's away
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        paper = cat.register(Identifier(pmid="42230985", pmcid="PMC13387087",
+                                        doi="10.1038/s41366-026-02114-2",
+                                        neurostore="vY5mktCMTn9P")).id
+        cat.register(Identifier(pmid="41674811", pmcid="PMC12889832",
+                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"))
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "remove", "article": paper, "kind": "neurostore",
+                                "value": "vY5mktCMTn9P"}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 1
+    assert [line for line in result.output.splitlines()
+            if line.startswith("violation ") and "two-versions" in line]
+
+
+@pytest.mark.vcr()
+def test_a_download_moved_onto_an_article_with_an_unreadable_one_is_still_checked(tmp_path):
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+        b = cat.register(Identifier(pmcid="PMC5582689", pmid="28290265")).id
+        cat.record([Outcome(a, "download", "ace", Status.OK),
+                    Outcome(b, "download", "pubget", Status.OK, payload={"files": [
+                        {"file_path": "/pubget/articles/pmcid_5582689/tables.xml"}]})])
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "move_artifacts", "from": b, "to": a,
+                                "artifacts": [["download", "pubget"]]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 1
+    assert f"violation {a} download: download/pubget names pmcid PMC5582689, which {b} holds" \
+        in result.output
+
+
+@pytest.mark.vcr()
+def test_a_violation_of_an_article_the_plan_merges_away_is_still_the_one_before(tmp_path):
+    # B holds two PMCIDs and waits for a person; the plan merges it into O, its paper's other
+    config = _config(tmp_path)
+    with Catalog.open(tmp_path / "catalog") as cat:
+        o = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+        b = cat.register(Identifier(pmcid="PMC3189437")).id
+        cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
+        cat._conn.execute("UPDATE articles SET created_at='2000-01-01' WHERE id=?", (o,))
+    plan = tmp_path / "plan.jsonl"
+    plan.write_text(json.dumps({"op": "merge", "articles": [o, b]}) + "\n", encoding="utf-8")
+    result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
+                     "--manifest", tmp_path / "m.jsonl")
+    assert result.exit_code == 0, result.output
+    assert f"pre-existing, not caused by this plan: {o} pmcids:" in result.output
+
+
+def test_a_plan_in_which_an_operation_undoes_another_is_refused_whole(setup):
+    config, tmp_path, ids = setup
+    a = ids["a"]
+    plan = tmp_path / "cycle.jsonl"
+    plan.write_text("".join(json.dumps(line) + "\n" for line in [
+        {"op": "rekind", "article": a, "kind": "doi", "value": "10.1016/j.ajog.2011.02.050"},
+        {"op": "remove", "article": a, "kind": "alternate_doi",
+         "value": "10.1016/j.ajog.2011.02.050"},
+        {"op": "add", "article": a, "kind": "alternate_doi",
+         "value": "10.1016/j.ajog.2011.02.050"},
+    ]), encoding="utf-8")
+    before = _db(tmp_path)
+    result = _invoke(config, plan)
+    assert result.exit_code == 2
+    assert "comes back to" in result.output and a in result.output
+    assert _db(tmp_path) == before

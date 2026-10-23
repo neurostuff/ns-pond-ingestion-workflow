@@ -461,3 +461,112 @@ def test_an_article_holding_only_its_pmid_asks_no_registry_of_pubmed_s_doi(check
     # article holds it, and the article holds no DOI, so no rule has anything to judge
     a = checked.register(Identifier(pmid="16059980")).id
     assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_download_between_two_based_articles_that_are_not_versions_is_a_violation(
+        checked, tmp_path):
+    # mwni3etc4i7l's Elsevier copy is 54xpppoekzpj's paper; each article holds a base study
+    holder = checked.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007",
+                                         neurostore="3Rob7cK8y6gY")).id
+    owner = checked.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015",
+                                        neurostore="AkYZauDLLAS5")).id
+    xml = tmp_path / "elsevier" / "content.xml"
+    xml.parent.mkdir()
+    xml.write_text("<prism:doi>10.1016/j.neuroimage.2004.05.015</prism:doi>")
+    checked.record([Outcome(holder, "download", "elsevier", Status.OK,
+                            payload={"files": [{"file_path": str(xml)}]})])
+    [found] = [v for v in violations(checked, [holder]) if v.rule == "download"]
+    assert owner in found.detail and not found.accepted
+
+
+@pytest.mark.vcr()
+def test_each_download_is_judged_though_another_is_unreadable(checked):
+    # an article's ACE copy has no record; its pubget copy is lg6selcsnr7f's PMC copy
+    a = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    b = checked.register(Identifier(pmcid="PMC5582689", pmid="28290265")).id
+    checked.record([Outcome(a, "download", "ace", Status.OK),
+                    Outcome(a, "download", "pubget", Status.OK, payload={"files": [
+                        {"file_path": "/pubget/articles/pmcid_5582689/tables.xml"}]})])
+    assert sorted(v.rule for v in violations(checked, [a])) == ["download", "download-unreadable"]
+    assert b in next(v.detail for v in violations(checked, [a]) if v.rule == "download")
+
+
+@pytest.mark.vcr()
+def test_a_registry_that_cannot_be_read_judges_nothing(checked):
+    # mxp7s3fbegzb: PubMed's DOI, and the alias spelling no registry describes
+    a = checked.register(Identifier(doi="10.1176/jnp.2009.21.3.307")).id
+    _hold(checked, a, "alternate_doi", "10.1176/appi.neuropsych.21.3.307")
+    assert [v.rule for v in violations(checked, [a])] == ["evidence-unreadable"]
+
+
+@pytest.mark.vcr()
+def test_an_unregistered_alternate_spelling_is_no_other_work(checked):
+    a = checked.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
+    _hold(checked, a, "alternate_doi", "10.137/journal.pone.0066241")
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_pmid_its_own_pmc_record_agrees_with_may_hold_pmc_s_doi_not_pubmed_s(checked):
+    # aucqqxrbcno2: PubMed gives PNAS's issue DOI; the article holds its PMC record's early
+    # edition DOI
+    a = checked.register(
+        Identifier(pmid="10725372", pmcid="PMC16281", doi="10.1073/pnas.050583797")).id
+    assert violations(checked, [a]) == []
+
+
+@pytest.mark.vcr()
+def test_a_preprint_record_s_doi_held_as_an_alternate_is_no_version_of_record_s(checked):
+    # 37808793 is bioRxiv's record of vrr7x2ygtjdt's eLife paper
+    a = checked.register(Identifier(pmid="37808793", doi="10.7554/elife.92563")).id
+    _hold(checked, a, "alternate_doi", "10.1101/2023.09.27.559792")
+    assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
+
+
+@pytest.mark.vcr()
+def test_a_preprint_pmid_s_doi_held_as_an_alternate_is_no_version_of_record_s(checked):
+    a = checked.register(Identifier(pmid="38345852", doi="10.7554/elife.92563")).id
+    _hold(checked, a, "preprint_pmid", "37808793")
+    _hold(checked, a, "alternate_doi", "10.1101/2023.09.27.559792")
+    assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
+
+
+@pytest.mark.vcr()
+def test_two_preprint_pmcids_are_a_violation(checked):
+    a = checked.register(Identifier(doi="10.7554/elife.92563")).id
+    _hold(checked, a, "preprint_pmcid", "PMC10634801")
+    _hold(checked, a, "preprint_pmcid", "PMC10634864")
+    assert (a, "preprint-pmcids") in _rules(violations(checked, [a]))
+
+
+@pytest.mark.vcr()
+def test_a_download_naming_an_id_held_as_a_second_kind_links_its_article(checked):
+    # the other article holds the PMID as its preprint's
+    a = checked.register(Identifier(doi="10.7554/elife.92563")).id
+    _hold(checked, a, "preprint_pmid", "37808793")
+    x = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    checked.record([Outcome(x, "download", "ace", Status.OK,
+                            payload={"files": [{"file_path": "/ace/37808793.html"}]})])
+    index_downloads(checked)
+    assert x in neighbourhood(checked, [a])
+
+
+@pytest.mark.vcr()
+def test_a_paper_s_record_held_as_a_preprint_s_with_its_doi_an_alternate_is_no_vor_violation(
+        checked):
+    # only the article's own PMID's DOI must be its DOI
+    a = checked.register(Identifier(doi=NLM[1])).id
+    _hold(checked, a, "preprint_pmid", BIOPSYCH[0])
+    _hold(checked, a, "alternate_doi", BIOPSYCH[1])
+    assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
+
+
+@pytest.mark.vcr()
+def test_a_preprint_record_held_as_the_preprint_s_finds_its_paper_by_title(checked):
+    # wlvovj2lmdff's bioRxiv record, held only as a preprint's; xxv5qzt4dg7u holds Sci Rep's
+    preprint = checked.register(Identifier(neurostore="3Rob7cK8y6gY")).id
+    _hold(checked, preprint, "preprint_pmid", "36778457")
+    paper = checked.register(Identifier(pmid="38123591", doi="10.1038/s41598-023-49250-7")).id
+    found = [v for v in violations(checked, [preprint]) if v.rule == "two-versions"]
+    assert any(f"PubMed 38123591's work, which {paper} holds" in v.detail for v in found)

@@ -1,0 +1,196 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works/10.1016/j.neuropsychologia.2011.03.007
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,27]],"date-time":"2026-09-27T08:41:22Z","timestamp":1790498482861,"version":"4.1.0"},"reference-count":44,"publisher":"Elsevier
+        BV","issue":"7","license":[{"start":{"date-parts":[[2011,6,1]],"date-time":"2011-06-01T00:00:00Z","timestamp":1306886400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"funder":[{"name":"National
+        Science Foundation","award":["BCS 0542694"],"award-info":[{"award-number":["BCS
+        0542694"]}]},{"DOI":"10.13039\/100000025","name":"National Institute of Mental
+        Health","doi-asserted-by":"crossref","award":["MH080833"],"award-info":[{"award-number":["MH080833"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"crossref"}]}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Neuropsychologia"],"published-print":{"date-parts":[[2011,6]]},"DOI":"10.1016\/j.neuropsychologia.2011.03.007","type":"journal-article","created":{"date-parts":[[2011,3,16]],"date-time":"2011-03-16T08:16:52Z","timestamp":1300263412000},"page":"1831-1842","source":"Crossref","is-referenced-by-count":54,"title":["How
+        emotion leads to selective memory: Neuroimaging evidence"],"prefix":"10.1016","volume":"49","author":[{"given":"Jill
+        D.","family":"Waring","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elizabeth
+        A.","family":"Kensinger","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0005","doi-asserted-by":"crossref","first-page":"983","DOI":"10.1037\/0735-7044.115.5.983","article-title":"The
+        amygdala''s role in long-term declarative memory for gist and detail","volume":"115","author":"Adolphs","year":"2001","journal-title":"Behavioral
+        Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0010","doi-asserted-by":"crossref","first-page":"512","DOI":"10.1038\/nn1413","article-title":"Amygdala
+        damage impairs emotional memory for gist but not details of complex stimuli","volume":"8","author":"Adolphs","year":"2005","journal-title":"Nature
+        Neuroscience"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0015","doi-asserted-by":"crossref","first-page":"893","DOI":"10.1037\/0022-006X.56.6.893","article-title":"An
+        inventory for measuring clinical anxiety: Psychometric properties","volume":"56","author":"Beck","year":"1988","journal-title":"Journal
+        of Consulting and Clinical Psychology"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0020","series-title":"Manual
+        for the Beck Depression Inventory","author":"Beck","year":"1993"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0025","series-title":"Region
+        of interest analysis using an SPM toolbox [Abstract] (Vol. 16). Presented
+        at the 8th International Conference on Functional Mapping of the Human Brain,
+        Sendai, Japan","author":"Brett","year":"2002"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0030","doi-asserted-by":"crossref","first-page":"73","DOI":"10.1016\/0010-0277(77)90018-X","article-title":"Flashbulb
+        memories","volume":"5","author":"Brown","year":"1977","journal-title":"Cognition"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0035","doi-asserted-by":"crossref","first-page":"277","DOI":"10.3758\/BF03199665","article-title":"Remembering
+        emotional events","volume":"20","author":"Burke","year":"1992","journal-title":"Memory
+        and Cognition"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0040","doi-asserted-by":"crossref","first-page":"693","DOI":"10.1037\/0278-7393.17.4.693","article-title":"Eye
+        fixations and memory for emotional events","volume":"17","author":"Christianson","year":"1991","journal-title":"Journal
+        of Experimental Psychology. Learning, Memory, and Cognition"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0045","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1037\/1528-3542.4.2.173","article-title":"Influence
+        of affective meaning on memory for contextual information","volume":"4","author":"D\u2019Argembeau","year":"2004","journal-title":"Emotion"},{"issue":"2\u20133","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0050","doi-asserted-by":"crossref","first-page":"109","DOI":"10.1002\/(SICI)1097-0193(1999)8:2\/3<109::AID-HBM7>3.0.CO;2-W","article-title":"Optimal
+        experimental design for event-related fMRI","volume":"8","author":"Dale","year":"1999","journal-title":"Human
+        Brain Mapping"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0055","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1037\/1528-3542.1.1.5","article-title":"Source
+        memory enhancement for emotional words","volume":"1","author":"Doerksen","year":"2001","journal-title":"Emotion"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0060","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1016\/j.neuroimage.2004.05.015","article-title":"Dissociable
+        effects of arousal and valence on prefrontal activity indexing emotional evaluation
+        and subsequent memory: An event-related fMRI study","volume":"23","author":"Dolcos","year":"2004","journal-title":"NeuroImage"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0065","doi-asserted-by":"crossref","first-page":"190","DOI":"10.1016\/j.tics.2007.01.007","article-title":"The
+        role of the amygdala in visual awareness","volume":"11","author":"Duncan","year":"2007","journal-title":"Trends
+        in Cognitive Sciences"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0070","doi-asserted-by":"crossref","first-page":"183","DOI":"10.1037\/h0047707","article-title":"The
+        effect of emotion on cue utilization and the organization of behavior","volume":"66","author":"Easterbrook","year":"1959","journal-title":"Psychological
+        Review"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0075","doi-asserted-by":"crossref","first-page":"847","DOI":"10.1016\/j.neuropsychologia.2004.09.014","article-title":"The
+        neural origins of specific and general memory: The role of the fusiform cortex","volume":"43","author":"Garoff","year":"2005","journal-title":"Neuropsychologia"},{"issue":"9","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0080","doi-asserted-by":"crossref","first-page":"394","DOI":"10.1016\/S1364-6613(00)01707-1","article-title":"Cognitive
+        and neural mechanisms of emotional memory","volume":"5","author":"Hamann","year":"2001","journal-title":"Trends
+        in Cognitive Sciences"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0085","doi-asserted-by":"crossref","first-page":"289","DOI":"10.1038\/6404","article-title":"Amygdala
+        activity related to enhanced memory for pleasant and aversive stimuli","volume":"2","author":"Hamann","year":"1999","journal-title":"Nature
+        Neuroscience"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0090","doi-asserted-by":"crossref","first-page":"496","DOI":"10.3758\/BF03198482","article-title":"Vivid
+        memories of emotional events: The accuracy of remembered minutiae","volume":"18","author":"Heuer","year":"1990","journal-title":"Memory
+        and Cognition"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0095","doi-asserted-by":"crossref","first-page":"241","DOI":"10.1515\/REVNEURO.2004.15.4.241","article-title":"Remembering
+        emotional experiences: The contribution of valence and arousal","volume":"15","author":"Kensinger","year":"2004","journal-title":"Reviews
+        in the Neurosciences"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0100","doi-asserted-by":"crossref","first-page":"99","DOI":"10.1016\/j.jml.2005.05.005","article-title":"Memory
+        for specific visual details can be enhanced by negative arousing content","volume":"54","author":"Kensinger","year":"2006","journal-title":"Journal
+        of Memory and Language"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0105","doi-asserted-by":"crossref","first-page":"575","DOI":"10.1016\/j.jml.2006.05.004","article-title":"Effects
+        of emotion on memory specificity: Memory trade-offs elicited by negative visually
+        arousing stimuli","volume":"56","author":"Kensinger","year":"2007","journal-title":"Journal
+        of Memory and Language"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0110","doi-asserted-by":"crossref","first-page":"208","DOI":"10.1093\/geronb\/62.4.P208","article-title":"Effects
+        of emotion on memory specificity in young and older adults","volume":"62","author":"Kensinger","year":"2007","journal-title":"Journals
+        of Gerontology Series B"},{"issue":"11","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0115","doi-asserted-by":"crossref","first-page":"1872","DOI":"10.1162\/jocn.2007.19.11.1872","article-title":"How
+        negative emotion enhances the visual specificity of a memory","volume":"19","author":"Kensinger","year":"2007","journal-title":"Journal
+        of Cognitive Neuroscience"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0125","doi-asserted-by":"crossref","first-page":"241","DOI":"10.1037\/0882-7974.20.2.241","article-title":"Memory
+        for contextual details: Effects of emotion and aging","volume":"20","author":"Kensinger","year":"2005","journal-title":"Psychology
+        and Aging"},{"issue":"9","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0130","doi-asserted-by":"crossref","first-page":"2564","DOI":"10.1523\/JNEUROSCI.5241-05.2006","article-title":"Amygdala
+        activity is associated with the successful encoding of item, but not source,
+        information for positive and negative stimuli","volume":"26","author":"Kensinger","year":"2006","journal-title":"Journal
+        of Neuroscience"},{"issue":"7","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0140","doi-asserted-by":"crossref","first-page":"1161","DOI":"10.1162\/jocn.2008.20080","article-title":"Neural
+        processes supporting young and older adults\u2019 emotional memories","volume":"20","author":"Kensinger","year":"2008","journal-title":"Journal
+        of Cognitive Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0145","series-title":"International
+        affective picture system (IAPS): Technical manual and affective ratings","author":"Lang","year":"1997"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0150","doi-asserted-by":"crossref","first-page":"559","DOI":"10.1080\/02699930341000446","article-title":"Painting
+        with broad strokes: Happiness and the malleability of event memory","volume":"18","author":"Levine","year":"2004","journal-title":"Cognition
+        and Emotion"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0155","doi-asserted-by":"crossref","first-page":"833","DOI":"10.1080\/02699930902738863","article-title":"Emotion
+        and memory narrowing: A review and goal-relevance approach","volume":"23","author":"Levine","year":"2009","journal-title":"Cognition
+        and Emotion"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0160","doi-asserted-by":"crossref","first-page":"166","DOI":"10.3758\/BF03201222","article-title":"Source
+        of arousal and memory for detail","volume":"27","author":"Libkuman","year":"1999","journal-title":"Memory
+        and Cognition"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0165","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1080\/09658210244000630","article-title":"Arousal,
+        valence, and memory for detail","volume":"12","author":"Libkuman","year":"2004","journal-title":"Memory"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0170","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1111\/j.1745-6916.2007.00028.x","article-title":"Emotional
+        arousal and memory binding: An object-based framework","volume":"2","author":"Mather","year":"2007","journal-title":"Perspectives
+        on Psychological Science"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0175","doi-asserted-by":"crossref","first-page":"349","DOI":"10.2307\/27784408","article-title":"The
+        limits of arousal''s memory-impairing effects on nearby information","volume":"122","author":"Mather","year":"2009","journal-title":"American
+        Journal of Psychology"},{"issue":"4","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0180","doi-asserted-by":"crossref","first-page":"614","DOI":"10.1162\/jocn.2006.18.4.614","article-title":"Emotional
+        arousal can impair feature binding in working memory","volume":"18","author":"Mather","year":"2006","journal-title":"Journal
+        of Cognitive Neuroscience"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0185","doi-asserted-by":"crossref","first-page":"1190","DOI":"10.1111\/j.1469-8986.2009.00868.x","article-title":"The
+        effects of valence and arousal on the neural activity leading to subsequent
+        memory","volume":"46","author":"Mickley","year":"2009","journal-title":"Psychophysiology"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0190","doi-asserted-by":"crossref","first-page":"31","DOI":"10.1016\/S0926-6410(02)00214-8","article-title":"Attentional
+        control of the processing of neural and emotional stimuli","volume":"15","author":"Pessoa","year":"2002","journal-title":"Cognitive
+        Brain Research"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0195","series-title":"Memory
+        and emotion","first-page":"3","article-title":"Memory for emotional events","author":"Reisberg","year":"2004"},{"issue":"6","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0200","doi-asserted-by":"crossref","first-page":"1161","DOI":"10.1037\/h0077714","article-title":"A
+        circumplex model of affect","volume":"39","author":"Russell","year":"1980","journal-title":"Journal
+        of Personality and Social Psychology"},{"issue":"1","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0205","doi-asserted-by":"crossref","first-page":"75","DOI":"10.1016\/S0926-6410(03)00082-X","article-title":"Distinct
+        prefrontal cortex activity associated with item memory and source memory for
+        visual shapes","volume":"17","author":"Slotnick","year":"2003","journal-title":"Cognitive
+        Brain Research"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0210","doi-asserted-by":"crossref","first-page":"172","DOI":"10.1101\/lm.722908","article-title":"Immediate
+        memory consequences of the effect of emotion on attention to pictures","volume":"15","author":"Talmi","year":"2008","journal-title":"Learning
+        and Memory"},{"issue":"5","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0215","doi-asserted-by":"crossref","first-page":"742","DOI":"10.3758\/BF03195864","article-title":"Can
+        semantic relatedness explain the enhancement of memory for emotional words?","volume":"32","author":"Talmi","year":"2004","journal-title":"Memory
+        and Cognition"},{"key":"10.1016\/j.neuropsychologia.2011.03.007_bib0220","series-title":"Co-planar
+        stereotaxic atlas of the human brain","author":"Talairach","year":"1988"},{"issue":"3","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0225","doi-asserted-by":"crossref","first-page":"829","DOI":"10.1016\/S0896-6273(01)00328-2","article-title":"Effects
+        of attention and emotion on face processing in the human brain: An event-related
+        fMRI study","volume":"30","author":"Vuilleumier","year":"2001","journal-title":"Neuron"},{"issue":"2","key":"10.1016\/j.neuropsychologia.2011.03.007_bib0230","doi-asserted-by":"crossref","first-page":"412","DOI":"10.1037\/a0015526","article-title":"Effects
+        of emotional valence and arousal upon memory trade-offs with aging","volume":"24","author":"Waring","year":"2009","journal-title":"Psychology
+        and Aging"}],"container-title":["Neuropsychologia"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0028393211001369?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0028393211001369?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2023,6,5]],"date-time":"2023-06-05T19:29:55Z","timestamp":1685993395000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0028393211001369"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2011,6]]},"references-count":44,"journal-issue":{"issue":"7","published-print":{"date-parts":[[2011,6]]}},"alternative-id":["S0028393211001369"],"URL":"https:\/\/doi.org\/10.1016\/j.neuropsychologia.2011.03.007","relation":{},"ISSN":["0028-3932"],"issn-type":[{"value":"0028-3932","type":"print"}],"subject":[],"published":{"date-parts":[[2011,6]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4252'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Oct 2026 20:27:19 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.neuropsychologia.2011.03.007&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:27:19 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

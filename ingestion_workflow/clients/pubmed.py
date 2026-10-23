@@ -64,6 +64,8 @@ class PubMedSummary:
     #: The journal's print and electronic ISSNs, and its name.
     issns: Tuple[str, ...] = ()
     journal: Optional[str] = None
+    #: Published in a supplement issue: a meeting's abstracts.
+    supplement: bool = False
 
     @property
     def preprint(self) -> bool:
@@ -76,6 +78,17 @@ class PmcRecord:
 
     pmid: Optional[str]
     doi: Optional[str]
+
+
+_SUPPLEMENT_ISSUE = re.compile(r"suppl|^s\d|^s$|\ds(\b|_)", re.IGNORECASE)
+_SUPPLEMENT_PAGE = re.compile(r"^s-?\d", re.IGNORECASE)
+
+
+def in_supplement(issue, volume, page) -> bool:
+    """Whether an issue, volume or first page is a supplement's ("S1", "4S_Part_9",
+    "Suppl 2", page "S744"), where a journal prints a meeting's abstracts."""
+    return (any(bool(_SUPPLEMENT_ISSUE.search(str(v))) for v in (issue, volume) if v)
+            or bool(page and _SUPPLEMENT_PAGE.search(str(page))))
 
 
 def _year(date: Optional[str]) -> Optional[int]:
@@ -585,6 +598,8 @@ class PubMedClient:
                 year=_year(record.get("pubdate")),
                 issns=tuple(i for i in (record.get("issn"), record.get("essn")) if i),
                 journal=record.get("fulljournalname") or None,
+                supplement=in_supplement(record.get("issue"), record.get("volume"),
+                                         record.get("pages")),
             )
         return found
 

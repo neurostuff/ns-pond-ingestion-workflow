@@ -40,11 +40,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:40 GMT
+      - Thu, 22 Oct 2026 20:37:22 GMT
       ncbi-phid:
-      - 1D348A0161E73355000062A664CC960A.1.1.m_1
+      - 1D3238309BD9AC75000070A05C9480D5.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -58,7 +58,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -136,11 +136,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:40 GMT
+      - Thu, 22 Oct 2026 20:37:22 GMT
       ncbi-phid:
-      - 1D348A0161E73355000042A665DAFD57.1.1.m_1
+      - 1D3238309BD9AC75000074A05D07FD57.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -154,7 +154,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -299,7 +299,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
+      - Thu, 22 Oct 2026 20:37:23 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -329,143 +329,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.ajog.2011.02.050
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.ajog.2011.02.050&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,10,8]],"date-time":"2026-10-08T01:58:49Z","timestamp":1791424729232,"version":"4.3.3"},"reference-count":37,"publisher":"Elsevier
-        BV","issue":"1","license":[{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-017"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-037"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-012"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-029"},{"start":{"date-parts":[[2011,7,1]],"date-time":"2011-07-01T00:00:00Z","timestamp":1309478400000},"content-version":"stm-asf","delay-in-days":0,"URL":"https:\/\/doi.org\/10.15223\/policy-004"}],"content-domain":{"domain":["ajog.org","clinicalkey.com","clinicalkey.com.au","clinicalkey.es","clinicalkey.fr","clinicalkey.jp","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["American
-        Journal of Obstetrics and Gynecology"],"published-print":{"date-parts":[[2011,7]]},"DOI":"10.1016\/j.ajog.2011.02.050","type":"journal-article","created":{"date-parts":[[2011,2,24]],"date-time":"2011-02-24T08:43:46Z","timestamp":1298537026000},"page":"43.e1-43.e8","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":105,"title":["Congenital
-        diaphragmatic hernia: lung-to-head ratio and lung volume for prediction of
-        outcome"],"prefix":"10.1016","volume":"205","author":[{"given":"Malikah A.","family":"Alfaraj","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Prakesh
-        S.","family":"Shah","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Desmond","family":"Bohn","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Sophia","family":"Pantazi","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Karel","family":"O''Brien","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Priscilla
-        P.","family":"Chiu","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Rose","family":"Gaiteiro","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Greg","family":"Ryan","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"key":"10.1016\/j.ajog.2011.02.050_bib1","doi-asserted-by":"crossref","first-page":"18","DOI":"10.1002\/uog.2688","article-title":"Prenatal
-        prediction of survival in isolated left-sided diaphragmatic hernia","volume":"27","author":"Jani","year":"2006","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib2","doi-asserted-by":"crossref","first-page":"888","DOI":"10.1016\/j.jpedsurg.2006.01.026","article-title":"The
-        price of success in the management of congenital diaphragmatic hernia: is
-        improved survival accompanied by an increase in long-term morbidity?","volume":"41","author":"Chiu","year":"2006","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib3","doi-asserted-by":"crossref","first-page":"422.e1","DOI":"10.1016\/j.ajog.2007.07.001","article-title":"Liver
-        position and lung-to-head ratio for prediction of extracorporeal membrane
-        oxygenation and survival in isolated left congenital diaphragmatic hernia","volume":"197","author":"Hedrick","year":"2007","journal-title":"Am
-        J Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib4","doi-asserted-by":"crossref","first-page":"592","DOI":"10.1002\/pd.2007","article-title":"Postnatal
-        management and long-term outcome for survivors with congenital diaphragmatic
-        hernia","volume":"28","author":"Chiu","year":"2008","journal-title":"Prenat
-        Diagn"},{"key":"10.1016\/j.ajog.2011.02.050_bib5","doi-asserted-by":"crossref","first-page":"319","DOI":"10.1017\/S096553950999012X","article-title":"Contemporary
-        neonatal intensive care management in congenital diaphragmatic hernia: does
-        this obviate the need for fetal therapy","volume":"20","author":"Bohn","year":"2009","journal-title":"Fetal
-        and Maternal Medicine Review"},{"key":"10.1016\/j.ajog.2011.02.050_bib6","doi-asserted-by":"crossref","first-page":"395","DOI":"10.1016\/S0022-3468(97)90589-3","article-title":"Congenital
-        diaphragmatic hernia: a tale of two cities: the Toronto experience","volume":"32","author":"Azarow","year":"1997","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib7","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.siny.2009.07.012","article-title":"Management
-        of prenatally diagnosed congenital diaphragmatic hernia","volume":"15","author":"Hedrick","year":"2010","journal-title":"Semin
-        Fetal Neonatal Med"},{"key":"10.1016\/j.ajog.2011.02.050_bib8","doi-asserted-by":"crossref","first-page":"148","DOI":"10.1016\/S0022-3468(96)90338-3","article-title":"Sonographic
-        predictors of survival in fetal diaphragmatic hernia","volume":"31","author":"Metkus","year":"1996","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib9","doi-asserted-by":"crossref","first-page":"1634","DOI":"10.1016\/S0022-3468(97)90471-1","article-title":"Prospective
-        analysis of lung-to-head ratio predicts survival for patients with prenatally
-        diagnosed congenital diaphragmatic hernia","volume":"32","author":"Lipshutz","year":"1997","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib10","doi-asserted-by":"crossref","first-page":"1017","DOI":"10.1016\/S0022-3468(98)90524-3","article-title":"Correction
-        of congenital diaphragmatic hernia in utero IX: fetuses with poor prognosis
-        (liver herniation and low lung-to-head ratio) can be saved by fetoscopic temporary
-        tracheal occlusion","volume":"33","author":"Harrison","year":"1998","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib11","doi-asserted-by":"crossref","first-page":"1059","DOI":"10.1067\/mob.2000.108871","article-title":"Treatment
-        of severe congenital diaphragmatic hernia by fetal tracheal occlusion: clinical
-        experience with fifteen cases","volume":"183","author":"Flake","year":"2000","journal-title":"Am
-        J Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib12","doi-asserted-by":"crossref","first-page":"845","DOI":"10.7863\/jum.2000.19.12.845","article-title":"Congenital
-        diaphragmatic hernia without herniation of the liver: does the lung-to-head
-        ratio predict survival?","volume":"19","author":"Sbragia","year":"2000","journal-title":"J
-        Ultrasound Med"},{"key":"10.1016\/j.ajog.2011.02.050_bib13","doi-asserted-by":"crossref","first-page":"634","DOI":"10.1002\/pd.654","article-title":"Congenital
-        diaphragmatic hernia: an evaluation of the prognostic value of the lung-to-head
-        ratio and other prenatal parameters","volume":"23","author":"Laudy","year":"2003","journal-title":"Prenat
-        Diagn"},{"key":"10.1016\/j.ajog.2011.02.050_bib14","doi-asserted-by":"crossref","first-page":"112","DOI":"10.1002\/uog.1837","article-title":"Reliability
-        of the lung-to-head ratio in predicting outcome and neonatal ventilation parameters
-        in fetuses with congenital diaphragmatic hernia","volume":"25","author":"Heling","year":"2005","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib15","doi-asserted-by":"crossref","first-page":"30.e1","DOI":"10.1016\/j.ajog.2007.01.016","article-title":"Reliability
-        of the lung-to-head ratio as a predictor of outcome in fetuses with isolated
-        left congenital diaphragmatic hernia at gestation outside 24-26 weeks","volume":"197","author":"Yang","year":"2007","journal-title":"Am
-        J Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib16","doi-asserted-by":"crossref","first-page":"80.e1","DOI":"10.1016\/j.ajog.2007.06.069","article-title":"Prenatal
-        prognosis in isolated congenital diaphragmatic hernia","volume":"198","author":"Datin-Dorriere","year":"2008","journal-title":"Am
-        J Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib17","doi-asserted-by":"crossref","first-page":"312","DOI":"10.1016\/j.jpedsurg.2008.10.078","article-title":"Congenital
-        diaphragmatic hernia: prognostic indices in the fetal endoluminal tracheal
-        occlusion era","volume":"44","author":"Sinha","year":"2009","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib18","doi-asserted-by":"crossref","first-page":"897","DOI":"10.1002\/uog.5164","article-title":"How
-        useful is the lung-to-head ratio in predicting outcome in the fetus with congenital
-        diaphragmatic hernia?","volume":"30","author":"Ba''ath","year":"2007","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib19","doi-asserted-by":"crossref","first-page":"718","DOI":"10.1002\/uog.2651","article-title":"Assessment
-        of lung area in normal fetuses at 12-32 weeks","volume":"26","author":"Peralta","year":"2005","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib20","doi-asserted-by":"crossref","first-page":"545","DOI":"10.1002\/uog.2735","article-title":"Relationship
-        between lung-to-head ratio and lung volume in normal fetuses and fetuses with
-        diaphragmatic hernia","volume":"27","author":"Jani","year":"2006","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib21","doi-asserted-by":"crossref","first-page":"67","DOI":"10.1002\/uog.4052","article-title":"Observed
-        to expected lung area to head circumference ratio in the prediction of survival
-        in fetuses with isolated diaphragmatic hernia","volume":"30","author":"Jani","year":"2007","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib22","doi-asserted-by":"crossref","first-page":"1067","DOI":"10.1067\/mob.2000.108895","article-title":"Assessment
-        of fetal lung volumes and liver herniation with magnetic resonance imaging
-        in congenital diaphragmatic hernia","volume":"183","author":"Walsh","year":"2000","journal-title":"Am
-        J Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib23","doi-asserted-by":"crossref","first-page":"1307","DOI":"10.2214\/AJR.07.2434","article-title":"Prediction
-        of mortality and need for neonatal extracorporeal membrane oxygenation in
-        fetuses with congenital diaphragmatic hernia: logistic regression analysis
-        based on MRI fetal lung volume measurements","volume":"189","author":"Neff","year":"2007","journal-title":"AJR
-        Am J Roentgenol"},{"key":"10.1016\/j.ajog.2011.02.050_bib24","doi-asserted-by":"crossref","first-page":"793","DOI":"10.1002\/uog.6234","article-title":"Value
-        of prenatal magnetic resonance imaging in the prediction of postnatal outcome
-        in fetuses with diaphragmatic hernia","volume":"32","author":"Jani","year":"2008","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib25","doi-asserted-by":"crossref","first-page":"633","DOI":"10.1002\/uog.6139","article-title":"Prenatal
-        prediction of survival in isolated diaphragmatic hernia using observed to
-        expected total fetal lung volume determined by magnetic resonance imaging
-        based on either gestational age or fetal body volume","volume":"32","author":"Cannie","year":"2008","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib26","doi-asserted-by":"crossref","first-page":"240","DOI":"10.1148\/radiol.2481070952","article-title":"MR
-        relative fetal lung volume in congenital diaphragmatic hernia: survival and
-        need for extracorporeal membrane oxygenation","volume":"248","author":"Busing","year":"2008","journal-title":"Radiology"},{"key":"10.1016\/j.ajog.2011.02.050_bib27","doi-asserted-by":"crossref","first-page":"153","DOI":"10.2214\/AJR.08.1082","article-title":"Congenital
-        diaphragmatic hernia: predictive value of MRI relative lung-to-head ratio
-        compared with MRI fetal lung volume and sonographic lung-to-head ratio","volume":"192","author":"Kilian","year":"2009","journal-title":"AJR
-        Am J Roentgenol"},{"key":"10.1016\/j.ajog.2011.02.050_bib28","doi-asserted-by":"crossref","first-page":"609","DOI":"10.1002\/uog.7586","article-title":"Value
-        of liver herniation in prediction of outcome in fetal congenital diaphragmatic
-        hernia: a systematic review and meta-analysis","volume":"35","author":"Mullassery","year":"2010","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib29","doi-asserted-by":"crossref","first-page":"1916","DOI":"10.1056\/NEJMoa035005","article-title":"A
-        randomized trial of fetal endoscopic tracheal occlusion for severe fetal congenital
-        diaphragmatic hernia","volume":"349","author":"Harrison","year":"2003","journal-title":"N
-        Engl J Med"},{"key":"10.1016\/j.ajog.2011.02.050_bib30","doi-asserted-by":"crossref","first-page":"94","DOI":"10.1053\/j.semperi.2005.04.006","article-title":"Fetal
-        intervention for congenital diaphragmatic hernia: the European experience","volume":"29","author":"Deprest","year":"2005","journal-title":"Semin
-        Perinatol"},{"key":"10.1016\/j.ajog.2011.02.050_bib31","doi-asserted-by":"crossref","first-page":"910","DOI":"10.1097\/01.grf.0000184774.02793.0c","article-title":"Percutaneous
-        fetal endoscopic tracheal occlusion (FETO) for severe left-sided congenital
-        diaphragmatic hernia","volume":"48","author":"Jani","year":"2005","journal-title":"Clin
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib32","doi-asserted-by":"crossref","first-page":"304","DOI":"10.1002\/uog.6450","article-title":"Severe
-        diaphragmatic hernia treated by fetal endoscopic tracheal occlusion","volume":"34","author":"Jani","year":"2009","journal-title":"Ultrasound
-        Obstet Gynecol"},{"key":"10.1016\/j.ajog.2011.02.050_bib33","doi-asserted-by":"crossref","first-page":"112","DOI":"10.1002\/ppul.20915","article-title":"The
-        effect of fetal tracheal occlusion on lung tissue mechanics and tissue composition","volume":"44","author":"Jani","year":"2009","journal-title":"Pediatr
-        Pulmonol"},{"key":"10.1016\/j.ajog.2011.02.050_bib34","doi-asserted-by":"crossref","first-page":"8","DOI":"10.1016\/j.siny.2008.08.010","article-title":"Antenatal
-        prediction of lung volume and in-utero treatment by fetal endoscopic tracheal
-        occlusion in severe isolated congenital diaphragmatic hernia","volume":"14","author":"Deprest","year":"2009","journal-title":"Semin
-        Fetal Neonatal Med"},{"key":"10.1016\/j.ajog.2011.02.050_bib35","doi-asserted-by":"crossref","first-page":"236","DOI":"10.1148\/radiology.219.1.r01ap18236","article-title":"Fetal
-        lung volume: estimation at MR imaging-initial results","volume":"219","author":"Rypens","year":"2001","journal-title":"Radiology"},{"key":"10.1016\/j.ajog.2011.02.050_bib36","doi-asserted-by":"crossref","first-page":"877","DOI":"10.1016\/j.jpedsurg.2009.01.046","article-title":"Absolute
-        vs relative improvements in congenital diaphragmatic hernia survival: what
-        happened to \u201chidden mortality.\u201d","volume":"44","author":"Mah","year":"2009","journal-title":"J
-        Pediatr Surg"},{"key":"10.1016\/j.ajog.2011.02.050_bib37","doi-asserted-by":"crossref","first-page":"40","DOI":"10.1159\/000315889","article-title":"Are
-        we making a real difference?","volume":"29","author":"Mah","year":"2011","journal-title":"Fetal
-        Diagn Ther"}],"container-title":["American Journal of Obstetrics and Gynecology"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0002937811002407?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0002937811002407?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,9,11]],"date-time":"2025-09-11T10:42:47Z","timestamp":1757587367000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0002937811002407"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2011,7]]},"references-count":37,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2011,7]]}},"alternative-id":["S0002937811002407"],"URL":"https:\/\/doi.org\/10.1016\/j.ajog.2011.02.050","relation":{},"ISSN":["0002-9378"],"issn-type":[{"value":"0002-9378","type":"print"}],"subject":[],"published":{"date-parts":[[2011,7]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
-        article is maintained by"},{"value":"Congenital diaphragmatic hernia: lung-to-head
-        ratio and lung volume for prediction of outcome","name":"articletitle","label":"Article
-        Title"},{"value":"American Journal of Obstetrics and Gynecology","name":"journaltitle","label":"Journal
-        Title"},{"value":"https:\/\/doi.org\/10.1016\/j.ajog.2011.02.050","name":"articlelink","label":"CrossRef
-        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
-        Type"},{"value":"Copyright \u00a9 2011 Mosby, Inc. All rights reserved.","name":"copyright","label":"Copyright"}]}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '4015'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -473,24 +354,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:23 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -623,7 +508,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
+      - Thu, 22 Oct 2026 20:37:23 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -653,135 +538,24 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.apmr.2010.12.021
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.apmr.2010.12.021&rows=100&select=DOI%2Crelation
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,29]],"date-time":"2026-09-29T14:42:53Z","timestamp":1790692973615,"version":"4.1.0"},"reference-count":40,"publisher":"Elsevier
-        BV","issue":"6","license":[{"start":{"date-parts":[[2011,6,1]],"date-time":"2011-06-01T00:00:00Z","timestamp":1306886400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Archives
-        of Physical Medicine and Rehabilitation"],"published-print":{"date-parts":[[2011,6]]},"DOI":"10.1016\/j.apmr.2010.12.021","type":"journal-article","created":{"date-parts":[[2011,5,9]],"date-time":"2011-05-09T08:10:34Z","timestamp":1304928634000},"page":"929-934","source":"Crossref","is-referenced-by-count":79,"title":["Is
-        There Altered Activity of the Extensor Muscles in Chronic Mechanical Neck
-        Pain? A Functional Magnetic Resonance Imaging Study"],"prefix":"10.1016","volume":"92","author":[{"given":"Shaun","family":"O''Leary","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Barbara","family":"Cagnie","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Ashton","family":"Reeve","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Gwendolen","family":"Jull","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"James
-        M.","family":"Elliott","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"key":"10.1016\/j.apmr.2010.12.021_bib1","doi-asserted-by":"crossref","first-page":"267","DOI":"10.1016\/j.pain.2004.09.004","article-title":"The
-        annual incidence and course of neck pain in the general population: a population-based
-        cohort study","volume":"112","author":"C\u00f4t\u00e9","year":"2004","journal-title":"Pain"},{"key":"10.1016\/j.apmr.2010.12.021_bib2","doi-asserted-by":"crossref","first-page":"891","DOI":"10.1111\/j.1468-2982.2007.01346.x","article-title":"Cervical
-        musculoskeletal impairment in frequent intermittent headache","volume":"27","author":"Amiri","year":"2007","journal-title":"Cephalalgia"},{"key":"10.1016\/j.apmr.2010.12.021_bib3","doi-asserted-by":"crossref","first-page":"258","DOI":"10.1016\/j.math.2007.01.012","article-title":"MRI
-        study of the cross-sectional area for the cervical extensor musculature in
-        patients with persistent whiplash associated disorders (WAD)","volume":"13","author":"Elliott","year":"2008","journal-title":"Man
-        Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib4","doi-asserted-by":"crossref","first-page":"175","DOI":"10.2519\/jospt.2008.2598","article-title":"Cross-sectional
-        area of cervical multifidus muscle in females with chronic bilateral neck
-        pain compared to controls","volume":"38","author":"Fern\u00e1ndez-de-las-Pe\u00f1as","year":"2008","journal-title":"J
-        Orthop Sports Phys Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib5","doi-asserted-by":"crossref","first-page":"355","DOI":"10.1111\/j.1468-2982.2007.01293.x","article-title":"Magnetic
-        resonance imaging study of the morphometry of cervical extensor muscles in
-        chronic tension-type headache","volume":"27","author":"Fern\u00e1ndez-de-Las-Pe\u00f1as","year":"2007","journal-title":"Cephalalgia"},{"key":"10.1016\/j.apmr.2010.12.021_bib6","doi-asserted-by":"crossref","first-page":"793","DOI":"10.1111\/j.1468-2982.2007.01345.x","article-title":"Cervical
-        musculoskeletal impairment in frequent intermittent headache","volume":"27","author":"Jull","year":"2007","journal-title":"Cephalalgia"},{"key":"10.1016\/j.apmr.2010.12.021_bib7","series-title":"Whiplash,
-        headache and neck pain: research based directions for physical therapies","author":"Jull","year":"2008"},{"key":"10.1016\/j.apmr.2010.12.021_bib8","doi-asserted-by":"crossref","first-page":"83","DOI":"10.1016\/S1356-689X(03)00059-6","article-title":"Reliability
-        of ultrasonography for the cervical multifidus muscle in asymptomatic and
-        symptomatic subjects","volume":"9","author":"Kristjansson","year":"2004","journal-title":"Man
-        Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib9","doi-asserted-by":"crossref","first-page":"240","DOI":"10.1002\/jor.1100130212","article-title":"Fiber
-        composition and fiber transformations in neck muscles of patients with dysfunction
-        of the cervical spine","volume":"13","author":"Uhlig","year":"1995","journal-title":"J
-        Orthop Res"},{"key":"10.1016\/j.apmr.2010.12.021_bib10","doi-asserted-by":"crossref","first-page":"1441","DOI":"10.1016\/j.apmr.2007.06.776","article-title":"Differences
-        in isometric neck muscle strength between healthy controls and women with
-        chronic neck pain: the use of a reliable measurement","volume":"88","author":"Cagnie","year":"2007","journal-title":"Arch
-        Phys Med Rehabil"},{"key":"10.1016\/j.apmr.2010.12.021_bib11","first-page":"468","article-title":"A
-        comparison of physical characteristics between patients seeking treatment
-        for neck pain and aged-matched healthy people","volume":"20","author":"Jordan","year":"1997","journal-title":"J
-        Manipulative Physiol Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib12","doi-asserted-by":"crossref","first-page":"25","DOI":"10.1016\/j.jmpt.2004.12.005","article-title":"Neck
-        muscle endurance, self-report, and range of motion data from subjects with
-        treated and untreated neck pain","volume":"28","author":"Lee","year":"2005","journal-title":"J
-        Manipulative Physiol Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib13","doi-asserted-by":"crossref","first-page":"343","DOI":"10.1016\/j.jmpt.2007.04.008","article-title":"Neck
-        muscle endurance in nonspecific patients with neck pain and in patients after
-        anterior cervical decompression and fusion","volume":"30","author":"Peolsson","year":"2007","journal-title":"J
-        Manipulative Physiol Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib14","doi-asserted-by":"crossref","first-page":"286","DOI":"10.1016\/j.jmpt.2010.03.010","article-title":"A
-        magnetic resonance imaging investigation into the function of the deep cervical
-        flexors during the performance of craniocervical flexion","volume":"33","author":"Cagnie","year":"2010","journal-title":"J
-        Manipulative Physiol Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib15","doi-asserted-by":"crossref","first-page":"2108","DOI":"10.1097\/01.brs.0000141170.89317.0e","article-title":"Patients
-        with neck pain demonstrate reduced electromyographic activity of the deep
-        cervical flexor muscles during performance of the craniocervical flexion test","volume":"29","author":"Falla","year":"2004","journal-title":"Spine
-        (Phila Pa 1976)"},{"key":"10.1016\/j.apmr.2010.12.021_bib16","doi-asserted-by":"crossref","first-page":"1418","DOI":"10.1016\/j.apmr.2010.05.014","article-title":"Craniocervical
-        orientation affects muscle activation when exercising the cervical extensors
-        in healthy subjects","volume":"91","author":"Elliott","year":"2010","journal-title":"Arch
-        Phys Med Rehabil"},{"key":"10.1016\/j.apmr.2010.12.021_bib17","doi-asserted-by":"crossref","first-page":"2105","DOI":"10.1152\/jappl.1997.83.6.2105","article-title":"Resistance
-        training and human cervical muscle recruitment plasticity","volume":"83","author":"Conley","year":"1997","journal-title":"J
-        Appl Physiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib18","doi-asserted-by":"crossref","first-page":"E847","DOI":"10.1097\/01.brs.0000240841.07050.34","article-title":"Fatty
-        infiltration in the cervical extensor muscles in persistent whiplash-associated
-        disorders: a magnetic resonance imaging analysis","volume":"31","author":"Elliott","year":"2006","journal-title":"Spine
-        (Phila Pa 1976)"},{"key":"10.1016\/j.apmr.2010.12.021_bib19","doi-asserted-by":"crossref","first-page":"1418","DOI":"10.1016\/j.apmr.2010.05.014","article-title":"Craniocervical
-        orientation affects muscle activation when exercising the cervical extensors
-        in healthy subjects","volume":"91","author":"Elliott","year":"2010","journal-title":"Arch
-        Phys Med Rehabil"},{"key":"10.1016\/j.apmr.2010.12.021_bib20","first-page":"89","article-title":"Functional
-        magnetic resonance imaging of muscle","volume":"28","author":"Meyer","year":"2000","journal-title":"Exerc
-        Sport Sci Rev"},{"key":"10.1016\/j.apmr.2010.12.021_bib21","doi-asserted-by":"crossref","first-page":"1578","DOI":"10.1152\/jappl.1992.73.4.1578","article-title":"Magnetic
-        resonance imaging and electromyography as indexes of muscle function","volume":"73","author":"Adams","year":"1992","journal-title":"J
-        Appl Physiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib22","doi-asserted-by":"crossref","first-page":"593","DOI":"10.1249\/01.MSS.0000159026.99792.76","article-title":"Neuromuscular
-        activation of triceps surae using muscle functional MRI and EMG","volume":"37","author":"Kinugasa","year":"2005","journal-title":"Med
-        Sci Sports Exerc"},{"key":"10.1016\/j.apmr.2010.12.021_bib23","doi-asserted-by":"crossref","first-page":"853","DOI":"10.1016\/S0730-725X(03)00183-8","article-title":"Comparison
-        of MRI with EMG to study muscle activity associated with dynamic plantar flexion","volume":"21","author":"Price","year":"2003","journal-title":"Magn
-        Reson Imaging"},{"key":"10.1016\/j.apmr.2010.12.021_bib24","doi-asserted-by":"crossref","first-page":"480","DOI":"10.1097\/00004424-199005000-00003","article-title":"Direct
-        relationship between proton T2 and exercise intensity in skeletal muscle MR
-        images","volume":"25","author":"Fisher","year":"1990","journal-title":"Invest
-        Radiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib25","doi-asserted-by":"crossref","first-page":"230","DOI":"10.1152\/japplphysiol.00918.2007","article-title":"The
-        use of functional MRI to evaluate cervical flexor activity during different
-        cervical flexion exercises","volume":"104","author":"Cagnie","year":"2008","journal-title":"J
-        Appl Physiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib26","doi-asserted-by":"crossref","first-page":"1157","DOI":"10.2522\/ptj.20090351","article-title":"Use
-        of muscle functional magnetic resonance imaging to compare cervical flexor
-        activity between patients with whiplash-associated disorders and people who
-        are healthy","volume":"90","author":"Cagnie","year":"2010","journal-title":"Phys
-        Ther"},{"key":"10.1016\/j.apmr.2010.12.021_bib27","doi-asserted-by":"crossref","first-page":"233","DOI":"10.5694\/j.1326-5377.1988.tb99431.x","article-title":"The
-        accuracy of manual diagnosis for cervical zygapophysial joint pain syndromes","volume":"148","author":"Jull","year":"1988","journal-title":"Med
-        J Aust"},{"key":"10.1016\/j.apmr.2010.12.021_bib28","doi-asserted-by":"crossref","first-page":"2105","DOI":"10.1152\/jappl.1997.83.6.2105","article-title":"Resistance
-        training and human cervical muscle recruitment plasticity","volume":"83","author":"Conley","year":"1997","journal-title":"J
-        Appl Physiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib29","doi-asserted-by":"crossref","first-page":"694","DOI":"10.1097\/00007632-200204010-00005","article-title":"Muscle
-        spindle distribution, morphology, and density in longus colli and multifidus
-        muscles of the cervical spine","volume":"27","author":"Boyd-Clark","year":"2002","journal-title":"Spine
-        (Phila Pa 1976)"},{"key":"10.1016\/j.apmr.2010.12.021_bib30","doi-asserted-by":"crossref","first-page":"367","DOI":"10.1007\/BF01627655","article-title":"Longus
-        colli has a postural function on cervical curvature","volume":"16","author":"Mayoux-Benhamou","year":"1994","journal-title":"Surg
-        Radiol Anat"},{"key":"10.1016\/j.apmr.2010.12.021_bib31","doi-asserted-by":"crossref","first-page":"11","DOI":"10.1016\/S0268-0033(97)00057-0","article-title":"Critical
-        load of the human cervical spine: an in vitro experimental study","volume":"13","author":"Panjabi","year":"1998","journal-title":"Clin
-        Biomech (Bristol, Avon)"},{"key":"10.1016\/j.apmr.2010.12.021_bib32","doi-asserted-by":"crossref","first-page":"1633","DOI":"10.1016\/S1388-2457(01)00631-9","article-title":"Inhibition
-        of motor system excitability at cortical and spinal level by tonic muscle
-        pain","volume":"112","author":"Le Pera","year":"2001","journal-title":"Clin
-        Neurophysiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib33","doi-asserted-by":"crossref","first-page":"1219","DOI":"10.1002\/1097-4598(200008)23:8<1219::AID-MUS10>3.0.CO;2-A","article-title":"Inhibition
-        of motor unit firing during experimental muscle pain in humans","volume":"23","author":"Sohn","year":"2000","journal-title":"Muscle
-        Nerve"},{"key":"10.1016\/j.apmr.2010.12.021_bib34","doi-asserted-by":"crossref","first-page":"1250","DOI":"10.1152\/jn.00620.2003","article-title":"Effect
-        of experimental muscle pain on motor unit firing rate and conduction velocity","volume":"91","author":"Farina","year":"2004","journal-title":"J
-        Neurophysiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib35","doi-asserted-by":"crossref","first-page":"423","DOI":"10.1007\/s00421-006-0312-8","article-title":"Influence
-        of sympathetic nervous system on sensorimotor function: whiplash associated
-        disorders (WAD) as a model","volume":"98","author":"Passatore","year":"2006","journal-title":"Eur
-        J Appl Physiol"},{"key":"10.1016\/j.apmr.2010.12.021_bib36","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1046\/j.1526-4610.1996.3606372.x","article-title":"Cervicogenic
-        headache: the influence of mental load on pain level and EMG of shoulder-neck
-        and facial muscles","volume":"36","author":"Bansevicius","year":"1996","journal-title":"Headache"},{"key":"10.1016\/j.apmr.2010.12.021_bib37","doi-asserted-by":"crossref","first-page":"615","DOI":"10.1016\/j.ejpain.2005.10.001","article-title":"Pain
-        induced by low-grade stress in patients with fibromyalgia and chronic shoulder\/neck
-        pain, relation to surface electromyography","volume":"10","author":"Nilsen","year":"2006","journal-title":"Eur
-        J Pain"},{"key":"10.1016\/j.apmr.2010.12.021_bib38","doi-asserted-by":"crossref","first-page":"138","DOI":"10.1016\/j.pain.2005.03.038","article-title":"Muscle
-        fiber conduction velocity of the upper trapezius muscle during dynamic contraction
-        of the upper limb in patients with chronic neck pain","volume":"116","author":"Falla","year":"2005","journal-title":"Pain"},{"key":"10.1016\/j.apmr.2010.12.021_bib39","doi-asserted-by":"crossref","first-page":"390","DOI":"10.1097\/00002517-199212000-00002","article-title":"The
-        stabilizing system of the spine","volume":"5","author":"Panjabi","year":"1992","journal-title":"J
-        Spinal Disord"},{"issue":"Suppl 679","key":"10.1016\/j.apmr.2010.12.021_bib40","first-page":"1","article-title":"On
-        functional motor adaptations: from the quantification of motor strategies
-        to the prevention of musculoskeletal disorders in the neck-shoulder region","volume":"199","author":"Madeleine","year":"2010","journal-title":"Acta
-        physiologica (Oxf)"}],"container-title":["Archives of Physical Medicine and
-        Rehabilitation"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0003999310010026?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0003999310010026?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2020,6,19]],"date-time":"2020-06-19T00:36:19Z","timestamp":1592526979000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0003999310010026"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2011,6]]},"references-count":40,"journal-issue":{"issue":"6","published-print":{"date-parts":[[2011,6]]}},"alternative-id":["S0003999310010026"],"URL":"https:\/\/doi.org\/10.1016\/j.apmr.2010.12.021","relation":{},"ISSN":["0003-9993"],"issn-type":[{"value":"0003-9993","type":"print"}],"subject":[],"published":{"date-parts":[[2011,6]]}}}'
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
     headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '4279'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -789,24 +563,28 @@ interactions:
       - '*'
       access-control-expose-headers:
       - Link
-      content-encoding:
-      - gzip
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:23 GMT
       permissions-policy:
       - interest-cohort=()
       server:
       - Jetty(9.4.40.v20210413)
       strict-transport-security:
       - max-age=31536000;
-      vary:
-      - Accept-Encoding
+      transfer-encoding:
+      - chunked
       x-api-pool:
-      - public-single
+      - public-array
       x-concurrency-limit:
       - '1'
       x-rate-limit-interval:
       - 1s
       x-rate-limit-limit:
-      - '5'
+      - '1'
     status:
       code: 200
       message: OK
@@ -845,7 +623,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
+      - Thu, 22 Oct 2026 20:37:23 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -875,609 +653,84 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: null
+    body: ''
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate
-      Connection:
+      connection:
       - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
     method: GET
-    uri: https://api.crossref.org/works/10.1016/j.biopsych.2021.02.423
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,9,16]],"date-time":"2025-09-16T19:03:09Z","timestamp":1758049389655,"version":"3.44.0"},"reference-count":0,"publisher":"Elsevier
-        BV","issue":"9","license":[{"start":{"date-parts":[[2021,5,1]],"date-time":"2021-05-01T00:00:00Z","timestamp":1619827200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2021,5,1]],"date-time":"2021-05-01T00:00:00Z","timestamp":1619827200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"}],"content-domain":{"domain":["biologicalpsychiatryjournal.com","clinicalkey.com","clinicalkey.com.au","clinicalkey.es","clinicalkey.fr","clinicalkey.jp","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Biological
-        Psychiatry"],"published-print":{"date-parts":[[2021,5]]},"DOI":"10.1016\/j.biopsych.2021.02.423","type":"journal-article","created":{"date-parts":[[2021,4,27]],"date-time":"2021-04-27T06:17:23Z","timestamp":1619504243000},"page":"S165","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":1,"special_numbering":"S","title":["A
-        Multivoxel Pattern Analysis of Anhedonia During Fear Extinction \u2013 Implications
-        for Safety Learning"],"prefix":"10.1016","volume":"89","author":[{"given":"Benjamin","family":"Rosenberg","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Vincent","family":"Taschereau-Dumouchel","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Katherine","family":"Young","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hakwan","family":"Lau","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Richard","family":"Zinbarg","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Robin","family":"Nusslock","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Michelle","family":"Craske","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","container-title":["Biological
-        Psychiatry"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322321005278?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322321005278?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,9,13]],"date-time":"2025-09-13T15:12:13Z","timestamp":1757776333000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0006322321005278"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2021,5]]},"references-count":0,"journal-issue":{"issue":"9","published-print":{"date-parts":[[2021,5]]}},"alternative-id":["S0006322321005278"],"URL":"https:\/\/doi.org\/10.1016\/j.biopsych.2021.02.423","relation":{},"ISSN":["0006-3223"],"issn-type":[{"type":"print","value":"0006-3223"}],"subject":[],"published":{"date-parts":[[2021,5]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
-        article is maintained by"},{"value":"A Multivoxel Pattern Analysis of Anhedonia
-        During Fear Extinction \u2013 Implications for Safety Learning","name":"articletitle","label":"Article
-        Title"},{"value":"Biological Psychiatry","name":"journaltitle","label":"Journal
-        Title"},{"value":"https:\/\/doi.org\/10.1016\/j.biopsych.2021.02.423","name":"articlelink","label":"CrossRef
-        DOI link to publisher maintained version"},{"value":"simple-article","name":"content_type","label":"Content
-        Type"},{"value":"Copyright \u00a9 2021 Published by Elsevier Inc.","name":"copyright","label":"Copyright"}]}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '1373'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:20:41 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1016/j.bpsc.2021.12.008
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,5,15]],"date-time":"2026-05-15T19:27:25Z","timestamp":1778873245924,"version":"3.51.4"},"reference-count":80,"publisher":"Elsevier
-        BV","issue":"4","license":[{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2024,4,5]],"date-time":"2024-04-05T00:00:00Z","timestamp":1712275200000},"content-version":"am","delay-in-days":370,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"}],"funder":[{"DOI":"10.13039\/100000001","name":"National
-        Science Foundation","doi-asserted-by":"publisher","award":["DGE-1650604"],"award-info":[{"award-number":["DGE-1650604"]}],"id":[{"id":"10.13039\/100000001","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000025","name":"National
-        Institute of Mental Health","doi-asserted-by":"publisher","award":["R01 MH100117-01"],"award-info":[{"award-number":["R01
-        MH100117-01"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["clinicalkey.com","clinicalkey.com.au","clinicalkey.es","clinicalkey.fr","clinicalkey.jp","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Biological
-        Psychiatry: Cognitive Neuroscience and Neuroimaging"],"published-print":{"date-parts":[[2023,4]]},"DOI":"10.1016\/j.bpsc.2021.12.008","type":"journal-article","created":{"date-parts":[[2021,12,23]],"date-time":"2021-12-23T11:53:49Z","timestamp":1640260429000},"page":"417-425","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":3,"title":["A
-        Multivoxel Pattern Analysis of Anhedonia During Fear Extinction: Implications
-        for Safety Learning"],"prefix":"10.1016","volume":"8","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-5346-6889","authenticated-orcid":false,"given":"Benjamin
-        M.","family":"Rosenberg","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Vincent","family":"Taschereau-Dumouchel","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hakwan","family":"Lau","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Katherine
-        S.","family":"Young","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Robin","family":"Nusslock","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Richard
-        E.","family":"Zinbarg","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Michelle
-        G.","family":"Craske","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","reference":[{"key":"10.1016\/j.bpsc.2021.12.008_bib1","doi-asserted-by":"crossref","first-page":"507","DOI":"10.1016\/S0166-2236(03)00233-9","article-title":"Parsing
-        reward [published correction appears in Trends Neurosci 2003; 26:581]","volume":"26","author":"Berridge","year":"2003","journal-title":"Trends
-        Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib2","doi-asserted-by":"crossref","first-page":"537","DOI":"10.1016\/j.neubiorev.2010.06.006","article-title":"Reconsidering
-        anhedonia in depression: Lessons from translational neuroscience","volume":"35","author":"Treadway","year":"2011","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib3","doi-asserted-by":"crossref","first-page":"12","DOI":"10.1186\/2045-5380-3-12","article-title":"Mapping
-        anhedonia onto reinforcement learning: A behavioural meta-analysis","volume":"3","author":"Huys","year":"2013","journal-title":"Biol
-        Mood Anxiety Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib4","doi-asserted-by":"crossref","first-page":"1409","DOI":"10.3389\/fpsyg.2015.01409","article-title":"Measuring
-        anhedonia: Impaired ability to pursue, experience, and learn about reward","volume":"6","author":"Thomsen","year":"2015","journal-title":"Front
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib5","doi-asserted-by":"crossref","first-page":"2084","DOI":"10.1093\/brain\/awn136","article-title":"Abnormal
-        temporal difference reward-learning signals in major depression","volume":"131","author":"Kumar","year":"2008","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib6","doi-asserted-by":"crossref","first-page":"76","DOI":"10.1016\/j.jpsychires.2008.03.001","article-title":"Reduced
-        hedonic capacity in major depressive disorder: Evidence from a probabilistic
-        reward task","volume":"43","author":"Pizzagalli","year":"2008","journal-title":"J\u00a0Psychiatr
-        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib7","doi-asserted-by":"crossref","first-page":"1751","DOI":"10.1093\/brain\/awr059","article-title":"Expected
-        value and prediction error abnormalities in depression and schizophrenia","volume":"134","author":"Gradin","year":"2011","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib8","doi-asserted-by":"crossref","first-page":"393","DOI":"10.1146\/annurev-clinpsy-050212-185606","article-title":"Depression,
-        stress, and anhedonia: Toward a synthesis and integrated model","volume":"10","author":"Pizzagalli","year":"2014","journal-title":"Annu
-        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib9","doi-asserted-by":"crossref","first-page":"1650","DOI":"10.1038\/s41386-021-01003-8","article-title":"Dysregulation
-        of threat neurocircuitry during fear extinction: The role of anhedonia","volume":"46","author":"Young","year":"2021","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib10","doi-asserted-by":"crossref","first-page":"1476","DOI":"10.1176\/appi.ajp.2007.07030504","article-title":"Functional
-        neuroimaging of anxiety: A meta-analysis of emotional processing in PTSD,
-        social anxiety disorder, and specific phobia","volume":"164","author":"Etkin","year":"2007","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib11","doi-asserted-by":"crossref","DOI":"10.1371\/journal.pone.0005865","article-title":"Human
-        fear conditioning and extinction in neuroimaging: A systematic review","volume":"4","author":"Sehlmeyer","year":"2009","journal-title":"PLoS
-        One"},{"key":"10.1016\/j.bpsc.2021.12.008_bib12","doi-asserted-by":"crossref","first-page":"17","DOI":"10.1016\/j.brat.2014.08.006","article-title":"Neuroscience
-        of fear extinction: Implications for assessment and treatment of fear-based
-        and anxiety related disorders","volume":"62","author":"Milad","year":"2014","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib13","doi-asserted-by":"crossref","first-page":"500","DOI":"10.1038\/mp.2015.88","article-title":"Neural
-        signatures of human fear conditioning: An updated and extended meta-analysis
-        of fMRI studies","volume":"21","author":"Fullana","year":"2016","journal-title":"Mol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib14","doi-asserted-by":"crossref","first-page":"320","DOI":"10.1038\/npp.2015.255","article-title":"Neuroimaging
-        of fear-associated learning","volume":"41","author":"Greco","year":"2016","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib15","doi-asserted-by":"crossref","first-page":"8491","DOI":"10.1523\/JNEUROSCI.0304-20.2020","article-title":"Revaluing
-        the role of vmPFC in the acquisition of Pavlovian threat conditioning in humans","volume":"40","author":"Battaglia","year":"2020","journal-title":"J\u00a0Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib16","doi-asserted-by":"crossref","first-page":"1255","DOI":"10.1176\/appi.ajp.2011.11040557","article-title":"The
-        study of fear extinction: Implications for anxiety disorders","volume":"168","author":"Graham","year":"2011","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib17","doi-asserted-by":"crossref","first-page":"17024","DOI":"10.1038\/nrdp.2017.24","article-title":"Anxiety
-        disorders [published correction appears in Nat Rev Dis Primers 2017; 3:17100]","volume":"3","author":"Craske","year":"2017","journal-title":"Nat
-        Rev Dis Primers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib18","doi-asserted-by":"crossref","first-page":"20170025","DOI":"10.1098\/rstb.2017.0025","article-title":"State-of-the-art
-        and future directions for extinction as a translational model for fear and
-        anxiety [published correction appears in Philos Trans R Soc Lond B Biol Sci
-        2018; 373:20180432]","volume":"373","author":"Craske","year":"2018","journal-title":"Philos
-        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib19","doi-asserted-by":"crossref","DOI":"10.7554\/eLife.38818","article-title":"Dopamine
-        neurons drive fear extinction learning by signaling the omission of expected
-        aversive outcomes","volume":"7","author":"Salinas-Hern\u00e1ndez","year":"2018","journal-title":"Elife"},{"key":"10.1016\/j.bpsc.2021.12.008_bib20","doi-asserted-by":"crossref","first-page":"164","DOI":"10.1038\/s41398-020-0814-x","article-title":"Dopamine:
-        From prediction error to psychotherapy","volume":"10","author":"Papalini","year":"2020","journal-title":"Transl
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib21","first-page":"125","article-title":"Threat
-        sensitivity, incentive sensitivity, and the experience of relief","volume":"77","author":"Carver","year":"2009","journal-title":"J\u00a0Pers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib22","doi-asserted-by":"crossref","first-page":"274","DOI":"10.1016\/j.tics.2019.01.013","article-title":"A\u00a0dopaminergic
-        basis for fear extinction","volume":"23","author":"Kalisch","year":"2019","journal-title":"Trends
-        Cogn Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib23","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.neubiorev.2016.03.004","article-title":"Assessing
-        anhedonia in depression: Potentials and pitfalls","volume":"65","author":"Rizvi","year":"2016","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib24","doi-asserted-by":"crossref","first-page":"712","DOI":"10.1080\/02699931.2016.1142428","article-title":"Positive
-        affect predicts less reacquisition of fear: Relevance for long-term outcomes
-        of exposure therapy","volume":"31","author":"Zbozinek","year":"2017","journal-title":"Cogn
-        Emot"},{"key":"10.1016\/j.bpsc.2021.12.008_bib25","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1016\/j.brat.2015.05.016","article-title":"The
-        effect of positive mood induction on reducing reinstatement fear: Relevance
-        for long term outcomes of exposure therapy","volume":"71","author":"Zbozinek","year":"2015","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib26","doi-asserted-by":"crossref","first-page":"531","DOI":"10.1016\/j.jad.2013.06.039","article-title":"The
-        neural correlates of reward-related processing in major depressive disorder:
-        A meta-analysis of functional magnetic resonance imaging studies","volume":"151","author":"Zhang","year":"2013","journal-title":"J\u00a0Affect
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib27","doi-asserted-by":"crossref","first-page":"499","DOI":"10.1196\/annals.1401.029","article-title":"Orbitofrontal
-        cortex function and structure in depression","volume":"1121","author":"Drevets","year":"2007","journal-title":"Ann
-        N Y Acad Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib28","doi-asserted-by":"crossref","first-page":"1942","DOI":"10.1073\/pnas.0812686106","article-title":"The
-        default mode network and self-referential processes in depression","volume":"106","author":"Sheline","year":"2009","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib29","doi-asserted-by":"crossref","first-page":"224","DOI":"10.1016\/j.biopsych.2015.02.020","article-title":"Depressive
-        rumination, the default-mode network, and the dark matter of clinical neuroscience","volume":"78","author":"Hamilton","year":"2015","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib30","doi-asserted-by":"crossref","first-page":"116287","DOI":"10.1016\/j.neuroimage.2019.116287","article-title":"Rumination
-        and the default mode network: Meta-analysis of brain imaging studies and implications
-        for depression","volume":"206","author":"Zhou","year":"2020","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib31","doi-asserted-by":"crossref","first-page":"91","DOI":"10.1146\/annurev-clinpsy-032816-045037","article-title":"Machine
-        learning approaches for clinical psychology and psychiatry","volume":"14","author":"Dwyer","year":"2018","journal-title":"Annu
-        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib32","first-page":"780","article-title":"Data-driven
-        approaches to neuroimaging analysis to enhance psychiatric diagnosis and therapy","volume":"5","author":"Zhang","year":"2020","journal-title":"Biol
-        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib33","doi-asserted-by":"crossref","first-page":"107573","DOI":"10.1016\/j.neuropsychologia.2020.107573","article-title":"Contextual
-        reinstatement promotes extinction generalization in healthy adults but not
-        PTSD","volume":"147","author":"Hennings","year":"2020","journal-title":"Neuropsychologia"},{"key":"10.1016\/j.bpsc.2021.12.008_bib34","doi-asserted-by":"crossref","first-page":"2342","DOI":"10.1038\/s41380-019-0520-3","article-title":"Multivoxel
-        pattern analysis reveals dissociations between subjective fear and its physiological
-        correlates","volume":"25","author":"Taschereau-Dumouchel","year":"2020","journal-title":"Mol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib35","doi-asserted-by":"crossref","first-page":"46","DOI":"10.1038\/s41398-020-01193-7","article-title":"Fear-induced
-        brain activations distinguish anxious and trauma-exposed brains","volume":"11","author":"Wen","year":"2021","journal-title":"Transl
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib36","series-title":"Manual
-        of the Eysenck Personality Questionnaire (Junior and Adult)","author":"Eysenck","year":"1975"},{"key":"10.1016\/j.bpsc.2021.12.008_bib37","doi-asserted-by":"crossref","first-page":"319","DOI":"10.1037\/0022-3514.67.2.319","article-title":"Behavioral
-        inhibition, behavioral activation, and affective responses to impending reward
-        and punishment: The BIS\/BAS scales","volume":"67","author":"Carver","year":"1994","journal-title":"J\u00a0Pers
-        Soc Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib38","doi-asserted-by":"crossref","first-page":"1191","DOI":"10.1016\/j.biopsych.2007.04.032","article-title":"A\u00a0role
-        for the human dorsal anterior cingulate cortex in fear expression","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib39","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1016\/j.biopsych.2006.10.011","article-title":"Recall
-        of fear extinction in humans activates the ventromedial prefrontal cortex
-        and hippocampus in concert","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib40","doi-asserted-by":"crossref","first-page":"622","DOI":"10.1001\/jamapsychiatry.2017.0329","article-title":"Skin
-        conductance responses and neural activations during fear conditioning and
-        extinction recall across anxiety disorders","volume":"74","author":"Marin","year":"2017","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib41","doi-asserted-by":"crossref","first-page":"618","DOI":"10.1001\/jamapsychiatry.2019.4833","article-title":"Multimodal
-        categorical and dimensional approaches to understanding threat conditioning
-        and its extinction in individuals with anxiety disorders","volume":"77","author":"Marin","year":"2020","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib42","doi-asserted-by":"crossref","first-page":"1293","DOI":"10.1098\/rstb.2001.0915","article-title":"A\u00a0probabilistic
-        atlas and reference system for the human brain: International Consortium for
-        Brain Mapping (ICBM)","volume":"356","author":"Mazziotta","year":"2001","journal-title":"Philos
-        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib43","first-page":"2825","article-title":"Scikit-learn:
-        Machine learning in Python","volume":"12","author":"Pedregosa","year":"2011","journal-title":"J\u00a0Mach
-        Learn Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib44","doi-asserted-by":"crossref","first-page":"1125","DOI":"10.1152\/jn.00338.2011","article-title":"The
-        organization of the human cerebral cortex estimated by intrinsic functional
-        connectivity","volume":"106","author":"Yeo","year":"2011","journal-title":"J\u00a0Neurophysiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib45","doi-asserted-by":"crossref","first-page":"3095","DOI":"10.1093\/cercor\/bhx179","article-title":"Local-global
-        parcellation of the human cerebral cortex from intrinsic functional connectivity
-        MRI","volume":"28","author":"Schaefer","year":"2018","journal-title":"Cereb
-        Cortex"},{"key":"10.1016\/j.bpsc.2021.12.008_bib46","doi-asserted-by":"crossref","first-page":"167","DOI":"10.1016\/j.conb.2019.04.002","article-title":"Interpreting
-        encoding and decoding models","volume":"55","author":"Kriegeskorte","year":"2019","journal-title":"Curr
-        Opin Neurobiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib47","doi-asserted-by":"crossref","first-page":"12569","DOI":"10.1073\/pnas.0800005105","article-title":"A\u00a0critical
-        role for the right fronto-insular cortex in switching between central-executive
-        and default-mode networks","volume":"105","author":"Sridharan","year":"2008","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib48","doi-asserted-by":"crossref","first-page":"655","DOI":"10.1007\/s00429-010-0262-0","article-title":"Saliency,
-        switching, attention and control: A network model of insula function","volume":"214","author":"Menon","year":"2010","journal-title":"Brain
-        Struct Funct"},{"key":"10.1016\/j.bpsc.2021.12.008_bib49","doi-asserted-by":"crossref","first-page":"180","DOI":"10.1016\/j.neuroimage.2014.05.052","article-title":"The
-        salience network is responsible for switching between the default mode network
-        and the central executive network: Replication from DCM","volume":"99","author":"Goulden","year":"2014","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib50","doi-asserted-by":"crossref","first-page":"327","DOI":"10.1016\/j.biopsych.2011.02.003","article-title":"Default-mode
-        and task-positive network activity in major depressive disorder: Implications
-        for adaptive and maladaptive rumination","volume":"70","author":"Hamilton","year":"2011","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib51","doi-asserted-by":"crossref","first-page":"603","DOI":"10.1001\/jamapsychiatry.2015.0071","article-title":"Large-scale
-        network dysfunction in major depressive disorder: A meta-analysis of resting-state
-        functional connectivity","volume":"72","author":"Kaiser","year":"2015","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib52","doi-asserted-by":"crossref","first-page":"159","DOI":"10.1111\/j.1467-8721.2008.00567.x","article-title":"Neuroimaging
-        and depression: Current status and unresolved issues","volume":"17","author":"Gotlib","year":"2008","journal-title":"Curr
-        Dir Psychol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib53","doi-asserted-by":"crossref","first-page":"239","DOI":"10.1016\/j.bbr.2009.03.004","article-title":"The
-        functional neuroanatomy of depression: Distinct roles for ventromedial and
-        dorsolateral prefrontal cortex","volume":"201","author":"Koenigs","year":"2009","journal-title":"Behav
-        Brain Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib54","doi-asserted-by":"crossref","first-page":"467","DOI":"10.1038\/nrn3027","article-title":"Neural
-        mechanisms of the cognitive model of depression","volume":"12","author":"Disner","year":"2011","journal-title":"Nat
-        Rev Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib55","first-page":"280","article-title":"Negative
-        learning bias in depression revisited: Enhanced neural response to surprising
-        reward across psychiatric disorders","volume":"6","author":"Brolsma","year":"2021","journal-title":"Biol
-        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib56","doi-asserted-by":"crossref","first-page":"348","DOI":"10.1016\/j.cpr.2006.12.003","article-title":"Social
-        anxiety spectrum and diminished positive experiences: Theoretical synthesis
-        and meta-analysis","volume":"27","author":"Kashdan","year":"2007","journal-title":"Clin
-        Psychol Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib57","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1016\/j.psychres.2014.02.002","article-title":"Anhedonia
-        in obsessive-compulsive disorder: Beyond comorbid depression","volume":"216","author":"Abramovitch","year":"2014","journal-title":"Psychiatry
-        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib58","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1016\/j.neubiorev.2015.01.019","article-title":"Reward
-        functioning in PTSD: A systematic review exploring the mechanisms underlying
-        anhedonia","volume":"51","author":"Nawijn","year":"2015","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib59","doi-asserted-by":"crossref","first-page":"282","DOI":"10.1002\/wps.20566","article-title":"Progress
-        in achieving quantitative classification of psychopathology","volume":"17","author":"Krueger","year":"2018","journal-title":"World
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib60","doi-asserted-by":"crossref","first-page":"853","DOI":"10.1037\/abn0000197","article-title":"A\u00a0comparison
-        and integration of structural models of depression and anxiety in a clinical
-        sample: Support for and validation of the tri-level model","volume":"125","author":"Naragon-Gainey","year":"2016","journal-title":"J\u00a0Abnorm
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib61","doi-asserted-by":"crossref","first-page":"334","DOI":"10.1016\/j.janxdis.2010.01.006","article-title":"Testing
-        a hierarchical model of anxiety and depression in adolescents: A tri-level
-        model","volume":"24","author":"Prenoveau","year":"2010","journal-title":"J\u00a0Anxiety
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib62","doi-asserted-by":"crossref","first-page":"256","DOI":"10.1037\/a0016608","article-title":"A\u00a0proposal
-        for a dimensional classification system based on the shared features of the
-        DSM-IV anxiety and mood disorders: Implications for assessment and treatment","volume":"21","author":"Brown","year":"2009","journal-title":"Psychol
-        Assess"},{"key":"10.1016\/j.bpsc.2021.12.008_bib63","doi-asserted-by":"crossref","first-page":"395","DOI":"10.1176\/appi.ajp.2014.14020138","article-title":"The
-        NIMH Research Domain Criteria (RDoC) project: Precision medicine for psychiatry","volume":"171","author":"Insel","year":"2014","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib64","doi-asserted-by":"crossref","first-page":"909","DOI":"10.1002\/da.22301","article-title":"CBT
-        and the future of personalized treatment: A proposal","volume":"31","author":"Thompson-Hollands","year":"2014","journal-title":"Depress
-        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib65","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1037\/abn0000258","article-title":"The
-        Hierarchical Taxonomy of Psychopathology (HiTOP): A dimensional alternative
-        to traditional nosologies","volume":"126","author":"Kotov","year":"2017","journal-title":"J\u00a0Abnorm
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib66","doi-asserted-by":"crossref","first-page":"24","DOI":"10.1002\/wps.20478","article-title":"A\u00a0paradigm
-        shift in psychiatric classification: The Hierarchical Taxonomy of Psychopathology
-        (HiTOP)","volume":"17","author":"Kotov","year":"2018","journal-title":"World
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib67","doi-asserted-by":"crossref","first-page":"1069","DOI":"10.1037\/ccp0000452","article-title":"Integrating
-        the Hierarchical Taxonomy of Psychopathology (HiTOP) into clinical practice","volume":"87","author":"Ruggero","year":"2019","journal-title":"J\u00a0Consult
-        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib68","first-page":"477","article-title":"Integrating
-        psychotherapy with the hierarchical taxonomy of psychopathology (HiTOP)","volume":"30","author":"Hopwood","year":"2020","journal-title":"J\u00a0Psychother
-        Integr"},{"key":"10.1016\/j.bpsc.2021.12.008_bib69","doi-asserted-by":"crossref","first-page":"39","DOI":"10.1097\/YCO.0000000000000220","article-title":"The
-        key role of extinction learning in anxiety disorders: Behavioral strategies
-        to enhance exposure-based treatments","volume":"29","author":"Pittig","year":"2016","journal-title":"Curr
-        Opin Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib70","doi-asserted-by":"crossref","first-page":"87","DOI":"10.1016\/j.brat.2016.08.015","article-title":"The
-        validity of laboratory-based treatment research: Bridging the gap between
-        fear extinction and exposure treatment","volume":"86","author":"Scheveneels","year":"2016","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib71","doi-asserted-by":"crossref","first-page":"103528","DOI":"10.1016\/j.brat.2019.103528","article-title":"Human
-        fear conditioning: From neuroscience to the clinic","volume":"124","author":"Fullana","year":"2020","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib72","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1016\/j.brat.2007.10.003","article-title":"Optimizing
-        inhibitory learning during exposure therapy","volume":"46","author":"Craske","year":"2008","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib73","doi-asserted-by":"crossref","first-page":"322","DOI":"10.5127\/jep.026511","article-title":"Role
-        of inhibition in exposure therapy","volume":"3","author":"Craske","year":"2012","journal-title":"J\u00a0Exp
-        Psychopathol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib74","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1016\/j.brat.2014.04.006","article-title":"Maximizing
-        exposure therapy: An inhibitory learning approach","volume":"58","author":"Craske","year":"2014","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib75","doi-asserted-by":"crossref","first-page":"927","DOI":"10.1002\/da.22490","article-title":"Treatment
-        for anhedonia: A neuroscience driven approach","volume":"33","author":"Craske","year":"2016","journal-title":"Depress
-        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib76","doi-asserted-by":"crossref","first-page":"457","DOI":"10.1037\/ccp0000396","article-title":"Positive
-        affect treatment for depression and anxiety: A randomized clinical trial for
-        a core feature of anhedonia","volume":"87","author":"Craske","year":"2019","journal-title":"J\u00a0Consult
-        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib77","doi-asserted-by":"crossref","first-page":"54","DOI":"10.1016\/j.janxdis.2008.03.015","article-title":"Repetitive
-        TMS combined with exposure therapy for PTSD: A preliminary study","volume":"23","author":"Osuch","year":"2009","journal-title":"J\u00a0Anxiety
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib78","doi-asserted-by":"crossref","first-page":"151","DOI":"10.1016\/j.brs.2013.10.006","article-title":"Review
-        of the effectiveness of transcranial magnetic stimulation for post-traumatic
-        stress disorder","volume":"7","author":"Karsen","year":"2014","journal-title":"Brain
-        Stimul"},{"key":"10.1016\/j.bpsc.2021.12.008_bib79","first-page":"53","article-title":"Exposure
-        therapy and simultaneous repetitive transcranial magnetic stimulation: A controlled
-        pilot trial for the treatment of posttraumatic stress disorder","volume":"35","author":"Fryml","year":"2019","journal-title":"J\u00a0ECT"},{"key":"10.1016\/j.bpsc.2021.12.008_bib80","doi-asserted-by":"crossref","first-page":"534","DOI":"10.1001\/jamapsychiatry.2019.3671","article-title":"Establishment
-        of best practices for evidence for prediction: A review","volume":"77","author":"Poldrack","year":"2020","journal-title":"JAMA
-        Psychiatry"}],"container-title":["Biological Psychiatry: Cognitive Neuroscience
-        and Neuroimaging"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,11,7]],"date-time":"2025-11-07T13:20:01Z","timestamp":1762521601000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S2451902221003517"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,4]]},"references-count":80,"journal-issue":{"issue":"4","published-print":{"date-parts":[[2023,4]]}},"alternative-id":["S2451902221003517"],"URL":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","relation":{},"ISSN":["2451-9022"],"issn-type":[{"value":"2451-9022","type":"print"}],"subject":[],"published":{"date-parts":[[2023,4]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
-        article is maintained by"},{"value":"A Multivoxel Pattern Analysis of Anhedonia
-        During Fear Extinction: Implications for Safety Learning","name":"articletitle","label":"Article
-        Title"},{"value":"Biological Psychiatry: Cognitive Neuroscience and Neuroimaging","name":"journaltitle","label":"Journal
-        Title"},{"value":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","name":"articlelink","label":"CrossRef
-        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
-        Type"},{"value":"\u00a9 2021 Society of Biological Psychiatry. Published by
-        Elsevier Inc. All rights reserved.","name":"copyright","label":"Copyright"}]}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '7514'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:20:42 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1016/j.bpsc.2021.12.008
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,5,15]],"date-time":"2026-05-15T19:27:25Z","timestamp":1778873245924,"version":"3.51.4"},"reference-count":80,"publisher":"Elsevier
-        BV","issue":"4","license":[{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2024,4,5]],"date-time":"2024-04-05T00:00:00Z","timestamp":1712275200000},"content-version":"am","delay-in-days":370,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"}],"funder":[{"DOI":"10.13039\/100000001","name":"National
-        Science Foundation","doi-asserted-by":"publisher","award":["DGE-1650604"],"award-info":[{"award-number":["DGE-1650604"]}],"id":[{"id":"10.13039\/100000001","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000025","name":"National
-        Institute of Mental Health","doi-asserted-by":"publisher","award":["R01 MH100117-01"],"award-info":[{"award-number":["R01
-        MH100117-01"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["clinicalkey.com","clinicalkey.com.au","clinicalkey.es","clinicalkey.fr","clinicalkey.jp","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Biological
-        Psychiatry: Cognitive Neuroscience and Neuroimaging"],"published-print":{"date-parts":[[2023,4]]},"DOI":"10.1016\/j.bpsc.2021.12.008","type":"journal-article","created":{"date-parts":[[2021,12,23]],"date-time":"2021-12-23T11:53:49Z","timestamp":1640260429000},"page":"417-425","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":3,"title":["A
-        Multivoxel Pattern Analysis of Anhedonia During Fear Extinction: Implications
-        for Safety Learning"],"prefix":"10.1016","volume":"8","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-5346-6889","authenticated-orcid":false,"given":"Benjamin
-        M.","family":"Rosenberg","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Vincent","family":"Taschereau-Dumouchel","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hakwan","family":"Lau","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Katherine
-        S.","family":"Young","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Robin","family":"Nusslock","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Richard
-        E.","family":"Zinbarg","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Michelle
-        G.","family":"Craske","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","reference":[{"key":"10.1016\/j.bpsc.2021.12.008_bib1","doi-asserted-by":"crossref","first-page":"507","DOI":"10.1016\/S0166-2236(03)00233-9","article-title":"Parsing
-        reward [published correction appears in Trends Neurosci 2003; 26:581]","volume":"26","author":"Berridge","year":"2003","journal-title":"Trends
-        Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib2","doi-asserted-by":"crossref","first-page":"537","DOI":"10.1016\/j.neubiorev.2010.06.006","article-title":"Reconsidering
-        anhedonia in depression: Lessons from translational neuroscience","volume":"35","author":"Treadway","year":"2011","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib3","doi-asserted-by":"crossref","first-page":"12","DOI":"10.1186\/2045-5380-3-12","article-title":"Mapping
-        anhedonia onto reinforcement learning: A behavioural meta-analysis","volume":"3","author":"Huys","year":"2013","journal-title":"Biol
-        Mood Anxiety Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib4","doi-asserted-by":"crossref","first-page":"1409","DOI":"10.3389\/fpsyg.2015.01409","article-title":"Measuring
-        anhedonia: Impaired ability to pursue, experience, and learn about reward","volume":"6","author":"Thomsen","year":"2015","journal-title":"Front
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib5","doi-asserted-by":"crossref","first-page":"2084","DOI":"10.1093\/brain\/awn136","article-title":"Abnormal
-        temporal difference reward-learning signals in major depression","volume":"131","author":"Kumar","year":"2008","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib6","doi-asserted-by":"crossref","first-page":"76","DOI":"10.1016\/j.jpsychires.2008.03.001","article-title":"Reduced
-        hedonic capacity in major depressive disorder: Evidence from a probabilistic
-        reward task","volume":"43","author":"Pizzagalli","year":"2008","journal-title":"J\u00a0Psychiatr
-        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib7","doi-asserted-by":"crossref","first-page":"1751","DOI":"10.1093\/brain\/awr059","article-title":"Expected
-        value and prediction error abnormalities in depression and schizophrenia","volume":"134","author":"Gradin","year":"2011","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib8","doi-asserted-by":"crossref","first-page":"393","DOI":"10.1146\/annurev-clinpsy-050212-185606","article-title":"Depression,
-        stress, and anhedonia: Toward a synthesis and integrated model","volume":"10","author":"Pizzagalli","year":"2014","journal-title":"Annu
-        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib9","doi-asserted-by":"crossref","first-page":"1650","DOI":"10.1038\/s41386-021-01003-8","article-title":"Dysregulation
-        of threat neurocircuitry during fear extinction: The role of anhedonia","volume":"46","author":"Young","year":"2021","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib10","doi-asserted-by":"crossref","first-page":"1476","DOI":"10.1176\/appi.ajp.2007.07030504","article-title":"Functional
-        neuroimaging of anxiety: A meta-analysis of emotional processing in PTSD,
-        social anxiety disorder, and specific phobia","volume":"164","author":"Etkin","year":"2007","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib11","doi-asserted-by":"crossref","DOI":"10.1371\/journal.pone.0005865","article-title":"Human
-        fear conditioning and extinction in neuroimaging: A systematic review","volume":"4","author":"Sehlmeyer","year":"2009","journal-title":"PLoS
-        One"},{"key":"10.1016\/j.bpsc.2021.12.008_bib12","doi-asserted-by":"crossref","first-page":"17","DOI":"10.1016\/j.brat.2014.08.006","article-title":"Neuroscience
-        of fear extinction: Implications for assessment and treatment of fear-based
-        and anxiety related disorders","volume":"62","author":"Milad","year":"2014","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib13","doi-asserted-by":"crossref","first-page":"500","DOI":"10.1038\/mp.2015.88","article-title":"Neural
-        signatures of human fear conditioning: An updated and extended meta-analysis
-        of fMRI studies","volume":"21","author":"Fullana","year":"2016","journal-title":"Mol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib14","doi-asserted-by":"crossref","first-page":"320","DOI":"10.1038\/npp.2015.255","article-title":"Neuroimaging
-        of fear-associated learning","volume":"41","author":"Greco","year":"2016","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib15","doi-asserted-by":"crossref","first-page":"8491","DOI":"10.1523\/JNEUROSCI.0304-20.2020","article-title":"Revaluing
-        the role of vmPFC in the acquisition of Pavlovian threat conditioning in humans","volume":"40","author":"Battaglia","year":"2020","journal-title":"J\u00a0Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib16","doi-asserted-by":"crossref","first-page":"1255","DOI":"10.1176\/appi.ajp.2011.11040557","article-title":"The
-        study of fear extinction: Implications for anxiety disorders","volume":"168","author":"Graham","year":"2011","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib17","doi-asserted-by":"crossref","first-page":"17024","DOI":"10.1038\/nrdp.2017.24","article-title":"Anxiety
-        disorders [published correction appears in Nat Rev Dis Primers 2017; 3:17100]","volume":"3","author":"Craske","year":"2017","journal-title":"Nat
-        Rev Dis Primers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib18","doi-asserted-by":"crossref","first-page":"20170025","DOI":"10.1098\/rstb.2017.0025","article-title":"State-of-the-art
-        and future directions for extinction as a translational model for fear and
-        anxiety [published correction appears in Philos Trans R Soc Lond B Biol Sci
-        2018; 373:20180432]","volume":"373","author":"Craske","year":"2018","journal-title":"Philos
-        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib19","doi-asserted-by":"crossref","DOI":"10.7554\/eLife.38818","article-title":"Dopamine
-        neurons drive fear extinction learning by signaling the omission of expected
-        aversive outcomes","volume":"7","author":"Salinas-Hern\u00e1ndez","year":"2018","journal-title":"Elife"},{"key":"10.1016\/j.bpsc.2021.12.008_bib20","doi-asserted-by":"crossref","first-page":"164","DOI":"10.1038\/s41398-020-0814-x","article-title":"Dopamine:
-        From prediction error to psychotherapy","volume":"10","author":"Papalini","year":"2020","journal-title":"Transl
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib21","first-page":"125","article-title":"Threat
-        sensitivity, incentive sensitivity, and the experience of relief","volume":"77","author":"Carver","year":"2009","journal-title":"J\u00a0Pers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib22","doi-asserted-by":"crossref","first-page":"274","DOI":"10.1016\/j.tics.2019.01.013","article-title":"A\u00a0dopaminergic
-        basis for fear extinction","volume":"23","author":"Kalisch","year":"2019","journal-title":"Trends
-        Cogn Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib23","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.neubiorev.2016.03.004","article-title":"Assessing
-        anhedonia in depression: Potentials and pitfalls","volume":"65","author":"Rizvi","year":"2016","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib24","doi-asserted-by":"crossref","first-page":"712","DOI":"10.1080\/02699931.2016.1142428","article-title":"Positive
-        affect predicts less reacquisition of fear: Relevance for long-term outcomes
-        of exposure therapy","volume":"31","author":"Zbozinek","year":"2017","journal-title":"Cogn
-        Emot"},{"key":"10.1016\/j.bpsc.2021.12.008_bib25","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1016\/j.brat.2015.05.016","article-title":"The
-        effect of positive mood induction on reducing reinstatement fear: Relevance
-        for long term outcomes of exposure therapy","volume":"71","author":"Zbozinek","year":"2015","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib26","doi-asserted-by":"crossref","first-page":"531","DOI":"10.1016\/j.jad.2013.06.039","article-title":"The
-        neural correlates of reward-related processing in major depressive disorder:
-        A meta-analysis of functional magnetic resonance imaging studies","volume":"151","author":"Zhang","year":"2013","journal-title":"J\u00a0Affect
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib27","doi-asserted-by":"crossref","first-page":"499","DOI":"10.1196\/annals.1401.029","article-title":"Orbitofrontal
-        cortex function and structure in depression","volume":"1121","author":"Drevets","year":"2007","journal-title":"Ann
-        N Y Acad Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib28","doi-asserted-by":"crossref","first-page":"1942","DOI":"10.1073\/pnas.0812686106","article-title":"The
-        default mode network and self-referential processes in depression","volume":"106","author":"Sheline","year":"2009","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib29","doi-asserted-by":"crossref","first-page":"224","DOI":"10.1016\/j.biopsych.2015.02.020","article-title":"Depressive
-        rumination, the default-mode network, and the dark matter of clinical neuroscience","volume":"78","author":"Hamilton","year":"2015","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib30","doi-asserted-by":"crossref","first-page":"116287","DOI":"10.1016\/j.neuroimage.2019.116287","article-title":"Rumination
-        and the default mode network: Meta-analysis of brain imaging studies and implications
-        for depression","volume":"206","author":"Zhou","year":"2020","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib31","doi-asserted-by":"crossref","first-page":"91","DOI":"10.1146\/annurev-clinpsy-032816-045037","article-title":"Machine
-        learning approaches for clinical psychology and psychiatry","volume":"14","author":"Dwyer","year":"2018","journal-title":"Annu
-        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib32","first-page":"780","article-title":"Data-driven
-        approaches to neuroimaging analysis to enhance psychiatric diagnosis and therapy","volume":"5","author":"Zhang","year":"2020","journal-title":"Biol
-        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib33","doi-asserted-by":"crossref","first-page":"107573","DOI":"10.1016\/j.neuropsychologia.2020.107573","article-title":"Contextual
-        reinstatement promotes extinction generalization in healthy adults but not
-        PTSD","volume":"147","author":"Hennings","year":"2020","journal-title":"Neuropsychologia"},{"key":"10.1016\/j.bpsc.2021.12.008_bib34","doi-asserted-by":"crossref","first-page":"2342","DOI":"10.1038\/s41380-019-0520-3","article-title":"Multivoxel
-        pattern analysis reveals dissociations between subjective fear and its physiological
-        correlates","volume":"25","author":"Taschereau-Dumouchel","year":"2020","journal-title":"Mol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib35","doi-asserted-by":"crossref","first-page":"46","DOI":"10.1038\/s41398-020-01193-7","article-title":"Fear-induced
-        brain activations distinguish anxious and trauma-exposed brains","volume":"11","author":"Wen","year":"2021","journal-title":"Transl
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib36","series-title":"Manual
-        of the Eysenck Personality Questionnaire (Junior and Adult)","author":"Eysenck","year":"1975"},{"key":"10.1016\/j.bpsc.2021.12.008_bib37","doi-asserted-by":"crossref","first-page":"319","DOI":"10.1037\/0022-3514.67.2.319","article-title":"Behavioral
-        inhibition, behavioral activation, and affective responses to impending reward
-        and punishment: The BIS\/BAS scales","volume":"67","author":"Carver","year":"1994","journal-title":"J\u00a0Pers
-        Soc Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib38","doi-asserted-by":"crossref","first-page":"1191","DOI":"10.1016\/j.biopsych.2007.04.032","article-title":"A\u00a0role
-        for the human dorsal anterior cingulate cortex in fear expression","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib39","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1016\/j.biopsych.2006.10.011","article-title":"Recall
-        of fear extinction in humans activates the ventromedial prefrontal cortex
-        and hippocampus in concert","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib40","doi-asserted-by":"crossref","first-page":"622","DOI":"10.1001\/jamapsychiatry.2017.0329","article-title":"Skin
-        conductance responses and neural activations during fear conditioning and
-        extinction recall across anxiety disorders","volume":"74","author":"Marin","year":"2017","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib41","doi-asserted-by":"crossref","first-page":"618","DOI":"10.1001\/jamapsychiatry.2019.4833","article-title":"Multimodal
-        categorical and dimensional approaches to understanding threat conditioning
-        and its extinction in individuals with anxiety disorders","volume":"77","author":"Marin","year":"2020","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib42","doi-asserted-by":"crossref","first-page":"1293","DOI":"10.1098\/rstb.2001.0915","article-title":"A\u00a0probabilistic
-        atlas and reference system for the human brain: International Consortium for
-        Brain Mapping (ICBM)","volume":"356","author":"Mazziotta","year":"2001","journal-title":"Philos
-        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib43","first-page":"2825","article-title":"Scikit-learn:
-        Machine learning in Python","volume":"12","author":"Pedregosa","year":"2011","journal-title":"J\u00a0Mach
-        Learn Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib44","doi-asserted-by":"crossref","first-page":"1125","DOI":"10.1152\/jn.00338.2011","article-title":"The
-        organization of the human cerebral cortex estimated by intrinsic functional
-        connectivity","volume":"106","author":"Yeo","year":"2011","journal-title":"J\u00a0Neurophysiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib45","doi-asserted-by":"crossref","first-page":"3095","DOI":"10.1093\/cercor\/bhx179","article-title":"Local-global
-        parcellation of the human cerebral cortex from intrinsic functional connectivity
-        MRI","volume":"28","author":"Schaefer","year":"2018","journal-title":"Cereb
-        Cortex"},{"key":"10.1016\/j.bpsc.2021.12.008_bib46","doi-asserted-by":"crossref","first-page":"167","DOI":"10.1016\/j.conb.2019.04.002","article-title":"Interpreting
-        encoding and decoding models","volume":"55","author":"Kriegeskorte","year":"2019","journal-title":"Curr
-        Opin Neurobiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib47","doi-asserted-by":"crossref","first-page":"12569","DOI":"10.1073\/pnas.0800005105","article-title":"A\u00a0critical
-        role for the right fronto-insular cortex in switching between central-executive
-        and default-mode networks","volume":"105","author":"Sridharan","year":"2008","journal-title":"Proc
-        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib48","doi-asserted-by":"crossref","first-page":"655","DOI":"10.1007\/s00429-010-0262-0","article-title":"Saliency,
-        switching, attention and control: A network model of insula function","volume":"214","author":"Menon","year":"2010","journal-title":"Brain
-        Struct Funct"},{"key":"10.1016\/j.bpsc.2021.12.008_bib49","doi-asserted-by":"crossref","first-page":"180","DOI":"10.1016\/j.neuroimage.2014.05.052","article-title":"The
-        salience network is responsible for switching between the default mode network
-        and the central executive network: Replication from DCM","volume":"99","author":"Goulden","year":"2014","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib50","doi-asserted-by":"crossref","first-page":"327","DOI":"10.1016\/j.biopsych.2011.02.003","article-title":"Default-mode
-        and task-positive network activity in major depressive disorder: Implications
-        for adaptive and maladaptive rumination","volume":"70","author":"Hamilton","year":"2011","journal-title":"Biol
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib51","doi-asserted-by":"crossref","first-page":"603","DOI":"10.1001\/jamapsychiatry.2015.0071","article-title":"Large-scale
-        network dysfunction in major depressive disorder: A meta-analysis of resting-state
-        functional connectivity","volume":"72","author":"Kaiser","year":"2015","journal-title":"JAMA
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib52","doi-asserted-by":"crossref","first-page":"159","DOI":"10.1111\/j.1467-8721.2008.00567.x","article-title":"Neuroimaging
-        and depression: Current status and unresolved issues","volume":"17","author":"Gotlib","year":"2008","journal-title":"Curr
-        Dir Psychol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib53","doi-asserted-by":"crossref","first-page":"239","DOI":"10.1016\/j.bbr.2009.03.004","article-title":"The
-        functional neuroanatomy of depression: Distinct roles for ventromedial and
-        dorsolateral prefrontal cortex","volume":"201","author":"Koenigs","year":"2009","journal-title":"Behav
-        Brain Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib54","doi-asserted-by":"crossref","first-page":"467","DOI":"10.1038\/nrn3027","article-title":"Neural
-        mechanisms of the cognitive model of depression","volume":"12","author":"Disner","year":"2011","journal-title":"Nat
-        Rev Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib55","first-page":"280","article-title":"Negative
-        learning bias in depression revisited: Enhanced neural response to surprising
-        reward across psychiatric disorders","volume":"6","author":"Brolsma","year":"2021","journal-title":"Biol
-        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib56","doi-asserted-by":"crossref","first-page":"348","DOI":"10.1016\/j.cpr.2006.12.003","article-title":"Social
-        anxiety spectrum and diminished positive experiences: Theoretical synthesis
-        and meta-analysis","volume":"27","author":"Kashdan","year":"2007","journal-title":"Clin
-        Psychol Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib57","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1016\/j.psychres.2014.02.002","article-title":"Anhedonia
-        in obsessive-compulsive disorder: Beyond comorbid depression","volume":"216","author":"Abramovitch","year":"2014","journal-title":"Psychiatry
-        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib58","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1016\/j.neubiorev.2015.01.019","article-title":"Reward
-        functioning in PTSD: A systematic review exploring the mechanisms underlying
-        anhedonia","volume":"51","author":"Nawijn","year":"2015","journal-title":"Neurosci
-        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib59","doi-asserted-by":"crossref","first-page":"282","DOI":"10.1002\/wps.20566","article-title":"Progress
-        in achieving quantitative classification of psychopathology","volume":"17","author":"Krueger","year":"2018","journal-title":"World
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib60","doi-asserted-by":"crossref","first-page":"853","DOI":"10.1037\/abn0000197","article-title":"A\u00a0comparison
-        and integration of structural models of depression and anxiety in a clinical
-        sample: Support for and validation of the tri-level model","volume":"125","author":"Naragon-Gainey","year":"2016","journal-title":"J\u00a0Abnorm
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib61","doi-asserted-by":"crossref","first-page":"334","DOI":"10.1016\/j.janxdis.2010.01.006","article-title":"Testing
-        a hierarchical model of anxiety and depression in adolescents: A tri-level
-        model","volume":"24","author":"Prenoveau","year":"2010","journal-title":"J\u00a0Anxiety
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib62","doi-asserted-by":"crossref","first-page":"256","DOI":"10.1037\/a0016608","article-title":"A\u00a0proposal
-        for a dimensional classification system based on the shared features of the
-        DSM-IV anxiety and mood disorders: Implications for assessment and treatment","volume":"21","author":"Brown","year":"2009","journal-title":"Psychol
-        Assess"},{"key":"10.1016\/j.bpsc.2021.12.008_bib63","doi-asserted-by":"crossref","first-page":"395","DOI":"10.1176\/appi.ajp.2014.14020138","article-title":"The
-        NIMH Research Domain Criteria (RDoC) project: Precision medicine for psychiatry","volume":"171","author":"Insel","year":"2014","journal-title":"Am
-        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib64","doi-asserted-by":"crossref","first-page":"909","DOI":"10.1002\/da.22301","article-title":"CBT
-        and the future of personalized treatment: A proposal","volume":"31","author":"Thompson-Hollands","year":"2014","journal-title":"Depress
-        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib65","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1037\/abn0000258","article-title":"The
-        Hierarchical Taxonomy of Psychopathology (HiTOP): A dimensional alternative
-        to traditional nosologies","volume":"126","author":"Kotov","year":"2017","journal-title":"J\u00a0Abnorm
-        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib66","doi-asserted-by":"crossref","first-page":"24","DOI":"10.1002\/wps.20478","article-title":"A\u00a0paradigm
-        shift in psychiatric classification: The Hierarchical Taxonomy of Psychopathology
-        (HiTOP)","volume":"17","author":"Kotov","year":"2018","journal-title":"World
-        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib67","doi-asserted-by":"crossref","first-page":"1069","DOI":"10.1037\/ccp0000452","article-title":"Integrating
-        the Hierarchical Taxonomy of Psychopathology (HiTOP) into clinical practice","volume":"87","author":"Ruggero","year":"2019","journal-title":"J\u00a0Consult
-        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib68","first-page":"477","article-title":"Integrating
-        psychotherapy with the hierarchical taxonomy of psychopathology (HiTOP)","volume":"30","author":"Hopwood","year":"2020","journal-title":"J\u00a0Psychother
-        Integr"},{"key":"10.1016\/j.bpsc.2021.12.008_bib69","doi-asserted-by":"crossref","first-page":"39","DOI":"10.1097\/YCO.0000000000000220","article-title":"The
-        key role of extinction learning in anxiety disorders: Behavioral strategies
-        to enhance exposure-based treatments","volume":"29","author":"Pittig","year":"2016","journal-title":"Curr
-        Opin Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib70","doi-asserted-by":"crossref","first-page":"87","DOI":"10.1016\/j.brat.2016.08.015","article-title":"The
-        validity of laboratory-based treatment research: Bridging the gap between
-        fear extinction and exposure treatment","volume":"86","author":"Scheveneels","year":"2016","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib71","doi-asserted-by":"crossref","first-page":"103528","DOI":"10.1016\/j.brat.2019.103528","article-title":"Human
-        fear conditioning: From neuroscience to the clinic","volume":"124","author":"Fullana","year":"2020","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib72","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1016\/j.brat.2007.10.003","article-title":"Optimizing
-        inhibitory learning during exposure therapy","volume":"46","author":"Craske","year":"2008","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib73","doi-asserted-by":"crossref","first-page":"322","DOI":"10.5127\/jep.026511","article-title":"Role
-        of inhibition in exposure therapy","volume":"3","author":"Craske","year":"2012","journal-title":"J\u00a0Exp
-        Psychopathol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib74","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1016\/j.brat.2014.04.006","article-title":"Maximizing
-        exposure therapy: An inhibitory learning approach","volume":"58","author":"Craske","year":"2014","journal-title":"Behav
-        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib75","doi-asserted-by":"crossref","first-page":"927","DOI":"10.1002\/da.22490","article-title":"Treatment
-        for anhedonia: A neuroscience driven approach","volume":"33","author":"Craske","year":"2016","journal-title":"Depress
-        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib76","doi-asserted-by":"crossref","first-page":"457","DOI":"10.1037\/ccp0000396","article-title":"Positive
-        affect treatment for depression and anxiety: A randomized clinical trial for
-        a core feature of anhedonia","volume":"87","author":"Craske","year":"2019","journal-title":"J\u00a0Consult
-        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib77","doi-asserted-by":"crossref","first-page":"54","DOI":"10.1016\/j.janxdis.2008.03.015","article-title":"Repetitive
-        TMS combined with exposure therapy for PTSD: A preliminary study","volume":"23","author":"Osuch","year":"2009","journal-title":"J\u00a0Anxiety
-        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib78","doi-asserted-by":"crossref","first-page":"151","DOI":"10.1016\/j.brs.2013.10.006","article-title":"Review
-        of the effectiveness of transcranial magnetic stimulation for post-traumatic
-        stress disorder","volume":"7","author":"Karsen","year":"2014","journal-title":"Brain
-        Stimul"},{"key":"10.1016\/j.bpsc.2021.12.008_bib79","first-page":"53","article-title":"Exposure
-        therapy and simultaneous repetitive transcranial magnetic stimulation: A controlled
-        pilot trial for the treatment of posttraumatic stress disorder","volume":"35","author":"Fryml","year":"2019","journal-title":"J\u00a0ECT"},{"key":"10.1016\/j.bpsc.2021.12.008_bib80","doi-asserted-by":"crossref","first-page":"534","DOI":"10.1001\/jamapsychiatry.2019.3671","article-title":"Establishment
-        of best practices for evidence for prediction: A review","volume":"77","author":"Poldrack","year":"2020","journal-title":"JAMA
-        Psychiatry"}],"container-title":["Biological Psychiatry: Cognitive Neuroscience
-        and Neuroimaging"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,11,7]],"date-time":"2025-11-07T13:20:01Z","timestamp":1762521601000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S2451902221003517"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,4]]},"references-count":80,"journal-issue":{"issue":"4","published-print":{"date-parts":[[2023,4]]}},"alternative-id":["S2451902221003517"],"URL":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","relation":{},"ISSN":["2451-9022"],"issn-type":[{"value":"2451-9022","type":"print"}],"subject":[],"published":{"date-parts":[[2023,4]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
-        article is maintained by"},{"value":"A Multivoxel Pattern Analysis of Anhedonia
-        During Fear Extinction: Implications for Safety Learning","name":"articletitle","label":"Article
-        Title"},{"value":"Biological Psychiatry: Cognitive Neuroscience and Neuroimaging","name":"journaltitle","label":"Journal
-        Title"},{"value":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","name":"articlelink","label":"CrossRef
-        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
-        Type"},{"value":"\u00a9 2021 Society of Biological Psychiatry. Published by
-        Elsevier Inc. All rights reserved.","name":"copyright","label":"Copyright"}]}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '7514'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 22 Oct 2026 10:20:42 GMT
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      content-encoding:
-      - gzip
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      vary:
-      - Accept-Encoding
-      x-api-pool:
-      - public-single
-      x-concurrency-limit:
-      - '1'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '5'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
-    method: GET
-    uri: https://api.crossref.org/works/10.1176/ajp.2006.163.4.735
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.biopsych.2021.02.423&rows=100&select=DOI%2Crelation
   response:
     body:
       string: ''
     headers:
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
+      content-length:
       - '0'
-      Date:
-      - Thu, 22 Oct 2026 10:20:42 GMT
+      date:
+      - Thu, 22 Oct 2026 20:37:23 GMT
     status:
       code: 429
       message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.biopsych.2021.02.423&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:24 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
 - request:
     body: null
     headers:
@@ -1490,28 +743,223 @@ interactions:
       User-Agent:
       - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
     method: GET
-    uri: https://api.crossref.org/works/10.1176/ajp.2006.163.4.735
+    uri: https://api.crossref.org/works/10.1016/j.bpsc.2021.12.008
   response:
     body:
-      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,22]],"date-time":"2026-09-22T11:06:36Z","timestamp":1790075196741,"version":"4.0.1"},"reference-count":10,"publisher":"American
-        Psychiatric Association Publishing","issue":"4","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["AJP"],"published-print":{"date-parts":[[2006,4]]},"DOI":"10.1176\/ajp.2006.163.4.735","type":"journal-article","created":{"date-parts":[[2014,12,17]],"date-time":"2014-12-17T21:34:34Z","timestamp":1418852074000},"page":"735-738","source":"Crossref","is-referenced-by-count":377,"title":["Use
-        of fMRI to Predict Recovery From Unipolar Depression With Cognitive Behavior
-        Therapy"],"prefix":"10.1176","volume":"163","author":[{"suffix":"Ph.D.","given":"Greg
-        J.","family":"Siegle","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"suffix":"M.D.","given":"Cameron
-        S.","family":"Carter","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"suffix":"M.D.","given":"Michael
-        E.","family":"Thase","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"230","reference":[{"key":"p_1","volume-title":"Cognitive
-        Therapy of Depression","author":"Beck AT","year":"1979"},{"key":"p_2","doi-asserted-by":"publisher","DOI":"10.1111\/1529-1006.00008"},{"key":"p_3","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(02)01314-8"},{"key":"p_4","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(00)01020-9"},{"key":"p_5","doi-asserted-by":"publisher","DOI":"10.1016\/S0006-3223(01)01263-X"},{"key":"p_6","volume-title":"Patient
-        Edition (SCIDP), version 2.","author":"First MB","year":"1996"},{"key":"p_7","doi-asserted-by":"publisher","DOI":"10.1001\/archpsyc.61.9.877"},{"key":"p_8","doi-asserted-by":"publisher","DOI":"10.1001\/archpsyc.61.1.34"},{"key":"p_9","doi-asserted-by":"publisher","DOI":"10.1093\/bmb\/65.1.193"},{"key":"p_10","doi-asserted-by":"publisher","DOI":"10.1037\/0021-843X.102.1.20"}],"container-title":["American
-        Journal of Psychiatry"],"original-title":[],"language":"en","link":[{"URL":"http:\/\/psychiatryonline.org\/doi\/10.1176\/ajp.2006.163.4.735","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,7,30]],"date-time":"2024-07-30T20:59:54Z","timestamp":1722373194000},"score":1,"resource":{"primary":{"URL":"https:\/\/psychiatryonline.org\/doi\/10.1176\/ajp.2006.163.4.735"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2006,4]]},"references-count":10,"aliases":["10.1176\/appi.ajp.163.4.735"],"journal-issue":{"issue":"4","published-print":{"date-parts":[[2006,4]]}},"alternative-id":["10.1176\/ajp.2006.163.4.735"],"URL":"https:\/\/doi.org\/10.1176\/ajp.2006.163.4.735","relation":{},"ISSN":["0002-953X","1535-7228"],"issn-type":[{"value":"0002-953X","type":"print"},{"value":"1535-7228","type":"electronic"}],"subject":[],"published":{"date-parts":[[2006,4]]}}}'
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,5,15]],"date-time":"2026-05-15T19:27:25Z","timestamp":1778873245924,"version":"3.51.4"},"reference-count":80,"publisher":"Elsevier
+        BV","issue":"4","license":[{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2023,4,1]],"date-time":"2023-04-01T00:00:00Z","timestamp":1680307200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2024,4,5]],"date-time":"2024-04-05T00:00:00Z","timestamp":1712275200000},"content-version":"am","delay-in-days":370,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"}],"funder":[{"DOI":"10.13039\/100000001","name":"National
+        Science Foundation","doi-asserted-by":"publisher","award":["DGE-1650604"],"award-info":[{"award-number":["DGE-1650604"]}],"id":[{"id":"10.13039\/100000001","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000025","name":"National
+        Institute of Mental Health","doi-asserted-by":"publisher","award":["R01 MH100117-01"],"award-info":[{"award-number":["R01
+        MH100117-01"]}],"id":[{"id":"10.13039\/100000025","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["clinicalkey.com","clinicalkey.com.au","clinicalkey.es","clinicalkey.fr","clinicalkey.jp","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Biological
+        Psychiatry: Cognitive Neuroscience and Neuroimaging"],"published-print":{"date-parts":[[2023,4]]},"DOI":"10.1016\/j.bpsc.2021.12.008","type":"journal-article","created":{"date-parts":[[2021,12,23]],"date-time":"2021-12-23T11:53:49Z","timestamp":1640260429000},"page":"417-425","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":3,"title":["A
+        Multivoxel Pattern Analysis of Anhedonia During Fear Extinction: Implications
+        for Safety Learning"],"prefix":"10.1016","volume":"8","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-5346-6889","authenticated-orcid":false,"given":"Benjamin
+        M.","family":"Rosenberg","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Vincent","family":"Taschereau-Dumouchel","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hakwan","family":"Lau","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Katherine
+        S.","family":"Young","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Robin","family":"Nusslock","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Richard
+        E.","family":"Zinbarg","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Michelle
+        G.","family":"Craske","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","reference":[{"key":"10.1016\/j.bpsc.2021.12.008_bib1","doi-asserted-by":"crossref","first-page":"507","DOI":"10.1016\/S0166-2236(03)00233-9","article-title":"Parsing
+        reward [published correction appears in Trends Neurosci 2003; 26:581]","volume":"26","author":"Berridge","year":"2003","journal-title":"Trends
+        Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib2","doi-asserted-by":"crossref","first-page":"537","DOI":"10.1016\/j.neubiorev.2010.06.006","article-title":"Reconsidering
+        anhedonia in depression: Lessons from translational neuroscience","volume":"35","author":"Treadway","year":"2011","journal-title":"Neurosci
+        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib3","doi-asserted-by":"crossref","first-page":"12","DOI":"10.1186\/2045-5380-3-12","article-title":"Mapping
+        anhedonia onto reinforcement learning: A behavioural meta-analysis","volume":"3","author":"Huys","year":"2013","journal-title":"Biol
+        Mood Anxiety Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib4","doi-asserted-by":"crossref","first-page":"1409","DOI":"10.3389\/fpsyg.2015.01409","article-title":"Measuring
+        anhedonia: Impaired ability to pursue, experience, and learn about reward","volume":"6","author":"Thomsen","year":"2015","journal-title":"Front
+        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib5","doi-asserted-by":"crossref","first-page":"2084","DOI":"10.1093\/brain\/awn136","article-title":"Abnormal
+        temporal difference reward-learning signals in major depression","volume":"131","author":"Kumar","year":"2008","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib6","doi-asserted-by":"crossref","first-page":"76","DOI":"10.1016\/j.jpsychires.2008.03.001","article-title":"Reduced
+        hedonic capacity in major depressive disorder: Evidence from a probabilistic
+        reward task","volume":"43","author":"Pizzagalli","year":"2008","journal-title":"J\u00a0Psychiatr
+        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib7","doi-asserted-by":"crossref","first-page":"1751","DOI":"10.1093\/brain\/awr059","article-title":"Expected
+        value and prediction error abnormalities in depression and schizophrenia","volume":"134","author":"Gradin","year":"2011","journal-title":"Brain"},{"key":"10.1016\/j.bpsc.2021.12.008_bib8","doi-asserted-by":"crossref","first-page":"393","DOI":"10.1146\/annurev-clinpsy-050212-185606","article-title":"Depression,
+        stress, and anhedonia: Toward a synthesis and integrated model","volume":"10","author":"Pizzagalli","year":"2014","journal-title":"Annu
+        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib9","doi-asserted-by":"crossref","first-page":"1650","DOI":"10.1038\/s41386-021-01003-8","article-title":"Dysregulation
+        of threat neurocircuitry during fear extinction: The role of anhedonia","volume":"46","author":"Young","year":"2021","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib10","doi-asserted-by":"crossref","first-page":"1476","DOI":"10.1176\/appi.ajp.2007.07030504","article-title":"Functional
+        neuroimaging of anxiety: A meta-analysis of emotional processing in PTSD,
+        social anxiety disorder, and specific phobia","volume":"164","author":"Etkin","year":"2007","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib11","doi-asserted-by":"crossref","DOI":"10.1371\/journal.pone.0005865","article-title":"Human
+        fear conditioning and extinction in neuroimaging: A systematic review","volume":"4","author":"Sehlmeyer","year":"2009","journal-title":"PLoS
+        One"},{"key":"10.1016\/j.bpsc.2021.12.008_bib12","doi-asserted-by":"crossref","first-page":"17","DOI":"10.1016\/j.brat.2014.08.006","article-title":"Neuroscience
+        of fear extinction: Implications for assessment and treatment of fear-based
+        and anxiety related disorders","volume":"62","author":"Milad","year":"2014","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib13","doi-asserted-by":"crossref","first-page":"500","DOI":"10.1038\/mp.2015.88","article-title":"Neural
+        signatures of human fear conditioning: An updated and extended meta-analysis
+        of fMRI studies","volume":"21","author":"Fullana","year":"2016","journal-title":"Mol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib14","doi-asserted-by":"crossref","first-page":"320","DOI":"10.1038\/npp.2015.255","article-title":"Neuroimaging
+        of fear-associated learning","volume":"41","author":"Greco","year":"2016","journal-title":"Neuropsychopharmacology"},{"key":"10.1016\/j.bpsc.2021.12.008_bib15","doi-asserted-by":"crossref","first-page":"8491","DOI":"10.1523\/JNEUROSCI.0304-20.2020","article-title":"Revaluing
+        the role of vmPFC in the acquisition of Pavlovian threat conditioning in humans","volume":"40","author":"Battaglia","year":"2020","journal-title":"J\u00a0Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib16","doi-asserted-by":"crossref","first-page":"1255","DOI":"10.1176\/appi.ajp.2011.11040557","article-title":"The
+        study of fear extinction: Implications for anxiety disorders","volume":"168","author":"Graham","year":"2011","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib17","doi-asserted-by":"crossref","first-page":"17024","DOI":"10.1038\/nrdp.2017.24","article-title":"Anxiety
+        disorders [published correction appears in Nat Rev Dis Primers 2017; 3:17100]","volume":"3","author":"Craske","year":"2017","journal-title":"Nat
+        Rev Dis Primers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib18","doi-asserted-by":"crossref","first-page":"20170025","DOI":"10.1098\/rstb.2017.0025","article-title":"State-of-the-art
+        and future directions for extinction as a translational model for fear and
+        anxiety [published correction appears in Philos Trans R Soc Lond B Biol Sci
+        2018; 373:20180432]","volume":"373","author":"Craske","year":"2018","journal-title":"Philos
+        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib19","doi-asserted-by":"crossref","DOI":"10.7554\/eLife.38818","article-title":"Dopamine
+        neurons drive fear extinction learning by signaling the omission of expected
+        aversive outcomes","volume":"7","author":"Salinas-Hern\u00e1ndez","year":"2018","journal-title":"Elife"},{"key":"10.1016\/j.bpsc.2021.12.008_bib20","doi-asserted-by":"crossref","first-page":"164","DOI":"10.1038\/s41398-020-0814-x","article-title":"Dopamine:
+        From prediction error to psychotherapy","volume":"10","author":"Papalini","year":"2020","journal-title":"Transl
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib21","first-page":"125","article-title":"Threat
+        sensitivity, incentive sensitivity, and the experience of relief","volume":"77","author":"Carver","year":"2009","journal-title":"J\u00a0Pers"},{"key":"10.1016\/j.bpsc.2021.12.008_bib22","doi-asserted-by":"crossref","first-page":"274","DOI":"10.1016\/j.tics.2019.01.013","article-title":"A\u00a0dopaminergic
+        basis for fear extinction","volume":"23","author":"Kalisch","year":"2019","journal-title":"Trends
+        Cogn Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib23","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.neubiorev.2016.03.004","article-title":"Assessing
+        anhedonia in depression: Potentials and pitfalls","volume":"65","author":"Rizvi","year":"2016","journal-title":"Neurosci
+        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib24","doi-asserted-by":"crossref","first-page":"712","DOI":"10.1080\/02699931.2016.1142428","article-title":"Positive
+        affect predicts less reacquisition of fear: Relevance for long-term outcomes
+        of exposure therapy","volume":"31","author":"Zbozinek","year":"2017","journal-title":"Cogn
+        Emot"},{"key":"10.1016\/j.bpsc.2021.12.008_bib25","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1016\/j.brat.2015.05.016","article-title":"The
+        effect of positive mood induction on reducing reinstatement fear: Relevance
+        for long term outcomes of exposure therapy","volume":"71","author":"Zbozinek","year":"2015","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib26","doi-asserted-by":"crossref","first-page":"531","DOI":"10.1016\/j.jad.2013.06.039","article-title":"The
+        neural correlates of reward-related processing in major depressive disorder:
+        A meta-analysis of functional magnetic resonance imaging studies","volume":"151","author":"Zhang","year":"2013","journal-title":"J\u00a0Affect
+        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib27","doi-asserted-by":"crossref","first-page":"499","DOI":"10.1196\/annals.1401.029","article-title":"Orbitofrontal
+        cortex function and structure in depression","volume":"1121","author":"Drevets","year":"2007","journal-title":"Ann
+        N Y Acad Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib28","doi-asserted-by":"crossref","first-page":"1942","DOI":"10.1073\/pnas.0812686106","article-title":"The
+        default mode network and self-referential processes in depression","volume":"106","author":"Sheline","year":"2009","journal-title":"Proc
+        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib29","doi-asserted-by":"crossref","first-page":"224","DOI":"10.1016\/j.biopsych.2015.02.020","article-title":"Depressive
+        rumination, the default-mode network, and the dark matter of clinical neuroscience","volume":"78","author":"Hamilton","year":"2015","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib30","doi-asserted-by":"crossref","first-page":"116287","DOI":"10.1016\/j.neuroimage.2019.116287","article-title":"Rumination
+        and the default mode network: Meta-analysis of brain imaging studies and implications
+        for depression","volume":"206","author":"Zhou","year":"2020","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib31","doi-asserted-by":"crossref","first-page":"91","DOI":"10.1146\/annurev-clinpsy-032816-045037","article-title":"Machine
+        learning approaches for clinical psychology and psychiatry","volume":"14","author":"Dwyer","year":"2018","journal-title":"Annu
+        Rev Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib32","first-page":"780","article-title":"Data-driven
+        approaches to neuroimaging analysis to enhance psychiatric diagnosis and therapy","volume":"5","author":"Zhang","year":"2020","journal-title":"Biol
+        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib33","doi-asserted-by":"crossref","first-page":"107573","DOI":"10.1016\/j.neuropsychologia.2020.107573","article-title":"Contextual
+        reinstatement promotes extinction generalization in healthy adults but not
+        PTSD","volume":"147","author":"Hennings","year":"2020","journal-title":"Neuropsychologia"},{"key":"10.1016\/j.bpsc.2021.12.008_bib34","doi-asserted-by":"crossref","first-page":"2342","DOI":"10.1038\/s41380-019-0520-3","article-title":"Multivoxel
+        pattern analysis reveals dissociations between subjective fear and its physiological
+        correlates","volume":"25","author":"Taschereau-Dumouchel","year":"2020","journal-title":"Mol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib35","doi-asserted-by":"crossref","first-page":"46","DOI":"10.1038\/s41398-020-01193-7","article-title":"Fear-induced
+        brain activations distinguish anxious and trauma-exposed brains","volume":"11","author":"Wen","year":"2021","journal-title":"Transl
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib36","series-title":"Manual
+        of the Eysenck Personality Questionnaire (Junior and Adult)","author":"Eysenck","year":"1975"},{"key":"10.1016\/j.bpsc.2021.12.008_bib37","doi-asserted-by":"crossref","first-page":"319","DOI":"10.1037\/0022-3514.67.2.319","article-title":"Behavioral
+        inhibition, behavioral activation, and affective responses to impending reward
+        and punishment: The BIS\/BAS scales","volume":"67","author":"Carver","year":"1994","journal-title":"J\u00a0Pers
+        Soc Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib38","doi-asserted-by":"crossref","first-page":"1191","DOI":"10.1016\/j.biopsych.2007.04.032","article-title":"A\u00a0role
+        for the human dorsal anterior cingulate cortex in fear expression","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib39","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1016\/j.biopsych.2006.10.011","article-title":"Recall
+        of fear extinction in humans activates the ventromedial prefrontal cortex
+        and hippocampus in concert","volume":"62","author":"Milad","year":"2007","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib40","doi-asserted-by":"crossref","first-page":"622","DOI":"10.1001\/jamapsychiatry.2017.0329","article-title":"Skin
+        conductance responses and neural activations during fear conditioning and
+        extinction recall across anxiety disorders","volume":"74","author":"Marin","year":"2017","journal-title":"JAMA
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib41","doi-asserted-by":"crossref","first-page":"618","DOI":"10.1001\/jamapsychiatry.2019.4833","article-title":"Multimodal
+        categorical and dimensional approaches to understanding threat conditioning
+        and its extinction in individuals with anxiety disorders","volume":"77","author":"Marin","year":"2020","journal-title":"JAMA
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib42","doi-asserted-by":"crossref","first-page":"1293","DOI":"10.1098\/rstb.2001.0915","article-title":"A\u00a0probabilistic
+        atlas and reference system for the human brain: International Consortium for
+        Brain Mapping (ICBM)","volume":"356","author":"Mazziotta","year":"2001","journal-title":"Philos
+        Trans R Soc Lond B Biol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib43","first-page":"2825","article-title":"Scikit-learn:
+        Machine learning in Python","volume":"12","author":"Pedregosa","year":"2011","journal-title":"J\u00a0Mach
+        Learn Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib44","doi-asserted-by":"crossref","first-page":"1125","DOI":"10.1152\/jn.00338.2011","article-title":"The
+        organization of the human cerebral cortex estimated by intrinsic functional
+        connectivity","volume":"106","author":"Yeo","year":"2011","journal-title":"J\u00a0Neurophysiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib45","doi-asserted-by":"crossref","first-page":"3095","DOI":"10.1093\/cercor\/bhx179","article-title":"Local-global
+        parcellation of the human cerebral cortex from intrinsic functional connectivity
+        MRI","volume":"28","author":"Schaefer","year":"2018","journal-title":"Cereb
+        Cortex"},{"key":"10.1016\/j.bpsc.2021.12.008_bib46","doi-asserted-by":"crossref","first-page":"167","DOI":"10.1016\/j.conb.2019.04.002","article-title":"Interpreting
+        encoding and decoding models","volume":"55","author":"Kriegeskorte","year":"2019","journal-title":"Curr
+        Opin Neurobiol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib47","doi-asserted-by":"crossref","first-page":"12569","DOI":"10.1073\/pnas.0800005105","article-title":"A\u00a0critical
+        role for the right fronto-insular cortex in switching between central-executive
+        and default-mode networks","volume":"105","author":"Sridharan","year":"2008","journal-title":"Proc
+        Natl Acad Sci U S A"},{"key":"10.1016\/j.bpsc.2021.12.008_bib48","doi-asserted-by":"crossref","first-page":"655","DOI":"10.1007\/s00429-010-0262-0","article-title":"Saliency,
+        switching, attention and control: A network model of insula function","volume":"214","author":"Menon","year":"2010","journal-title":"Brain
+        Struct Funct"},{"key":"10.1016\/j.bpsc.2021.12.008_bib49","doi-asserted-by":"crossref","first-page":"180","DOI":"10.1016\/j.neuroimage.2014.05.052","article-title":"The
+        salience network is responsible for switching between the default mode network
+        and the central executive network: Replication from DCM","volume":"99","author":"Goulden","year":"2014","journal-title":"Neuroimage"},{"key":"10.1016\/j.bpsc.2021.12.008_bib50","doi-asserted-by":"crossref","first-page":"327","DOI":"10.1016\/j.biopsych.2011.02.003","article-title":"Default-mode
+        and task-positive network activity in major depressive disorder: Implications
+        for adaptive and maladaptive rumination","volume":"70","author":"Hamilton","year":"2011","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib51","doi-asserted-by":"crossref","first-page":"603","DOI":"10.1001\/jamapsychiatry.2015.0071","article-title":"Large-scale
+        network dysfunction in major depressive disorder: A meta-analysis of resting-state
+        functional connectivity","volume":"72","author":"Kaiser","year":"2015","journal-title":"JAMA
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib52","doi-asserted-by":"crossref","first-page":"159","DOI":"10.1111\/j.1467-8721.2008.00567.x","article-title":"Neuroimaging
+        and depression: Current status and unresolved issues","volume":"17","author":"Gotlib","year":"2008","journal-title":"Curr
+        Dir Psychol Sci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib53","doi-asserted-by":"crossref","first-page":"239","DOI":"10.1016\/j.bbr.2009.03.004","article-title":"The
+        functional neuroanatomy of depression: Distinct roles for ventromedial and
+        dorsolateral prefrontal cortex","volume":"201","author":"Koenigs","year":"2009","journal-title":"Behav
+        Brain Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib54","doi-asserted-by":"crossref","first-page":"467","DOI":"10.1038\/nrn3027","article-title":"Neural
+        mechanisms of the cognitive model of depression","volume":"12","author":"Disner","year":"2011","journal-title":"Nat
+        Rev Neurosci"},{"key":"10.1016\/j.bpsc.2021.12.008_bib55","first-page":"280","article-title":"Negative
+        learning bias in depression revisited: Enhanced neural response to surprising
+        reward across psychiatric disorders","volume":"6","author":"Brolsma","year":"2021","journal-title":"Biol
+        Psychiatry Cogn Neurosci Neuroimaging"},{"key":"10.1016\/j.bpsc.2021.12.008_bib56","doi-asserted-by":"crossref","first-page":"348","DOI":"10.1016\/j.cpr.2006.12.003","article-title":"Social
+        anxiety spectrum and diminished positive experiences: Theoretical synthesis
+        and meta-analysis","volume":"27","author":"Kashdan","year":"2007","journal-title":"Clin
+        Psychol Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib57","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1016\/j.psychres.2014.02.002","article-title":"Anhedonia
+        in obsessive-compulsive disorder: Beyond comorbid depression","volume":"216","author":"Abramovitch","year":"2014","journal-title":"Psychiatry
+        Res"},{"key":"10.1016\/j.bpsc.2021.12.008_bib58","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1016\/j.neubiorev.2015.01.019","article-title":"Reward
+        functioning in PTSD: A systematic review exploring the mechanisms underlying
+        anhedonia","volume":"51","author":"Nawijn","year":"2015","journal-title":"Neurosci
+        Biobehav Rev"},{"key":"10.1016\/j.bpsc.2021.12.008_bib59","doi-asserted-by":"crossref","first-page":"282","DOI":"10.1002\/wps.20566","article-title":"Progress
+        in achieving quantitative classification of psychopathology","volume":"17","author":"Krueger","year":"2018","journal-title":"World
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib60","doi-asserted-by":"crossref","first-page":"853","DOI":"10.1037\/abn0000197","article-title":"A\u00a0comparison
+        and integration of structural models of depression and anxiety in a clinical
+        sample: Support for and validation of the tri-level model","volume":"125","author":"Naragon-Gainey","year":"2016","journal-title":"J\u00a0Abnorm
+        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib61","doi-asserted-by":"crossref","first-page":"334","DOI":"10.1016\/j.janxdis.2010.01.006","article-title":"Testing
+        a hierarchical model of anxiety and depression in adolescents: A tri-level
+        model","volume":"24","author":"Prenoveau","year":"2010","journal-title":"J\u00a0Anxiety
+        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib62","doi-asserted-by":"crossref","first-page":"256","DOI":"10.1037\/a0016608","article-title":"A\u00a0proposal
+        for a dimensional classification system based on the shared features of the
+        DSM-IV anxiety and mood disorders: Implications for assessment and treatment","volume":"21","author":"Brown","year":"2009","journal-title":"Psychol
+        Assess"},{"key":"10.1016\/j.bpsc.2021.12.008_bib63","doi-asserted-by":"crossref","first-page":"395","DOI":"10.1176\/appi.ajp.2014.14020138","article-title":"The
+        NIMH Research Domain Criteria (RDoC) project: Precision medicine for psychiatry","volume":"171","author":"Insel","year":"2014","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib64","doi-asserted-by":"crossref","first-page":"909","DOI":"10.1002\/da.22301","article-title":"CBT
+        and the future of personalized treatment: A proposal","volume":"31","author":"Thompson-Hollands","year":"2014","journal-title":"Depress
+        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib65","doi-asserted-by":"crossref","first-page":"454","DOI":"10.1037\/abn0000258","article-title":"The
+        Hierarchical Taxonomy of Psychopathology (HiTOP): A dimensional alternative
+        to traditional nosologies","volume":"126","author":"Kotov","year":"2017","journal-title":"J\u00a0Abnorm
+        Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib66","doi-asserted-by":"crossref","first-page":"24","DOI":"10.1002\/wps.20478","article-title":"A\u00a0paradigm
+        shift in psychiatric classification: The Hierarchical Taxonomy of Psychopathology
+        (HiTOP)","volume":"17","author":"Kotov","year":"2018","journal-title":"World
+        Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib67","doi-asserted-by":"crossref","first-page":"1069","DOI":"10.1037\/ccp0000452","article-title":"Integrating
+        the Hierarchical Taxonomy of Psychopathology (HiTOP) into clinical practice","volume":"87","author":"Ruggero","year":"2019","journal-title":"J\u00a0Consult
+        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib68","first-page":"477","article-title":"Integrating
+        psychotherapy with the hierarchical taxonomy of psychopathology (HiTOP)","volume":"30","author":"Hopwood","year":"2020","journal-title":"J\u00a0Psychother
+        Integr"},{"key":"10.1016\/j.bpsc.2021.12.008_bib69","doi-asserted-by":"crossref","first-page":"39","DOI":"10.1097\/YCO.0000000000000220","article-title":"The
+        key role of extinction learning in anxiety disorders: Behavioral strategies
+        to enhance exposure-based treatments","volume":"29","author":"Pittig","year":"2016","journal-title":"Curr
+        Opin Psychiatry"},{"key":"10.1016\/j.bpsc.2021.12.008_bib70","doi-asserted-by":"crossref","first-page":"87","DOI":"10.1016\/j.brat.2016.08.015","article-title":"The
+        validity of laboratory-based treatment research: Bridging the gap between
+        fear extinction and exposure treatment","volume":"86","author":"Scheveneels","year":"2016","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib71","doi-asserted-by":"crossref","first-page":"103528","DOI":"10.1016\/j.brat.2019.103528","article-title":"Human
+        fear conditioning: From neuroscience to the clinic","volume":"124","author":"Fullana","year":"2020","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib72","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1016\/j.brat.2007.10.003","article-title":"Optimizing
+        inhibitory learning during exposure therapy","volume":"46","author":"Craske","year":"2008","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib73","doi-asserted-by":"crossref","first-page":"322","DOI":"10.5127\/jep.026511","article-title":"Role
+        of inhibition in exposure therapy","volume":"3","author":"Craske","year":"2012","journal-title":"J\u00a0Exp
+        Psychopathol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib74","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1016\/j.brat.2014.04.006","article-title":"Maximizing
+        exposure therapy: An inhibitory learning approach","volume":"58","author":"Craske","year":"2014","journal-title":"Behav
+        Res Ther"},{"key":"10.1016\/j.bpsc.2021.12.008_bib75","doi-asserted-by":"crossref","first-page":"927","DOI":"10.1002\/da.22490","article-title":"Treatment
+        for anhedonia: A neuroscience driven approach","volume":"33","author":"Craske","year":"2016","journal-title":"Depress
+        Anxiety"},{"key":"10.1016\/j.bpsc.2021.12.008_bib76","doi-asserted-by":"crossref","first-page":"457","DOI":"10.1037\/ccp0000396","article-title":"Positive
+        affect treatment for depression and anxiety: A randomized clinical trial for
+        a core feature of anhedonia","volume":"87","author":"Craske","year":"2019","journal-title":"J\u00a0Consult
+        Clin Psychol"},{"key":"10.1016\/j.bpsc.2021.12.008_bib77","doi-asserted-by":"crossref","first-page":"54","DOI":"10.1016\/j.janxdis.2008.03.015","article-title":"Repetitive
+        TMS combined with exposure therapy for PTSD: A preliminary study","volume":"23","author":"Osuch","year":"2009","journal-title":"J\u00a0Anxiety
+        Disord"},{"key":"10.1016\/j.bpsc.2021.12.008_bib78","doi-asserted-by":"crossref","first-page":"151","DOI":"10.1016\/j.brs.2013.10.006","article-title":"Review
+        of the effectiveness of transcranial magnetic stimulation for post-traumatic
+        stress disorder","volume":"7","author":"Karsen","year":"2014","journal-title":"Brain
+        Stimul"},{"key":"10.1016\/j.bpsc.2021.12.008_bib79","first-page":"53","article-title":"Exposure
+        therapy and simultaneous repetitive transcranial magnetic stimulation: A controlled
+        pilot trial for the treatment of posttraumatic stress disorder","volume":"35","author":"Fryml","year":"2019","journal-title":"J\u00a0ECT"},{"key":"10.1016\/j.bpsc.2021.12.008_bib80","doi-asserted-by":"crossref","first-page":"534","DOI":"10.1001\/jamapsychiatry.2019.3671","article-title":"Establishment
+        of best practices for evidence for prediction: A review","volume":"77","author":"Poldrack","year":"2020","journal-title":"JAMA
+        Psychiatry"}],"container-title":["Biological Psychiatry: Cognitive Neuroscience
+        and Neuroimaging"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S2451902221003517?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,11,7]],"date-time":"2025-11-07T13:20:01Z","timestamp":1762521601000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S2451902221003517"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,4]]},"references-count":80,"journal-issue":{"issue":"4","published-print":{"date-parts":[[2023,4]]}},"alternative-id":["S2451902221003517"],"URL":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","relation":{},"ISSN":["2451-9022"],"issn-type":[{"value":"2451-9022","type":"print"}],"subject":[],"published":{"date-parts":[[2023,4]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
+        article is maintained by"},{"value":"A Multivoxel Pattern Analysis of Anhedonia
+        During Fear Extinction: Implications for Safety Learning","name":"articletitle","label":"Article
+        Title"},{"value":"Biological Psychiatry: Cognitive Neuroscience and Neuroimaging","name":"journaltitle","label":"Journal
+        Title"},{"value":"https:\/\/doi.org\/10.1016\/j.bpsc.2021.12.008","name":"articlelink","label":"CrossRef
+        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
+        Type"},{"value":"\u00a9 2021 Society of Biological Psychiatry. Published by
+        Elsevier Inc. All rights reserved.","name":"copyright","label":"Copyright"}]}}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '1206'
+      - '7514'
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:20:43 GMT
+      - Thu, 22 Oct 2026 20:37:24 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1537,6 +985,57 @@ interactions:
       - 1s
       x-rate-limit-limit:
       - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1016%2Fj.bpsc.2021.12.008&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:25 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
     status:
       code: 200
       message: OK
@@ -1573,7 +1072,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Oct 2026 10:20:43 GMT
+      - Thu, 22 Oct 2026 20:37:25 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -1599,6 +1098,57 @@ interactions:
       - 1s
       x-rate-limit-limit:
       - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/works?filter=relation.object%3A10.1176%2Fajp.2006.163.4.735&rows=100&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":100,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      date:
+      - Thu, 22 Oct 2026 20:37:25 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
     status:
       code: 200
       message: OK
@@ -1642,11 +1192,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:43 GMT
+      - Thu, 22 Oct 2026 20:37:24 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000068927E7F7756.1.1.m_1
+      - 1D348A0161E73355000033BA31BFC552.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1706,11 +1256,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:43 GMT
+      - Thu, 22 Oct 2026 20:37:24 GMT
       ncbi-phid:
-      - 1D348A0161E73355000052A66D730750.1.1.m_1
+      - 1D348A0161E73355000051BA32837509.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1772,11 +1322,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:44 GMT
+      - Thu, 22 Oct 2026 20:37:25 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000059927F906BE6.1.1.m_1
+      - 1D33C9B11FD1F985000033B0AC0FD51F.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1836,11 +1386,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:44 GMT
+      - Thu, 22 Oct 2026 20:37:26 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000036927FEF3F84.1.1.m_1
+      - 1D348A0161E73355000034BA3406FBA5.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1862,62 +1412,6 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Is%5Bti%5D+AND+there%5Bti%5D+AND+altered%5Bti%5D+AND+activity%5Bti%5D+AND+of%5Bti%5D+AND+the%5Bti%5D+AND+extensor%5Bti%5D+AND+muscles%5Bti%5D+AND+in%5Bti%5D+AND+chronic%5Bti%5D+AND+mechanical%5Bti%5D+AND+neck%5Bti%5D+AND+pain%5Bti%5D+AND+A%5Bti%5D+AND+functional%5Bti%5D+AND+magnetic%5Bti%5D+AND+resonance%5Bti%5D+AND+imaging%5Bti%5D+AND+study%5Bti%5D&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 10:20:44 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
 - request:
     body: ''
     headers:
@@ -1958,11 +1452,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:45 GMT
+      - Thu, 22 Oct 2026 20:37:27 GMT
       ncbi-phid:
-      - 1D348A0161E73355000045A674406F8E.1.1.m_1
+      - 1D3238309BD9AC75000036A0634A1B35.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -1976,7 +1470,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -2023,11 +1517,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:45 GMT
+      - Thu, 22 Oct 2026 20:37:26 GMT
       ncbi-phid:
-      - 1D348A0161E7335500005AA6751754A7.1.1.m_1
+      - 1D33C9B11FD1F985000031B0AD90967F.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -2089,11 +1583,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:46 GMT
+      - Thu, 22 Oct 2026 20:37:27 GMT
       ncbi-phid:
-      - 1D3238309BD9AC750000799284066FCF.1.1.m_1
+      - 1D348A0161E7335500002BBA3729C978.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -2107,7 +1601,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -2115,62 +1609,6 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Multivoxel%5Bti%5D+AND+Pattern%5Bti%5D+AND+Analysis%5Bti%5D+AND+Anhedonia%5Bti%5D+AND+Fear%5Bti%5D+AND+Extinction%5Bti%5D+AND+Implications%5Bti%5D+AND+Safety%5Bti%5D+AND+Learning%5Bti%5D&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Thu, 22 Oct 2026 10:20:46 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
 - request:
     body: ''
     headers:
@@ -2210,11 +1648,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:47 GMT
+      - Thu, 22 Oct 2026 20:37:27 GMT
       ncbi-phid:
-      - 1D348A0161E73355000046A67C532A33.1.1.m_1
+      - 1D348A0161E73355000043BA37E5B8B0.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -2228,7 +1666,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -2262,15 +1700,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7c5828c8c8b9c-DFW
+      - a4eb4cd4af876b06-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:20:48 GMT
+      - Thu, 22 Oct 2026 20:37:28 GMT
       expires:
-      - Thu, 22 Oct 2026 11:08:07 GMT
+      - Thu, 22 Oct 2026 21:08:07 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
@@ -2281,7 +1719,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=T1WetUzfe4F0Cy1sv6VwVS66pXhotQIlXouYf1nG%2BM8y5PisjF11J%2FRduaMjuqGa0dRQy4VWP0rACWCh7Lz%2BOFJzNxRhixOGw%2BNh5eYHrGzITflKzTKONpQ%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=u8k4J1qSq1Y0D%2BXE6q3glzbFAyzdDhMLptaI%2B50fKkf6dekboqLuYYXY4PkFP2kqRf7OImtQ087BH%2FiP%2FVHsmA3ueQZBEuMm4PQy7AXa1glMZz%2FGWsWDRf0%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -2399,7 +1837,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 10:20:48 GMT
+      - Thu, 22 Oct 2026 20:37:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -2445,15 +1883,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7c5839e218b9c-DFW
+      - a4eb4cd558646b06-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:20:48 GMT
+      - Thu, 22 Oct 2026 20:37:28 GMT
       expires:
-      - Thu, 22 Oct 2026 11:09:20 GMT
+      - Thu, 22 Oct 2026 21:27:30 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       location:
@@ -2463,7 +1901,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=fMX%2BLlLQSIZyaYmXRdaRENy45F0W1OYb%2F0AIfW3Jcng0djjR0HZdOl7YNsmJbNSuc7Zw9K7Du1sW7nNL0HgZ9k7MHgd2zY2U2EXxICuUvq2gpQqups%2F7Fus%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lMKsYsaUVEIo5OQHsk67%2F3NVOq1sj3IM%2FSHsD8Xc6dGnLgTQi0lKMXjbfiU3eRVjY48%2FiCSWTp06RCcW0qrY5bbXwHuzbrYEE7ZOltZzpGutW6KVt%2F%2FIIHU%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -2586,7 +2024,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Thu, 22 Oct 2026 10:20:48 GMT
+      - Thu, 22 Oct 2026 20:37:28 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -2647,11 +2085,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:20:48 GMT
+      - Thu, 22 Oct 2026 20:37:28 GMT
       ncbi-phid:
-      - 1D348A0161E73355000066A67E71DBC6.1.1.m_1
+      - 1D348A0161E7335500005FBA389E3FCD.1.1.m_1
       ncbi-sid:
-      - C33CE69D08063D65_8098SID
+      - A83952F83D1AC0C2_7D11SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -2665,7 +2103,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

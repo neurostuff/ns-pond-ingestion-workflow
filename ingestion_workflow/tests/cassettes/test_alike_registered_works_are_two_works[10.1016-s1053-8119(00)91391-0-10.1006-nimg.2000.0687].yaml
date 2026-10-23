@@ -1,0 +1,295 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/s1053-8119%2800%2991391-0
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fs1053-8119%2800%2991391-0/transform">https://api.crossref.org/v1/works/10.1016%2Fs1053-8119%2800%2991391-0/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4eb3db91d0f4798-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 20:27:09 GMT
+      expires:
+      - Thu, 22 Oct 2026 20:34:32 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fs1053-8119%2800%2991391-0/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2FsmbazM3cQlh7WgC5dAUJ%2F8w0Q9yV%2Bv7CTzA0A8APN%2FIPlMPTAhNFEsZRGKKddksMHvIX3VgFHEir50t1cQVq1cxeXcgEjTcr%2B1GNWALTlDaXwj%2BQPiqVVE%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fs1053-8119%2800%2991391-0/transform
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/71V74/iNhD9V5A/9aQY7IQsm0hVtXdtJdrr9XS71w8FVJnEgO8SJ7UdFor43zvj
+        hIUFtq2qXqV8SPxj5s3Lmzc7onQuNzIn6Y7kwklaC+MsSSeTkIXDYBSEs1nQ7jhVSpISXKdsRFn4
+        wKM0DNOI/0oCgrvWibImKR/xJAlv4pgnId8HxMiFNFJnkmZVox1JWUDqZl4ou5IGIn5XWLlW0vRe
+        /wKBlLUN5onhvVCZ1Ba+JjsCwY27BpOxIA74JUzGKIsp4w+Mpf45g5nEIx4leI4xQJlV2knt6Foa
+        qyoNIVxewo1cFmJLlaa52FqP/eOHt7C7cq626XQwHTw+PvZlV0M/q8rpAG5OB42VpitgOuB9Nh2Q
+        /eyYJ69KobQvqHub4K6prC2F+UwN4DQqcx7LQkD8/ZG2nNZG6RfpmM3g7Lc/jwEmZ33O+M10YDmL
+        I3rLefIVY68SKJ1Thoxsa+TrU9UYLQoKgVRWSIJQJIS+qgw2DHjAoyucgzQ45dEDZ2kYp9HwXBps
+        FCW3SRwNW9JrscSL98MbhGIBQ4bfb5AFkI2XA33ST07n24OGOByvZaZE8ZtuyrkEOpYYyedzBUa5
+        s1ZaC+s965p8S/35hcp6Ri6BVVH01sIogQz3lO4tfvow7lm1hA0IUkNWtTkSCEvrqmh8nZzDl2jc
+        qjJemku1liiY10YtlXNI3kKUqtjC2ltV22zVuD+wPvl7g3XA8kIZ6zDKYqGKFkMrAFMVrd7bl0Ma
+        zJ6JeVMIg1GzA0F7+NNHAD9UK32a/M6u5vBbpXmeXOS5cp6B/xzBj8IUpwi+N8q6Sv9v+d8It9qe
+        AngPPSS/bHq4VEqUIKyPbknb4tDR0tCDFN/JxlTjEtUekAplgr3W7WLWQuhl0zaD1N759GeP4txs
+        RK3OzKYzFNhqW3c6eD8ep/fY7tjtjPleZ99gjLssk7X72skNnN+UBTn6UecD17aOlrj2TChczqEd
+        RV2Dw3Xk+au0VBo7Ef/JF4ReF+iYL4A/3/w38NHZZF1Z9YID8iQIAx5fOiBPYDJSHj/wmzSO0mFy
+        7oBxDAM0uQmT1gFtVhnp7QwMv/O/HbiPKr3QLllEZQDEVTM/I9NImBdyDSTWSk0HFyySPaZr5ieq
+        s6BsdypDP3yvW/5hrDy5sT0Z54fp0Q3v3bMp/s+HFoQXhZMQykE/UwVIJuSykNnpDPak5Jt+Xql+
+        ZZYwav9u4hmY6O0/30HC8f39O0zzdBjDA02fZOa6mfy8naln7bypn4r8q/L+BGDVtV5vCQAA
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '966'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 20:27:09 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1006/nimg.2000.0687
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1006%2Fnimg.2000.0687/transform">https://api.crossref.org/v1/works/10.1006%2Fnimg.2000.0687/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4eb3dba7e574798-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 20:27:09 GMT
+      expires:
+      - Thu, 22 Oct 2026 21:08:07 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1006%2Fnimg.2000.0687/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=MYbUSeWPwHan0Y%2FAOZf%2Bbky4O2AVpjukgrQfQZmAjXVb8lsFQycHSrPunNp1xe%2B%2BjAjTl%2F%2Ff%2BBH8Qkag%2BBLti%2BNUwP9N6GCVQlTgrY9EvSIIs4x%2BncXV8sI%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1006%2Fnimg.2000.0687/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        UPd9GyYAAA==
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '2914'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 20:27:09 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1
