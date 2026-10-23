@@ -238,6 +238,23 @@ def test_a_record_mixing_two_preprint_papers_ids_fuses_neither(catalog):
     assert catalog.conflicts >= 1
 
 
+def test_a_record_mixing_two_preprint_papers_pmcids_fuses_neither(catalog):
+    """The same fault as above, in PMC: A's DOI with B's PMCID."""
+    a = catalog.register(Identifier(preprint_pmcids=["PMC10054934"],
+                                    preprint_dois=["10.1101/2023.02.15.528738"]))
+    b = catalog.register(Identifier(preprint_pmcids=["PMC10244497"],
+                                    preprint_dois=["10.1101/2023.05.01.538938"]))
+
+    ref = catalog.register(Identifier(preprint_pmcids=["PMC10244497"],
+                                      preprint_dois=["10.1101/2023.02.15.528738"]))
+
+    assert a.id != b.id and catalog.count_articles() == 2
+    assert ref.id in (a.id, b.id)
+    assert catalog.aliases(a.id, "preprint_pmcid") == ["PMC10054934"]
+    assert catalog.aliases(b.id, "preprint_pmcid") == ["PMC10244497"]
+    assert catalog.conflicts >= 1
+
+
 def test_several_preprint_records_of_one_paper_are_held_together(catalog):
     """A paper on bioRxiv and Research Square has a PubMed record of each."""
     ref = catalog.register(Identifier(
