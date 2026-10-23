@@ -54,9 +54,9 @@ def _offline(service: MetadataService) -> MetadataService:
 
 
 def _enrich(service, contents, held=None):
-    """`enrich_metadata` with each content's identifier's DOI as the catalog's."""
-    dois = {c.slug: [c.identifier.doi] if c.identifier and c.identifier.doi else []
-            for c in contents}
+    """`enrich_metadata` with each content's identifier's DOIs as the catalog's."""
+    dois = {c.slug: [d for d in (c.identifier.doi, *c.identifier.preprint_dois) if d]
+            if c.identifier else [] for c in contents}
     return service.enrich_metadata(contents, held or {}, dois, NOW)
 
 
@@ -963,11 +963,10 @@ def test_the_page_speaks_for_the_paper_when_no_other_source_does(tmp_path):
 
 
 @pytest.mark.vcr()
-def test_a_paper_presented_by_its_preprint_doi_takes_its_journal_s_licence(tmp_path, vcr):
-    """dpl6phhniqbj holds 10.1002/hbm.25137 and its bioRxiv preprint 10.1101/2020.03.25.008318,
-    and is presented by the preprint's DOI. Crossref holds a CC BY deposit for the journal's
-    DOI and none for the preprint's."""
-    identifier = Identifier(doi="10.1101/2020.03.25.008318")
+def test_a_paper_with_a_preprint_takes_its_journal_s_licence(tmp_path, vcr):
+    """dpl6phhniqbj holds 10.1002/hbm.25137 and its bioRxiv preprint 10.1101/2020.03.25.008318.
+    Crossref holds a CC BY deposit for the journal's DOI and none for the preprint's."""
+    identifier = Identifier(doi="10.1002/hbm.25137", preprint_dois=["10.1101/2020.03.25.008318"])
     dois = ["10.1002/hbm.25137", "10.1101/2020.03.25.008318"]
     service = MetadataService(_licence_settings(tmp_path))
     meta = service.enrich_metadata([_content(identifier)], {}, {identifier.slug: dois}, NOW)[

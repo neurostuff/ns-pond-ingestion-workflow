@@ -123,7 +123,7 @@ def preprints_among(ctx: Context, ids: Sequence[str]) -> set:
         # A download refreshed since the extraction may have failed, and keeps no copy.
         copy = (_copy_of(download)
                 if download is not None and download.status is Status.OK else None)
-        if is_preprint(dois[article_id].doi, copy):
+        if is_preprint(dois[article_id].asking_doi, copy):
             out.add(article_id)
     return out
 
@@ -267,7 +267,9 @@ class SyncStage:
                 # A notice can reprint the table it retracts; it is not a study.
                 _skip(plan, ref, spaced, existing, RETRACTION_NOTICE, base_study_id)
                 continue
-            if not base_study_id and not (identifier.doi or identifier.pmid or identifier.pmcid):
+            if not base_study_id and not (identifier.asking_doi or identifier.pmid
+                                          or identifier.pmcid or identifier.preprint_pmids
+                                          or identifier.preprint_pmcids):
                 _skip(plan, ref, spaced, existing, NO_IDENTIFIER, None)
                 continue
             if ref.id in shared:

@@ -16,7 +16,7 @@ import xmltodict
 from ingestion_workflow.catalog import Artifact, Status
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings
-from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
+from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.notices import corrections_from_pubmed
 from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
@@ -203,7 +203,7 @@ def test_every_pubmed_record_of_a_paper_is_asked_for_its_notices():
         return {p: found[p] for p in pmids if p in found}
 
     stage._client = SimpleNamespace(get_notices=get_notices)
-    ident = Identifier(pmid="5", other_ids={DUPLICATE_PUBMED_RECORDS: "9500320"})
+    ident = Identifier(pmid="5", alternative_pmids=["9500320"])
     ref = SimpleNamespace(id="a1", identifier=ident)
     [out] = stage.execute(_ctx(), [Work(ref=ref, source="", fingerprint="f", upstream=None)])
     assert asked == ["5", "9500320"]

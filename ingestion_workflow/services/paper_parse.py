@@ -23,7 +23,7 @@ import itertools
 import json
 import re
 from array import array
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple
 
@@ -31,7 +31,6 @@ from study_schema import keys, layouts
 from study_schema.models import paper_parse as pp
 
 from ingestion_workflow.extractors.utils import normalize_minus
-from ingestion_workflow.models.ids import PREPRINT_PMCID, PREPRINT_PMID
 from ingestion_workflow.models import (
     Analysis,
     AnalysisCollection,
@@ -45,12 +44,12 @@ from ingestion_workflow.services.create_analyses import table_reading
 from ingestion_workflow.services.logging import get_logger
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.set_roles.labels import is_decided
-from ingestion_workflow.utils.preprints import preprint_server
+from ingestion_workflow.utils.preprints import server_of_filed_preprint_doi
 
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 8
+PAPER_PARSE_VERSION = 9
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -75,7 +74,7 @@ class ParseInputs:
     article_id: str
     #: The copy the text was read from, as its download recorded it, with its licence.
     text_copy: pp.HeldCopy
-    #: Every DOI the catalog holds for the article.
+    #: Every version-of-record DOI row the catalog holds for the article, of which one is allowed.
     dois: Sequence[str]
     base_study_id: Optional[str] = None
     #: The triage payload: `is_meta_analysis`, `publication_types`, `tables[]`.
@@ -189,6 +188,11 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
     text_file = _text_file(root, source)
     if text_file is None:
         return None, None, {}
+    # Two `doi` rows are two papers, or one the catalog has not been told is one: only an
+    # identity repair says which is an alternative, so the article is not written until then.
+    if len(set(inputs.dois)) > 1:
+        raise ValueError(
+            f"the article holds two DOIs of a version of record: {sorted(set(inputs.dois))}")
     raw = text_file.read_bytes()
     text = _Text(raw.decode("utf-8", errors="replace"))
 
@@ -222,7 +226,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         header=_header(
             "parsed_paper",
             inputs,
-            article_identifiers(content.identifier, inputs.dois, meta),
+            article_identifiers(content.identifier, meta),
             "sync",
             [
                 ("extraction", inputs.fingerprints.get("extract")),
@@ -538,43 +542,39 @@ def _exclusion_reason(excluded) -> Optional[str]:
     return "; ".join(parts) or None
 
 
-def article_identifiers(identifier, dois: Sequence[str], meta):
-    """The catalog's identifiers, each preprint's apart from the version of record's.
+def article_identifiers(identifier, meta):
+    """The identifiers of the article, each in the bucket the catalog holds it in: the
+    version of record's (`doi`, `pmid`, `pmcid`), a preprint's, and every other id of the
+    paper's, which only the catalog says (`alternative_*`).
 
-    A preprint server's DOI is a preprint's. So are the PMID of a PubMed record typed
-    `Preprint` and the PMCID that record lists, and the PMID and PMCID the catalog
-    holds as the preprint's beside the version of record's. Raises ValueError for an article
-    with two DOIs neither of which is a preprint's, since `doi` holds one.
+    The PMID of a PubMed record typed `Preprint`, and the PMCID that record lists, are a
+    preprint's even where the catalog holds them as the version of record's.
     """
     from ingestion_workflow.pipeline.stage import publication_types
 
-    pmid = getattr(identifier, "pmid", None) or None
-    pmcid = getattr(identifier, "pmcid", None) or None
-    held = getattr(identifier, "other_ids", None) or {}
-    preprint_pmids = [held[PREPRINT_PMID]] if held.get(PREPRINT_PMID) else []
-    preprint_pmcids = [held[PREPRINT_PMCID]] if held.get(PREPRINT_PMCID) else []
-    if pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
-        preprint_pmids.append(pmid)
-        pmid = None
-        if pmcid and pmcid == _pubmed_pmcid(meta):
-            preprint_pmcids.append(pmcid)
-            pmcid = None
-    preprints = [pp.PreprintDoi(doi=d, server=preprint_server(d))
-                 for d in sorted(dois) if preprint_server(d)]
-    published = sorted(d for d in dois if not preprint_server(d))
-    if len(published) > 1:
-        raise ValueError(f"the article holds two DOIs of a version of record: {published}")
-    doi = published[0] if published else None
-    preprint_only = (preprints or preprint_pmids or preprint_pmcids) and not (doi or pmid or pmcid)
+    if identifier.pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
+        filed = {"pmid": None, "preprint_pmids": (*identifier.preprint_pmids, identifier.pmid)}
+        if identifier.pmcid and identifier.pmcid == _pubmed_pmcid(meta):
+            filed.update(pmcid=None,
+                         preprint_pmcids=(*identifier.preprint_pmcids, identifier.pmcid))
+        identifier = replace(identifier, **filed)
+    preprints = []
+    for doi in identifier.preprint_dois:
+        server = server_of_filed_preprint_doi(doi)
+        if server is None:
+            raise ValueError(f"{doi} is filed as a preprint's, and no server is known for it")
+        preprints.append(pp.PreprintDoi(doi=doi, server=server))
     return pp.ArticleIdentifiers(
-        pmid=pmid,
-        pmcid=pmcid,
-        doi=doi,
+        pmid=identifier.pmid,
+        pmcid=identifier.pmcid,
+        doi=identifier.doi,
         preprint_dois=preprints or None,
-        preprint_pmids=list(dict.fromkeys(preprint_pmids)) or None,
-        preprint_pmcids=list(dict.fromkeys(preprint_pmcids)) or None,
-        publication_status=(pp.PublicationStatus.preprint if preprint_only
-                            else pp.PublicationStatus.published),
+        preprint_pmids=list(identifier.preprint_pmids) or None,
+        preprint_pmcids=list(identifier.preprint_pmcids) or None,
+        alternative_dois=list(identifier.alternative_dois) or None,
+        alternative_pmids=list(identifier.alternative_pmids) or None,
+        alternative_pmcids=list(identifier.alternative_pmcids) or None,
+        publication_status=pp.PublicationStatus(identifier.publication_status),
     )
 
 

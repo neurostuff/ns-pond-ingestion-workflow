@@ -118,7 +118,7 @@ class CrossrefClient:
         """
         wanted: Dict[str, List[Identifier]] = {}
         for identifier in identifiers:
-            doi = normalize_doi(identifier.doi)
+            doi = normalize_doi(identifier.asking_doi)
             if doi:
                 wanted.setdefault(doi, []).append(identifier)
         answered: Dict[str, List[Dict]] = {}

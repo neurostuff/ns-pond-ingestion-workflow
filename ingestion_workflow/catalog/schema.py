@@ -4,7 +4,9 @@ from __future__ import annotations
 
 #: 2: doi aliases hold the bare DOI, not a resolver URL.
 #: 3: doi aliases hold the canonical DOI: bare and lower case.
-SCHEMA_VERSION = 3
+#: 4: ids are held by bucket: a preprint's DOI is `preprint_doi`, not `doi`; the other DOI and
+#:    duplicate record kinds are `alternative_doi`, `alternative_pmid`, `alternative_pmcid`.
+SCHEMA_VERSION = 4
 
 DDL = """
 CREATE TABLE IF NOT EXISTS articles (

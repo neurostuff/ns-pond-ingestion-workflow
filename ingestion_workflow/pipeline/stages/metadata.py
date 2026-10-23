@@ -36,6 +36,12 @@ METADATA_VERSION = 4
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
 
+def held_dois(catalog, article_id: str) -> List[str]:
+    """Every DOI the catalog holds for the article as its own: the version of record's and
+    each preprint's. Crossref and OpenAlex are asked by each; an alternative is not asked."""
+    return catalog.aliases(article_id, "doi") + catalog.aliases(article_id, "preprint_doi")
+
+
 class MetadataStage:
     name = "metadata"
     requires = "extract"
@@ -153,7 +159,7 @@ class MetadataStage:
         # In the order the sources are tried, so the first held copy's record speaks first.
         order = {source: i for i, source in enumerate(self.settings.download_sources)}
         for slug, work in by_slug.items():
-            dois[slug] = ctx.catalog.aliases(work.article_id, "doi")
+            dois[slug] = held_dois(ctx.catalog, work.article_id)
             for source, download in sorted(downloads.get(work.article_id, {}).items(),
                                            key=lambda item: (order.get(item[0], len(order)),
                                                              item[0])):

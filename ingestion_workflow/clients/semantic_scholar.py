@@ -44,6 +44,14 @@ def _paper_identifier(external_ids: Dict, paper_id: Optional[str]) -> Optional[I
         return None
 
 
+def request_id(identifier: Identifier) -> Optional[str]:
+    """The id a batch request names the paper by: its DOI (a preprint's when it has no other),
+    else its PMID."""
+    if identifier.asking_doi:
+        return f"DOI:{identifier.asking_doi}"
+    return f"PMID:{identifier.pmid}" if identifier.pmid else None
+
+
 class SemanticScholarClient:
     """Client for Semantic Scholar paper identifier enrichment."""
 
@@ -68,7 +76,7 @@ class SemanticScholarClient:
         if id_type not in self._SUPPORTED_ID_TYPES:
             raise ValueError("Semantic Scholar lookups support 'doi' or 'pmid'.")
 
-        if any(getattr(identifier, id_type) is None for identifier in identifiers):
+        if any(identifier.asking(id_type) is None for identifier in identifiers):
             raise ValueError(f"All identifiers must provide a {id_type.upper()} for lookup.")
 
     def get_ids_by_type(self, id_type: str, identifiers: Identifiers) -> Identifiers:
@@ -91,9 +99,9 @@ class SemanticScholarClient:
 
     def _collect_values(self, id_type: str, identifiers: Identifiers) -> List[str]:
         return [
-            str(getattr(identifier, id_type)).strip()
+            str(identifier.asking(id_type)).strip()
             for identifier in identifiers
-            if getattr(identifier, id_type)
+            if identifier.asking(id_type)
         ]
 
     @staticmethod
@@ -123,8 +131,8 @@ class SemanticScholarClient:
 
             updated = False
             for kind in ("doi", "pmid", "pmcid"):
-                if getattr(found, kind) and not getattr(identifier, kind):
-                    setattr(identifier, kind, getattr(found, kind))
+                if found.asking(kind) and not getattr(identifier, kind):
+                    setattr(identifier, kind, found.asking(kind))
                     updated = True
 
             self._store_additional_ids(identifier, record, external_ids)
@@ -275,12 +283,8 @@ class SemanticScholarClient:
         request_ids: List[str] = []
 
         for identifier in identifiers:
-            if identifier.doi:
-                req_id = f"DOI:{identifier.doi}"
-                request_map[req_id] = identifier
-                request_ids.append(req_id)
-            elif identifier.pmid:
-                req_id = f"PMID:{identifier.pmid}"
+            req_id = request_id(identifier)
+            if req_id:
                 request_map[req_id] = identifier
                 request_ids.append(req_id)
 

@@ -308,7 +308,7 @@ def test_every_operation_applies_and_its_articles_are_listed(cases):
         nlm = cat.holder("doi", "10.1016/j.nlm.2011.06.006")
         assert nlm != ids["fused"] and cat.aliases(nlm, "pmid") == ["21704176"]
         assert cat.artifact(ids["fused"], "download", "ace") is None
-        assert cat.aliases(ids["alias"], "alternate_doi") == ["10.3275/7271"]
+        assert cat.aliases(ids["alias"], "alternative_doi") == ["10.3275/7271"]
         listed = {cat.resolve(i).id for i in Identifiers.load(manifest).identifiers}
         assert listed == {paper, elife, ids["holder"], ids["owner"], ids["fused"], nlm,
                           ids["alias"]}
@@ -609,9 +609,9 @@ def test_a_plan_in_which_an_operation_undoes_another_is_refused_whole(setup):
     plan = tmp_path / "cycle.jsonl"
     plan.write_text("".join(json.dumps(line) + "\n" for line in [
         {"op": "rekind", "article": a, "kind": "doi", "value": "10.1016/j.ajog.2011.02.050"},
-        {"op": "remove", "article": a, "kind": "alternate_doi",
+        {"op": "remove", "article": a, "kind": "alternative_doi",
          "value": "10.1016/j.ajog.2011.02.050"},
-        {"op": "add", "article": a, "kind": "alternate_doi",
+        {"op": "add", "article": a, "kind": "alternative_doi",
          "value": "10.1016/j.ajog.2011.02.050"},
     ]), encoding="utf-8")
     before = _db(tmp_path)

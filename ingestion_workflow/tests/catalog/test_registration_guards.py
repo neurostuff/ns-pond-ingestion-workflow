@@ -44,8 +44,8 @@ def test_a_second_journal_doi_is_refused_and_recorded(catalog):
 def test_a_preprint_doi_joins_the_journal_doi(catalog):
     a = catalog.register(Identifier(pmid="37961286", doi="10.1016/j.neuroimage.2023.120450")).id
     catalog.register(Identifier(pmid="37961286", doi="10.1101/2023.10.21.563317"))
-    assert sorted(catalog.aliases(a, "doi")) == ["10.1016/j.neuroimage.2023.120450",
-                                                 "10.1101/2023.10.21.563317"]
+    assert catalog.aliases(a, "doi") == ["10.1016/j.neuroimage.2023.120450"]
+    assert catalog.aliases(a, "preprint_doi") == ["10.1101/2023.10.21.563317"]
     assert catalog.conflicts == 0
 
 
@@ -84,7 +84,7 @@ def test_a_publisher_s_new_doi_for_the_paper_is_an_alternate(checked):
     checked.register(Identifier(pmid="20885123", doi="10.1007/bf03337758"))
 
     assert checked.aliases(a, "doi") == ["10.3275/7271"]
-    assert checked.aliases(a, "alternate_doi") == ["10.1007/bf03337758"]
+    assert checked.aliases(a, "alternative_doi") == ["10.1007/bf03337758"]
     assert checked.resolve(Identifier(doi="10.1007/bf03337758")).id == a
     assert checked.refused == []
 
@@ -93,7 +93,7 @@ def test_a_publisher_s_new_doi_for_the_paper_is_an_alternate(checked):
 def test_another_paper_s_doi_is_refused_with_evidence_too(checked):
     a = checked.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
     checked.register(Identifier(pmid=BIOPSYCH[0], doi=NLM[1]))
-    assert checked.aliases(a, "alternate_doi") == []
+    assert checked.aliases(a, "alternative_doi") == []
     assert _refusals(checked) == [("doi", NLM[1], a)]
 
 

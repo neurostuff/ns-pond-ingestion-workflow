@@ -7,26 +7,30 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from ingestion_workflow.models.ids import PREPRINT_PMCID, PREPRINT_PMID, Identifier
+from ingestion_workflow.models.ids import Identifier
 
-#: Identifier kinds that can name an article, strongest first. A new article
-#: takes its id from the first kind it has, which is why the order is fixed.
-ALIAS_KINDS = ("pmcid", "pmid", "doi", "neurostore")
+#: The ids an article is named and found by, in the order a new article takes its id from
+#: the first it has and a lookup tries them. `doi`, `pmid` and `pmcid` are the version of
+#: record's; a preprint's and every other id of the paper's are kinds of their own, so no
+#: query for a version of record's id can answer with another version's.
+ALIAS_KINDS = ("pmcid", "pmid", "doi", "preprint_pmcid", "preprint_pmid", "preprint_doi",
+               "neurostore", "alternative_pmcid", "alternative_pmid", "alternative_doi")
 
-#: Another DOI the registries give the same paper: a publisher's earlier DOI, an alias
-#: spelling, a repository copy. It finds the article and is not its DOI.
-ALTERNATE_DOI = "alternate_doi"
+#: Each kind a paper holds beside its version of record's id, by the id it is a version of.
+#: A lookup by an id finds the article holding it as any of these.
+SECOND_KINDS = {"preprint_pmid": "pmid", "preprint_pmcid": "pmcid", "preprint_doi": "doi",
+                "alternative_pmid": "pmid", "alternative_pmcid": "pmcid",
+                "alternative_doi": "doi"}
 
-#: A second PubMed or PMC record of the paper, which a merge dropped: it finds the
-#: article and is not its PMID or PMCID.
-DUPLICATE_PMID = "duplicate_pmid"
-DUPLICATE_PMCID = "duplicate_pmcid"
+#: The alias kinds an old catalog held the second kinds as, and the kind each became.
+RENAMED_KINDS = {"alternate_doi": "alternative_doi", "duplicate_pmid": "alternative_pmid",
+                 "duplicate_pmcid": "alternative_pmcid"}
 
-#: Kinds an article holds beside an identifier of the kind each maps to: a preprint's
-#: PMID and PMCID next to its version of record's, an alternate DOI, and the duplicate
-#: records. A lookup by the kind on the right finds them too.
-SECOND_KINDS = {PREPRINT_PMID: "pmid", PREPRINT_PMCID: "pmcid", ALTERNATE_DOI: "doi",
-                DUPLICATE_PMID: "pmid", DUPLICATE_PMCID: "pmcid"}
+
+def field_of(kind: str) -> str:
+    """The Identifier field that holds the ids of an alias kind."""
+    return kind + "s" if kind in SECOND_KINDS else kind
+
 
 NO_SOURCE = ""
 

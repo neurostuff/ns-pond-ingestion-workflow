@@ -266,7 +266,7 @@ def match_titles(pdfs: Iterable[LocalPdf], providers: Sequence) -> None:
             match = next((c for c in candidates if verified(pdf, *c)), None)
             if match is not None:
                 identifier = match[0]
-                pdf.doi, pdf.pmid, pdf.pmcid = identifier.doi, identifier.pmid, identifier.pmcid
+                pdf.doi, pdf.pmid, pdf.pmcid = identifier.asking_doi, identifier.pmid, identifier.pmcid
                 pdf.found_by = f"title match ({name})"
                 break
 
@@ -297,7 +297,7 @@ def title_searchers(settings) -> List[tuple]:
 
 
 def verified(pdf: LocalPdf, identifier: Identifier, metadata) -> bool:
-    if not (identifier.doi or identifier.pmid or identifier.pmcid):
+    if not (identifier.asking_doi or identifier.pmid or identifier.pmcid):
         return False
     year = metadata.publication_year
     if pdf.year and year and abs(int(year) - pdf.year) > 1:

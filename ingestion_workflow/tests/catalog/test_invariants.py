@@ -44,9 +44,10 @@ def test_two_of_a_kind_are_violations_and_suspects(checked):
 
     one_each = {"journal-dois", "pmids", "pmcids", "preprint-pmids", "base-studies"}
     found = [v for v in violations(checked, [a, b, c, d]) if v.rule in one_each]
+    # a paper indexed on two preprint servers has a PubMed record of each
     assert _rules(found) == sorted(
-        [(a, "journal-dois"), (b, "pmcids"), (c, "base-studies"), (d, "preprint-pmids")])
-    assert suspects(checked) == {a, b, c, d}
+        [(a, "journal-dois"), (b, "pmcids"), (c, "base-studies")])
+    assert suspects(checked) == {a, b, c}
 
 
 @pytest.mark.vcr()
@@ -55,11 +56,11 @@ def test_what_is_not_a_second_of_a_kind(checked):
     a = checked.register(Identifier(doi="10.1101/2023.10.21.563317")).id
     _hold(checked, a, "doi", "10.1016/j.neuroimage.2023.120450")
     b = checked.register(Identifier(doi="10.3275/7271")).id
-    _hold(checked, b, "alternate_doi", "10.1007/bf03337758")
+    _hold(checked, b, "alternative_doi", "10.1007/bf03337758")
     c = checked.register(Identifier(doi="10.1100/tsw.2011.147")).id
     _hold(checked, c, "doi", "10.1100/TSW.2011.147")
     assert violations(checked, [a, b, c]) == []
-    assert suspects(checked) == {a, c}
+    assert suspects(checked) == {c}
 
 
 def test_merged_articles_are_not_checked_or_suspected(checked):
@@ -138,7 +139,7 @@ def test_a_preprint_s_pmid_is_held_to_its_pubmed_doi(checked):
     assert [(v.rule, v.detail) for v in violations(checked, [a])] == [("pmid-doi", (
         "pmid 37808793 is 10.1101/2023.09.27.559792 in PubMed, not 10.7554/elife.92563"))]
 
-    _hold(checked, a, "doi", "10.1101/2023.09.27.559792")
+    _hold(checked, a, "preprint_doi", "10.1101/2023.09.27.559792")
     assert violations(checked, [a]) == []
 
 
@@ -348,10 +349,10 @@ def test_a_download_whose_record_or_file_is_gone_is_a_violation(checked, tmp_pat
 def test_a_journal_record_s_doi_is_the_article_s_doi_not_an_alternate(checked):
     # ki7akud6c347: the journal's earlier mEDRA DOI, and PubMed's Springer DOI
     a = checked.register(Identifier(doi="10.3275/7271", pmid="20885123")).id
-    _hold(checked, a, "alternate_doi", "10.1007/bf03337758")
+    _hold(checked, a, "alternative_doi", "10.1007/bf03337758")
     assert _rules(violations(checked, [a])) == [(a, "vor-doi")]
-    checked._conn.execute("UPDATE aliases SET kind=CASE kind WHEN 'doi' THEN 'alternate_doi' "
-                          "ELSE 'doi' END WHERE article_id=? AND kind IN ('doi', 'alternate_doi')",
+    checked._conn.execute("UPDATE aliases SET kind=CASE kind WHEN 'doi' THEN 'alternative_doi' "
+                          "ELSE 'doi' END WHERE article_id=? AND kind IN ('doi', 'alternative_doi')",
                           (a,))
     assert violations(checked, [a]) == []
 
@@ -379,7 +380,7 @@ def test_a_meeting_abstract_s_pmc_record_beside_the_paper_breaks_the_pmcid_rule(
     # abstract (no PMID in PMC), whose DOI the plan had made an alternate.
     a = checked.register(Identifier(pmid="24532480", doi="10.1002/mrm.25133")).id
     _hold(checked, a, "pmcid", "PMC4043787")
-    _hold(checked, a, "alternate_doi", "10.1186/1532-429x-16-s1-o7")
+    _hold(checked, a, "alternative_doi", "10.1186/1532-429x-16-s1-o7")
     found = violations(checked, [a])
     assert (a, "pmcid") in _rules(found) and (a, "alternate-doi") in _rules(found)
     assert any("only as an alternate DOI" in v.detail for v in found if v.rule == "pmcid")
@@ -389,7 +390,7 @@ def test_a_meeting_abstract_s_pmc_record_beside_the_paper_breaks_the_pmcid_rule(
 def test_an_erratum_kept_as_an_alternate_doi_is_another_work(checked):
     # rg5bc6o7gs7m: the paper, and "Erratum to 'A quantitative comparison...'"
     a = checked.register(Identifier(pmid="11595367", doi="10.1016/s0730-725x(01)00418-0")).id
-    _hold(checked, a, "alternate_doi", "10.1016/s0730-725x(03)00069-9")
+    _hold(checked, a, "alternative_doi", "10.1016/s0730-725x(03)00069-9")
     assert _rules(violations(checked, [a])) == [(a, "alternate-doi")]
 
 
@@ -429,7 +430,7 @@ def test_a_pmc_record_of_the_article_s_pubmed_record_may_give_its_other_doi(chec
     # aucqqxrbcno2: PubMed gives PNAS's issue DOI, PMC its early edition's
     a = checked.register(Identifier(pmid="10725372", pmcid="PMC16281",
                                     doi="10.1073/pnas.97.7.3573")).id
-    _hold(checked, a, "alternate_doi", "10.1073/pnas.050583797")
+    _hold(checked, a, "alternative_doi", "10.1073/pnas.050583797")
     assert violations(checked, [a]) == []
 
 
@@ -496,14 +497,14 @@ def test_each_download_is_judged_though_another_is_unreadable(checked):
 def test_a_registry_that_cannot_be_read_judges_nothing(checked):
     # mxp7s3fbegzb: PubMed's DOI, and the alias spelling no registry describes
     a = checked.register(Identifier(doi="10.1176/jnp.2009.21.3.307")).id
-    _hold(checked, a, "alternate_doi", "10.1176/appi.neuropsych.21.3.307")
+    _hold(checked, a, "alternative_doi", "10.1176/appi.neuropsych.21.3.307")
     assert [v.rule for v in violations(checked, [a])] == ["evidence-unreadable"]
 
 
 @pytest.mark.vcr()
 def test_an_unregistered_alternate_spelling_is_no_other_work(checked):
     a = checked.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])).id
-    _hold(checked, a, "alternate_doi", "10.137/journal.pone.0066241")
+    _hold(checked, a, "alternative_doi", "10.137/journal.pone.0066241")
     assert violations(checked, [a]) == []
 
 
@@ -520,7 +521,7 @@ def test_a_pmid_its_own_pmc_record_agrees_with_may_hold_pmc_s_doi_not_pubmed_s(c
 def test_a_preprint_record_s_doi_held_as_an_alternate_is_no_version_of_record_s(checked):
     # 37808793 is bioRxiv's record of vrr7x2ygtjdt's eLife paper
     a = checked.register(Identifier(pmid="37808793", doi="10.7554/elife.92563")).id
-    _hold(checked, a, "alternate_doi", "10.1101/2023.09.27.559792")
+    _hold(checked, a, "alternative_doi", "10.1101/2023.09.27.559792")
     assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
 
 
@@ -528,16 +529,17 @@ def test_a_preprint_record_s_doi_held_as_an_alternate_is_no_version_of_record_s(
 def test_a_preprint_pmid_s_doi_held_as_an_alternate_is_no_version_of_record_s(checked):
     a = checked.register(Identifier(pmid="38345852", doi="10.7554/elife.92563")).id
     _hold(checked, a, "preprint_pmid", "37808793")
-    _hold(checked, a, "alternate_doi", "10.1101/2023.09.27.559792")
+    _hold(checked, a, "alternative_doi", "10.1101/2023.09.27.559792")
     assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
 
 
 @pytest.mark.vcr()
-def test_two_preprint_pmcids_are_a_violation(checked):
+def test_several_preprint_pmcids_are_no_violation(checked):
     a = checked.register(Identifier(doi="10.7554/elife.92563")).id
     _hold(checked, a, "preprint_pmcid", "PMC10634801")
     _hold(checked, a, "preprint_pmcid", "PMC10634864")
-    assert (a, "preprint-pmcids") in _rules(violations(checked, [a]))
+    assert "preprint-pmcids" not in [v.rule for v in violations(checked, [a])]
+    assert a not in suspects(checked)
 
 
 @pytest.mark.vcr()
@@ -558,7 +560,7 @@ def test_a_paper_s_record_held_as_a_preprint_s_with_its_doi_an_alternate_is_no_v
     # only the article's own PMID's DOI must be its DOI
     a = checked.register(Identifier(doi=NLM[1])).id
     _hold(checked, a, "preprint_pmid", BIOPSYCH[0])
-    _hold(checked, a, "alternate_doi", BIOPSYCH[1])
+    _hold(checked, a, "alternative_doi", BIOPSYCH[1])
     assert "vor-doi" not in [v.rule for v in violations(checked, [a])]
 
 

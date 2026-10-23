@@ -189,7 +189,7 @@ class OpenAlexClient:
     def validate_ids(self, id_type: str, identifiers: Identifiers) -> None:
         """Ensure we have values available for the requested id_type."""
         if id_type == "doi":
-            if any(identifier.doi is None for identifier in identifiers):
+            if any(identifier.asking_doi is None for identifier in identifiers):
                 raise ValueError("All identifiers must have a DOI for doi lookup.")
         elif id_type == "pmid":
             if any(identifier.pmid is None for identifier in identifiers):
@@ -200,9 +200,9 @@ class OpenAlexClient:
     def get_ids_by_type(self, id_type: str, identifiers: Identifiers) -> Identifiers:
         """Query OpenAlex using the provided id type and enrich identifiers."""
         values = [
-            str(getattr(identifier, id_type)).strip()
+            str(identifier.asking(id_type)).strip()
             for identifier in identifiers
-            if getattr(identifier, id_type)
+            if identifier.asking(id_type)
         ]
 
         batches = [
@@ -240,8 +240,8 @@ class OpenAlexClient:
                 # only provider that does: without this, a DOI-only article
                 # never gained the PMID its PubMed metadata is fetched by.
                 for kind in ("pmid", "pmcid", "doi"):
-                    if not getattr(identifier, kind) and getattr(found, kind):
-                        setattr(identifier, kind, getattr(found, kind))
+                    if not getattr(identifier, kind) and found.asking(kind):
+                        setattr(identifier, kind, found.asking(kind))
                 identifier.normalize()
 
         return identifiers
@@ -258,9 +258,9 @@ class OpenAlexClient:
         failed: Dict[str, str] = {}
         for id_type in ("doi", "pmid"):
             values = [
-                str(getattr(identifier, id_type)).strip()
+                str(identifier.asking(id_type)).strip()
                 for identifier in identifiers
-                if getattr(identifier, id_type) and identifier.slug not in found
+                if identifier.asking(id_type) and identifier.slug not in found
             ]
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
                 batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
@@ -343,9 +343,9 @@ class OpenAlexClient:
         results: Dict[str, ArticleMetadata] = {}
         for id_type in ("doi", "pmid"):
             wanted = {
-                str(getattr(identifier, id_type)): identifier
+                str(identifier.asking(id_type)): identifier
                 for identifier in identifiers
-                if getattr(identifier, id_type) and identifier.slug not in results
+                if identifier.asking(id_type) and identifier.slug not in results
             }
             values = list(wanted)
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
@@ -360,7 +360,7 @@ class OpenAlexClient:
                 )
                 answered = set()
                 for work in payload.get("results", []) or []:
-                    value = getattr(_identifier_from(work.get("ids"), [id_type]), id_type)
+                    value = _identifier_from(work.get("ids"), [id_type]).asking(id_type)
                     identifier = wanted.get(str(value)) if value else None
                     if identifier is not None:
                         answered.add(str(value))
@@ -391,9 +391,9 @@ class OpenAlexClient:
             answered = set()
             for work in payload.get("results", []) or []:
                 ids = _identifier_from(work.get("ids"), ["doi"])
-                if ids.doi in batch:
-                    answered.add(ids.doi)
-                    found[ids.doi] = _cited_work(work)
+                if ids.asking_doi in batch:
+                    answered.add(ids.asking_doi)
+                    found[ids.asking_doi] = _cited_work(work)
             for doi, work in self._works_asked_singly(batch, answered, "ids,publication_year,authorships"):
                 found[doi] = _cited_work(work)
         return found

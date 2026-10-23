@@ -8,7 +8,7 @@ import time
 
 import pytest
 from ingestion_workflow.catalog import WHOLE_ARTICLE, Catalog, Outcome, Status
-from ingestion_workflow.models.ids import DUPLICATE_PUBMED_RECORDS, Identifier
+from ingestion_workflow.models.ids import Identifier
 
 
 @pytest.fixture()
@@ -24,7 +24,9 @@ def test_identity_survives_enrichment(catalog):
 
     assert first.id == second.id == third.id
     assert catalog.count_articles() == 1
-    assert catalog.identifier(first.id).doi == "10.1101/2023.10.21.563317"
+    held = catalog.identifier(first.id)
+    assert (held.doi, held.preprint_dois) == (None, ("10.1101/2023.10.21.563317",))
+    assert held.asking_doi == "10.1101/2023.10.21.563317"
 
 
 def test_separate_articles_stay_separate(catalog):
@@ -729,7 +731,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_pa
     first.join()
     second.join()
     assert errors == []
-    assert _version_and_dois(root) == ("3", {(UPPER.lower(), "a1")})
+    assert _version_and_dois(root) == ("4", {(UPPER.lower(), "a1")})
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
 
 
@@ -757,9 +759,9 @@ def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
     root = tmp_path / "cat"
     Catalog.open(root).close()
     monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
-    with pytest.raises(RuntimeError, match="schema version 3; this code reads version 2"):
+    with pytest.raises(RuntimeError, match="schema version 4; this code reads version 2"):
         Catalog.open(root)
-    assert _version_and_dois(root)[0] == "3"
+    assert _version_and_dois(root)[0] == "4"
 
 
 def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalog):
@@ -767,13 +769,13 @@ def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalo
     duplicate record's, and every stage that asks PubMed of the paper asks of both."""
     ref = catalog.register(Identifier(pmid="12671262"))
     catalog._conn.executemany(
-        "INSERT INTO aliases(kind, value, article_id) VALUES('duplicate_pmid', ?, ?)",
+        "INSERT INTO aliases(kind, value, article_id) VALUES('alternative_pmid', ?, ?)",
         [("9999999999", ref.id), ("22387514", ref.id)])
     for presented in (catalog.identifier(ref.id), catalog.identifiers([ref.id])[ref.id]):
         assert presented.pmid == "12671262"
-        assert presented.other_ids == {DUPLICATE_PUBMED_RECORDS: "22387514,9999999999"}
+        assert presented.alternative_pmids == ("22387514", "9999999999")
         assert presented.pmids == ["12671262", "22387514", "9999999999"]
-    assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).other_ids is None
+    assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).alternative_pmids == ()
 
 
 def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(catalog):

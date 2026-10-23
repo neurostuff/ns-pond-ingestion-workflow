@@ -5,6 +5,7 @@ from ingestion_workflow.utils.preprints import (
     is_preprint_doi,
     is_preprint_host,
     preprint_server,
+    server_of_filed_preprint_doi,
     preprint_server_of_url,
 )
 
@@ -111,6 +112,27 @@ STUDY_SCHEMA_PREPRINT_SERVERS = {
 
 def test_the_registrys_servers_are_study_schemas_preprint_servers():
     assert {s.name for s in PREPRINT_SERVERS} == STUDY_SCHEMA_PREPRINT_SERVERS
+
+
+@pytest.mark.parametrize("doi, server", [
+    # 10.7554/eLife.106070 and 10.7554/eLife.112197 are Crossref's `posted-content` base DOIs of
+    # reviewed preprints, `.1` their first version; eLife.92563 is a published paper.
+    ("10.7554/elife.112197", "elife"),
+    ("10.7554/elife.112197.1", "elife"),
+    ("10.1101/2023.09.27.559792", "biorxiv"),
+    ("10.31234/osf.io/edaxh_v3", "psyarxiv"),
+])
+def test_a_doi_filed_as_a_preprint_s_names_its_server(doi, server):
+    assert server_of_filed_preprint_doi(doi) == server
+
+
+def test_an_elife_doi_is_no_preprint_until_it_is_filed_as_one():
+    assert not is_preprint_doi("10.7554/elife.112197")
+    assert not is_preprint_doi("10.7554/elife.92563")
+
+
+def test_a_doi_no_server_registered_names_no_server():
+    assert server_of_filed_preprint_doi("10.1016/j.neuroimage.2020.117000") is None
 
 
 def test_no_doi_is_no_preprint():

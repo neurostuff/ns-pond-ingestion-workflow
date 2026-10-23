@@ -3,14 +3,15 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import MutableMapping
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Tuple
 
 from ingestion_workflow.utils import slugify
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.pmcid import normalize_pmcid
-
+from ingestion_workflow.utils.pmid import normalize_pmid
+from ingestion_workflow.utils.preprints import is_preprint_doi
 
 
 def _normalize_identifier(value: Optional[str]) -> Optional[str]:
@@ -20,60 +21,106 @@ def _normalize_identifier(value: Optional[str]) -> Optional[str]:
     return value or None
 
 
-def _normalize_pmid(value: Optional[str]) -> Optional[str]:
-    value = _normalize_identifier(value)
-    if value and value.startswith("https://pubmed.ncbi.nlm.nih.gov/"):
-        prefix = "https://pubmed.ncbi.nlm.nih.gov/"
-        value = value.replace(prefix, "").rstrip("/")
-    return value or None
+#: Where an identifier of each kind is held, by how it is spelled. A paper has the DOIs,
+#: PMIDs and PMCIDs of its version of record (`doi`, `pmid`, `pmcid`), those of its
+#: preprints, and any other of its own, in three buckets of each kind.
+CANONICAL: Dict[str, Callable[[str], Optional[str]]] = {
+    "dois": normalize_doi, "pmids": normalize_pmid, "pmcids": normalize_pmcid}
+BUCKETS = ("preprint_dois", "preprint_pmids", "preprint_pmcids",
+           "alternative_dois", "alternative_pmids", "alternative_pmcids")
+_VERSION_OF_RECORD = {"dois": "doi", "pmids": "pmid", "pmcids": "pmcid"}
 
 
-#: The `other_ids` key holding, comma-joined, the PMIDs of the paper's duplicate
-#: PubMed records, which a merge kept beside its `pmid`.
-DUPLICATE_PUBMED_RECORDS = "duplicate_pubmed_records"
+def _natural(value: str) -> Tuple:
+    """Sorts `v2` before `v10`, so the latest version of a preprint is last."""
+    return tuple(int(part) if part.isdigit() else part for part in re.split(r"(\d+)", value))
 
-#: The `other_ids` key holding the PMID of a preprint's PubMed record, on an article
-#: whose `pmid` is its version of record's.
-PREPRINT_PMID = "preprint_pmid"
 
-#: The `other_ids` key holding the PMCID of a preprint's PMC record, on an article
-#: whose `pmcid` is its version of record's.
-PREPRINT_PMCID = "preprint_pmcid"
+def _bucket(name: str, values: Optional[Iterable[str]]) -> Tuple[str, ...]:
+    """The canonical, distinct, sorted ids of a bucket; a lone string is one id."""
+    canonical = CANONICAL[name.partition("_")[2]]
+    values = (values,) if isinstance(values, str) else values or ()
+    return tuple(sorted({c for v in values if (c := canonical(v))}, key=_natural))
 
 
 @dataclass
 class Identifier(MutableMapping[str, Optional[str]]):
     neurostore: Optional[str] = None
     pmid: Optional[str] = None
+    #: The version of record's DOI, never a preprint's: those are `preprint_dois`.
     doi: Optional[str] = None
     pmcid: Optional[str] = None
     other_ids: Optional[dict[str, str]] = None
+    #: A preprint server's DOI, and PubMed's and PMC's records of the preprint.
+    preprint_dois: Tuple[str, ...] = ()
+    preprint_pmids: Tuple[str, ...] = ()
+    preprint_pmcids: Tuple[str, ...] = ()
+    #: Every other id of the paper: another version's, a duplicate record's, an alias.
+    alternative_dois: Tuple[str, ...] = ()
+    alternative_pmids: Tuple[str, ...] = ()
+    alternative_pmcids: Tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Ensure identifiers are normalized immediately after creation."""
         self.normalize()
 
     def __setattr__(self, name: str, value: Any) -> None:
-        # Enrichment assigns `doi` and `pmcid` after construction, as the provider
-        # spelled them; every reader, the catalog included, sees the canonical id.
+        # Enrichment assigns ids after construction, as the provider spelled them;
+        # every reader, the catalog included, sees the canonical id.
         if name == "doi":
             value = normalize_doi(value) if value else None
+            # `doi` is never a preprint server's, whoever gives it: providers hand over a
+            # record's DOI whichever it is, and the registry files it. (Before construction
+            # is done the buckets do not exist; `normalize` files it then.)
+            if value and "preprint_dois" in self.__dict__ and is_preprint_doi(value):
+                self.preprint_dois = (*self.preprint_dois, value)
+                return
         elif name == "pmcid":
             value = normalize_pmcid(value)
+        elif name == "pmid":
+            value = normalize_pmid(value)
+        elif name in BUCKETS:
+            value = _bucket(name, value)
         super().__setattr__(name, value)
 
     @property
+    def asking_doi(self) -> Optional[str]:
+        """The DOI to ask a provider by: the version of record's, else the preprint's (of
+        several, the shortest, then the lowest).
+
+        `doi` itself is the version of record's only, so a preprint-only paper has none.
+        """
+        return self.doi or min(self.preprint_dois, key=lambda d: (len(d), d), default=None)
+
+    def asking(self, id_type: str) -> Optional[str]:
+        """The id of `id_type` to ask a provider by: `asking_doi` for a DOI, else the field."""
+        return self.asking_doi if id_type == "doi" else getattr(self, id_type)
+
+    @property
     def pmids(self) -> List[str]:
-        """Every PMID of the paper: `pmid`, then its duplicate PubMed records."""
-        duplicates = (self.other_ids or {}).get(DUPLICATE_PUBMED_RECORDS) or ""
-        return [p for p in [self.pmid, *duplicates.split(",")] if p]
+        """Every PMID of the paper's version of record: `pmid`, then its other records."""
+        return [p for p in [self.pmid, *self.alternative_pmids] if p]
+
+    @property
+    def publication_status(self) -> str:
+        """`preprint` when only a preprint's ids are known, else `published`.
+
+        An alternative id never makes a paper published: it may be a preprint's other
+        version.
+        """
+        held = self.preprint_dois or self.preprint_pmids or self.preprint_pmcids
+        return "preprint" if held and not (self.doi or self.pmid or self.pmcid) else "published"
 
     def make_slug(self) -> str:
-        """Create a slugable representation of the identifiers."""
+        """Create a slugable representation of the identifiers.
+
+        An article known only by a preprint's ids is named by them; without that every
+        such article's slug would be `--`, and slugs key metadata and downloads.
+        """
         id_parts = [
-            self.pmid or "",
-            self.doi or "",
-            self.pmcid or "",
+            self.pmid or next(iter(self.preprint_pmids), ""),
+            self.asking_doi or "",
+            self.pmcid or next(iter(self.preprint_pmcids), ""),
         ]
         # replace slashes to avoid path issues
         return slugify("-".join(id_parts))
@@ -84,8 +131,21 @@ class Identifier(MutableMapping[str, Optional[str]]):
         return self.make_slug()
 
     def normalize(self) -> None:
-        """Normalize identifier fields."""
-        self.pmid = _normalize_pmid(self.pmid) if self.pmid else None
+        """Normalize identifier fields.
+
+        An id is in one slot only: the version of record's, else a preprint's, else an
+        alternative. A preprint server's DOI given as `doi` is the preprint's.
+        """
+        buckets = {name: set(getattr(self, name)) for name in BUCKETS}
+        if self.doi and is_preprint_doi(self.doi):
+            buckets["preprint_dois"].add(self.doi)
+            self.doi = None
+        for kind, vor in _VERSION_OF_RECORD.items():
+            held = {getattr(self, vor)} - {None}
+            buckets[f"preprint_{kind}"] -= held
+            buckets[f"alternative_{kind}"] -= held | buckets[f"preprint_{kind}"]
+        for name, values in buckets.items():
+            setattr(self, name, values)
         if self.other_ids is not None:
             normalized = {k: _normalize_identifier(v) for k, v in self.other_ids.items()}
             self.other_ids = {key: value for key, value in normalized.items() if value is not None}
@@ -95,10 +155,13 @@ class Identifier(MutableMapping[str, Optional[str]]):
     # -- MutableMapping protocol ----------------------------------------------
 
     _PRIMARY_KEYS = {"neurostore", "pmid", "doi", "pmcid"}
+    #: The buckets are keys too, valued by tuples; a mapping with only a preprint's DOI
+    #: is not empty.
+    _BUCKET_KEYS = set(BUCKETS)
 
     def __getitem__(self, key: str) -> Optional[str]:
         normalized_key = self._normalize_mapping_key(key)
-        if normalized_key in self._PRIMARY_KEYS:
+        if normalized_key in self._PRIMARY_KEYS | self._BUCKET_KEYS:
             return getattr(self, normalized_key)
         if self.other_ids and normalized_key in self.other_ids:
             return self.other_ids[normalized_key]
@@ -106,7 +169,7 @@ class Identifier(MutableMapping[str, Optional[str]]):
 
     def __setitem__(self, key: str, value: Optional[str]) -> None:
         normalized_key = self._normalize_mapping_key(key)
-        if normalized_key in self._PRIMARY_KEYS:
+        if normalized_key in self._PRIMARY_KEYS | self._BUCKET_KEYS:
             setattr(self, normalized_key, value)
             self.normalize()
             return
@@ -125,7 +188,7 @@ class Identifier(MutableMapping[str, Optional[str]]):
 
     def __delitem__(self, key: str) -> None:
         normalized_key = self._normalize_mapping_key(key)
-        if normalized_key in self._PRIMARY_KEYS:
+        if normalized_key in self._PRIMARY_KEYS | self._BUCKET_KEYS:
             setattr(self, normalized_key, None)
             return
         if self.other_ids and normalized_key in self.other_ids:
@@ -140,12 +203,16 @@ class Identifier(MutableMapping[str, Optional[str]]):
             value = getattr(self, primary)
             if value is not None:
                 yield primary
+        for bucket in BUCKETS:
+            if getattr(self, bucket):
+                yield bucket
         if self.other_ids:
             for key in self.other_ids:
                 yield key
 
     def __len__(self) -> int:
         count = sum(1 for key in self._PRIMARY_KEYS if getattr(self, key) is not None)
+        count += sum(1 for key in BUCKETS if getattr(self, key))
         if self.other_ids:
             count += len(self.other_ids)
         return count
@@ -158,15 +225,17 @@ class Identifier(MutableMapping[str, Optional[str]]):
             raise KeyError(key)
         return key_str.lower()
 
-    def to_dict(self) -> Dict[str, Optional[str]]:
-        """Serialize the identifier to a plain dictionary."""
-        payload = {
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the identifier to a plain dictionary; a bucket only when it holds ids."""
+        payload: Dict[str, Any] = {
             "neurostore": self.neurostore,
             "pmid": self.pmid,
             "doi": self.doi,
             "pmcid": self.pmcid,
         }
         payload["other_ids"] = dict(self.other_ids or {})
+        payload.update({name: list(getattr(self, name)) for name in BUCKETS
+                        if getattr(self, name)})
         return payload
 
     @classmethod
@@ -243,7 +312,7 @@ class Identifiers:
             return None
         value_str = str(value)
         if key == "pmid":
-            return _normalize_pmid(value_str)
+            return normalize_pmid(value_str)
         if key == "pmcid":
             return normalize_pmcid(value_str)
         if key == "doi":
@@ -256,7 +325,7 @@ class Identifiers:
         if not self._index_keys:
             return
         for key in self._index_keys:
-            value = getattr(identifier, key)
+            value = identifier.asking(key)
             if value:
                 normalized = self._normalize_for_key(key, value)
                 if normalized:
@@ -266,7 +335,7 @@ class Identifiers:
         if not self._index_keys:
             return
         for key in self._index_keys:
-            value = getattr(identifier, key)
+            value = identifier.asking(key)
             if value:
                 normalized = self._normalize_for_key(key, value)
                 if normalized:
@@ -305,7 +374,7 @@ class Identifiers:
 
         with file_path.open("w", encoding="utf-8") as f:
             for identifier in self.identifiers:
-                json.dump(asdict(identifier), f)
+                json.dump(identifier.to_dict(), f)
                 f.write("\n")
 
     @classmethod

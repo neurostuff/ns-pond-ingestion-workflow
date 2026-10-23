@@ -374,7 +374,11 @@ def _plan_sync(sync, ctx, catalog, refs):
     (Identifier(), True),
     (Identifier(doi="10.5555/doi.only"), False),
     (Identifier(pmcid="PMC9990028"), False),
-], ids=["none", "doi-only", "pmcid-only"])
+    (Identifier(preprint_dois=["10.1101/2025.05.13.653896"]), False),
+    (Identifier(preprint_pmids=["34845462"]), False),
+    (Identifier(preprint_pmcids=["PMC8629206"]), False),
+], ids=["none", "doi-only", "pmcid-only", "preprint-doi-only", "preprint-pmid-only",
+        "preprint-pmcid-only"])
 def test_an_article_with_nothing_to_create_a_base_study_by_is_recorded_with_why(
         env, monkeypatch, identifier, waits):
     """Any one of doi, pmid or pmcid is enough for the ingester to find or create the base
@@ -590,13 +594,26 @@ def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeyp
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "45", "BS45", doi="10.1101/2020.03.25.008318")
     catalog.add_aliases([(ref.id, "doi", "10.1002/hbm.25137")])
-    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, catalog.ref(ref.id))
     assert synced.status is Status.OK, synced.error
 
     header = json.loads(
         (settings.ns_pond_root / "BS45" / "parse" / "parsed_paper.json").read_text())["header"]
     assert (header["identifiers"]["doi"], header["identifiers"]["preprint_dois"]) == (
         "10.1002/hbm.25137", [{"doi": "10.1101/2020.03.25.008318", "server": "biorxiv"}])
+
+
+def test_an_article_holding_two_doi_rows_is_not_synced(env, monkeypatch):
+    """298 catalog articles hold two version-of-record DOIs, most of them two works fused;
+    sync must not write one and drop the other."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "46", "BS46", doi="10.1002/hbm.25137")
+    catalog.add_aliases([(ref.id, "doi", "10.1371/journal.pone.0041873")])
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, catalog.ref(ref.id))
+
+    assert synced.status is not Status.OK
+    assert "two DOIs of a version of record" in synced.error
+    assert not (settings.ns_pond_root / "BS46" / "parse").exists()
 
 
 def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):

@@ -199,3 +199,21 @@ def test_fingerprints_follow_the_canonical_doi_and_tell_apart_non_ascii_case(env
         doi = lambda spelling: Identifier(doi=spelling).doi
         assert fingerprint_for(stage, doi("10.1000/ABC")) == fingerprint_for(stage, doi("doi:10.1000/abc"))
         assert fingerprint_for(stage, doi("10.26321/Á")) != fingerprint_for(stage, doi("10.26321/á"))
+
+
+def test_a_paper_known_only_by_its_preprint_is_still_planned_by_its_preprint_s_doi(env):
+    """8,058 catalog articles have no version-of-record DOI; their reference lists and
+    retraction notices are asked for by the preprint's."""
+    from ingestion_workflow.pipeline.stages.notices import NoticesStage
+
+    settings, catalog, article, text = env
+    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"))
+    assert ref.identifier.doi is None
+    catalog.record([Outcome(article_id=ref.id, stage="download", source="pdf", fingerprint="d",
+                            payload={}, summary={}),
+                    Outcome(article_id=ref.id, stage="metadata", fingerprint="m", payload={},
+                            summary={})])
+    ctx = Context(settings, catalog)
+    for stage in (ReflistStage(settings), NoticesStage(settings)):
+        plan = stage.plan(ctx, [ref], {}, catalog.artifacts([ref.id], stage.requires))
+        assert (plan.blocked, len(plan.pending)) == (0, 1), stage.name

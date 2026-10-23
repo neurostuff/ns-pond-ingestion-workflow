@@ -228,7 +228,7 @@ class PubMedClient:
         if id_type not in self._SUPPORTED_ID_TYPES:
             raise ValueError("PubMed ID lookups support only 'pmid', 'pmcid', or 'doi'.")
 
-        if any(getattr(identifier, id_type) is None for identifier in identifiers):
+        if any(identifier.asking(id_type) is None for identifier in identifiers):
             raise ValueError(f"All identifiers must provide a {id_type.upper()} for lookup.")
 
     def get_ids_by_type(
@@ -260,9 +260,9 @@ class PubMedClient:
         identifiers: Identifiers,
     ) -> list[str]:
         return [
-            str(getattr(identifier, id_type)).strip()
+            str(identifier.asking(id_type)).strip()
             for identifier in identifiers
-            if getattr(identifier, id_type)
+            if identifier.asking(id_type)
         ]
 
     def _build_params(
