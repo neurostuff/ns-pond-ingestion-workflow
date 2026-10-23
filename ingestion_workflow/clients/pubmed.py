@@ -281,8 +281,7 @@ class PubMedClient:
 
         params.append(("tool", self.tool))
 
-        if self.api_key:
-            params.append(("api_key", self.api_key))
+        params.append(("api_key", self.api_key))
 
         return params
 
@@ -424,8 +423,7 @@ class PubMedClient:
             ("tool", self.tool),
         ]
 
-        if self.api_key:
-            params.append(("api_key", self.api_key))
+        params.append(("api_key", self.api_key))
 
         if mindate is not None:
             params.append(("mindate", str(mindate)))
@@ -447,8 +445,11 @@ class PubMedClient:
     ) -> Dict[str, object]:
         return self._request_json(self.BASE_URL, params)
 
-    def _get(self, url: str, params: Mapping[str, str] | Sequence[Tuple[str, str]]) -> httpx.Response:
-        # NCBI reads a bare  as an address that is empty, not as none given.
+    def _get(
+        self, url: str, params: Mapping[str, str] | Sequence[Tuple[str, str]]
+    ) -> httpx.Response:
+        # NCBI reads a bare `email=` as an address that is empty, not as none given; the
+        # same goes for `tool=` and `api_key=`. This is the one place unset ones are dropped.
         pairs = params.items() if isinstance(params, Mapping) else params
         return self._client.get(url, params=[(k, v) for k, v in pairs if v not in (None, "")])
 
@@ -574,8 +575,7 @@ class PubMedClient:
         100 of them."""
         params = [("db", "pubmed"), ("id", ",".join(pmids)), ("retmode", "json"),
                   ("email", self.email), ("tool", self.tool)]
-        if self.api_key:
-            params.append(("api_key", self.api_key))
+        params.append(("api_key", self.api_key))
         try:
             result = self._request_json(self.ESUMMARY_URL, params).get("result") or {}
         except httpx.HTTPStatusError as exc:
@@ -641,8 +641,7 @@ class PubMedClient:
             params = [("db", "pubmed"), ("term", " AND ".join(f"{w}[ti]" for w in words)),
                       ("retmode", "json"), ("retmax", "20"), ("email", self.email),
                       ("tool", self.tool)]
-            if self.api_key:
-                params.append(("api_key", self.api_key))
+            params.append(("api_key", self.api_key))
             result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
             missing = (result.get("errorlist") or {}).get("phrasesnotfound") or []
             unindexed = {w.lower() for w in missing}
@@ -660,8 +659,7 @@ class PubMedClient:
             params = [("db", "pubmed"), ("term", term), ("retmode", "json"),
                       ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email),
                       ("tool", self.tool)]
-            if self.api_key:
-                params.append(("api_key", self.api_key))
+            params.append(("api_key", self.api_key))
             result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
             found += [str(p) for p in result.get("idlist") or []]
         return list(dict.fromkeys(found))
@@ -699,8 +697,7 @@ class PubMedClient:
             ("email", self.email),
             ("tool", self.tool),
         ]
-        if self.api_key:
-            params.append(("api_key", self.api_key))
+        params.append(("api_key", self.api_key))
 
         return self._request_xml(self.EFETCH_URL, params)
 
