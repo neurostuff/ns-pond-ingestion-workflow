@@ -16,6 +16,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
+from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.http import transient
 
@@ -75,6 +76,7 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         publication_year=work.get("publication_year"),
         source=MetadataSource.openalex.value,
         raw_metadata={"openalex": {name: work.get(name) for name in _RAW_FIELDS}},
+        corresponding_authors=corresponding_authors.from_openalex(work),
     )
 
 

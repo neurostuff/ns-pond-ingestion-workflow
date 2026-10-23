@@ -49,8 +49,9 @@ dependencies = [
   # set (services.set_roles; needs CoordinateRole.other), keys.normalize_name,
   # which resolve compares prose analysis names by, and keys.analysis_key, the
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
-  # CopyAccess, the facts each download records about its copy. Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@7c0425a35c6ae1c3f7754cd97a4d8e2f35ec5530",
+  # CopyAccess, the facts each download records about its copy, and CorrespondingAuthor.
+  # Pinned to study_schema main.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@8fe87a17226e154a31b52ad2fcef8d9ac9cfa732",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<article id="cns14712" article-type="research-article" dtd-version="1.4"><front><article-meta><article-id pub-id-type="pmcid">PMC11016347</article-id><article-id pub-id-type="pmcid-ver">PMC11016347.1</article-id><article-id pub-id-type="pmcaid">11016347</article-id><article-id pub-id-type="pmcaiid">11016347</article-id><article-id pub-id-type="pmid">38615364</article-id><article-id pub-id-type="doi">10.1111/cns.14712</article-id><article-id pub-id-type="publisher-id">CNS14712</article-id><article-id pub-id-type="other">CNSNT-2024-414.R1</article-id><article-version article-version-type="pmc-version">1</article-version><title-group><article-title>Brain white matter changes and their associations with <styled-content style="fixed-case" toggle="no">non‐motor</styled-content> dysfunction in orthostatic hypotension in <styled-content style="fixed-case" toggle="no">α‐synucleinopathy</styled-content>: A <styled-content style="fixed-case" toggle="no">NODDI</styled-content> study</article-title><alt-title alt-title-type="left-running-head">Lin et al.</alt-title></title-group><contrib-group><contrib id="cns14712-cr-0001" contrib-type="author"><name name-style="western"><surname>Lin</surname><given-names initials="L">Lin</given-names></name><contrib-id contrib-id-type="orcid" authenticated="false">https://orcid.org/0000-0003-3018-494X</contrib-id><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref></contrib><contrib id="cns14712-cr-0002" contrib-type="author"><name name-style="western"><surname>Huang</surname><given-names initials="P">Peilin</given-names></name><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref></contrib><contrib id="cns14712-cr-0003" contrib-type="author"><name name-style="western"><surname>Cheng</surname><given-names initials="Y">Yingzhe</given-names></name><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref></contrib><contrib id="cns14712-cr-0004" contrib-type="author"><name name-style="western"><surname>Jiang</surname><given-names initials="S">Shaofan</given-names></name><xref rid="cns14712-aff-0005" ref-type="aff">
+<sup>5</sup>
+</xref><xref rid="cns14712-aff-0006" ref-type="aff">
+<sup>6</sup>
+</xref></contrib><contrib id="cns14712-cr-0005" contrib-type="author"><name name-style="western"><surname>Zhang</surname><given-names initials="J">Jiejun</given-names></name><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref><xref rid="cns14712-aff-0007" ref-type="aff">
+<sup>7</sup>
+</xref></contrib><contrib id="cns14712-cr-0006" contrib-type="author"><name name-style="western"><surname>Li</surname><given-names initials="M">Man</given-names></name><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref></contrib><contrib id="cns14712-cr-0007" contrib-type="author"><name name-style="western"><surname>Zheng</surname><given-names initials="J">Jiahao</given-names></name><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref></contrib><contrib id="cns14712-cr-0008" contrib-type="author" corresp="yes"><name name-style="western"><surname>Pan</surname><given-names initials="X">Xiaodong</given-names></name><contrib-id contrib-id-type="orcid" authenticated="false">https://orcid.org/0000-0001-9511-6986</contrib-id><xref rid="cns14712-aff-0001" ref-type="aff">
+<sup>1</sup>
+</xref><xref rid="cns14712-aff-0002" ref-type="aff">
+<sup>2</sup>
+</xref><xref rid="cns14712-aff-0003" ref-type="aff">
+<sup>3</sup>
+</xref><xref rid="cns14712-aff-0004" ref-type="aff">
+<sup>4</sup>
+</xref><address><email>xq1003@mail163.example</email></address></contrib><contrib id="cns14712-cr-0009" contrib-type="author" corresp="yes"><name name-style="western"><surname>Wang</surname><given-names initials="Y">Yanping</given-names></name><contrib-id contrib-id-type="orcid" authenticated="false">https://orcid.org/0009-0005-9947-3821</contrib-id><xref rid="cns14712-aff-0008" ref-type="aff">
+<sup>8</sup>
+</xref><address><email>yp.wang@mail163.example</email></address></contrib></contrib-group><aff id="cns14712-aff-0001">
+<label>
+<sup>1</sup>
+</label>
+<named-content content-type="organisation-division">Department of Neurology, Center for Cognitive Neurology</named-content>
+<institution>Fujian Medical University Union Hospital</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0002">
+<label>
+<sup>2</sup>
+</label>
+<named-content content-type="organisation-division">Fujian Institute of Geriatrics</named-content>
+<institution>Fujian Medical University Union Hospital</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0003">
+<label>
+<sup>3</sup>
+</label>
+<named-content content-type="organisation-division">Institute of Clinical Neurology</named-content>
+<institution>Fujian Medical University</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0004">
+<label>
+<sup>4</sup>
+</label>
+<named-content content-type="organisation-division">Fujian Key Laboratory of Molecular Neurology</named-content>
+<institution>Fujian Medical University</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0005">
+<label>
+<sup>5</sup>
+</label>
+<named-content content-type="organisation-division">Department of Radiology</named-content>
+<institution>Fujian Medical University Union Hospital</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0006">
+<label>
+<sup>6</sup>
+</label>
+<named-content content-type="organisation-division">Fujian Key Laboratory of Intelligent Imaging and Precision Radiotherapy for Tumors</named-content>
+<institution>Fujian Medical University</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0007">
+<label>
+<sup>7</sup>
+</label>
+<named-content content-type="organisation-division">Center for Geriatrics</named-content>
+<institution>Hainan General Hospital</institution>
+<named-content content-type="country-part">Hainan</named-content>
+<country country="CN">China</country>
+</aff><aff id="cns14712-aff-0008">
+<label>
+<sup>8</sup>
+</label>
+<named-content content-type="organisation-division">Department of Endocrinology</named-content>
+<institution>Fujian Medical University Union Hospital</institution>
+<city>Fuzhou City</city>
+<country country="CN">China</country>
+</aff><author-notes><corresp id="correspondenceTo">
+<label>*</label>
+<bold>Correspondence</bold>
+<break/>Yanping Wang, Department of Endocrinology, Fujian Medical University Union Hospital, No. 29 Xinquan Road, Fuzhou City 350001, China.<break/>Email: <email>yp.wang@mail163.example</email>
+<break/> Xiaodong Pan, Department of Neurology, Center for Cognitive Neurology, Fujian Medical University Union Hospital, No. 29 Xinquan Road, Fuzhou City 350001, China.<break/>Email: <email>xq1003@mail163.example</email>
+<break/>
+</corresp></author-notes><issue-id pub-id-type="pmc-issue-id">459387</issue-id><issue-id pub-id-type="doi">10.1002/cns.v30.4</issue-id><pub-history><event event-type="pmc-release"><date><day>14</day><month>04</month><year>2024</year></date></event><event event-type="pmc-live"><date><day>14</day><month>04</month><year>2024</year></date></event><event event-type="pmc-last-change"><date iso-8601-date="2026-03-23 02:25:13.317"><day>23</day><month>03</month><year>2026</year></date></event></pub-history></article-meta><notes><p content-type="self-citation">
+<mixed-citation publication-type="journal" id="CNS14712-cit-2001">
+<string-name name-style="western">
+<surname>Lin</surname>
+<given-names>L</given-names>
+</string-name>, <string-name name-style="western">
+<surname>Huang</surname>
+<given-names>P</given-names>
+</string-name>, <string-name name-style="western">
+<surname>Cheng</surname>
+<given-names>Y</given-names>
+</string-name>, et al. <article-title>Brain white matter changes and their associations with <styled-content style="fixed-case" toggle="no">non‐motor</styled-content> dysfunction in orthostatic hypotension in <styled-content style="fixed-case" toggle="no">α‐synucleinopathy</styled-content>: A <styled-content style="fixed-case" toggle="no">NODDI</styled-content> study</article-title>. <source>CNS Neurosci Ther</source>. <year>2024</year>;<pub-id pub-id-type="doi">10.1111/cns.14712</pub-id>
+<pub-id pub-id-type="pmid">38615364</pub-id>
+<pub-id pub-id-type="pmcid">PMC11016347</pub-id></mixed-citation>
+</p></notes></front></article>

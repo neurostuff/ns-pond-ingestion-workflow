@@ -291,6 +291,7 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
     return pp.Bibliography(
         title=title,
         authors=[a.name for a in meta.authors] or None,
+        corresponding_authors=list(meta.corresponding_authors) or None,
         journal=meta.journal,
         publication_year=meta.publication_year,
         abstract=meta.abstract,
@@ -550,25 +551,28 @@ def article_identifiers(identifier, dois: Sequence[str], meta):
     pmid = getattr(identifier, "pmid", None) or None
     pmcid = getattr(identifier, "pmcid", None) or None
     held = getattr(identifier, "other_ids", None) or {}
-    preprint_pmid, preprint_pmcid = held.get(PREPRINT_PMID), held.get(PREPRINT_PMCID)
+    preprint_pmids = [held[PREPRINT_PMID]] if held.get(PREPRINT_PMID) else []
+    preprint_pmcids = [held[PREPRINT_PMCID]] if held.get(PREPRINT_PMCID) else []
     if pmid and pp.StudyType.Preprint.value in publication_types(meta.to_dict()):
-        preprint_pmid, pmid = pmid, None
+        preprint_pmids.append(pmid)
+        pmid = None
         if pmcid and pmcid == _pubmed_pmcid(meta):
-            preprint_pmcid, pmcid = pmcid, None
+            preprint_pmcids.append(pmcid)
+            pmcid = None
     preprints = [pp.PreprintDoi(doi=d, server=preprint_server(d))
                  for d in sorted(dois) if preprint_server(d)]
     published = sorted(d for d in dois if not preprint_server(d))
     if len(published) > 1:
         raise ValueError(f"the article holds two DOIs of a version of record: {published}")
     doi = published[0] if published else None
-    preprint_only = (preprints or preprint_pmid or preprint_pmcid) and not (doi or pmid or pmcid)
+    preprint_only = (preprints or preprint_pmids or preprint_pmcids) and not (doi or pmid or pmcid)
     return pp.ArticleIdentifiers(
         pmid=pmid,
         pmcid=pmcid,
         doi=doi,
         preprint_dois=preprints or None,
-        preprint_pmid=preprint_pmid,
-        preprint_pmcid=preprint_pmcid,
+        preprint_pmids=list(dict.fromkeys(preprint_pmids)) or None,
+        preprint_pmcids=list(dict.fromkeys(preprint_pmcids)) or None,
         publication_status=(pp.PublicationStatus.preprint if preprint_only
                             else pp.PublicationStatus.published),
     )

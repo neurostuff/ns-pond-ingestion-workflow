@@ -180,6 +180,10 @@ def _write_metadata(
     payload: MutableMapping[str, object] = {
         "title": metadata.title,
         "authors": authors,
+        "corresponding_authors": [
+            author.model_dump(mode="json", include={"name", "email"}, exclude_none=True)
+            for author in metadata.corresponding_authors
+        ] or None,
         "journal": metadata.journal,
         "keywords": metadata.keywords or None,
         "abstract": metadata.abstract,
