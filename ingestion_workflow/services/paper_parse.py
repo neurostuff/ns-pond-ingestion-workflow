@@ -49,7 +49,7 @@ from ingestion_workflow.utils.preprints import server_of_filed_preprint_doi
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 9
+PAPER_PARSE_VERSION = 10
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -294,8 +294,12 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         raise ValueError("the metadata record holds no licence for the paper")
     return pp.Bibliography(
         title=title,
-        authors=[a.name for a in meta.authors] or None,
-        corresponding_authors=list(meta.corresponding_authors) or None,
+        authors=[pp.Author(name=a.name, orcid=a.orcid, openalex_id=a.openalex_id,
+                           affiliations=list(a.affiliations) or None,
+                           corresponding=a.corresponding, emails=list(a.emails) or None)
+                 for a in meta.authors] or None,
+        authors_provider=_provider(meta.authors_provider) if meta.authors_provider else None,
+        correspondence_emails=list(meta.correspondence_emails) or None,
         journal=meta.journal,
         publication_year=meta.publication_year,
         abstract=meta.abstract,

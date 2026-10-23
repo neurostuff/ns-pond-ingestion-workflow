@@ -31,7 +31,7 @@ from .sync import _copy_of
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 4
+METADATA_VERSION = 6
 #: The providers the metadata service asks, in the order it asks them. It reads no setting
 #: for this, so no setting is in the fingerprint: changing which providers look up ids does
 #: not make the metadata stale. (The value is what the setting used to default to, so
@@ -224,7 +224,7 @@ class MetadataStage:
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
                 } | _licenses(metadata)
                 | {"authors": len(metadata.authors),
-                   "corresponding_authors": len(metadata.corresponding_authors),
+                   "corresponding_authors": sum(1 for a in metadata.authors if a.corresponding),
                    "sufficient": is_sufficient(metadata),
                    "digests": metadata_digests(payload)},
             )

@@ -6,7 +6,9 @@ import re
 from typing import List, Optional
 
 from lxml import etree
-from study_schema.models.paper_parse import CorrespondingAuthor, MetadataSource
+from study_schema.models.paper_parse import MetadataSource
+
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 from .common import authors, emails, fold, squash, surname
 

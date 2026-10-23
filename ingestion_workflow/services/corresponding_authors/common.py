@@ -6,7 +6,9 @@ import re
 import unicodedata
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from study_schema.models.paper_parse import CorrespondingAuthor, MetadataSource
+from study_schema.models.paper_parse import MetadataSource
+
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 #: (name, email): one corresponding author as an extractor reads them, either part absent.
 Found = Tuple[Optional[str], Optional[str]]
@@ -32,13 +34,32 @@ def emails(text: Optional[str]) -> List[str]:
     return [e for e in dict.fromkeys(found) if not _NOT_AN_AUTHOR.match(e)]
 
 
+#: Letters and marks that have no ASCII decomposition: OpenAlex spells "Dobson‐Stone" with
+#: U+2010 and "d’Amato" with U+2019, "Smıth" with a dotless i, "Sigurðsson" with an eth.
+_PLAIN = str.maketrans({
+    "‐": "-", "‑": "-", "‒": "-", "–": "-", "—": "-", "−": "-", "’": "'", "‘": "'",
+    "ı": "i", "ð": "d", "Ð": "D", "ø": "o", "Ø": "O", "ł": "l", "Ł": "L", "đ": "d",
+    "Đ": "D", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE", "ß": "ss", "þ": "th",
+})
+
+
 def fold(text: str) -> str:
-    return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    text = unicodedata.normalize("NFKD", re.sub(r"[\x00-\x1f]", "", text.translate(_PLAIN)))
+    return text.encode("ascii", "ignore").decode().lower()
+
+
+def words(name: str) -> List[str]:
+    """A name's words, folded: initials and suffixes dropped from the end ("Shinsuke
+    Shimojo A", "Jose L. Pascual L.")."""
+    found = re.findall(r"[a-z]+", fold(name))
+    while len(found) > 1 and len(found[-1]) == 1:
+        found.pop()
+    return found
 
 
 def surname(name: str) -> str:
-    words = re.findall(r"[a-z]+", fold(name))
-    return words[-1] if words else ""
+    found = words(name)
+    return found[-1] if found else ""
 
 
 def authors(found: Iterable[Found], by: MetadataSource,

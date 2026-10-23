@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import List, Mapping
 
-from study_schema.models.paper_parse import CorrespondingAuthor, MetadataSource
+from study_schema.models.paper_parse import MetadataSource
+
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 from .common import authors
 

@@ -260,14 +260,30 @@ def test_both_files_validate_against_the_json_schema(written):
     assert "parse_omitted" not in summary
 
 
-def test_the_bibliography_carries_the_corresponding_authors_and_validates(tmp_path):
-    authors = [pp.CorrespondingAuthor(name="Jones, S", stated_by="openalex"),
-               pp.CorrespondingAuthor(email="jones@example.org", stated_by="jats")]
-    _, _, summary = _written(tmp_path, corresponding_authors=authors)
+def test_the_bibliography_carries_structured_authors_and_validates(tmp_path):
+    ut = pp.Institution(ror="00hj54h04", name="The University of Texas at Austin", country="US")
+    # ORCID's own documentation iD (a fictional researcher).
+    listed = [
+        Author(name="Jones, S", orcid="0000-0002-1825-0097", openalex_id="A5000000001",
+               affiliations=[pp.Affiliation(text="UT Austin", institutions=[ut])],
+               corresponding=True, emails=["jones@example.org"]),
+        Author(name="Smith, J", corresponding=False),
+    ]
+    _, _, summary = _written(tmp_path, authors=listed, authors_provider="openalex",
+                             correspondence_emails=["lab@example.org"])
     paper = json.loads((summary["dir"] / "parsed_paper.json").read_text())
     _validate(paper, "parsed-paper")
-    assert [pp.CorrespondingAuthor.model_validate(a)
-            for a in paper["bibliography"]["corresponding_authors"]] == authors
+    bib = paper["bibliography"]
+    assert (bib["authors_provider"], bib["correspondence_emails"]) == (
+        "openalex", ["lab@example.org"])
+    jones, smith = ({k: v for k, v in a.items() if v is not None} for a in bib["authors"])
+    assert jones == {"name": "Jones, S", "orcid": "0000-0002-1825-0097",
+                     "openalex_id": "A5000000001", "corresponding": True,
+                     "emails": ["jones@example.org"],
+                     "affiliations": [{"text": "UT Austin", "institutions": [{
+                         "ror": "00hj54h04", "name": "The University of Texas at Austin",
+                         "country": "US"}]}]}
+    assert smith == {"name": "Smith, J", "corresponding": False}
 
 
 def test_the_parsed_paper_points_at_the_synced_text(written):
@@ -281,7 +297,7 @@ def test_bibliography_and_meta_analysis_come_from_metadata_and_triage(written):
     paper, _, _ = written
     bib = paper["bibliography"]
     assert bib["title"] == "Faces and houses"
-    assert bib["authors"] == ["Jones, S"]
+    assert [a["name"] for a in bib["authors"]] == ["Jones, S"]
     assert bib["language"] == ["eng"]
     assert bib["publication_types"] == ["Journal Article"]
     assert paper["is_meta_analysis"] is False
@@ -1818,9 +1834,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 9
+    assert paper_parse.PAPER_PARSE_VERSION == 10
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.9"
+        "paper_parse.10"
     }
 
 
