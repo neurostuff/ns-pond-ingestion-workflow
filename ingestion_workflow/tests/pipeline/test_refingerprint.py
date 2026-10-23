@@ -524,6 +524,51 @@ def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repa
     assert found.rerun() == {"passages": 1}
 
 
+def _imported_without_text(catalog, tmp_path, **summary):
+    """Production, 2026-10-23: an article whose pubget extraction was imported with no text
+    file, beside an ace extraction that has it and the passages read from that."""
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    _download(catalog, ref, tmp_path)
+    text = tmp_path / f"{ref.id}.txt"
+    text.write_text(TEXT, encoding="utf-8")
+    catalog.record([
+        Outcome(article_id=ref.id, stage="extract", source="pubget",
+                payload={"full_text_path": None, "tables": [], "figure_captions": []},
+                summary={"migrated": True, **summary}),
+        Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="5042cb9aebec",
+                payload={"full_text_path": str(text), "tables": [], "figure_captions": []},
+                summary={"tables": 7, "has_text": True, "captions_sha256": captions_digest(()),
+                         "text_sha256": file_sha256(text)}),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="70f0ccca2ae7",
+                payload={"source": "ace", "passages": []},
+                summary={"source": "ace", "passages": 0}),
+    ])
+    return ref
+
+
+def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env):
+    """Stored, it would be chosen over the ace extraction that has the text, and passages
+    would wait on a text it cannot read. It is left to run again."""
+    settings, catalog, stages, tmp_path = env
+    ref = _imported_without_text(catalog, tmp_path)
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 0
+    assert found.stages["extract"].empty_rerun == 1
+    assert "passages" not in found.stages
+    assert found.rerun() == {"extract": 1}
+    assert ("extract", "pubget", ref.id) not in {(k[1], k[2], k[0]) for k in found.rewrites}
+
+
+def test_an_extraction_that_says_it_holds_no_text_is_stored(env):
+    settings, catalog, stages, tmp_path = env
+    ref = _imported_without_text(catalog, tmp_path, has_text=False)
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 1
+    assert found.stages["extract"].empty_rerun == 0
+
+
 def test_a_stage_that_blocks_on_its_model_still_stops_the_repair(migrated):
     """Roles asks about nothing while its models are not served, and what it made would
     go stale: its artifacts are not read from an extraction, so none is left alone."""

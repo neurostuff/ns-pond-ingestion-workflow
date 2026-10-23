@@ -19,7 +19,8 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog, Status
 
 from .scheduler import RunReport, run_stages
 from .stage import NO_TEXT, Context, Stage
-from .stages.extract import extraction_inputs
+from .stages.extract import extraction_inputs, unusable
+from .stages.passages import text_of
 
 Key = Tuple[str, str, str]
 
@@ -117,6 +118,14 @@ class _After(Context):
         self.asked.add(key)
         if key in self.rewrites or (artifact.fingerprint and key not in self.fresh_before):
             return super().is_fresh(artifact, expected)
+        if artifact.stage == "extract" and artifact.ok and not artifact.fingerprint \
+                and artifact.summary.get("has_text", True) and not unusable(artifact) \
+                and text_of(self, artifact)[0] is None:
+            # An import that kept no text and was not set aside claims some: stored as
+            # current it would be chosen over a source that has the text, and no plan
+            # could read it.
+            self.empty_asked.add(key)
+            return False
         now = replace(artifact, fingerprint=expected, summary=self._copied(artifact))
         fresh = super().is_fresh(now, expected)
         if not fresh:
