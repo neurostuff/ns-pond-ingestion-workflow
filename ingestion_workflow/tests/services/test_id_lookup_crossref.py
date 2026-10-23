@@ -17,7 +17,7 @@ from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.services.id_lookup import CrossrefIDLookupService
-from ingestion_workflow.services.metadata import MetadataService
+from ingestion_workflow.services.metadata import PROVIDER_CACHE_DIRS, MetadataService
 from ingestion_workflow.tests import cassette_secrets
 from ingestion_workflow.utils.preprints import server_of_filed_preprint_doi
 
@@ -299,7 +299,7 @@ def test_a_stored_record_of_another_pmid_is_not_taken_for_this_one(service, sett
     # the stage's cache of the article's slug holds Brain's 11335702, not the preprint
     other = Identifier(pmid="11335702")
     stored = MetadataService(settings)._get_pubmed_metadata_cached([other])
-    cache = settings.get_cache_dir("metadata") / "pubmed"
+    cache = settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS["pubmed"]
     (cache / "38013996.json").write_text((cache / "11335702.json").read_text(),
                                          encoding="utf-8")
     assert stored
